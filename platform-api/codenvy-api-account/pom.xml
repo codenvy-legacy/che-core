@@ -15,8 +15,8 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>codenvy-platform-api-parent</artifactId>
-        <groupId>com.codenvy.platform-api</groupId>
-        <version>0.34.0-SNAPSHOT</version>
+        <groupId>org.eclipse.che.core</groupId>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>codenvy-api-account</artifactId>
     <name>Codenvy API Account</name>
@@ -25,19 +25,19 @@
     </properties>
     <dependencies>
         <dependency>
-            <groupId>com.codenvy.platform-api</groupId>
+            <groupId>com.wordnik</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <version>${com.wordnik.swagger.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.che.core</groupId>
             <artifactId>codenvy-api-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.codenvy.platform-api</groupId>
+            <groupId>org.eclipse.che.core</groupId>
             <artifactId>codenvy-api-user</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.wordnik</groupId>
-            <artifactId>swagger-annotations</artifactId>
-            <version>${com.wordnik.swagger.version}</version>
         </dependency>
         <dependency>
             <groupId>javax.ws.rs</groupId>
@@ -99,7 +99,7 @@
         </resources>
         <plugins>
             <plugin>
-                <groupId>com.codenvy.platform-api</groupId>
+                <groupId>org.eclipse.che.core</groupId>
                 <artifactId>codenvy-dto-maven-plugin</artifactId>
                 <version>${project.version}</version>
                 <executions>
@@ -112,7 +112,7 @@
                 </executions>
                 <dependencies>
                     <dependency>
-                        <groupId>com.codenvy.platform-api</groupId>
+                        <groupId>org.eclipse.che.core</groupId>
                         <artifactId>codenvy-api-account</artifactId>
                         <version>${project.version}</version>
                     </dependency>

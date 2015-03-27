@@ -25,8 +25,8 @@
     <name>Codenvy API Parent</name>
     <modules>
         <module>commons</module>
-        <!--module>platform-api</module>
-        <module>platform-api-client-gwt</module>
+        <module>platform-api</module>
+        <!--module>platform-api-client-gwt</module>
         <module>ide</module>
         <module>vfs-impl</module>
         <module>security</module>

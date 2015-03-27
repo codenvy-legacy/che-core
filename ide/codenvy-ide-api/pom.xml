@@ -29,27 +29,27 @@
     </properties>
     <dependencies>
         <dependency>
-            <groupId>com.codenvy.platform-api</groupId>
+            <groupId>org.eclipse.che.core</groupId>
             <artifactId>codenvy-api-factory</artifactId>
             <version>${codenvy.platform-api.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.codenvy.platform-api</groupId>
+            <groupId>org.eclipse.che.core</groupId>
             <artifactId>codenvy-api-project</artifactId>
             <version>${codenvy.platform-api.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.codenvy.platform-api</groupId>
+            <groupId>org.eclipse.che.core</groupId>
             <artifactId>codenvy-api-runner</artifactId>
             <version>${codenvy.platform-api.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.codenvy.platform-api</groupId>
+            <groupId>org.eclipse.che.core</groupId>
             <artifactId>codenvy-api-user</artifactId>
             <version>${codenvy.platform-api.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.codenvy.platform-api</groupId>
+            <groupId>org.eclipse.che.core</groupId>
             <artifactId>codenvy-api-workspace</artifactId>
             <version>${codenvy.platform-api.version}</version>
         </dependency>
@@ -182,7 +182,7 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>com.codenvy.platform-api</groupId>
+                <groupId>org.eclipse.che.core</groupId>
                 <artifactId>codenvy-dto-maven-plugin</artifactId>
                 <executions>
                     <execution>

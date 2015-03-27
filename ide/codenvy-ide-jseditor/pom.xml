@@ -32,7 +32,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.codenvy.platform-api</groupId>
+            <groupId>org.eclipse.che.core</groupId>
             <artifactId>codenvy-api-user</artifactId>
             <version>${codenvy.platform-api.version}</version>
         </dependency>

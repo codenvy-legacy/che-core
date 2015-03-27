@@ -26,12 +26,12 @@
     </properties>
     <dependencies>
         <dependency>
-            <groupId>com.codenvy.platform-api</groupId>
+            <groupId>org.eclipse.che.core</groupId>
             <artifactId>codenvy-api-core</artifactId>
             <version>${codenvy.platform-api.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.codenvy.platform-api</groupId>
+            <groupId>org.eclipse.che.core</groupId>
             <artifactId>codenvy-api-user</artifactId>
             <version>${codenvy.platform-api.version}</version>
         </dependency>
@@ -71,7 +71,7 @@
         </resources>
         <plugins>
             <plugin>
-                <groupId>com.codenvy.platform-api</groupId>
+                <groupId>org.eclipse.che.core</groupId>
                 <artifactId>codenvy-dto-maven-plugin</artifactId>
                 <version>${codenvy.platform-api.version}</version>
                 <executions>
@@ -84,7 +84,7 @@
                 </executions>
                 <dependencies>
                     <dependency>
-                        <groupId>com.codenvy.platform-api</groupId>
+                        <groupId>org.eclipse.che.core</groupId>
                         <artifactId>codenvy-api-user</artifactId>
                         <version>${codenvy.platform-api.version}</version>
                     </dependency>
