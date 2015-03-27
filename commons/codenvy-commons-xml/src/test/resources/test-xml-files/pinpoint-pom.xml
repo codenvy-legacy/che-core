@@ -83,72 +83,72 @@
             <dependency>
                 <groupId>com.navercorp.pinpoint</groupId>
                 <artifactId>pinpoint-commons</artifactId>
-                <version>${project.version}</version>
+                <version>${che.core.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.navercorp.pinpoint</groupId>
                 <artifactId>pinpoint-rpc</artifactId>
-                <version>${project.version}</version>
+                <version>${che.core.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.navercorp.pinpoint</groupId>
                 <artifactId>pinpoint-thrift</artifactId>
-                <version>${project.version}</version>
+                <version>${che.core.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.navercorp.pinpoint</groupId>
                 <artifactId>pinpoint-bootstrap-core</artifactId>
-                <version>${project.version}</version>
+                <version>${che.core.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.navercorp.pinpoint</groupId>
                 <artifactId>pinpoint-bootstrap</artifactId>
-                <version>${project.version}</version>
+                <version>${che.core.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.navercorp.pinpoint</groupId>
                 <artifactId>pinpoint-profiler</artifactId>
-                <version>${project.version}</version>
+                <version>${che.core.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.navercorp.pinpoint</groupId>
                 <artifactId>pinpoint-profiler-optional</artifactId>
-                <version>${project.version}</version>
+                <version>${che.core.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.navercorp.pinpoint</groupId>
                 <artifactId>pinpoint-collector</artifactId>
                 <type>war</type>
-                <version>${project.version}</version>
+                <version>${che.core.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.navercorp.pinpoint</groupId>
                 <artifactId>pinpoint-collector</artifactId>
                 <classifier>classes</classifier>
-                <version>${project.version}</version>
+                <version>${che.core.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.navercorp.pinpoint</groupId>
                 <artifactId>pinpoint-web</artifactId>
-                <version>${project.version}</version>
+                <version>${che.core.version}</version>
                 <type>war</type>
             </dependency>
             <dependency>
                 <groupId>com.navercorp.pinpoint</groupId>
                 <artifactId>pinpoint-web</artifactId>
                 <classifier>classes</classifier>
-                <version>${project.version}</version>
+                <version>${che.core.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.navercorp.pinpoint</groupId>
                 <artifactId>pinpoint-plugins</artifactId>
                 <type>pom</type>
-                <version>${project.version}</version>
+                <version>${che.core.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.navercorp.pinpoint</groupId>
                 <artifactId>pinpoint-test</artifactId>
-                <version>${project.version}</version>
+                <version>${che.core.version}</version>
             </dependency>
             
 

@@ -30,7 +30,7 @@
         <dependency>
             <groupId>com.codenvy.security</groupId>
             <artifactId>codenvy-security-oauth1</artifactId>
-            <version>${project.version}</version>
+            <version>${che.core.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.inject</groupId>

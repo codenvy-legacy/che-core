@@ -199,7 +199,7 @@
         <artifactId>nuxeo-ecm</artifactId>
         <type>zip</type>
         <classifier>tools</classifier>
-        <version>${project.version}</version>
+        <version>${che.core.version}</version>
       </dependency>
       <!-- Nuxeo Common -->
       <dependency>
