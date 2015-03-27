@@ -15,22 +15,22 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>codenvy-security-parent</artifactId>
-        <groupId>com.codenvy.security</groupId>
-        <version>1.5.0-SNAPSHOT</version>
+        <groupId>org.eclipse.che.core</groupId>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>codenvy-security-oauth2-google</artifactId>
     <packaging>jar</packaging>
     <name>Codenvy Security :: Oauth2 :: Google</name>
     <dependencies>
         <dependency>
-            <groupId>com.codenvy.security</groupId>
-            <artifactId>codenvy-security-oauth2</artifactId>
-            <version>${che.core.version}</version>
-        </dependency>
-        <dependency>
             <groupId>com.google.oauth-client</groupId>
             <artifactId>google-oauth-client</artifactId>
             <version>${com.google.oauth-client.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.che.core</groupId>
+            <artifactId>codenvy-security-oauth2</artifactId>
+            <version>${che.core.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

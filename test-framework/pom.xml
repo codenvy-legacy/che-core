@@ -14,24 +14,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.eclipse.che.core</groupId>
         <artifactId>che-core-parent</artifactId>
+        <groupId>org.eclipse.che.core</groupId>
         <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>com.codenvy.test-framework</groupId>
     <artifactId>codenvy-test-framework</artifactId>
-    <version>0.14.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Codenvy Test Framework</name>
-    <scm>
-        <connection>scm:git:git@github.com:codenvy/test-framework.git</connection>
-        <developerConnection>scm:git:git@github.com:codenvy/test-framework.git</developerConnection>
-        <tag>HEAD</tag>
-        <url>https://fisheye.codenvycorp.com/browse/test-framework</url>
-    </scm>
-    <properties>
-        <maven.model.version>3.0.5</maven.model.version>
-    </properties>
     <dependencies>
         <dependency>
             <groupId>com.googlecode.grep4j</groupId>
@@ -60,13 +50,6 @@
             <version>${org.jboss.arquillian.version}</version>
         </dependency>
     </dependencies>
-    <repositories>
-        <repository>
-            <id>codenvy-public-repo</id>
-            <name>codenvy public</name>
-            <url>https://maven.codenvycorp.com/content/groups/public/</url>
-        </repository>
-    </repositories>
     <build>
         <plugins>
             <plugin>

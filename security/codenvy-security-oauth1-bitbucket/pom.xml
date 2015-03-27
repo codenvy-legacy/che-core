@@ -15,23 +15,13 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>codenvy-security-parent</artifactId>
-        <groupId>com.codenvy.security</groupId>
-        <version>1.5.0-SNAPSHOT</version>
+        <groupId>org.eclipse.che.core</groupId>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>codenvy-security-oauth1-bitbucket</artifactId>
     <packaging>jar</packaging>
     <name>Codenvy Security :: Oauth1 :: Bitbucket</name>
     <dependencies>
-        <dependency>
-            <groupId>org.eclipse.che.core</groupId>
-            <artifactId>codenvy-commons-inject</artifactId>
-            <version>${che.core.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.codenvy.security</groupId>
-            <artifactId>codenvy-security-oauth1</artifactId>
-            <version>${che.core.version}</version>
-        </dependency>
         <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
@@ -51,6 +41,16 @@
             <groupId>javax.mail</groupId>
             <artifactId>mail</artifactId>
             <version>${javax.mail.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.che.core</groupId>
+            <artifactId>codenvy-commons-inject</artifactId>
+            <version>${che.core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.che.core</groupId>
+            <artifactId>codenvy-security-oauth1</artifactId>
+            <version>${che.core.version}</version>
         </dependency>
     </dependencies>
     <build>

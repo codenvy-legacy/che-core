@@ -15,23 +15,13 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>codenvy-security-parent</artifactId>
-        <groupId>com.codenvy.security</groupId>
-        <version>1.5.0-SNAPSHOT</version>
+        <groupId>org.eclipse.che.core</groupId>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>codenvy-security-oauth1</artifactId>
     <packaging>jar</packaging>
     <name>Codenvy Security :: Oauth1</name>
     <dependencies>
-        <dependency>
-            <groupId>org.eclipse.che.core</groupId>
-            <artifactId>codenvy-commons-json</artifactId>
-            <version>${che.core.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.che.core</groupId>
-            <artifactId>codenvy-api-auth</artifactId>
-            <version>${che.core.version}</version>
-        </dependency>
         <dependency>
             <groupId>com.google.http-client</groupId>
             <artifactId>google-http-client</artifactId>
@@ -51,6 +41,16 @@
             <groupId>javax.ws.rs</groupId>
             <artifactId>javax.ws.rs-api</artifactId>
             <version>${javax.ws.rs.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.che.core</groupId>
+            <artifactId>codenvy-api-auth</artifactId>
+            <version>${che.core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.che.core</groupId>
+            <artifactId>codenvy-commons-json</artifactId>
+            <version>${che.core.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

@@ -15,15 +15,15 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>codenvy-security-parent</artifactId>
-        <groupId>com.codenvy.security</groupId>
-        <version>1.5.0-SNAPSHOT</version>
+        <groupId>org.eclipse.che.core</groupId>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>codenvy-security-oauth2-github</artifactId>
     <packaging>jar</packaging>
     <name>Codenvy Security :: Oauth2 :: Github</name>
     <dependencies>
         <dependency>
-            <groupId>com.codenvy.security</groupId>
+            <groupId>org.eclipse.che.core</groupId>
             <artifactId>codenvy-security-oauth2</artifactId>
             <version>${che.core.version}</version>
         </dependency>

@@ -29,8 +29,8 @@
         <module>platform-api-client-gwt</module>
         <module>ide</module>
         <module>vfs-impl</module>
-        <!--module>security</module>
-        <module>test-framework</module-->
+        <module>security</module>
+        <module>test-framework</module>
     </modules>
     <scm>
         <connection>scm:git:git@github.com:codenvy/core.git</connection>
