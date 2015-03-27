@@ -36,28 +36,34 @@ public class LoggedRunnable implements Runnable {
     @Override
     public void run() {
         long startTime = System.currentTimeMillis();
-        if (object instanceof Runnable && method.getName().equals("run") && method.getParameterTypes().length == 0) {
-            LOG.debug("Invoking method run of class {} instance {}", object.getClass().getName(), object);
+        try {
+            if (object instanceof Runnable && method.getName().equals("run") && method.getParameterTypes().length == 0) {
+                LOG.debug("Invoking method run of class {} instance {}", object.getClass().getName(), object);
 
-            ((Runnable)object).run();
-
-            LOG.debug("Method of class {} instance {} complete  at {}  sec",
-                      object.getClass().getName(),
-                      object,
-                      TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime));
-        } else {
-            try {
-                LOG.debug("Invoking run method of class {} instance {}", object.getClass().getName(), object);
-
-                method.invoke(object);
+                ((Runnable)object).run();
 
                 LOG.debug("Method of class {} instance {} complete  at {}  sec",
                           object.getClass().getName(),
                           object,
                           TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime));
-            } catch (InvocationTargetException | IllegalAccessException e) {
-                LOG.error(e.getLocalizedMessage());
+            } else {
+                try {
+                    LOG.debug("Invoking run method of class {} instance {}", object.getClass().getName(), object);
+
+                    method.invoke(object);
+
+                    LOG.debug("Method of class {} instance {} complete  at {}  sec",
+                              object.getClass().getName(),
+                              object,
+                              TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime));
+                } catch (InvocationTargetException | IllegalAccessException e) {
+                    LOG.error(e.getLocalizedMessage());
+                }
             }
+        } catch (Exception e) {
+            LOG.error(e.getLocalizedMessage(), e);
+            throw e;
         }
+
     }
 }
