@@ -28,8 +28,8 @@
         <module>platform-api</module>
         <module>platform-api-client-gwt</module>
         <module>ide</module>
-        <!--module>vfs-impl</module>
-        <module>security</module>
+        <module>vfs-impl</module>
+        <!--module>security</module>
         <module>test-framework</module-->
     </modules>
     <scm>
