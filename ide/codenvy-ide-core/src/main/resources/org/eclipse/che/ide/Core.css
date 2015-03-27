@@ -1,0 +1,609 @@
+/*******************************************************************************
+ * Copyright (c) 2012-2015 Codenvy, S.A.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Codenvy, S.A. - initial API and implementation
+ *******************************************************************************/
+@external .gwt-SplitLayoutPanel-HDragger, .gwt-SplitLayoutPanel-VDragger, .hsplitter, .hsplitter, .gwt-DialogBox, gwt-Button, gwt-PushButton, gwt-PushButton-up, gwt-PushButton-up-hovering, gwt-PushButton-up-disabled, gwt-PushButton-down,.gwt-PushButton-down-hovering,.gwt-PushButton-down-disabled, gwt-ToggleButton, gwt-ToggleButton-up, gwt-ToggleButton-up-hovering, gwt-ToggleButton-up-disabled, gwt-ToggleButton-down, .gwt-ToggleButton-down-hovering, .gwt-ToggleButton-down-disabled, gwt-TextBox, gwt-ListBox, gwt-PopupPanel;
+
+/* Global styles and external GWT styles. */
+
+body, td {
+    font-size: 13px;
+    font-family: mainFontFamily;
+    color: mainFontColor;
+    -moz-user-select: -moz-none;
+    -webkit-user-select: none;
+    user-select: none;
+
+    /* We turn off document level scrolling all together for the outer page. */
+    overflow: hidden;
+    /*background-color: partBackground;*/
+}
+
+/* We must override the user agent stylesheet which sets textarea font to monospace. */
+textarea {
+    font-family: mainFontFamily;
+    color: mainFontColor;
+    background-color: inputBackground;
+    border: 1px solid tabBorder;
+    border-radius: 2px;
+    font-size: fontSize;
+}
+
+.gwt-ListBox {
+    background-color: boxBackgroundColor;
+    color: boxTextColor;
+    border: 1px solid boxBorderColor;
+    border-radius: 1px;
+    box-shadow: boxInnerShadow, boxOuterShadow;
+    font-family: mainFontFamily;
+    font-size: boxFontSize;
+    font-weight: bold;
+    text-shadow: boxTextShadow;
+}
+
+.gwt-ListBox[disabled] {
+    background-color: boxBackgroundColorDisabled;
+}
+
+.gwt-CheckBox {
+    display: block;
+}
+
+.gwt-CheckBox label {
+    float: left;
+    line-height: 20px;
+}
+
+.gwt-CheckBox input {
+    float: left;
+}
+
+.gwt-RadioButton label {
+    display: inline-block;
+    cursor: pointer;
+    position: relative;
+    margin-right: 15px;
+    height: 18px;
+    font-weight: bold;
+}
+
+.gwt-RadioButton input[type=radio] {
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    position: absolute;
+}
+
+.gwt-RadioButton label:before {
+    content: "";
+    display: inline-block;
+
+    width: 13px;
+    height: 13px;
+    top: 2px;
+    margin-right: 7px;
+    position: relative;
+    background-color: radioButtonBackgroundColor;
+}
+
+.gwt-RadioButton label:before {
+    border-radius: 8px;
+}
+
+.gwt-RadioButton input[type=radio]:checked + label:before {
+    /*text-align: center;*/
+    /*line-height: 18px;*/
+    background: -moz-radial-gradient(center, ellipse cover, windowContentBackground 35%, radioButtonBackgroundColor 40%); /*FF3.6+*/
+    background: -webkit-radial-gradient(center, ellipse cover, windowContentBackground 35%, radioButtonBackgroundColor 40%); /*Chrome10+,Safari5.1+*/
+    background: radial-gradient(ellipse at center, windowContentBackground 35%, radioButtonBackgroundColor 40%); /* W3C*/
+}
+
+.gwt-TextBox, .gwt-PasswordTextBox, .gwt-SuggestBox {
+    background-color: boxBackgroundColor;
+    color: boxTextColor;
+    border: 1px solid boxBorderColor;
+    border-radius: 1px;
+    box-shadow: boxInnerShadow, boxOuterShadow;
+    font-family: mainFontFamily;
+    font-size: boxFontSize;
+    text-shadow: boxTextShadow;
+}
+
+.gwt-TextBox[disabled], .gwt-PasswordTextBox[disabled], .gwt-SuggestBox[disabled] {
+    background-color: boxBackgroundColorDisabled;
+}
+
+.gwt-Button, button {
+    padding: 0px 10px;
+    color: mainFontColor;
+    border: 1px solid tabBorder;
+    font-weight: 700;
+    font-size: buttonFontSize;
+    height: 22px;
+    background: linear-gradient(to bottom, buttonTopColor 0%, buttonTopColor 3%, buttonColor 4%, buttonColor 100%);
+    border-radius: 1px;
+    font-family: mainFontFamily;
+    font-weight: bold;
+}
+
+.gwt-Button:hover, .gwt-Button[disabled]:hover, button:hover, button[disabled]:hover {
+    /*border-top: 1px solid #646464;*/
+    border: 1px solid tabBorder;
+}
+
+.gwt-Button:hover, button:hover {
+    /*border-top: 1px solid #646464;*/
+    color: buttonHoverTextColor;
+    background: linear-gradient(to bottom, buttonColor 0%, buttonColor 3%, buttonHoverColor 4%, buttonHoverColor 100%);
+}
+
+.gwt-Button[disabled]:hover, button[disabled]:hover {
+    color: #888888;
+    background: linear-gradient(to bottom, buttonTopColor 0%, buttonTopColor 3%, buttonColor 4%, buttonColor 100%);
+}
+
+.gwt-Button:active, button:active {
+    box-shadow: 0 0 4px 2px selectionBackground;
+    border-radius: 1px;
+    outline: none;
+}
+
+*::-moz-focus-inner {
+    border: 0;
+}
+
+.gwt-Button[disabled]:active, button[disabled]:active {
+    box-shadow: 0 0 0px 0px selectionBackground;
+    border-radius: 1px;
+    outline: none;
+}
+
+.gwt-PushButton, .gwt-ToggleButton {
+    font-family: mainFontFamily;
+}
+
+.gwt-PushButton-up, .gwt-ToggleButton-up {
+    color: mainFontColor;
+    border-radius: 1px;
+    border: 1px solid tabBorder;
+    font-weight: 700;
+    background: linear-gradient(to bottom, buttonTopColor 0%, buttonTopColor 3%, buttonColor 4%, buttonColor 100%);
+}
+
+.gwt-PushButton-up-hovering, .gwt-ToggleButton-up-hovering {
+    border: 1px solid tabBorder;
+    background: linear-gradient(to bottom, buttonTopColor 0%, buttonTopColor 3%, buttonColor 4%, buttonColor 100%);
+    font-weight: 700;
+    color: buttonHoverTextColor;
+    background: linear-gradient(to bottom, buttonColor 0%, buttonColor 3%, buttonHoverColor 4%, buttonHoverColor 100%);
+}
+
+.gwt-PushButton-up-disabled, .gwt-ToggleButton-up-disabled {
+
+}
+
+.gwt-PushButton-down, .gwt-ToggleButton-down {
+    color: mainFontColor;
+    border-radius: 1px;
+    border: 1px solid tabBorder;
+    font-weight: 700;
+    background: linear-gradient(to bottom, buttonTopColor 0%, buttonTopColor 3%, buttonColor 4%, buttonColor 100%);
+    box-shadow: 0 0 4px 2px selectionBackground;
+    border-radius: 1px;
+    outline: none;
+}
+
+.gwt-PushButton-down-hovering, .gwt-ToggleButton-down-hovering {
+    color: buttonHoverTextColor;
+    background: linear-gradient(to bottom, buttonColor 0%, buttonColor 3%, buttonHoverColor 4%, buttonHoverColor 100%);
+    border-radius: 1px;
+    border: 1px solid tabBorder;
+    font-weight: 700;
+    box-shadow: 0 0 4px 2px selectionBackground;
+    border-radius: 1px;
+    outline: none;
+}
+
+.gwt-PushButton-down-disabled, .gwt-ToggleButton-down-disabled {
+    box-shadow: 0 0 0px 0px selectionBackground;
+    border-radius: 1px;
+    outline: none;
+    color: #888888;
+}
+
+.gwt-ToggleButton-up-disabled > svg, .gwt-PushButton-up-disabled > svg,
+.gwt-ToggleButton-down-disabled > svg, .gwt-PushButton-down-disabled > svg {
+    filter: grayscale(100%);
+    -webkit-filter: grayscale(100%);
+    -moz-filter: grayscale(100%);
+    fill: #9B9B9B;
+}
+
+.gwt-ToggleButton-up > svg, .gwt-PushButton-up > svg,
+.gwt-ToggleButton-up-hovering > svg, .gwt-PushButton-up-hovering > svg,
+.gwt-ToggleButton-down > svg, .gwt-PushButton-down > svg,
+.gwt-ToggleButton-down-hovering > svg, .gwt-PushButton-down-hovering > svg {
+    fill: mainFontColor;
+}
+
+/* Style for splitter */
+.gwt-SplitLayoutPanel-HDragger {
+    /*background: tabBorder;*/
+    cursor: col-resize;
+}
+
+.gwt-SplitLayoutPanel-VDragger {
+    /*background: tabBorder;*/
+    cursor: row-resize;
+}
+
+.gwt-DialogBox {
+    box-shadow: 0 0 6px 1px tabBorder;
+}
+
+.hsplitter, .gwt-SplitLayoutPanel-HDragger {
+    background: tabBorder; /*Old browsers */
+}
+
+.vsplitter, .gwt-SplitLayoutPanel-VDragger {
+    background: tabBorder; /*Old browsers */
+}
+
+#talk_roster {
+    display: none;
+}
+
+a {
+    outline: none;
+}
+
+.simpleListContainer {
+    border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.mainText {
+    font-family: mainFontFamily;
+}
+
+.mainFont {
+    cursor: default;
+    font-family: mainFontFamily;
+    font-size: fontSize;
+    font-style: normal;
+    font-weight: normal;
+}
+
+.mainBoldFont {
+    cursor: default;
+    font-family: mainFontFamily;
+    font-size: fontSize;
+    font-style: normal;
+    font-weight: bold;
+}
+
+.errorFont {
+    cursor: default;
+    font-family: mainFontFamily;
+    font-size: fontSize;
+    font-style: normal;
+    font-weight: normal;
+    color: #d21a1a;
+}
+
+.greyFontColor {
+    color: #888888;
+}
+
+.defaultFont {
+    font-family: mainFontFamily;
+    font-size: fontSize;
+    color: inherit;
+}
+
+.warningFont {
+    font-family: mainFontFamily;
+    font-size: fontSize;
+    color: #d26a11;
+}
+
+.cursorPointer {
+    cursor: pointer;
+}
+
+.line {
+
+}
+
+/* We tweaked so that the default styles will be
+the inline scroller style. There's a separate "documentScrollable"
+class for the document-level scrollbars. */
+::-webkit-scrollbar {
+    width: scrollbarSize;
+    height: scrollbarSize;
+}
+
+::-webkit-scrollbar-button {
+    height: 0px;
+    width: 0px;
+}
+
+::-webkit-scrollbar-button:start:decrement, ::-webkit-scrollbar-button:end:increment {
+    display: block;
+}
+
+::-webkit-scrollbar-button:vertical:start:increment, ::-webkit-scrollbar-button:vertical:end:decrement {
+    display: none;
+}
+
+::-webkit-scrollbar-track:vertical {
+    border-right: 1px solid transparent;
+    background-clip: padding-box;
+    background-color: transparent;
+}
+
+::-webkit-scrollbar-track:horizontal {
+    border-bottom: 1px solid transparent;
+    background-clip: padding-box;
+    background-color: transparent;
+}
+
+::-webkit-scrollbar-track:hover {
+    background-color: rgba(178, 178, 178, 0.05);
+    -webkit-box-shadow: inset 1px 0px 0px rgba(178, 178, 178, 0.10);
+}
+
+::-webkit-scrollbar-track:active {
+    background-color: rgba(178, 178, 178, 0.05);
+    -webkit-box-shadow: inset 1px 0px 0px rgba(178, 178, 178, 0.14),
+    inset -1px -1px 0px rgba(178, 178, 178, 0.07);
+}
+
+::-webkit-scrollbar-thumb {
+    min-height: 28px;
+    padding-top: 100px;
+    background-clip: padding-box;
+    background-color: rgba(178, 178, 178, 0.2);
+    -webkit-box-shadow: inset 1px 1px 0px rgba(178, 178, 178, 0.10),
+    inset 0px -1px 0px rgba(178, 178, 178, 0.07);
+}
+
+::-webkit-scrollbar-corner {
+    background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(178, 178, 178, 0.4);
+    -webkit-box-shadow: inset 1px 1px 1px rgba(178, 178, 178, 0.25);
+}
+
+::-webkit-scrollbar-thumb:active {
+    -webkit-box-shadow: inset 1px 1px 3px rgba(178, 178, 178, 0.35);
+    background-color: rgba(178, 178, 178, 0.5);
+}
+
+::-webkit-scrollbar-thumb:vertical {
+    border-right: 1px solid transparent;
+    border-top: 0px solid transparent;
+    border-bottom: 0px solid transparent;
+}
+
+::-webkit-scrollbar-thumb:horizontal {
+    border-left: 0px solid transparent;
+    border-right: 0px solid transparent;
+    border-bottom: 1px solid transparent;
+}
+
+.gwt-PopupPanel {
+    color: mainFontColor;
+    border: 1px solid tabBorder;
+    border-radius: 3px;
+    background-color: partBackground;
+    z-index: 7;
+}
+
+/* Style for SuggestBox */
+.gwt-SuggestBoxPopup {
+    z-index: 90000;
+}
+
+.gwt-SuggestBoxPopup .suggestPopupTopLeft {
+    background: dialogTopLeft url("");
+}
+
+.gwt-SuggestBoxPopup .suggestPopupTopLeftInner {
+    width: 1px;
+    height: 1px;
+}
+
+.gwt-SuggestBoxPopup .suggestPopupTopCenter {
+    background: dialogTopCenter url("");
+}
+
+.gwt-SuggestBoxPopup .suggestPopupTopRight {
+    background: dialogTopRight url("");
+}
+
+.gwt-SuggestBoxPopup .suggestPopupTopRightInner {
+    width: 1px;
+    height: 1px;
+}
+
+.gwt-SuggestBoxPopup .suggestPopupMiddleLeft {
+    background: dialogMiddleLeft url("");
+}
+
+.gwt-SuggestBoxPopup .suggestPopupContent {
+    background-color: partBackground;
+}
+
+.gwt-SuggestBoxPopup .suggestPopupMiddleRight {
+    background: dialogMiddleRight url("");
+}
+
+.gwt-SuggestBoxPopup .suggestPopupBottomLeft {
+    background: dialogBottomLeft url("");
+}
+
+.gwt-SuggestBoxPopup .suggestPopupBottomLeftInner {
+    width: 1px;
+    height: 1px;
+}
+
+.gwt-SuggestBoxPopup .suggestPopupBottomCenter {
+    background: dialogBottomCenter url("");
+}
+
+.gwt-SuggestBoxPopup .suggestPopupBottomRight {
+    background: dialogBottomRight url("");
+}
+
+.gwt-SuggestBoxPopup .suggestPopupBottomRightInner {
+    width: 1px;
+    height: 1px;
+}
+
+.gwt-SuggestBoxPopup .item {
+    color: boxTextColor;
+}
+
+.gwt-SuggestBoxPopup .item-selected {
+    background-color: keyboardSelectionBackgroundColor;
+}
+
+.editorFullScreen {
+    fill: #e7e7e7;
+    width: 15px;
+    height: 15px;
+    margin: 1px 2px;
+    background: #515151;
+    border: 1px solid #000000;
+    padding: 1px;
+    cursor: pointer;
+}
+
+.editorFullScreen svg {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    z-index: 8;
+}
+
+.editorFullScreen:hover {
+    background: #202020;
+    color: #ffffff;
+    box-shadow: 0 1px 0 0 rgba(66, 66, 66, 1);
+}
+
+.editorFullScreen span:hover {
+    pointer-events: none;
+}
+
+.editorFullScreen span {
+    color: #e7e7e7;
+    background: #202020;
+    padding: 10px 20px;
+    font-size: 8pt;
+    position: fixed;
+    z-index: 7;
+    cursor: default;
+    display: none;
+}
+
+.editorFullScreen span:after {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 0;
+    border: 10px solid;
+    border-color: transparent transparent #202020 transparent;
+    top: -20px;
+    right: 0;
+}
+
+.editorFullScreen:hover span {
+    display: block;
+}
+
+.editorFullScreenSvgDown {
+    box-shadow: 0 0 1px 0 socialButtonColor;
+    cursor: pointer;
+}
+
+.privacy {
+    width: 16px;
+    height: 16px;
+    margin: 2px;
+}
+
+.privacy svg {
+    width: 100%;
+    height: 100%;
+}
+
+.privacy:hover .privacyTooltip {
+    display: block;
+}
+
+.privacy .privacyTooltip:hover {
+    pointer-events: none;
+}
+
+.privacyTooltip {
+    font-family: mainFontFamily;
+    font-size: 8pt;
+    position: fixed;
+    z-index: 7;
+    border-top: 1px solid #2D2D2D;
+    display: none;
+    cursor: default;
+}
+
+.privacyTooltip:after {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 0;
+    border: 10px solid;
+    border-color: transparent transparent #2D2D2D transparent;
+    top: -20px;
+    right: 45px;
+}
+
+.privacyTooltip div:first-child {
+    font-size: 9pt;
+    font-weight: bold;
+    background: #2D2D2D;
+    border-bottom: 1px solid #595959;
+    border-top: 1px solid #2D2D2D;
+    padding: 3px 20px;
+}
+
+.privacyTooltip div:first-child svg {
+    width: 15px;
+    height: 15px;
+    fill: #DBDBDB;
+    vertical-align: middle;
+    margin-right: 10px;
+}
+.privacyTooltip div:first-child span {
+    vertical-align: middle;
+}
+
+.privacyTooltip div:last-child {
+    background: #202020;
+    padding: 10px 20px;
+}
+
+.privateProjectSvg {
+    fill: #EDC047;
+}
+
+.publicProjectSvg {
+    fill: #4C9AFF;
+}

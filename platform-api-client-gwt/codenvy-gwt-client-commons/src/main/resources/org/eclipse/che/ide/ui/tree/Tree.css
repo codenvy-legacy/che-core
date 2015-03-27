@@ -1,0 +1,122 @@
+/*******************************************************************************
+ * Copyright (c) 2012-2015 Codenvy, S.A.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Codenvy, S.A. - initial API and implementation
+ *******************************************************************************/
+/* Default annotated CSS for Tree.java */
+/* @def treeIndent 14px; */
+@url oldExpansionIcon oldExpansionIcon;
+
+.treeRoot {
+    font-family: alternativeFontFamily;
+    padding-left: 0px;
+    margin: 0px 0px 0px 2px;
+    min-height: 100px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    outline: none;
+}
+
+.treeNode {
+    list-style-type: none;
+    display: block;
+}
+
+.treeRoot > .treeNode {
+    /*height: 18px;*/
+    margin-top: 2px;
+}
+
+.treeRoot > .treeNode > .treeNodeBody > .leafIcon {
+    display: none;
+}
+
+.childrenContainer {
+    position: relative;
+    padding-left: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.treeNodeBody {
+    min-width: 100%;
+    display: inline-block;
+    position: relative;
+    white-space: pre;
+    height: 18px;
+}
+
+.treeNodeBody:HOVER {
+}
+
+.expandControl {
+    display: inline-block;
+    vertical-align: middle;
+    -moz-transition: -moz-transform 0.2s ease-out;
+    -webkit-transition: -webkit-transform 0.2s ease-out;
+}
+
+.openedIcon {
+    /* TODO: expandControl should have the image, but
+     * right now it looks like files have the expandControl rule also.
+     * I'm doing the least amount of change for the demo, so
+     * don't want to refactor anything. */
+    background-image: oldExpansionIcon;
+    background-repeat: no-repeat;
+    background-position: 3px;
+    -moz-transform: rotate(90deg);
+    -webkit-transform: rotate(90deg);
+}
+
+.closedIcon {
+    background-image: oldExpansionIcon;
+    background-repeat: no-repeat;
+    background-position: 3px;
+    -moz-transform: rotate(0);
+    -webkit-transform: rotate(0);
+}
+
+.openedIcon,
+.closedIcon {
+    position: relative;
+    height: 16px;
+    width: 16px;
+}
+
+/* We have no icon, just a spacer */
+.leafIcon {
+    width: 16px;
+    height: 16px;
+    visibility: hidden;
+}
+
+.treeNodeLabel {
+    height: 18px;
+}
+
+.treeNode a:hover {
+    color: mainFontColor;
+}
+
+.active,
+.selected {
+    background-color: selectionBackground ! important;
+}
+
+.selectedInactive {
+    background-color: #132D41 ! important;
+}
+
+.isDropTarget {
+    background-color: #dfdfdf;
+    margin: -2px;
+    padding: 2px;
+}

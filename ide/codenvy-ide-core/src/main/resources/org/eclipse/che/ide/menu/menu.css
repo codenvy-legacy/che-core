@@ -1,0 +1,102 @@
+/*******************************************************************************
+ * Copyright (c) 2012-2015 Codenvy, S.A.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Codenvy, S.A. - initial API and implementation
+ *******************************************************************************/
+/**********************************************************************************************
+   MENU BAR
+ ***********************************************************************************************/
+
+.menuBarTable {
+    float: left;
+    border: 0;
+}
+
+.menuBar,
+.menuBarItem,
+.menuBarItemOver,
+.menuBarItemSelected,
+.menuBarItemDisabled {
+    height: 21px;
+}
+
+.menuBarItem,
+.menuBarItemOver,
+.menuBarItemSelected,
+.menuBarItemDisabled {
+    padding-top: 1px;
+    padding-left: 12px;
+    padding-right: 12px;
+    cursor: default;
+    font-family: mainFontFamily;
+    font-size: fontMenuSize;
+    font-weight: normal;
+    font-style: normal;
+    vertical-align: middle;
+    text-shadow: 0 1px 0px rgba(0, 0, 0, 1);
+}
+
+.menuBar {
+    width: 100%;
+    background-color: mainMenuBkgColor;
+    color: mainMenuFontColor;
+}
+
+.menuBarItem {
+}
+
+.menuBarItem:HOVER,
+.menuBarItemOver:HOVER {
+    box-shadow: inset 0px -3px 0px -1px #49a2e6;
+    background-color: #525252;
+}
+
+.menuBarItemSelected {
+    background-color: #545454;
+    box-shadow: inset -2px 0px 0px -1px #242424,
+    inset 2px 0px 0px -1px #242424,
+    inset 0px 2px 0px -1px #242424,
+    inset 0px -3px 0px -1px #49a2e6;
+}
+
+.menuBarItemDisabled {
+    color: disabledMenuItemColor;
+}
+
+.leftPanel {
+    float: left;
+    white-space: nowrap;
+}
+
+.leftPanel .customComponent {
+    float: left;
+}
+
+.rightPanel {
+    float: right;
+    white-space: nowrap;
+}
+
+.rightPanel .customComponent {
+    float: right;
+}
+
+.panelSeparator {
+    width: 4px;
+    height: 17px;
+    margin: 2px;
+    float: inherit;
+}
+
+.panelSeparator div {
+    height: 0;
+    width: 4px;
+    border-bottom: 1px solid #000000;
+    margin-bottom: 2px;
+    box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.23);
+}

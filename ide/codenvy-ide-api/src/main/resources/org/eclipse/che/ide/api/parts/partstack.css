@@ -1,0 +1,460 @@
+/*******************************************************************************
+ * Copyright (c) 2012-2015 Codenvy, S.A.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Codenvy, S.A. - initial API and implementation
+ *******************************************************************************/
+
+.ide-PartStack {
+    /* fill */
+}
+
+.ide-PartStack .ide-PartStack-Tabs {
+    /* panel where tab-buttons created*/
+    background: editorBackgroundColor;
+    border-bottom: 1px solid tabBorder;
+}
+
+.ide-PartStack .ide-PartStack-Editor-Content {
+    border-left: 3px solid activeTabBackground;
+    border-top: 3px solid activeTabBackground;
+    background-color: activeTabBackground;
+}
+
+.ide-PartStack .ide-PartStack-Tab {
+    /* tab button */
+    margin-left: 3px;
+    margin-top: 3px;
+    background: inactiveTabBackground;
+    border: 1px solid inactiveTabBorderColor;
+    padding: 3px 0px 3px 10px;
+    cursor: pointer;
+    cursor: hand;
+    position: relative;
+    display: inline-block;
+    height: 15px;
+    color: tabFontColor;
+}
+
+.ide-PartStack .ide-PartStack-Tab:hover {
+    color: mainFontColor;
+}
+
+.ide-PartStack .ide-PartStack-Tab span {
+    /* margin between text and image */
+    padding-bottom: 2px;
+    white-space: nowrap;
+    font-size: 11px;
+    line-height: 14px;
+    text-shadow: 0px 0px 1px rgba(0, 0, 0, 0.5);
+}
+
+.ide-PartStack .ide-PartStack-Tab img,
+.ide-PartStack .ide-PartStack-Tab svg {
+    vertical-align: middle;
+}
+
+.ide-PartStack-Tab-Icon {
+    float: left;
+    position: relative;
+    top: 1px;
+    max-width: 16px;
+    max-height: 16px;
+    margin-right: 2px;
+    opacity: 0.6;
+}
+
+@sprite .ide-PartStack-Tab-Line-Error {
+    gwt-image: "squiggle";
+    background-position: bottom;
+    background-repeat: repeat-x;
+    margin: 0;
+    padding: 0;
+    height: auto;
+    width: auto;
+    overflow: visible;
+}
+
+@sprite .ide-PartStack-Tab-Line-Warning {
+    gwt-image: "squiggleWarning";
+    background-position: bottom;
+    background-repeat: repeat-x;
+    margin: 0;
+    padding: 0;
+    height: auto;
+    width: auto;
+    overflow: visible;
+}
+
+.ide-PartStack .ide-PartStack-Tab .CloseButton {
+    /* change cursor for close button */
+    cursor: default;
+    opacity: 0.5;
+    vertical-align: middle;
+    padding: 5px 10px;
+}
+
+.ide-PartStack .ide-PartStack-Tab .CloseButton:hover {
+    /* hihglight on hover */
+    opacity: 1;
+}
+
+.ide-PartStack .ide-PartStack-Tab-selected {
+    /* tab that is currently selected (active) */
+    cursor: default;
+    border: 1px solid tabBorder;
+    height: 16px;
+    background: activeTabBackground;
+    color: mainFontColor;
+}
+
+.ide-PartStack-focused {
+
+}
+
+.ide-PartStack-focused .ide-Base-Part-Toolbar {
+    /*Toolbar that is currently selected(active)*/
+}
+
+.ide-PartStack-Button-Left {
+    cursor: pointer;
+    height: 17px;
+    min-width: 14px;
+    z-index: 1;
+}
+
+.ide-PartStack-Button-Left > svg {
+    -webkit-transform: rotate(270deg);
+    -moz-transform: rotate(270deg);
+    transform: rotate(270deg);
+    fill: toolbarIconColor;
+    /*filter: svgUrlShadow;*/
+    height: 15px;
+    width: 15px;
+    margin: 1px -1px;
+}
+
+.ide-PartStack-Tab-Left {
+    -webkit-transform: rotate(270deg);
+    -moz-transform: rotate(270deg);
+    transform: rotate(270deg);
+    transform-origin: 9px 9px;
+    -webkit-transform-origin: 9px 9px; /* Safari and Chrome */
+    -moz-transform-origin: 9px 9px; /* Firefox */
+    /*position: absolute;*/
+    position: relative;
+    border-right: none !important;
+    border-left: 1px solid tabBorder;
+    box-shadow: -1px 0px 0px 0px tabBorderShadow;
+    padding-left: 15px;
+    padding-right: 15px;
+    white-space: nowrap;
+}
+
+.ide-PartStack-Tab-Label {
+    /* margin between text and image */
+    margin-right: 4px;
+    margin-left: 4px;
+    text-shadow: 0px 1px 0px buttonTextShadow;
+    position: relative;
+    top: 2px;
+    white-space: nowrap;
+}
+
+.ide-PartStack-Tab-Right {
+    -webkit-transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+    transform: rotate(90deg);
+    transform-origin: 9px 9px;
+    -webkit-transform-origin: 8px 9px; /* Safari and Chrome */
+    -moz-transform-origin: 8px 9px; /* Firefox */
+    position: relative;
+    box-shadow: 1px -1px 0px 0px tabBorderShadow;
+    padding-left: 15px;
+    padding-right: 15px;
+    white-space: nowrap;
+}
+
+.ide-PartStack-Tab-Below {
+    /* tab button */
+    border-right: 1px solid tabBorder;
+    box-shadow: 1px 0px 0px 0px tabBorderShadow;
+    cursor: pointer;
+    cursor: hand;
+    position: relative;
+    top: -2px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.ide-PartStack-Tool-Tab-selected {
+    /* tab that is currently selected (active) */
+    cursor: default;
+    color: #ffffff;
+}
+
+.ide-PartStack-Tool-Tab-selected:before {
+    position: absolute;
+    height: 0px;
+    content: "";
+}
+
+.ide-PartStack-Tab-Right.ide-PartStack-Tool-Tab-selected:before {
+    right: 0px;
+    width: 100%;
+    border-bottom: 1px solid #47afdd !important;
+    border-top: 16px solid #454545;
+}
+
+.ide-PartStack-Tab-Left.ide-PartStack-Tool-Tab-selected:before {
+    left: 0px;
+    bottom: 0px;
+    width: literal("calc(100% - 1px)");
+    border-top: 16px solid #454545;
+    border-bottom: 1px solid #47afdd !important;
+}
+
+.ide-PartStack-Tab-Below.ide-PartStack-Tool-Tab-selected:before {
+    top: 0px;
+    left: 0px;
+    margin-left: 0px;
+    width: 100%;
+    border-top: 1px solid #47afdd !important;
+    border-bottom: 16px solid #454545;
+}
+
+.ide-PartStack-Content {
+    background-color: partBackground;
+    width: 100%;
+    height: 100%;
+}
+
+.ide-PartStack-Content div[role="part"][active] div[role="toolbar"] div[role="toolbar-header"] {
+    background-color: rgb(77, 113, 145) ! important;
+    /*background-color: rgb(87, 143, 193) ! important;*/
+    /*background-color: rgb(53, 82, 108) ! important;*/
+}
+
+.ide-Base-Part-Title-Label {
+    display: inline-block;
+    line-height: 22px;
+    margin-left: 10px;
+    vertical-align: middle;
+    cursor: default;
+}
+
+.ide-PartStack-Tool-Tab {
+    /* tab button */
+    border-right: 1px solid tabBorder;
+    cursor: pointer;
+    cursor: hand;
+    height: 17px;
+    font-size: 11px;
+    display: inline-block;
+}
+
+.ide-PartStack-Tool-Tab:hover {
+    color: buttonHoverTextColor;
+}
+
+.ide-PartStack-Tool-Tab:hover:before {
+    position: absolute;
+    height: 0px;
+    content: "";
+}
+
+.ide-PartStack-Tab-Right.ide-PartStack-Tool-Tab:hover:before {
+    right: 0px;
+    width: 100%;
+    border-top: 16px solid #7d7d7d;
+    border-bottom: 1px solid #7d7d7d;
+}
+
+.ide-PartStack-Tab-Left.ide-PartStack-Tool-Tab:hover:before {
+    left: 0px;
+    bottom: 0px;
+    width: literal("calc(100% - 1px)");
+    border-top: 16px solid #7d7d7d;
+    border-bottom: 1px solid #7d7d7d;
+}
+
+.ide-PartStack-Tab-Below.ide-PartStack-Tool-Tab:hover:before {
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    border-bottom: 16px solid #7d7d7d;
+    border-top: 1px solid #7d7d7d;
+}
+
+.ide-PartStack-Tab-Right-Button {
+    margin-right: 6px;
+    height: 16px;
+    float: right;
+}
+
+.ide-PartStack-Tab-Button {
+    margin-left: 3px;
+    margin-top: 3px;
+    background: inactiveTabBackground;
+    border: 1px solid inactiveTabBorderColor;
+    cursor: pointer;
+    cursor: hand;
+    position: relative;
+    display: inline-block;
+    height: 15px;
+    padding: 3px;
+}
+
+.ide-PartStack-Tab-Button img {
+    vertical-align: bottom;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 2px;
+    display: block;
+}
+
+.ide-PartStack-Tab-Button:hover {
+    border: 1px solid activeTabBorderColor !important;
+    background-color: activeTabBackground !important;
+}
+
+.ide-PartStack-Tab-Button-selected {
+    border: 1px solid activeTabBorderColor !important;
+    background-color: activeTabBackground !important;
+    border-bottom: none !important;
+    height: 16px;
+}
+
+.ide-PartStack-Multiple-Tabs-Container {
+    background-color: activeTabBackground;
+    border: 1px solid activeTabBorderColor;
+    border-top: none;
+    padding: 6 0;
+}
+
+.ide-PartStack-Multiple-Tabs-Item {
+    font-family: mainFontFamily;
+    font-size: 11px;
+    color: #d4d4d4;
+    text-shadow: 0px 0px 1px rgba(0, 0, 0, 0.5);
+    height: 18px;
+    line-height: 18px;
+    margin-bottom: 2px;
+    padding: 0 sideBarHorizontalPadding;
+    height: 18px;
+    line-height: 18px;
+    padding: 0 sideBarHorizontalPadding;
+}
+
+.ide-PartStack-Multiple-Tabs-Item:hover {
+    background-color: selectionBackground;
+    cursor: pointer;
+    opacity: 0.5;
+}
+
+.ide-PartStack-Multiple-Tabs-Item .CloseButton {
+    /* change cursor for close button */
+    cursor: default;
+    opacity: 0.5;
+    vertical-align: middle;
+    margin-left: 6px;
+    margin-top: 6px;
+    float: right;
+}
+
+.ide-PartStack-Multiple-Tabs-Item .CloseButton:hover {
+    /* hihglight on hover */
+    opacity: 1;
+}
+
+.ide-Base-Part-Toolbar {
+    background-color: partToolbar;
+    border-bottom: 1px solid tabBorder;
+    box-shadow: 0px 2px 5px 0px partToolbarShadow;
+    text-shadow: 0px 1px 0px rgba(0, 0, 0, 0.5);
+    font-size: secondaryTextFontSize;
+    color: mainFontColor;
+}
+
+.ide-Base-Part-Toolbar-Bottom {
+    background-color: partToolbar;
+    text-shadow: 0px 1px 0px rgba(0, 0, 0, 0.5);
+    font-size: boxFontSize;
+    color: mainFontColor;
+    font-weight: bold;
+    width: 100%;
+    line-height: 26px;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.ide-Base-Part-Toolbar-Separator {
+    border-top: 1px solid partToolbarSeparatorTopColor;
+    background-color: partToolbarSeparatorBottomColor;
+    height: 1px;
+    width: 100%;
+}
+
+.ide-Base-Part-Toolbar-Bottom-Icon {
+    fill: toolbarIconColor;
+    height: 16px;
+    width: 16px;
+    margin-right: 8px;
+    margin-left: 10px;
+    margin-top: 4px;
+    float: left;
+}
+
+/***********************************************************************************************************************
+ *
+ * Below styles are needed for IDEUI-40 [UI] Create rounded tabs for file in order to be conform to initial designs.
+ * The main idea is restyling the tabs using CSS attribute selectors.
+ *
+ **********************************************************************************************************************/
+
+/*
+.ide-PartStack .ide-PartStack-Tab[visible][left] {
+    border-left: greenyellow 2px solid;
+}
+.ide-PartStack .ide-PartStack-Tab[visible][right] {
+    border-right: greenyellow 2px solid;
+}
+.ide-PartStack .ide-PartStack-Tab[visible] {
+    background-color: #082f8e;
+    color: #f4ffdb;
+}
+.ide-PartStack .ide-PartStack-Tab[visible]:HOVER {
+    text-decoration: underline;
+    color: red;
+}
+.ide-PartStack .ide-PartStack-Tab[visible][active] {
+    background-color: #08c7f8;
+    color: #593e59;
+}
+.ide-PartStack .ide-PartStack-Tab[visible][active]:HOVER {
+    color: #ffd600;
+}
+*/
+
+/*
+div[id="gwt-debug-editorPartStack-tabsPanel"] > div[visible] {
+    background-color: #6d9caa;
+    color: #F9FBA7;
+}
+div[id="gwt-debug-editorPartStack-tabsPanel"] > div[visible]:HOVER {
+    text-decoration: underline;
+    color: #593E59;
+    cursor: pointer;
+}
+div[id="gwt-debug-editorPartStack-tabsPanel"] > div[visible][active] {
+    background-color: #b6f1ff;
+    color: #D82D2D;
+}
+div[id="gwt-debug-editorPartStack-tabsPanel"] > div[visible][active]:HOVER {
+    color: #973E62;
+}
+*/

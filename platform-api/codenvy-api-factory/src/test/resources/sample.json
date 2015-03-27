@@ -1,0 +1,27 @@
+{
+	"v":"1.1",
+	"vcs":"git",
+	"vcsurl":"http://codenvy.com/git/58/2f/e6/workspaceffx83mkyz8jeiem3/angularjs",
+	"commitid":"de9f42085666e5c25070f35e2c419c1302cf4bf5",
+	"contactmail":"stevan@codenvy.com",
+	"author":"Stevan Le Meur",
+	"orgid":"accountya9vidwqbifhqd9p",
+	"projectattributes":{
+			"pname":"AngularJS-Custom",
+			"ptype":"JavaScript"
+	},
+	"openfile":"index.html",
+	"style":"Advanced with Counter",
+	"welcome":{
+		"authenticated": {
+			"title":"TodoMVC - AngularJS Implementation",
+			"iconurl":"https://dl.dropboxusercontent.com/u/2187905/Codenvy/SampleCustomizedWelcomeMessage/angularjs-icon.png",
+			"contenturl":"https://dl.dropboxusercontent.com/u/2187905/Codenvy/SampleCustomizedWelcomeMessage/angular_welcome_message_authenticated.html"
+		},
+		"nonauthenticated": {
+			"title":"TodoMVC - AngularJS Implementation",
+			"iconurl":"https://dl.dropboxusercontent.com/u/2187905/Codenvy/SampleCustomizedWelcomeMessage/angularjs-icon.png",
+			"contenturl":"https://dl.dropboxusercontent.com/u/2187905/Codenvy/SampleCustomizedWelcomeMessage/angular_welcome_message_not-authenticated.html"
+		}
+	}
+}

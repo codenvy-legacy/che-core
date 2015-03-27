@@ -1,0 +1,15 @@
+{
+   "v":"1.1",
+   "vcs":"git",
+   "vcsurl":"http://codenvy.com/git/04/0f/7f/workspacegcpv6cdxy1q34n1i/Sample-Python",
+   "orgid":"accountya9vidwqbifhqd9p",
+   "idcommit":"858338fe8338c10ce096b52ef5e3adfe5899de3a",
+   "action":"openproject",
+   "projectattributes":{
+      "pname":"Sample-Python-Project",
+      "ptype":"Python"
+   },
+   "wname":"codenvy-factories",
+   "image":"python.jpg",
+   "style":"Advanced"
+}

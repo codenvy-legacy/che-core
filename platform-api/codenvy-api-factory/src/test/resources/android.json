@@ -1,0 +1,14 @@
+{
+   "v":"1.1",
+   "vcs":"git",
+   "vcsurl":"http://codenvy.com/git/04/0f/7f/workspacegcpv6cdxy1q34n1i/Sample-Android",
+   "action":"openproject",
+   "projectattributes":{
+      "pname":"Sample-Android-Project",
+      "ptype":"Android"
+   },
+   "orgid":"accountya9vidwqbifhqd9p",
+   "wname":"codenvy-factories",
+   "image":"android.jpg",
+   "style":"Advanced"
+}

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (c) 2012-2015 Codenvy, S.A.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the Eclipse Public License v1.0
+    which accompanies this distribution, and is available at
+    http://www.eclipse.org/legal/epl-v10.html
+
+    Contributors:
+      Codenvy, S.A. - initial API and implementation
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.eclipse.che.core</groupId>
+        <artifactId>che-core-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+    <groupId>com.codenvy.platform-api-gwt-client</groupId>
+    <artifactId>codenvy-platform-api-gwt-client-parent</artifactId>
+    <version>0.22.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>Codenvy Platform API :: GWT Client :: Parent</name>
+    <modules>
+        <module>codenvy-api-core-gwt-client</module>
+        <module>codenvy-api-analytics-gwt-client</module>
+        <module>codenvy-api-auth-gwt-client</module>
+        <module>codenvy-api-builder-gwt-client</module>
+        <module>codenvy-api-account-gwt-client</module>
+        <module>codenvy-api-project-gwt-client</module>
+        <module>codenvy-api-user-gwt-client</module>
+        <module>codenvy-api-runner-gwt-client</module>
+        <module>codenvy-api-vfs-gwt-client</module>
+        <module>codenvy-api-factory-gwt-client</module>
+        <module>codenvy-api-workspace-gwt-client</module>
+        <module>codenvy-gwt-client-commons</module>
+        <module>codenvy-gwt-commons-promises</module>
+    </modules>
+    <scm>
+        <connection>scm:git:git@github.com:codenvy/platform-api-gwt-client.git</connection>
+        <developerConnection>scm:git:git@github.com:codenvy/platform-api-gwt-client.git</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://fisheye.codenvycorp.com/browse/platform-api-gwt-client</url>
+    </scm>
+    <properties>
+        <gwt.test.skip>true</gwt.test.skip>
+        <maven-model.version>3.0.5</maven-model.version>
+    </properties>
+    <repositories>
+        <repository>
+            <id>codenvy-public-repo</id>
+            <name>codenvy public</name>
+            <url>https://maven.codenvycorp.com/content/groups/public/</url>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>codenvy-public-repo</id>
+            <name>codenvy public</name>
+            <url>https://maven.codenvycorp.com/content/groups/public/</url>
+        </pluginRepository>
+    </pluginRepositories>
+</project>

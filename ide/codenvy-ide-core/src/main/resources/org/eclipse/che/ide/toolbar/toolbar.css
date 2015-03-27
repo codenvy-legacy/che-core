@@ -1,0 +1,238 @@
+/*******************************************************************************
+ * Copyright (c) 2012-2015 Codenvy, S.A.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Codenvy, S.A. - initial API and implementation
+ *******************************************************************************/
+.toolbarMenuPanel {
+    width: 100%;
+    height: 26px;
+    cursor: default;
+    background-color: toolbarBackgroundColor;
+    border-top: 1px solid tabBorder;
+    border-bottom: 1px solid tabBorder;
+}
+
+.toolbarMenuPanel div {
+    margin-top: 1px;
+    margin-left: 2px;
+    float: left;
+}
+
+.toolbarPanel {
+    width: 100%;
+    height: 17px;
+    cursor: default;
+    background-color: tabsPanelBackground;
+    border-top: 1px solid tabBorderShadow;
+    border-bottom: 1px solid tabBorder;
+    box-shadow: 3 2px 5px 0 rgba(50, 50, 50, 0.75);
+    display: flex;
+    display: -webkit-flex;
+    display: -moz-box;
+}
+
+.toolbarPanel div {
+    text-shadow: 0px 1px 0px buttonTextShadow;
+    float: left;
+}
+
+.toolbarPanel a {
+    color: outputLinkColor;
+}
+
+.toolbarPanel .toolbarDelimiter {
+    width: 0px;
+    height: 18px;
+    margin-top: -1px;
+    border-left: 1px solid tabBorder;
+    border-right: 1px solid tabBorderShadow;
+}
+
+.toolbarPanel svg.iconButtonIcon {
+    width: 12px;
+    height: 12px;
+    margin-top: 1px;
+}
+
+
+.rightPanel {
+    float: right !important;
+    white-space: nowrap;
+}
+
+.toolbarPanel .iconButtonPanel,
+.toolbarPanel .iconButtonPanelOver,
+.toolbarPanel .iconButtonPanelDown,
+.toolbarPanel .iconButtonPanelSelected,
+.toolbarPanel .iconButtonPanelSelectedOver,
+.toolbarPanel .iconButtonPanelSelectedDown {
+    width: 17px;
+    height: 14px;
+    overflow: hidden;
+    margin-right: 1px;
+}
+
+.toolbarMenuPanel .toolbarDelimiter {
+    width: 1px;
+    height: 24px;
+    border-left: 1px solid tabBorder;
+}
+
+.toolbarDelimiter {
+}
+
+.iconButtonPanel,
+.iconButtonPanelOver,
+.iconButtonPanelDown,
+.iconButtonPanelSelected,
+.iconButtonPanelSelectedOver,
+.iconButtonPanelSelectedDown {
+    width: 22px;
+    height: 22px;
+    /*background: url(IDE/button-background.png);*/
+}
+
+.iconButtonPanel {
+    /*background-position: 0px 0px;*/
+    border: 1px solid transparent;
+}
+
+.tooltip {
+    display: none;
+}
+
+.iconButtonPanelOver .tooltip,
+.popupButtonPanelOver .tooltip,
+.iconButtonPanel:hover .tooltip,
+.popupButtonPanel:hover .tooltip {
+    display: inline-block;
+    position: fixed;
+    cursor: default;
+    padding: 8px;
+    font-size: 8pt;
+    font-weight: normal;
+    white-space: nowrap;
+    background: #202020;
+    font-family: mainFontFamily;
+    border-radius: 0;
+    -moz-border-radius: 0;
+    -webkit-border-radius: 0;
+}
+
+.iconButtonPanelOver .tooltip:after,
+.popupButtonPanelOver .tooltip:after,
+.iconButtonPanel:hover .tooltip:after,
+.popupButtonPanel:hover .tooltip:after {
+    content: "";
+    width: 0;
+    height: 0;
+    border-width: 9px;
+    border-style: solid;
+    border-color: transparent transparent #232323 transparent;
+    position: absolute;
+    top: -16px;
+    left: 3px;
+}
+
+.iconButtonPanelOver {
+    border-radius: 2px;
+    border: 1px solid tabBorder;
+    /*background-position: 0px -24px;*/
+}
+
+.iconButtonPanelDown {
+    /*background-position: 0px -48px;*/
+    border-radius: 4px;
+    border: 1px solid tabBorder;
+    background-color: hoverBackgroundColor;
+}
+
+.iconButtonPanelSelected {
+    border-radius: 4px;
+    border: 1px solid tabBorder;
+    background-color: hoverBackgroundColor;
+}
+
+.iconButtonPanelSelectedOver {
+    border-radius: 4px;
+    border: 1px solid tabBorder;
+    background-color: hoverBackgroundColor;
+}
+
+.iconButtonPanelSelectedDown {
+    border-radius: 4px;
+    border: 1px solid tabBorder;
+    background-color: hoverBackgroundColor;
+}
+
+.iconButtonIcon {
+    width: toolbarIconSize;
+    height: toolbarIconSize;
+    margin: 3px;
+}
+
+svg.iconButtonIcon {
+    width: toolbarIconSize;
+    height: toolbarIconSize;
+    fill: toolbarIconColor;
+}
+
+.disabled svg {
+    opacity: 0.6;
+}
+
+.popupButtonPanel,
+.popupButtonPanelOver,
+.popupButtonPanelDown {
+    height: 22px;
+    width: 30px;
+    border: 1px solid transparent;
+}
+
+.popupButtonPanel {
+    background-position: 0px 0px;
+}
+
+.popupButtonPanelOver {
+    border-radius: 2px;
+    border: 1px solid tabBorder;
+}
+
+.popupButtonPanelDown {
+    border-radius: 4px;
+    border: 1px solid tabBorder;
+    background-color: hoverBackgroundColor;
+}
+
+.popupButtonIcon {
+    width: toolbarIconSize;
+    height: toolbarIconSize;
+    margin-top: 3px;
+    margin-left: 2px;
+}
+
+svg.popupButtonIcon {
+    width: toolbarIconSize;
+    height: toolbarIconSize;
+    fill: toolbarIconColor;
+    margin-right: 2px;
+}
+
+.caret {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    right: 2px;
+    float: right;
+    border-top: 4px solid #000000;
+    border-right: 4px solid transparent;
+    border-left: 4px solid transparent;
+    content: "";
+    position: relative;
+    top: 50%;
+}

@@ -1,0 +1,92 @@
+/*******************************************************************************
+ * Copyright (c) 2012-2015 Codenvy, S.A.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Codenvy, S.A. - initial API and implementation
+ *******************************************************************************/
+.ide-work-bench-tool-panel-left,
+.ide-work-bench-tool-panel-right,
+.ide-work-bench-tool-panel-bottom {
+    position: relative;
+}
+
+.ide-work-bench-tool-panel-left {
+    /* panel where tab-buttons created*/
+    background: tabsPanelBackground;
+    border-right: 1px solid tabBorder;
+    width: 100%;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box; /* Firefox */
+    -webkit-box-sizing: border-box;
+}
+
+.ide-work-bench-tool-panel-left:before {
+    /* panel where tab-buttons created*/
+    position: absolute;
+    border-right: 1px solid tabBorderShadow;
+    right: 0px;
+    height: 100%;
+    width: 1px;
+    content: "";
+}
+
+.ide-work-bench-tool-panel-right {
+    /* panel where tab-buttons created*/
+    background: tabsPanelBackground;
+    border-left: 1px solid tabBorder;
+    z-index: 5;
+}
+
+.ide-work-bench-tool-panel-right:before {
+    /* panel where tab-buttons created*/
+    border-left: 1px solid tabBorderShadow;
+    position: absolute;
+    height: 100%;
+    width: 1px;
+    content: "";
+}
+
+.ide-work-bench-tool-panel-bottom {
+    /* panel where tab-buttons created*/
+    background: tabsPanelBackground;
+    border-top: 1px solid tabBorder;
+    z-index: 4;
+}
+
+.ide-work-bench-tool-panel-bottom:before {
+    /* panel where tab-buttons created*/
+    border-top: 1px solid tabBorderShadow;
+    position: absolute;
+    width: 100%;
+    height: 1px;
+    content: "";
+}
+
+.ide-work-bench-parent-panel > div {
+    overflow: hidden!important;
+}
+
+svg[name="workBenchIconMinimize"] {
+    margin: 2px 5px;
+    width: 14px;
+    height: 11px;
+    fill: minimizeIconColor;
+}
+
+.ide-work-bench-split-panel-left svg[name="workBenchIconMinimize"] {
+    -webkit-transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+    transform: rotate(180deg);
+    margin-left: 3px;
+}
+
+.ide-work-bench-split-panel-bottom svg[name="workBenchIconMinimize"] {
+    -webkit-transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+    transform: rotate(90deg);
+    margin: 2px 4px;
+}

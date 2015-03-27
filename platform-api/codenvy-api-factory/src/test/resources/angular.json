@@ -1,0 +1,15 @@
+{
+   "v":"1.1",
+   "vcs":"git",
+   "vcsurl":"http://codenvy.com/git/04/0f/7f/workspacegcpv6cdxy1q34n1i/Sample-AngularJS",
+   "orgid":"accountya9vidwqbifhqd9p",
+   "idcommit":"37a21ef422e7995cbab615431f0f63991a9b314a",
+   "action":"openproject",
+   "projectattributes":{
+      "pname":"Sample AngularJS Project",
+      "ptype":"JavaScript"
+   },
+   "wname":"codenvy-factories",
+   "image":"spring.jpg",
+   "style":"Advanced"
+}

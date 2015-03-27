@@ -1,0 +1,139 @@
+/*******************************************************************************
+ * Copyright (c) 2012-2015 Codenvy, S.A.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Codenvy, S.A. - initial API and implementation
+ *******************************************************************************/
+.notificationItem {
+    font-family: mainFontFamily;
+    border-bottom: 1px solid delimeterColor;
+    vertical-align: middle;
+}
+
+.notificationGrid {
+    border-collapse: collapse;
+    width: 100%;
+    height: 100%;
+}
+
+.notificationGrid td {
+    font-size: secondaryTextFontSize !important;
+    text-shadow: 0px 0px 1px rgba(0, 0, 0, 0.5);
+}
+
+.center {
+    display: table;
+    position: absolute;
+}
+
+.center p {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.notificationItem svg {
+    width: 15px;
+    height: 15px;
+}
+
+.notificationItem a, .notificationPopup a {
+    color: linkColor;
+}
+
+.notificationPanel {
+    cursor: pointer;
+    padding-left: 2px;
+}
+
+.notificationPopup {
+    border-radius: 1px !important;
+    box-shadow: 0 2px 5px 0 rgba(50, 50, 50, 0.75);
+    font-size: secondaryTextFontSize;
+    color: buttonHoverTextColor;
+    vertical-align: middle;
+}
+
+.closePopupIcon {
+    fill: toolbarIconColor;
+    margin: auto;
+    width: 18px;
+    height: 18px;
+    opacity: 0.5;
+    padding: 10px;
+}
+
+.closePopupIcon:hover {
+    opacity: 1;
+}
+
+.floatLeft {
+    float: left;
+}
+
+.close {
+    float: right;
+    margin: auto;
+    width: 7px;
+    height: 7px;
+    opacity: 0.5;
+    padding: 5px 10px;
+}
+
+.close:hover {
+    opacity: 1;
+}
+
+.margin4px {
+    margin: 4px;
+}
+
+.right25px {
+    margin-right: 25px !important;
+}
+
+.error {
+    color: errorEventColor !important;
+    fill: errorEventColor !important;
+}
+
+.success {
+    fill: successEventColor;
+}
+
+.warning {
+    color: #cb772f !important;
+    fill: #cb772f;
+}
+
+.unread {
+    /*opacity: 0.7;*/
+}
+
+.countLabel {
+    float: left;
+    margin-top: 3px;
+    margin-left: 3px;
+    padding: 0px 3px;
+    color: tabBorder;
+    background-color: mainFontColor;
+    line-height: 11px;
+    vertical-align: middle;
+    font-weight: bold;
+    font-size: smallFontSize;
+    position: relative;
+}
+
+.notificationMessage > svg {
+    width: 20px;
+    height: 20px;
+    margin-top: 5px;
+    margin-right: 3px;
+}
+
+.progress {
+    fill: progressColor;
+}
