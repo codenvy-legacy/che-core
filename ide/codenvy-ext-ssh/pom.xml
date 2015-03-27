@@ -33,12 +33,12 @@
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
             <artifactId>codenvy-api-core</artifactId>
-            <version>${codenvy.platform-api.version}</version>
+            <version>${che.core.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
             <artifactId>codenvy-api-user</artifactId>
-            <version>${codenvy.platform-api.version}</version>
+            <version>${che.core.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -95,15 +95,15 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.codenvy.platform-api-gwt-client</groupId>
+            <groupId>org.eclipse.che.core</groupId>
             <artifactId>codenvy-api-user-gwt-client</artifactId>
-            <version>${codenvy.platform-api-gwt-client.version}</version>
+            <version>${che.core.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.codenvy.platform-api-gwt-client</groupId>
+            <groupId>org.eclipse.che.core</groupId>
             <artifactId>codenvy-gwt-client-commons</artifactId>
-            <version>${codenvy.platform-api-gwt-client.version}</version>
+            <version>${che.core.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

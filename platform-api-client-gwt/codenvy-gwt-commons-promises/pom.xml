@@ -15,8 +15,8 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>codenvy-platform-api-gwt-client-parent</artifactId>
-        <groupId>com.codenvy.platform-api-gwt-client</groupId>
-        <version>0.22.0-SNAPSHOT</version>
+        <groupId>org.eclipse.che.core</groupId>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>codenvy-gwt-commons-promises</artifactId>
     <name>Che GWT Commons :: Promises</name>

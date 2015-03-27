@@ -15,8 +15,8 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>codenvy-platform-api-gwt-client-parent</artifactId>
-        <groupId>com.codenvy.platform-api-gwt-client</groupId>
-        <version>0.22.0-SNAPSHOT</version>
+        <groupId>org.eclipse.che.core</groupId>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>codenvy-api-user-gwt-client</artifactId>
     <packaging>jar</packaging>
@@ -26,29 +26,29 @@
     </properties>
     <dependencies>
         <dependency>
+            <groupId>com.google.inject</groupId>
+            <artifactId>guice</artifactId>
+            <version>${com.google.code.guice.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.eclipse.che.core</groupId>
             <artifactId>codenvy-api-core</artifactId>
-            <version>${codenvy.platform-api.version}</version>
+            <version>${che.core.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
-            <artifactId>codenvy-api-user</artifactId>
-            <version>${codenvy.platform-api.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.codenvy.platform-api-gwt-client</groupId>
             <artifactId>codenvy-api-core-gwt-client</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.codenvy.platform-api-gwt-client</groupId>
-            <artifactId>codenvy-gwt-client-commons</artifactId>
-            <version>${project.version}</version>
+            <groupId>org.eclipse.che.core</groupId>
+            <artifactId>codenvy-api-user</artifactId>
+            <version>${che.core.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.google.inject</groupId>
-            <artifactId>guice</artifactId>
-            <version>${com.google.code.guice.version}</version>
+            <groupId>org.eclipse.che.core</groupId>
+            <artifactId>codenvy-gwt-client-commons</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.gwt</groupId>
@@ -73,7 +73,7 @@
             <plugin>
                 <groupId>org.eclipse.che.core</groupId>
                 <artifactId>codenvy-dto-maven-plugin</artifactId>
-                <version>${codenvy.platform-api.version}</version>
+                <version>${che.core.version}</version>
                 <executions>
                     <execution>
                         <phase>process-sources</phase>
@@ -85,13 +85,13 @@
                 <dependencies>
                     <dependency>
                         <groupId>org.eclipse.che.core</groupId>
-                        <artifactId>codenvy-api-user</artifactId>
-                        <version>${codenvy.platform-api.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>com.codenvy.platform-api-gwt-client</groupId>
                         <artifactId>codenvy-api-core-gwt-client</artifactId>
                         <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.eclipse.che.core</groupId>
+                        <artifactId>codenvy-api-user</artifactId>
+                        <version>${che.core.version}</version>
                     </dependency>
                 </dependencies>
                 <configuration>
