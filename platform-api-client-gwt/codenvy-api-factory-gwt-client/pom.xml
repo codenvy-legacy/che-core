@@ -16,7 +16,7 @@
     <parent>
         <artifactId>codenvy-platform-api-gwt-client-parent</artifactId>
         <groupId>org.eclipse.che.core</groupId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>3.9.0-SNAPSHOT</version>
     </parent>
     <artifactId>codenvy-api-factory-gwt-client</artifactId>
     <packaging>jar</packaging>
