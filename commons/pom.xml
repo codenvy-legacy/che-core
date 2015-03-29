@@ -19,15 +19,15 @@
         <version>3.9.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>codenvy-commons-parent</artifactId>
+    <artifactId>che-core-commons-parent</artifactId>
     <packaging>pom</packaging>
-    <name>Codenvy :: Commons</name>
+    <name>Che Core Commons Parent</name>
     <modules>
-        <module>codenvy-commons-lang</module>
-        <module>codenvy-commons-inject</module>
-        <module>codenvy-commons-env</module>
-        <module>codenvy-commons-json</module>
-        <module>codenvy-commons-xml</module>
-        <module>codenvy-commons-schedule</module>
+        <module>che-core-commons-lang</module>
+        <module>che-core-commons-inject</module>
+        <module>che-core-commons-env</module>
+        <module>che-core-commons-json</module>
+        <module>che-core-commons-xml</module>
+        <module>che-core-commons-schedule</module>
     </modules>
 </project>
