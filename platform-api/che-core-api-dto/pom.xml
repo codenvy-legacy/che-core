@@ -14,13 +14,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>codenvy-platform-api-parent</artifactId>
+        <artifactId>che-core-api-parent</artifactId>
         <groupId>org.eclipse.che.core</groupId>
         <version>3.9.0-SNAPSHOT</version>
     </parent>
-    <artifactId>codenvy-dto</artifactId>
+    <artifactId>che-core-api-dto</artifactId>
     <packaging>jar</packaging>
-    <name>Codenvy DTO</name>
+    <name>Che Core API DTO</name>
     <properties>
         <generated.test.sources.directory>${project.build.directory}/generated-test-sources/gen</generated.test.sources.directory>
     </properties>

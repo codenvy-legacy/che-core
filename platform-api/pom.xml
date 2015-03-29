@@ -19,25 +19,25 @@
         <version>3.9.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>codenvy-platform-api-parent</artifactId>
+    <artifactId>che-core-api-parent</artifactId>
     <packaging>pom</packaging>
-    <name>Codenvy API Parent</name>
+    <name>Che Core API Parent</name>
     <modules>
-        <module>codenvy-dto</module>
-        <module>codenvy-dto-maven-plugin</module>
-        <module>codenvy-api-docs</module>
-        <module>codenvy-api-core</module>
-        <module>codenvy-api-vfs</module>
-        <module>codenvy-api-project</module>
-        <module>codenvy-api-factory</module>
-        <module>codenvy-api-builder</module>
-        <module>codenvy-api-runner</module>
-        <module>codenvy-api-analytics</module>
-        <module>codenvy-api-user</module>
-        <module>codenvy-api-workspace</module>
-        <module>codenvy-api-account</module>
-        <module>codenvy-api-auth</module>
-        <module>codenvy-infrastructure-local</module>
+        <module>che-core-api-dto</module>
+        <module>che-core-api-dto-maven-plugin</module>
+        <module>che-core-api-docs</module>
+        <module>che-core-api-core</module>
+        <module>che-core-api-vfs</module>
+        <module>che-core-api-project</module>
+        <module>che-core-api-factory</module>
+        <module>che-core-api-builder</module>
+        <module>che-core-api-runner</module>
+        <module>che-core-api-analytics</module>
+        <module>che-core-api-user</module>
+        <module>che-core-api-workspace</module>
+        <module>che-core-api-account</module>
+        <module>che-core-api-auth</module>
+        <module>che-core-api-infrastructure-local</module>
     </modules>
     <properties>
         <maven.model.version>3.0.5</maven.model.version>

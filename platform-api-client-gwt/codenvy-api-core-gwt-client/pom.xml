@@ -20,7 +20,7 @@
     </parent>
     <artifactId>codenvy-api-core-gwt-client</artifactId>
     <packaging>jar</packaging>
-    <name>Codenvy API :: Core :: GWT Client</name>
+    <name>Che Core API :: Core :: GWT Client</name>
     <properties>
         <dto-generator-out-directory>${project.build.directory}/generated-sources/dto/</dto-generator-out-directory>
     </properties>
@@ -32,12 +32,12 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
-            <artifactId>codenvy-api-core</artifactId>
+            <artifactId>che-core-api-core</artifactId>
             <version>${che.core.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
-            <artifactId>codenvy-dto</artifactId>
+            <artifactId>che-core-api-dto</artifactId>
             <version>${che.core.version}</version>
         </dependency>
         <dependency>
@@ -64,7 +64,7 @@
         <plugins>
             <plugin>
                 <groupId>org.eclipse.che.core</groupId>
-                <artifactId>codenvy-dto-maven-plugin</artifactId>
+                <artifactId>che-core-api-dto-maven-plugin</artifactId>
                 <version>${che.core.version}</version>
                 <executions>
                     <execution>
@@ -82,7 +82,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.eclipse.che.core</groupId>
-                        <artifactId>codenvy-api-core</artifactId>
+                        <artifactId>che-core-api-core</artifactId>
                         <version>${che.core.version}</version>
                     </dependency>
                 </dependencies>

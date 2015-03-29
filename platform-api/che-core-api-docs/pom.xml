@@ -14,13 +14,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>codenvy-platform-api-parent</artifactId>
+        <artifactId>che-core-api-parent</artifactId>
         <groupId>org.eclipse.che.core</groupId>
         <version>3.9.0-SNAPSHOT</version>
     </parent>
-    <artifactId>codenvy-api-docs</artifactId>
+    <artifactId>che-core-api-docs</artifactId>
     <packaging>jar</packaging>
-    <name>Codenvy API Docs</name>
+    <name>Che Core API Docs</name>
     <dependencies>
         <dependency>
             <groupId>com.wordnik</groupId>
@@ -35,12 +35,12 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
-            <artifactId>che-core-commons-inject</artifactId>
+            <artifactId>che-core-api-core</artifactId>
             <version>${che.core.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
-            <artifactId>codenvy-api-core</artifactId>
+            <artifactId>che-core-commons-inject</artifactId>
             <version>${che.core.version}</version>
         </dependency>
     </dependencies>

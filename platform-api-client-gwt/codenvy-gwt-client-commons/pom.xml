@@ -20,7 +20,7 @@
     </parent>
     <artifactId>codenvy-gwt-client-commons</artifactId>
     <packaging>jar</packaging>
-    <name>Codenvy API :: GWT Client :: Commons</name>
+    <name>Che Core API :: GWT Client :: Commons</name>
     <properties>
         <generated.test.sources.directory>${project.build.directory}/generated-test-sources/dto</generated.test.sources.directory>
     </properties>
@@ -32,12 +32,12 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
-            <artifactId>codenvy-api-workspace</artifactId>
+            <artifactId>che-core-api-dto</artifactId>
             <version>${che.core.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
-            <artifactId>codenvy-dto</artifactId>
+            <artifactId>che-core-api-workspace</artifactId>
             <version>${che.core.version}</version>
         </dependency>
         <dependency>
