@@ -14,13 +14,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>codenvy-platform-api-gwt-client-parent</artifactId>
+        <artifactId>che-core-platform-api-gwt-client-parent</artifactId>
         <groupId>org.eclipse.che.core</groupId>
         <version>3.9.0-SNAPSHOT</version>
     </parent>
-    <artifactId>codenvy-api-account-gwt-client</artifactId>
+    <artifactId>che-core-api-user-gwt-client</artifactId>
     <packaging>jar</packaging>
-    <name>Che Core API :: Account :: GWT Client</name>
+    <name>Che Core API :: GWT Client :: User</name>
     <properties>
         <dto-generator-out-directory>${project.build.directory}/generated-sources/dto/</dto-generator-out-directory>
     </properties>
@@ -32,27 +32,22 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
-            <artifactId>che-core-api-account</artifactId>
-            <version>${che.core.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.che.core</groupId>
             <artifactId>che-core-api-core</artifactId>
             <version>${che.core.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
-            <artifactId>che-core-api-dto</artifactId>
+            <artifactId>che-core-api-core-gwt-client</artifactId>
             <version>${che.core.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
-            <artifactId>codenvy-api-core-gwt-client</artifactId>
+            <artifactId>che-core-api-user</artifactId>
             <version>${che.core.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
-            <artifactId>codenvy-gwt-client-commons</artifactId>
+            <artifactId>che-core-gwt-client-commons</artifactId>
             <version>${che.core.version}</version>
         </dependency>
         <dependency>
@@ -90,21 +85,21 @@
                 <dependencies>
                     <dependency>
                         <groupId>org.eclipse.che.core</groupId>
-                        <artifactId>che-core-api-account</artifactId>
+                        <artifactId>che-core-api-core-gwt-client</artifactId>
                         <version>${che.core.version}</version>
                     </dependency>
                     <dependency>
                         <groupId>org.eclipse.che.core</groupId>
-                        <artifactId>codenvy-api-core-gwt-client</artifactId>
+                        <artifactId>che-core-api-user</artifactId>
                         <version>${che.core.version}</version>
                     </dependency>
                 </dependencies>
                 <configuration>
                     <dtoPackages>
-                        <package>org.eclipse.che.api.account.shared.dto</package>
+                        <package>org.eclipse.che.api.user.shared.dto</package>
                     </dtoPackages>
                     <outputDirectory>${dto-generator-out-directory}</outputDirectory>
-                    <genClassName>org.eclipse.che.api.account.gwt.client.dto.DtoClientImpls</genClassName>
+                    <genClassName>org.eclipse.che.api.user.gwt.client.dto.DtoClientImpls</genClassName>
                     <impl>client</impl>
                 </configuration>
             </plugin>

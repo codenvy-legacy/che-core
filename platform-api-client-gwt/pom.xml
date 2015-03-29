@@ -19,22 +19,22 @@
         <version>3.9.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>codenvy-platform-api-gwt-client-parent</artifactId>
+    <artifactId>che-core-platform-api-gwt-client-parent</artifactId>
     <packaging>pom</packaging>
-    <name>Codenvy Platform API :: GWT Client :: Parent</name>
+    <name>Che Core API :: GWT Client :: Parent</name>
     <modules>
-        <module>codenvy-api-core-gwt-client</module>
-        <module>codenvy-api-analytics-gwt-client</module>
-        <module>codenvy-api-auth-gwt-client</module>
-        <module>codenvy-api-builder-gwt-client</module>
-        <module>codenvy-api-account-gwt-client</module>
-        <module>codenvy-api-project-gwt-client</module>
-        <module>codenvy-api-user-gwt-client</module>
-        <module>codenvy-api-runner-gwt-client</module>
-        <module>codenvy-api-vfs-gwt-client</module>
-        <module>codenvy-api-factory-gwt-client</module>
-        <module>codenvy-api-workspace-gwt-client</module>
-        <module>codenvy-gwt-client-commons</module>
-        <module>codenvy-gwt-commons-promises</module>
+        <module>che-core-api-core-gwt-client</module>
+        <module>che-core-api-analytics-gwt-client</module>
+        <module>che-core-api-auth-gwt-client</module>
+        <module>che-core-api-builder-gwt-client</module>
+        <module>che-core-api-account-gwt-client</module>
+        <module>che-core-api-project-gwt-client</module>
+        <module>che-core-api-user-gwt-client</module>
+        <module>che-core-api-runner-gwt-client</module>
+        <module>che-core-api-vfs-gwt-client</module>
+        <module>che-core-api-factory-gwt-client</module>
+        <module>che-core-api-workspace-gwt-client</module>
+        <module>che-core-gwt-client-commons</module>
+        <module>che-core-gwt-commons-promises</module>
     </modules>
 </project>

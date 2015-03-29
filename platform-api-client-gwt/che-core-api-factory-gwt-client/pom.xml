@@ -14,13 +14,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>codenvy-platform-api-gwt-client-parent</artifactId>
+        <artifactId>che-core-platform-api-gwt-client-parent</artifactId>
         <groupId>org.eclipse.che.core</groupId>
         <version>3.9.0-SNAPSHOT</version>
     </parent>
-    <artifactId>codenvy-api-project-gwt-client</artifactId>
+    <artifactId>che-core-api-factory-gwt-client</artifactId>
     <packaging>jar</packaging>
-    <name>Che Core API :: Project :: GWT Client</name>
+    <name>Che Core API :: GWT Client :: Factory</name>
     <properties>
         <dto-generator-out-directory>${project.build.directory}/generated-sources/dto/</dto-generator-out-directory>
     </properties>
@@ -31,13 +31,18 @@
             <version>${com.google.code.guice.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax.inject</groupId>
-            <artifactId>javax.inject</artifactId>
-            <version>${javax.inject.version}</version>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>${javax.validation.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
             <artifactId>che-core-api-core</artifactId>
+            <version>${che.core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.che.core</groupId>
+            <artifactId>che-core-api-core-gwt-client</artifactId>
             <version>${che.core.version}</version>
         </dependency>
         <dependency>
@@ -47,17 +52,32 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
+            <artifactId>che-core-api-factory</artifactId>
+            <version>${che.core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.che.core</groupId>
             <artifactId>che-core-api-project</artifactId>
             <version>${che.core.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
-            <artifactId>codenvy-api-core-gwt-client</artifactId>
+            <artifactId>che-core-api-project-gwt-client</artifactId>
             <version>${che.core.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
-            <artifactId>codenvy-gwt-client-commons</artifactId>
+            <artifactId>che-core-api-vfs</artifactId>
+            <version>${che.core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.che.core</groupId>
+            <artifactId>che-core-api-vfs-gwt-client</artifactId>
+            <version>${che.core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.che.core</groupId>
+            <artifactId>che-core-gwt-client-commons</artifactId>
             <version>${che.core.version}</version>
         </dependency>
         <dependency>
@@ -70,10 +90,10 @@
     <build>
         <resources>
             <resource>
-                <directory>src/main/java</directory>
+                <directory>src/main/resources</directory>
             </resource>
             <resource>
-                <directory>src/main/resources</directory>
+                <directory>src/main/java</directory>
             </resource>
             <resource>
                 <directory>${dto-generator-out-directory}</directory>
@@ -86,32 +106,33 @@
                 <version>${che.core.version}</version>
                 <executions>
                     <execution>
+                        <id>generate-client-dto</id>
                         <phase>process-sources</phase>
                         <goals>
                             <goal>generate</goal>
                         </goals>
+                        <configuration>
+                            <dtoPackages>
+                                <package>org.eclipse.che.api.factory.dto</package>
+                            </dtoPackages>
+                            <outputDirectory>${dto-generator-out-directory}</outputDirectory>
+                            <genClassName>org.eclipse.che.api.factory.gwt.client.dto.DtoClientImpls</genClassName>
+                            <impl>client</impl>
+                        </configuration>
                     </execution>
                 </executions>
                 <dependencies>
                     <dependency>
                         <groupId>org.eclipse.che.core</groupId>
-                        <artifactId>che-core-api-project</artifactId>
+                        <artifactId>che-core-api-factory</artifactId>
                         <version>${che.core.version}</version>
                     </dependency>
                     <dependency>
                         <groupId>org.eclipse.che.core</groupId>
-                        <artifactId>codenvy-api-core-gwt-client</artifactId>
+                        <artifactId>che-core-api-factory-gwt-client</artifactId>
                         <version>${che.core.version}</version>
                     </dependency>
                 </dependencies>
-                <configuration>
-                    <dtoPackages>
-                        <package>org.eclipse.che.api.project.shared.dto</package>
-                    </dtoPackages>
-                    <outputDirectory>${dto-generator-out-directory}</outputDirectory>
-                    <genClassName>org.eclipse.che.api.project.gwt.client.dto.DtoClientImpls</genClassName>
-                    <impl>client</impl>
-                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
