@@ -18,9 +18,9 @@
         <groupId>org.eclipse.che.core</groupId>
         <version>3.9.0-SNAPSHOT</version>
     </parent>
-    <artifactId>che-core-api-account-gwt-client</artifactId>
+    <artifactId>che-core-client-gwt-analytics</artifactId>
     <packaging>jar</packaging>
-    <name>Che Core API :: GWT Client :: Account</name>
+    <name>Che Core API :: Client GWT :: Analytics</name>
     <properties>
         <dto-generator-out-directory>${project.build.directory}/generated-sources/dto/</dto-generator-out-directory>
     </properties>
@@ -32,7 +32,7 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
-            <artifactId>che-core-api-account</artifactId>
+            <artifactId>che-core-api-analytics</artifactId>
             <version>${che.core.version}</version>
         </dependency>
         <dependency>
@@ -42,17 +42,17 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
-            <artifactId>che-core-api-core-gwt-client</artifactId>
-            <version>${che.core.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.che.core</groupId>
             <artifactId>che-core-api-dto</artifactId>
             <version>${che.core.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
-            <artifactId>che-core-gwt-client-commons</artifactId>
+            <artifactId>che-core-client-gwt-commons</artifactId>
+            <version>${che.core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.che.core</groupId>
+            <artifactId>che-core-client-gwt-core</artifactId>
             <version>${che.core.version}</version>
         </dependency>
         <dependency>
@@ -65,10 +65,10 @@
     <build>
         <resources>
             <resource>
-                <directory>src/main/java</directory>
+                <directory>src/main/resources</directory>
             </resource>
             <resource>
-                <directory>src/main/resources</directory>
+                <directory>src/main/java</directory>
             </resource>
             <resource>
                 <directory>${dto-generator-out-directory}</directory>
@@ -81,32 +81,33 @@
                 <version>${che.core.version}</version>
                 <executions>
                     <execution>
+                        <id>generate-client-dto</id>
                         <phase>process-sources</phase>
                         <goals>
                             <goal>generate</goal>
                         </goals>
+                        <configuration>
+                            <dtoPackages>
+                                <package>org.eclipse.che.api.analytics.shared.dto</package>
+                            </dtoPackages>
+                            <outputDirectory>${dto-generator-out-directory}</outputDirectory>
+                            <genClassName>org.eclipse.che.api.analytics.client.dto.DtoClientImpls</genClassName>
+                            <impl>client</impl>
+                        </configuration>
                     </execution>
                 </executions>
                 <dependencies>
                     <dependency>
                         <groupId>org.eclipse.che.core</groupId>
-                        <artifactId>che-core-api-account</artifactId>
+                        <artifactId>che-core-api-analytics</artifactId>
                         <version>${che.core.version}</version>
                     </dependency>
                     <dependency>
                         <groupId>org.eclipse.che.core</groupId>
-                        <artifactId>che-core-api-core-gwt-client</artifactId>
+                        <artifactId>che-core-client-gwt-core</artifactId>
                         <version>${che.core.version}</version>
                     </dependency>
                 </dependencies>
-                <configuration>
-                    <dtoPackages>
-                        <package>org.eclipse.che.api.account.shared.dto</package>
-                    </dtoPackages>
-                    <outputDirectory>${dto-generator-out-directory}</outputDirectory>
-                    <genClassName>org.eclipse.che.api.account.gwt.client.dto.DtoClientImpls</genClassName>
-                    <impl>client</impl>
-                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -124,21 +125,6 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
                 <executions>
-                    <execution>
-                        <id>add-resource</id>
-                        <phase>process-sources</phase>
-                        <goals>
-                            <goal>add-resource</goal>
-                        </goals>
-                        <configuration>
-                            <resources>
-                                <resource>
-                                    <directory>${dto-generator-out-directory}/META-INF</directory>
-                                    <targetPath>META-INF</targetPath>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
                     <execution>
                         <id>add-source</id>
                         <phase>process-sources</phase>

@@ -18,9 +18,9 @@
         <groupId>org.eclipse.che.core</groupId>
         <version>3.9.0-SNAPSHOT</version>
     </parent>
-    <artifactId>che-core-api-auth-gwt-client</artifactId>
+    <artifactId>che-core-client-gwt-auth</artifactId>
     <packaging>jar</packaging>
-    <name>Che Core API :: GWT Client :: Auth</name>
+    <name>Che Core API :: Client GWT :: Auth</name>
     <properties>
         <dto-generator-out-directory>${project.build.directory}/generated-sources/dto/</dto-generator-out-directory>
     </properties>
@@ -42,17 +42,17 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
-            <artifactId>che-core-api-core-gwt-client</artifactId>
-            <version>${che.core.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.che.core</groupId>
             <artifactId>che-core-api-dto</artifactId>
             <version>${che.core.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
-            <artifactId>che-core-gwt-client-commons</artifactId>
+            <artifactId>che-core-client-gwt-commons</artifactId>
+            <version>${che.core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.che.core</groupId>
+            <artifactId>che-core-client-gwt-core</artifactId>
             <version>${che.core.version}</version>
         </dependency>
         <dependency>
@@ -95,7 +95,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.eclipse.che.core</groupId>
-                        <artifactId>che-core-api-core-gwt-client</artifactId>
+                        <artifactId>che-core-client-gwt-core</artifactId>
                         <version>${che.core.version}</version>
                     </dependency>
                 </dependencies>

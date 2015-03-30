@@ -18,36 +18,21 @@
         <groupId>org.eclipse.che.core</groupId>
         <version>3.9.0-SNAPSHOT</version>
     </parent>
-    <artifactId>che-core-api-runner-gwt-client</artifactId>
+    <artifactId>che-core-client-gwt-vfs</artifactId>
     <packaging>jar</packaging>
-    <name>Che Core API :: GWT Client :: Runner</name>
+    <name>Che Core API :: Client GWT :: Virtual Filesystem</name>
     <properties>
         <dto-generator-out-directory>${project.build.directory}/generated-sources/dto/</dto-generator-out-directory>
     </properties>
     <dependencies>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
-            <artifactId>che-core-api-builder-gwt-client</artifactId>
+            <artifactId>che-core-api-vfs</artifactId>
             <version>${che.core.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
-            <artifactId>che-core-api-core-gwt-client</artifactId>
-            <version>${che.core.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.che.core</groupId>
-            <artifactId>che-core-api-project-gwt-client</artifactId>
-            <version>${che.core.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.che.core</groupId>
-            <artifactId>che-core-api-runner</artifactId>
-            <version>${che.core.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.che.core</groupId>
-            <artifactId>che-core-gwt-client-commons</artifactId>
+            <artifactId>che-core-client-gwt-commons</artifactId>
             <version>${che.core.version}</version>
         </dependency>
         <dependency>
@@ -60,10 +45,10 @@
     <build>
         <resources>
             <resource>
-                <directory>src/main/resources</directory>
+                <directory>src/main/java</directory>
             </resource>
             <resource>
-                <directory>src/main/java</directory>
+                <directory>src/main/resources</directory>
             </resource>
             <resource>
                 <directory>${dto-generator-out-directory}</directory>
@@ -85,31 +70,16 @@
                 <dependencies>
                     <dependency>
                         <groupId>org.eclipse.che.core</groupId>
-                        <artifactId>che-core-api-builder-gwt-client</artifactId>
-                        <version>${che.core.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.eclipse.che.core</groupId>
-                        <artifactId>che-core-api-core-gwt-client</artifactId>
-                        <version>${che.core.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.eclipse.che.core</groupId>
-                        <artifactId>che-core-api-project-gwt-client</artifactId>
-                        <version>${che.core.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.eclipse.che.core</groupId>
-                        <artifactId>che-core-api-runner</artifactId>
+                        <artifactId>che-core-api-vfs</artifactId>
                         <version>${che.core.version}</version>
                     </dependency>
                 </dependencies>
                 <configuration>
                     <dtoPackages>
-                        <package>org.eclipse.che.api.runner.dto</package>
+                        <package>org.eclipse.che.api.vfs.shared.dto</package>
                     </dtoPackages>
                     <outputDirectory>${dto-generator-out-directory}</outputDirectory>
-                    <genClassName>org.eclipse.che.api.runner.gwt.client.dto.DtoClientImpls</genClassName>
+                    <genClassName>org.eclipse.che.api.vfs.gwt.client.dto.DtoClientImpls</genClassName>
                     <impl>client</impl>
                 </configuration>
             </plugin>

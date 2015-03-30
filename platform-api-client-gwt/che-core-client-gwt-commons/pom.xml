@@ -18,7 +18,7 @@
         <groupId>org.eclipse.che.core</groupId>
         <version>3.9.0-SNAPSHOT</version>
     </parent>
-    <artifactId>che-core-gwt-client-commons</artifactId>
+    <artifactId>che-core-client-gwt-commons</artifactId>
     <packaging>jar</packaging>
     <name>Che Core API :: GWT Client :: Commons</name>
     <properties>

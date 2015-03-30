@@ -21,20 +21,20 @@
     </parent>
     <artifactId>che-core-platform-api-gwt-client-parent</artifactId>
     <packaging>pom</packaging>
-    <name>Che Core API :: GWT Client :: Parent</name>
+    <name>Che Core API :: Client GWT :: Parent</name>
     <modules>
-        <module>che-core-api-core-gwt-client</module>
-        <module>che-core-api-analytics-gwt-client</module>
-        <module>che-core-api-auth-gwt-client</module>
-        <module>che-core-api-builder-gwt-client</module>
-        <module>che-core-api-account-gwt-client</module>
-        <module>che-core-api-project-gwt-client</module>
-        <module>che-core-api-user-gwt-client</module>
-        <module>che-core-api-runner-gwt-client</module>
-        <module>che-core-api-vfs-gwt-client</module>
-        <module>che-core-api-factory-gwt-client</module>
-        <module>che-core-api-workspace-gwt-client</module>
-        <module>che-core-gwt-client-commons</module>
+        <module>che-core-client-gwt-core</module>
+        <module>che-core-client-gwt-analytics</module>
+        <module>che-core-client-gwt-auth</module>
+        <module>che-core-client-gwt-builder</module>
+        <module>che-core-client-gwt-account</module>
+        <module>che-core-client-gwt-project</module>
+        <module>che-core-client-gwt-user</module>
+        <module>che-core-client-gwt-runner</module>
+        <module>che-core-client-gwt-vfs</module>
+        <module>che-core-client-gwt-factory</module>
+        <module>che-core-client-gwt-workspace</module>
+        <module>che-core-client-gwt-commons</module>
         <module>che-core-gwt-commons-promises</module>
     </modules>
 </project>

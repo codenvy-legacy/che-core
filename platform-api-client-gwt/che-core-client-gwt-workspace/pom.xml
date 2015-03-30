@@ -18,9 +18,9 @@
         <groupId>org.eclipse.che.core</groupId>
         <version>3.9.0-SNAPSHOT</version>
     </parent>
-    <artifactId>che-core-api-project-gwt-client</artifactId>
+    <artifactId>che-core-client-gwt-workspace</artifactId>
     <packaging>jar</packaging>
-    <name>Che Core API :: GWT Client :: Project</name>
+    <name>Che Core API :: Client GWT :: Workspace</name>
     <properties>
         <dto-generator-out-directory>${project.build.directory}/generated-sources/dto/</dto-generator-out-directory>
     </properties>
@@ -31,28 +31,18 @@
             <version>${com.google.code.guice.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax.inject</groupId>
-            <artifactId>javax.inject</artifactId>
-            <version>${javax.inject.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.eclipse.che.core</groupId>
             <artifactId>che-core-api-core</artifactId>
             <version>${che.core.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
-            <artifactId>che-core-api-core-gwt-client</artifactId>
+            <artifactId>che-core-api-workspace</artifactId>
             <version>${che.core.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
-            <artifactId>che-core-api-dto</artifactId>
-            <version>${che.core.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.che.core</groupId>
-            <artifactId>che-core-api-project</artifactId>
+            <artifactId>che-core-client-gwt-core</artifactId>
             <version>${che.core.version}</version>
         </dependency>
         <dependency>
@@ -95,21 +85,26 @@
                 <dependencies>
                     <dependency>
                         <groupId>org.eclipse.che.core</groupId>
-                        <artifactId>che-core-api-core-gwt-client</artifactId>
+                        <artifactId>che-core-api-core</artifactId>
                         <version>${che.core.version}</version>
                     </dependency>
                     <dependency>
                         <groupId>org.eclipse.che.core</groupId>
-                        <artifactId>che-core-api-project</artifactId>
+                        <artifactId>che-core-api-workspace</artifactId>
+                        <version>${che.core.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.eclipse.che.core</groupId>
+                        <artifactId>che-core-client-gwt-core</artifactId>
                         <version>${che.core.version}</version>
                     </dependency>
                 </dependencies>
                 <configuration>
                     <dtoPackages>
-                        <package>org.eclipse.che.api.project.shared.dto</package>
+                        <package>org.eclipse.che.api.workspace.shared.dto</package>
                     </dtoPackages>
                     <outputDirectory>${dto-generator-out-directory}</outputDirectory>
-                    <genClassName>org.eclipse.che.api.project.gwt.client.dto.DtoClientImpls</genClassName>
+                    <genClassName>org.eclipse.che.api.workspace.client.dto.DtoClientImpls</genClassName>
                     <impl>client</impl>
                 </configuration>
             </plugin>
