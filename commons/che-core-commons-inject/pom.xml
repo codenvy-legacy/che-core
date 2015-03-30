@@ -20,7 +20,7 @@
     </parent>
     <artifactId>che-core-commons-inject</artifactId>
     <packaging>jar</packaging>
-    <name>Che Core Commons :: Dependency Injecting Framework</name>
+    <name>Che Core :: Commons :: Dependency Injecting</name>
     <dependencies>
         <dependency>
             <groupId>com.google.guava</groupId>

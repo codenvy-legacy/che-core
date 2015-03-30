@@ -20,7 +20,7 @@
     </parent>
     <artifactId>che-core-commons-xml</artifactId>
     <packaging>jar</packaging>
-    <name>Che Core Commons :: XML</name>
+    <name>Che Core :: Commons :: XML</name>
     <dependencies>
         <dependency>
             <groupId>com.google.guava</groupId>

@@ -20,7 +20,7 @@
     </parent>
     <artifactId>codenvy-commons-env</artifactId>
     <packaging>jar</packaging>
-    <name>Che Core Commons :: Environment</name>
+    <name>Che Core :: Commons :: Environment</name>
     <dependencies>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>

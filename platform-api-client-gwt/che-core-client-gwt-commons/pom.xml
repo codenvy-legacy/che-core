@@ -20,7 +20,7 @@
     </parent>
     <artifactId>che-core-client-gwt-commons</artifactId>
     <packaging>jar</packaging>
-    <name>Che Core API :: GWT Client :: Commons</name>
+    <name>Che Core API :: Client GWT :: Commons</name>
     <properties>
         <generated.test.sources.directory>${project.build.directory}/generated-test-sources/dto</generated.test.sources.directory>
     </properties>

@@ -20,7 +20,7 @@
     </parent>
     <artifactId>che-core-commons-lang</artifactId>
     <packaging>jar</packaging>
-    <name>Che Core Commons :: Java API extension classes</name>
+    <name>Che Core :: Commons :: Java API extension classes</name>
     <dependencies>
         <dependency>
             <groupId>org.apache.commons</groupId>

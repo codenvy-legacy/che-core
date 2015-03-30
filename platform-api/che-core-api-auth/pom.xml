@@ -20,7 +20,7 @@
     </parent>
     <artifactId>che-core-api-auth</artifactId>
     <packaging>jar</packaging>
-    <name>Che Core API Authentication</name>
+    <name>Che Core :: API :: Authentication</name>
     <properties>
         <dto-generator-out-directory>${project.build.directory}/generated-sources/dto/</dto-generator-out-directory>
     </properties>

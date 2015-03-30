@@ -20,7 +20,7 @@
     </parent>
     <artifactId>che-core-commons-json</artifactId>
     <packaging>jar</packaging>
-    <name>Che Core Commons :: Json helpers</name>
+    <name>Che Core :: Commons :: Json helpers</name>
     <dependencies>
         <dependency>
             <groupId>org.everrest</groupId>

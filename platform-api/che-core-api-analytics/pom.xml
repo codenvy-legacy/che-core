@@ -20,7 +20,7 @@
     </parent>
     <artifactId>che-core-api-analytics</artifactId>
     <packaging>jar</packaging>
-    <name>Che Core API Analytics</name>
+    <name>Che Core :: API :: Analytics</name>
     <properties>
         <dto-generator-out-directory>${project.build.directory}/generated-sources/dto/</dto-generator-out-directory>
     </properties>

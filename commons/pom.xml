@@ -21,7 +21,7 @@
     </parent>
     <artifactId>che-core-commons-parent</artifactId>
     <packaging>pom</packaging>
-    <name>Che Core Commons Parent</name>
+    <name>Che Core :: Commons :: Parent</name>
     <modules>
         <module>che-core-commons-lang</module>
         <module>che-core-commons-inject</module>

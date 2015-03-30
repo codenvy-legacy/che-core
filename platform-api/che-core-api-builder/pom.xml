@@ -20,7 +20,7 @@
     </parent>
     <artifactId>che-core-api-builder</artifactId>
     <packaging>jar</packaging>
-    <name>Che Core API Builder</name>
+    <name>Che Core :: API :: Builder</name>
     <properties>
         <dto-generator-out-directory>${project.build.directory}/generated-sources/dto/</dto-generator-out-directory>
     </properties>
