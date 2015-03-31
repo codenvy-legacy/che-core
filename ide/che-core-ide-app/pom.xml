@@ -150,7 +150,7 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
-            <artifactId>codenvy-ide-ui</artifactId>
+            <artifactId>che-core-ide-ui</artifactId>
             <version>${che.core.version}</version>
         </dependency>
         <dependency>
@@ -307,29 +307,6 @@
                         <exclude>**/ide/dto/client/ClientDocOpFactory.java</exclude>
                         <exclude>**/ide/dto/shared/DocOpFactory.java</exclude>
                         <exclude>**/ide/text/ConfigurableLineTracker.java</exclude>
-                        <exclude>**/com/codenvy/ide/text/store/anchor/Anchor.java</exclude>
-                        <exclude>**/com/codenvy/ide/text/store/anchor/AnchorDeferredDispatcher.java</exclude>
-                        <exclude>**/com/codenvy/ide/text/store/anchor/AnchorList.java</exclude>
-                        <exclude>**/com/codenvy/ide/text/store/anchor/AnchorManager.java</exclude>
-                        <exclude>**/com/codenvy/ide/text/store/anchor/AnchorType.java</exclude>
-                        <exclude>**/com/codenvy/ide/text/store/anchor/AnchorUtils.java</exclude>
-                        <exclude>**/com/codenvy/ide/text/store/anchor/InsertionPlacementStrategy.java</exclude>
-                        <exclude>**/com/codenvy/ide/text/store/anchor/LineAnchorList.java</exclude>
-                        <exclude>**/com/codenvy/ide/text/store/anchor/ReadOnlyAnchor.java</exclude>
-                        <exclude>**/com/codenvy/ide/text/store/util/LineUtils.java</exclude>
-                        <exclude>**/com/codenvy/ide/text/store/util/PositionUtils.java</exclude>
-                        <exclude>**/com/codenvy/ide/text/store/DocumentModel.java</exclude>
-                        <exclude>**/com/codenvy/ide/text/store/DocumentMutatorImpl.java</exclude>
-                        <exclude>**/com/codenvy/ide/text/store/Line.java</exclude>
-                        <exclude>**/com/codenvy/ide/text/store/LineFinder.java</exclude>
-                        <exclude>**/com/codenvy/ide/text/store/LineInfo.java</exclude>
-                        <exclude>**/com/codenvy/ide/text/store/LineNumberAndColumn.java</exclude>
-                        <exclude>**/com/codenvy/ide/text/store/Position.java</exclude>
-                        <exclude>**/com/codenvy/ide/text/store/PositionOutOfBoundsException.java</exclude>
-                        <exclude>**/com/codenvy/ide/text/store/TaggableLine.java</exclude>
-                        <exclude>**/com/codenvy/ide/text/store/TextChange.java</exclude>
-                        <exclude>**/com/codenvy/ide/text/store/TextStoreMutator.java</exclude>
-                        <exclude>**/com/codenvy/ide/texteditor/selection/CursorView.java</exclude>
                     </excludes>
                 </configuration>
             </plugin>

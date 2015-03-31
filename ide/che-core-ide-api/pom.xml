@@ -220,24 +220,6 @@
                         <exclude>**/ide/api/text/annotation/AnnotationModelEvent.java</exclude>
                         <exclude>**/ide/api/text/rules/**/*.*</exclude>
                         <exclude>**/ide/api/text/undo/**/*.*</exclude>
-                        <exclude>**/com/codenvy/ide/api/texteditor/historymanager/AbstractOperation.java</exclude>
-                        <exclude>**/com/codenvy/ide/api/texteditor/historymanager/DefaultOperationHistory.java</exclude>
-                        <exclude>**/com/codenvy/ide/api/texteditor/historymanager/GlobalUndoContext.java</exclude>
-                        <exclude>**/com/codenvy/ide/api/texteditor/historymanager/IContextReplacingOperation.java</exclude>
-                        <exclude>**/com/codenvy/ide/api/texteditor/historymanager/IOperationHistory.java</exclude>
-                        <exclude>**/com/codenvy/ide/api/texteditor/historymanager/IOperationHistoryListener.java</exclude>
-                        <exclude>**/com/codenvy/ide/api/texteditor/historymanager/IUndoableOperation.java</exclude>
-                        <exclude>**/com/codenvy/ide/api/texteditor/historymanager/IUndoContext.java</exclude>
-                        <exclude>**/com/codenvy/ide/api/texteditor/historymanager/ObjectUndoContext.java</exclude>
-                        <exclude>**/com/codenvy/ide/api/texteditor/historymanager/OperationHistoryEvent.java</exclude>
-                        <exclude>**/com/codenvy/ide/api/texteditor/historymanager/OperationHistoryFactory.java</exclude>
-                        <exclude>**/com/codenvy/ide/api/texteditor/historymanager/OperationStatus.java</exclude>
-                        <exclude>**/com/codenvy/ide/api/texteditor/historymanager/UndoContext.java</exclude>
-                        <exclude>**/com/codenvy/ide/api/texteditor/parser/*.java</exclude>
-                        <exclude>**/com/codenvy/ide/api/texteditor/reconciler/DirtyRegion.java</exclude>
-                        <exclude>**/com/codenvy/ide/api/texteditor/reconciler/DirtyRegionQueue.java</exclude>
-                        <exclude>**/com/codenvy/ide/api/texteditor/SelectionModel.java</exclude>
-                        <exclude>**/com/codenvy/ide/api/texteditor/UndoManager.java</exclude>
                     </excludes>
                 </configuration>
             </plugin>
