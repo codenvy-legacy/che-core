@@ -29,7 +29,6 @@
         <module>platform-api-client-gwt</module>
         <module>ide</module>
         <module>che-core-vfs-impl</module>
-        <module>security</module>
         <module>che-core-test-framework</module>
     </modules>
     <scm>
