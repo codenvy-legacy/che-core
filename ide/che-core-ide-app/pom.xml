@@ -140,12 +140,12 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
-            <artifactId>che-core-ide-generators</artifactId>
+            <artifactId>che-core-ide-api</artifactId>
             <version>${che.core.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
-            <artifactId>che-core-ide-api</artifactId>
+            <artifactId>che-core-ide-generators</artifactId>
             <version>${che.core.version}</version>
         </dependency>
         <dependency>
