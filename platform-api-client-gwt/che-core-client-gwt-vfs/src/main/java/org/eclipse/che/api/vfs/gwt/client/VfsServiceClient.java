@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.api.vfs.gwt.client;
 
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.api.vfs.shared.dto.ReplacementSet;
 import org.eclipse.che.ide.collections.Array;
@@ -25,7 +24,7 @@ import javax.annotation.Nonnull;
  * @author Artem Zatsarynnyy
  */
 public interface VfsServiceClient {
-    public void replaceInCurrentWorkspace(@Nonnull ProjectDescriptor project,
+    public void replaceInCurrentWorkspace(@Nonnull String projectPath,
                                           Array<ReplacementSet> replacementSets,
                                           AsyncRequestCallback<Void> callback);
 

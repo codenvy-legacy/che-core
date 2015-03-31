@@ -19,18 +19,15 @@
         <version>3.9.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>codenvy-ide-parent</artifactId>
+    <artifactId>che-core-ide-parent</artifactId>
     <packaging>pom</packaging>
-    <name>Codenvy :: IDE</name>
+    <name>Che Core :: IDE</name>
     <modules>
-        <module>codenvy-ide-api</module>
-        <module>codenvy-ide-ui</module>
-        <module>codenvy-ide-core</module>
-        <module>codenvy-ext-builder</module>
-        <module>codenvy-ext-web</module>
-        <module>codenvy-ext-ssh</module>
-        <module>codenvy-ide-client</module>
-        <module>codenvy-ide-jseditor</module>
+        <module>che-core-ide-api</module>
+        <module>che-core-ide-generators</module>
+        <module>che-core-ide-ui</module>
+        <module>che-core-ide-app</module>
+        <module>che-core-ide-jseditor</module>
     </modules>
     <build>
         <pluginManagement>

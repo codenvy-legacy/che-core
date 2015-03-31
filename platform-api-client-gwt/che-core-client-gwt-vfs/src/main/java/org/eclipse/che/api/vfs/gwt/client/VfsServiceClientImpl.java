@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.api.vfs.gwt.client;
 
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.api.vfs.shared.dto.ReplacementSet;
 import org.eclipse.che.ide.collections.Array;
@@ -55,10 +54,10 @@ public class VfsServiceClientImpl implements VfsServiceClient {
     }
 
     @Override
-    public void replaceInCurrentWorkspace(@Nonnull ProjectDescriptor project,
+    public void replaceInCurrentWorkspace(@Nonnull String projectPath,
                                           Array<ReplacementSet> replacementSets,
                                           AsyncRequestCallback<Void> callback) {
-        String path = FIND_REPLACE + normalizePath(project.getPath());
+        String path = FIND_REPLACE + normalizePath(projectPath);
 
         asyncRequestFactory.createRequest(RequestBuilder.POST, path, replacementSets, false)
                            .header(CONTENT_TYPE, APPLICATION_JSON)

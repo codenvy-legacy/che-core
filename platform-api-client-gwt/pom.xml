@@ -34,7 +34,5 @@
         <module>che-core-client-gwt-vfs</module>
         <module>che-core-client-gwt-factory</module>
         <module>che-core-client-gwt-workspace</module>
-        <module>che-core-client-gwt-commons</module>
-        <module>che-core-gwt-commons-promises</module>
     </modules>
 </project>
