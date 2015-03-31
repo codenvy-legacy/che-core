@@ -16,7 +16,7 @@
 <module>
     <!-- Generator that builds ExtensionManager from ExtensionDefinition annotations. -->
     <generate-with class="org.eclipse.che.util.ExtensionRegistryGenerator">
-        <when-type-assignable class="org.eclipse.che.ide.extension.ExtensionRegistry"/>
+        <when-type-assignable class="org.eclipse.che.ide.api.extension.ExtensionRegistry"/>
     </generate-with>
 
     <inherits name="com.google.gwt.user.User"/>
