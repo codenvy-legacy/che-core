@@ -18,6 +18,7 @@ import org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor;
  * @author Dmytro Nochevnov
  * @author Vitaliy Guliy
  */
+@Deprecated
 public class Config {
 
     private static WorkspaceDescriptor _workspace;

@@ -174,7 +174,6 @@ import org.eclipse.che.ide.ui.dialogs.message.MessageDialogViewImpl;
 import org.eclipse.che.ide.ui.loader.IdeLoader;
 import org.eclipse.che.ide.ui.zeroClipboard.ClipboardButtonBuilder;
 import org.eclipse.che.ide.ui.zeroClipboard.ClipboardButtonBuilderImpl;
-import org.eclipse.che.ide.util.Config;
 import org.eclipse.che.ide.util.executor.UserActivityManager;
 import org.eclipse.che.ide.websocket.MessageBus;
 import org.eclipse.che.ide.websocket.MessageBusImpl;
@@ -183,6 +182,7 @@ import org.eclipse.che.ide.workspace.PartStackViewFactory;
 import org.eclipse.che.ide.workspace.WorkBenchViewImpl;
 import org.eclipse.che.ide.workspace.WorkspaceView;
 import org.eclipse.che.ide.workspace.WorkspaceViewImpl;
+import org.eclipse.che.ide.util.Config;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.inject.client.AbstractGinModule;
