@@ -38,10 +38,12 @@ public class DtoUnmarshaller<T> implements Unmarshallable<T> {
     /** {@inheritDoc} */
     @Override
     public void unmarshal(Response response) {
-        if (isJsonArray(response)) {
-            payload = (T)dtoFactory.createListDtoFromJson(response.getText(), dtoInterface);
-        } else {
-            payload = (T)dtoFactory.createDtoFromJson(response.getText(), dtoInterface);
+        if (response.getText() == null) {
+            if (isJsonArray(response)) {
+                payload = (T)dtoFactory.createListDtoFromJson(response.getText(), dtoInterface);
+            } else {
+                payload = (T)dtoFactory.createDtoFromJson(response.getText(), dtoInterface);
+            }
         }
     }
 
