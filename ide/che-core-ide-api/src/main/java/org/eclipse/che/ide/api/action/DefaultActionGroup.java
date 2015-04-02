@@ -15,7 +15,6 @@ import org.eclipse.che.ide.api.constraints.Constraints;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.LinkedHashMap;
@@ -42,7 +41,7 @@ public class DefaultActionGroup extends ActionGroup {
     private final List<Constraints> constraintsList = new ArrayList<>();
 
     /** Contains instances of sorted Actions */
-    private Action[] mySortedActions;
+    private Action[] sortedActions;
 
     private ActionManager actionManager;
 
@@ -178,7 +177,6 @@ public class DefaultActionGroup extends ActionGroup {
     public final void removeAll() {
         actionList.clear();
         constraintsList.clear();
-        Iterator iter = new LinkedList().iterator();
         needSorting = true;
     }
     /**
@@ -192,10 +190,10 @@ public class DefaultActionGroup extends ActionGroup {
     public final Action[] getChildren(ActionEvent e) {
 
         if (needSorting) {
-            mySortedActions = getSortedActions();
+            sortedActions = getSortedActions();
             needSorting = false;
         }
-        return mySortedActions == null ? EMPTY_ACTIONS : mySortedActions;
+        return sortedActions == null ? EMPTY_ACTIONS : sortedActions;
     }
 
     /**
@@ -287,7 +285,7 @@ public class DefaultActionGroup extends ActionGroup {
     }
 
     public final Action[] getChildActionsOrStubs() {
-        return mySortedActions == null ? EMPTY_ACTIONS : mySortedActions;
+        return sortedActions == null ? EMPTY_ACTIONS : sortedActions;
     }
 
     public final void addAll(ActionGroup group) {
