@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.core.problemDialog;
 
-import org.eclipse.che.ide.ui.UILocalizationConstant;
 import org.eclipse.che.ide.ui.window.Window;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -21,8 +20,6 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 
-import org.vectomatic.dom.svg.ui.SVGImage;
-
 /** @author Artem Zatsarynnyy */
 public class ProjectProblemDialog extends Window {
 
@@ -30,9 +27,6 @@ public class ProjectProblemDialog extends Window {
     private final AskHandler handler;
     @UiField
     SimplePanel message;
-    @UiField
-    SVGImage    questionImage;
-    private UILocalizationConstant locale = GWT.create(UILocalizationConstant.class);
 
     /**
      * Creates new dialog.
@@ -51,15 +45,6 @@ public class ProjectProblemDialog extends Window {
         setWidget(widget);
         message.addStyleName(resources.centerPanelCss().label());
         message.getElement().setInnerHTML(question);
-        questionImage.getElement().setAttribute("class", resources.centerPanelCss().image());
-
-        Button deleteButton = createButton("Delete", "problem-dialog-delete", new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                handler.onDelete();
-                onClose();
-            }
-        });
 
         Button configureButton = createButton("Configure...", "problem-dialog-configure", new ClickHandler() {
             @Override
@@ -69,18 +54,7 @@ public class ProjectProblemDialog extends Window {
             }
         });
         configureButton.addStyleName(resources.centerPanelCss().blueButton());
-
-        Button cancelButton = createButton(locale.cancelButtonText(), "problem-dialog-cancel", new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                handler.onCancel();
-                onClose();
-            }
-        });
-
-        getFooter().add(deleteButton);
         getFooter().add(configureButton);
-        getFooter().add(cancelButton);
     }
 
     /** {@inheritDoc} */
@@ -101,17 +75,5 @@ public class ProjectProblemDialog extends Window {
     public abstract static class AskHandler {
         /** Call if user click 'Configure' button. */
         public abstract void onConfigure();
-
-        /** Call if user click 'Delete' button. */
-        public abstract void onDelete();
-
-        /**
-         * Call if user click cancel button.
-         * By default nothing todo.
-         * If need custom interaction override it.
-         */
-        public void onCancel() {
-            //by default nothing todo
-        }
     }
 }
