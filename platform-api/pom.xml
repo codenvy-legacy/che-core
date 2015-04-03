@@ -32,6 +32,7 @@
         <module>che-core-api-factory</module>
         <module>che-core-api-builder</module>
         <module>che-core-api-runner</module>
+        <module>che-core-api-machine</module>
         <module>che-core-api-analytics</module>
         <module>che-core-api-user</module>
         <module>che-core-api-workspace</module>
