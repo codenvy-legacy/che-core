@@ -585,7 +585,7 @@ public class DtoImplServerTemplate extends DtoImpl {
         builder.append("  public static class ");
         builder.append(getImplClassName());
 
-        Class<?> superType = getSuperInterface(getDtoInterface());
+        Class<?> superType = getSuperDtoInterface(getDtoInterface());
         if (superType != null && superType != JsonSerializable.class) {
             // We need to extend something.
             builder.append(" extends ");
