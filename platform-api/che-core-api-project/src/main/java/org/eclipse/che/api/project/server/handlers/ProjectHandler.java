@@ -13,7 +13,7 @@ package org.eclipse.che.api.project.server.handlers;
 /**
  * @author gazarenkov
  */
-public abstract interface ProjectHandler {
+public interface ProjectHandler {
 
     String getProjectType();
 }

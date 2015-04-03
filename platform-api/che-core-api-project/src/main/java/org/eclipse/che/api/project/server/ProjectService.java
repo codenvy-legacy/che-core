@@ -193,7 +193,6 @@ public class ProjectService extends Service {
                     NotValidProject notValidProject = new NotValidProject(folderEntry, projectManager);
 
                     projectReferences.add(DtoConverter.toReferenceDto2(notValidProject, getServiceContext().getServiceUriBuilder()));
-//                    projectReferences.add(DtoConverter.toReferenceDto(notValidProject, getServiceContext().getServiceUriBuilder()));
                 }
             }
         }
@@ -268,12 +267,10 @@ public class ProjectService extends Service {
             options = generatorDescription.getOptions();
         }
 
-
         final Project project = projectManager.createProject(workspace, name,
                                                              DtoConverter.fromDto2(newProject, projectManager.getProjectTypeRegistry()),
                                                              options,
                                                              newProject.getVisibility());
-
 
         final ProjectDescriptor descriptor = DtoConverter.toDescriptorDto2(project, getServiceContext().getServiceUriBuilder(),
                                                                            projectManager.getProjectTypeRegistry());
@@ -366,7 +363,6 @@ public class ProjectService extends Service {
         return descriptor;
     }
 
-
     @ApiOperation(value = "Updates existing project",
                   response = ProjectDescriptor.class,
                   position = 6)
@@ -435,9 +431,7 @@ public class ProjectService extends Service {
 
         return DtoConverter.toDescriptorDto2(project, getServiceContext().getServiceUriBuilder(),
                                              projectManager.getProjectTypeRegistry());
-
     }
-
 
     @ApiOperation(value = "Estimates if the folder supposed to be project of certain type",
                   response = Map.class,
@@ -465,9 +459,7 @@ public class ProjectService extends Service {
         }
 
         return attributes;
-
     }
-
 
     @GET
     @Path("/resolve/{path:.*}")
@@ -476,13 +468,10 @@ public class ProjectService extends Service {
                                                  @PathParam("ws-id") String workspace,
                                                  @ApiParam(value = "Path to requested project", required = true)
                                                  @PathParam("path") String path)
-
             throws NotFoundException, ForbiddenException, ServerException, ConflictException {
 
         return projectManager.resolveSources(workspace, path, false);
-
     }
-
 
     @ApiOperation(value = "Create file",
                   notes = "Create a new file in a project. If file type isn't specified the server will resolve its type.",
@@ -813,7 +802,7 @@ public class ProjectService extends Service {
     @ApiOperation(value = "Import resource",
                   notes = "Import resource. JSON with a designated importer and project location is sent. It is possible to import from " +
                           "VCS or ZIP",
-                  response = ProjectDescriptor.class,
+                  response = ImportResponse.class,
                   position = 17)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = ""),
@@ -1048,12 +1037,10 @@ public class ProjectService extends Service {
                                 " we get :" +
                                 runnerSourceLocation);
                     }
-
                 }
             }
         }
     }
-
 
     /**
      * Some importers don't use virtual file system API and changes are not indexed.
@@ -1190,7 +1177,6 @@ public class ProjectService extends Service {
     @ApiOperation(value = "Get project tree",
                   notes = "Get project tree. Depth is specified in a query parameter",
                   response = TreeElement.class,
-                  responseContainer = "List",
                   position = 22)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
@@ -1216,8 +1202,7 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Get file or folder",
-                  response = TreeElement.class,
-                  responseContainer = "List",
+                  response = ItemReference.class,
                   position = 28)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
@@ -1247,7 +1232,6 @@ public class ProjectService extends Service {
         }
 
         return item;
-
     }
 
     private List<TreeElement> getTree(FolderEntry folder, int depth, UriBuilder uriBuilder, DtoFactory dtoFactory) throws ServerException {
