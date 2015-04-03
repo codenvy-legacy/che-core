@@ -269,6 +269,11 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
         return tree.getSelectionModel().getSelectedNodes().get(0);
     }
 
+    @Nonnull
+    public Array<?> getSelectedNodes() {
+        return tree.getSelectionModel().getSelectedNodes();
+    }
+
     @Override
     protected void focusView() {
         tree.asWidget().getElement().getFirstChildElement().focus();
