@@ -40,4 +40,10 @@ public interface UpdateResourcesDescriptor {
     Integer getBuilderTimeout();
 
     UpdateResourcesDescriptor withBuilderTimeout(Integer builderTimeout);
+
+    void setResourcesUsageLimit(Double gbHUsageLimit);
+
+    Double getResourcesUsageLimit();
+
+    UpdateResourcesDescriptor withResourcesUsageLimit(Double gbHUsageLimit);
 }
