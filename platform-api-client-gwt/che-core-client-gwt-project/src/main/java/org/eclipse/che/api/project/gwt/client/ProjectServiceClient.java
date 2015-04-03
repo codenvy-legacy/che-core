@@ -40,7 +40,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    public void getProjects(AsyncRequestCallback<Array<ProjectReference>> callback);
+    void getProjects(AsyncRequestCallback<Array<ProjectReference>> callback);
 
     /**
      * Get all projects in specific workspace.
@@ -48,7 +48,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    public void getProjectsInSpecificWorkspace(String wsId, AsyncRequestCallback<Array<ProjectReference>> callback);
+    void getProjectsInSpecificWorkspace(String wsId, AsyncRequestCallback<Array<ProjectReference>> callback);
 
     /**
      * Clone project from some workspace.
@@ -56,7 +56,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    public void cloneProjectToCurrentWorkspace(String srcWorkspaceId, String srcProjectPath, String newNameForProject,
+    void cloneProjectToCurrentWorkspace(String srcWorkspaceId, String srcProjectPath, String newNameForProject,
                                                AsyncRequestCallback<String> callback);
 
     /**
@@ -67,7 +67,17 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    public void getProject(String path, AsyncRequestCallback<ProjectDescriptor> callback);
+    void getProject(String path, AsyncRequestCallback<ProjectDescriptor> callback);
+
+    /**
+     * Get item.
+     *
+     * @param path
+     *         path to the item to get
+     * @param callback
+     *         the callback to use for the response
+     */
+    void getItem(String path, AsyncRequestCallback<ItemReference> callback);
 
     /**
      * Create project.
@@ -79,7 +89,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    public void createProject(String name, NewProject newProject, AsyncRequestCallback<ProjectDescriptor> callback);
+    void createProject(String name, NewProject newProject, AsyncRequestCallback<ProjectDescriptor> callback);
 
 
     /**
@@ -92,7 +102,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    public void estimateProject(String path, String projectType, AsyncRequestCallback<Map<String, List<String>>> callback);
+    void estimateProject(String path, String projectType, AsyncRequestCallback<Map<String, List<String>>> callback);
 
     /**
      * Get sub-project.
@@ -102,7 +112,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    public void getModules(String path, AsyncRequestCallback<Array<ProjectDescriptor>> callback);
+    void getModules(String path, AsyncRequestCallback<Array<ProjectDescriptor>> callback);
 
     /**
      * Create sub-project.
@@ -116,8 +126,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    public void createModule(String parentProjectPath, String name, NewProject newProject,
-                             AsyncRequestCallback<ProjectDescriptor> callback);
+    void createModule(String parentProjectPath, String name, NewProject newProject, AsyncRequestCallback<ProjectDescriptor> callback);
 
     /**
      * Update project.
@@ -130,7 +139,7 @@ public interface ProjectServiceClient {
      *         the callback to use for the response
      * @deprecated use {@link #updateProject(String, ProjectUpdate, AsyncRequestCallback)} instead.
      */
-    public void updateProject(String path, ProjectDescriptor descriptor, AsyncRequestCallback<ProjectDescriptor> callback);
+    void updateProject(String path, ProjectDescriptor descriptor, AsyncRequestCallback<ProjectDescriptor> callback);
 
     /**
      * Update project.
@@ -142,7 +151,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    public void updateProject(String path, ProjectUpdate descriptor, AsyncRequestCallback<ProjectDescriptor> callback);
+    void updateProject(String path, ProjectUpdate descriptor, AsyncRequestCallback<ProjectDescriptor> callback);
 
     /**
      * Create new file in the specified folder.
@@ -158,8 +167,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    public void createFile(String parentPath, String name, String content, String contentType,
-                           AsyncRequestCallback<ItemReference> callback);
+    void createFile(String parentPath, String name, String content, String contentType, AsyncRequestCallback<ItemReference> callback);
 
     /**
      * Get file content.
@@ -169,7 +177,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    public void getFileContent(String path, AsyncRequestCallback<String> callback);
+    void getFileContent(String path, AsyncRequestCallback<String> callback);
 
     /**
      * Update file content.
@@ -183,7 +191,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    public void updateFile(String path, String content, String contentType, AsyncRequestCallback<Void> callback);
+    void updateFile(String path, String content, String contentType, AsyncRequestCallback<Void> callback);
 
     /**
      * Create new folder in the specified folder.
@@ -193,7 +201,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    public void createFolder(String path, AsyncRequestCallback<ItemReference> callback);
+    void createFolder(String path, AsyncRequestCallback<ItemReference> callback);
 
     /**
      * Delete item.
@@ -203,7 +211,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    public void delete(String path, AsyncRequestCallback<Void> callback);
+    void delete(String path, AsyncRequestCallback<Void> callback);
 
     /**
      * Delete module.
@@ -215,7 +223,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    public void deleteModule(String path, String modulePath, AsyncRequestCallback<Void> callback);
+    void deleteModule(String path, String modulePath, AsyncRequestCallback<Void> callback);
 
     /**
      * Copy an item to the specified target path.
@@ -227,7 +235,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    public void copy(String path, String newParentPath, AsyncRequestCallback<Void> callback);
+    void copy(String path, String newParentPath, AsyncRequestCallback<Void> callback);
 
     /**
      * Move an item to the specified target path.
@@ -239,7 +247,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    public void move(String path, String newParentPath, AsyncRequestCallback<Void> callback);
+    void move(String path, String newParentPath, AsyncRequestCallback<Void> callback);
 
     /**
      * Rename and/or set new media type for item.
@@ -253,7 +261,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    public void rename(String path, String newName, @Nullable String newMediaType, AsyncRequestCallback<Void> callback);
+    void rename(String path, String newName, @Nullable String newMediaType, AsyncRequestCallback<Void> callback);
 
     /**
      * Import sources into project.
@@ -267,7 +275,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    public void importProject(String path, boolean force, ImportProject importProject, AsyncRequestCallback<ImportResponse> callback);
+    void importProject(String path, boolean force, ImportProject importProject, AsyncRequestCallback<ImportResponse> callback);
 
     /**
      * Get children for the specified path.
@@ -277,7 +285,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    public void getChildren(String path, AsyncRequestCallback<Array<ItemReference>> callback);
+    void getChildren(String path, AsyncRequestCallback<Array<ItemReference>> callback);
 
     /**
      * Get folders tree starts from the specified path.
@@ -289,7 +297,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    public void getTree(String path, int depth, AsyncRequestCallback<TreeElement> callback);
+    void getTree(String path, int depth, AsyncRequestCallback<TreeElement> callback);
 
     /**
      * Search an item(s) by the specified criteria.
@@ -299,7 +307,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    public void search(QueryExpression expression, AsyncRequestCallback<Array<ItemReference>> callback);
+    void search(QueryExpression expression, AsyncRequestCallback<Array<ItemReference>> callback);
 
     /**
      * Switch visibility(public/private) of the project represented by it's path.
@@ -311,7 +319,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    public void switchVisibility(String path, String visibility, AsyncRequestCallback<Void> callback);
+    void switchVisibility(String path, String visibility, AsyncRequestCallback<Void> callback);
 
     /**
      * Get available project-scoped runner environments.
@@ -321,5 +329,5 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    public void getRunnerEnvironments(String path, AsyncRequestCallback<RunnerEnvironmentTree> callback);
+    void getRunnerEnvironments(String path, AsyncRequestCallback<RunnerEnvironmentTree> callback);
 }

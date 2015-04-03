@@ -45,6 +45,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     private final String              PROJECT;
     private final String              PROJECTS_IN_SPECIFIC_WORKSPACE;
     private final String              MODULES;
+    private final String              ITEM;
     private final String              FILE;
     private final String              FOLDER;
     private final String              COPY;
@@ -71,6 +72,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         PROJECT = restContext + "/project/" + workspaceId;
         PROJECTS_IN_SPECIFIC_WORKSPACE = restContext + "/project";
         MODULES = restContext + "/project/" + workspaceId + "/modules";
+        ITEM = restContext + "/project/" + workspaceId + "/item";
         FILE = restContext + "/project/" + workspaceId + "/file";
         FOLDER = restContext + "/project/" + workspaceId + "/folder";
         COPY = restContext + "/project/" + workspaceId + "/copy";
@@ -124,6 +126,15 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loader, "Getting project...")
+                           .send(callback);
+    }
+
+    @Override
+    public void getItem(String path, AsyncRequestCallback<ItemReference> callback) {
+        final String requestUrl = ITEM + normalizePath(path);
+        asyncRequestFactory.createGetRequest(requestUrl)
+                           .header(ACCEPT, MimeType.APPLICATION_JSON)
+                           .loader(loader, "Getting item...")
                            .send(callback);
     }
 
