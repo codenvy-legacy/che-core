@@ -13,7 +13,6 @@ package org.eclipse.che.api.factory.dto;
 import org.eclipse.che.api.core.factory.FactoryParameter;
 import org.eclipse.che.dto.shared.DTO;
 
-import static org.eclipse.che.api.core.factory.FactoryParameter.FactoryFormat.ENCODED;
 import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.OPTIONAL;
 
 /**
@@ -26,7 +25,7 @@ public interface Author {
     /**
      * Name of the author
      */
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "name")
+    @FactoryParameter(obligation = OPTIONAL)
     String getName();
 
     void setName(String name);
@@ -36,7 +35,7 @@ public interface Author {
     /**
      * Email of the author
      */
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "email")
+    @FactoryParameter(obligation = OPTIONAL)
     String getEmail();
 
     void setEmail(String email);
@@ -47,7 +46,7 @@ public interface Author {
      * Identifier for the tracked factory features.
      * Replaces orgid.
      */
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "accountId")
+    @FactoryParameter(obligation = OPTIONAL)
     String getAccountId();
 
     void setAccountId(String accountId);
@@ -57,7 +56,7 @@ public interface Author {
     /**
      * Id of user that create factory, set by the server
      */
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "userId", setByServer = true, format = ENCODED)
+    @FactoryParameter(obligation = OPTIONAL, setByServer = true)
     String getUserId();
 
     void setUserId(String userId);
@@ -67,7 +66,7 @@ public interface Author {
     /**
      * @return Creation time of factory, set by the server (in milliseconds, from Unix epoch, no timezone)
      */
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "created", setByServer = true, format = ENCODED)
+    @FactoryParameter(obligation = OPTIONAL, setByServer = true)
     Long getCreated();
 
     void setCreated(Long created);

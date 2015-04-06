@@ -15,7 +15,6 @@ import org.eclipse.che.api.project.shared.dto.NewProject;
 import org.eclipse.che.api.project.shared.dto.Source;
 import org.eclipse.che.dto.shared.DTO;
 
-import static org.eclipse.che.api.core.factory.FactoryParameter.FactoryFormat.ENCODED;
 import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.MANDATORY;
 import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.OPTIONAL;
 import static org.eclipse.che.api.core.factory.FactoryParameter.Version.V2_1;
@@ -32,7 +31,7 @@ public interface FactoryV2_0 {
     /**
      * @return Version for Codenvy Factory API.
      */
-    @FactoryParameter(obligation = MANDATORY, queryParameterName = "v")
+    @FactoryParameter(obligation = MANDATORY)
     String getV();
 
     void setV(String v);
@@ -42,7 +41,7 @@ public interface FactoryV2_0 {
     /**
      * Describes source where project's files can be retrieved
      */
-    @FactoryParameter(obligation = MANDATORY, queryParameterName = "source")
+    @FactoryParameter(obligation = MANDATORY)
     Source getSource();
 
     void setSource(Source source);
@@ -52,7 +51,7 @@ public interface FactoryV2_0 {
     /**
      * Describes parameters of the workspace that should be used for factory
      */
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "workspace")
+    @FactoryParameter(obligation = OPTIONAL)
     Workspace getWorkspace();
 
     void setWorkspace(Workspace workspace);
@@ -62,7 +61,7 @@ public interface FactoryV2_0 {
     /**
      * Describe restrictions of the factory
      */
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "policies", trackedOnly = true)
+    @FactoryParameter(obligation = OPTIONAL, trackedOnly = true)
     Policies getPolicies();
 
     void setPolicies(Policies policies);
@@ -72,7 +71,7 @@ public interface FactoryV2_0 {
     /**
      * Describes project that should be factory-created
      */
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "project")
+    @FactoryParameter(obligation = OPTIONAL)
     NewProject getProject();
 
     void setProject(NewProject project);
@@ -82,7 +81,7 @@ public interface FactoryV2_0 {
     /**
      * Identifying information of author
      */
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "creator")
+    @FactoryParameter(obligation = OPTIONAL)
     Author getCreator();
 
     void setCreator(Author creator);
@@ -93,7 +92,7 @@ public interface FactoryV2_0 {
      * Describes actions that should be done after loading of the IDE
      */
     @Deprecated
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "actions", deprecatedSince = V2_1)
+    @FactoryParameter(obligation = OPTIONAL, deprecatedSince = V2_1)
     Actions getActions();
 
     @Deprecated
@@ -105,7 +104,7 @@ public interface FactoryV2_0 {
     /**
      * Describes factory button
      */
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "button", format = ENCODED)
+    @FactoryParameter(obligation = OPTIONAL)
     Button getButton();
 
     void setButton(Button button);
@@ -116,7 +115,7 @@ public interface FactoryV2_0 {
     /**
      * @return - id of stored factory object
      */
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "id", format = ENCODED, setByServer = true)
+    @FactoryParameter(obligation = OPTIONAL, setByServer = true)
     String getId();
 
     void setId(String id);

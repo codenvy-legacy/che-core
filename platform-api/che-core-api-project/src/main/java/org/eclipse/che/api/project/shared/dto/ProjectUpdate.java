@@ -30,7 +30,7 @@ import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.OPTIO
 public interface ProjectUpdate {
     /** Get unique ID of type of project. */
     @ApiModelProperty(value = "Unique ID of project's type", position = 1, required = true)
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "type")
+    @FactoryParameter(obligation = OPTIONAL)
     String getType();
 
     /** Set unique ID of type of project. */
@@ -42,7 +42,7 @@ public interface ProjectUpdate {
 
     /** Gets builder configurations. */
     @ApiModelProperty(value = "Builders configuration for the project", position = 5)
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "builders")
+    @FactoryParameter(obligation = OPTIONAL)
     BuildersDescriptor getBuilders();
 
     /** Sets builder configurations. */
@@ -54,7 +54,7 @@ public interface ProjectUpdate {
 
     /** Gets runner configurations. */
     @ApiModelProperty(value = "Runners configuration for the project", position = 6)
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "runners")
+    @FactoryParameter(obligation = OPTIONAL)
     RunnersDescriptor getRunners();
 
     /** Sets runner configurations. */
@@ -66,7 +66,7 @@ public interface ProjectUpdate {
 
     /** Get optional description of project. */
     @ApiModelProperty(value = "Optional description for new project", position = 2)
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "description")
+    @FactoryParameter(obligation = OPTIONAL)
     String getDescription();
 
     /** Set optional description of project. */
@@ -77,7 +77,7 @@ public interface ProjectUpdate {
     //
 
     @ApiModelProperty(value = "Attributes for project", position = 4)
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "attributes")
+    @FactoryParameter(obligation = OPTIONAL)
     /** Get attributes of project. */
     Map<String, List<String>> getAttributes();
 
@@ -89,7 +89,7 @@ public interface ProjectUpdate {
     //
 
     @ApiModelProperty(value = "Visibility for project", allowableValues = "public,private", position = 3)
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "visibility")
+    @FactoryParameter(obligation = OPTIONAL)
     /** Gets project visibility, e.g. private or public. */
     String getVisibility();
 
