@@ -41,27 +41,19 @@ public interface Instance {
      */
     String mount(File dir) throws MachineException;
 
-    /**
-     * Directory on local host that is mounted some target place in this instance an reserved for holding projects bounded to this
-     * instance. Method returns {@code null} if there is no any directory for bounded projects.
-     */
-    File getHostProjectsFolder();
-
     ImageKey saveToImage(String owner) throws MachineException;
 
     void destroy() throws MachineException;
-
-    String getLocationAddress();
 
     /**
      *
      * binds project
      */
-    void bindProject(ProjectBinding project) throws MachineException;
+    void bindProject(String workspaceId, ProjectBinding project) throws MachineException;
 
     /**
      *
      * unbinds project
      */
-    void unbindProject(ProjectBinding project) throws MachineException;
+    void unbindProject(String workspaceId, ProjectBinding project) throws MachineException;
 }

@@ -186,6 +186,7 @@ public class MachineService {
     @RolesAllowed("user")
     public void saveSnapshot(@PathParam("machineId") String machineId, NewSnapshotDescriptor newSnapshotDescriptor)
             throws NotFoundException, ServerException, ForbiddenException {
+        requiredNotNull(newSnapshotDescriptor, "Snapshot description");
         checkCurrentUserPermissionsForMachine(machineManager.getMachine(machineId).getOwner());
 
         machineManager.save(machineId, EnvironmentContext.getCurrent().getUser().getId(), newSnapshotDescriptor.getDescription());

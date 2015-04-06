@@ -19,7 +19,6 @@ import org.eclipse.che.api.machine.shared.Machine;
 import org.eclipse.che.api.machine.shared.MachineState;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
 
-import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -120,45 +119,35 @@ public class MachineImpl implements Machine {
     }
 
     /**
-     * @deprecated
-     */
-    public String getLocationAddress() {
-        return instance.getLocationAddress();
-    }
-
-    /**
-     * @deprecated
-     */
-    public File getHostProjectsFolder() {
-        return instance.getHostProjectsFolder();
-    }
-
-    /**
      *
      * binds project
      */
     void bindProject(ProjectBinding project) throws MachineException {
-        if(instance == null)
+        if(instance == null) {
             throw new MachineException(String.format("Machine %s is not ready to bind the project", id));
+        }
 
-        instance.bindProject(project);
+        instance.bindProject(workspaceId, project);
 
         this.projectBindings.add(project);
-
     }
 
     /**
      *
      * unbinds project
      */
-    void unbindProject(ProjectBinding project) throws MachineException {
-        if(instance == null)
+    void unbindProject(ProjectBinding project) throws MachineException, NotFoundException {
+        if(instance == null) {
             throw new MachineException(String.format("Machine %s is not ready to unbind the project", id));
+        }
 
-        instance.unbindProject(project);
-
-        this.projectBindings.remove(project);
+        for (ProjectBinding projectBinding : projectBindings) {
+            if (projectBinding.getPath().equals(project.getPath())) {
+                instance.unbindProject(workspaceId, project);
+                this.projectBindings.remove(project);
+                return;
+            }
+        }
+        throw new NotFoundException(String.format("Binding of project %s in machine %s not found", project.getPath(), id));
     }
-
-
 }

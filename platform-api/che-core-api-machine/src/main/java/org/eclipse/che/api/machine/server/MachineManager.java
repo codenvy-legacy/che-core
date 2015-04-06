@@ -68,18 +68,15 @@ public class MachineManager {
     private final File                       machineLogsDir;
     private final Map<String, ImageProvider> imageProviders;
     private final ExecutorService            executor;
-    private final MachineNode                machineNode;
     private final MachineRegistry            machineRegistry;
 
     @Inject
     public MachineManager(SnapshotStorage snapshotStorage,
                           Set<ImageProvider> imageProviders,
                           MachineRegistry machineRegistry,
-                          MachineNode machineNode,
                           @Named("machine.logs.location") String machineLogsDir) {
         this.snapshotStorage = snapshotStorage;
         this.machineLogsDir = new File(machineLogsDir);
-        this.machineNode = machineNode;
         this.imageProviders = new HashMap<>();
         this.machineRegistry = machineRegistry;
         for (ImageProvider provider : imageProviders) {
@@ -294,16 +291,7 @@ public class MachineManager {
         }
 
         try {
-
-
-
-            // TODO bindProject instead of machineNode
-//            machine.bindProject(project);
-            machineNode.copyProjectToMachine(machineId, project);
-
-            machine.getProjects().add(project);
-
-            machineNode.startSynchronization(machineId, project);
+            machine.bindProject(project);
         } catch (Exception e) {
             try {
                 machine.getMachineLogsOutput().writeLine("[ERROR] " + e.getLocalizedMessage());
@@ -316,36 +304,7 @@ public class MachineManager {
     public void unbindProject(String machineId, ProjectBinding project) throws NotFoundException, MachineException {
         final MachineImpl machine = getMachine(machineId);
 
-        // TODO unbindProject instead of machineNode
         machine.unbindProject(project);
-        for (ProjectBinding projectBinding : machine.getProjects()) {
-            if (projectBinding.getPath().equals(project.getPath())) {
-
-                try {
-                    machineNode.stopSynchronization(machineId, project);
-                } catch (ServerException | NotFoundException e) {
-                    LOG.error(e.getLocalizedMessage(), e);
-                    try {
-                        machine.getMachineLogsOutput().writeLine("[ERROR] " + e.getLocalizedMessage());
-                    } catch (IOException ignored) {
-                    }
-                }
-
-                try {
-                    machineNode.removeProjectFromMachine(machineId, project);
-                } catch (ServerException e) {
-                    LOG.error(e.getLocalizedMessage(), e);
-                    try {
-                        machine.getMachineLogsOutput().writeLine("[ERROR] " + e.getLocalizedMessage());
-                    } catch (IOException ignored) {
-                    }
-                }
-
-                machine.getProjects().remove(project);
-                return;
-            }
-        }
-        throw new NotFoundException(String.format("Binding of project %s in machine %s not found", project.getPath(), machineId));
     }
 
     public List<ProjectBinding> getProjects(String machineId) throws NotFoundException, MachineException {
