@@ -53,6 +53,7 @@ import org.eclipse.che.ide.preferences.PreferencesManagerImpl;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.StringMapUnmarshaller;
+import org.eclipse.che.ide.state.AppStateManager;
 import org.eclipse.che.ide.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.UUID;
 import org.eclipse.che.ide.util.loging.Log;
@@ -106,9 +107,10 @@ public class BootstrapController {
     private final EventBus                     eventBus;
     private final ActionManager                actionManager;
     private final AppCloseHandler              appCloseHandler;
-    private final PresentationFactory          presentationFactory;
-    private final AppContext                   appContext;
-    private       CurrentUser                  currentUser;
+    private final AppStateManager appStateManager;
+    private final PresentationFactory presentationFactory;
+    private final AppContext          appContext;
+    private       CurrentUser         currentUser;
 
     /** Create controller. */
     @Inject
@@ -134,7 +136,8 @@ public class BootstrapController {
                                final IconRegistry iconRegistry,
                                final ThemeAgent themeAgent,
                                ActionManager actionManager,
-                               AppCloseHandler appCloseHandler) {
+                               AppCloseHandler appCloseHandler,
+                               AppStateManager appStateManager) {
         this.componentRegistry = componentRegistry;
         this.workspaceProvider = workspaceProvider;
         this.extensionInitializer = extensionInitializer;
@@ -156,6 +159,7 @@ public class BootstrapController {
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.analyticsEventLoggerExt = analyticsEventLoggerExt;
         this.appCloseHandler = appCloseHandler;
+        this.appStateManager = appStateManager;
 
         presentationFactory = new PresentationFactory();
 
@@ -329,6 +333,7 @@ public class BootstrapController {
                             @Override
                             public void execute() {
                                 displayIDE();
+                                appStateManager.start(Config.getProjectName() == null);
                             }
                         });
                     }
@@ -477,8 +482,11 @@ public class BootstrapController {
             }
 
             @Override
+            public void onProjectClosing(ProjectActionEvent event) {
+            }
+
+            @Override
             public void onProjectClosed(ProjectActionEvent event) {
-                //do nothing
             }
         };
     }
@@ -489,12 +497,14 @@ public class BootstrapController {
             @Override
             public void onProjectOpened(ProjectActionEvent event) {
                 processStartupAction();
+            }
 
+            @Override
+            public void onProjectClosing(ProjectActionEvent event) {
             }
 
             @Override
             public void onProjectClosed(ProjectActionEvent event) {
-
             }
         };
     }

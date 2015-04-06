@@ -63,6 +63,8 @@ import org.eclipse.che.ide.preferences.PreferencesViewImpl;
 import org.eclipse.che.ide.projectimport.wizard.ImportWizardRegistryImpl;
 import org.eclipse.che.ide.projecttype.BlankProjectWizardRegistrar;
 import org.eclipse.che.ide.projecttype.wizard.ProjectWizardRegistryImpl;
+import org.eclipse.che.ide.state.OpenedFilesPersister;
+import org.eclipse.che.ide.state.Persister;
 import org.eclipse.che.ide.theme.AppearanceViewImpl;
 import org.eclipse.che.ide.theme.ThemeAgentImpl;
 import org.eclipse.che.ide.toolbar.ToolbarPresenter;
@@ -230,6 +232,8 @@ public class CoreGinModule extends AbstractGinModule {
         configureCoreUI();
         configureEditorAPI();
         configureProjectTree();
+
+        GinMultibinder.newSetBinder(binder(), Persister.class).addBinding().to(OpenedFilesPersister.class);
     }
 
     private void configureProjectWizard() {
