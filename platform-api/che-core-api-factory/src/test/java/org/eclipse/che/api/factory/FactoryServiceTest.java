@@ -128,45 +128,6 @@ public class FactoryServiceTest {
 
     }
 
-    @Test
-    public void shouldBeAbleToConvertQueryStringToFactory() throws Exception {
-        // given
-
-
-        Factory expected = dto.createDto(Factory.class)
-                              .withV("2.0")
-                              .withSource(dto.createDto(Source.class)
-                                             .withProject(dto.createDto(ImportSourceDescriptor.class)
-                                                             .withType("git")
-                                                             .withLocation(
-                                                                     "http://github.com/codenvy/platform-api.git")
-                                                             .withParameters(ImmutableMap.of("keepVcs", "true"))))
-                              .withProject(dto.createDto(NewProject.class)
-                                              .withType("ptype")
-                                              .withName("pname"))
-                              .withWorkspace(dto.createDto(Workspace.class)
-                                                .withType("temp")
-                                                .withLocation("owner"));
-
-
-        StringBuilder queryString = new StringBuilder();
-        queryString.append("v=2.0");
-        queryString.append("&source.project.type=git");
-        queryString.append("&source.project.location=http://github.com/codenvy/platform-api.git");
-        queryString.append("&source.project.parameters.keepVcs=true");
-        queryString.append("&project.name=pname");
-        queryString.append("&project.type=ptype");
-
-        // when
-        Response response = given().when().get(SERVICE_PATH + "/nonencoded?" + queryString);
-
-        // then
-        assertEquals(response.getStatusCode(), 200);
-        Factory responseFactoryUrl =
-                dto.createDtoFromJson(response.getBody().asInputStream(), Factory.class);
-        assertEquals(responseFactoryUrl, expected);
-    }
-
 
     @Test
     public void shouldReturnSavedFactoryIfUserDidNotUseSpecialMethod() throws Exception {

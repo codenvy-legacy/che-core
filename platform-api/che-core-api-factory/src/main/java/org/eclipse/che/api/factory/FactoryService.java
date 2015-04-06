@@ -217,37 +217,6 @@ public class FactoryService extends Service {
     }
 
     /**
-     * Get  factory json from non encoded version of factory.
-     *
-     * @param uriInfo
-     *         - url context
-     * @return - stored data, if id is correct.
-     * @throws org.eclipse.che.api.core.ApiException
-     *         - {@link org.eclipse.che.api.core.NotFoundException} when factory with given id doesn't exist
-     */
-    @GET
-    @Path("/nonencoded")
-    @Produces({MediaType.APPLICATION_JSON})
-    public Factory getFactoryFromNonEncoded(@DefaultValue("false") @QueryParam("legacy") Boolean legacy,
-                                            @DefaultValue("false") @QueryParam("validate") Boolean validate,
-                                            @Context UriInfo uriInfo) throws ApiException {
-        final URI uri = UriBuilder.fromUri(uriInfo.getRequestUri())
-                                  .replaceQueryParam("legacy", null)
-                                  .replaceQueryParam("token", null)
-                                  .replaceQueryParam("validate", null)
-                                  .build();
-        Factory factory = factoryBuilder.buildEncoded(uri);
-        if (legacy) {
-            factory = factoryBuilder.convertToLatest(factory);
-        }
-        processDefaults(factory);
-        if (validate) {
-            acceptValidator.validateOnAccept(factory, false);
-        }
-        return factory;
-    }
-
-    /**
      * Get factory information from storage by its id.
      *
      * @param id

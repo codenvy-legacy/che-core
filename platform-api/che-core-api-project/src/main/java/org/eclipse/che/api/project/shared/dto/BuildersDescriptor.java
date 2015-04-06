@@ -21,7 +21,7 @@ import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.OPTIO
  */
 @DTO
 public interface BuildersDescriptor {
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "default")
+    @FactoryParameter(obligation = OPTIONAL)
     /** Gets default builder identifier, e.g. "maven". */
     String getDefault();
 
@@ -30,7 +30,7 @@ public interface BuildersDescriptor {
 
     BuildersDescriptor withDefault(String _default);
 
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "configs")
+    @FactoryParameter(obligation = OPTIONAL)
     /** Gets all available runner configurations. */
     Map<String, BuilderConfiguration> getConfigs();
 

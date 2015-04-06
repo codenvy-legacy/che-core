@@ -21,7 +21,7 @@ import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.OPTIO
  */
 @DTO
 public interface RunnerConfiguration {
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "ram")
+    @FactoryParameter(obligation = OPTIONAL)
     /** Gets amount of RAM for this configuration in megabytes. */
     int getRam();
 
@@ -30,7 +30,7 @@ public interface RunnerConfiguration {
 
     RunnerConfiguration withRam(int ram);
 
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "options")
+    @FactoryParameter(obligation = OPTIONAL)
     /** Gets runtime options (runner type and(or) receipt specific). */
     Map<String, String> getOptions();
 
@@ -43,7 +43,7 @@ public interface RunnerConfiguration {
 
     RunnerConfiguration withOptions(Map<String, String> options);
 
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "variables")
+    @FactoryParameter(obligation = OPTIONAL)
     /** Gets environment variables (runner type and(or) receipt specific). */
     Map<String, String> getVariables();
 

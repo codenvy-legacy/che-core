@@ -30,7 +30,7 @@ import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.OPTIO
 public interface NewProject extends ProjectUpdate {
     /** Gets name of project. */
     @ApiModelProperty(value = "Project name", position = 1)
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "name")
+    @FactoryParameter(obligation = OPTIONAL)
     String getName();
 
     /** Sets name of project. */

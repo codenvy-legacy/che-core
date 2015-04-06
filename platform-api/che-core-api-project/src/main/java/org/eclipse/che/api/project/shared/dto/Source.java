@@ -25,14 +25,14 @@ import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.MANDA
  */
 @DTO
 public interface Source {
-    @FactoryParameter(obligation = MANDATORY, queryParameterName = "project")
+    @FactoryParameter(obligation = MANDATORY)
     ImportSourceDescriptor getProject();
 
     void setProject(ImportSourceDescriptor project);
 
     Source withProject(ImportSourceDescriptor project);
 
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "runners")
+    @FactoryParameter(obligation = OPTIONAL)
     Map<String, RunnerSource> getRunners();
 
     void setRunners(Map<String, RunnerSource> runners);

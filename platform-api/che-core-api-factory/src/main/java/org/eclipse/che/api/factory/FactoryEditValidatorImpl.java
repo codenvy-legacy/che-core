@@ -85,7 +85,7 @@ public class FactoryEditValidatorImpl implements FactoryEditValidator {
      * Ensures that the given user may be an account owner
      * @param factory the factory to check
      * @param userId the user id to check
-     * @return true if this is matching, else false
+     * @throws org.eclipse.che.api.core.ApiException
      */
     protected void validateAccountOwner(Factory factory, String userId) throws ApiException {
         // Checks if there is an author from the factory (It may be missing for some old factories)
