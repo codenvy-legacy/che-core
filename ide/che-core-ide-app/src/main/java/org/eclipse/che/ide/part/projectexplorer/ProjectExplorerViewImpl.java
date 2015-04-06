@@ -270,7 +270,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
     }
 
     @Nonnull
-    public Array<?> getSelectedNodes() {
+    public Array<TreeNode<?>> getSelectedNodes() {
         return tree.getSelectionModel().getSelectedNodes();
     }
 
