@@ -10,8 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.reconciler;
 
-import java.util.List;
+import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 
+import org.eclipse.che.ide.api.editor.EditorInput;
 import org.eclipse.che.ide.api.text.Region;
 import org.eclipse.che.ide.api.text.RegionImpl;
 import org.eclipse.che.ide.api.text.TypedRegion;
@@ -22,16 +26,22 @@ import org.eclipse.che.ide.jseditor.client.document.Document;
 import org.eclipse.che.ide.jseditor.client.document.DocumentHandle;
 import org.eclipse.che.ide.jseditor.client.events.DocumentChangeEvent;
 import org.eclipse.che.ide.jseditor.client.partition.DocumentPartitioner;
-import org.eclipse.che.ide.util.executor.BasicIncrementalScheduler;
-import com.google.gwt.user.client.Timer;
-import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
+import org.eclipse.che.ide.jseditor.client.texteditor.TextEditor;
+import org.eclipse.che.ide.util.loging.Log;
+
+import java.util.List;
 
 
 /**
  * Default implementation of {@link Reconciler}.
+ * Also this implementation provide autosave function.
+ * Avtosave will performed before 'reconcile'.
  */
-public class ReconcilerImpl implements Reconciler {
+/*
+   Maybe this class not proper place for autosave function, but for this issue: https://jira.codenvycorp.com/browse/IDEX-2099
+   we need to save file content before 'reconcile'.
+ */
+public class ReconcilerWithAutoSave implements Reconciler {
 
     private static final int DELAY = 1000;
 
@@ -48,17 +58,16 @@ public class ReconcilerImpl implements Reconciler {
 
         @Override
         public void run() {
-            final DirtyRegion region = dirtyRegionQueue.removeNextDirtyRegion();
-            process(region);
+            save();
         }
     };
 
     private DocumentHandle documentHandle;
+    private TextEditor editor;
 
     @AssistedInject
-    public ReconcilerImpl(@Assisted final String partition,
-                          @Assisted final BasicIncrementalScheduler scheduler,
-                          @Assisted final DocumentPartitioner partitioner) {
+    public ReconcilerWithAutoSave(@Assisted final String partition,
+                                  @Assisted final DocumentPartitioner partitioner) {
         this.partition = partition;
         strategies = Collections.createStringMap();
         this.partitioner = partitioner;
@@ -77,7 +86,8 @@ public class ReconcilerImpl implements Reconciler {
     }
 
     @Override
-    public void install() {
+    public void install(TextEditor editor) {
+        this.editor = editor;
         this.dirtyRegionQueue = new DirtyRegionQueue();
         reconcilerDocumentChanged();
     }
@@ -87,10 +97,26 @@ public class ReconcilerImpl implements Reconciler {
         timer.cancel();
     }
 
+    private void save() {
+        editor.doSave(new AsyncCallback<EditorInput>() {
+            @Override
+            public void onFailure(Throwable throwable) {
+                Log.error(ReconcilerWithAutoSave.class, throwable);
+            }
+
+            @Override
+            public void onSuccess(EditorInput editorInput) {
+                final DirtyRegion region = dirtyRegionQueue.removeNextDirtyRegion();
+                process(region);
+
+            }
+        });
+    }
+
     /**
      * Processes a dirty region. If the dirty region is <code>null</code> the whole document is consider being dirty. The dirty region is
      * partitioned by the document and each partition is handed over to a reconciling strategy registered for the partition's content type.
-     * 
+     *
      * @param dirtyRegion the dirty region to be processed
      */
     protected void process(final DirtyRegion dirtyRegion) {

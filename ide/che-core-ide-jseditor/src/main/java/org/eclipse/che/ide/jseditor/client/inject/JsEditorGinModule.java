@@ -31,7 +31,7 @@ import org.eclipse.che.ide.jseditor.client.quickfix.QuickAssistWidgetFactory;
 import org.eclipse.che.ide.jseditor.client.quickfix.QuickAssistantFactory;
 import org.eclipse.che.ide.jseditor.client.reconciler.Reconciler;
 import org.eclipse.che.ide.jseditor.client.reconciler.ReconcilerFactory;
-import org.eclipse.che.ide.jseditor.client.reconciler.ReconcilerImpl;
+import org.eclipse.che.ide.jseditor.client.reconciler.ReconcilerWithAutoSave;
 import org.eclipse.che.ide.jseditor.client.texteditor.EmbeddedTextEditorPartViewImpl;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
@@ -96,7 +96,7 @@ public class JsEditorGinModule extends AbstractGinModule {
 
         // bind the reconciler
         install(new GinFactoryModuleBuilder()
-                    .implement(Reconciler.class, ReconcilerImpl.class)
+                    .implement(Reconciler.class, ReconcilerWithAutoSave.class)
                     .build(ReconcilerFactory.class));
 
         // bind the code assistant and quick assistant
