@@ -11,13 +11,14 @@
 package org.eclipse.che.ide.api.parts;
 
 import org.eclipse.che.ide.api.mvp.View;
-import org.eclipse.che.ide.collections.Array;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.dom.client.HasMouseDownHandlers;
 import com.google.gwt.event.logical.shared.HasCloseHandlers;
 import com.google.gwt.user.client.ui.IsWidget;
 
 import org.vectomatic.dom.svg.ui.SVGImage;
+
+import java.util.List;
 
 import static com.google.gwt.user.client.ui.InsertPanel.ForIsWidget;
 
@@ -42,7 +43,7 @@ public interface PartStackView extends View<PartStackView.ActionDelegate> {
     public void setActiveTab(int index);
 
     /** Set new Tabs positions */
-    public void setTabpositions(Array<Integer> partPositions);
+    public void setTabpositions(List<Integer> partPositions);
 
     /** Get Content Panel */
     public ForIsWidget getContentPanel();
