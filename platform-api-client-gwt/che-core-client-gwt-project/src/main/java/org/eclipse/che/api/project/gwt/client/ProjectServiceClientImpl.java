@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.gwt.client;
 
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+
 import org.eclipse.che.api.project.shared.dto.ImportProject;
 import org.eclipse.che.api.project.shared.dto.ImportResponse;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
@@ -24,16 +27,14 @@ import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
 import java.util.List;
 import java.util.Map;
 
-import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
-import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
 import static com.google.gwt.http.client.RequestBuilder.DELETE;
 import static com.google.gwt.http.client.RequestBuilder.PUT;
+import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
+import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
 
 /**
  * Implementation of {@link ProjectServiceClient}.
@@ -222,7 +223,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         asyncRequestFactory.createRequest(PUT, requestUrl, null, false)
                            .header(CONTENT_TYPE, contentType)
                            .data(content)
-                           .loader(loader, "Updating file content...")
+//                           .loader(loader, "Updating file content...")
                            .send(callback);
     }
 
