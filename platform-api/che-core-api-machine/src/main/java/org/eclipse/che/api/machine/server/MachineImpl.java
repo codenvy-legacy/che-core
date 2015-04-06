@@ -119,11 +119,46 @@ public class MachineImpl implements Machine {
         this.instance = instance;
     }
 
+    /**
+     * @deprecated
+     */
     public String getLocationAddress() {
         return instance.getLocationAddress();
     }
 
+    /**
+     * @deprecated
+     */
     public File getHostProjectsFolder() {
         return instance.getHostProjectsFolder();
     }
+
+    /**
+     *
+     * binds project
+     */
+    void bindProject(ProjectBinding project) throws MachineException {
+        if(instance == null)
+            throw new MachineException(String.format("Machine %s is not ready to bind the project", id));
+
+        instance.bindProject(project);
+
+        this.projectBindings.add(project);
+
+    }
+
+    /**
+     *
+     * unbinds project
+     */
+    void unbindProject(ProjectBinding project) throws MachineException {
+        if(instance == null)
+            throw new MachineException(String.format("Machine %s is not ready to unbind the project", id));
+
+        instance.unbindProject(project);
+
+        this.projectBindings.remove(project);
+    }
+
+
 }

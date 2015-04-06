@@ -294,12 +294,17 @@ public class MachineManager {
         }
 
         try {
+
+
+
+            // TODO bindProject instead of machineNode
+//            machine.bindProject(project);
             machineNode.copyProjectToMachine(machineId, project);
 
             machine.getProjects().add(project);
 
             machineNode.startSynchronization(machineId, project);
-        } catch (ServerException | NotFoundException e) {
+        } catch (Exception e) {
             try {
                 machine.getMachineLogsOutput().writeLine("[ERROR] " + e.getLocalizedMessage());
             } catch (IOException ignored) {
@@ -310,6 +315,9 @@ public class MachineManager {
 
     public void unbindProject(String machineId, ProjectBinding project) throws NotFoundException, MachineException {
         final MachineImpl machine = getMachine(machineId);
+
+        // TODO unbindProject instead of machineNode
+        machine.unbindProject(project);
         for (ProjectBinding projectBinding : machine.getProjects()) {
             if (projectBinding.getPath().equals(project.getPath())) {
 
