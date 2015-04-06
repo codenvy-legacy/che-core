@@ -13,7 +13,6 @@ package org.eclipse.che.api.factory;
 import com.google.common.collect.ImmutableMap;
 
 import org.eclipse.che.api.core.ApiException;
-import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.factory.FactoryParameter;
 import org.eclipse.che.api.factory.dto.Action;
 import org.eclipse.che.api.factory.dto.Actions;
@@ -49,20 +48,13 @@ import org.testng.annotations.Test;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.util.Arrays;
-import java.util.HashMap;
 
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
-import static org.eclipse.che.api.core.factory.FactoryParameter.FactoryFormat;
-import static org.eclipse.che.api.core.factory.FactoryParameter.FactoryFormat.ENCODED;
-import static org.eclipse.che.api.core.factory.FactoryParameter.FactoryFormat.NONENCODED;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
@@ -74,6 +66,7 @@ import static org.testng.Assert.assertEquals;
  * @author Alexander Garagatyi
  * @author Sergii Kabashniuk
  */
+@SuppressWarnings("deprecation")
 @Listeners(MockitoTestNGListener.class)
 public class FactoryBuilderTest {
 
@@ -179,56 +172,7 @@ public class FactoryBuilderTest {
                                                 .withStyle("style")))
               .withWorkspace(dto.createDto(Workspace.class)
                                 .withType("named"));
-        factoryBuilder.checkValid(actual, ENCODED);
-
-        verify(sourceProjectParametersValidator).validate(any(ImportSourceDescriptor.class), eq(FactoryParameter.Version.V2_0));
-    }
-
-    @Test
-    public void shouldBeAbleToValidateNonEncodedV2_0() throws Exception {
-        actual.withV("2.0")
-              .withSource(dto.createDto(Source.class)
-                             .withProject(dto.createDto(ImportSourceDescriptor.class)
-                                             .withType("git")
-                                             .withLocation("location")
-                                             .withParameters(singletonMap("key", "value")))
-                             .withRunners(singletonMap("runEnv", dto.createDto(RunnerSource.class)
-                                                                    .withLocation("location")
-                                                                    .withParameters(singletonMap("key", "value")))))
-              .withProject(dto.createDto(NewProject.class)
-                              .withType("type")
-                              .withAttributes(singletonMap("key", singletonList("value")))
-                              .withBuilders(dto.createDto(BuildersDescriptor.class).withDefault("default"))
-                              .withDescription("description")
-                              .withName("name")
-                              .withVisibility("private")
-                              .withRunners(dto.createDto(RunnersDescriptor.class)
-                                              .withDefault("default")
-                                              .withConfigs(singletonMap("key", dto.createDto(RunnerConfiguration.class)
-                                                                                  .withRam(768)
-                                                                                  .withOptions(singletonMap("key", "value"))
-                                                                                  .withVariables(singletonMap("key", "value"))))))
-              .withCreator(dto.createDto(Author.class)
-                              .withAccountId("accountId")
-                              .withEmail("email")
-                              .withName("name"))
-              .withPolicies(dto.createDto(Policies.class)
-                               .withRefererHostname("referrer")
-                               .withValidSince(123l)
-                               .withValidUntil(123l))
-              .withActions(dto.createDto(Actions.class)
-                              .withOpenFile("openFile")
-                              .withWarnOnClose(true)
-                              .withFindReplace(singletonList(dto.createDto(ReplacementSet.class)
-                                                                .withFiles(singletonList("file"))
-                                                                .withEntries(singletonList(dto.createDto(Variable.class)
-                                                                                              .withFind("find")
-                                                                                              .withReplace("replace")
-                                                                                              .withReplacemode("mode"))))))
-              .withWorkspace(dto.createDto(Workspace.class)
-                                .withType("named"));
-
-        factoryBuilder.checkValid(actual, NONENCODED);
+        factoryBuilder.checkValid(actual);
 
         verify(sourceProjectParametersValidator).validate(any(ImportSourceDescriptor.class), eq(FactoryParameter.Version.V2_0));
     }
@@ -303,79 +247,10 @@ public class FactoryBuilderTest {
                                                                                              "replace", "NEW_VALUE_2",
                                                                                              "replaceMode", "mode"))))));
 
-        factoryBuilder.checkValid(actual, ENCODED);
+        factoryBuilder.checkValid(actual);
 
         verify(sourceProjectParametersValidator).validate(any(ImportSourceDescriptor.class), eq(FactoryParameter.Version.V2_1));
     }
-
-    @Test
-    public void shouldBeAbleToValidateNonEncodedV2_1() throws Exception {
-        actual.withV("2.1")
-              .withSource(dto.createDto(Source.class)
-                             .withProject(dto.createDto(ImportSourceDescriptor.class)
-                                             .withType("git")
-                                             .withLocation("location")
-                                             .withParameters(singletonMap("key", "value")))
-                             .withRunners(singletonMap("runEnv", dto.createDto(RunnerSource.class)
-                                                                    .withLocation("location")
-                                                                    .withParameters(singletonMap("key", "value")))))
-              .withProject(dto.createDto(NewProject.class)
-                              .withType("type")
-                              .withAttributes(singletonMap("key", singletonList("value")))
-                              .withBuilders(dto.createDto(BuildersDescriptor.class).withDefault("default"))
-                              .withDescription("description")
-                              .withName("name")
-                              .withRunners(dto.createDto(RunnersDescriptor.class)
-                                              .withDefault("default")
-                                              .withConfigs(singletonMap("key", dto.createDto(RunnerConfiguration.class)
-                                                                                  .withRam(768)
-                                                                                  .withOptions(singletonMap("key", "value"))
-                                                                                  .withVariables(singletonMap("key", "value")))))
-                              .withVisibility("private"))
-              .withCreator(dto.createDto(Author.class)
-                              .withAccountId("accountId")
-                              .withEmail("email")
-                              .withName("name"))
-              .withPolicies(dto.createDto(Policies.class)
-                               .withRefererHostname("referrer")
-                               .withValidSince(123l)
-                               .withValidUntil(123l))
-              .withWorkspace(dto.createDto(Workspace.class)
-                                .withType("named"))
-              .withIde(dto.createDto(Ide.class)
-                          .withOnAppClosed(
-                                  dto.createDto(OnAppClosed.class)
-                                     .withActions(singletonList(dto.createDto(Action.class).withId("warnonclose"))))
-                          .withOnAppLoaded(
-                                  dto.createDto(OnAppLoaded.class)
-                                     .withActions(singletonList(dto.createDto(Action.class).withId("newProject"))))
-                          .withOnProjectOpened(dto.createDto(OnProjectOpened.class)
-                                                  .withActions(Arrays.asList(
-                                                          dto.createDto(Action.class)
-                                                             .withId("openWelcomePage")
-                                                             .withProperties(ImmutableMap.of(
-                                                                     "authenticatedTitle",
-                                                                     "Greeting title for authenticated users",
-                                                                     "authenticatedContentUrl",
-                                                                     "http://example.com/content.url")),
-                                                          dto.createDto(Action.class)
-                                                             .withId("openfile")
-                                                             .withProperties(singletonMap("file", "pom.xml")),
-                                                          dto.createDto(Action.class)
-                                                             .withId("run"),
-                                                          dto.createDto(Action.class)
-                                                             .withId("findReplace")
-                                                             .withProperties(ImmutableMap.of("in", "src/main/resources/consts2.properties",
-                                                                                             "find", "OLD_VALUE_2",
-                                                                                             "replace", "NEW_VALUE_2",
-                                                                                             "replaceMode", "mode"
-                                                                                            ))))));
-
-        factoryBuilder.checkValid(actual, NONENCODED);
-
-        verify(sourceProjectParametersValidator).validate(any(ImportSourceDescriptor.class), eq(FactoryParameter.Version.V2_1));
-    }
-
 
     @DataProvider(name = "TFParamsProvider")
     public static Object[][] tFParamsProvider() throws URISyntaxException, IOException, NoSuchMethodException {
@@ -391,26 +266,17 @@ public class FactoryBuilderTest {
         };
     }
 
-    @Test(expectedExceptions = ApiException.class)
-    public void shouldNotAllowInNonencodedVersionUsingParamsOnlyForEncodedVersion() throws ApiException, URISyntaxException {
-        StringBuilder sb = new StringBuilder("?");
-        sb.append("v=").append("1.0").append("&");
-        sb.append("vcs=").append("git").append("&");
-        sb.append("welcome=").append("welcome").append("&");
-
-        factoryBuilder.buildEncoded(new URI(sb.toString()));
-    }
 
     @Test(expectedExceptions = ApiException.class)
     public void shouldNotValidateUnparseableFactory() throws ApiException, URISyntaxException {
-        factoryBuilder.checkValid(null, NONENCODED);
+        factoryBuilder.checkValid(null);
     }
 
     @Test(expectedExceptions = ApiException.class, dataProvider = "setByServerParamsProvider",
             expectedExceptionsMessageRegExp = "You have provided an invalid parameter .* for this version of Factory parameters.*")
     public void shouldNotAllowUsingParamsThatCanBeSetOnlyByServer(Factory factory)
             throws InvocationTargetException, IllegalAccessException, ApiException, NoSuchMethodException {
-        factoryBuilder.checkValid(factory, ENCODED);
+        factoryBuilder.checkValid(factory);
     }
 
     @DataProvider(name = "setByServerParamsProvider")
@@ -550,9 +416,9 @@ public class FactoryBuilderTest {
     }
 
     @Test(expectedExceptions = ApiException.class, dataProvider = "notValidParamsProvider")
-    public void shouldNotAllowUsingNotValidParams(Factory factory, FactoryFormat encoded)
+    public void shouldNotAllowUsingNotValidParams(Factory factory)
             throws InvocationTargetException, IllegalAccessException, ApiException, NoSuchMethodException {
-        factoryBuilder.checkValid(factory, encoded);
+        factoryBuilder.checkValid(factory);
     }
 
     @DataProvider(name = "notValidParamsProvider")
@@ -566,240 +432,6 @@ public class FactoryBuilderTest {
                                                                     "http://github.com/codenvy/platform-api.git")));
 
         return new Object[][]{};
-    }
-
-    private String encode(String value) {
-        try {
-            return URLEncoder.encode(value, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            return value;
-        }
-    }
-
-
-    @Test
-    public void shouldBeAbleToParseAndValidateNonEncodedV2_0() throws Exception {
-        expected.withV("2.0")
-                .withSource(dto.createDto(Source.class)
-                               .withProject(dto.createDto(ImportSourceDescriptor.class)
-                                               .withType("git")
-                                               .withLocation("location")
-                                               .withParameters(new HashMap<String, String>() {
-                                                   {
-                                                       put("keepVcs", "true");
-                                                       put("branch", "master");
-                                                       put("commitId", "123");
-                                                   }
-                                               }))
-                               .withRunners(singletonMap("runEnv", dto.createDto(RunnerSource.class)
-                                                                      .withLocation("location")
-                                                                      .withParameters(singletonMap("key", "value")))))
-                .withProject(dto.createDto(NewProject.class)
-                                .withType("type")
-                                .withAttributes(singletonMap("key", singletonList("value")))
-                                .withBuilders(dto.createDto(BuildersDescriptor.class).withDefault("default"))
-                                .withDescription("description")
-                                .withName("name")
-                                .withRunners(dto.createDto(RunnersDescriptor.class)
-                                                .withDefault("default")
-                                                .withConfigs(singletonMap("key", dto.createDto(RunnerConfiguration.class)
-                                                                                    .withRam(768)
-                                                                                    .withOptions(new HashMap<String, String>() {
-                                                                                        {
-                                                                                            put("key1", "value1");
-                                                                                            put("key2", "value2");
-                                                                                        }
-                                                                                    })
-                                                                                    .withVariables(new HashMap<String, String>() {
-                                                                                        {
-                                                                                            put("key1", "value1");
-                                                                                            put("key2", "value2");
-                                                                                        }
-                                                                                    }))))
-                                .withVisibility("private"))
-                .withCreator(dto.createDto(Author.class)
-                                .withAccountId("accountId")
-                                .withEmail("email")
-                                .withName("name"))
-                .withPolicies(dto.createDto(Policies.class)
-                                 .withRefererHostname("referrer")
-                                 .withValidSince(123l)
-                                 .withValidUntil(123l))
-                .withActions(dto.createDto(Actions.class)
-                                .withOpenFile("openFile")
-                                .withWarnOnClose(true)
-                                .withFindReplace(singletonList(dto.createDto(ReplacementSet.class)
-                                                                  .withFiles(singletonList("file"))
-                                                                  .withEntries(singletonList(dto.createDto(Variable.class)
-                                                                                                .withFind("find")
-                                                                                                .withReplace("replace")
-                                                                                                .withReplacemode("mode"))))))
-                .withWorkspace(dto.createDto(Workspace.class)
-                                  .withType("named"));
-
-
-        StringBuilder sb = new StringBuilder("?");
-        sb.append("v=2.0").append("&");
-        sb.append("actions.openFile=openFile").append("&");
-        sb.append("actions.warnOnClose=true").append("&");
-        sb.append("actions.findReplace=")
-          .append(URLEncoder.encode(DtoFactory.getInstance().toJson(expected.getActions().getFindReplace()), "UTF-8")).append("&");
-        sb.append("policies.refererHostname=referrer").append("&");
-        sb.append("policies.validSince=123").append("&");
-        sb.append("policies.validUntil=123").append("&");
-        sb.append("creator.accountId=accountId").append("&");
-        sb.append("creator.email=email").append("&");
-        sb.append("creator.name=name").append("&");
-        sb.append("workspace.type=named").append("&");
-        sb.append("source.project.type=git").append("&");
-        sb.append("source.project.location=location").append("&");
-        sb.append("source.project.parameters.keepVcs=true").append("&");
-        sb.append("source.project.parameters.commitId=123").append("&");
-        sb.append("source.project.parameters.branch=master").append("&");
-        sb.append("source.runners.runEnv.location=location").append("&");
-        sb.append("source.runners.runEnv.parameters.key=value").append("&");
-        sb.append("project.type=type").append("&");
-        sb.append("project.name=name").append("&");
-        sb.append("project.description=description").append("&");
-        sb.append("project.attributes.key=value").append("&");
-        sb.append("project.visibility=private").append("&");
-        sb.append("project.builders.default=default").append("&");
-        sb.append("project.runners.default=default").append("&");
-        sb.append("project.runners.configs.key.ram=768").append("&");
-        sb.append("project.runners.configs.key.options.key1=value1").append("&");
-        sb.append("project.runners.configs.key.options.key2=value2").append("&");
-        sb.append("project.runners.configs.key.variables.key1=value1").append("&");
-        sb.append("project.runners.configs.key.variables.key2=value2");
-
-
-        Factory newFactory = factoryBuilder.buildEncoded(new URI(sb.toString()));
-        assertEquals(newFactory, expected);
-    }
-
-    @Test
-    public void shouldBeAbleToParseAndValidateNonEncodedV2_1() throws Exception {
-        expected.withV("2.1")
-                .withSource(dto.createDto(Source.class)
-                               .withProject(dto.createDto(ImportSourceDescriptor.class)
-                                               .withType("git")
-                                               .withLocation("location")
-                                               .withParameters(new HashMap<String, String>() {
-                                                   {
-                                                       put("keepVcs", "true");
-                                                       put("branch", "master");
-                                                       put("commitId", "123");
-                                                   }
-                                               }))
-                               .withRunners(singletonMap("runEnv", dto.createDto(RunnerSource.class)
-                                                                      .withLocation("location")
-                                                                      .withParameters(singletonMap("key", "value")))))
-                .withProject(dto.createDto(NewProject.class)
-                                .withType("type")
-                                .withAttributes(singletonMap("key", singletonList("value")))
-                                .withBuilders(dto.createDto(BuildersDescriptor.class).withDefault("default"))
-                                .withDescription("description")
-                                .withName("name")
-                                .withRunners(dto.createDto(RunnersDescriptor.class)
-                                                .withDefault("default")
-                                                .withConfigs(singletonMap("key", dto.createDto(RunnerConfiguration.class)
-                                                                                    .withRam(768)
-                                                                                    .withOptions(new HashMap<String, String>() {
-                                                                                        {
-                                                                                            put("key1", "value1");
-                                                                                            put("key2", "value2");
-                                                                                        }
-                                                                                    })
-                                                                                    .withVariables(new HashMap<String, String>() {
-                                                                                        {
-                                                                                            put("key1", "value1");
-                                                                                            put("key2", "value2");
-                                                                                        }
-                                                                                    }))))
-                                .withVisibility("private"))
-                .withCreator(dto.createDto(Author.class)
-                                .withAccountId("accountId")
-                                .withEmail("email")
-                                .withName("name"))
-                .withPolicies(dto.createDto(Policies.class)
-                                 .withRefererHostname("referrer")
-                                 .withValidSince(123l)
-                                 .withValidUntil(123l))
-                .withWorkspace(dto.createDto(Workspace.class)
-                                  .withType("named"))
-                .withIde(dto.createDto(Ide.class)
-                            .withOnAppClosed(
-                                    dto.createDto(OnAppClosed.class)
-                                       .withActions(singletonList(dto.createDto(Action.class).withId("warnonclose"))))
-                            .withOnAppLoaded(
-                                    dto.createDto(OnAppLoaded.class)
-                                       .withActions(singletonList(dto.createDto(Action.class).withId("newProject"))))
-                            .withOnProjectOpened(dto.createDto(OnProjectOpened.class)
-                                                    .withActions(Arrays.asList(
-                                                            dto.createDto(Action.class)
-                                                               .withId("openfile")
-                                                               .withProperties(singletonMap("file", "pom.xml")),
-                                                            dto.createDto(Action.class)
-                                                               .withId("run"),
-                                                            dto.createDto(Action.class)
-                                                               .withId("findReplace")
-                                                               .withProperties(ImmutableMap.of(
-                                                                       "in", "src/main/resources/consts2.properties",
-                                                                       "find", "OLD_VALUE_2",
-                                                                       "replace", "NEW_VALUE_2")),
-                                                            dto.createDto(Action.class)
-                                                               .withId("openWelcomePage")
-                                                               .withProperties(ImmutableMap.of(
-                                                                       "authenticatedTitle",
-                                                                       "Greeting title for authenticated users",
-                                                                       "authenticatedContentUrl",
-                                                                       "http://example.com/content.url"))))));
-
-
-        StringBuilder sb = new StringBuilder("?");
-        sb.append("v=2.1").append("&");
-        sb.append("policies.refererHostname=referrer").append("&");
-        sb.append("policies.validSince=123").append("&");
-        sb.append("policies.validUntil=123").append("&");
-        sb.append("creator.accountId=accountId").append("&");
-        sb.append("creator.email=email").append("&");
-        sb.append("creator.name=name").append("&");
-        sb.append("workspace.type=named").append("&");
-        sb.append("source.project.type=git").append("&");
-        sb.append("source.project.location=location").append("&");
-        sb.append("source.project.parameters.keepVcs=true").append("&");
-        sb.append("source.project.parameters.commitId=123").append("&");
-        sb.append("source.project.parameters.branch=master").append("&");
-        sb.append("source.runners.runEnv.location=location").append("&");
-        sb.append("source.runners.runEnv.parameters.key=value").append("&");
-        sb.append("project.type=type").append("&");
-        sb.append("project.name=name").append("&");
-        sb.append("project.description=description").append("&");
-        sb.append("project.attributes.key=value").append("&");
-        sb.append("project.visibility=private").append("&");
-        sb.append("project.builders.default=default").append("&");
-        sb.append("project.runners.default=default").append("&");
-        sb.append("project.runners.configs.key.ram=768").append("&");
-        sb.append("project.runners.configs.key.options.key1=value1").append("&");
-        sb.append("project.runners.configs.key.options.key2=value2").append("&");
-        sb.append("project.runners.configs.key.variables.key1=value1").append("&");
-        sb.append("project.runners.configs.key.variables.key2=value2").append("&");
-        sb.append("ide.onProjectOpened.actions.%5B0%5D.id=openfile").append("&");
-        sb.append("ide.onProjectOpened.actions.%5B0%5D.properties.file=pom.xml").append("&");
-        sb.append("ide.onProjectOpened.actions.%5B1%5D.id=run").append("&");
-        sb.append("ide.onProjectOpened.actions.%5B2%5D.id=findReplace").append("&");
-        sb.append("ide.onProjectOpened.actions.%5B2%5D.properties.in=src%2Fmain%2Fresources%2Fconsts2.properties").append("&");
-        sb.append("ide.onProjectOpened.actions.%5B2%5D.properties.find=OLD_VALUE_2").append("&");
-        sb.append("ide.onProjectOpened.actions.%5B2%5D.properties.replace=NEW_VALUE_2").append("&");
-        sb.append("ide.onProjectOpened.actions.%5B3%5D.id=openWelcomePage").append("&");
-        sb.append("ide.onProjectOpened.actions.%5B3%5D.properties.authenticatedTitle=Greeting+title+for+authenticated+users").append("&");
-        sb.append("ide.onProjectOpened.actions.%5B3%5D.properties.authenticatedContentUrl=http%3A%2F%2Fexample.com%2Fcontent.url")
-          .append("&");
-        sb.append("ide.onAppClosed.actions.%5B0%5D.id=warnonclose").append("&");
-        sb.append("ide.onAppLoaded.actions.%5B0%5D.id=newProject");
-
-
-        Factory newFactory = factoryBuilder.buildEncoded(new URI(sb.toString()));
-        assertEquals(newFactory, expected);
     }
 
 
@@ -819,6 +451,6 @@ public class FactoryBuilderTest {
                                 .withValidUntil(123l))
                .withActions(dto.createDto(Actions.class).withWelcome(dto.createDto(WelcomePage.class)));
 
-        factoryBuilder.checkValid(factory, FactoryFormat.ENCODED);
+        factoryBuilder.checkValid(factory);
     }
 }

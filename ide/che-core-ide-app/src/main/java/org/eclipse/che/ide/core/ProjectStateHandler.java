@@ -33,7 +33,6 @@ import org.eclipse.che.ide.api.event.OpenProjectHandler;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.ProjectDescriptorChangedEvent;
 import org.eclipse.che.ide.api.event.ProjectDescriptorChangedHandler;
-import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
 import org.eclipse.che.ide.core.problemDialog.ProjectProblemDialog;
 import org.eclipse.che.ide.projecttype.wizard.presenter.ProjectWizardPresenter;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
@@ -200,29 +199,19 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
     }
 
     private void openProblemProject(final ProjectDescriptor project) {
-        ProjectProblemDialog dialog = new ProjectProblemDialog(
-                constant.projectProblemTitle(),
-                constant.projectProblemMessage(),
-                new ProjectProblemDialog.AskHandler() {
-                    @Override
-                    public void onConfigure() {
-                        openProject(project);
-                        eventBus.fireEvent(new ConfigureProjectEvent(project));
-                    }
-
-                    @Override
-                    public void onDelete() {
-                        deleteProject(project);
-                    }
-
-                    @Override
-                    public void onCancel() {
-                        Document.get().setTitle(constant.codenvyTabTitle());
-                        rewriteBrowserHistory(null);
-                        eventBus.fireEvent(new RefreshProjectTreeEvent());
-                    }
-                });
+        ProjectProblemDialog dialog =
+                new ProjectProblemDialog(constant.projectProblemTitle(), constant.projectProblemMessage(), getAskHandler(project));
         dialog.show();
+    }
+
+    private ProjectProblemDialog.AskHandler getAskHandler(final ProjectDescriptor project) {
+        return new ProjectProblemDialog.AskHandler() {
+            @Override
+            public void onConfigure() {
+                openProject(project);
+                eventBus.fireEvent(new ConfigureProjectEvent(project));
+            }
+        };
     }
 
     private void rewriteBrowserHistory(@Nullable String projectName) {
@@ -232,22 +221,6 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
             url.append('/').append(projectName);
         }
         Browser.getWindow().getHistory().replaceState(null, Window.getTitle(), url.toString());
-    }
-
-    private void deleteProject(ProjectDescriptor project) {
-        projectServiceClient.delete(project.getPath(), new AsyncRequestCallback<Void>() {
-            @Override
-            protected void onSuccess(Void result) {
-                Document.get().setTitle(constant.codenvyTabTitle());
-                rewriteBrowserHistory(null);
-                eventBus.fireEvent(new RefreshProjectTreeEvent());
-            }
-
-            @Override
-            protected void onFailure(Throwable exception) {
-                Log.error(ProjectStateHandler.class, exception);
-            }
-        });
     }
 
     private interface CloseCallback {
