@@ -82,9 +82,6 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
         this.dtoFactory = dtoFactory;
         this.actionManager = actionManager;
         this.presentationFactory = presentationFactory;
-
-        eventBus.addHandler(WindowActionEvent.TYPE, this);
-        eventBus.addHandler(ProjectActionEvent.TYPE, this);
     }
 
     @Override
@@ -124,12 +121,15 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
     }
 
     /**
-     * Start the component.
+     * Start the manager.
      *
      * @param openLastProject
      *         specifies whether the last opened project should be re-opened
      */
     public void start(boolean openLastProject) {
+        eventBus.addHandler(WindowActionEvent.TYPE, this);
+        eventBus.addHandler(ProjectActionEvent.TYPE, this);
+
         readStateFromPreferences();
 
         // don't re-open last project if some project name was provided
