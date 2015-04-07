@@ -53,7 +53,7 @@ import org.eclipse.che.ide.preferences.PreferencesManagerImpl;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.StringMapUnmarshaller;
-import org.eclipse.che.ide.state.AppStateManager;
+import org.eclipse.che.ide.statepersistance.AppStateManager;
 import org.eclipse.che.ide.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.UUID;
 import org.eclipse.che.ide.util.loging.Log;

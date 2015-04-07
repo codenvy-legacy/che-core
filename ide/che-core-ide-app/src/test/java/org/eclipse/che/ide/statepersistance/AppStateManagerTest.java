@@ -8,30 +8,22 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.state;
+package org.eclipse.che.ide.statepersistance;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.inject.Provider;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.ide.actions.OpenFileAction;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
-import org.eclipse.che.ide.api.editor.EditorAgent;
-import org.eclipse.che.ide.api.editor.EditorInput;
-import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.event.OpenProjectEvent;
+import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.WindowActionEvent;
 import org.eclipse.che.ide.api.preferences.PreferencesManager;
-import org.eclipse.che.ide.api.project.tree.generic.FileNode;
-import org.eclipse.che.ide.collections.Collections;
-import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.dto.DtoFactory;
-import org.eclipse.che.ide.state.dto.ActionDescriptor;
-import org.eclipse.che.ide.state.dto.AppState;
-import org.eclipse.che.ide.state.dto.ProjectState;
+import org.eclipse.che.ide.statepersistance.dto.AppState;
+import org.eclipse.che.ide.statepersistance.dto.ProjectState;
 import org.eclipse.che.ide.toolbar.PresentationFactory;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,8 +33,12 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyMapOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -60,6 +56,9 @@ public class AppStateManagerTest {
     private static final String SERIALIZED_STATE = "text";
 
     @Mock
+    private Set<PersistenceComponent> persistenceComponents;
+
+    @Mock
     private EventBus eventBus;
 
     @Mock
@@ -67,12 +66,6 @@ public class AppStateManagerTest {
 
     @Mock
     private AppContext appContext;
-
-    @Mock
-    private Provider<EditorAgent> editorAgentProvider;
-
-    @Mock
-    private EditorAgent editorAgent;
 
     @Mock
     private DtoFactory dtoFactory;
@@ -84,9 +77,6 @@ public class AppStateManagerTest {
     private PresentationFactory presentationFactory;
 
     @Mock
-    private OpenFileAction openFileAction;
-
-    @Mock
     private AppState appState;
 
     @InjectMocks
@@ -94,12 +84,17 @@ public class AppStateManagerTest {
 
     @Before
     public void setUp() {
-        when(editorAgentProvider.get()).thenReturn(editorAgent);
         when(preferencesManager.getValue(anyString())).thenReturn(SERIALIZED_STATE);
         when(dtoFactory.createDtoFromJson(anyString(), Matchers.<Class<AppState>>anyObject())).thenReturn(appState);
         when(appState.getLastProjectPath()).thenReturn("/project");
 
         appStateManager.start(false);
+    }
+
+    @Test
+    public void shouldAddEventHandlers() {
+        verify(eventBus).addHandler(eq(WindowActionEvent.TYPE), eq(appStateManager));
+        verify(eventBus).addHandler(eq(ProjectActionEvent.TYPE), eq(appStateManager));
     }
 
     @Test
@@ -115,7 +110,7 @@ public class AppStateManagerTest {
     }
 
     @Test
-    public void shouldPersistStateOnWindowClosingWhenNoOpenedProject() {
+    public void shouldEraseLastProjectPathOnWindowClosingWhenNoOpenedProject() {
         when(dtoFactory.toJson(eq(appState))).thenReturn(SERIALIZED_STATE);
 
         appStateManager.onWindowClosing(mock(WindowActionEvent.class));
@@ -127,44 +122,29 @@ public class AppStateManagerTest {
     }
 
     @Test
-    public void shouldPersistStateOnWindowClosingWhenProjectOpened() {
+    public void shouldCallAllRegisteredComponents() {
         CurrentProject currentProject = mock(CurrentProject.class);
         when(appContext.getCurrentProject()).thenReturn(currentProject);
 
         ProjectDescriptor rootProject = mock(ProjectDescriptor.class);
         when(currentProject.getRootProject()).thenReturn(rootProject);
-        when(rootProject.getPath()).thenReturn("/project");
+        final String projectPath = "/project";
+        when(rootProject.getPath()).thenReturn(projectPath);
 
         when(dtoFactory.toJson(eq(appState))).thenReturn(SERIALIZED_STATE);
 
         ProjectState projectState = mock(ProjectState.class);
         when(dtoFactory.createDto(eq(ProjectState.class))).thenReturn(projectState);
 
-        StringMap<EditorPartPresenter> openedEditors = Collections.createStringMap();
-        EditorPartPresenter editorPartPresenter = mock(EditorPartPresenter.class);
-        openedEditors.put("/project/file", editorPartPresenter);
-        EditorInput editorInput = mock(EditorInput.class);
-        FileNode file = mock(FileNode.class);
-        when(editorAgent.getOpenedEditors()).thenReturn(openedEditors);
-        when(editorPartPresenter.getEditorInput()).thenReturn(editorInput);
-        when(editorInput.getFile()).thenReturn(file);
-        when(file.getPath()).thenReturn("/project/file");
-
-        ActionDescriptor action = mock(ActionDescriptor.class);
-        when(action.withId(anyString())).thenReturn(action);
-        when(action.withParameters(anyMapOf(String.class, String.class))).thenReturn(action);
-        when(dtoFactory.createDto(eq(ActionDescriptor.class))).thenReturn(action);
-
+        PersistenceComponent c1 = mock(PersistenceComponent.class);
+        PersistenceComponent c2 = mock(PersistenceComponent.class);
+        List<PersistenceComponent> componentList = new ArrayList<>();
+        Collections.addAll(componentList, c1, c2);
+        when(persistenceComponents.iterator()).thenReturn(componentList.iterator());
 
         appStateManager.onWindowClosing(mock(WindowActionEvent.class));
 
-
-        verify(appState).setLastProjectPath(eq("/project"));
-
-        verify(action).withId(anyString());
-        verify(action).withParameters(anyMapOf(String.class, String.class));
-
-        verify(preferencesManager).setValue(anyString(), eq(SERIALIZED_STATE));
-        verify(preferencesManager).flushPreferences(any(AsyncCallback.class));
+        verify(c1).getActions(eq(projectPath));
+        verify(c2).getActions(eq(projectPath));
     }
 }

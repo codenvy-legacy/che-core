@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.state;
+package org.eclipse.che.ide.statepersistance;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -20,7 +20,7 @@ import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.dto.DtoFactory;
-import org.eclipse.che.ide.state.dto.ActionDescriptor;
+import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,22 +29,23 @@ import java.util.List;
 import static org.eclipse.che.ide.actions.OpenFileAction.FILE_PARAM_ID;
 
 /**
- * //
+ * Component provides sequence of actions which should be performed
+ * in order to restore active file for the particular project.
  *
  * @author Artem Zatsarynnyy
  */
 @Singleton
-public class OpenedFilesPersister implements Persister {
+public class ActiveFilePersistenceComponent implements PersistenceComponent {
     private final Provider<EditorAgent> editorAgentProvider;
     private final ActionManager         actionManager;
     private final OpenFileAction        openFileAction;
-    private final DtoFactory dtoFactory;
+    private final DtoFactory            dtoFactory;
 
     @Inject
-    public OpenedFilesPersister(Provider<EditorAgent> editorAgentProvider,
-                                ActionManager actionManager,
-                                OpenFileAction openFileAction,
-                                DtoFactory dtoFactory) {
+    public ActiveFilePersistenceComponent(Provider<EditorAgent> editorAgentProvider,
+                                          ActionManager actionManager,
+                                          OpenFileAction openFileAction,
+                                          DtoFactory dtoFactory) {
         this.editorAgentProvider = editorAgentProvider;
         this.actionManager = actionManager;
         this.openFileAction = openFileAction;
@@ -52,18 +53,23 @@ public class OpenedFilesPersister implements Persister {
     }
 
     @Override
-    public List<ActionDescriptor> persist(String projectPath) {
+    public List<ActionDescriptor> getActions(String projectPath) {
         final EditorAgent editorAgent = editorAgentProvider.get();
         final List<ActionDescriptor> actions = new ArrayList<>();
         final String openFileActionId = actionManager.getId(openFileAction);
         final StringMap<EditorPartPresenter> openedEditors = editorAgent.getOpenedEditors();
+        final EditorPartPresenter activeEditor = editorAgent.getActiveEditor();
 
-        for (String filePath : openedEditors.getKeys().asIterable()) {
-            final String relFilePath = filePath.replaceFirst(projectPath, "");
+        if (activeEditor != null) {
+            final String activeFilePath = activeEditor.getEditorInput().getFile().getPath();
+            // save active file only if it's not the last opened file
+            if (openedEditors.getKeys().indexOf(activeFilePath) < openedEditors.getKeys().size() - 1) {
+                final String activeFileRelPath = activeFilePath.replaceFirst(projectPath, "");
 
-            actions.add(dtoFactory.createDto(ActionDescriptor.class)
-                                  .withId(openFileActionId)
-                                  .withParameters(Collections.singletonMap(FILE_PARAM_ID, relFilePath)));
+                actions.add(dtoFactory.createDto(ActionDescriptor.class)
+                                      .withId(openFileActionId)
+                                      .withParameters(Collections.singletonMap(FILE_PARAM_ID, activeFileRelPath)));
+            }
         }
         return actions;
     }

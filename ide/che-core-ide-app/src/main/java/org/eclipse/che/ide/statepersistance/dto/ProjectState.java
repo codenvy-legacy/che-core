@@ -8,22 +8,24 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.state;
+package org.eclipse.che.ide.statepersistance.dto;
 
-import org.eclipse.che.ide.state.dto.ActionDescriptor;
+import org.eclipse.che.dto.shared.DTO;
 
 import java.util.List;
 
 /**
- * //
+ * DTO describes the state of the project.
  *
  * @author Artem Zatsarynnyy
  */
-public interface Persister {
-    /**
-     *
-     * @param projectPath
-     * @return
-     */
-    List<ActionDescriptor> persist(String projectPath);
+@DTO
+public interface ProjectState {
+
+    /** Get the list of the actions that should be performed in order to restore some project's state. */
+    List<ActionDescriptor> getActions();
+
+    void setActions(List<ActionDescriptor> actions);
+
+    ProjectState withActions(List<ActionDescriptor> actions);
 }

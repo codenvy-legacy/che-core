@@ -8,24 +8,32 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.state.dto;
+package org.eclipse.che.ide.statepersistance.dto;
 
 import org.eclipse.che.dto.shared.DTO;
 
-import java.util.List;
+import java.util.Map;
 
 /**
- * DTO describes the state of the project.
+ * DTO for {@link org.eclipse.che.ide.api.action.Action}.
  *
  * @author Artem Zatsarynnyy
  */
 @DTO
-public interface ProjectState {
+public interface ActionDescriptor {
 
-    /** Get the list of the actions that should be performed in order to restore some project's state. */
-    List<ActionDescriptor> getActions();
+    /** get action's ID. */
+    String getId();
 
-    void setActions(List<ActionDescriptor> actions);
+    void setId(String id);
 
-    ProjectState withActions(List<ActionDescriptor> actions);
+    ActionDescriptor withId(String id);
+
+
+    /** Get parameters for performing action. */
+    Map<String, String> getParameters();
+
+    void setParameters(Map<String, String> parameters);
+
+    ActionDescriptor withParameters(Map<String, String> parameters);
 }
