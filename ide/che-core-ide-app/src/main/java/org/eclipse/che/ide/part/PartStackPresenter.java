@@ -68,7 +68,7 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
     /** list of parts */
     protected final List<PartPresenter>             parts             = new ArrayList<>();
     protected final List<Integer>                   viewPartPositions = new ArrayList<>();
-    private         Map<PartPresenter, Constraints> constraints       = new HashMap<>();
+    protected final Map<PartPresenter, Constraints> constraints       = new HashMap<>();
     /** view implementation */
     protected final PartStackView view;
     private final   EventBus      eventBus;
@@ -153,6 +153,13 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
                     if (anchor2 == Anchor.AFTER && relative2.equals(title1)) {
                         return -1;
                     }
+                }
+
+                if (constr1 != null && constr2 == null) {
+                    return 1;
+                }
+                if (constr1 == null) {
+                    return -1;
                 }
                 return 0;
             }
@@ -248,7 +255,7 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
     /** {@inheritDoc} */
     @Override
     public void setActivePart(PartPresenter part) {
-        if (activePart == part) {
+        if (activePart != null && activePart == part) {
             // request part stack to get the focus
             onRequestFocus();
             return;
@@ -287,9 +294,9 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
      */
     public List<PartPresenter> getPartPresenters() {
         List<PartPresenter> presenters = new ArrayList<>();
-        for (int i = 0; i < parts.size(); i++) {
-            presenters.add(parts.get(i));
-    }
+        for (PartPresenter part : parts) {
+            presenters.add(part);
+        }
         return presenters;
     }
 
@@ -428,14 +435,18 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
 
     /** Sort parts depending on constraint. */
     protected void sortPartsOnView() {
-        List<PartPresenter> sortedParts = new ArrayList<>();
-        sortedParts.addAll(parts);
-        java.util.Collections.sort(sortedParts, partPresenterComparator);
-
         viewPartPositions.clear();
+        List<PartPresenter> sortedParts = getSortedParts();
         for (PartPresenter partPresenter : sortedParts) {
             viewPartPositions.add(sortedParts.indexOf(partPresenter), parts.indexOf(partPresenter));
         }
         view.setTabpositions(viewPartPositions);
+    }
+
+    protected List<PartPresenter> getSortedParts() {
+        List<PartPresenter> sortedParts = new ArrayList<>();
+        sortedParts.addAll(parts);
+        java.util.Collections.sort(sortedParts, partPresenterComparator);
+        return sortedParts;
     }
 }
