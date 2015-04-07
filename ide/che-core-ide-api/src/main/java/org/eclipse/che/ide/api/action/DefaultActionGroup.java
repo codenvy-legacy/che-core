@@ -45,6 +45,8 @@ public class DefaultActionGroup extends ActionGroup {
 
     private ActionManager actionManager;
 
+
+    //TODO: think about removing this field
     private boolean needSorting = false;
 
     public DefaultActionGroup(ActionManager actionManager) {
@@ -200,6 +202,7 @@ public class DefaultActionGroup extends ActionGroup {
      * Sorts actions depending on their constraints and their input order.
      * @return An array of sorted actions
      */
+    //TODO: to complicate 
     private Action[] getSortedActions() {
         List<Action> result = new ArrayList<>();
         Map<Action, Constraints> unsortedMap = new LinkedHashMap<>();
