@@ -10,9 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.codeassist;
 
-import org.eclipse.che.ide.api.icon.Icon;
-
 import elemental.dom.Element;
+
+import org.eclipse.che.ide.api.icon.Icon;
 
 
 /**
@@ -53,7 +53,7 @@ public interface CompletionProposal {
     /**
      * Callback called when the completion is applied.
      */
-    public interface CompletionCallback{
+    interface CompletionCallback{
         void onCompletion(Completion completion);
     }
 }
