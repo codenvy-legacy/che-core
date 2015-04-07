@@ -218,7 +218,7 @@ public class MachineManager {
      */
     public MachineImpl create(final String snapshotId, final String owner, final LineConsumer machineLogsOutput)
             throws NotFoundException, ServerException {
-        final Snapshot snapshot = snapshotStorage.getSnapshot(snapshotId);
+        final SnapshotImpl snapshot = snapshotStorage.getSnapshot(snapshotId);
         final String imageType = snapshot.getImageType();
         final ImageProvider imageProvider = imageProviders.get(imageType);
         if (imageProvider == null) {
@@ -354,7 +354,7 @@ public class MachineManager {
     }
 
     /**
-     * Saves machine to Snapshot storage.
+     * Saves machine to SnapshotImpl storage.
      *
      * @param machineId
      *         id of machine for saving
@@ -362,9 +362,9 @@ public class MachineManager {
      *         owner for new snapshot
      * @param description
      *         optional description that should help to understand purpose of new snapshot in future
-     * @return Future for Snapshot creation process
+     * @return Future for SnapshotImpl creation process
      */
-    public Future<Snapshot> save(final String machineId, final String owner, final String description)
+    public Future<SnapshotImpl> save(final String machineId, final String owner, final String label, final String description)
             throws NotFoundException, MachineException {
         final MachineImpl machine = getMachine(machineId);
         final Instance instance = machine.getInstance();
@@ -372,18 +372,19 @@ public class MachineManager {
             throw new MachineException(
                     String.format("Unable save machine '%s' in image, machine isn't properly initialized yet", machineId));
         }
-        return executor.submit(new Callable<Snapshot>() {
+        return executor.submit(new Callable<SnapshotImpl>() {
             @Override
-            public Snapshot call() throws Exception {
-                final ImageKey imageKey = instance.saveToImage(machine.getOwner());
-                final Snapshot snapshot = new Snapshot(generateSnapshotId(),
+            public SnapshotImpl call() throws Exception {
+                final ImageKey imageKey = instance.saveToImage(machine.getOwner(), label);
+                final SnapshotImpl snapshot = new SnapshotImpl(generateSnapshotId(),
                                                        machine.getType(),
                                                        imageKey,
                                                        owner,
                                                        System.currentTimeMillis(),
                                                        machine.getWorkspaceId(),
                                                        new ArrayList<>(machine.getProjects()),
-                                                       description);
+                                                       description,
+                                                       label);
                 snapshotStorage.saveSnapshot(snapshot);
                 return snapshot;
             }
@@ -394,7 +395,7 @@ public class MachineManager {
         return NameGenerator.generate("snapshot", 16);
     }
 
-    public Snapshot getSnapshot(String snapshotId) throws NotFoundException, ServerException {
+    public SnapshotImpl getSnapshot(String snapshotId) throws NotFoundException, ServerException {
         return snapshotStorage.getSnapshot(snapshotId);
     }
 
@@ -409,12 +410,12 @@ public class MachineManager {
      *         project binding
      * @return list of Snapshots
      */
-    public List<Snapshot> getSnapshots(String owner, String workspaceId, ProjectBinding project) throws ServerException {
+    public List<SnapshotImpl> getSnapshots(String owner, String workspaceId, ProjectBinding project) throws ServerException {
         return snapshotStorage.findSnapshots(owner, workspaceId, project);
     }
 
     public void removeSnapshot(String snapshotId) throws NotFoundException, ServerException {
-        final Snapshot snapshot = getSnapshot(snapshotId);
+        final SnapshotImpl snapshot = getSnapshot(snapshotId);
         final String imageType = snapshot.getImageType();
         final ImageProvider imageProvider = imageProviders.get(imageType);
         if (imageProvider == null) {
@@ -437,7 +438,7 @@ public class MachineManager {
      *         project binding
      */
     public void removeSnapshots(String owner, String workspaceId, ProjectBinding project) throws ServerException {
-        for (Snapshot snapshot : snapshotStorage.findSnapshots(owner, workspaceId, project)) {
+        for (SnapshotImpl snapshot : snapshotStorage.findSnapshots(owner, workspaceId, project)) {
             try {
                 removeSnapshot(snapshot.getId());
             } catch (NotFoundException ignored) {

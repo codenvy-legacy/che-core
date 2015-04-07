@@ -97,9 +97,9 @@ public class MachineService {
     @RolesAllowed("user")
     public MachineDescriptor createMachineFromSnapshot(CreateMachineFromSnapshot createMachineRequest)
             throws ForbiddenException, NotFoundException, ServerException {
-        requiredNotNull(createMachineRequest, "Snapshot description");
-        requiredNotNull(createMachineRequest.getSnapshotId(), "Snapshot id");
-        final Snapshot snapshot = machineManager.getSnapshot(createMachineRequest.getSnapshotId());
+        requiredNotNull(createMachineRequest, "SnapshotImpl description");
+        requiredNotNull(createMachineRequest.getSnapshotId(), "SnapshotImpl id");
+        final SnapshotImpl snapshot = machineManager.getSnapshot(createMachineRequest.getSnapshotId());
         checkCurrentUserPermissionsForSnapshot(snapshot);
         checkCurrentUserPermissionsForWorkspace(snapshot.getWorkspaceId());
 
@@ -167,13 +167,13 @@ public class MachineService {
             throws ServerException, ForbiddenException {
         requiredNotNull(workspaceId, "Parameter workspace");
 
-        final List<Snapshot> snapshots = machineManager.getSnapshots(EnvironmentContext.getCurrent().getUser().getId(),
+        final List<SnapshotImpl> snapshots = machineManager.getSnapshots(EnvironmentContext.getCurrent().getUser().getId(),
                                                                      workspaceId,
                                                                      path != null && !path.isEmpty() ? new ProjectBindingImpl()
                                                                              .withPath(path) : null);
 
         final List<SnapshotDescriptor> snapshotDescriptors = new LinkedList<>();
-        for (Snapshot snapshot : snapshots) {
+        for (SnapshotImpl snapshot : snapshots) {
             snapshotDescriptors.add(toDescriptor(snapshot));
         }
 
@@ -186,10 +186,11 @@ public class MachineService {
     @RolesAllowed("user")
     public void saveSnapshot(@PathParam("machineId") String machineId, NewSnapshotDescriptor newSnapshotDescriptor)
             throws NotFoundException, ServerException, ForbiddenException {
-        requiredNotNull(newSnapshotDescriptor, "Snapshot description");
+        requiredNotNull(newSnapshotDescriptor, "SnapshotImpl description");
         checkCurrentUserPermissionsForMachine(machineManager.getMachine(machineId).getOwner());
 
-        machineManager.save(machineId, EnvironmentContext.getCurrent().getUser().getId(), newSnapshotDescriptor.getDescription());
+        machineManager.save(machineId, EnvironmentContext.getCurrent().getUser().getId(),
+                newSnapshotDescriptor.getLabel(), newSnapshotDescriptor.getDescription());
     }
 
     @Path("/snapshot/{snapshotId}")
@@ -265,7 +266,7 @@ public class MachineService {
         machineManager.unbindProject(machineId, new ProjectBindingImpl().withPath(path));
     }
 
-    private void checkCurrentUserPermissionsForSnapshot(Snapshot snapshot) throws ForbiddenException, NotFoundException, ServerException {
+    private void checkCurrentUserPermissionsForSnapshot(SnapshotImpl snapshot) throws ForbiddenException, NotFoundException, ServerException {
         if (!EnvironmentContext.getCurrent().getUser().getId().equals(snapshot.getOwner())) {
             throw new ForbiddenException("You are not the owner of this snapshot");
         }
@@ -343,7 +344,7 @@ public class MachineService {
                          .withLinks(null); // TODO
     }
 
-    private SnapshotDescriptor toDescriptor(Snapshot snapshot) {
+    private SnapshotDescriptor toDescriptor(SnapshotImpl snapshot) {
         final List<ProjectBindingDescriptor> projectDescriptors = new ArrayList<>(snapshot.getProjects().size());
         for (ProjectBinding projectBinding : snapshot.getProjects()) {
             projectDescriptors.add(dtoFactory.createDto(ProjectBindingDescriptor.class)

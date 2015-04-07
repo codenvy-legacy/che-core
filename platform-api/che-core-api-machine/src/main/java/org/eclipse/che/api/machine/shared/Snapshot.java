@@ -8,25 +8,28 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.machine.shared.dto;
+package org.eclipse.che.api.machine.shared;
 
-import org.eclipse.che.dto.shared.DTO;
+import java.util.List;
 
 /**
- * @author Alexander Garagatyi
+ * @author gazarenkov
  */
-@DTO
-public interface NewSnapshotDescriptor {
+public interface Snapshot {
+
+    String getId();
+
+    String getImageType();
+
+    String getOwner();
+
+    long getCreationDate();
+
+    String getWorkspaceId();
+
+    List<? extends ProjectBinding> getProjects();
 
     String getLabel();
 
-    void setLabel(String label);
-
-    NewSnapshotDescriptor withLabel(String label);
-
     String getDescription();
-
-    void setDescription(String description);
-
-    NewSnapshotDescriptor withDescription(String description);
 }

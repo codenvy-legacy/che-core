@@ -12,6 +12,7 @@ package org.eclipse.che.api.machine.shared.dto;
 
 import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
+import org.eclipse.che.api.machine.shared.Snapshot;
 import org.eclipse.che.dto.shared.DTO;
 
 import java.util.List;
@@ -20,7 +21,7 @@ import java.util.List;
  * @author Alexander Garagatyi
  */
 @DTO
-public interface SnapshotDescriptor extends Hyperlinks {
+public interface SnapshotDescriptor extends /*Snapshot,*/ Hyperlinks {
     String getId();
 
     void setId(String id);
@@ -44,6 +45,12 @@ public interface SnapshotDescriptor extends Hyperlinks {
     void setDescription(String description);
 
     SnapshotDescriptor withDescription(String description);
+
+    String getLabel();
+
+    void setLabel(String label);
+
+    SnapshotDescriptor withLabel(String label);
 
     long getCreationDate();
 

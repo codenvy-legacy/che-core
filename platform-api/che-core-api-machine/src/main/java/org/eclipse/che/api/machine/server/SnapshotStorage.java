@@ -23,11 +23,11 @@ import java.util.List;
  * @author andrew00x
  */
 public interface SnapshotStorage {
-    Snapshot getSnapshot(String snapshotId) throws NotFoundException, ServerException;
+    SnapshotImpl getSnapshot(String snapshotId) throws NotFoundException, ServerException;
 
-    void saveSnapshot(Snapshot snapshot) throws ServerException, ForbiddenException;
+    void saveSnapshot(SnapshotImpl snapshot) throws ServerException, ForbiddenException;
 
-    List<Snapshot> findSnapshots(String owner, String workspaceId, ProjectBinding project) throws ServerException;
+    List<SnapshotImpl> findSnapshots(String owner, String workspaceId, ProjectBinding project) throws ServerException;
 
     void removeSnapshot(String snapshotId) throws NotFoundException, ServerException;
 }

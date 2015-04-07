@@ -12,6 +12,7 @@ package org.eclipse.che.api.machine.server;
 
 import org.eclipse.che.api.machine.server.spi.ImageKey;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
+import org.eclipse.che.api.machine.shared.Snapshot;
 
 import java.util.Collections;
 import java.util.List;
@@ -21,7 +22,7 @@ import java.util.List;
  *
  * @author andrew00x
  */
-public class Snapshot {
+public class SnapshotImpl implements Snapshot {
     private final String               id;
     private final String               type;
     private final ImageKey             imageKey;
@@ -30,15 +31,17 @@ public class Snapshot {
     private final String               workspaceId;
     private final List<ProjectBinding> projects;
     private final String               description;
+    private final String               label;
 
-    public Snapshot(String id,
-                    String type,
-                    ImageKey imageKey,
-                    String owner,
-                    long creationDate,
-                    String workspaceId,
-                    List<ProjectBinding> projects,
-                    String description) {
+    public SnapshotImpl(String id,
+                        String type,
+                        ImageKey imageKey,
+                        String owner,
+                        long creationDate,
+                        String workspaceId,
+                        List<ProjectBinding> projects,
+                        String description,
+                        String label) {
         this.id = id;
         this.type = type;
         this.imageKey = imageKey;
@@ -47,12 +50,14 @@ public class Snapshot {
         this.workspaceId = workspaceId;
         this.projects = Collections.unmodifiableList(projects);
         this.description = description;
+        this.label = label;
     }
-
+    @Override
     public String getId() {
         return id;
     }
 
+    @Override
     public String getImageType() {
         return type;
     }
@@ -61,23 +66,33 @@ public class Snapshot {
         return imageKey;
     }
 
+    @Override
     public String getOwner() {
         return owner;
     }
 
+    @Override
     public long getCreationDate() {
         return creationDate;
     }
 
+    @Override
     public String getWorkspaceId() {
         return workspaceId;
     }
 
+    @Override
     public List<ProjectBinding> getProjects() {
         return projects;
     }
 
+    @Override
     public String getDescription() {
         return description;
+    }
+
+    @Override
+    public String getLabel() {
+        return label;
     }
 }
