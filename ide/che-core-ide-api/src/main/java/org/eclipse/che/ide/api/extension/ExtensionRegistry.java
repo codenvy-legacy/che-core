@@ -26,6 +26,5 @@ public interface ExtensionRegistry {
      *
      * @return
      */
-    public StringMap<ExtensionDescription> getExtensionDescriptions();
-
+    StringMap<ExtensionDescription> getExtensionDescriptions();
 }

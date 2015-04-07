@@ -24,37 +24,37 @@ import static com.google.gwt.user.client.ui.InsertPanel.ForIsWidget;
 /** PartStack View interface */
 public interface PartStackView extends View<PartStackView.ActionDelegate> {
 
-    public enum TabPosition {
+    enum TabPosition {
         BELOW, LEFT, RIGHT
     }
 
     /** Tab which can be clicked and closed */
-    public interface TabItem extends HasCloseHandlers<PartStackView.TabItem>, HasClickHandlers, HasMouseDownHandlers {
+    interface TabItem extends HasCloseHandlers<PartStackView.TabItem>, HasClickHandlers, HasMouseDownHandlers {
     }
 
     /** Add Tab */
-    public PartStackView.TabItem addTab(SVGImage icon, String title, String toolTip, IsWidget widget, boolean closable);
+    PartStackView.TabItem addTab(SVGImage icon, String title, String toolTip, IsWidget widget, boolean closable);
 
     /** Remove Tab */
-    public void removeTab(int index);
+    void removeTab(int index);
 
     /** Set Active Tab */
-    public void setActiveTab(int index);
+    void setActiveTab(int index);
 
     /** Set new Tabs positions */
-    public void setTabpositions(Array<Integer> partPositions);
+    void setTabpositions(Array<Integer> partPositions);
 
     /** Get Content Panel */
-    public ForIsWidget getContentPanel();
+    ForIsWidget getContentPanel();
 
     /** Set PartStack focused */
-    public void setFocus(boolean focused);
+    void setFocus(boolean focused);
 
     /** Update Tab */
-    public void updateTabItem(int index, SVGImage icon, String title, String toolTip, IsWidget widget);
+    void updateTabItem(int index, SVGImage icon, String title, String toolTip, IsWidget widget);
 
     /** Handles Focus Request Event. It is generated, when user clicks a stack anywhere */
-    public interface ActionDelegate {
+    interface ActionDelegate {
         /** PartStack is being clicked and requests Focus */
         void onRequestFocus();
     }

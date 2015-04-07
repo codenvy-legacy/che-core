@@ -14,17 +14,11 @@ import com.google.gwt.core.client.Callback;
 
 /**
  * Components that have to be started on application's startup
- * must implement this interface. Please don't directly implement this interface
- * used {@link ComponentImpl} instead.
+ * must implement this interface.
  *
  * @author <a href="mailto:nzamosenchuk@exoplatform.com">Nikolay Zamosenchuk</a>
  */
 public interface Component {
-    /**
-     * Starts Component. It should send corresponding Event, when started.
-     * Please refer for {@link ComponentImpl}
-     *
-     * @throws Exception
-     */
-    public void start(Callback<Component, ComponentException> callback);
+    /** Starts Component. It should call the {@code callback} when started. */
+    void start(Callback<Component, ComponentException> callback);
 }
