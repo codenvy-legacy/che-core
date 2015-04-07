@@ -183,6 +183,7 @@ public class RunnerService extends Service {
             @ApiResponse(code = 500, message = "Internal Server Error")})
     @GET
     @Path("/logs/{id}")
+    @Produces(MediaType.TEXT_PLAIN)
     public void getLogs(@ApiParam(value = "Workspace ID", required = true)
                         @PathParam("ws-id") String workspace,
                         @ApiParam(value = "Run ID", required = true)
