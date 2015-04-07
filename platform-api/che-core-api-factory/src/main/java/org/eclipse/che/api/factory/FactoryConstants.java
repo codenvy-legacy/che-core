@@ -31,6 +31,11 @@ public class FactoryConstants {
             "You are missing a mandatory parameter.  For more information, please visit http://docs.codenvy" +
             ".com/user/project-lifecycle/#configuration-reference";
 
+      /* Used in factory servlet*/
+    public static final String ILLEGAL_HOSTNAME_MESSAGE =
+            "This Factory has its access restricted by certain hostname. Your client does not match the specified " +
+            "policy. Please contact the owner of this Factory for more information.";
+
     public static final String PARAMETRIZED_INVALID_PARAMETER_MESSAGE =
             "You have provided an invalid parameter %s for this version of Factory parameters %s. For more " +
             "information, please visit http://docs.codenvy.com/user/project-lifecycle/#configuration-reference";
@@ -40,6 +45,15 @@ public class FactoryConstants {
             "or you do not have a valid subscription account. " +
             "Please contact info@codenvy.com with any questions. \n" +
             "accountId Submitted: %s";
+
+    /* Used in factory servlet*/
+    public static final String PARAMETRIZED_ILLEGAL_TRACKED_PARAMETER_MESSAGE =
+            "You do not have a valid accountId. Your Factory configuration has a parameter that can only be used with a " +
+            "Tracked Factory subscription. You could have provided the wrong value, " +
+            "your subscription has expired, or you do not have a valid subscription account. " +
+            "Please contact info@codenvy.com with any questions. \n" +
+            "accountId Submitted: %s \n" +
+            "Invalid Parameter Name: %s";
 
     public static final String INVALID_VALIDSINCE_MESSAGE = "Valid Since date cannot occur before the current date.";
 
@@ -56,6 +70,9 @@ public class FactoryConstants {
 
     public static final String INVALID_WELCOME_PAGE_ACTION = "The openWelcomePage action requires 'nonAuthenticatedContentUrl', " +
                                                              "'authenticatedContentUrl' properties to be set.";
+
+    public static final String ILLEGAL_REQUIRE_AUTHENTICATION_FOR_NAMED_WORKSPACE_MESSAGE =
+            "This factory was improperly configured. The parameter 'workspace.type=named' requires 'policies.requireAuthentication=true'.";
 
     public static final String ILLEGAL_FACTORY_BY_VALIDSINCE_MESSAGE =
             "This Factory is not yet valid due to time restrictions applied by its owner. Please, " +
