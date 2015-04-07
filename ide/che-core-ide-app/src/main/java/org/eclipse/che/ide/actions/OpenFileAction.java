@@ -94,8 +94,6 @@ public class OpenFileAction extends Action implements PromisableAction {
 
         final String filePathToOpen = activeProject.getPath() + (!path.startsWith("/") ? "/".concat(path) : path);
 
-        Log.info(OpenFileAction.class, "Opening: " + filePathToOpen);
-
         openFileByPath(filePathToOpen);
     }
 
