@@ -15,8 +15,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import static org.eclipse.che.api.project.shared.Constants.BLANK_CATEGORY;
-import static org.eclipse.che.api.project.shared.Constants.BLANK_ID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -30,12 +28,12 @@ public class BlankProjectWizardRegistrarTest {
 
     @Test
     public void shouldReturnCorrectProjectTypeId() throws Exception {
-        assertThat(wizardRegistrar.getProjectTypeId(), equalTo(BLANK_ID));
+        assertThat(wizardRegistrar.getProjectTypeId(), equalTo(BlankProjectWizardRegistrar.BLANK_ID));
     }
 
     @Test
     public void shouldReturnCorrectCategory() throws Exception {
-        assertThat(wizardRegistrar.getCategory(), equalTo(BLANK_CATEGORY));
+        assertThat(wizardRegistrar.getCategory(), equalTo(BlankProjectWizardRegistrar.BLANK_CATEGORY));
     }
 
     @Test

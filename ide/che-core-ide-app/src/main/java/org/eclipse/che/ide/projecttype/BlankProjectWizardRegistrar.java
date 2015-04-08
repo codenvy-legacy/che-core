@@ -19,15 +19,16 @@ import com.google.inject.Provider;
 
 import javax.annotation.Nonnull;
 
-import static org.eclipse.che.api.project.shared.Constants.BLANK_CATEGORY;
-import static org.eclipse.che.api.project.shared.Constants.BLANK_ID;
-
 /**
  * Provides information for registering Blank project type into project wizard.
  *
  * @author Artem Zatsarynnyy
  */
 public class BlankProjectWizardRegistrar implements ProjectWizardRegistrar {
+
+    public static final String BLANK_CATEGORY            = "Blank";
+    public static final String BLANK_ID                  = "blank";
+
     private final Array<Provider<? extends WizardPage<ImportProject>>> wizardPages;
 
     public BlankProjectWizardRegistrar() {

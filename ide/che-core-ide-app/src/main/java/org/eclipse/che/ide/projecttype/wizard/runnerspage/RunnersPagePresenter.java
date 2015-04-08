@@ -21,6 +21,7 @@ import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistry;
 import org.eclipse.che.ide.api.wizard.AbstractWizardPage;
 import org.eclipse.che.ide.dto.DtoFactory;
+import org.eclipse.che.ide.projecttype.BlankProjectWizardRegistrar;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.Unmarshallable;
@@ -32,7 +33,6 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.eclipse.che.api.project.shared.Constants.BLANK_ID;
 import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode.CREATE;
 import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistrar.PROJECT_PATH_KEY;
 import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistrar.WIZARD_MODE_KEY;
@@ -112,7 +112,7 @@ public class RunnersPagePresenter extends AbstractWizardPage<ImportProject> impl
             @Override
             protected void onSuccess(RunnerEnvironmentTree environmentTree) {
                 final String category = projectWizardRegistry.getWizardCategory(dataObject.getProject().getType());
-                if (category == null || BLANK_ID.equalsIgnoreCase(category)) {
+                if (category == null || BlankProjectWizardRegistrar.BLANK_ID.equalsIgnoreCase(category)) {
                     view.addRunner(environmentTree);
                 } else {
                     RunnerEnvironmentTree tree = dtoFactory.createDto(RunnerEnvironmentTree.class)

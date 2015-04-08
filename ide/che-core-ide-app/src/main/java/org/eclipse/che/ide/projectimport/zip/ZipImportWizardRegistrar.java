@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projectimport.zip;
 
+import org.eclipse.che.api.project.server.ZipProjectImporter;
 import org.eclipse.che.api.project.shared.dto.ImportProject;
 import org.eclipse.che.ide.api.project.wizard.ImportWizardRegistrar;
 import org.eclipse.che.ide.api.wizard.WizardPage;
@@ -19,8 +20,6 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 
 import javax.annotation.Nonnull;
-
-import static org.eclipse.che.api.project.shared.Constants.ZIP_IMPORTER_ID;
 
 /**
  * Provides information for registering ZIP importer into import wizard.
@@ -38,7 +37,7 @@ public class ZipImportWizardRegistrar implements ImportWizardRegistrar {
 
     @Nonnull
     public String getImporterId() {
-        return ZIP_IMPORTER_ID;
+        return ZipProjectImporter.ID;
     }
 
     @Nonnull

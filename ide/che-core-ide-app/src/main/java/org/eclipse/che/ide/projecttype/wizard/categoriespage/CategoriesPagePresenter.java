@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.eclipse.che.api.project.shared.Constants.DEFAULT_TEMPLATE_CATEGORY;
 import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode.CREATE;
 import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistrar.WIZARD_MODE_KEY;
 
@@ -44,6 +43,8 @@ import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistrar
 public class CategoriesPagePresenter extends AbstractWizardPage<ImportProject> implements CategoriesPageView.ActionDelegate {
     private static final String PUBLIC_VISIBILITY  = "public";
     private static final String PRIVATE_VISIBILITY = "private";
+    public final static String DEFAULT_TEMPLATE_CATEGORY = "Samples";
+
     private final CategoriesPageView               view;
     private final ProjectTypeRegistry              projectTypeRegistry;
     private final ProjectTemplateRegistry          projectTemplateRegistry;

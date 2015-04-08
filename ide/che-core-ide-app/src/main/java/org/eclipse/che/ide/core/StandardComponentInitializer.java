@@ -35,6 +35,7 @@ import org.eclipse.che.ide.actions.UploadFolderFromZipAction;
 import org.eclipse.che.ide.connection.WsConnectionListener;
 import org.eclipse.che.ide.imageviewer.ImageViewerProvider;
 import org.eclipse.che.ide.newresource.NewFileAction;
+import org.eclipse.che.ide.projecttype.BlankProjectWizardRegistrar;
 import org.eclipse.che.ide.toolbar.MainToolbar;
 import org.eclipse.che.ide.toolbar.ToolbarPresenter;
 import org.eclipse.che.ide.xml.NewXmlFileAction;
@@ -246,7 +247,7 @@ public class StandardComponentInitializer {
     /** Instantiates {@link StandardComponentInitializer} an creates standard content. */
     @Inject
     public StandardComponentInitializer(IconRegistry iconRegistry, StandardComponentInitializer.ParserResource parserResource) {
-        iconRegistry.registerIcon(new Icon(Constants.BLANK_CATEGORY + ".samples.category.icon", parserResource.samplesCategoryBlank()));
+        iconRegistry.registerIcon(new Icon(BlankProjectWizardRegistrar.BLANK_CATEGORY + ".samples.category.icon", parserResource.samplesCategoryBlank()));
     }
 
     public void initialize() {
