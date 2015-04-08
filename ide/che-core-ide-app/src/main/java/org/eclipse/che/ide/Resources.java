@@ -14,13 +14,16 @@
 
 package org.eclipse.che.ide;
 
-import org.eclipse.che.ide.api.parts.PartStackUIResources;
+import com.google.gwt.resources.client.CssResource;
+import com.google.gwt.resources.client.CssResource.NotStrict;
+import com.google.gwt.resources.client.ImageResource;
 
+import org.eclipse.che.ide.api.parts.PartStackUIResources;
+import org.eclipse.che.ide.dropdown.ListHeaderWidgetImpl;
+import org.eclipse.che.ide.menu.MenuResources;
 import org.eclipse.che.ide.notification.NotificationResources;
 import org.eclipse.che.ide.part.projectexplorer.ProjectTreeNodeRenderer;
 import org.eclipse.che.ide.projecttype.wizard.ProjectWizardResources;
-import org.eclipse.che.ide.menu.MenuResources;
-
 import org.eclipse.che.ide.ui.DialogBoxResources;
 import org.eclipse.che.ide.ui.buttonLoader.ButtonLoaderResources;
 import org.eclipse.che.ide.ui.cellview.CellTableResources;
@@ -29,11 +32,6 @@ import org.eclipse.che.ide.ui.list.CategoriesList;
 import org.eclipse.che.ide.ui.list.SimpleList;
 import org.eclipse.che.ide.ui.tree.Tree;
 import org.eclipse.che.ide.ui.zeroClipboard.ZeroClipboardResources;
-
-import com.google.gwt.resources.client.CssResource;
-import com.google.gwt.resources.client.CssResource.NotStrict;
-import com.google.gwt.resources.client.ImageResource;
-
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 /**
@@ -57,6 +55,7 @@ public interface Resources extends Tree.Resources,
                                    DataGridResources,
                                    CellTableResources,
                                    CategoriesList.Resources,
+                                   ListHeaderWidgetImpl.Resources,
                                    ButtonLoaderResources,
                                    ProjectWizardResources {
 
