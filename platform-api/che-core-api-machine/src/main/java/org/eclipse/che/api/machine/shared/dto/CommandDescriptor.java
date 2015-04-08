@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.shared.dto;
 
+import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
 import org.eclipse.che.api.machine.shared.Command;
 import org.eclipse.che.dto.shared.DTO;
 
@@ -17,7 +18,7 @@ import org.eclipse.che.dto.shared.DTO;
  * @author andrew00x
  */
 @DTO
-public interface CommandDescriptor extends Command {
+public interface CommandDescriptor extends Command, Hyperlinks {
     void setName(String name);
 
     CommandDescriptor withName(String name);

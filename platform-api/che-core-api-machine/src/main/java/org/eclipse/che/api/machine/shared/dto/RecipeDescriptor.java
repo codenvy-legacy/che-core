@@ -10,13 +10,14 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.shared.dto;
 
+import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
 import org.eclipse.che.dto.shared.DTO;
 
 /**
  * @author andrew00x
  */
 @DTO
-public interface RecipeDescriptor {
+public interface RecipeDescriptor extends Hyperlinks {
     String getType();
 
     void setType(String type);

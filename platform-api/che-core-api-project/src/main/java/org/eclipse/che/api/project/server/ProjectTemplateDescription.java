@@ -107,21 +107,21 @@ public class ProjectTemplateDescription {
         this(category, importerType, displayName, description, location, null);
     }
 
-    /**
-     * Create new ProjectTemplateDescription with default category eq @see defaultCategory.
-     *
-     * @param importerType
-     *         importer name like git, zip that maybe used fot import template to IDE
-     * @param displayName
-     *         display name of this template
-     * @param description
-     *         description of this template
-     * @param location
-     *         location of template, importer uses it when import templates to IDE
-     */
-    public ProjectTemplateDescription(String importerType, String displayName, String description, String location) {
-        this(org.eclipse.che.api.project.shared.Constants.DEFAULT_TEMPLATE_CATEGORY, importerType, displayName, description, location);
-    }
+//    /**
+//     * Create new ProjectTemplateDescription with default category eq @see defaultCategory.
+//     *
+//     * @param importerType
+//     *         importer name like git, zip that maybe used fot import template to IDE
+//     * @param displayName
+//     *         display name of this template
+//     * @param description
+//     *         description of this template
+//     * @param location
+//     *         location of template, importer uses it when import templates to IDE
+//     */
+//    public ProjectTemplateDescription(String importerType, String displayName, String description, String location) {
+//        this(org.eclipse.che.api.project.shared.Constants.DEFAULT_TEMPLATE_CATEGORY, importerType, displayName, description, location);
+//    }
 
     /**
      * Gets type of "importer" that can recognize sources template, sources located at specified {@code location}.

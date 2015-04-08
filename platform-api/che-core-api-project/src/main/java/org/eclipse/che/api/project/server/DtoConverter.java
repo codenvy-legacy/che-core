@@ -58,36 +58,36 @@ public class DtoConverter {
     private DtoConverter() { //converter
     }
 
-    public static ProjectTemplateDescription fromDto(ProjectTemplateDescriptor dto) {
-        final String category = dto.getCategory();
-        final ImportSourceDescriptor importSource = dto.getSource();
-        final BuildersDescriptor builders = dto.getBuilders();
-        final RunnersDescriptor runners = dto.getRunners();
-        return new ProjectTemplateDescription(
-                category == null ? org.eclipse.che.api.project.shared.Constants.DEFAULT_TEMPLATE_CATEGORY : category,
-                importSource == null ? null : importSource.getType(),
-                dto.getDisplayName(),
-                dto.getDescription(),
-                importSource == null ? null : importSource.getLocation(),
-                importSource == null ? null : importSource.getParameters(),
-                builders == null ? null : fromDto(builders),
-                runners == null ? null : fromDto(runners));
-    }
-
-
-    public static ProjectTemplateDescriptor toDto(ProjectTemplateDescription templateDescription) {
-        final DtoFactory dtoFactory = DtoFactory.getInstance();
-        ImportSourceDescriptor sources = dtoFactory.createDto(ImportSourceDescriptor.class)
-                                                   .withLocation(templateDescription.getLocation())
-                                                   .withType(templateDescription.getImporterType());
-
-        return dtoFactory.createDto(ProjectTemplateDescriptor.class).withDescription(templateDescription.getDescription())
-                                                             .withBuilders(toDto(templateDescription.getBuilders()))
-                                                             .withCategory(templateDescription.getCategory())
-                                                             .withDisplayName(templateDescription.getDisplayName())
-                                                             .withRunners(toDto(templateDescription.getRunners()))
-                                                             .withSource(sources);
-    }
+//    public static ProjectTemplateDescription fromDto(ProjectTemplateDescriptor dto) {
+//        final String category = dto.getCategory();
+//        final ImportSourceDescriptor importSource = dto.getSource();
+//        final BuildersDescriptor builders = dto.getBuilders();
+//        final RunnersDescriptor runners = dto.getRunners();
+//        return new ProjectTemplateDescription(
+//                category == null ? org.eclipse.che.api.project.shared.Constants.DEFAULT_TEMPLATE_CATEGORY : category,
+//                importSource == null ? null : importSource.getType(),
+//                dto.getDisplayName(),
+//                dto.getDescription(),
+//                importSource == null ? null : importSource.getLocation(),
+//                importSource == null ? null : importSource.getParameters(),
+//                builders == null ? null : fromDto(builders),
+//                runners == null ? null : fromDto(runners));
+//    }
+//
+//
+//    public static ProjectTemplateDescriptor toDto(ProjectTemplateDescription templateDescription) {
+//        final DtoFactory dtoFactory = DtoFactory.getInstance();
+//        ImportSourceDescriptor sources = dtoFactory.createDto(ImportSourceDescriptor.class)
+//                                                   .withLocation(templateDescription.getLocation())
+//                                                   .withType(templateDescription.getImporterType());
+//
+//        return dtoFactory.createDto(ProjectTemplateDescriptor.class).withDescription(templateDescription.getDescription())
+//                                                             .withBuilders(toDto(templateDescription.getBuilders()))
+//                                                             .withCategory(templateDescription.getCategory())
+//                                                             .withDisplayName(templateDescription.getDisplayName())
+//                                                             .withRunners(toDto(templateDescription.getRunners()))
+//                                                             .withSource(sources);
+//    }
 
     public static ProjectConfig fromDto2(ProjectUpdate dto, ProjectTypeRegistry typeRegistry) throws ServerException,
                                                                                                      ProjectTypeConstraintException,
