@@ -117,25 +117,22 @@ public abstract class FactoryBaseValidator {
         }
         if (workspace.getType() != null) {
             if (!workspace.getType().equals("named") && !workspace.getType().equals("temp")) {
-                throw new ConflictException("workspace.type have only two possible values - named or temp");
+                throw new ConflictException("Attribute workspace.type have only two possible values - named or temp.");
             }
         }
         if (workspace.getLocation() != null) {
             if (!workspace.getLocation().equals("owner") && !workspace.getLocation().equals("acceptor")) {
-                throw new ConflictException("workspace.location have only two possible values - owner or acceptor");
+                throw new ConflictException("Attribute workspace.location have only two possible values - owner or acceptor.");
             }
         }
     }
 
     protected void validateCreator(Factory factory) throws ApiException {
         final Workspace workspace = factory.getWorkspace();
-        if (workspace == null || workspace.getLocation() == null) {
-            return;
-        }
-        if (workspace.getLocation().equals("owner")) {
+        if (workspace == null || workspace.getLocation() == null || workspace.getLocation().equals("owner")) {
             String accountId = factory.getCreator() != null ? emptyToNull(factory.getCreator().getAccountId()) : null;
             if (accountId == null) {
-                throw new ConflictException("current workspace location requires factory creator accountId to be set");
+                throw new ConflictException("Current workspace location requires factory creator accountId to be set.");
             }
         }
 
