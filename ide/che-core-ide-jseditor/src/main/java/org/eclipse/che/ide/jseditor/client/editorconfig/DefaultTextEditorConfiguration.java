@@ -21,7 +21,6 @@ import org.eclipse.che.ide.jseditor.client.partition.DocumentPartitioner;
 import org.eclipse.che.ide.jseditor.client.partition.DocumentPositionMap;
 import org.eclipse.che.ide.jseditor.client.quickfix.QuickAssistProcessor;
 import org.eclipse.che.ide.jseditor.client.reconciler.Reconciler;
-import org.eclipse.che.ide.jseditor.client.reconciler.ReconcilerWithAutoSave;
 
 /**
  * Default implementation of the {@link TextEditorConfiguration}.
@@ -50,7 +49,7 @@ public class DefaultTextEditorConfiguration implements TextEditorConfiguration {
 
     @Override
     public Reconciler getReconciler() {
-        return new ReconcilerWithAutoSave(DocumentPartitioner.DEFAULT_CONTENT_TYPE, getPartitioner());
+        return null;
     }
 
     @Override

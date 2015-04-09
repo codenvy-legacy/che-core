@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client;
 
+import com.google.inject.Inject;
+
 import org.eclipse.che.ide.api.extension.Extension;
 import org.eclipse.che.ide.api.filetypes.FileType;
 import org.eclipse.che.ide.api.filetypes.FileTypeRegistry;
@@ -20,8 +22,6 @@ import org.eclipse.che.ide.jseditor.client.popup.PopupResources;
 import org.eclipse.che.ide.jseditor.client.preference.EditorPreferenceResource;
 import org.eclipse.che.ide.jseditor.client.texteditor.EditorResources;
 
-import com.google.inject.Inject;
-
 @Extension(title = "Common Editor", version = "3.1.0")
 public class JsEditorExtension {
 
@@ -30,6 +30,12 @@ public class JsEditorExtension {
 
     /** The default editor injection name. */
     public static final String DEFAULT_EDITOR_TYPE_INSTANCE = "DefaultEditorType";
+
+    /** The editor without autosave */
+    public static final String EMBEDDED_EDITOR_BUILDER= "DefaultEditorBuilder";
+
+    /** The editor without autosave */
+    public static final String EMBEDDED_EDITOR_PROVIDER= "DefaultEditorProvider";
 
 
     @Inject
