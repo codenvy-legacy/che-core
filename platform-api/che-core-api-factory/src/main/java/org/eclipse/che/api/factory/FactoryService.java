@@ -192,7 +192,7 @@ public class FactoryService extends Service {
             }
             factory.getCreator().withUserId(context.getUser().getId()).withCreated(System.currentTimeMillis());
 
-
+            processDefaults(factory);
             createValidator.validateOnCreate(factory);
             String factoryId = factoryStore.saveFactory(factory, images);
             factory = factoryStore.getFactory(factoryId);
