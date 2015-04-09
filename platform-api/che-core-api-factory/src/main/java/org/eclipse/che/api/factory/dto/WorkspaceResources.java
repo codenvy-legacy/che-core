@@ -10,28 +10,35 @@
  *******************************************************************************/
 package org.eclipse.che.api.factory.dto;
 
+import org.eclipse.che.api.core.factory.FactoryParameter;
 import org.eclipse.che.dto.shared.DTO;
+
+import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.OPTIONAL;
 
 /**
  * @author Max Shaposhnik
  */
 @DTO
 public interface WorkspaceResources {
-    void setRunnerRam(Integer runnerRam);
 
+    @FactoryParameter(obligation = OPTIONAL)
     Integer getRunnerRam();
+
+    void setRunnerRam(Integer runnerRam);
 
     WorkspaceResources withRunnerRam(Integer runnerRam);
 
-    void setRunnerTimeout(Integer runnerTimeout);
-
+    @FactoryParameter(obligation = OPTIONAL)
     Integer getRunnerTimeout();
+
+    void setRunnerTimeout(Integer runnerTimeout);
 
     WorkspaceResources withRunnerTimeout(Integer runnerTimeout);
 
-    void setBuilderTimeout(Integer builderTimeout);
-
+    @FactoryParameter(obligation = OPTIONAL)
     Integer getBuilderTimeout();
+
+    void setBuilderTimeout(Integer builderTimeout);
 
     WorkspaceResources withBuilderTimeout(Integer builderTimeout);
 }

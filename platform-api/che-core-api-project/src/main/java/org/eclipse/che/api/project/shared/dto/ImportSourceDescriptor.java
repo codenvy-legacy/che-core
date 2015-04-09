@@ -28,7 +28,7 @@ public interface ImportSourceDescriptor {
      * @return type of importer e.g zip, git
      */
     @ApiModelProperty(value = "Importer type", required = true, allowableValues = "zip,git,svn")
-    @FactoryParameter(obligation = MANDATORY, queryParameterName = "type")
+    @FactoryParameter(obligation = MANDATORY)
     String getType();
 
     /**
@@ -42,7 +42,7 @@ public interface ImportSourceDescriptor {
      * @return location to the resource
      */
     @ApiModelProperty(value = "Location of remote resources to be imported", required = true)
-    @FactoryParameter(obligation = MANDATORY, queryParameterName = "location")
+    @FactoryParameter(obligation = MANDATORY)
     String getLocation();
 
     /**
@@ -56,7 +56,7 @@ public interface ImportSourceDescriptor {
      * @return import parameters
      */
     @ApiModelProperty(value = "Optional import parameters", required = false)
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "parameters")
+    @FactoryParameter(obligation = OPTIONAL)
     Map<String, String> getParameters();
 
     /**

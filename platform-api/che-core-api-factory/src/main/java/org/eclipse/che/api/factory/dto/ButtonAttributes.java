@@ -20,28 +20,28 @@ import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.OPTIO
  */
 @DTO
 public interface ButtonAttributes {
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "color")
+    @FactoryParameter(obligation = OPTIONAL)
     String getColor();
 
     void setColor(String color);
 
     ButtonAttributes withColor(String color);
 
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "counter")
+    @FactoryParameter(obligation = OPTIONAL)
     Boolean getCounter();
 
     void setCounter(Boolean counter);
 
     ButtonAttributes withCounter(Boolean counter);
 
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "logo")
+    @FactoryParameter(obligation = OPTIONAL)
     String getLogo();
 
     void setLogo(String logo);
 
     ButtonAttributes withLogo(String logo);
 
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "style")
+    @FactoryParameter(obligation = OPTIONAL)
     String getStyle();
 
     void setStyle(String style);

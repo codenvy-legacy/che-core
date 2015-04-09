@@ -103,11 +103,7 @@ public class FactoryBaseValidatorTest {
 
         User user = new User().withId("userid");
 
-        Subscription subscription = new Subscription()
-                .withServiceId("Factory")
-                .withProperties(Collections.singletonMap("Package", "Tracked"));
         member = new Member().withUserId("userid").withRoles(Arrays.asList("account/owner"));
-        when(accountDao.getActiveSubscription(ID, "Factory")).thenReturn(subscription);
         when(accountDao.getMembers(anyString())).thenReturn(Arrays.asList(member));
         when(userDao.getById("userid")).thenReturn(user);
 
@@ -152,7 +148,7 @@ public class FactoryBaseValidatorTest {
     }
 
     @Test(expectedExceptions = ApiException.class,
-            expectedExceptionsMessageRegExp = "workspace.type have only two possible values - named or temp")
+            expectedExceptionsMessageRegExp = "Attribute workspace.type have only two possible values - named or temp.")
     public void shouldNotValidateIfWorkspaceTypeIsInvalid() throws ApiException {
         factory = factory.withWorkspace(dto.createDto(Workspace.class)
                                            .withType("wrongg"));
@@ -161,7 +157,7 @@ public class FactoryBaseValidatorTest {
     }
 
     @Test(expectedExceptions = ApiException.class,
-            expectedExceptionsMessageRegExp = "workspace.location have only two possible values - owner or acceptor")
+            expectedExceptionsMessageRegExp = "Attribute workspace.location have only two possible values - owner or acceptor.")
     public void shouldNotValidateIfWorkspaceLocationIsInvalid() throws ApiException {
         factory = factory.withWorkspace(dto.createDto(Workspace.class)
                                            .withLocation("wrongg"));
@@ -170,7 +166,7 @@ public class FactoryBaseValidatorTest {
     }
 
     @Test(expectedExceptions = ApiException.class,
-            expectedExceptionsMessageRegExp = "current workspace location requires factory creator accountId to be set")
+            expectedExceptionsMessageRegExp = "Current workspace location requires factory creator accountId to be set.")
     public void shouldNotValidateIfWorkspaceLocationOwnerButNotAuthor() throws ApiException {
         factory = factory.withWorkspace(dto.createDto(Workspace.class).withLocation("owner")).withCreator(null);
         validator.validateCreator(factory);

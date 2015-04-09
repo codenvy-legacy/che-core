@@ -27,10 +27,6 @@ public @interface FactoryParameter {
         MANDATORY, OPTIONAL
     }
 
-    enum FactoryFormat {
-        ENCODED, NONENCODED, BOTH
-    }
-
     enum Version {
         // NEVER must be the last defined constant
         V2_0, V2_1, NEVER;
@@ -55,15 +51,11 @@ public @interface FactoryParameter {
         }
     }
 
-    FactoryFormat format() default FactoryFormat.BOTH;
-
     Obligation obligation();
 
     boolean setByServer() default false;
 
     boolean trackedOnly() default false;
-
-    String queryParameterName();
 
     Version deprecatedSince() default Version.NEVER;
 

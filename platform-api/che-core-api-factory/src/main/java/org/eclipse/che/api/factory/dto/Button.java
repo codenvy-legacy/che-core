@@ -27,7 +27,7 @@ public interface Button {
     }
 
     /** Type of the button */
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "type")
+    @FactoryParameter(obligation = OPTIONAL)
     ButtonType getType();
 
     void setType(ButtonType type);
@@ -35,7 +35,7 @@ public interface Button {
     Button withType(ButtonType type);
 
     /** Button attributes */
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "attributes")
+    @FactoryParameter(obligation = OPTIONAL)
     ButtonAttributes getAttributes();
 
     void setAttributes(ButtonAttributes attributes);

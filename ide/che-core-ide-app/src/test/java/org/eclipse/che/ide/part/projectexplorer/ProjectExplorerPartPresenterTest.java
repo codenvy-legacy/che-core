@@ -32,16 +32,20 @@ import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.web.bindery.event.shared.EventBus;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -171,11 +175,17 @@ public class ProjectExplorerPartPresenterTest {
 
     @Test
     public void testOnDeleteKey() throws Exception {
-        StorableNode node = mock(StorableNode.class);
-        doReturn(node).when(view).getSelectedNode();
+        StorableNode firstNode = mock(StorableNode.class);
+        StorableNode secondNode = mock(StorableNode.class);
+        Array<?> array = new JsonArrayListAdapter<>(Arrays.asList(firstNode, secondNode));
+        doReturn(array).when(view).getSelectedNodes();
         presenter.onDeleteKey();
 
-        verify(deleteNodeHandler).delete(node);
+        Class<List<StorableNode>> listClass = (Class) List.class;
+        ArgumentCaptor<List<StorableNode>> captor = ArgumentCaptor.forClass(listClass);
+        verify(deleteNodeHandler).deleteNodes(captor.capture());
+        assertTrue(captor.getValue().contains(firstNode));
+        assertTrue(captor.getValue().contains(secondNode));
     }
 
     @Test

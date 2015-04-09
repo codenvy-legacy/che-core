@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.factory;
 
+import com.google.common.base.CaseFormat;
+
 import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.factory.FactoryParameter;
@@ -19,8 +21,6 @@ import org.eclipse.che.api.factory.dto.Factory;
 import org.eclipse.che.api.factory.dto.FactoryV2_0;
 import org.eclipse.che.api.factory.dto.FactoryV2_1;
 import org.eclipse.che.api.project.shared.dto.ImportSourceDescriptor;
-import org.eclipse.che.api.vfs.shared.dto.ReplacementSet;
-import org.eclipse.che.commons.lang.URLEncodedUtils;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.eclipse.che.dto.shared.DTO;
 import org.slf4j.Logger;
@@ -31,39 +31,27 @@ import javax.inject.Singleton;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.net.URI;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 
-import static com.google.common.base.Strings.emptyToNull;
-import static org.eclipse.che.api.core.factory.FactoryParameter.FactoryFormat;
-import static org.eclipse.che.api.core.factory.FactoryParameter.FactoryFormat.ENCODED;
-import static org.eclipse.che.api.core.factory.FactoryParameter.FactoryFormat.NONENCODED;
 import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation;
 import static org.eclipse.che.api.core.factory.FactoryParameter.Version;
 
 /**
- * Tool to easy convert Factory object to nonencoded version or
- * to json version and vise versa.
+ * Tool to easy convert Factory object to json and vise versa.
  * Also it provides factory parameters compatibility.
  *
  * @author Sergii Kabashniuk
  * @author Alexander Garagatyi
  */
 @Singleton
-public class FactoryBuilder extends NonEncodedFactoryBuilder {
+public class FactoryBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(FactoryService.class);
 
     /** List contains all possible implementation of factory legacy converters. */
@@ -83,35 +71,6 @@ public class FactoryBuilder extends NonEncodedFactoryBuilder {
     }
 
     /**
-     * Build factory from query string of non-encoded factory URI and validate compatibility.
-     *
-     * @param uri
-     *         - uri with non-encoded factory parameters.
-     * @return - Factory object represented by given factory URI.
-     */
-    public Factory buildEncoded(URI uri) throws ApiException {
-        if (uri == null) {
-            throw new ConflictException("Passed in invalid query parameters.");
-        }
-
-        Map<String, Set<String>> queryParams = URLEncodedUtils.parse(uri, "UTF-8");
-
-        Factory factory = buildDtoObject(queryParams, "", Factory.class);
-
-        // there is unsupported parameters in query
-        if (!queryParams.isEmpty()) {
-            String nameInvalidParams = queryParams.keySet().iterator().next();
-            throw new ConflictException(
-                    String.format(FactoryConstants.PARAMETRIZED_INVALID_PARAMETER_MESSAGE, nameInvalidParams, factory.getV()));
-        } else if (null == factory) {
-            throw new ConflictException(FactoryConstants.MISSING_MANDATORY_MESSAGE);
-        }
-
-        checkValid(factory, NONENCODED);
-        return factory;
-    }
-
-    /**
      * Build factory from json of encoded factory and validate compatibility.
      *
      * @param json
@@ -120,7 +79,7 @@ public class FactoryBuilder extends NonEncodedFactoryBuilder {
      */
     public Factory buildEncoded(Reader json) throws IOException, ApiException {
         Factory factory = DtoFactory.getInstance().createDtoFromJson(json, Factory.class);
-        checkValid(factory, ENCODED);
+        checkValid(factory);
         return factory;
     }
 
@@ -133,7 +92,7 @@ public class FactoryBuilder extends NonEncodedFactoryBuilder {
      */
     public Factory buildEncoded(String json) throws ApiException {
         Factory factory = DtoFactory.getInstance().createDtoFromJson(json, Factory.class);
-        checkValid(factory, ENCODED);
+        checkValid(factory);
         return factory;
     }
 
@@ -146,7 +105,7 @@ public class FactoryBuilder extends NonEncodedFactoryBuilder {
      */
     public Factory buildEncoded(InputStream json) throws IOException, ApiException {
         Factory factory = DtoFactory.getInstance().createDtoFromJson(json, Factory.class);
-        checkValid(factory, ENCODED);
+        checkValid(factory);
         return factory;
     }
 
@@ -155,11 +114,9 @@ public class FactoryBuilder extends NonEncodedFactoryBuilder {
      *
      * @param factory
      *         - factory object to validate
-     * @param sourceFormat
-     *         - is it encoded factory or not
      * @throws ApiException
      */
-    public void checkValid(Factory factory, FactoryFormat sourceFormat) throws ApiException {
+    public void checkValid(Factory factory) throws ApiException {
         if (null == factory) {
             throw new ConflictException(FactoryConstants.UNPARSABLE_FACTORY_MESSAGE);
         }
@@ -174,24 +131,18 @@ public class FactoryBuilder extends NonEncodedFactoryBuilder {
             throw new ConflictException(FactoryConstants.INVALID_VERSION_MESSAGE);
         }
 
-        String accountId;
-
         Class usedFactoryVersionMethodProvider;
         switch (v) {
             case V2_0:
                 usedFactoryVersionMethodProvider = FactoryV2_0.class;
-                accountId = factory.getCreator() != null ? factory.getCreator().getAccountId() : null;
                 break;
             case V2_1:
                 usedFactoryVersionMethodProvider = FactoryV2_1.class;
-                accountId = factory.getCreator() != null ? factory.getCreator().getAccountId() : null;
                 break;
             default:
                 throw new ConflictException(FactoryConstants.INVALID_VERSION_MESSAGE);
         }
-        accountId = emptyToNull(accountId);
-
-        validateCompatibility(factory, Factory.class, usedFactoryVersionMethodProvider, v, sourceFormat, accountId, "");
+        validateCompatibility(factory, Factory.class, usedFactoryVersionMethodProvider, v, "");
     }
 
     /**
@@ -225,10 +176,6 @@ public class FactoryBuilder extends NonEncodedFactoryBuilder {
      *         - class that provides allowed methods
      * @param version
      *         - version of factory
-     * @param sourceFormat
-     *         - factory format
-     * @param accountId
-     *         - account id of a factory
      * @param parentName
      *         - parent parameter queryParameterName
      * @throws org.eclipse.che.api.core.ApiException
@@ -237,15 +184,15 @@ public class FactoryBuilder extends NonEncodedFactoryBuilder {
                                Class methodsProvider,
                                Class allowedMethodsProvider,
                                Version version,
-                               FactoryFormat sourceFormat,
-                               String accountId,
                                String parentName) throws ApiException {
         // get all methods recursively
         for (Method method : methodsProvider.getMethods()) {
             FactoryParameter factoryParameter = method.getAnnotation(FactoryParameter.class);
             // is it factory parameter
             if (factoryParameter != null) {
-                String fullName = (parentName.isEmpty() ? "" : (parentName + ".")) + factoryParameter.queryParameterName();
+                String fullName = (parentName.isEmpty() ? "" : (parentName + ".")) + CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL,
+                                                                                                              method.getName().substring(3)
+                                                                                                                     .toLowerCase());
                 // check that field is set
                 Object parameterValue;
                 try {
@@ -279,16 +226,10 @@ public class FactoryBuilder extends NonEncodedFactoryBuilder {
                                 String.format(FactoryConstants.PARAMETRIZED_INVALID_PARAMETER_MESSAGE, fullName, version));
                     }
 
-                    // check that field satisfies format rules
-                    if (!FactoryFormat.BOTH.equals(factoryParameter.format()) && !factoryParameter.format().equals(sourceFormat)) {
-                        throw new ConflictException(String.format(FactoryConstants.PARAMETRIZED_ENCODED_ONLY_PARAMETER_MESSAGE, fullName));
-                    }
-
                     // use recursion if parameter is DTO object
                     if (method.getReturnType().isAnnotationPresent(DTO.class)) {
                         // validate inner objects such Git ot ProjectAttributes
-                        validateCompatibility(parameterValue, method.getReturnType(), method.getReturnType(), version, sourceFormat,
-                                              accountId, fullName);
+                        validateCompatibility(parameterValue, method.getReturnType(), method.getReturnType(), version, fullName);
                     } else if (Map.class.isAssignableFrom(method.getReturnType())) {
                         Type tp = ((ParameterizedType)method.getGenericReturnType()).getActualTypeArguments()[1];
 
@@ -308,8 +249,8 @@ public class FactoryBuilder extends NonEncodedFactoryBuilder {
                             if (secMapParamClass.isAnnotationPresent(DTO.class)) {
                                 Map<Object, Object> map = (Map)parameterValue;
                                 for (Map.Entry<Object, Object> entry : map.entrySet()) {
-                                    validateCompatibility(entry.getValue(), secMapParamClass, secMapParamClass, version, sourceFormat,
-                                                          accountId, fullName + "." + (String)entry.getKey());
+                                    validateCompatibility(entry.getValue(), secMapParamClass, secMapParamClass, version,
+                                                          fullName + "." + entry.getKey());
                                 }
                             } else {
                                 throw new RuntimeException("This type of fields is not supported by factory.");
@@ -319,213 +260,5 @@ public class FactoryBuilder extends NonEncodedFactoryBuilder {
                 }
             }
         }
-    }
-
-    /**
-     * Build dto object with {@link org.eclipse.che.api.core.factory.FactoryParameter} annotations on its methods.
-     *
-     * @param queryParams
-     *         - source of parameters to parse
-     * @param parentName
-     *         - queryParameterName of parent object. Allow provide support of nested parameters such as
-     *         projectattributes.pname
-     * @param cl
-     *         - class of the object to build.
-     * @return - built object
-     * @throws org.eclipse.che.api.core.ApiException
-     */
-    private <T> T buildDtoObject(Map<String, Set<String>> queryParams,
-                                 String parentName,
-                                 Class<T> cl) throws ApiException {
-        T result = DtoFactory.getInstance().createDto(cl);
-        boolean returnNull = true;
-        // get all methods of object recursively
-        for (Method method : cl.getMethods()) {
-            FactoryParameter factoryParameter = method.getAnnotation(FactoryParameter.class);
-            try {
-                if (factoryParameter != null) {
-                    final String queryParameterName = factoryParameter.queryParameterName();
-                    // define full queryParameterName of parameter to be able retrieving nested parameters
-                    String fullName = (parentName.isEmpty() ? "" : parentName + ".") + queryParameterName;
-                    Class<?> returnClass = method.getReturnType();
-
-                    if (factoryParameter.format() == FactoryFormat.ENCODED) {
-                        if (queryParams.containsKey(fullName)) {
-                            throw new ConflictException(
-                                    String.format(FactoryConstants.PARAMETRIZED_ENCODED_ONLY_PARAMETER_MESSAGE, fullName));
-                        } else {
-                            continue;
-                        }
-                    }
-
-                    //PrimitiveTypeProducer
-                    Object param = null;
-                    if (queryParams.containsKey(fullName)) {
-                        Set<String> values;
-                        if (null == (values = queryParams.remove(fullName)) || values.size() != 1) {
-                            throw new ConflictException(
-                                    String.format(FactoryConstants.PARAMETRIZED_ILLEGAL_PARAMETER_VALUE_MESSAGE, fullName,
-                                                  null != values ? values.toString() : "null"));
-                        }
-                        param = ValueHelper.createValue(returnClass, values);
-                        if (null == param) {
-                            if ("variables".equals(fullName) || "actions.findReplace".equals(fullName)) {
-                                try {
-                                    param = DtoFactory.getInstance().createListDtoFromJson(values.iterator().next(), ReplacementSet.class);
-                                } catch (Exception e) {
-                                    throw new ConflictException(
-                                            String.format(FactoryConstants.PARAMETRIZED_ILLEGAL_PARAMETER_VALUE_MESSAGE, fullName,
-                                                          values.toString()));
-                                }
-                            } else {
-                                // should never happen
-                                throw new ConflictException(
-                                        String.format(FactoryConstants.PARAMETRIZED_ILLEGAL_PARAMETER_VALUE_MESSAGE, fullName,
-                                                      values.toString()));
-                            }
-                        }
-                    } else if (returnClass.isAnnotationPresent(DTO.class)) {
-                        // use recursion if parameter is DTO object
-                        param = buildDtoObject(queryParams, fullName, returnClass);
-                    } else if (List.class.isAssignableFrom(returnClass)) {
-                        Type tp = ((ParameterizedType)method.getGenericReturnType()).getActualTypeArguments()[0];
-                        Class listClass;
-                        if (tp instanceof ParameterizedType) {
-                            listClass = (Class)((ParameterizedType)tp).getRawType();
-                        } else {
-                            listClass = (Class)tp;
-                        }
-
-                        Set<String> keys = new TreeSet<>();
-                        for (String key : queryParams.keySet()) {
-                            if (key.startsWith(fullName)) {
-                                keys.add(key.substring(fullName.length() + 1, key.indexOf(".", fullName.length() + 1)));
-                            }
-                        }
-                        if (!keys.isEmpty()) {
-                            param = new ArrayList<>(keys.size());
-                            for (String key : keys) {
-                                Map<String, Set<String>> listQueryParams = new HashMap<>();
-                                Set<String> removeKeys = new HashSet<>();
-                                for (Map.Entry<String, Set<String>> queryParam : queryParams.entrySet()) {
-                                    String queryParamKey = queryParam.getKey();
-                                    if (queryParamKey.startsWith(fullName + "." + key + ".")) {
-                                        removeKeys.add(queryParamKey);
-                                        listQueryParams
-                                                .put(queryParamKey.substring(fullName.length() + key.length() + 2), queryParam.getValue());
-                                    }
-                                }
-                                ((List)param).add(buildDtoObject(listQueryParams, "", listClass));
-                                //cleanup in list of query params.
-                                for (String removeKey : removeKeys) {
-                                    queryParams.remove(removeKey);
-                                }
-                            }
-                        }
-                    } else if (Map.class.isAssignableFrom(returnClass)) {
-                        Type tp = ((ParameterizedType)method.getGenericReturnType()).getActualTypeArguments()[1];
-
-                        Class secMapParamClass;
-                        if (tp instanceof ParameterizedType) {
-                            secMapParamClass = (Class)((ParameterizedType)tp).getRawType();
-                        } else {
-                            secMapParamClass = (Class)tp;
-                        }
-                        String mapEntryPrefix = fullName + ".";
-                        Map<String, Object> map;
-                        if (Map.class == returnClass) {
-                            map = new HashMap<>();
-                        } else {
-                            map = (Map)returnClass.newInstance();
-                        }
-                        if (String.class.equals(secMapParamClass)) {
-                            for (Map.Entry<String, Set<String>> parameterEntry : queryParams.entrySet()) {
-                                if (parameterEntry.getKey().startsWith(mapEntryPrefix)) {
-                                    map.put(parameterEntry.getKey().substring(mapEntryPrefix.length()),
-                                            parameterEntry.getValue().iterator().next());
-                                }
-                            }
-                            for (String key : map.keySet()) {
-                                queryParams.remove(mapEntryPrefix + key);
-                            }
-                            if (!map.isEmpty()) {
-                                param = map;
-                            }
-                        } else if (List.class.equals(secMapParamClass)) {
-                            for (Map.Entry<String, Set<String>> parameterEntry : queryParams.entrySet()) {
-                                if (parameterEntry.getKey().startsWith(mapEntryPrefix)) {
-                                    map.put(parameterEntry.getKey().substring(mapEntryPrefix.length()),
-                                            new ArrayList<>(parameterEntry.getValue()));
-                                }
-                            }
-                            for (String key : map.keySet()) {
-                                queryParams.remove(mapEntryPrefix + key);
-                            }
-                            if (!map.isEmpty()) {
-                                param = map;
-                            }
-                        } else {
-                            if (secMapParamClass.isAnnotationPresent(DTO.class)) {
-                                final Map<String, Map<String, Set<String>>> dtosQueries = new HashMap<>();
-                                for (Map.Entry<String, Set<String>> parameterEntry : queryParams.entrySet()) {
-                                    if (parameterEntry.getKey().startsWith(mapEntryPrefix) &&
-                                        parameterEntry.getKey().length() > mapEntryPrefix.length()) {
-                                        final String currentKey = parameterEntry.getKey().substring(mapEntryPrefix.length());
-                                        final int i = currentKey.indexOf('.');
-                                        if (i != -1) {
-                                            String dtoKey = currentKey.substring(0, i);
-                                            Map<String, Set<String>> dtoMap;
-                                            if ((dtoMap = dtosQueries.get(dtoKey)) == null) {
-                                                dtosQueries.put(dtoKey, dtoMap = new HashMap<>());
-                                            }
-                                            dtoMap.put(parameterEntry.getKey(), parameterEntry.getValue());
-                                        }
-                                    }
-                                }
-                                for (Map.Entry<String, Map<String, Set<String>>> dtoEntry : dtosQueries.entrySet()) {
-                                    Object dto = buildDtoObject(queryParams, mapEntryPrefix + dtoEntry.getKey(), secMapParamClass);
-                                    map.put(dtoEntry.getKey(), dto);
-                                }
-                                if (!map.isEmpty()) {
-                                    param = map;
-                                }
-                            }
-                        }
-                    }
-                    if (param != null) {
-                        // call appropriate setter to set current parameter
-                        String setterMethodName =
-                                "set" + Character.toUpperCase(method.getName().substring(3).charAt(0)) + method.getName().substring(4);
-                        Method setterMethod = cl.getMethod(setterMethodName, returnClass);
-                        setterMethod.invoke(result, param);
-                        returnNull = false;
-                    }
-                }
-            } catch (ApiException e) {
-                throw e;
-            } catch (Exception e) {
-                LOG.error(e.getLocalizedMessage(), e);
-                throw new ConflictException(
-                        "Can't validate '" + (parentName.isEmpty() ? "" : parentName + ".") + factoryParameter.queryParameterName() +
-                        "' parameter."
-                );
-            }
-        }
-
-        return returnNull ? null : result;
-    }
-
-    @Override
-    protected String encode(String value) {
-        try {
-            return URLEncoder.encode(value, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            return value;
-        }
-    }
-
-    @Override
-    protected String toJson(List<ReplacementSet> dto) {
-        return DtoFactory.getInstance().toJson(dto);
     }
 }

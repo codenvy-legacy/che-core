@@ -31,14 +31,10 @@ public class FactoryConstants {
             "You are missing a mandatory parameter.  For more information, please visit http://docs.codenvy" +
             ".com/user/project-lifecycle/#configuration-reference";
 
+      /* Used in factory servlet*/
     public static final String ILLEGAL_HOSTNAME_MESSAGE =
             "This Factory has its access restricted by certain hostname. Your client does not match the specified " +
             "policy. Please contact the owner of this Factory for more information.";
-
-    public static final String PARAMETRIZED_INVALID_TRACKED_PARAMETER_MESSAGE =
-            "You have provided a Tracked Factory parameter %s, and you do not have a valid accountId. You could have " +
-            "provided the wrong code, your subscription has expired, or you do not have a valid subscription account." +
-            " Please contact info@codenvy.com with any questions.";
 
     public static final String PARAMETRIZED_INVALID_PARAMETER_MESSAGE =
             "You have provided an invalid parameter %s for this version of Factory parameters %s. For more " +
@@ -50,10 +46,7 @@ public class FactoryConstants {
             "Please contact info@codenvy.com with any questions. \n" +
             "accountId Submitted: %s";
 
-    public static final String PARAMETRIZED_ENCODED_ONLY_PARAMETER_MESSAGE =
-            "You submitted a parameter that can only be submitted through an encoded Factory URL %s. For more " +
-            "information, please visit http://docs.codenvy.com/user/project-lifecycle/#configuration-reference";
-
+    /* Used in factory servlet*/
     public static final String PARAMETRIZED_ILLEGAL_TRACKED_PARAMETER_MESSAGE =
             "You do not have a valid accountId. Your Factory configuration has a parameter that can only be used with a " +
             "Tracked Factory subscription. You could have provided the wrong value, " +

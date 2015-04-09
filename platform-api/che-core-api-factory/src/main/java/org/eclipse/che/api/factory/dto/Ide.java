@@ -26,7 +26,7 @@ public interface Ide {
     /**
      * @return configuration of IDE on application loaded event.
      */
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "onAppLoaded")
+    @FactoryParameter(obligation = OPTIONAL)
     OnAppLoaded getOnAppLoaded();
 
     void setOnAppLoaded(OnAppLoaded onAppLoaded);
@@ -36,7 +36,7 @@ public interface Ide {
     /**
      * @return configuration of IDE on application closed event.
      */
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "onAppClosed")
+    @FactoryParameter(obligation = OPTIONAL)
     OnAppClosed getOnAppClosed();
 
     void setOnAppClosed(OnAppClosed onAppClosed);
@@ -46,7 +46,7 @@ public interface Ide {
     /**
      * @return configuration of IDE on project opened event.
      */
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "onProjectOpened")
+    @FactoryParameter(obligation = OPTIONAL)
     OnProjectOpened getOnProjectOpened();
 
     void setOnProjectOpened(OnProjectOpened onProjectOpened);

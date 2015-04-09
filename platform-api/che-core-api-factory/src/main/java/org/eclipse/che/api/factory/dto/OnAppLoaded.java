@@ -27,7 +27,7 @@ public interface OnAppLoaded {
     /**
      * @return actions for current event.
      */
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "actions")
+    @FactoryParameter(obligation = OPTIONAL)
     List<Action> getActions();
 
     void setActions(List<Action> actions);

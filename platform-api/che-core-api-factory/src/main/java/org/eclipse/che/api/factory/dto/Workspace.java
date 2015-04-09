@@ -23,14 +23,14 @@ import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.OPTIO
  */
 @DTO
 public interface Workspace {
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "type")
+    @FactoryParameter(obligation = OPTIONAL)
     String getType();
 
     void setType(String type);
 
     Workspace withType(String type);
 
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "location")
+    @FactoryParameter(obligation = OPTIONAL)
     String getLocation();
 
     void setLocation(String location);
@@ -38,7 +38,7 @@ public interface Workspace {
     Workspace withLocation(String location);
 
 
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "resources")
+    @FactoryParameter(obligation = OPTIONAL)
     WorkspaceResources getResources();
 
     void setResources(WorkspaceResources resources);

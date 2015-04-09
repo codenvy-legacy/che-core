@@ -14,7 +14,7 @@ import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.Collections;
 
 /**
- * Queue used by {@link ReconcilerImpl} to manage dirty regions. When a dirty region is inserted into the queue, the queue tries to fold it
+ * Queue used by {@link ReconcilerWithAutoSave} to manage dirty regions. When a dirty region is inserted into the queue, the queue tries to fold it
  * into the neighboring dirty region.
  */
 class DirtyRegionQueue {

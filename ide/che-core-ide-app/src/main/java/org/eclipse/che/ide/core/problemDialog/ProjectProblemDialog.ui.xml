@@ -12,7 +12,6 @@
 -->
 <!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
-    		 xmlns:svg='urn:import:org.vectomatic.dom.svg.ui'
              xmlns:g='urn:import:com.google.gwt.user.client.ui'>
     <ui:with field='resources' type='org.eclipse.che.ide.ui.Resources'/>
     <ui:style>
@@ -20,16 +19,15 @@
             margin: 6px;
         }
 
-		.label {
-			margin-bottom: 10px
-		}
+        .label {
+            margin-bottom: 10px;
+            margin-left: 10px;
+            align-content: center;
+        }
     </ui:style>
-    <g:HorizontalPanel width="350px" height="100px" addStyleNames="{style.emptyBorder}">
-        <g:cell verticalAlignment="ALIGN_MIDDLE" horizontalAlignment="ALIGN_CENTER" width="80px">
-            <svg:SVGImage resource="{resources.question}" ui:field="questionImage"/>
-        </g:cell>
+    <g:HorizontalPanel width="350px" height="80px" addStyleNames="{style.emptyBorder}">
         <g:cell verticalAlignment="ALIGN_MIDDLE">
-            <g:SimplePanel ui:field="message" addStyleNames="{style.label}" width="270px"/>
+            <g:SimplePanel ui:field="message" addStyleNames="{style.label}" width="330px"/>
         </g:cell>
     </g:HorizontalPanel>
 </ui:UiBinder>

@@ -13,8 +13,9 @@ package org.eclipse.che.api.promises.client;
 /**
  * Interface for an 'operation', as a function without a return value, only side-effects, but without the burden of having a callback with
  * Void parameter.
- * 
- * @param <A> the type of the argument
+ *
+ * @param <A>
+ *         the type of the argument
  */
 public interface Operation<A> {
     void apply(A arg) throws OperationException;
