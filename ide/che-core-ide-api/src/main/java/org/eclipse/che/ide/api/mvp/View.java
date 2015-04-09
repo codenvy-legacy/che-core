@@ -19,5 +19,5 @@ import com.google.gwt.user.client.ui.IsWidget;
  */
 public interface View<T> extends IsWidget {
     /** Sets the delegate to receive events from this view. */
-    public void setDelegate(T delegate);
+    void setDelegate(T delegate);
 }
