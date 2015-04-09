@@ -8,16 +8,12 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.api.mvp;
-
-import com.google.gwt.user.client.ui.IsWidget;
+package org.eclipse.che.ide.api.editor;
 
 /**
- * Common interface for Views
- *
- * @author Andrey Plotnikov
+ * @author Evgen Vidolob
  */
-public interface View<T> extends IsWidget {
-    /** Sets the delegate to receive events from this view. */
-    void setDelegate(T delegate);
+public interface EditorWithAutoSave {
+
+    boolean isAutoSaveEnabled();
 }

@@ -8,16 +8,22 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.api.mvp;
+package org.eclipse.che.ide.api.action.permits;
 
-import com.google.gwt.user.client.ui.IsWidget;
+import com.google.inject.BindingAnnotation;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Common interface for Views
+ * Used to bind memory indicator action.
  *
- * @author Andrey Plotnikov
+ * @author Oleksii Orel
  */
-public interface View<T> extends IsWidget {
-    /** Sets the delegate to receive events from this view. */
-    void setDelegate(T delegate);
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD, ElementType.TYPE})
+@BindingAnnotation
+public @interface Indicator {
 }

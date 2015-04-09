@@ -10,20 +10,18 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.texteditor;
 
-import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Nonnull;
-import javax.inject.Inject;
-
-import org.eclipse.che.ide.collections.StringMap;
-import org.eclipse.che.ide.jseditor.client.codeassist.CodeAssistProcessor;
-import org.eclipse.che.ide.jseditor.client.formatter.ContentFormatter;
-import org.eclipse.che.ide.jseditor.client.events.DocumentReadyEvent;
-import org.eclipse.che.ide.jseditor.client.quickfix.QuickAssistantFactory;
-import org.vectomatic.dom.svg.ui.SVGResource;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.AcceptsOneWidget;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.Widget;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
+import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.editor.AbstractEditorPresenter;
@@ -43,10 +41,12 @@ import org.eclipse.che.ide.api.texteditor.HasReadOnlyProperty;
 import org.eclipse.che.ide.api.texteditor.TextEditorOperations;
 import org.eclipse.che.ide.api.texteditor.UndoableEditor;
 import org.eclipse.che.ide.api.texteditor.outline.OutlineModel;
+import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.debug.BreakpointManager;
 import org.eclipse.che.ide.debug.BreakpointRenderer;
 import org.eclipse.che.ide.debug.HasBreakpointRenderer;
 import org.eclipse.che.ide.jseditor.client.JsEditorConstants;
+import org.eclipse.che.ide.jseditor.client.codeassist.CodeAssistProcessor;
 import org.eclipse.che.ide.jseditor.client.codeassist.CodeAssistantFactory;
 import org.eclipse.che.ide.jseditor.client.codeassist.CompletionsSource;
 import org.eclipse.che.ide.jseditor.client.debug.BreakpointRendererFactory;
@@ -56,13 +56,19 @@ import org.eclipse.che.ide.jseditor.client.document.EmbeddedDocument;
 import org.eclipse.che.ide.jseditor.client.editorconfig.EditorUpdateAction;
 import org.eclipse.che.ide.jseditor.client.editorconfig.TextEditorConfiguration;
 import org.eclipse.che.ide.jseditor.client.events.CompletionRequestEvent;
+import org.eclipse.che.ide.jseditor.client.events.DocumentReadyEvent;
 import org.eclipse.che.ide.jseditor.client.events.GutterClickEvent;
 import org.eclipse.che.ide.jseditor.client.events.GutterClickHandler;
 import org.eclipse.che.ide.jseditor.client.filetype.FileTypeIdentifier;
+import org.eclipse.che.ide.jseditor.client.formatter.ContentFormatter;
 import org.eclipse.che.ide.jseditor.client.gutter.Gutters;
 import org.eclipse.che.ide.jseditor.client.gutter.HasGutter;
 import org.eclipse.che.ide.jseditor.client.keymap.Keybinding;
 import org.eclipse.che.ide.jseditor.client.position.PositionConverter;
+import org.eclipse.che.ide.jseditor.client.quickfix.QuickAssistantFactory;
+import org.eclipse.che.ide.api.editor.EditorWithAutoSave;
+import org.eclipse.che.ide.jseditor.client.reconciler.Reconciler;
+import org.eclipse.che.ide.jseditor.client.reconciler.ReconcilerWithAutoSave;
 import org.eclipse.che.ide.jseditor.client.text.LinearRange;
 import org.eclipse.che.ide.jseditor.client.text.TextPosition;
 import org.eclipse.che.ide.jseditor.client.text.TextRange;
@@ -73,18 +79,14 @@ import org.eclipse.che.ide.ui.dialogs.CancelCallback;
 import org.eclipse.che.ide.ui.dialogs.ConfirmCallback;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.ui.dialogs.choice.ChoiceDialog;
-import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.AcceptsOneWidget;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.Widget;
-import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
-import com.google.web.bindery.event.shared.EventBus;
+import org.vectomatic.dom.svg.ui.SVGResource;
+
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
 
 
 /**
@@ -97,6 +99,7 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
                                                                                     HasBreakpointRenderer,
                                                                                     HasReadOnlyProperty,
                                                                                     HandlesTextOperations,
+                                                                                    EditorWithAutoSave,
                                                                                     EditorWithErrors,
                                                                                     Delegate {
 
@@ -776,5 +779,11 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
 
     protected EditorWidget getEditorWidget() {
         return this.editorWidget;
+    }
+
+    @Override
+    public boolean isAutoSaveEnabled() {
+        Reconciler reconciler = getConfiguration().getReconciler();
+         return reconciler != null && reconciler instanceof ReconcilerWithAutoSave;
     }
 }

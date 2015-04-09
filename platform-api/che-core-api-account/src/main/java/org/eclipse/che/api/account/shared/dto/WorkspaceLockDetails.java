@@ -8,16 +8,25 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.api.mvp;
+package org.eclipse.che.api.account.shared.dto;
 
-import com.google.gwt.user.client.ui.IsWidget;
+import org.eclipse.che.dto.shared.DTO;
+
 
 /**
- * Common interface for Views
- *
- * @author Andrey Plotnikov
+ * @author Ann Shumilova
  */
-public interface View<T> extends IsWidget {
-    /** Sets the delegate to receive events from this view. */
-    void setDelegate(T delegate);
+@DTO
+public interface WorkspaceLockDetails {
+    String getWorkspaceId();
+
+    void setWorkspaceId(String accountId);
+
+    WorkspaceLockDetails withWorkspaceId(String workspaceId);
+
+    Boolean isLocked();
+
+    void setLocked(Boolean isLocked);
+
+    WorkspaceLockDetails withLocked(Boolean isLocked);
 }
