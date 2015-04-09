@@ -15,8 +15,14 @@ package org.eclipse.che.ide.api.action.permits;
  *
  * @author Oleksii Orel
  */
-public interface ActionPermit {
+public interface ResourcesLockedActionPermit {
 
     /** return allowed status for the action. */
     boolean isAllowed();
+
+    /** return account lock status. */
+    boolean isAccountLocked();
+
+    /** return workspace lock status. */
+    boolean isWorkspaceLocked();
 }
