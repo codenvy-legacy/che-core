@@ -112,9 +112,8 @@ public class ListHeaderWidgetImpl extends Composite implements ClickHandler, Mou
     /** {@inheritDoc} */
     @Override
     public void onClick(ClickEvent event) {
-        int top = getAbsoluteTop() + listHeader.getAbsoluteTop();
-        int left = getAbsoluteLeft();
-
+        int left = getAbsoluteLeft() + listHeader.getOffsetWidth();
+        int top = getAbsoluteTop() + listHeader.getOffsetHeight();
         listBody.show(left, top, listId);
     }
 

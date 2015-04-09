@@ -11,7 +11,6 @@
 package org.eclipse.che.ide.dropdown;
 
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.user.client.Window;
 import com.google.inject.Inject;
 
 import org.eclipse.che.ide.api.action.Action;
@@ -91,9 +90,9 @@ public class ListBody implements CloseMenuHandler, ActionSelectedHandler {
         Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
             @Override
             public void execute() {
-                int left = x;
-                if (left + popupMenu.getOffsetWidth() > Window.getClientWidth()) {
-                    left = Window.getClientWidth() - popupMenu.getOffsetWidth();
+                int left = x - popupMenu.getOffsetWidth();
+                if (left < 0) {
+                    left = 0;
                 }
 
                 popupMenu.getElement().getStyle().setTop(y, PX);
