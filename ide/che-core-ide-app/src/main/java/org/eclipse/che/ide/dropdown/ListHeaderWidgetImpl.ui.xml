@@ -19,17 +19,13 @@
             padding-left: 10px;
             padding-bottom: 5px;
             padding-right: 5px;
+            margin-top: 3px !important;
 
-        }
-
-        .selectedElementImage {
-            z-index: 0;
-            float: left;
         }
 
         .selectedElementImage svg {
-            height: 13px;
-            width: 13px;
+            width: 19px;
+            height: 19px;
             fill: #dbdbdb;
         }
 
@@ -45,11 +41,26 @@
             width: 16px;
             height: 16px;
         }
+
+        .container div {
+            margin-left: 0;
+        }
+
+        .imageContainer div {
+            margin-top: 0;
+        }
+
+        .imageContainer {
+            position: absolute;
+            z-index: 1;
+            width: 19px;
+            height: 19px;
+        }
     </ui:style>
 
     <g:FlowPanel ui:field="listHeader">
-        <g:FlowPanel ui:field="selectedElement">
-            <g:SimpleLayoutPanel addStyleNames="{style.imagePanel}">
+        <g:FlowPanel ui:field="selectedElement" addStyleNames="{style.container}">
+            <g:SimpleLayoutPanel addStyleNames="{style.imageContainer}">
                 <g:SimpleLayoutPanel ui:field="selectedElementImage" addStyleNames="{style.selectedElementImage}"/>
             </g:SimpleLayoutPanel>
             <g:Label ui:field="selectedElementName" addStyleNames="{style.selectedElementName}"/>

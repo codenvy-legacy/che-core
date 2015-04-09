@@ -145,8 +145,5 @@ public class ListHeaderWidgetImpl extends Composite implements ClickHandler, Mou
 
         @Source("expansionIcon.svg")
         SVGResource expansionImage();
-
-        @Source("run.svg")
-        SVGResource run();
     }
 }

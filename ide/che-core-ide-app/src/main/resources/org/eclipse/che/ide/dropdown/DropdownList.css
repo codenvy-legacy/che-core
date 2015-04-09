@@ -15,12 +15,14 @@
 }
 
 .onMouseOver {
+    height: 22px;
     padding-right: 5px;
     border-radius: 4px;
     border: 1px solid #232323;
 }
 
 .onMouseOut {
+    height: 22px;
     padding-right: 5px;
     border-radius: 4px;
     border: 1px solid #666666;
