@@ -49,7 +49,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -340,14 +339,20 @@ public class MachineManager {
                                                        description,
                                                        label);
 
-        executor.submit(new Callable<SnapshotImpl>() {
+        executor.submit(new Runnable() {
             @Override
-            public SnapshotImpl call() throws Exception {
-                final ImageKey imageKey = instance.saveToImage(machine.getOwner(), label);
-                snapshot.setImageKey(imageKey);
+            public void run() {
+                try {
+                    final ImageKey imageKey = instance.saveToImage(machine.getOwner(), label);
+                    snapshot.setImageKey(imageKey);
 
-                snapshotStorage.saveSnapshot(snapshot);
-                return snapshot;
+                    snapshotStorage.saveSnapshot(snapshot);
+                } catch (Exception e) {
+                    try {
+                        machine.getMachineLogsOutput().writeLine("Snapshot storing failed. " + e.getLocalizedMessage());
+                    } catch (IOException ignore) {
+                    }
+                }
             }
         });
 
