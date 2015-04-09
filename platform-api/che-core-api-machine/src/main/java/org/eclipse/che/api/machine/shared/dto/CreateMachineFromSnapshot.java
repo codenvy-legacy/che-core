@@ -13,16 +13,24 @@ package org.eclipse.che.api.machine.shared.dto;
 import org.eclipse.che.dto.shared.DTO;
 
 /**
+ * Describes information needed for machine creation from snapshot
+ *
  * @author Alexander Garagatyi
  */
 @DTO
 public interface CreateMachineFromSnapshot {
+    /**
+     * Channel of websocket where machine logs should be put
+     */
     String getOutputChannel();
 
     void setOutputChannel(String outputChannel);
 
     CreateMachineFromSnapshot withOutputChannel(String outputChannel);
 
+    /**
+     * Id of snapshot machine should be created from
+     */
     String getSnapshotId();
 
     void setSnapshotId(String snapshotId);

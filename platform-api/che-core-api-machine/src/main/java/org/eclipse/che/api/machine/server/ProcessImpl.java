@@ -14,6 +14,8 @@ import org.eclipse.che.api.machine.server.spi.InstanceProcess;
 import org.eclipse.che.api.machine.shared.Process;
 
 /**
+ * Represents process in a machine
+ *
  * @author andrew00x
  */
 public class ProcessImpl implements Process {

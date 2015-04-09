@@ -15,6 +15,8 @@ import org.eclipse.che.api.machine.shared.RecipeId;
 import org.eclipse.che.api.machine.shared.dto.RecipeDescriptor;
 
 /**
+ * Implementation of {@link Recipe}
+ *
  * @author andrew00x
  */
 public class RecipeImpl implements Recipe {

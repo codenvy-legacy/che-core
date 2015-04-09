@@ -23,15 +23,18 @@ import java.util.List;
  * @author andrew00x
  */
 public class SnapshotImpl implements Snapshot {
-    private final String               id;
-    private final String               type;
-    private final ImageKey             imageKey;
-    private final String               owner;
-    private final long                 creationDate;
-    private final String               workspaceId;
-    private final List<ProjectBinding> projects;
-    private final String               description;
-    private final String               label;
+    private String               id;
+    private String               type;
+    private ImageKey             imageKey;
+    private String               owner;
+    private long                 creationDate;
+    private String               workspaceId;
+    private List<ProjectBinding> projects;
+    private String               description;
+    private String               label;
+
+    public SnapshotImpl() {
+    }
 
     public SnapshotImpl(String id,
                         String type,
@@ -52,9 +55,19 @@ public class SnapshotImpl implements Snapshot {
         this.description = description;
         this.label = label;
     }
+
     @Override
     public String getId() {
         return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public SnapshotImpl withId(String id) {
+        this.id = id;
+        return this;
     }
 
     @Override
@@ -62,8 +75,26 @@ public class SnapshotImpl implements Snapshot {
         return type;
     }
 
+    public void setImageType(String imageType) {
+        this.type = imageType;
+    }
+
+    public SnapshotImpl withImageType(String imageType) {
+        this.type = imageType;
+        return this;
+    }
+
     public ImageKey getImageKey() {
         return imageKey;
+    }
+
+    public void setImageKey(ImageKey imageKey) {
+        this.imageKey = imageKey;
+    }
+
+    public SnapshotImpl withImageKey(ImageKey imageKey) {
+        this.imageKey = imageKey;
+        return this;
     }
 
     @Override
@@ -71,9 +102,27 @@ public class SnapshotImpl implements Snapshot {
         return owner;
     }
 
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
+
+    public SnapshotImpl withOwner(String owner) {
+        this.owner = owner;
+        return this;
+    }
+
     @Override
     public long getCreationDate() {
         return creationDate;
+    }
+
+    public void setCreationDate(long creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public SnapshotImpl withCreationDate(long creationDate) {
+        this.creationDate = creationDate;
+        return this;
     }
 
     @Override
@@ -81,9 +130,27 @@ public class SnapshotImpl implements Snapshot {
         return workspaceId;
     }
 
+    public void setWorkspaceId(String workspaceId) {
+        this.workspaceId = workspaceId;
+    }
+
+    public SnapshotImpl withWorkspaceId(String workspaceId) {
+        this.workspaceId = workspaceId;
+        return this;
+    }
+
     @Override
     public List<ProjectBinding> getProjects() {
         return projects;
+    }
+
+    public void setProjects(List<ProjectBinding> projects) {
+        this.projects = projects;
+    }
+
+    public SnapshotImpl withProjects(List<ProjectBinding> projects) {
+        this.projects = projects;
+        return this;
     }
 
     @Override
@@ -91,8 +158,26 @@ public class SnapshotImpl implements Snapshot {
         return description;
     }
 
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public SnapshotImpl withDescription(String description) {
+        this.description = description;
+        return this;
+    }
+
     @Override
     public String getLabel() {
         return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    public SnapshotImpl withLabel(String label) {
+        this.label = label;
+        return this;
     }
 }

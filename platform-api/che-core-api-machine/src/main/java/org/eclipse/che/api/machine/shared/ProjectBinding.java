@@ -11,9 +11,14 @@
 package org.eclipse.che.api.machine.shared;
 
 /**
+ * Describes project bound to machine
+ *
  * @author gazarenkov
  */
 public interface ProjectBinding {
+    /**
+     * Project's path in workspace. Subproject can be used too
+     */
     String getPath();
 
     void setPath(String path);

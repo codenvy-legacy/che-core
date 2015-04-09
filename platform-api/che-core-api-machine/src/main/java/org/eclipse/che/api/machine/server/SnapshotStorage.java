@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.server;
 
-import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
@@ -23,11 +22,53 @@ import java.util.List;
  * @author andrew00x
  */
 public interface SnapshotStorage {
+    /**
+     * Retrieve snapshot metadata by id
+     *
+     * @param snapshotId
+     *         id of required snapshot
+     * @return {@link SnapshotImpl} with specified id
+     * @throws NotFoundException
+     *         if snapshot with specified id not found
+     * @throws ServerException
+     *         if other error occurs
+     */
     SnapshotImpl getSnapshot(String snapshotId) throws NotFoundException, ServerException;
 
-    void saveSnapshot(SnapshotImpl snapshot) throws ServerException, ForbiddenException;
+    /**
+     * Save snapshot metadata
+     *
+     * @param snapshot
+     *         snapshot metadata to store
+     * @throws ServerException
+     *         if error occurs
+     */
+    void saveSnapshot(SnapshotImpl snapshot) throws ServerException;
 
+    /**
+     * Find snapshots by owner, workspace, project
+     *
+     * @param owner
+     *         id of the owner of desired snapshot
+     * @param workspaceId
+     *         workspace specified in desired snapshot, optional
+     * @param project
+     *         project specified in desired snapshot, optional
+     * @return list of snapshot that satisfy provided queries, or empty list if no desired snapshots found
+     * @throws ServerException
+     *         if error occurs
+     */
     List<SnapshotImpl> findSnapshots(String owner, String workspaceId, ProjectBinding project) throws ServerException;
 
+    /**
+     * Remove snapshot by id
+     *
+     * @param snapshotId
+     *         id of snapshot that should be removed
+     * @throws NotFoundException
+     *         if snapshot with specified id not found
+     * @throws ServerException
+     *         if other error occur
+     */
     void removeSnapshot(String snapshotId) throws NotFoundException, ServerException;
 }

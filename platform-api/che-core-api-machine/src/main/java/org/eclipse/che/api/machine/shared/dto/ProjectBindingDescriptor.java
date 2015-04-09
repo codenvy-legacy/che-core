@@ -18,6 +18,8 @@ import org.eclipse.che.dto.shared.DTO;
 import java.util.List;
 
 /**
+ * Describes project that is bound to machine
+ *
  * @author andrew00x
  */
 @DTO

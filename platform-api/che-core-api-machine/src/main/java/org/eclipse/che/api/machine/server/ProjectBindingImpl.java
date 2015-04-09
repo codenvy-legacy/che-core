@@ -13,6 +13,8 @@ package org.eclipse.che.api.machine.server;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
 
 /**
+ * Implementation of {@link ProjectBinding}
+ *
  * @author Alexander Garagatyi
  */
 public class ProjectBindingImpl implements ProjectBinding {

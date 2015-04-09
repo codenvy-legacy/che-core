@@ -19,46 +19,69 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Describes created machine
+ *
  * @author andrew00x
  */
 @DTO
 public interface MachineDescriptor extends Hyperlinks {
+    /**
+     * Machine id
+     */
     String getId();
 
     void setId(String id);
 
     MachineDescriptor withId(String id);
 
+    /**
+     * Type of machine implementation
+     */
     String getType();
 
     void setType(String type);
 
     MachineDescriptor withType(String type);
 
+    /**
+     * Machine state
+     */
     MachineState getState();
 
     void setState(MachineState state);
 
     MachineDescriptor withState(MachineState state);
 
+    /**
+     * Id of user that is owner of machine
+     */
     String getOwner();
 
     void setOwner(String owner);
 
     MachineDescriptor withOwner(String owner);
 
+    /**
+     * Id of a workspace machine is bound to
+     */
     String getWorkspaceId();
 
     void setWorkspaceId(String workspaceId);
 
     MachineDescriptor withWorkspaceId(String workspaceId);
 
+    /**
+     * List of the project which are bound to machine
+     */
     List<ProjectBindingDescriptor> getProjects();
 
     void setProjects(List<ProjectBindingDescriptor> projects);
 
     MachineDescriptor withProjects(List<ProjectBindingDescriptor> projects);
 
+    /**
+     * Implementation specific information about machine
+     */
     Map<String, String> getMetadata();
 
     void setMetadata(Map<String, String> metadata);

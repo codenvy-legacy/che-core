@@ -13,6 +13,8 @@ package org.eclipse.che.api.machine.server.spi;
 import org.eclipse.che.api.machine.server.MachineException;
 
 /**
+ * Provides instances of {@link org.eclipse.che.api.machine.server.spi.Instance} in implementation specific way.
+ *
  * @author andrew00x
  */
 public interface Image {

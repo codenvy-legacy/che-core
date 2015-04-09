@@ -13,7 +13,7 @@ package org.eclipse.che.api.machine.server.spi;
 import java.util.Map;
 
 /**
- * Image metadata
+ * Describe implementation specific image metadata
  *
  * @author gazarenkov
  * @author andrew00x
@@ -26,14 +26,12 @@ public interface ImageMetadata {
     //Recipe getRecipe();
 
     /**
-     *
-     * @return implementation specific key of this image
+     * Returns implementation specific key of this image
      */
     ImageKey getKey();
 
     /**
-     *
-     * @return image specific properties
+     * Returns image specific properties
      */
     Map<String, String> getProperties();
 

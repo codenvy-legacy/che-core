@@ -13,17 +13,21 @@ package org.eclipse.che.api.machine.shared.dto;
 import org.eclipse.che.dto.shared.DTO;
 
 /**
+ * Describes snapshot creation information
+ *
  * @author Alexander Garagatyi
  */
 @DTO
 public interface NewSnapshotDescriptor {
-
     String getLabel();
 
     void setLabel(String label);
 
     NewSnapshotDescriptor withLabel(String label);
 
+    /**
+     * Description of machine saved in snapshot
+     */
     String getDescription();
 
     void setDescription(String description);

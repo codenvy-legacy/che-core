@@ -18,6 +18,8 @@ import java.io.File;
 import java.util.List;
 
 /**
+ * Representation of machine instance in implementation specific way.
+ *
  * @author gazarenkov
  */
 public interface Instance {
@@ -46,14 +48,18 @@ public interface Instance {
     void destroy() throws MachineException;
 
     /**
+     * Binds project to machine instance
      *
-     * binds project
+     * @param workspaceId workspace where project is placed
+     * @param project project that should be bound to machine instance
      */
     void bindProject(String workspaceId, ProjectBinding project) throws MachineException;
 
     /**
+     * Unbinds project from machine instance
      *
-     * unbinds project
+     * @param workspaceId workspace where project is placed
+     * @param project project that should be unbound from machine instance
      */
     void unbindProject(String workspaceId, ProjectBinding project) throws MachineException;
 }

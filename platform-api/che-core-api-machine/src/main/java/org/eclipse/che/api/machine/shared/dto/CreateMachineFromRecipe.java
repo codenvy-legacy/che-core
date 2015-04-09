@@ -13,28 +13,42 @@ package org.eclipse.che.api.machine.shared.dto;
 import org.eclipse.che.dto.shared.DTO;
 
 /**
+ * Describes information needed for machine creation from recipe
+ *
  * @author Alexander Garagatyi
  */
 @DTO
 public interface CreateMachineFromRecipe {
+    /**
+     * Channel of websocket where machine logs should be put
+     */
     String getOutputChannel();
 
     void setOutputChannel(String outputChannel);
 
     CreateMachineFromRecipe withOutputChannel(String outputChannel);
 
+    /**
+     * Type of machine implementation
+     */
     String getType();
 
     void setType(String type);
 
     CreateMachineFromRecipe withType(String type);
 
+    /**
+     * Description of recipe for machine instance
+     */
     RecipeDescriptor getRecipeDescriptor();
 
     void setRecipeDescriptor(RecipeDescriptor recipeDescriptor);
 
     CreateMachineFromRecipe withRecipeDescriptor(RecipeDescriptor recipeDescriptor);
 
+    /**
+     * Id of a workspace machine should be bound to
+     */
     String getWorkspaceId();
 
     void setWorkspaceId(String workspaceId);

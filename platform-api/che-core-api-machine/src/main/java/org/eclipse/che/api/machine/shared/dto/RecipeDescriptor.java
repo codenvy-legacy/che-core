@@ -14,16 +14,24 @@ import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
 import org.eclipse.che.dto.shared.DTO;
 
 /**
+ * Describe description of the recipe for machine creation
+ *
  * @author andrew00x
  */
 @DTO
 public interface RecipeDescriptor extends Hyperlinks {
+    /**
+     * Type of the recipe
+     */
     String getType();
 
     void setType(String type);
 
     RecipeDescriptor withType(String type);
 
+    /**
+     * Content of the recipe
+     */
     String getScript();
 
     void setScript(String script);

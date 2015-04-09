@@ -19,6 +19,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * Holds active machines
+ *
  * @author Alexander Garagatyi
  */
 @Singleton
@@ -29,14 +31,28 @@ public class MachineRegistry {
         machines = new ConcurrentHashMap<>();
     }
 
+    /**
+     * Get all active machine
+     */
     public List<MachineImpl> getAll() {
         return new ArrayList<>(machines.values());
     }
 
+    /**
+     * Add new machine
+     */
     public void put(MachineImpl machine) {
         machines.put(machine.getId(), machine);
     }
 
+    /**
+     * Remove machine by id
+     *
+     * @param machineId
+     *         id of machine that should be removed
+     * @throws NotFoundException
+     *         if machine with specified id not found
+     */
     public void remove(String machineId) throws NotFoundException {
         if (machines.containsKey(machineId)) {
             machines.remove(machineId);
@@ -45,6 +61,15 @@ public class MachineRegistry {
         }
     }
 
+    /**
+     * Get machine by id
+     *
+     * @param machineId
+     *         id of machine
+     * @return machine with specified id
+     * @throws NotFoundException
+     *         if machine with specified id not found
+     */
     public MachineImpl get(String machineId) throws NotFoundException {
         if (machines.containsKey(machineId)) {
             return machines.get(machineId);

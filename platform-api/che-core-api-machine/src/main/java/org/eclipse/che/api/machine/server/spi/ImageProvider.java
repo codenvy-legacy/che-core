@@ -57,7 +57,6 @@ public interface ImageProvider {
     Image createImage(Recipe recipe, LineConsumer creationLogsOutput)
             throws UnsupportedRecipeException, InvalidRecipeException, MachineException;
 
-
     /**
      * Creates image using implementation specific {@link ImageKey}.
      *
@@ -71,7 +70,14 @@ public interface ImageProvider {
      * @throws InvalidImageException
      *         if other errors occurs while restoring image
      */
-    Image createImage(ImageKey imageKey, LineConsumer creationLogsOutput) throws NotFoundException, InvalidImageException, MachineException;
+    Image createImage(ImageKey imageKey, LineConsumer creationLogsOutput)
+            throws NotFoundException, InvalidImageException, MachineException;
 
+    /**
+     * Removes image in implementation specific way.
+     *
+     * @param imageKey key of the image that should be removed
+     * @throws MachineException if exception occurs on image removal
+     */
     void removeImage(ImageKey imageKey) throws MachineException;
 }
