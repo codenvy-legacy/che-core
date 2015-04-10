@@ -206,7 +206,6 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
         return new ProjectProblemDialog.AskHandler() {
             @Override
             public void onConfigure() {
-                openProject(project);
                 eventBus.fireEvent(new ConfigureProjectEvent(project));
             }
         };
