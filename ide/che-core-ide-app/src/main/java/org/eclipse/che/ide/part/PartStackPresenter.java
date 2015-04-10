@@ -22,7 +22,6 @@ import org.eclipse.che.ide.api.parts.PartStackView.TabItem;
 import org.eclipse.che.ide.api.parts.PropertyListener;
 import org.eclipse.che.ide.api.parts.base.BasePresenter;
 import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 
 import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerPartPresenter;
 import org.eclipse.che.ide.workspace.WorkBenchPartController;
@@ -39,11 +38,11 @@ import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import com.google.web.bindery.event.shared.EventBus;
 
-import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerPartPresenter;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,16 +64,16 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
         void onRequestFocus(PartStack partStack);
     }
 
-    private HashMap<PartPresenter, Double> partSizes = new HashMap<PartPresenter, Double>();
-
+    private         HashMap<PartPresenter, Double>  partSizes         = new HashMap<>();
     /** list of parts */
-    protected final Array<PartPresenter>     parts               = Collections.createArray();
-    protected final Array<Integer>           viewPartPositions   = Collections.createArray();
-    private         Map<String, Constraints> priorityPositionMap = new HashMap<>();
+    protected final List<PartPresenter>             parts             = new ArrayList<>();
+    protected final List<Integer>                   viewPartPositions = new ArrayList<>();
+    protected final Map<PartPresenter, Constraints> constraints       = new HashMap<>();
     /** view implementation */
     protected final PartStackView view;
     private final   EventBus      eventBus;
-    protected boolean          partsClosable    = false;
+    private final Comparator partPresenterComparator = getPartPresenterComparator();
+    protected     boolean    partsClosable           = false;
 
     protected PropertyListener propertyListener = new PropertyListener() {
         @Override
@@ -113,6 +112,59 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
         view.setDelegate(this);
     }
 
+    private Comparator<PartPresenter> getPartPresenterComparator() {
+        return new Comparator<PartPresenter>() {
+            @Override
+            public int compare(PartPresenter part1, PartPresenter part2) {
+                String title1 = part1.getTitle();
+                String title2 = part2.getTitle();
+                Constraints constr1 = constraints.get(part1);
+                Constraints constr2 = constraints.get(part2);
+
+                if (constr1 == null && constr2 == null) {
+                    return 0;
+                }
+
+                if ((constr1 != null && constr1.myAnchor == Anchor.FIRST) || (constr2 != null && constr2.myAnchor == Anchor.LAST)) {
+                    return -1;
+                }
+
+                if ((constr2 != null && constr2.myAnchor == Anchor.FIRST) || (constr1 != null && constr1.myAnchor == Anchor.LAST)) {
+                    return 1;
+                }
+
+                if (constr1 != null && constr1.myRelativeToActionId != null) {
+                    Anchor anchor1 = constr1.myAnchor;
+                    String relative1 = constr1.myRelativeToActionId;
+                    if (anchor1 == Anchor.BEFORE && relative1.equals(title2)) {
+                        return -1;
+                    }
+                    if (anchor1 == Anchor.AFTER && relative1.equals(title2)) {
+                        return 1;
+                    }
+                }
+
+                if (constr2 != null && constr2.myRelativeToActionId != null) {
+                    Anchor anchor2 = constr2.myAnchor;
+                    String relative2 = constr2.myRelativeToActionId;
+                    if (anchor2 == Anchor.BEFORE && relative2.equals(title1)) {
+                        return 1;
+                    }
+                    if (anchor2 == Anchor.AFTER && relative2.equals(title1)) {
+                        return -1;
+                    }
+                }
+
+                if (constr1 != null && constr2 == null) {
+                    return 1;
+                }
+                if (constr1 == null) {
+                    return -1;
+                }
+                return 0;
+            }
+        };
+    }
 
     /**
      * Update part tab, it's may be title, icon or tooltip
@@ -125,12 +177,10 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
         }
         int index = parts.indexOf(part);
         view.updateTabItem(index,
-                           part.decorateIcon(
-                                   part.getTitleSVGImage() != null ? new SVGImage(part.getTitleSVGImage()) : null),
+                           part.decorateIcon(part.getTitleSVGImage() != null ? new SVGImage(part.getTitleSVGImage()) : null),
                            part.getTitle(),
                            part.getTitleToolTip(),
-                           part.getTitleWidget()
-                          );
+                           part.getTitleWidget());
     }
 
     /** {@inheritDoc} */
@@ -164,7 +214,7 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
         }
 
         parts.add(part);
-        viewPartPositions.add(parts.indexOf(part));
+        constraints.put(part, constraint);
         partSizes.put(part, Double.valueOf(part.getSize()));
 
         part.addPropertyListener(propertyListener);
@@ -174,11 +224,10 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
         if (titleSVGResource != null) {
             titleSVGImage = part.decorateIcon(new SVGImage(titleSVGResource));
         }
-        TabItem tabItem =view.addTab(titleSVGImage, part.getTitle(), part.getTitleToolTip(),
-                                     part.getTitleWidget(), partsClosable);
+        TabItem tabItem = view.addTab(titleSVGImage, part.getTitle(), part.getTitleToolTip(), part.getTitleWidget(), partsClosable);
         bindEvents(tabItem, part);
         part.go(partViewContainer);
-        sortPartsOnView(constraint);
+        sortPartsOnView();
         part.onOpen();
 
         // request focus
@@ -206,7 +255,7 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
     /** {@inheritDoc} */
     @Override
     public void setActivePart(PartPresenter part) {
-        if (activePart == part) {
+        if (activePart != null && activePart == part) {
             // request part stack to get the focus
             onRequestFocus();
             return;
@@ -245,9 +294,9 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
      */
     public List<PartPresenter> getPartPresenters() {
         List<PartPresenter> presenters = new ArrayList<>();
-        for (int i = 0; i < parts.size(); i++) {
-            presenters.add(parts.get(i));
-    }
+        for (PartPresenter part : parts) {
+            presenters.add(part);
+        }
         return presenters;
     }
 
@@ -288,7 +337,7 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
                 int partIndex = parts.indexOf(part);
                 if (activePart == part) {
                     PartPresenter newActivePart = null;
-                    for (PartPresenter tmpPart : parts.asIterable()) {
+                    for (PartPresenter tmpPart : parts) {
                         if (tmpPart instanceof ProjectExplorerPartPresenter) {
                             newActivePart = tmpPart;
                             break;
@@ -297,17 +346,10 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
                     setActivePart(newActivePart);
                 }
                 view.removeTab(partIndex);
-                int viewPartPositionsIndex = viewPartPositions.indexOf(partIndex);
-                if (viewPartPositionsIndex >= 0) {
-                    int lastPosOfViewPart = viewPartPositions.size() - 1;
-                    for (; viewPartPositionsIndex < lastPosOfViewPart; viewPartPositionsIndex++) {
-                        viewPartPositions.set(viewPartPositions.get(viewPartPositionsIndex + 1), viewPartPositionsIndex);
-                    }
-                    viewPartPositions.remove(lastPosOfViewPart);
-                }
-
+                constraints.remove(part);
                 parts.remove(part);
                 partSizes.remove(part);
+                sortPartsOnView();
                 part.removePropertyListener(propertyListener);
             }
         });
@@ -375,7 +417,7 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
      *
      * @return {@link Array} array of parts
      */
-    protected Array<PartPresenter> getParts() {
+    protected List<PartPresenter> getParts() {
         return parts;
     }
 
@@ -391,93 +433,20 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
         view.setFocus(focused);
     }
 
-    /**
-     * Sort parts depending on constraint.
-     *
-     * @param constraint
-     */
-    protected void sortPartsOnView(Constraints constraint) {
-        // TODO remake method of sorting
-        int oldPartPosition;
-        int partPositionsSize = viewPartPositions.size();
-        int positionOfLastElement = viewPartPositions.get(partPositionsSize - 1);
-        int lastPositionOfSorting = partPositionsSize - 1;
-        PartPresenter checkPart;
-
-        if (partPositionsSize > 1) {
-            checkPart = parts.get(viewPartPositions.get(partPositionsSize - 2));
-            Constraints previousConstraint = priorityPositionMap.get(checkPart.getTitle());
-            if (previousConstraint != null && previousConstraint.myAnchor.equals(Anchor.LAST)) {
-                oldPartPosition = viewPartPositions.get(partPositionsSize - 2);
-                viewPartPositions.set(partPositionsSize - 2, viewPartPositions.get(partPositionsSize - 1));
-                viewPartPositions.set(partPositionsSize - 1, oldPartPosition);
-                lastPositionOfSorting = partPositionsSize - 2;
-            }
-        }
-        if (constraint != null) {
-            priorityPositionMap.put(parts.get(positionOfLastElement).getTitle(), constraint);
-        } else if (priorityPositionMap.size() == 0) {
-            return;
-        }
-        for (int labelOfPartsPos = 0; labelOfPartsPos < partPositionsSize; labelOfPartsPos++) {
-            checkPart = parts.get(viewPartPositions.get(labelOfPartsPos));
-            Constraints localeConstraint = priorityPositionMap.get(checkPart.getTitle());
-            if (localeConstraint != null) {
-                if (localeConstraint.myAnchor == Anchor.LAST) {
-                    if (viewPartPositions.get(labelOfPartsPos) != positionOfLastElement) {
-                        oldPartPosition = viewPartPositions.get(labelOfPartsPos);
-                        for (int partPosition = labelOfPartsPos; partPosition < partPositionsSize - 1; partPosition++) {
-                            viewPartPositions.set(partPosition, viewPartPositions.get(partPosition + 1));
-                        }
-                        viewPartPositions.set(partPositionsSize - 1, oldPartPosition);
-                    }
-                    continue;
-                } else if (localeConstraint.myAnchor == Anchor.FIRST) {
-                    if (viewPartPositions.get(labelOfPartsPos) != 0) {
-                        oldPartPosition = viewPartPositions.get(labelOfPartsPos);
-                        for (int partPosition = labelOfPartsPos; partPosition > 0; partPosition--) {
-                            viewPartPositions.set(partPosition, viewPartPositions.get(partPosition - 1));
-                        }
-                        viewPartPositions.set(0, oldPartPosition);
-                    }
-                    continue;
-                } else if (localeConstraint.myAnchor == Anchor.BEFORE) {
-                    if (partPositionsSize > labelOfPartsPos + 1) {
-                        if (parts.get(viewPartPositions.get(labelOfPartsPos + 1)).getTitle().equals(localeConstraint.myRelativeToActionId))
-                            continue;
-                    }
-                } else {//Anchor.AFTER
-                    if (labelOfPartsPos > 1) {
-                        if (parts.get(viewPartPositions.get(labelOfPartsPos - 1)).getTitle().equals(localeConstraint.myRelativeToActionId))
-                            continue;
-                    }
-                }
-                if (labelOfPartsPos < lastPositionOfSorting) {
-                    oldPartPosition = viewPartPositions.get(labelOfPartsPos);
-                    for (int partPosition = labelOfPartsPos; partPosition < lastPositionOfSorting; partPosition++) {
-                        viewPartPositions.set(partPosition, viewPartPositions.get(partPosition + 1));
-                    }
-                    viewPartPositions.set(lastPositionOfSorting, oldPartPosition);
-                }
-                oldPartPosition = viewPartPositions.get(labelOfPartsPos);
-                for (int partPosition = lastPositionOfSorting; partPosition > 0; partPosition--) {
-                    if (parts.get(viewPartPositions.get(partPosition - 1)).getTitle().equals(localeConstraint.myRelativeToActionId)) {
-                        if (localeConstraint.myAnchor == Anchor.BEFORE) {
-                            viewPartPositions.set(partPosition, oldPartPosition);
-                        } else {
-                            if (partPosition > 1) {
-                                viewPartPositions.set(partPosition, viewPartPositions.get(partPosition - 1));
-                                viewPartPositions.set(partPosition - 1, oldPartPosition);
-                            }
-                        }
-                        break;
-                    } else {
-                        if (partPosition > 1) viewPartPositions.set(partPosition, viewPartPositions.get(partPosition - 1));
-                    }
-                }
-            }
+    /** Sort parts depending on constraint. */
+    protected void sortPartsOnView() {
+        viewPartPositions.clear();
+        List<PartPresenter> sortedParts = getSortedParts();
+        for (PartPresenter partPresenter : sortedParts) {
+            viewPartPositions.add(sortedParts.indexOf(partPresenter), parts.indexOf(partPresenter));
         }
         view.setTabpositions(viewPartPositions);
     }
 
+    protected List<PartPresenter> getSortedParts() {
+        List<PartPresenter> sortedParts = new ArrayList<>();
+        sortedParts.addAll(parts);
+        java.util.Collections.sort(sortedParts, partPresenterComparator);
+        return sortedParts;
+    }
 }
