@@ -40,18 +40,18 @@ import static org.testng.Assert.assertTrue;
 @Listeners(value = {MockitoTestNGListener.class})
 public class LocalAccountDaoImplTest {
 
-    public static final Account ACCOUNT_1 = new Account().withId("id1").withName("name1");
-    public static final Account ACCOUNT_2 = new Account().withId("id2").withName("name2");
-    public static final Account ACCOUNT_3 = new Account().withId("id3").withName("name3");
-    public static final Account ACCOUNT_4 = new Account().withId("id4").withName("name4");
-    public static final Account ACCOUNT_5 = new Account().withId("id5").withName("name5");
-    public static final Account ACCOUNT_6 = new Account().withId("id6").withName("name6");
+    private static final Account ACCOUNT_1 = new Account().withId("id1").withName("name1");
+    private static final Account ACCOUNT_2 = new Account().withId("id2").withName("name2");
+    private static final Account ACCOUNT_3 = new Account().withId("id3").withName("name3");
+    private static final Account ACCOUNT_4 = new Account().withId("id4").withName("name4");
+    private static final Account ACCOUNT_5 = new Account().withId("id5").withName("name5");
+    private static final Account ACCOUNT_6 = new Account().withId("id6").withName("name6");
 
-    public static final Subscription SUBSCRIPTION_1 = new Subscription().withAccountId("id1").withServiceId("OnPremises");
-    public static final Subscription SUBSCRIPTION_2 = new Subscription().withAccountId("id2").withServiceId("OnPremises");
-    public static final Subscription SUBSCRIPTION_3 = new Subscription().withAccountId("id3").withServiceId("Saas");
+    private static final Subscription SUBSCRIPTION_1 = new Subscription().withAccountId("id1").withServiceId("OnPremises");
+    private static final Subscription SUBSCRIPTION_2 = new Subscription().withAccountId("id2").withServiceId("OnPremises");
+    private static final Subscription SUBSCRIPTION_3 = new Subscription().withAccountId("id3").withServiceId("Saas");
 
-    public static final Member MEMBER_1 = new Member().withAccountId("id1").withUserId("userId1").withRoles(ImmutableList.of("account/owner"));
+    private static final Member MEMBER_1 = new Member().withAccountId("id1").withUserId("userId1").withRoles(ImmutableList.of("account/owner"));
 
     @Mock
     private AccountSearchCriteria searchCriteria;
