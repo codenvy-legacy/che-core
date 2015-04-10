@@ -428,7 +428,7 @@ public class LocalAccountDaoImpl implements AccountDao {
     /** {@inheritDoc} */
     @Override
     public List<Account> find(AccountSearchCriteria searchCriteria, int page, int perPage) throws ServerException {
-        List<Account> result = null;
+        List<Account> result = new ArrayList<>(accounts);
         try {
             if (searchCriteria.getEmailOwner() != null) {
                 User owner = userDao.getByAlias(searchCriteria.getEmailOwner());
@@ -474,14 +474,10 @@ public class LocalAccountDaoImpl implements AccountDao {
     }
 
     private List<Account> mergeResult(@Nullable List<Account> result, List<Account> searchResult) throws NotFoundException {
-        if (result == null) {
-            return searchResult;
-        } else {
-            result.retainAll(searchResult);
-            if (result.isEmpty()) {
-                throw new NotFoundException("Search result is empty");
-            }
-            return result;
+        result.retainAll(searchResult);
+        if (result.isEmpty()) {
+            throw new NotFoundException("Search result is empty");
         }
+        return result;
     }
 }

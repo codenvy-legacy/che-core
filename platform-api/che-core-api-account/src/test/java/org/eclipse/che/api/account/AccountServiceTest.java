@@ -1600,8 +1600,7 @@ public class AccountServiceTest {
     }
 
     @Test
-    public void shouldFindThrowExceptionIfPaginationParametersIncorrect() throws Exception {
-        prepareSecurityContext("system/admin");
+    public void findShouldThrowExceptionIfPaginationParametersIncorrect() throws Exception {
         prepareMocks();
 
         ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/find?page=value",
@@ -1612,8 +1611,7 @@ public class AccountServiceTest {
     }
 
     @Test
-    public void shouldFindUsePaginationParametersFromUrl() throws Exception {
-        prepareSecurityContext("system/admin");
+    public void findShouldUsePaginationParametersFromUrl() throws Exception {
         prepareMocks();
 
         ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/find?page=3&perPage=15",
@@ -1624,8 +1622,7 @@ public class AccountServiceTest {
     }
 
     @Test
-    public void shouldFindUseDefaultPaginationParameters() throws Exception {
-        prepareSecurityContext("system/admin");
+    public void findShouldUseDefaultPaginationParameters() throws Exception {
         prepareMocks();
 
         ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/find",
@@ -1636,6 +1633,7 @@ public class AccountServiceTest {
     }
 
     private void prepareMocks() throws ServerException {
+        prepareSecurityContext("system/admin");
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
