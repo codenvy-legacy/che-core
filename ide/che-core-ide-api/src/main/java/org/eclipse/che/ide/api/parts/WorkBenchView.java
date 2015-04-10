@@ -48,6 +48,6 @@ public interface WorkBenchView<T> extends View<T> {
     AcceptsOneWidget getToolPanel();
 
     /** Handle View events */
-    public interface ActionDelegate {
+    interface ActionDelegate {
     }
 }

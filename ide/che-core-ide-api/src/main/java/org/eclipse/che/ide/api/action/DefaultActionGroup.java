@@ -74,7 +74,6 @@ public class DefaultActionGroup extends ActionGroup {
     private static int findIndex(String actionId, List<Action> actions, ActionManager actionManager) {
         for (int i = 0; i < actions.size(); i++) {
             Action action = actions.get(i);
-
             if (action != null) {
                 String id = actionManager.getId(action);
                 if (id != null && id.equals(actionId)) {

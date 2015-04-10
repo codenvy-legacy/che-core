@@ -10,20 +10,21 @@
  *******************************************************************************/
 package org.eclipse.che.ide.actions;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
-import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ProjectAction;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorInput;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
+import org.eclipse.che.ide.api.editor.EditorWithAutoSave;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.util.loging.Log;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 
 /** @author Evgen Vidolob */
 @Singleton
@@ -79,14 +80,19 @@ public class SaveAllAction extends ProjectAction {
     /** {@inheritDoc} */
     @Override
     public void updateProjectAction(ActionEvent e) {
-        e.getPresentation().setVisible(true);
+//        e.getPresentation().setVisible(true);
         boolean hasDirtyEditor = false;
         for (EditorPartPresenter editor : editorAgent.getOpenedEditors().getValues().asIterable()) {
+            if(editor instanceof EditorWithAutoSave) {
+                if (((EditorWithAutoSave)editor).isAutoSaveEnabled()) {
+                    continue;
+                }
+            }
             if (editor.isDirty()) {
                 hasDirtyEditor = true;
                 break;
             }
         }
-        e.getPresentation().setEnabled(hasDirtyEditor);
+        e.getPresentation().setEnabledAndVisible(hasDirtyEditor);
     }
 }
