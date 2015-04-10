@@ -25,14 +25,14 @@ import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.OPTIO
  */
 @DTO
 public interface RunnerSource {
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "location")
+    @FactoryParameter(obligation = OPTIONAL)
     String getLocation();
 
     void setLocation(String location);
 
     RunnerSource withLocation(String location);
 
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "parameters")
+    @FactoryParameter(obligation = OPTIONAL)
     Map<String, String> getParameters();
 
     void setParameters(Map<String, String> parameters);

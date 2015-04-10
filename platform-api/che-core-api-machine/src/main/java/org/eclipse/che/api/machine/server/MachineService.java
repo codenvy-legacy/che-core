@@ -86,7 +86,6 @@ public class MachineService {
                                                           EnvironmentContext.getCurrent().getUser().getId(),
                                                           lineConsumer);
 
-        // TODO displayName? machine description?
         return toDescriptor(machine);
     }
 
@@ -97,8 +96,8 @@ public class MachineService {
     @RolesAllowed("user")
     public MachineDescriptor createMachineFromSnapshot(CreateMachineFromSnapshot createMachineRequest)
             throws ForbiddenException, NotFoundException, ServerException {
-        requiredNotNull(createMachineRequest, "SnapshotImpl description");
-        requiredNotNull(createMachineRequest.getSnapshotId(), "SnapshotImpl id");
+        requiredNotNull(createMachineRequest, "Snapshot description");
+        requiredNotNull(createMachineRequest.getSnapshotId(), "Snapshot id");
         final SnapshotImpl snapshot = machineManager.getSnapshot(createMachineRequest.getSnapshotId());
         checkCurrentUserPermissionsForSnapshot(snapshot);
         checkCurrentUserPermissionsForWorkspace(snapshot.getWorkspaceId());
@@ -183,14 +182,17 @@ public class MachineService {
     @Path("/{machineId}/snapshot")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
-    public void saveSnapshot(@PathParam("machineId") String machineId, NewSnapshotDescriptor newSnapshotDescriptor)
+    public SnapshotDescriptor saveSnapshot(@PathParam("machineId") String machineId, NewSnapshotDescriptor newSnapshotDescriptor)
             throws NotFoundException, ServerException, ForbiddenException {
-        requiredNotNull(newSnapshotDescriptor, "SnapshotImpl description");
+        requiredNotNull(newSnapshotDescriptor, "Snapshot description");
         checkCurrentUserPermissionsForMachine(machineManager.getMachine(machineId).getOwner());
 
-        machineManager.save(machineId, EnvironmentContext.getCurrent().getUser().getId(),
-                newSnapshotDescriptor.getLabel(), newSnapshotDescriptor.getDescription());
+        return toDescriptor(machineManager.save(machineId,
+                            EnvironmentContext.getCurrent().getUser().getId(),
+                            newSnapshotDescriptor.getLabel(),
+                            newSnapshotDescriptor.getDescription()));
     }
 
     @Path("/snapshot/{snapshotId}")
@@ -306,7 +308,7 @@ public class MachineService {
         }
     }
 
-    // make it package private for testing purposes
+    // package private for testing purposes
     LineConsumer getLineConsumer(String outputChannel) {
         final LineConsumer lineConsumer;
         if (outputChannel != null) {

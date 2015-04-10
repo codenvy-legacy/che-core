@@ -21,7 +21,7 @@ import java.util.List;
  * @author Alexander Garagatyi
  */
 @DTO
-public interface SnapshotDescriptor extends /*Snapshot,*/ Hyperlinks {
+public interface SnapshotDescriptor extends Hyperlinks {
     String getId();
 
     void setId(String id);

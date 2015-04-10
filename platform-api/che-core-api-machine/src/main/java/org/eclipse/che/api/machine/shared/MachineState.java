@@ -11,6 +11,8 @@
 package org.eclipse.che.api.machine.shared;
 
 /**
+ * Describes state of a machine
+ *
 * @author andrew00x
 */
 public enum MachineState {

@@ -13,6 +13,8 @@ package org.eclipse.che.api.machine.shared;
 import java.util.List;
 
 /**
+ * Represents saved state of a machine
+ *
  * @author gazarenkov
  */
 public interface Snapshot {

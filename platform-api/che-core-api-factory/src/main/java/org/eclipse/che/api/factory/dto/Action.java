@@ -29,7 +29,7 @@ public interface Action {
      *
      * @return id of action.
      */
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "id")
+    @FactoryParameter(obligation = OPTIONAL)
     String getId();
 
     void setId(String id);
@@ -40,7 +40,7 @@ public interface Action {
      *
      * @return Action properties
      */
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "properties")
+    @FactoryParameter(obligation = OPTIONAL)
     Map<String, String> getProperties();
 
     void setProperties(Map<String, String> properties);

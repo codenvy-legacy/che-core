@@ -22,7 +22,7 @@ import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.OPTIO
  */
 @DTO
 public interface RunnersDescriptor {
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "default")
+    @FactoryParameter(obligation = OPTIONAL)
     /** Gets default runner identifier. */
     String getDefault();
 
@@ -31,7 +31,7 @@ public interface RunnersDescriptor {
 
     RunnersDescriptor withDefault(String _default);
 
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "configs")
+    @FactoryParameter(obligation = OPTIONAL)
     /** Gets all available runner configurations. */
     Map<String, RunnerConfiguration> getConfigs();
 

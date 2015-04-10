@@ -15,46 +15,45 @@ package org.eclipse.che.ide.rest;
  * HTTP methods
  *
  * @author Gennady Azarenkov
- * @version $Id: $
  */
 public interface HTTPMethod {
 
-    public static final String GET = "GET";
+    String GET = "GET";
 
-    public static final String PUT = "PUT";
+    String PUT = "PUT";
 
-    public static final String POST = "POST";
+    String POST = "POST";
 
-    public static final String DELETE = "DELETE";
+    String DELETE = "DELETE";
 
-    public static final String SEARCH = "SEARCH";
+    String SEARCH = "SEARCH";
 
-    public static final String PROPFIND = "PROPFIND";
+    String PROPFIND = "PROPFIND";
 
-    public static final String PROPPATCH = "PROPPATCH";
+    String PROPPATCH = "PROPPATCH";
 
-    public static final String HEAD = "HEAD";
+    String HEAD = "HEAD";
 
-    public static final String CHECKIN = "CHECKIN";
+    String CHECKIN = "CHECKIN";
 
-    public static final String CHECKOUT = "CHECKOUT";
+    String CHECKOUT = "CHECKOUT";
 
-    public static final String COPY = "COPY";
+    String COPY = "COPY";
 
-    public static final String LOCK = "LOCK";
+    String LOCK = "LOCK";
 
-    public static final String MOVE = "MOVE";
+    String MOVE = "MOVE";
 
-    public static final String UNLOCK = "UNLOCK";
+    String UNLOCK = "UNLOCK";
 
-    public static final String OPTIONS = "OPTIONS";
+    String OPTIONS = "OPTIONS";
 
-    public static final String MKCOL = "MKCOL";
+    String MKCOL = "MKCOL";
 
-    public static final String REPORT = "REPORT";
+    String REPORT = "REPORT";
 
-    public static final String UPDATE = "UPDATE";
+    String UPDATE = "UPDATE";
 
-    public static final String ACL = "ACL";
+    String ACL = "ACL";
 
 }

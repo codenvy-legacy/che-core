@@ -11,24 +11,22 @@
 package org.eclipse.che.api.machine.shared.dto;
 
 import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
-import org.eclipse.che.api.machine.shared.Recipe;
 import org.eclipse.che.dto.shared.DTO;
 
 /**
  * @author andrew00x
  */
 @DTO
-public interface RecipeDescriptor extends Recipe, Hyperlinks {
-    //String getType();
+public interface RecipeDescriptor extends Hyperlinks {
+    String getType();
 
     void setType(String type);
 
     RecipeDescriptor withType(String type);
 
-    //String getScript();
+    String getScript();
 
     void setScript(String script);
 
     RecipeDescriptor withScript(String script);
-    
 }

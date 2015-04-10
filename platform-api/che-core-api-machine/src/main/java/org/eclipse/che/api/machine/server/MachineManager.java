@@ -49,10 +49,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -83,56 +81,6 @@ public class MachineManager {
             this.imageProviders.put(provider.getType(), provider);
         }
         executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("MachineManager-%d").setDaemon(true).build());
-    }
-
-    @PostConstruct
-    private void createLogsDir() {
-        if (!(machineLogsDir.exists() || machineLogsDir.mkdirs())) {
-            throw new IllegalStateException(String.format("Unable create directory %s", machineLogsDir.getAbsolutePath()));
-        }
-    }
-
-    @PreDestroy
-    private void cleanup() {
-        boolean interrupted = false;
-        executor.shutdown();
-        try {
-            if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
-                executor.shutdownNow();
-                if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
-                    LOG.warn("Unable terminate main pool");
-                }
-            }
-        } catch (InterruptedException e) {
-            interrupted = true;
-            executor.shutdownNow();
-        }
-
-        for (MachineImpl machine : machineRegistry.getAll()) {
-            try {
-                destroy(machine);
-            } catch (Exception e) {
-                LOG.warn(e.getMessage());
-            }
-        }
-
-        final java.io.File[] files = machineLogsDir.listFiles();
-        if (files != null && files.length > 0) {
-            for (java.io.File f : files) {
-                boolean deleted;
-                if (f.isDirectory()) {
-                    deleted = IoUtil.deleteRecursive(f);
-                } else {
-                    deleted = f.delete();
-                }
-                if (!deleted) {
-                    LOG.warn("Failed delete {}", f);
-                }
-            }
-        }
-        if (interrupted) {
-            Thread.currentThread().interrupt();
-        }
     }
 
     /**
@@ -227,7 +175,11 @@ public class MachineManager {
         }
         final String machineId = generateMachineId();
         final CompositeLineConsumer machineLogger = new CompositeLineConsumer(machineLogsOutput, getMachineFileLogger(machineId));
-        final MachineImpl machine = new MachineImpl(machineId, imageProvider.getType(), snapshot.getWorkspaceId(), owner, machineLogger);
+        final MachineImpl machine = new MachineImpl(machineId,
+                                                    imageProvider.getType(),
+                                                    snapshot.getWorkspaceId(),
+                                                    owner,
+                                                    machineLogger);
         machine.setState(MachineState.CREATING);
         machineRegistry.put(machine);
         executor.execute(new Runnable() {
@@ -253,64 +205,15 @@ public class MachineManager {
         return machine;
     }
 
-    private String generateMachineId() {
-        return NameGenerator.generate("machine", 16);
-    }
-
-    private FileLineConsumer getMachineFileLogger(String machineId) throws MachineException {
-        try {
-            return new FileLineConsumer(getMachineLogsFile(machineId));
-        } catch (IOException e) {
-            throw new MachineException(String.format("Unable create log file for machine '%s'. %s", machineId, e.getMessage()));
-        }
-    }
-
-    private File getMachineLogsFile(String machineId) {
-        return new File(machineLogsDir, machineId);
-    }
-
-    public Reader getMachineLogReader(String machineId) throws NotFoundException, MachineException {
-        final File machineLogsFile = getMachineLogsFile(machineId);
-        if (machineLogsFile.isFile()) {
-            try {
-                return Files.newBufferedReader(machineLogsFile.toPath(), Charset.defaultCharset());
-            } catch (IOException e) {
-                throw new MachineException(String.format("Unable read log file for machine '%s'. %s", machineId, e.getMessage()));
-            }
-        }
-        throw new NotFoundException(String.format("Logs for machine '%s' are not available", machineId));
-    }
-
-    public void bindProject(String machineId, ProjectBinding project) throws NotFoundException, MachineException, ForbiddenException {
-        // TODO check that user has write permissions to bind project with synchronization
-        final MachineImpl machine = getMachine(machineId);
-        for (ProjectBinding projectBinding : machine.getProjects()) {
-            if (projectBinding.getPath().equals(project.getPath())) {
-                throw new ForbiddenException(String.format("Project %s is already bound to machine %s", project.getPath(), machineId));
-            }
-        }
-
-        try {
-            machine.bindProject(project);
-        } catch (Exception e) {
-            try {
-                machine.getMachineLogsOutput().writeLine("[ERROR] " + e.getLocalizedMessage());
-            } catch (IOException ignored) {
-            }
-            throw new MachineException(e.getLocalizedMessage(), e);
-        }
-    }
-
-    public void unbindProject(String machineId, ProjectBinding project) throws NotFoundException, MachineException {
-        final MachineImpl machine = getMachine(machineId);
-
-        machine.unbindProject(project);
-    }
-
-    public List<ProjectBinding> getProjects(String machineId) throws NotFoundException, MachineException {
-        return new ArrayList<>(getMachine(machineId).getProjects());
-    }
-
+    /**
+     * Get machine information by id
+     *
+     * @param machineId
+     *         id of required machine
+     * @return machine with specified id
+     * @throws NotFoundException
+     *         if machine with specified if not found
+     */
     public MachineImpl getMachine(String machineId) throws NotFoundException {
         final MachineImpl machine = machineRegistry.get(machineId);
         if (machine == null) {
@@ -319,12 +222,8 @@ public class MachineManager {
         return machine;
     }
 
-    public List<MachineImpl> getMachines() throws ServerException {
-        return machineRegistry.getAll();
-    }
-
     /**
-     * Machine(s) the project is bound to.
+     * Find machines connected with specific workspace/project
      *
      * @param owner
      *         id of owner of machine
@@ -354,7 +253,60 @@ public class MachineManager {
     }
 
     /**
-     * Saves machine to SnapshotImpl storage.
+     * Bind project to machine
+     *
+     * @param machineId
+     *         machine where project should be bound
+     * @param project
+     *         project that should be bound
+     * @throws NotFoundException
+     *         with specified id not found
+     * @throws ForbiddenException
+     *         if project is bound already to specified machine
+     * @throws MachineException
+     *         if other error occur
+     */
+    public void bindProject(String machineId, ProjectBinding project) throws NotFoundException, MachineException, ForbiddenException {
+        // TODO check that user has write permissions to bind project with synchronization
+        final MachineImpl machine = getMachine(machineId);
+        for (ProjectBinding projectBinding : machine.getProjects()) {
+            if (projectBinding.getPath().equals(project.getPath())) {
+                throw new ForbiddenException(String.format("Project %s is already bound to machine %s", project.getPath(), machineId));
+            }
+        }
+
+        try {
+            machine.bindProject(project);
+        } catch (Exception e) {
+            try {
+                machine.getMachineLogsOutput().writeLine("[ERROR] " + e.getLocalizedMessage());
+            } catch (IOException ignored) {
+            }
+            LOG.error(e.getLocalizedMessage(), e);
+            throw new MachineException(e.getLocalizedMessage());
+        }
+    }
+
+    /**
+     * Unbind project from machine
+     *
+     * @param machineId
+     *         machine where project should be bound
+     * @param project
+     *         project that should be unbound
+     * @throws NotFoundException
+     *         if machine with specified id not found
+     * @throws MachineException
+     *         if other error occur
+     */
+    public void unbindProject(String machineId, ProjectBinding project) throws NotFoundException, MachineException {
+        final MachineImpl machine = getMachine(machineId);
+
+        machine.unbindProject(project);
+    }
+
+    /**
+     * Saves state of machine to snapshot.
      *
      * @param machineId
      *         id of machine for saving
@@ -362,9 +314,13 @@ public class MachineManager {
      *         owner for new snapshot
      * @param description
      *         optional description that should help to understand purpose of new snapshot in future
-     * @return Future for SnapshotImpl creation process
+     * @return {@link SnapshotImpl} that will be stored in background
+     * @throws NotFoundException
+     *         if machine with specified id doesn't exist
+     * @throws MachineException
+     *         if other error occur
      */
-    public Future<SnapshotImpl> save(final String machineId, final String owner, final String label, final String description)
+    public SnapshotImpl save(final String machineId, final String owner, final String label, final String description)
             throws NotFoundException, MachineException {
         final MachineImpl machine = getMachine(machineId);
         final Instance instance = machine.getInstance();
@@ -372,29 +328,48 @@ public class MachineManager {
             throw new MachineException(
                     String.format("Unable save machine '%s' in image, machine isn't properly initialized yet", machineId));
         }
-        return executor.submit(new Callable<SnapshotImpl>() {
-            @Override
-            public SnapshotImpl call() throws Exception {
-                final ImageKey imageKey = instance.saveToImage(machine.getOwner(), label);
-                final SnapshotImpl snapshot = new SnapshotImpl(generateSnapshotId(),
+
+        final SnapshotImpl snapshot = new SnapshotImpl(generateSnapshotId(),
                                                        machine.getType(),
-                                                       imageKey,
+                                                       null,
                                                        owner,
                                                        System.currentTimeMillis(),
                                                        machine.getWorkspaceId(),
                                                        new ArrayList<>(machine.getProjects()),
                                                        description,
                                                        label);
-                snapshotStorage.saveSnapshot(snapshot);
-                return snapshot;
+
+        executor.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final ImageKey imageKey = instance.saveToImage(machine.getOwner(), label);
+                    snapshot.setImageKey(imageKey);
+
+                    snapshotStorage.saveSnapshot(snapshot);
+                } catch (Exception e) {
+                    try {
+                        machine.getMachineLogsOutput().writeLine("Snapshot storing failed. " + e.getLocalizedMessage());
+                    } catch (IOException ignore) {
+                    }
+                }
             }
         });
+
+        return snapshot;
     }
 
-    private String generateSnapshotId() {
-        return NameGenerator.generate("snapshot", 16);
-    }
-
+    /**
+     * Get snapshot by id
+     *
+     * @param snapshotId
+     *         id of required snapshot
+     * @return snapshot with specified id
+     * @throws NotFoundException
+     *         if snapshot with provided id not found
+     * @throws ServerException
+     *         if other error occur
+     */
     public SnapshotImpl getSnapshot(String snapshotId) throws NotFoundException, ServerException {
         return snapshotStorage.getSnapshot(snapshotId);
     }
@@ -414,6 +389,15 @@ public class MachineManager {
         return snapshotStorage.findSnapshots(owner, workspaceId, project);
     }
 
+    /**
+     * Remove snapshot by id
+     *
+     * @param snapshotId
+     * @throws NotFoundException
+     *         if snapshot with specified id not found
+     * @throws ServerException
+     *         if other error occurs
+     */
     public void removeSnapshot(String snapshotId) throws NotFoundException, ServerException {
         final SnapshotImpl snapshot = getSnapshot(snapshotId);
         final String imageType = snapshot.getImageType();
@@ -436,6 +420,8 @@ public class MachineManager {
      *         workspace binding
      * @param project
      *         project binding
+     * @throws ServerException
+     *         error occur
      */
     public void removeSnapshots(String owner, String workspaceId, ProjectBinding project) throws ServerException {
         for (SnapshotImpl snapshot : snapshotStorage.findSnapshots(owner, workspaceId, project)) {
@@ -449,6 +435,21 @@ public class MachineManager {
         }
     }
 
+    /**
+     * Execute a command in machine
+     *
+     * @param machineId
+     *         id of the machine where command should be executed
+     * @param command
+     *         command that should be executed in the machine
+     * @param commandOutput
+     *         line consumer for execution logs
+     * @return {@link ProcessImpl} that represents started process in machine
+     * @throws NotFoundException
+     *         if machine with specified id not found
+     * @throws MachineException
+     *         if other error occur
+     */
     public ProcessImpl exec(final String machineId, final Command command, final LineConsumer commandOutput)
             throws NotFoundException, MachineException {
         final MachineImpl machine = getMachine(machineId);
@@ -476,10 +477,35 @@ public class MachineManager {
         return new ProcessImpl(instanceProcess);
     }
 
+    /**
+     * Get list of active processes from specific machine
+     *
+     * @param machineId
+     *         id of machine to get processes information from
+     * @return list of {@link ProcessImpl}
+     * @throws NotFoundException
+     *         if machine with specified id not found
+     * @throws MachineException
+     *         if other error occur
+     */
     public List<ProcessImpl> getProcesses(String machineId) throws NotFoundException, MachineException {
         return getMachine(machineId).getProcesses();
     }
 
+    /**
+     * Stop process in machine
+     *
+     * @param machineId
+     *         if of the machine where process should be stopped
+     * @param processId
+     *         id of the process that should be stopped in machine
+     * @throws NotFoundException
+     *         if machine or process with specified id not found
+     * @throws ForbiddenException
+     *         if process is finished already
+     * @throws MachineException
+     *         if other error occur
+     */
     public void stopProcess(String machineId, int processId) throws NotFoundException, MachineException, ForbiddenException {
         final ProcessImpl process = getMachine(machineId).getProcess(processId);
         if (!process.isAlive()) {
@@ -489,6 +515,13 @@ public class MachineManager {
         process.kill();
     }
 
+    /**
+     * Destroy machine with specified id
+     *
+     * @param machineId id of machine that should be destroyed
+     * @throws NotFoundException if machine with specified id not found
+     * @throws MachineException if other error occur
+     */
     public void destroy(final String machineId) throws NotFoundException, MachineException {
         final MachineImpl machine = getMachine(machineId);
         machine.setState(MachineState.DESTROYING);
@@ -513,8 +546,97 @@ public class MachineManager {
         }
         try {
             machine.getMachineLogsOutput().close();
+        } catch (IOException ignore) {
+        }
+    }
+
+    public List<MachineImpl> getMachines() throws ServerException {
+        return machineRegistry.getAll();
+    }
+
+    public List<ProjectBinding> getProjects(String machineId) throws NotFoundException, MachineException {
+        return new ArrayList<>(getMachine(machineId).getProjects());
+    }
+
+    private FileLineConsumer getMachineFileLogger(String machineId) throws MachineException {
+        try {
+            return new FileLineConsumer(getMachineLogsFile(machineId));
         } catch (IOException e) {
-            LOG.warn(e.getMessage());
+            throw new MachineException(String.format("Unable create log file for machine '%s'. %s", machineId, e.getMessage()));
+        }
+    }
+
+    private File getMachineLogsFile(String machineId) {
+        return new File(machineLogsDir, machineId);
+    }
+
+    public Reader getMachineLogReader(String machineId) throws NotFoundException, MachineException {
+        final File machineLogsFile = getMachineLogsFile(machineId);
+        if (machineLogsFile.isFile()) {
+            try {
+                return Files.newBufferedReader(machineLogsFile.toPath(), Charset.defaultCharset());
+            } catch (IOException e) {
+                throw new MachineException(String.format("Unable read log file for machine '%s'. %s", machineId, e.getMessage()));
+            }
+        }
+        throw new NotFoundException(String.format("Logs for machine '%s' are not available", machineId));
+    }
+
+    private String generateMachineId() {
+        return NameGenerator.generate("machine", 16);
+    }
+
+    private String generateSnapshotId() {
+        return NameGenerator.generate("snapshot", 16);
+    }
+
+    @PostConstruct
+    private void createLogsDir() {
+        if (!(machineLogsDir.exists() || machineLogsDir.mkdirs())) {
+            throw new IllegalStateException(String.format("Unable create directory %s", machineLogsDir.getAbsolutePath()));
+        }
+    }
+
+    @PreDestroy
+    private void cleanup() {
+        boolean interrupted = false;
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+                if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
+                    LOG.warn("Unable terminate main pool");
+                }
+            }
+        } catch (InterruptedException e) {
+            interrupted = true;
+            executor.shutdownNow();
+        }
+
+        for (MachineImpl machine : machineRegistry.getAll()) {
+            try {
+                destroy(machine);
+            } catch (Exception e) {
+                LOG.warn(e.getMessage());
+            }
+        }
+
+        final java.io.File[] files = machineLogsDir.listFiles();
+        if (files != null && files.length > 0) {
+            for (java.io.File f : files) {
+                boolean deleted;
+                if (f.isDirectory()) {
+                    deleted = IoUtil.deleteRecursive(f);
+                } else {
+                    deleted = f.delete();
+                }
+                if (!deleted) {
+                    LOG.warn("Failed delete {}", f);
+                }
+            }
+        }
+        if (interrupted) {
+            Thread.currentThread().interrupt();
         }
     }
 }

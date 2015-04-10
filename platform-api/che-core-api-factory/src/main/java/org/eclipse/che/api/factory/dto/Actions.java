@@ -16,7 +16,6 @@ import org.eclipse.che.dto.shared.DTO;
 
 import java.util.List;
 
-import static org.eclipse.che.api.core.factory.FactoryParameter.FactoryFormat.ENCODED;
 import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.OPTIONAL;
 
 /**
@@ -32,7 +31,7 @@ public interface Actions {
      * Welcome page configuration.
      */
     @Deprecated
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "welcome", format = ENCODED, trackedOnly = true)
+    @FactoryParameter(obligation = OPTIONAL, trackedOnly = true)
     WelcomePage getWelcome();
 
     @Deprecated
@@ -44,7 +43,7 @@ public interface Actions {
     /**
      * Allow to use text replacement in project files after clone
      */
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "findReplace")
+    @FactoryParameter(obligation = OPTIONAL)
     @Deprecated
     List<ReplacementSet> getFindReplace();
 
@@ -58,7 +57,7 @@ public interface Actions {
     /**
      * Path of the file to open in the project.
      */
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "openFile")
+    @FactoryParameter(obligation = OPTIONAL)
     @Deprecated
     String getOpenFile();
 
@@ -71,7 +70,7 @@ public interface Actions {
     /**
      * Warn on leave page
      */
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "warnOnClose")
+    @FactoryParameter(obligation = OPTIONAL)
     @Deprecated
     Boolean getWarnOnClose();
 

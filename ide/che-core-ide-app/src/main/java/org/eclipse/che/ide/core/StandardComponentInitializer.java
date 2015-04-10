@@ -71,7 +71,7 @@ import org.vectomatic.dom.svg.ui.SVGResource;
 import static org.eclipse.che.ide.api.action.IdeActions.GROUP_FILE_NEW;
 
 /**
- * Initializer for standard component i.e. some basic menu commands (Save, Save As etc)
+ * Initializer for standard components i.e. some basic menu commands (Save, Save As etc)
  *
  * @author Evgen Vidolob
  */
@@ -281,7 +281,7 @@ public class StandardComponentInitializer {
         fileTypeRegistry.registerFileType(jpgFile);
         editorRegistry.registerDefaultEditor(jpgFile, imageViewerProvider);
 
-        // Compose Import Project groupRun
+        // Compose Import Project group
         DefaultActionGroup importProjectGroup = new DefaultActionGroup("Import Project", true, actionManager);
         importProjectGroup.getTemplatePresentation().setSVGIcon(resources.importProject());
         actionManager.registerAction(IdeActions.GROUP_IMPORT_PROJECT, importProjectGroup);
@@ -290,7 +290,7 @@ public class StandardComponentInitializer {
         importProjectGroup.addAction(importProjectFromLocationAction);
         importProjectGroup.addAction(importLocalProjectAction);
 
-        // Compose New groupRun
+        // Compose New group
         DefaultActionGroup newGroup = new DefaultActionGroup("New", true, actionManager);
         newGroup.getTemplatePresentation().setDescription("Create...");
         newGroup.getTemplatePresentation().setSVGIcon(resources.newResource());
@@ -315,7 +315,7 @@ public class StandardComponentInitializer {
         actionManager.registerAction("createModuleAction", createModuleAction);
         actionManager.registerAction("showHideHiddenFiles", showHiddenFilesAction);
 
-        // Compose Save groupRun
+        // Compose Save group
         DefaultActionGroup saveGroup = new DefaultActionGroup(actionManager);
         actionManager.registerAction("saveGroup", saveGroup);
         actionManager.registerAction("save", saveAction);

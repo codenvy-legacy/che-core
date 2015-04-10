@@ -24,7 +24,7 @@ import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.OPTIO
  */
 @DTO
 public interface BuilderConfiguration {
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "options")
+    @FactoryParameter(obligation = OPTIONAL)
     /** Gets runtime options (runner type and(or) receipt specific). */
     Map<String, String> getOptions();
 
@@ -37,7 +37,7 @@ public interface BuilderConfiguration {
 
     BuilderConfiguration withOptions(Map<String, String> options);
 
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "targets")
+    @FactoryParameter(obligation = OPTIONAL)
     /** Gets environment variables (runner type and(or) receipt specific). */
     List<String> getTargets();
 

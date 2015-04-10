@@ -10,8 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.api.promises.client.js;
 
-import org.eclipse.che.api.promises.client.PromiseError;
 import com.google.gwt.core.client.JavaScriptObject;
+
+import org.eclipse.che.api.promises.client.PromiseError;
 
 public class RejectFunction extends JavaScriptObject {
 

@@ -10,8 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.api.promises.client.js;
 
-import org.eclipse.che.api.promises.client.PromiseError;
 import com.google.gwt.core.client.JavaScriptObject;
+
+import org.eclipse.che.api.promises.client.PromiseError;
 
 public class JsPromiseError extends JavaScriptObject implements PromiseError {
 
@@ -40,10 +41,10 @@ public class JsPromiseError extends JavaScriptObject implements PromiseError {
         if (stack != null && stack.length != 0) {
             result = create(e.getMessage(), stack[0].getFileName(), Integer.toString(stack[0].getLineNumber()));
             result.setStack(stack);
-         } else {
-             result = create(e.getMessage());
-         }
-         return result;
+        } else {
+            result = create(e.getMessage());
+        }
+        return result;
     }
 
     private final void setStack(final StackTraceElement[] stack) {

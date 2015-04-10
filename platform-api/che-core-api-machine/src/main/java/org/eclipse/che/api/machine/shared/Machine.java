@@ -16,44 +16,39 @@ import org.eclipse.che.api.machine.server.spi.InstanceMetadata;
 import java.util.Set;
 
 /**
+ * Describes machine
+ *
  * @author gazarenkov
  */
 public interface Machine {
 
     /**
-     *
-     * @return unique ID of this machine
+     * Unique ID of this machine
      */
     String getId();
 
     /**
-     *
-     * @return machine type (i.e. "docker")
+     * Machine type (i.e. "docker")
      */
     String getType();
 
     /**
-     * Gets identifier of user who launched this machine.
-     *
-     * @return identifier of user who launched this machine
+     * Identifier of user who launched this machine.
      */
     String getOwner();
 
     /**
-     *
-     * @return list of projects bound to this machine
+     * List of projects bound to this machine
      */
     Set<? extends ProjectBinding> getProjects();
 
     /**
-     *
-     * @return id of workspace this machine belongs to
+     * Id of workspace this machine belongs to
      */
     String getWorkspaceId();
 
     /**
-     *
-     * @return machine specific metadata
+     * Machine specific metadata
      */
     InstanceMetadata getMetadata() throws MachineException;
 }

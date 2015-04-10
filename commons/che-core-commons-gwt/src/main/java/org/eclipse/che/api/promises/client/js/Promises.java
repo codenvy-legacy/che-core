@@ -10,25 +10,29 @@
  *******************************************************************************/
 package org.eclipse.che.api.promises.client.js;
 
-import org.eclipse.che.api.promises.client.Promise;
-import org.eclipse.che.api.promises.client.PromiseError;
-import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArrayMixed;
-
 import elemental.js.util.JsArrayOf;
 import elemental.util.ArrayOf;
 
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArrayMixed;
+
+import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.api.promises.client.PromiseError;
 
 public final class Promises {
 
     /** Private constructor, the class is not instantiable. */
-    private Promises() {}
+    private Promises() {
+    }
 
     /**
      * Creates a new promise using the provided executor.
-     * @param conclusion the executor
+     *
+     * @param conclusion
+     *         the executor
+     * @param <V>
+     *         the type of the promised value
      * @return a promise
-     * @param <V> the type of the promised value
      */
     public static final native <V> JsPromise<V> create(Executor<V> conclusion) /*-{
         return new Promise(conclusion);
@@ -37,7 +41,9 @@ public final class Promises {
     /**
      * Creates a promise that resolves as soon as all the promises used as parameters are resolved or rejected
      * as soon as the first rejection happens on one of the included promises.
-     * @param promises the included promises
+     *
+     * @param promises
+     *         the included promises
      * @return a promise with an array of unit values as fulfillment value
      */
     public static final native JsPromise<JsArrayMixed> all(ArrayOf<Promise<?>> promises) /*-{
@@ -46,7 +52,7 @@ public final class Promises {
 
     public static final JsPromise<JsArrayMixed> all(final Promise<?>... promises) {
         final JsArrayOf<Promise<?>> promisesArray = JavaScriptObject.createArray().cast();
-        for (final Promise<?> promise: promises) {
+        for (final Promise<?> promise : promises) {
             promisesArray.push(promise);
         }
         return all(promisesArray);

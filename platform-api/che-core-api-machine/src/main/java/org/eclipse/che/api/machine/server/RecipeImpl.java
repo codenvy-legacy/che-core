@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Implementation of {@link Recipe}
+ *
  * @author andrew00x
  */
 public class RecipeImpl implements Recipe {

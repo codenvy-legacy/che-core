@@ -907,7 +907,7 @@ public class DtoImplServerTemplate extends DtoImpl {
             return sb.toString();
 
         } else {
-            throw new IllegalArgumentException("We do not handle this type");
+            throw new IllegalArgumentException("We do not handle this type " + type.toString());
         }
     }
 

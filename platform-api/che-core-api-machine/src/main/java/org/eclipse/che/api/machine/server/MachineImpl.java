@@ -25,6 +25,8 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
+ * Provides machine's operations
+ *
  * @author andrew00x
  */
 public class MachineImpl implements Machine {
@@ -119,8 +121,7 @@ public class MachineImpl implements Machine {
     }
 
     /**
-     *
-     * binds project
+     * Binds project to machine
      */
     void bindProject(ProjectBinding project) throws MachineException {
         if(instance == null) {
@@ -133,8 +134,7 @@ public class MachineImpl implements Machine {
     }
 
     /**
-     *
-     * unbinds project
+     * Unbinds project from machine
      */
     void unbindProject(ProjectBinding project) throws MachineException, NotFoundException {
         if(instance == null) {

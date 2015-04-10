@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.api.factory.dto;
 
-import static org.eclipse.che.api.core.factory.FactoryParameter.FactoryFormat.BOTH;
 import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.OPTIONAL;
 
 import org.eclipse.che.api.core.factory.FactoryParameter;
@@ -28,7 +27,7 @@ public interface FactoryV2_1 extends FactoryV2_0 {
     /**
      * Describes ide look and feel.
      */
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "ide", format = BOTH)
+    @FactoryParameter(obligation = OPTIONAL)
     Ide getIde();
 
     void setIde(Ide ide);

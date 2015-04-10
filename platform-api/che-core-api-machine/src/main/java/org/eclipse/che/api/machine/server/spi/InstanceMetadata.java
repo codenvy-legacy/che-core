@@ -13,6 +13,8 @@ package org.eclipse.che.api.machine.server.spi;
 import java.util.Map;
 
 /**
+ * Describe implementation specific properties of machine instance
+ *
  * @author andrew00x
  */
 public interface InstanceMetadata {
@@ -20,8 +22,7 @@ public interface InstanceMetadata {
     // TODO add more generic info
 
     /**
-     *
-     * @return instance specific properties
+     * Returns instance specific properties
      */
     Map<String, String> getProperties();
 

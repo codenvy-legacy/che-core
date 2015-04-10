@@ -16,8 +16,6 @@ package org.eclipse.che.ide.core;
  * @author <a href="mailto:nzamosenchuk@exoplatform.com">Nikolay Zamosenchuk</a>
  */
 public class ComponentException extends Exception {
-    private static final long serialVersionUID = 1L;
-
     private Component component;
 
     /** @return the instance of failed component */
@@ -34,6 +32,5 @@ public class ComponentException extends Exception {
     public ComponentException(String message, Component component) {
         super(message);
         this.component = component;
-
     }
 }

@@ -10,30 +10,10 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.inject;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
-
-import org.eclipse.che.ide.jseditor.client.codeassist.CodeAssistantImpl;
-import org.eclipse.che.ide.jseditor.client.debug.BreakpointRendererFactory;
-import org.eclipse.che.ide.jseditor.client.debug.BreakpointRendererImpl;
-import org.eclipse.che.ide.jseditor.client.defaulteditor.DefaultEditorProvider;
-import org.eclipse.che.ide.jseditor.client.document.DocumentStorage;
-import org.eclipse.che.ide.jseditor.client.editortype.EditorType;
-import org.eclipse.che.ide.jseditor.client.editortype.EditorTypeRegistry;
-import org.eclipse.che.ide.jseditor.client.editortype.EditorTypeRegistryImpl;
-import org.eclipse.che.ide.jseditor.client.filetype.FileTypeIdentifier;
-import org.eclipse.che.ide.jseditor.client.filetype.MultipleMethodFileIdentifier;
-import org.eclipse.che.ide.jseditor.client.partition.DocumentPositionMapImpl;
-import org.eclipse.che.ide.jseditor.client.prefmodel.EditorPreferenceReader;
-import org.eclipse.che.ide.jseditor.client.quickfix.QuickAssistAssistantImpl;
-import org.eclipse.che.ide.jseditor.client.quickfix.QuickAssistWidgetFactory;
-import org.eclipse.che.ide.jseditor.client.quickfix.QuickAssistantFactory;
-import org.eclipse.che.ide.jseditor.client.reconciler.Reconciler;
-import org.eclipse.che.ide.jseditor.client.reconciler.ReconcilerFactory;
-import org.eclipse.che.ide.jseditor.client.reconciler.ReconcilerImpl;
-import org.eclipse.che.ide.jseditor.client.texteditor.EmbeddedTextEditorPartViewImpl;
-import org.vectomatic.dom.svg.ui.SVGResource;
+import com.google.gwt.inject.client.AbstractGinModule;
+import com.google.gwt.inject.client.assistedinject.GinFactoryModuleBuilder;
+import com.google.inject.Provides;
+import com.google.inject.name.Names;
 
 import org.eclipse.che.ide.api.editor.EditorProvider;
 import org.eclipse.che.ide.api.extension.ExtensionGinModule;
@@ -44,19 +24,39 @@ import org.eclipse.che.ide.jseditor.client.JsEditorConstants;
 import org.eclipse.che.ide.jseditor.client.JsEditorExtension;
 import org.eclipse.che.ide.jseditor.client.codeassist.CodeAssistant;
 import org.eclipse.che.ide.jseditor.client.codeassist.CodeAssistantFactory;
+import org.eclipse.che.ide.jseditor.client.codeassist.CodeAssistantImpl;
 import org.eclipse.che.ide.jseditor.client.debug.BreakpointManagerImpl;
+import org.eclipse.che.ide.jseditor.client.debug.BreakpointRendererFactory;
+import org.eclipse.che.ide.jseditor.client.debug.BreakpointRendererImpl;
+import org.eclipse.che.ide.jseditor.client.defaulteditor.DefaultEditorProvider;
+import org.eclipse.che.ide.jseditor.client.defaulteditor.EditorWithoutAutoSaveProvider;
+import org.eclipse.che.ide.jseditor.client.document.DocumentStorage;
+import org.eclipse.che.ide.jseditor.client.editortype.EditorType;
+import org.eclipse.che.ide.jseditor.client.editortype.EditorTypeRegistry;
+import org.eclipse.che.ide.jseditor.client.editortype.EditorTypeRegistryImpl;
+import org.eclipse.che.ide.jseditor.client.filetype.FileTypeIdentifier;
+import org.eclipse.che.ide.jseditor.client.filetype.MultipleMethodFileIdentifier;
 import org.eclipse.che.ide.jseditor.client.infopanel.InfoPanel;
 import org.eclipse.che.ide.jseditor.client.partition.DocumentPositionMap;
+import org.eclipse.che.ide.jseditor.client.partition.DocumentPositionMapImpl;
 import org.eclipse.che.ide.jseditor.client.prefmodel.DefaultEditorTypePrefReader;
+import org.eclipse.che.ide.jseditor.client.prefmodel.EditorPreferenceReader;
 import org.eclipse.che.ide.jseditor.client.prefmodel.KeymapPrefReader;
 import org.eclipse.che.ide.jseditor.client.quickfix.QuickAssistAssistant;
+import org.eclipse.che.ide.jseditor.client.quickfix.QuickAssistAssistantImpl;
+import org.eclipse.che.ide.jseditor.client.quickfix.QuickAssistWidgetFactory;
+import org.eclipse.che.ide.jseditor.client.quickfix.QuickAssistantFactory;
+import org.eclipse.che.ide.jseditor.client.reconciler.Reconciler;
+import org.eclipse.che.ide.jseditor.client.reconciler.ReconcilerFactory;
+import org.eclipse.che.ide.jseditor.client.reconciler.ReconcilerWithAutoSave;
 import org.eclipse.che.ide.jseditor.client.requirejs.ModuleHolder;
 import org.eclipse.che.ide.jseditor.client.texteditor.EmbeddedTextEditorPartView;
+import org.eclipse.che.ide.jseditor.client.texteditor.EmbeddedTextEditorPartViewImpl;
+import org.vectomatic.dom.svg.ui.SVGResource;
 
-import com.google.gwt.inject.client.AbstractGinModule;
-import com.google.gwt.inject.client.assistedinject.GinFactoryModuleBuilder;
-import com.google.inject.Provides;
-import com.google.inject.name.Names;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 
 @ExtensionGinModule
 public class JsEditorGinModule extends AbstractGinModule {
@@ -96,7 +96,7 @@ public class JsEditorGinModule extends AbstractGinModule {
 
         // bind the reconciler
         install(new GinFactoryModuleBuilder()
-                    .implement(Reconciler.class, ReconcilerImpl.class)
+                    .implement(Reconciler.class, ReconcilerWithAutoSave.class)
                     .build(ReconcilerFactory.class));
 
         // bind the code assistant and quick assistant
@@ -104,8 +104,8 @@ public class JsEditorGinModule extends AbstractGinModule {
                     .implement(CodeAssistant.class, CodeAssistantImpl.class)
                     .build(CodeAssistantFactory.class));
         install(new GinFactoryModuleBuilder()
-                    .implement(QuickAssistAssistant.class, QuickAssistAssistantImpl.class)
-                    .build(QuickAssistantFactory.class));
+                        .implement(QuickAssistAssistant.class, QuickAssistAssistantImpl.class)
+                        .build(QuickAssistantFactory.class));
 
         // breakpoint renderer and manager
         install(new GinFactoryModuleBuilder()
@@ -115,7 +115,9 @@ public class JsEditorGinModule extends AbstractGinModule {
 
         // bind the quick assist widget factory
         install(new GinFactoryModuleBuilder()
-                    .build(QuickAssistWidgetFactory.class));
+                        .build(QuickAssistWidgetFactory.class));
+
+        bind(EditorProvider.class).annotatedWith(Names.named(JsEditorExtension.EMBEDDED_EDITOR_PROVIDER)).to(EditorWithoutAutoSaveProvider.class);
     }
 
     // no real need to make it a singleton, it's a simple instantiation

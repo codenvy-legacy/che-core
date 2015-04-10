@@ -15,6 +15,8 @@ import org.eclipse.che.api.machine.shared.Command;
 import org.eclipse.che.dto.shared.DTO;
 
 /**
+ * Description of command to execute
+ *
  * @author andrew00x
  */
 @DTO
@@ -27,6 +29,9 @@ public interface CommandDescriptor extends Command, Hyperlinks {
 
     CommandDescriptor withCommandLine(String commandLine);
 
+    /**
+     * Channel of websocket where command execution logs should be put
+     */
     String getOutputChannel();
 
     void setOutputChannel(String outputChannel);

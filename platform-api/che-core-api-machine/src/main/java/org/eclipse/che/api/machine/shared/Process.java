@@ -11,6 +11,8 @@
 package org.eclipse.che.api.machine.shared;
 
 /**
+ * Describe process running in a machine
+ *
  * @author andrew00x
  */
 public interface Process {

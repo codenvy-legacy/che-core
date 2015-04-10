@@ -26,7 +26,7 @@ public interface Policies {
      * Restrict access if referer header doesn't match this field
      */
     // Do not change referer to referrer
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "refererHostname")
+    @FactoryParameter(obligation = OPTIONAL)
     String getRefererHostname();
 
     void setRefererHostname(String refererHostname);
@@ -36,7 +36,7 @@ public interface Policies {
     /**
      * Restrict access for factories used earlier then author supposes
      */
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "validSince")
+    @FactoryParameter(obligation = OPTIONAL)
     Long getValidSince();
 
     void setValidSince(Long validSince);
@@ -46,7 +46,7 @@ public interface Policies {
     /**
      * Restrict access for factories used later then author supposes
      */
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "validUntil")
+    @FactoryParameter(obligation = OPTIONAL)
     Long getValidUntil();
 
     void setValidUntil(Long validUntil);
@@ -57,7 +57,7 @@ public interface Policies {
      * Restrict access for factories only to authenticated users
      */
     @Deprecated
-    @FactoryParameter(obligation = OPTIONAL, queryParameterName = "requireAuthentication")
+    @FactoryParameter(obligation = OPTIONAL)
     Boolean getRequireAuthentication();
 
     @Deprecated
