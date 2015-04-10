@@ -32,17 +32,6 @@ public interface Instance {
 
     InstanceProcess createProcess(String commandLine) throws MachineException;
 
-    /**
-     * Mount host directory to some directory in this instance. Methods returns path to the instance's directory (target of mount).
-     *
-     * @param dir
-     *         mountpoint on local host
-     * @return path to directory on this instance where host directory is mounted
-     * @throws MachineException
-     *         if any error occurs while mounting
-     */
-    String mount(File dir) throws MachineException;
-
     ImageKey saveToImage(String owner, String label) throws MachineException;
 
     void destroy() throws MachineException;
