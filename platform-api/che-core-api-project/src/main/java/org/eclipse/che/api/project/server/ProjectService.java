@@ -680,9 +680,12 @@ public class ProjectService extends Service {
             String projectType = null;
             try {
                 projectType = project.getConfig().getTypeId();
-            } catch (ServerException | ValueStorageException e) {
+            } catch (ServerException | ValueStorageException | ProjectTypeConstraintException e) {
                 // Let delete even project in invalid state.
-                LOG.error(e.getMessage(), e);
+                entry.remove();
+                LOG.info("EVENT#project-destroyed# PROJECT#{}# TYPE#{}# WS#{}# USER#{}#", name, "unknown",
+                         EnvironmentContext.getCurrent().getWorkspaceName(), EnvironmentContext.getCurrent().getUser().getName());
+                LOG.warn(String.format("Removing not valid project ws : %s, project path: %s ", workspace, path) + e.getMessage(), e);
             }
             entry.remove();
             LOG.info("EVENT#project-destroyed# PROJECT#{}# TYPE#{}# WS#{}# USER#{}#", name, projectType,
