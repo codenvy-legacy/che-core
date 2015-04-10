@@ -10,6 +10,8 @@
  *******************************************************************************/
 package com.codenvy.api.account;
 
+import com.google.common.collect.ImmutableList;
+
 import org.eclipse.che.api.account.server.AccountService;
 import org.eclipse.che.api.account.server.Constants;
 import org.eclipse.che.api.account.server.ResourcesManager;
@@ -23,6 +25,7 @@ import org.eclipse.che.api.account.server.dao.Subscription;
 import org.eclipse.che.api.account.server.dao.SubscriptionQueryBuilder;
 import org.eclipse.che.api.account.server.dao.SubscriptionQueryBuilder.SubscriptionQuery;
 import org.eclipse.che.api.account.shared.dto.AccountDescriptor;
+import org.eclipse.che.api.account.shared.dto.AccountSearchCriteria;
 import org.eclipse.che.api.account.shared.dto.AccountUpdate;
 import org.eclipse.che.api.account.shared.dto.BillingCycleType;
 import org.eclipse.che.api.account.shared.dto.MemberDescriptor;
@@ -57,6 +60,8 @@ import org.everrest.core.tools.ResourceLauncher;
 import org.everrest.core.tools.SimplePrincipal;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.mockito.testng.MockitoTestNGListener;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -83,11 +88,13 @@ import java.util.Map;
 
 import static java.util.Collections.singletonList;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -1590,6 +1597,63 @@ public class AccountServiceTest {
 
         assertEquals(response.getStatus(), Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         assertEquals(response.getEntity().toString(), "Unknown serviceId is used");
+    }
+
+    @Test
+    public void shouldFindThrowExceptionIfPaginationParametersIncorrect() throws Exception {
+        prepareSecurityContext("system/admin");
+        prepareMocks();
+
+        ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/find?page=value",
+                                                 MediaType.APPLICATION_JSON,
+                                                 DtoFactory.getInstance().createDto(AccountSearchCriteria.class));
+
+        assertEquals(response.getStatus(), Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+    }
+
+    @Test
+    public void shouldFindUsePaginationParametersFromUrl() throws Exception {
+        prepareSecurityContext("system/admin");
+        prepareMocks();
+
+        ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/find?page=3&perPage=15",
+                                                 MediaType.APPLICATION_JSON,
+                                                 DtoFactory.getInstance().createDto(AccountSearchCriteria.class));
+
+        assertFindResponse(response, "3", "15");
+    }
+
+    @Test
+    public void shouldFindUseDefaultPaginationParameters() throws Exception {
+        prepareSecurityContext("system/admin");
+        prepareMocks();
+
+        ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/find",
+                                                 MediaType.APPLICATION_JSON,
+                                                 DtoFactory.getInstance().createDto(AccountSearchCriteria.class));
+
+        assertFindResponse(response, "1", "20");
+    }
+
+    private void prepareMocks() throws ServerException {
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                Object[] arguments = invocationOnMock.getArguments();
+                Object page = arguments[1];
+                Object perPage = arguments[2];
+                return ImmutableList.of(new Account().withId(page + ":" + perPage));
+            }
+        }).when(accountDao).find(any(AccountSearchCriteria.class), anyInt(), anyInt());
+    }
+
+    private void assertFindResponse(ContainerResponse response, String page, String perPage) {
+        assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
+        assertNotNull(response.getEntity());
+
+        List<Account> accounts = (List<Account>)response.getEntity();
+        assertEquals(accounts.size(), 1);
+        assertEquals(accounts.get(0).getId(), String.format("%s:%s", page, perPage));
     }
 
     protected void verifyLinksRel(List<Link> links, List<String> rels) {

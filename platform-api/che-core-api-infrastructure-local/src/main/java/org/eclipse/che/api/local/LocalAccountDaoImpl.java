@@ -10,21 +10,28 @@
  *******************************************************************************/
 package org.eclipse.che.api.local;
 
+import com.google.common.collect.ImmutableList;
+
 import org.eclipse.che.api.account.server.dao.Account;
 import org.eclipse.che.api.account.server.dao.AccountDao;
 import org.eclipse.che.api.account.server.dao.Member;
 import org.eclipse.che.api.account.server.dao.Subscription;
 import org.eclipse.che.api.account.server.dao.SubscriptionQueryBuilder;
+import org.eclipse.che.api.account.shared.dto.AccountSearchCriteria;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.user.server.dao.User;
+import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.api.workspace.server.dao.WorkspaceDao;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -47,13 +54,16 @@ public class LocalAccountDaoImpl implements AccountDao {
     private final ReadWriteLock      lock;
 
     private final WorkspaceDao workspaceDao;
+    private final UserDao      userDao;
 
     @Inject
     public LocalAccountDaoImpl(@Named("codenvy.local.infrastructure.accounts") Set<Account> accounts,
                                @Named("codenvy.local.infrastructure.account.members") Set<Member> members,
                                @Named("codenvy.local.infrastructure.account.subscriptions") Set<Subscription> subscriptions,
-                               WorkspaceDao workspaceDao) {
+                               WorkspaceDao workspaceDao,
+                               UserDao userDao) {
         this.workspaceDao = workspaceDao;
+        this.userDao = userDao;
         this.accounts = new LinkedList<>();
         this.members = new LinkedList<>();
         this.subscriptions = new LinkedList<>();
@@ -413,5 +423,65 @@ public class LocalAccountDaoImpl implements AccountDao {
             }
         }
         return lockedAccounts;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<Account> find(AccountSearchCriteria searchCriteria, int page, int perPage) throws ServerException {
+        List<Account> result = null;
+        try {
+            if (searchCriteria.getEmailOwner() != null) {
+                User owner = userDao.getByAlias(searchCriteria.getEmailOwner());
+                List<Account> byOwner = getByOwner(owner.getId());
+                result = mergeResult(result, byOwner);
+            }
+
+            if (searchCriteria.getId() != null) {
+                Account account = getById(searchCriteria.getId());
+                result = mergeResult(result, ImmutableList.of(account));
+            }
+
+            if (searchCriteria.getName() != null) {
+                Account account = getByName(searchCriteria.getName());
+                result = mergeResult(result, ImmutableList.of(account));
+            }
+
+            if (searchCriteria.getSubscription() != null) {
+                List<Account> bySubscriptions = new LinkedList<>();
+                for (Subscription subscription : subscriptions) {
+                    if (subscription.getServiceId().equals(searchCriteria.getSubscription())) {
+                        bySubscriptions.add(getById(subscription.getAccountId()));
+                    }
+                }
+                result = mergeResult(result, bySubscriptions);
+            }
+
+        } catch (NotFoundException e) {
+            return Collections.emptyList();
+        }
+
+        if (result == null) {
+            return Collections.emptyList();
+        }
+
+        int fromIndex = (page - 1) * perPage;
+        if (fromIndex >= result.size()) {
+            return Collections.emptyList();
+        }
+        int toIndex = Math.min(page * perPage, result.size());
+
+        return result.subList(fromIndex, toIndex);
+    }
+
+    private List<Account> mergeResult(@Nullable List<Account> result, List<Account> searchResult) throws NotFoundException {
+        if (result == null) {
+            return searchResult;
+        } else {
+            result.retainAll(searchResult);
+            if (result.isEmpty()) {
+                throw new NotFoundException("Search result is empty");
+            }
+            return result;
+        }
     }
 }

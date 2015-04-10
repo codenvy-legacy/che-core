@@ -23,6 +23,7 @@ import org.eclipse.che.api.account.server.dao.PlanDao;
 import org.eclipse.che.api.account.server.dao.Subscription;
 import org.eclipse.che.api.account.shared.dto.AccountDescriptor;
 import org.eclipse.che.api.account.shared.dto.AccountReference;
+import org.eclipse.che.api.account.shared.dto.AccountSearchCriteria;
 import org.eclipse.che.api.account.shared.dto.AccountUpdate;
 import org.eclipse.che.api.account.shared.dto.MemberDescriptor;
 import org.eclipse.che.api.account.shared.dto.NewAccount;
@@ -58,6 +59,7 @@ import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.POST;
@@ -91,6 +93,7 @@ import static java.util.Collections.singletonList;
  *
  * @author Eugene Voevodin
  * @author Alex Garagatyi
+ * @author Anatoliy Bazko
  */
 @Api(value = "/account",
         description = "Account manager")
@@ -1036,6 +1039,60 @@ public class AccountService extends Service {
         }
 
         return result;
+    }
+
+
+    /**
+     * Returns list of accounts satisfying given criteria.
+     *
+     * @param paramPage
+     *         page number, must be positive
+     * @param paramPerPage
+     *         number of items per page, must be positive
+     * @throws ServerException
+     *         when some error occurred while retrieving accounts
+     * @see org.eclipse.che.api.account.server.dao.AccountDao#find
+     */
+    @ApiOperation(value = "Gets list of accounts satisfying given criteria",
+            notes = "Search criteria should be specified. Result is returned by pages. The number of page and number of items per page should be " +
+                    "specified as query parameters. For this API call system/admin or system/manager role is required",
+            response = Account.class,
+            responseContainer = "List",
+            position = 20)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 500, message = "Internal Server Error")})
+    @POST
+    @Path("/find")
+    @GenerateLink(rel = Constants.LINK_REL_FIND_ACCOUNTS)
+    @RolesAllowed({"system/admin", "system/manager"})
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Account> find(@ApiParam(value = "Search criteria") AccountSearchCriteria searchCriteria,
+                              @ApiParam(value = "Page number") @DefaultValue("1") @QueryParam("page") String paramPage,
+                              @ApiParam(value = "Number of items per page") @DefaultValue("20") @QueryParam("perPage") String paramPerPage)
+            throws ServerException {
+
+        int page = parseInt(paramPage, "page");
+        int perPage = parseInt(paramPerPage, "perPage");
+
+        try {
+            return accountDao.find(searchCriteria, page, perPage);
+        } catch (NumberFormatException e) {
+            throw new ServerException("Page parameter", e);
+        }
+    }
+
+    private int parseInt(String param, String name) throws ServerException {
+        try {
+            int value = Integer.valueOf(param);
+            if (value <= 0) {
+                throw new ServerException(format("'%s' parameter must be a positive number", name));
+            }
+            return value;
+        } catch (NumberFormatException e) {
+            throw new ServerException(format("'%s' parameter has incorrect format. Must be a positive integer number", name), e);
+        }
     }
 
     /**
