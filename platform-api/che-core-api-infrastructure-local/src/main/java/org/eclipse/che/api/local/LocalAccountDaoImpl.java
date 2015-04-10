@@ -473,7 +473,7 @@ public class LocalAccountDaoImpl implements AccountDao {
         return result.subList(fromIndex, toIndex);
     }
 
-    private List<Account> mergeResult(@Nullable List<Account> result, List<Account> searchResult) throws NotFoundException {
+    private List<Account> mergeResult(List<Account> result, List<Account> searchResult) throws NotFoundException {
         result.retainAll(searchResult);
         if (result.isEmpty()) {
             throw new NotFoundException("Search result is empty");
