@@ -880,8 +880,8 @@ public class ProjectService extends Service {
         //try convert folder to project with giving config
         try {
             if (newProject != null) {
-                projectConfig = DtoConverter.fromDto2(newProject, projectTypeRegistry);
                 visibility = newProject.getVisibility();
+                projectConfig = DtoConverter.fromDto2(newProject, projectTypeRegistry);
             }
             project = projectManager.convertFolderToProject(workspace,
                                                             baseProjectFolder.getPath(),
@@ -897,6 +897,8 @@ public class ProjectService extends Service {
             }
         } catch (ConflictException | ForbiddenException | ServerException | NotFoundException e) {
             project = new NotValidProject(baseProjectFolder, projectManager);
+            project.setVisibility(visibility);
+
             projectDescriptor = DtoConverter.toDescriptorDto2(project,
                                                               getServiceContext().getServiceUriBuilder(),
                                                               projectManager.getProjectTypeRegistry());
