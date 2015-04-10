@@ -18,6 +18,7 @@ import java.util.Map;
 import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.OPTIONAL;
 /**
  * @author andrew00x
+ * @deprecated
  */
 @DTO
 public interface RunnerConfiguration {

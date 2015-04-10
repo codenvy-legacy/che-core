@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
  * Unique identifier of dev environment.
  *
  * @author andrew00x
+ * @deprecated
  */
 public class EnvironmentId {
     public enum Scope {

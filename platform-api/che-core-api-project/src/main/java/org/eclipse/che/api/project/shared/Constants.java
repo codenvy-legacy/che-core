@@ -12,6 +12,7 @@ package org.eclipse.che.api.project.shared;
 
 /**
  * @author Evgen Vidolob
+ * @deprecated
  */
 public class Constants {
     public final static String DEFAULT_TEMPLATE_CATEGORY = "Samples";

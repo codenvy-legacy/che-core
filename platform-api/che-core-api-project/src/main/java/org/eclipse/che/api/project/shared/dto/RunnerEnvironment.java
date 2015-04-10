@@ -18,6 +18,7 @@ import java.util.Map;
 
 /**
  * @author andrew00x
+ * @deprecated
  */
 @DTO
 public interface RunnerEnvironment {

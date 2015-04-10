@@ -131,8 +131,8 @@ public class ProjectJson {
     }
 
     private String                    type;
-    private Builders builders;
-    private Runners runners;
+//    private Builders builders;
+//    private Runners runners;
     private String                    description;
     private Map<String, List<String>> attributes;
     private List <String> mixinTypes;
@@ -140,10 +140,10 @@ public class ProjectJson {
     public ProjectJson() {
     }
 
-    public ProjectJson(String type, Map<String, List<String>> attributes, Builders builders, Runners runners, String description) {
+    public ProjectJson(String type, Map<String, List<String>> attributes, String description) {
         this.type = type;
-        this.builders = builders;
-        this.runners = runners;
+//        this.builders = builders;
+//        this.runners = runners;
         this.description = description;
         this.attributes = attributes;
     }
@@ -161,31 +161,31 @@ public class ProjectJson {
         return this;
     }
 
-    public Builders getBuilders() {
-        return builders;
-    }
-
-    public ProjectJson withBuilders(Builders builders) {
-        this.builders = builders;
-        return this;
-    }
-
-    public void setBuilders(Builders builders) {
-        this.builders = builders;
-    }
-
-    public Runners getRunners() {
-        return runners;
-    }
-
-    public ProjectJson withRunners(Runners runners) {
-        this.runners = runners;
-        return this;
-    }
-
-    public void setRunners(Runners runners) {
-        this.runners = runners;
-    }
+//    public Builders getBuilders() {
+//        return builders;
+//    }
+//
+//    public ProjectJson withBuilders(Builders builders) {
+//        this.builders = builders;
+//        return this;
+//    }
+//
+//    public void setBuilders(Builders builders) {
+//        this.builders = builders;
+//    }
+//
+//    public Runners getRunners() {
+//        return runners;
+//    }
+//
+//    public ProjectJson withRunners(Runners runners) {
+//        this.runners = runners;
+//        return this;
+//    }
+//
+//    public void setRunners(Runners runners) {
+//        this.runners = runners;
+//    }
 
     public Map<String, List<String>> getAttributes() {
         if (attributes == null) {

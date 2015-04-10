@@ -21,6 +21,7 @@ import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.OPTIO
  * Describe docker runner configuration source
  *
  * @author Alexander Garagatyi
+ * @deprecated
  */
 @DTO
 public interface RunnerSource {

@@ -1,0 +1,1 @@
+{"name":"hello","description":"my project","visibility":"public","mixinTypes":[],"builders":{"configs":{},"default":"maven"},"runners":{"configs":{"recommend":{"ram":256,"variables":{},"options":{}}},"default":"system:/java/web/tomcat7"},"type":"maven","attributes":{"languageVersion":["1.6"],"language":["java"]}}

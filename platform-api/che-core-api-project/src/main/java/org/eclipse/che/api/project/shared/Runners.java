@@ -17,6 +17,7 @@ import java.util.Map;
  * Describes runner configuration for project.
  *
  * @author andrew00x
+ * @deprecated
  */
 public class Runners {
     /** Default runner identifier. */

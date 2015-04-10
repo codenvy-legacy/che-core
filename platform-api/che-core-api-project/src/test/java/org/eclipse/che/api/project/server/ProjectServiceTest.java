@@ -163,7 +163,7 @@ public class ProjectServiceTest {
                                        ptRegistry, phRegistry);
 
         pm.createProject(workspace, "my_project", new ProjectConfig("my test project", "my_project_type",
-                                                                    new HashMap<String, AttributeValue>(), null, null, null), null, null);
+                                                                    new HashMap<String, AttributeValue>(), null), null, null);
 
 
         DependencySupplierImpl dependencies = new DependencySupplierImpl();
@@ -1577,8 +1577,8 @@ public class ProjectServiceTest {
 
         assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
         ImportResponse importResponse = (ImportResponse)response.getEntity();
-        assertNotNull(importResponse.getProjectDescriptor().getRunners());
-        assertEquals(importResponse.getProjectDescriptor().getRunners().getDefault(), "system:/java/web/tomcat7");
+//        assertNotNull(importResponse.getProjectDescriptor().getRunners());
+//        assertEquals(importResponse.getProjectDescriptor().getRunners().getDefault(), "system:/java/web/tomcat7");
         Project newProject = pm.getProject(workspace, "new_project");
         assertNotNull(newProject);
         VirtualFileEntry environments = newProject.getBaseFolder().getChild(Constants.CODENVY_RUNNER_ENVIRONMENTS_DIR);
@@ -1659,8 +1659,8 @@ public class ProjectServiceTest {
                                                       "http://localhost:8080/api", headers, b, null);
         assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
         ImportResponse importResponse = (ImportResponse)response.getEntity();
-        assertNotNull(importResponse.getProjectDescriptor().getBuilders());
-        assertEquals(importResponse.getProjectDescriptor().getBuilders().getDefault(), "maven");
+//        assertNotNull(importResponse.getProjectDescriptor().getBuilders());
+//        assertEquals(importResponse.getProjectDescriptor().getBuilders().getDefault(), "maven");
         Project newProject = pm.getProject(workspace, "new_project");
         assertNotNull(newProject);
         VirtualFileEntry environments = newProject.getBaseFolder().getChild(Constants.CODENVY_RUNNER_ENVIRONMENTS_DIR);
@@ -2457,8 +2457,8 @@ public class ProjectServiceTest {
                 addVariableDefinition("calculated_attribute", "attr description", true, vpf1);
                 addVariableDefinition("my_property_1", "attr description", true);
                 addVariableDefinition("my_property_2", "attr description", false);
-                setDefaultBuilder("builder1");
-                setDefaultRunner("system:/runner/runner1");
+//                setDefaultBuilder("builder1");
+//                setDefaultRunner("system:/runner/runner1");
             }
 
         };

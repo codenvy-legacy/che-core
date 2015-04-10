@@ -273,29 +273,29 @@ public class ProjectTypeTest {
 
     }
 
-    @Test
-    public void testWithDefaultBuilderAndRunner() throws Exception {
-
-        Set<ProjectType> pts = new HashSet<>();
-        final ProjectType type = new ProjectType("testWithDefaultBuilderAndRunner", "testWithDefaultBuilderAndRunner", true, false) {
-            {
-                addConstantDefinition("parent_const", "Constant", "const_value");
-                setDefaultBuilder("builder1");
-                setDefaultRunner("system:/runner1/myRunner");
-            }
-
-        };
-
-
-        pts.add(type);
-        ProjectTypeRegistry reg = new ProjectTypeRegistry(pts);
-
-        Assert.assertNotNull(reg.getProjectType("testWithDefaultBuilderAndRunner"));
-
-        Assert.assertEquals("builder1", reg.getProjectType("testWithDefaultBuilderAndRunner").getDefaultBuilder());
-        Assert.assertEquals("system:/runner1/myRunner", reg.getProjectType("testWithDefaultBuilderAndRunner").getDefaultRunner());
-
-    }
+//    @Test
+//    public void testWithDefaultBuilderAndRunner() throws Exception {
+//
+//        Set<ProjectType> pts = new HashSet<>();
+//        final ProjectType type = new ProjectType("testWithDefaultBuilderAndRunner", "testWithDefaultBuilderAndRunner", true, false) {
+//            {
+//                addConstantDefinition("parent_const", "Constant", "const_value");
+////                setDefaultBuilder("builder1");
+////                setDefaultRunner("system:/runner1/myRunner");
+//            }
+//
+//        };
+//
+//
+//        pts.add(type);
+//        ProjectTypeRegistry reg = new ProjectTypeRegistry(pts);
+//
+//        Assert.assertNotNull(reg.getProjectType("testWithDefaultBuilderAndRunner"));
+//
+////        Assert.assertEquals("builder1", reg.getProjectType("testWithDefaultBuilderAndRunner").getDefaultBuilder());
+////        Assert.assertEquals("system:/runner1/myRunner", reg.getProjectType("testWithDefaultBuilderAndRunner").getDefaultRunner());
+//
+//    }
 
 
     @Test

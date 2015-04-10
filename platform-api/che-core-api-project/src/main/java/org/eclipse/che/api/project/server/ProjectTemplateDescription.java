@@ -27,8 +27,8 @@ public class ProjectTemplateDescription {
     private final String              description;
     private final String              location;
     private final Map<String, String> parameters;
-    private final Builders builders;
-    private final Runners runners;
+//    private final Builders builders;
+//    private final Runners runners;
 
     /**
      * Create new ProjectTemplateDescription with default category eq @see defaultCategory.
@@ -41,53 +41,49 @@ public class ProjectTemplateDescription {
      *         display name of this template
      * @param description
      *         description of this template
-     * @param location
-     *         location of template, importer uses it when import templates to IDE
-     * @param builders
-     *         builders configuration for this template
-     * @param runners
-     *         runners configuration for this template
+     *
      */
     public ProjectTemplateDescription(String category,
                                       String importerType,
                                       String displayName,
                                       String description,
                                       String location,
-                                      Map<String, String> parameters,
-                                      Builders builders,
-                                      Runners runners) {
+                                      Map<String, String> parameters)
+//                                      Builders builders,
+//                                      Runners runners)
+    {
         this.category = category;
         this.importerType = importerType;
         this.displayName = displayName;
         this.description = description;
         this.location = location;
         this.parameters = parameters;
-        this.builders = builders;
-        this.runners = runners;
+//        this.builders = builders;
+//        this.runners = runners;
     }
 
-    /**
-     * Create new ProjectTemplateDescription with default category eq @see defaultCategory.
-     *
-     * @param category
-     *         category of this template. Categories maybe used for creation group of similar templates
-     * @param importerType
-     *         importer name like git, zip that maybe used fot import template to IDE
-     * @param displayName
-     *         display name of this template
-     * @param description
-     *         description of this template
-     * @param location
-     *         location of template, importer uses it when import templates to IDE
-     */
-    public ProjectTemplateDescription(String category,
-                                      String importerType,
-                                      String displayName,
-                                      String description,
-                                      String location,
-                                      Map<String, String> parameters) {
-        this(category, importerType, displayName, description, location, parameters, null, null);
-    }
+//    /**
+//     * Create new ProjectTemplateDescription with default category eq @see defaultCategory.
+//     *
+//     * @param category
+//     *         category of this template. Categories maybe used for creation group of similar templates
+//     * @param importerType
+//     *         importer name like git, zip that maybe used fot import template to IDE
+//     * @param displayName
+//     *         display name of this template
+//     * @param description
+//     *         description of this template
+//     * @param location
+//     *         location of template, importer uses it when import templates to IDE
+//     */
+//    public ProjectTemplateDescription(String category,
+//                                      String importerType,
+//                                      String displayName,
+//                                      String description,
+//                                      String location,
+//                                      Map<String, String> parameters) {
+//        this(category, importerType, displayName, description, location, parameters);
+//    }
 
     /**
      * Create new ProjectTemplateDescription with default category eq @see defaultCategory.
@@ -177,23 +173,23 @@ public class ProjectTemplateDescription {
         return category;
     }
 
-    /**
-     * Gets builders configuration for this template.
-     *
-     * @return builders configuration for this template
-     */
-    public Builders getBuilders() {
-        return builders;
-    }
-
-    /**
-     * Gets runners configuration for this template.
-     *
-     * @return runners configuration for this template
-     */
-    public Runners getRunners() {
-        return runners;
-    }
+//    /**
+//     * Gets builders configuration for this template.
+//     *
+//     * @return builders configuration for this template
+//     */
+//    public Builders getBuilders() {
+//        return builders;
+//    }
+//
+//    /**
+//     * Gets runners configuration for this template.
+//     *
+//     * @return runners configuration for this template
+//     */
+//    public Runners getRunners() {
+//        return runners;
+//    }
 
     @Override
     public String toString() {

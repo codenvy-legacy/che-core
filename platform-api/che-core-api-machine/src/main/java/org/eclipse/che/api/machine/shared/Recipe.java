@@ -10,15 +10,20 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.shared;
 
+import java.util.List;
+
 /**
  * Recipe to create new {@link org.eclipse.che.api.machine.server.spi.Image}.
  *
  * @author gazarenkov
  */
 public interface Recipe {
-    RecipeId getId();
+
+//    RecipeId getId();
 
     String getType();
 
     String getScript();
+
+//    List<String> getTags();
 }

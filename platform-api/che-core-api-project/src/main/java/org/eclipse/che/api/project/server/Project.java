@@ -150,15 +150,15 @@ public class Project {
         }
 
 
-        Builders builders =
-                (projectJson.getBuilders() == null) ? new Builders(types.primary.getDefaultBuilder()) : projectJson.getBuilders();
-        Runners runners = (projectJson.getRunners() == null) ? new Runners(types.primary.getDefaultRunner()) : projectJson.getRunners();
+//        Builders builders =
+//                (projectJson.getBuilders() == null) ? new Builders(types.primary.getDefaultBuilder()) : projectJson.getBuilders();
+//        Runners runners = (projectJson.getRunners() == null) ? new Runners(types.primary.getDefaultRunner()) : projectJson.getRunners();
 
 //        return new ProjectConfig(projectJson.getDescription(), projectJson.getType(),
 //                attributes, runners, builders, projectJson.getMixinTypes());
 
         return new ProjectConfig(projectJson.getDescription(), types.primary.getId(),
-                                 attributes, runners, builders, types.mixinIds());
+                                 attributes, types.mixinIds());
     }
 
 
@@ -180,8 +180,8 @@ public class Project {
         types.removeTransient();
 
         projectJson.setType(types.primary.getId());
-        projectJson.setBuilders(update.getBuilders());
-        projectJson.setRunners(update.getRunners());
+//        projectJson.setBuilders(update.getBuilders());
+//        projectJson.setRunners(update.getRunners());
         projectJson.setDescription(update.getDescription());
 
 
@@ -249,11 +249,11 @@ public class Project {
         // Default builders and runners
         // NOTE we take it from Primary type only (for the time)
         // TODO? let's see for Machine API
-        if (projectJson.getBuilders().getDefault() == null)
-            projectJson.getBuilders().setDefault(types.primary.getDefaultBuilder());
-
-        if (projectJson.getRunners().getDefault() == null)
-            projectJson.getRunners().setDefault(types.primary.getDefaultRunner());
+//        if (projectJson.getBuilders().getDefault() == null)
+//            projectJson.getBuilders().setDefault(types.primary.getDefaultBuilder());
+//
+//        if (projectJson.getRunners().getDefault() == null)
+//            projectJson.getRunners().setDefault(types.primary.getDefaultRunner());
 
 
         projectJson.save(this);

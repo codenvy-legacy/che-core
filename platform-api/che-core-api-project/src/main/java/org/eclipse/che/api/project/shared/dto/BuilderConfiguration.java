@@ -20,6 +20,7 @@ import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.OPTIO
 
 /**
  * @author andrew00x
+ * @deprecated
  */
 @DTO
 public interface BuilderConfiguration {

@@ -28,30 +28,30 @@ public class ProjectConfig {
     private String description;
     private String typeId;
     private Map<String, AttributeValue> attributes;
-    private Runners runners;
-    private Builders builders;
+//    private Runners runners;
+//    private Builders builders;
     private List <String> mixinTypes;
 
-    public ProjectConfig(String description, String typeId, Map<String, AttributeValue> attributes, Runners runners,
-                         Builders builders, List <String> mixinTypes) {
+    public ProjectConfig(String description, String typeId, Map<String, AttributeValue> attributes, /*Runners runners,
+                         Builders builders,*/ List <String> mixinTypes) {
 
         this.description = description;
         this.typeId = typeId;
         this.attributes = (attributes == null)?new HashMap<String, AttributeValue>():attributes;
-        this.builders = (builders == null)?new Builders():builders;
-        this.runners = (runners == null)?new Runners():runners;
+//        this.builders = (builders == null)?new Builders():builders;
+//        this.runners = (runners == null)?new Runners():runners;
         this.mixinTypes = (mixinTypes == null)?new ArrayList<String>():mixinTypes;
 
     }
 
     public ProjectConfig(String description, String typeId) {
 
-        this(description, typeId, new HashMap<String, AttributeValue>(), new Runners(), new Builders(), new ArrayList<String>());
+        this(description, typeId, new HashMap<String, AttributeValue>(), new ArrayList<String>());
 
     }
 
     public ProjectConfig() {
-        this("", BaseProjectType.ID, new HashMap<String, AttributeValue>(), new Runners(), new Builders(), new ArrayList<String>());
+        this("", BaseProjectType.ID, new HashMap<String, AttributeValue>(), new ArrayList<String>());
     }
 
 
@@ -67,13 +67,13 @@ public class ProjectConfig {
         return attributes;
     }
 
-    public Runners getRunners() {
-        return runners;
-    }
-
-    public Builders getBuilders() {
-        return builders;
-    }
+//    public Runners getRunners() {
+//        return runners;
+//    }
+//
+//    public Builders getBuilders() {
+//        return builders;
+//    }
 
     public List<String> getMixinTypes() {
         return mixinTypes;

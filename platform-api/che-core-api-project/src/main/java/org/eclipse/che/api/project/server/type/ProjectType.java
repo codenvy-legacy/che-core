@@ -25,24 +25,27 @@ public abstract class ProjectType {
     private final   String                  displayName;
     private final   Map<String, Attribute> attributes;
     private final   List<ProjectType>      parents;
-    protected final List<String>            runnerCategories;
-    protected final List<String>            builderCategories;
-    private String defaultBuilder = null;
-    private String defaultRunner  = null;
+//    protected final List<String>            runnerCategories;
+//    protected final List<String>            builderCategories;
+//    private String defaultBuilder = null;
+//    private String defaultRunner  = null;
     private final boolean mixable;
     private final boolean primaryable;
     protected final boolean persisted;
+    protected final String defaultRecipe;
 
-    protected ProjectType(String id, String displayName, boolean primaryable, boolean mixable, boolean persisted) {
+    protected ProjectType(String id, String displayName, boolean primaryable, boolean mixable, boolean persisted,
+                          String defaultRecipe) {
         this.id = id;
         this.displayName = displayName;
         this.attributes = new HashMap<>();
         this.parents = new ArrayList<ProjectType>();
-        this.runnerCategories = new ArrayList<String>();
-        this.builderCategories = new ArrayList<String>();
+//        this.runnerCategories = new ArrayList<String>();
+//        this.builderCategories = new ArrayList<String>();
         this.mixable = mixable;
         this.primaryable = primaryable;
         this.persisted = persisted;
+        this.defaultRecipe = defaultRecipe;
     }
 
     /**
@@ -54,19 +57,9 @@ public abstract class ProjectType {
      */
     protected ProjectType(String id, String displayName, boolean primaryable, boolean mixable) {
 
-        this(id, displayName, primaryable, mixable, true);
+        this(id, displayName, primaryable, mixable, true, null);
 
     }
-
-//    /**
-//     *
-//     * @param id
-//     * @param displayName
-//     * @deprecated
-//     */
-//    protected ProjectType(String id, String displayName) {
-//        this(id, displayName, true, true);
-//    }
 
 
     public boolean isPersisted() {
@@ -97,24 +90,24 @@ public abstract class ProjectType {
 
     }
 
-    public String getDefaultBuilder() {
-
-        return defaultBuilder;
-    }
-
-    public String getDefaultRunner() {
-
-        return defaultRunner;
-    }
+//    public String getDefaultBuilder() {
+//
+//        return defaultBuilder;
+//    }
+//
+//    public String getDefaultRunner() {
+//
+//        return defaultRunner;
+//    }
 
     public Attribute getAttribute(String name) {
         return attributes.get(name);
     }
 
 
-    public List<String> getRunnerCategories() {
-        return runnerCategories;
-    }
+//    public List<String> getRunnerCategories() {
+//        return runnerCategories;
+//    }
 
     public boolean canBeMixin() {
         return mixable;
@@ -157,17 +150,17 @@ public abstract class ProjectType {
         parents.add(parent);
     }
 
-    protected void setDefaultBuilder(String builder) {
-        this.defaultBuilder = builder;
-    }
-
-    protected void setDefaultRunner(String runner) {
-        this.defaultRunner = runner;
-    }
-
-    protected void addRunnerCategories(List<String> categories) {
-        this.runnerCategories.addAll(categories);
-    }
+//    protected void setDefaultBuilder(String builder) {
+//        this.defaultBuilder = builder;
+//    }
+//
+//    protected void setDefaultRunner(String runner) {
+//        this.defaultRunner = runner;
+//    }
+//
+//    protected void addRunnerCategories(List<String> categories) {
+//        this.runnerCategories.addAll(categories);
+//    }
 
     private boolean recurseParents(ProjectType child, String parent) {
 

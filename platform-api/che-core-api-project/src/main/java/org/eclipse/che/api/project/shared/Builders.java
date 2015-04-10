@@ -19,6 +19,7 @@ import java.util.Map;
  * Describes builder configuration for project.
  *
  * @author andrew00x
+ * @deprecated
  */
 public class Builders {
     /** Default builder identifier. */

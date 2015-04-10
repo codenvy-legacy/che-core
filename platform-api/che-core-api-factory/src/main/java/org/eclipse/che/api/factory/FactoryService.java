@@ -639,14 +639,14 @@ public class FactoryService extends Service {
                                    .withDescription(projectJson.getDescription());
             newProject.setMixinTypes(projectJson.getMixinTypes());
 
-            final Builders builders = projectJson.getBuilders();
-            if (builders != null) {
-                newProject.withBuilders(DtoConverter.toDto(builders));
-            }
-            final Runners runners = projectJson.getRunners();
-            if (runners != null) {
-                newProject.withRunners(DtoConverter.toDto(runners));
-            }
+//            final Builders builders = projectJson.getBuilders();
+//            if (builders != null) {
+//                newProject.withBuilders(DtoConverter.toDto(builders));
+//            }
+//            final Runners runners = projectJson.getRunners();
+//            if (runners != null) {
+//                newProject.withRunners(DtoConverter.toDto(runners));
+//            }
         } catch (IOException e) {
             throw new ServerException(e.getLocalizedMessage());
         }

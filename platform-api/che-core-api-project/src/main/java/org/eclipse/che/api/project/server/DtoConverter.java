@@ -129,41 +129,41 @@ public class DtoConverter {
         }
 
         return new ProjectConfig(dto.getDescription(), dto.getType(), attributes,
-                fromDto(dto.getRunners()), fromDto(dto.getBuilders()), validMixins);
+                 validMixins);
 
     }
 
 
 
     /*================================ Methods for conversion to DTO. ===============================*/
-
-    public static Builders fromDto(BuildersDescriptor dto) {
-        if (dto == null)
-            return null;
-        final Builders builders = new Builders(dto.getDefault());
-        for (Map.Entry<String, BuilderConfiguration> e : dto.getConfigs().entrySet()) {
-            final BuilderConfiguration config = e.getValue();
-            if (config != null) {
-                builders.getConfigs().put(e.getKey(), new Builders.Config(config.getOptions(), config.getTargets()));
-            }
-        }
-        return builders;
-
-    }
-
-    public static Runners fromDto(RunnersDescriptor dto) {
-        if(dto == null)
-            return null;
-        final Runners runners = new Runners(dto.getDefault());
-        for (Map.Entry<String, RunnerConfiguration> e : dto.getConfigs().entrySet()) {
-            final RunnerConfiguration config = e.getValue();
-            if (config != null) {
-                runners.getConfigs().put(e.getKey(), new Runners.Config(config.getRam(), config.getOptions(), config.getVariables()));
-            }
-        }
-        return runners;
-    }
-
+//
+//    public static Builders fromDto(BuildersDescriptor dto) {
+//        if (dto == null)
+//            return null;
+//        final Builders builders = new Builders(dto.getDefault());
+//        for (Map.Entry<String, BuilderConfiguration> e : dto.getConfigs().entrySet()) {
+//            final BuilderConfiguration config = e.getValue();
+//            if (config != null) {
+//                builders.getConfigs().put(e.getKey(), new Builders.Config(config.getOptions(), config.getTargets()));
+//            }
+//        }
+//        return builders;
+//
+//    }
+//
+//    public static Runners fromDto(RunnersDescriptor dto) {
+//        if(dto == null)
+//            return null;
+//        final Runners runners = new Runners(dto.getDefault());
+//        for (Map.Entry<String, RunnerConfiguration> e : dto.getConfigs().entrySet()) {
+//            final RunnerConfiguration config = e.getValue();
+//            if (config != null) {
+//                runners.getConfigs().put(e.getKey(), new Runners.Config(config.getRam(), config.getOptions(), config.getVariables()));
+//            }
+//        }
+//        return runners;
+//    }
+//
 
     public static ProjectTypeDefinition toTypeDescriptor2(ProjectType projectType) {
 
@@ -171,9 +171,9 @@ public class DtoConverter {
         final ProjectTypeDefinition definition = dtoFactory.createDto(ProjectTypeDefinition.class)
                 .withId(projectType.getId())
                 .withDisplayName(projectType.getDisplayName())
-                .withRunnerCategories(projectType.getRunnerCategories())
-                .withDefaultRunner(projectType.getDefaultRunner())
-                .withDefaultBuilder(projectType.getDefaultBuilder())
+//                .withRunnerCategories(projectType.getRunnerCategories())
+//                .withDefaultRunner(projectType.getDefaultRunner())
+//                .withDefaultBuilder(projectType.getDefaultBuilder())
                 .withPrimaryable(projectType.canBePrimary())
                 .withMixable(projectType.canBeMixin());
 
@@ -215,20 +215,20 @@ public class DtoConverter {
                                                               .withType(projectTemplate.getImporterType())
                                                               .withLocation(projectTemplate.getLocation())
                                                               .withParameters(projectTemplate.getParameters());
-        final Builders builders = projectTemplate.getBuilders();
-        final Runners runners = projectTemplate.getRunners();
+//        final Builders builders = projectTemplate.getBuilders();
+//        final Runners runners = projectTemplate.getRunners();
         final ProjectTemplateDescriptor dto = dtoFactory.createDto(ProjectTemplateDescriptor.class)
                                                         .withDisplayName(projectTemplate.getDisplayName())
                                                         .withSource(importSource)
                                                         .withCategory(projectTemplate.getCategory())
                                                         .withProjectType(projectType)
                                                         .withDescription(projectTemplate.getDescription());
-        if (builders != null) {
-            dto.withBuilders(toDto(dtoFactory, builders));
-        }
-        if (runners != null) {
-            dto.withRunners(toDto(dtoFactory, runners));
-        }
+//        if (builders != null) {
+//            dto.withBuilders(toDto(dtoFactory, builders));
+//        }
+//        if (runners != null) {
+//            dto.withRunners(toDto(dtoFactory, runners));
+//        }
         return dto;
     }
 
@@ -306,15 +306,15 @@ public class DtoConverter {
             }
             dto.withAttributes(attributesMap);
 
-
-            final Builders builders = config.getBuilders();
-            if (builders != null) {
-                dto.withBuilders(toDto(dtoFactory, builders));
-            }
-            final Runners runners = config.getRunners();
-            if (runners != null) {
-                dto.withRunners(toDto(dtoFactory, runners));
-            }
+//
+//            final Builders builders = config.getBuilders();
+//            if (builders != null) {
+//                dto.withBuilders(toDto(dtoFactory, builders));
+//            }
+//            final Runners runners = config.getRunners();
+//            if (runners != null) {
+//                dto.withRunners(toDto(dtoFactory, runners));
+//            }
         }
 
         final User currentUser = environmentContext.getUser();
@@ -373,48 +373,48 @@ public class DtoConverter {
     }
 
 
-    public static BuildersDescriptor toDto(Builders builders) {
-        return toDto(DtoFactory.getInstance(), builders);
-    }
+//    public static BuildersDescriptor toDto(Builders builders) {
+//        return toDto(DtoFactory.getInstance(), builders);
+//    }
+//
+//    private static BuildersDescriptor toDto(DtoFactory dtoFactory, Builders builders) {
+//        BuildersDescriptor dto = dtoFactory.createDto(BuildersDescriptor.class).withDefault(builders.getDefault());
+//        final Map<String, Builders.Config> configs = builders.getConfigs();
+//        Map<String, BuilderConfiguration> configsDto = new LinkedHashMap<>(configs.size());
+//        for (Map.Entry<String, Builders.Config> e : configs.entrySet()) {
+//            final Builders.Config config = e.getValue();
+//            if (config != null) {
+//                configsDto.put(e.getKey(), dtoFactory.createDto(BuilderConfiguration.class)
+//                                                     .withOptions(config.getOptions())
+//                                                     .withTargets(config.getTargets())
+//                              );
+//            }
+//        }
+//        dto.withConfigs(configsDto);
+//        return dto;
+//    }
 
-    private static BuildersDescriptor toDto(DtoFactory dtoFactory, Builders builders) {
-        BuildersDescriptor dto = dtoFactory.createDto(BuildersDescriptor.class).withDefault(builders.getDefault());
-        final Map<String, Builders.Config> configs = builders.getConfigs();
-        Map<String, BuilderConfiguration> configsDto = new LinkedHashMap<>(configs.size());
-        for (Map.Entry<String, Builders.Config> e : configs.entrySet()) {
-            final Builders.Config config = e.getValue();
-            if (config != null) {
-                configsDto.put(e.getKey(), dtoFactory.createDto(BuilderConfiguration.class)
-                                                     .withOptions(config.getOptions())
-                                                     .withTargets(config.getTargets())
-                              );
-            }
-        }
-        dto.withConfigs(configsDto);
-        return dto;
-    }
-
-    public static RunnersDescriptor toDto(Runners runners) {
-        return toDto(DtoFactory.getInstance(), runners);
-    }
-
-    private static RunnersDescriptor toDto(DtoFactory dtoFactory, Runners runners) {
-        final RunnersDescriptor dto = dtoFactory.createDto(RunnersDescriptor.class).withDefault(runners.getDefault());
-        final Map<String, Runners.Config> configs = runners.getConfigs();
-        Map<String, RunnerConfiguration> configsDto = new LinkedHashMap<>(configs.size());
-        for (Map.Entry<String, Runners.Config> e : configs.entrySet()) {
-            final Runners.Config config = e.getValue();
-            if (config != null) {
-                configsDto.put(e.getKey(), dtoFactory.createDto(RunnerConfiguration.class)
-                                                     .withRam(config.getRam())
-                                                     .withOptions(config.getOptions())
-                                                     .withVariables(config.getVariables())
-                              );
-            }
-        }
-        dto.withConfigs(configsDto);
-        return dto;
-    }
+//    public static RunnersDescriptor toDto(Runners runners) {
+//        return toDto(DtoFactory.getInstance(), runners);
+//    }
+//
+//    private static RunnersDescriptor toDto(DtoFactory dtoFactory, Runners runners) {
+//        final RunnersDescriptor dto = dtoFactory.createDto(RunnersDescriptor.class).withDefault(runners.getDefault());
+//        final Map<String, Runners.Config> configs = runners.getConfigs();
+//        Map<String, RunnerConfiguration> configsDto = new LinkedHashMap<>(configs.size());
+//        for (Map.Entry<String, Runners.Config> e : configs.entrySet()) {
+//            final Runners.Config config = e.getValue();
+//            if (config != null) {
+//                configsDto.put(e.getKey(), dtoFactory.createDto(RunnerConfiguration.class)
+//                                                     .withRam(config.getRam())
+//                                                     .withOptions(config.getOptions())
+//                                                     .withVariables(config.getVariables())
+//                              );
+//            }
+//        }
+//        dto.withConfigs(configsDto);
+//        return dto;
+//    }
 
     private static List<Link> generateProjectLinks(Project project, UriBuilder uriBuilder) {
         final List<Link> links = generateFolderLinks(project.getBaseFolder(), uriBuilder);

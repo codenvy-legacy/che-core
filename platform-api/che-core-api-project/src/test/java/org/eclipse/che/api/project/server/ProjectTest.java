@@ -28,12 +28,18 @@ import org.eclipse.che.api.vfs.server.VirtualFileSystemUserContext;
 import org.eclipse.che.api.vfs.server.impl.memory.MemoryFileSystemProvider;
 import org.eclipse.che.api.vfs.server.impl.memory.MemoryMountPoint;
 
+import org.eclipse.che.commons.json.JsonHelper;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -79,8 +85,8 @@ public class ProjectTest {
                 addVariableDefinition("calculated_attribute", "attr description", true, vpf1);
                 addVariableDefinition("my_property_1", "attr description", true);
                 addVariableDefinition("my_property_2", "attr description", false);
-                setDefaultBuilder("builder1");
-                setDefaultRunner("system:/runner/runner1");
+//                setDefaultBuilder("builder1");
+//                setDefaultRunner("system:/runner/runner1");
             }
 
         };
@@ -173,7 +179,7 @@ public class ProjectTest {
         Project myProject = pm.getProject("my_ws", "my_project");
         Map<String, List<String>> attributes = new HashMap<>(2);
         attributes.put("my_property_1", Arrays.asList("value_1", "value_2"));
-        ProjectJson projectJson = new ProjectJson("my_project_type", attributes, null, null, "test project");
+        ProjectJson projectJson = new ProjectJson("my_project_type", attributes, "test project");
         projectJson.save(myProject);
 
         Map <String, AttributeValue> attrs = new HashMap<>();
@@ -182,7 +188,7 @@ public class ProjectTest {
         // wont stored
         attrs.put("new_my_property_2", new AttributeValue("new value 2"));
 
-        ProjectConfig myConfig = new ProjectConfig("descr", "my_project_type", attrs, null, null, null);
+        ProjectConfig myConfig = new ProjectConfig("descr", "my_project_type", attrs, null);
 
         myProject.updateConfig(myConfig);
 
@@ -207,20 +213,20 @@ public class ProjectTest {
         Assert.assertTrue(modificationDate2 > modificationDate1);
     }
 
-    @Test
-    public void testIfDefaultBuilderRunnerAppearsInProject() throws Exception {
-        Project myProject = pm.getProject("my_ws", "my_project");
-        Map<String, List<String>> attributes = new HashMap<>(2);
-        attributes.put("my_property_1", Arrays.asList("value_1", "value_2"));
-        ProjectJson projectJson = new ProjectJson("my_project_type", attributes, null , null, "test project");
-        projectJson.save(myProject);
-
-        Assert.assertNotNull(myProject.getConfig().getRunners());
-        Assert.assertEquals(myProject.getConfig().getRunners().getDefault(), "system:/runner/runner1");
-
-        Assert.assertNotNull(myProject.getConfig().getBuilders());
-        Assert.assertEquals(myProject.getConfig().getBuilders().getDefault(), "builder1");
-    }
+//    @Test
+//    public void testIfDefaultBuilderRunnerAppearsInProject() throws Exception {
+//        Project myProject = pm.getProject("my_ws", "my_project");
+//        Map<String, List<String>> attributes = new HashMap<>(2);
+//        attributes.put("my_property_1", Arrays.asList("value_1", "value_2"));
+//        ProjectJson projectJson = new ProjectJson("my_project_type", attributes, null , null, "test project");
+//        projectJson.save(myProject);
+//
+//        Assert.assertNotNull(myProject.getConfig().getRunners());
+//        Assert.assertEquals(myProject.getConfig().getRunners().getDefault(), "system:/runner/runner1");
+//
+//        Assert.assertNotNull(myProject.getConfig().getBuilders());
+//        Assert.assertEquals(myProject.getConfig().getBuilders().getDefault(), "builder1");
+//    }
 
     @Test
     public void testEstimateProject() throws Exception {
@@ -269,8 +275,8 @@ public class ProjectTest {
                 addVariableDefinition("calculated_attribute", "attr description", true, vpf1);
                 addVariableDefinition("my_property_1", "attr description", true);
                 addVariableDefinition("my_property_2", "attr description", false);
-                setDefaultBuilder("builder1");
-                setDefaultRunner("system:/runner/runner1");
+//                setDefaultBuilder("builder1");
+//                setDefaultRunner("system:/runner/runner1");
             }
 
         };
@@ -339,8 +345,8 @@ public class ProjectTest {
                 addVariableDefinition("my_calculated_attribute", "attr description", true, vpf1);
                 addVariableDefinition("my_property_1", "attr description", true);
                 addVariableDefinition("my_property_2", "attr description", false);
-                setDefaultBuilder("builder1");
-                setDefaultRunner("system:/runner/runner1");
+//                setDefaultBuilder("builder1");
+//                setDefaultRunner("system:/runner/runner1");
             }
 
         };
@@ -555,7 +561,7 @@ public class ProjectTest {
 
         Map <String, AttributeValue> attrs = new HashMap<>();
         attrs.put("p.calculate", new AttributeValue(""));
-        ProjectConfig config = new ProjectConfig("proj", "testPrimary", attrs, null, null, null);
+        ProjectConfig config = new ProjectConfig("proj", "testPrimary", attrs, null);
         Project proj = pm.createProject("my_ws", "provided", config , null, null);
 
         Assert.assertEquals(proj.getConfig().getMixinTypes().size(), 0);
@@ -651,6 +657,20 @@ public class ProjectTest {
         Assert.assertEquals(projectConfig.getAttributes().get("var2"), new AttributeValue("var2Value"));
     }
 
+    @Test
+    public void testIfJson30CompatibleWith40() throws Exception {
 
+
+        FileInputStream fis = new FileInputStream(new File("src/test/resources/json_test/Json30.json"));
+
+        ProjectJson oldJson = ProjectJson.load(fis);
+
+        Assert.assertNotNull(oldJson.getType());
+        Assert.assertNotNull(oldJson.getAttributes().size());
+        Assert.assertNotNull(oldJson.getDescription());
+
+        //System.out.println(new String(JsonHelper.toJson(oldJson).getBytes()));
+
+    }
 }
 

@@ -21,6 +21,7 @@ import java.util.List;
  * Represents RunnerEnvironment as tree.
  *
  * @author andrew00x
+ * @deprecated
  */
 @DTO
 public interface RunnerEnvironmentTree {

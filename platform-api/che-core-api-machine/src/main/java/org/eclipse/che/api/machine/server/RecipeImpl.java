@@ -10,9 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.server;
 
+import org.eclipse.che.api.core.recipe.RecipeId;
 import org.eclipse.che.api.machine.shared.Recipe;
-import org.eclipse.che.api.machine.shared.RecipeId;
 import org.eclipse.che.api.machine.shared.dto.RecipeDescriptor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author andrew00x
@@ -32,7 +35,6 @@ public class RecipeImpl implements Recipe {
         this.script = script;
     }
 
-    @Override
     public RecipeId getId() {
         return id;
     }
@@ -45,5 +47,11 @@ public class RecipeImpl implements Recipe {
     @Override
     public String getScript() {
         return script;
+    }
+
+
+    public List<String> getTags() {
+        // TODO
+        return new ArrayList<>();
     }
 }

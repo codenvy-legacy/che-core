@@ -22,7 +22,8 @@ import java.util.regex.Pattern;
 public class RecipeId {
     public enum Scope {
         system("system"),
-        project("project");
+        project("project"),
+        user("user");
 
         private Scope(String value) {
             this.value = value;
@@ -142,6 +143,15 @@ public class RecipeId {
     @Nonnull
     public String getName() {
         return name;
+    }
+
+    /**
+     * Gets path of this recipe. Path it is concatenation of Scope together with category and name gives fully-qualified name of recipe. FQN of
+     * recipe has a following syntax: <i>&lt;scope&gt;:/&lt;category&gt;/&lt;name&gt;</i>.
+     */
+    @Nonnull
+    public String getPath() {
+        return category+"/"+name;
     }
 
     @Override

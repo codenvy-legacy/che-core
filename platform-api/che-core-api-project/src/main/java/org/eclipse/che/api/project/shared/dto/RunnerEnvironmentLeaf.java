@@ -16,6 +16,7 @@ import org.eclipse.che.dto.shared.DTO;
  * For display RunnerEnvironment in RunnerEnvironmentTree.
  *
  * @author andrew00x
+ * @deprecated
  */
 @DTO
 public interface RunnerEnvironmentLeaf {
