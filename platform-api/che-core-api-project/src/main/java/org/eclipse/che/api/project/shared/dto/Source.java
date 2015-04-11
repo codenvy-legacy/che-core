@@ -32,11 +32,11 @@ public interface Source {
 
     Source withProject(ImportSourceDescriptor project);
 
-    @FactoryParameter(obligation = OPTIONAL)
-    Map<String, RunnerSource> getRunners();
-
-    void setRunners(Map<String, RunnerSource> runners);
-
-    Source withRunners(Map<String, RunnerSource> runners);
+//    @FactoryParameter(obligation = OPTIONAL)
+//    Map<String, RunnerSource> getRunners();
+//
+//    void setRunners(Map<String, RunnerSource> runners);
+//
+//    Source withRunners(Map<String, RunnerSource> runners);
 }
 

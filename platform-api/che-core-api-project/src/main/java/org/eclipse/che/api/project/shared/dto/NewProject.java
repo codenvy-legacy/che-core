@@ -50,9 +50,9 @@ public interface NewProject extends ProjectUpdate {
 
     NewProject withType(String type);
 
-    NewProject withBuilders(BuildersDescriptor builders);
-
-    NewProject withRunners(RunnersDescriptor runners);
+//    NewProject withBuilders(BuildersDescriptor builders);
+//
+//    NewProject withRunners(RunnersDescriptor runners);
 
     NewProject withDescription(String description);
 

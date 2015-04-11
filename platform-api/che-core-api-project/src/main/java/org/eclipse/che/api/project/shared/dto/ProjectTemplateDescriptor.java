@@ -63,20 +63,20 @@ public interface ProjectTemplateDescriptor {
     //
 
     /** Gets builder configurations. */
-    BuildersDescriptor getBuilders();
-
-    /** Sets builder configurations. */
-    void setBuilders(BuildersDescriptor builders);
-
-    ProjectTemplateDescriptor withBuilders(BuildersDescriptor builders);
-
-    //
-
-    /** Gets runner configurations. */
-    RunnersDescriptor getRunners();
-
-    /** Sets runner configurations. */
-    void setRunners(RunnersDescriptor runners);
-
-    ProjectTemplateDescriptor withRunners(RunnersDescriptor runners);
+//    BuildersDescriptor getBuilders();
+//
+//    /** Sets builder configurations. */
+//    void setBuilders(BuildersDescriptor builders);
+//
+//    ProjectTemplateDescriptor withBuilders(BuildersDescriptor builders);
+//
+//    //
+//
+//    /** Gets runner configurations. */
+//    RunnersDescriptor getRunners();
+//
+//    /** Sets runner configurations. */
+//    void setRunners(RunnersDescriptor runners);
+//
+//    ProjectTemplateDescriptor withRunners(RunnersDescriptor runners);
 }

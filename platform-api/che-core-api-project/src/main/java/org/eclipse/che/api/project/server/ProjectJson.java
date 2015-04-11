@@ -13,8 +13,6 @@ package org.eclipse.che.api.project.server;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.project.shared.Builders;
-import org.eclipse.che.api.project.shared.Runners;
 import org.eclipse.che.commons.json.JsonHelper;
 import org.eclipse.che.commons.json.JsonParseException;
 

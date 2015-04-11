@@ -29,7 +29,6 @@ import org.eclipse.che.api.project.server.handlers.ProjectTypeChangedHandler;
 import org.eclipse.che.api.project.server.notification.ProjectItemModifiedEvent;
 import org.eclipse.che.api.project.server.type.AttributeValue;
 import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
-import org.eclipse.che.api.project.shared.EnvironmentId;
 import org.eclipse.che.api.project.shared.dto.GeneratorDescription;
 import org.eclipse.che.api.project.shared.dto.ImportProject;
 import org.eclipse.che.api.project.shared.dto.ImportResponse;
@@ -40,10 +39,6 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectProblem;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.api.project.shared.dto.ProjectUpdate;
-import org.eclipse.che.api.project.shared.dto.RunnerEnvironment;
-import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentLeaf;
-import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentTree;
-import org.eclipse.che.api.project.shared.dto.RunnerSource;
 import org.eclipse.che.api.project.shared.dto.Source;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.project.shared.dto.TreeElement;
@@ -908,7 +903,7 @@ public class ProjectService extends Service {
         List<SourceEstimation> sourceEstimations = projectManager.resolveSources(workspace, baseProjectFolder.getPath(), false);
         importResponse.setSourceEstimations(sourceEstimations);
         reindexProject(creationDate, baseProjectFolder, project);
-        importRunnerEnvironment(importProject, baseProjectFolder);
+//        importRunnerEnvironment(importProject, baseProjectFolder);
         eventService.publish(new ProjectCreatedEvent(project.getWorkspace(), project.getPath()));
         logProjectCreatedEvent(projectDescriptor.getName(), projectDescriptor.getType());
         return importResponse;
@@ -987,8 +982,8 @@ public class ProjectService extends Service {
                                           .withName(projectName)
                                           .withDescription(projectDescription)
                                           .withVisibility(privacy);
-        Source source = dtoFactory.createDto(Source.class)
-                                  .withRunners(new HashMap<String, RunnerSource>());
+        Source source = dtoFactory.createDto(Source.class);
+//                                  .withRunners(new HashMap<String, RunnerSource>());
         ImportProject importProject = dtoFactory.createDto(ImportProject.class)
                                                 .withProject(newProject)
                                                 .withSource(source);
@@ -997,50 +992,50 @@ public class ProjectService extends Service {
         return configureProject(importProject, baseProjectFolder, workspace, creationDate);
     }
 
-    /**
-     * Import runner environment tha configure in ImportProject
-     *
-     * @param importProject
-     * @param baseProjectFolder
-     * @throws ForbiddenException
-     * @throws ServerException
-     * @throws ConflictException
-     * @throws IOException
-     */
-    private void importRunnerEnvironment(ImportProject importProject, FolderEntry baseProjectFolder)
-            throws ForbiddenException, ServerException, ConflictException, IOException {
-        VirtualFileEntry environmentsFolder = baseProjectFolder.getChild(Constants.CODENVY_RUNNER_ENVIRONMENTS_DIR);
-        if (environmentsFolder != null && environmentsFolder.isFile()) {
-            throw new ConflictException(String.format("Unable import runner environments. File with the name '%s' already exists.",
-                                                      Constants.CODENVY_RUNNER_ENVIRONMENTS_DIR));
-        } else if (environmentsFolder == null) {
-            environmentsFolder = baseProjectFolder.createFolder(Constants.CODENVY_RUNNER_ENVIRONMENTS_DIR);
-        }
-
-        for (Map.Entry<String, RunnerSource> runnerSource : importProject.getSource().getRunners().entrySet()) {
-            final String runnerSourceKey = runnerSource.getKey();
-            if (runnerSourceKey.startsWith("/docker/")) {
-                final RunnerSource runnerSourceValue = runnerSource.getValue();
-                if (runnerSourceValue != null) {
-                    String name = runnerSourceKey.substring(8);
-                    String runnerSourceLocation = runnerSourceValue.getLocation();
-                    if (runnerSourceLocation.startsWith("https") || runnerSourceLocation.startsWith("http")) {
-                        try (InputStream in = new java.net.URL(runnerSourceLocation).openStream()) {
-                            // Add file without mediatype to avoid creation useless metadata files on virtual file system level.
-                            // Dockerfile add in list of known files, see ContentTypeGuesser
-                            // and content-types.attributes file.
-                            ((FolderEntry)environmentsFolder).createFolder(name).createFile("Dockerfile", in, null);
-                        }
-                    } else {
-                        LOG.warn(
-                                "ProjectService.importProject :: not valid runner source location available only http or https scheme but" +
-                                " we get :" +
-                                runnerSourceLocation);
-                    }
-                }
-            }
-        }
-    }
+//    /**
+//     * Import runner environment tha configure in ImportProject
+//     *
+//     * @param importProject
+//     * @param baseProjectFolder
+//     * @throws ForbiddenException
+//     * @throws ServerException
+//     * @throws ConflictException
+//     * @throws IOException
+//     */
+//    private void importRunnerEnvironment(ImportProject importProject, FolderEntry baseProjectFolder)
+//            throws ForbiddenException, ServerException, ConflictException, IOException {
+//        VirtualFileEntry environmentsFolder = baseProjectFolder.getChild(Constants.CODENVY_RUNNER_ENVIRONMENTS_DIR);
+//        if (environmentsFolder != null && environmentsFolder.isFile()) {
+//            throw new ConflictException(String.format("Unable import runner environments. File with the name '%s' already exists.",
+//                                                      Constants.CODENVY_RUNNER_ENVIRONMENTS_DIR));
+//        } else if (environmentsFolder == null) {
+//            environmentsFolder = baseProjectFolder.createFolder(Constants.CODENVY_RUNNER_ENVIRONMENTS_DIR);
+//        }
+//
+//        for (Map.Entry<String, RunnerSource> runnerSource : importProject.getSource().getRunners().entrySet()) {
+//            final String runnerSourceKey = runnerSource.getKey();
+//            if (runnerSourceKey.startsWith("/docker/")) {
+//                final RunnerSource runnerSourceValue = runnerSource.getValue();
+//                if (runnerSourceValue != null) {
+//                    String name = runnerSourceKey.substring(8);
+//                    String runnerSourceLocation = runnerSourceValue.getLocation();
+//                    if (runnerSourceLocation.startsWith("https") || runnerSourceLocation.startsWith("http")) {
+//                        try (InputStream in = new java.net.URL(runnerSourceLocation).openStream()) {
+//                            // Add file without mediatype to avoid creation useless metadata files on virtual file system level.
+//                            // Dockerfile add in list of known files, see ContentTypeGuesser
+//                            // and content-types.attributes file.
+//                            ((FolderEntry)environmentsFolder).createFolder(name).createFile("Dockerfile", in, null);
+//                        }
+//                    } else {
+//                        LOG.warn(
+//                                "ProjectService.importProject :: not valid runner source location available only http or https scheme but" +
+//                                " we get :" +
+//                                runnerSourceLocation);
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     /**
      * Some importers don't use virtual file system API and changes are not indexed.
@@ -1414,42 +1409,42 @@ public class ProjectService extends Service {
         return project.getPermissions();
     }
 
-    @ApiOperation(value = "Get available project-scoped runner environments",
-                  notes = "Get available project-scoped runner environments.",
-                  response = RunnerEnvironmentTree.class,
-                  position = 27)
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 403, message = "User not authorized to call this operation"),
-            @ApiResponse(code = 404, message = "Not found"),
-            @ApiResponse(code = 500, message = "Internal Server Error")})
-    @GET
-    @Path("/runner_environments/{path:.*}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public RunnerEnvironmentTree getRunnerEnvironments(@ApiParam(value = "Workspace ID", required = true)
-                                                       @PathParam("ws-id") String workspace,
-                                                       @ApiParam(value = "Path to a project", required = true)
-                                                       @PathParam("path") String path)
-            throws NotFoundException, ForbiddenException, ServerException {
-        final Project project = projectManager.getProject(workspace, path);
-        final DtoFactory dtoFactory = DtoFactory.getInstance();
-        final RunnerEnvironmentTree root = dtoFactory.createDto(RunnerEnvironmentTree.class).withDisplayName("project");
-        if (project != null) {
-            final List<RunnerEnvironmentLeaf> environments = new LinkedList<>();
-            final VirtualFileEntry environmentsFolder = project.getBaseFolder().getChild(Constants.CODENVY_RUNNER_ENVIRONMENTS_DIR);
-            if (environmentsFolder != null && environmentsFolder.isFolder()) {
-                for (FolderEntry childFolder : ((FolderEntry)environmentsFolder).getChildFolders()) {
-                    final String id = new EnvironmentId(EnvironmentId.Scope.project, childFolder.getName()).toString();
-                    environments.add(dtoFactory.createDto(RunnerEnvironmentLeaf.class)
-                                               .withEnvironment(dtoFactory.createDto(RunnerEnvironment.class).withId(id))
-                                               .withDisplayName(childFolder.getName()));
-                }
-            }
-            return root.withLeaves(environments);
-        } else {
-            return root.withLeaves(Collections.<RunnerEnvironmentLeaf>emptyList());
-        }
-    }
+//    @ApiOperation(value = "Get available project-scoped runner environments",
+//                  notes = "Get available project-scoped runner environments.",
+//                  response = RunnerEnvironmentTree.class,
+//                  position = 27)
+//    @ApiResponses(value = {
+//            @ApiResponse(code = 200, message = "OK"),
+//            @ApiResponse(code = 403, message = "User not authorized to call this operation"),
+//            @ApiResponse(code = 404, message = "Not found"),
+//            @ApiResponse(code = 500, message = "Internal Server Error")})
+//    @GET
+//    @Path("/runner_environments/{path:.*}")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public RunnerEnvironmentTree getRunnerEnvironments(@ApiParam(value = "Workspace ID", required = true)
+//                                                       @PathParam("ws-id") String workspace,
+//                                                       @ApiParam(value = "Path to a project", required = true)
+//                                                       @PathParam("path") String path)
+//            throws NotFoundException, ForbiddenException, ServerException {
+//        final Project project = projectManager.getProject(workspace, path);
+//        final DtoFactory dtoFactory = DtoFactory.getInstance();
+//        final RunnerEnvironmentTree root = dtoFactory.createDto(RunnerEnvironmentTree.class).withDisplayName("project");
+//        if (project != null) {
+//            final List<RunnerEnvironmentLeaf> environments = new LinkedList<>();
+//            final VirtualFileEntry environmentsFolder = project.getBaseFolder().getChild(Constants.CODENVY_RUNNER_ENVIRONMENTS_DIR);
+//            if (environmentsFolder != null && environmentsFolder.isFolder()) {
+//                for (FolderEntry childFolder : ((FolderEntry)environmentsFolder).getChildFolders()) {
+//                    final String id = new EnvironmentId(EnvironmentId.Scope.project, childFolder.getName()).toString();
+//                    environments.add(dtoFactory.createDto(RunnerEnvironmentLeaf.class)
+//                                               .withEnvironment(dtoFactory.createDto(RunnerEnvironment.class).withId(id))
+//                                               .withDisplayName(childFolder.getName()));
+//                }
+//            }
+//            return root.withLeaves(environments);
+//        } else {
+//            return root.withLeaves(Collections.<RunnerEnvironmentLeaf>emptyList());
+//        }
+//    }
 
     private FileEntry asFile(String workspace, String path) throws ForbiddenException, NotFoundException, ServerException {
         final VirtualFileEntry entry = getVirtualFileEntry(workspace, path);

@@ -23,14 +23,14 @@ public class Constants {
     public static final String LINK_REL_DELETE                  = "delete";
     public static final String LINK_REL_GET_CONTENT             = "get content";
     public static final String LINK_REL_UPDATE_CONTENT          = "update content";
-    public static final String LINK_REL_GET_RUNNER_ENVIRONMENTS = "get runner environments";
+//    public static final String LINK_REL_GET_RUNNER_ENVIRONMENTS = "get runner environments";
 
     public static final String LINK_REL_PROJECT_TYPES = "project types";
 
     public static final String CODENVY_DIR                        = ".codenvy";
     public static final String CODENVY_PROJECT_FILE               = "project.json";
     public static final String CODENVY_PROJECT_FILE_RELATIVE_PATH = CODENVY_DIR + "/" + CODENVY_PROJECT_FILE;
-    public static final String CODENVY_RUNNER_ENVIRONMENTS_DIR    = CODENVY_DIR + "/runners/environments";
+//    public static final String CODENVY_RUNNER_ENVIRONMENTS_DIR    = CODENVY_DIR + "/runners/environments";
 
     private Constants() {
     }

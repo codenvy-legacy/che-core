@@ -40,13 +40,10 @@ import org.eclipse.che.api.project.shared.dto.NewProject;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.api.project.shared.dto.ProjectUpdate;
-import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentLeaf;
-import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentTree;
 import org.eclipse.che.api.project.shared.dto.Source;
 import org.eclipse.che.api.project.shared.dto.TreeElement;
 
 import org.eclipse.che.api.user.server.dao.UserDao;
-import org.eclipse.che.api.vfs.server.*;
 
 import org.eclipse.che.api.vfs.server.ContentStream;
 import org.eclipse.che.api.vfs.server.ContentStreamWriter;
@@ -1581,9 +1578,9 @@ public class ProjectServiceTest {
 //        assertEquals(importResponse.getProjectDescriptor().getRunners().getDefault(), "system:/java/web/tomcat7");
         Project newProject = pm.getProject(workspace, "new_project");
         assertNotNull(newProject);
-        VirtualFileEntry environments = newProject.getBaseFolder().getChild(Constants.CODENVY_RUNNER_ENVIRONMENTS_DIR);
-        assertNotNull(environments);
-        Assert.assertTrue(environments.isFolder());
+//        VirtualFileEntry environments = newProject.getBaseFolder().getChild(Constants.CODENVY_RUNNER_ENVIRONMENTS_DIR);
+//        assertNotNull(environments);
+//        Assert.assertTrue(environments.isFolder());
 
     }
 
@@ -1663,9 +1660,9 @@ public class ProjectServiceTest {
 //        assertEquals(importResponse.getProjectDescriptor().getBuilders().getDefault(), "maven");
         Project newProject = pm.getProject(workspace, "new_project");
         assertNotNull(newProject);
-        VirtualFileEntry environments = newProject.getBaseFolder().getChild(Constants.CODENVY_RUNNER_ENVIRONMENTS_DIR);
-        assertNotNull(environments);
-        Assert.assertTrue(environments.isFolder());
+//        VirtualFileEntry environments = newProject.getBaseFolder().getChild(Constants.CODENVY_RUNNER_ENVIRONMENTS_DIR);
+//        assertNotNull(environments);
+//        Assert.assertTrue(environments.isFolder());
 
     }
 
@@ -1747,9 +1744,9 @@ public class ProjectServiceTest {
         //Assert.assertEquals(importResponse.getAttributes().get("y"), Arrays.asList("q", "z"));
         Project newProject = pm.getProject(workspace, "new_project");
         assertNotNull(newProject);
-        VirtualFileEntry environments = newProject.getBaseFolder().getChild(Constants.CODENVY_RUNNER_ENVIRONMENTS_DIR);
-        assertNotNull(environments);
-        Assert.assertTrue(environments.isFolder());
+//        VirtualFileEntry environments = newProject.getBaseFolder().getChild(Constants.CODENVY_RUNNER_ENVIRONMENTS_DIR);
+//        assertNotNull(environments);
+//        Assert.assertTrue(environments.isFolder());
     }
 
     @Test
@@ -2380,34 +2377,34 @@ public class ProjectServiceTest {
         assertEquals(myProject.getBaseFolder().getVirtualFile().getACL().size(), 0);
     }
 
-    @Test
-    public void testGetRunnerEnvironments() throws Exception {
-        Project myProject = pm.getProject(workspace, "my_project");
-        FolderEntry environmentsFolder = myProject.getBaseFolder().createFolder(".codenvy/runners/environments");
-        environmentsFolder.createFolder("my_env_1");
-        environmentsFolder.createFolder("my_env_2");
-        ContainerResponse response = launcher.service("GET",
-                                                      String.format("http://localhost:8080/api/project/%s/runner_environments/my_project",
-                                                                    workspace),
-                                                      "http://localhost:8080/api", null, null, null);
-        assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
-        RunnerEnvironmentTree runnerEnvironmentTree = (RunnerEnvironmentTree)response.getEntity();
-        assertEquals(runnerEnvironmentTree.getDisplayName(), "project");
-        List<RunnerEnvironmentLeaf> environments = runnerEnvironmentTree.getLeaves();
-        assertNotNull(environments);
-        assertEquals(environments.size(), 2);
-
-        Set<String> ids = new LinkedHashSet<>(2);
-        Set<String> names = new LinkedHashSet<>(2);
-        for (RunnerEnvironmentLeaf environment : environments) {
-            ids.add(environment.getEnvironment().getId());
-            names.add(environment.getDisplayName());
-        }
-        Assert.assertTrue(ids.contains("project://my_env_1"));
-        Assert.assertTrue(ids.contains("project://my_env_2"));
-        Assert.assertTrue(names.contains("my_env_1"));
-        Assert.assertTrue(names.contains("my_env_2"));
-    }
+//    @Test
+//    public void testGetRunnerEnvironments() throws Exception {
+//        Project myProject = pm.getProject(workspace, "my_project");
+//        FolderEntry environmentsFolder = myProject.getBaseFolder().createFolder(".codenvy/runners/environments");
+//        environmentsFolder.createFolder("my_env_1");
+//        environmentsFolder.createFolder("my_env_2");
+//        ContainerResponse response = launcher.service("GET",
+//                                                      String.format("http://localhost:8080/api/project/%s/runner_environments/my_project",
+//                                                                    workspace),
+//                                                      "http://localhost:8080/api", null, null, null);
+//        assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
+//        RunnerEnvironmentTree runnerEnvironmentTree = (RunnerEnvironmentTree)response.getEntity();
+//        assertEquals(runnerEnvironmentTree.getDisplayName(), "project");
+//        List<RunnerEnvironmentLeaf> environments = runnerEnvironmentTree.getLeaves();
+//        assertNotNull(environments);
+//        assertEquals(environments.size(), 2);
+//
+//        Set<String> ids = new LinkedHashSet<>(2);
+//        Set<String> names = new LinkedHashSet<>(2);
+//        for (RunnerEnvironmentLeaf environment : environments) {
+//            ids.add(environment.getEnvironment().getId());
+//            names.add(environment.getDisplayName());
+//        }
+//        Assert.assertTrue(ids.contains("project://my_env_1"));
+//        Assert.assertTrue(ids.contains("project://my_env_2"));
+//        Assert.assertTrue(names.contains("my_env_1"));
+//        Assert.assertTrue(names.contains("my_env_2"));
+//    }
 
 
     @Test
@@ -2573,10 +2570,10 @@ public class ProjectServiceTest {
         assertEquals(link.getMethod(), "DELETE");
         assertEquals(link.getHref(), "http://localhost:8080/api/project/" + workspace + project.getPath());
 
-        link = project.getLink("get runner environments");
-        assertNotNull(link);
-        assertEquals(link.getMethod(), "GET");
-        assertEquals(link.getHref(), "http://localhost:8080/api/project/" + workspace + "/runner_environments" + project.getPath());
+//        link = project.getLink("get runner environments");
+//        assertNotNull(link);
+//        assertEquals(link.getMethod(), "GET");
+//        assertEquals(link.getHref(), "http://localhost:8080/api/project/" + workspace + "/runner_environments" + project.getPath());
     }
 
     private void clearAcl(Project project) throws ServerException, ForbiddenException {

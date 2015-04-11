@@ -12,8 +12,6 @@ package org.eclipse.che.api.project.server;
 
 import org.eclipse.che.api.project.server.type.AttributeValue;
 import org.eclipse.che.api.project.server.type.BaseProjectType;
-import org.eclipse.che.api.project.shared.Builders;
-import org.eclipse.che.api.project.shared.Runners;
 
 import java.util.ArrayList;
 import java.util.HashMap;

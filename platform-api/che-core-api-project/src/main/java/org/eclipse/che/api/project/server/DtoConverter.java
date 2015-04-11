@@ -16,11 +16,7 @@ import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.core.util.LinksHelper;
 import org.eclipse.che.api.project.server.type.AttributeValue;
 import org.eclipse.che.api.project.server.type.ProjectType;
-import org.eclipse.che.api.project.shared.Builders;
-import org.eclipse.che.api.project.shared.Runners;
 import org.eclipse.che.api.project.shared.dto.AttributeDescriptor;
-import org.eclipse.che.api.project.shared.dto.BuilderConfiguration;
-import org.eclipse.che.api.project.shared.dto.BuildersDescriptor;
 import org.eclipse.che.api.project.shared.dto.ImportSourceDescriptor;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
@@ -30,8 +26,6 @@ import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
 import org.eclipse.che.api.project.shared.dto.ProjectUpdate;
-import org.eclipse.che.api.project.shared.dto.RunnerConfiguration;
-import org.eclipse.che.api.project.shared.dto.RunnersDescriptor;
 
 import org.eclipse.che.api.project.server.type.Attribute;
 import org.eclipse.che.api.project.server.type.BaseProjectType;
@@ -424,11 +418,11 @@ public class DtoConverter {
                 LinksHelper.createLink("PUT",
                                        uriBuilder.clone().path(ProjectService.class, "updateProject").build(workspace, relPath).toString(),
                                        MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON, Constants.LINK_REL_UPDATE_PROJECT));
-        links.add(
-                LinksHelper.createLink("GET",
-                                       uriBuilder.clone().path(ProjectService.class, "getRunnerEnvironments").build(workspace, relPath)
-                                                 .toString(),
-                                       MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON, Constants.LINK_REL_GET_RUNNER_ENVIRONMENTS));
+//        links.add(
+//                LinksHelper.createLink("GET",
+//                                       uriBuilder.clone().path(ProjectService.class, "getRunnerEnvironments").build(workspace, relPath)
+//                                                 .toString(),
+//                                       MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON, Constants.LINK_REL_GET_RUNNER_ENVIRONMENTS));
         return links;
     }
 

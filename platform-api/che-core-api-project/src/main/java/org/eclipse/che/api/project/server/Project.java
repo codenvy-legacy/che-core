@@ -19,8 +19,6 @@ import org.eclipse.che.api.project.server.type.Attribute;
 import org.eclipse.che.api.project.server.type.AttributeValue;
 import org.eclipse.che.api.project.server.type.ProjectType;
 import org.eclipse.che.api.project.server.type.Variable;
-import org.eclipse.che.api.project.shared.Builders;
-import org.eclipse.che.api.project.shared.Runners;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 
 import org.eclipse.che.api.vfs.server.VirtualFile;

@@ -10,27 +10,19 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.server;
 
-import org.eclipse.che.api.project.shared.Builders;
-import org.eclipse.che.api.project.shared.dto.BuilderConfiguration;
-import org.eclipse.che.api.project.shared.dto.BuildersDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.vfs.shared.dto.AccessControlEntry;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.commons.env.EnvironmentContext;
-import org.eclipse.che.commons.lang.NameGenerator;
 import org.eclipse.che.commons.user.User;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 
 /**
