@@ -11,6 +11,7 @@
 package org.eclipse.che.api.workspace.server.dao;
 
 import org.eclipse.che.api.core.ConflictException;
+import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 
@@ -83,4 +84,11 @@ public interface WorkspaceDao {
      * @return List of workspaces
      */
     List<Workspace> getByAccount(String accountId) throws ServerException;
+
+    /**
+     * Get all workspaces which are locked after RAM runner resources was exceeded.
+     *
+     * @return all locked workspaces
+     */
+    List<Workspace> getWorkspacesWithLockedResources() throws ServerException;
 }

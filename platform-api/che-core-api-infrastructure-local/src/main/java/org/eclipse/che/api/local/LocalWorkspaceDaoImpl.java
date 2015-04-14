@@ -12,6 +12,7 @@ package org.eclipse.che.api.local;
 
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.workspace.server.dao.Workspace;
 import org.eclipse.che.api.workspace.server.dao.WorkspaceDao;
 
@@ -154,6 +155,23 @@ public class LocalWorkspaceDaoImpl implements WorkspaceDao {
                                               .withAccountId(workspace.getAccountId())
                                               .withAttributes(new LinkedHashMap<>(workspace.getAttributes()))
                                               .withTemporary(workspace.isTemporary()));
+                }
+            }
+        } finally {
+            lock.readLock().unlock();
+        }
+        return result;
+    }
+
+    @Override
+    public List<Workspace> getWorkspacesWithLockedResources() throws ServerException {
+        List<Workspace> result = new LinkedList<>();
+        lock.readLock().lock();
+        try {
+            for (Workspace workspace : workspaces) {
+                if (workspace.getAttributes().containsKey("codenvy:locked")
+                    && workspace.getAttributes().get("codenvy:locked").equals("true")) {
+                    result.add(workspace);
                 }
             }
         } finally {
