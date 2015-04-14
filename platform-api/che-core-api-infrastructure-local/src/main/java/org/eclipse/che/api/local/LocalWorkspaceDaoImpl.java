@@ -27,6 +27,8 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Pattern;
 
+import static org.eclipse.che.api.account.server.Constants.RESOURCES_LOCKED_PROPERTY;
+
 @Singleton
 public class LocalWorkspaceDaoImpl implements WorkspaceDao {
     private static final Pattern WS_NAME = Pattern.compile("[\\w][\\w\\.\\-]{1,18}[\\w]");
@@ -169,8 +171,8 @@ public class LocalWorkspaceDaoImpl implements WorkspaceDao {
         lock.readLock().lock();
         try {
             for (Workspace workspace : workspaces) {
-                if (workspace.getAttributes().containsKey("codenvy:locked")
-                    && workspace.getAttributes().get("codenvy:locked").equals("true")) {
+                final String lockedAttribute = workspace.getAttributes().get(RESOURCES_LOCKED_PROPERTY);
+                if (Boolean.parseBoolean(lockedAttribute)) {
                     result.add(workspace);
                 }
             }
