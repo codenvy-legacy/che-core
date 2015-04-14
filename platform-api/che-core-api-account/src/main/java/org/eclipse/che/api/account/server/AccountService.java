@@ -1068,16 +1068,22 @@ public class AccountService extends Service {
     @RolesAllowed({"system/admin", "system/manager"})
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Account> find(@ApiParam(value = "Search criteria") AccountSearchCriteria searchCriteria,
-                              @ApiParam(value = "Page number") @DefaultValue("1") @QueryParam("page") String paramPage,
-                              @ApiParam(value = "Number of items per page") @DefaultValue("20") @QueryParam("perPage") String paramPerPage)
+    public List<AccountDescriptor> find(@ApiParam(value = "Search criteria") AccountSearchCriteria searchCriteria,
+                                        @ApiParam(value = "Page number") @DefaultValue("1") @QueryParam("page") String paramPage,
+                                        @ApiParam(value = "Number of items per page") @DefaultValue("20") @QueryParam("perPage") String paramPerPage,
+                                        @Context SecurityContext securityContext)
             throws ServerException {
 
         int page = parseInt(paramPage, "page");
         int perPage = parseInt(paramPerPage, "perPage");
 
         try {
-            return accountDao.find(searchCriteria, page, perPage);
+            List<Account> accounts = accountDao.find(searchCriteria, page, perPage);
+            final List<AccountDescriptor> result = new ArrayList<>(accounts.size());
+            for (Account account : accounts) {
+                result.add(toDescriptor(account, securityContext));
+            }
+            return result;
         } catch (NumberFormatException e) {
             throw new ServerException("Page parameter", e);
         }

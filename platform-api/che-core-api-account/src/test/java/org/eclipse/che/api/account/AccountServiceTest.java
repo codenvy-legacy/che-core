@@ -1640,7 +1640,9 @@ public class AccountServiceTest {
                 Object[] arguments = invocationOnMock.getArguments();
                 Object page = arguments[1];
                 Object perPage = arguments[2];
-                return ImmutableList.of(new Account().withId(page + ":" + perPage));
+                return ImmutableList.of(new Account().withId(page + ":" + perPage)
+                                                     .withName("name")
+                                                     .withAttributes(Collections.<String, String>emptyMap()));
             }
         }).when(accountDao).find(any(AccountSearchCriteria.class), anyInt(), anyInt());
     }
@@ -1649,7 +1651,7 @@ public class AccountServiceTest {
         assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
         assertNotNull(response.getEntity());
 
-        List<Account> accounts = (List<Account>)response.getEntity();
+        List<AccountDescriptor> accounts = (List<AccountDescriptor>)response.getEntity();
         assertEquals(accounts.size(), 1);
         assertEquals(accounts.get(0).getId(), String.format("%s:%s", page, perPage));
     }
