@@ -11,7 +11,6 @@
 package org.eclipse.che.api.workspace.server.dao;
 
 import org.eclipse.che.api.core.ConflictException;
-import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 
