@@ -26,7 +26,6 @@ import org.eclipse.che.api.user.server.dao.User;
 import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.api.workspace.server.dao.WorkspaceDao;
 
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -433,17 +432,17 @@ public class LocalAccountDaoImpl implements AccountDao {
             if (searchCriteria.getEmailOwner() != null) {
                 User owner = userDao.getByAlias(searchCriteria.getEmailOwner());
                 List<Account> byOwner = getByOwner(owner.getId());
-                result = mergeResult(result, byOwner);
+                merge(result, byOwner);
             }
 
             if (searchCriteria.getId() != null) {
                 Account account = getById(searchCriteria.getId());
-                result = mergeResult(result, ImmutableList.of(account));
+                merge(result, ImmutableList.of(account));
             }
 
             if (searchCriteria.getName() != null) {
                 Account account = getByName(searchCriteria.getName());
-                result = mergeResult(result, ImmutableList.of(account));
+                merge(result, ImmutableList.of(account));
             }
 
             if (searchCriteria.getSubscription() != null) {
@@ -453,14 +452,10 @@ public class LocalAccountDaoImpl implements AccountDao {
                         bySubscriptions.add(getById(subscription.getAccountId()));
                     }
                 }
-                result = mergeResult(result, bySubscriptions);
+                merge(result, bySubscriptions);
             }
 
         } catch (NotFoundException e) {
-            return Collections.emptyList();
-        }
-
-        if (result == null) {
             return Collections.emptyList();
         }
 
@@ -473,11 +468,10 @@ public class LocalAccountDaoImpl implements AccountDao {
         return result.subList(fromIndex, toIndex);
     }
 
-    private List<Account> mergeResult(List<Account> result, List<Account> searchResult) throws NotFoundException {
+    private void merge(List<Account> result, List<Account> searchResult) throws NotFoundException {
         result.retainAll(searchResult);
         if (result.isEmpty()) {
             throw new NotFoundException("Search result is empty");
         }
-        return result;
     }
 }

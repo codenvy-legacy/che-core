@@ -129,7 +129,7 @@ public class LocalAccountDaoImplTest {
     @Test
     public void findShouldReturnAccountIfSearchByEmailOwner() throws Exception {
         doReturn("email1").when(searchCriteria).getEmailOwner();
-        doReturn(new User().withId("userId1")).when(userDao).getByAlias("email1");
+        doReturn(new User().withId("userId1").withEmail("email1")).when(userDao).getByAlias("email1");
 
         List<Account> result = accountDao.find(searchCriteria, 1, 20);
         assertResult(result, ACCOUNT_1);
