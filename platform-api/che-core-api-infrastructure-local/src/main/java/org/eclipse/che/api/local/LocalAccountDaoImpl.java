@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.api.local;
 
-import com.google.common.collect.ImmutableList;
-
 import org.eclipse.che.api.account.server.dao.Account;
 import org.eclipse.che.api.account.server.dao.AccountDao;
 import org.eclipse.che.api.account.server.dao.Member;
@@ -22,8 +20,6 @@ import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.user.server.dao.User;
-import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.api.workspace.server.dao.WorkspaceDao;
 
 import javax.inject.Inject;
@@ -53,16 +49,13 @@ public class LocalAccountDaoImpl implements AccountDao {
     private final ReadWriteLock      lock;
 
     private final WorkspaceDao workspaceDao;
-    private final UserDao      userDao;
 
     @Inject
     public LocalAccountDaoImpl(@Named("codenvy.local.infrastructure.accounts") Set<Account> accounts,
                                @Named("codenvy.local.infrastructure.account.members") Set<Member> members,
                                @Named("codenvy.local.infrastructure.account.subscriptions") Set<Subscription> subscriptions,
-                               WorkspaceDao workspaceDao,
-                               UserDao userDao) {
+                               WorkspaceDao workspaceDao) {
         this.workspaceDao = workspaceDao;
-        this.userDao = userDao;
         this.accounts = new LinkedList<>();
         this.members = new LinkedList<>();
         this.subscriptions = new LinkedList<>();
@@ -426,52 +419,52 @@ public class LocalAccountDaoImpl implements AccountDao {
 
     /** {@inheritDoc} */
     @Override
-    public List<Account> find(AccountSearchCriteria searchCriteria, int page, int perPage) throws ServerException {
+    public List<Account> find(AccountSearchCriteria searchCriteria, int skipLimit, int maxItems) {
         List<Account> result = new ArrayList<>(accounts);
-        try {
-            if (searchCriteria.getEmailOwner() != null) {
-                User owner = userDao.getByAlias(searchCriteria.getEmailOwner());
-                List<Account> byOwner = getByOwner(owner.getId());
-                merge(result, byOwner);
-            }
 
-            if (searchCriteria.getId() != null) {
-                Account account = getById(searchCriteria.getId());
-                merge(result, ImmutableList.of(account));
+        if (!isNullOrEmpty(searchCriteria.getOwnerIds())) {
+            List<Account> byOwnerIds = new LinkedList<>();
+            for (String ownerId : searchCriteria.getOwnerIds()) {
+                byOwnerIds.addAll(getByOwner(ownerId));
             }
+            result.retainAll(byOwnerIds);
+        }
 
-            if (searchCriteria.getName() != null) {
-                Account account = getByName(searchCriteria.getName());
-                merge(result, ImmutableList.of(account));
+        if (!isNullOrEmpty(searchCriteria.getIds())) {
+            List<Account> byIds = new LinkedList<>();
+            for (String id : searchCriteria.getIds()) {
+                try {
+                    byIds.add(getById(id));
+                } catch (NotFoundException e) {
+                    // ignore
+                }
             }
+            result.retainAll(byIds);
+        }
 
-            if (searchCriteria.getSubscription() != null) {
-                List<Account> bySubscriptions = new LinkedList<>();
-                for (Subscription subscription : subscriptions) {
-                    if (subscription.getServiceId().equals(searchCriteria.getSubscription())) {
-                        bySubscriptions.add(getById(subscription.getAccountId()));
+        if (searchCriteria.getServiceId() != null) {
+            List<Account> byServiceId = new LinkedList<>();
+            for (Subscription subscription : subscriptions) {
+                if (subscription.getServiceId().equals(searchCriteria.getServiceId())) {
+                    try {
+                        byServiceId.add(getById(subscription.getAccountId()));
+                    } catch (NotFoundException e) {
+                        // ignore
                     }
                 }
-                merge(result, bySubscriptions);
             }
-
-        } catch (NotFoundException e) {
-            return Collections.emptyList();
+            result.retainAll(byServiceId);
         }
 
-        int fromIndex = (page - 1) * perPage;
-        if (fromIndex >= result.size()) {
+        if (skipLimit >= result.size()) {
             return Collections.emptyList();
         }
-        int toIndex = Math.min(page * perPage, result.size());
+        int toIndex = Math.min(skipLimit + maxItems, result.size());
 
-        return result.subList(fromIndex, toIndex);
+        return result.subList(skipLimit, toIndex);
     }
 
-    private void merge(List<Account> result, List<Account> searchResult) throws NotFoundException {
-        result.retainAll(searchResult);
-        if (result.isEmpty()) {
-            throw new NotFoundException("Search result is empty");
-        }
+    private boolean isNullOrEmpty(List<String> list) {
+        return list == null || list.isEmpty();
     }
 }

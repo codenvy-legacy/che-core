@@ -18,7 +18,6 @@ import org.eclipse.che.api.account.server.dao.AccountDao;
 import org.eclipse.che.api.account.server.dao.Member;
 import org.eclipse.che.api.account.server.dao.Subscription;
 import org.eclipse.che.api.account.shared.dto.AccountSearchCriteria;
-import org.eclipse.che.api.user.server.dao.User;
 import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.api.workspace.server.dao.WorkspaceDao;
 import org.mockito.Mock;
@@ -68,18 +67,18 @@ public class LocalAccountDaoImplTest {
         Set<Subscription> subscriptions = ImmutableSet.of(SUBSCRIPTION_1, SUBSCRIPTION_2, SUBSCRIPTION_3);
         Set<Member> members = ImmutableSet.of(MEMBER_1);
 
-        accountDao = new LocalAccountDaoImpl(accounts, members, subscriptions, workspaceDao, userDao);
+        accountDao = new LocalAccountDaoImpl(accounts, members, subscriptions, workspaceDao);
     }
 
     @Test
     public void findShouldReturnAllAccountsWithoutSearchCriteria() throws Exception {
-        List<Account> result = accountDao.find(searchCriteria, 1, 20);
+        List<Account> result = accountDao.find(searchCriteria, 0, 20);
         assertResult(result, ACCOUNT_1, ACCOUNT_2, ACCOUNT_3, ACCOUNT_4, ACCOUNT_5, ACCOUNT_6);
     }
 
     @Test
     public void findShouldReturnPage1WithoutSearchCriteria() throws Exception {
-        List<Account> result = accountDao.find(searchCriteria, 1, 2);
+        List<Account> result = accountDao.find(searchCriteria, 0, 2);
         assertResult(result, ACCOUNT_1, ACCOUNT_2);
     }
 
@@ -91,7 +90,7 @@ public class LocalAccountDaoImplTest {
 
     @Test
     public void findShouldReturnLastPageWithoutSearchCriteria() throws Exception {
-        List<Account> result = accountDao.find(searchCriteria, 2, 4);
+        List<Account> result = accountDao.find(searchCriteria, 4, 2);
         assertResult(result, ACCOUNT_5, ACCOUNT_6);
     }
 
@@ -103,52 +102,35 @@ public class LocalAccountDaoImplTest {
 
     @Test
     public void findShouldReturnAccountIfSearchByAccountId() throws Exception {
-        doReturn("id1").when(searchCriteria).getId();
+        doReturn(ImmutableList.of("id1")).when(searchCriteria).getIds();
 
-        List<Account> result = accountDao.find(searchCriteria, 1, 20);
+        List<Account> result = accountDao.find(searchCriteria, 0, 20);
         assertResult(result, ACCOUNT_1);
     }
 
     @Test
-    public void findShouldReturnAccountIfSearchByAccountName() throws Exception {
-        doReturn("name2").when(searchCriteria).getName();
-
-        List<Account> result = accountDao.find(searchCriteria, 1, 20);
-        assertResult(result, ACCOUNT_2);
-    }
-
-    @Test
-    public void findShouldReturnNothingIfDisjointSearchCriteriaAccountIdAndAccountName() throws Exception {
-        doReturn("id1").when(searchCriteria).getId();
-        doReturn("name2").when(searchCriteria).getName();
-
-        List<Account> result = accountDao.find(searchCriteria, 1, 20);
-        assertTrue(result.isEmpty());
-    }
-
-    @Test
     public void findShouldReturnAccountIfSearchByEmailOwner() throws Exception {
-        doReturn("email1").when(searchCriteria).getEmailOwner();
-        doReturn(new User().withId("userId1").withEmail("email1")).when(userDao).getByAlias("email1");
+        doReturn(ImmutableList.of("id1")).when(searchCriteria).getIds();
+        doReturn(ImmutableList.of("userId1")).when(searchCriteria).getOwnerIds();
 
-        List<Account> result = accountDao.find(searchCriteria, 1, 20);
+        List<Account> result = accountDao.find(searchCriteria, 0, 20);
         assertResult(result, ACCOUNT_1);
     }
 
     @Test
     public void findShouldReturnAccountsListIfSearchBySubscription() throws Exception {
-        doReturn("OnPremises").when(searchCriteria).getSubscription();
+        doReturn("OnPremises").when(searchCriteria).getServiceId();
 
-        List<Account> result = accountDao.find(searchCriteria, 1, 20);
+        List<Account> result = accountDao.find(searchCriteria, 0, 20);
         assertResult(result, ACCOUNT_1, ACCOUNT_2);
     }
 
     @Test
     public void findShouldReturnAccountIfSearchBySubscriptionAndAccountId() throws Exception {
-        doReturn("OnPremises").when(searchCriteria).getSubscription();
-        doReturn("id2").when(searchCriteria).getId();
+        doReturn("OnPremises").when(searchCriteria).getServiceId();
+        doReturn(ImmutableList.of("id2")).when(searchCriteria).getIds();
 
-        List<Account> result = accountDao.find(searchCriteria, 1, 20);
+        List<Account> result = accountDao.find(searchCriteria, 0, 20);
         assertResult(result, ACCOUNT_2);
     }
 

@@ -12,25 +12,23 @@ package org.eclipse.che.api.account.shared.dto;
 
 import org.eclipse.che.dto.shared.DTO;
 
+import java.util.List;
+
 /**
  * @author Anatoliy Bazko
  */
 @DTO
 public interface AccountSearchCriteria {
 
-    String getName();
+    List<String> getIds();
 
-    void setName(String name);
+    void setIds(List<String> ids);
 
-    String getId();
+    List<String> getOwnerIds();
 
-    void setId(String id);
+    void setOwnerIds(List<String> ownerIds);
 
-    String getEmailOwner();
+    String getServiceId();
 
-    void setEmailOwner(String emailOwner);
-
-    String getSubscription();
-
-    void setSubscription(String subscription);
+    void setServiceId(String serviceId);
 }

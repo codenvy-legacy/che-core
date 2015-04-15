@@ -192,13 +192,13 @@ public interface AccountDao {
      * It is supposed that search result might be very huge, that's why it is recommended to
      * retrieve result using pagination approach to reduce network traffic.
      *
-     * @param page
-     *         page number, must be positive
-     * @param perPage
-     *         number of items per page, must be positive
      * @param searchCriteria
      *         search criteria
+     * @param skipLimit
+     *         the number of items to skip at first
+     * @param maxItems
+     *         the maximum number if items to return
      * @return list of accounts, or empty list if no accounts found
      */
-    List<Account> find(AccountSearchCriteria searchCriteria, int page, int perPage) throws ServerException;
+    List<Account> find(AccountSearchCriteria searchCriteria, int skipLimit, int maxItems) throws ServerException;
 }

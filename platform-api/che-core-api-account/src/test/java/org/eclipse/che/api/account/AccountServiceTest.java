@@ -10,8 +10,6 @@
  *******************************************************************************/
 package com.codenvy.api.account;
 
-import com.google.common.collect.ImmutableList;
-
 import org.eclipse.che.api.account.server.AccountService;
 import org.eclipse.che.api.account.server.Constants;
 import org.eclipse.che.api.account.server.ResourcesManager;
@@ -60,8 +58,6 @@ import org.everrest.core.tools.ResourceLauncher;
 import org.everrest.core.tools.SimplePrincipal;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.mockito.testng.MockitoTestNGListener;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -88,13 +84,11 @@ import java.util.Map;
 
 import static java.util.Collections.singletonList;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -1600,60 +1594,27 @@ public class AccountServiceTest {
     }
 
     @Test
-    public void findShouldThrowExceptionIfPaginationParametersIncorrect() throws Exception {
-        prepareMocks();
-
-        ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/find?page=value",
-                                                 MediaType.APPLICATION_JSON,
-                                                 DtoFactory.getInstance().createDto(AccountSearchCriteria.class));
-
-        assertEquals(response.getStatus(), Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
-    }
-
-    @Test
     public void findShouldUsePaginationParametersFromUrl() throws Exception {
-        prepareMocks();
+        prepareSecurityContext("system/admin");
 
-        ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/find?page=3&perPage=15",
+        ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/find?skipCount=3&maxItems=15",
                                                  MediaType.APPLICATION_JSON,
                                                  DtoFactory.getInstance().createDto(AccountSearchCriteria.class));
 
-        assertFindResponse(response, "3", "15");
+        assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
+        verify(accountDao).find(any(AccountSearchCriteria.class), eq(3), eq(15));
     }
 
     @Test
     public void findShouldUseDefaultPaginationParameters() throws Exception {
-        prepareMocks();
+        prepareSecurityContext("system/admin");
 
         ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/find",
                                                  MediaType.APPLICATION_JSON,
                                                  DtoFactory.getInstance().createDto(AccountSearchCriteria.class));
 
-        assertFindResponse(response, "1", "20");
-    }
-
-    private void prepareMocks() throws ServerException {
-        prepareSecurityContext("system/admin");
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                Object[] arguments = invocationOnMock.getArguments();
-                Object page = arguments[1];
-                Object perPage = arguments[2];
-                return ImmutableList.of(new Account().withId(page + ":" + perPage)
-                                                     .withName("name")
-                                                     .withAttributes(Collections.<String, String>emptyMap()));
-            }
-        }).when(accountDao).find(any(AccountSearchCriteria.class), anyInt(), anyInt());
-    }
-
-    private void assertFindResponse(ContainerResponse response, String page, String perPage) {
         assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
-        assertNotNull(response.getEntity());
-
-        List<AccountDescriptor> accounts = (List<AccountDescriptor>)response.getEntity();
-        assertEquals(accounts.size(), 1);
-        assertEquals(accounts.get(0).getId(), String.format("%s:%s", page, perPage));
+        verify(accountDao).find(any(AccountSearchCriteria.class), eq(0), eq(20));
     }
 
     protected void verifyLinksRel(List<Link> links, List<String> rels) {

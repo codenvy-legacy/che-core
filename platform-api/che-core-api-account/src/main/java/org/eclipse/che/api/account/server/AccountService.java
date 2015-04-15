@@ -1045,22 +1045,25 @@ public class AccountService extends Service {
     /**
      * Returns list of accounts satisfying given criteria.
      *
-     * @param paramPage
-     *         page number, must be positive
-     * @param paramPerPage
-     *         number of items per page, must be positive
+     * @param maxItems
+     *         the maximum number of items to return, must be non negative
+     * @param skipCount
+     *         number of items to skip at first, must be non negative
      * @throws ServerException
      *         when some error occurred while retrieving accounts
+     * @throws ConflictException
+     *         when query parameters are incorrect
      * @see org.eclipse.che.api.account.server.dao.AccountDao#find
      */
     @ApiOperation(value = "Gets list of accounts satisfying given criteria",
-            notes = "Search criteria should be specified. Result is returned by pages. The number of page and number of items per page should be " +
+            notes = "Search criteria should be specified. The number of items to return and number of items to skip at first should be " +
                     "specified as query parameters. For this API call system/admin or system/manager role is required",
             response = Account.class,
             responseContainer = "List",
             position = 20)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 409, message = "Conflict Error"),
             @ApiResponse(code = 500, message = "Internal Server Error")})
     @POST
     @Path("/find")
@@ -1069,36 +1072,21 @@ public class AccountService extends Service {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public List<AccountDescriptor> find(@ApiParam(value = "Search criteria") AccountSearchCriteria searchCriteria,
-                                        @ApiParam(value = "Page number") @DefaultValue("1") @QueryParam("page") String paramPage,
-                                        @ApiParam(value = "Number of items per page") @DefaultValue("20") @QueryParam("perPage") String paramPerPage,
-                                        @Context SecurityContext securityContext)
-            throws ServerException {
+                                        @ApiParam(value = "Max items count", required = false)
+                                        @DefaultValue("20") @QueryParam("maxItems") int maxItems,
+                                        @ApiParam(value = "Skip count", required = false) @QueryParam("skipCount") int skipCount,
+                                        @Context SecurityContext securityContext) throws ServerException, ConflictException {
 
-        int page = parseInt(paramPage, "page");
-        int perPage = parseInt(paramPerPage, "perPage");
+        requiredNotNegative(skipCount, "skipCount");
+        requiredNotNegative(maxItems, "maxItems");
 
-        try {
-            List<Account> accounts = accountDao.find(searchCriteria, page, perPage);
-            final List<AccountDescriptor> result = new ArrayList<>(accounts.size());
-            for (Account account : accounts) {
-                result.add(toDescriptor(account, securityContext));
-            }
-            return result;
-        } catch (NumberFormatException e) {
-            throw new ServerException("Page parameter", e);
+        List<Account> accounts = accountDao.find(searchCriteria, skipCount, maxItems);
+        final List<AccountDescriptor> result = new ArrayList<>(accounts.size());
+        for (Account account : accounts) {
+            result.add(toDescriptor(account, securityContext));
         }
-    }
 
-    private int parseInt(String param, String name) throws ServerException {
-        try {
-            int value = Integer.valueOf(param);
-            if (value <= 0) {
-                throw new ServerException(format("'%s' parameter must be a positive number", name));
-            }
-            return value;
-        } catch (NumberFormatException e) {
-            throw new ServerException(format("'%s' parameter has incorrect format. Must be a positive integer number", name), e);
-        }
+        return result;
     }
 
     /**
@@ -1263,6 +1251,22 @@ public class AccountService extends Service {
     private void requiredNotNull(Object object, String subject) throws ConflictException {
         if (object == null) {
             throw new ConflictException(subject + " required");
+        }
+    }
+
+    /**
+     * Checks if object is a negative number.
+     *
+     * @param object
+     *         object to check
+     * @param subject
+     *         is used as subject in exception message
+     * @throws ConflictException
+     *         when object is a negative number
+     */
+    private void requiredNotNegative(long object, String subject) throws ConflictException {
+        if (object < 0) {
+            throw new ConflictException(format("'%s' parameter must be a non negative number", subject));
         }
     }
 
