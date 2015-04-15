@@ -31,9 +31,9 @@ import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import org.eclipse.che.api.analytics.logger.EventLogger;
-import org.eclipse.che.api.factory.dto.Factory;
-import org.eclipse.che.api.factory.dto.Ide;
-import org.eclipse.che.api.factory.gwt.client.FactoryServiceClient;
+//import org.eclipse.che.api.factory.dto.Factory;
+//import org.eclipse.che.api.factory.dto.Ide;
+//import org.eclipse.che.api.factory.gwt.client.FactoryServiceClient;
 import org.eclipse.che.api.project.gwt.client.ProjectTemplateServiceClient;
 import org.eclipse.che.api.project.gwt.client.ProjectTypeServiceClient;
 import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
@@ -93,7 +93,7 @@ public class BootstrapController {
     private final Provider<ComponentRegistry>  componentRegistry;
     private final Provider<WorkspacePresenter> workspaceProvider;
     private final ExtensionInitializer         extensionInitializer;
-    private final FactoryServiceClient         factoryService;
+//    private final FactoryServiceClient         factoryService;
     private final UserProfileServiceClient     userProfileService;
     private final WorkspaceServiceClient       workspaceServiceClient;
     private final ProjectTypeServiceClient     projectTypeService;
@@ -128,7 +128,7 @@ public class BootstrapController {
                                DtoUnmarshallerFactory dtoUnmarshallerFactory,
                                AnalyticsEventLoggerExt analyticsEventLoggerExt,
                                Resources resources,
-                               FactoryServiceClient factoryService,
+//                               FactoryServiceClient factoryService,
                                EventBus eventBus,
                                AppContext appContext,
                                final IconRegistry iconRegistry,
@@ -147,7 +147,7 @@ public class BootstrapController {
         this.preferencesManager = preferencesManager;
         this.styleInjector = styleInjector;
         this.coreLocalizationConstant = coreLocalizationConstant;
-        this.factoryService = factoryService;
+//        this.factoryService = factoryService;
         this.eventBus = eventBus;
         this.appContext = appContext;
         this.iconRegistry = iconRegistry;
@@ -294,7 +294,7 @@ public class BootstrapController {
         }
 
         if (factoryParams != null) {
-            factoryService.getFactory(factoryParams, encoded,
+            /*factoryService.getFactory(factoryParams, encoded,
                                       new AsyncRequestCallback<Factory>(dtoUnmarshallerFactory.newUnmarshaller(Factory.class)) {
                                           @Override
                                           protected void onSuccess(Factory factory) {
@@ -308,7 +308,7 @@ public class BootstrapController {
                                               initializeComponentRegistry();
                                           }
                                       }
-                                     );
+                                     );*/
         } else {
             initializeComponentRegistry();
         }
@@ -447,7 +447,7 @@ public class BootstrapController {
             handlerRegistration = eventBus.addHandler(ProjectActionEvent.TYPE, getFactoryActionHandler());
         }
 
-        if (appContext.getFactory() != null && appContext.getFactory().getIde() != null) {
+        /*if (appContext.getFactory() != null && appContext.getFactory().getIde() != null) {
             final Ide ide = appContext.getFactory().getIde();
 
             if (ide.getOnAppClosed() != null && ide.getOnAppClosed().getActions() != null) {
@@ -457,7 +457,7 @@ public class BootstrapController {
             if (ide.getOnAppLoaded() != null && ide.getOnAppLoaded().getActions() != null) {
                 performActions(ide.getOnAppLoaded().getActions());
             }
-        }
+        }*/
     }
 
     private ProjectActionHandler getFactoryActionHandler() {
@@ -468,12 +468,12 @@ public class BootstrapController {
                     handlerRegistration.removeHandler();
                 }
 
-                if (appContext.getFactory() != null && appContext.getFactory().getIde() != null
-                    && appContext.getFactory().getIde().getOnProjectOpened() != null
-                    && appContext.getFactory().getIde().getOnProjectOpened().getActions() != null) {
-
-                    performActions(appContext.getFactory().getIde().getOnProjectOpened().getActions());
-                }
+//                if (appContext.getFactory() != null && appContext.getFactory().getIde() != null
+//                    && appContext.getFactory().getIde().getOnProjectOpened() != null
+//                    && appContext.getFactory().getIde().getOnProjectOpened().getActions() != null) {
+//
+//                    performActions(appContext.getFactory().getIde().getOnProjectOpened().getActions());
+//                }
             }
 
             @Override
@@ -506,11 +506,11 @@ public class BootstrapController {
         }
     }
 
-    private void performActions(List<org.eclipse.che.api.factory.dto.Action> actions) {
-        for (org.eclipse.che.api.factory.dto.Action action : actions) {
-            performAction(action.getId(), action.getProperties());
-        }
-    }
+//    private void performActions(List<org.eclipse.che.api.factory.dto.Action> actions) {
+//        for (org.eclipse.che.api.factory.dto.Action action : actions) {
+//            performAction(action.getId(), action.getProperties());
+//        }
+//    }
 
     private void performAction(String actionId) {
         performAction(actionId, null);

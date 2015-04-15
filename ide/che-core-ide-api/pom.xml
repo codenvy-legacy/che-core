@@ -50,11 +50,11 @@
             <artifactId>javax.inject</artifactId>
             <version>${javax.inject.version}</version>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>org.eclipse.che.core</groupId>
             <artifactId>che-core-api-factory</artifactId>
             <version>${che.core.version}</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
             <artifactId>che-core-api-project</artifactId>
@@ -75,11 +75,11 @@
             <artifactId>che-core-api-workspace</artifactId>
             <version>${che.core.version}</version>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>org.eclipse.che.core</groupId>
             <artifactId>che-core-client-gwt-factory</artifactId>
             <version>${che.core.version}</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
             <artifactId>che-core-client-gwt-project</artifactId>

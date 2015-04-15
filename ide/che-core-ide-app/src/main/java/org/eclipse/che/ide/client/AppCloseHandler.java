@@ -12,7 +12,7 @@ package org.eclipse.che.ide.client;
 
 import com.google.web.bindery.event.shared.EventBus;
 
-import org.eclipse.che.api.factory.dto.Action;
+//import org.eclipse.che.api.factory.dto.Action;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.AppCloseActionEvent;
 import org.eclipse.che.ide.api.action.Presentation;
@@ -31,7 +31,7 @@ import java.util.List;
  */
 public class AppCloseHandler {
     private final ActionManager actionManager;
-    private List<Action> actions = new ArrayList<>();
+//    private List<Action> actions = new ArrayList<>();
 
     @Inject
     public AppCloseHandler(ActionManager actionManager, EventBus eventBus) {
@@ -55,9 +55,9 @@ public class AppCloseHandler {
     /**
      * Register actions for perform before closing of application
      */
-    public void performBeforeClose(List<Action> actions) {
-        this.actions.addAll(actions);
-    }
+//    public void performBeforeClose(List<Action> actions) {
+//        this.actions.addAll(actions);
+//    }
 
     /**
      * Performs registered action
@@ -67,7 +67,7 @@ public class AppCloseHandler {
      */
     private String performActions() {
         String cancelMessage = null;
-        for (Action action : actions) {
+        /*for (Action action : actions) {
             org.eclipse.che.ide.api.action.Action ideAction = actionManager.getAction(action.getId());
 
             if (ideAction == null) {
@@ -87,7 +87,7 @@ public class AppCloseHandler {
             if (e.getCancelMessage() != null) {
                 cancelMessage = e.getCancelMessage();
             }
-        }
+        }*/
 
         return cancelMessage;
     }

@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.app;
 
-import org.eclipse.che.api.factory.dto.Factory;
+//import org.eclipse.che.api.factory.dto.Factory;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor;
 
 import javax.annotation.Nullable;
@@ -28,7 +28,7 @@ public class AppContext {
     private WorkspaceDescriptor workspace;
     private CurrentProject      currentProject;
     private CurrentUser         currentUser;
-    private Factory             factory;
+//    private Factory             factory;
 
     public WorkspaceDescriptor getWorkspace() {
         return workspace;
@@ -80,17 +80,17 @@ public class AppContext {
      *
      * @return loaded factory or {@code null}
      */
-    @Nullable
-    public Factory getFactory() {
-        return factory;
-    }
+//    @Nullable
+//    public Factory getFactory() {
+//        return factory;
+//    }
 
     /**
      * Set the factory instance.
      * <p/>
      * Should not be called directly as the factory is managed by the core.
      */
-    public void setFactory(Factory factory) {
-        this.factory = factory;
-    }
+//    public void setFactory(Factory factory) {
+//        this.factory = factory;
+//    }
 }
