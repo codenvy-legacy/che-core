@@ -78,6 +78,7 @@ public class DropDownListMenu implements ActionSelectedHandler {
         lockLayer = new MenuLockLayer();
         popupMenu =
                 new PopupMenu(actions, actionManager, place, presentationFactory, lockLayer, this, keyBindingAgent, itemIdPrefix);
+        popupMenu.getElement().getStyle().setOpacity(0);
         lockLayer.add(popupMenu);
 
         Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
@@ -90,6 +91,8 @@ public class DropDownListMenu implements ActionSelectedHandler {
 
                 popupMenu.getElement().getStyle().setTop(y, PX);
                 popupMenu.getElement().getStyle().setLeft(left, PX);
+                popupMenu.getElement().getStyle().setProperty("transition", "opacity 0.2s");
+                popupMenu.getElement().getStyle().setOpacity(1);
             }
         });
     }
