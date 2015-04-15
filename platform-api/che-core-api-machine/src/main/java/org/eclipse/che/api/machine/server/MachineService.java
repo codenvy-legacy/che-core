@@ -51,6 +51,8 @@ import java.util.List;
  */
 @Path("/machine")
 public class MachineService {
+    private static LineConsumer defaultLineConsumer = LineConsumer.DEV_NULL;
+
     private MachineManager machineManager;
     private DtoFactory     dtoFactory;
     private MemberDao      memberDao;
@@ -309,12 +311,12 @@ public class MachineService {
     }
 
     // package private for testing purposes
-    LineConsumer getLineConsumer(String outputChannel) {
+    private LineConsumer getLineConsumer(String outputChannel) {
         final LineConsumer lineConsumer;
         if (outputChannel != null) {
             lineConsumer = new WebsocketLineConsumer(outputChannel);
         } else {
-            lineConsumer = LineConsumer.DEV_NULL;
+            lineConsumer = defaultLineConsumer;
         }
         return lineConsumer;
     }
