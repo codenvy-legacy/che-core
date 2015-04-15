@@ -10,18 +10,29 @@
  *******************************************************************************/
 package org.eclipse.che.ide.core;
 
-import org.eclipse.che.api.project.shared.Constants;
+import com.google.gwt.resources.client.ClientBundle;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 
+import org.eclipse.che.ide.Resources;
+import org.eclipse.che.ide.actions.CloseProjectAction;
 import org.eclipse.che.ide.actions.CreateModuleAction;
 import org.eclipse.che.ide.actions.DeleteItemAction;
+import org.eclipse.che.ide.actions.ExpandEditorAction;
 import org.eclipse.che.ide.actions.FindReplaceAction;
 import org.eclipse.che.ide.actions.FormatterAction;
 import org.eclipse.che.ide.actions.ImportLocalProjectAction;
 import org.eclipse.che.ide.actions.ImportProjectFromLocationAction;
 import org.eclipse.che.ide.actions.NavigateToFileAction;
 import org.eclipse.che.ide.actions.NewProjectAction;
+import org.eclipse.che.ide.actions.OpenFileAction;
+import org.eclipse.che.ide.actions.OpenProjectAction;
 import org.eclipse.che.ide.actions.OpenSelectedFileAction;
+import org.eclipse.che.ide.actions.ProjectConfigurationAction;
 import org.eclipse.che.ide.actions.RedirectToFeedbackAction;
+import org.eclipse.che.ide.actions.RedirectToForumsAction;
+import org.eclipse.che.ide.actions.RedirectToHelpAction;
 import org.eclipse.che.ide.actions.RedoAction;
 import org.eclipse.che.ide.actions.RenameItemAction;
 import org.eclipse.che.ide.actions.SaveAction;
@@ -32,21 +43,7 @@ import org.eclipse.che.ide.actions.ShowPreferencesAction;
 import org.eclipse.che.ide.actions.UndoAction;
 import org.eclipse.che.ide.actions.UploadFileAction;
 import org.eclipse.che.ide.actions.UploadFolderFromZipAction;
-import org.eclipse.che.ide.connection.WsConnectionListener;
-import org.eclipse.che.ide.imageviewer.ImageViewerProvider;
-import org.eclipse.che.ide.newresource.NewFileAction;
 import org.eclipse.che.ide.projecttype.BlankProjectWizardRegistrar;
-import org.eclipse.che.ide.toolbar.MainToolbar;
-import org.eclipse.che.ide.toolbar.ToolbarPresenter;
-import org.eclipse.che.ide.xml.NewXmlFileAction;
-import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.actions.CloseProjectAction;
-import org.eclipse.che.ide.actions.ExpandEditorAction;
-import org.eclipse.che.ide.actions.OpenFileAction;
-import org.eclipse.che.ide.actions.OpenProjectAction;
-import org.eclipse.che.ide.actions.ProjectConfigurationAction;
-import org.eclipse.che.ide.actions.RedirectToForumsAction;
-import org.eclipse.che.ide.actions.RedirectToHelpAction;
 import org.eclipse.che.ide.actions.find.FindActionAction;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.DefaultActionGroup;
@@ -58,14 +55,13 @@ import org.eclipse.che.ide.api.icon.Icon;
 import org.eclipse.che.ide.api.icon.IconRegistry;
 import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
 import org.eclipse.che.ide.api.keybinding.KeyBuilder;
-
+import org.eclipse.che.ide.connection.WsConnectionListener;
+import org.eclipse.che.ide.imageviewer.ImageViewerProvider;
+import org.eclipse.che.ide.newresource.NewFileAction;
 import org.eclipse.che.ide.newresource.NewFolderAction;
-
-import com.google.gwt.resources.client.ClientBundle;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
-
+import org.eclipse.che.ide.ui.toolbar.MainToolbar;
+import org.eclipse.che.ide.ui.toolbar.ToolbarPresenter;
+import org.eclipse.che.ide.xml.NewXmlFileAction;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 import static org.eclipse.che.ide.api.action.IdeActions.GROUP_FILE_NEW;

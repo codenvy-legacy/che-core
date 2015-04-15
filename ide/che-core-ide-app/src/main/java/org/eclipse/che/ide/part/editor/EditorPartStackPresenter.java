@@ -214,7 +214,7 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
     @Override
     public void onShowListClicked(int x, int y, AsyncCallback<Void> callback) {
         Array<VirtualFile> openedFiles = Collections.createArray();
-        for (PartPresenter part : getParts().asIterable()) {
+        for (PartPresenter part : getParts()) {
             if (part instanceof EditorPartPresenter) {
                 openedFiles.add(((EditorPartPresenter)part).getEditorInput().getFile());
             }
@@ -224,7 +224,7 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
     }
 
     @Override
-    protected void sortPartsOnView(Constraints constraint) {
+    protected void sortPartsOnView() {
     }
 
 }

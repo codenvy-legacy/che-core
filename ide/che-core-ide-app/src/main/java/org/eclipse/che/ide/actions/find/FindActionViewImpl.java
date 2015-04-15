@@ -15,19 +15,6 @@ import elemental.dom.Node;
 import elemental.html.TableCellElement;
 import elemental.html.TableElement;
 
-import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.api.action.Action;
-import org.eclipse.che.ide.api.action.ActionEvent;
-import org.eclipse.che.ide.api.action.ActionManager;
-import org.eclipse.che.ide.api.action.Presentation;
-import org.eclipse.che.ide.api.autocomplete.AutoCompleteResources;
-import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
-import org.eclipse.che.ide.toolbar.PresentationFactory;
-import org.eclipse.che.ide.toolbar.Toolbar;
-import org.eclipse.che.ide.toolbar.PresentationFactory;
-import org.eclipse.che.ide.ui.list.SimpleList;
-import org.eclipse.che.ide.util.dom.Elements;
-import org.eclipse.che.ide.util.input.KeyMapUtil;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style;
@@ -49,6 +36,18 @@ import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.inject.Inject;
 
+import org.eclipse.che.ide.Resources;
+import org.eclipse.che.ide.api.action.Action;
+import org.eclipse.che.ide.api.action.ActionEvent;
+import org.eclipse.che.ide.api.action.ActionManager;
+import org.eclipse.che.ide.api.action.Presentation;
+import org.eclipse.che.ide.api.autocomplete.AutoCompleteResources;
+import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
+import org.eclipse.che.ide.ui.list.SimpleList;
+import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
+import org.eclipse.che.ide.ui.toolbar.Toolbar;
+import org.eclipse.che.ide.util.dom.Elements;
+import org.eclipse.che.ide.util.input.KeyMapUtil;
 import org.vectomatic.dom.svg.ui.SVGImage;
 
 import java.util.ArrayList;

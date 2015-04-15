@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.toolbar;
+package org.eclipse.che.ide.ui.toolbar;
 
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
@@ -48,8 +48,9 @@ public class MenuLockLayer extends AbsolutePanel {
 
     private int topOffset = 20;
 
+    /** Create Menu Lock Layer. */
     public MenuLockLayer() {
-
+        this(null, 0);
     }
 
     /**

@@ -11,7 +11,6 @@
 package org.eclipse.che.ide.api.parts;
 
 import org.eclipse.che.ide.api.mvp.View;
-import org.eclipse.che.ide.collections.Array;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.dom.client.HasMouseDownHandlers;
 import com.google.gwt.event.logical.shared.HasCloseHandlers;
@@ -19,42 +18,44 @@ import com.google.gwt.user.client.ui.IsWidget;
 
 import org.vectomatic.dom.svg.ui.SVGImage;
 
+import java.util.List;
+
 import static com.google.gwt.user.client.ui.InsertPanel.ForIsWidget;
 
 /** PartStack View interface */
 public interface PartStackView extends View<PartStackView.ActionDelegate> {
 
-    enum TabPosition {
+    public enum TabPosition {
         BELOW, LEFT, RIGHT
     }
 
     /** Tab which can be clicked and closed */
-    interface TabItem extends HasCloseHandlers<PartStackView.TabItem>, HasClickHandlers, HasMouseDownHandlers {
+    public interface TabItem extends HasCloseHandlers<PartStackView.TabItem>, HasClickHandlers, HasMouseDownHandlers {
     }
 
     /** Add Tab */
-    PartStackView.TabItem addTab(SVGImage icon, String title, String toolTip, IsWidget widget, boolean closable);
+    public PartStackView.TabItem addTab(SVGImage icon, String title, String toolTip, IsWidget widget, boolean closable);
 
     /** Remove Tab */
-    void removeTab(int index);
+    public void removeTab(int index);
 
     /** Set Active Tab */
-    void setActiveTab(int index);
+    public void setActiveTab(int index);
 
     /** Set new Tabs positions */
-    void setTabpositions(Array<Integer> partPositions);
+    public void setTabpositions(List<Integer> partPositions);
 
     /** Get Content Panel */
-    ForIsWidget getContentPanel();
+    public ForIsWidget getContentPanel();
 
     /** Set PartStack focused */
-    void setFocus(boolean focused);
+    public void setFocus(boolean focused);
 
     /** Update Tab */
-    void updateTabItem(int index, SVGImage icon, String title, String toolTip, IsWidget widget);
+    public void updateTabItem(int index, SVGImage icon, String title, String toolTip, IsWidget widget);
 
     /** Handles Focus Request Event. It is generated, when user clicks a stack anywhere */
-    interface ActionDelegate {
+    public interface ActionDelegate {
         /** PartStack is being clicked and requests Focus */
         void onRequestFocus();
     }

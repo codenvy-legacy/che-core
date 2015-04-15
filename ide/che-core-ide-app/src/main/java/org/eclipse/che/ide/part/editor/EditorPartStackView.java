@@ -44,6 +44,8 @@ import com.google.inject.Inject;
 
 import org.vectomatic.dom.svg.ui.SVGImage;
 
+import java.util.List;
+
 import static com.google.gwt.user.client.ui.InsertPanel.ForIsWidget;
 
 /**
@@ -170,7 +172,7 @@ public class EditorPartStackView extends ResizeComposite implements PartStackVie
 
     /** {@inheritDoc} */
     @Override
-    public void setTabpositions(Array<Integer> partPositions) {
+    public void setTabpositions(List<Integer> partPositions) {
         //TODO not implemented. need to add for sorting
     }
 

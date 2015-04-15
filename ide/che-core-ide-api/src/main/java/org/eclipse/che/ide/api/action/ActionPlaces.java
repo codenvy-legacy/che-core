@@ -17,6 +17,7 @@ public class ActionPlaces {
     public static final String MAIN_MENU         = "MainMenu";
     public static final String MAIN_TOOLBAR      = "MainToolbar";
     public static final String MAIN_CONTEXT_MENU = "MainContextMenu";
+    public static final String DROPDOWN_MENU     = "DropdownMenu";
     public static final String EDITOR_POPUP      = "EditorPopup";
     public static final String EDITOR_TOOLBAR    = "EditorToolbar";
     public static final String EDITOR_TAB_POPUP  = "EditorTabPopup";
