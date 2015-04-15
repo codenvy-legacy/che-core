@@ -10,20 +10,19 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.action.permits;
 
-import com.google.inject.BindingAnnotation;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 /**
- * Used to bind memory indicator action.
+ * Interface for check if the action is allowed.
  *
  * @author Oleksii Orel
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD, ElementType.TYPE})
-@BindingAnnotation
-public @interface Indicator {
+public interface ResourcesLockedActionPermit {
+
+    /** return allowed status for the action. */
+    boolean isAllowed();
+
+    /** return account lock status. */
+    boolean isAccountLocked();
+
+    /** return workspace lock status. */
+    boolean isWorkspaceLocked();
 }
