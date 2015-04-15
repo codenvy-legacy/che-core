@@ -10,14 +10,15 @@
  *******************************************************************************/
 package org.eclipse.che.ide.client;
 
+import com.google.web.bindery.event.shared.EventBus;
+
 import org.eclipse.che.api.factory.dto.Action;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.AppCloseActionEvent;
 import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.event.WindowActionEvent;
 import org.eclipse.che.ide.api.event.WindowActionHandler;
-import org.eclipse.che.ide.toolbar.PresentationFactory;
-import com.google.web.bindery.event.shared.EventBus;
+import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 
 import javax.inject.Inject;
 import java.util.ArrayList;

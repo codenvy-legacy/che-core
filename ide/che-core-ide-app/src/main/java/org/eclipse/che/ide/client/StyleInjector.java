@@ -10,8 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.ide.client;
 
-import org.eclipse.che.ide.Resources;
 import com.google.inject.Inject;
+
+import org.eclipse.che.ide.Resources;
 
 /** @author Evgen Vidolob */
 public class StyleInjector {
@@ -34,6 +35,7 @@ public class StyleInjector {
         resources.dataGridStyle().ensureInjected();
         resources.cellTableStyle().ensureInjected();
         resources.defaultCategoriesListCss().ensureInjected();
+        resources.dropdownListCss().ensureInjected();
         resources.Css().ensureInjected();
         resources.menuCss().ensureInjected();
     }

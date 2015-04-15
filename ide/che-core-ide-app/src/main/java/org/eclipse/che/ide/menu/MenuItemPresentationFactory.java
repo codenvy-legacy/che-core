@@ -11,8 +11,7 @@
 package org.eclipse.che.ide.menu;
 
 import org.eclipse.che.ide.api.action.Presentation;
-import org.eclipse.che.ide.toolbar.PresentationFactory;
-import org.eclipse.che.ide.toolbar.PresentationFactory;
+import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 
 /**
  * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>

@@ -10,12 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.ide.client.inject;
 
-import org.eclipse.che.ide.api.extension.ExtensionGinModule;
-import org.eclipse.che.ide.client.StyleInjector;
-import org.eclipse.che.ide.client.BootstrapController;
-
 import com.google.gwt.inject.client.AbstractGinModule;
 import com.google.inject.Singleton;
+
+import org.eclipse.che.ide.api.extension.ExtensionGinModule;
+import org.eclipse.che.ide.client.BootstrapController;
+import org.eclipse.che.ide.client.StyleInjector;
 
 
 /**

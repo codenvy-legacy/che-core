@@ -8,12 +8,8 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.toolbar;
+package org.eclipse.che.ide.ui.toolbar;
 
-import org.eclipse.che.ide.api.action.Action;
-import org.eclipse.che.ide.api.action.ActionGroup;
-import org.eclipse.che.ide.api.action.ActionManager;
-import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
@@ -22,6 +18,11 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.InlineLabel;
 
+import org.eclipse.che.ide.api.action.Action;
+import org.eclipse.che.ide.api.action.ActionGroup;
+import org.eclipse.che.ide.api.action.ActionManager;
+import org.eclipse.che.ide.api.action.ActionSelectedHandler;
+import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
