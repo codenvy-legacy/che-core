@@ -8,21 +8,21 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.toolbar;
+package org.eclipse.che.ide.ui.toolbar;
 
+import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.FlowPanel;
 
-import org.eclipse.che.ide.api.action.Action;
-
-/** @author <a href="mailto:gavrikvetal@gmail.com">Vitaliy Gulyy</a> */
-
-public interface ActionSelectedHandler {
-
-    /**
-     * Do some actions when menu item will be selected.
-     *
-     * @param action
-     *         selected Action
-     */
-    void onActionSelected(Action action);
-
+/**
+ * Toolbar item that represent 'delimiter'
+ *
+ * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
+ * @version $Id:
+ */
+public class DelimiterItem extends Composite {
+    public DelimiterItem() {
+        FlowPanel widget = new FlowPanel();
+        widget.setStyleName(Toolbar.RESOURCES.toolbar().toolbarDelimiter());
+        initWidget(widget);
+    }
 }

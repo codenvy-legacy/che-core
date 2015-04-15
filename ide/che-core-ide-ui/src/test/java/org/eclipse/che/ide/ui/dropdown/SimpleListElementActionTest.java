@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.dropdown;
+package org.eclipse.che.ide.ui.dropdown;
 
 import com.google.gwtmockito.GwtMockitoTestRunner;
 
@@ -34,15 +34,15 @@ public class SimpleListElementActionTest {
     static private final String TEXT = "text";
 
     @Mock
-    private AppContext       appContext;
+    private AppContext           appContext;
     @Mock
-    private SVGResource      image;
+    private SVGResource          image;
     @Mock
-    private ListHeaderWidget header;
+    private DropDownHeaderWidget header;
     @Mock
-    private ActionEvent      actionEvent;
+    private ActionEvent          actionEvent;
     @Mock
-    private Presentation     presentation;
+    private Presentation         presentation;
 
     private SimpleListElementAction action;
 

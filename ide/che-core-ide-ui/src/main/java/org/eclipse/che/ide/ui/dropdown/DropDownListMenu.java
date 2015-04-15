@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.dropdown;
+package org.eclipse.che.ide.ui.dropdown;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.inject.Inject;
@@ -18,14 +18,13 @@ import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionGroup;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.ActionPlaces;
+import org.eclipse.che.ide.api.action.ActionSelectedHandler;
 import org.eclipse.che.ide.api.action.DefaultActionGroup;
 import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
-import org.eclipse.che.ide.toolbar.ActionSelectedHandler;
-import org.eclipse.che.ide.toolbar.CloseMenuHandler;
-import org.eclipse.che.ide.toolbar.MenuLockLayer;
-import org.eclipse.che.ide.toolbar.PopupMenu;
-import org.eclipse.che.ide.toolbar.PresentationFactory;
+import org.eclipse.che.ide.ui.toolbar.MenuLockLayer;
+import org.eclipse.che.ide.ui.toolbar.PopupMenu;
+import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 
 import javax.annotation.Nonnull;
 
@@ -36,7 +35,7 @@ import static com.google.gwt.dom.client.Style.Unit.PX;
  *
  * @author Valeriy Svydenko
  */
-public class ListBody implements CloseMenuHandler, ActionSelectedHandler {
+public class DropDownListMenu implements ActionSelectedHandler {
     private static final String place = ActionPlaces.DROPDOWN_MENU;
 
     private final ActionManager       actionManager;
@@ -48,7 +47,7 @@ public class ListBody implements CloseMenuHandler, ActionSelectedHandler {
     private MenuLockLayer lockLayer;
 
     @Inject
-    public ListBody(ActionManager actionManager, KeyBindingAgent keyBindingAgent) {
+    public DropDownListMenu(ActionManager actionManager, KeyBindingAgent keyBindingAgent) {
         this.actionManager = actionManager;
         this.keyBindingAgent = keyBindingAgent;
 
@@ -59,12 +58,6 @@ public class ListBody implements CloseMenuHandler, ActionSelectedHandler {
     /** {@inheritDoc} */
     @Override
     public void onActionSelected(Action action) {
-        hide();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void onCloseMenu() {
         hide();
     }
 
@@ -82,7 +75,7 @@ public class ListBody implements CloseMenuHandler, ActionSelectedHandler {
         hide();
         updateActions(itemIdPrefix);
 
-        lockLayer = new MenuLockLayer(this);
+        lockLayer = new MenuLockLayer();
         popupMenu =
                 new PopupMenu(actions, actionManager, place, presentationFactory, lockLayer, this, keyBindingAgent, itemIdPrefix);
         lockLayer.add(popupMenu);

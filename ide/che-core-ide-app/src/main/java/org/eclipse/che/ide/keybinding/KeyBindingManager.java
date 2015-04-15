@@ -14,22 +14,20 @@ import elemental.dom.Element;
 import elemental.events.Event;
 import elemental.events.EventListener;
 
+import com.google.inject.Inject;
+
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
 import org.eclipse.che.ide.api.keybinding.Scheme;
 import org.eclipse.che.ide.collections.Array;
-
-import org.eclipse.che.ide.toolbar.PresentationFactory;
-
+import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.browser.UserAgent;
 import org.eclipse.che.ide.util.dom.Elements;
 import org.eclipse.che.ide.util.input.CharCodeWithModifiers;
 import org.eclipse.che.ide.util.input.SignalEvent;
 import org.eclipse.che.ide.util.input.SignalEventUtils;
-
-import com.google.inject.Inject;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

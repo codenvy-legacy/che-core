@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.dropdown;
+package org.eclipse.che.ide.ui.dropdown;
 
 import org.vectomatic.dom.svg.ui.SVGResource;
 
@@ -20,7 +20,7 @@ import javax.annotation.Nullable;
  *
  * @author Valeriy Svydenko
  */
-public interface ListHeaderWidget {
+public interface DropDownHeaderWidget {
     /** Sets the action delegate. */
     void setDelegate(ActionDelegate delegate);
 

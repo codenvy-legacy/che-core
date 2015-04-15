@@ -10,13 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.extension;
 
-import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.api.action.ActionManager;
-import org.eclipse.che.ide.api.action.DefaultActionGroup;
-import org.eclipse.che.ide.api.extension.ExtensionDescription;
-import org.eclipse.che.ide.toolbar.ToolbarPresenter;
-import org.eclipse.che.ide.util.loging.Log;
-
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.TextAreaElement;
@@ -33,6 +26,13 @@ import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SingleSelectionModel;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
+import org.eclipse.che.ide.Resources;
+import org.eclipse.che.ide.api.action.ActionManager;
+import org.eclipse.che.ide.api.action.DefaultActionGroup;
+import org.eclipse.che.ide.api.extension.ExtensionDescription;
+import org.eclipse.che.ide.ui.toolbar.ToolbarPresenter;
+import org.eclipse.che.ide.util.loging.Log;
 
 import java.util.List;
 

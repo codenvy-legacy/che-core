@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.toolbar;
+package org.eclipse.che.ide.ui.toolbar;
 
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.Presentation;

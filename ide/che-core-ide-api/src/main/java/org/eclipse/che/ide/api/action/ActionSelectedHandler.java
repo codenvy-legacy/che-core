@@ -8,13 +8,19 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.toolbar;
+package org.eclipse.che.ide.api.action;
+
 
 /** @author <a href="mailto:gavrikvetal@gmail.com">Vitaliy Gulyy</a> */
 
-public interface CloseMenuHandler {
+public interface ActionSelectedHandler {
 
-    /** Implement closing of all opened popups when user will click outside of all of them */
-    void onCloseMenu();
+    /**
+     * Do some actions when menu item will be selected.
+     *
+     * @param action
+     *         selected Action
+     */
+    void onActionSelected(Action action);
 
 }

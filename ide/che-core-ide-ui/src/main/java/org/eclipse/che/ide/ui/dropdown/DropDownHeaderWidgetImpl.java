@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.dropdown;
+package org.eclipse.che.ide.ui.dropdown;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -40,9 +40,9 @@ import javax.annotation.Nullable;
  *
  * @author Valeriy Svydenko
  */
-public class ListHeaderWidgetImpl extends Composite implements ClickHandler, MouseOutHandler, MouseOverHandler, ListHeaderWidget {
+public class DropDownHeaderWidgetImpl extends Composite implements ClickHandler, MouseOutHandler, MouseOverHandler, DropDownHeaderWidget {
 
-    interface HeaderWidgetImplUiBinder extends UiBinder<Widget, ListHeaderWidgetImpl> {
+    interface HeaderWidgetImplUiBinder extends UiBinder<Widget, DropDownHeaderWidgetImpl> {
     }
 
     private static final HeaderWidgetImplUiBinder UI_BINDER = GWT.create(HeaderWidgetImplUiBinder.class);
@@ -58,16 +58,16 @@ public class ListHeaderWidgetImpl extends Composite implements ClickHandler, Mou
     @UiField
     FlowPanel         listHeader;
 
-    private final Resources resources;
-    private final ListBody  listBody;
-    private final String    listId;
+    private final Resources        resources;
+    private final DropDownListMenu dropDownListMenu;
+    private final String           listId;
 
     private String selectedName;
 
     @AssistedInject
-    public ListHeaderWidgetImpl(Resources resources, ListBody listBody, @Nonnull @Assisted String listId) {
+    public DropDownHeaderWidgetImpl(Resources resources, DropDownListMenu dropDownListMenu, @Nonnull @Assisted String listId) {
         this.resources = resources;
-        this.listBody = listBody;
+        this.dropDownListMenu = dropDownListMenu;
         this.listId = listId;
 
         initWidget(UI_BINDER.createAndBindUi(this));
@@ -114,7 +114,7 @@ public class ListHeaderWidgetImpl extends Composite implements ClickHandler, Mou
     public void onClick(ClickEvent event) {
         int left = getAbsoluteLeft() + listHeader.getOffsetWidth();
         int top = getAbsoluteTop() + listHeader.getOffsetHeight();
-        listBody.show(left, top, listId);
+        dropDownListMenu.show(left, top, listId);
     }
 
     /** {@inheritDoc} */

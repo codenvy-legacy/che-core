@@ -10,20 +10,19 @@
  *******************************************************************************/
 package org.eclipse.che.ide.menu;
 
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.ui.UIObject;
+
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionGroup;
 import org.eclipse.che.ide.api.action.ActionManager;
+import org.eclipse.che.ide.api.action.ActionSelectedHandler;
 import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
-import org.eclipse.che.ide.toolbar.PopupMenu;
-
-import org.eclipse.che.ide.toolbar.ActionSelectedHandler;
-import org.eclipse.che.ide.toolbar.MenuLockLayer;
-import org.eclipse.che.ide.toolbar.PopupMenu;
-import org.eclipse.che.ide.toolbar.PresentationFactory;
-import org.eclipse.che.ide.toolbar.Utils;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.ui.UIObject;
+import org.eclipse.che.ide.ui.toolbar.MenuLockLayer;
+import org.eclipse.che.ide.ui.toolbar.PopupMenu;
+import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
+import org.eclipse.che.ide.ui.toolbar.Utils;
 
 /**
  * @author <a href="mailto:gavrikvetal@gmail.com">Vitaliy Gulyy</a>

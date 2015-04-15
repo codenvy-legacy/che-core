@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.dropdown;
+package org.eclipse.che.ide.ui.dropdown;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
@@ -28,16 +28,16 @@ import javax.annotation.Nonnull;
  */
 public class SimpleListElementAction extends ProjectAction {
 
-    private final AppContext       appContext;
-    private final String           name;
-    private final SVGResource      image;
-    private final ListHeaderWidget header;
+    private final AppContext           appContext;
+    private final String               name;
+    private final SVGResource          image;
+    private final DropDownHeaderWidget header;
 
     @AssistedInject
     public SimpleListElementAction(AppContext appContext,
                                    @Nonnull @Assisted String name,
                                    @Nonnull @Assisted SVGResource image,
-                                   @Nonnull @Assisted ListHeaderWidget header) {
+                                   @Nonnull @Assisted DropDownHeaderWidget header) {
         super(name, name, image);
 
         this.name = name;

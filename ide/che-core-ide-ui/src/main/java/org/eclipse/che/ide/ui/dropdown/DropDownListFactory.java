@@ -8,10 +8,8 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.client.inject.factories;
+package org.eclipse.che.ide.ui.dropdown;
 
-import org.eclipse.che.ide.dropdown.ListHeaderWidget;
-import org.eclipse.che.ide.dropdown.SimpleListElementAction;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.annotation.Nonnull;
@@ -23,14 +21,14 @@ import javax.annotation.Nonnull;
  */
 public interface DropDownListFactory {
     /**
-     * Create an instance of {@link ListHeaderWidget} with a given identifier for registering.
+     * Create an instance of {@link DropDownHeaderWidget} with a given identifier for registering.
      *
      * @param listId
      *         list identifier
-     * @return an instance of {@link ListHeaderWidget}
+     * @return an instance of {@link DropDownHeaderWidget}
      */
     @Nonnull
-    ListHeaderWidget createList(@Nonnull String listId);
+    DropDownHeaderWidget createList(@Nonnull String listId);
 
     /**
      * Create an instance of {@link SimpleListElementAction} with given name amd icon for displaying it and header which is configured this
@@ -42,8 +40,8 @@ public interface DropDownListFactory {
      *         icon of action
      * @param header
      *         header widget of custom list
-     * @return
+     * @return an instance of {@link SimpleListElementAction}
      */
     @Nonnull
-    SimpleListElementAction createElement(@Nonnull String name, @Nonnull SVGResource image, @Nonnull ListHeaderWidget header);
+    SimpleListElementAction createElement(@Nonnull String name, @Nonnull SVGResource image, @Nonnull DropDownHeaderWidget header);
 }
