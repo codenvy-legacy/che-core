@@ -12,9 +12,9 @@ package org.eclipse.che.api.local;
 
 import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ConflictException;
-import org.eclipse.che.api.factory.FactoryImage;
+/*import org.eclipse.che.api.factory.FactoryImage;
 import org.eclipse.che.api.factory.FactoryStore;
-import org.eclipse.che.api.factory.dto.Factory;
+import org.eclipse.che.api.factory.dto.Factory;*/
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.eclipse.che.commons.lang.Pair;
 import org.eclipse.che.dto.server.DtoFactory;
@@ -35,7 +35,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @author Vladyslav Zhukovskii
  */
 @Singleton
-public class InMemoryFactoryStore implements FactoryStore {
+public class InMemoryFactoryStore {/*implements FactoryStore {
     private final Map<String, Set<FactoryImage>> images    = new HashMap<>();
     private final Map<String, Factory>           factories = new HashMap<>();
     private final ReentrantReadWriteLock         lock      = new ReentrantReadWriteLock();
@@ -137,7 +137,7 @@ public class InMemoryFactoryStore implements FactoryStore {
      *         - factory information
      * @return - if of stored factory
      * @throws org.eclipse.che.api.core.ApiException
-     */
+     *//*
     @Override
     public String updateFactory(String factoryId, Factory factory) throws ApiException {
         lock.writeLock().lock();
@@ -148,5 +148,5 @@ public class InMemoryFactoryStore implements FactoryStore {
         } finally {
             lock.writeLock().unlock();
         }
-    }
+    }*/
 }
