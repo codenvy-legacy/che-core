@@ -20,7 +20,7 @@ import org.eclipse.che.api.project.shared.dto.NewProject;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.api.project.shared.dto.ProjectUpdate;
-import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentTree;
+//import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentTree;
 import org.eclipse.che.api.project.shared.dto.TreeElement;
 import org.eclipse.che.ide.MimeType;
 import org.eclipse.che.ide.collections.Array;
@@ -354,14 +354,14 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     /** {@inheritDoc} */
-    @Override
+    /*@Override
     public void getRunnerEnvironments(String path, AsyncRequestCallback<RunnerEnvironmentTree> callback) {
         final String requestUrl = ENVIRONMENTS + normalizePath(path);
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loader, "Getting project-scoped runner environments...")
                            .send(callback);
-    }
+    }*/
 
     /**
      * Normalizes the path by adding a leading '/' if it doesn't exist.

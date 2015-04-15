@@ -10,10 +10,10 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projecttype.wizard.presenter;
 
-import org.eclipse.che.api.project.shared.dto.RunnerEnvironment;
+/*import org.eclipse.che.api.project.shared.dto.RunnerEnvironment;
 import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentLeaf;
 import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentTree;
-import org.eclipse.che.api.runner.gwt.client.RunnerServiceClient;
+import org.eclipse.che.api.runner.gwt.client.RunnerServiceClient;*/
 import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.json.JsonHelper;
@@ -34,7 +34,7 @@ import javax.annotation.Nonnull;
 
 @Singleton
 class RunnersRegistry {
-    private final StringMap<String> descriptions;
+    /*private final StringMap<String> descriptions;
 
     @Inject
     RunnersRegistry(RunnerServiceClient runnerServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory) {
@@ -66,8 +66,8 @@ class RunnersRegistry {
         }
     }
 
-    /** Returns description of the given runner. */
+    *//** Returns description of the given runner. *//*
     String getDescription(@Nonnull String runnerId) {
         return descriptions.get(runnerId);
-    }
+    }*/
 }

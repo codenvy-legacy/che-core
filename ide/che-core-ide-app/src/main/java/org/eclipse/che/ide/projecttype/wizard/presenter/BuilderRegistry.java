@@ -10,9 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projecttype.wizard.presenter;
 
-import org.eclipse.che.api.builder.dto.BuilderDescriptor;
+/*import org.eclipse.che.api.builder.dto.BuilderDescriptor;
 import org.eclipse.che.api.builder.dto.BuilderEnvironment;
-import org.eclipse.che.api.builder.gwt.client.BuilderServiceClient;
+import org.eclipse.che.api.builder.gwt.client.BuilderServiceClient;*/
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.collections.StringMap;
@@ -33,7 +33,7 @@ import javax.annotation.Nonnull;
  */
 @Singleton
 class BuilderRegistry {
-    private final StringMap<String> environments;
+    /*private final StringMap<String> environments;
 
     @Inject
     BuilderRegistry(BuilderServiceClient builderServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory) {
@@ -60,8 +60,8 @@ class BuilderRegistry {
         });
     }
 
-    /** Returns display name of the default environment for the given builder. */
+    *//** Returns display name of the default environment for the given builder. *//*
     String getDefaultEnvironmentName(@Nonnull String builderName) {
         return environments.get(builderName);
-    }
+    }*/
 }

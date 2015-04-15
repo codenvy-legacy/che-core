@@ -17,7 +17,7 @@ import org.eclipse.che.api.project.shared.dto.NewProject;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.api.project.shared.dto.ProjectUpdate;
-import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentTree;
+//import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentTree;
 import org.eclipse.che.api.project.shared.dto.TreeElement;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
@@ -329,5 +329,5 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void getRunnerEnvironments(String path, AsyncRequestCallback<RunnerEnvironmentTree> callback);
+//    void getRunnerEnvironments(String path, AsyncRequestCallback<RunnerEnvironmentTree> callback);
 }

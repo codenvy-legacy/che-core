@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.ide.part.projectexplorer;
 
-import org.eclipse.che.api.runner.dto.ApplicationProcessDescriptor;
-import org.eclipse.che.api.runner.gwt.client.RunnerServiceClient;
+/*import org.eclipse.che.api.runner.dto.ApplicationProcessDescriptor;
+import org.eclipse.che.api.runner.gwt.client.RunnerServiceClient;*/
 
 import org.eclipse.che.ide.CoreLocalizationConstant;
 
@@ -34,8 +34,8 @@ import com.google.gwt.user.client.ui.IsWidget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import static org.eclipse.che.api.runner.ApplicationStatus.NEW;
-import static org.eclipse.che.api.runner.ApplicationStatus.RUNNING;
+/*import static org.eclipse.che.api.runner.ApplicationStatus.NEW;
+import static org.eclipse.che.api.runner.ApplicationStatus.RUNNING;*/
 import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
 import static org.eclipse.che.ide.api.project.tree.TreeNode.DeleteCallback;
 
@@ -54,19 +54,19 @@ import java.util.Queue;
 public class DeleteNodeHandler {
     private NotificationManager      notificationManager;
     private CoreLocalizationConstant localization;
-    private RunnerServiceClient      runnerServiceClient;
+//    private RunnerServiceClient      runnerServiceClient;
     private DtoUnmarshallerFactory   dtoUnmarshallerFactory;
     private DialogFactory            dialogFactory;
 
     @Inject
     public DeleteNodeHandler(NotificationManager notificationManager,
                              CoreLocalizationConstant localization,
-                             RunnerServiceClient runnerServiceClient,
+//                             RunnerServiceClient runnerServiceClient,
                              DtoUnmarshallerFactory dtoUnmarshallerFactory,
                              DialogFactory dialogFactory) {
         this.notificationManager = notificationManager;
         this.localization = localization;
-        this.runnerServiceClient = runnerServiceClient;
+//        this.runnerServiceClient = runnerServiceClient;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.dialogFactory = dialogFactory;
     }
@@ -86,7 +86,7 @@ public class DeleteNodeHandler {
     }
 
     private void deleteProjectNode(final StorableNode projectNodeToDelete) {
-        checkRunningProcessesForProject(projectNodeToDelete, new AsyncCallback<Boolean>() {
+        /*checkRunningProcessesForProject(projectNodeToDelete, new AsyncCallback<Boolean>() {
             @Override
             public void onSuccess(final Boolean hasRunningProcesses) {
                 if (hasRunningProcesses) {
@@ -100,7 +100,7 @@ public class DeleteNodeHandler {
             public void onFailure(final Throwable caught) {
                 askForDeletingNode(projectNodeToDelete);
             }
-        });
+        });*/
     }
 
     /**
@@ -165,7 +165,7 @@ public class DeleteNodeHandler {
      * @param projectNode
      * @param callback callback returns true if project has any running processes and false - otherwise
      */
-    private void checkRunningProcessesForProject(StorableNode projectNode, final AsyncCallback<Boolean> callback) {
+    /*private void checkRunningProcessesForProject(StorableNode projectNode, final AsyncCallback<Boolean> callback) {
         Unmarshallable<Array<ApplicationProcessDescriptor>> unmarshaller =
                 dtoUnmarshallerFactory.newArrayUnmarshaller(ApplicationProcessDescriptor.class);
         runnerServiceClient.getRunningProcesses(projectNode.getPath(),
@@ -187,7 +187,7 @@ public class DeleteNodeHandler {
                                                         callback.onFailure(exception);
                                                     }
                                                 });
-    }
+    }*/
 
     /**
      * Return the title of the deletion dialog due the resource type.
@@ -266,7 +266,7 @@ public class DeleteNodeHandler {
     private void checkRunningForAllProjects(final Queue<StorableNode> nodes, final AsyncCallback<Boolean> callback) {
         if (!nodes.isEmpty()) {
             final StorableNode projectNode = nodes.remove();
-            checkRunningProcessesForProject(projectNode, new AsyncCallback<Boolean>() {
+            /*checkRunningProcessesForProject(projectNode, new AsyncCallback<Boolean>() {
                 @Override
                 public void onSuccess(final Boolean result) {
                     if (result == null) {
@@ -284,7 +284,7 @@ public class DeleteNodeHandler {
                 public void onFailure(final Throwable caught) {
                     callback.onFailure(caught);
                 }
-            });
+            });*/
         } else {
             callback.onSuccess(false);
         }

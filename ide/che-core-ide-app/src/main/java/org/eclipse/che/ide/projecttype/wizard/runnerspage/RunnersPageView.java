@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projecttype.wizard.runnerspage;
 
-import org.eclipse.che.api.project.shared.dto.RunnerEnvironment;
-import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentTree;
+//import org.eclipse.che.api.project.shared.dto.RunnerEnvironment;
+//import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentTree;
 import org.eclipse.che.ide.api.mvp.View;
 import com.google.inject.ImplementedBy;
 
@@ -21,17 +21,17 @@ import javax.annotation.Nullable;
  * @author Evgen Vidolob
  */
 @ImplementedBy(RunnersPageViewImpl.class)
-public interface RunnersPageView extends View<RunnersPageView.ActionDelegate> {
+public interface RunnersPageView /*extends View<RunnersPageView.ActionDelegate>*/ {
 
     void showRunnerDescription(String description);
 
-    void addRunner(RunnerEnvironmentTree environmentTree);
+//    void addRunner(RunnerEnvironmentTree environmentTree);
 
     void selectRunnerEnvironment(String environmentId);
 
     void clearTree();
 
-    public interface ActionDelegate {
-        void environmentSelected(@Nullable RunnerEnvironment environment);
-    }
+//    public interface ActionDelegate {
+//        void environmentSelected(@Nullable RunnerEnvironment environment);
+//    }
 }

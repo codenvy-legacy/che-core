@@ -13,9 +13,9 @@ package org.eclipse.che.ide.projecttype.wizard.runnerspage;
 import elemental.events.KeyboardEvent;
 import elemental.events.MouseEvent;
 
-import org.eclipse.che.api.project.shared.dto.RunnerEnvironment;
-import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentLeaf;
-import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentTree;
+//import org.eclipse.che.api.project.shared.dto.RunnerEnvironment;
+//import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentLeaf;
+//import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentTree;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.ui.tree.Tree;
@@ -36,12 +36,12 @@ import java.util.Map;
 /**
  * @author Evgen Vidolob
  */
-public class RunnersPageViewImpl implements RunnersPageView {
+public class RunnersPageViewImpl /*implements RunnersPageView*/ {
 
     interface RunnersPageViewImplUiBinder extends UiBinder<DockLayoutPanel, RunnersPageViewImpl> {
     }
 
-    private final DockLayoutPanel       rootElement;
+    /*private final DockLayoutPanel       rootElement;
     private final Tree<Object>          tree;
     private final RunnerEnvironmentTree root;
     @UiField
@@ -175,5 +175,5 @@ public class RunnersPageViewImpl implements RunnersPageView {
         root.getNodes().clear();
         tree.renderTree(1);
     }
-
+*/
 }

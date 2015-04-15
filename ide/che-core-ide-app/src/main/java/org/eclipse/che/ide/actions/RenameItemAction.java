@@ -14,8 +14,8 @@ import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.gwt.client.QueryExpression;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
-import org.eclipse.che.api.runner.dto.ApplicationProcessDescriptor;
-import org.eclipse.che.api.runner.gwt.client.RunnerServiceClient;
+//import org.eclipse.che.api.runner.dto.ApplicationProcessDescriptor;
+//import org.eclipse.che.api.runner.gwt.client.RunnerServiceClient;
 
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.part.projectexplorer.ProjectListStructure;
@@ -60,8 +60,8 @@ import com.google.inject.Singleton;
 
 import javax.annotation.Nullable;
 
-import static org.eclipse.che.api.runner.ApplicationStatus.NEW;
-import static org.eclipse.che.api.runner.ApplicationStatus.RUNNING;
+//import static org.eclipse.che.api.runner.ApplicationStatus.NEW;
+//import static org.eclipse.che.api.runner.ApplicationStatus.RUNNING;
 import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
 import static org.eclipse.che.ide.api.project.tree.TreeNode.RenameCallback;
 
@@ -77,7 +77,7 @@ public class RenameItemAction extends Action {
     private final EditorAgent              editorAgent;
     private final CoreLocalizationConstant localization;
     private final ProjectServiceClient     projectServiceClient;
-    private final RunnerServiceClient      runnerServiceClient;
+//    private final RunnerServiceClient      runnerServiceClient;
     private final DtoUnmarshallerFactory   dtoUnmarshallerFactory;
     private final DialogFactory            dialogFactory;
     private final AppContext               appContext;
@@ -94,7 +94,7 @@ public class RenameItemAction extends Action {
                             EditorAgent editorAgent,
                             CoreLocalizationConstant localization,
                             ProjectServiceClient projectServiceClient,
-                            RunnerServiceClient runnerServiceClient,
+//                            RunnerServiceClient runnerServiceClient,
                             DtoUnmarshallerFactory dtoUnmarshallerFactory,
                             DialogFactory dialogFactory,
                             AppContext appContext) {
@@ -105,7 +105,7 @@ public class RenameItemAction extends Action {
         this.editorAgent = editorAgent;
         this.localization = localization;
         this.projectServiceClient = projectServiceClient;
-        this.runnerServiceClient = runnerServiceClient;
+//        this.runnerServiceClient = runnerServiceClient;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.dialogFactory = dialogFactory;
         this.appContext = appContext;
@@ -126,7 +126,7 @@ public class RenameItemAction extends Action {
             if (selectedNode instanceof ProjectNode) {
                 dialogFactory.createMessageDialog("", localization.closeProjectBeforeRenaming(), null).show();
             } else if (selectedNode instanceof ProjectListStructure.ProjectNode) {
-                checkRunningProcessesForProject(selectedNode, new AsyncCallback<Boolean>() {
+                /*checkRunningProcessesForProject(selectedNode, new AsyncCallback<Boolean>() {
                     @Override
                     public void onSuccess(Boolean hasRunningProcesses) {
                         if (hasRunningProcesses) {
@@ -140,7 +140,7 @@ public class RenameItemAction extends Action {
                     public void onFailure(Throwable caught) {
                         askForRenamingNode(selectedNode);
                     }
-                });
+                });*/
             } else {
                 askForRenamingNode(selectedNode);
             }
@@ -217,7 +217,7 @@ public class RenameItemAction extends Action {
      * @param callback
      *         callback returns true if project has any running processes and false - otherwise
      */
-    private void checkRunningProcessesForProject(StorableNode projectNode, final AsyncCallback<Boolean> callback) {
+    /*private void checkRunningProcessesForProject(StorableNode projectNode, final AsyncCallback<Boolean> callback) {
         Unmarshallable<Array<ApplicationProcessDescriptor>> unmarshaller =
                 dtoUnmarshallerFactory.newArrayUnmarshaller(ApplicationProcessDescriptor.class);
         runnerServiceClient.getRunningProcesses(projectNode.getPath(),
@@ -239,7 +239,7 @@ public class RenameItemAction extends Action {
                                                         callback.onFailure(exception);
                                                     }
                                                 });
-    }
+    }*/
 
     private void checkOpenedFiles(ItemReference itemBeforeRenaming, String newName) {
         final String itemPathBeforeRenaming = itemBeforeRenaming.getPath();

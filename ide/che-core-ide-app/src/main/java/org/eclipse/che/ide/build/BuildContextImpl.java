@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.build;
 
-import org.eclipse.che.api.builder.dto.BuildTaskDescriptor;
+//import org.eclipse.che.api.builder.dto.BuildTaskDescriptor;
 import org.eclipse.che.ide.api.build.BuildContext;
 
 /**
@@ -22,7 +22,7 @@ public class BuildContextImpl implements BuildContext {
 
     private boolean building;
 
-    private BuildTaskDescriptor buildTaskDescriptor;
+//    private BuildTaskDescriptor buildTaskDescriptor;
 
     @Override
     public boolean isBuilding() {
@@ -34,13 +34,13 @@ public class BuildContextImpl implements BuildContext {
         this.building = building;
     }
 
-    @Override
-    public BuildTaskDescriptor getBuildTaskDescriptor() {
-        return buildTaskDescriptor;
-    }
+//    @Override
+//    public BuildTaskDescriptor getBuildTaskDescriptor() {
+//        return buildTaskDescriptor;
+//    }
 
-    @Override
-    public void setBuildTaskDescriptor(BuildTaskDescriptor buildTaskDescriptor) {
-        this.buildTaskDescriptor = buildTaskDescriptor;
-    }
+//    @Override
+//    public void setBuildTaskDescriptor(BuildTaskDescriptor buildTaskDescriptor) {
+//        this.buildTaskDescriptor = buildTaskDescriptor;
+//    }
 }

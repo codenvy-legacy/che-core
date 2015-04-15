@@ -10,9 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.app;
 
-import org.eclipse.che.api.project.shared.dto.BuildersDescriptor;
+//import org.eclipse.che.api.project.shared.dto.BuildersDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.api.project.shared.dto.RunnersDescriptor;
+//import org.eclipse.che.api.project.shared.dto.RunnersDescriptor;
 import org.eclipse.che.ide.api.project.tree.TreeStructure;
 
 import javax.annotation.Nullable;
@@ -73,11 +73,11 @@ public class CurrentProject {
     }
 
     public String getRunner() {
-        final RunnersDescriptor runners = projectDescription.getRunners();
-        if (runners == null) {
+//        final RunnersDescriptor runners = projectDescription.getRunners();
+//        if (runners == null) {
             return null;
-        }
-        return runners.getDefault();
+//        }
+//        return runners.getDefault();
     }
 
     @Deprecated
@@ -86,11 +86,11 @@ public class CurrentProject {
     }
 
     public String getBuilder() {
-        final BuildersDescriptor builders = projectDescription.getBuilders();
-        if (builders == null) {
+//        final BuildersDescriptor builders = projectDescription.getBuilders();
+//        if (builders == null) {
             return null;
-        }
-        return builders.getDefault();
+//        }
+//        return builders.getDefault();
     }
 
     public ProjectDescriptor getRootProject() {

@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.build;
 
-import org.eclipse.che.api.builder.dto.BuildTaskDescriptor;
+//import org.eclipse.che.api.builder.dto.BuildTaskDescriptor;
 
 /**
  * Context interface, used for communication between different action that used builder to avoid
@@ -40,12 +40,12 @@ public interface BuildContext {
      *
      * @return descriptor of the last build task
      */
-    BuildTaskDescriptor getBuildTaskDescriptor();
+//    BuildTaskDescriptor getBuildTaskDescriptor();
 
     /**
      * Sets descriptor of build task.
      *
      * @param buildTaskDescriptor descriptor of build task
      */
-    void setBuildTaskDescriptor(BuildTaskDescriptor buildTaskDescriptor);
+//    void setBuildTaskDescriptor(BuildTaskDescriptor buildTaskDescriptor);
 }

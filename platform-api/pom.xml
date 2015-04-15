@@ -29,7 +29,7 @@
         <module>che-core-api-core</module>
         <module>che-core-api-vfs</module>
         <module>che-core-api-project</module>
-        <!-- module>che-core-api-factory</module -->
+        <module>che-core-api-factory</module>
         <!-- module>che-core-api-builder</module -->
         <!-- module>che-core-api-runner</module -->
         <module>che-core-api-machine</module>

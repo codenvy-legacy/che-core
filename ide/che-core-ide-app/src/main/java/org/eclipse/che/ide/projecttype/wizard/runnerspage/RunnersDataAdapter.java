@@ -10,9 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projecttype.wizard.runnerspage;
 
-import org.eclipse.che.api.project.shared.dto.RunnerEnvironment;
+/*import org.eclipse.che.api.project.shared.dto.RunnerEnvironment;
 import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentLeaf;
-import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentTree;
+import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentTree;*/
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.ui.tree.NodeDataAdapter;
@@ -24,8 +24,8 @@ import java.util.HashMap;
 /**
  * @author Evgen Vidolob
  */
-public class RunnersDataAdapter implements NodeDataAdapter<Object> {
-    private static final Comparator<Object>                       COMPARATOR       = new Comparator<Object>() {
+public class RunnersDataAdapter /*implements NodeDataAdapter<Object>*/ {
+    /*private static final Comparator<Object>                       COMPARATOR       = new Comparator<Object>() {
         @Override
         public int compare(Object o1, Object o2) {
             if (o1 instanceof RunnerEnvironmentTree && o2 instanceof RunnerEnvironmentLeaf) {
@@ -129,5 +129,5 @@ public class RunnersDataAdapter implements NodeDataAdapter<Object> {
     public Object getNodeByPath(Object root, Array<String> relativeNodePath) {
         return null;
     }
-
+*/
 }

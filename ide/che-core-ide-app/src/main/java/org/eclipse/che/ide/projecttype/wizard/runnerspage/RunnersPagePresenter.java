@@ -12,11 +12,11 @@ package org.eclipse.che.ide.projecttype.wizard.runnerspage;
 
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ImportProject;
-import org.eclipse.che.api.project.shared.dto.RunnerConfiguration;
+/*import org.eclipse.che.api.project.shared.dto.RunnerConfiguration;
 import org.eclipse.che.api.project.shared.dto.RunnerEnvironment;
 import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentTree;
 import org.eclipse.che.api.project.shared.dto.RunnersDescriptor;
-import org.eclipse.che.api.runner.gwt.client.RunnerServiceClient;
+import org.eclipse.che.api.runner.gwt.client.RunnerServiceClient;*/
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistry;
 import org.eclipse.che.ide.api.wizard.AbstractWizardPage;
@@ -43,9 +43,9 @@ import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistrar
  * @author Evgen Vidolob
  * @author Artem Zatsarynnyy
  */
-public class RunnersPagePresenter extends AbstractWizardPage<ImportProject> implements RunnersPageView.ActionDelegate {
+public class RunnersPagePresenter /*extends AbstractWizardPage<ImportProject> implements RunnersPageView.ActionDelegate*/ {
 
-    private final ProjectWizardRegistry  projectWizardRegistry;
+    /*private final ProjectWizardRegistry  projectWizardRegistry;
     private final RunnersPageView        view;
     private final RunnerServiceClient    runnerServiceClient;
     private final DtoUnmarshallerFactory dtoUnmarshallerFactory;
@@ -136,7 +136,7 @@ public class RunnersPagePresenter extends AbstractWizardPage<ImportProject> impl
     }
 
     /** Updates view from data-object. */
-    private void updateView() {
+    /*private void updateView() {
         final RunnersDescriptor runners = dataObject.getProject().getRunners();
         if (runners != null) {
             final String defaultRunner = runners.getDefault();
@@ -163,5 +163,5 @@ public class RunnersPagePresenter extends AbstractWizardPage<ImportProject> impl
             dataObject.getProject().setRunners(dtoFactory.createDto(RunnersDescriptor.class));
             view.showRunnerDescription("");
         }
-    }
+    }*/
 }

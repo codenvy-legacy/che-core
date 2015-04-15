@@ -13,8 +13,8 @@ package org.eclipse.che.ide.projecttype.wizard.runnerspage;
 import elemental.dom.Element;
 import elemental.html.SpanElement;
 
-import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentLeaf;
-import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentTree;
+//import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentLeaf;
+//import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentTree;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.ui.tree.NodeRenderer;
@@ -44,15 +44,15 @@ public class RunnersRenderer implements NodeRenderer<Object> {
     @Override
     public SpanElement renderNodeContents(Object data) {
         SpanElement rootElement = Elements.createSpanElement();
-        if (data instanceof RunnerEnvironmentTree) {
-            rootElement.setInnerHTML(((RunnerEnvironmentTree)data).getDisplayName());
-        } else if (data instanceof RunnerEnvironmentLeaf) {
-            SVGResource environment = resources.environment();
-            SVGImage image = new SVGImage(environment);
-            image.getElement().setAttribute("class", resources.mainPageStyle().treeIcon());
-            rootElement.appendChild((elemental.dom.Node)image.getElement());
-            rootElement.setInnerHTML(rootElement.getInnerHTML() + "&nbsp;" + ((RunnerEnvironmentLeaf)data).getDisplayName());
-        }
+//        if (data instanceof RunnerEnvironmentTree) {
+//            rootElement.setInnerHTML(((RunnerEnvironmentTree)data).getDisplayName());
+//        } else if (data instanceof RunnerEnvironmentLeaf) {
+//            SVGResource environment = resources.environment();
+//            SVGImage image = new SVGImage(environment);
+//            image.getElement().setAttribute("class", resources.mainPageStyle().treeIcon());
+//            rootElement.appendChild((elemental.dom.Node)image.getElement());
+//            rootElement.setInnerHTML(rootElement.getInnerHTML() + "&nbsp;" + ((RunnerEnvironmentLeaf)data).getDisplayName());
+//        }
 
         return rootElement;
     }
