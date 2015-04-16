@@ -430,9 +430,9 @@ public class LocalAccountDaoImpl implements AccountDao {
             result.retainAll(byOwnerIds);
         }
 
-        if (!isNullOrEmpty(searchCriteria.getIds())) {
+        if (!isNullOrEmpty(searchCriteria.getAccountIds())) {
             List<Account> byIds = new LinkedList<>();
-            for (String id : searchCriteria.getIds()) {
+            for (String id : searchCriteria.getAccountIds()) {
                 try {
                     byIds.add(getById(id));
                 } catch (NotFoundException e) {

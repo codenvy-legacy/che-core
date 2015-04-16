@@ -20,9 +20,9 @@ import java.util.List;
 @DTO
 public interface AccountSearchCriteria {
 
-    List<String> getIds();
+    List<String> getAccountIds();
 
-    void setIds(List<String> ids);
+    void setAccountIds(List<String> accountIds);
 
     List<String> getOwnerIds();
 

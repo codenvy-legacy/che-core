@@ -102,7 +102,7 @@ public class LocalAccountDaoImplTest {
 
     @Test
     public void findShouldReturnAccountIfSearchByAccountId() throws Exception {
-        doReturn(ImmutableList.of("id1")).when(searchCriteria).getIds();
+        doReturn(ImmutableList.of("id1")).when(searchCriteria).getAccountIds();
 
         List<Account> result = accountDao.find(searchCriteria, 0, 20);
         assertResult(result, ACCOUNT_1);
@@ -110,7 +110,7 @@ public class LocalAccountDaoImplTest {
 
     @Test
     public void findShouldReturnAccountIfSearchByEmailOwner() throws Exception {
-        doReturn(ImmutableList.of("id1")).when(searchCriteria).getIds();
+        doReturn(ImmutableList.of("id1")).when(searchCriteria).getAccountIds();
         doReturn(ImmutableList.of("userId1")).when(searchCriteria).getOwnerIds();
 
         List<Account> result = accountDao.find(searchCriteria, 0, 20);
@@ -128,7 +128,7 @@ public class LocalAccountDaoImplTest {
     @Test
     public void findShouldReturnAccountIfSearchBySubscriptionAndAccountId() throws Exception {
         doReturn("OnPremises").when(searchCriteria).getServiceId();
-        doReturn(ImmutableList.of("id2")).when(searchCriteria).getIds();
+        doReturn(ImmutableList.of("id2")).when(searchCriteria).getAccountIds();
 
         List<Account> result = accountDao.find(searchCriteria, 0, 20);
         assertResult(result, ACCOUNT_2);
