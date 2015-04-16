@@ -13,6 +13,7 @@ package org.eclipse.che.api.account.gwt.client;
 import org.eclipse.che.api.account.shared.dto.AccountDescriptor;
 import org.eclipse.che.api.account.shared.dto.MemberDescriptor;
 import org.eclipse.che.api.account.shared.dto.SubscriptionDescriptor;
+import org.eclipse.che.api.account.shared.dto.UpdateResourcesDescriptor;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 
@@ -66,4 +67,8 @@ public interface AccountServiceClient {
     void getSubscriptionByServiceId(@Nonnull String accountId,
                                     @Nonnull String serviceId,
                                     AsyncRequestCallback<Array<SubscriptionDescriptor>> callback);
+
+    void redistributeResources(@Nonnull String accountId,
+                               @Nonnull Array<UpdateResourcesDescriptor> updateResources,
+                               AsyncRequestCallback<Void> callback);
 }
