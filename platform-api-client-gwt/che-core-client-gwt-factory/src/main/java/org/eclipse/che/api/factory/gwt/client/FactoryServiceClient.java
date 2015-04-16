@@ -41,6 +41,7 @@ public interface FactoryServiceClient {
 
 
     /**
+     * Retrieves factory object prototype for given project with it's attributes. It's not the stored factory object.
      * @param workspaceId workspace id
      * @param path project path
      * @param callback callback which returns snippet of the factory or exception if occurred
