@@ -177,7 +177,8 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
         if (currentProject != null) {
             ProjectDescriptor closedProject = currentProject.getRootProject();
 
-            Document.get().setTitle(constant.codenvyTabTitle());
+            String documentTitle = Config.isSdkProject() ? constant.cheTabTitle() : constant.codenvyTabTitle();
+            Document.get().setTitle(documentTitle);
             rewriteBrowserHistory(null);
 
             // notify all listeners about current project has been closed
@@ -189,7 +190,8 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
     private void openProject(ProjectDescriptor project) {
         appContext.setCurrentProject(new CurrentProject(project));
 
-        Document.get().setTitle(constant.codenvyTabTitle(project.getName()));
+        String documentTitle = Config.isSdkProject() ? constant.cheTabTitle(project.getName()) : constant.codenvyTabTitle(project.getName());
+        Document.get().setTitle(documentTitle);
         rewriteBrowserHistory(project.getName());
 
         // notify all listeners about opening project

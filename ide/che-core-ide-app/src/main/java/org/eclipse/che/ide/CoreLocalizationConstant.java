@@ -467,6 +467,12 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("codenvy.projectOpened.title")
     String codenvyTabTitle(String projectName);
 
+    @Key("che.projectClosed.title")
+    String cheTabTitle();
+
+    @Key("che.projectOpened.title")
+    String cheTabTitle(String projectName);
+
     @Key("projectProblem.title")
     String projectProblemTitle();
 
