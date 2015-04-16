@@ -20,7 +20,7 @@ import org.eclipse.che.api.core.rest.Service;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.factory.dto.Author;
 import org.eclipse.che.api.factory.dto.Factory;
-import org.eclipse.che.api.factory.dto.FactoryV2_0;
+import org.eclipse.che.api.factory.dto.FactoryV2_1;
 import org.eclipse.che.api.factory.dto.Workspace;
 import org.eclipse.che.api.project.server.ProjectConfig;
 import org.eclipse.che.api.project.server.ProjectJson;
@@ -619,10 +619,10 @@ public class FactoryService extends Service {
         } catch (IOException e) {
             throw new ServerException(e.getLocalizedMessage());
         }
-        return Response.ok(dtoFactory.createDto(FactoryV2_0.class)
+        return Response.ok(dtoFactory.createDto(FactoryV2_1.class)
                                      .withProject(newProject)
                                      .withSource(dtoFactory.createDto(Source.class).withProject(source))
-                                     .withV("2.0"), MediaType.APPLICATION_JSON)
+                                     .withV("2.1"), MediaType.APPLICATION_JSON)
                        .header("Content-Disposition", "attachment; filename=" + path + ".json")
                        .build();
     }
