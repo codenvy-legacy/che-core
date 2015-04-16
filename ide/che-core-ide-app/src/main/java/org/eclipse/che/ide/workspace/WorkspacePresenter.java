@@ -10,6 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.ide.workspace;
 
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.AcceptsOneWidget;
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.google.inject.Singleton;
+
 import org.eclipse.che.ide.api.constraints.Constraints;
 import org.eclipse.che.ide.api.mvp.Presenter;
 import org.eclipse.che.ide.api.parts.PartPresenter;
@@ -18,18 +24,8 @@ import org.eclipse.che.ide.api.parts.PartStackType;
 import org.eclipse.che.ide.api.parts.WorkspaceAgent;
 import org.eclipse.che.ide.menu.MainMenuPresenter;
 import org.eclipse.che.ide.menu.StatusPanelGroupPresenter;
-import org.eclipse.che.ide.toolbar.MainToolbar;
-import org.eclipse.che.ide.toolbar.ToolbarPresenter;
-
-import org.eclipse.che.ide.menu.MainMenuPresenter;
-import org.eclipse.che.ide.menu.StatusPanelGroupPresenter;
-import org.eclipse.che.ide.toolbar.MainToolbar;
-import org.eclipse.che.ide.toolbar.ToolbarPresenter;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.AcceptsOneWidget;
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-import com.google.inject.Singleton;
+import org.eclipse.che.ide.ui.toolbar.MainToolbar;
+import org.eclipse.che.ide.ui.toolbar.ToolbarPresenter;
 
 /**
  * Root Presenter that implements Workspace logic. Descendant Presenters are injected

@@ -10,7 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.ide.actions.find;
 
-import org.eclipse.che.ide.toolbar.PresentationFactory;
+import com.google.gwt.regexp.shared.RegExp;
+import com.google.gwt.user.client.ui.AcceptsOneWidget;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import org.eclipse.che.ide.actions.ActionManagerImpl;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
@@ -19,13 +23,9 @@ import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.IdeActions;
 import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.mvp.Presenter;
+import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.StringUtils;
 import org.eclipse.che.ide.util.UnicodeUtils;
-
-import com.google.gwt.regexp.shared.RegExp;
-import com.google.gwt.user.client.ui.AcceptsOneWidget;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
