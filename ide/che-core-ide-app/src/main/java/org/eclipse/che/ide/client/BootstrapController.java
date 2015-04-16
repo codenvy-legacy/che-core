@@ -284,17 +284,9 @@ public class BootstrapController {
     }
 
     private void loadFactory() {
-        String factoryParams = null;
-        boolean encoded = false;
-        if (Config.getStartupParam("id") != null) {
-            factoryParams = Config.getStartupParam("id");
-            encoded = true;
-        } else if (Config.getStartupParam("v") != null) {
-            factoryParams = Config.getStartupParams();
-        }
-
+        String factoryParams = Config.getStartupParam("id");
         if (factoryParams != null) {
-            factoryService.getFactory(factoryParams, encoded,
+            factoryService.getFactory(factoryParams,
                                       new AsyncRequestCallback<Factory>(dtoUnmarshallerFactory.newUnmarshaller(Factory.class)) {
                                           @Override
                                           protected void onSuccess(Factory factory) {

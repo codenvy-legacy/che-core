@@ -36,17 +36,9 @@ public class FactoryServiceClientImpl implements FactoryServiceClient {
 
     /** {@inheritDoc} */
     @Override
-    public void getFactory(@Nonnull String raw, boolean encoded, @Nonnull AsyncRequestCallback<Factory> callback) {
+    public void getFactory(@Nonnull String raw, @Nonnull AsyncRequestCallback<Factory> callback) {
         StringBuilder url = new StringBuilder("/api/factory");
-
-        if (encoded) {
-            url.append("/").append(raw).append("?");
-        } else {
-            url.append("/nonencoded?").append(raw).append("&");
-        }
-
-        url.append("legacy=true");
-
+        url.append("/").append(raw).append("?").append("legacy=true");
         asyncRequestFactory.createGetRequest(url.toString()).header(HTTPHeader.ACCEPT, MimeType.APPLICATION_JSON)
                            .send(callback);
     }
@@ -56,5 +48,12 @@ public class FactoryServiceClientImpl implements FactoryServiceClient {
     public void getFactorySnippet(String factoryId, String type, AsyncRequestCallback<String> callback) {
         final String requestUrl = "/api/factory/" + factoryId + "/snippet?type=" + type;
         asyncRequestFactory.createGetRequest(requestUrl).header(HTTPHeader.ACCEPT, MimeType.TEXT_PLAIN).send(callback);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void getFactoryJson(String workspaceId, String path, AsyncRequestCallback<Factory> callback) {
+        final String requestUrl = "/api/factory/" + workspaceId + "/" + path;
+        asyncRequestFactory.createGetRequest(requestUrl).header(HTTPHeader.ACCEPT, MimeType.APPLICATION_JSON).send(callback);
     }
 }
