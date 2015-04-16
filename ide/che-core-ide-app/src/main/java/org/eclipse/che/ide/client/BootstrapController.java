@@ -284,7 +284,7 @@ public class BootstrapController {
     }
 
     private void loadFactory() {
-        String factoryParams = null;
+        String factoryParams = Config.getStartupParam("id");
         if (factoryParams != null) {
             factoryService.getFactory(factoryParams,
                                       new AsyncRequestCallback<Factory>(dtoUnmarshallerFactory.newUnmarshaller(Factory.class)) {
