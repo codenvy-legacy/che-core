@@ -10,22 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.menu;
 
-import org.eclipse.che.ide.api.action.Action;
-import org.eclipse.che.ide.api.action.ActionEvent;
-import org.eclipse.che.ide.api.action.ActionGroup;
-import org.eclipse.che.ide.api.action.ActionManager;
-import org.eclipse.che.ide.api.action.ActionPlaces;
-import org.eclipse.che.ide.api.action.CustomComponentAction;
-import org.eclipse.che.ide.api.action.IdeActions;
-import org.eclipse.che.ide.api.action.Presentation;
-import org.eclipse.che.ide.api.action.Separator;
-import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
-import org.eclipse.che.ide.toolbar.ActionSelectedHandler;
-import org.eclipse.che.ide.toolbar.CloseMenuHandler;
-import org.eclipse.che.ide.toolbar.PresentationFactory;
-
-import org.eclipse.che.ide.toolbar.MenuLockLayer;
-
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
@@ -35,6 +19,21 @@ import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
+
+import org.eclipse.che.ide.api.action.Action;
+import org.eclipse.che.ide.api.action.ActionEvent;
+import org.eclipse.che.ide.api.action.ActionGroup;
+import org.eclipse.che.ide.api.action.ActionManager;
+import org.eclipse.che.ide.api.action.ActionPlaces;
+import org.eclipse.che.ide.api.action.ActionSelectedHandler;
+import org.eclipse.che.ide.api.action.CustomComponentAction;
+import org.eclipse.che.ide.api.action.IdeActions;
+import org.eclipse.che.ide.api.action.Presentation;
+import org.eclipse.che.ide.api.action.Separator;
+import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
+import org.eclipse.che.ide.ui.toolbar.CloseMenuHandler;
+import org.eclipse.che.ide.ui.toolbar.MenuLockLayer;
+import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;

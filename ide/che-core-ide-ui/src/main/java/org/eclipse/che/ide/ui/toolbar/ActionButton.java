@@ -8,16 +8,8 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.toolbar;
+package org.eclipse.che.ide.ui.toolbar;
 
-import org.eclipse.che.ide.api.action.Action;
-import org.eclipse.che.ide.api.action.ActionEvent;
-import org.eclipse.che.ide.api.action.ActionGroup;
-import org.eclipse.che.ide.api.action.ActionManager;
-import org.eclipse.che.ide.api.action.CustomComponentAction;
-import org.eclipse.che.ide.api.action.Presentation;
-import org.eclipse.che.ide.api.action.PropertyChangeEvent;
-import org.eclipse.che.ide.api.action.PropertyChangeListener;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -34,6 +26,14 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Image;
 
+import org.eclipse.che.ide.api.action.Action;
+import org.eclipse.che.ide.api.action.ActionEvent;
+import org.eclipse.che.ide.api.action.ActionGroup;
+import org.eclipse.che.ide.api.action.ActionManager;
+import org.eclipse.che.ide.api.action.CustomComponentAction;
+import org.eclipse.che.ide.api.action.Presentation;
+import org.eclipse.che.ide.api.action.PropertyChangeEvent;
+import org.eclipse.che.ide.api.action.PropertyChangeListener;
 import org.vectomatic.dom.svg.ui.SVGImage;
 
 /**

@@ -10,25 +10,25 @@
  *******************************************************************************/
 package org.eclipse.che.ide.menu;
 
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.ui.RootPanel;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionGroup;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.ActionPlaces;
+import org.eclipse.che.ide.api.action.ActionSelectedHandler;
 import org.eclipse.che.ide.api.action.DefaultActionGroup;
 import org.eclipse.che.ide.api.action.IdeActions;
 import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
-import org.eclipse.che.ide.toolbar.ActionSelectedHandler;
-import org.eclipse.che.ide.toolbar.CloseMenuHandler;
-import org.eclipse.che.ide.toolbar.PopupMenu;
-
-import org.eclipse.che.ide.toolbar.MenuLockLayer;
-import org.eclipse.che.ide.toolbar.PresentationFactory;
-import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.ui.RootPanel;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
+import org.eclipse.che.ide.ui.toolbar.CloseMenuHandler;
+import org.eclipse.che.ide.ui.toolbar.MenuLockLayer;
+import org.eclipse.che.ide.ui.toolbar.PopupMenu;
+import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 
 /**
  * Manages the Content menu.

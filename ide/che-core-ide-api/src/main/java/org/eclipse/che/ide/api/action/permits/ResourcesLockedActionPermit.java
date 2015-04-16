@@ -8,13 +8,21 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.toolbar;
+package org.eclipse.che.ide.api.action.permits;
 
-/** @author <a href="mailto:gavrikvetal@gmail.com">Vitaliy Gulyy</a> */
+/**
+ * Interface for check if the action is allowed.
+ *
+ * @author Oleksii Orel
+ */
+public interface ResourcesLockedActionPermit {
 
-public interface CloseMenuHandler {
+    /** return allowed status for the action. */
+    boolean isAllowed();
 
-    /** Implement closing of all opened popups when user will click outside of all of them */
-    void onCloseMenu();
+    /** return account lock status. */
+    boolean isAccountLocked();
 
+    /** return workspace lock status. */
+    boolean isWorkspaceLocked();
 }

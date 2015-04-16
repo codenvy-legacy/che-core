@@ -8,15 +8,21 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.api.action.permits;
+package org.eclipse.che.ide.ui.toolbar;
+
+import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.FlowPanel;
 
 /**
- * Interface for check if the action is allowed.
+ * Toolbar item that represent 'delimiter'
  *
- * @author Oleksii Orel
+ * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
+ * @version $Id:
  */
-public interface ActionPermit {
-
-    /** return allowed status for the action. */
-    boolean isAllowed();
+public class DelimiterItem extends Composite {
+    public DelimiterItem() {
+        FlowPanel widget = new FlowPanel();
+        widget.setStyleName(Toolbar.RESOURCES.toolbar().toolbarDelimiter());
+        initWidget(widget);
+    }
 }

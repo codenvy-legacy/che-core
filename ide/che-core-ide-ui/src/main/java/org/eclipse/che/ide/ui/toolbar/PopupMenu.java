@@ -8,19 +8,8 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.toolbar;
+package org.eclipse.che.ide.ui.toolbar;
 
-import org.eclipse.che.ide.api.action.Action;
-import org.eclipse.che.ide.api.action.ActionEvent;
-import org.eclipse.che.ide.api.action.ActionGroup;
-import org.eclipse.che.ide.api.action.ActionManager;
-import org.eclipse.che.ide.api.action.Presentation;
-import org.eclipse.che.ide.api.action.Separator;
-import org.eclipse.che.ide.api.action.ToggleAction;
-import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
-import org.eclipse.che.ide.util.input.KeyMapUtil;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -43,6 +32,18 @@ import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.UIObject;
 
+import org.eclipse.che.ide.api.action.Action;
+import org.eclipse.che.ide.api.action.ActionEvent;
+import org.eclipse.che.ide.api.action.ActionGroup;
+import org.eclipse.che.ide.api.action.ActionManager;
+import org.eclipse.che.ide.api.action.ActionSelectedHandler;
+import org.eclipse.che.ide.api.action.Presentation;
+import org.eclipse.che.ide.api.action.Separator;
+import org.eclipse.che.ide.api.action.ToggleAction;
+import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
+import org.eclipse.che.ide.collections.Array;
+import org.eclipse.che.ide.collections.Collections;
+import org.eclipse.che.ide.util.input.KeyMapUtil;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
@@ -74,29 +75,29 @@ public class PopupMenu extends Composite {
     private       MenuLockLayer         lockLayer;
 
     /** Contains opened sub Popup Menu. */
-    private       PopupMenu             openedSubPopup;
-    private       Element               subPopupAnchor;
+    private PopupMenu openedSubPopup;
+    private Element   subPopupAnchor;
 
     /** Contains HTML element ( <TR> ) which is hovered for the current time. */
-    private       Element               hoveredTR;
+    private Element hoveredTR;
 
     /**
      * Working variable.
      * PopupMenu panel.
      */
-    private       SimplePanel           popupMenuPanel;
+    private SimplePanel         popupMenuPanel;
     /** Working variable. Special table uses for handling mouse events. */
-    private       PopupMenuTable        table;
-    private       PresentationFactory   presentationFactory;
-    private       KeyBindingAgent       keyBindingAgent;
+    private PopupMenuTable      table;
+    private PresentationFactory presentationFactory;
+    private KeyBindingAgent     keyBindingAgent;
     /**
      * Prefix to be appended to the ID for each menu item.
      * This is debug feature.
      */
-    private       String                itemIdPrefix;
-    private       Array<Action>         list;
+    private String              itemIdPrefix;
+    private Array<Action>       list;
 
-    private Timer openSubPopupTimer  = new Timer() {
+    private Timer openSubPopupTimer = new Timer() {
         @Override
         public void run() {
             openSubPopup(hoveredTR);
