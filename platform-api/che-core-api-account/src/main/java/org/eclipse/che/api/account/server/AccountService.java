@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.account.server;
 
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -55,6 +57,7 @@ import org.eclipse.che.dto.server.DtoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -1075,18 +1078,19 @@ public class AccountService extends Service {
                                         @ApiParam(value = "Max items count", required = false)
                                         @DefaultValue("20") @QueryParam("maxItems") int maxItems,
                                         @ApiParam(value = "Skip count", required = false) @QueryParam("skipCount") int skipCount,
-                                        @Context SecurityContext securityContext) throws ServerException, ConflictException {
+                                        @Context final SecurityContext securityContext) throws ServerException, ConflictException {
 
         requiredNotNegative(skipCount, "skipCount");
         requiredNotNegative(maxItems, "maxItems");
 
         List<Account> accounts = accountDao.find(searchCriteria, skipCount, maxItems);
-        final List<AccountDescriptor> result = new ArrayList<>(accounts.size());
-        for (Account account : accounts) {
-            result.add(toDescriptor(account, securityContext));
-        }
-
-        return result;
+        return FluentIterable.from(accounts).transform(new Function<Account, AccountDescriptor>() {
+            @Nullable
+            @Override
+            public AccountDescriptor apply(Account account) {
+                return toDescriptor(account, securityContext);
+            }
+        }).toList();
     }
 
     /**
