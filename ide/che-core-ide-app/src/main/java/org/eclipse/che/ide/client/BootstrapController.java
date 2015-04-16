@@ -353,7 +353,8 @@ public class BootstrapController {
         // Display IDE
         workspacePresenter.go(mainPanel);
 
-        Document.get().setTitle(coreLocalizationConstant.codenvyTabTitle());
+        String documentTitle = Config.isSdkProject() ? coreLocalizationConstant.cheTabTitle() : coreLocalizationConstant.codenvyTabTitle();
+        Document.get().setTitle(documentTitle);
 
         processStartupParameters();
 
