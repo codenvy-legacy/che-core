@@ -92,13 +92,15 @@ public class DropDownHeaderWidgetImpl extends Composite implements ClickHandler,
 
     /** {@inheritDoc} */
     @Override
-    public void selectElement(@Nonnull SVGResource icon, @Nonnull String title) {
+    public void selectElement(@Nullable SVGResource icon, @Nonnull String title) {
         selectedName = title;
 
-        selectedElement.setVisible(true);
+        selectedElement.setVisible(icon != null && !title.isEmpty());
 
         selectedElementImage.clear();
-        selectedElementImage.add(new SVGImage(icon));
+        if (icon != null) {
+            selectedElementImage.add(new SVGImage(icon));
+        }
         selectedElementName.setText(title);
     }
 
