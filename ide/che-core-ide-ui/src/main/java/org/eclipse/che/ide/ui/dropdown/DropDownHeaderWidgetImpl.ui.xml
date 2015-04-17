@@ -59,7 +59,7 @@
         }
     </ui:style>
 
-    <g:FlowPanel ui:field="listHeader">
+    <g:FlowPanel ui:field="listHeader" debugId="dropDownHeader">
         <g:FlowPanel ui:field="selectedElement" addStyleNames="{style.container}">
             <g:SimpleLayoutPanel addStyleNames="{style.imageContainer}">
                 <g:SimpleLayoutPanel ui:field="selectedElementImage" addStyleNames="{style.selectedElementImage}"/>
