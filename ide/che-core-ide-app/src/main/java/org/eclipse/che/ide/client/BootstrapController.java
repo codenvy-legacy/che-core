@@ -14,6 +14,22 @@ import elemental.client.Browser;
 import elemental.events.Event;
 import elemental.events.EventListener;
 
+import com.google.gwt.core.client.Callback;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.core.client.ScriptInjector;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.event.logical.shared.CloseEvent;
+import com.google.gwt.event.logical.shared.CloseHandler;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.RootLayoutPanel;
+import com.google.gwt.user.client.ui.SimpleLayoutPanel;
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.google.web.bindery.event.shared.EventBus;
+import com.google.web.bindery.event.shared.HandlerRegistration;
+
 import org.eclipse.che.api.analytics.logger.EventLogger;
 import org.eclipse.che.api.factory.dto.Factory;
 import org.eclipse.che.api.factory.dto.Ide;
@@ -28,6 +44,7 @@ import org.eclipse.che.api.workspace.gwt.client.WorkspaceServiceClient;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.Resources;
+import org.eclipse.che.ide.api.DocumentTitleDecorator;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionManager;
@@ -53,27 +70,11 @@ import org.eclipse.che.ide.preferences.PreferencesManagerImpl;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.StringMapUnmarshaller;
-import org.eclipse.che.ide.toolbar.PresentationFactory;
+import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
+import org.eclipse.che.ide.util.Config;
 import org.eclipse.che.ide.util.UUID;
 import org.eclipse.che.ide.util.loging.Log;
 import org.eclipse.che.ide.workspace.WorkspacePresenter;
-import org.eclipse.che.ide.util.Config;
-
-import com.google.gwt.core.client.Callback;
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.core.client.ScriptInjector;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.event.logical.shared.CloseEvent;
-import com.google.gwt.event.logical.shared.CloseHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.RootLayoutPanel;
-import com.google.gwt.user.client.ui.SimpleLayoutPanel;
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-import com.google.web.bindery.event.shared.EventBus;
-import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import java.util.HashMap;
 import java.util.List;
@@ -106,6 +107,7 @@ public class BootstrapController {
     private final EventBus                     eventBus;
     private final ActionManager                actionManager;
     private final AppCloseHandler              appCloseHandler;
+    private final DocumentTitleDecorator       documentTitleDecorator;
     private final PresentationFactory          presentationFactory;
     private final AppContext                   appContext;
     private       CurrentUser                  currentUser;
@@ -134,7 +136,8 @@ public class BootstrapController {
                                final IconRegistry iconRegistry,
                                final ThemeAgent themeAgent,
                                ActionManager actionManager,
-                               AppCloseHandler appCloseHandler) {
+                               AppCloseHandler appCloseHandler,
+                               DocumentTitleDecorator documentTitleDecorator) {
         this.componentRegistry = componentRegistry;
         this.workspaceProvider = workspaceProvider;
         this.extensionInitializer = extensionInitializer;
@@ -156,7 +159,7 @@ public class BootstrapController {
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.analyticsEventLoggerExt = analyticsEventLoggerExt;
         this.appCloseHandler = appCloseHandler;
-
+        this.documentTitleDecorator = documentTitleDecorator;
         presentationFactory = new PresentationFactory();
 
         // Register DTO providers
@@ -284,17 +287,9 @@ public class BootstrapController {
     }
 
     private void loadFactory() {
-        String factoryParams = null;
-        boolean encoded = false;
-        if (Config.getStartupParam("id") != null) {
-            factoryParams = Config.getStartupParam("id");
-            encoded = true;
-        } else if (Config.getStartupParam("v") != null) {
-            factoryParams = Config.getStartupParams();
-        }
-
+        String factoryParams = Config.getStartupParam("id");
         if (factoryParams != null) {
-            factoryService.getFactory(factoryParams, encoded,
+            factoryService.getFactory(factoryParams,
                                       new AsyncRequestCallback<Factory>(dtoUnmarshallerFactory.newUnmarshaller(Factory.class)) {
                                           @Override
                                           protected void onSuccess(Factory factory) {
@@ -361,7 +356,7 @@ public class BootstrapController {
         // Display IDE
         workspacePresenter.go(mainPanel);
 
-        Document.get().setTitle(coreLocalizationConstant.codenvyTabTitle());
+        Document.get().setTitle(documentTitleDecorator.getDocumentTitle());
 
         processStartupParameters();
 

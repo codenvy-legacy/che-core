@@ -8,22 +8,19 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.api.action.permits;
+package org.eclipse.che.ide.api.action;
 
-import com.google.inject.BindingAnnotation;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+/** @author <a href="mailto:gavrikvetal@gmail.com">Vitaliy Gulyy</a> */
 
-/**
- * Used to bind memory indicator action.
- *
- * @author Oleksii Orel
- */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD, ElementType.TYPE})
-@BindingAnnotation
-public @interface Indicator {
+public interface ActionSelectedHandler {
+
+    /**
+     * Do some actions when menu item will be selected.
+     *
+     * @param action
+     *         selected Action
+     */
+    void onActionSelected(Action action);
+
 }

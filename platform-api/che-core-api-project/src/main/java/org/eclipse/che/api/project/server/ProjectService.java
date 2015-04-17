@@ -680,9 +680,12 @@ public class ProjectService extends Service {
             String projectType = null;
             try {
                 projectType = project.getConfig().getTypeId();
-            } catch (ServerException | ValueStorageException e) {
+            } catch (ServerException | ValueStorageException | ProjectTypeConstraintException e) {
                 // Let delete even project in invalid state.
-                LOG.error(e.getMessage(), e);
+                entry.remove();
+                LOG.info("EVENT#project-destroyed# PROJECT#{}# TYPE#{}# WS#{}# USER#{}#", name, "unknown",
+                         EnvironmentContext.getCurrent().getWorkspaceName(), EnvironmentContext.getCurrent().getUser().getName());
+                LOG.warn(String.format("Removing not valid project ws : %s, project path: %s ", workspace, path) + e.getMessage(), e);
             }
             entry.remove();
             LOG.info("EVENT#project-destroyed# PROJECT#{}# TYPE#{}# WS#{}# USER#{}#", name, projectType,
@@ -880,8 +883,8 @@ public class ProjectService extends Service {
         //try convert folder to project with giving config
         try {
             if (newProject != null) {
-                projectConfig = DtoConverter.fromDto2(newProject, projectTypeRegistry);
                 visibility = newProject.getVisibility();
+                projectConfig = DtoConverter.fromDto2(newProject, projectTypeRegistry);
             }
             project = projectManager.convertFolderToProject(workspace,
                                                             baseProjectFolder.getPath(),
@@ -897,6 +900,8 @@ public class ProjectService extends Service {
             }
         } catch (ConflictException | ForbiddenException | ServerException | NotFoundException e) {
             project = new NotValidProject(baseProjectFolder, projectManager);
+            project.setVisibility(visibility);
+
             projectDescriptor = DtoConverter.toDescriptorDto2(project,
                                                               getServiceContext().getServiceUriBuilder(),
                                                               projectManager.getProjectTypeRegistry());

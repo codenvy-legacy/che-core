@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import static org.eclipse.che.api.account.server.Constants.RESOURCES_LOCKED_PROPERTY;
 import static org.eclipse.che.api.account.shared.dto.SubscriptionState.ACTIVE;
 
 /**
@@ -405,13 +406,18 @@ public class LocalAccountDaoImpl implements AccountDao {
 
     @Override
     public List<Account> getAccountsWithLockedResources() throws ServerException, ForbiddenException {
-        List<Account> lockedAccounts = new LinkedList<>();
-        for (Account account : accounts) {
-            if (account.getAttributes().containsKey("codenvy:locked") &&
-                account.getAttributes().get("codenvy:locked").equals("true")) {
-                lockedAccounts.add(account);
+        List<Account> result = new LinkedList<>();
+        lock.readLock().lock();
+        try {
+            for (Account account : accounts) {
+                final String lockedAttribute = account.getAttributes().get(RESOURCES_LOCKED_PROPERTY);
+                if (Boolean.parseBoolean(lockedAttribute)) {
+                    result.add(account);
+                }
             }
+        } finally {
+            lock.readLock().unlock();
         }
-        return lockedAccounts;
+        return result;
     }
 }

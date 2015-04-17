@@ -8,21 +8,17 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.toolbar;
+package org.eclipse.che.ide.api;
+
+/**
+ * Implementation will provide different looks for document title
+ *
+ * @author Vitaly Parfonov
+ */
+public interface DocumentTitleDecorator {
 
 
-import org.eclipse.che.ide.api.action.Action;
+   String getDocumentTitle();
 
-/** @author <a href="mailto:gavrikvetal@gmail.com">Vitaliy Gulyy</a> */
-
-public interface ActionSelectedHandler {
-
-    /**
-     * Do some actions when menu item will be selected.
-     *
-     * @param action
-     *         selected Action
-     */
-    void onActionSelected(Action action);
-
+   String getDocumentTitle(String project);
 }

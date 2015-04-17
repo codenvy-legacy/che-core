@@ -152,6 +152,7 @@ public class RunnersPagePresenter extends AbstractWizardPage<ImportProject> impl
             RunnerConfiguration runnerConfiguration = dtoFactory.createDto(RunnerConfiguration.class);
             runnerConfiguration.setOptions(environment.getOptions());
             runnerConfiguration.setVariables(environment.getVariables());
+            runnerConfiguration.setRam(512);//set default memory size
             Map<String, RunnerConfiguration> configurations = new HashMap<>();
             configurations.put(environment.getId(), runnerConfiguration);
             runnersDescriptor.setConfigs(configurations);
