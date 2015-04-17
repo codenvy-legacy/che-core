@@ -461,18 +461,6 @@ public interface CoreLocalizationConstant extends Messages {
     @DefaultMessage("Delete")
     String delete();
 
-    @Key("codenvy.projectClosed.title")
-    String codenvyTabTitle();
-
-    @Key("codenvy.projectOpened.title")
-    String codenvyTabTitle(String projectName);
-
-    @Key("che.projectClosed.title")
-    String cheTabTitle();
-
-    @Key("che.projectOpened.title")
-    String cheTabTitle(String projectName);
-
     @Key("projectProblem.title")
     String projectProblemTitle();
 

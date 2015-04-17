@@ -44,6 +44,7 @@ import org.eclipse.che.api.workspace.gwt.client.WorkspaceServiceClient;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.Resources;
+import org.eclipse.che.ide.api.DocumentTitleDecorator;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionManager;
@@ -106,6 +107,7 @@ public class BootstrapController {
     private final EventBus                     eventBus;
     private final ActionManager                actionManager;
     private final AppCloseHandler              appCloseHandler;
+    private final DocumentTitleDecorator       documentTitleDecorator;
     private final PresentationFactory          presentationFactory;
     private final AppContext                   appContext;
     private       CurrentUser                  currentUser;
@@ -134,7 +136,8 @@ public class BootstrapController {
                                final IconRegistry iconRegistry,
                                final ThemeAgent themeAgent,
                                ActionManager actionManager,
-                               AppCloseHandler appCloseHandler) {
+                               AppCloseHandler appCloseHandler,
+                               DocumentTitleDecorator documentTitleDecorator) {
         this.componentRegistry = componentRegistry;
         this.workspaceProvider = workspaceProvider;
         this.extensionInitializer = extensionInitializer;
@@ -156,7 +159,7 @@ public class BootstrapController {
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.analyticsEventLoggerExt = analyticsEventLoggerExt;
         this.appCloseHandler = appCloseHandler;
-
+        this.documentTitleDecorator = documentTitleDecorator;
         presentationFactory = new PresentationFactory();
 
         // Register DTO providers
@@ -353,8 +356,7 @@ public class BootstrapController {
         // Display IDE
         workspacePresenter.go(mainPanel);
 
-        String documentTitle = Config.isSdkProject() ? coreLocalizationConstant.cheTabTitle() : coreLocalizationConstant.codenvyTabTitle();
-        Document.get().setTitle(documentTitle);
+        Document.get().setTitle(documentTitleDecorator.getDocumentTitle());
 
         processStartupParameters();
 
