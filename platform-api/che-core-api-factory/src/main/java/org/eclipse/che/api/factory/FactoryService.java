@@ -635,6 +635,13 @@ public class FactoryService extends Service {
         if (factory.getCreator() == null) {
             factory.setCreator(DtoFactory.getInstance().createDto(Author.class).withUserId(currentUser.getId()).withCreated(
                     System.currentTimeMillis()));
+        } else {
+            if (isNullOrEmpty(factory.getCreator().getUserId())){
+                factory.getCreator().setUserId(currentUser.getId());
+            }
+            if (factory.getCreator().getCreated() == null) {
+                factory.getCreator().setCreated(System.currentTimeMillis());
+            }
         }
 
         if (factory.getWorkspace() ==  null) {
