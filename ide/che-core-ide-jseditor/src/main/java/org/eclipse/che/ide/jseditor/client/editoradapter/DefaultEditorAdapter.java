@@ -25,7 +25,6 @@ import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.parts.PartPresenter;
 import org.eclipse.che.ide.api.parts.PropertyListener;
 import org.eclipse.che.ide.api.parts.WorkspaceAgent;
-import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.texteditor.HandlesUndoRedo;
 import org.eclipse.che.ide.api.texteditor.UndoableEditor;
@@ -312,9 +311,9 @@ public class DefaultEditorAdapter extends Composite implements EditorAdapter, Fi
             return;
         }
 
-        final VirtualFile eventFile = event.getFile();
-        final VirtualFile file = input.getFile();
-        if (file.equals(eventFile)) {
+        final String eventFilePath = event.getFile().getPath();
+        final String filePath = input.getFile().getPath();
+        if (filePath.equals(eventFilePath)) {
             workspaceAgent.removePart(this);
         }
     }
