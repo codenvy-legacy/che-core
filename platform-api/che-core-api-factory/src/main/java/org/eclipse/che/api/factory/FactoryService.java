@@ -629,7 +629,7 @@ public class FactoryService extends Service {
                        .build();
     }
 
-    private void processDefaults(Factory factory) throws NotFoundException, ServerException {
+    private void processDefaults(Factory factory) throws ApiException {
 
         User currentUser =  EnvironmentContext.getCurrent().getUser();
         if (factory.getCreator() == null) {
@@ -658,7 +658,7 @@ public class FactoryService extends Service {
             switch (ownedAccounts.size()) {
                 case 0: {
                     // must never happen but who knows
-                    throw new ServerException(
+                    throw new ForbiddenException(
                             "You are not owner of any account, so you can't create factory with such workspace location.");
                 }
                 case 1: {
@@ -666,8 +666,8 @@ public class FactoryService extends Service {
                     break;
                 }
                 default: {
-                    throw new ServerException(
-                            "You are owner more than one account. Please indicate which one to use using creator/accountId property.");
+                    throw new ForbiddenException(
+                            "You are owner of more than one account. Please indicate which one to use using creator/accountId property.");
                 }
             }
         }
