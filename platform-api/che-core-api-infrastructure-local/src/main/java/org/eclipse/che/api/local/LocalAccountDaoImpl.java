@@ -14,9 +14,7 @@ import org.eclipse.che.api.account.server.dao.Account;
 import org.eclipse.che.api.account.server.dao.AccountDao;
 import org.eclipse.che.api.account.server.dao.Member;
 import org.eclipse.che.api.account.server.dao.Subscription;
-import org.eclipse.che.api.account.server.dao.SubscriptionQueryBuilder;
 import org.eclipse.che.api.core.ConflictException;
-import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.workspace.server.dao.WorkspaceDao;
@@ -33,7 +31,6 @@ import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import static org.eclipse.che.api.account.server.Constants.RESOURCES_LOCKED_PROPERTY;
 import static org.eclipse.che.api.account.shared.dto.SubscriptionState.ACTIVE;
 
 /**
@@ -397,27 +394,5 @@ public class LocalAccountDaoImpl implements AccountDao {
         } finally {
             lock.writeLock().unlock();
         }
-    }
-
-    @Override
-    public SubscriptionQueryBuilder getSubscriptionQueryBuilder() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public List<Account> getAccountsWithLockedResources() throws ServerException, ForbiddenException {
-        List<Account> result = new LinkedList<>();
-        lock.readLock().lock();
-        try {
-            for (Account account : accounts) {
-                final String lockedAttribute = account.getAttributes().get(RESOURCES_LOCKED_PROPERTY);
-                if (Boolean.parseBoolean(lockedAttribute)) {
-                    result.add(account);
-                }
-            }
-        } finally {
-            lock.readLock().unlock();
-        }
-        return result;
     }
 }
