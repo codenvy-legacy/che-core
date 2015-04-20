@@ -432,9 +432,11 @@ public class DefaultEditorAdapterTest {
         final FileEvent event = mock(FileEvent.class);
         final VirtualFile file = mock(VirtualFile.class);
         final EditorInput input = mock(EditorInput.class);
+        String path = "filePath";
 
         when(input.getFile()).thenReturn(file);
         when(event.getFile()).thenReturn(file);
+        when(file.getPath()).thenReturn(path);
         when(event.getOperationType()).thenReturn(FileEvent.FileOperation.CLOSE);
 
         defaultEditorAdapter.init(input);
