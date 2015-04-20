@@ -178,4 +178,16 @@ public class AsyncRequestFactory {
         }
         return asyncRequest;
     }
+
+
+    /**
+     * Creates new GET request to the specified {@code url}.
+     *
+     * @param url
+     *         request URL
+     * @return new {@link AsyncRequest} instance to send GET request
+     */
+    public AsyncRequest createDeleteRequest(String url) {
+        return doCreateRequest(RequestBuilder.DELETE, url, null, false);
+    }
 }
