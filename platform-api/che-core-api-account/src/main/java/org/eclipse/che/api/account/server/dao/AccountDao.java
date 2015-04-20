@@ -174,13 +174,4 @@ public interface AccountDao {
      * @return list of accounts, or empty list if no accounts found
      */
     List<Member> getByMember(String userId) throws NotFoundException, ServerException;
-
-    SubscriptionQueryBuilder getSubscriptionQueryBuilder();
-
-    /**
-     * Get all accounts which are locked after RAM runner resources was exceeded.
-     *
-     * @return all locked accounts
-     */
-    List<Account> getAccountsWithLockedResources() throws ServerException, ForbiddenException;
 }
