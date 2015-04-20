@@ -23,6 +23,7 @@ import org.eclipse.che.api.account.server.dao.Subscription;
 import org.eclipse.che.api.account.server.dao.SubscriptionQueryBuilder;
 import org.eclipse.che.api.account.server.dao.SubscriptionQueryBuilder.SubscriptionQuery;
 import org.eclipse.che.api.account.shared.dto.AccountDescriptor;
+import org.eclipse.che.api.account.shared.dto.AccountSearchCriteria;
 import org.eclipse.che.api.account.shared.dto.AccountUpdate;
 import org.eclipse.che.api.account.shared.dto.BillingCycleType;
 import org.eclipse.che.api.account.shared.dto.MemberDescriptor;
@@ -1590,6 +1591,30 @@ public class AccountServiceTest {
 
         assertEquals(response.getStatus(), Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         assertEquals(response.getEntity().toString(), "Unknown serviceId is used");
+    }
+
+    @Test
+    public void findShouldUsePaginationParametersFromUrl() throws Exception {
+        prepareSecurityContext("system/admin");
+
+        ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/find?skipCount=3&maxItems=15",
+                                                 MediaType.APPLICATION_JSON,
+                                                 DtoFactory.getInstance().createDto(AccountSearchCriteria.class));
+
+        assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
+        verify(accountDao).find(any(AccountSearchCriteria.class), eq(3), eq(15));
+    }
+
+    @Test
+    public void findShouldUseDefaultPaginationParameters() throws Exception {
+        prepareSecurityContext("system/admin");
+
+        ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/find",
+                                                 MediaType.APPLICATION_JSON,
+                                                 DtoFactory.getInstance().createDto(AccountSearchCriteria.class));
+
+        assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
+        verify(accountDao).find(any(AccountSearchCriteria.class), eq(0), eq(20));
     }
 
     protected void verifyLinksRel(List<Link> links, List<String> rels) {

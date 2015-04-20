@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.account.server.dao;
 
+import org.eclipse.che.api.account.shared.dto.AccountSearchCriteria;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
@@ -28,11 +29,13 @@ import java.util.List;
  *
  * @author Eugene Voevodin
  * @author Alexander Garagatyi
+ * @author Anatoliy Bazko
  */
 public interface AccountDao {
 
     /**
      * Adds new account to persistent layer
+     *
      *
      * @param account
      *         POJO representation of account
@@ -183,4 +186,19 @@ public interface AccountDao {
      * @return all locked accounts
      */
     List<Account> getAccountsWithLockedResources() throws ServerException, ForbiddenException;
+
+    /**
+     * Gets list of existing in persistent layer Account satisfying given criteria.
+     * It is supposed that search result might be very huge, that's why it is recommended to
+     * retrieve result using pagination approach to reduce network traffic.
+     *
+     * @param searchCriteria
+     *         search criteria
+     * @param skipLimit
+     *         the number of items to skip at first
+     * @param maxItems
+     *         the maximum number if items to return
+     * @return list of accounts, or empty list if no accounts found
+     */
+    List<Account> find(AccountSearchCriteria searchCriteria, int skipLimit, int maxItems) throws ServerException;
 }

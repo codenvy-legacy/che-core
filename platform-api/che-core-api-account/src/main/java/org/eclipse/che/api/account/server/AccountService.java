@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.account.server;
 
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -23,6 +25,7 @@ import org.eclipse.che.api.account.server.dao.PlanDao;
 import org.eclipse.che.api.account.server.dao.Subscription;
 import org.eclipse.che.api.account.shared.dto.AccountDescriptor;
 import org.eclipse.che.api.account.shared.dto.AccountReference;
+import org.eclipse.che.api.account.shared.dto.AccountSearchCriteria;
 import org.eclipse.che.api.account.shared.dto.AccountUpdate;
 import org.eclipse.che.api.account.shared.dto.MemberDescriptor;
 import org.eclipse.che.api.account.shared.dto.NewAccount;
@@ -54,10 +57,12 @@ import org.eclipse.che.dto.server.DtoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.POST;
@@ -91,6 +96,7 @@ import static java.util.Collections.singletonList;
  *
  * @author Eugene Voevodin
  * @author Alex Garagatyi
+ * @author Anatoliy Bazko
  */
 @Api(value = "/account",
         description = "Account manager")
@@ -1038,6 +1044,55 @@ public class AccountService extends Service {
         return result;
     }
 
+
+    /**
+     * Returns list of accounts satisfying given criteria.
+     *
+     * @param maxItems
+     *         the maximum number of items to return, must be non negative
+     * @param skipCount
+     *         number of items to skip at first, must be non negative
+     * @throws ServerException
+     *         when some error occurred while retrieving accounts
+     * @throws ConflictException
+     *         when query parameters are incorrect
+     * @see org.eclipse.che.api.account.server.dao.AccountDao#find
+     */
+    @ApiOperation(value = "Gets list of accounts satisfying given criteria",
+            notes = "Search criteria should be specified. The number of items to return and number of items to skip at first should be " +
+                    "specified as query parameters. For this API call system/admin or system/manager role is required",
+            response = Account.class,
+            responseContainer = "List",
+            position = 20)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 409, message = "Conflict Error"),
+            @ApiResponse(code = 500, message = "Internal Server Error")})
+    @POST
+    @Path("/find")
+    @GenerateLink(rel = Constants.LINK_REL_FIND_ACCOUNTS)
+    @RolesAllowed({"system/admin", "system/manager"})
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<AccountDescriptor> find(@ApiParam(value = "Search criteria") AccountSearchCriteria searchCriteria,
+                                        @ApiParam(value = "Max items count", required = false)
+                                        @DefaultValue("20") @QueryParam("maxItems") int maxItems,
+                                        @ApiParam(value = "Skip count", required = false) @QueryParam("skipCount") int skipCount,
+                                        @Context final SecurityContext securityContext) throws ServerException, ConflictException {
+
+        requiredNotNegative(skipCount, "skipCount");
+        requiredNotNegative(maxItems, "maxItems");
+
+        List<Account> accounts = accountDao.find(searchCriteria, skipCount, maxItems);
+        return FluentIterable.from(accounts).transform(new Function<Account, AccountDescriptor>() {
+            @Nullable
+            @Override
+            public AccountDescriptor apply(Account account) {
+                return toDescriptor(account, securityContext);
+            }
+        }).toList();
+    }
+
     /**
      * Can be used only in methods that is restricted with @RolesAllowed. Require "user" role.
      *
@@ -1200,6 +1255,22 @@ public class AccountService extends Service {
     private void requiredNotNull(Object object, String subject) throws ConflictException {
         if (object == null) {
             throw new ConflictException(subject + " required");
+        }
+    }
+
+    /**
+     * Checks if object is a negative number.
+     *
+     * @param object
+     *         object to check
+     * @param subject
+     *         is used as subject in exception message
+     * @throws ConflictException
+     *         when object is a negative number
+     */
+    private void requiredNotNegative(long object, String subject) throws ConflictException {
+        if (object < 0) {
+            throw new ConflictException(format("'%s' parameter must be a non negative number", subject));
         }
     }
 

@@ -15,6 +15,7 @@ import org.eclipse.che.api.account.server.dao.AccountDao;
 import org.eclipse.che.api.account.server.dao.Member;
 import org.eclipse.che.api.account.server.dao.Subscription;
 import org.eclipse.che.api.account.server.dao.SubscriptionQueryBuilder;
+import org.eclipse.che.api.account.shared.dto.AccountSearchCriteria;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
@@ -25,6 +26,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -419,5 +421,56 @@ public class LocalAccountDaoImpl implements AccountDao {
             lock.readLock().unlock();
         }
         return result;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<Account> find(AccountSearchCriteria searchCriteria, int skipLimit, int maxItems) {
+        List<Account> result = new ArrayList<>(accounts);
+
+        if (!isNullOrEmpty(searchCriteria.getOwnerIds())) {
+            List<Account> byOwnerIds = new LinkedList<>();
+            for (String ownerId : searchCriteria.getOwnerIds()) {
+                byOwnerIds.addAll(getByOwner(ownerId));
+            }
+            result.retainAll(byOwnerIds);
+        }
+
+        if (!isNullOrEmpty(searchCriteria.getAccountIds())) {
+            List<Account> byIds = new LinkedList<>();
+            for (String id : searchCriteria.getAccountIds()) {
+                try {
+                    byIds.add(getById(id));
+                } catch (NotFoundException e) {
+                    // ignore
+                }
+            }
+            result.retainAll(byIds);
+        }
+
+        if (searchCriteria.getServiceId() != null) {
+            List<Account> byServiceId = new LinkedList<>();
+            for (Subscription subscription : subscriptions) {
+                if (subscription.getServiceId().equals(searchCriteria.getServiceId())) {
+                    try {
+                        byServiceId.add(getById(subscription.getAccountId()));
+                    } catch (NotFoundException e) {
+                        // ignore
+                    }
+                }
+            }
+            result.retainAll(byServiceId);
+        }
+
+        if (skipLimit >= result.size()) {
+            return Collections.emptyList();
+        }
+        int toIndex = Math.min(skipLimit + maxItems, result.size());
+
+        return result.subList(skipLimit, toIndex);
+    }
+
+    private boolean isNullOrEmpty(List<String> list) {
+        return list == null || list.isEmpty();
     }
 }

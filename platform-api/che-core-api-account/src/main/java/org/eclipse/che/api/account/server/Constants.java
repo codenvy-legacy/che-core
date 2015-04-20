@@ -15,6 +15,7 @@ package org.eclipse.che.api.account.server;
  *
  * @author Eugene Voevodin
  * @author Alexander Garagatyi
+ * @author Anatoliy Bazko
  */
 public final class Constants {
 
@@ -37,6 +38,7 @@ public final class Constants {
     public static final int    ID_LENGTH                      = 16;
     public static final String RESOURCES_LOCKED_PROPERTY      = "codenvy:resources_locked";
     public static final String PAYMENT_LOCKED_PROPERTY        = "codenvy:payment_locked";
+    public static final String LINK_REL_FIND_ACCOUNTS         = "find accounts";
 
     private Constants() {
     }
