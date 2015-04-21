@@ -110,7 +110,7 @@ public class RunQueue {
 
     private static final long PROCESS_CLEANER_PERIOD = TimeUnit.MINUTES.toMillis(1);
 
-    private static final int DEFAULT_MAX_MEMORY_SIZE = 512;
+    private static final int DEFAULT_MAX_MEMORY_SIZE = 1000;
 
     private static final int APPLICATION_CHECK_URL_TIMEOUT = 2000;
     private static final int APPLICATION_CHECK_URL_COUNT   = 30;

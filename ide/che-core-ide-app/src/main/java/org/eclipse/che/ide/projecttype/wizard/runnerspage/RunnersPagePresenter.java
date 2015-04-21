@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projecttype.wizard.runnerspage;
 
+import com.google.gwt.user.client.ui.AcceptsOneWidget;
+import com.google.inject.Inject;
+
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ImportProject;
 import org.eclipse.che.api.project.shared.dto.RunnerConfiguration;
@@ -25,8 +28,6 @@ import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.Unmarshallable;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
-import com.google.gwt.user.client.ui.AcceptsOneWidget;
-import com.google.inject.Inject;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -152,7 +153,7 @@ public class RunnersPagePresenter extends AbstractWizardPage<ImportProject> impl
             RunnerConfiguration runnerConfiguration = dtoFactory.createDto(RunnerConfiguration.class);
             runnerConfiguration.setOptions(environment.getOptions());
             runnerConfiguration.setVariables(environment.getVariables());
-            runnerConfiguration.setRam(512);//set default memory size
+            runnerConfiguration.setRam(1000);//set default memory size
             Map<String, RunnerConfiguration> configurations = new HashMap<>();
             configurations.put(environment.getId(), runnerConfiguration);
             runnersDescriptor.setConfigs(configurations);
