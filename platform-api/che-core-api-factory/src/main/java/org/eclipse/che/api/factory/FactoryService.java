@@ -410,9 +410,6 @@ public class FactoryService extends Service {
         if (queryParams.isEmpty()) {
             throw new IllegalArgumentException("Query must contain at least one attribute.");
         }
-        if (queryParams.containsKey("accountid")) {
-            queryParams.put("orgid", queryParams.remove("accountid"));
-        }
         ArrayList<Pair> pairs = new ArrayList<>();
         for (Map.Entry<String, Set<String>> entry : queryParams.entrySet()) {
             if (!entry.getValue().isEmpty())
