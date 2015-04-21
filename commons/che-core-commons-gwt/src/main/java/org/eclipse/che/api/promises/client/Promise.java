@@ -35,6 +35,8 @@ public interface Promise<V> extends Thenable<V> {
      */
     <B> Promise<B> then(Function<V, B> onFulfilled, Function<PromiseError, B> onRejected);
 
+    <B> Promise<B> thenPromise(Function<V, Promise<B>> onFulfilled);
+
     /**
      * Adds actions when the promise is rejected.
      * <p>The action is added both to the original promise and the returned value, but the promises are not
