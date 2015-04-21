@@ -12,18 +12,11 @@ package org.eclipse.che.ide.api.parts.base;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.DivElement;
-import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
-import com.google.gwt.event.dom.client.MouseDownEvent;
-import com.google.gwt.event.dom.client.MouseOutEvent;
-import com.google.gwt.event.dom.client.MouseOverEvent;
-import com.google.gwt.event.dom.client.MouseUpEvent;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
-import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Widget;
@@ -43,31 +36,12 @@ import java.util.List;
 
 public class ToolButton extends Composite implements HasClickHandlers {
 
-    /** UIBinder for this TabButton. */
-    private static TabButtonUiBinder uiBinder = GWT.create(TabButtonUiBinder.class);
-
     /** UIBinder class for this TabButton. */
     interface TabButtonUiBinder extends UiBinder<Widget, ToolButton> {
     }
 
-    /** Style Resource for this TabButton. */
-    interface Style extends CssResource {
-
-        String buttonOver();
-
-        String buttonDown();
-
-        String iconPanel();
-
-        String button();
-
-        String controlPanel();
-
-    }
-
-    /** Instance of Style Resource. */
-    @UiField
-    Style style;
+    /** UIBinder for this TabButton. */
+    private static TabButtonUiBinder uiBinder = GWT.create(TabButtonUiBinder.class);
 
     @UiField
     HTML controlPanel;
@@ -78,8 +52,6 @@ public class ToolButton extends Composite implements HasClickHandlers {
     @UiField
     DivElement iconPanel;
 
-    boolean enabled = true;
-
     private List<ClickHandler> clickHandlers = new ArrayList<ClickHandler>();
 
     public ToolButton(SVGImage image) {
@@ -88,6 +60,7 @@ public class ToolButton extends Composite implements HasClickHandlers {
 
     public ToolButton(String id, SVGImage image) {
         initWidget(uiBinder.createAndBindUi(this));
+
         iconPanel.appendChild(image.getElement());
 
         if (id != null) {
@@ -95,57 +68,9 @@ public class ToolButton extends Composite implements HasClickHandlers {
         }
     }
 
-    @UiHandler("controlPanel")
-    void onMouseOver(MouseOverEvent e) {
-        buttonPanel.addClassName(style.buttonOver());
-    }
-
-    @UiHandler("controlPanel")
-    void onMouseOut(MouseOutEvent e) {
-        buttonPanel.removeClassName(style.buttonOver());
-        buttonPanel.removeClassName(style.buttonDown());
-    }
-
-    @UiHandler("controlPanel")
-    void onMouseDown(MouseDownEvent e) {
-        buttonPanel.addClassName(style.buttonDown());
-    }
-
-    @UiHandler("controlPanel")
-    void onMouseUp(MouseUpEvent e) {
-        buttonPanel.removeClassName(style.buttonDown());
-    }
-
-    @UiHandler("controlPanel")
-    void onClick(ClickEvent e) {
-        for (ClickHandler clickHandler : clickHandlers) {
-            clickHandler.onClick(e);
-        }
-    }
-
     @Override
-    public HandlerRegistration addClickHandler(ClickHandler handler) {
-        clickHandlers.add(handler);
-        return new ClickHandlerRegistration(handler);
-    }
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    private class ClickHandlerRegistration implements HandlerRegistration {
-
-        private ClickHandler handler;
-
-        public ClickHandlerRegistration(ClickHandler handler) {
-            this.handler = handler;
-        }
-
-        @Override
-        public void removeHandler() {
-            clickHandlers.remove(handler);
-        }
-
+    public HandlerRegistration addClickHandler(ClickHandler clickHandler) {
+        return controlPanel.addClickHandler(clickHandler);
     }
 
 }

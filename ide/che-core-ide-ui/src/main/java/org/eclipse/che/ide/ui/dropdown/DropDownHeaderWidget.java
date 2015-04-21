@@ -36,7 +36,7 @@ public interface DropDownHeaderWidget {
      * @param title
      *         title of the selected element
      */
-    void selectElement(@Nonnull SVGResource icon, @Nonnull String title);
+    void selectElement(@Nullable SVGResource icon, @Nonnull String title);
 
     interface ActionDelegate {
     }
