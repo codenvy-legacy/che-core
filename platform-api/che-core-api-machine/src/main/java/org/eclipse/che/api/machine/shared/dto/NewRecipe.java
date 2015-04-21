@@ -15,7 +15,7 @@ import org.eclipse.che.dto.shared.DTO;
 import java.util.List;
 
 /**
- * Describes new recipe that is recipe type, script and tags.
+ * Describes new recipe
  *
  * @author Eugene Voevodin
  */

@@ -14,25 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Permissions for recipe
- * <pre>
- *     "permissions" : {
- *         "groups" : [
- *             {
- *                 "name" : "workspace/admin"
- *                 "unit" : "workspace123",
- *                 "acl"  : [ "read", "write" ]
- *             }
- *         ],
- *         "users" : {
- *             "user123" : [ "read", "write" ]
- *             "user124" : [ "read", "write" ]
- *             "user125" : [ "read" ]
- *             "user126" : [ "read", "write" ]
- *         }
- *     }
- * </pre>
- *
  * @author Eugene Voevodin
  */
 public interface Permissions {

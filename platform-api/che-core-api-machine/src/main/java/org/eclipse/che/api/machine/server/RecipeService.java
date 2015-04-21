@@ -128,7 +128,7 @@ public class RecipeService extends Service {
             Collections.addAll(tagsList, tags);
         }
         final List<Recipe> recipes = recipeDao.search(tagsList, type);
-        final ArrayList<RecipeDescriptor> descriptors = new ArrayList<>(recipes.size());
+        final List<RecipeDescriptor> descriptors = new ArrayList<>(recipes.size());
         for (Recipe recipe : recipes) {
             descriptors.add(asRecipeDescriptor(recipe));
         }
