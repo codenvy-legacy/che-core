@@ -10,49 +10,33 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.shared.dto;
 
-import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
 import org.eclipse.che.dto.shared.DTO;
 
 import java.util.List;
 
 /**
- * @author andrew00x
+ * Describes new recipe that is recipe type, script and tags.
+ *
+ * @author Eugene Voevodin
  */
 @DTO
-public interface RecipeDescriptor extends Hyperlinks {
-    String getId();
-
-    void setId(String id);
-
-    RecipeDescriptor withId(String id);
+public interface NewRecipe {
 
     String getType();
 
     void setType(String type);
 
-    RecipeDescriptor withType(String type);
+    NewRecipe withType(String type);
 
     String getScript();
 
     void setScript(String script);
 
-    RecipeDescriptor withScript(String script);
-
-    String getCreator();
-
-    void setCreator(String creator);
-
-    RecipeDescriptor withCreator(String creator);
+    NewRecipe withScript(String script);
 
     List<String> getTags();
 
     void setTags(List<String> tags);
 
-    RecipeDescriptor withTags(List<String> tags);
-
-    PermissionsDescriptor getPermissions();
-
-    void setPermissions(PermissionsDescriptor permissions);
-
-    RecipeDescriptor withPermissions(PermissionsDescriptor permissions);
+    NewRecipe withTags(List<String> tags);
 }
