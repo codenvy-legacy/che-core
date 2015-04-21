@@ -22,6 +22,7 @@ import com.google.web.bindery.event.shared.EventBus;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.api.DocumentTitleDecorator;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.event.CloseCurrentProjectEvent;
@@ -67,6 +68,7 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
     private final ProjectWizardPresenter   projectWizardPresenter;
     private final DtoUnmarshallerFactory   dtoUnmarshallerFactory;
     private final CoreLocalizationConstant constant;
+    private final DocumentTitleDecorator   documentTitleDecorator;
 
     @Inject
     public ProjectStateHandler(AppContext appContext,
@@ -74,13 +76,15 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
                                ProjectServiceClient projectServiceClient,
                                ProjectWizardPresenter projectWizardPresenter,
                                CoreLocalizationConstant constant,
-                               DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+                               DtoUnmarshallerFactory dtoUnmarshallerFactory,
+                               DocumentTitleDecorator documentTitleDecorator) {
         this.eventBus = eventBus;
         this.appContext = appContext;
         this.projectServiceClient = projectServiceClient;
         this.projectWizardPresenter = projectWizardPresenter;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.constant = constant;
+        this.documentTitleDecorator = documentTitleDecorator;
     }
 
     @Override
@@ -177,7 +181,7 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
         if (currentProject != null) {
             ProjectDescriptor closedProject = currentProject.getRootProject();
 
-            Document.get().setTitle(constant.codenvyTabTitle());
+            Document.get().setTitle(documentTitleDecorator.getDocumentTitle());
             rewriteBrowserHistory(null);
 
             // notify all listeners about current project has been closed
@@ -189,7 +193,7 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
     private void openProject(ProjectDescriptor project) {
         appContext.setCurrentProject(new CurrentProject(project));
 
-        Document.get().setTitle(constant.codenvyTabTitle(project.getName()));
+        Document.get().setTitle(documentTitleDecorator.getDocumentTitle(project.getName()));
         rewriteBrowserHistory(project.getName());
 
         // notify all listeners about opening project

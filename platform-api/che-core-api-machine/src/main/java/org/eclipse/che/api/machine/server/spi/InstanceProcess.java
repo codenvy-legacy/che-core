@@ -22,7 +22,8 @@ import org.eclipse.che.api.machine.server.MachineException;
  */
 public interface InstanceProcess {
     /**
-     * Returns pid of the process. Returns {@code -1} if process isn't started yet.
+     * Returns pid of the process.
+     * To be able to control from the clients pid should be valid even if process isn't started yet.
      *
      * @return pid of the process
      */

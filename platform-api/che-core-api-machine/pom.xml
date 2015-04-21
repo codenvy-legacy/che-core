@@ -45,6 +45,12 @@
             <artifactId>che-core-api-workspace</artifactId>
             <version>${che.core.version}</version>
         </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>${javax.servlet.version}</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
     <build>
         <resources>

@@ -117,6 +117,7 @@ public class MachineManager {
         final String recipeType = recipe.getType();
         if (imageProvider.getRecipeTypes().contains(recipeType)) {
             final String machineId = generateMachineId();
+            createMachineLogsDir(machineId);
             final CompositeLineConsumer machineLogger = new CompositeLineConsumer(machineLogsOutput, getMachineFileLogger(machineId));
             final MachineImpl machine = new MachineImpl(machineId, imageProvider.getType(), workspaceId, owner, machineLogger);
             machine.setState(MachineState.CREATING);
@@ -174,6 +175,7 @@ public class MachineManager {
                     String.format("Unable create machine from snapshot '%s', unsupported image type '%s'", snapshotId, imageType));
         }
         final String machineId = generateMachineId();
+        createMachineLogsDir(machineId);
         final CompositeLineConsumer machineLogger = new CompositeLineConsumer(machineLogsOutput, getMachineFileLogger(machineId));
         final MachineImpl machine = new MachineImpl(machineId,
                                                     imageProvider.getType(),
@@ -459,15 +461,17 @@ public class MachineManager {
                     String.format("Unable execute command in machine '%s' in image, machine isn't properly initialized yet", machineId));
         }
         final InstanceProcess instanceProcess = instance.createProcess(command.getCommandLine());
+        final CompositeLineConsumer processLogger =
+                new CompositeLineConsumer(commandOutput, getProcessFileLogger(machineId, instanceProcess.getPid()));
         final Runnable execTask = new Runnable() {
             @Override
             public void run() {
                 try {
-                    instanceProcess.start(commandOutput);
+                    instanceProcess.start(processLogger);
                 } catch (ConflictException | MachineException error) {
                     LOG.warn(error.getMessage());
                     try {
-                        commandOutput.writeLine(String.format("[ERROR] %s", error.getMessage()));
+                        processLogger.writeLine(String.format("[ERROR] %s", error.getMessage()));
                     } catch (IOException ignored) {
                     }
                 }
@@ -497,7 +501,7 @@ public class MachineManager {
      *
      * @param machineId
      *         if of the machine where process should be stopped
-     * @param processId
+     * @param pid
      *         id of the process that should be stopped in machine
      * @throws NotFoundException
      *         if machine or process with specified id not found
@@ -506,8 +510,8 @@ public class MachineManager {
      * @throws MachineException
      *         if other error occur
      */
-    public void stopProcess(String machineId, int processId) throws NotFoundException, MachineException, ForbiddenException {
-        final ProcessImpl process = getMachine(machineId).getProcess(processId);
+    public void stopProcess(String machineId, int pid) throws NotFoundException, MachineException, ForbiddenException {
+        final ProcessImpl process = getMachine(machineId).getProcess(pid);
         if (!process.isAlive()) {
             throw new ForbiddenException("Process finished already");
         }
@@ -558,6 +562,12 @@ public class MachineManager {
         return new ArrayList<>(getMachine(machineId).getProjects());
     }
 
+    private void createMachineLogsDir(String machineId) throws MachineException {
+        if (!new File(machineLogsDir, machineId).mkdirs()) {
+            throw new MachineException("Can't create folder for the logs of machine");
+        }
+    }
+
     private FileLineConsumer getMachineFileLogger(String machineId) throws MachineException {
         try {
             return new FileLineConsumer(getMachineLogsFile(machineId));
@@ -567,7 +577,7 @@ public class MachineManager {
     }
 
     private File getMachineLogsFile(String machineId) {
-        return new File(machineLogsDir, machineId);
+        return new File(new File(machineLogsDir, machineId), "machineId.logs");
     }
 
     public Reader getMachineLogReader(String machineId) throws NotFoundException, MachineException {
@@ -580,6 +590,32 @@ public class MachineManager {
             }
         }
         throw new NotFoundException(String.format("Logs for machine '%s' are not available", machineId));
+    }
+
+    private File getProcessLogsFile(String machineId, int pid) {
+        return new File(new File(machineLogsDir, machineId), Integer.toString(pid));
+    }
+
+    private FileLineConsumer getProcessFileLogger(String machineId, int pid) throws MachineException {
+        try {
+            return new FileLineConsumer(getProcessLogsFile(machineId, pid));
+        } catch (IOException e) {
+            throw new MachineException(
+                    String.format("Unable create log file for process '%s' of machine '%s'. %s", pid, machineId, e.getMessage()));
+        }
+    }
+
+    public Reader getProcessLogReader(String machineId, int pid) throws NotFoundException, MachineException {
+        final File processLogsFile = getProcessLogsFile(machineId, pid);
+        if (processLogsFile.isFile()) {
+            try {
+                return Files.newBufferedReader(processLogsFile.toPath(), Charset.defaultCharset());
+            } catch (IOException e) {
+                throw new MachineException(
+                        String.format("Unable read log file for process '%s' of machine '%s'. %s", pid, machineId, e.getMessage()));
+            }
+        }
+        throw new NotFoundException(String.format("Logs for process '%s' of machine '%s' are not available", pid, machineId));
     }
 
     private String generateMachineId() {
@@ -624,13 +660,7 @@ public class MachineManager {
         final java.io.File[] files = machineLogsDir.listFiles();
         if (files != null && files.length > 0) {
             for (java.io.File f : files) {
-                boolean deleted;
-                if (f.isDirectory()) {
-                    deleted = IoUtil.deleteRecursive(f);
-                } else {
-                    deleted = f.delete();
-                }
-                if (!deleted) {
+                if (!IoUtil.deleteRecursive(f)) {
                     LOG.warn("Failed delete {}", f);
                 }
             }

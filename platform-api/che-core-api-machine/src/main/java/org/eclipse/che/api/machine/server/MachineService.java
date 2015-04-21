@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.server;
 
+import com.google.common.io.CharStreams;
+
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
@@ -31,6 +33,7 @@ import org.eclipse.che.dto.server.DtoFactory;
 
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -39,7 +42,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -268,6 +274,39 @@ public class MachineService {
         checkCurrentUserPermissionsForMachine(machineManager.getMachine(machineId).getOwner());
 
         machineManager.unbindProject(machineId, new ProjectBindingImpl().withPath(path));
+    }
+
+    @GET
+    @Path("/{machineId}/logs")
+    @Produces(MediaType.TEXT_PLAIN)
+    @RolesAllowed("user")
+    public void getMachineLogs(@PathParam("machineId") String machineId,
+                               @Context HttpServletResponse httpServletResponse)
+            throws NotFoundException, ForbiddenException, MachineException, IOException {
+        // Response is written directly to the servlet request stream
+        checkCurrentUserPermissionsForMachine(machineManager.getMachine(machineId).getOwner());
+
+        final Reader machineLogReader = machineManager.getMachineLogReader(machineId);
+        httpServletResponse.setContentType("text/plain");
+        CharStreams.copy(machineLogReader, httpServletResponse.getWriter());
+        httpServletResponse.getWriter().flush();
+    }
+
+    @GET
+    @Path("/{machineId}/process/{pid}/logs")
+    @Produces(MediaType.TEXT_PLAIN)
+    @RolesAllowed("user")
+    public void getProcessLogs(@PathParam("machineId") String machineId,
+                               @PathParam("pid") int pid,
+                               @Context HttpServletResponse httpServletResponse)
+            throws NotFoundException, ForbiddenException, MachineException, IOException {
+        // Response is written directly to the servlet request stream
+        checkCurrentUserPermissionsForMachine(machineManager.getMachine(machineId).getOwner());
+
+        final Reader machineLogReader = machineManager.getProcessLogReader(machineId, pid);
+        httpServletResponse.setContentType("text/plain");
+        CharStreams.copy(machineLogReader, httpServletResponse.getWriter());
+        httpServletResponse.getWriter().flush();
     }
 
     private void checkCurrentUserPermissionsForSnapshot(SnapshotImpl snapshot) throws ForbiddenException, NotFoundException, ServerException {
