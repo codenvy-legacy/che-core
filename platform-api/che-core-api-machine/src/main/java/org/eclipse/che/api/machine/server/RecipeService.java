@@ -122,12 +122,8 @@ public class RecipeService extends Service {
     @Path("/list")
     @Produces(APPLICATION_JSON)
     @RolesAllowed({"user", "system/admin", "system/manager"})
-    public List<RecipeDescriptor> searchRecipes(@QueryParam("tags") String[] tags, @QueryParam("type") String type) {
-        final List<String> tagsList = new ArrayList<>();
-        if (tags != null) {
-            Collections.addAll(tagsList, tags);
-        }
-        final List<Recipe> recipes = recipeDao.search(tagsList, type);
+    public List<RecipeDescriptor> searchRecipes(@QueryParam("tags") List<String> tags, @QueryParam("type") String type) {
+        final List<Recipe> recipes = recipeDao.search(tags, type);
         final List<RecipeDescriptor> descriptors = new ArrayList<>(recipes.size());
         for (Recipe recipe : recipes) {
             descriptors.add(asRecipeDescriptor(recipe));
