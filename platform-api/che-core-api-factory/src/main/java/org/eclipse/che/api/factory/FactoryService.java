@@ -367,15 +367,8 @@ public class FactoryService extends Service {
         // Validate the factory against the current user
         factoryEditValidator.validate(existingFactory, userId);
 
-        // Check author is set and copy created date from old factory
-        Author newAuthor = newFactory.getCreator();
-        if (newAuthor == null || newAuthor.getUserId() == null) {
-            newAuthor = DtoFactory.getInstance().createDto(Author.class);
-            newFactory.setCreator(newAuthor);
-        }
-        if (newAuthor.getUserId() == null) {
-            newAuthor.setUserId(user.getId());
-        }
+        processDefaults(newFactory);
+
         newFactory.getCreator().withCreated(existingFactory.getCreator().getCreated());
         newFactory.setId(existingFactory.getId());
 
