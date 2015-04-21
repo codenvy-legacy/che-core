@@ -30,6 +30,4 @@ public interface RecipeDao {
     List<Recipe> search(List<String> tags, String type);
 
     List<Recipe> getByCreator(String creator);
-
-    List<Recipe> getAllowed(String user);
 }
