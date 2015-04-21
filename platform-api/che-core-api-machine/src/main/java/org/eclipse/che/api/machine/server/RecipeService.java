@@ -115,7 +115,8 @@ public class RecipeService extends Service {
     @Produces(APPLICATION_JSON)
     @RolesAllowed({"user", "system/admin", "system/manager"})
     public List<RecipeDescriptor> getCreatedRecipes() {
-        return new ArrayList<>();
+        final List<Recipe> recipes = recipeDao.getByCreator(user.get().getId());
+        return asRecipeDescriptors(recipes);
     }
 
     @GET
@@ -124,11 +125,7 @@ public class RecipeService extends Service {
     @RolesAllowed({"user", "system/admin", "system/manager"})
     public List<RecipeDescriptor> searchRecipes(@QueryParam("tags") List<String> tags, @QueryParam("type") String type) {
         final List<Recipe> recipes = recipeDao.search(tags, type);
-        final List<RecipeDescriptor> descriptors = new ArrayList<>(recipes.size());
-        for (Recipe recipe : recipes) {
-            descriptors.add(asRecipeDescriptor(recipe));
-        }
-        return descriptors;
+        return asRecipeDescriptors(recipes);
     }
 
     @PUT
@@ -161,7 +158,15 @@ public class RecipeService extends Service {
         recipeDao.remove(id);
     }
 
-    private static RecipeDescriptor asRecipeDescriptor(Recipe recipe) {
+    private List<RecipeDescriptor> asRecipeDescriptors(List<Recipe> recipes) {
+        final List<RecipeDescriptor> descriptors = new ArrayList<>(recipes.size());
+        for (Recipe recipe : recipes) {
+            descriptors.add(asRecipeDescriptor(recipe));
+        }
+        return descriptors;
+    }
+
+    private RecipeDescriptor asRecipeDescriptor(Recipe recipe) {
         final Permissions permissions = recipe.getPermissions();
         final ArrayList<GroupDescriptor> groups = new ArrayList<>(permissions.getGroups().size());
         for (Group group : permissions.getGroups()) {
