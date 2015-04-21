@@ -30,24 +30,34 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author andrew00x
  */
+
+//Add some not good changes in case SDK packaging we have several war and have different instance of mapping map
+//this must be fix ASAP after release 3.9.0
+
 @Singleton
 public class MappedDirectoryLocalFSMountStrategy implements LocalFSMountStrategy {
     private final Map<String, java.io.File> mapping = new ConcurrentHashMap<>();
 
     private final java.io.File mappingFile;
 
-    public MappedDirectoryLocalFSMountStrategy(Map<String, java.io.File> mapping) {
-        this.mappingFile = null;
+    public MappedDirectoryLocalFSMountStrategy(java.io.File mappingFile, Map<String, java.io.File> mapping) throws IOException {
+        this.mappingFile = mappingFile;
         this.mapping.putAll(mapping);
+        if (!mapping.isEmpty()) {
+            saveInPropertiesFile(mappingFile);
+        }
     }
 
-    public MappedDirectoryLocalFSMountStrategy() {
-        this.mappingFile = null;
-    }
+//    public MappedDirectoryLocalFSMountStrategy() {
+//        this.mappingFile = null;
+//    }
 
     @Inject
-    private MappedDirectoryLocalFSMountStrategy(@Named("vfs.local.directory_mapping_file") java.io.File mappingFile) {
+    public MappedDirectoryLocalFSMountStrategy(@Named("vfs.local.directory_mapping_file") java.io.File mappingFile) throws IOException {
         this.mappingFile = mappingFile;
+        if(!mappingFile.exists()) {
+            mappingFile.createNewFile();
+        }
     }
 
     @PostConstruct
@@ -75,6 +85,7 @@ public class MappedDirectoryLocalFSMountStrategy implements LocalFSMountStrategy
     }
 
     public void loadFromPropertiesFile(java.io.File propertiesFile) throws IOException {
+
         final Properties properties = new Properties();
         try (Reader in = new FileReader(propertiesFile)) {
             properties.load(in);
@@ -103,6 +114,11 @@ public class MappedDirectoryLocalFSMountStrategy implements LocalFSMountStrategy
         if (workspaceId == null || workspaceId.isEmpty()) {
             throw new ServerException("Unable get mount path for virtual file system. Workspace id is not set.");
         }
+        try {
+            loadFromPropertiesFile(mappingFile); //TODO for now need always re-read file because in SDK packaging we have several wars and have different instance of mapping map
+        } catch (IOException e) {
+            throw new ServerException(e);
+        }
         final java.io.File directory = mapping.get(workspaceId);
         if (directory == null) {
             throw new ServerException(
@@ -117,15 +133,18 @@ public class MappedDirectoryLocalFSMountStrategy implements LocalFSMountStrategy
         return getMountPath(EnvironmentContext.getCurrent().getWorkspaceId());
     }
 
-    public void setMountPath(String workspaceId, java.io.File mountPath) {
+    public void setMountPath(String workspaceId, java.io.File mountPath) throws IOException {
         mapping.put(workspaceId, mountPath);
+        saveInPropertiesFile(mappingFile);//TODO for now need always re-read file because in SDK packaging we have several wars and have different instance of mapping map
     }
 
-    public void removeMountPath(String workspaceId) {
+    public void removeMountPath(String workspaceId) throws IOException {
         mapping.remove(workspaceId);
+        saveInPropertiesFile(mappingFile);//TODO for now need always re-read file because in SDK packaging we have several wars and have different instance of mapping map
     }
 
-    public Map<String, java.io.File> getDirectoryMapping() {
+    public Map<String, java.io.File> getDirectoryMapping() throws IOException {
+        loadFromPropertiesFile(mappingFile); //TODO for now need always re-read file because in SDK packaging we have several wars and have different instance of mapping map
         return mapping;
     }
 }

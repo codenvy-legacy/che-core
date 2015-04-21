@@ -28,6 +28,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -46,7 +47,7 @@ public class WorkspaceToDirectoryMappingService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Map<String, String> setMountPath(@PathParam("ws-id") String workspaceId, @QueryParam("mountPath") String mountPath)
-            throws ServerException {
+            throws ServerException, IOException {
         VirtualFileSystemProvider provider = virtualFileSystemRegistry.getProvider(workspaceId);
         provider.close();
         mappedDirectoryLocalFSMountStrategy.setMountPath(workspaceId, new File(mountPath));
@@ -57,7 +58,7 @@ public class WorkspaceToDirectoryMappingService {
     @Path("{ws-id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Map<String, String> removeMountPath(@PathParam("ws-id") String workspaceId) throws ServerException {
+    public Map<String, String> removeMountPath(@PathParam("ws-id") String workspaceId) throws ServerException, IOException {
         VirtualFileSystemProvider provider = virtualFileSystemRegistry.getProvider(workspaceId);
         provider.close();
         mappedDirectoryLocalFSMountStrategy.removeMountPath(workspaceId);
@@ -67,7 +68,7 @@ public class WorkspaceToDirectoryMappingService {
     @GET
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Map<String, String> getDirectoryMapping() {
+    public Map<String, String> getDirectoryMapping() throws IOException {
         return Maps.transformValues(mappedDirectoryLocalFSMountStrategy.getDirectoryMapping(), new Function<File, String>() {
             @Override
             public String apply(File input) {

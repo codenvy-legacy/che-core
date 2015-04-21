@@ -17,8 +17,10 @@ import org.junit.Test;
 
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -39,6 +41,7 @@ public class MappedDirectoryLocalFSMountStrategyTest {
     public void setUp() throws Exception {
         java.io.File testDir = new java.io.File(Thread.currentThread().getContextClassLoader().getResource(".").toURI()).getParentFile();
         mappingFile = new java.io.File(testDir, "directory_mapping.properties");
+        mappingFile.createNewFile();
         mountPath = new java.io.File(testDir, "ws1");
     }
 
@@ -55,7 +58,7 @@ public class MappedDirectoryLocalFSMountStrategyTest {
             mappingProperties.store(out, null);
         }
 
-        final MappedDirectoryLocalFSMountStrategy mountStrategy = new MappedDirectoryLocalFSMountStrategy();
+        final MappedDirectoryLocalFSMountStrategy mountStrategy = new MappedDirectoryLocalFSMountStrategy(mappingFile);
         mountStrategy.loadFromPropertiesFile(mappingFile);
 
         final Map<String, java.io.File> mapping = mountStrategy.getDirectoryMapping();
@@ -67,7 +70,7 @@ public class MappedDirectoryLocalFSMountStrategyTest {
         final Map<String, java.io.File> mapping = new HashMap<>();
         mapping.put(workspaceId, mountPath);
 
-        final MappedDirectoryLocalFSMountStrategy mountStrategy = new MappedDirectoryLocalFSMountStrategy(mapping);
+        final MappedDirectoryLocalFSMountStrategy mountStrategy = new MappedDirectoryLocalFSMountStrategy(mappingFile, mapping);
         mountStrategy.saveInPropertiesFile(mappingFile);
 
         final Properties mappingProperties = new Properties();
@@ -79,19 +82,19 @@ public class MappedDirectoryLocalFSMountStrategyTest {
     }
 
     @Test
-    public void setsMountPath() {
-        final MappedDirectoryLocalFSMountStrategy mountStrategy = new MappedDirectoryLocalFSMountStrategy();
+    public void setsMountPath() throws IOException {
+        final MappedDirectoryLocalFSMountStrategy mountStrategy = new MappedDirectoryLocalFSMountStrategy(mappingFile);
         mountStrategy.setMountPath(workspaceId, mountPath);
 
         assertEquals(mountPath, mountStrategy.getDirectoryMapping().get(workspaceId));
     }
 
     @Test
-    public void removesMountPath() {
+    public void removesMountPath() throws IOException {
         final Map<String, java.io.File> mapping = new HashMap<>();
         mapping.put(workspaceId, mountPath);
 
-        final MappedDirectoryLocalFSMountStrategy mountStrategy = new MappedDirectoryLocalFSMountStrategy(mapping);
+        final MappedDirectoryLocalFSMountStrategy mountStrategy = new MappedDirectoryLocalFSMountStrategy(mappingFile, mapping);
         mountStrategy.removeMountPath(workspaceId);
 
         assertNull(mountStrategy.getDirectoryMapping().get(workspaceId));
@@ -103,13 +106,13 @@ public class MappedDirectoryLocalFSMountStrategyTest {
         final Map<String, java.io.File> mapping = new HashMap<>();
         mapping.put(workspaceId, mountPath);
 
-        final LocalFSMountStrategy mountStrategy = new MappedDirectoryLocalFSMountStrategy(mapping);
+        final LocalFSMountStrategy mountStrategy = new MappedDirectoryLocalFSMountStrategy(mappingFile, mapping);
         assertEquals(mountPath, mountStrategy.getMountPath(workspaceId));
     }
 
     @Test(expected = ServerException.class)
     public void throwsExceptionIfMountPathForWorkspaceIsNotSet() throws Exception {
-        final LocalFSMountStrategy mountStrategy = new MappedDirectoryLocalFSMountStrategy();
+        final LocalFSMountStrategy mountStrategy = new MappedDirectoryLocalFSMountStrategy(mappingFile);
         mountStrategy.getMountPath(workspaceId);
     }
 
@@ -118,7 +121,7 @@ public class MappedDirectoryLocalFSMountStrategyTest {
         final Map<String, java.io.File> mapping = new HashMap<>();
         mapping.put(workspaceId, mountPath);
 
-        final LocalFSMountStrategy mountStrategy = new MappedDirectoryLocalFSMountStrategy(mapping);
+        final LocalFSMountStrategy mountStrategy = new MappedDirectoryLocalFSMountStrategy(mappingFile, mapping);
         mountStrategy.getMountPath(null);
     }
 }
