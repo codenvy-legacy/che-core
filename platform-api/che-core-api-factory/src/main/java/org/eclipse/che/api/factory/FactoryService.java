@@ -398,7 +398,7 @@ public class FactoryService extends Service {
      * @throws org.eclipse.che.api.core.ApiException
      *         - {@link org.eclipse.che.api.core.NotFoundException} when factory with given id doesn't exist
      */
-    @RolesAllowed("user")
+    @RolesAllowed({"user", "system/manager"})
     @GET
     @Path("/find")
     @Produces({MediaType.APPLICATION_JSON})
