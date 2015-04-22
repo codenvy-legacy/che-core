@@ -123,7 +123,7 @@ public class Bytes {
         // Strip any trailing 0
         BigDecimal myDecimal = BigDecimal.valueOf(roundedValue);
         BigDecimal updated = myDecimal.stripTrailingZeros();
-        return updated.toString() + unit.name();
+        return updated.toPlainString() + unit.name();
 
     }
 
