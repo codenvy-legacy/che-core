@@ -34,9 +34,11 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -102,6 +104,15 @@ public class CodenvyJsonProvider<T> implements MessageBodyReader<T>, MessageBody
                       MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException, WebApplicationException {
         if (type.isAnnotationPresent(DTO.class)) {
             return DtoFactory.getInstance().createDtoFromJson(entityStream, type);
+        } else if (type.isAssignableFrom(List.class) && genericType instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType)genericType;
+            Type elementType = parameterizedType.getActualTypeArguments()[0];
+            if (elementType instanceof Class) {
+                Class elementClass = (Class)elementType;
+                if (elementClass.isAnnotationPresent(DTO.class)) {
+                    return (T)DtoFactory.getInstance().createListDtoFromJson(entityStream, elementClass);
+                }
+            }
         }
         return (T)delegate.readFrom(type, genericType, annotations, mediaType, httpHeaders, entityStream);
     }

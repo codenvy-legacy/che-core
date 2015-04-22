@@ -27,9 +27,9 @@ public class Config {
      * Returns the base context of the IDE.
      * Is used to give IDE an ability to build valid URL when using history.
      * Valid IDE url looks like
-     *      "/ide-context/workspace-name/project-name"
+     * "/ide-context/workspace-name/project-name"
      * and can be got by code below
-     *      Config.getContext() + "/" + Config.getWorkspaceName() + "/" + Config.getProjectName()
+     * Config.getContext() + "/" + Config.getWorkspaceName() + "/" + Config.getProjectName()
      *
      * @return
      */
@@ -114,6 +114,21 @@ public class Config {
             }
         }
         return null;
+    }-*/;
+
+    /**
+     * The method defines current mode is sdk or not.
+     *
+     * @return <code>true</code> current mode is sdk, <code>false</code> current mode isn't sdk
+     */
+    public static native boolean isSdkProject()/*-{
+        var isSdk = $wnd.sdk;
+
+        if (!isSdk) {
+            return false;
+        }
+
+        return isSdk == 1;
     }-*/;
 
     /**

@@ -791,7 +791,7 @@ public class WorkspaceService extends Service {
             @ApiResponse(code = 500, message = "Internal Server Error")})
     @DELETE
     @Path("/{id}/members/{userid}")
-    @RolesAllowed({"account/owner", "workspace/admin", "account/owner"})
+    @RolesAllowed({"account/owner", "workspace/admin"})
     public void removeMember(@ApiParam(value = "Workspace ID")
                              @PathParam("id")
                              String wsId,

@@ -12,7 +12,6 @@ package org.eclipse.che.api.local;
 
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
-import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.workspace.server.dao.Workspace;
 import org.eclipse.che.api.workspace.server.dao.WorkspaceDao;
 
@@ -26,8 +25,6 @@ import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Pattern;
-
-import static org.eclipse.che.api.account.server.Constants.RESOURCES_LOCKED_PROPERTY;
 
 @Singleton
 public class LocalWorkspaceDaoImpl implements WorkspaceDao {
@@ -157,23 +154,6 @@ public class LocalWorkspaceDaoImpl implements WorkspaceDao {
                                               .withAccountId(workspace.getAccountId())
                                               .withAttributes(new LinkedHashMap<>(workspace.getAttributes()))
                                               .withTemporary(workspace.isTemporary()));
-                }
-            }
-        } finally {
-            lock.readLock().unlock();
-        }
-        return result;
-    }
-
-    @Override
-    public List<Workspace> getWorkspacesWithLockedResources() throws ServerException {
-        List<Workspace> result = new LinkedList<>();
-        lock.readLock().lock();
-        try {
-            for (Workspace workspace : workspaces) {
-                final String lockedAttribute = workspace.getAttributes().get(RESOURCES_LOCKED_PROPERTY);
-                if (Boolean.parseBoolean(lockedAttribute)) {
-                    result.add(workspace);
                 }
             }
         } finally {

@@ -454,9 +454,9 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
             return;
         }
 
-        final VirtualFile eventFile = event.getFile();
-        final VirtualFile file = input.getFile();
-        if (file.equals(eventFile)) {
+        final String eventFilePath = event.getFile().getPath();
+        final String filePath = input.getFile().getPath();
+        if (filePath.equals(eventFilePath)) {
             workspaceAgent.removePart(this);
         }
     }
