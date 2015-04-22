@@ -52,9 +52,13 @@ public class OpenedNodesPersistenceComponent implements PersistenceComponent {
     @Override
     public List<ActionDescriptor> getActions(String projectPath) {
         Array<TreeNode<?>> openedNodes = projectExplorerView.getOpenedTreeNodes();
-        String actionId = actionManager.getId(openNodeAction);
-
         final List<ActionDescriptor> actions = new ArrayList<>();
+
+        if (openedNodes == null || openedNodes.isEmpty()) {
+            return actions;
+        }
+
+        String actionId = actionManager.getId(openNodeAction);
 
         for (TreeNode<?> openedNode: openedNodes.asIterable()) {
             if (openedNode instanceof StorableNode) {

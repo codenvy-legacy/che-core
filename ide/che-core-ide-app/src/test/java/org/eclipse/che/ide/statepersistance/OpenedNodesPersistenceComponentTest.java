@@ -66,9 +66,10 @@ public class OpenedNodesPersistenceComponentTest {
 
     @Mock
     private ActionDescriptor actionDescriptor1;
-
     @Mock
     private ActionDescriptor actionDescriptor2;
+    @Mock
+    private Array<TreeNode<?>>  emptyArray;
 
     @InjectMocks
     private OpenedNodesPersistenceComponent openedNodesComponent;
@@ -80,7 +81,6 @@ public class OpenedNodesPersistenceComponentTest {
         treeNodeList.add(node2);
         treeNodeList.add(node3);
         Array<TreeNode<?>> openedNodes = new JsonArrayListAdapter<>(treeNodeList);
-
 
         when(projectExplorerView.getOpenedTreeNodes()).thenReturn(openedNodes);
         when(actionManager.getId(openNodeAction)).thenReturn(TEXT1);
@@ -118,6 +118,29 @@ public class OpenedNodesPersistenceComponentTest {
 
         assertThat(result.contains(actionDescriptor1), is(true));
         assertThat(result.contains(actionDescriptor2), is(true));
+        assertThat(result.size(), is(2));
     }
 
+    @Test
+    public void emptyListActionsShouldBeReturnedIfListOpenedNodesIsNull() {
+        when(projectExplorerView.getOpenedTreeNodes()).thenReturn(null);
+
+        List<ActionDescriptor> result = openedNodesComponent.getActions(PROJECT_PATH);
+
+        verify(projectExplorerView).getOpenedTreeNodes();
+
+        assertThat(result.isEmpty(), is(true));
+    }
+
+    @Test
+    public void emptyListActionsShouldBeReturnedIfListOpenedNodesIsEmpty() {
+        when(projectExplorerView.getOpenedTreeNodes()).thenReturn(emptyArray);
+        when(emptyArray.isEmpty()).thenReturn(true);
+
+        List<ActionDescriptor> result = openedNodesComponent.getActions(PROJECT_PATH);
+
+        verify(projectExplorerView).getOpenedTreeNodes();
+
+        assertThat(result.size(), is(0));
+    }
 }

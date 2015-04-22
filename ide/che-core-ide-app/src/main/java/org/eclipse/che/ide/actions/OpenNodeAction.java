@@ -84,7 +84,7 @@ public class OpenNodeAction extends Action implements PromisableAction {
         }
 
         final String path = event.getParameters().get(NODE_PARAM_ID);
-        if (path == null) {
+        if (path == null || path.equals("")) {
             Log.error(getClass(), localization.nodeToOpenIsNotSpecified());
             return;
         }

@@ -205,6 +205,21 @@ public class OpenNodeActionTest {
     }
 
     @Test
+    public void actionShouldBeFailedBecausePathToNodeIsEmptyLine() {
+        Map<String, String> params = new HashMap<>();
+        params.put(NODE_PARAM_ID, "");
+        when(event.getParameters()).thenReturn(params);
+
+        openNodeAction.actionPerformed(event);
+
+        verify(appContext).getCurrentProject();
+        verify(currentProject, times(2)).getRootProject();
+
+        verify(event, times(2)).getParameters();
+        verify(localization).nodeToOpenIsNotSpecified();
+    }
+
+    @Test
     public void actionShouldBeFailedBecauseNodeIsIsNull() {
         openNodeAction.actionPerformed(event);
 
