@@ -39,6 +39,13 @@ public class JsPromise<V> extends JavaScriptObject implements Promise<V> {
     }-*/;
 
     @Override
+    public final native <B> Promise<B> thenPromise(Function<V, Promise<B>> onFulfilled) /*-{
+        return this.then(function(value) {
+            return onFulfilled.@org.eclipse.che.api.promises.client.Function::apply(*)(value);
+        });
+    }-*/;
+
+    @Override
     public final <B> Promise<B> then(Function<V, B> onFulfilled, Function<PromiseError, B> onRejected) {
         if (onFulfilled != null) {
             return this.internalThen(onFulfilled, onRejected);

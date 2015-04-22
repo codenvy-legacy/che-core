@@ -10,7 +10,24 @@
  *******************************************************************************/
 package org.eclipse.che.api.promises.client;
 
+import javax.annotation.Nullable;
+
 
 public interface PromiseError {
 
+    /**
+     * Returns the error message.
+     * 
+     * @return the message
+     */
+    @Nullable
+    String getMessage();
+
+    /**
+     * Returns the error cause.
+     * 
+     * @return the cause
+     */
+    @Nullable
+    Throwable getCause();
 }

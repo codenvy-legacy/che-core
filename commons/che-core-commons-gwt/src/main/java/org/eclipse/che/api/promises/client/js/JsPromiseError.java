@@ -10,9 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.api.promises.client.js;
 
-import com.google.gwt.core.client.JavaScriptObject;
-
 import org.eclipse.che.api.promises.client.PromiseError;
+
+import com.google.gwt.core.client.JavaScriptObject;
 
 public class JsPromiseError extends JavaScriptObject implements PromiseError {
 
@@ -35,17 +35,24 @@ public class JsPromiseError extends JavaScriptObject implements PromiseError {
         return new Error(message);
     }-*/;
 
+    public static final native JsPromiseError create(JavaScriptObject object) /*-{
+        return object;
+    }-*/;
+
     public static final JsPromiseError create(final Throwable e) {
-        final StackTraceElement[] stack = e.getStackTrace();
-        JsPromiseError result;
-        if (stack != null && stack.length != 0) {
-            result = create(e.getMessage(), stack[0].getFileName(), Integer.toString(stack[0].getLineNumber()));
-            result.setStack(stack);
+        if (e == null) {
+            return create();
         } else {
-            result = create(e.getMessage());
+            return createFromThrowable(e);
         }
-        return result;
     }
+
+    private static final native JsPromiseError createFromThrowable(final Throwable e) /*-{
+        var message = e.@java.lang.Throwable::getMessage()();
+        var result = new Error(message);
+        result.cause = e;
+        return result;
+    }-*/;
 
     private final void setStack(final StackTraceElement[] stack) {
         // TODO
@@ -57,5 +64,10 @@ public class JsPromiseError extends JavaScriptObject implements PromiseError {
 
     public final native String getName() /*-{
         return this.name;
+    }-*/;
+
+    @Override
+    public final native Throwable getCause() /*-{
+        return this.cause;
     }-*/;
 }
