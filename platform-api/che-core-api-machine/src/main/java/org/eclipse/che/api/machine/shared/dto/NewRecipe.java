@@ -39,4 +39,10 @@ public interface NewRecipe {
     void setTags(List<String> tags);
 
     NewRecipe withTags(List<String> tags);
+
+    PermissionsDescriptor getPermissions();
+
+    void setPermissions(PermissionsDescriptor permissions);
+
+    NewRecipe withPermissions(PermissionsDescriptor permissions);
 }

@@ -68,8 +68,7 @@ public class RecipeService extends Service {
     private final MemberDao memberDao;
 
     @Inject
-    private RecipeService(RecipeDao recipeDao,
-                          MemberDao memberDao) {
+    public RecipeService(RecipeDao recipeDao, MemberDao memberDao) {
         this.recipeDao = recipeDao;
         this.memberDao = memberDao;
     }
@@ -90,7 +89,9 @@ public class RecipeService extends Service {
         if (isNullOrEmpty(newRecipe.getScript())) {
             throw new ForbiddenException("Recipe script required");
         }
-
+        if (newRecipe.getPermissions() != null) {
+            checkPublicPermission(newRecipe.getPermissions());
+        }
         final String id = NameGenerator.generate("recipe", 16);
         final Recipe recipe = new RecipeImpl().withId(id)
                                               .withCreator(currentUser().getId())
@@ -180,6 +181,7 @@ public class RecipeService extends Service {
             updateRequired = true;
         }
         if (update.getPermissions() != null) {
+            checkPublicPermission(update.getPermissions());
             recipe.setPermissions(PermissionsImpl.fromDescriptor(update.getPermissions()));
             updateRequired = true;
         }
@@ -206,26 +208,43 @@ public class RecipeService extends Service {
     /**
      * Checks that user with id {@code userId} has access to recipe.
      * If user with id {@code userId} is recipe creator or has given permission in {@code recipe}
+     * or recipe has group permission "public
      * returns {@code true} otherwise returns {@code false}
      */
     private boolean hasAccess(Recipe recipe, String userId, String permission) throws ServerException {
-        final Map<String, List<String>> users = recipe.getPermissions().getUsers();
+        final Map<String, List<String>> userPerms = recipe.getPermissions().getUsers();
 
-        if (recipe.getCreator().equals(userId) || users.get(userId).contains(permission)) {
+        if (recipe.getCreator().equals(userId) || userPerms.get(userId).contains(permission)) {
             return true;
         }
 
         final List<Member> relationships = memberDao.getUserRelationships(userId);
         final List<Group> groups = recipe.getPermissions().getGroups();
-
-        for (Member relationship : relationships) {
+        for (Member member : relationships) {
             for (Group group : groups) {
-                if (group.getUnit().equals(relationship.getWorkspaceId()) && relationship.getRoles().contains(group.getName())) {
+                boolean hasPublicAccess = group.getName().equals("public") && group.getAcl().contains(permission);
+                if (hasPublicAccess || group.getUnit().equals(member.getWorkspaceId()) && member.getRoles().contains(group.getName())) {
                     return true;
                 }
             }
         }
         return false;
+    }
+
+    /**
+     * User who is neither 'workspace/admin' no 'workspace/developer' can't create or
+     * update recipe permissions to 'public: search', this operation allowed only
+     * for 'system/admin' or 'system/manager'
+     */
+    private void checkPublicPermission(PermissionsDescriptor permissions) throws ForbiddenException {
+        final User user = currentUser();
+        if (!user.isMemberOf("system/admin") || !user.isMemberOf("system/manager")) {
+            for (GroupDescriptor group : permissions.getGroups()) {
+                if ("public".equalsIgnoreCase(group.getName()) && group.getAcl().contains("search")) {
+                    throw new ForbiddenException("User " + user.getId() + " doesn't have access to use 'public -> search' permission");
+                }
+            }
+        }
     }
 
     private User currentUser() {
