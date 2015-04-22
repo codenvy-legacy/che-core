@@ -544,7 +544,7 @@ public class RunQueue {
         final InternalRunTask future = new InternalRunTask(ThreadLocalPropagateContext.wrap(callable), id, workspace, project);
         request.setId(id); // for getting callback events from remote runner
         final RunQueueTask task = new RunQueueTask(id, request, maxWaitingTimeMillis, future, buildTaskHolder,
-                                                   serviceContext.getServiceUriBuilder());
+                                                   eventService, serviceContext.getServiceUriBuilder());
         tasks.put(id, task);
         eventService.publish(RunnerEvent.queueStartedEvent(id, workspace, project));
         executor.execute(future);
@@ -1271,6 +1271,7 @@ public class RunQueue {
                 case STOPPED:
                 case ERROR:
                 case RUN_TASK_QUEUE_TIME_EXCEEDED:
+                case CANCELED:
                     try {
                         final ChannelBroadcastMessage bm = new ChannelBroadcastMessage();
                         String workspaceId = event.getWorkspace();
@@ -1316,6 +1317,7 @@ public class RunQueue {
                     case PREPARATION_STARTED:
                     case STARTED:
                     case STOPPED:
+                    case CANCELED:
                     case ERROR:
                         bm.setChannel(String.format("runner:status:%d", id));
                         try {

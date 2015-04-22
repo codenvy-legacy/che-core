@@ -28,6 +28,8 @@ public class BuilderEvent {
         BUILD_TASK_QUEUE_TIME_EXCEEDED("build_task_queue_time_exceeded"),
         /** Building process is added in queue. */
         BUILD_TASK_ADDED_IN_QUEUE("build_task_added_in_queue"),
+        /** Build canceled. */
+        CANCELED("canceled"),
         /**
          * Gets new logged message from the builder.
          *
@@ -100,6 +102,10 @@ public class BuilderEvent {
         return new BuilderEvent(EventType.DONE, taskId, workspace, project);
     }
 
+    public static BuilderEvent canceledEvent(long taskId, String workspace, String project) {
+        return new BuilderEvent(EventType.CANCELED, taskId, workspace, project);
+    }
+
     public static BuilderEvent doneEvent(long taskId, String workspace, String project, boolean reused) {
         return new BuilderEvent(EventType.DONE, taskId, workspace, project, reused);
     }
@@ -131,7 +137,7 @@ public class BuilderEvent {
     /** Message associated with this event. Makes sense only for {@link EventType#MESSAGE_LOGGED} events. */
     private LoggedMessage message;
     /** Indicates if build result was reused. */
-    private boolean reused;
+    private boolean       reused;
 
     BuilderEvent(EventType type, long taskId, String workspace, String project, LoggedMessage message) {
         this.type = type;

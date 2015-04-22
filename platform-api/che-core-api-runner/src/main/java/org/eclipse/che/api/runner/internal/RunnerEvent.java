@@ -28,6 +28,8 @@ public class RunnerEvent {
         RUN_TASK_QUEUE_TIME_EXCEEDED("run_task_queue_time_exceeded"),
         /** Running process is added in queue. */
         RUN_TASK_ADDED_IN_QUEUE("run_task_added_in_queue"),
+        /** Start of application canceled. */
+        CANCELED("canceled"),
         /** Error occurs while starting or stopped an application. */
         ERROR("error"),
         /**
@@ -96,6 +98,10 @@ public class RunnerEvent {
 
     public static RunnerEvent startedEvent(long processId, String workspace, String project) {
         return new RunnerEvent(EventType.STARTED, processId, workspace, project);
+    }
+
+    public static RunnerEvent canceledEvent(long processId, String workspace, String project) {
+        return new RunnerEvent(EventType.CANCELED, processId, workspace, project);
     }
 
     public static RunnerEvent stoppedEvent(long processId, String workspace, String project) {
