@@ -34,13 +34,14 @@ import org.eclipse.che.ide.api.event.OpenProjectHandler;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.ProjectDescriptorChangedEvent;
 import org.eclipse.che.ide.api.event.ProjectDescriptorChangedHandler;
+import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
 import org.eclipse.che.ide.core.problemDialog.ProjectProblemDialog;
 import org.eclipse.che.ide.projecttype.wizard.presenter.ProjectWizardPresenter;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.Unmarshallable;
-import org.eclipse.che.ide.util.loging.Log;
 import org.eclipse.che.ide.util.Config;
+import org.eclipse.che.ide.util.loging.Log;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -201,9 +202,13 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
     }
 
     private void openProblemProject(final ProjectDescriptor project) {
-        ProjectProblemDialog dialog =
-                new ProjectProblemDialog(constant.projectProblemTitle(), constant.projectProblemMessage(), getAskHandler(project));
+        ProjectProblemDialog dialog = new ProjectProblemDialog(constant.projectProblemTitle(),
+                                                               constant.projectProblemMessage(),
+                                                               getAskHandler(project));
+
         dialog.show();
+
+        eventBus.fireEvent(new RefreshProjectTreeEvent());
     }
 
     private ProjectProblemDialog.AskHandler getAskHandler(final ProjectDescriptor project) {
