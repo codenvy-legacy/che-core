@@ -423,8 +423,23 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("messages.promptSaveChanges")
     String messagesPromptSaveChanges();
 
-    @Key("messages.unableOpenFile")
-    public String unableOpenFile(String path);
+    @Key("messages.unableOpenResource")
+    String unableOpenResource(String path);
+
+    @Key("messages.canNotOpenFileWithoutParams")
+    String canNotOpenFileWithoutParams();
+
+    @Key("messages.fileToOpenIsNotSpecified")
+    String fileToOpenIsNotSpecified();
+
+    @Key("messages.canNotOpenNodeWithoutParams")
+    String canNotOpenNodeWithoutParams();
+
+    @Key("messages.nodeToOpenIsNotSpecified")
+    String nodeToOpenIsNotSpecified();
+
+    @Key("messages.noOpenedProject")
+    String noOpenedProject();
 
     /* Buttons */
     @Key("ok")

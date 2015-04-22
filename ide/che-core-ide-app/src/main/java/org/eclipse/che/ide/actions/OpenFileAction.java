@@ -19,7 +19,6 @@ import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.promises.client.Promise;
-import org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper;
 import org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper.Call;
 import org.eclipse.che.api.promises.client.js.JsPromiseError;
 import org.eclipse.che.api.promises.client.js.Promises;
@@ -45,6 +44,7 @@ import javax.inject.Singleton;
 
 import static org.eclipse.che.ide.api.event.FileEvent.FileOperation.OPEN;
 import static org.eclipse.che.ide.api.notification.Notification.Type.WARNING;
+import static org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper.createFromCallback;
 
 /**
  * @author Sergii Leschenko
@@ -59,7 +59,7 @@ public class OpenFileAction extends Action implements PromisableAction {
     private final AppContext               appContext;
     private final NotificationManager      notificationManager;
     private final CoreLocalizationConstant localization;
-    private final ProjectServiceClient projectServiceClient;
+    private final ProjectServiceClient     projectServiceClient;
 
     @Inject
     public OpenFileAction(EventBus eventBus,
@@ -82,13 +82,13 @@ public class OpenFileAction extends Action implements PromisableAction {
 
         final ProjectDescriptor activeProject = appContext.getCurrentProject().getRootProject();
         if (event.getParameters() == null) {
-            Log.error(getClass(), "Can't open file without parameters");
+            Log.error(getClass(),localization.canNotOpenFileWithoutParams());
             return;
         }
 
         final String path = event.getParameters().get(FILE_PARAM_ID);
         if (path == null) {
-            Log.error(getClass(), "File to open is not specified");
+            Log.error(getClass(), localization.fileToOpenIsNotSpecified());
             return;
         }
 
@@ -107,7 +107,7 @@ public class OpenFileAction extends Action implements PromisableAction {
             @Override
             public void onSuccess(TreeNode<?> result) {
                 if (result == null) {
-                    notificationManager.showNotification(new Notification(localization.unableOpenFile(filePath), WARNING));
+                    notificationManager.showNotification(new Notification(localization.unableOpenResource(filePath), WARNING));
                     return;
                 }
 
@@ -118,7 +118,7 @@ public class OpenFileAction extends Action implements PromisableAction {
 
             @Override
             public void onFailure(Throwable caught) {
-                notificationManager.showNotification(new Notification(localization.unableOpenFile(filePath), WARNING));
+                notificationManager.showNotification(new Notification(localization.unableOpenResource(filePath), WARNING));
             }
         });
     }
@@ -127,18 +127,18 @@ public class OpenFileAction extends Action implements PromisableAction {
     public Promise<Void> promise(final ActionEvent e) {
         final CurrentProject currentProject = appContext.getCurrentProject();
         if (currentProject == null) {
-            return Promises.reject(JsPromiseError.create("No opened project"));
+            return Promises.reject(JsPromiseError.create(localization.noOpenedProject()));
         }
 
         final String activeProjectPath = currentProject.getRootProject().getPath();
 
         if (e.getParameters() == null) {
-            return Promises.reject(JsPromiseError.create("Can't open file without parameters"));
+            return Promises.reject(JsPromiseError.create(localization.canNotOpenFileWithoutParams()));
         }
 
         String relPathToOpen = e.getParameters().get(FILE_PARAM_ID);
         if (relPathToOpen == null) {
-            return Promises.reject(JsPromiseError.create("File to open is not specified"));
+            return Promises.reject(JsPromiseError.create(localization.fileToOpenIsNotSpecified()));
         }
 
         if (!relPathToOpen.startsWith("/")) {
@@ -178,6 +178,6 @@ public class OpenFileAction extends Action implements PromisableAction {
             }
         };
 
-        return CallbackPromiseHelper.createFromCallback(call);
+        return createFromCallback(call);
     }
 }

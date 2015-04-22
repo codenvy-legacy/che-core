@@ -8,11 +8,14 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.action;
+package org.eclipse.che.ide.api.event;
+
+import com.google.gwt.event.shared.EventHandler;
 
 /**
- * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
- * @version $Id:
+ * @author Andrienko Alexander
  */
-public class DefaultGroupTest {
+public interface UpdateNodeEventHandler extends EventHandler {
+
+    void onNodeUpdated();
 }
