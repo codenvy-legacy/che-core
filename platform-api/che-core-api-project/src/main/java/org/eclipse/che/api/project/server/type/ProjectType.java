@@ -82,6 +82,10 @@ public abstract class ProjectType {
         return parents;
     }
 
+    public String getDefaultRecipe() {
+        return defaultRecipe;
+    }
+
     public boolean isTypeOf(String typeId) {
         if (this.id.equals(typeId))
             return true;

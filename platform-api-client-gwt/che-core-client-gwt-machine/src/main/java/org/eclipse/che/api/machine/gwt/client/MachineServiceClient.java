@@ -11,6 +11,7 @@
 package org.eclipse.che.api.machine.gwt.client;
 
 import org.eclipse.che.api.machine.shared.dto.MachineDescriptor;
+import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 
 import javax.annotation.Nonnull;
@@ -61,6 +62,20 @@ public interface MachineServiceClient {
                                    @Nonnull AsyncRequestCallback<MachineDescriptor> callback);
 
     /**
+     * Find machines connected with specific workspace/project.
+     *
+     * @param workspaceId
+     *         workspace binding
+     * @param projectPath
+     *         project binding
+     * @param callback
+     *         the callback to use for the response
+     */
+    void getMachines(@Nonnull String workspaceId,
+                     @Nullable String projectPath,
+                     @Nonnull AsyncRequestCallback<Array<MachineDescriptor>> callback);
+
+    /**
      * Destroy machine with the specified ID.
      *
      * @param machineId
@@ -86,4 +101,24 @@ public interface MachineServiceClient {
                                  @Nonnull String commandLine,
                                  @Nullable String outputChannel,
                                  @Nonnull AsyncRequestCallback<Void> callback);
+
+    /**
+     * Bind project to machine.
+     *
+     * @param machineId
+     *         machine where project should be bound
+     * @param projectPath
+     *         project that should be bound
+     */
+    void bindProject(@Nonnull String machineId, @Nonnull String projectPath, @Nonnull AsyncRequestCallback<Void> callback);
+
+    /**
+     * Unbind project from machine.
+     *
+     * @param machineId
+     *         machine where project should be unbound
+     * @param projectPath
+     *         project that should be unbound
+     */
+    void unbindProject(@Nonnull String machineId, @Nonnull String projectPath, @Nonnull AsyncRequestCallback<Void> callback);
 }

@@ -62,6 +62,14 @@ public interface ProjectTemplateDescriptor {
 
     //
 
+    String getRecipe();
+
+    void setRecipe(String recipe);
+
+    ProjectTemplateDescriptor withRecipe(String recipe);
+
+    //
+
     /** Gets builder configurations. */
 //    BuildersDescriptor getBuilders();
 //

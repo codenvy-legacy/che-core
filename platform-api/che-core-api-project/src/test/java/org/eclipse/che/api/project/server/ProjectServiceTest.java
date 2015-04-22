@@ -160,7 +160,7 @@ public class ProjectServiceTest {
                                        ptRegistry, phRegistry);
 
         pm.createProject(workspace, "my_project", new ProjectConfig("my test project", "my_project_type",
-                                                                    new HashMap<String, AttributeValue>(), null), null, null);
+                                                                    new HashMap<String, AttributeValue>(), null, null), null, null);
 
 
         DependencySupplierImpl dependencies = new DependencySupplierImpl();

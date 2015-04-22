@@ -179,7 +179,7 @@ public class ProjectTest {
         Project myProject = pm.getProject("my_ws", "my_project");
         Map<String, List<String>> attributes = new HashMap<>(2);
         attributes.put("my_property_1", Arrays.asList("value_1", "value_2"));
-        ProjectJson projectJson = new ProjectJson("my_project_type", attributes, "test project");
+        ProjectJson projectJson = new ProjectJson("my_project_type", attributes, "recipe_id", "test project");
         projectJson.save(myProject);
 
         Map <String, AttributeValue> attrs = new HashMap<>();
@@ -188,13 +188,14 @@ public class ProjectTest {
         // wont stored
         attrs.put("new_my_property_2", new AttributeValue("new value 2"));
 
-        ProjectConfig myConfig = new ProjectConfig("descr", "my_project_type", attrs, null);
+        ProjectConfig myConfig = new ProjectConfig("descr", "my_project_type", attrs, "recipe_id", null);
 
         myProject.updateConfig(myConfig);
 
         projectJson = ProjectJson.load(myProject);
 
         Assert.assertEquals(projectJson.getType(), "my_project_type");
+        Assert.assertEquals(projectJson.getRecipe(), "recipe_id");
         Assert.assertEquals(calculateAttributeValueHolder, Arrays.asList("updated calculated_attribute"));
         Map<String, List<String>> pm = projectJson.getAttributes();
         // only stored (non-provided) attributes
@@ -561,7 +562,7 @@ public class ProjectTest {
 
         Map <String, AttributeValue> attrs = new HashMap<>();
         attrs.put("p.calculate", new AttributeValue(""));
-        ProjectConfig config = new ProjectConfig("proj", "testPrimary", attrs, null);
+        ProjectConfig config = new ProjectConfig("proj", "testPrimary", attrs, "my_recipe", null);
         Project proj = pm.createProject("my_ws", "provided", config , null, null);
 
         Assert.assertEquals(proj.getConfig().getMixinTypes().size(), 0);

@@ -10,7 +10,10 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projecttype.wizard.presenter;
 
-//import org.eclipse.che.api.project.shared.dto.BuildersDescriptor;
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.google.inject.Singleton;
+
 import org.eclipse.che.api.project.shared.dto.GeneratorDescription;
 import org.eclipse.che.api.project.shared.dto.ImportProject;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
@@ -18,7 +21,6 @@ import org.eclipse.che.api.project.shared.dto.NewProject;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
-//import org.eclipse.che.api.project.shared.dto.RunnersDescriptor;
 import org.eclipse.che.api.project.shared.dto.Source;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistrar;
@@ -27,16 +29,11 @@ import org.eclipse.che.ide.api.wizard.Wizard;
 import org.eclipse.che.ide.api.wizard.WizardPage;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.dto.DtoFactory;
-
 import org.eclipse.che.ide.projecttype.wizard.ProjectWizard;
-import org.eclipse.che.ide.projecttype.wizard.categoriespage.CategoriesPagePresenter;
-import org.eclipse.che.ide.projecttype.wizard.runnerspage.RunnersPagePresenter;
 import org.eclipse.che.ide.projecttype.wizard.ProjectWizardFactory;
-//import org.eclipse.che.ide.projecttype.wizard.categoriespage.CategoriesPagePresenter;
+import org.eclipse.che.ide.projecttype.wizard.categoriespage.CategoriesPagePresenter;
+import org.eclipse.che.ide.projecttype.wizard.recipespage.RecipesPagePresenter;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-import com.google.inject.Singleton;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -65,15 +62,13 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
     private final ProjectWizardView                         view;
     private final DtoFactory                                dtoFactory;
     private final DialogFactory                             dialogFactory;
-//    private final BuilderRegistry                           builderRegistry;
-    private final RunnersRegistry                           runnersRegistry;
     private final ProjectWizardFactory                      projectWizardFactory;
     private final ProjectWizardRegistry                     wizardRegistry;
     private final Provider<CategoriesPagePresenter>         categoriesPageProvider;
-    private final Provider<RunnersPagePresenter>            runnersPageProvider;
+    private final Provider<RecipesPagePresenter>            runnersPageProvider;
     private final Map<ProjectTypeDefinition, ProjectWizard> wizardsCache;
     private       CategoriesPagePresenter                   categoriesPage;
-    private       RunnersPagePresenter                      runnersPage;
+    private       RecipesPagePresenter                      recipesPage;
     private       ProjectWizard                             wizard;
     private       ProjectWizard                             importWizard;
     private       WizardPage                                currentPage;
@@ -86,17 +81,13 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
     public ProjectWizardPresenter(ProjectWizardView view,
                                   DtoFactory dtoFactory,
                                   DialogFactory dialogFactory,
-//                                  BuilderRegistry builderRegistry,
-                                  RunnersRegistry runnersRegistry,
                                   ProjectWizardFactory projectWizardFactory,
                                   ProjectWizardRegistry wizardRegistry,
                                   Provider<CategoriesPagePresenter> categoriesPageProvider,
-                                  Provider<RunnersPagePresenter> runnersPageProvider) {
+                                  Provider<RecipesPagePresenter> runnersPageProvider) {
         this.view = view;
         this.dtoFactory = dtoFactory;
         this.dialogFactory = dialogFactory;
-//        this.builderRegistry = builderRegistry;
-        this.runnersRegistry = runnersRegistry;
         this.projectWizardFactory = projectWizardFactory;
         this.wizardRegistry = wizardRegistry;
         this.categoriesPageProvider = categoriesPageProvider;
@@ -169,9 +160,7 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
                                                                           .withDescription(project.getDescription())
                                                                           .withVisibility(project.getVisibility())
                                                                           .withAttributes(new HashMap<>(project.getAttributes()))
-//                                                                          .withBuilders(project.getBuilders())
-//                                                                          .withRunners(project.getRunners())
-                                                               );
+                                                                          .withRecipe(project.getRecipe()));
         dataObject.getProject().setMixinTypes(project.getMixins());
         showDialog(dataObject);
     }
@@ -191,7 +180,7 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
     private void resetState() {
         wizardsCache.clear();
         categoriesPage = categoriesPageProvider.get();
-        runnersPage = runnersPageProvider.get();
+        recipesPage = runnersPageProvider.get();
         wizardMode = null;
         categoriesPage.setProjectTypeSelectionListener(this);
         categoriesPage.setProjectTemplateSelectionListener(this);
@@ -210,8 +199,6 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
 
     @Override
     public void onProjectTypeSelected(ProjectTypeDefinition projectType) {
-        updateView(projectType.getDefaultBuilder(), projectType.getDefaultRunner());
-
         final ImportProject prevData = wizard.getDataObject();
         wizard = getWizardForProjectType(projectType);
         wizard.navigateToFirst();
@@ -229,19 +216,11 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
 
         // set dataObject's values from projectType
         newProject.setType(projectType.getId());
-//        newProject.setBuilders(dtoFactory.createDto(BuildersDescriptor.class).withDefault(projectType.getDefaultBuilder()));
-//        if (newProject.getRunners() == null) {
-//            newProject.setRunners(prevDataProject.getRunners());
-//        }
+        newProject.setRecipe(projectType.getDefaultRecipe());
     }
 
     @Override
     public void onProjectTemplateSelected(ProjectTemplateDescriptor projectTemplate) {
-//        final BuildersDescriptor builders = projectTemplate.getBuilders();
-//        final RunnersDescriptor runners = projectTemplate.getRunners();
-//        updateView(builders == null ? null : builders.getDefault(),
-//                   runners == null ? null : runners.getDefault());
-
         final ImportProject prevData = wizard.getDataObject();
         wizard = importWizard == null ? importWizard = createDefaultWizard(null, IMPORT) : importWizard;
         wizard.navigateToFirst();
@@ -255,24 +234,8 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
 
         // set dataObject's values from projectTemplate
         newProject.setType(projectTemplate.getProjectType());
-//        newProject.setBuilders(builders);
-//        newProject.setRunners(runners);
+        newProject.setRecipe(projectTemplate.getRecipe());
         dataObject.getSource().setProject(projectTemplate.getSource());
-    }
-
-    private void updateView(@Nullable String builderName, @Nullable String runnerId) {
-//        if (builderName != null) {
-//            final String builderEnvName = builderRegistry.getDefaultEnvironmentName(builderName);
-//            view.setBuilderEnvironmentConfig(builderEnvName);
-//        } else {
-//            view.setBuilderEnvironmentConfig(null);
-//        }
-        if (runnerId != null) {
-//            final String runnerDescription = runnersRegistry.getDescription(runnerId);
-//            view.setRunnerEnvironmentConfig(runnerDescription);
-        } else {
-            view.setRunnerEnvironmentConfig(null);
-        }
     }
 
     /** Creates or returns project wizard for the specified projectType with the given dataObject. */
@@ -312,7 +275,7 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
         // add pre-defined pages - first and last
         projectWizard.addPage(categoriesPage);
         if (mode != IMPORT) {
-//            projectWizard.addPage(runnersPage);
+            projectWizard.addPage(recipesPage);
         }
         return projectWizard;
     }

@@ -131,6 +131,7 @@ public class ProjectJson {
     private String                    type;
 //    private Builders builders;
 //    private Runners runners;
+    private String                    recipe;
     private String                    description;
     private Map<String, List<String>> attributes;
     private List <String> mixinTypes;
@@ -138,10 +139,11 @@ public class ProjectJson {
     public ProjectJson() {
     }
 
-    public ProjectJson(String type, Map<String, List<String>> attributes, String description) {
+    public ProjectJson(String type, Map<String, List<String>> attributes, String recipe, String description) {
         this.type = type;
 //        this.builders = builders;
 //        this.runners = runners;
+        this.recipe = recipe;
         this.description = description;
         this.attributes = attributes;
     }
@@ -156,6 +158,19 @@ public class ProjectJson {
 
     public ProjectJson withType(String type) {
         this.type = type;
+        return this;
+    }
+
+    public String getRecipe() {
+        return recipe;
+    }
+
+    public void setRecipe(String recipe) {
+        this.recipe = recipe;
+    }
+
+    public ProjectJson withRecipe(String recipe) {
+        this.recipe = recipe;
         return this;
     }
 

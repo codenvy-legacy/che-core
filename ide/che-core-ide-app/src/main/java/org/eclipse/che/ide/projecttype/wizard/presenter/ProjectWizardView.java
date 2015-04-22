@@ -10,12 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projecttype.wizard.presenter;
 
+import com.google.inject.ImplementedBy;
+
 import org.eclipse.che.ide.api.mvp.Presenter;
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode;
-import com.google.inject.ImplementedBy;
-
-import javax.annotation.Nullable;
 
 /**
  * @author Evgen Vidolob
@@ -28,10 +27,6 @@ public interface ProjectWizardView extends View<ProjectWizardView.ActionDelegate
 
     void showDialog(ProjectWizardMode wizardMode);
 
-    void setBuilderEnvironmentConfig(@Nullable String text);
-
-    void setRunnerEnvironmentConfig(String text);
-
     void setLoaderVisibility(boolean visible);
 
     void close();
@@ -42,7 +37,7 @@ public interface ProjectWizardView extends View<ProjectWizardView.ActionDelegate
 
     void setPreviousButtonEnabled(boolean enabled);
 
-    public interface ActionDelegate {
+    interface ActionDelegate {
         /** Performs any actions appropriate in response to the user having pressed the Next button */
         void onNextClicked();
 

@@ -10,12 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projecttype.wizard.presenter;
 
-import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.api.mvp.Presenter;
-import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode;
-import org.eclipse.che.ide.ui.window.Window;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -27,12 +21,14 @@ import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 
-import javax.annotation.Nullable;
+import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.api.mvp.Presenter;
+import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode;
+import org.eclipse.che.ide.ui.window.Window;
 
 import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode.CREATE;
 import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode.CREATE_MODULE;
@@ -48,14 +44,6 @@ public class ProjectWizardViewImpl extends Window implements ProjectWizardView {
     private final CoreLocalizationConstant coreLocalizationConstant;
     @UiField
     SimplePanel wizardPanel;
-    @UiField
-    Label       builderEnvConfText;
-    @UiField
-    Label       builderEnvConf;
-    @UiField
-    Label       runnerEnvConfText;
-    @UiField
-    Label       runnerEnvConf;
     @UiField
     Button      nextStepButton;
     @UiField
@@ -89,10 +77,6 @@ public class ProjectWizardViewImpl extends Window implements ProjectWizardView {
         }, ClickEvent.getType());
         saveButton.addStyleName(resources.Css().buttonLoader());
         saveButton.setText(coreLocalizationConstant.projectWizardDefaultSaveButtonText());
-        builderEnvConfText.setVisible(false);
-        builderEnvConf.setVisible(false);
-        runnerEnvConfText.setVisible(false);
-        runnerEnvConf.setVisible(false);
         this.ensureDebugId("projectWizard-window");
     }
 
@@ -113,30 +97,6 @@ public class ProjectWizardViewImpl extends Window implements ProjectWizardView {
                 saveButton.setText(coreLocalizationConstant.projectWizardSaveButtonText());
             }
             saveButton.setEnabled(true);
-        }
-    }
-
-    @Override
-    public void setBuilderEnvironmentConfig(@Nullable String text) {
-        if (text == null) {
-            if (builderEnvConfText.isVisible()) builderEnvConfText.setVisible(false);
-            if (builderEnvConf.isVisible()) builderEnvConf.setVisible(false);
-        } else {
-            if (!builderEnvConfText.isVisible()) builderEnvConfText.setVisible(true);
-            if (!builderEnvConf.isVisible()) builderEnvConf.setVisible(true);
-            builderEnvConf.setText(text);
-        }
-    }
-
-    @Override
-    public void setRunnerEnvironmentConfig(String text) {
-        if (text == null) {
-            if (runnerEnvConfText.isVisible()) runnerEnvConfText.setVisible(false);
-            if (runnerEnvConf.isVisible()) runnerEnvConf.setVisible(false);
-        } else {
-            if (!runnerEnvConfText.isVisible()) runnerEnvConfText.setVisible(true);
-            if (!runnerEnvConf.isVisible()) runnerEnvConf.setVisible(true);
-            runnerEnvConf.setText(text);
         }
     }
 

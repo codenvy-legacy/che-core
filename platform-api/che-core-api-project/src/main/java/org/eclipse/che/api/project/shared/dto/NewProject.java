@@ -59,4 +59,6 @@ public interface NewProject extends ProjectUpdate {
     NewProject withAttributes(Map<String, List<String>> attributes);
 
     NewProject withVisibility(String visibility);
+
+    NewProject withRecipe(String recipe);
 }

@@ -122,9 +122,7 @@ public class DtoConverter {
             }
         }
 
-        return new ProjectConfig(dto.getDescription(), dto.getType(), attributes,
-                 validMixins);
-
+        return new ProjectConfig(dto.getDescription(), dto.getType(), attributes, dto.getRecipe(), validMixins);
     }
 
 
@@ -165,6 +163,7 @@ public class DtoConverter {
         final ProjectTypeDefinition definition = dtoFactory.createDto(ProjectTypeDefinition.class)
                 .withId(projectType.getId())
                 .withDisplayName(projectType.getDisplayName())
+                .withDefaultRecipe(projectType.getDefaultRecipe())
 //                .withRunnerCategories(projectType.getRunnerCategories())
 //                .withDefaultRunner(projectType.getDefaultRunner())
 //                .withDefaultBuilder(projectType.getDefaultBuilder())
@@ -216,6 +215,7 @@ public class DtoConverter {
                                                         .withSource(importSource)
                                                         .withCategory(projectTemplate.getCategory())
                                                         .withProjectType(projectType)
+                                                        .withRecipe(projectTemplate.getRecipe())
                                                         .withDescription(projectTemplate.getDescription());
 //        if (builders != null) {
 //            dto.withBuilders(toDto(dtoFactory, builders));
@@ -283,6 +283,7 @@ public class DtoConverter {
 
         if (config != null) {
             dto.withDescription(config.getDescription());
+            dto.withRecipe(config.getRecipe());
             String typeId = config.getTypeId();
             dto.withType(typeId)
                .withTypeName(ptRegistry.getProjectType(typeId).getDisplayName());
