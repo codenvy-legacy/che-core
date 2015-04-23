@@ -32,7 +32,6 @@ import org.eclipse.che.ide.projecttype.wizard.ProjectWizard;
 import org.eclipse.che.ide.projecttype.wizard.categoriespage.CategoriesPagePresenter;
 import org.eclipse.che.ide.projecttype.wizard.runnerspage.RunnersPagePresenter;
 import org.eclipse.che.ide.projecttype.wizard.ProjectWizardFactory;
-import org.eclipse.che.ide.projecttype.wizard.categoriespage.CategoriesPagePresenter;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -213,9 +212,12 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
 
         final ImportProject prevData = wizard.getDataObject();
         wizard = getWizardForProjectType(projectType);
-        wizard.navigateToFirst();
-        final NewProject newProject = wizard.getDataObject().getProject();
+        WizardPage<ImportProject> wizardPage = wizard.navigateToFirst();
+        if (wizardPage != null) {
+            wizardPage.init(wizard.getDataObject());
+        }
 
+        final NewProject newProject = wizard.getDataObject().getProject();
         // some values should be shared between wizards for different project types
         NewProject prevDataProject = prevData.getProject();
         newProject.setName(prevDataProject.getName());
