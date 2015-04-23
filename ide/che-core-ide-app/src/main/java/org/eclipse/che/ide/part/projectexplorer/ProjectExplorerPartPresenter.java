@@ -37,6 +37,7 @@ import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.Collections;
+import org.eclipse.che.ide.logger.AnalyticsEventLoggerExt;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.ui.tree.SelectionModel;
 import org.eclipse.che.ide.util.loging.Log;
@@ -53,6 +54,7 @@ import org.eclipse.che.ide.util.Config;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -79,6 +81,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
     private TreeStructure                  currentTreeStructure;
     private DeleteNodeHandler              deleteNodeHandler;
     private Provider<ProjectListStructure> projectListStructureProvider;
+    private AnalyticsEventLoggerExt        eventLogger;
 
     /** A list of nodes is used for asynchronously refreshing the tree. */
     private Array<TreeNode<?>>             nodesToRefresh;
@@ -93,6 +96,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
                                         AppContext appContext,
                                         TreeStructureProviderRegistry treeStructureProviderRegistry,
                                         DeleteNodeHandler deleteNodeHandler,
+                                        AnalyticsEventLoggerExt eventLogger,
                                         Provider<ProjectListStructure> projectListStructureProvider) {
         this.view = view;
         this.eventBus = eventBus;
@@ -102,6 +106,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
         this.appContext = appContext;
         this.treeStructureProviderRegistry = treeStructureProviderRegistry;
         this.deleteNodeHandler = deleteNodeHandler;
+        this.eventLogger = eventLogger;
         this.projectListStructureProvider = projectListStructureProvider;
         this.view.setTitle(coreLocalizationConstant.projectExplorerTitleBarText());
 
@@ -179,6 +184,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
                 final ProjectDescriptor project = event.getProject();
                 setTree(treeStructureProviderRegistry.getTreeStructureProvider(project.getType()).get());
                 view.setProjectHeader(event.getProject());
+                eventLogger.logEvent("project-opened", new HashMap<String, String>());
             }
 
             @Override
