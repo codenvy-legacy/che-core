@@ -16,6 +16,7 @@ import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.util.CompositeLineConsumer;
 import org.eclipse.che.api.core.util.FileLineConsumer;
 import org.eclipse.che.api.core.util.LineConsumer;
@@ -28,8 +29,11 @@ import org.eclipse.che.api.machine.shared.Command;
 import org.eclipse.che.api.machine.shared.MachineState;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
 import org.eclipse.che.api.machine.shared.Recipe;
+import org.eclipse.che.api.machine.shared.dto.MachineProcessEvent;
+import org.eclipse.che.api.machine.shared.dto.MachineStateEvent;
 import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.commons.lang.NameGenerator;
+import org.eclipse.che.dto.server.DtoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,13 +71,17 @@ public class MachineManager {
     private final Map<String, ImageProvider> imageProviders;
     private final ExecutorService            executor;
     private final MachineRegistry            machineRegistry;
+    private final EventService               eventService;
+
+    private final DtoFactory                 dtoFactory = DtoFactory.getInstance();
 
     @Inject
     public MachineManager(SnapshotStorage snapshotStorage,
                           Set<ImageProvider> imageProviders,
                           MachineRegistry machineRegistry,
-                          @Named("machine.logs.location") String machineLogsDir) {
+                          @Named("machine.logs.location") String machineLogsDir, EventService eventService) {
         this.snapshotStorage = snapshotStorage;
+        this.eventService = eventService;
         this.machineLogsDir = new File(machineLogsDir);
         this.imageProviders = new HashMap<>();
         this.machineRegistry = machineRegistry;
@@ -126,15 +134,28 @@ public class MachineManager {
                 @Override
                 public void run() {
                     try {
+                        eventService.publish(dtoFactory.createDto(MachineStateEvent.class)
+                                                       .withEventType(MachineStateEvent.EventType.CREATING)
+                                                       .withMachineId(machineId));
+
                         final Image image = imageProvider.createImage(recipe, machineLogger);
                         final Instance instance = image.createInstance();
                         machine.setInstance(instance);
                         machine.setState(MachineState.RUNNING);
+
+                        eventService.publish(dtoFactory.createDto(MachineStateEvent.class)
+                                                       .withEventType(MachineStateEvent.EventType.RUNNING)
+                                                       .withMachineId(machineId));
                     } catch (Exception error) {
+                        eventService.publish(dtoFactory.createDto(MachineStateEvent.class)
+                                                       .withEventType(MachineStateEvent.EventType.ERROR)
+                                                       .withMachineId(machineId)
+                                                       .withError(error.getLocalizedMessage()));
+
                         try {
-                            LOG.error(error.getMessage(), error);
+                            LOG.error(error.getLocalizedMessage(), error);
                             machineRegistry.remove(machine.getId());
-                            machineLogger.writeLine(String.format("[ERROR] %s", error.getMessage()));
+                            machineLogger.writeLine(String.format("[ERROR] %s", error.getLocalizedMessage()));
                             machineLogger.close();
                         } catch (IOException | NotFoundException e) {
                             LOG.error(e.getMessage());
@@ -188,15 +209,27 @@ public class MachineManager {
             @Override
             public void run() {
                 try {
+                    eventService.publish(dtoFactory.createDto(MachineStateEvent.class)
+                                                   .withEventType(MachineStateEvent.EventType.CREATING)
+                                                   .withMachineId(machineId));
+
                     final Image image = imageProvider.createImage(snapshot.getImageKey(), machineLogger);
                     final Instance instance = image.createInstance();
                     machine.setInstance(instance);
                     machine.setState(MachineState.RUNNING);
+
+                    eventService.publish(dtoFactory.createDto(MachineStateEvent.class)
+                                                   .withEventType(MachineStateEvent.EventType.RUNNING)
+                                                   .withMachineId(machineId));
                 } catch (Exception error) {
+                    eventService.publish(dtoFactory.createDto(MachineStateEvent.class)
+                                                   .withEventType(MachineStateEvent.EventType.ERROR)
+                                                   .withMachineId(machineId)
+                                                   .withError(error.getLocalizedMessage()));
                     try {
                         machineRegistry.remove(machine.getId());
-                        LOG.error(error.getMessage());
-                        machineLogger.writeLine(String.format("[ERROR] %s", error.getMessage()));
+                        LOG.error(error.getLocalizedMessage());
+                        machineLogger.writeLine(String.format("[ERROR] %s", error.getLocalizedMessage()));
                         machineLogger.close();
                     } catch (IOException | NotFoundException e) {
                         LOG.error(e.getMessage());
@@ -461,14 +494,31 @@ public class MachineManager {
                     String.format("Unable execute command in machine '%s' in image, machine isn't properly initialized yet", machineId));
         }
         final InstanceProcess instanceProcess = instance.createProcess(command.getCommandLine());
+        final int pid = instanceProcess.getPid();
         final CompositeLineConsumer processLogger =
-                new CompositeLineConsumer(commandOutput, getProcessFileLogger(machineId, instanceProcess.getPid()));
+                new CompositeLineConsumer(commandOutput, getProcessFileLogger(machineId, pid));
         final Runnable execTask = new Runnable() {
             @Override
             public void run() {
                 try {
+                    eventService.publish(dtoFactory.createDto(MachineProcessEvent.class)
+                                                   .withEventType(MachineProcessEvent.EventType.STARTED)
+                                                   .withMachineId(machineId)
+                                                   .withProcessId(pid));
+
                     instanceProcess.start(processLogger);
+
+                    eventService.publish(dtoFactory.createDto(MachineProcessEvent.class)
+                                                   .withEventType(MachineProcessEvent.EventType.STOPPED)
+                                                   .withMachineId(machineId)
+                                                   .withProcessId(pid));
                 } catch (ConflictException | MachineException error) {
+                    eventService.publish(dtoFactory.createDto(MachineProcessEvent.class)
+                                                   .withEventType(MachineProcessEvent.EventType.ERROR)
+                                                   .withMachineId(machineId)
+                                                   .withProcessId(pid)
+                                                   .withError(error.getLocalizedMessage()));
+
                     LOG.warn(error.getMessage());
                     try {
                         processLogger.writeLine(String.format("[ERROR] %s", error.getMessage()));
@@ -517,24 +567,40 @@ public class MachineManager {
         }
 
         process.kill();
+
+        eventService.publish(dtoFactory.createDto(MachineProcessEvent.class)
+                                       .withEventType(MachineProcessEvent.EventType.STOPPED)
+                                       .withMachineId(machineId)
+                                       .withProcessId(pid));
     }
 
     /**
      * Destroy machine with specified id
      *
-     * @param machineId id of machine that should be destroyed
-     * @throws NotFoundException if machine with specified id not found
-     * @throws MachineException if other error occur
+     * @param machineId
+     *         id of machine that should be destroyed
+     * @throws NotFoundException
+     *         if machine with specified id not found
+     * @throws MachineException
+     *         if other error occur
      */
     public void destroy(final String machineId) throws NotFoundException, MachineException {
         final MachineImpl machine = getMachine(machineId);
         machine.setState(MachineState.DESTROYING);
+        eventService.publish(dtoFactory.createDto(MachineStateEvent.class)
+                                       .withEventType(MachineStateEvent.EventType.DESTROYING)
+                                       .withMachineId(machineId));
+
         executor.execute(new Runnable() {
             @Override
             public void run() {
                 try {
                     destroy(machine);
                     machineRegistry.remove(machine.getId());
+
+                    eventService.publish(dtoFactory.createDto(MachineStateEvent.class)
+                                                   .withEventType(MachineStateEvent.EventType.DESTROYED)
+                                                   .withMachineId(machineId));
                 } catch (MachineException | NotFoundException e) {
                     LOG.error(e.getMessage(), e);
                 }
