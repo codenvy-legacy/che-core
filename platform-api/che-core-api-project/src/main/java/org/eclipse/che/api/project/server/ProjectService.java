@@ -395,9 +395,10 @@ public class ProjectService extends Service {
             }
         } else {
             try {
-                oldProjectType = project.getConfig().getTypeId();
-                oldMixinTypes = project.getConfig().getMixinTypes();
-            } catch (ProjectTypeConstraintException e) {
+                ProjectConfig config = project.getConfig();
+                oldProjectType = config.getTypeId();
+                oldMixinTypes = config.getMixinTypes();
+            } catch (ProjectTypeConstraintException | ValueStorageException e) {
                 //here we allow changing bad project type on registered
                 LOG.warn(e.getMessage());
             }
@@ -1056,7 +1057,7 @@ public class ProjectService extends Service {
      * @param project
      * @throws ServerException
      */
-    private void reindexProject(long creationDate, FolderEntry baseProjectFolder, Project project) throws ServerException {
+    private void reindexProject(long creationDate, FolderEntry baseProjectFolder, final Project project) throws ServerException {
         final VirtualFile file = baseProjectFolder.getVirtualFile();
         executor.execute(new Runnable() {
             @Override
@@ -1064,7 +1065,7 @@ public class ProjectService extends Service {
                 try {
                     searcherProvider.getSearcher(file.getMountPoint(), true).add(file);
                 } catch (Exception e) {
-                    LOG.error(e.getMessage());
+                    LOG.warn(String.format("Workspace: %s, project: %s", project.getWorkspace(), project.getPath()), e.getMessage());
                 }
             }
         });
