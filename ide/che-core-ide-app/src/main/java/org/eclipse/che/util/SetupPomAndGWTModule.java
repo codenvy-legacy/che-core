@@ -41,7 +41,7 @@ import java.nio.file.Files;
  */
 public class SetupPomAndGWTModule {
 
-    public static final String GEN_START = "<!-- START OF AUTO GENERATED BLOCK -->\n";
+    public static final String GEN_START = "<!-- STARTED OF AUTO GENERATED BLOCK -->\n";
 
     public static final String GEN_END = "<!-- END OF AUTO GENERATED BLOCK -->\n";
 
