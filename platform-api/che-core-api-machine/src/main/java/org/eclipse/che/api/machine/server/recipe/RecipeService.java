@@ -89,15 +89,18 @@ public class RecipeService extends Service {
         if (isNullOrEmpty(newRecipe.getScript())) {
             throw new ForbiddenException("Recipe script required");
         }
+        Permissions permissions = null;
         if (newRecipe.getPermissions() != null) {
             checkPublicPermission(newRecipe.getPermissions());
+            permissions = PermissionsImpl.fromDescriptor(newRecipe.getPermissions());
         }
-        final String id = NameGenerator.generate("recipe", 16);
-        final Recipe recipe = new RecipeImpl().withId(id)
+
+        final Recipe recipe = new RecipeImpl().withId(NameGenerator.generate("recipe", 16))
                                               .withCreator(currentUser().getId())
                                               .withType(newRecipe.getType())
                                               .withScript(newRecipe.getScript())
-                                              .withTags(newRecipe.getTags());
+                                              .withTags(newRecipe.getTags())
+                                              .withPermissions(permissions);
         recipeDao.create(recipe);
 
         return Response.status(CREATED)
@@ -113,7 +116,7 @@ public class RecipeService extends Service {
         final Recipe recipe = recipeDao.getById(id);
 
         final String userId = currentUser().getId();
-        if (!hasAccess(recipe, userId, "read")) {
+        if (recipe.getPermissions() != null && !hasAccess(recipe, userId, "read")) {
             throw new ForbiddenException(format("User %s doesn't have access to recipe %s", userId, id));
         }
 
@@ -128,7 +131,7 @@ public class RecipeService extends Service {
         final Recipe recipe = recipeDao.getById(id);
 
         final String userId = currentUser().getId();
-        if (!hasAccess(recipe, userId, "read")) {
+        if (recipe.getPermissions() != null && !hasAccess(recipe, userId, "read")) {
             throw new ForbiddenException(format("User %s doesn't have access to recipe %s", userId, id));
         }
 
@@ -167,7 +170,7 @@ public class RecipeService extends Service {
         final Recipe recipe = recipeDao.getById(id);
 
         final String userId = currentUser().getId();
-        if (!hasAccess(recipe, userId, "write")) {
+        if (recipe.getPermissions() != null && !hasAccess(recipe, userId, "write")) {
             throw new ForbiddenException(format("User %s doesn't have access to update recipe %s", userId, id));
         }
 
@@ -238,10 +241,10 @@ public class RecipeService extends Service {
      */
     private void checkPublicPermission(PermissionsDescriptor permissions) throws ForbiddenException {
         final User user = currentUser();
-        if (!user.isMemberOf("system/admin") || !user.isMemberOf("system/manager")) {
+        if (!user.isMemberOf("system/admin") && !user.isMemberOf("system/manager")) {
             for (GroupDescriptor group : permissions.getGroups()) {
                 if ("public".equalsIgnoreCase(group.getName()) && group.getAcl().contains("search")) {
-                    throw new ForbiddenException("User " + user.getId() + " doesn't have access to use 'public -> search' permission");
+                    throw new ForbiddenException("User " + user.getId() + " doesn't have access to use 'public: search' permission");
                 }
             }
         }
@@ -260,27 +263,29 @@ public class RecipeService extends Service {
         @Nullable
         @Override
         public RecipeDescriptor apply(Recipe recipe) {
+            final RecipeDescriptor descriptor = DtoFactory.getInstance()
+                                                          .createDto(RecipeDescriptor.class)
+                                                          .withId(recipe.getId())
+                                                          .withType(recipe.getType())
+                                                          .withScript(recipe.getScript())
+                                                          .withCreator(recipe.getCreator())
+                                                          .withTags(recipe.getTags());
             final Permissions permissions = recipe.getPermissions();
-            final List<GroupDescriptor> groups = new ArrayList<>(permissions.getGroups().size());
-            for (Group group : permissions.getGroups()) {
-                groups.add(DtoFactory.getInstance()
-                                     .createDto(GroupDescriptor.class)
-                                     .withName(group.getName())
-                                     .withUnit(group.getUnit())
-                                     .withAcl(group.getAcl()));
+            if (permissions != null) {
+                final List<GroupDescriptor> groups = new ArrayList<>(permissions.getGroups().size());
+                for (Group group : permissions.getGroups()) {
+                    groups.add(DtoFactory.getInstance()
+                                         .createDto(GroupDescriptor.class)
+                                         .withName(group.getName())
+                                         .withUnit(group.getUnit())
+                                         .withAcl(group.getAcl()));
+                }
+                descriptor.setPermissions(DtoFactory.getInstance()
+                                                    .createDto(PermissionsDescriptor.class)
+                                                    .withGroups(groups)
+                                                    .withUsers(permissions.getUsers()));
             }
-            final PermissionsDescriptor permissionsDescriptor = DtoFactory.getInstance()
-                                                                          .createDto(PermissionsDescriptor.class)
-                                                                          .withGroups(groups)
-                                                                          .withUsers(permissions.getUsers());
-            return DtoFactory.getInstance()
-                             .createDto(RecipeDescriptor.class)
-                             .withId(recipe.getId())
-                             .withType(recipe.getType())
-                             .withScript(recipe.getScript())
-                             .withCreator(recipe.getCreator())
-                             .withTags(recipe.getTags())
-                             .withPermissions(permissionsDescriptor);
+            return descriptor;
         }
     }
 }
