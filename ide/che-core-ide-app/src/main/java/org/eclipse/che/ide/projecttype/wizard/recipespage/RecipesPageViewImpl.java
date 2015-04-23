@@ -24,6 +24,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.ui.list.SimpleList;
 import org.eclipse.che.ide.util.dom.Elements;
 
@@ -36,51 +37,57 @@ import java.util.List;
  */
 @Singleton
 public class RecipesPageViewImpl implements RecipesPageView {
+
     private static RecipesPageViewImplUiBinder uiBinder = GWT.create(RecipesPageViewImplUiBinder.class);
 
-    private final DockLayoutPanel       rootElement;
+    private final DockLayoutPanel rootElement;
 
     @UiField
-    ScrollPanel                   listPanel;
+    ScrollPanel listPanel;
     @UiField(provided = true)
-    org.eclipse.che.ide.Resources res;
-    private ActionDelegate           delegate;
-    private SimpleList<String>       list;
-    private SimpleList.ListItemRenderer<String>  listItemRenderer = new SimpleList.ListItemRenderer<String>() {
-        @Override
-        public void render(Element itemElement, String itemData) {
-            TableCellElement label = Elements.createTDElement();
-            label.setInnerHTML(itemData);
-            itemElement.appendChild(label);
-            UIObject.ensureDebugId((com.google.gwt.dom.client.Element)itemElement, "file-openProject-" + itemData);
-        }
+    Resources   res;
 
-        @Override
-        public Element createElement() {
-            return Elements.createTRElement();
-        }
-    };
-    private SimpleList.ListEventDelegate<String> listDelegate     = new SimpleList.ListEventDelegate<String>() {
-        public void onListItemClicked(Element itemElement, String itemData) {
-            list.getSelectionModel().setSelectedItem(itemData);
-            delegate.recipeSelected(itemData);
-        }
-
-        public void onListItemDoubleClicked(Element listItemBase, String itemData) {
-            list.getSelectionModel().setSelectedItem(itemData);
-            delegate.recipeSelected(itemData);
-        }
-    };
+    private ActionDelegate     delegate;
+    private SimpleList<String> list;
 
     @Inject
-    protected RecipesPageViewImpl(org.eclipse.che.ide.Resources resources) {
+    protected RecipesPageViewImpl(Resources resources) {
         this.res = resources;
 
         rootElement = uiBinder.createAndBindUi(this);
 
         TableElement tableElement = Elements.createTableElement();
         tableElement.setAttribute("style", "width: 100%");
+
+        final SimpleList.ListItemRenderer<String> listItemRenderer = new SimpleList.ListItemRenderer<String>() {
+            @Override
+            public void render(Element itemElement, String itemData) {
+                TableCellElement label = Elements.createTDElement();
+                label.setInnerHTML(itemData);
+                itemElement.appendChild(label);
+                UIObject.ensureDebugId((com.google.gwt.dom.client.Element)itemElement, "file-openProject-" + itemData);
+            }
+
+            @Override
+            public Element createElement() {
+                return Elements.createTRElement();
+            }
+        };
+
+        final SimpleList.ListEventDelegate<String> listDelegate = new SimpleList.ListEventDelegate<String>() {
+            public void onListItemClicked(Element itemElement, String itemData) {
+                list.getSelectionModel().setSelectedItem(itemData);
+                delegate.recipeSelected(itemData);
+            }
+
+            public void onListItemDoubleClicked(Element listItemBase, String itemData) {
+                list.getSelectionModel().setSelectedItem(itemData);
+                delegate.recipeSelected(itemData);
+            }
+        };
+
         list = SimpleList.create((SimpleList.View)tableElement, res.defaultSimpleListCss(), listItemRenderer, listDelegate);
+
         this.listPanel.add(list);
     }
 
@@ -99,6 +106,12 @@ public class RecipesPageViewImpl implements RecipesPageView {
     @Override
     public void setRecipes(List<String> recipes) {
         list.render(recipes);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void selectRecipe(String recipe) {
+        list.getSelectionModel().setSelectedItem(recipe);
     }
 
     interface RecipesPageViewImplUiBinder extends UiBinder<DockLayoutPanel, RecipesPageViewImpl> {

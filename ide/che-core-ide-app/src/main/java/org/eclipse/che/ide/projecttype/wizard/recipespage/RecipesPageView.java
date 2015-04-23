@@ -24,16 +24,30 @@ import java.util.List;
 @ImplementedBy(RecipesPageViewImpl.class)
 public interface RecipesPageView extends View<RecipesPageView.ActionDelegate> {
 
-    /** Needs for delegate some function into ChangePerspective view. */
-    interface ActionDelegate {
-        /** Returns selected recipe. */
-        void recipeSelected(String recipe);
-    }
-
     /**
-     * Set recipes.
+     * Set recipes list.
      *
      * @param recipes
+     *         recipes list to set
      */
     void setRecipes(List<String> recipes);
+
+    /**
+     * Select the specified recipe.
+     *
+     * @param recipe
+     *         recipe to select
+     */
+    void selectRecipe(String recipe);
+
+    interface ActionDelegate {
+
+        /**
+         * Called when recipe selected.
+         *
+         * @param recipe
+         *         selected recipe
+         */
+        void recipeSelected(String recipe);
+    }
 }

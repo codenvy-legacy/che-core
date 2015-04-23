@@ -17,7 +17,9 @@ import com.google.inject.Singleton;
 import org.eclipse.che.api.project.shared.dto.ImportProject;
 import org.eclipse.che.ide.api.wizard.AbstractWizardPage;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Project wizard page for selecting recipe.
@@ -44,8 +46,26 @@ public class RecipesPagePresenter extends AbstractWizardPage<ImportProject> impl
     }
 
     private void requestRecipes() {
+        List<String> recipes = new ArrayList<>();
+
+        // TODO: request appropriate recipes by tags
+
         final String defaultRecipe = dataObject.getProject().getRecipe();
-        view.setRecipes(Collections.singletonList(defaultRecipe));
+
+        if (defaultRecipe != null) {
+            recipes.add(defaultRecipe);
+        }
+        view.setRecipes(recipes);
+
+        updateView();
+    }
+
+    /** Updates view from data-object. */
+    private void updateView() {
+        final String recipe = dataObject.getProject().getRecipe();
+        if (recipe != null) {
+            view.selectRecipe(recipe);
+        }
     }
 
     /** {@inheritDoc} */
