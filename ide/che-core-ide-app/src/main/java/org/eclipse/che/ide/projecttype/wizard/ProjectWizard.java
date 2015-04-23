@@ -122,31 +122,7 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
         } else if (mode == CREATE_MODULE) {
             createModule(callback);
         } else if (mode == UPDATE) {
-            updateProject(new Wizard.CompleteCallback() {
-                @Override
-                public void onCompleted() {
-                    callback.onCompleted();
-                }
-
-                @Override
-                public void onFailure(Throwable e) {
-                    dialogFactory.createConfirmDialog("Project Configuration Fail",
-                                                      "Configure project type as BLANK? You can re-configure it later",
-
-                                                      new ConfirmCallback() {
-                                                          @Override
-                                                          public void accepted() {
-                                                              doSaveAsBlank(callback);
-                                                          }
-                                                      },
-                                                      new CancelCallback() {
-                                                          @Override
-                                                          public void cancelled() {
-                                                              callback.onCompleted();
-                                                          }
-                                                      }).show();
-                }
-            });
+            updateProject(new UpdateCallback(callback));
         } else if (mode == IMPORT) {
             importProject(callback);
         }
@@ -283,5 +259,37 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
                 callback.onFailure(exception);
             }
         });
+    }
+
+    public class UpdateCallback implements CompleteCallback {
+        private final CompleteCallback callback;
+
+        public UpdateCallback(CompleteCallback callback) {
+            this.callback = callback;
+        }
+
+        @Override
+        public void onCompleted() {
+            callback.onCompleted();
+        }
+
+        @Override
+        public void onFailure(Throwable e) {
+            dialogFactory.createConfirmDialog("Project Configuration Fail",
+                                              "Configure project type as BLANK? You can re-configure it later",
+
+                                              new ConfirmCallback() {
+                                                  @Override
+                                                  public void accepted() {
+                                                      doSaveAsBlank(callback);
+                                                  }
+                                              },
+                                              new CancelCallback() {
+                                                  @Override
+                                                  public void cancelled() {
+                                                      callback.onCompleted();
+                                                  }
+                                              }).show();
+        }
     }
 }
