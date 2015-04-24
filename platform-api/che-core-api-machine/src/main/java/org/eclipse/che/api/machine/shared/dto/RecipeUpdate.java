@@ -12,6 +12,8 @@ package org.eclipse.che.api.machine.shared.dto;
 
 import org.eclipse.che.dto.shared.DTO;
 
+import java.util.List;
+
 @DTO
 public interface RecipeUpdate {
 
@@ -26,6 +28,12 @@ public interface RecipeUpdate {
     void setScript(String script);
 
     RecipeUpdate withScript(String script);
+
+    List<String> getTags();
+
+    void setTags(List<String> tags);
+
+    RecipeUpdate withTags(List<String> tags);
 
     PermissionsDescriptor getPermissions();
 

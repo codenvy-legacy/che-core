@@ -15,8 +15,8 @@ import com.google.common.collect.FluentIterable;
 
 import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ForbiddenException;
-import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.rest.Service;
+import org.eclipse.che.api.machine.server.PermissionsChecker;
 import org.eclipse.che.api.machine.server.PermissionsImpl;
 import org.eclipse.che.api.machine.server.RecipeImpl;
 import org.eclipse.che.api.machine.server.dao.RecipeDao;
@@ -28,8 +28,6 @@ import org.eclipse.che.api.machine.shared.dto.NewRecipe;
 import org.eclipse.che.api.machine.shared.dto.PermissionsDescriptor;
 import org.eclipse.che.api.machine.shared.dto.RecipeDescriptor;
 import org.eclipse.che.api.machine.shared.dto.RecipeUpdate;
-import org.eclipse.che.api.workspace.server.dao.Member;
-import org.eclipse.che.api.workspace.server.dao.MemberDao;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.eclipse.che.commons.user.User;
@@ -50,10 +48,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.lang.String.format;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -65,13 +61,13 @@ public class RecipeService extends Service {
 
     private static final Function<Recipe, RecipeDescriptor> RECIPE_TO_DESCRIPTOR_FUNCTION = new RecipeToDescriptorFunction();
 
-    private final RecipeDao recipeDao;
-    private final MemberDao memberDao;
+    private final RecipeDao          recipeDao;
+    private final PermissionsChecker permissionsChecker;
 
     @Inject
-    public RecipeService(RecipeDao recipeDao, MemberDao memberDao) {
+    public RecipeService(RecipeDao recipeDao, PermissionsChecker permissionsChecker) {
         this.recipeDao = recipeDao;
-        this.memberDao = memberDao;
+        this.permissionsChecker = permissionsChecker;
     }
 
     @POST
@@ -115,7 +111,7 @@ public class RecipeService extends Service {
         final Recipe recipe = recipeDao.getById(id);
 
         final String userId = currentUser().getId();
-        if (!hasAccess(recipe, userId, "read")) {
+        if (!permissionsChecker.hasAccess(recipe, userId, "read")) {
             throw new ForbiddenException(format("User %s doesn't have access to recipe %s", userId, id));
         }
 
@@ -130,7 +126,7 @@ public class RecipeService extends Service {
         final Recipe recipe = recipeDao.getById(id);
 
         final String userId = currentUser().getId();
-        if (recipe.getPermissions() != null && !hasAccess(recipe, userId, "read")) {
+        if (!permissionsChecker.hasAccess(recipe, userId, "read")) {
             throw new ForbiddenException(format("User %s doesn't have access to recipe %s", userId, id));
         }
 
@@ -158,7 +154,7 @@ public class RecipeService extends Service {
                              .toList();
     }
 
-    //TODO check consider update_acl permission
+    //TODO consider update_acl permission
 
     @PUT
     @Path("/{id}")
@@ -169,10 +165,9 @@ public class RecipeService extends Service {
         final Recipe recipe = recipeDao.getById(id);
 
         final String userId = currentUser().getId();
-        if (recipe.getPermissions() != null && !hasAccess(recipe, userId, "write")) {
+        if (!permissionsChecker.hasAccess(recipe, userId, "write")) {
             throw new ForbiddenException(format("User %s doesn't have access to update recipe %s", userId, id));
         }
-
         boolean updateRequired = false;
         if (update.getType() != null) {
             recipe.setType(update.getType());
@@ -182,7 +177,15 @@ public class RecipeService extends Service {
             recipe.setScript(update.getScript());
             updateRequired = true;
         }
+        if (!update.getTags().isEmpty()) {
+            recipe.setTags(update.getTags());
+            updateRequired = true;
+        }
         if (update.getPermissions() != null) {
+            //ensure that user has access to update recipe permissions
+            if (!permissionsChecker.hasAccess(recipe, userId, "update_acl")) {
+                throw new ForbiddenException(format("User %s doesn't have access to update recipe %s permissions", userId, id));
+            }
             checkPublicPermission(update.getPermissions());
             recipe.setPermissions(PermissionsImpl.fromDescriptor(update.getPermissions()));
             updateRequired = true;
@@ -196,55 +199,15 @@ public class RecipeService extends Service {
     @DELETE
     @Path("/{id}")
     @RolesAllowed({"user", "system/admin", "system/manager"})
-    public void removeRecipe(@PathParam("{id}") String id) throws ApiException {
+    public void removeRecipe(@PathParam("id") String id) throws ApiException {
         final Recipe recipe = recipeDao.getById(id);
 
         final String userId = currentUser().getId();
-        if (!hasAccess(recipe, userId, "write")) {
+        if (!permissionsChecker.hasAccess(recipe, userId, "write")) {
             throw new ForbiddenException(format("User %s doesn't have access to recipe %s", userId, id));
         }
 
         recipeDao.remove(id);
-    }
-
-    //TODO consider moving to different place
-
-    /**
-     * Checks that user with id {@code userId} has access to recipe.
-     * If user with id {@code userId} is recipe creator or has given permission in {@code recipe}
-     * or recipe has group permission "public
-     * returns {@code true} otherwise returns {@code false}
-     */
-    private boolean hasAccess(Recipe recipe, String userId, String permission) throws ServerException {
-        //if user is recipe creator he has access to it
-        if (recipe.getCreator().equals(userId)) {
-            return true;
-        }
-        //if recipe doesn't have any permissions it may be accessed only by its creator
-        final Permissions permissions = recipe.getPermissions();
-        if (permissions == null) {
-            return false;
-        }
-        //check user permissions
-        final List<String> userPerms = firstNonNull(permissions.getUsers().get(userId), Collections.<String>emptyList());
-        if (userPerms.contains(permission)) {
-            return true;
-        }
-        //check group permissions
-        final List<Member> relationships = memberDao.getUserRelationships(userId);
-        for (Group group : permissions.getGroups()) {
-            //check public access
-            if (group.getName().equals("public") && group.getAcl().contains(permission)) {
-                return true;
-            }
-            //check user relationships for this group
-            for (Member member : relationships) {
-                if (group.getUnit().equals(member.getWorkspaceId()) && member.getRoles().contains(group.getName())) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     /**
