@@ -50,9 +50,10 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.lang.String.format;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -72,8 +73,6 @@ public class RecipeService extends Service {
         this.recipeDao = recipeDao;
         this.memberDao = memberDao;
     }
-
-    //TODO consider recipe creation for system/admin
 
     @POST
     @Consumes(APPLICATION_JSON)
@@ -116,7 +115,7 @@ public class RecipeService extends Service {
         final Recipe recipe = recipeDao.getById(id);
 
         final String userId = currentUser().getId();
-        if (recipe.getPermissions() != null && !hasAccess(recipe, userId, "read")) {
+        if (!hasAccess(recipe, userId, "read")) {
             throw new ForbiddenException(format("User %s doesn't have access to recipe %s", userId, id));
         }
 
@@ -208,6 +207,8 @@ public class RecipeService extends Service {
         recipeDao.remove(id);
     }
 
+    //TODO consider moving to different place
+
     /**
      * Checks that user with id {@code userId} has access to recipe.
      * If user with id {@code userId} is recipe creator or has given permission in {@code recipe}
@@ -215,18 +216,30 @@ public class RecipeService extends Service {
      * returns {@code true} otherwise returns {@code false}
      */
     private boolean hasAccess(Recipe recipe, String userId, String permission) throws ServerException {
-        final Map<String, List<String>> userPerms = recipe.getPermissions().getUsers();
-
-        if (recipe.getCreator().equals(userId) || userPerms.get(userId).contains(permission)) {
+        //if user is recipe creator he has access to it
+        if (recipe.getCreator().equals(userId)) {
             return true;
         }
-
+        //if recipe doesn't have any permissions it may be accessed only by its creator
+        final Permissions permissions = recipe.getPermissions();
+        if (permissions == null) {
+            return false;
+        }
+        //check user permissions
+        final List<String> userPerms = firstNonNull(permissions.getUsers().get(userId), Collections.<String>emptyList());
+        if (userPerms.contains(permission)) {
+            return true;
+        }
+        //check group permissions
         final List<Member> relationships = memberDao.getUserRelationships(userId);
-        final List<Group> groups = recipe.getPermissions().getGroups();
-        for (Member member : relationships) {
-            for (Group group : groups) {
-                boolean hasPublicAccess = group.getName().equals("public") && group.getAcl().contains(permission);
-                if (hasPublicAccess || group.getUnit().equals(member.getWorkspaceId()) && member.getRoles().contains(group.getName())) {
+        for (Group group : permissions.getGroups()) {
+            //check public access
+            if (group.getName().equals("public") && group.getAcl().contains(permission)) {
+                return true;
+            }
+            //check user relationships for this group
+            for (Member member : relationships) {
+                if (group.getUnit().equals(member.getWorkspaceId()) && member.getRoles().contains(group.getName())) {
                     return true;
                 }
             }

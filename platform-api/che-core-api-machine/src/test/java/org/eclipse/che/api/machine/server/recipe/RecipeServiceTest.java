@@ -14,12 +14,17 @@ import com.jayway.restassured.response.Response;
 
 import org.eclipse.che.api.core.rest.ApiExceptionMapper;
 import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
+import org.eclipse.che.api.machine.server.GroupImpl;
+import org.eclipse.che.api.machine.server.PermissionsImpl;
+import org.eclipse.che.api.machine.server.RecipeImpl;
 import org.eclipse.che.api.machine.server.dao.RecipeDao;
+import org.eclipse.che.api.machine.shared.Group;
 import org.eclipse.che.api.machine.shared.Recipe;
 import org.eclipse.che.api.machine.shared.dto.GroupDescriptor;
 import org.eclipse.che.api.machine.shared.dto.NewRecipe;
 import org.eclipse.che.api.machine.shared.dto.PermissionsDescriptor;
 import org.eclipse.che.api.machine.shared.dto.RecipeDescriptor;
+import org.eclipse.che.api.workspace.server.dao.Member;
 import org.eclipse.che.api.workspace.server.dao.MemberDao;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.user.UserImpl;
@@ -34,15 +39,20 @@ import org.mockito.testng.MockitoTestNGListener;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import static com.jayway.restassured.RestAssured.given;
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static org.everrest.assured.JettyHttpServer.ADMIN_USER_NAME;
 import static org.everrest.assured.JettyHttpServer.ADMIN_USER_PASSWORD;
 import static org.everrest.assured.JettyHttpServer.SECURE_PATH;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
@@ -52,9 +62,9 @@ import static org.testng.Assert.assertNotNull;
 @Listeners(value = {EverrestJetty.class, MockitoTestNGListener.class})
 public class RecipeServiceTest {
 
-    static final String             USER_ID = "user123";
     static final EnvironmentFilter  FILTER  = new EnvironmentFilter();
     static final ApiExceptionMapper MAPPER  = new ApiExceptionMapper();
+    static final String             USER_ID = "user123";
     static final LinkedList<String> ROLES   = new LinkedList<>(asList("user"));
 
     @Mock
@@ -181,43 +191,98 @@ public class RecipeServiceTest {
         ROLES.remove("system/admin");
     }
 
-//    @Test
-//    public void shouldBeAbleToGetRecipeScript() {
-//        final Recipe recipe = new RecipeImpl().withCreator(USER_ID)
-//                                              .withId("recipe123")
-//                                              .withScript("FROM ubuntu\n");
-//        when(recipeDao.getById(recipe.getId())).thenReturn(recipe);
-//
-//        final Response response = given().auth()
-//                                         .basic(ADMIN_USER_NAME, ADMIN_USER_PASSWORD)
-//                                         .when()
-//                                         .get(SECURE_PATH + "/recipe/" + recipe.getId());
-//
-//        assertEquals(response.getStatusCode(), 200);
-//        assertEquals(response.getBody().print(), recipe.getScript());
-//    }
-//
-//    @Test
-//    public void shouldBeAbleToGetRecipeById() {
-//        final Recipe recipe = new RecipeImpl().withCreator(USER_ID)
-//                                              .withId("recipe123")
-//                                              .withType("docker")
-//                                              .withScript("FROM ubuntu\n");
-//        when(recipeDao.getById(recipe.getId())).thenReturn(recipe);
-//
-//        final Response response = given().auth()
-//                                         .basic(ADMIN_USER_NAME, ADMIN_USER_PASSWORD)
-//                                         .when()
-//                                         .get(SECURE_PATH + "/recipe/" + recipe.getId() + "/json");
-//
-//        assertEquals(response.getStatusCode(), 200);
-//        final RecipeDescriptor descriptor = unwrapDto(response, RecipeDescriptor.class);
-//        assertEquals(descriptor.getType(), recipe.getType());
-//        assertEquals(descriptor.getScript(), recipe.getScript());
-//        assertEquals(descriptor.getId(), recipe.getId());
-//        assertEquals(descriptor.getTags(), recipe.getTags());
-//        assertEquals(descriptor.getPermissions(), recipe.getPermissions());
-//    }
+    @Test
+    public void shouldBeAbleToGetRecipeScriptWhenUserIsRecipeCreator() {
+        final Recipe recipe = new RecipeImpl().withCreator(USER_ID)
+                                              .withId("recipe123")
+                                              .withScript("FROM ubuntu\n");
+        when(recipeDao.getById(recipe.getId())).thenReturn(recipe);
+
+        final Response response = given().auth()
+                                         .basic(ADMIN_USER_NAME, ADMIN_USER_PASSWORD)
+                                         .when()
+                                         .get(SECURE_PATH + "/recipe/" + recipe.getId());
+
+        assertEquals(response.getStatusCode(), 200);
+        assertEquals(response.getBody().print(), recipe.getScript());
+    }
+
+    @Test
+    public void shouldBeAbleToGetRecipeScriptWhenUserHasReadAccessToIt() {
+        final Map<String, List<String>> users = Collections.singletonMap(USER_ID, asList("read", "write"));
+        final Recipe recipe = new RecipeImpl().withCreator("other-user")
+                                              .withId("recipe123")
+                                              .withScript("FROM ubuntu\n")
+                                              .withPermissions(new PermissionsImpl(users, null));
+        when(recipeDao.getById(recipe.getId())).thenReturn(recipe);
+
+        final Response response = given().auth()
+                                         .basic(ADMIN_USER_NAME, ADMIN_USER_PASSWORD)
+                                         .when()
+                                         .get(SECURE_PATH + "/recipe/" + recipe.getId());
+
+        assertEquals(response.getStatusCode(), 200);
+        assertEquals(response.getBody().print(), recipe.getScript());
+    }
+
+    @Test
+    public void shouldBeAbleToGetRecipeScriptWhenRecipeHasPublicReadPermission() {
+        final Group group = new GroupImpl("public", null, asList("read"));
+        final Recipe recipe = new RecipeImpl().withCreator("other-user")
+                                              .withId("recipe123")
+                                              .withScript("FROM ubuntu\n")
+                                              .withPermissions(new PermissionsImpl(null, asList(group)));
+        when(recipeDao.getById(recipe.getId())).thenReturn(recipe);
+
+        final Response response = given().auth()
+                                         .basic(ADMIN_USER_NAME, ADMIN_USER_PASSWORD)
+                                         .when()
+                                         .get(SECURE_PATH + "/recipe/" + recipe.getId());
+
+        assertEquals(response.getStatusCode(), 200);
+        assertEquals(response.getBody().print(), recipe.getScript());
+    }
+
+    @Test
+    public void shouldThrowForbiddenExceptionWhenUserDoesNotHaveReadAccessToRecipe() {
+        final Map<String, List<String>> users = Collections.singletonMap("someone", asList("read", "write"));
+        final Recipe recipe = new RecipeImpl().withCreator("someone2")
+                                              .withId("recipe123")
+                                              .withScript("FROM ubuntu\n")
+                                              .withPermissions(new PermissionsImpl(users, null));
+        when(recipeDao.getById(recipe.getId())).thenReturn(recipe);
+
+        final Response response = given().auth()
+                                         .basic(ADMIN_USER_NAME, ADMIN_USER_PASSWORD)
+                                         .when()
+                                         .get(SECURE_PATH + "/recipe/" + recipe.getId());
+
+        assertEquals(response.getStatusCode(), 403);
+        final String expMessage = format("User %s doesn't have access to recipe %s", USER_ID, recipe.getId());
+        assertEquals(unwrapDto(response, ServiceError.class).getMessage(), expMessage);
+    }
+
+    @Test
+    public void shouldBeAbleToGetRecipeScriptWhenUserHasAccessToRecipeViaGroup() throws Exception {
+        final Group group = new GroupImpl("workspace/admin", "workspace123", asList("read", "write"));
+        final Recipe recipe = new RecipeImpl().withCreator("someone")
+                                              .withId("recipe123")
+                                              .withScript("FROM ubuntu\n")
+                                              .withPermissions(new PermissionsImpl(null, asList(group)));
+        when(recipeDao.getById(recipe.getId())).thenReturn(recipe);
+        final Member member = new Member().withUserId(USER_ID)
+                                          .withRoles(asList("workspace/admin", "workspace/developer"))
+                                          .withWorkspaceId("workspace123");
+        when(memberDao.getUserRelationships(USER_ID)).thenReturn(asList(member));
+
+        final Response response = given().auth()
+                                         .basic(ADMIN_USER_NAME, ADMIN_USER_PASSWORD)
+                                         .when()
+                                         .get(SECURE_PATH + "/recipe/" + recipe.getId());
+
+        assertEquals(response.getStatusCode(), 200);
+        assertEquals(response.getBody().print(), recipe.getScript());
+    }
 
     private static <T> T newDto(Class<T> clazz) {
         return DtoFactory.getInstance().createDto(clazz);
