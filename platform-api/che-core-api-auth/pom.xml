@@ -80,7 +80,7 @@
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
             <artifactId>che-core-api-core</artifactId>
-            <version>${che.core.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -122,7 +122,7 @@
             <plugin>
                 <groupId>org.eclipse.che.core</groupId>
                 <artifactId>che-core-api-dto-maven-plugin</artifactId>
-                <version>${che.core.version}</version>
+                <version>${project.version}</version>
                 <executions>
                     <execution>
                         <phase>process-sources</phase>
@@ -135,7 +135,7 @@
                     <dependency>
                         <groupId>org.eclipse.che.core</groupId>
                         <artifactId>che-core-api-auth</artifactId>
-                        <version>${che.core.version}</version>
+                        <version>${project.version}</version>
                     </dependency>
                 </dependencies>
                 <configuration>
