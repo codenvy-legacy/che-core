@@ -229,8 +229,8 @@ public class RunQueueTask implements Cancellable {
         if (remoteProcess != null) {
             remoteProcess.stop();
         } else {
-            eventService.publish(RunnerEvent.canceledEvent(id, request.getWorkspace(), request.getProject()));
             future.cancel(true);
+            eventService.publish(RunnerEvent.canceledEvent(id, request.getWorkspace(), request.getProject()));
         }
     }
 
