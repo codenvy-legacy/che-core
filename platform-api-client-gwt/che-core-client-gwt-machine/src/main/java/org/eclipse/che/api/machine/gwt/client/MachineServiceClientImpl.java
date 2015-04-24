@@ -17,6 +17,7 @@ import org.eclipse.che.api.machine.shared.dto.CommandDescriptor;
 import org.eclipse.che.api.machine.shared.dto.CreateMachineFromRecipe;
 import org.eclipse.che.api.machine.shared.dto.CreateMachineFromSnapshot;
 import org.eclipse.che.api.machine.shared.dto.MachineDescriptor;
+import org.eclipse.che.api.machine.shared.dto.ProcessDescriptor;
 import org.eclipse.che.api.machine.shared.dto.RecipeDescriptor;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.dto.DtoFactory;
@@ -120,13 +121,13 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     public void executeCommandInMachine(@Nonnull String machineId,
                                         @Nonnull String commandLine,
                                         @Nullable String outputChannel,
-                                        @Nonnull AsyncRequestCallback<Void> callback) {
+                                        @Nonnull AsyncRequestCallback<ProcessDescriptor> callback) {
         final CommandDescriptor request = dtoFactory.createDto(CommandDescriptor.class)
                                                     .withCommandLine(commandLine)
                                                     .withOutputChannel(outputChannel);
 
         asyncRequestFactory.createPostRequest(baseHttpUrl + '/' + machineId + "/command", request)
-                           .header(CONTENT_TYPE, APPLICATION_JSON)
+                           .header(ACCEPT, APPLICATION_JSON)
                            .loader(loader, "Executing command...")
                            .send(callback);
     }

@@ -11,6 +11,7 @@
 package org.eclipse.che.api.machine.gwt.client;
 
 import org.eclipse.che.api.machine.shared.dto.MachineDescriptor;
+import org.eclipse.che.api.machine.shared.dto.ProcessDescriptor;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 
@@ -100,7 +101,7 @@ public interface MachineServiceClient {
     void executeCommandInMachine(@Nonnull String machineId,
                                  @Nonnull String commandLine,
                                  @Nullable String outputChannel,
-                                 @Nonnull AsyncRequestCallback<Void> callback);
+                                 @Nonnull AsyncRequestCallback<ProcessDescriptor> callback);
 
     /**
      * Bind project to machine.
