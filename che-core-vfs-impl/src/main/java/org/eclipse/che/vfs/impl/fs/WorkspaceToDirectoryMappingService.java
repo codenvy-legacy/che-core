@@ -29,6 +29,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Map;
 
 /**
@@ -48,10 +50,14 @@ public class WorkspaceToDirectoryMappingService {
     @Produces(MediaType.APPLICATION_JSON)
     public Map<String, String> setMountPath(@PathParam("ws-id") String workspaceId, @QueryParam("mountPath") String mountPath)
             throws ServerException, IOException {
-        VirtualFileSystemProvider provider = virtualFileSystemRegistry.getProvider(workspaceId);
-        provider.close();
-        mappedDirectoryLocalFSMountStrategy.setMountPath(workspaceId, new File(mountPath));
-        return getDirectoryMapping();
+        if (Files.notExists(Paths.get(mountPath))) {
+            throw new ServerException(String.format("Folder %s not found ", mountPath));
+        } else {
+            VirtualFileSystemProvider provider = virtualFileSystemRegistry.getProvider(workspaceId);
+            provider.close();
+            mappedDirectoryLocalFSMountStrategy.setMountPath(workspaceId, new File(mountPath));
+            return getDirectoryMapping();
+        }
     }
 
     @DELETE
