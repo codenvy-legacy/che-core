@@ -72,6 +72,8 @@ import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.StringMapUnmarshaller;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.Config;
+import org.eclipse.che.ide.statepersistance.AppStateManager;
+import org.eclipse.che.ide.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.UUID;
 import org.eclipse.che.ide.util.loging.Log;
 import org.eclipse.che.ide.workspace.WorkspacePresenter;
@@ -107,11 +109,12 @@ public class BootstrapController {
     private final EventBus                     eventBus;
     private final ActionManager                actionManager;
     private final AppCloseHandler              appCloseHandler;
+    private final AppStateManager appStateManager;
+    private final PresentationFactory presentationFactory;
+    private final AppContext          appContext;
+    private       CurrentUser         currentUser;
     private final DocumentTitleDecorator       documentTitleDecorator;
-    private final PresentationFactory          presentationFactory;
-    private final AppContext                   appContext;
-    private       CurrentUser                  currentUser;
-
+    
     /** Create controller. */
     @Inject
     public BootstrapController(Provider<ComponentRegistry> componentRegistry,
@@ -137,6 +140,7 @@ public class BootstrapController {
                                final ThemeAgent themeAgent,
                                ActionManager actionManager,
                                AppCloseHandler appCloseHandler,
+                               AppStateManager appStateManager,
                                DocumentTitleDecorator documentTitleDecorator) {
         this.componentRegistry = componentRegistry;
         this.workspaceProvider = workspaceProvider;
@@ -160,6 +164,8 @@ public class BootstrapController {
         this.analyticsEventLoggerExt = analyticsEventLoggerExt;
         this.appCloseHandler = appCloseHandler;
         this.documentTitleDecorator = documentTitleDecorator;
+        this.appStateManager = appStateManager;
+
         presentationFactory = new PresentationFactory();
 
         // Register DTO providers
@@ -324,6 +330,7 @@ public class BootstrapController {
                             @Override
                             public void execute() {
                                 displayIDE();
+                                appStateManager.start(Config.getProjectName() == null);
                             }
                         });
                     }
@@ -472,8 +479,11 @@ public class BootstrapController {
             }
 
             @Override
+            public void onProjectClosing(ProjectActionEvent event) {
+            }
+
+            @Override
             public void onProjectClosed(ProjectActionEvent event) {
-                //do nothing
             }
         };
     }
@@ -484,12 +494,14 @@ public class BootstrapController {
             @Override
             public void onProjectOpened(ProjectActionEvent event) {
                 processStartupAction();
+            }
 
+            @Override
+            public void onProjectClosing(ProjectActionEvent event) {
             }
 
             @Override
             public void onProjectClosed(ProjectActionEvent event) {
-
             }
         };
     }

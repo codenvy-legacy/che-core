@@ -188,6 +188,10 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
             }
 
             @Override
+            public void onProjectClosing(ProjectActionEvent event) {
+            }
+
+            @Override
             public void onProjectClosed(ProjectActionEvent event) {
                 // this isn't case when some project going to open while previously opened project is closing
                 if (!event.isCloseBeforeOpening()) {

@@ -142,12 +142,21 @@ import org.eclipse.che.ide.projecttype.wizard.ProjectWizardFactory;
 import org.eclipse.che.ide.projecttype.wizard.ProjectWizardRegistryImpl;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.selection.SelectionAgentImpl;
+import org.eclipse.che.ide.statepersistance.ActiveFilePersistenceComponent;
+import org.eclipse.che.ide.statepersistance.OpenedFilesPersistenceComponent;
+import org.eclipse.che.ide.statepersistance.PersistenceComponent;
 import org.eclipse.che.ide.texteditor.openedfiles.ListOpenedFilesView;
 import org.eclipse.che.ide.texteditor.openedfiles.ListOpenedFilesViewImpl;
 import org.eclipse.che.ide.theme.AppearancePresenter;
 import org.eclipse.che.ide.theme.AppearanceView;
 import org.eclipse.che.ide.theme.AppearanceViewImpl;
 import org.eclipse.che.ide.theme.DarkTheme;
+import org.eclipse.che.ide.theme.ThemeAgentImpl;
+import org.eclipse.che.ide.toolbar.MainToolbar;
+import org.eclipse.che.ide.toolbar.ToolbarMainPresenter;
+import org.eclipse.che.ide.toolbar.ToolbarPresenter;
+import org.eclipse.che.ide.toolbar.ToolbarView;
+import org.eclipse.che.ide.toolbar.ToolbarViewImpl;
 import org.eclipse.che.ide.theme.ThemeAgentImpl;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.ui.dialogs.choice.ChoiceDialog;
@@ -230,6 +239,10 @@ public class CoreGinModule extends AbstractGinModule {
         configureCoreUI();
         configureEditorAPI();
         configureProjectTree();
+
+        GinMultibinder<PersistenceComponent> componentMultibinder = GinMultibinder.newSetBinder(binder(), PersistenceComponent.class);
+        componentMultibinder.addBinding().to(OpenedFilesPersistenceComponent.class);
+        componentMultibinder.addBinding().to(ActiveFilePersistenceComponent.class);
     }
 
     private void configureProjectWizard() {

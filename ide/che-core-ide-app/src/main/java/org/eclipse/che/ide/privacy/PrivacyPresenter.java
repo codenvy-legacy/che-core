@@ -63,6 +63,10 @@ public class PrivacyPresenter implements ProjectActionHandler {
     }
 
     @Override
+    public void onProjectClosing(ProjectActionEvent event) {
+    }
+
+    @Override
     public void onProjectClosed(ProjectActionEvent event) {
         int index = 0;
         boolean found = false;

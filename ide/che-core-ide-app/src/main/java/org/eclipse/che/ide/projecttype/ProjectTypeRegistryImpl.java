@@ -12,7 +12,6 @@ package org.eclipse.che.ide.projecttype;
 
 import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
 import org.eclipse.che.ide.api.project.type.ProjectTypeRegistry;
-import org.eclipse.che.ide.util.loging.Log;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -45,7 +44,6 @@ public class ProjectTypeRegistryImpl implements ProjectTypeRegistry {
 
     @Override
     public List<ProjectTypeDefinition> getProjectTypes() {
-        Log.info(this.getClass(),  types.size());
         return types;
     }
 
