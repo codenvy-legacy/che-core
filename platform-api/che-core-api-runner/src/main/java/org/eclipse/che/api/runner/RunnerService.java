@@ -10,6 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.api.runner;
 
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
+
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.rest.HttpJsonHelper;
 import org.eclipse.che.api.core.rest.HttpServletProxyResponse;
@@ -32,12 +38,6 @@ import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.Pair;
 import org.eclipse.che.commons.user.User;
 import org.eclipse.che.dto.server.DtoFactory;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,6 +92,9 @@ public class RunnerService extends Service {
                                             @Required @Description("project name") @QueryParam("project") String project,
                                             @ApiParam(value = "Run options")
                                             @Description("run options") RunOptions options) throws Exception {
+        if (project != null && !project.startsWith("/")) {
+            project = '/' + project;
+        }
         return runQueue.run(workspace, project, getServiceContext(), options).getDescriptor();
     }
 
