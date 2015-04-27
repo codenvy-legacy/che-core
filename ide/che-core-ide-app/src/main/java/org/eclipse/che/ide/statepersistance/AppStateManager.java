@@ -36,7 +36,7 @@ import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 import org.eclipse.che.ide.statepersistance.dto.AppState;
 import org.eclipse.che.ide.statepersistance.dto.ProjectState;
-import org.eclipse.che.ide.toolbar.PresentationFactory;
+import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.Pair;
 import org.eclipse.che.ide.util.loging.Log;
 

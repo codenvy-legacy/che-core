@@ -73,7 +73,6 @@ import org.eclipse.che.ide.rest.StringMapUnmarshaller;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.Config;
 import org.eclipse.che.ide.statepersistance.AppStateManager;
-import org.eclipse.che.ide.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.UUID;
 import org.eclipse.che.ide.util.loging.Log;
 import org.eclipse.che.ide.workspace.WorkspacePresenter;
