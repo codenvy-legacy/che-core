@@ -14,6 +14,7 @@ import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 
 import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.api.event.UpdateNodeEvent;
 import org.eclipse.che.ide.menu.ContextMenu;
 
 import org.eclipse.che.ide.api.app.AppContext;
@@ -309,6 +310,14 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
         if (node != null && node instanceof StorableNode && appContext.getCurrentProject() != null) {
             appContext.getCurrentProject().setProjectDescription(node.getProject().getData());
         }
+    }
+
+    @Override
+    public void expandNode(TreeNode<?> node) {
+        view.expandAndSelectNode(node);
+        view.updateNode(node, node);
+
+        eventBus.fireEvent(new UpdateNodeEvent());
     }
 
     /** {@inheritDoc} */
