@@ -63,17 +63,17 @@ public class OpenedNodesPersistenceComponent implements PersistenceComponent {
 
         for (TreeNode<?> openedNode: openedNodes.asIterable()) {
             if (openedNode instanceof StorableNode && !(openedNode instanceof FileNode)) {
-                String relFilePath = ((StorableNode)openedNode).getPath();
+                String relNodePath = ((StorableNode)openedNode).getPath();
 
-                relFilePath = relFilePath.replaceFirst(projectPath, "");
+                relNodePath = relNodePath.replaceFirst(projectPath, "");
 
-                if (relFilePath.equals("")) {
+                if (relNodePath.equals("")) {
                     continue;
                 }
 
                 ActionDescriptor actionDescriptor = dtoFactory.createDto(ActionDescriptor.class)
                                                               .withId(actionId)
-                                                              .withParameters(Collections.singletonMap(NODE_PARAM_ID, relFilePath));
+                                                              .withParameters(Collections.singletonMap(NODE_PARAM_ID, relNodePath));
                 actions.add(actionDescriptor);
             }
         }

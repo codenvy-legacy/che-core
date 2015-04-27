@@ -14,8 +14,8 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
+import org.eclipse.che.ide.actions.SelectNodeAction;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
-import org.eclipse.che.ide.actions.OpenNodeAction;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.eclipse.che.ide.actions.OpenNodeAction.NODE_PARAM_ID;
+import static org.eclipse.che.ide.actions.SelectNodeAction.SELECT_NODE_PARAM_ID;
 
 /**
  * @author Andrienko Alexander
@@ -42,19 +42,19 @@ public class ActiveNodePersistentComponent implements PersistenceComponent {
     private Provider<EditorAgent> editorAgentProvider;
     private DtoFactory            dtoFactory;
     private ActionManager         actionManager;
-    private OpenNodeAction        openNodeAction;
+    private SelectNodeAction selectNodeAction;
     private ProjectExplorerViewImpl projectExplorerView;
 
     @Inject
     public ActiveNodePersistentComponent(Provider<EditorAgent> editorAgentProvider,
                                          DtoFactory dtoFactory,
                                          ActionManager actionManager,
-                                         OpenNodeAction openNodeAction,
+                                         SelectNodeAction selectNodeAction,
                                          ProjectExplorerViewImpl projectExplorerView) {
         this.editorAgentProvider = editorAgentProvider;
         this.dtoFactory = dtoFactory;
         this.actionManager = actionManager;
-        this.openNodeAction = openNodeAction;
+        this.selectNodeAction = selectNodeAction;
         this.projectExplorerView = projectExplorerView;
     }
 
@@ -82,11 +82,11 @@ public class ActiveNodePersistentComponent implements PersistenceComponent {
             String path = virtualFile.getPath();
             path = path.replaceFirst(projectPath, "");
 
-            String openNodeActionId = actionManager.getId(openNodeAction);
+            String openNodeActionId = actionManager.getId(selectNodeAction);
 
             actions.add(dtoFactory.createDto(ActionDescriptor.class)
                                   .withId(openNodeActionId)
-                                  .withParameters(Collections.singletonMap(NODE_PARAM_ID, path)));
+                                  .withParameters(Collections.singletonMap(SELECT_NODE_PARAM_ID, path)));
         }
 
         return actions;

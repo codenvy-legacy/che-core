@@ -14,6 +14,7 @@ import com.google.gwtmockito.GwtMockitoTestRunner;
 import com.google.inject.Provider;
 
 import org.eclipse.che.ide.actions.OpenNodeAction;
+import org.eclipse.che.ide.actions.SelectNodeAction;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorInput;
@@ -60,7 +61,7 @@ public class ActiveNodePersistentComponentTest {
     @Mock
     private ActionManager           actionManager;
     @Mock
-    private OpenNodeAction          openNodeAction;
+    private SelectNodeAction selectNodeAction;
     @Mock
     private ProjectExplorerViewImpl projectExplorerView;
 
@@ -97,7 +98,7 @@ public class ActiveNodePersistentComponentTest {
         when(editorInput.getFile()).thenReturn(virtualFile);
         Mockito.<TreeNode<?>>when(((FileNode)virtualFile).getParent()).thenReturn(parentNode);
         when(virtualFile.getPath()).thenReturn(TEXT);
-        when(actionManager.getId(openNodeAction)).thenReturn(TEXT);
+        when(actionManager.getId(selectNodeAction)).thenReturn(TEXT);
 
         when(dtoFactory.createDto(ActionDescriptor.class)).thenReturn(actionDescriptor);
         when(actionDescriptor.withId(TEXT)).thenReturn(actionDescriptor);
@@ -117,7 +118,7 @@ public class ActiveNodePersistentComponentTest {
         verify(((FileNode)virtualFile)).getParent();
         verify(projectExplorerView).getOpenedTreeNodes();
         verify(virtualFile).getPath();
-        verify(actionManager).getId(openNodeAction);
+        verify(actionManager).getId(selectNodeAction);
         verify(dtoFactory).createDto(ActionDescriptor.class);
         verify(actionDescriptor).withId(TEXT);
         verify(actionDescriptor).withParameters(Matchers.<Map<String, String>>anyObject());

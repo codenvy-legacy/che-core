@@ -39,6 +39,7 @@ import org.eclipse.che.ide.actions.RedoAction;
 import org.eclipse.che.ide.actions.RenameItemAction;
 import org.eclipse.che.ide.actions.SaveAction;
 import org.eclipse.che.ide.actions.SaveAllAction;
+import org.eclipse.che.ide.actions.SelectNodeAction;
 import org.eclipse.che.ide.actions.ShowAboutAction;
 import org.eclipse.che.ide.actions.ShowHiddenFilesAction;
 import org.eclipse.che.ide.actions.ShowPreferencesAction;
@@ -148,6 +149,9 @@ public class StandardComponentInitializer {
 
     @Inject
     private OpenNodeAction openNodeAction;
+
+    @Inject
+    private SelectNodeAction selectNodeAction;
 
     @Inject
     private ShowHiddenFilesAction showHiddenFilesAction;
@@ -408,6 +412,7 @@ public class StandardComponentInitializer {
         actionManager.registerAction("findReplace", findReplaceAction);
         actionManager.registerAction("openFile", openFileAction);
         actionManager.registerAction("openNode", openNodeAction);
+        actionManager.registerAction("selectNode", selectNodeAction);
 
         changeResourceGroup.add(closeProjectAction);
         changeResourceGroup.add(deleteItemAction);

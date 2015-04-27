@@ -426,6 +426,9 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("messages.unableOpenResource")
     String unableOpenResource(String path);
 
+    @Key("messages.unableSelectResource")
+    String unableSelectResource(String path);
+
     @Key("messages.canNotOpenFileWithoutParams")
     String canNotOpenFileWithoutParams();
 
@@ -435,8 +438,14 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("messages.canNotOpenNodeWithoutParams")
     String canNotOpenNodeWithoutParams();
 
+    @Key("messages.canNotSelectNodeWithoutParams")
+    String canNotSelectNodeWithoutParams();
+
     @Key("messages.nodeToOpenIsNotSpecified")
     String nodeToOpenIsNotSpecified();
+
+    @Key("messages.nodeToSelectIsNotSpecified")
+    String nodeToSelectIsNotSpecified();
 
     @Key("messages.noOpenedProject")
     String noOpenedProject();
