@@ -16,7 +16,6 @@ import com.google.common.collect.FluentIterable;
 import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.rest.Service;
-import org.eclipse.che.api.machine.server.PermissionsChecker;
 import org.eclipse.che.api.machine.server.PermissionsImpl;
 import org.eclipse.che.api.machine.server.RecipeImpl;
 import org.eclipse.che.api.machine.server.dao.RecipeDao;

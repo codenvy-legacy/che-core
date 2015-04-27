@@ -17,7 +17,7 @@ import java.util.Objects;
 /**
  * @author Eugene Voevodin
  */
-public class Member {
+public class    Member {
 
     private String       userId;
     private String       workspaceId;

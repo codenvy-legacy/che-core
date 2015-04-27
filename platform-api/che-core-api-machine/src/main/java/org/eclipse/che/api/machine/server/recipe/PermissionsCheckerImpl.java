@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.machine.server;
+package org.eclipse.che.api.machine.server.recipe;
 
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.machine.shared.Group;
@@ -19,10 +19,7 @@ import org.eclipse.che.api.workspace.server.dao.MemberDao;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.Collections;
 import java.util.List;
-
-import static com.google.common.base.MoreObjects.firstNonNull;
 
 /**
  * TODO add doc
@@ -54,16 +51,20 @@ public class PermissionsCheckerImpl implements PermissionsChecker {
         }
 
         //check user permissions
-        final List<String> userPerms = firstNonNull(permissions.getUsers().get(userId), Collections.<String>emptyList());
-        if (userPerms.contains(permission)) {
-            return true;
+        final List<String> userPerms = permissions.getUsers().get(userId);
+        if (userPerms != null) {
+            return userPerms.contains(permission);
         }
 
         //check group permissions
         final List<Member> relationships = memberDao.getUserRelationships(userId);
         for (Group group : permissions.getGroups()) {
+            //skip group if it doesn't contain target permission
+            if (!group.getAcl().contains(permission)) {
+                continue;
+            }
             //check public access
-            if (group.getName().equals("public") && group.getAcl().contains(permission)) {
+            if (group.getName().equals("public")) {
                 return true;
             }
             //check user relationships for this group
