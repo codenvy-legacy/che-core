@@ -13,7 +13,6 @@ package org.eclipse.che.api.machine.server.recipe;
 import com.google.common.collect.FluentIterable;
 import com.jayway.restassured.response.Response;
 
-import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.rest.ApiExceptionMapper;
 import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 import org.eclipse.che.api.machine.server.PermissionsImpl;
@@ -61,7 +60,9 @@ import static org.testng.Assert.assertNotNull;
 @Listeners(value = {EverrestJetty.class, MockitoTestNGListener.class})
 public class RecipeServiceTest {
 
+    @SuppressWarnings("unused")
     static final EnvironmentFilter  FILTER  = new EnvironmentFilter();
+    @SuppressWarnings("unused")
     static final ApiExceptionMapper MAPPER  = new ApiExceptionMapper();
     static final String             USER_ID = "user123";
     static final LinkedList<String> ROLES   = new LinkedList<>(asList("user"));
@@ -124,7 +125,7 @@ public class RecipeServiceTest {
     }
 
     @Test
-    public void shouldCreateNewRecipe() {
+    public void shouldCreateNewRecipe() throws Exception {
         final GroupDescriptor group = newDto(GroupDescriptor.class).withName("public").withAcl(asList("read"));
         final NewRecipe newRecipe = newDto(NewRecipe.class).withType("docker")
                                                            .withScript("FROM ubuntu\n")
@@ -191,7 +192,7 @@ public class RecipeServiceTest {
     }
 
     @Test
-    public void shouldBeAbleToGetRecipeScript() throws ServerException {
+    public void shouldBeAbleToGetRecipeScript() throws Exception {
         final Map<String, List<String>> users = Collections.singletonMap(USER_ID, asList("read", "write"));
         final Recipe recipe = new RecipeImpl().withCreator("other-user")
                                               .withId("recipe123")
@@ -210,7 +211,7 @@ public class RecipeServiceTest {
     }
 
     @Test
-    public void shouldThrowForbiddenExceptionWhenUserDoesNotHaveReadAccessToRecipeScript() throws ServerException {
+    public void shouldThrowForbiddenExceptionWhenUserDoesNotHaveReadAccessToRecipeScript() throws Exception {
         final Recipe recipe = new RecipeImpl().withCreator("someone2")
                                               .withId("recipe123")
                                               .withScript("FROM ubuntu\n");
@@ -228,7 +229,7 @@ public class RecipeServiceTest {
     }
 
     @Test
-    public void shouldBeAbleToGetRecipe() throws ServerException {
+    public void shouldBeAbleToGetRecipe() throws Exception {
         final Map<String, List<String>> users = Collections.singletonMap(USER_ID, asList("read", "write"));
         final Recipe recipe = new RecipeImpl().withCreator("someone2")
                                               .withId("recipe123")
@@ -255,7 +256,7 @@ public class RecipeServiceTest {
     }
 
     @Test
-    public void shouldThrowForbiddenExceptionWhenUserDoesNotHaveReadAccessToRecipe() throws ServerException {
+    public void shouldThrowForbiddenExceptionWhenUserDoesNotHaveReadAccessToRecipe() throws Exception {
         final Recipe recipe = new RecipeImpl().withCreator("someone2")
                                               .withId("recipe123")
                                               .withScript("FROM ubuntu\n");
@@ -273,7 +274,7 @@ public class RecipeServiceTest {
     }
 
     @Test
-    public void shouldBeAbleToGetCreatedRecipes() {
+    public void shouldBeAbleToGetCreatedRecipes() throws Exception {
         final Recipe recipe1 = new RecipeImpl().withId("id1")
                                                .withCreator(USER_ID)
                                                .withType("docker")
@@ -294,7 +295,7 @@ public class RecipeServiceTest {
     }
 
     @Test
-    public void shouldBeAbleToSearchRecipes() {
+    public void shouldBeAbleToSearchRecipes() throws Exception {
         final Recipe recipe1 = new RecipeImpl().withId("id1")
                                                .withCreator(USER_ID)
                                                .withType("docker")
@@ -319,7 +320,7 @@ public class RecipeServiceTest {
     }
 
     @Test
-    public void shouldBeAbleToRemoveRecipe() throws ServerException {
+    public void shouldBeAbleToRemoveRecipe() throws Exception {
         final Recipe recipe = new RecipeImpl().withId("id")
                                               .withCreator(USER_ID)
                                               .withType("docker")
@@ -338,7 +339,7 @@ public class RecipeServiceTest {
     }
 
     @Test
-    public void shouldNotBeAbleToRemoveRecipeIfUserDoesNotHaveWritePermission() throws ServerException {
+    public void shouldNotBeAbleToRemoveRecipeIfUserDoesNotHaveWritePermission() throws Exception {
         final Recipe recipe = new RecipeImpl().withId("id")
                                               .withCreator(USER_ID)
                                               .withType("docker")
@@ -358,7 +359,7 @@ public class RecipeServiceTest {
     }
 
     @Test
-    public void shouldBeAbleToUpdateRecipe() throws ServerException {
+    public void shouldBeAbleToUpdateRecipe() throws Exception {
         final Recipe recipe = new RecipeImpl().withId("id")
                                               .withCreator(USER_ID)
                                               .withType("docker")
@@ -391,7 +392,7 @@ public class RecipeServiceTest {
     }
 
     @Test
-    public void shouldThrowForbiddenExceptionWhenUserDoesNotHaveAccessToUpdateRecipe() throws ServerException {
+    public void shouldThrowForbiddenExceptionWhenUserDoesNotHaveAccessToUpdateRecipe() throws Exception {
         final Recipe recipe = new RecipeImpl().withId("id")
                                               .withCreator(USER_ID)
                                               .withType("docker")
@@ -412,7 +413,7 @@ public class RecipeServiceTest {
     }
 
     @Test
-    public void shouldThrowForbiddenExceptionWhenUserDoesNotHaveAccessToUpdateRecipePermissions() throws ServerException {
+    public void shouldThrowForbiddenExceptionWhenUserDoesNotHaveAccessToUpdateRecipePermissions() throws Exception {
         final Recipe recipe = new RecipeImpl().withId("id")
                                               .withCreator(USER_ID)
                                               .withType("docker")
@@ -446,7 +447,7 @@ public class RecipeServiceTest {
     }
 
     private static <T> T unwrapDto(Response response, Class<T> dtoClass) {
-        return DtoFactory.getInstance().createDtoFromJson(response.getBody().print(), dtoClass);
+        return DtoFactory.getInstance().createDtoFromJson(response.body().print(), dtoClass);
     }
 
     private static <T> List<T> unwrapDtoList(Response response, Class<T> dtoClass) {

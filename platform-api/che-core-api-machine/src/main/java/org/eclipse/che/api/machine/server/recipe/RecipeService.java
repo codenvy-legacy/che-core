@@ -55,6 +55,11 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.Response.Status.CREATED;
 
+/**
+ * Recipe API
+ *
+ * @author Eugene Voevodin
+ */
 @Path("/recipe")
 public class RecipeService extends Service {
 
@@ -135,7 +140,7 @@ public class RecipeService extends Service {
     @GET
     @Produces(APPLICATION_JSON)
     @RolesAllowed({"user", "system/admin", "system/manager"})
-    public List<RecipeDescriptor> getCreatedRecipes() {
+    public List<RecipeDescriptor> getCreatedRecipes() throws ApiException {
         final List<Recipe> recipes = recipeDao.getByCreator(currentUser().getId());
         return FluentIterable.from(recipes)
                              .transform(RECIPE_TO_DESCRIPTOR_FUNCTION)
@@ -146,7 +151,8 @@ public class RecipeService extends Service {
     @Path("/list")
     @Produces(APPLICATION_JSON)
     @RolesAllowed({"user", "system/admin", "system/manager"})
-    public List<RecipeDescriptor> searchRecipes(@QueryParam("tags") List<String> tags, @QueryParam("type") String type) {
+    public List<RecipeDescriptor> searchRecipes(@QueryParam("tags") List<String> tags,
+                                                @QueryParam("type") String type) throws ApiException {
         final List<Recipe> recipes = recipeDao.search(tags, type);
         return FluentIterable.from(recipes)
                              .transform(RECIPE_TO_DESCRIPTOR_FUNCTION)

@@ -10,24 +10,29 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.server.dao;
 
+import org.eclipse.che.api.core.ConflictException;
+import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.machine.shared.Recipe;
 
 import java.util.List;
 
 /**
+ * TODO add docs
+ *
  * @author Eugene Voevodin
  */
 public interface RecipeDao {
 
-    void create(Recipe recipe); //persist
+    void create(Recipe recipe) throws ServerException, ConflictException; //persist
 
-    void update(Recipe recipe); //refresh
+    void update(Recipe recipe) throws ServerException, NotFoundException; //refresh
 
-    void remove(String id);
+    void remove(String id) throws ServerException, NotFoundException;
 
-    Recipe getById(String id);
+    Recipe getById(String id) throws ServerException, NotFoundException;
 
-    List<Recipe> search(List<String> tags, String type);
+    List<Recipe> search(List<String> tags, String type) throws ServerException;
 
-    List<Recipe> getByCreator(String creator);
+    List<Recipe> getByCreator(String creator) throws ServerException;
 }
