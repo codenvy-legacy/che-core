@@ -752,11 +752,27 @@ public class AccountService extends Service {
                     throw new ConflictException("User not authorized to add this subscription, please contact support");
                 }
             }
+
+            //only admins can override properties
+            if (!newSubscription.getProperties().isEmpty()) {
+                throw new ForbiddenException("User not authorized to add subscription with custom properties, please contact support");
+            }
         }
 
         // disable payment if subscription is free
         if (!plan.isPaid()) {
             newSubscription.setUsePaymentSystem(false);
+        }
+
+        //preparing properties
+        Map<String, String> properties = plan.getProperties();
+        Map<String, String> customProperties = newSubscription.getProperties();
+        for (Map.Entry<String, String> propertyEntry : customProperties.entrySet()) {
+            if (properties.containsKey(propertyEntry.getKey())) {
+                properties.put(propertyEntry.getKey(), propertyEntry.getValue());
+            } else {
+                throw new ForbiddenException("Forbidden overriding of non-existent plan properties");
+            }
         }
 
         //create new subscription
@@ -766,7 +782,7 @@ public class AccountService extends Service {
                 .withUsePaymentSystem(newSubscription.getUsePaymentSystem())
                 .withServiceId(plan.getServiceId())
                 .withPlanId(plan.getId())
-                .withProperties(plan.getProperties())
+                .withProperties(properties)
                 .withDescription(plan.getDescription())
                 .withBillingCycleType(plan.getBillingCycleType())
                 .withBillingCycle(plan.getBillingCycle())
