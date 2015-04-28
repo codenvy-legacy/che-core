@@ -10,7 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ui.toolbar;
 
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
@@ -48,9 +50,12 @@ public class ActionButton extends Composite implements MouseOverHandler, MouseOu
     private final Presentation presentation;
     private final String       place;
     private final Element      tooltip;
+    private final Element      tooltipBody;
+    private final Element      tooltipArrow;
     /** Command which will be executed when button was pressed. */
     protected     Action       action;
     private       FlowPanel    panel;
+    private       Element      image;
     /** Is enabled. */
     private boolean enabled  = true;
     /** Is button selected. */
@@ -61,7 +66,9 @@ public class ActionButton extends Composite implements MouseOverHandler, MouseOu
     public ActionButton(final Action action, ActionManager actionManager, final Presentation presentation, String place) {
         this.actionManager = actionManager;
         panel = new FlowPanel();
-        tooltip = DOM.createSpan();
+        tooltip = DOM.createDiv();
+        tooltipBody = DOM.createDiv();
+        tooltipArrow = DOM.createDiv();
         initWidget(panel);
         panel.setStyleName(css.iconButtonPanel());
         this.action = action;
@@ -72,8 +79,12 @@ public class ActionButton extends Composite implements MouseOverHandler, MouseOu
         setEnabled(presentation.isEnabled());
         setVisible(presentation.isVisible());
         if (presentation.getDescription() != null) {
-            tooltip.setInnerText(presentation.getDescription());
+            tooltipArrow.addClassName(css.tooltipArrow());
+            tooltipBody.setInnerText(presentation.getDescription());
+            tooltipBody.addClassName(css.tooltipBody());
             tooltip.addClassName(css.tooltip());
+            tooltip.appendChild(tooltipArrow);
+            tooltip.appendChild(tooltipBody);
             panel.getElement().appendChild(tooltip);
         }
     }
@@ -113,10 +124,12 @@ public class ActionButton extends Composite implements MouseOverHandler, MouseOu
             SVGImage image = new SVGImage(presentation.getSVGIcon());
             image.getElement().setAttribute("class", css.iconButtonIcon());
             panel.add(image);
+            this.image = image.getElement();
         } else if (presentation.getIcon() != null) {
             Image img = new Image(presentation.getIcon());
             img.setStyleName(css.iconButtonIcon());
             panel.add(img);
+            this.image = img.getElement();
         }
     }
 
@@ -151,8 +164,13 @@ public class ActionButton extends Composite implements MouseOverHandler, MouseOu
     /** Mouse Over handler. */
     @Override
     public void onMouseOver(MouseOverEvent event) {
-        tooltip.getStyle().setProperty("top", (panel.getAbsoluteTop() + panel.getOffsetHeight() + 9) + "px");
-        tooltip.getStyle().setProperty("left", (panel.getAbsoluteLeft() + panel.getOffsetWidth() / 2 - 11) + "px");
+        tooltip.getStyle().setTop(0, Style.Unit.PX);
+        tooltip.getStyle().setLeft((image.getOffsetWidth() + 2 ) / 2 - tooltipArrow.getOffsetWidth() / 2, Style.Unit.PX);
+
+        int screenSize = Document.get().getClientWidth();
+        if (image.getAbsoluteLeft() + tooltip.getOffsetWidth() > screenSize) {
+            tooltipBody.getStyle().setRight(image.getAbsoluteLeft() + tooltip.getOffsetWidth() - screenSize, Style.Unit.PX);
+        }
         if (!enabled) {
             return;
         }
