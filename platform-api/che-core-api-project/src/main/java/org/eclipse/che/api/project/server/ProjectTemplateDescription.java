@@ -27,6 +27,7 @@ public class ProjectTemplateDescription {
     private final String              description;
     private final String              location;
     private final Map<String, String> parameters;
+    private final String              recipe;
 //    private final Builders builders;
 //    private final Runners runners;
 
@@ -48,7 +49,8 @@ public class ProjectTemplateDescription {
                                       String displayName,
                                       String description,
                                       String location,
-                                      Map<String, String> parameters)
+                                      Map<String, String> parameters,
+                                      String recipe)
 //                                      Builders builders,
 //                                      Runners runners)
     {
@@ -58,6 +60,7 @@ public class ProjectTemplateDescription {
         this.description = description;
         this.location = location;
         this.parameters = parameters;
+        this.recipe = recipe;
 //        this.builders = builders;
 //        this.runners = runners;
     }
@@ -100,7 +103,7 @@ public class ProjectTemplateDescription {
      *         location of template, importer uses it when import templates to IDE
      */
     public ProjectTemplateDescription(String category, String importerType, String displayName, String description, String location) {
-        this(category, importerType, displayName, description, location, null);
+        this(category, importerType, displayName, description, location, null, null);
     }
 
 //    /**
@@ -171,6 +174,10 @@ public class ProjectTemplateDescription {
      */
     public String getCategory() {
         return category;
+    }
+
+    public String getRecipe() {
+        return recipe;
     }
 
 //    /**

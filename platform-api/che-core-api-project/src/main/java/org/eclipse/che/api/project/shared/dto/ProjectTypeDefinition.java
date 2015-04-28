@@ -65,26 +65,32 @@ public interface ProjectTypeDefinition {
     ProjectTypeDefinition withMixable(boolean mixable);
 
 
+    String getDefaultRecipe();
 
-    /** builder / runner configurations. */
-    List<String> getRunnerCategories();
+    void setDefaultRecipe(String defaultRecipe);
 
-    void setRunnerCategories(List<String> runnerCategories);
-
-    ProjectTypeDefinition withRunnerCategories(List<String> runnerCategories);
+    ProjectTypeDefinition withDefaultRecipe(String defaultRecipe);
 
 
-    String getDefaultBuilder();
+//    /** builder / runner configurations. */
+//    List<String> getRunnerCategories();
 
-    void setDefaultBuilder(String builder);
+//    void setRunnerCategories(List<String> runnerCategories);
 
-    ProjectTypeDefinition withDefaultBuilder(String builder);
+//    ProjectTypeDefinition withRunnerCategories(List<String> runnerCategories);
 
 
-    String getDefaultRunner();
+//    String getDefaultBuilder();
 
-    void setDefaultRunner(String runner);
+//    void setDefaultBuilder(String builder);
 
-    ProjectTypeDefinition withDefaultRunner(String runner);
+//    ProjectTypeDefinition withDefaultBuilder(String builder);
+
+
+//    String getDefaultRunner();
+
+//    void setDefaultRunner(String runner);
+
+//    ProjectTypeDefinition withDefaultRunner(String runner);
 
 }

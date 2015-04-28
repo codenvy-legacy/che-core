@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.api.account;
+package org.eclipse.che.api.account;
 
 import org.eclipse.che.api.account.server.AccountService;
 import org.eclipse.che.api.account.server.Constants;
@@ -20,15 +20,12 @@ import org.eclipse.che.api.account.server.dao.AccountDao;
 import org.eclipse.che.api.account.server.dao.Member;
 import org.eclipse.che.api.account.server.dao.PlanDao;
 import org.eclipse.che.api.account.server.dao.Subscription;
-import org.eclipse.che.api.account.server.dao.SubscriptionQueryBuilder;
-import org.eclipse.che.api.account.server.dao.SubscriptionQueryBuilder.SubscriptionQuery;
 import org.eclipse.che.api.account.shared.dto.AccountDescriptor;
 import org.eclipse.che.api.account.shared.dto.AccountUpdate;
 import org.eclipse.che.api.account.shared.dto.BillingCycleType;
 import org.eclipse.che.api.account.shared.dto.MemberDescriptor;
 import org.eclipse.che.api.account.shared.dto.NewMembership;
 import org.eclipse.che.api.account.shared.dto.NewSubscription;
-import org.eclipse.che.api.account.shared.dto.NewSubscriptionTemplate;
 import org.eclipse.che.api.account.shared.dto.Plan;
 import org.eclipse.che.api.account.shared.dto.SubscriptionDescriptor;
 import org.eclipse.che.api.account.shared.dto.SubscriptionResourcesUsed;
@@ -147,12 +144,6 @@ public class AccountServiceTest {
 
     @Mock
     private EnvironmentContext environmentContext;
-
-    @Mock
-    private SubscriptionQueryBuilder subscriptionQueryBuilder;
-
-    @Mock
-    private SubscriptionQuery subscriptionQuery;
 
     private Account           account;
     private Plan              plan;
@@ -696,59 +687,6 @@ public class AccountServiceTest {
     }
 
     @Test
-    public void shouldRespondForbiddenIfUserHasGotTrialOfTheSameServiceBefore() throws Exception {
-        prepareSuccessfulSubscriptionAddition();
-
-        when(accountDao.getSubscriptionQueryBuilder()).thenReturn(subscriptionQueryBuilder);
-        when(subscriptionQueryBuilder.getTrialQuery(anyString(), anyString())).thenReturn(subscriptionQuery);
-        when(subscriptionQuery.execute()).thenReturn(Collections.singletonList(createSubscription()));
-
-        ContainerResponse response =
-                makeRequest(HttpMethod.POST, SERVICE_PATH + "/subscriptions", MediaType.APPLICATION_JSON, newSubscription);
-
-        assertNotEquals(response.getStatus(), Response.Status.CREATED.getStatusCode());
-        assertEquals(response.getEntity(), "Can't add new trial. Please, contact support");
-
-        verify(accountDao, never()).addSubscription(any(Subscription.class));
-        verify(subscriptionService, never()).afterCreateSubscription(any(Subscription.class));
-    }
-
-    @Test
-    public void shouldRespondServerErrorIfServerExceptionIsThrownOnCheckTrialHistory() throws Exception {
-        prepareSuccessfulSubscriptionAddition();
-
-        when(accountDao.getSubscriptionQueryBuilder()).thenReturn(subscriptionQueryBuilder);
-        when(subscriptionQueryBuilder.getTrialQuery(anyString(), anyString())).thenReturn(subscriptionQuery);
-        when(subscriptionQuery.execute()).thenThrow(new ServerException(""));
-
-        ContainerResponse response =
-                makeRequest(HttpMethod.POST, SERVICE_PATH + "/subscriptions", MediaType.APPLICATION_JSON, newSubscription);
-
-        assertNotEquals(response.getStatus(), Response.Status.CREATED.getStatusCode());
-        assertEquals(response.getEntity(), "Can't add subscription. Please, contact support");
-
-        verify(accountDao).getSubscriptionQueryBuilder();
-        verify(subscriptionQueryBuilder).getTrialQuery(anyString(), anyString());
-        verify(subscriptionQuery).execute();
-        verify(accountDao, never()).addSubscription(any(Subscription.class));
-        verify(subscriptionService, never()).afterCreateSubscription(any(Subscription.class));
-    }
-
-    @Test
-    public void shouldNotCheckTrialHistoryIfUserIsAdmin() throws Exception {
-        prepareSuccessfulSubscriptionAddition();
-
-        prepareSecurityContext("system/admin");
-
-        ContainerResponse response =
-                makeRequest(HttpMethod.POST, SERVICE_PATH + "/subscriptions", MediaType.APPLICATION_JSON, newSubscription);
-
-        assertEquals(response.getStatus(), Response.Status.CREATED.getStatusCode());
-        verify(accountDao).addSubscription(any(Subscription.class));
-        verify(accountDao, never()).getSubscriptionQueryBuilder();
-    }
-
-    @Test
     public void shouldBeAbleToAddSubscriptionWithoutTrialAndCharge() throws Exception {
         prepareSuccessfulSubscriptionAddition();
 
@@ -1107,291 +1045,12 @@ public class AccountServiceTest {
         assertEquals(descriptor.withLinks(null), convertToDescriptor(subscription));
     }
 
-    @Test(dataProvider = "roleProvider")
-    public void shouldBeAbleToValidateSubscriptionAdditionBySystemAdminOrManager(String role) throws Exception {
-        prepareSuccessfulSubscriptionAddition();
-
-        final NewSubscriptionTemplate subscriptionTemplate = DtoFactory.getInstance().createDto(NewSubscriptionTemplate.class)
-                                                                       .withAccountId(ACCOUNT_ID)
-                                                                       .withPlanId(PLAN_ID)
-                                                                       .withTrialDuration(7);
-
-        prepareSecurityContext(role);
-
-        ContainerResponse response =
-                makeRequest(HttpMethod.POST, SERVICE_PATH + "/subscriptions/validate", MediaType.APPLICATION_JSON, subscriptionTemplate);
-
-        assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
-        NewSubscriptionTemplate actualSubscriptionTemplate = (NewSubscriptionTemplate)response.getEntity();
-        assertEquals(actualSubscriptionTemplate.getAccountId(), subscriptionTemplate.getAccountId());
-        assertEquals(actualSubscriptionTemplate.getPlanId(), subscriptionTemplate.getPlanId());
-        assertEquals(actualSubscriptionTemplate.getTrialDuration(), subscriptionTemplate.getTrialDuration());
-
-        verify(subscriptionService).beforeCreateSubscription(argThat(new ArgumentMatcher<Subscription>() {
-            @Override
-            public boolean matches(Object argument) {
-                Subscription actual = (Subscription)argument;
-                return SERVICE_ID.equals(actual.getServiceId()) && ACCOUNT_ID.equals(actual.getAccountId()) &&
-                       PLAN_ID.equals(actual.getPlanId()) && Collections.singletonMap("key", "value").equals(actual.getProperties());
-            }
-        }));
-        verify(accountDao, never()).getSubscriptionQueryBuilder();
-    }
-
     @DataProvider(name = "roleProvider")
     public String[][] roleProvider() {
         return new String[][]{
                 {"system/admin"},
                 {"system/manager"},
         };
-    }
-
-    @Test
-    public void shouldBeAbleToValidateSubscriptionAdditionByAccountOwner() throws Exception {
-        prepareSuccessfulSubscriptionAddition();
-
-        final NewSubscriptionTemplate subscriptionTemplate = DtoFactory.getInstance().createDto(NewSubscriptionTemplate.class)
-                                                                       .withAccountId(ACCOUNT_ID)
-                                                                       .withPlanId(PLAN_ID)
-                                                                       .withTrialDuration(7);
-
-        prepareSecurityContext("user");
-
-        ContainerResponse response =
-                makeRequest(HttpMethod.POST, SERVICE_PATH + "/subscriptions/validate", MediaType.APPLICATION_JSON, subscriptionTemplate);
-
-        assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
-        NewSubscriptionTemplate actualSubscriptionTemplate = (NewSubscriptionTemplate)response.getEntity();
-        assertEquals(actualSubscriptionTemplate.getAccountId(), subscriptionTemplate.getAccountId());
-        assertEquals(actualSubscriptionTemplate.getPlanId(), subscriptionTemplate.getPlanId());
-        assertEquals(actualSubscriptionTemplate.getTrialDuration(), subscriptionTemplate.getTrialDuration());
-
-        verify(subscriptionService).beforeCreateSubscription(argThat(new ArgumentMatcher<Subscription>() {
-            @Override
-            public boolean matches(Object argument) {
-                Subscription actual = (Subscription)argument;
-                return SERVICE_ID.equals(actual.getServiceId()) && ACCOUNT_ID.equals(actual.getAccountId()) &&
-                       PLAN_ID.equals(actual.getPlanId()) && Collections.singletonMap("key", "value").equals(actual.getProperties());
-            }
-        }));
-        verify(accountDao).getSubscriptionQueryBuilder();
-        verify(subscriptionQueryBuilder).getTrialQuery(anyString(), anyString());
-        verify(subscriptionQuery).execute();
-    }
-
-    @Test
-    public void shouldNotCheckTrialHistoryIfNewSubscriptionTemplateWithoutTrialOnValidateSubscriptionAddition() throws Exception {
-        prepareSuccessfulSubscriptionAddition();
-
-        final NewSubscriptionTemplate subscriptionTemplate = DtoFactory.getInstance().createDto(NewSubscriptionTemplate.class)
-                                                                       .withAccountId(ACCOUNT_ID)
-                                                                       .withPlanId(PLAN_ID)
-                                                                       .withTrialDuration(null);
-
-        ContainerResponse response =
-                makeRequest(HttpMethod.POST, SERVICE_PATH + "/subscriptions/validate", MediaType.APPLICATION_JSON, subscriptionTemplate);
-
-        assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
-        verify(accountDao, never()).getSubscriptionQueryBuilder();
-    }
-
-    @Test
-    public void shouldAllowUseNullTrialOnValidateSubscriptionAddition() throws Exception {
-        prepareSuccessfulSubscriptionAddition();
-
-        final NewSubscriptionTemplate subscriptionTemplate = DtoFactory.getInstance().createDto(NewSubscriptionTemplate.class)
-                                                                       .withAccountId(ACCOUNT_ID)
-                                                                       .withPlanId(PLAN_ID)
-                                                                       .withTrialDuration(null);
-
-        ContainerResponse response =
-                makeRequest(HttpMethod.POST, SERVICE_PATH + "/subscriptions/validate", MediaType.APPLICATION_JSON, subscriptionTemplate);
-
-        assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
-    }
-
-    @Test
-    public void shouldAllowUseZeroTrialOnValidateSubscriptionAddition() throws Exception {
-        prepareSuccessfulSubscriptionAddition();
-
-        final NewSubscriptionTemplate subscriptionTemplate = DtoFactory.getInstance().createDto(NewSubscriptionTemplate.class)
-                                                                       .withAccountId(ACCOUNT_ID)
-                                                                       .withPlanId(PLAN_ID)
-                                                                       .withTrialDuration(0);
-
-        ContainerResponse response =
-                makeRequest(HttpMethod.POST, SERVICE_PATH + "/subscriptions/validate", MediaType.APPLICATION_JSON, subscriptionTemplate);
-
-        assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
-    }
-
-    @Test
-    public void shouldThrowConflictExceptionIfObjectIsNotSetOnValidateSubscriptionAddition() throws Exception {
-        prepareSuccessfulSubscriptionAddition();
-
-        ContainerResponse response =
-                makeRequest(HttpMethod.POST, SERVICE_PATH + "/subscriptions/validate", MediaType.APPLICATION_JSON, null);
-
-        assertEquals(response.getEntity().toString(), "Plan and account identifier required");
-    }
-
-    @Test
-    public void shouldThrowConflictExceptionIfPlanIdIsNotSetOnValidateSubscriptionAddition() throws Exception {
-        prepareSuccessfulSubscriptionAddition();
-
-        final NewSubscriptionTemplate subscriptionTemplate =
-                DtoFactory.getInstance().createDto(NewSubscriptionTemplate.class).withAccountId(ACCOUNT_ID);
-
-        ContainerResponse response =
-                makeRequest(HttpMethod.POST, SERVICE_PATH + "/subscriptions/validate", MediaType.APPLICATION_JSON, subscriptionTemplate);
-
-        assertEquals(response.getEntity().toString(), "Plan and account identifier required");
-    }
-
-    @Test
-    public void shouldThrowConflictExceptionIfAccountIdIsNotSetOnValidateSubscriptionAddition() throws Exception {
-        prepareSuccessfulSubscriptionAddition();
-
-        final NewSubscriptionTemplate subscriptionTemplate =
-                DtoFactory.getInstance().createDto(NewSubscriptionTemplate.class).withAccountId(ACCOUNT_ID);
-
-        ContainerResponse response =
-                makeRequest(HttpMethod.POST, SERVICE_PATH + "/subscriptions/validate", MediaType.APPLICATION_JSON, subscriptionTemplate);
-
-        assertEquals(response.getEntity().toString(), "Plan and account identifier required");
-    }
-
-    @Test
-    public void shouldRespondForbiddenIfUserHasGotTrialOfTheSameServiceBeforeOnVerifySubsAddition() throws Exception {
-        prepareSuccessfulSubscriptionAddition();
-        when(accountDao.getSubscriptionQueryBuilder()).thenReturn(subscriptionQueryBuilder);
-        when(subscriptionQueryBuilder.getTrialQuery(anyString(), anyString())).thenReturn(subscriptionQuery);
-        when(subscriptionQuery.execute()).thenReturn(Collections.singletonList(createSubscription()));
-
-        final NewSubscriptionTemplate subscriptionTemplate = DtoFactory.getInstance().createDto(NewSubscriptionTemplate.class)
-                                                                       .withAccountId(ACCOUNT_ID)
-                                                                       .withPlanId(PLAN_ID)
-                                                                       .withTrialDuration(7);
-
-        ContainerResponse response =
-                makeRequest(HttpMethod.POST, SERVICE_PATH + "/subscriptions/validate", MediaType.APPLICATION_JSON, subscriptionTemplate);
-
-        assertNotEquals(response.getStatus(), Response.Status.OK.getStatusCode());
-        assertEquals(response.getEntity(), "Can't add new trial. Please, contact support");
-    }
-
-    @Test
-    public void shouldRespondServerErrorIfServerExceptionIsThrownOnCheckTrialHistoryOnVerifySubsAddition() throws Exception {
-        prepareSuccessfulSubscriptionAddition();
-        when(accountDao.getSubscriptionQueryBuilder()).thenReturn(subscriptionQueryBuilder);
-        when(subscriptionQueryBuilder.getTrialQuery(anyString(), anyString())).thenReturn(subscriptionQuery);
-        when(subscriptionQuery.execute()).thenThrow(new ServerException(""));
-
-        final NewSubscriptionTemplate subscriptionTemplate = DtoFactory.getInstance().createDto(NewSubscriptionTemplate.class)
-                                                                       .withAccountId(ACCOUNT_ID)
-                                                                       .withPlanId(PLAN_ID)
-                                                                       .withTrialDuration(7);
-
-        ContainerResponse response =
-                makeRequest(HttpMethod.POST, SERVICE_PATH + "/subscriptions/validate", MediaType.APPLICATION_JSON, subscriptionTemplate);
-
-        assertNotEquals(response.getStatus(), Response.Status.OK.getStatusCode());
-        assertEquals(response.getEntity(), "Can't add subscription. Please, contact support");
-    }
-
-    @Test
-    public void shouldRespondForbiddenIfUserHasNoRightsToAddSubscription() throws Exception {
-        prepareSuccessfulSubscriptionAddition();
-
-        final NewSubscriptionTemplate subscriptionTemplate = DtoFactory.getInstance().createDto(NewSubscriptionTemplate.class)
-                                                                       .withAccountId(ACCOUNT_ID)
-                                                                       .withPlanId(PLAN_ID)
-                                                                       .withTrialDuration(7);
-
-        when(accountDao.getByMember(USER_ID)).thenReturn(Arrays.asList(new Member().withRoles(Arrays.asList("account/member"))
-                                                                                   .withAccountId(ACCOUNT_ID)
-                                                                                   .withUserId(USER_ID)));
-        prepareSecurityContext("user");
-
-        ContainerResponse response =
-                makeRequest(HttpMethod.POST, SERVICE_PATH + "/subscriptions/validate", MediaType.APPLICATION_JSON, subscriptionTemplate);
-
-        assertNotEquals(response.getStatus(), Response.Status.OK.getStatusCode());
-        assertEquals(response.getEntity(), "Access denied");
-    }
-
-    @Test
-    public void shouldRespondForbiddenIfTrialDiffersFromTheTrialInPlanOnValidateSubscriptionAddition() throws Exception {
-        prepareSuccessfulSubscriptionAddition();
-
-        final NewSubscriptionTemplate subscriptionTemplate = DtoFactory.getInstance().createDto(NewSubscriptionTemplate.class)
-                                                                       .withAccountId(ACCOUNT_ID)
-                                                                       .withPlanId(PLAN_ID)
-                                                                       .withTrialDuration(6);
-
-        ContainerResponse response =
-                makeRequest(HttpMethod.POST, SERVICE_PATH + "/subscriptions/validate", MediaType.APPLICATION_JSON, subscriptionTemplate);
-
-        assertNotEquals(response.getStatus(), Response.Status.OK.getStatusCode());
-        assertEquals(response.getEntity(), "Trial duration " + subscriptionTemplate.getTrialDuration() + " is not allowed");
-    }
-
-    @Test(dataProvider = "roleProvider")
-    public void shouldAllowToUseTrialDurationWhichDiffersFromPlanOnValidateSubscriptionAdditionIfUserIsSystem(String role)
-            throws Exception {
-        prepareSuccessfulSubscriptionAddition();
-        prepareSecurityContext(role);
-
-        final NewSubscriptionTemplate subscriptionTemplate = DtoFactory.getInstance().createDto(NewSubscriptionTemplate.class)
-                                                                       .withAccountId(ACCOUNT_ID)
-                                                                       .withPlanId(PLAN_ID)
-                                                                       .withTrialDuration(6);
-
-        ContainerResponse response =
-                makeRequest(HttpMethod.POST, SERVICE_PATH + "/subscriptions/validate", MediaType.APPLICATION_JSON, subscriptionTemplate);
-
-        assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
-    }
-
-    @Test
-    public void shouldThrowNotFoundExceptionIfPlanIsNotFoundOnValidateSubscriptionAddition() throws Exception {
-        prepareSuccessfulSubscriptionAddition();
-        when(planDao.getPlanById(PLAN_ID)).thenThrow(new NotFoundException("message"));
-
-        final NewSubscriptionTemplate subscriptionTemplate = DtoFactory.getInstance().createDto(NewSubscriptionTemplate.class)
-                                                                       .withAccountId(ACCOUNT_ID)
-                                                                       .withPlanId(PLAN_ID)
-                                                                       .withTrialDuration(null);
-
-        ContainerResponse response =
-                makeRequest(HttpMethod.POST, SERVICE_PATH + "/subscriptions/validate", MediaType.APPLICATION_JSON, subscriptionTemplate);
-
-        assertEquals(response.getEntity().toString(), "message");
-    }
-
-    @Test
-    public void shouldNotReturnOKIfBeforeCreateSubscriptionMethodThrowsExceptionOnValidateSubscriptionAddition() throws Exception {
-        prepareSuccessfulSubscriptionAddition();
-        doThrow(new ConflictException("conflict message")).when(subscriptionService).beforeCreateSubscription(any(Subscription.class));
-
-        final NewSubscriptionTemplate subscriptionTemplate = DtoFactory.getInstance().createDto(NewSubscriptionTemplate.class)
-                                                                       .withAccountId(ACCOUNT_ID)
-                                                                       .withPlanId(PLAN_ID)
-                                                                       .withTrialDuration(null);
-
-        ContainerResponse response =
-                makeRequest(HttpMethod.POST, SERVICE_PATH + "/subscriptions/validate", MediaType.APPLICATION_JSON, subscriptionTemplate);
-
-        assertEquals(response.getEntity().toString(), "conflict message");
-
-        verify(subscriptionService).beforeCreateSubscription(argThat(new ArgumentMatcher<Subscription>() {
-            @Override
-            public boolean matches(Object argument) {
-                Subscription actual = (Subscription)argument;
-                return SERVICE_ID.equals(actual.getServiceId()) && ACCOUNT_ID.equals(actual.getAccountId()) &&
-                       PLAN_ID.equals(actual.getPlanId()) && Collections.singletonMap("key", "value").equals(actual.getProperties());
-            }
-        }));
     }
 
     @Test
@@ -1717,9 +1376,6 @@ public class AccountServiceTest {
         when(accountDao.getByMember(USER_ID)).thenReturn(Arrays.asList(new Member().withRoles(Arrays.asList("account/owner"))
                                                                                    .withAccountId(ACCOUNT_ID)
                                                                                    .withUserId(USER_ID)));
-        when(accountDao.getSubscriptionQueryBuilder()).thenReturn(subscriptionQueryBuilder);
-        when(subscriptionQueryBuilder.getTrialQuery(anyString(), anyString())).thenReturn(subscriptionQuery);
-        when(subscriptionQuery.execute()).thenReturn(Collections.<Subscription>emptyList());
         prepareSecurityContext("user");
     }
 

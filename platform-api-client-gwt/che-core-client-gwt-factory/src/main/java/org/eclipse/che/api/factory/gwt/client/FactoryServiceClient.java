@@ -26,14 +26,11 @@ public interface FactoryServiceClient {
      *
      * @param raw
      *         factory ID or query string which represents factory non encoded version
-     * @param encoded
-     *         if factory ID passed, encoded should be true, otherwise if non encoded factory URL passed value for this parameter should be
-     *         false
      * @param callback
      *         callback which return valid JSON object of factory or exception if occurred
      *
      */
-    void getFactory(@Nonnull String raw, boolean encoded, @Nonnull AsyncRequestCallback<Factory> callback);
+    void getFactory(@Nonnull String raw, @Nonnull AsyncRequestCallback<Factory> callback);
     
     /**
      * @param factoryId Factory's id
@@ -41,4 +38,13 @@ public interface FactoryServiceClient {
      * @param callback callback which returns snippet of the factory or exception if occurred
      */
     void getFactorySnippet(@Nonnull String factoryId, @Nonnull String type, @Nonnull AsyncRequestCallback<String> callback);
+
+
+    /**
+     * Retrieves factory object prototype for given project with it's attributes. It's not the stored factory object.
+     * @param workspaceId workspace id
+     * @param path project path
+     * @param callback callback which returns snippet of the factory or exception if occurred
+     */
+    void getFactoryJson(@Nonnull String workspaceId, @Nonnull String path, @Nonnull AsyncRequestCallback<Factory> callback);
 }

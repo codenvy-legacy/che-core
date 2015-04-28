@@ -155,8 +155,8 @@ public class Project {
 //        return new ProjectConfig(projectJson.getDescription(), projectJson.getType(),
 //                attributes, runners, builders, projectJson.getMixinTypes());
 
-        return new ProjectConfig(projectJson.getDescription(), types.primary.getId(),
-                                 attributes, types.mixinIds());
+        return new ProjectConfig(projectJson.getDescription(), types.primary.getId(), attributes, projectJson.getRecipe(),
+                                 types.mixinIds());
     }
 
 
@@ -178,6 +178,7 @@ public class Project {
         types.removeTransient();
 
         projectJson.setType(types.primary.getId());
+        projectJson.setRecipe(update.getRecipe());
 //        projectJson.setBuilders(update.getBuilders());
 //        projectJson.setRunners(update.getRunners());
         projectJson.setDescription(update.getDescription());

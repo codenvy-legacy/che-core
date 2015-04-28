@@ -28,7 +28,6 @@ import org.eclipse.che.api.account.shared.dto.MemberDescriptor;
 import org.eclipse.che.api.account.shared.dto.NewAccount;
 import org.eclipse.che.api.account.shared.dto.NewMembership;
 import org.eclipse.che.api.account.shared.dto.NewSubscription;
-import org.eclipse.che.api.account.shared.dto.NewSubscriptionTemplate;
 import org.eclipse.che.api.account.shared.dto.Plan;
 import org.eclipse.che.api.account.shared.dto.SubscriptionDescriptor;
 import org.eclipse.che.api.account.shared.dto.SubscriptionReference;
@@ -674,79 +673,6 @@ public class AccountService extends Service {
     }
 
     /**
-     * Validates addition of the subscription
-     *
-     * @param subscriptionTemplate
-     *         template of the subscription
-     * @return {@link org.eclipse.che.api.account.shared.dto.NewSubscriptionTemplate}
-     * @throws NotFoundException
-     *         if requested plan is not found
-     * @throws ConflictException
-     *         if requested subscription can't be added
-     * @throws ServerException
-     */
-    @ApiOperation(value = "Validate new subscription",
-            notes = "This method can be used prior to adding a new subscription to an account to make sure such a subscription can be added.",
-            response = NewSubscriptionTemplate.class,
-            position = 16)
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 403, message = "Access denied"),
-            @ApiResponse(code = 404, message = "Invalid subscription ID"),
-            @ApiResponse(code = 409, message = "Plan and account identifier required"),
-            @ApiResponse(code = 500, message = "Internal Server Error")})
-    @POST
-    @Path("/subscriptions/validate")
-    @RolesAllowed({"user", "system/admin", "system/manager"})
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public NewSubscriptionTemplate validateSubscriptionAddition(@ApiParam(value = "Subscription template", required = true)
-                                                                NewSubscriptionTemplate subscriptionTemplate,
-                                                                @Context SecurityContext securityContext)
-            throws NotFoundException, ServerException, ConflictException, ForbiddenException {
-        if (null == subscriptionTemplate || null == subscriptionTemplate.getAccountId() || null == subscriptionTemplate.getPlanId()) {
-            throw new ConflictException("Plan and account identifier required");
-        }
-        if (securityContext.isUserInRole("user") &&
-            !resolveRolesForSpecificAccount(subscriptionTemplate.getAccountId()).contains("account/owner")) {
-            throw new ForbiddenException("Access denied");
-        }
-        final Plan plan = planDao.getPlanById(subscriptionTemplate.getPlanId());
-
-        // allow regular user use subscription without trial or with trial which duration equal to duration from the plan
-        if (subscriptionTemplate.getTrialDuration() != null && subscriptionTemplate.getTrialDuration() != 0 &&
-            !subscriptionTemplate.getTrialDuration().equals(plan.getTrialDuration()) && securityContext.isUserInRole("user")) {
-            throw new ConflictException("Trial duration " + subscriptionTemplate.getTrialDuration() + " is not allowed");
-        }
-
-        final SubscriptionService service = registry.get(plan.getServiceId());
-        //create new subscription
-        final Subscription subscription = new Subscription().withAccountId(subscriptionTemplate.getAccountId())
-                                                            .withServiceId(plan.getServiceId())
-                                                            .withPlanId(plan.getId())
-                                                            .withProperties(plan.getProperties());
-        service.beforeCreateSubscription(subscription);
-
-        // check that user hasn't got trial before, omit for privileged user (e.g. system/admin)
-        if (subscriptionTemplate.getTrialDuration() != null && subscriptionTemplate.getTrialDuration() != 0 &&
-            securityContext.isUserInRole("user")) {
-            try {
-                List<Subscription> subscriptions = accountDao.getSubscriptionQueryBuilder()
-                                                             .getTrialQuery(subscription.getServiceId(), subscription.getAccountId())
-                                                             .execute();
-
-                if (!subscriptions.isEmpty()) {
-                    throw new ForbiddenException("Can't add new trial. Please, contact support");
-                }
-            } catch (ServerException e) {
-                throw new ServerException("Can't add subscription. Please, contact support");
-            }
-        }
-
-        return subscriptionTemplate;
-    }
-
-    /**
      * <p>Creates new subscription. Returns {@link SubscriptionDescriptor}
      * when subscription has been created successfully.
      * <p>Each new subscription should contain plan id and account id </p>
@@ -824,19 +750,6 @@ public class AccountService extends Service {
                 // allow regular user use subscription without trial or with trial which duration equal to duration from the plan
                 if (!newSubscription.getTrialDuration().equals(plan.getTrialDuration())) {
                     throw new ConflictException("User not authorized to add this subscription, please contact support");
-                }
-
-                // check that user hasn't got trial before, omit for privileged user (e.g. system/admin)
-                try {
-                    List<Subscription> subscriptions = accountDao.getSubscriptionQueryBuilder()
-                                                                 .getTrialQuery(plan.getServiceId(), newSubscription.getAccountId())
-                                                                 .execute();
-
-                    if (!subscriptions.isEmpty()) {
-                        throw new ForbiddenException("Can't add new trial. Please, contact support");
-                    }
-                } catch (ServerException e) {
-                    throw new ServerException("Can't add subscription. Please, contact support");
                 }
             }
         }
@@ -1308,21 +1221,5 @@ public class AccountService extends Service {
                          .withDescription(subscription.getDescription())
                          .withPlanId(subscription.getPlanId())
                          .withLinks(links);
-    }
-
-    // TODO remove it after testing!
-    @GET
-    @Path("/subscriptions/test")
-    @RolesAllowed({"user"})
-    public void test() {
-        LOG.info("Subscription scheduler test is started");
-        try {
-            for (SubscriptionService subscriptionService : registry.getAll()) {
-                subscriptionService.onCheckSubscriptions();
-            }
-        } catch (Exception e) {
-            LOG.error(e.getLocalizedMessage(), e);
-        }
-        LOG.info("Subscription scheduler test is finished");
     }
 }

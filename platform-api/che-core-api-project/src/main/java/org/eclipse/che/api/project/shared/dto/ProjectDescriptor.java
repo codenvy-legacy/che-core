@@ -188,6 +188,14 @@ public interface ProjectDescriptor extends Hyperlinks {
 
     //
 
+    String getRecipe();
+
+    void setRecipe(String recipe);
+
+    ProjectDescriptor withRecipe(String recipe);
+
+    //
+
     /** Gets URL for getting this description of project. */
     @ApiModelProperty(value = "Project URL", position = 15)
     String getBaseUrl();

@@ -17,7 +17,9 @@ import org.eclipse.che.api.machine.shared.dto.CommandDescriptor;
 import org.eclipse.che.api.machine.shared.dto.CreateMachineFromRecipe;
 import org.eclipse.che.api.machine.shared.dto.CreateMachineFromSnapshot;
 import org.eclipse.che.api.machine.shared.dto.MachineDescriptor;
+import org.eclipse.che.api.machine.shared.dto.ProcessDescriptor;
 import org.eclipse.che.api.machine.shared.dto.RecipeDescriptor;
+import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
@@ -96,6 +98,18 @@ public class MachineServiceClientImpl implements MachineServiceClient {
 
     /** {@inheritDoc} */
     @Override
+    public void getMachines(@Nonnull String workspaceId,
+                            @Nullable String projectPath,
+                            @Nonnull AsyncRequestCallback<Array<MachineDescriptor>> callback) {
+        asyncRequestFactory.createGetRequest(
+                baseHttpUrl + "?workspace=" + workspaceId + (projectPath != null ? "&project=" + projectPath : ""))
+                           .header(ACCEPT, APPLICATION_JSON)
+                           .loader(loader, "Getting info about bound machines...")
+                           .send(callback);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void destroyMachine(@Nonnull String machineId, @Nonnull AsyncRequestCallback<Void> callback) {
         asyncRequestFactory.createRequest(DELETE, baseHttpUrl + '/' + machineId, null, false)
                            .loader(loader, "Destroying machine...")
@@ -107,14 +121,35 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     public void executeCommandInMachine(@Nonnull String machineId,
                                         @Nonnull String commandLine,
                                         @Nullable String outputChannel,
-                                        @Nonnull AsyncRequestCallback<Void> callback) {
+                                        @Nonnull AsyncRequestCallback<ProcessDescriptor> callback) {
         final CommandDescriptor request = dtoFactory.createDto(CommandDescriptor.class)
                                                     .withCommandLine(commandLine)
                                                     .withOutputChannel(outputChannel);
 
         asyncRequestFactory.createPostRequest(baseHttpUrl + '/' + machineId + "/command", request)
-                           .header(CONTENT_TYPE, APPLICATION_JSON)
+                           .header(ACCEPT, APPLICATION_JSON)
                            .loader(loader, "Executing command...")
                            .send(callback);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void bindProject(@Nonnull String machineId, @Nonnull String projectPath, @Nonnull AsyncRequestCallback<Void> callback) {
+        asyncRequestFactory.createPostRequest(baseHttpUrl + '/' + machineId + "/binding/" + (projectPath), null)
+                           .loader(loader, "Binding project to machine...")
+                           .send(callback);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void unbindProject(@Nonnull String machineId, @Nonnull String projectPath, @Nonnull AsyncRequestCallback<Void> callback) {
+        asyncRequestFactory.createDeleteRequest(baseHttpUrl + '/' + machineId + "/binding/" + (projectPath))
+                           .loader(loader, "Unbinding project from machine...")
+                           .send(callback);
+    }
+
+    /** Returns the given path without leading slash character. */
+    private String normalizePath(String path) {
+        return path.startsWith("/") ? path.substring(1) : path;
     }
 }

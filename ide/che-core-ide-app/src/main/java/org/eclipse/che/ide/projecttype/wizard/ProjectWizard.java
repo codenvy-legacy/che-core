@@ -10,14 +10,17 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projecttype.wizard;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
+import com.google.web.bindery.event.shared.EventBus;
+
 import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ImportProject;
 import org.eclipse.che.api.project.shared.dto.ImportResponse;
 import org.eclipse.che.api.project.shared.dto.NewProject;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.OpenProjectEvent;
 import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
@@ -27,11 +30,6 @@ import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.Unmarshallable;
-import org.eclipse.che.ide.ui.dialogs.DialogFactory;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.inject.Inject;
-import com.google.inject.assistedinject.Assisted;
-import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nonnull;
 
@@ -50,14 +48,12 @@ import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistrar
  */
 public class ProjectWizard extends AbstractWizard<ImportProject> {
 
-    private final ProjectWizardMode        mode;
-    private final CoreLocalizationConstant localizationConstants;
-    private final ProjectServiceClient     projectServiceClient;
-    private final DtoUnmarshallerFactory   dtoUnmarshallerFactory;
-    private final DtoFactory               dtoFactory;
-    private final DialogFactory            dialogFactory;
-    private final EventBus                 eventBus;
-    private final AppContext               appContext;
+    private final ProjectWizardMode      mode;
+    private final ProjectServiceClient   projectServiceClient;
+    private final DtoUnmarshallerFactory dtoUnmarshallerFactory;
+    private final DtoFactory             dtoFactory;
+    private final EventBus               eventBus;
+    private final AppContext             appContext;
 
     /**
      * Creates project wizard.
@@ -69,14 +65,10 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
      * @param projectPath
      *         path to the project to update if wizard created in {@link ProjectWizardMode#UPDATE} mode
      *         or path to the folder to convert it to module if wizard created in {@link ProjectWizardMode#CREATE_MODULE} mode
-     * @param localizationConstants
-     *         localization constants
      * @param projectServiceClient
      *         GWT-client for Project service
      * @param dtoUnmarshallerFactory
      *         {@link org.eclipse.che.ide.rest.DtoUnmarshallerFactory} instance
-     * @param dialogFactory
-     *         {@link org.eclipse.che.ide.ui.dialogs.DialogFactory} instance
      * @param eventBus
      *         {@link com.google.web.bindery.event.shared.EventBus} instance
      * @param appContext
@@ -86,20 +78,16 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
     public ProjectWizard(@Assisted ImportProject dataObject,
                          @Assisted ProjectWizardMode mode,
                          @Assisted String projectPath,
-                         CoreLocalizationConstant localizationConstants,
                          ProjectServiceClient projectServiceClient,
                          DtoUnmarshallerFactory dtoUnmarshallerFactory,
                          DtoFactory dtoFactory,
-                         DialogFactory dialogFactory,
                          EventBus eventBus,
                          AppContext appContext) {
         super(dataObject);
         this.mode = mode;
-        this.localizationConstants = localizationConstants;
         this.projectServiceClient = projectServiceClient;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.dtoFactory = dtoFactory;
-        this.dialogFactory = dialogFactory;
         this.eventBus = eventBus;
         this.appContext = appContext;
 

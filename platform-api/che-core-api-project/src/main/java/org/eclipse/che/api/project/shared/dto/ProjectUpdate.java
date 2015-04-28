@@ -106,4 +106,11 @@ public interface ProjectUpdate {
     void setMixinTypes(List<String> mixinTypes);
 
     ProjectUpdate withMixinTypes(List<String> mixinTypes);
+
+
+    String getRecipe();
+
+    void setRecipe(String recipe);
+
+    ProjectUpdate withRecipe(String recipe);
 }

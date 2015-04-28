@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.factory;
 
+import org.eclipse.che.api.account.server.dao.AccountDao;
+import org.eclipse.che.api.account.server.dao.Member;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.rest.ApiExceptionMapper;
@@ -67,6 +69,7 @@ import static javax.ws.rs.core.Response.Status;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anySetOf;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -85,6 +88,9 @@ public class FactoryServiceTest {
 
     @Mock
     private FactoryStore factoryStore;
+
+    @Mock
+    private AccountDao  accountDao;
 
     @Mock
     private FactoryCreateValidator createValidator;
@@ -109,12 +115,15 @@ public class FactoryServiceTest {
         factoryBuilder = spy(new FactoryBuilder(new SourceProjectParametersValidator()));
         factoryService = new FactoryService("https://codenvy.com/api",
                                             factoryStore,
+                                            accountDao,
                                             createValidator,
                                             acceptValidator,
                                             editValidator,
                                             new LinksHelper(),
                                             factoryBuilder,
                                             projectManager);
+
+        when(accountDao.getByMember(anyString())).thenReturn(Arrays.asList(new Member().withRoles(Arrays.asList("account/owner"))));
     }
 
     @Filter
@@ -146,7 +155,7 @@ public class FactoryServiceTest {
                                              .withName("pname"));
 
         factory.setId(CORRECT_FACTORY_ID);
-        Factory expected = dto.clone(factory).withWorkspace(dto.createDto(Workspace.class).withType("temp").withLocation("owner"));
+        Factory expected = dto.clone(factory);
 
         when(factoryStore.getFactory(CORRECT_FACTORY_ID)).thenReturn(factory);
         when(factoryStore.getFactoryImages(CORRECT_FACTORY_ID, null)).thenReturn(Collections.<FactoryImage>emptySet());
@@ -182,6 +191,7 @@ public class FactoryServiceTest {
         FactorySaveAnswer factorySaveAnswer = new FactorySaveAnswer();
         when(factoryStore.saveFactory((Factory)any(), anySetOf(FactoryImage.class))).then(factorySaveAnswer);
         when(factoryStore.getFactory(CORRECT_FACTORY_ID)).then(factorySaveAnswer);
+
 
 
         // when, then

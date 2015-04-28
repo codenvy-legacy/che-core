@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projecttype.wizard;
 
+import com.google.web.bindery.event.shared.Event;
+import com.google.web.bindery.event.shared.EventBus;
+
 import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ImportProject;
@@ -24,13 +27,8 @@ import org.eclipse.che.ide.api.wizard.Wizard;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
-
-import org.eclipse.che.ide.projecttype.wizard.ProjectWizard;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.test.GwtReflectionUtils;
-import com.google.web.bindery.event.shared.Event;
-import com.google.web.bindery.event.shared.EventBus;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -237,11 +235,9 @@ public class ProjectWizardTest {
         wizard = new ProjectWizard(importProject,
                                    mode,
                                    PROJECT_NAME,
-                                   coreLocalizationConstant,
                                    projectServiceClient,
                                    dtoUnmarshallerFactory,
                                    dtoFactory,
-                                   dialogFactory,
                                    eventBus,
                                    appContext);
     }
