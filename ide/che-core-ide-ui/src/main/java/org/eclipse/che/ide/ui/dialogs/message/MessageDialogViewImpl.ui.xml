@@ -29,6 +29,7 @@
             padding: 1em;
             word-wrap: break-word;
             -webkit-user-select: initial;
+            -moz-user-select: text;
         }
 
     </ui:style>
