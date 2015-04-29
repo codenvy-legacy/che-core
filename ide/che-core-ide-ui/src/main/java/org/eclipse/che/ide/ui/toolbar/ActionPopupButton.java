@@ -10,7 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ui.toolbar;
 
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Composite;
@@ -23,8 +25,12 @@ import org.eclipse.che.ide.api.action.ActionGroup;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.ActionSelectedHandler;
 import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
+import org.eclipse.che.ide.util.loging.Log;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
+
+import java.util.Deque;
+import java.util.Stack;
 
 /**
  * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
@@ -36,6 +42,8 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
     private final ActionGroup         action;
     private final ActionManager       actionManager;
     private final Element             tooltip;
+    private final Element             tooltipBody;
+    private final Element             tooltipArrow;
     private       KeyBindingAgent     keyBindingAgent;
     private       PresentationFactory presentationFactory;
     private final String              place;
@@ -60,7 +68,9 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
         this.place = place;
 
         panel = new ButtonPanel();
-        tooltip = DOM.createSpan();
+        tooltip = DOM.createDiv();
+        tooltipBody = DOM.createDiv();
+        tooltipArrow = DOM.createDiv();
         initWidget(panel);
         panel.setStyleName(css.popupButtonPanel());
         SVGResource icon = presentationFactory.getPresentation(action).getSVGIcon();
@@ -79,8 +89,12 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
         panel.add(caret);
         final String description = presentationFactory.getPresentation(action).getDescription();
         if (description != null) {
-            tooltip.setInnerText(description);
+            tooltipArrow.addClassName(css.tooltipArrow());
+            tooltipBody.setInnerText(description);
+            tooltipBody.addClassName(css.tooltipBody());
             tooltip.addClassName(css.tooltip());
+            tooltip.appendChild(tooltipArrow);
+            tooltip.appendChild(tooltipBody);
             panel.getElement().appendChild(tooltip);
         }
         this.ensureDebugId(place + "/" + action.getTemplatePresentation().getText());
@@ -146,8 +160,14 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
 
     /** Mouse Over handler. */
     private void onMouseOver() {
-        tooltip.getStyle().setProperty("top", (panel.getAbsoluteTop() + panel.getOffsetHeight() + 9) + "px");
-        tooltip.getStyle().setProperty("left", (panel.getAbsoluteLeft() + panel.getOffsetWidth() / 2 - 11) + "px");
+        tooltip.getStyle().setLeft(panel.getOffsetWidth() / 2 - tooltipArrow.getOffsetWidth() / 2, Style.Unit.PX);
+        tooltip.getStyle().setTop(3, Style.Unit.PX);
+
+        int screenSize = Document.get().getClientWidth();
+        if (panel.getAbsoluteLeft() + tooltip.getOffsetWidth() > screenSize) {
+            tooltipBody.getStyle().setRight(panel.getAbsoluteLeft() + tooltip.getOffsetWidth() - screenSize, Style.Unit.PX);
+        }
+
         panel.setStyleName(css.popupButtonPanelOver());
     }
 
@@ -222,9 +242,7 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
                 case Event.ONCLICK:
                     onMouseClick();
                     break;
-
             }
         }
-
     }
 }
