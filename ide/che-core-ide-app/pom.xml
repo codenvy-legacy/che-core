@@ -312,7 +312,6 @@
                         <exclude>**/readableNames</exclude>
                         <exclude>**/project</exclude>
                         <exclude>**/ide/Resources.java</exclude>
-                        <exclude>**/ide/common/Constants.java</exclude>
                         <exclude>**/ide/dto/DocOp.java</exclude>
                         <exclude>**/ide/dto/DocOpComponent.java</exclude>
                         <exclude>**/ide/dto/client/ClientDocOpFactory.java</exclude>

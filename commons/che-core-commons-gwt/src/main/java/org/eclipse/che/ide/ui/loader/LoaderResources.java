@@ -22,7 +22,7 @@ import com.google.gwt.resources.client.DataResource.MimeType;
  */
 public interface LoaderResources extends ClientBundle {
 
-    public interface PinionCss extends CssResource {
+    interface PinionCss extends CssResource {
         String pinion();
     }
 
@@ -30,7 +30,7 @@ public interface LoaderResources extends ClientBundle {
     @Source("org/eclipse/che/ide/ui/loader/pinion-icon.png")
     DataResource pinionIcon();
 
-    @Source({"org/eclipse/che/ide/common/constants.css", "org/eclipse/che/ide/ui/loader/IdeLoader.css", "org/eclipse/che/ide/api/ui/style.css"})
+    @Source({"org/eclipse/che/ide/ui/constants.css", "org/eclipse/che/ide/ui/loader/IdeLoader.css", "org/eclipse/che/ide/api/ui/style.css"})
     PinionCss Css();
 
 }

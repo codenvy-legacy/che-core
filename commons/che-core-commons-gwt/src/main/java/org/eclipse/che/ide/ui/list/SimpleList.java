@@ -120,7 +120,7 @@ public class SimpleList<M> extends UiComponent<SimpleList.View> implements IsWid
     }
 
     public interface Resources extends ClientBundle {
-        @Source({"SimpleList.css", "org/eclipse/che/ide/common/constants.css", "org/eclipse/che/ide/api/ui/style.css"})
+        @Source({"SimpleList.css", "org/eclipse/che/ide/ui/constants.css", "org/eclipse/che/ide/api/ui/style.css"})
         Css defaultSimpleListCss();
     }
 

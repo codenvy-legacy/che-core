@@ -30,7 +30,7 @@
 @def dividerColor #ebebeb;
 @def dividerColorDark #c0c0c0;
 
-@eval scrollbarSize org.eclipse.che.ide.common.Constants.SCROLLBAR_SIZE+"px";
+@eval scrollbarSize org.eclipse.che.ide.ui.Constants.SCROLLBAR_SIZE+"px";
 /* Buttons */
 @def buttonBorderRadius 2px;
 @def buttonFontSize 11px;

@@ -236,7 +236,7 @@ public class Tree<D> extends UiComponent<Tree.View<D>> implements IsWidget {
         SVGResource expansionIcon();
 
         // Default Stylesheet.
-        @Source({"org/eclipse/che/ide/common/constants.css", "Tree.css", "org/eclipse/che/ide/api/ui/style.css"})
+        @Source({"org/eclipse/che/ide/ui/constants.css", "Tree.css", "org/eclipse/che/ide/api/ui/style.css"})
         Css treeCss();
     }
 
