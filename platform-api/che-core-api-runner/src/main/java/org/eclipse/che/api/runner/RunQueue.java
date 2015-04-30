@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.runner;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import org.eclipse.che.api.builder.BuildStatus;
@@ -643,7 +645,17 @@ public class RunQueue {
                 }
             }
         }
-        return runnerList;
+        return runnerList == null ? null : FluentIterable.from(runnerList).filter(new Predicate<RemoteRunner>() {
+            @Override
+            public boolean apply(@Nullable RemoteRunner input) {
+                try {
+                    return input != null && input.getRemoteRunnerState() != null;
+                } catch (RunnerException e) {
+                    LOG.warn(e.getLocalizedMessage(), e);
+                }
+                return false;
+            }
+        }).toSet();
     }
 
     // Switched to default for test.
