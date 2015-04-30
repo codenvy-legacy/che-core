@@ -72,7 +72,6 @@ import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.StringMapUnmarshaller;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.Config;
-import org.eclipse.che.ide.util.UUID;
 import org.eclipse.che.ide.util.loging.Log;
 import org.eclipse.che.ide.workspace.WorkspacePresenter;
 
@@ -559,41 +558,4 @@ public class BootstrapController {
             console.log(e.message);
         }
     }-*/;
-
-
-    private static class AnalyticsSessions {
-        private String id;
-        private long   lastLogTime;
-        private long   lastUsageTime;
-
-        private AnalyticsSessions() {
-            makeNew();
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public void updateLogTime() {
-            lastLogTime = System.currentTimeMillis();
-        }
-
-        public void updateUsageTime() {
-            lastUsageTime = System.currentTimeMillis();
-        }
-
-        public void makeNew() {
-            this.id = UUID.uuid();
-            this.lastUsageTime = System.currentTimeMillis();
-            this.lastLogTime = lastUsageTime;
-        }
-
-        public long getIdleUsageTime() {
-            return System.currentTimeMillis() - lastUsageTime;
-        }
-
-        public long getIdleLogTime() {
-            return System.currentTimeMillis() - lastUsageTime;
-        }
-    }
 }
