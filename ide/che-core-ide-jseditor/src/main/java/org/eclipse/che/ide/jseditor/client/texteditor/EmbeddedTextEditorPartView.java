@@ -82,8 +82,8 @@ public interface EmbeddedTextEditorPartView extends RequiresResize,
      */
     void updateInfoPanelUnfocused(int linecount);
 
-    /** Delegate interface for theis view. */
-    public interface Delegate extends EditorWithErrors, RequiresResize {
+    /** Delegate interface for this view. */
+    interface Delegate extends EditorWithErrors, RequiresResize {
         /** Reaction on loss of focus. */
         void editorLostFocus();
         /** Reaction when the editor gains focus. */

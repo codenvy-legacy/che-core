@@ -22,6 +22,7 @@
     <inherits name="org.vectomatic.libgwtsvg"/>
     <inherits name="org.eclipse.che.api.Project"/>
     <inherits name="org.eclipse.che.api.Workspace"/>
+    <inherits name="org.eclipse.che.api.promises.Promises"/>
 
     <source path="api"/>
 </module>

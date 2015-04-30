@@ -19,7 +19,7 @@ import com.google.gwt.event.shared.EventHandler;
  */
 public interface ProjectActionHandler extends EventHandler {
     /**
-     * Called when project is opened.
+     * Called on project open.
      *
      * @param event
      *         the fired {@link ProjectActionEvent}
@@ -27,7 +27,15 @@ public interface ProjectActionHandler extends EventHandler {
     void onProjectOpened(ProjectActionEvent event);
 
     /**
-     * Called when project is closed.
+     * Called on project close before any closing activities.
+     *
+     * @param event
+     *         the fired {@link ProjectActionEvent}
+     */
+    void onProjectClosing(ProjectActionEvent event);
+
+    /**
+     * Called on project close after performing all closing activities.
      *
      * @param event
      *         the fired {@link ProjectActionEvent}
