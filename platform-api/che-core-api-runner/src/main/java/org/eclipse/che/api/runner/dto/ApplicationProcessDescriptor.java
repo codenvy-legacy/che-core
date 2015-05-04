@@ -10,13 +10,13 @@
  *******************************************************************************/
 package org.eclipse.che.api.runner.dto;
 
+import com.wordnik.swagger.annotations.ApiModelProperty;
+
 import org.eclipse.che.api.builder.dto.BuilderMetric;
 import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.runner.ApplicationStatus;
-
 import org.eclipse.che.dto.shared.DTO;
-import com.wordnik.swagger.annotations.ApiModelProperty;
 
 import java.util.List;
 
@@ -141,4 +141,11 @@ public interface ApplicationProcessDescriptor extends Hyperlinks {
     void setMemorySize(int memory);
 
     ApplicationProcessDescriptor withMemorySize(int memory);
+
+    @ApiModelProperty(value = "Id of started environment")
+    String getEnvironmentId();
+
+    void setEnvironmentId(String environmentId);
+
+    ApplicationProcessDescriptor withEnvironmentId(String environmentId);
 }

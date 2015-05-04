@@ -425,14 +425,14 @@ public class RunQueue {
                                              .withProjectDescriptor(projectDescriptor)
                                              .withUserId(user == null ? "" : user.getId())
                                              .withUserToken(getUserToken());
-        String environmentId = runOptions.getEnvironmentId();
+        String originalEnvironmentId = runOptions.getEnvironmentId();
         // Project configuration for runner.
         final RunnersDescriptor runners = projectDescriptor.getRunners();
-        if (environmentId == null) {
+        if (originalEnvironmentId == null) {
             if (runners != null) {
-                environmentId = runners.getDefault();
+                originalEnvironmentId = runners.getDefault();
             }
-            if (environmentId == null) {
+            if (originalEnvironmentId == null) {
                 throw new RunnerException("Name of runner environment is not specified, be sure corresponded property of project is set.");
             }
         }
@@ -441,7 +441,7 @@ public class RunQueue {
         if (infra == null) {
             infra = "community";
         }
-        final EnvironmentId parsedEnvironmentId = EnvironmentId.parse(environmentId);
+        final EnvironmentId parsedEnvironmentId = EnvironmentId.parse(originalEnvironmentId);
         final List<RemoteRunner> matchedRunners = new LinkedList<>();
         switch (parsedEnvironmentId.getScope()) {
             // This may be fixed in next versions but for now use following agreements.
@@ -472,7 +472,7 @@ public class RunQueue {
                 }
                 if (matchedRunners.isEmpty()) {
                     throw new RunnerException(String.format("Runner environment '%s' is not available for workspace '%s' on infra '%s'.",
-                                                            environmentId, workspace, infra));
+                                                            originalEnvironmentId, workspace, infra));
                 }
                 break;
             case project:
@@ -488,7 +488,7 @@ public class RunQueue {
         }
 
         // Get runner configuration.
-        final RunnerConfiguration runnerConfig = runners == null ? null : runners.getConfigs().get(environmentId);
+        final RunnerConfiguration runnerConfig = runners == null ? null : runners.getConfigs().get(originalEnvironmentId);
         int mem = runOptions.getMemorySize();
         // If nothing is set in user request try to determine memory size for application.
         if (mem <= 0) {
@@ -550,8 +550,14 @@ public class RunQueue {
         final Long id = sequence.getAndIncrement();
         final InternalRunTask future = new InternalRunTask(ThreadLocalPropagateContext.wrap(callable), id, workspace, project);
         request.setId(id); // for getting callback events from remote runner
-        final RunQueueTask task = new RunQueueTask(id, request, maxWaitingTimeMillis, future, buildTaskHolder,
-                                                   eventService, serviceContext.getServiceUriBuilder());
+        final RunQueueTask task = new RunQueueTask(id,
+                                                   request,
+                                                   maxWaitingTimeMillis,
+                                                   future,
+                                                   buildTaskHolder,
+                                                   eventService,
+                                                   originalEnvironmentId,
+                                                   serviceContext.getServiceUriBuilder());
         tasks.put(id, task);
         eventService.publish(RunnerEvent.queueStartedEvent(id, workspace, project));
         executor.execute(future);
