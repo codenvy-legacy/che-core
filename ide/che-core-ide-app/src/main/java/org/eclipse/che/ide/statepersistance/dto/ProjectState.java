@@ -8,11 +8,24 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.action;
+package org.eclipse.che.ide.statepersistance.dto;
+
+import org.eclipse.che.dto.shared.DTO;
+
+import java.util.List;
 
 /**
- * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
- * @version $Id:
+ * DTO describes the state of the project.
+ *
+ * @author Artem Zatsarynnyy
  */
-public class DefaultGroupTest {
+@DTO
+public interface ProjectState {
+
+    /** Get the list of the actions that should be performed in order to restore some project's state. */
+    List<ActionDescriptor> getActions();
+
+    void setActions(List<ActionDescriptor> actions);
+
+    ProjectState withActions(List<ActionDescriptor> actions);
 }
