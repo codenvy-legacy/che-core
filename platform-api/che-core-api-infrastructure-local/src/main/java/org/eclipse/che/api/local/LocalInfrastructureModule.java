@@ -18,8 +18,12 @@ import org.eclipse.che.api.account.server.dao.AccountDao;
 import org.eclipse.che.api.account.server.dao.Subscription;
 import org.eclipse.che.api.auth.AuthenticationDao;
 //import org.eclipse.che.api.factory.FactoryStore;
+import org.eclipse.che.api.machine.server.GroupImpl;
+import org.eclipse.che.api.machine.server.PermissionsImpl;
 import org.eclipse.che.api.machine.server.RecipeImpl;
 import org.eclipse.che.api.machine.server.dao.RecipeDao;
+import org.eclipse.che.api.machine.shared.Group;
+import org.eclipse.che.api.machine.shared.Permissions;
 import org.eclipse.che.api.machine.shared.Recipe;
 import org.eclipse.che.api.user.server.TokenValidator;
 import org.eclipse.che.api.user.server.dao.PreferenceDao;
@@ -134,16 +138,19 @@ public class LocalInfrastructureModule extends AbstractModule {
     @Provides
     @Named("codenvy.local.infrastructure.recipes")
     Set<Recipe> recipes() {
+        final Group group = new GroupImpl("public", null, asList("read", "search"));
         final Recipe recipe1 = new RecipeImpl().withId("recipe1234567890")
-                                              .withCreator("codenvy")
-                                              .withType("docker")
-                                              .withScript("FROM ubuntu\ntail -f \\dev\\null")
-                                              .withTags(asList("ubuntu"));
+                                               .withCreator("codenvy")
+                                               .withType("docker")
+                                               .withScript("FROM ubuntu\ntail -f \\dev\\null")
+                                               .withTags(asList("ubuntu"))
+                                               .withPermissions(new PermissionsImpl(null, asList(group)));
         final Recipe recipe2 = new RecipeImpl().withId("recipe2345678901")
                                                .withCreator("codenvy")
                                                .withType("docker")
                                                .withScript("FROM bosybox\ntail -f \\dev\\null")
-                                               .withTags(asList("java", "busybox"));
+                                               .withTags(asList("java", "busybox"))
+                                               .withPermissions(new PermissionsImpl(null, asList(group)));
         return new HashSet<>(asList(recipe1, recipe2));
     }
 }
