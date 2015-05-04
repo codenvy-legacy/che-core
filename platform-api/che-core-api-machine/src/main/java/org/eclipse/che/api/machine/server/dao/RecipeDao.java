@@ -41,7 +41,7 @@ public interface RecipeDao {
     /**
      * Updates existing recipe
      * <p/>
-     * All data instead of recipe identifier and recipe creator may be updated
+     * All data except of recipe identifier and recipe creator may be updated
      *
      * @param recipe
      *         recipe update
