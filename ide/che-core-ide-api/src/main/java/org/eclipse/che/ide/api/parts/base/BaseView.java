@@ -37,14 +37,14 @@ import javax.annotation.Nonnull;
 public abstract class BaseView<T extends BaseActionDelegate> extends Composite implements View<T>, Focusable {
 
     /** Root widget */
-    private DockLayoutPanel   container;
+    private DockLayoutPanel container;
 
     protected DockLayoutPanel toolBar;
     protected DockLayoutPanel toolbarHeader;
 
     protected T          delegate;
     protected ToolButton minimizeButton;
-    protected FlowPanel  menuButton;
+    protected FlowPanel  menuPanel;
     protected Label      titleLabel;
 
     /** Indicates whether this view is focused */
@@ -84,15 +84,15 @@ public abstract class BaseView<T extends BaseActionDelegate> extends Composite i
         toolbarHeader.addWest(titleLabel, 200);
         toolbarHeader.addEast(minimizeButton, 29);
 
-        menuButton = new FlowPanel();
-        menuButton.addStyleName(resources.partStackCss().headerMenuButton());
-        toolbarHeader.addEast(menuButton, 20);
+        menuPanel = new FlowPanel();
+        menuPanel.addStyleName(resources.partStackCss().headerMenuButton());
+        toolbarHeader.addEast(menuPanel, 20);
 
         toolBar.addNorth(toolbarHeader, 20);
     }
 
     public final void addMenuButton(@Nonnull IsWidget button) {
-        menuButton.add(button);
+        menuPanel.add(button);
     }
 
     /** {@inheritDoc} */
