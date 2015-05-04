@@ -16,7 +16,7 @@ import org.eclipse.che.dto.shared.DTO;
 import java.util.List;
 
 /**
- * @author andrew00x
+ * @author Eugene Voevodin
  */
 @DTO
 public interface RecipeDescriptor extends Hyperlinks {

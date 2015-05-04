@@ -17,6 +17,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * @author Eugene Voevodin
+ */
 public class GroupImpl implements Group {
 
     public static GroupImpl fromDescriptor(GroupDescriptor descriptor) {

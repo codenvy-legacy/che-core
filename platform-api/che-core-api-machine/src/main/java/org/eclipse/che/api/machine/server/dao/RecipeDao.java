@@ -36,7 +36,7 @@ public interface RecipeDao {
      * @throws ServerException
      *         when any other error occurs
      */
-    void create(Recipe recipe) throws ConflictException, ServerException, NullPointerException;
+    void create(Recipe recipe) throws ConflictException, ServerException;
 
     /**
      * Updates existing recipe
@@ -52,7 +52,7 @@ public interface RecipeDao {
      * @throws ServerException
      *         when any other error occurs
      */
-    void update(Recipe recipe) throws NotFoundException, ServerException, NullPointerException;
+    void update(Recipe recipe) throws NotFoundException, ServerException;
 
     /**
      * Removes existing recipe
@@ -66,7 +66,7 @@ public interface RecipeDao {
      * @throws ServerException
      *         when any error occurs
      */
-    void remove(String id) throws ServerException, NullPointerException;
+    void remove(String id) throws ServerException;
 
     /**
      * Returns recipe with specified {@code id} or throws {@link NotFoundException}
@@ -82,7 +82,7 @@ public interface RecipeDao {
      * @throws ServerException
      *         when any error occurs
      */
-    Recipe getById(String id) throws NotFoundException, ServerException, NullPointerException;
+    Recipe getById(String id) throws NotFoundException, ServerException;
 
     /**
      * Searches for recipes which type is equal to specified {@code type}
@@ -121,5 +121,5 @@ public interface RecipeDao {
      * @throws ServerException
      *         when any error occurs
      */
-    List<Recipe> getByCreator(String creator) throws ServerException, NullPointerException;
+    List<Recipe> getByCreator(String creator) throws ServerException;
 }

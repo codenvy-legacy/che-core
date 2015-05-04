@@ -14,6 +14,9 @@ import org.eclipse.che.dto.shared.DTO;
 
 import java.util.List;
 
+/**
+ * @author Eugene Voevodin
+ */
 @DTO
 public interface RecipeUpdate {
 

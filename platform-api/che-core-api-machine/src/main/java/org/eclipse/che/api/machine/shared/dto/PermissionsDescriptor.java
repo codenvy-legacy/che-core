@@ -15,6 +15,9 @@ import org.eclipse.che.dto.shared.DTO;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author Eugene Voevodin
+ */
 @DTO
 public interface PermissionsDescriptor {
 

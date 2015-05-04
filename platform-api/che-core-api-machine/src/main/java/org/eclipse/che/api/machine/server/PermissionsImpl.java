@@ -20,6 +20,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author Eugene Voevodin
+ */
 public class PermissionsImpl implements Permissions {
 
     public static PermissionsImpl fromDescriptor(PermissionsDescriptor descriptor) {

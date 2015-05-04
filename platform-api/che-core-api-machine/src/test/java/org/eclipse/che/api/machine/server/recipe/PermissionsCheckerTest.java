@@ -33,6 +33,9 @@ import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
+/**
+ * @author Eugene Voevodin
+ */
 @Listeners(value = {MockitoTestNGListener.class})
 public class PermissionsCheckerTest {
 
