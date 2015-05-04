@@ -10,8 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.api.account.shared.dto;
 
-import org.eclipse.che.dto.shared.DTO;
 import com.wordnik.swagger.annotations.ApiModelProperty;
+
+import org.eclipse.che.dto.shared.DTO;
+
+import java.util.Map;
 
 /**
  * Describes subscription - a link between {@link org.eclipse.che.api.account.server.SubscriptionService} and {@link
@@ -53,4 +56,11 @@ public interface NewSubscription {
     void setUsePaymentSystem(Boolean usePaymentSystem);
 
     NewSubscription withUsePaymentSystem(Boolean usePaymentSystem);
+
+    @ApiModelProperty(value = "Properties of subscription")
+    Map<String, String> getProperties();
+
+    void setProperties(Map<String, String> properties);
+
+    NewSubscription withProperties(Map<String, String> properties);
 }
