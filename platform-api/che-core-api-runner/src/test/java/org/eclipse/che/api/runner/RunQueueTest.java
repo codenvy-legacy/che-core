@@ -748,12 +748,14 @@ public class RunQueueTest {
     private RemoteRunnerServer registerRunnerServer(String remoteUrl, RunnerDescriptor runnerDescriptor,
                                                     RunnerServerAccessCriteria accessRules) throws Exception {
         RemoteRunnerServer runnerServer = spy(new RemoteRunnerServer(remoteUrl));
+
         doReturn(dto(RunnerServerDescriptor.class)).when(runnerServer).getServiceDescriptor();
         doReturn(Arrays.asList(runnerDescriptor)).when(runnerServer).getRunnerDescriptors();
         RemoteRunner runner = spy(new RemoteRunner(remoteUrl, runnerDescriptor.getName(), new ArrayList<Link>()));
         doReturn(runnerDescriptor.getEnvironments()).when(runner).getEnvironments();
         doReturn(Arrays.asList(runner)).when(runnerServer).getRemoteRunners();
         doReturn(runner).when(runnerServer).getRemoteRunner(eq(runnerDescriptor.getName()));
+        when(runnerServer.isAvailable()).thenReturn(true);
         doReturn(dto(RunnerState.class)).when(runner).getRemoteRunnerState();
         when(runQueue.createRemoteRunnerServer(remoteUrl)).thenReturn(runnerServer);
         RunnerServerRegistration registration = dto(RunnerServerRegistration.class)

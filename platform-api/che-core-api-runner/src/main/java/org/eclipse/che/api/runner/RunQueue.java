@@ -11,10 +11,6 @@
 package org.eclipse.che.api.runner;
 
 import com.google.common.base.Predicate;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.collect.FluentIterable;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
@@ -78,6 +74,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -124,7 +121,6 @@ public class RunQueue {
     private static final AtomicLong sequence = new AtomicLong(1);
 
     private final ConcurrentMap<String, RemoteRunnerServer>       runnerServers;
-    private final LoadingCache<String, Boolean>                   runnerServerStatesCache;
     private final RunnerSelectionStrategy                         runnerSelector;
     private final ConcurrentMap<RunnerListKey, Set<RemoteRunner>> runnerListMapping;
     private final ConcurrentMap<Long, RunQueueTask>               tasks;
@@ -228,20 +224,6 @@ public class RunQueue {
         for (int i = 0; i < partitions; i++) {
             resourceCheckerLocks[i] = new ReentrantLock();
         }
-        this.runnerServerStatesCache = CacheBuilder.newBuilder()
-                                                   .expireAfterWrite(1, TimeUnit.MINUTES)
-                                                   .build(
-                                                           new CacheLoader<String, Boolean>() {
-                                                               @Override
-                                                               public Boolean load(String key) throws Exception {
-                                                                   RemoteRunnerServer runnerServer = runnerServers.get(key);
-                                                                   if (runnerServer == null) {
-                                                                       throw new Exception("Server with id " + key + " is not found");
-                                                                   }
-                                                                   return runnerServer.isAvailable();
-                                                               }
-                                                           });
-
     }
 
     public RunQueueTask getTask(Long id) throws NotFoundException {
@@ -663,12 +645,28 @@ public class RunQueue {
                 }
             }
         }
+
         return runnerList == null ? null : FluentIterable.from(runnerList).filter(new Predicate<RemoteRunner>() {
+            private final Map<String, Boolean> serverAvailability = new HashMap<>();
+
+            private boolean isAvailable(String serverUrl) throws ServerException {
+                Boolean result = serverAvailability.get(serverUrl);
+                if (result == null) {
+                    RemoteRunnerServer runnerServer = runnerServers.get(serverUrl);
+                    if (runnerServer == null) {
+                        throw new ServerException("Server with id " + serverUrl + " is not found");
+                    }
+                    result = runnerServer.isAvailable();
+                    serverAvailability.put(serverUrl, result);
+                }
+                return result;
+            }
+
             @Override
             public boolean apply(@Nullable RemoteRunner input) {
                 try {
-                    return runnerServerStatesCache.get(input.getBaseUrl()).booleanValue();
-                } catch (ExecutionException e) {
+                    return isAvailable(input.getBaseUrl());
+                } catch (ServerException e) {
                     LOG.warn(e.getLocalizedMessage());
                 }
                 return false;
@@ -924,7 +922,6 @@ public class RunQueue {
             return false;
         }
         final RemoteRunnerServer runnerService = runnerServers.remove(url);
-        runnerServerStatesCache.invalidate(url);
         return runnerService != null && doUnregisterRunners(url);
     }
 
