@@ -804,7 +804,6 @@ public class WorkspaceService extends Service {
 
     /**
      * Removes certain workspace.
-     * BTW all workspace members are going to be removed as well.
      *
      * @param wsId
      *         workspace identifier to remove workspace
