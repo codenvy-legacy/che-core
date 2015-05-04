@@ -237,7 +237,7 @@ public class ProjectTreeNodeRenderer implements NodeRenderer<TreeNode<?>> {
     }
 
     public interface Resources extends Tree.Resources {
-        @Source({"FileTreeNodeRenderer.css", "org/eclipse/che/ide/common/constants.css", "org/eclipse/che/ide/api/ui/style.css"})
+        @Source({"FileTreeNodeRenderer.css", "org/eclipse/che/ide/api/ui/style.css"})
         Css workspaceNavigationFileTreeNodeRendererCss();
 
         @Source("toConfigure.svg")

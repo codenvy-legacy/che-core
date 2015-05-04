@@ -367,7 +367,7 @@ public class Tooltip extends AutoHideComponent<AutoHideView<Void>,
     }
 
     public interface Resources extends ClientBundle {
-        @Source({"org/eclipse/che/ide/common/constants.css", "Tooltip.css", "org/eclipse/che/ide/api/ui/style.css"})
+        @Source({"org/eclipse/che/ide/ui/constants.css", "Tooltip.css", "org/eclipse/che/ide/api/ui/style.css"})
         Css tooltipCss();
 
     }

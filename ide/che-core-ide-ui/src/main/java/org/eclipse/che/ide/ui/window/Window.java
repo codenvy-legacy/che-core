@@ -244,7 +244,7 @@ public abstract class Window implements IsWidget {
      * The resources used by this UI component.
      */
     public interface Resources extends ClientBundle {
-        @Source({"org/eclipse/che/ide/common/constants.css", "Window.css", "org/eclipse/che/ide/api/ui/style.css"})
+        @Source({"org/eclipse/che/ide/ui/constants.css", "Window.css", "org/eclipse/che/ide/api/ui/style.css"})
         Css centerPanelCss();
 
         @Source("close-dark-normal.png")
