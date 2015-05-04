@@ -84,12 +84,10 @@ public class LocalRecipeDaoImpl implements RecipeDao {
     }
 
     @Override
-    public void remove(String id) throws NotFoundException {
+    public void remove(String id) {
         lock.writeLock().lock();
         try {
-            if (recipes.remove(id) == null) {
-                throw new NotFoundException(format("Recipe with id %s was not found", id));
-            }
+            recipes.remove(id);
         } finally {
             lock.writeLock().unlock();
         }

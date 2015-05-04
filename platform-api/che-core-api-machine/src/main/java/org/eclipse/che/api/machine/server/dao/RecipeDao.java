@@ -18,21 +18,108 @@ import org.eclipse.che.api.machine.shared.Recipe;
 import java.util.List;
 
 /**
- * TODO add docs
+ * Data access object for {@link Recipe}.
  *
  * @author Eugene Voevodin
  */
 public interface RecipeDao {
 
-    void create(Recipe recipe) throws ServerException, ConflictException; //persist
+    /**
+     * Creates recipe
+     *
+     * @param recipe
+     *         recipe to create
+     * @throws NullPointerException
+     *         when {@code recipe} is not specified
+     * @throws ConflictException
+     *         when recipe with id equal to {@code recipe.getId()} already exists
+     * @throws ServerException
+     *         when any other error occurs
+     */
+    void create(Recipe recipe) throws ConflictException, ServerException, NullPointerException;
 
-    void update(Recipe recipe) throws ServerException, NotFoundException; //refresh
+    /**
+     * Updates existing recipe
+     * <p/>
+     * All data instead of recipe identifier and recipe creator may be updated
+     *
+     * @param recipe
+     *         recipe update
+     * @throws NullPointerException
+     *         when {@code recipe} is not specified
+     * @throws NotFoundException
+     *         when recipe with id equal to {@code recipe.getId()} doesn't exist
+     * @throws ServerException
+     *         when any other error occurs
+     */
+    void update(Recipe recipe) throws NotFoundException, ServerException, NullPointerException;
 
-    void remove(String id) throws ServerException, NotFoundException;
+    /**
+     * Removes existing recipe
+     * <p/>
+     * If recipe with specified {@code id} doesn't exist nothing will be done
+     *
+     * @param id
+     *         recipe identifier to remove recipe
+     * @throws NullPointerException
+     *         when recipe {@code id} is not specified
+     * @throws ServerException
+     *         when any error occurs
+     */
+    void remove(String id) throws ServerException, NullPointerException;
 
-    Recipe getById(String id) throws ServerException, NotFoundException;
+    /**
+     * Returns recipe with specified {@code id} or throws {@link NotFoundException}
+     * when recipe with such identifier doesn't exist
+     *
+     * @param id
+     *         recipe identifier to search recipe
+     * @return recipe with specified {@code id}
+     * @throws NullPointerException
+     *         when recipe {@code id} is not specified
+     * @throws NotFoundException
+     *         when recipe with specified {@code id} doesn't exist
+     * @throws ServerException
+     *         when any error occurs
+     */
+    Recipe getById(String id) throws NotFoundException, ServerException, NullPointerException;
 
+    /**
+     * Searches for recipes which type is equal to specified {@code type}
+     * and tags contain all of specified {@code tags}.
+     * <p/>
+     * Not specified {@code tags} or {@code type} will not take a part of search,
+     * i.e. when {@code type} is {@code null} then only recipes which tags
+     * contain all of specified {@code tags} will be returned,
+     * when {@code tags} are {@code null} then only recipes which type
+     * is equal to specified {@code type} will be returned,
+     * when both {@code type} and {@code tags} are {@code null} then all available
+     * recipes will be returned.
+     * <p/>
+     * <b>Note that only recipes which contains <i>public: search</i> permission take a part of search</b>
+     *
+     * @param tags
+     *         recipe tags to search recipes, may be {@code null}
+     * @param type
+     *         recipe type to search recipes, may be {@code null}
+     * @return recipes which type is equal to specified {@code type}
+     * and tags contain all of specified {@code tags}
+     * @throws ServerException
+     *         when any error occurs
+     */
     List<Recipe> search(List<String> tags, String type) throws ServerException;
 
-    List<Recipe> getByCreator(String creator) throws ServerException;
+    /**
+     * Returns recipes which creator is equal to specified {@code creator} or
+     * empty list when such recipes were not found
+     *
+     * @param creator
+     *         recipe creator to search recipes
+     * @return recipes which creator matches to specified {@code creator}
+     * @throws NullPointerException
+     *         when recipe {@code creator} is not specified
+     * @throws ServerException
+     *         when any error occurs
+     */
+    List<Recipe> getByCreator(String creator) throws ServerException, NullPointerException;
 }
