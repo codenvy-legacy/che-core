@@ -11,6 +11,10 @@
 package org.eclipse.che.api.runner;
 
 import com.google.common.base.Predicate;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.FluentIterable;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
@@ -120,6 +124,7 @@ public class RunQueue {
     private static final AtomicLong sequence = new AtomicLong(1);
 
     private final ConcurrentMap<String, RemoteRunnerServer>       runnerServers;
+    private final LoadingCache<String, Boolean>                   runnerServerStatesCache;
     private final RunnerSelectionStrategy                         runnerSelector;
     private final ConcurrentMap<RunnerListKey, Set<RemoteRunner>> runnerListMapping;
     private final ConcurrentMap<Long, RunQueueTask>               tasks;
@@ -213,17 +218,30 @@ public class RunQueue {
         this.defLifetime = defLifetime;
         this.runnerSelector = runnerSelector;
         this.appCleanupTime = TimeUnit.SECONDS.toMillis(appCleanupTime);
-
-        runnerServers = new ConcurrentHashMap<>();
-        tasks = new ConcurrentHashMap<>();
-        runnerListMapping = new ConcurrentHashMap<>();
-        started = new AtomicBoolean(false);
+        this.runnerServers = new ConcurrentHashMap<>();
+        this.tasks = new ConcurrentHashMap<>();
+        this.runnerListMapping = new ConcurrentHashMap<>();
+        this.started = new AtomicBoolean(false);
         final int partitions = 1 << 4;
-        resourceCheckerMask = partitions - 1;
-        resourceCheckerLocks = new Lock[partitions];
+        this.resourceCheckerMask = partitions - 1;
+        this.resourceCheckerLocks = new Lock[partitions];
         for (int i = 0; i < partitions; i++) {
             resourceCheckerLocks[i] = new ReentrantLock();
         }
+        this.runnerServerStatesCache = CacheBuilder.newBuilder()
+                                                   .expireAfterWrite(1, TimeUnit.MINUTES)
+                                                   .build(
+                                                           new CacheLoader<String, Boolean>() {
+                                                               @Override
+                                                               public Boolean load(String key) throws Exception {
+                                                                   RemoteRunnerServer runnerServer = runnerServers.get(key);
+                                                                   if (runnerServer == null) {
+                                                                       throw new Exception("Server with id " + key + " is not found");
+                                                                   }
+                                                                   return runnerServer.isAvailable();
+                                                               }
+                                                           });
+
     }
 
     public RunQueueTask getTask(Long id) throws NotFoundException {
@@ -631,7 +649,7 @@ public class RunQueue {
 
     // Switched to default for test.
     // private
-    Set<RemoteRunner> getRunnerList(String infra, String workspace, String project) {
+    Set<RemoteRunner> getRunnerList(final String infra, String workspace, String project) {
         Set<RemoteRunner> runnerList = runnerListMapping.get(new RunnerListKey(infra, workspace, project));
         if (runnerList == null) {
             if (project != null || workspace != null) {
@@ -649,9 +667,9 @@ public class RunQueue {
             @Override
             public boolean apply(@Nullable RemoteRunner input) {
                 try {
-                    return input != null && input.getRemoteRunnerState() != null;
-                } catch (RunnerException e) {
-                    LOG.warn(e.getLocalizedMessage(), e);
+                    return runnerServerStatesCache.get(input.getBaseUrl()).booleanValue();
+                } catch (ExecutionException e) {
+                    LOG.warn(e.getLocalizedMessage());
                 }
                 return false;
             }
@@ -906,6 +924,7 @@ public class RunQueue {
             return false;
         }
         final RemoteRunnerServer runnerService = runnerServers.remove(url);
+        runnerServerStatesCache.invalidate(url);
         return runnerService != null && doUnregisterRunners(url);
     }
 
@@ -1366,8 +1385,10 @@ public class RunQueue {
                         bm.setChannel(String.format("runner:status:%d", id));
                         bm.setType(ChannelBroadcastMessage.Type.ERROR);
                         bm.setBody(String.format("{\"message\":%s}",
-                                                 "Unable to start application, currently there are no resources to start your application." +
-                                                 " Max waiting time for available resources has been reached. Contact support for assistance."));
+                                                 "Unable to start application, currently there are no resources to start your application" +
+                                                 "." +
+                                                 " Max waiting time for available resources has been reached. Contact support for " +
+                                                 "assistance."));
                         break;
                     case MESSAGE_LOGGED:
                         final RunnerEvent.LoggedMessage message = event.getMessage();
@@ -1415,17 +1436,20 @@ public class RunQueue {
                     final String user = request.getUserId();
                     switch (event.getType()) {
                         case STARTED:
-                            LOG.info("EVENT#run-queue-waiting-finished# TIME#{}# WS#{}# USER#{}# PROJECT#{}# TYPE#{}# ID#{} WAITING-TIME#{}#",
-                                     time,
-                                     workspace,
-                                     user,
-                                     project,
-                                     projectTypeId,
-                                     analyticsID,
-                                     waitingTime);
+                            LOG.info(
+                                    "EVENT#run-queue-waiting-finished# TIME#{}# WS#{}# USER#{}# PROJECT#{}# TYPE#{}# ID#{} " +
+                                    "WAITING-TIME#{}#",
+                                    time,
+                                    workspace,
+                                    user,
+                                    project,
+                                    projectTypeId,
+                                    analyticsID,
+                                    waitingTime);
                             final String startLineFormat =
-                                    debug ? "EVENT#debug-started# TIME#{}# WS#{}# USER#{}# PROJECT#{}# TYPE#{}# ID#{}# MEMORY#{}# LIFETIME#{}#"
-                                          : "EVENT#run-started# TIME#{}# WS#{}# USER#{}# PROJECT#{}# TYPE#{}# ID#{}# MEMORY#{}# LIFETIME#{}#";
+                                    debug
+                                    ? "EVENT#debug-started# TIME#{}# WS#{}# USER#{}# PROJECT#{}# TYPE#{}# ID#{}# MEMORY#{}# LIFETIME#{}#"
+                                    : "EVENT#run-started# TIME#{}# WS#{}# USER#{}# PROJECT#{}# TYPE#{}# ID#{}# MEMORY#{}# LIFETIME#{}#";
                             LOG.info(startLineFormat,
                                      time,
                                      workspace,
