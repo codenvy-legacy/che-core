@@ -130,6 +130,8 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
             return;
         }
 
+        eventBus.fireEvent(ProjectActionEvent.createProjectClosingEvent(currentProject.getRootProject()));
+
         closeCurrentProject(closingBeforeOpening);
         if (closeCallback != null) {
             closeCallback.onClosed();
@@ -168,7 +170,7 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
 
             @Override
             protected void onFailure(Throwable throwable) {
-                Log.error(AppContext.class, throwable);
+                Log.error(ProjectStateHandler.class, throwable);
             }
         });
     }

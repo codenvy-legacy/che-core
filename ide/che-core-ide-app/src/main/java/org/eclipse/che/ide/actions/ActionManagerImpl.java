@@ -12,19 +12,29 @@ package org.eclipse.che.ide.actions;
 
 import com.google.inject.Inject;
 
+import org.eclipse.che.api.promises.client.Function;
+import org.eclipse.che.api.promises.client.FunctionException;
+import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.api.promises.client.PromiseError;
+import org.eclipse.che.api.promises.client.js.Promises;
 import org.eclipse.che.ide.api.action.Action;
+import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionGroup;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.DefaultActionGroup;
 import org.eclipse.che.ide.api.action.IdeActions;
+import org.eclipse.che.ide.api.action.PromisableAction;
 import org.eclipse.che.ide.api.constraints.Anchor;
 import org.eclipse.che.ide.api.constraints.Constraints;
+import org.eclipse.che.ide.util.Pair;
 import org.eclipse.che.ide.util.loging.Log;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -120,6 +130,7 @@ public class ActionManagerImpl implements ActionManager {
         }
     }
 
+    @Override
     public Action getAction(String id) {
         return getActionImpl(id, false);
     }
@@ -128,10 +139,12 @@ public class ActionManagerImpl implements ActionManager {
         return (Action)myId2Action.get(id);
     }
 
+    @Override
     public String getId(Action action) {
         return myAction2Id.get(action);
     }
 
+    @Override
     public String[] getActionIds(String idPrefix) {
         ArrayList<String> idList = new ArrayList<>();
         for (String id : myId2Action.keySet()) {
@@ -142,8 +155,57 @@ public class ActionManagerImpl implements ActionManager {
         return idList.toArray(new String[idList.size()]);
     }
 
+    @Override
     public boolean isGroup(String actionId) {
         return getActionImpl(actionId, true) instanceof ActionGroup;
+    }
+
+    @Override
+    public Promise<Void> performActions(List<Pair<Action, ActionEvent>> actions, boolean breakOnFail) {
+        Promise<Void> promise = Promises.resolve(null);
+        return chainActionsRecursively(promise, actions.listIterator(), breakOnFail);
+    }
+
+    /** Recursively chains the given promise with the promise that performs the next action from the given iterator. */
+    private Promise<Void> chainActionsRecursively(Promise<Void> promise,
+                                                  ListIterator<Pair<Action, ActionEvent>> iterator,
+                                                  boolean breakOnFail) {
+        if (!iterator.hasNext()) {
+            return promise;
+        }
+
+        final Pair<Action, ActionEvent> actionWithEvent = iterator.next();
+
+        final Promise<Void> derivedPromise = promise.thenPromise(new Function<Void, Promise<Void>>() {
+            @Override
+            public Promise<Void> apply(Void arg) throws FunctionException {
+                return promiseAction(actionWithEvent.first, actionWithEvent.second);
+            }
+        });
+
+        if (breakOnFail) {
+            return chainActionsRecursively(derivedPromise, iterator, breakOnFail);
+        }
+
+        final Promise<Void> derivedErrorSafePromise = derivedPromise.catchErrorPromise(new Function<PromiseError, Promise<Void>>() {
+            @Override
+            public Promise<Void> apply(PromiseError arg) throws FunctionException {
+                // 'hide' the error to avoid rejecting chain of promises
+                return Promises.resolve(null);
+            }
+        });
+
+        return chainActionsRecursively(derivedErrorSafePromise, iterator, breakOnFail);
+    }
+
+    /** Returns promise returned by PromisableAction or already resolved promise for non-PromisableAction. */
+    private Promise<Void> promiseAction(final Action action, final ActionEvent event) {
+        if (action instanceof PromisableAction) {
+            return ((PromisableAction)action).promise(event);
+        } else {
+            action.actionPerformed(event);
+            return Promises.resolve(null);
+        }
     }
 
     public Action getParentGroup(final String groupId,
@@ -168,6 +230,7 @@ public class ActionManagerImpl implements ActionManager {
         return parentGroup;
     }
 
+    @Override
     public void registerAction(String actionId, Action action, String pluginId) {
 
         if (myId2Action.containsKey(actionId)) {
@@ -193,13 +256,14 @@ public class ActionManagerImpl implements ActionManager {
             }
             pluginActionIds.add(actionId);
         }
-//            action.registerCustomShortcutSet(new ProxyShortcutSet(actionId, myKeymapManager), null);
     }
 
+    @Override
     public void registerAction(String actionId, Action action) {
         registerAction(actionId, action, null);
     }
 
+    @Override
     public void unregisterAction(String actionId) {
         if (!myId2Action.containsKey(actionId)) {
             Log.debug(getClass(), "action with ID " + actionId + " wasn't registered");
@@ -235,5 +299,4 @@ public class ActionManagerImpl implements ActionManager {
     public Set<String> getActionIds() {
         return new HashSet<>(myId2Action.keySet());
     }
-
 }

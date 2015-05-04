@@ -43,6 +43,10 @@ public class DebuggerManager {
             }
 
             @Override
+            public void onProjectClosing(ProjectActionEvent event) {
+            }
+
+            @Override
             public void onProjectClosed(ProjectActionEvent event) {
                 currentDebugger = null;
             }

@@ -75,7 +75,7 @@ public interface EditorAgent {
     @Nullable
     EditorPartPresenter getActiveEditor();
 
-    public interface OpenEditorCallback{
+    interface OpenEditorCallback{
         void onEditorOpened(EditorPartPresenter editor);
     }
 }

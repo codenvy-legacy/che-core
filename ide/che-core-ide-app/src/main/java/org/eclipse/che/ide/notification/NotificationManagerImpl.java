@@ -91,6 +91,10 @@ public class NotificationManagerImpl extends BasePresenter implements Notificati
             }
 
             @Override
+            public void onProjectClosing(ProjectActionEvent event) {
+            }
+
+            @Override
             public void onProjectClosed(ProjectActionEvent event) {
                 notifications.clear();
                 notificationMessageStack.clear();

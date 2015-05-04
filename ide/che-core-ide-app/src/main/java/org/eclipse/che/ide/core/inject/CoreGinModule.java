@@ -142,6 +142,11 @@ import org.eclipse.che.ide.projecttype.wizard.ProjectWizardFactory;
 import org.eclipse.che.ide.projecttype.wizard.ProjectWizardRegistryImpl;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.selection.SelectionAgentImpl;
+import org.eclipse.che.ide.statepersistance.ActiveFilePersistenceComponent;
+import org.eclipse.che.ide.statepersistance.ActiveNodePersistentComponent;
+import org.eclipse.che.ide.statepersistance.OpenedFilesPersistenceComponent;
+import org.eclipse.che.ide.statepersistance.OpenedNodesPersistenceComponent;
+import org.eclipse.che.ide.statepersistance.PersistenceComponent;
 import org.eclipse.che.ide.texteditor.openedfiles.ListOpenedFilesView;
 import org.eclipse.che.ide.texteditor.openedfiles.ListOpenedFilesViewImpl;
 import org.eclipse.che.ide.theme.AppearancePresenter;
@@ -230,6 +235,12 @@ public class CoreGinModule extends AbstractGinModule {
         configureCoreUI();
         configureEditorAPI();
         configureProjectTree();
+
+        GinMultibinder<PersistenceComponent> componentMultibinder = GinMultibinder.newSetBinder(binder(), PersistenceComponent.class);
+        componentMultibinder.addBinding().to(OpenedFilesPersistenceComponent.class);
+        componentMultibinder.addBinding().to(ActiveFilePersistenceComponent.class);
+        componentMultibinder.addBinding().to(OpenedNodesPersistenceComponent.class);
+        componentMultibinder.addBinding().to(ActiveNodePersistentComponent.class);
     }
 
     private void configureProjectWizard() {
