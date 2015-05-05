@@ -72,6 +72,7 @@ import static org.eclipse.che.ide.api.action.IdeActions.GROUP_FILE_NEW;
  * Initializer for standard components i.e. some basic menu commands (Save, Save As etc)
  *
  * @author Evgen Vidolob
+ * @author Dmitry Shnurenko
  */
 @Singleton
 public class StandardComponentInitializer {
@@ -431,14 +432,8 @@ public class StandardComponentInitializer {
         DefaultActionGroup rightToolbarGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_RIGHT_TOOLBAR);
         toolbarPresenter.bindRightGroup(rightToolbarGroup);
 
-
         // Define hot-keys
-        keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('F').build(), "format");
-        keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('z').build(), "undo");
-        keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('Z').build(), "redo");
         keyBinding.getGlobal().addKey(new KeyBuilder().action().alt().charCode('n').build(), "navigateToFile");
-        keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('s').build(), "save");
-        keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('S').build(), "saveAll");
         keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('A').build(), "findActionAction");
     }
 }
