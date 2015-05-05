@@ -754,6 +754,8 @@ public class RunQueueTest {
         doReturn(runnerDescriptor.getEnvironments()).when(runner).getEnvironments();
         doReturn(Arrays.asList(runner)).when(runnerServer).getRemoteRunners();
         doReturn(runner).when(runnerServer).getRemoteRunner(eq(runnerDescriptor.getName()));
+        when(runnerServer.isAvailable()).thenReturn(true);
+        doReturn(dto(RunnerState.class)).when(runner).getRemoteRunnerState();
         when(runQueue.createRemoteRunnerServer(remoteUrl)).thenReturn(runnerServer);
         RunnerServerRegistration registration = dto(RunnerServerRegistration.class)
                 .withRunnerServerLocation(dto(RunnerServerLocation.class).withUrl(remoteUrl))

@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.runner;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import org.eclipse.che.api.builder.BuildStatus;
@@ -72,6 +74,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -649,7 +652,32 @@ public class RunQueue {
                 }
             }
         }
-        return runnerList;
+        return runnerList == null ? null : FluentIterable.from(runnerList).filter(new Predicate<RemoteRunner>() {
+            private final Map<String, Boolean> serverAvailability = new HashMap<>();
+
+            private boolean isAvailable(String serverUrl) throws ServerException {
+                Boolean result = serverAvailability.get(serverUrl);
+                if (result == null) {
+                    RemoteRunnerServer runnerServer = runnerServers.get(serverUrl);
+                    if (runnerServer == null) {
+                        throw new ServerException("Server with id " + serverUrl + " is not found");
+                    }
+                    result = runnerServer.isAvailable();
+                    serverAvailability.put(serverUrl, result);
+                }
+                return result;
+            }
+
+            @Override
+            public boolean apply(@Nullable RemoteRunner input) {
+                try {
+                    return isAvailable(input.getBaseUrl());
+                } catch (ServerException e) {
+                    LOG.warn(e.getLocalizedMessage());
+                }
+                return false;
+            }
+        }).toSet();
     }
 
     // Switched to default for test.
