@@ -19,7 +19,7 @@ import java.util.List;
 
 /**
  * DAO interface offers means to perform CRUD operations with {@link Workspace} data.
- * Workspace DAO should secure reference integrity for dependent objects (such as workspace {@link Member}).
+ * Workspace DAO should secure referential integrity for dependent objects (such as workspace {@link Member}).
  * It is up to implementation to define policy for that, either:
  *  - not to let remove the object or
  *  - perform cascade deletion of dependent objects
