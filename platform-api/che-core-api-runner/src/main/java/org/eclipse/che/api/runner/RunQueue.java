@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.runner;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import org.eclipse.che.api.builder.BuildStatus;
@@ -72,6 +74,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -211,14 +214,13 @@ public class RunQueue {
         this.defLifetime = defLifetime;
         this.runnerSelector = runnerSelector;
         this.appCleanupTime = TimeUnit.SECONDS.toMillis(appCleanupTime);
-
-        runnerServers = new ConcurrentHashMap<>();
-        tasks = new ConcurrentHashMap<>();
-        runnerListMapping = new ConcurrentHashMap<>();
-        started = new AtomicBoolean(false);
+        this.runnerServers = new ConcurrentHashMap<>();
+        this.tasks = new ConcurrentHashMap<>();
+        this.runnerListMapping = new ConcurrentHashMap<>();
+        this.started = new AtomicBoolean(false);
         final int partitions = 1 << 4;
-        resourceCheckerMask = partitions - 1;
-        resourceCheckerLocks = new Lock[partitions];
+        this.resourceCheckerMask = partitions - 1;
+        this.resourceCheckerLocks = new Lock[partitions];
         for (int i = 0; i < partitions; i++) {
             resourceCheckerLocks[i] = new ReentrantLock();
         }
@@ -635,7 +637,7 @@ public class RunQueue {
 
     // Switched to default for test.
     // private
-    Set<RemoteRunner> getRunnerList(String infra, String workspace, String project) {
+    Set<RemoteRunner> getRunnerList(final String infra, String workspace, String project) {
         Set<RemoteRunner> runnerList = runnerListMapping.get(new RunnerListKey(infra, workspace, project));
         if (runnerList == null) {
             if (project != null || workspace != null) {
@@ -649,7 +651,33 @@ public class RunQueue {
                 }
             }
         }
-        return runnerList;
+
+        return runnerList == null ? null : FluentIterable.from(runnerList).filter(new Predicate<RemoteRunner>() {
+            private final Map<String, Boolean> serverAvailability = new HashMap<>();
+
+            private boolean isAvailable(String serverUrl) throws ServerException {
+                Boolean result = serverAvailability.get(serverUrl);
+                if (result == null) {
+                    RemoteRunnerServer runnerServer = runnerServers.get(serverUrl);
+                    if (runnerServer == null) {
+                        throw new ServerException("Server with id " + serverUrl + " is not found");
+                    }
+                    result = runnerServer.isAvailable();
+                    serverAvailability.put(serverUrl, result);
+                }
+                return result;
+            }
+
+            @Override
+            public boolean apply(@Nullable RemoteRunner input) {
+                try {
+                    return isAvailable(input.getBaseUrl());
+                } catch (ServerException e) {
+                    LOG.warn(e.getLocalizedMessage());
+                }
+                return false;
+            }
+        }).toSet();
     }
 
     // Switched to default for test.
@@ -1360,8 +1388,10 @@ public class RunQueue {
                         bm.setChannel(String.format("runner:status:%d", id));
                         bm.setType(ChannelBroadcastMessage.Type.ERROR);
                         bm.setBody(String.format("{\"message\":%s}",
-                                                 "Unable to start application, currently there are no resources to start your application." +
-                                                 " Max waiting time for available resources has been reached. Contact support for assistance."));
+                                                 "Unable to start application, currently there are no resources to start your application" +
+                                                 "." +
+                                                 " Max waiting time for available resources has been reached. Contact support for " +
+                                                 "assistance."));
                         break;
                     case MESSAGE_LOGGED:
                         final RunnerEvent.LoggedMessage message = event.getMessage();
@@ -1409,17 +1439,20 @@ public class RunQueue {
                     final String user = request.getUserId();
                     switch (event.getType()) {
                         case STARTED:
-                            LOG.info("EVENT#run-queue-waiting-finished# TIME#{}# WS#{}# USER#{}# PROJECT#{}# TYPE#{}# ID#{} WAITING-TIME#{}#",
-                                     time,
-                                     workspace,
-                                     user,
-                                     project,
-                                     projectTypeId,
-                                     analyticsID,
-                                     waitingTime);
+                            LOG.info(
+                                    "EVENT#run-queue-waiting-finished# TIME#{}# WS#{}# USER#{}# PROJECT#{}# TYPE#{}# ID#{} " +
+                                    "WAITING-TIME#{}#",
+                                    time,
+                                    workspace,
+                                    user,
+                                    project,
+                                    projectTypeId,
+                                    analyticsID,
+                                    waitingTime);
                             final String startLineFormat =
-                                    debug ? "EVENT#debug-started# TIME#{}# WS#{}# USER#{}# PROJECT#{}# TYPE#{}# ID#{}# MEMORY#{}# LIFETIME#{}#"
-                                          : "EVENT#run-started# TIME#{}# WS#{}# USER#{}# PROJECT#{}# TYPE#{}# ID#{}# MEMORY#{}# LIFETIME#{}#";
+                                    debug
+                                    ? "EVENT#debug-started# TIME#{}# WS#{}# USER#{}# PROJECT#{}# TYPE#{}# ID#{}# MEMORY#{}# LIFETIME#{}#"
+                                    : "EVENT#run-started# TIME#{}# WS#{}# USER#{}# PROJECT#{}# TYPE#{}# ID#{}# MEMORY#{}# LIFETIME#{}#";
                             LOG.info(startLineFormat,
                                      time,
                                      workspace,
