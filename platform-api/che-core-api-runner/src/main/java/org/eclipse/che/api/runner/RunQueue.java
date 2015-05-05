@@ -425,14 +425,14 @@ public class RunQueue {
                                              .withProjectDescriptor(projectDescriptor)
                                              .withUserId(user == null ? "" : user.getId())
                                              .withUserToken(getUserToken());
-        String originalEnvironmentId = runOptions.getEnvironmentId();
+        String notParsedEnvironmentId = runOptions.getEnvironmentId();
         // Project configuration for runner.
         final RunnersDescriptor runners = projectDescriptor.getRunners();
-        if (originalEnvironmentId == null) {
+        if (notParsedEnvironmentId == null) {
             if (runners != null) {
-                originalEnvironmentId = runners.getDefault();
+                notParsedEnvironmentId = runners.getDefault();
             }
-            if (originalEnvironmentId == null) {
+            if (notParsedEnvironmentId == null) {
                 throw new RunnerException("Name of runner environment is not specified, be sure corresponded property of project is set.");
             }
         }
@@ -441,7 +441,7 @@ public class RunQueue {
         if (infra == null) {
             infra = "community";
         }
-        final EnvironmentId parsedEnvironmentId = EnvironmentId.parse(originalEnvironmentId);
+        final EnvironmentId parsedEnvironmentId = EnvironmentId.parse(notParsedEnvironmentId);
         final List<RemoteRunner> matchedRunners = new LinkedList<>();
         switch (parsedEnvironmentId.getScope()) {
             // This may be fixed in next versions but for now use following agreements.
@@ -472,7 +472,7 @@ public class RunQueue {
                 }
                 if (matchedRunners.isEmpty()) {
                     throw new RunnerException(String.format("Runner environment '%s' is not available for workspace '%s' on infra '%s'.",
-                                                            originalEnvironmentId, workspace, infra));
+                                                            notParsedEnvironmentId, workspace, infra));
                 }
                 break;
             case project:
@@ -488,7 +488,7 @@ public class RunQueue {
         }
 
         // Get runner configuration.
-        final RunnerConfiguration runnerConfig = runners == null ? null : runners.getConfigs().get(originalEnvironmentId);
+        final RunnerConfiguration runnerConfig = runners == null ? null : runners.getConfigs().get(notParsedEnvironmentId);
         int mem = runOptions.getMemorySize();
         // If nothing is set in user request try to determine memory size for application.
         if (mem <= 0) {
@@ -556,7 +556,7 @@ public class RunQueue {
                                                    future,
                                                    buildTaskHolder,
                                                    eventService,
-                                                   originalEnvironmentId,
+                                                   notParsedEnvironmentId,
                                                    serviceContext.getServiceUriBuilder());
         tasks.put(id, task);
         eventService.publish(RunnerEvent.queueStartedEvent(id, workspace, project));
