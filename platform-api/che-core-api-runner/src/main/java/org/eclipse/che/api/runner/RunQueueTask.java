@@ -48,6 +48,7 @@ public class RunQueueTask implements Cancellable {
     private final EventService                     eventService;
     private final long                             created;
     private final long                             waitingTimeout;
+    private final String                           originalEnvironmentId;
     private final AtomicBoolean stopped = new AtomicBoolean(false);
     private Long stopTime;
 
@@ -67,6 +68,7 @@ public class RunQueueTask implements Cancellable {
                  Future<RemoteRunnerProcess> future,
                  ValueHolder<BuildTaskDescriptor> buildTaskHolder,
                  EventService eventService,
+                 String originalEnvironmentId,
                  UriBuilder uriBuilder) {
         this.id = id;
         this.future = future;
@@ -74,6 +76,7 @@ public class RunQueueTask implements Cancellable {
         this.waitingTimeout = waitingTimeout;
         this.buildTaskHolder = buildTaskHolder;
         this.eventService = eventService;
+        this.originalEnvironmentId = originalEnvironmentId;
         this.uriBuilder = uriBuilder;
         created = System.currentTimeMillis();
     }
@@ -169,6 +172,9 @@ public class RunQueueTask implements Cancellable {
                 descriptor.setBuildStats(buildTaskDescriptor.getBuildStats());
             }
         }
+        //we set this id to detect environment scope on client side
+        descriptor.setEnvironmentId(originalEnvironmentId);
+
         return descriptor;
     }
 
