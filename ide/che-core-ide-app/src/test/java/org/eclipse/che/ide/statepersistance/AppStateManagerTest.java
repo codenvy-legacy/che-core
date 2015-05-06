@@ -11,10 +11,16 @@
 package org.eclipse.che.ide.statepersistance;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwtmockito.GwtMockitoTestRunner;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.api.user.shared.dto.ProfileDescriptor;
+import org.eclipse.che.ide.api.action.Action;
+import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionManager;
+import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.event.OpenProjectEvent;
@@ -22,72 +28,126 @@ import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.WindowActionEvent;
 import org.eclipse.che.ide.api.preferences.PreferencesManager;
 import org.eclipse.che.ide.dto.DtoFactory;
+import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 import org.eclipse.che.ide.statepersistance.dto.AppState;
 import org.eclipse.che.ide.statepersistance.dto.ProjectState;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
+import org.eclipse.che.ide.util.Pair;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Matchers;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static org.eclipse.che.ide.statepersistance.AppStateManager.PREFERENCE_PROPERTY_NAME;
 
 /**
  * Test covers {@link AppStateManager} functionality.
  *
  * @author Artem Zatsarynnyy
  */
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(GwtMockitoTestRunner.class)
 public class AppStateManagerTest {
 
-    private static final String SERIALIZED_STATE = "text";
+    private static final String SERIALIZED_STATE  = "text";
+    private static final String PROJECT_PATH      = "/project";
+    private static final String WORKSPACE_NAME    = "someWorkspace";
+    private static final String FULL_PROJECT_PATH = "/" + WORKSPACE_NAME + PROJECT_PATH;
+    private List<ActionDescriptor>    actions;
+    private Map<String, ProjectState> stateMap;
 
     @Mock
     private Set<PersistenceComponent> persistenceComponents;
+    @Mock
+    private EventBus                  eventBus;
+    @Mock
+    private PreferencesManager        preferencesManager;
+    @Mock
+    private AppContext                appContext;
+    @Mock
+    private DtoFactory                dtoFactory;
+    @Mock
+    private ActionManager             actionManager;
+    @Mock
+    private PresentationFactory       presentationFactory;
 
     @Mock
-    private EventBus eventBus;
-
+    private AppState             appState;
     @Mock
-    private PreferencesManager preferencesManager;
-
+    private ProjectDescriptor    rootProject;
     @Mock
-    private AppContext appContext;
-
+    private CurrentProject       currentProject;
     @Mock
-    private DtoFactory dtoFactory;
-
+    private ProjectActionEvent   event;
     @Mock
-    private ActionManager actionManager;
-
+    private ActionDescriptor     actionDescriptor;
     @Mock
-    private PresentationFactory presentationFactory;
-
+    private ProjectState         projectState;
     @Mock
-    private AppState appState;
+    private PersistenceComponent persistenceComponent;
+    @Mock
+    private PersistenceComponent c1;
+    @Mock
+    private PersistenceComponent c2;
+    @Mock
+    private Promise<Void>        promise;
+    @Mock
+    private Action               action;
+    @Mock
+    private Presentation         presentation;
 
-    @InjectMocks
     private AppStateManager appStateManager;
 
     @Before
     public void setUp() {
+        actions = new ArrayList<>();
+        actions.add(actionDescriptor);
+        stateMap = new HashMap<>();
+        stateMap.put(FULL_PROJECT_PATH, projectState);
+
+        List<PersistenceComponent> componentList = new ArrayList<>();
+        Collections.addAll(componentList, c1, c2);
+        when(persistenceComponents.iterator()).thenReturn(componentList.iterator());
+
         when(preferencesManager.getValue(anyString())).thenReturn(SERIALIZED_STATE);
         when(dtoFactory.createDtoFromJson(anyString(), Matchers.<Class<AppState>>anyObject())).thenReturn(appState);
         when(appState.getLastProjectPath()).thenReturn("/project");
+        when(appContext.getCurrentProject()).thenReturn(currentProject);
+        when(currentProject.getRootProject()).thenReturn(rootProject);
+        when(rootProject.getPath()).thenReturn(PROJECT_PATH);
+        when(rootProject.getWorkspaceName()).thenReturn(WORKSPACE_NAME);
+        when(event.getProject()).thenReturn(rootProject);
+        when(rootProject.getPath()).thenReturn(PROJECT_PATH);
+        when(dtoFactory.createDto(ProjectState.class)).thenReturn(projectState);
+        when(projectState.getActions()).thenReturn(actions);
+        when(appState.getProjects()).thenReturn(stateMap);
+        when(actionManager.performActions(Matchers.<List<Pair<Action, ActionEvent>>>anyObject(), eq(false))).thenReturn(promise);
+        when(actionDescriptor.getId()).thenReturn(SERIALIZED_STATE);
+        when(actionManager.getAction(SERIALIZED_STATE)).thenReturn(action);
+        when(presentationFactory.getPresentation(action)).thenReturn(presentation);
 
+        appStateManager = new AppStateManager(persistenceComponents,
+                                              eventBus,
+                                              preferencesManager,
+                                              appContext,
+                                              dtoFactory,
+                                              actionManager,
+                                              presentationFactory);
         appStateManager.start(false);
     }
 
@@ -112,6 +172,7 @@ public class AppStateManagerTest {
     @Test
     public void shouldEraseLastProjectPathOnWindowClosingWhenNoOpenedProject() {
         when(dtoFactory.toJson(eq(appState))).thenReturn(SERIALIZED_STATE);
+        when(appContext.getCurrentProject()).thenReturn(null);
 
         appStateManager.onWindowClosing(mock(WindowActionEvent.class));
 
@@ -123,28 +184,54 @@ public class AppStateManagerTest {
 
     @Test
     public void shouldCallAllRegisteredComponents() {
-        CurrentProject currentProject = mock(CurrentProject.class);
-        when(appContext.getCurrentProject()).thenReturn(currentProject);
-
-        ProjectDescriptor rootProject = mock(ProjectDescriptor.class);
-        when(currentProject.getRootProject()).thenReturn(rootProject);
-        final String projectPath = "/project";
-        when(rootProject.getPath()).thenReturn(projectPath);
-
+        when(dtoFactory.toJson(appState)).thenReturn(SERIALIZED_STATE);
         when(dtoFactory.toJson(eq(appState))).thenReturn(SERIALIZED_STATE);
 
         ProjectState projectState = mock(ProjectState.class);
         when(dtoFactory.createDto(eq(ProjectState.class))).thenReturn(projectState);
 
-        PersistenceComponent c1 = mock(PersistenceComponent.class);
-        PersistenceComponent c2 = mock(PersistenceComponent.class);
-        List<PersistenceComponent> componentList = new ArrayList<>();
-        Collections.addAll(componentList, c1, c2);
-        when(persistenceComponents.iterator()).thenReturn(componentList.iterator());
-
         appStateManager.onWindowClosing(mock(WindowActionEvent.class));
 
-        verify(c1).getActions(eq(projectPath));
-        verify(c2).getActions(eq(projectPath));
+        verify(appContext, times(2)).getCurrentProject();
+        verify(currentProject, times(2)).getRootProject();
+        verify(rootProject, times(2)).getPath();
+        verify(rootProject, times(2)).getWorkspaceName();
+        verify(appState).setLastProjectPath(FULL_PROJECT_PATH);
+        verify(dtoFactory).createDto(ProjectState.class);
+        verify(appState).getProjects();
+        verify(projectState).getActions();
+        verify(currentProject, times(2)).getRootProject();
+        verify(dtoFactory).toJson(appState);
+        verify(preferencesManager).setValue(PREFERENCE_PROPERTY_NAME, SERIALIZED_STATE);
+        verify(preferencesManager).flushPreferences(Matchers.<AsyncCallback<ProfileDescriptor>>anyObject());
+
+        verify(c1).getActions(eq(PROJECT_PATH));
+        verify(c2).getActions(eq(PROJECT_PATH));
+    }
+
+    @Test
+    public void projectShouldNotBeOpenedBecauseCurrentProjectIsNull() {
+        when(appContext.getCurrentProject()).thenReturn(null);
+
+        appStateManager.onProjectOpened(event);
+
+        verify(appContext).getCurrentProject();
+        verifyNoMoreInteractions(rootProject, event, appState);
+    }
+
+    @Test
+    public void projectShouldBeOpenedAndRestored() {
+        appStateManager.onProjectOpened(event);
+
+        verify(appContext).getCurrentProject();
+        verify(currentProject).getRootProject();
+        verify(rootProject).getWorkspaceName();
+        verify(event).getProject();
+        verify(rootProject).getPath();
+        verify(appState).getProjects();
+
+        verify(projectState).getActions();
+        verify(presentationFactory).getPresentation(action);
+        verify(actionDescriptor).getParameters();
     }
 }

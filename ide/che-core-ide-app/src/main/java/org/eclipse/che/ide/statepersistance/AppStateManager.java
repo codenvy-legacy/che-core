@@ -15,6 +15,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.Promise;
@@ -55,7 +56,7 @@ import java.util.Set;
 public class AppStateManager implements WindowActionHandler, ProjectActionHandler {
 
     /** The name of the property for the mappings in user preferences. */
-    private static final String PREFERENCE_PROPERTY_NAME = "CodenvyAppState";
+    protected static final String PREFERENCE_PROPERTY_NAME = "CodenvyAppState";
 
     private AppState appState;
 
@@ -90,7 +91,9 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
         if (currentProject == null) {
             appState.setLastProjectPath("");
         } else {
-            final String projectPath = currentProject.getRootProject().getPath();
+            ProjectDescriptor descriptor = currentProject.getRootProject();
+            final String projectPath = "/" + descriptor.getWorkspaceName() + descriptor.getPath();
+
             appState.setLastProjectPath(projectPath);
             persistCurrentProjectState();
         }
@@ -103,8 +106,14 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
 
     @Override
     public void onProjectOpened(ProjectActionEvent event) {
-        final String projectPath = event.getProject().getPath();
-        final ProjectState projectState = appState.getProjects().get(projectPath);
+        CurrentProject rootProject = appContext.getCurrentProject();
+        if (rootProject == null) {
+            return;
+        }
+        String workspaceName = rootProject.getRootProject().getWorkspaceName();
+        final String fullProjectPath = "/" + workspaceName + event.getProject().getPath();
+
+        final ProjectState projectState = appState.getProjects().get(fullProjectPath);
         if (projectState != null) {
             restoreCurrentProjectState(projectState);
         }
@@ -168,11 +177,17 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
     }
 
     private void openLastProject() {
-        final String lastProjectPath = appState.getLastProjectPath();
-        if (lastProjectPath != null && !lastProjectPath.isEmpty()) {
-            eventBus.fireEvent(new OpenProjectEvent(lastProjectPath));
+        final String projectPath = appState.getLastProjectPath();
+        if (projectPath != null && !projectPath.isEmpty()) {
+
+            int start = projectPath.lastIndexOf("/");
+            String projectName = projectPath.substring(start);
+
+            eventBus.fireEvent(new OpenProjectEvent(projectName));
         }
     }
+
+
 
     /** Restores state of the currently opened project. */
     private void restoreCurrentProjectState(@Nonnull ProjectState projectState) {
@@ -206,9 +221,15 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
             return;
         }
 
-        final String projectPath = currentProject.getRootProject().getPath();
+        ProjectDescriptor descriptor = currentProject.getRootProject();
+
+        final String projectPath = descriptor.getPath();
+        final String fullProjectPath = "/" + descriptor.getWorkspaceName() + projectPath;
+
         final ProjectState projectState = dtoFactory.createDto(ProjectState.class);
-        appState.getProjects().put(projectPath, projectState);
+
+        appState.getProjects().put(fullProjectPath, projectState);
+
         final List<ActionDescriptor> actions = projectState.getActions();
 
         for (PersistenceComponent persistenceComponent : persistenceComponents) {
