@@ -110,10 +110,8 @@ public class EnvironmentId {
 
     public String getFqn() {
         String category = this.category;
-        if (category == null) {
-            category = "";
-        }
-        return scope + ":/" + category + "/" + name;
+        String fqn = scope + ":/";
+        return category != null && !category.isEmpty() ? fqn + category + "/" + name : fqn + name;
     }
 
     @Override

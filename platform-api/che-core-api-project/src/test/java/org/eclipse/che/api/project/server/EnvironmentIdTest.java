@@ -22,7 +22,7 @@ public class EnvironmentIdTest {
     @Test
     public void testEnvironmentIdNoCategoryToString() {
         EnvironmentId id = new EnvironmentId(EnvironmentId.Scope.project, "env");
-        Assert.assertEquals(id.toString(), "project://env");
+        Assert.assertEquals(id.toString(), "project:/env");
     }
 
     @Test
