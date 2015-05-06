@@ -108,16 +108,18 @@ public class LocalRecipeDaoImpl implements RecipeDao {
     }
 
     @Override
-    public List<Recipe> search(final List<String> tags, final String type) {
+    public List<Recipe> search(final List<String> tags, final String type, int skipCount, int maxItems) {
         lock.readLock().lock();
         try {
             return FluentIterable.from(recipes.values())
+                                 .skip(skipCount)
                                  .filter(new Predicate<Recipe>() {
                                      @Override
                                      public boolean apply(Recipe recipe) {
                                          return recipe.getTags().containsAll(tags) && (type == null || type.equals(recipe.getType()));
                                      }
                                  })
+                                 .limit(maxItems)
                                  .toImmutableList();
         } finally {
             lock.readLock().unlock();
@@ -125,16 +127,18 @@ public class LocalRecipeDaoImpl implements RecipeDao {
     }
 
     @Override
-    public List<Recipe> getByCreator(final String creator) {
+    public List<Recipe> getByCreator(final String creator, int skipCount, int maxItems) {
         lock.readLock().lock();
         try {
             return FluentIterable.from(recipes.values())
+                                 .skip(skipCount)
                                  .filter(new Predicate<Recipe>() {
                                      @Override
                                      public boolean apply(Recipe recipe) {
                                          return recipe.getCreator().equals(creator);
                                      }
                                  })
+                                 .limit(maxItems)
                                  .toImmutableList();
         } finally {
             lock.readLock().unlock();

@@ -102,12 +102,18 @@ public interface RecipeDao {
      *         recipe tags to search recipes, may be {@code null}
      * @param type
      *         recipe type to search recipes, may be {@code null}
+     * @param skipCount
+     *         count of items which should be skipped,
+     *         if found items contain fewer than {@code skipCount} items
+     *         then empty list will be returned
+     * @param maxItems
+     *         max count of items to fetch
      * @return recipes which type is equal to specified {@code type}
      * and tags contain all of specified {@code tags}
      * @throws ServerException
      *         when any error occurs
      */
-    List<Recipe> search(List<String> tags, String type) throws ServerException;
+    List<Recipe> search(List<String> tags, String type, int skipCount, int maxItems) throws ServerException;
 
     /**
      * Returns recipes which creator is equal to specified {@code creator} or
@@ -115,11 +121,17 @@ public interface RecipeDao {
      *
      * @param creator
      *         recipe creator to search recipes
+     * @param skipCount
+     *         count of items which should be skipped,
+     *         if found items contain fewer than {@code skipCount} items
+     *         then empty list will be returned
+     * @param maxItems
+     *         max count of items to fetch
      * @return recipes which creator matches to specified {@code creator}
      * @throws NullPointerException
      *         when recipe {@code creator} is not specified
      * @throws ServerException
      *         when any error occurs
      */
-    List<Recipe> getByCreator(String creator) throws ServerException;
+    List<Recipe> getByCreator(String creator, int skipCount, int maxItems) throws ServerException;
 }

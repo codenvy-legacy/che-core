@@ -49,6 +49,7 @@ import static org.everrest.assured.JettyHttpServer.ADMIN_USER_NAME;
 import static org.everrest.assured.JettyHttpServer.ADMIN_USER_PASSWORD;
 import static org.everrest.assured.JettyHttpServer.SECURE_PATH;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
@@ -283,7 +284,7 @@ public class RecipeServiceTest {
                                                .withCreator(USER_ID)
                                                .withType("docker")
                                                .withScript("script2 content");
-        when(recipeDao.getByCreator(USER_ID)).thenReturn(asList(recipe1, recipe2));
+        when(recipeDao.getByCreator(eq(USER_ID), any(int.class), any(int.class))).thenReturn(asList(recipe1, recipe2));
 
         final Response response = given().auth()
                                          .basic(ADMIN_USER_NAME, ADMIN_USER_PASSWORD)
@@ -306,7 +307,10 @@ public class RecipeServiceTest {
                                                .withType("docker")
                                                .withScript("script2 content")
                                                .withTags(asList("java", "mongodb"));
-        when(recipeDao.search(asList("java", "mongodb"), "docker")).thenReturn(asList(recipe1, recipe2));
+        when(recipeDao.search(eq(asList("java", "mongodb")),
+                              eq("docker"),
+                              any(int.class),
+                              any(int.class))).thenReturn(asList(recipe1, recipe2));
 
         final Response response = given().auth()
                                          .basic(ADMIN_USER_NAME, ADMIN_USER_PASSWORD)
