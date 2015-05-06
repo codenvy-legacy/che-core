@@ -91,8 +91,10 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
         if (currentProject == null) {
             appState.setLastProjectPath("");
         } else {
-            final String fullProjectPath = getProjectPathWithWorkspace(currentProject);
-            appState.setLastProjectPath(fullProjectPath);
+            ProjectDescriptor descriptor = currentProject.getRootProject();
+            final String projectPath = "/" + descriptor.getWorkspaceName() + descriptor.getPath();
+
+            appState.setLastProjectPath(projectPath);
             persistCurrentProjectState();
         }
         writeStateToPreferences();
@@ -175,18 +177,17 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
     }
 
     private void openLastProject() {
-        final String lastFullProjectPath = appState.getLastProjectPath();
-        if (lastFullProjectPath != null && !lastFullProjectPath.isEmpty()) {
-            final String lastProjectPath = getProjectWithoutWorkspace(lastFullProjectPath);
-            eventBus.fireEvent(new OpenProjectEvent(lastProjectPath));
+        final String projectPath = appState.getLastProjectPath();
+        if (projectPath != null && !projectPath.isEmpty()) {
+
+            int start = projectPath.lastIndexOf("/");
+            String projectName = projectPath.substring(start);
+
+            eventBus.fireEvent(new OpenProjectEvent(projectName));
         }
     }
 
-    private String getProjectWithoutWorkspace(String fullProjectPath) {
-        int start = fullProjectPath.lastIndexOf("/");
-        int end  = fullProjectPath.length();
-        return fullProjectPath.substring(start, end);
-    }
+
 
     /** Restores state of the currently opened project. */
     private void restoreCurrentProjectState(@Nonnull ProjectState projectState) {
@@ -220,29 +221,19 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
             return;
         }
 
-        final String fullProjectPath = getProjectPathWithWorkspace(currentProject);
+        ProjectDescriptor descriptor = currentProject.getRootProject();
+
+        final String projectPath = descriptor.getPath();
+        final String fullProjectPath = "/" + descriptor.getWorkspaceName() + projectPath;
+
         final ProjectState projectState = dtoFactory.createDto(ProjectState.class);
 
         appState.getProjects().put(fullProjectPath, projectState);
 
         final List<ActionDescriptor> actions = projectState.getActions();
-        final String projectPath = currentProject.getRootProject().getPath();
 
         for (PersistenceComponent persistenceComponent : persistenceComponents) {
             actions.addAll(persistenceComponent.getActions(projectPath));
         }
-    }
-
-    private String getProjectPathWithWorkspace(@Nonnull CurrentProject currentProject) {
-        ProjectDescriptor descriptor = currentProject.getRootProject();
-
-        String path = descriptor.getPath();
-        String workspaceName = descriptor.getWorkspaceName();
-
-        if (!workspaceName.isEmpty()) {
-            path = "/" + workspaceName + path;
-        }
-
-        return  path;
     }
 }

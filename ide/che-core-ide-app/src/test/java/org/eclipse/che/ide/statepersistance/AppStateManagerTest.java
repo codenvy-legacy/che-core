@@ -193,14 +193,14 @@ public class AppStateManagerTest {
         appStateManager.onWindowClosing(mock(WindowActionEvent.class));
 
         verify(appContext, times(2)).getCurrentProject();
-        verify(currentProject, times(3)).getRootProject();
-        verify(rootProject, times(3)).getPath();
+        verify(currentProject, times(2)).getRootProject();
+        verify(rootProject, times(2)).getPath();
         verify(rootProject, times(2)).getWorkspaceName();
         verify(appState).setLastProjectPath(FULL_PROJECT_PATH);
         verify(dtoFactory).createDto(ProjectState.class);
         verify(appState).getProjects();
         verify(projectState).getActions();
-        verify(currentProject, times(3)).getRootProject();
+        verify(currentProject, times(2)).getRootProject();
         verify(dtoFactory).toJson(appState);
         verify(preferencesManager).setValue(PREFERENCE_PROPERTY_NAME, SERIALIZED_STATE);
         verify(preferencesManager).flushPreferences(Matchers.<AsyncCallback<ProfileDescriptor>>anyObject());
