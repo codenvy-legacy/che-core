@@ -15,6 +15,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
@@ -34,6 +35,7 @@ import org.eclipse.che.ide.api.event.WindowActionEvent;
 import org.eclipse.che.ide.api.event.WindowActionHandler;
 import org.eclipse.che.ide.api.preferences.PreferencesManager;
 import org.eclipse.che.ide.dto.DtoFactory;
+import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 import org.eclipse.che.ide.statepersistance.dto.AppState;
 import org.eclipse.che.ide.statepersistance.dto.ProjectState;
@@ -67,6 +69,7 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
     private final DtoFactory                dtoFactory;
     private final ActionManager             actionManager;
     private final PresentationFactory       presentationFactory;
+    private final ProjectServiceClient      projectServiceClient;
 
     @Inject
     public AppStateManager(Set<PersistenceComponent> persistenceComponents,
@@ -75,7 +78,8 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
                            AppContext appContext,
                            DtoFactory dtoFactory,
                            ActionManager actionManager,
-                           PresentationFactory presentationFactory) {
+                           PresentationFactory presentationFactory,
+                           ProjectServiceClient projectServiceClient) {
         this.persistenceComponents = persistenceComponents;
         this.eventBus = eventBus;
         this.preferencesManager = preferencesManager;
@@ -83,6 +87,7 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
         this.dtoFactory = dtoFactory;
         this.actionManager = actionManager;
         this.presentationFactory = presentationFactory;
+        this.projectServiceClient = projectServiceClient;
     }
 
     @Override
@@ -140,10 +145,34 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
         eventBus.addHandler(ProjectActionEvent.TYPE, this);
 
         readStateFromPreferences();
+        openLastProject(openLastProject);
+    }
 
-        // don't re-open last project if some project name was provided
-        if (openLastProject) {
-            openLastProject();
+    private void openLastProject(final boolean openLastProject) {
+        final String lastProjectPath = appState.getLastProjectPath();
+
+        if (lastProjectPath != null && !lastProjectPath.isEmpty()) {
+
+            int start = lastProjectPath.lastIndexOf("/");
+            String projectPath = lastProjectPath.substring(start);
+
+            projectServiceClient.getProject(projectPath, new AsyncRequestCallback<ProjectDescriptor>() {
+                @Override
+                protected void onSuccess(ProjectDescriptor result) {
+                    // don't re-open last project if some project name was provided
+                    if (openLastProject) {
+                        openLastProject();
+                    }
+                }
+
+                @Override
+                protected void onFailure(Throwable exception) {
+                    appState.getProjects().remove(lastProjectPath);
+                    appState.setLastProjectPath("");
+                    writeStateToPreferences();
+                }
+            });
+
         }
     }
 
