@@ -60,7 +60,7 @@ public class EnvironmentIdTest {
 
     @Test(expectedExceptions = {IllegalArgumentException.class})
     public void testEnvironmentIdInvalidFormat() {
-        String fqn = "system:/Tomcat7";
+        String fqn = "system: Tomcat7";
         EnvironmentId id = EnvironmentId.parse(fqn);
         Assert.assertEquals(id.getScope(), EnvironmentId.Scope.system);
         Assert.assertEquals(id.getCategory(), "Java/Web");
