@@ -84,7 +84,7 @@ public class WorkspaceToDirectoryMappingService {
         Map<String, String> directoryMapping;
         if (mappedDirectoryLocalFSMountStrategy.getDirectoryMapping().isEmpty()) {
             directoryMapping = new HashMap<>();
-            directoryMapping.put("default", rootDir);
+            directoryMapping.put("__default", rootDir);
             return directoryMapping;
         }
         directoryMapping =
