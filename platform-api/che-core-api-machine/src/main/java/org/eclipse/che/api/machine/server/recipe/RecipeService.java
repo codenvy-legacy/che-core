@@ -16,6 +16,9 @@ import com.google.common.collect.FluentIterable;
 import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.rest.Service;
+import org.eclipse.che.api.core.rest.annotations.GenerateLink;
+import org.eclipse.che.api.core.rest.shared.dto.Link;
+import org.eclipse.che.api.core.util.LinksHelper;
 import org.eclipse.che.api.machine.server.PermissionsImpl;
 import org.eclipse.che.api.machine.server.RecipeImpl;
 import org.eclipse.che.api.machine.server.dao.RecipeDao;
@@ -45,6 +48,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,9 +56,16 @@ import java.util.List;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.Response.Status.CREATED;
+import static org.eclipse.che.api.machine.server.Constants.LINK_REL_CREATE_RECIPE;
+import static org.eclipse.che.api.machine.server.Constants.LINK_REL_GET_RECIPES_BY_CREATOR;
+import static org.eclipse.che.api.machine.server.Constants.LINK_REL_GET_RECIPE_SCRIPT;
+import static org.eclipse.che.api.machine.server.Constants.LINK_REL_REMOVE_RECIPE;
+import static org.eclipse.che.api.machine.server.Constants.LINK_REL_SEARCH_RECIPES;
+import static org.eclipse.che.api.machine.server.Constants.LINK_REL_UPDATE_RECIPE;
 
 /**
  * Recipe API
@@ -64,8 +75,7 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 @Path("/recipe")
 public class RecipeService extends Service {
 
-    private static final Function<Recipe, RecipeDescriptor> RECIPE_TO_DESCRIPTOR_FUNCTION = new RecipeToDescriptorFunction();
-    private static final int                                DEFAULT_ITEMS_COUNT_LIMIT     = 30;
+    private static final int DEFAULT_ITEMS_COUNT_LIMIT = 30;
 
     private final RecipeDao          recipeDao;
     private final PermissionsChecker permissionsChecker;
@@ -79,6 +89,7 @@ public class RecipeService extends Service {
     @POST
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
+    @GenerateLink(rel = LINK_REL_CREATE_RECIPE)
     @RolesAllowed({"user", "system/admin", "system/manager"})
     public Response createRecipe(NewRecipe newRecipe) throws ApiException {
         if (newRecipe == null) {
@@ -105,12 +116,12 @@ public class RecipeService extends Service {
         recipeDao.create(recipe);
 
         return Response.status(CREATED)
-                       .entity(RECIPE_TO_DESCRIPTOR_FUNCTION.apply(recipe))
+                       .entity(asRecipeDescriptor(recipe))
                        .build();
     }
 
     @GET
-    @Path("/{id}")
+    @Path("/{id}/script")
     @Produces(TEXT_PLAIN)
     @RolesAllowed({"user", "system/admin", "system/manager"})
     public String getRecipeScript(@PathParam("id") String id) throws ApiException {
@@ -125,7 +136,7 @@ public class RecipeService extends Service {
     }
 
     @GET
-    @Path("/{id}/json")
+    @Path("/{id}")
     @Produces(APPLICATION_JSON)
     @RolesAllowed({"user", "system/admin", "system/manager"})
     public RecipeDescriptor getRecipe(@PathParam("id") String id) throws ApiException {
@@ -136,11 +147,12 @@ public class RecipeService extends Service {
             throw new ForbiddenException(format("User %s doesn't have access to recipe %s", userId, id));
         }
 
-        return RECIPE_TO_DESCRIPTOR_FUNCTION.apply(recipe);
+        return asRecipeDescriptor(recipe);
     }
 
     @GET
     @Produces(APPLICATION_JSON)
+    @GenerateLink(rel = LINK_REL_GET_RECIPES_BY_CREATOR)
     @RolesAllowed({"user", "system/admin", "system/manager"})
     public List<RecipeDescriptor> getCreatedRecipes(@QueryParam("skipCount") Integer skipCount,
                                                     @QueryParam("maxItems") Integer maxItems) throws ApiException {
@@ -148,13 +160,20 @@ public class RecipeService extends Service {
                                                             firstNonNull(skipCount, 0),
                                                             firstNonNull(maxItems, DEFAULT_ITEMS_COUNT_LIMIT));
         return FluentIterable.from(recipes)
-                             .transform(RECIPE_TO_DESCRIPTOR_FUNCTION)
+                             .transform(new Function<Recipe, RecipeDescriptor>() {
+                                 @Nullable
+                                 @Override
+                                 public RecipeDescriptor apply(@Nullable Recipe recipe) {
+                                     return asRecipeDescriptor(recipe);
+                                 }
+                             })
                              .toList();
     }
 
     @GET
     @Path("/list")
     @Produces(APPLICATION_JSON)
+    @GenerateLink(rel = LINK_REL_SEARCH_RECIPES)
     @RolesAllowed({"user", "system/admin", "system/manager"})
     public List<RecipeDescriptor> searchRecipes(@QueryParam("tags") List<String> tags,
                                                 @QueryParam("type") String type,
@@ -165,7 +184,13 @@ public class RecipeService extends Service {
                                                       firstNonNull(skipCount, 0),
                                                       firstNonNull(maxItems, DEFAULT_ITEMS_COUNT_LIMIT));
         return FluentIterable.from(recipes)
-                             .transform(RECIPE_TO_DESCRIPTOR_FUNCTION)
+                             .transform(new Function<Recipe, RecipeDescriptor>() {
+                                 @Nullable
+                                 @Override
+                                 public RecipeDescriptor apply(@Nullable Recipe recipe) {
+                                     return asRecipeDescriptor(recipe);
+                                 }
+                             })
                              .toList();
     }
 
@@ -173,6 +198,7 @@ public class RecipeService extends Service {
     @Path("/{id}")
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
+    @GenerateLink(rel = LINK_REL_UPDATE_RECIPE)
     @RolesAllowed({"user", "system/admin", "system/manager"})
     public RecipeDescriptor updateRecipe(@PathParam("id") String id, RecipeUpdate update) throws ApiException {
         final Recipe recipe = recipeDao.getById(id);
@@ -206,7 +232,7 @@ public class RecipeService extends Service {
         if (updateRequired) {
             recipeDao.update(recipe);
         }
-        return RECIPE_TO_DESCRIPTOR_FUNCTION.apply(recipe);
+        return asRecipeDescriptor(recipe);
     }
 
     @DELETE
@@ -239,42 +265,52 @@ public class RecipeService extends Service {
         }
     }
 
-    private User currentUser() {
-        return EnvironmentContext.getCurrent().getUser();
-    }
-
     /**
      * Transforms {@link Recipe} to {@link RecipeDescriptor}.
-     * It is stateless so thread safe.
      */
-    private static class RecipeToDescriptorFunction implements Function<Recipe, RecipeDescriptor> {
-
-        @Nullable
-        @Override
-        public RecipeDescriptor apply(Recipe recipe) {
-            final RecipeDescriptor descriptor = DtoFactory.getInstance()
-                                                          .createDto(RecipeDescriptor.class)
-                                                          .withId(recipe.getId())
-                                                          .withType(recipe.getType())
-                                                          .withScript(recipe.getScript())
-                                                          .withCreator(recipe.getCreator())
-                                                          .withTags(recipe.getTags());
-            final Permissions permissions = recipe.getPermissions();
-            if (permissions != null) {
-                final List<GroupDescriptor> groups = new ArrayList<>(permissions.getGroups().size());
-                for (Group group : permissions.getGroups()) {
-                    groups.add(DtoFactory.getInstance()
-                                         .createDto(GroupDescriptor.class)
-                                         .withName(group.getName())
-                                         .withUnit(group.getUnit())
-                                         .withAcl(group.getAcl()));
-                }
-                descriptor.setPermissions(DtoFactory.getInstance()
-                                                    .createDto(PermissionsDescriptor.class)
-                                                    .withGroups(groups)
-                                                    .withUsers(permissions.getUsers()));
+    private RecipeDescriptor asRecipeDescriptor(Recipe recipe) {
+        final RecipeDescriptor descriptor = DtoFactory.getInstance()
+                                                      .createDto(RecipeDescriptor.class)
+                                                      .withId(recipe.getId())
+                                                      .withType(recipe.getType())
+                                                      .withScript(recipe.getScript())
+                                                      .withCreator(recipe.getCreator())
+                                                      .withTags(recipe.getTags());
+        final Permissions permissions = recipe.getPermissions();
+        if (permissions != null) {
+            final List<GroupDescriptor> groups = new ArrayList<>(permissions.getGroups().size());
+            for (Group group : permissions.getGroups()) {
+                groups.add(DtoFactory.getInstance()
+                                     .createDto(GroupDescriptor.class)
+                                     .withName(group.getName())
+                                     .withUnit(group.getUnit())
+                                     .withAcl(group.getAcl()));
             }
-            return descriptor;
+            descriptor.setPermissions(DtoFactory.getInstance()
+                                                .createDto(PermissionsDescriptor.class)
+                                                .withGroups(groups)
+                                                .withUsers(permissions.getUsers()));
         }
+
+        final UriBuilder builder = getServiceContext().getBaseUriBuilder();
+        final Link removeLink = LinksHelper.createLink("DELETE",
+                                                       builder.clone()
+                                                              .path(getClass(), "removeRecipe")
+                                                              .build(recipe.getId())
+                                                              .toString(),
+                                                       LINK_REL_REMOVE_RECIPE);
+        final Link scriptLink = LinksHelper.createLink("GET",
+                                                       builder.clone()
+                                                              .path(getClass(), "getRecipeScript")
+                                                              .build(recipe.getId())
+                                                              .toString(),
+                                                       TEXT_PLAIN,
+                                                       LINK_REL_GET_RECIPE_SCRIPT);
+        descriptor.setLinks(asList(scriptLink, removeLink));
+        return descriptor;
+    }
+
+    private User currentUser() {
+        return EnvironmentContext.getCurrent().getUser();
     }
 }

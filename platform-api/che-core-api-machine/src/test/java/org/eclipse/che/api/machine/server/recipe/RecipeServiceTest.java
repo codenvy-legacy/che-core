@@ -31,12 +31,16 @@ import org.everrest.assured.EverrestJetty;
 import org.everrest.core.Filter;
 import org.everrest.core.GenericContainerRequest;
 import org.everrest.core.RequestFilter;
+import org.everrest.core.impl.uri.UriBuilderImpl;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.testng.MockitoTestNGListener;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
+import javax.ws.rs.core.UriInfo;
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -72,8 +76,21 @@ public class RecipeServiceTest {
     RecipeDao          recipeDao;
     @Mock
     PermissionsChecker permissionsChecker;
+    @Mock
+    UriInfo            uriInfo;
     @InjectMocks
     RecipeService      service;
+
+    @BeforeMethod
+    public void setUpUriInfo() throws NoSuchFieldException, IllegalAccessException {
+        when(uriInfo.getBaseUriBuilder()).thenReturn(new UriBuilderImpl());
+
+        final Field uriField = service.getClass()
+                                      .getSuperclass()
+                                      .getDeclaredField("uriInfo");
+        uriField.setAccessible(true);
+        uriField.set(service, uriInfo);
+    }
 
     @Filter
     public static class EnvironmentFilter implements RequestFilter {
@@ -205,7 +222,7 @@ public class RecipeServiceTest {
         final Response response = given().auth()
                                          .basic(ADMIN_USER_NAME, ADMIN_USER_PASSWORD)
                                          .when()
-                                         .get(SECURE_PATH + "/recipe/" + recipe.getId());
+                                         .get(SECURE_PATH + "/recipe/" + recipe.getId() + "/script");
 
         assertEquals(response.getStatusCode(), 200);
         assertEquals(response.getBody().print(), recipe.getScript());
@@ -244,7 +261,7 @@ public class RecipeServiceTest {
         final Response response = given().auth()
                                          .basic(ADMIN_USER_NAME, ADMIN_USER_PASSWORD)
                                          .when()
-                                         .get(SECURE_PATH + "/recipe/" + recipe.getId() + "/json");
+                                         .get(SECURE_PATH + "/recipe/" + recipe.getId());
 
         assertEquals(response.getStatusCode(), 200);
         final RecipeDescriptor descriptor = unwrapDto(response, RecipeDescriptor.class);
@@ -267,7 +284,7 @@ public class RecipeServiceTest {
         final Response response = given().auth()
                                          .basic(ADMIN_USER_NAME, ADMIN_USER_PASSWORD)
                                          .when()
-                                         .get(SECURE_PATH + "/recipe/" + recipe.getId() + "/json");
+                                         .get(SECURE_PATH + "/recipe/" + recipe.getId());
 
         assertEquals(response.getStatusCode(), 403);
         final String expMessage = format("User %s doesn't have access to recipe %s", USER_ID, recipe.getId());
