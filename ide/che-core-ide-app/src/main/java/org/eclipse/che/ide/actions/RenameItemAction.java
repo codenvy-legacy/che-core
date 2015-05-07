@@ -10,16 +10,16 @@
  *******************************************************************************/
 package org.eclipse.che.ide.actions;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.gwt.client.QueryExpression;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.runner.dto.ApplicationProcessDescriptor;
 import org.eclipse.che.api.runner.gwt.client.RunnerServiceClient;
-
-import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.part.projectexplorer.ProjectListStructure;
-import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.Action;
@@ -30,8 +30,8 @@ import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.project.tree.AbstractTreeNode;
-import org.eclipse.che.ide.api.project.tree.TreeStructure;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
+import org.eclipse.che.ide.api.project.tree.TreeStructure;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.api.project.tree.generic.FileNode;
 import org.eclipse.che.ide.api.project.tree.generic.FolderNode;
@@ -43,6 +43,7 @@ import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.collections.StringMap;
+import org.eclipse.che.ide.part.editor.EditorPartStackPresenter;
 import org.eclipse.che.ide.part.projectexplorer.ProjectListStructure;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
@@ -53,10 +54,6 @@ import org.eclipse.che.ide.ui.dialogs.input.InputDialog;
 import org.eclipse.che.ide.ui.dialogs.input.InputValidator;
 import org.eclipse.che.ide.util.NameUtils;
 import org.eclipse.che.ide.util.loging.Log;
-
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 
 import javax.annotation.Nullable;
 
@@ -85,6 +82,7 @@ public class RenameItemAction extends Action {
     private final InputValidator           fileNameValidator;
     private final InputValidator           folderNameValidator;
     private final InputValidator           projectNameValidator;
+    private final EditorPartStackPresenter partStackPresenter;
 
     @Inject
     public RenameItemAction(Resources resources,
@@ -97,7 +95,8 @@ public class RenameItemAction extends Action {
                             RunnerServiceClient runnerServiceClient,
                             DtoUnmarshallerFactory dtoUnmarshallerFactory,
                             DialogFactory dialogFactory,
-                            AppContext appContext) {
+                            AppContext appContext,
+                            EditorPartStackPresenter partStackPresenter) {
         super(localization.renameItemActionText(), localization.renameItemActionDescription(), null, resources.rename());
         this.selectionAgent = selectionAgent;
         this.eventLogger = eventLogger;
@@ -109,6 +108,7 @@ public class RenameItemAction extends Action {
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.dialogFactory = dialogFactory;
         this.appContext = appContext;
+        this.partStackPresenter = partStackPresenter;
         this.fileNameValidator = new FileNameValidator();
         this.folderNameValidator = new FolderNameValidator();
         this.projectNameValidator = new ProjectNameValidator();
@@ -120,30 +120,36 @@ public class RenameItemAction extends Action {
         eventLogger.log(this);
 
         Selection<?> selection = selectionAgent.getSelection();
-        if (selection != null && selection.getFirstElement() != null && selection.getFirstElement() instanceof StorableNode) {
-            final StorableNode selectedNode = (StorableNode)selection.getFirstElement();
+        if (selection == null) {
+            return;
+        }
 
-            if (selectedNode instanceof ProjectNode) {
-                dialogFactory.createMessageDialog("", localization.closeProjectBeforeRenaming(), null).show();
-            } else if (selectedNode instanceof ProjectListStructure.ProjectNode) {
-                checkRunningProcessesForProject(selectedNode, new AsyncCallback<Boolean>() {
-                    @Override
-                    public void onSuccess(Boolean hasRunningProcesses) {
-                        if (hasRunningProcesses) {
-                            dialogFactory.createMessageDialog("", localization.stopProcessesBeforeRenamingProject(), null).show();
-                        } else {
-                            askForRenamingNode(selectedNode);
-                        }
-                    }
+        final StorableNode selectedNode = (StorableNode)selection.getHeadElement();
 
-                    @Override
-                    public void onFailure(Throwable caught) {
+        if (selectedNode == null) {
+            return;
+        }
+
+        TreeNode selectedParent = selectedNode.getParent();
+
+        if (selectedParent.getParent() != null || selectedNode instanceof ProjectListStructure.ProjectNode) {
+            checkRunningProcessesForProject(selectedNode, new AsyncCallback<Boolean>() {
+                @Override
+                public void onSuccess(Boolean hasRunningProcesses) {
+                    if (hasRunningProcesses) {
+                        dialogFactory.createMessageDialog("", localization.stopProcessesBeforeRenamingProject(), null).show();
+                    } else {
                         askForRenamingNode(selectedNode);
                     }
-                });
-            } else {
-                askForRenamingNode(selectedNode);
-            }
+                }
+
+                @Override
+                public void onFailure(Throwable caught) {
+                    askForRenamingNode(selectedNode);
+                }
+            });
+        } else {
+            dialogFactory.createMessageDialog("", localization.closeProjectBeforeRenaming(), null).show();
         }
     }
 
@@ -179,6 +185,13 @@ public class RenameItemAction extends Action {
                 nodeToRename.rename(value, new RenameCallback() {
                     @Override
                     public void onRenamed() {
+                        StringMap<EditorPartPresenter> editors = editorAgent.getOpenedEditors();
+                        Array<EditorPartPresenter> openedEditors = editors.getValues();
+
+                        for (EditorPartPresenter editor : openedEditors.asIterable()) {
+                            partStackPresenter.removePart(editor);
+                        }
+
                         if (finalItemReferenceBeforeRenaming != null) {
                             checkOpenedFiles(finalItemReferenceBeforeRenaming, value);
                         }
