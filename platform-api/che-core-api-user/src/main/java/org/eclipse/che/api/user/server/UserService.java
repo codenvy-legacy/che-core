@@ -11,11 +11,20 @@
 package org.eclipse.che.api.user.server;
 
 
+import com.google.common.annotations.Beta;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
+
 import org.eclipse.che.api.core.ConflictException;
+import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.core.rest.Service;
+import org.eclipse.che.api.core.rest.annotations.Description;
 import org.eclipse.che.api.core.rest.annotations.GenerateLink;
 import org.eclipse.che.api.core.rest.annotations.Required;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
@@ -26,19 +35,15 @@ import org.eclipse.che.api.user.server.dao.User;
 import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.api.user.server.dao.UserProfileDao;
 import org.eclipse.che.api.user.shared.dto.UserDescriptor;
-
+import org.eclipse.che.api.user.shared.dto.UserInRoleDescriptor;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.dto.server.DtoFactory;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
 
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -55,20 +60,21 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import static org.eclipse.che.commons.lang.NameGenerator.generate;
-import static javax.ws.rs.core.Response.status;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.APPLICATION_FORM_URLENCODED;
-import static org.eclipse.che.api.user.server.Constants.LINK_REL_GET_USER_BY_ID;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.status;
 import static org.eclipse.che.api.user.server.Constants.LINK_REL_CREATE_USER;
 import static org.eclipse.che.api.user.server.Constants.LINK_REL_GET_CURRENT_USER;
-import static org.eclipse.che.api.user.server.Constants.LINK_REL_UPDATE_PASSWORD;
-import static org.eclipse.che.api.user.server.Constants.LINK_REL_GET_USER_BY_EMAIL;
-import static org.eclipse.che.api.user.server.Constants.LINK_REL_REMOVE_USER_BY_ID;
-import static org.eclipse.che.api.user.server.Constants.PASSWORD_LENGTH;
-import static org.eclipse.che.api.user.server.Constants.LINK_REL_GET_USER_PROFILE_BY_ID;
 import static org.eclipse.che.api.user.server.Constants.LINK_REL_GET_CURRENT_USER_PROFILE;
+import static org.eclipse.che.api.user.server.Constants.LINK_REL_GET_USER_BY_EMAIL;
+import static org.eclipse.che.api.user.server.Constants.LINK_REL_GET_USER_BY_ID;
+import static org.eclipse.che.api.user.server.Constants.LINK_REL_GET_USER_PROFILE_BY_ID;
+import static org.eclipse.che.api.user.server.Constants.LINK_REL_INROLE;
+import static org.eclipse.che.api.user.server.Constants.LINK_REL_REMOVE_USER_BY_ID;
+import static org.eclipse.che.api.user.server.Constants.LINK_REL_UPDATE_PASSWORD;
+import static org.eclipse.che.api.user.server.Constants.PASSWORD_LENGTH;
+import static org.eclipse.che.commons.lang.NameGenerator.generate;
 
 /**
  * Provides REST API for user management
@@ -310,6 +316,60 @@ public class UserService extends Service {
     public void remove(@ApiParam(value = "User ID")
                        @PathParam("id") String id) throws NotFoundException, ServerException, ConflictException {
         userDao.remove(id);
+    }
+
+
+    /**
+     * Allow to check if current user has a given role or not. status <b>200</b> and {@link UserInRoleDescriptor} is returned by indicating if role is granted or not
+     *
+     * @param role
+     *         role to search (like admin or manager)
+     * @param scope
+     *         the optional scope like system, workspace, account.(default scope is system)
+     * @param scopeId
+     *         an optional scopeID used by the scope like the workspace ID if scope is workspace.
+     * @return {UserInRoleDescriptor} which indicates if role is granted or not
+     * @throws org.eclipse.che.api.core.ForbiddenException
+     *         with an uknown scope
+     * @throws ServerException
+     *         when unable to perform the check
+     */
+    @ApiOperation(value = "Check role for the authenticated user",
+            notes = "Check if user has a role in given scope (default is system) and with an optional scope id. Roles allowed: user, system/admin, system/manager.",
+            response = UserInRoleDescriptor.class,
+            position = 7)
+    @ApiResponses({@ApiResponse(code = 200, message = "OK"),
+                   @ApiResponse(code = 403, message = "Unable to check for the given scope"),
+                   @ApiResponse(code = 500, message = "Internal Server Error")})
+    @GET
+    @Path("/inrole")
+    @GenerateLink(rel = LINK_REL_INROLE)
+    @RolesAllowed({"user", "system/admin", "system/manager"})
+    @Produces(APPLICATION_JSON)
+    @Beta
+    public UserInRoleDescriptor inRole(@Required @Description("role inside a scope") @QueryParam("role") String role,
+                                       @DefaultValue("system") @Description("scope of the role (like system, workspace)") @QueryParam("scope") String scope,
+                                       @DefaultValue("") @Description("id used by the scope, like workspaceId for workspace scope") @QueryParam("scopeId") String scopeId,
+                                       @Context SecurityContext context) throws NotFoundException, ServerException, ForbiddenException {
+
+        // handle scope
+        boolean isInRole;
+        if ("system".equals(scope)) {
+            String roleToCheck;
+            if ("user".equals(role) || "temp_user".equals(role)) {
+                roleToCheck = role;
+            } else {
+                roleToCheck = "system/" + role;
+            }
+
+            // check role
+            isInRole = context.isUserInRole(roleToCheck);
+        } else {
+            throw new ForbiddenException(String.format("Only system scope is handled for now. Provided scope is %s", scope));
+        }
+
+        return DtoFactory.getInstance().createDto(UserInRoleDescriptor.class).withIsInRole(isInRole).withRoleName(role).withScope(scope).withScopeId(scopeId);
+
     }
 
     private void checkPassword(String password) throws ConflictException {
