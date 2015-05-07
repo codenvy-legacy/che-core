@@ -14,6 +14,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwtmockito.GwtMockitoTestRunner;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.user.shared.dto.ProfileDescriptor;
@@ -28,6 +29,7 @@ import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.WindowActionEvent;
 import org.eclipse.che.ide.api.preferences.PreferencesManager;
 import org.eclipse.che.ide.dto.DtoFactory;
+import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 import org.eclipse.che.ide.statepersistance.dto.AppState;
 import org.eclipse.che.ide.statepersistance.dto.ProjectState;
@@ -36,9 +38,12 @@ import org.eclipse.che.ide.util.Pair;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -85,6 +90,8 @@ public class AppStateManagerTest {
     private ActionManager             actionManager;
     @Mock
     private PresentationFactory       presentationFactory;
+    @Mock
+    private ProjectServiceClient      projectServiceClient;
 
     @Mock
     private AppState             appState;
@@ -110,6 +117,9 @@ public class AppStateManagerTest {
     private Action               action;
     @Mock
     private Presentation         presentation;
+
+    @Captor
+    private ArgumentCaptor<AsyncRequestCallback<ProjectDescriptor>> projectDescriptorCaptor;
 
     private AppStateManager appStateManager;
 
@@ -140,6 +150,7 @@ public class AppStateManagerTest {
         when(actionDescriptor.getId()).thenReturn(SERIALIZED_STATE);
         when(actionManager.getAction(SERIALIZED_STATE)).thenReturn(action);
         when(presentationFactory.getPresentation(action)).thenReturn(presentation);
+        when(dtoFactory.toJson(eq(appState))).thenReturn(SERIALIZED_STATE);
 
         appStateManager = new AppStateManager(persistenceComponents,
                                               eventBus,
@@ -147,7 +158,8 @@ public class AppStateManagerTest {
                                               appContext,
                                               dtoFactory,
                                               actionManager,
-                                              presentationFactory);
+                                              presentationFactory,
+                                              projectServiceClient);
         appStateManager.start(false);
     }
 
@@ -163,15 +175,43 @@ public class AppStateManagerTest {
     }
 
     @Test
-    public void shouldOpenLastProjectOnStart() {
+    public void shouldOpenLastProjectOnStart() throws Exception {
         appStateManager.start(true);
+
+        ProjectDescriptor result = mock(ProjectDescriptor.class);
+
+        verify(projectServiceClient, times(2)).getProject(anyString(), projectDescriptorCaptor.capture());
+        AsyncRequestCallback<ProjectDescriptor> asyncRequestCallback = projectDescriptorCaptor.getValue();
+
+        Method method = asyncRequestCallback.getClass().getDeclaredMethod("onSuccess", Object.class);
+        method.setAccessible(true);
+        method.invoke(asyncRequestCallback, result);
 
         verify(eventBus).fireEvent(any(OpenProjectEvent.class));
     }
 
     @Test
+    public void userPreferenceShouldBeCleanedUp() throws Exception {
+        appStateManager.start(true);
+
+        Throwable exception = mock(Throwable.class);
+
+        verify(projectServiceClient, times(2)).getProject(anyString(), projectDescriptorCaptor.capture());
+        AsyncRequestCallback<ProjectDescriptor> asyncRequestCallback = projectDescriptorCaptor.getValue();
+
+        Method method = asyncRequestCallback.getClass().getDeclaredMethod("onFailure", Throwable.class);
+        method.setAccessible(true);
+        method.invoke(asyncRequestCallback, exception);
+
+        verify(appState).getProjects();
+        verify(appState).setLastProjectPath("");
+        verify(dtoFactory).toJson(appState);
+        preferencesManager.setValue(PREFERENCE_PROPERTY_NAME, SERIALIZED_STATE);
+        verify(preferencesManager).flushPreferences(Matchers.<AsyncCallback<ProfileDescriptor>>anyObject());
+    }
+
+    @Test
     public void shouldEraseLastProjectPathOnWindowClosingWhenNoOpenedProject() {
-        when(dtoFactory.toJson(eq(appState))).thenReturn(SERIALIZED_STATE);
         when(appContext.getCurrentProject()).thenReturn(null);
 
         appStateManager.onWindowClosing(mock(WindowActionEvent.class));
@@ -179,7 +219,7 @@ public class AppStateManagerTest {
         verify(appState).setLastProjectPath(eq(""));
 
         verify(preferencesManager).setValue(anyString(), eq(SERIALIZED_STATE));
-        verify(preferencesManager).flushPreferences(any(AsyncCallback.class));
+        verify(preferencesManager).flushPreferences(Matchers.<AsyncCallback<ProfileDescriptor>>anyObject());
     }
 
     @Test
@@ -216,7 +256,7 @@ public class AppStateManagerTest {
         appStateManager.onProjectOpened(event);
 
         verify(appContext).getCurrentProject();
-        verifyNoMoreInteractions(rootProject, event, appState);
+        verifyNoMoreInteractions(rootProject, event);
     }
 
     @Test
