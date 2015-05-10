@@ -16,6 +16,8 @@ import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
+import org.eclipse.che.ide.rest.RestContext;
+
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.inject.name.Named;
 
@@ -41,7 +43,7 @@ public class VfsServiceClientImpl implements VfsServiceClient {
     private final AsyncRequestFactory asyncRequestFactory;
 
     @Inject
-    public VfsServiceClientImpl(@Named("restContext") String restContext,
+    public VfsServiceClientImpl(@RestContext String restContext,
                                 @Named("workspaceId") String workspaceId,
                                 AsyncRequestLoader loader,
                                 AsyncRequestFactory asyncRequestFactory) {

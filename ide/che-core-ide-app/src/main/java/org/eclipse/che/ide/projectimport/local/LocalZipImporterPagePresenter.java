@@ -25,6 +25,7 @@ import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscribe
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.json.JsonHelper;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
+import org.eclipse.che.ide.rest.RestContext;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.util.NameUtils;
 import org.eclipse.che.ide.util.loging.Log;
@@ -51,7 +52,7 @@ public class LocalZipImporterPagePresenter implements LocalZipImporterPageView.A
     public LocalZipImporterPagePresenter(LocalZipImporterPageView view,
                                          DtoFactory dtoFactory,
                                          CoreLocalizationConstant locale,
-                                         @Named("restContext") String restContext,
+                                         @RestContext String restContext,
                                          @Named("workspaceId") String workspaceId,
                                          EventBus eventBus,
                                          VfsServiceClient vfsServiceClient,

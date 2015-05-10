@@ -20,6 +20,8 @@ import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
+import org.eclipse.che.ide.rest.RestContext;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -37,7 +39,7 @@ public class RunnerServiceClientImpl implements RunnerServiceClient {
     private final AsyncRequestFactory asyncRequestFactory;
 
     @Inject
-    public RunnerServiceClientImpl(@Named("restContext") String baseUrl,
+    public RunnerServiceClientImpl(@RestContext String baseUrl,
                                    @Named("workspaceId") String workspaceId,
                                    AsyncRequestLoader loader,
                                    AsyncRequestFactory asyncRequestFactory) {

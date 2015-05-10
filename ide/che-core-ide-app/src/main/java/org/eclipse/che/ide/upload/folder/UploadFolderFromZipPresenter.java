@@ -15,6 +15,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.ide.rest.RestContext;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.event.FileContentUpdateEvent;
@@ -42,7 +43,7 @@ public class UploadFolderFromZipPresenter implements UploadFolderFromZipView.Act
 
     @Inject
     public UploadFolderFromZipPresenter(UploadFolderFromZipView view,
-                                        @Named("restContext") String restContext,
+                                        @RestContext String restContext,
                                         @Named("workspaceId") String workspaceId,
                                         SelectionAgent selectionAgent,
                                         EditorAgent editorAgent,

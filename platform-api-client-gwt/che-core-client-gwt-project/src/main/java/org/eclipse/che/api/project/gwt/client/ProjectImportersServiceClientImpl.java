@@ -16,6 +16,8 @@ import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.HTTPHeader;
+import org.eclipse.che.ide.rest.RestContext;
+
 import com.google.inject.name.Named;
 
 import javax.inject.Inject;
@@ -30,7 +32,7 @@ public class ProjectImportersServiceClientImpl implements ProjectImportersServic
     private AsyncRequestFactory asyncRequestFactory;
 
     @Inject
-    public ProjectImportersServiceClientImpl(@Named("restContext") String restContext,
+    public ProjectImportersServiceClientImpl(@RestContext String restContext,
                                              AsyncRequestFactory asyncRequestFactory) {
         this.restContext = restContext;
         this.asyncRequestFactory = asyncRequestFactory;

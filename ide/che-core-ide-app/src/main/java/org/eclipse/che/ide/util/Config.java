@@ -42,6 +42,15 @@ public class Config {
     }-*/;
 
 
+    public static native String getRestContext() /*-{
+        if ($wnd.IDE && $wnd.IDE.config) {
+            return $wnd.IDE.config.restContext;
+        } else {
+            return null;
+        }
+    }-*/;
+
+
     /**
      * Returns workspace name
      *

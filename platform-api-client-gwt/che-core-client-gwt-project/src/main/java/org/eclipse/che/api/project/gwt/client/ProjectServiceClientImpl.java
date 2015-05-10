@@ -27,6 +27,7 @@ import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
+import org.eclipse.che.ide.rest.RestContext;
 
 import java.util.List;
 import java.util.Map;
@@ -64,7 +65,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     private final AsyncRequestFactory asyncRequestFactory;
 
     @Inject
-    protected ProjectServiceClientImpl(@Named("restContext") String restContext,
+    protected ProjectServiceClientImpl(@RestContext String restContext,
                                        @Named("workspaceId") String workspaceId,
                                        AsyncRequestLoader loader,
                                        AsyncRequestFactory asyncRequestFactory) {
