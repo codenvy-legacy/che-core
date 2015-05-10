@@ -122,7 +122,7 @@ public class MessageBusImpl implements MessageBus {
      *         WebSocket server URL
      */
     @Inject
-    public MessageBusImpl(@Named("websocketUrl") String url) {
+    public MessageBusImpl(@WebSocketUrl String url) {
         this.url = url;
 
         MessageBuilder builder = new MessageBuilder(RequestBuilder.POST, null);

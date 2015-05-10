@@ -15,6 +15,8 @@ import org.eclipse.che.ide.MimeType;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
+import org.eclipse.che.ide.rest.RestContext;
+
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -38,7 +40,7 @@ public class UserServiceClientImpl implements UserServiceClient {
     private final AsyncRequestFactory asyncRequestFactory;
 
     @Inject
-    protected UserServiceClientImpl(@Named("restContext") String restContext,
+    protected UserServiceClientImpl(@RestContext String restContext,
                                     AsyncRequestLoader loader,
                                     AsyncRequestFactory asyncRequestFactory) {
         this.loader = loader;

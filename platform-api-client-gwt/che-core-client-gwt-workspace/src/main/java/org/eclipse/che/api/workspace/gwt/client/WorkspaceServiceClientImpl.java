@@ -13,11 +13,14 @@ package org.eclipse.che.api.workspace.gwt.client;
 import org.eclipse.che.api.workspace.shared.dto.MemberDescriptor;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceUpdate;
+import org.eclipse.che.ide.rest.RestContext;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
+
+import com.google.gwt.user.client.Window;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -42,7 +45,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
 
     @Inject
     protected WorkspaceServiceClientImpl(AsyncRequestLoader loader,
-                                         @Named("restContext") String restContext,
+                                         @RestContext String restContext,
                                          @Named("workspaceId") String workspaceId,
                                          AsyncRequestFactory asyncRequestFactory, DtoFactory dtoFactory) {
         this.loader = loader;

@@ -15,6 +15,8 @@ import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
+import org.eclipse.che.ide.rest.RestContext;
+
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -34,7 +36,7 @@ public class ProjectTemplateServiceClientImpl implements ProjectTemplateServiceC
     private final AsyncRequestLoader  loader;
 
     @Inject
-    protected ProjectTemplateServiceClientImpl(@Named("restContext") String restContext,
+    protected ProjectTemplateServiceClientImpl(@RestContext String restContext,
                                                AsyncRequestFactory asyncRequestFactory,
                                                AsyncRequestLoader loader) {
         this.asyncRequestFactory = asyncRequestFactory;

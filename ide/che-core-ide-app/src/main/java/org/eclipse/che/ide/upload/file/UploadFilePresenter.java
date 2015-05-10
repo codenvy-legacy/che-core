@@ -17,6 +17,7 @@ import org.eclipse.che.ide.api.project.tree.generic.FileNode;
 import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
+import org.eclipse.che.ide.rest.RestContext;
 
 import com.google.gwt.user.client.ui.FormPanel;
 import com.google.inject.Inject;
@@ -39,7 +40,7 @@ public class UploadFilePresenter implements UploadFileView.ActionDelegate {
 
     @Inject
     public UploadFilePresenter(UploadFileView view,
-                               @Named("restContext") String restContext,
+                              @RestContext String restContext,
                                @Named("workspaceId") String workspaceId,
                                SelectionAgent selectionAgent,
                                EventBus eventBus,

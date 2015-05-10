@@ -53,6 +53,8 @@ import org.eclipse.che.ide.actions.ActionManagerImpl;
 import org.eclipse.che.ide.actions.find.FindActionView;
 import org.eclipse.che.ide.actions.find.FindActionViewImpl;
 import org.eclipse.che.ide.api.action.ActionManager;
+import org.eclipse.che.ide.rest.RestContext;
+import org.eclipse.che.ide.rest.RestContextProvider;
 import org.eclipse.che.ide.api.build.BuildContext;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorRegistry;
@@ -193,6 +195,8 @@ import org.eclipse.che.ide.util.Config;
 import org.eclipse.che.ide.util.executor.UserActivityManager;
 import org.eclipse.che.ide.websocket.MessageBus;
 import org.eclipse.che.ide.websocket.MessageBusImpl;
+import org.eclipse.che.ide.websocket.WebSocketUrl;
+import org.eclipse.che.ide.websocket.WebSocketUrlProvider;
 import org.eclipse.che.ide.workspace.PartStackPresenterFactory;
 import org.eclipse.che.ide.workspace.PartStackViewFactory;
 import org.eclipse.che.ide.workspace.WorkBenchViewImpl;
@@ -211,6 +215,8 @@ public class CoreGinModule extends AbstractGinModule {
         bind(EventBus.class).to(SimpleEventBus.class).in(Singleton.class);
         bind(AsyncRequestLoader.class).to(IdeLoader.class).in(Singleton.class);
         bind(Resources.class).in(Singleton.class);
+        bind(String.class).annotatedWith(RestContext.class).toProvider(RestContextProvider.class).in(Singleton.class);
+        bind(String.class).annotatedWith(WebSocketUrl.class).toProvider(WebSocketUrlProvider.class).in(Singleton.class);
         bind(ExtensionRegistry.class).in(Singleton.class);
         bind(StandardComponentInitializer.class).in(Singleton.class);
         bind(BuildContext.class).to(BuildContextImpl.class).in(Singleton.class);
@@ -383,8 +389,9 @@ public class CoreGinModule extends AbstractGinModule {
     @Provides
     @Named("restContext")
     @Singleton
+    @Deprecated
     protected String provideDefaultRestContext() {
-        return "/api";
+        return Config.getRestContext();
     }
 
     @Provides
@@ -397,8 +404,9 @@ public class CoreGinModule extends AbstractGinModule {
     @Provides
     @Named("websocketUrl")
     @Singleton
+    @Deprecated
     protected String provideDefaultWebsocketUrl() {
         boolean isSecureConnection = Window.Location.getProtocol().equals("https:");
-        return (isSecureConnection ? "wss://" : "ws://") + Window.Location.getHost() + "/api/ws/" + Config.getWorkspaceId();
+        return (isSecureConnection ? "wss://" : "ws://") + Window.Location.getHost() + Config.getRestContext() + "/ws/" + Config.getWorkspaceId();
     }
 }
