@@ -13,7 +13,6 @@ package org.eclipse.che.ide.statepersistance;
 import com.google.gwtmockito.GwtMockitoTestRunner;
 import com.google.inject.Provider;
 
-import org.eclipse.che.ide.actions.OpenNodeAction;
 import org.eclipse.che.ide.actions.SelectNodeAction;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.editor.EditorAgent;
