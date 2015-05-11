@@ -450,6 +450,9 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("messages.noOpenedProject")
     String noOpenedProject();
 
+    @Key("messages.noShowHiddenFilesParam")
+    String noShowHiddenFilesParam();
+
     /* Buttons */
     @Key("ok")
     String ok();

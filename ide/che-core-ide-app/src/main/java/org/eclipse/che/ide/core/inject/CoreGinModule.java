@@ -88,6 +88,7 @@ import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.api.theme.Theme;
 import org.eclipse.che.ide.api.theme.ThemeAgent;
 import org.eclipse.che.ide.build.BuildContextImpl;
+import org.eclipse.che.ide.statepersistance.ShowHiddenFilesPersistenceComponent;
 import org.eclipse.che.ide.ui.dropdown.DropDownListFactory;
 import org.eclipse.che.ide.core.StandardComponentInitializer;
 import org.eclipse.che.ide.core.editor.EditorAgentImpl;
@@ -237,6 +238,7 @@ public class CoreGinModule extends AbstractGinModule {
         configureProjectTree();
 
         GinMultibinder<PersistenceComponent> componentMultibinder = GinMultibinder.newSetBinder(binder(), PersistenceComponent.class);
+        componentMultibinder.addBinding().to(ShowHiddenFilesPersistenceComponent.class);
         componentMultibinder.addBinding().to(OpenedFilesPersistenceComponent.class);
         componentMultibinder.addBinding().to(ActiveFilePersistenceComponent.class);
         componentMultibinder.addBinding().to(OpenedNodesPersistenceComponent.class);
