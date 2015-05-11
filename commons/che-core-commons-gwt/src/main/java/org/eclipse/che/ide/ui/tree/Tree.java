@@ -1472,6 +1472,9 @@ public class Tree<D> extends UiComponent<Tree.View<D>> implements IsWidget {
 
             if (selectedTreeNodeElement != projectTreeNode) {
                 TreeNodeElement<D> parentTreeNode = (TreeNodeElement<D>)selectedTreeNodeElement.getParentElement().getParentElement();
+                if (parentTreeNode.getData() == null) {
+                    return;
+                }
                 selectSingleNode(parentTreeNode);
             }
         }
