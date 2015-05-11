@@ -10,74 +10,300 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.server.recipe;
 
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
+
+import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ForbiddenException;
-import org.eclipse.che.api.core.NotFoundException;
-import org.eclipse.che.api.core.recipe.RecipeId;
-import org.eclipse.che.api.machine.server.InvalidRecipeException;
+import org.eclipse.che.api.core.rest.Service;
+import org.eclipse.che.api.core.rest.annotations.GenerateLink;
+import org.eclipse.che.api.core.rest.shared.dto.Link;
+import org.eclipse.che.api.core.util.LinksHelper;
+import org.eclipse.che.api.machine.server.PermissionsImpl;
+import org.eclipse.che.api.machine.server.RecipeImpl;
+import org.eclipse.che.api.machine.server.dao.RecipeDao;
+import org.eclipse.che.api.machine.shared.Group;
+import org.eclipse.che.api.machine.shared.Permissions;
 import org.eclipse.che.api.machine.shared.Recipe;
+import org.eclipse.che.api.machine.shared.dto.GroupDescriptor;
+import org.eclipse.che.api.machine.shared.dto.NewRecipe;
+import org.eclipse.che.api.machine.shared.dto.PermissionsDescriptor;
 import org.eclipse.che.api.machine.shared.dto.RecipeDescriptor;
+import org.eclipse.che.api.machine.shared.dto.RecipeUpdate;
+import org.eclipse.che.commons.env.EnvironmentContext;
+import org.eclipse.che.commons.lang.NameGenerator;
+import org.eclipse.che.commons.user.User;
 import org.eclipse.che.dto.server.DtoFactory;
 
+import javax.annotation.Nullable;
+import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
-import javax.inject.Singleton;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- * REST service for RecipeRepository
- *
- * @author gazarenkov
- */
-@Singleton
-public class RecipeService {
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static java.lang.String.format;
+import static java.util.Arrays.asList;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
+import static javax.ws.rs.core.Response.Status.CREATED;
+import static org.eclipse.che.api.machine.server.Constants.LINK_REL_CREATE_RECIPE;
+import static org.eclipse.che.api.machine.server.Constants.LINK_REL_GET_RECIPES_BY_CREATOR;
+import static org.eclipse.che.api.machine.server.Constants.LINK_REL_GET_RECIPE_SCRIPT;
+import static org.eclipse.che.api.machine.server.Constants.LINK_REL_REMOVE_RECIPE;
+import static org.eclipse.che.api.machine.server.Constants.LINK_REL_SEARCH_RECIPES;
+import static org.eclipse.che.api.machine.server.Constants.LINK_REL_UPDATE_RECIPE;
 
-    private final RecipeRepository repository;
+/**
+ * Recipe API
+ *
+ * @author Eugene Voevodin
+ */
+@Path("/recipe")
+public class RecipeService extends Service {
+
+    private final RecipeDao          recipeDao;
+    private final PermissionsChecker permissionsChecker;
 
     @Inject
-    public RecipeService(RecipeRepository repository) {
-        this.repository = repository;
+    public RecipeService(RecipeDao recipeDao, PermissionsChecker permissionsChecker) {
+        this.recipeDao = recipeDao;
+        this.permissionsChecker = permissionsChecker;
     }
 
-    public RecipeDescriptor getRecipe(String path) throws ForbiddenException, InvalidRecipeException, NotFoundException {
+    @POST
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    @GenerateLink(rel = LINK_REL_CREATE_RECIPE)
+    @RolesAllowed({"user", "system/admin", "system/manager"})
+    public Response createRecipe(NewRecipe newRecipe) throws ApiException {
+        if (newRecipe == null) {
+            throw new ForbiddenException("Recipe required");
+        }
+        if (isNullOrEmpty(newRecipe.getType())) {
+            throw new ForbiddenException("Recipe type required");
+        }
+        if (isNullOrEmpty(newRecipe.getScript())) {
+            throw new ForbiddenException("Recipe script required");
+        }
+        Permissions permissions = null;
+        if (newRecipe.getPermissions() != null) {
+            checkPublicPermission(newRecipe.getPermissions());
+            permissions = PermissionsImpl.fromDescriptor(newRecipe.getPermissions());
+        }
 
-        //RecipeId id = RecipeId.parse(fqn);
+        final Recipe recipe = new RecipeImpl().withId(NameGenerator.generate("recipe", 16))
+                                              .withCreator(EnvironmentContext.getCurrent().getUser().getId())
+                                              .withType(newRecipe.getType())
+                                              .withScript(newRecipe.getScript())
+                                              .withTags(newRecipe.getTags())
+                                              .withPermissions(permissions);
+        recipeDao.create(recipe);
 
-        Recipe recipe = repository.getRecipe(path);
-                //storage(id.getScope()).getRecipe(id.getPath());
+        return Response.status(CREATED)
+                       .entity(asRecipeDescriptor(recipe))
+                       .build();
+    }
 
-        RecipeDescriptor descriptor = DtoFactory.getInstance().createDto(RecipeDescriptor.class)
-                .withScript(recipe.getScript())
-                .withType(recipe.getType());
+    @GET
+    @Path("/{id}/script")
+    @Produces(TEXT_PLAIN)
+    @RolesAllowed({"user", "system/admin", "system/manager"})
+    public String getRecipeScript(@PathParam("id") String id) throws ApiException {
+        final Recipe recipe = recipeDao.getById(id);
 
+        final User user = EnvironmentContext.getCurrent().getUser();
+        if (!user.isMemberOf("system/admin") &&
+            !user.isMemberOf("system/manager") &&
+            !permissionsChecker.hasAccess(recipe, user.getId(), "read")) {
+            throw new ForbiddenException(format("User %s doesn't have access to recipe %s", user.getId(), id));
+        }
+
+        return recipe.getScript();
+    }
+
+    @GET
+    @Path("/{id}")
+    @Produces(APPLICATION_JSON)
+    @RolesAllowed({"user", "system/admin", "system/manager"})
+    public RecipeDescriptor getRecipe(@PathParam("id") String id) throws ApiException {
+        final Recipe recipe = recipeDao.getById(id);
+
+        final User user = EnvironmentContext.getCurrent().getUser();
+        if (!user.isMemberOf("system/admin") &&
+            !user.isMemberOf("system/manager") &&
+            !permissionsChecker.hasAccess(recipe, user.getId(), "read")) {
+            throw new ForbiddenException(format("User %s doesn't have access to recipe %s", user.getId(), id));
+        }
+
+        return asRecipeDescriptor(recipe);
+    }
+
+    @GET
+    @Produces(APPLICATION_JSON)
+    @GenerateLink(rel = LINK_REL_GET_RECIPES_BY_CREATOR)
+    @RolesAllowed({"user", "system/admin", "system/manager"})
+    public List<RecipeDescriptor> getCreatedRecipes(@DefaultValue("0") @QueryParam("skipCount") Integer skipCount,
+                                                    @DefaultValue("30") @QueryParam("maxItems") Integer maxItems) throws ApiException {
+        final List<Recipe> recipes = recipeDao.getByCreator(EnvironmentContext.getCurrent().getUser().getId(), skipCount, maxItems);
+        return FluentIterable.from(recipes)
+                             .transform(new Function<Recipe, RecipeDescriptor>() {
+                                 @Nullable
+                                 @Override
+                                 public RecipeDescriptor apply(@Nullable Recipe recipe) {
+                                     return asRecipeDescriptor(recipe);
+                                 }
+                             })
+                             .toList();
+    }
+
+    @GET
+    @Path("/list")
+    @Produces(APPLICATION_JSON)
+    @GenerateLink(rel = LINK_REL_SEARCH_RECIPES)
+    @RolesAllowed({"user", "system/admin", "system/manager"})
+    public List<RecipeDescriptor> searchRecipes(@QueryParam("tags") List<String> tags,
+                                                @QueryParam("type") String type,
+                                                @DefaultValue("0") @QueryParam("skipCount") Integer skipCount,
+                                                @DefaultValue("30") @QueryParam("maxItems") Integer maxItems) throws ApiException {
+        final List<Recipe> recipes = recipeDao.search(tags, type, skipCount, maxItems);
+        return FluentIterable.from(recipes)
+                             .transform(new Function<Recipe, RecipeDescriptor>() {
+                                 @Nullable
+                                 @Override
+                                 public RecipeDescriptor apply(@Nullable Recipe recipe) {
+                                     return asRecipeDescriptor(recipe);
+                                 }
+                             })
+                             .toList();
+    }
+
+    @PUT
+    @Path("/{id}")
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    @GenerateLink(rel = LINK_REL_UPDATE_RECIPE)
+    @RolesAllowed({"user", "system/admin", "system/manager"})
+    public RecipeDescriptor updateRecipe(@PathParam("id") String id, RecipeUpdate update) throws ApiException {
+        final Recipe recipe = recipeDao.getById(id);
+
+        final User user = EnvironmentContext.getCurrent().getUser();
+        if (!user.isMemberOf("system/admin") && !permissionsChecker.hasAccess(recipe, user.getId(), "write")) {
+            throw new ForbiddenException(format("User %s doesn't have access to update recipe %s", user.getId(), id));
+        }
+        boolean updateRequired = false;
+        if (update.getType() != null) {
+            recipe.setType(update.getType());
+            updateRequired = true;
+        }
+        if (update.getScript() != null) {
+            recipe.setScript(update.getScript());
+            updateRequired = true;
+        }
+        if (!update.getTags().isEmpty()) {
+            recipe.setTags(update.getTags());
+            updateRequired = true;
+        }
+        if (update.getPermissions() != null) {
+            //ensure that user has access to update recipe permissions
+            if (!user.isMemberOf("system/admin") && !permissionsChecker.hasAccess(recipe, user.getId(), "update_acl")) {
+                throw new ForbiddenException(format("User %s doesn't have access to update recipe %s permissions", user.getId(), id));
+            }
+            checkPublicPermission(update.getPermissions());
+            recipe.setPermissions(PermissionsImpl.fromDescriptor(update.getPermissions()));
+            updateRequired = true;
+        }
+        if (updateRequired) {
+            recipeDao.update(recipe);
+        }
+        return asRecipeDescriptor(recipe);
+    }
+
+    @DELETE
+    @Path("/{id}")
+    @RolesAllowed({"user", "system/admin", "system/manager"})
+    public void removeRecipe(@PathParam("id") String id) throws ApiException {
+        final Recipe recipe = recipeDao.getById(id);
+
+        final User user = EnvironmentContext.getCurrent().getUser();
+        if (!user.isMemberOf("system/admin") && !permissionsChecker.hasAccess(recipe, user.getId(), "write")) {
+            throw new ForbiddenException(format("User %s doesn't have access to recipe %s", user.getId(), id));
+        }
+
+        recipeDao.remove(id);
+    }
+
+    /**
+     * User who is neither 'workspace/admin' no 'workspace/developer' can't create or
+     * update recipe permissions to 'public: search', this operation allowed only
+     * for 'system/admin' or 'system/manager'
+     */
+    private void checkPublicPermission(PermissionsDescriptor permissions) throws ForbiddenException {
+        final User user = EnvironmentContext.getCurrent().getUser();
+        if (!user.isMemberOf("system/admin") && !user.isMemberOf("system/manager")) {
+            for (GroupDescriptor group : permissions.getGroups()) {
+                if ("public".equalsIgnoreCase(group.getName()) && group.getAcl().contains("search")) {
+                    throw new ForbiddenException("User " + user.getId() + " doesn't have access to use 'public: search' permission");
+                }
+            }
+        }
+    }
+
+    /**
+     * Transforms {@link Recipe} to {@link RecipeDescriptor}.
+     */
+    private RecipeDescriptor asRecipeDescriptor(Recipe recipe) {
+        final RecipeDescriptor descriptor = DtoFactory.getInstance()
+                                                      .createDto(RecipeDescriptor.class)
+                                                      .withId(recipe.getId())
+                                                      .withType(recipe.getType())
+                                                      .withScript(recipe.getScript())
+                                                      .withCreator(recipe.getCreator())
+                                                      .withTags(recipe.getTags());
+        final Permissions permissions = recipe.getPermissions();
+        if (permissions != null) {
+            final List<GroupDescriptor> groups = new ArrayList<>(permissions.getGroups().size());
+            for (Group group : permissions.getGroups()) {
+                groups.add(DtoFactory.getInstance()
+                                     .createDto(GroupDescriptor.class)
+                                     .withName(group.getName())
+                                     .withUnit(group.getUnit())
+                                     .withAcl(group.getAcl()));
+            }
+            descriptor.setPermissions(DtoFactory.getInstance()
+                                                .createDto(PermissionsDescriptor.class)
+                                                .withGroups(groups)
+                                                .withUsers(permissions.getUsers()));
+        }
+
+        final UriBuilder builder = getServiceContext().getServiceUriBuilder();
+        final Link removeLink = LinksHelper.createLink("DELETE",
+                                                       builder.clone()
+                                                              .path(getClass(), "removeRecipe")
+                                                              .build(recipe.getId())
+                                                              .toString(),
+                                                       LINK_REL_REMOVE_RECIPE);
+        final Link scriptLink = LinksHelper.createLink("GET",
+                                                       builder.clone()
+                                                              .path(getClass(), "getRecipeScript")
+                                                              .build(recipe.getId())
+                                                              .toString(),
+                                                       TEXT_PLAIN,
+                                                       LINK_REL_GET_RECIPE_SCRIPT);
+        descriptor.setLinks(asList(scriptLink, removeLink));
         return descriptor;
-
     }
-
-    public List<RecipeDescriptor> findRecipe(String tag) {
-        // TODO
-        return new ArrayList<>();
-    }
-
-    public void addRecipe(RecipeDescriptor recipe) {
-        // TODO
-    }
-
-    public void  deleteRecipe(String fqn) {
-        //TODO
-    }
-
-//
-//    private RecipeRepository storage(RecipeId.Scope scope) throws InvalidRecipeException {
-//        if(scope.equals(RecipeId.Scope.system))
-//            return systemScopeStorage;
-//        else if(scope.equals(RecipeId.Scope.project))
-//            return projectScopeStorage;
-//        else if(scope.equals(RecipeId.Scope.user))
-//            return userScopeStorage;
-//        else
-//            throw new InvalidRecipeException("Illegal scope "+scope);
-//    }
-
-
 }
