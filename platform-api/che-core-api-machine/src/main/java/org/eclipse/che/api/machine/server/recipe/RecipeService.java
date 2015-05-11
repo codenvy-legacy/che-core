@@ -40,6 +40,7 @@ import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -53,7 +54,6 @@ import javax.ws.rs.core.UriBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -74,8 +74,6 @@ import static org.eclipse.che.api.machine.server.Constants.LINK_REL_UPDATE_RECIP
  */
 @Path("/recipe")
 public class RecipeService extends Service {
-
-    private static final int DEFAULT_ITEMS_COUNT_LIMIT = 30;
 
     private final RecipeDao          recipeDao;
     private final PermissionsChecker permissionsChecker;
@@ -158,11 +156,9 @@ public class RecipeService extends Service {
     @Produces(APPLICATION_JSON)
     @GenerateLink(rel = LINK_REL_GET_RECIPES_BY_CREATOR)
     @RolesAllowed({"user", "system/admin", "system/manager"})
-    public List<RecipeDescriptor> getCreatedRecipes(@QueryParam("skipCount") Integer skipCount,
-                                                    @QueryParam("maxItems") Integer maxItems) throws ApiException {
-        final List<Recipe> recipes = recipeDao.getByCreator(EnvironmentContext.getCurrent().getUser().getId(),
-                                                            firstNonNull(skipCount, 0),
-                                                            firstNonNull(maxItems, DEFAULT_ITEMS_COUNT_LIMIT));
+    public List<RecipeDescriptor> getCreatedRecipes(@DefaultValue("0") @QueryParam("skipCount") Integer skipCount,
+                                                    @DefaultValue("30") @QueryParam("maxItems") Integer maxItems) throws ApiException {
+        final List<Recipe> recipes = recipeDao.getByCreator(EnvironmentContext.getCurrent().getUser().getId(), skipCount, maxItems);
         return FluentIterable.from(recipes)
                              .transform(new Function<Recipe, RecipeDescriptor>() {
                                  @Nullable
@@ -181,12 +177,9 @@ public class RecipeService extends Service {
     @RolesAllowed({"user", "system/admin", "system/manager"})
     public List<RecipeDescriptor> searchRecipes(@QueryParam("tags") List<String> tags,
                                                 @QueryParam("type") String type,
-                                                @QueryParam("skipCount") Integer skipCount,
-                                                @QueryParam("maxItems") Integer maxItems) throws ApiException {
-        final List<Recipe> recipes = recipeDao.search(tags,
-                                                      type,
-                                                      firstNonNull(skipCount, 0),
-                                                      firstNonNull(maxItems, DEFAULT_ITEMS_COUNT_LIMIT));
+                                                @DefaultValue("0") @QueryParam("skipCount") Integer skipCount,
+                                                @DefaultValue("30") @QueryParam("maxItems") Integer maxItems) throws ApiException {
+        final List<Recipe> recipes = recipeDao.search(tags, type, skipCount, maxItems);
         return FluentIterable.from(recipes)
                              .transform(new Function<Recipe, RecipeDescriptor>() {
                                  @Nullable

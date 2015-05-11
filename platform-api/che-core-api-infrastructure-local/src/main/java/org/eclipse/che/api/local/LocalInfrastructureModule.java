@@ -17,13 +17,11 @@ import org.eclipse.che.api.account.server.dao.Account;
 import org.eclipse.che.api.account.server.dao.AccountDao;
 import org.eclipse.che.api.account.server.dao.Subscription;
 import org.eclipse.che.api.auth.AuthenticationDao;
-//import org.eclipse.che.api.factory.FactoryStore;
 import org.eclipse.che.api.machine.server.GroupImpl;
 import org.eclipse.che.api.machine.server.PermissionsImpl;
 import org.eclipse.che.api.machine.server.RecipeImpl;
 import org.eclipse.che.api.machine.server.dao.RecipeDao;
 import org.eclipse.che.api.machine.shared.Group;
-import org.eclipse.che.api.machine.shared.Permissions;
 import org.eclipse.che.api.machine.shared.Recipe;
 import org.eclipse.che.api.user.server.TokenValidator;
 import org.eclipse.che.api.user.server.dao.PreferenceDao;
@@ -151,6 +149,7 @@ public class LocalInfrastructureModule extends AbstractModule {
                                                .withScript("FROM bosybox\ntail -f \\dev\\null")
                                                .withTags(asList("java", "busybox"))
                                                .withPermissions(new PermissionsImpl(null, asList(group)));
-        return new HashSet<>(asList(recipe1, recipe2));
+
+        return Collections.unmodifiableSet(new HashSet<>(asList(recipe1, recipe2)));
     }
 }
