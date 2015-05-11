@@ -108,7 +108,7 @@ public class RecipeService extends Service {
         }
 
         final Recipe recipe = new RecipeImpl().withId(NameGenerator.generate("recipe", 16))
-                                              .withCreator(currentUser().getId())
+                                              .withCreator(EnvironmentContext.getCurrent().getUser().getId())
                                               .withType(newRecipe.getType())
                                               .withScript(newRecipe.getScript())
                                               .withTags(newRecipe.getTags())
@@ -127,9 +127,11 @@ public class RecipeService extends Service {
     public String getRecipeScript(@PathParam("id") String id) throws ApiException {
         final Recipe recipe = recipeDao.getById(id);
 
-        final String userId = currentUser().getId();
-        if (!permissionsChecker.hasAccess(recipe, userId, "read")) {
-            throw new ForbiddenException(format("User %s doesn't have access to recipe %s", userId, id));
+        final User user = EnvironmentContext.getCurrent().getUser();
+        if (!user.isMemberOf("system/admin") &&
+            !user.isMemberOf("system/manager") &&
+            !permissionsChecker.hasAccess(recipe, user.getId(), "read")) {
+            throw new ForbiddenException(format("User %s doesn't have access to recipe %s", user.getId(), id));
         }
 
         return recipe.getScript();
@@ -142,9 +144,11 @@ public class RecipeService extends Service {
     public RecipeDescriptor getRecipe(@PathParam("id") String id) throws ApiException {
         final Recipe recipe = recipeDao.getById(id);
 
-        final String userId = currentUser().getId();
-        if (!permissionsChecker.hasAccess(recipe, userId, "read")) {
-            throw new ForbiddenException(format("User %s doesn't have access to recipe %s", userId, id));
+        final User user = EnvironmentContext.getCurrent().getUser();
+        if (!user.isMemberOf("system/admin") &&
+            !user.isMemberOf("system/manager") &&
+            !permissionsChecker.hasAccess(recipe, user.getId(), "read")) {
+            throw new ForbiddenException(format("User %s doesn't have access to recipe %s", user.getId(), id));
         }
 
         return asRecipeDescriptor(recipe);
@@ -156,7 +160,7 @@ public class RecipeService extends Service {
     @RolesAllowed({"user", "system/admin", "system/manager"})
     public List<RecipeDescriptor> getCreatedRecipes(@QueryParam("skipCount") Integer skipCount,
                                                     @QueryParam("maxItems") Integer maxItems) throws ApiException {
-        final List<Recipe> recipes = recipeDao.getByCreator(currentUser().getId(),
+        final List<Recipe> recipes = recipeDao.getByCreator(EnvironmentContext.getCurrent().getUser().getId(),
                                                             firstNonNull(skipCount, 0),
                                                             firstNonNull(maxItems, DEFAULT_ITEMS_COUNT_LIMIT));
         return FluentIterable.from(recipes)
@@ -203,9 +207,9 @@ public class RecipeService extends Service {
     public RecipeDescriptor updateRecipe(@PathParam("id") String id, RecipeUpdate update) throws ApiException {
         final Recipe recipe = recipeDao.getById(id);
 
-        final String userId = currentUser().getId();
-        if (!permissionsChecker.hasAccess(recipe, userId, "write")) {
-            throw new ForbiddenException(format("User %s doesn't have access to update recipe %s", userId, id));
+        final User user = EnvironmentContext.getCurrent().getUser();
+        if (!user.isMemberOf("system/admin") && !permissionsChecker.hasAccess(recipe, user.getId(), "write")) {
+            throw new ForbiddenException(format("User %s doesn't have access to update recipe %s", user.getId(), id));
         }
         boolean updateRequired = false;
         if (update.getType() != null) {
@@ -222,8 +226,8 @@ public class RecipeService extends Service {
         }
         if (update.getPermissions() != null) {
             //ensure that user has access to update recipe permissions
-            if (!permissionsChecker.hasAccess(recipe, userId, "update_acl")) {
-                throw new ForbiddenException(format("User %s doesn't have access to update recipe %s permissions", userId, id));
+            if (!user.isMemberOf("system/admin") && !permissionsChecker.hasAccess(recipe, user.getId(), "update_acl")) {
+                throw new ForbiddenException(format("User %s doesn't have access to update recipe %s permissions", user.getId(), id));
             }
             checkPublicPermission(update.getPermissions());
             recipe.setPermissions(PermissionsImpl.fromDescriptor(update.getPermissions()));
@@ -241,9 +245,9 @@ public class RecipeService extends Service {
     public void removeRecipe(@PathParam("id") String id) throws ApiException {
         final Recipe recipe = recipeDao.getById(id);
 
-        final String userId = currentUser().getId();
-        if (!permissionsChecker.hasAccess(recipe, userId, "write")) {
-            throw new ForbiddenException(format("User %s doesn't have access to recipe %s", userId, id));
+        final User user = EnvironmentContext.getCurrent().getUser();
+        if (!user.isMemberOf("system/admin") && !permissionsChecker.hasAccess(recipe, user.getId(), "write")) {
+            throw new ForbiddenException(format("User %s doesn't have access to recipe %s", user.getId(), id));
         }
 
         recipeDao.remove(id);
@@ -255,7 +259,7 @@ public class RecipeService extends Service {
      * for 'system/admin' or 'system/manager'
      */
     private void checkPublicPermission(PermissionsDescriptor permissions) throws ForbiddenException {
-        final User user = currentUser();
+        final User user = EnvironmentContext.getCurrent().getUser();
         if (!user.isMemberOf("system/admin") && !user.isMemberOf("system/manager")) {
             for (GroupDescriptor group : permissions.getGroups()) {
                 if ("public".equalsIgnoreCase(group.getName()) && group.getAcl().contains("search")) {
@@ -292,7 +296,7 @@ public class RecipeService extends Service {
                                                 .withUsers(permissions.getUsers()));
         }
 
-        final UriBuilder builder = getServiceContext().getBaseUriBuilder();
+        final UriBuilder builder = getServiceContext().getServiceUriBuilder();
         final Link removeLink = LinksHelper.createLink("DELETE",
                                                        builder.clone()
                                                               .path(getClass(), "removeRecipe")
@@ -308,9 +312,5 @@ public class RecipeService extends Service {
                                                        LINK_REL_GET_RECIPE_SCRIPT);
         descriptor.setLinks(asList(scriptLink, removeLink));
         return descriptor;
-    }
-
-    private User currentUser() {
-        return EnvironmentContext.getCurrent().getUser();
     }
 }
