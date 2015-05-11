@@ -95,7 +95,7 @@ public interface Resources extends Tree.Resources,
         String publicProjectSvg();
     }
 
-    @Source({"Core.css", "org/eclipse/che/ide/api/ui/style.css"})
+    @Source({"Core.css", "org/eclipse/che/ide/ui/constants.css", "org/eclipse/che/ide/api/ui/style.css"})
     @NotStrict
     CoreCss coreCss();
 
