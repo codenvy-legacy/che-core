@@ -10,7 +10,15 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.quickfix;
 
-import javax.inject.Inject;
+import elemental.dom.Element;
+import elemental.dom.Node;
+import elemental.events.CustomEvent;
+import elemental.events.Event;
+import elemental.events.EventListener;
+import elemental.html.SpanElement;
+
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 
 import org.eclipse.che.ide.jseditor.client.codeassist.Completion;
 import org.eclipse.che.ide.jseditor.client.codeassist.CompletionProposal;
@@ -21,15 +29,8 @@ import org.eclipse.che.ide.jseditor.client.text.LinearRange;
 import org.eclipse.che.ide.jseditor.client.texteditor.TextEditor;
 import org.eclipse.che.ide.util.dom.Elements;
 import org.eclipse.che.ide.util.loging.Log;
-import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
 
-import elemental.dom.Element;
-import elemental.dom.Node;
-import elemental.events.CustomEvent;
-import elemental.events.Event;
-import elemental.events.EventListener;
-import elemental.html.SpanElement;
+import javax.inject.Inject;
 
 /**
  * Widget for quick assist display.
@@ -91,6 +92,20 @@ public class QuickAssistWidget extends PopupWidget<CompletionProposal> {
         };
         element.addEventListener(Event.DBLCLICK, validateListener, false);
         element.addEventListener(CUSTOM_EVT_TYPE_VALIDATE, validateListener, false);
+        element.addEventListener(Event.FOCUS, new EventListener() {
+            @Override
+            public void handleEvent(Event event) {
+                Elements.addClassName("CodeMirror-hint-active ", element);
+            }
+        },false);
+
+        element.addEventListener(Event.BLUR, new EventListener() {
+            @Override
+            public void handleEvent(Event event) {
+                Elements.removeClassName("CodeMirror-hint-active ", element);
+            }
+        },false);
+
         return element;
     }
 

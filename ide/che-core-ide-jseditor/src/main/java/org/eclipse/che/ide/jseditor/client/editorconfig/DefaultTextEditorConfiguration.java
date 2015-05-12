@@ -28,6 +28,8 @@ import org.eclipse.che.ide.jseditor.client.reconciler.ReconcilerWithAutoSave;
  */
 public class DefaultTextEditorConfiguration implements TextEditorConfiguration {
 
+    private ConstantPartitioner partitioner;
+
     @Override
     public int getTabWidth() {
         return 3;
@@ -55,7 +57,10 @@ public class DefaultTextEditorConfiguration implements TextEditorConfiguration {
 
     @Override
     public DocumentPartitioner getPartitioner() {
-        return new ConstantPartitioner();
+        if(partitioner == null) {
+            partitioner = new ConstantPartitioner();
+        }
+        return partitioner;
     }
 
     @Override

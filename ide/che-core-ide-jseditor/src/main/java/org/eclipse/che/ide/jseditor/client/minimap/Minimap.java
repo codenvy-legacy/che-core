@@ -17,18 +17,20 @@ public interface Minimap {
 
     /**
      * Add a mark on the minimap.<br>
-     * @param line the line where the mark is set
+     * @param offset the offset where the mark is set
      * @param style the style of the mark
+     * @param title the title text
      */
-    void addMark(int line, String style);
+    void addMark(int offset, String style, String title);
 
     /**
      * Add a mark on the minimap.
-     * @param line the line where the mark is set
+     * @param offset the offset where the mark is set
      * @param style the style of the mark
      * @param level the mark priority level
+     * @param title the title text
      */
-    void addMark(int line, String style, int level);
+    void addMark(int offset, String style, int level, String title);
 
     /**
      * Remove the marks on the lines between the two given lines (included).

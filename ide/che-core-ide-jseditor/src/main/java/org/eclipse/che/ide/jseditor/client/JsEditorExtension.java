@@ -10,17 +10,16 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client;
 
+import com.google.inject.Inject;
+
 import org.eclipse.che.ide.api.extension.Extension;
 import org.eclipse.che.ide.api.filetypes.FileType;
 import org.eclipse.che.ide.api.filetypes.FileTypeRegistry;
 import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
-import org.eclipse.che.ide.api.keybinding.KeyBuilder;
 import org.eclipse.che.ide.jseditor.client.inject.PlainTextFileType;
 import org.eclipse.che.ide.jseditor.client.popup.PopupResources;
 import org.eclipse.che.ide.jseditor.client.preference.EditorPreferenceResource;
 import org.eclipse.che.ide.jseditor.client.texteditor.EditorResources;
-
-import com.google.inject.Inject;
 
 @Extension(title = "Common Editor", version = "3.1.0")
 public class JsEditorExtension {
@@ -48,6 +47,6 @@ public class JsEditorExtension {
         editorResources.editorCss().ensureInjected();
         popupResources.popupStyle().ensureInjected();
 
-        keyBindingAgent.getGlobal().addKey(new KeyBuilder().action().charCode('1').build(), "preventNative");
+//        keyBindingAgent.getGlobal().addKey(new KeyBuilder().action().charCode('1').build(), "preventNative");
     }
 }

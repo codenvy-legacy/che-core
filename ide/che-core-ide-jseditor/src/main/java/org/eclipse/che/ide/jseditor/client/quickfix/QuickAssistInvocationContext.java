@@ -10,10 +10,10 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.quickfix;
 
+import org.eclipse.che.ide.jseditor.client.texteditor.TextEditor;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
-import org.eclipse.che.ide.jseditor.client.texteditor.TextEditor;
 
 /**
  * Context information for quick fix and quick assist processors.
@@ -22,26 +22,26 @@ import org.eclipse.che.ide.jseditor.client.texteditor.TextEditor;
  */
 public final class QuickAssistInvocationContext {
 
-    private final int line;
+    private final int offset;
     private final TextEditor textEditor;
 
-    public QuickAssistInvocationContext(@Nullable final Integer line,
+    public QuickAssistInvocationContext(@Nullable final Integer offset,
                                         @Nonnull final TextEditor textEditor) {
         if (textEditor == null) {
             throw new IllegalArgumentException("editor handle cannot be null");
         }
-        this.line = line;
+        this.offset = offset;
         this.textEditor = textEditor;
     }
 
     /**
-     * Returns the line where quick assist was invoked.
+     * Returns the offset where quick assist was invoked.
      *
-     * @return the invocation line or <code>-1</code> if unknown
+     * @return the invocation offset or <code>-1</code> if unknown
      */
     @Nullable
-    public Integer getLine() {
-        return this.line;
+    public Integer getOffset() {
+        return this.offset;
     }
 
     /**

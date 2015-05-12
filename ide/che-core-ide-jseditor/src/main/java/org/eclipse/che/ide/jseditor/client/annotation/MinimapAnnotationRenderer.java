@@ -10,14 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.annotation;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
-
 import org.eclipse.che.ide.api.text.Position;
 import org.eclipse.che.ide.api.text.annotation.Annotation;
 import org.eclipse.che.ide.collections.StringMap;
@@ -26,6 +18,14 @@ import org.eclipse.che.ide.jseditor.client.minimap.Minimap;
 import org.eclipse.che.ide.jseditor.client.text.LinearRange;
 import org.eclipse.che.ide.jseditor.client.text.TextPosition;
 import org.eclipse.che.ide.util.loging.Log;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Renderer for annotation marks in the minimap (on the right margin of the text).
@@ -124,11 +124,11 @@ public class MinimapAnnotationRenderer implements AnnotationModelHandler, ClearA
             Log.warn(MinimapAnnotationRenderer.class, "No position for annotation " + annotation);
             return;
         }
-        final TextPosition textPosition = this.document.getPositionFromIndex(position.getOffset());
-        final int line = textPosition.getLine();
+//        final TextPosition textPosition = this.document.getPositionFromIndex(position.getOffset());
+//        final int line = textPosition.getLine();
 
         final String style = decorations.get(annotation.getType());
-        this.minimap.addMark(line, style, annotation.getLayer());
+        this.minimap.addMark(position.getOffset(), style, annotation.getLayer(), annotation.getText());
     }
 
     @Override
