@@ -1,13 +1,15 @@
-/*******************************************************************************
+/**
+ * ****************************************************************************
  * Copyright (c) 2012-2015 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * <p/>
  * Contributors:
- *   Codenvy, S.A. - initial API and implementation
- *******************************************************************************/
+ * Codenvy, S.A. - initial API and implementation
+ * *****************************************************************************
+ */
 package org.eclipse.che.inject;
 
 import com.google.inject.matcher.AbstractMatcher;
@@ -23,10 +25,20 @@ import java.lang.reflect.Method;
 public class Matchers {
     private Matchers() {}
 
+    /**
+     * Returns a matcher which matches methods with matching name.
+     */
+    public static Matcher<Method> names(String methodName) {
+        return new Names(methodName);
+    }
+
     public static class Names extends AbstractMatcher<Method> {
         private String methodName;
 
         private Names(String methodName) {
+            if (methodName == null) {
+                throw new NullPointerException("methodName");
+            }
             this.methodName = methodName;
         }
 
@@ -50,12 +62,5 @@ public class Matchers {
         public String toString() {
             return "names(" + methodName + ")";
         }
-    }
-
-    /**
-     * Returns a matcher which matches methods with matching name.
-     */
-    public static Matcher<Method> names(String methodName) {
-        return new Names(methodName);
     }
 }
