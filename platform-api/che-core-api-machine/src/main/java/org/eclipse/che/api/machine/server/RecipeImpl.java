@@ -20,18 +20,21 @@ import java.util.Objects;
 
 /**
  * Implementation of {@link Recipe}
- *`
+ *
  * @author Eugene Voevodin
  */
 public class RecipeImpl implements Recipe {
 
     public static Recipe fromDescriptor(RecipeDescriptor descriptor) {
-        return new RecipeImpl().withId(descriptor.getId())
-                               .withType(descriptor.getType())
-                               .withScript(descriptor.getScript())
-                               .withTags(descriptor.getTags())
-                               .withCreator(descriptor.getCreator())
-                               .withPermissions(PermissionsImpl.fromDescriptor(descriptor.getPermissions()));
+        final Recipe recipe = new RecipeImpl().withId(descriptor.getId())
+                                              .withType(descriptor.getType())
+                                              .withScript(descriptor.getScript())
+                                              .withTags(descriptor.getTags())
+                                              .withCreator(descriptor.getCreator());
+        if (descriptor.getPermissions() != null) {
+            recipe.setPermissions(PermissionsImpl.fromDescriptor(descriptor.getPermissions()));
+        }
+        return recipe;
     }
 
     private String       id;
