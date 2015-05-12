@@ -113,6 +113,8 @@ public class BootstrapController {
     private final AppContext          appContext;
     private       CurrentUser         currentUser;
     private final DocumentTitleDecorator       documentTitleDecorator;
+
+    private boolean startupActionIsExist;
     
     /** Create controller. */
     @Inject
@@ -329,7 +331,8 @@ public class BootstrapController {
                             @Override
                             public void execute() {
                                 displayIDE();
-                                appStateManager.start(Config.getProjectName() == null);
+                                boolean openLastProject = Config.getProjectName() == null && Config.getStartupParam("action") == null;
+                                appStateManager.start(openLastProject);
                             }
                         });
                     }
