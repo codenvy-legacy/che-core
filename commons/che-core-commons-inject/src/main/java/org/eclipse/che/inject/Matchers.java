@@ -16,6 +16,7 @@ import com.google.inject.matcher.AbstractMatcher;
 import com.google.inject.matcher.Matcher;
 
 import java.lang.reflect.Method;
+import java.util.Objects;
 
 /**
  * Matcher implementations. Supports matching methods.
@@ -36,9 +37,7 @@ public class Matchers {
         private String methodName;
 
         private Names(String methodName) {
-            if (methodName == null) {
-                throw new NullPointerException("methodName");
-            }
+            Objects.requireNonNull(methodName, "methodName");
             this.methodName = methodName;
         }
 
