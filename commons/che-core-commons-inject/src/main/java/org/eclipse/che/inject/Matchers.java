@@ -15,12 +15,18 @@ package org.eclipse.che.inject;
 import com.google.inject.matcher.AbstractMatcher;
 import com.google.inject.matcher.Matcher;
 
+import org.aopalliance.intercept.MethodInterceptor;
+
 import java.lang.reflect.Method;
 
 import static java.util.Objects.requireNonNull;
 
 /**
  * Matcher implementations. Supports matching methods.
+ * It can be used for binding of {@link MethodInterceptor}.
+ * <p/>
+ * Example of usage:
+ * <code> bindInterceptor(com.google.inject.matcher.Matchers.subclassesOf(SomeClass.class), Matcher.names("getInstance"), new MethodInterceptor() {...});} </code>
  *
  * @author Sergii Leschenko
  */
