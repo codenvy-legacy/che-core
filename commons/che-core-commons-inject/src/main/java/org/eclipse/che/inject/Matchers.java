@@ -16,7 +16,8 @@ import com.google.inject.matcher.AbstractMatcher;
 import com.google.inject.matcher.Matcher;
 
 import java.lang.reflect.Method;
-import java.util.Objects;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * Matcher implementations. Supports matching methods.
@@ -37,7 +38,7 @@ public class Matchers {
         private String methodName;
 
         private Names(String methodName) {
-            Objects.requireNonNull(methodName, "methodName");
+            requireNonNull(methodName, "methodName");
             this.methodName = methodName;
         }
 
@@ -48,8 +49,8 @@ public class Matchers {
 
         @Override
         public boolean equals(Object other) {
-            return other instanceof Names
-                   && ((Names)other).methodName.equals(methodName);
+            return other == this ||
+                   other instanceof Names && ((Names)other).methodName.equals(methodName);
         }
 
         @Override
