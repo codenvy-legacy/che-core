@@ -34,7 +34,7 @@ public class Matchers {
         return new Names(methodName);
     }
 
-    public static class Names extends AbstractMatcher<Method> {
+    private static class Names extends AbstractMatcher<Method> {
         private String methodName;
 
         private Names(String methodName) {
