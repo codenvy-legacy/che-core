@@ -44,6 +44,7 @@ import static org.eclipse.che.commons.xml.XMLTreeUtil.asElements;
 import static org.eclipse.che.commons.xml.XMLTreeUtil.closeTagLength;
 import static org.eclipse.che.commons.xml.XMLTreeUtil.indexOf;
 import static org.eclipse.che.commons.xml.XMLTreeUtil.indexOfAttributeName;
+import static org.eclipse.che.commons.xml.XMLTreeUtil.replaceAll;
 import static org.eclipse.che.commons.xml.XMLTreeUtil.single;
 import static org.eclipse.che.commons.xml.XMLTreeUtil.level;
 import static org.eclipse.che.commons.xml.XMLTreeUtil.insertBetween;
@@ -72,7 +73,7 @@ import static org.w3c.dom.Node.TEXT_NODE;
  * XML tool which provides abilities to modify and search
  * information in xml document without affecting of
  * existing formatting, comments.
- * <p/>
+ * <p>
  * XMLTree delegates out of the box implementation of
  * org.w3c.dom and provides a lot of functionality
  * such as XPath selection.
@@ -87,12 +88,12 @@ import static org.w3c.dom.Node.TEXT_NODE;
  * As you may see there are a lot of data manipulations
  * when update is going, so <b>you should not use this tool for
  * parsing huge xml documents or for often complex updates.</b>
- * <p/>
+ * <p>
  * XPath is embedded to XMLTree so each query to tree
  * is xpath query. You will be able to select/update
  * content provided with XMLTree elements or attributes
  * without working with xpath directly.
- * <p/>
+ * <p>
  * XMLTree provides methods which do the same
  * as model methods but sometimes they are more convenient,
  * you can use tree methods as well as model methods.
@@ -177,7 +178,11 @@ public final class XMLTree {
         this.xml = xml;
         elements = new LinkedList<>();
         namespaces = newHashMapWithExpectedSize(EXPECTED_NAMESPACES_SIZE);
-        document = parseQuietly(xml);
+        //using character reference '&#xD;' instead of carriage return character '\r'
+        //reason: parser is going to replace all '\r\n' sequences with single '\n'
+        //which will affect elements position in source xml and produce incorrect XMLTree behaviour
+        //the solution comes from spec http://www.w3.org/TR/2004/REC-xml11-20040204/
+        document = parseQuietly(replaceAll(xml, (byte)'\r', "&#xD;".getBytes()));
         constructTreeQuietly();
     }
 
@@ -199,7 +204,7 @@ public final class XMLTree {
      * Searches for requested elements text.
      * If there are no elements were found
      * empty list will be returned.
-     * <p/>
+     * <p>
      * You can use this method to request
      * not only elements text but for selecting
      * attributes values or whatever text information
@@ -270,7 +275,7 @@ public final class XMLTree {
     /**
      * Adds element to the end of the list
      * of existed children or adds it as only child.
-     * <p/>
+     * <p>
      * If there are more then only parent element
      * were found {@link XMLTreeException} will be thrown
      *
@@ -288,7 +293,7 @@ public final class XMLTree {
      * Inserts element before referenced one.
      * All comments related before referenced element
      * going to have same positions like they had before.
-     * <p/>
+     * <p>
      * If there are more then only referenced element
      * were found {@link XMLTreeException} will be thrown
      *
@@ -304,7 +309,7 @@ public final class XMLTree {
 
     /**
      * Inserts element after referenced one.
-     * <p/>
+     * <p>
      * If there are more then only referenced elements
      * were found {@link XMLTreeException} will be thrown
      *
@@ -326,7 +331,7 @@ public final class XMLTree {
      * pretty - if it was pretty. It is really strange
      * when parent element contains not only whitespaces
      * but another text content.
-     * <p/>
+     * <p>
      * If there are more then only referenced element
      * were found {@link XMLTreeException} will be thrown
      *
@@ -510,7 +515,7 @@ public final class XMLTree {
 
     /**
      * Returns last text or cdata node in the chain of cdata and text nodes.
-     * <p/>
+     * <p>
      * i.e. node1 is text <i>node</i> and <i>node1</i> has next sibling <i>node2</i> as cdata node and
      * <i>node2</i> has next sibling <i>node3</i> as text node and node3 has next sibling <i>node4</i> as element
      * node, then <i>node3</i> will be returned as last text node in the chain. Consider following examples:
@@ -693,7 +698,7 @@ public final class XMLTree {
 
     /**
      * Removes element bytes from tree.
-     * <p/>
+     * <p>
      * It is important to save xml tree pretty view,
      * so element should be removed without of destroying
      * style of xml document.
