@@ -201,7 +201,7 @@
                             <target>
                                 <jar file="${project.build.directory}/${project.build.finalName}.jar" update="true">
                                     <manifest>
-                                        <attribute name="IDE-Version" value="${codenvy.ide.version}" />
+                                        <attribute name="IDE-Version" value="${che.core.version}" />
                                     </manifest>
                                 </jar>
                             </target>
