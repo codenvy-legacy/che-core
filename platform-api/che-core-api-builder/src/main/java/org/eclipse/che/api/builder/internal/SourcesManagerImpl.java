@@ -71,8 +71,8 @@ public class SourcesManagerImpl implements SourcesManager {
     private final ScheduledExecutorService            executor;
 
     private static final long KEEP_PROJECT_TIME = TimeUnit.MINUTES.toMillis(30);
-    private static final int  CONNECT_TIMEOUT   = (int)TimeUnit.MINUTES.toMillis(3);
-    private static final int  READ_TIMEOUT      = (int)TimeUnit.MINUTES.toMillis(3);
+    private static final int  CONNECT_TIMEOUT   = (int)TimeUnit.MINUTES.toMillis(4);//This time is chosen empirically and
+    private static final int  READ_TIMEOUT      = (int)TimeUnit.MINUTES.toMillis(4);//necessary for some large projects. See IDEX-1957.
 
     public SourcesManagerImpl(java.io.File directory) {
         this.directory = directory;
