@@ -11,6 +11,7 @@
 package org.eclipse.che.api.user.shared.dto;
 
 
+import com.google.common.annotations.Beta;
 import com.wordnik.swagger.annotations.ApiModelProperty;
 
 import org.eclipse.che.dto.shared.DTO;
@@ -20,6 +21,7 @@ import org.eclipse.che.dto.shared.DTO;
  * @author Florent Benoit
  */
 @DTO
+@Beta
 public interface UserInRoleDescriptor {
 
     @ApiModelProperty(value = "Is in Role")
