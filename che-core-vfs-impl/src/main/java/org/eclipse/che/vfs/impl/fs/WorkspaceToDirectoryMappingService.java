@@ -70,7 +70,7 @@ public class WorkspaceToDirectoryMappingService {
     @Path("{ws-id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Map<String, String> removeMountPath(@PathParam("ws-id") String workspaceId) throws ServerException, IOException {
+    public Map<String, String> removeMountPath(@PathParam("ws-id") String workspaceId) throws ServerException{
         VirtualFileSystemProvider provider = virtualFileSystemRegistry.getProvider(workspaceId);
         provider.close();
         mappedDirectoryLocalFSMountStrategy.removeMountPath(workspaceId);
@@ -80,7 +80,7 @@ public class WorkspaceToDirectoryMappingService {
     @GET
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Map<String, String> getDirectoryMapping() throws IOException, ServerException {
+    public Map<String, String> getDirectoryMapping() throws ServerException {
         Map<String, String> directoryMapping;
         if (mappedDirectoryLocalFSMountStrategy.getDirectoryMapping().isEmpty()) {
             directoryMapping = new HashMap<>();
