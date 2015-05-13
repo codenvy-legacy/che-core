@@ -11,9 +11,6 @@
 package org.eclipse.che.api.machine.server.recipe;
 
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.machine.server.GroupImpl;
-import org.eclipse.che.api.machine.server.PermissionsImpl;
-import org.eclipse.che.api.machine.server.RecipeImpl;
 import org.eclipse.che.api.machine.shared.Group;
 import org.eclipse.che.api.machine.shared.Recipe;
 import org.eclipse.che.api.workspace.server.dao.Member;

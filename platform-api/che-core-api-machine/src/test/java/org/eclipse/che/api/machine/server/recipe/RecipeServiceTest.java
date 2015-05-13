@@ -15,8 +15,6 @@ import com.jayway.restassured.response.Response;
 
 import org.eclipse.che.api.core.rest.ApiExceptionMapper;
 import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
-import org.eclipse.che.api.machine.server.PermissionsImpl;
-import org.eclipse.che.api.machine.server.RecipeImpl;
 import org.eclipse.che.api.machine.server.dao.RecipeDao;
 import org.eclipse.che.api.machine.shared.Recipe;
 import org.eclipse.che.api.machine.shared.dto.GroupDescriptor;
