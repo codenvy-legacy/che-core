@@ -107,7 +107,7 @@ public class MappedDirectoryLocalFSMountStrategy implements LocalFSMountStrategy
         if (directory == null) {
             throw new ServerException(
                     String.format("Unable get mount path for virtual file system. Virtual file system is not configured for workspace %s.",
-                                  workspaceId));
+                            workspaceId));
         }
         return directory;
     }
