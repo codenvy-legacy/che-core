@@ -185,12 +185,17 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
                 appState = dtoFactory.createDtoFromJson(json, AppState.class);
             } catch (Exception e) {
                 // create 'clear' state if there's any error
+                Log.error(getClass(), "Restore application state failed.");
                 appState = dtoFactory.createDto(AppState.class);
+                appState.setLastProjectPath("");
             }
         }
     }
 
     private void writeStateToPreferences() {
+        if (appState.getLastProjectPath() == null) {
+            appState.setLastProjectPath("");
+        }
         final String json = dtoFactory.toJson(appState);
         preferencesManager.setValue(PREFERENCE_PROPERTY_NAME, json);
         preferencesManager.flushPreferences(new AsyncCallback<ProfileDescriptor>() {
