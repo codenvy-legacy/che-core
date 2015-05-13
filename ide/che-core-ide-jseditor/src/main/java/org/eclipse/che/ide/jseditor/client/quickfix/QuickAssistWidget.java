@@ -20,6 +20,8 @@ import elemental.html.SpanElement;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
+import org.eclipse.che.ide.api.texteditor.HandlesUndoRedo;
+import org.eclipse.che.ide.api.texteditor.UndoableEditor;
 import org.eclipse.che.ide.jseditor.client.codeassist.Completion;
 import org.eclipse.che.ide.jseditor.client.codeassist.CompletionProposal;
 import org.eclipse.che.ide.jseditor.client.codeassist.CompletionResources;
@@ -76,7 +78,15 @@ public class QuickAssistWidget extends PopupWidget<CompletionProposal> {
                 proposal.getCompletion(new CompletionProposal.CompletionCallback() {
                     @Override
                     public void onCompletion(final Completion completion) {
+                        HandlesUndoRedo undoRedo = null;
+                        if(textEditor instanceof UndoableEditor){
+                            UndoableEditor undoableEditor = (UndoableEditor)QuickAssistWidget.this.textEditor;
+                            undoRedo = undoableEditor.getUndoRedo();
+                        }
                         try {
+                            if(undoRedo != null){
+                                undoRedo.beginCompoundChange();
+                            }
                             completion.apply(textEditor.getDocument());
                             final LinearRange selection = completion.getSelection(textEditor.getDocument());
                             if (selection != null) {
@@ -84,6 +94,10 @@ public class QuickAssistWidget extends PopupWidget<CompletionProposal> {
                             }
                         } catch (final Exception e) {
                             Log.error(getClass(), e);
+                        } finally {
+                            if(undoRedo != null){
+                                undoRedo.endCompoundChange();
+                            }
                         }
                     }
                 });

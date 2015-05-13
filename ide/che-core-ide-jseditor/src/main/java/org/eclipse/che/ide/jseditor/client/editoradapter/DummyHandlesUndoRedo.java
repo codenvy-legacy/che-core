@@ -35,4 +35,14 @@ public class DummyHandlesUndoRedo implements HandlesUndoRedo {
         throw new RuntimeException("undo not possible");
     }
 
+    @Override
+    public void beginCompoundChange() {
+        throw new RuntimeException("beginCompoundChange not possible");
+    }
+
+    @Override
+    public void endCompoundChange() {
+        throw new RuntimeException("endCompoundChange not possible");
+    }
+
 }
