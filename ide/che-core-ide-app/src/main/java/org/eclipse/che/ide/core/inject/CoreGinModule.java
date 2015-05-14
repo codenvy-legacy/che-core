@@ -10,26 +10,13 @@
  *******************************************************************************/
 package org.eclipse.che.ide.core.inject;
 
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.inject.client.AbstractGinModule;
-import com.google.gwt.inject.client.assistedinject.GinFactoryModuleBuilder;
-import com.google.gwt.inject.client.multibindings.GinMultibinder;
-import com.google.gwt.user.client.Window;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
-import com.google.web.bindery.event.shared.EventBus;
-import com.google.web.bindery.event.shared.SimpleEventBus;
-
 import org.eclipse.che.api.account.gwt.client.AccountServiceClient;
 import org.eclipse.che.api.account.gwt.client.AccountServiceClientImpl;
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
-//import org.eclipse.che.api.builder.gwt.client.BuilderServiceClient;
-//import org.eclipse.che.api.builder.gwt.client.BuilderServiceClientImpl;
-//import org.eclipse.che.api.factory.gwt.client.FactoryServiceClient;
-//import org.eclipse.che.api.factory.gwt.client.FactoryServiceClientImpl;
-import org.eclipse.che.api.machine.gwt.client.MachineServiceClient;
-import org.eclipse.che.api.machine.gwt.client.MachineServiceClientImpl;
+import org.eclipse.che.api.builder.gwt.client.BuilderServiceClient;
+import org.eclipse.che.api.builder.gwt.client.BuilderServiceClientImpl;
+import org.eclipse.che.api.factory.gwt.client.FactoryServiceClient;
+import org.eclipse.che.api.factory.gwt.client.FactoryServiceClientImpl;
 import org.eclipse.che.api.project.gwt.client.ProjectImportersServiceClient;
 import org.eclipse.che.api.project.gwt.client.ProjectImportersServiceClientImpl;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
@@ -38,8 +25,8 @@ import org.eclipse.che.api.project.gwt.client.ProjectTemplateServiceClient;
 import org.eclipse.che.api.project.gwt.client.ProjectTemplateServiceClientImpl;
 import org.eclipse.che.api.project.gwt.client.ProjectTypeServiceClient;
 import org.eclipse.che.api.project.gwt.client.ProjectTypeServiceClientImpl;
-//import org.eclipse.che.api.runner.gwt.client.RunnerServiceClient;
-//import org.eclipse.che.api.runner.gwt.client.RunnerServiceClientImpl;
+import org.eclipse.che.api.runner.gwt.client.RunnerServiceClient;
+import org.eclipse.che.api.runner.gwt.client.RunnerServiceClientImpl;
 import org.eclipse.che.api.user.gwt.client.UserProfileServiceClient;
 import org.eclipse.che.api.user.gwt.client.UserProfileServiceClientImpl;
 import org.eclipse.che.api.user.gwt.client.UserServiceClient;
@@ -55,9 +42,7 @@ import org.eclipse.che.ide.actions.ActionManagerImpl;
 import org.eclipse.che.ide.actions.find.FindActionView;
 import org.eclipse.che.ide.actions.find.FindActionViewImpl;
 import org.eclipse.che.ide.api.action.ActionManager;
-//import org.eclipse.che.ide.api.build.BuildContext;
-import org.eclipse.che.ide.rest.RestContext;
-import org.eclipse.che.ide.rest.RestContextProvider;
+import org.eclipse.che.ide.api.build.BuildContext;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorRegistry;
 import org.eclipse.che.ide.api.extension.ExtensionGinModule;
@@ -91,8 +76,18 @@ import org.eclipse.che.ide.api.project.wizard.ImportWizardRegistry;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.api.theme.Theme;
 import org.eclipse.che.ide.api.theme.ThemeAgent;
-//import org.eclipse.che.ide.build.BuildContextImpl;
-import org.eclipse.che.ide.ui.dropdown.DropDownListFactory;
+import org.eclipse.che.ide.bootstrap.DefaultIconsComponent;
+import org.eclipse.che.ide.bootstrap.FactoryComponent;
+import org.eclipse.che.ide.bootstrap.PreferencesComponent;
+import org.eclipse.che.ide.bootstrap.ProfileComponent;
+import org.eclipse.che.ide.bootstrap.ProjectTemplatesComponent;
+import org.eclipse.che.ide.bootstrap.ProjectTypeComponent;
+import org.eclipse.che.ide.bootstrap.StandartComponent;
+import org.eclipse.che.ide.bootstrap.WorkspaceComponent;
+import org.eclipse.che.ide.bootstrap.ZeroClipboardInjector;
+import org.eclipse.che.ide.build.BuildContextImpl;
+import org.eclipse.che.ide.core.Component;
+import org.eclipse.che.ide.core.ProjectStateHandler;
 import org.eclipse.che.ide.core.StandardComponentInitializer;
 import org.eclipse.che.ide.core.editor.EditorAgentImpl;
 import org.eclipse.che.ide.core.editor.EditorRegistryImpl;
@@ -120,6 +115,7 @@ import org.eclipse.che.ide.outline.OutlinePartView;
 import org.eclipse.che.ide.outline.OutlinePartViewImpl;
 import org.eclipse.che.ide.part.FocusManager;
 import org.eclipse.che.ide.part.PartStackPresenter;
+import org.eclipse.che.ide.part.PartStackPresenter.PartStackEventHandler;
 import org.eclipse.che.ide.part.PartStackViewImpl;
 import org.eclipse.che.ide.part.console.ConsolePartPresenter;
 import org.eclipse.che.ide.part.console.ConsolePartView;
@@ -145,7 +141,15 @@ import org.eclipse.che.ide.projecttype.wizard.PreSelectedProjectTypeManagerImpl;
 import org.eclipse.che.ide.projecttype.wizard.ProjectWizardFactory;
 import org.eclipse.che.ide.projecttype.wizard.ProjectWizardRegistryImpl;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
+import org.eclipse.che.ide.rest.RestContext;
+import org.eclipse.che.ide.rest.RestContextProvider;
 import org.eclipse.che.ide.selection.SelectionAgentImpl;
+import org.eclipse.che.ide.statepersistance.ActiveFilePersistenceComponent;
+import org.eclipse.che.ide.statepersistance.ActiveNodePersistentComponent;
+import org.eclipse.che.ide.statepersistance.OpenedFilesPersistenceComponent;
+import org.eclipse.che.ide.statepersistance.OpenedNodesPersistenceComponent;
+import org.eclipse.che.ide.statepersistance.PersistenceComponent;
+import org.eclipse.che.ide.statepersistance.ShowHiddenFilesPersistenceComponent;
 import org.eclipse.che.ide.texteditor.openedfiles.ListOpenedFilesView;
 import org.eclipse.che.ide.texteditor.openedfiles.ListOpenedFilesViewImpl;
 import org.eclipse.che.ide.theme.AppearancePresenter;
@@ -176,6 +180,7 @@ import org.eclipse.che.ide.ui.dialogs.message.MessageDialogView;
 import org.eclipse.che.ide.ui.dialogs.message.MessageDialogViewImpl;
 import org.eclipse.che.ide.ui.dropdown.DropDownHeaderWidget;
 import org.eclipse.che.ide.ui.dropdown.DropDownHeaderWidgetImpl;
+import org.eclipse.che.ide.ui.dropdown.DropDownListFactory;
 import org.eclipse.che.ide.ui.loader.IdeLoader;
 import org.eclipse.che.ide.ui.toolbar.MainToolbar;
 import org.eclipse.che.ide.ui.toolbar.ToolbarMainPresenter;
@@ -200,6 +205,17 @@ import org.eclipse.che.ide.workspace.WorkBenchViewImpl;
 import org.eclipse.che.ide.workspace.WorkspacePresenter;
 import org.eclipse.che.ide.workspace.WorkspaceView;
 import org.eclipse.che.ide.workspace.WorkspaceViewImpl;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.inject.client.AbstractGinModule;
+import com.google.gwt.inject.client.assistedinject.GinFactoryModuleBuilder;
+import com.google.gwt.inject.client.multibindings.GinMapBinder;
+import com.google.gwt.inject.client.multibindings.GinMultibinder;
+import com.google.gwt.user.client.Window;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
+import com.google.web.bindery.event.shared.EventBus;
+import com.google.web.bindery.event.shared.SimpleEventBus;
 
 /** @author Nikolay Zamosenchuk */
 @ExtensionGinModule
@@ -216,7 +232,7 @@ public class CoreGinModule extends AbstractGinModule {
         bind(String.class).annotatedWith(WebSocketUrl.class).toProvider(WebSocketUrlProvider.class).in(Singleton.class);
         bind(ExtensionRegistry.class).in(Singleton.class);
         bind(StandardComponentInitializer.class).in(Singleton.class);
-//        bind(BuildContext.class).to(BuildContextImpl.class).in(Singleton.class);
+        bind(BuildContext.class).to(BuildContextImpl.class).in(Singleton.class);
         bind(ClipboardButtonBuilder.class).to(ClipboardButtonBuilderImpl.class);
 
         install(new GinFactoryModuleBuilder().implement(PartStackView.class, PartStackViewImpl.class).build(PartStackViewFactory.class));
@@ -231,6 +247,7 @@ public class CoreGinModule extends AbstractGinModule {
         bind(AnalyticsEventLogger.class).to(AnalyticsEventLoggerImpl.class).in(Singleton.class);
         bind(AnalyticsEventLoggerExt.class).to(AnalyticsEventLoggerImpl.class).in(Singleton.class);
 
+        configureComponents();
         configureProjectWizard();
         configureImportWizard();
         configurePlatformApiGwtClients();
@@ -238,6 +255,28 @@ public class CoreGinModule extends AbstractGinModule {
         configureCoreUI();
         configureEditorAPI();
         configureProjectTree();
+
+        GinMultibinder<PersistenceComponent> componentMultibinder = GinMultibinder.newSetBinder(binder(), PersistenceComponent.class);
+        componentMultibinder.addBinding().to(ShowHiddenFilesPersistenceComponent.class);
+        componentMultibinder.addBinding().to(OpenedFilesPersistenceComponent.class);
+        componentMultibinder.addBinding().to(ActiveFilePersistenceComponent.class);
+        componentMultibinder.addBinding().to(OpenedNodesPersistenceComponent.class);
+        componentMultibinder.addBinding().to(ActiveNodePersistentComponent.class);
+    }
+
+    private void configureComponents() {
+        GinMapBinder<String, Component> mapBinder =
+                GinMapBinder.newMapBinder(binder(), String.class, Component.class);
+        mapBinder.addBinding("Default Icons").to(DefaultIconsComponent.class);
+        mapBinder.addBinding("ZeroClipboard").to(ZeroClipboardInjector.class);
+        mapBinder.addBinding("Preferences").to(PreferencesComponent.class);
+        mapBinder.addBinding("Workspace").to(WorkspaceComponent.class);
+        mapBinder.addBinding("Profile").to(ProfileComponent.class);
+        mapBinder.addBinding("Project Types").to(ProjectTypeComponent.class);
+        mapBinder.addBinding("Project Templates").to(ProjectTemplatesComponent.class);
+        mapBinder.addBinding("Factory").to(FactoryComponent.class);
+        mapBinder.addBinding("Project State Handler").to(ProjectStateHandler.class);
+        mapBinder.addBinding("Standard components").to(StandartComponent.class);
     }
 
     private void configureProjectWizard() {
@@ -259,16 +298,15 @@ public class CoreGinModule extends AbstractGinModule {
         bind(UserServiceClient.class).to(UserServiceClientImpl.class).in(Singleton.class);
         bind(UserProfileServiceClient.class).to(UserProfileServiceClientImpl.class).in(Singleton.class);
         bind(AccountServiceClient.class).to(AccountServiceClientImpl.class).in(Singleton.class);
-//        bind(FactoryServiceClient.class).to(FactoryServiceClientImpl.class).in(Singleton.class);
+        bind(FactoryServiceClient.class).to(FactoryServiceClientImpl.class).in(Singleton.class);
         bind(WorkspaceServiceClient.class).to(WorkspaceServiceClientImpl.class).in(Singleton.class);
         bind(VfsServiceClient.class).to(VfsServiceClientImpl.class).in(Singleton.class);
         bind(ProjectServiceClient.class).to(ProjectServiceClientImpl.class).in(Singleton.class);
         bind(ProjectImportersServiceClient.class).to(ProjectImportersServiceClientImpl.class).in(Singleton.class);
         bind(ProjectTypeServiceClient.class).to(ProjectTypeServiceClientImpl.class).in(Singleton.class);
         bind(ProjectTemplateServiceClient.class).to(ProjectTemplateServiceClientImpl.class).in(Singleton.class);
-        bind(MachineServiceClient.class).to(MachineServiceClientImpl.class).in(Singleton.class);
-//        bind(BuilderServiceClient.class).to(BuilderServiceClientImpl.class).in(Singleton.class);
-//        bind(RunnerServiceClient.class).to(RunnerServiceClientImpl.class).in(Singleton.class);
+        bind(BuilderServiceClient.class).to(BuilderServiceClientImpl.class).in(Singleton.class);
+        bind(RunnerServiceClient.class).to(RunnerServiceClientImpl.class).in(Singleton.class);
 
         bind(ProjectTypeRegistry.class).to(ProjectTypeRegistryImpl.class).in(Singleton.class);
         bind(ProjectTemplateRegistry.class).to(ProjectTemplateRegistryImpl.class).in(Singleton.class);
@@ -374,7 +412,7 @@ public class CoreGinModule extends AbstractGinModule {
 
     @Provides
     @Singleton
-    protected PartStackPresenter.PartStackEventHandler providePartStackEventHandler(FocusManager partAgentPresenter) {
+    protected PartStackEventHandler providePartStackEventHandler(FocusManager partAgentPresenter) {
         return partAgentPresenter.getPartStackHandler();
     }
 
