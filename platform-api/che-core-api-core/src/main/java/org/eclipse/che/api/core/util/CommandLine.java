@@ -127,14 +127,14 @@ public class CommandLine {
     public String toString() {
         final String[] str = asArray();
         final StringBuilder sb = new StringBuilder();
-        sb.append('\'');
+//        sb.append('\'');
         for (String s : str) {
             if (sb.length() > 1) {
                 sb.append(' ');
             }
             sb.append(s);
         }
-        sb.append('\'');
+//        sb.append('\'');
         return sb.toString();
     }
 }
