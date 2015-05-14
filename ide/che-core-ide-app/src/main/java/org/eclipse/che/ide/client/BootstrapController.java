@@ -108,13 +108,11 @@ public class BootstrapController {
     private final EventBus                     eventBus;
     private final ActionManager                actionManager;
     private final AppCloseHandler              appCloseHandler;
-    private final AppStateManager appStateManager;
-    private final PresentationFactory presentationFactory;
-    private final AppContext          appContext;
-    private       CurrentUser         currentUser;
+    private final AppStateManager              appStateManager;
+    private final PresentationFactory          presentationFactory;
+    private final AppContext                   appContext;
+    private       CurrentUser                  currentUser;
     private final DocumentTitleDecorator       documentTitleDecorator;
-
-    private boolean startupActionIsExist;
     
     /** Create controller. */
     @Inject
