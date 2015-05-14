@@ -74,6 +74,9 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("navigateToFile.canNotOpenFile")
     String navigateToFileCanNotOpenFile();
 
+    @Key("navigateToFile.searchIsCaseSensitive")
+    String navigateToFileSearchIsCaseSensitive();
+
     @Key("appearance.title")
     String appearanceTitle();
 
