@@ -31,6 +31,8 @@ import java.util.Set;
  */
 public class IDEInjectorGenerator {
 
+    /** Set containing all the FQNs of GinModules */
+    public static final Set<String> EXTENSIONS_FQN = new HashSet<String>();
     /** Annotation to look for */
     protected static final String GIN_MODULE_ANNOTATION = "@ExtensionGinModule";
 
@@ -41,10 +43,7 @@ public class IDEInjectorGenerator {
     protected static final String IDE_INJECTOR_PATH =
             "org/eclipse/che/ide/client/inject/IDEInjector.java";
 
-    /** Set containing all the FQNs of GinModules */
-    public static final Set<String> EXTENSIONS_FQN = new HashSet<String>();
-    public static final String      CLIENT_MODULE  = "org.eclipse.che.ide.client.inject.IDEClientModule";
-
+   
     /**
      * Entry point. --rootDir is the optional parameter.
      *
@@ -157,8 +156,6 @@ public class IDEInjectorGenerator {
             EXTENSIONS_FQN.add(clazz.getCanonicalName());
             System.out.println(String.format("New Gin Module Found: %s", clazz.getCanonicalName()));
         }
-        EXTENSIONS_FQN.add(CLIENT_MODULE);
-        System.out.println(String.format("New Gin Module Found: %s", CLIENT_MODULE));
         System.out.println(String.format("Found: %d Gin Modules", EXTENSIONS_FQN.size()));
     }
 
