@@ -140,4 +140,22 @@ public class XMLTreeUtilTest {
 
         assertEquals(indexOfAttributeName(byteSrc, "attribute1".getBytes(), 0), -1);
     }
+
+    @Test
+    public void shouldBeAbleToReplaceAllBytesWithGivenBytes() {
+        final byte[] src = "\r text \r".getBytes();
+
+        final byte[] newSrc = XMLTreeUtil.replaceAll(src, (byte)'\r', "&#xD;".getBytes());
+
+        assertEquals(newSrc, "&#xD; text &#xD;".getBytes());
+    }
+
+    @Test
+    public void shouldReturnSameArrayWhenSourceBytesDoNotContainTargetByte() {
+        final byte[] src = "text".getBytes();
+
+        final byte[] newSrc = XMLTreeUtil.replaceAll(src, (byte)'\r', "&#xD;".getBytes());
+
+        assertEquals(newSrc, "text".getBytes());
+    }
 }

@@ -22,6 +22,7 @@ public final class Constants {
     public static final String LINK_REL_UPDATE_CURRENT_USER_PROFILE = "update current user profile";
     public static final String LINK_REL_GET_USER_PROFILE_BY_ID      = "user profile by id";
     public static final String LINK_REL_UPDATE_USER_PROFILE_BY_ID   = "update user profile by id";
+    public static final String LINK_REL_INROLE                      = "in role";
     public static final String LINK_REL_CREATE_USER                 = "create user";
     public static final String LINK_REL_GET_CURRENT_USER            = "get current";
     public static final String LINK_REL_UPDATE_PASSWORD             = "update password";
