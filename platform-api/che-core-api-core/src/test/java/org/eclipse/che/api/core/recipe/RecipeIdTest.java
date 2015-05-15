@@ -20,7 +20,7 @@ public class RecipeIdTest {
     @Test
     public void testRecipeIdNoCategoryToString() {
         RecipeId id = new RecipeId(RecipeId.Scope.project, "env");
-        Assert.assertEquals(id.toString(), "project://env");
+        Assert.assertEquals(id.toString(), "project:/env");
     }
 
     @Test
@@ -49,19 +49,10 @@ public class RecipeIdTest {
 
     @Test(expectedExceptions = {IllegalArgumentException.class})
     public void testRecipeIdInvalidScope() {
-        String fqn = "invalid://env";
+        String fqn = "invalid:/env";
         RecipeId id = RecipeId.parse(fqn);
         Assert.assertEquals(id.getScope(), RecipeId.Scope.project);
         Assert.assertEquals(id.getCategory(), "");
         Assert.assertEquals(id.getName(), "env");
-    }
-
-    @Test(expectedExceptions = {IllegalArgumentException.class})
-    public void testRecipeIdInvalidFormat() {
-        String fqn = "system:/Tomcat7";
-        RecipeId id = RecipeId.parse(fqn);
-        Assert.assertEquals(id.getScope(), RecipeId.Scope.system);
-        Assert.assertEquals(id.getCategory(), "Java/Web");
-        Assert.assertEquals(id.getName(), "Tomcat7");
     }
 }

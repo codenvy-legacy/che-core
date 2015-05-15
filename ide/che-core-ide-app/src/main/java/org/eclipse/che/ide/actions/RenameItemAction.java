@@ -150,7 +150,6 @@ public class RenameItemAction extends Action {
             } else {
                 askForRenamingNode(selectedNode);
             }
-        }
     }
 
     /** {@inheritDoc} */
@@ -222,14 +221,14 @@ public class RenameItemAction extends Action {
         inputDialog.show();
     }
 
-    /**
-     * Check whether project has any running processes.
-     *
-     * @param projectNode
-     *         project to check
-     * @param callback
-     *         callback returns true if project has any running processes and false - otherwise
-     */
+//    /**
+//     * Check whether project has any running processes.
+//     *
+//     * @param projectNode
+//     *         project to check
+//     * @param callback
+//     *         callback returns true if project has any running processes and false - otherwise
+//     */
     /*private void checkRunningProcessesForProject(StorableNode projectNode, final AsyncCallback<Boolean> callback) {
         Unmarshallable<Array<ApplicationProcessDescriptor>> unmarshaller =
                 dtoUnmarshallerFactory.newArrayUnmarshaller(ApplicationProcessDescriptor.class);

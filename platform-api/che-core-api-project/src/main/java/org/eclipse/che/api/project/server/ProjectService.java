@@ -885,10 +885,10 @@ public class ProjectService extends Service {
                 //this trick need for fixing problem for default runners in case
                 //scripts downloaded  from remote resources "docker" this is only marker not real path in file system
                 //see importRunnerEnvironment() method
-                if (newProject.getRunners() != null && newProject.getRunners().getDefault() != null && newProject.getRunners().getDefault().startsWith("project:/docker/")) {
-                    String replace = newProject.getRunners().getDefault().replace("project:/docker/", "project:/");
-                    newProject.getRunners().setDefault(replace);
-                }
+//                if (newProject.getRunners() != null && newProject.getRunners().getDefault() != null && newProject.getRunners().getDefault().startsWith("project:/docker/")) {
+//                    String replace = newProject.getRunners().getDefault().replace("project:/docker/", "project:/");
+//                    newProject.getRunners().setDefault(replace);
+//                }
                 projectConfig = DtoConverter.fromDto2(newProject, projectTypeRegistry);
             }
             project = projectManager.convertFolderToProject(workspace,

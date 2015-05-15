@@ -31,7 +31,7 @@ import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import org.eclipse.che.api.analytics.logger.EventLogger;
-import org.eclipse.che.api.factory.dto.Ide;
+//import org.eclipse.che.api.factory.dto.Ide;
 import org.eclipse.che.ide.api.DocumentTitleDecorator;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
@@ -260,45 +260,45 @@ public class BootstrapController {
             handlerRegistration = eventBus.addHandler(ProjectActionEvent.TYPE, getFactoryActionHandler());
         }
 
-        if (appContext.getFactory() != null && appContext.getFactory().getIde() != null) {
-            final Ide ide = appContext.getFactory().getIde();
-
-            if (ide.getOnAppClosed() != null && ide.getOnAppClosed().getActions() != null) {
-                appCloseHandler.performBeforeClose(ide.getOnAppClosed().getActions());
-            }
-
-            if (ide.getOnAppLoaded() != null && ide.getOnAppLoaded().getActions() != null) {
-                performActions(ide.getOnAppLoaded().getActions());
-            }
-        }
+//        if (appContext.getFactory() != null && appContext.getFactory().getIde() != null) {
+//            final Ide ide = appContext.getFactory().getIde();
+//
+//            if (ide.getOnAppClosed() != null && ide.getOnAppClosed().getActions() != null) {
+//                appCloseHandler.performBeforeClose(ide.getOnAppClosed().getActions());
+//            }
+//
+//            if (ide.getOnAppLoaded() != null && ide.getOnAppLoaded().getActions() != null) {
+//                performActions(ide.getOnAppLoaded().getActions());
+//            }
+//        }
     }
 
-    private ProjectActionHandler getFactoryActionHandler() {
-        return new ProjectActionHandler() {
-            @Override
-            public void onProjectOpened(ProjectActionEvent event) {
-                if (handlerRegistration != null) {
-                    handlerRegistration.removeHandler();
-                }
-
-                if (appContext.getFactory() != null && appContext.getFactory().getIde() != null
-                    && appContext.getFactory().getIde().getOnProjectOpened() != null
-                    && appContext.getFactory().getIde().getOnProjectOpened().getActions() != null) {
-
-                    performActions(appContext.getFactory().getIde().getOnProjectOpened().getActions());
-                }
-            }
-
-            @Override
-            public void onProjectClosing(ProjectActionEvent event) {
-            }
-
-            @Override
-            public void onProjectClosed(ProjectActionEvent event) {
-                //do nothing
-            }
-        };
-    }
+//    private ProjectActionHandler getFactoryActionHandler() {
+//        return new ProjectActionHandler() {
+//            @Override
+//            public void onProjectOpened(ProjectActionEvent event) {
+//                if (handlerRegistration != null) {
+//                    handlerRegistration.removeHandler();
+//                }
+//
+//                if (appContext.getFactory() != null && appContext.getFactory().getIde() != null
+//                    && appContext.getFactory().getIde().getOnProjectOpened() != null
+//                    && appContext.getFactory().getIde().getOnProjectOpened().getActions() != null) {
+//
+//                    performActions(appContext.getFactory().getIde().getOnProjectOpened().getActions());
+//                }
+//            }
+//
+//            @Override
+//            public void onProjectClosing(ProjectActionEvent event) {
+//            }
+//
+//            @Override
+//            public void onProjectClosed(ProjectActionEvent event) {
+//                //do nothing
+//            }
+//        };
+//    }
 
     private ProjectActionHandler getStartupActionHandler() {
         return new ProjectActionHandler() {
@@ -325,11 +325,11 @@ public class BootstrapController {
         }
     }
 
-    private void performActions(List<org.eclipse.che.api.factory.dto.Action> actions) {
-        for (org.eclipse.che.api.factory.dto.Action action : actions) {
-            performAction(action.getId(), action.getProperties());
-        }
-    }
+//    private void performActions(List<org.eclipse.che.api.factory.dto.Action> actions) {
+//        for (org.eclipse.che.api.factory.dto.Action action : actions) {
+//            performAction(action.getId(), action.getProperties());
+//        }
+//    }
 
     private void performAction(String actionId) {
         performAction(actionId, null);
