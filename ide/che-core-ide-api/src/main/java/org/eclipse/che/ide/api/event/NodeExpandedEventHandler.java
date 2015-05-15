@@ -10,22 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.event;
 
-import com.google.gwt.event.shared.GwtEvent;
+import com.google.gwt.event.shared.EventHandler;
 
 /**
  * @author Andrienko Alexander
  */
-public class UpdateNodeEvent extends GwtEvent<UpdateNodeEventHandler> {
+public interface NodeExpandedEventHandler extends EventHandler {
 
-    public static Type<UpdateNodeEventHandler> TYPE = new Type<>();
-
-    @Override
-    public Type<UpdateNodeEventHandler> getAssociatedType() {
-        return TYPE;
-    }
-
-    @Override
-    protected void dispatch(UpdateNodeEventHandler handler) {
-        handler.onNodeUpdated();
-    }
+    void onNodeExpanded();
 }

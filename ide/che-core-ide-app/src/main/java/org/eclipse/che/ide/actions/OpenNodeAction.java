@@ -25,8 +25,8 @@ import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.PromisableAction;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
-import org.eclipse.che.ide.api.event.UpdateNodeEvent;
-import org.eclipse.che.ide.api.event.UpdateNodeEventHandler;
+import org.eclipse.che.ide.api.event.NodeExpandedEvent;
+import org.eclipse.che.ide.api.event.NodeExpandedEventHandler;
 import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
@@ -54,6 +54,8 @@ public class OpenNodeAction extends Action implements PromisableAction {
     private final NotificationManager          notificationManager;
     private final CoreLocalizationConstant     localization;
     private final ProjectExplorerPartPresenter projectExplorerPartPresenter;
+
+    private Callback<Void, Throwable>      actionCompletedCallBack;
 
     @Inject
     public OpenNodeAction(EventBus eventBus,
@@ -91,25 +93,24 @@ public class OpenNodeAction extends Action implements PromisableAction {
 
         String nodePathToOpen = activeProject.getPath() + (!path.startsWith("/") ? "/".concat(path) : path);
 
-        openNodeByPath(nodePathToOpen, currentProject);
+        openNodeByPath(nodePathToOpen, currentProject, event);
     }
 
-    private void openNodeByPath(final String path, CurrentProject currentProject) {
+    private void openNodeByPath(final String path, CurrentProject currentProject, final ActionEvent event) {
         currentProject.getCurrentTree().getNodeByPath(path, new AsyncCallback<TreeNode<?>>() {
 
             @Override
             public void onSuccess(TreeNode<?> treeNode) {
-                if (treeNode == null) {
-                    notificationManager.showNotification(new Notification(localization.unableOpenResource(path), WARNING));
-                    return;
-                }
-
                 projectExplorerPartPresenter.expandNode(treeNode);
             }
 
             @Override
             public void onFailure(Throwable throwable) {
                 notificationManager.showNotification(new Notification(localization.unableOpenResource(path), WARNING));
+
+                if (actionCompletedCallBack != null) {
+                    actionCompletedCallBack.onFailure(throwable);
+                }
             }
         });
     }
@@ -128,10 +129,11 @@ public class OpenNodeAction extends Action implements PromisableAction {
 
             @Override
             public void makeCall(final Callback<Void, Throwable> callback) {
+                actionCompletedCallBack = callback;
 
-                handlerRegistration = eventBus.addHandler(UpdateNodeEvent.TYPE, new UpdateNodeEventHandler() {
+                handlerRegistration = eventBus.addHandler(NodeExpandedEvent.TYPE, new NodeExpandedEventHandler() {
                     @Override
-                    public void onNodeUpdated() {
+                    public void onNodeExpanded() {
                         handlerRegistration.removeHandler();
                         callback.onSuccess(null);
                     }

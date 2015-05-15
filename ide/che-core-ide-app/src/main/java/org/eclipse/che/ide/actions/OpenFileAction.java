@@ -61,6 +61,8 @@ public class OpenFileAction extends Action implements PromisableAction {
     private final CoreLocalizationConstant localization;
     private final ProjectServiceClient     projectServiceClient;
 
+    private Callback<Void, Throwable>      actionCompletedCallBack;
+
     @Inject
     public OpenFileAction(EventBus eventBus,
                           AppContext appContext,
@@ -82,7 +84,7 @@ public class OpenFileAction extends Action implements PromisableAction {
 
         final ProjectDescriptor activeProject = appContext.getCurrentProject().getRootProject();
         if (event.getParameters() == null) {
-            Log.error(getClass(),localization.canNotOpenFileWithoutParams());
+            Log.error(getClass(), localization.canNotOpenFileWithoutParams());
             return;
         }
 
@@ -94,10 +96,10 @@ public class OpenFileAction extends Action implements PromisableAction {
 
         final String filePathToOpen = activeProject.getPath() + (!path.startsWith("/") ? "/".concat(path) : path);
 
-        openFileByPath(filePathToOpen);
+        openFileByPath(filePathToOpen, event);
     }
 
-    private void openFileByPath(final String filePath) {
+    private void openFileByPath(final String filePath, final ActionEvent actionEvent) {
         final CurrentProject currentProject = appContext.getCurrentProject();
         if (currentProject == null) {
             return;
@@ -106,11 +108,6 @@ public class OpenFileAction extends Action implements PromisableAction {
         currentProject.getCurrentTree().getNodeByPath(filePath, new AsyncCallback<TreeNode<?>>() {
             @Override
             public void onSuccess(TreeNode<?> result) {
-                if (result == null) {
-                    notificationManager.showNotification(new Notification(localization.unableOpenResource(filePath), WARNING));
-                    return;
-                }
-
                 if (result instanceof FileNode) {
                     eventBus.fireEvent(new FileEvent((FileNode)result, OPEN));
                 }
@@ -119,12 +116,16 @@ public class OpenFileAction extends Action implements PromisableAction {
             @Override
             public void onFailure(Throwable caught) {
                 notificationManager.showNotification(new Notification(localization.unableOpenResource(filePath), WARNING));
+
+                if (actionCompletedCallBack != null) {
+                    actionCompletedCallBack.onFailure(caught);
+                }
             }
         });
     }
 
     @Override
-    public Promise<Void> promise(final ActionEvent e) {
+    public Promise<Void> promise(final ActionEvent actionEvent) {
         final CurrentProject currentProject = appContext.getCurrentProject();
         if (currentProject == null) {
             return Promises.reject(JsPromiseError.create(localization.noOpenedProject()));
@@ -132,11 +133,11 @@ public class OpenFileAction extends Action implements PromisableAction {
 
         final String activeProjectPath = currentProject.getRootProject().getPath();
 
-        if (e.getParameters() == null) {
+        if (actionEvent.getParameters() == null) {
             return Promises.reject(JsPromiseError.create(localization.canNotOpenFileWithoutParams()));
         }
 
-        String relPathToOpen = e.getParameters().get(FILE_PARAM_ID);
+        String relPathToOpen = actionEvent.getParameters().get(FILE_PARAM_ID);
         if (relPathToOpen == null) {
             return Promises.reject(JsPromiseError.create(localization.fileToOpenIsNotSpecified()));
         }
@@ -154,20 +155,22 @@ public class OpenFileAction extends Action implements PromisableAction {
                 projectServiceClient.getItem(pathToOpen, new AsyncRequestCallback<ItemReference>() {
                     @Override
                     protected void onSuccess(ItemReference result) {
+                        actionCompletedCallBack = callback;
+
                         handlerRegistration = eventBus.addHandler(ActivePartChangedEvent.TYPE, new ActivePartChangedHandler() {
                             @Override
                             public void onActivePartChanged(ActivePartChangedEvent event) {
                                 if (event.getActivePart() instanceof EditorPartPresenter) {
                                     EditorPartPresenter editor = (EditorPartPresenter)event.getActivePart();
+                                    handlerRegistration.removeHandler();
                                     if ((pathToOpen).equals(editor.getEditorInput().getFile().getPath())) {
-                                        handlerRegistration.removeHandler();
                                         callback.onSuccess(null);
                                     }
                                 }
                             }
                         });
 
-                        actionPerformed(e);
+                        actionPerformed(actionEvent);
                     }
 
                     @Override

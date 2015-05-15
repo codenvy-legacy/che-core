@@ -89,11 +89,6 @@ public class SelectNodeAction extends Action implements PromisableAction {
 
             @Override
             public void onSuccess(TreeNode<?> treeNode) {
-                if (treeNode == null) {
-                    notificationManager.showNotification(new Notification(localization.unableSelectResource(path), WARNING));
-                    return;
-                }
-
                 projectExplorerView.selectNode(treeNode);
             }
 
@@ -115,8 +110,8 @@ public class SelectNodeAction extends Action implements PromisableAction {
         final CallbackPromiseHelper.Call<Void, Throwable> call = new CallbackPromiseHelper.Call<Void, Throwable>() {
             @Override
             public void makeCall(final Callback<Void, Throwable> callback) {
-                callback.onSuccess(null);
                 actionPerformed(event);
+                callback.onSuccess(null);
             }
         };
 

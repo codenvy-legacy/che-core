@@ -218,16 +218,4 @@ public class OpenNodeActionTest {
         verify(event, times(2)).getParameters();
         verify(localization).nodeToOpenIsNotSpecified();
     }
-
-    @Test
-    public void actionShouldBeFailedBecauseNodeIsIsNull() {
-        openNodeAction.actionPerformed(event);
-
-        verify(tree).getNodeByPath(eq(PATH_TO_NODE), argumentCaptor.capture());
-
-        argumentCaptor.getValue().onSuccess(null);
-
-        verify(localization).unableOpenResource(PATH_TO_NODE);
-        verify(notificationManager).showNotification(any(Notification.class));
-    }
 }
