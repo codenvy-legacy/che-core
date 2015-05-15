@@ -15,7 +15,7 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
-import org.eclipse.che.ide.api.event.UpdateNodeEvent;
+import org.eclipse.che.ide.api.event.NodeExpandedEvent;
 import org.eclipse.che.ide.api.project.tree.TreeStructure;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.api.project.tree.TreeStructureProviderRegistry;
@@ -203,6 +203,6 @@ public class ProjectExplorerPartPresenterTest {
         verify(view).expandAndSelectNode(selectedNode);
         verify(view).updateNode(selectedNode, selectedNode);
 
-        verify(eventBus).fireEvent(any(UpdateNodeEvent.class));
+        verify(eventBus).fireEvent(any(NodeExpandedEvent.class));
     }
 }

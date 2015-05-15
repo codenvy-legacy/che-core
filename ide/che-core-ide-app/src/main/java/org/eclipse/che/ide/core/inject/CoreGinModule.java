@@ -13,6 +13,8 @@ package org.eclipse.che.ide.core.inject;
 import org.eclipse.che.api.account.gwt.client.AccountServiceClient;
 import org.eclipse.che.api.account.gwt.client.AccountServiceClientImpl;
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
+import org.eclipse.che.api.machine.gwt.client.MachineServiceClient;
+import org.eclipse.che.api.machine.gwt.client.MachineServiceClientImpl;
 import org.eclipse.che.api.project.gwt.client.ProjectImportersServiceClient;
 import org.eclipse.che.api.project.gwt.client.ProjectImportersServiceClientImpl;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
@@ -299,6 +301,7 @@ public class CoreGinModule extends AbstractGinModule {
         bind(ProjectImportersServiceClient.class).to(ProjectImportersServiceClientImpl.class).in(Singleton.class);
         bind(ProjectTypeServiceClient.class).to(ProjectTypeServiceClientImpl.class).in(Singleton.class);
         bind(ProjectTemplateServiceClient.class).to(ProjectTemplateServiceClientImpl.class).in(Singleton.class);
+        bind(MachineServiceClient.class).to(MachineServiceClientImpl.class).in(Singleton.class);
 
         bind(ProjectTypeRegistry.class).to(ProjectTypeRegistryImpl.class).in(Singleton.class);
         bind(ProjectTemplateRegistry.class).to(ProjectTemplateRegistryImpl.class).in(Singleton.class);

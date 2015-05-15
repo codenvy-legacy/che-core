@@ -18,30 +18,30 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.junit.Assert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.eclipse.che.ide.api.event.UpdateNodeEvent.TYPE;
+import static org.eclipse.che.ide.api.event.NodeExpandedEvent.TYPE;
 import static org.mockito.Mockito.verify;
 
 /**
  * @author Andrienko Alexander
  */
 @RunWith(MockitoJUnitRunner.class)
-public class UpdateNodeEventTest {
+public class NodeExpandedEventTest {
 
     @Mock
-    private UpdateNodeEventHandler handler;
+    private NodeExpandedEventHandler handler;
 
     @InjectMocks
-    private UpdateNodeEvent updateNodeEvent;
+    private NodeExpandedEvent nodeExpandedEvent;
 
     @Test
     public void associatedTypeShouldBeReturned() {
-        assertThat(updateNodeEvent.getAssociatedType(), is(TYPE));
+        assertThat(nodeExpandedEvent.getAssociatedType(), is(TYPE));
     }
 
     @Test
     public void handlerShouldBeDispatched() {
-        updateNodeEvent.dispatch(handler);
+        nodeExpandedEvent.dispatch(handler);
 
-        verify(handler).onNodeUpdated();
+        verify(handler).onNodeExpanded();
     }
 }

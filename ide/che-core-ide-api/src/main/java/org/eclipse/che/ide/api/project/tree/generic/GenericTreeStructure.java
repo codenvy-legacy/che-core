@@ -134,7 +134,7 @@ public class GenericTreeStructure implements TreeStructure {
                         return;
                     }
                 }
-                callback.onSuccess(null);
+                callback.onFailure(new IllegalStateException("Node not found"));
             }
 
             @Override

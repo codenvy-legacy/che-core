@@ -27,6 +27,7 @@ import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
+import org.eclipse.che.ide.rest.RestContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -51,7 +52,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     private final String                 baseHttpUrl;
 
     @Inject
-    protected MachineServiceClientImpl(@Named("restContext") String restContext,
+    protected MachineServiceClientImpl(@RestContext String restContext,
                                        DtoFactory dtoFactory,
                                        DtoUnmarshallerFactory dtoUnmarshallerFactory,
                                        AsyncRequestFactory asyncRequestFactory,

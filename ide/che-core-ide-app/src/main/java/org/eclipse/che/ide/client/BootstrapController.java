@@ -257,7 +257,7 @@ public class BootstrapController {
         } else {
             processStartupAction();
 
-            handlerRegistration = eventBus.addHandler(ProjectActionEvent.TYPE, getFactoryActionHandler());
+//            handlerRegistration = eventBus.addHandler(ProjectActionEvent.TYPE, getFactoryActionHandler());
         }
 
 //        if (appContext.getFactory() != null && appContext.getFactory().getIde() != null) {
@@ -366,4 +366,5 @@ public class BootstrapController {
             console.log(e.message);
         }
     }-*/;
+
 }
