@@ -14,7 +14,7 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import com.google.gwt.event.shared.GwtEvent;
 
 /**
- * Event that describes the fact that Project Action (opened/closed) has been performed.
+ * Event that describes the fact that Project Action (opened/closing/closed) has been performed.
  *
  * @author Nikolay Zamosenchuk
  */
@@ -46,19 +46,27 @@ public class ProjectActionEvent extends GwtEvent<ProjectActionHandler> {
      * Creates a Project Opened Event.
      *
      * @param project
-     *         an instance of affected project
-     * @see OpenProjectEvent
+     *         opened project
      */
     public static ProjectActionEvent createProjectOpenedEvent(ProjectDescriptor project) {
         return new ProjectActionEvent(project, ProjectAction.OPENED, false);
     }
 
     /**
+     * Creates a Project Closing Event.
+     *
+     * @param project
+     *         closing project
+     */
+    public static ProjectActionEvent createProjectClosingEvent(ProjectDescriptor project) {
+        return new ProjectActionEvent(project, ProjectAction.CLOSING, false);
+    }
+
+    /**
      * Creates a Project Closed Event.
      *
      * @param project
-     *         an instance of affected project
-     * @see CloseCurrentProjectEvent
+     *         closed project
      */
     public static ProjectActionEvent createProjectClosedEvent(ProjectDescriptor project, boolean closingBeforeOpening) {
         return new ProjectActionEvent(project, ProjectAction.CLOSED, closingBeforeOpening);
@@ -90,6 +98,9 @@ public class ProjectActionEvent extends GwtEvent<ProjectActionHandler> {
             case OPENED:
                 handler.onProjectOpened(this);
                 break;
+            case CLOSING:
+                handler.onProjectClosing(this);
+                break;
             case CLOSED:
                 handler.onProjectClosed(this);
                 break;
@@ -100,6 +111,6 @@ public class ProjectActionEvent extends GwtEvent<ProjectActionHandler> {
 
     /** Set of possible Project Actions */
     public static enum ProjectAction {
-        OPENED, CLOSED
+        OPENED, CLOSING, CLOSED
     }
 }

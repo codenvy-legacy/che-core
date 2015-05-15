@@ -223,9 +223,11 @@ public abstract class Window implements IsWidget {
     }
 
     /**
-     * this method called when user close Window
+     * Is called when user closes the Window.
+     * The method was marked as deprecated until an empty implementation is added.
      */
-    protected abstract void onClose();
+    protected void onClose() {
+    }
 
     @Override
     public Widget asWidget() {

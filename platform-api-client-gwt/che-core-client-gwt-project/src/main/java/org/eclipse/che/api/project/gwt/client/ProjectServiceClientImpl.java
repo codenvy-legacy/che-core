@@ -366,12 +366,22 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     /**
      * Normalizes the path by adding a leading '/' if it doesn't exist.
+     * Also escapes some special characters.
+     *
+     * See following javascript functions for details:
+     *     escape() will not encode: @ * / +
+     *     encodeURI() will not encode: ~ ! @ # $ & * ( ) = : / , ; ? + '
+     *     encodeURIComponent() will not encode: ~ ! * ( ) '
      *
      * @param path
      *         path to normalize
      * @return normalized path
      */
     private String normalizePath(String path) {
+        while (path.indexOf('+') >= 0) {
+            path = path.replace("+", "%2B");
+        }
+
         return path.startsWith("/") ? path : '/' + path;
     }
 }

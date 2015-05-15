@@ -44,6 +44,7 @@ public class EventLogger {
     public static final String PARAMETERS_PARAM   = "PARAMETERS";
 
     public static final String IDE_USAGE             = "ide-usage";
+    public static final String PROJECT_OPENED        = "project-opened";
     public static final String DASHBOARD_USAGE       = "dashboard-usage";
     public static final String USER_INVITE           = "user-invite";
     public static final String SESSION_USAGE         = "session-usage";
@@ -61,6 +62,7 @@ public class EventLogger {
         add(USER_INVITE);
         add(SESSION_USAGE);
         add(SESSION_FACTORY_USAGE);
+        add(PROJECT_OPENED);
     }};
 
     private final Thread        logThread;

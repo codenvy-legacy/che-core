@@ -10,18 +10,20 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.parts.base;
 
-import org.eclipse.che.ide.api.mvp.View;
-import org.eclipse.che.ide.api.parts.Focusable;
-import org.eclipse.che.ide.api.parts.PartStackUIResources;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
+import org.eclipse.che.ide.api.mvp.View;
+import org.eclipse.che.ide.api.parts.Focusable;
+import org.eclipse.che.ide.api.parts.PartStackUIResources;
 import org.vectomatic.dom.svg.ui.SVGImage;
 
 import javax.annotation.Nonnull;
@@ -35,23 +37,19 @@ import javax.annotation.Nonnull;
 public abstract class BaseView<T extends BaseActionDelegate> extends Composite implements View<T>, Focusable {
 
     /** Root widget */
-    private DockLayoutPanel   container;
+    private DockLayoutPanel container;
 
     protected DockLayoutPanel toolBar;
     protected DockLayoutPanel toolbarHeader;
 
-    protected T               delegate;
-    protected ToolButton      minimizeButton;
-    protected Label           titleLabel;
+    protected T          delegate;
+    protected ToolButton minimizeButton;
+    protected FlowPanel  menuPanel;
+    protected Label      titleLabel;
 
     /** Indicates whether this view is focused */
     private boolean focused = false;
 
-    /**
-     * Creates an instance of this view.
-     *
-     * @param resources resources
-     */
     public BaseView(PartStackUIResources resources) {
         container = new DockLayoutPanel(Style.Unit.PX);
         container.getElement().setAttribute("role", "part");
@@ -83,10 +81,18 @@ public abstract class BaseView<T extends BaseActionDelegate> extends Composite i
                 minimize();
             }
         });
+        toolbarHeader.addWest(titleLabel, 200);
         toolbarHeader.addEast(minimizeButton, 29);
-        toolbarHeader.add(titleLabel);
+
+        menuPanel = new FlowPanel();
+        menuPanel.addStyleName(resources.partStackCss().headerMenuButton());
+        toolbarHeader.addEast(menuPanel, 20);
 
         toolBar.addNorth(toolbarHeader, 20);
+    }
+
+    public final void addMenuButton(@Nonnull IsWidget button) {
+        menuPanel.add(button);
     }
 
     /** {@inheritDoc} */
@@ -105,7 +111,8 @@ public abstract class BaseView<T extends BaseActionDelegate> extends Composite i
     /**
      * Sets content widget.
      *
-     * @param widget content widget
+     * @param widget
+     *         content widget
      */
     public final void setContentWidget(Widget widget) {
         container.add(widget);
@@ -114,7 +121,8 @@ public abstract class BaseView<T extends BaseActionDelegate> extends Composite i
     /**
      * Sets new value of part title.
      *
-     * @param title part title
+     * @param title
+     *         part title
      */
     public void setTitle(@Nonnull String title) {
         titleLabel.setText(title);
@@ -123,7 +131,8 @@ public abstract class BaseView<T extends BaseActionDelegate> extends Composite i
     /**
      * Sets new height of the toolbar.
      *
-     * @param height new toolbar height
+     * @param height
+     *         new toolbar height
      */
     public final void setToolbarHeight(int height) {
         container.setWidgetSize(toolBar, height);

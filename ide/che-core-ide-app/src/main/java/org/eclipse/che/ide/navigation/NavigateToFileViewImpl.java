@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.ide.navigation;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.collections.Array;
@@ -48,9 +51,11 @@ public class NavigateToFileViewImpl extends Window implements NavigateToFileView
     @UiField(provided = true)
     SuggestBox files;
 
-    private ActionDelegate delegate;
     @UiField(provided = true)
     CoreLocalizationConstant locale;
+
+    private ActionDelegate delegate;
+    private HandlerRegistration handlerRegistration;
 
     @Inject
     public NavigateToFileViewImpl(CoreLocalizationConstant locale, NavigateToFileViewImplUiBinder uiBinder) {
@@ -99,9 +104,26 @@ public class NavigateToFileViewImpl extends Window implements NavigateToFileView
         new Timer() {
             @Override
             public void run() {
+                String warning = locale.navigateToFileSearchIsCaseSensitive();
+                files.setText(warning);
+                files.getValueBox().selectAll();
+
                 files.setFocus(true);
             }
         }.schedule(300);
+
+        handlerRegistration = files.getValueBox().addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent clickEvent) {
+                String value = files.getText();
+                String warning = locale.navigateToFileSearchIsCaseSensitive();
+
+                if (value.equals(warning)) {
+                    files.setText("");
+                }
+                handlerRegistration.removeHandler();
+            }
+        });
         super.show();
     }
 

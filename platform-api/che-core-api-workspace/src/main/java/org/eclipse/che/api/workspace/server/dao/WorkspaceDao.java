@@ -18,15 +18,13 @@ import java.util.List;
 
 
 /**
- * DAO interface offers means to perform CRUD operations with {@link Workspace} data. The
- * implementation is not
- * required
- * to be responsible for persistent layer data dto consistency. It simply transfers data from one layer to another,
- * so
- * if you're going to call any of implemented methods it is considered that all needed verifications are already done.
- * <p> <strong>Note:</strong> This particularly does not mean that method call will not make any inconsistency but this
- * mean that such kind of inconsistencies are expected by design and may be treated further. </p>
+ * DAO interface offers means to perform CRUD operations with {@link Workspace} data.
+ * Workspace DAO should secure referential integrity for dependent objects (such as workspace {@link Member}).
+ * It is up to implementation to define policy for that, either:
+ *  - not to let remove the object or
+ *  - perform cascade deletion of dependent objects
  */
+
 public interface WorkspaceDao {
     /**
      * Adds workspace to persistent layer.
@@ -53,7 +51,7 @@ public interface WorkspaceDao {
     void remove(String id) throws ConflictException, NotFoundException, ServerException;
 
     /**
-     * Gets workspace from persistent layer.
+     * Gets workspace from persistent layer by id.
      *
      * @param id
      *         workspace identifier
@@ -64,7 +62,7 @@ public interface WorkspaceDao {
     Workspace getById(String id) throws NotFoundException, ServerException;
 
     /**
-     * Gets workspace from persistent layer.
+     * Gets workspace from persistent layer by name.
      *
      * @param name
      *         workspace identifier

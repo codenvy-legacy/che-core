@@ -77,7 +77,7 @@ public class RemoteRunnerProcess {
      */
     public ApplicationProcessDescriptor getApplicationProcessDescriptor() throws RunnerException, NotFoundException {
         try {
-            return HttpJsonHelper.get(ApplicationProcessDescriptor.class, baseUrl + "/status/" + runner + '/' + processId);
+            return HttpJsonHelper.get(ApplicationProcessDescriptor.class, 10000, baseUrl + "/status/" + runner + '/' + processId);
         } catch (IOException e) {
             throw new RunnerException(e);
         } catch (ServerException | UnauthorizedException | ForbiddenException | ConflictException e) {

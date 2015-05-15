@@ -26,6 +26,18 @@ import java.util.List;
  */
 @DTO
 public interface BuildTaskDescriptor extends Hyperlinks {
+    String getWorkspace();
+
+    void setWorkspace(String workspace);
+
+    BuildTaskDescriptor withWorkspace(String workspace);
+
+    String getProject();
+
+    void setProject(String project);
+
+    BuildTaskDescriptor withProject(String project);
+
     BuildStatus getStatus();
 
     BuildTaskDescriptor withStatus(BuildStatus status);
