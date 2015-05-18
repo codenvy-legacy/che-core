@@ -22,6 +22,7 @@ import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
+import org.eclipse.che.ide.rest.RestContext;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -52,7 +53,7 @@ public class CommandServiceClientImpl implements CommandServiceClient {
     private final Map<String, CommandDescriptor> fakeCommands = new HashMap<>();
 
     @Inject
-    protected CommandServiceClientImpl(@Named("restContext") String restContext,
+    protected CommandServiceClientImpl(@RestContext String restContext,
                                        DtoFactory dtoFactory,
                                        DtoUnmarshallerFactory dtoUnmarshallerFactory,
                                        AsyncRequestFactory asyncRequestFactory,

@@ -13,6 +13,7 @@ package org.eclipse.che.ide.core.inject;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.inject.client.AbstractGinModule;
 import com.google.gwt.inject.client.assistedinject.GinFactoryModuleBuilder;
+import com.google.gwt.inject.client.multibindings.GinMapBinder;
 import com.google.gwt.inject.client.multibindings.GinMultibinder;
 import com.google.gwt.user.client.Window;
 import com.google.inject.Provides;
@@ -24,10 +25,8 @@ import com.google.web.bindery.event.shared.SimpleEventBus;
 import org.eclipse.che.api.account.gwt.client.AccountServiceClient;
 import org.eclipse.che.api.account.gwt.client.AccountServiceClientImpl;
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
-//import org.eclipse.che.api.builder.gwt.client.BuilderServiceClient;
-//import org.eclipse.che.api.builder.gwt.client.BuilderServiceClientImpl;
-//import org.eclipse.che.api.factory.gwt.client.FactoryServiceClient;
-//import org.eclipse.che.api.factory.gwt.client.FactoryServiceClientImpl;
+import org.eclipse.che.api.machine.gwt.client.CommandServiceClient;
+import org.eclipse.che.api.machine.gwt.client.CommandServiceClientImpl;
 import org.eclipse.che.api.machine.gwt.client.MachineServiceClient;
 import org.eclipse.che.api.machine.gwt.client.MachineServiceClientImpl;
 import org.eclipse.che.api.project.gwt.client.ProjectImportersServiceClient;
@@ -53,7 +52,6 @@ import org.eclipse.che.ide.actions.ActionManagerImpl;
 import org.eclipse.che.ide.actions.find.FindActionView;
 import org.eclipse.che.ide.actions.find.FindActionViewImpl;
 import org.eclipse.che.ide.api.action.ActionManager;
-import org.eclipse.che.ide.api.build.BuildContext;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorRegistry;
 import org.eclipse.che.ide.api.extension.ExtensionGinModule;
@@ -88,7 +86,6 @@ import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.api.theme.Theme;
 import org.eclipse.che.ide.api.theme.ThemeAgent;
 import org.eclipse.che.ide.bootstrap.DefaultIconsComponent;
-//import org.eclipse.che.ide.bootstrap.FactoryComponent;
 import org.eclipse.che.ide.bootstrap.PreferencesComponent;
 import org.eclipse.che.ide.bootstrap.ProfileComponent;
 import org.eclipse.che.ide.bootstrap.ProjectTemplatesComponent;
@@ -96,7 +93,6 @@ import org.eclipse.che.ide.bootstrap.ProjectTypeComponent;
 import org.eclipse.che.ide.bootstrap.StandartComponent;
 import org.eclipse.che.ide.bootstrap.WorkspaceComponent;
 import org.eclipse.che.ide.bootstrap.ZeroClipboardInjector;
-import org.eclipse.che.ide.build.BuildContextImpl;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.core.ProjectStateHandler;
 import org.eclipse.che.ide.core.StandardComponentInitializer;
@@ -216,26 +212,6 @@ import org.eclipse.che.ide.workspace.WorkBenchViewImpl;
 import org.eclipse.che.ide.workspace.WorkspacePresenter;
 import org.eclipse.che.ide.workspace.WorkspaceView;
 import org.eclipse.che.ide.workspace.WorkspaceViewImpl;
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.inject.client.AbstractGinModule;
-import com.google.gwt.inject.client.assistedinject.GinFactoryModuleBuilder;
-import com.google.gwt.inject.client.multibindings.GinMapBinder;
-import com.google.gwt.inject.client.multibindings.GinMultibinder;
-import com.google.gwt.user.client.Window;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
-import com.google.web.bindery.event.shared.EventBus;
-import com.google.web.bindery.event.shared.SimpleEventBus;
-
-//import org.eclipse.che.api.builder.gwt.client.BuilderServiceClient;
-//import org.eclipse.che.api.builder.gwt.client.BuilderServiceClientImpl;
-//import org.eclipse.che.api.factory.gwt.client.FactoryServiceClient;
-//import org.eclipse.che.api.factory.gwt.client.FactoryServiceClientImpl;
-//import org.eclipse.che.api.runner.gwt.client.RunnerServiceClient;
-//import org.eclipse.che.api.runner.gwt.client.RunnerServiceClientImpl;
-//import org.eclipse.che.ide.api.build.BuildContext;
-//import org.eclipse.che.ide.build.BuildContextImpl;
 
 /** @author Nikolay Zamosenchuk */
 @ExtensionGinModule
@@ -438,6 +414,7 @@ public class CoreGinModule extends AbstractGinModule {
         return partAgentPresenter.getPartStackHandler();
     }
 
+    /** @deprecated use string constant annotated with {@link RestContext} annotation */
     @Provides
     @Named("restContext")
     @Singleton
@@ -453,12 +430,14 @@ public class CoreGinModule extends AbstractGinModule {
         return Config.getWorkspaceId();
     }
 
+    /** @deprecated use string constant annotated with {@link WebSocketUrl} annotation */
     @Provides
     @Named("websocketUrl")
     @Singleton
     @Deprecated
     protected String provideDefaultWebsocketUrl() {
         boolean isSecureConnection = Window.Location.getProtocol().equals("https:");
-        return (isSecureConnection ? "wss://" : "ws://") + Window.Location.getHost() + Config.getRestContext() + "/ws/" + Config.getWorkspaceId();
+        return (isSecureConnection ? "wss://" : "ws://") + Window.Location.getHost() + Config.getRestContext() + "/ws/" +
+               Config.getWorkspaceId();
     }
 }
