@@ -14,6 +14,8 @@
 
 package org.eclipse.che.ide.collections;
 
+import com.google.gwt.core.shared.GWT;
+
 import org.eclipse.che.ide.collections.java.JsonArrayListAdapter;
 import org.eclipse.che.ide.collections.java.JsonIntegerMapAdapter;
 import org.eclipse.che.ide.collections.java.JsonStringMapAdapter;
@@ -22,10 +24,12 @@ import org.eclipse.che.ide.collections.js.JsoArray;
 import org.eclipse.che.ide.collections.js.JsoIntegerMap;
 import org.eclipse.che.ide.collections.js.JsoStringMap;
 import org.eclipse.che.ide.collections.js.JsoStringSet;
-import com.google.gwt.core.client.GWT;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 
 /**
  * Use java.util.collections
