@@ -11,7 +11,6 @@
 package org.eclipse.che.ide.jseditor.client.texteditor;
 
 import elemental.events.KeyboardEvent.KeyCode;
-import elemental.events.MouseEvent;
 
 import com.google.web.bindery.event.shared.EventBus;
 
@@ -21,7 +20,6 @@ import org.eclipse.che.ide.collections.StringMap.IterationCallback;
 import org.eclipse.che.ide.jseditor.client.annotation.AnnotationModel;
 import org.eclipse.che.ide.jseditor.client.annotation.AnnotationModelEvent;
 import org.eclipse.che.ide.jseditor.client.annotation.ClearAnnotationModelEvent;
-import org.eclipse.che.ide.jseditor.client.annotation.GutterAnnotationRenderer;
 import org.eclipse.che.ide.jseditor.client.annotation.InlineAnnotationRenderer;
 import org.eclipse.che.ide.jseditor.client.annotation.MinimapAnnotationRenderer;
 import org.eclipse.che.ide.jseditor.client.annotation.QueryAnnotationsEvent;
@@ -40,13 +38,10 @@ import org.eclipse.che.ide.jseditor.client.editorconfig.TextEditorConfiguration;
 import org.eclipse.che.ide.jseditor.client.events.CompletionRequestEvent;
 import org.eclipse.che.ide.jseditor.client.events.CompletionRequestHandler;
 import org.eclipse.che.ide.jseditor.client.events.DocumentChangeEvent;
-import org.eclipse.che.ide.jseditor.client.events.GutterClickEvent;
-import org.eclipse.che.ide.jseditor.client.events.GutterClickHandler;
 import org.eclipse.che.ide.jseditor.client.events.TextChangeEvent;
 import org.eclipse.che.ide.jseditor.client.events.TextChangeHandler;
 import org.eclipse.che.ide.jseditor.client.events.doc.DocReadyWrapper;
 import org.eclipse.che.ide.jseditor.client.events.doc.DocReadyWrapper.DocReadyInit;
-import org.eclipse.che.ide.jseditor.client.gutter.Gutters;
 import org.eclipse.che.ide.jseditor.client.gutter.HasGutter;
 import org.eclipse.che.ide.jseditor.client.keymap.KeyBindingAction;
 import org.eclipse.che.ide.jseditor.client.keymap.Keybinding;
@@ -156,11 +151,11 @@ public class TextEditorInit<T extends EditorWidget> {
 
         // gutter renderer
         if (textEditor instanceof HasGutter && ((HasGutter)this.textEditor).getGutter() != null) {
-            final GutterAnnotationRenderer annotationRenderer = new GutterAnnotationRenderer();
-            annotationRenderer.setDocument(documentHandle.getDocument());
-            annotationRenderer.setHasGutter(((HasGutter)this.textEditor).getGutter());
-            documentHandle.getDocEventBus().addHandler(AnnotationModelEvent.TYPE, annotationRenderer);
-            documentHandle.getDocEventBus().addHandler(ClearAnnotationModelEvent.TYPE, annotationRenderer);
+//            final GutterAnnotationRenderer annotationRenderer = new GutterAnnotationRenderer();
+//            annotationRenderer.setDocument(documentHandle.getDocument());
+//            annotationRenderer.setHasGutter(((HasGutter)this.textEditor).getGutter());
+//            documentHandle.getDocEventBus().addHandler(AnnotationModelEvent.TYPE, annotationRenderer);
+//            documentHandle.getDocEventBus().addHandler(ClearAnnotationModelEvent.TYPE, annotationRenderer);
         }
 
         // inline renderer
@@ -288,17 +283,17 @@ public class TextEditorInit<T extends EditorWidget> {
         if (this.quickAssistantFactory != null && processor != null) {
             this.quickAssist = quickAssistantFactory.createQuickAssistant(this.textEditor);
             this.quickAssist.setQuickAssistProcessor(processor);
-            documentHandle.getDocEventBus().addHandler(GutterClickEvent.TYPE, new GutterClickHandler() {
-                @Override
-                public void onGutterClick(final GutterClickEvent event) {
-                    if (Gutters.ANNOTATION_GUTTER.equals(event.getGutterId())) {
-                        final MouseEvent originalEvent = event.getEvent();
-                        showQuickAssistant(event.getLineNumber(),
-                                           originalEvent.getClientX(),
-                                           originalEvent.getClientY());
-                    }
-                }
-            });
+//            documentHandle.getDocEventBus().addHandler(GutterClickEvent.TYPE, new GutterClickHandler() {
+//                @Override
+//                public void onGutterClick(final GutterClickEvent event) {
+//                    if (Gutters.ANNOTATION_GUTTER.equals(event.getGutterId())) {
+//                        final MouseEvent originalEvent = event.getEvent();
+//                        showQuickAssistant(event.getLineNumber(),
+//                                           originalEvent.getClientX(),
+//                                           originalEvent.getClientY());
+//                    }
+//                }
+//            });
 
             //add a key binding
             final KeyBindingAction action = new KeyBindingAction() {
@@ -307,20 +302,21 @@ public class TextEditorInit<T extends EditorWidget> {
                     final PositionConverter positionConverter = textEditor.getPositionConverter();
                     if (positionConverter != null) {
                         final TextPosition cursor = textEditor.getCursorPosition();
-                        final int lineNumber = cursor.getLine();
+                        final int offset = textEditor.getCursorModel().getCursorPosition().getOffset();
                         final PositionConverter.PixelCoordinates pixelPos = positionConverter.textToPixel(cursor);
-                        showQuickAssistant(lineNumber, pixelPos.getX(), pixelPos.getY());
+                        //TODO add to pixelPos.getY()  line height to assist widget doesn't cover current line
+                        showQuickAssistant(offset, pixelPos.getX(), pixelPos.getY() + 16);
                     }
                 }
             };
             final HasKeybindings hasKeybindings = this.textEditor.getHasKeybindings();
+            hasKeybindings.addKeybinding(new Keybinding(false, false, true, false, KeyCode.ENTER, action));
             hasKeybindings.addKeybinding(new Keybinding(true, false, false, false, KeyCode.ONE, action));
-            hasKeybindings.addKeybinding(new Keybinding(true, false, false, false, KeyCode.NUM_ONE, action));
         }
     }
 
-    private void showQuickAssistant(final int lineNumber, int clientX, int clientY) {
-        quickAssist.showPossibleQuickAssists(lineNumber, clientX, clientY);
+    private void showQuickAssistant(final int offset, int clientX, int clientY) {
+        quickAssist.showPossibleQuickAssists(offset, clientX, clientY);
     }
 
     private void configureChangeInterceptors(final DocumentHandle documentHandle) {

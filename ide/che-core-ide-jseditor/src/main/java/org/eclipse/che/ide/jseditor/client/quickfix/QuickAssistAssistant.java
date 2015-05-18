@@ -10,9 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.quickfix;
 
-import org.eclipse.che.ide.jseditor.client.codeassist.CodeAssistCallback;
-
 import elemental.dom.Element;
+
+import org.eclipse.che.ide.jseditor.client.codeassist.CodeAssistCallback;
 
 /**
  * An <code>QuickAssistAssistant</code> provides support for quick fixes and quick
@@ -33,11 +33,11 @@ public interface QuickAssistAssistant {
     /**
      * Shows all possible quick fixes and quick assists at the viewer's cursor position.
      *
-     * @param line the line on which the assist was triggered
+     * @param offset the offset on which the assist was triggered
      * @param coordX horizontal offset used for position
      * @param coordX vertical offset used for position
      */
-    void showPossibleQuickAssists(int line, float coordX, float coordY);
+    void showPossibleQuickAssists(int offset, float coordX, float coordY);
 
     /**
      * Compute the quick assist proposals.

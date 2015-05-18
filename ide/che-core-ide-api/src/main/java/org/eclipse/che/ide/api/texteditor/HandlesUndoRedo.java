@@ -35,4 +35,17 @@ public interface HandlesUndoRedo {
 
     /** Rolls back the most recently executed text change. */
     void undo();
+
+    /**
+     * Signals the UndoRedo that all subsequent changes until
+     * <code>endCompoundChange</code> is called are to be undone in one piece.
+     */
+    void beginCompoundChange();
+
+    /**
+     * Signals the UndoRedo that the sequence of changes which started with
+     * <code>beginCompoundChange</code> has been finished. All subsequent changes
+     * are considered to be individually undo-able.
+     */
+    void endCompoundChange();
 }

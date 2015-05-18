@@ -10,18 +10,18 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.quickfix;
 
-import java.util.List;
+import elemental.dom.Element;
+import elemental.html.ClientRect;
 
-import javax.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 
 import org.eclipse.che.ide.jseditor.client.codeassist.CodeAssistCallback;
 import org.eclipse.che.ide.jseditor.client.codeassist.CompletionProposal;
 import org.eclipse.che.ide.jseditor.client.texteditor.TextEditor;
-import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
 
-import elemental.dom.Element;
-import elemental.html.ClientRect;
+import javax.inject.Inject;
+import java.util.List;
 
 /** Implementation for {@link QuickAssistAssistant}. */
 public class QuickAssistAssistantImpl implements QuickAssistAssistant {
@@ -46,8 +46,8 @@ public class QuickAssistAssistantImpl implements QuickAssistAssistant {
     }
 
     @Override
-    public void showPossibleQuickAssists(final int line, final float coordX, final float coordY) {
-        computeQuickAssist(line, new CodeAssistCallback() {
+    public void showPossibleQuickAssists(final int offset, final float coordX, final float coordY) {
+        computeQuickAssist(offset, new CodeAssistCallback() {
             @Override
             public void proposalComputed(final List<CompletionProposal> proposals) {
                 final QuickAssistWidget widget = widgetFactory.createWidget(textEditor);
@@ -60,9 +60,9 @@ public class QuickAssistAssistantImpl implements QuickAssistAssistant {
     }
 
     @Override
-    public void computeQuickAssist(final int line, final CodeAssistCallback callback) {
+    public void computeQuickAssist(final int offset, final CodeAssistCallback callback) {
         if (this.quickAssistProcessor != null) {
-            final QuickAssistInvocationContext context = new QuickAssistInvocationContext(line, this.textEditor);
+            final QuickAssistInvocationContext context = new QuickAssistInvocationContext(offset, this.textEditor);
             this.quickAssistProcessor.computeQuickAssistProposals(context, callback);
         }
     }

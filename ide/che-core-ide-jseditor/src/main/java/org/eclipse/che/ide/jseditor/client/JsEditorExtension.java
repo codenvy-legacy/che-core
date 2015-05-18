@@ -16,7 +16,6 @@ import org.eclipse.che.ide.api.extension.Extension;
 import org.eclipse.che.ide.api.filetypes.FileType;
 import org.eclipse.che.ide.api.filetypes.FileTypeRegistry;
 import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
-import org.eclipse.che.ide.api.keybinding.KeyBuilder;
 import org.eclipse.che.ide.jseditor.client.inject.PlainTextFileType;
 import org.eclipse.che.ide.jseditor.client.popup.PopupResources;
 import org.eclipse.che.ide.jseditor.client.preference.EditorPreferenceResource;
@@ -54,6 +53,6 @@ public class JsEditorExtension {
         editorResources.editorCss().ensureInjected();
         popupResources.popupStyle().ensureInjected();
 
-        keyBindingAgent.getGlobal().addKey(new KeyBuilder().action().charCode('1').build(), "preventNative");
+//        keyBindingAgent.getGlobal().addKey(new KeyBuilder().action().charCode('1').build(), "preventNative");
     }
 }

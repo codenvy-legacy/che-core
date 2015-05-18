@@ -22,7 +22,7 @@ import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
 import org.eclipse.che.ide.api.keybinding.Scheme;
 import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
+import org.eclipse.che.ide.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.browser.UserAgent;
 import org.eclipse.che.ide.util.dom.Elements;
 import org.eclipse.che.ide.util.input.CharCodeWithModifiers;
@@ -95,6 +95,9 @@ public class KeyBindingManager implements KeyBindingAgent {
     private void runActions(Array<String> actionIds) {
         for (String actionId : actionIds.asIterable()) {
             Action action = actionManager.getAction(actionId);
+            if(action == null){
+                continue;
+            }
             ActionEvent e = new ActionEvent("", presentationFactory.getPresentation(action), actionManager, 0);
             action.update(e);
             if (e.getPresentation().isEnabled() && e.getPresentation().isVisible()) {
