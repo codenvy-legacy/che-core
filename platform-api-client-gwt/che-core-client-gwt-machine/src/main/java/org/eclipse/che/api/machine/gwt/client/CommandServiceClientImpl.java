@@ -68,9 +68,24 @@ public class CommandServiceClientImpl implements CommandServiceClient {
 
         final CommandDescriptor command1 = dtoFactory.createDto(CommandDescriptor.class)
                                                      .withId(uuid(3))
-                                                     .withName("SDM")
-                                                     .withType("gwt")
-                                                     .withCommandLine("blah-blah");
+                                                     .withName("Env info")
+                                                     .withType("arbitrary")
+                                                     .withCommandLine("echo '----------------------'\n" +
+                                                                      "echo '--- Sys-info ---'\n" +
+                                                                      "echo '----------------------'\n" +
+                                                                      "uname --all\n" +
+                                                                      "echo '----------------------'\n" +
+                                                                      "echo '--- JAVA-info ---'\n" +
+                                                                      "echo '----------------------'\n" +
+                                                                      "java -version\n" +
+                                                                      "echo '----------------------'\n" +
+                                                                      "echo '--- Maven-info ---'\n" +
+                                                                      "echo '----------------------'\n" +
+                                                                      "mvn -version\n" +
+                                                                      "echo '----------------------'\n" +
+                                                                      "echo '--- ls ---'\n" +
+                                                                      "echo '----------------------'\n" +
+                                                                      "ls");
         final CommandDescriptor command2 = dtoFactory.createDto(CommandDescriptor.class)
                                                      .withId(uuid(3))
                                                      .withName("Build module 1")
