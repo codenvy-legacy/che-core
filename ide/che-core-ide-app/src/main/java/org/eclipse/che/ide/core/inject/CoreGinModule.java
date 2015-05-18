@@ -10,9 +10,24 @@
  *******************************************************************************/
 package org.eclipse.che.ide.core.inject;
 
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.inject.client.AbstractGinModule;
+import com.google.gwt.inject.client.assistedinject.GinFactoryModuleBuilder;
+import com.google.gwt.inject.client.multibindings.GinMultibinder;
+import com.google.gwt.user.client.Window;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
+import com.google.web.bindery.event.shared.EventBus;
+import com.google.web.bindery.event.shared.SimpleEventBus;
+
 import org.eclipse.che.api.account.gwt.client.AccountServiceClient;
 import org.eclipse.che.api.account.gwt.client.AccountServiceClientImpl;
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
+//import org.eclipse.che.api.builder.gwt.client.BuilderServiceClient;
+//import org.eclipse.che.api.builder.gwt.client.BuilderServiceClientImpl;
+//import org.eclipse.che.api.factory.gwt.client.FactoryServiceClient;
+//import org.eclipse.che.api.factory.gwt.client.FactoryServiceClientImpl;
 import org.eclipse.che.api.machine.gwt.client.MachineServiceClient;
 import org.eclipse.che.api.machine.gwt.client.MachineServiceClientImpl;
 import org.eclipse.che.api.project.gwt.client.ProjectImportersServiceClient;
@@ -213,6 +228,15 @@ import com.google.inject.name.Named;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.SimpleEventBus;
 
+//import org.eclipse.che.api.builder.gwt.client.BuilderServiceClient;
+//import org.eclipse.che.api.builder.gwt.client.BuilderServiceClientImpl;
+//import org.eclipse.che.api.factory.gwt.client.FactoryServiceClient;
+//import org.eclipse.che.api.factory.gwt.client.FactoryServiceClientImpl;
+//import org.eclipse.che.api.runner.gwt.client.RunnerServiceClient;
+//import org.eclipse.che.api.runner.gwt.client.RunnerServiceClientImpl;
+//import org.eclipse.che.ide.api.build.BuildContext;
+//import org.eclipse.che.ide.build.BuildContextImpl;
+
 /** @author Nikolay Zamosenchuk */
 @ExtensionGinModule
 public class CoreGinModule extends AbstractGinModule {
@@ -228,7 +252,7 @@ public class CoreGinModule extends AbstractGinModule {
         bind(String.class).annotatedWith(WebSocketUrl.class).toProvider(WebSocketUrlProvider.class).in(Singleton.class);
         bind(ExtensionRegistry.class).in(Singleton.class);
         bind(StandardComponentInitializer.class).in(Singleton.class);
-        bind(BuildContext.class).to(BuildContextImpl.class).in(Singleton.class);
+//        bind(BuildContext.class).to(BuildContextImpl.class).in(Singleton.class);
         bind(ClipboardButtonBuilder.class).to(ClipboardButtonBuilderImpl.class);
 
         install(new GinFactoryModuleBuilder().implement(PartStackView.class, PartStackViewImpl.class).build(PartStackViewFactory.class));
@@ -302,6 +326,9 @@ public class CoreGinModule extends AbstractGinModule {
         bind(ProjectTypeServiceClient.class).to(ProjectTypeServiceClientImpl.class).in(Singleton.class);
         bind(ProjectTemplateServiceClient.class).to(ProjectTemplateServiceClientImpl.class).in(Singleton.class);
         bind(MachineServiceClient.class).to(MachineServiceClientImpl.class).in(Singleton.class);
+        bind(CommandServiceClient.class).to(CommandServiceClientImpl.class).in(Singleton.class);
+//        bind(BuilderServiceClient.class).to(BuilderServiceClientImpl.class).in(Singleton.class);
+//        bind(RunnerServiceClient.class).to(RunnerServiceClientImpl.class).in(Singleton.class);
 
         bind(ProjectTypeRegistry.class).to(ProjectTypeRegistryImpl.class).in(Singleton.class);
         bind(ProjectTemplateRegistry.class).to(ProjectTemplateRegistryImpl.class).in(Singleton.class);

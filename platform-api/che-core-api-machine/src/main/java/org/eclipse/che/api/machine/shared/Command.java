@@ -16,7 +16,11 @@ package org.eclipse.che.api.machine.shared;
  * @author gazarenkov
  */
 public interface Command {
+    String getId();
+
     String getName();
 
     String getCommandLine();
+
+    String getType();
 }

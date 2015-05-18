@@ -37,4 +37,12 @@ public interface CommandDescriptor extends Command, Hyperlinks {
     void setOutputChannel(String outputChannel);
 
     CommandDescriptor withOutputChannel(String outputChannel);
+
+    CommandDescriptor withId(String id);
+
+    void setId(String id);
+
+    CommandDescriptor withType(String type);
+
+    void setType(String type);
 }

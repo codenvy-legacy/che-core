@@ -42,7 +42,7 @@ public class Utils {
         promise.catchError(new Operation<PromiseError>() {
             @Override
             public void apply(PromiseError error) throws OperationException {
-                Log.error(MachineServiceClientImpl.class, error.toString());
+                Log.error(Utils.class, error.toString());
             }
         });
         return promise;
