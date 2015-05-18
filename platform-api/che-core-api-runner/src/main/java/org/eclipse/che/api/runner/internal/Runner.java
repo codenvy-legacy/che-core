@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.runner.internal;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import org.eclipse.che.api.builder.dto.BuildTaskDescriptor;
 import org.eclipse.che.api.builder.internal.Constants;
 import org.eclipse.che.api.core.NotFoundException;
@@ -24,13 +26,10 @@ import org.eclipse.che.api.project.shared.dto.RunnerEnvironment;
 import org.eclipse.che.api.runner.RunnerException;
 import org.eclipse.che.api.runner.dto.RunRequest;
 import org.eclipse.che.api.runner.dto.RunnerMetric;
-
 import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.commons.lang.TarUtils;
 import org.eclipse.che.commons.lang.concurrent.ThreadLocalPropagateContext;
 import org.eclipse.che.dto.server.DtoFactory;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -280,6 +279,9 @@ public abstract class Runner {
                     final java.io.File downloadDir =
                             Files.createTempDirectory(deployDirectory.toPath(), ("download_" + getName().replace("/", "."))).toFile();
                     final DeploymentSources deploymentSources = createDeploymentSources(request, downloadDir);
+                    if (deploymentSources.getFile() == null) {
+                        throw new RunnerException("[ERROR] No build artifacts found.");
+                    }
                     process.addToCleanupList(downloadDir);
                     if (!getDeploymentSourcesValidator().isValid(deploymentSources)) {
                         throw new RunnerException(
