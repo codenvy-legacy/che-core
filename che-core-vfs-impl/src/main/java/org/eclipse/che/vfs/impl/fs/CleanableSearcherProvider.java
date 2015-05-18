@@ -51,7 +51,7 @@ public class CleanableSearcherProvider extends LuceneSearcherProvider {
         this.indexRootDir = indexRootDir;
         this.filters = filters;
         executor = Executors.newFixedThreadPool(1 + Runtime.getRuntime().availableProcessors(),
-                                                new ThreadFactoryBuilder().setNameFormat("LocalVirtualFileSystem-CleanableSearcher-")
+                                                new ThreadFactoryBuilder().setNameFormat("LocalVirtualFileSystem-CleanableSearcher-%d")
                                                                           .setDaemon(true).build());
         instances = new ConcurrentHashMap<>();
     }

@@ -162,7 +162,7 @@ public abstract class Builder {
             executor = new MyThreadPoolExecutor(numberOfWorkers <= 0 ? Runtime.getRuntime().availableProcessors() : numberOfWorkers,
                                                 queueSize);
             scheduler = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder().setNameFormat(
-                    getName() + "-BuilderSchedulerPool-").setDaemon(true).build());
+                    getName() + "-BuilderSchedulerPool-%d").setDaemon(true).build());
             scheduler.scheduleAtFixedRate(new Runnable() {
                 public void run() {
                     int num = 0;
@@ -784,7 +784,7 @@ public abstract class Builder {
         private MyThreadPoolExecutor(int workerNumber, int queueSize) {
             super(workerNumber, workerNumber, 0L, TimeUnit.MILLISECONDS,
                   new LinkedBlockingQueue<Runnable>(queueSize),
-                  new ThreadFactoryBuilder().setNameFormat(Builder.this.getName() + "-Builder-").setDaemon(true).build(),
+                  new ThreadFactoryBuilder().setNameFormat(Builder.this.getName() + "-Builder-[%d]").setDaemon(true).build(),
                   new ManyBuildTasksRejectedExecutionPolicy(new AbortPolicy()));
         }
 
