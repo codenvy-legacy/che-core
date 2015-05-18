@@ -395,7 +395,7 @@ public class FactoryService extends Service {
      * @throws org.eclipse.che.api.core.ApiException
      *         - {@link org.eclipse.che.api.core.NotFoundException} when factory with given id doesn't exist
      */
-    @RolesAllowed("user")
+    @RolesAllowed({"user", "system/manager"})
     @GET
     @Path("/find")
     @Produces({MediaType.APPLICATION_JSON})
@@ -406,9 +406,6 @@ public class FactoryService extends Service {
         Map<String, Set<String>> queryParams = URLEncodedUtils.parse(uri, "UTF-8");
         if (queryParams.isEmpty()) {
             throw new IllegalArgumentException("Query must contain at least one attribute.");
-        }
-        if (queryParams.containsKey("accountid")) {
-            queryParams.put("orgid", queryParams.remove("accountid"));
         }
         ArrayList<Pair> pairs = new ArrayList<>();
         for (Map.Entry<String, Set<String>> entry : queryParams.entrySet()) {

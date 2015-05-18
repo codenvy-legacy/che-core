@@ -12,8 +12,8 @@ package org.eclipse.che.api.machine.gwt.client;
 
 import org.eclipse.che.api.machine.shared.dto.MachineDescriptor;
 import org.eclipse.che.api.machine.shared.dto.ProcessDescriptor;
+import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.rest.AsyncRequestCallback;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -38,15 +38,12 @@ public interface MachineServiceClient {
      *         recipe script
      * @param outputChannel
      *         websocket chanel where machine logs should be put
-     * @param callback
-     *         the callback to use for the response
      */
-    void createMachineFromRecipe(@Nonnull String workspaceId,
-                                 @Nonnull String machineType,
-                                 @Nonnull String recipeType,
-                                 @Nonnull String recipeScript,
-                                 @Nullable String outputChannel,
-                                 @Nonnull AsyncRequestCallback<MachineDescriptor> callback);
+    Promise<MachineDescriptor> createMachineFromRecipe(@Nonnull String workspaceId,
+                                                       @Nonnull String machineType,
+                                                       @Nonnull String recipeType,
+                                                       @Nonnull String recipeScript,
+                                                       @Nullable String outputChannel);
 
     /**
      * Restore and start machine from snapshot.
@@ -55,12 +52,8 @@ public interface MachineServiceClient {
      *         ID of snapshot machine should be restored from
      * @param outputChannel
      *         websocket chanel where machine logs should be put
-     * @param callback
-     *         the callback to use for the response
      */
-    void createMachineFromSnapshot(@Nonnull String snapshotId,
-                                   @Nullable String outputChannel,
-                                   @Nonnull AsyncRequestCallback<MachineDescriptor> callback);
+    Promise<MachineDescriptor> createMachineFromSnapshot(@Nonnull String snapshotId, @Nullable String outputChannel);
 
     /**
      * Find machines connected with specific workspace/project.
@@ -69,22 +62,16 @@ public interface MachineServiceClient {
      *         workspace binding
      * @param projectPath
      *         project binding
-     * @param callback
-     *         the callback to use for the response
      */
-    void getMachines(@Nonnull String workspaceId,
-                     @Nullable String projectPath,
-                     @Nonnull AsyncRequestCallback<Array<MachineDescriptor>> callback);
+    Promise<Array<MachineDescriptor>> getMachines(@Nonnull String workspaceId, @Nullable String projectPath);
 
     /**
      * Destroy machine with the specified ID.
      *
      * @param machineId
      *         ID of machine that should be destroyed
-     * @param callback
-     *         the callback to use for the response
      */
-    void destroyMachine(@Nonnull String machineId, @Nonnull AsyncRequestCallback<Void> callback);
+    Promise<Void> destroyMachine(@Nonnull String machineId);
 
     /**
      * Execute a command in machine.
@@ -95,13 +82,8 @@ public interface MachineServiceClient {
      *         command line that should be executed in the machine
      * @param outputChannel
      *         websocket chanel for execution logs
-     * @param callback
-     *         the callback to use for the response
      */
-    void executeCommandInMachine(@Nonnull String machineId,
-                                 @Nonnull String commandLine,
-                                 @Nullable String outputChannel,
-                                 @Nonnull AsyncRequestCallback<ProcessDescriptor> callback);
+    Promise<ProcessDescriptor> executeCommand(@Nonnull String machineId, @Nonnull String commandLine, @Nullable String outputChannel);
 
     /**
      * Bind project to machine.
@@ -111,7 +93,7 @@ public interface MachineServiceClient {
      * @param projectPath
      *         project that should be bound
      */
-    void bindProject(@Nonnull String machineId, @Nonnull String projectPath, @Nonnull AsyncRequestCallback<Void> callback);
+    Promise<Void> bindProject(@Nonnull String machineId, @Nonnull String projectPath);
 
     /**
      * Unbind project from machine.
@@ -121,5 +103,5 @@ public interface MachineServiceClient {
      * @param projectPath
      *         project that should be unbound
      */
-    void unbindProject(@Nonnull String machineId, @Nonnull String projectPath, @Nonnull AsyncRequestCallback<Void> callback);
+    Promise<Void> unbindProject(@Nonnull String machineId, @Nonnull String projectPath);
 }

@@ -10,53 +10,70 @@
  *******************************************************************************/
 package org.eclipse.che.ide.actions;
 
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-
-import org.eclipse.che.ide.CoreLocalizationConstant;
-
-import org.eclipse.che.ide.api.action.Action;
-import org.eclipse.che.ide.api.action.ActionEvent;
-import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.app.CurrentProject;
-import org.eclipse.che.ide.api.event.FileEvent;
-import org.eclipse.che.ide.api.event.ProjectActionEvent;
-import org.eclipse.che.ide.api.event.ProjectActionHandler;
-import org.eclipse.che.ide.api.notification.Notification;
-import org.eclipse.che.ide.api.notification.NotificationManager;
-import org.eclipse.che.ide.api.project.tree.TreeNode;
-import org.eclipse.che.ide.api.project.tree.generic.FileNode;
-import org.eclipse.che.ide.util.loging.Log;
-
+import com.google.gwt.core.client.Callback;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
+import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
+import org.eclipse.che.api.project.shared.dto.ItemReference;
+import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper.Call;
+import org.eclipse.che.api.promises.client.js.JsPromiseError;
+import org.eclipse.che.api.promises.client.js.Promises;
+import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.api.action.Action;
+import org.eclipse.che.ide.api.action.ActionEvent;
+import org.eclipse.che.ide.api.action.PromisableAction;
+import org.eclipse.che.ide.api.app.AppContext;
+import org.eclipse.che.ide.api.app.CurrentProject;
+import org.eclipse.che.ide.api.editor.EditorPartPresenter;
+import org.eclipse.che.ide.api.event.ActivePartChangedEvent;
+import org.eclipse.che.ide.api.event.ActivePartChangedHandler;
+import org.eclipse.che.ide.api.event.FileEvent;
+import org.eclipse.che.ide.api.notification.Notification;
+import org.eclipse.che.ide.api.notification.NotificationManager;
+import org.eclipse.che.ide.api.project.tree.TreeNode;
+import org.eclipse.che.ide.api.project.tree.generic.FileNode;
+import org.eclipse.che.ide.rest.AsyncRequestCallback;
+import org.eclipse.che.ide.util.loging.Log;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import static org.eclipse.che.ide.api.event.FileEvent.FileOperation.OPEN;
 import static org.eclipse.che.ide.api.notification.Notification.Type.WARNING;
+import static org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper.createFromCallback;
 
 /**
  * @author Sergii Leschenko
  */
 @Singleton
-public class OpenFileAction extends Action {
+public class OpenFileAction extends Action implements PromisableAction {
+
+    /** ID of the parameter to specify file path to open. */
+    public static String FILE_PARAM_ID = "file";
+
     private final EventBus                 eventBus;
     private final AppContext               appContext;
     private final NotificationManager      notificationManager;
     private final CoreLocalizationConstant localization;
+    private final ProjectServiceClient     projectServiceClient;
 
-    private HandlerRegistration reopenFileHandler;
+    private Callback<Void, Throwable>      actionCompletedCallBack;
 
     @Inject
     public OpenFileAction(EventBus eventBus,
                           AppContext appContext,
                           NotificationManager notificationManager,
-                          CoreLocalizationConstant localization) {
+                          CoreLocalizationConstant localization,
+                          ProjectServiceClient projectServiceClient) {
         this.eventBus = eventBus;
         this.appContext = appContext;
         this.notificationManager = notificationManager;
         this.localization = localization;
+        this.projectServiceClient = projectServiceClient;
     }
 
     @Override
@@ -67,57 +84,103 @@ public class OpenFileAction extends Action {
 
         final ProjectDescriptor activeProject = appContext.getCurrentProject().getRootProject();
         if (event.getParameters() == null) {
-            Log.error(getClass(), "Can't open file without parameters");
+            Log.error(getClass(), localization.canNotOpenFileWithoutParams());
+            return;
         }
 
-        final String path = event.getParameters().get("file");
+        final String path = event.getParameters().get(FILE_PARAM_ID);
+        if (path == null) {
+            Log.error(getClass(), localization.fileToOpenIsNotSpecified());
+            return;
+        }
+
         final String filePathToOpen = activeProject.getPath() + (!path.startsWith("/") ? "/".concat(path) : path);
 
-        openFileByPath(filePathToOpen);
+        openFileByPath(filePathToOpen, event);
+    }
 
-        //Reopens file after select project type
-        reopenFileHandler = eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
+    private void openFileByPath(final String filePath, final ActionEvent actionEvent) {
+        final CurrentProject currentProject = appContext.getCurrentProject();
+        if (currentProject == null) {
+            return;
+        }
+
+        currentProject.getCurrentTree().getNodeByPath(filePath, new AsyncCallback<TreeNode<?>>() {
             @Override
-            public void onProjectOpened(ProjectActionEvent event) {
-                final String openedProject = event.getProject().getName();
-                if (openedProject.equals(activeProject.getName())) {
-                    ProjectDescriptor activeProject = event.getProject();
-                    final String filePathToOpen = activeProject.getPath() + (!path.startsWith("/") ? "/".concat(path) : path);
-
-                    openFileByPath(filePathToOpen);
+            public void onSuccess(TreeNode<?> result) {
+                if (result instanceof FileNode) {
+                    eventBus.fireEvent(new FileEvent((FileNode)result, OPEN));
                 }
-                reopenFileHandler.removeHandler();
             }
 
             @Override
-            public void onProjectClosed(ProjectActionEvent event) {
-                //do nothing
+            public void onFailure(Throwable caught) {
+                notificationManager.showNotification(new Notification(localization.unableOpenResource(filePath), WARNING));
+
+                if (actionCompletedCallBack != null) {
+                    actionCompletedCallBack.onFailure(caught);
+                }
             }
         });
     }
 
-    private void openFileByPath(final String filePath) {
-        Log.error(getClass(), "there");
+    @Override
+    public Promise<Void> promise(final ActionEvent actionEvent) {
         final CurrentProject currentProject = appContext.getCurrentProject();
-        if (currentProject != null) {
-            currentProject.getCurrentTree().getNodeByPath(filePath, new AsyncCallback<TreeNode<?>>() {
-                @Override
-                public void onSuccess(TreeNode<?> result) {
-                    if (result == null) {
-                        notificationManager.showNotification(new Notification(localization.unableOpenFile(filePath), WARNING));
-                        return;
-                    }
-
-                    if (result instanceof FileNode) {
-                        eventBus.fireEvent(new FileEvent((FileNode)result, FileEvent.FileOperation.OPEN));
-                    }
-                }
-
-                @Override
-                public void onFailure(Throwable caught) {
-                    notificationManager.showNotification(new Notification(localization.unableOpenFile(filePath), WARNING));
-                }
-            });
+        if (currentProject == null) {
+            return Promises.reject(JsPromiseError.create(localization.noOpenedProject()));
         }
+
+        final String activeProjectPath = currentProject.getRootProject().getPath();
+
+        if (actionEvent.getParameters() == null) {
+            return Promises.reject(JsPromiseError.create(localization.canNotOpenFileWithoutParams()));
+        }
+
+        String relPathToOpen = actionEvent.getParameters().get(FILE_PARAM_ID);
+        if (relPathToOpen == null) {
+            return Promises.reject(JsPromiseError.create(localization.fileToOpenIsNotSpecified()));
+        }
+
+        if (!relPathToOpen.startsWith("/")) {
+            relPathToOpen = "/" + relPathToOpen;
+        }
+        final String pathToOpen = activeProjectPath + relPathToOpen;
+
+        final Call<Void, Throwable> call = new Call<Void, Throwable>() {
+            HandlerRegistration handlerRegistration;
+
+            @Override
+            public void makeCall(final Callback<Void, Throwable> callback) {
+                projectServiceClient.getItem(pathToOpen, new AsyncRequestCallback<ItemReference>() {
+                    @Override
+                    protected void onSuccess(ItemReference result) {
+                        actionCompletedCallBack = callback;
+
+                        handlerRegistration = eventBus.addHandler(ActivePartChangedEvent.TYPE, new ActivePartChangedHandler() {
+                            @Override
+                            public void onActivePartChanged(ActivePartChangedEvent event) {
+                                if (event.getActivePart() instanceof EditorPartPresenter) {
+                                    EditorPartPresenter editor = (EditorPartPresenter)event.getActivePart();
+                                    handlerRegistration.removeHandler();
+                                    if ((pathToOpen).equals(editor.getEditorInput().getFile().getPath())) {
+                                        callback.onSuccess(null);
+                                    }
+                                }
+                            }
+                        });
+
+                        actionPerformed(actionEvent);
+                    }
+
+                    @Override
+                    protected void onFailure(Throwable exception) {
+                        callback.onFailure(exception);
+                    }
+                });
+            }
+        };
+
+        return createFromCallback(call);
     }
 }

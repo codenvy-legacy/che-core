@@ -78,6 +78,11 @@ public class CategoriesList extends Composite {
         return false;
     }
 
+    /** Clear list of items. */
+    public void clear() {
+        root.clear();
+    }
+
     class SelectionManager {
 
         private Element selectedItem;

@@ -11,7 +11,6 @@
 package org.eclipse.che.ide.core.editor;
 
 import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorInitException;
 import org.eclipse.che.ide.api.editor.EditorInput;
@@ -225,6 +224,10 @@ public class EditorAgentImpl implements EditorAgent {
 
         //call close() method
         editor.close(false);
+
+        if (activeEditor == null) {
+            return;
+        }
 
         String activeFilePath = activeEditor.getEditorInput().getFile().getPath();
         if (activeFilePath.equals(closedFilePath)) {

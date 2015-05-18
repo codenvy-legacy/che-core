@@ -493,8 +493,8 @@ public class XMLTreeTest {
 
         tree.getRoot()
             .insertChild(NewElement.createElement("groupId", "test-group-id"), after("artifactId").or(after("version"))
-                                                                                       .or(after("parent"))
-                                                                                       .or(after("build")));
+                                                                                                  .or(after("parent"))
+                                                                                                  .or(after("build")));
     }
 
     @Test
@@ -590,8 +590,8 @@ public class XMLTreeTest {
         //second tree
         final NewElement dependency = NewElement
                 .createElement("dependency").appendChild(NewElement.createElement("artifactId", "test-artifact"))
-                                                                 .appendChild(NewElement.createElement("groupId", "test-group"))
-                                                                 .appendChild(NewElement.createElement("version", "test-version"));
+                .appendChild(NewElement.createElement("groupId", "test-group"))
+                .appendChild(NewElement.createElement("version", "test-version"));
         tree2.getSingleElement("//dependencies")
              .appendChild(dependency);
 
@@ -820,9 +820,9 @@ public class XMLTreeTest {
                                                   NewElement.createElement("artifactId", "test-artifact"),
                                                   NewElement.createElement("groupId", "test-group"),
                                                   NewElement.createElement("version", "test-version").setAttribute("attribute1", "value1"))
-                                 .setAttribute("attribute1", "value1")
-                                 .setAttribute("attribute2", "value2")
-                                 .setAttribute("attribute3", "value3"));
+                                   .setAttribute("attribute1", "value1")
+                                   .setAttribute("attribute2", "value2")
+                                   .setAttribute("attribute3", "value3"));
 
         assertEquals(tree.toString(), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                                       "<project>\n" +
@@ -1494,7 +1494,7 @@ public class XMLTreeTest {
     }
 
     @Test(expectedExceptions = XMLTreeException.class,
-          expectedExceptionsMessageRegExp = "Operation not permitted for element which has been removed from XMLTree")
+            expectedExceptionsMessageRegExp = "Operation not permitted for element which has been removed from XMLTree")
     public void shouldNotBeAbleToUseElementWhenParentWasRemovedFromTree() {
         final XMLTree tree = XMLTree.from(XML_CONTENT);
 
@@ -1623,12 +1623,21 @@ public class XMLTreeTest {
         tree.insertAfter("/parent/child1", NewElement.createElement("newTag"));
         assertEquals(tree.toString(), "<parent>\n" +
                                       "    <child1>\rchild1 text\r</child1>\n" +
-                                      "    <newTag/>\n"                   +
+                                      "    <newTag/>\n" +
                                       "\r\r<child2>child 2 text</child2>\n" +
                                       "</parent>");
     }
 
+    @Test
+    public void shouldRespectContentPositionsWhenUpdatingTextWithCarriageReturnCharacter() {
+        final String XML = "<parent><child>\r\nchild text\r\n</child></parent>";
 
+        XMLTree tree = XMLTree.from(XML);
+
+        tree.updateText("/parent/child", "new text");
+
+        assertEquals(tree.toString(), "<parent><child>new text</child></parent>");
+    }
 
     @Test(dataProvider = "custom-xml-files")
     public void shouldBeAbleToCreateTreeFromCustomXML(File xml) throws IOException {

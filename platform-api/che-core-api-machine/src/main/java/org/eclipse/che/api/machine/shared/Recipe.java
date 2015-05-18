@@ -19,11 +19,39 @@ import java.util.List;
  */
 public interface Recipe {
 
-//    RecipeId getId();
+    String getId();
+
+    void setId(String id);
+
+    Recipe withId(String id);
 
     String getType();
 
+    void setType(String type);
+
+    Recipe withType(String type);
+
     String getScript();
 
-//    List<String> getTags();
+    void setScript(String script);
+
+    Recipe withScript(String script);
+
+    String getCreator();
+
+    void setCreator(String creator);
+
+    Recipe withCreator(String creator);
+
+    List<String> getTags();
+
+    void setTags(List<String> tags);
+
+    Recipe withTags(List<String> tags);
+
+    Permissions getPermissions();
+
+    void setPermissions(Permissions permissions);
+
+    Recipe withPermissions(Permissions permissions);
 }

@@ -270,6 +270,28 @@ public final class XMLTreeUtil {
         return indexOfAttributeName(src, target, idx + 1);
     }
 
+    public static byte[] replaceAll(byte[] src, byte target, byte[] replacement) {
+        int matches = 0;
+        for (byte b : src) {
+            if (b == target) {
+                matches++;
+            }
+        }
+        if (matches == 0) {
+            return src;
+        }
+        final byte[] newSrc = new byte[src.length - matches + matches * replacement.length];
+        for (int i = 0, j = 0; i < src.length; i++) {
+            if (target != src[i]) {
+                newSrc[j++] = src[i];
+            } else {
+                System.arraycopy(replacement, 0, newSrc, j, replacement.length);
+                j += replacement.length;
+            }
+        }
+        return newSrc;
+    }
+
     private XMLTreeUtil() {
     }
 }

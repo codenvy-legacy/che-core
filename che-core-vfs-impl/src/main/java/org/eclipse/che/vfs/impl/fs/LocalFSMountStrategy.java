@@ -12,6 +12,8 @@ package org.eclipse.che.vfs.impl.fs;
 
 import org.eclipse.che.api.core.ServerException;
 
+import java.io.IOException;
+
 /**
  * Get local directory for 'mounting' virtual filesystem.
  *

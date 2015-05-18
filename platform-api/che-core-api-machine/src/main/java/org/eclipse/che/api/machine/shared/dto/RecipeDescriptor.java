@@ -13,11 +13,19 @@ package org.eclipse.che.api.machine.shared.dto;
 import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
 import org.eclipse.che.dto.shared.DTO;
 
+import java.util.List;
+
 /**
- * @author andrew00x
+ * @author Eugene Voevodin
  */
 @DTO
 public interface RecipeDescriptor extends Hyperlinks {
+    String getId();
+
+    void setId(String id);
+
+    RecipeDescriptor withId(String id);
+
     String getType();
 
     void setType(String type);
@@ -29,4 +37,22 @@ public interface RecipeDescriptor extends Hyperlinks {
     void setScript(String script);
 
     RecipeDescriptor withScript(String script);
+
+    String getCreator();
+
+    void setCreator(String creator);
+
+    RecipeDescriptor withCreator(String creator);
+
+    List<String> getTags();
+
+    void setTags(List<String> tags);
+
+    RecipeDescriptor withTags(List<String> tags);
+
+    PermissionsDescriptor getPermissions();
+
+    void setPermissions(PermissionsDescriptor permissions);
+
+    RecipeDescriptor withPermissions(PermissionsDescriptor permissions);
 }

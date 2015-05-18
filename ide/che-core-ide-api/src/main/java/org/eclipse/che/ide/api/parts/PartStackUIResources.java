@@ -103,6 +103,9 @@ public interface PartStackUIResources extends ClientBundle {
 
         @ClassName("ide-PartStack-Tab-Line-Error")
         String lineError();
+
+        @ClassName("ide-part-stack-header-menu-button")
+        String headerMenuButton();
     }
 
     @Source({"partstack.css", "org/eclipse/che/ide/api/ui/style.css"})

@@ -90,21 +90,16 @@ public class GenericTreeStructure implements TreeStructure {
                     }
                 }
 
+                if (project == null) {
+                    callback.onFailure(new IllegalStateException("ProjectNode not found"));
+                    return;
+                }
+
                 String p = path;
                 if (path.startsWith("/")) {
                     p = path.substring(1);
                 }
-                getNodeByPathRecursively(project, p, project.getId().length() + 1, new AsyncCallback<TreeNode<?>>() {
-                    @Override
-                    public void onSuccess(TreeNode<?> result) {
-                        callback.onSuccess(result);
-                    }
-
-                    @Override
-                    public void onFailure(Throwable caught) {
-                        callback.onFailure(caught);
-                    }
-                });
+                getNodeByPathRecursively(project, p, project.getId().length() + 1, callback);
             }
 
             @Override
@@ -121,16 +116,25 @@ public class GenericTreeStructure implements TreeStructure {
             public void onSuccess(TreeNode<?> result) {
                 for (TreeNode<?> childNode : result.getChildren().asIterable()) {
                     if (path.startsWith(childNode.getId(), offset)) {
+
                         final int nextOffset = offset + childNode.getId().length() + 1;
-                        if (nextOffset > path.length()) {
+
+                        if (nextOffset - 1 == path.length()) {
                             callback.onSuccess(childNode);
                         } else {
-                            getNodeByPathRecursively(childNode, path, nextOffset, callback);
+
+                            int indexNextNodeSlash = path.indexOf("/", nextOffset - 1);
+
+                            if (indexNextNodeSlash == nextOffset - 1) {
+                                getNodeByPathRecursively(childNode, path, nextOffset, callback);
+                            } else {//very similar path, f.e. /com/u but we need another /com/ua, we should get next child of com
+                                continue;
+                            }
                         }
                         return;
                     }
                 }
-                callback.onSuccess(null);
+                callback.onFailure(new IllegalStateException("Node not found"));
             }
 
             @Override

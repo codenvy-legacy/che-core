@@ -15,6 +15,7 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
+import org.eclipse.che.ide.api.event.NodeExpandedEvent;
 import org.eclipse.che.ide.api.project.tree.TreeStructure;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.api.project.tree.TreeStructureProviderRegistry;
@@ -25,9 +26,6 @@ import org.eclipse.che.ide.collections.java.JsonArrayListAdapter;
 import org.eclipse.che.ide.menu.ContextMenu;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.ui.tree.SelectionModel;
-import org.eclipse.che.ide.part.projectexplorer.DeleteNodeHandler;
-import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerPartPresenter;
-import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerView;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.web.bindery.event.shared.EventBus;
 
@@ -46,6 +44,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -195,5 +194,15 @@ public class ProjectExplorerPartPresenterTest {
         presenter.onEnterKey();
 
         verify(node).processNodeAction();
+    }
+
+    @Test
+    public void nodeShouldBeExpanded() {
+        presenter.expandNode(selectedNode);
+
+        verify(view).expandAndSelectNode(selectedNode);
+        verify(view).updateNode(selectedNode, selectedNode);
+
+        verify(eventBus).fireEvent(any(NodeExpandedEvent.class));
     }
 }

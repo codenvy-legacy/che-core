@@ -342,10 +342,10 @@ public class ProjectService extends Service {
             throws NotFoundException, ConflictException, ForbiddenException, ServerException {
 
         Project module = projectManager.addModule(workspace, parentPath, path,
-                                                  (newProject == null) ? null : DtoConverter
-                                                          .fromDto2(newProject, projectManager.getProjectTypeRegistry()),
-                                                  (newProject == null) ? null : newProject.getGeneratorDescription().getOptions(),
-                                                  (newProject == null) ? null : newProject.getVisibility());
+                (newProject == null) ? null : DtoConverter
+                        .fromDto2(newProject, projectManager.getProjectTypeRegistry()),
+                (newProject == null) ? null : newProject.getGeneratorDescription().getOptions(),
+                (newProject == null) ? null : newProject.getVisibility());
 
 
         final ProjectDescriptor descriptor = DtoConverter.toDescriptorDto2(module, getServiceContext().getServiceUriBuilder(),
@@ -390,9 +390,10 @@ public class ProjectService extends Service {
             }
         } else {
             try {
-                oldProjectType = project.getConfig().getTypeId();
-                oldMixinTypes = project.getConfig().getMixinTypes();
-            } catch (ProjectTypeConstraintException e) {
+                ProjectConfig config = project.getConfig();
+                oldProjectType = config.getTypeId();
+                oldMixinTypes = config.getMixinTypes();
+            } catch (ProjectTypeConstraintException | ValueStorageException e) {
                 //here we allow changing bad project type on registered
                 LOG.warn(e.getMessage());
             }
@@ -757,7 +758,7 @@ public class ProjectService extends Service {
             final String projectType = project.getConfig().getTypeId();
             entry.remove();
             LOG.info("EVENT#project-destroyed# PROJECT#{}# TYPE#{}# WS#{}# USER#{}#", name, projectType,
-                     EnvironmentContext.getCurrent().getWorkspaceName(), EnvironmentContext.getCurrent().getUser().getName());
+                    EnvironmentContext.getCurrent().getWorkspaceName(), EnvironmentContext.getCurrent().getUser().getName());
 
             logProjectCreatedEvent(name, projectType);
         }
@@ -879,6 +880,15 @@ public class ProjectService extends Service {
         try {
             if (newProject != null) {
                 visibility = newProject.getVisibility();
+
+                //TODO:
+                //this trick need for fixing problem for default runners in case
+                //scripts downloaded  from remote resources "docker" this is only marker not real path in file system
+                //see importRunnerEnvironment() method
+//                if (newProject.getRunners() != null && newProject.getRunners().getDefault() != null && newProject.getRunners().getDefault().startsWith("project:/docker/")) {
+//                    String replace = newProject.getRunners().getDefault().replace("project:/docker/", "project:/");
+//                    newProject.getRunners().setDefault(replace);
+//                }
                 projectConfig = DtoConverter.fromDto2(newProject, projectTypeRegistry);
             }
             project = projectManager.convertFolderToProject(workspace,
@@ -1051,7 +1061,7 @@ public class ProjectService extends Service {
      * @param project
      * @throws ServerException
      */
-    private void reindexProject(long creationDate, FolderEntry baseProjectFolder, Project project) throws ServerException {
+    private void reindexProject(long creationDate, FolderEntry baseProjectFolder, final Project project) throws ServerException {
         final VirtualFile file = baseProjectFolder.getVirtualFile();
         executor.execute(new Runnable() {
             @Override
@@ -1059,7 +1069,7 @@ public class ProjectService extends Service {
                 try {
                     searcherProvider.getSearcher(file.getMountPoint(), true).add(file);
                 } catch (Exception e) {
-                    LOG.error(e.getMessage());
+                    LOG.warn(String.format("Workspace: %s, project: %s", project.getWorkspace(), project.getPath()), e.getMessage());
                 }
             }
         });

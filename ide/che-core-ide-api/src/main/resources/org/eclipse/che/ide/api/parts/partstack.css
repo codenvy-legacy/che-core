@@ -247,6 +247,11 @@
     cursor: default;
 }
 
+.ide-part-stack-header-menu-button {
+    float: right;
+    margin-top: -1px;
+}
+
 .ide-PartStack-Tool-Tab {
     /* tab button */
     border-right: 1px solid tabBorder;

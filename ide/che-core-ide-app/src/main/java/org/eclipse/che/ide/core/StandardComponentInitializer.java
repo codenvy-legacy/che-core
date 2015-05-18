@@ -28,6 +28,7 @@ import org.eclipse.che.ide.actions.NavigateToFileAction;
 import org.eclipse.che.ide.actions.NewProjectAction;
 import org.eclipse.che.ide.actions.OpenFileAction;
 import org.eclipse.che.ide.actions.OpenProjectAction;
+import org.eclipse.che.ide.actions.OpenNodeAction;
 import org.eclipse.che.ide.actions.OpenSelectedFileAction;
 import org.eclipse.che.ide.actions.ProjectConfigurationAction;
 import org.eclipse.che.ide.actions.RedirectToFeedbackAction;
@@ -37,6 +38,7 @@ import org.eclipse.che.ide.actions.RedoAction;
 import org.eclipse.che.ide.actions.RenameItemAction;
 import org.eclipse.che.ide.actions.SaveAction;
 import org.eclipse.che.ide.actions.SaveAllAction;
+import org.eclipse.che.ide.actions.SelectNodeAction;
 import org.eclipse.che.ide.actions.ShowAboutAction;
 import org.eclipse.che.ide.actions.ShowHiddenFilesAction;
 import org.eclipse.che.ide.actions.ShowPreferencesAction;
@@ -70,6 +72,7 @@ import static org.eclipse.che.ide.api.action.IdeActions.GROUP_FILE_NEW;
  * Initializer for standard components i.e. some basic menu commands (Save, Save As etc)
  *
  * @author Evgen Vidolob
+ * @author Dmitry Shnurenko
  */
 @Singleton
 public class StandardComponentInitializer {
@@ -144,6 +147,12 @@ public class StandardComponentInitializer {
 
     @Inject
     private OpenFileAction openFileAction;
+
+    @Inject
+    private OpenNodeAction openNodeAction;
+
+    @Inject
+    private SelectNodeAction selectNodeAction;
 
     @Inject
     private ShowHiddenFilesAction showHiddenFilesAction;
@@ -403,6 +412,8 @@ public class StandardComponentInitializer {
 
         actionManager.registerAction("findReplace", findReplaceAction);
         actionManager.registerAction("openFile", openFileAction);
+        actionManager.registerAction("openNode", openNodeAction);
+        actionManager.registerAction("selectNode", selectNodeAction);
 
         changeResourceGroup.add(closeProjectAction);
         changeResourceGroup.add(deleteItemAction);
@@ -421,14 +432,8 @@ public class StandardComponentInitializer {
         DefaultActionGroup rightToolbarGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_RIGHT_TOOLBAR);
         toolbarPresenter.bindRightGroup(rightToolbarGroup);
 
-
         // Define hot-keys
-        keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('F').build(), "format");
-        keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('z').build(), "undo");
-        keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('Z').build(), "redo");
         keyBinding.getGlobal().addKey(new KeyBuilder().action().alt().charCode('n').build(), "navigateToFile");
-        keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('s').build(), "save");
-        keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('S').build(), "saveAll");
         keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('A').build(), "findActionAction");
     }
 }

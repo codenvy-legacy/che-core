@@ -20,6 +20,8 @@ import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.rest.HTTPHeader;
+import org.eclipse.che.ide.rest.RestContext;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -36,7 +38,7 @@ public class BuilderServiceClientImpl implements BuilderServiceClient {
     private final AsyncRequestFactory asyncRequestFactory;
 
     @Inject
-    public BuilderServiceClientImpl(@Named("restContext") String baseUrl,
+    public BuilderServiceClientImpl(@RestContext String baseUrl,
                                     @Named("workspaceId") String workspaceId,
                                     AsyncRequestLoader loader,
                                     AsyncRequestFactory asyncRequestFactory) {

@@ -34,6 +34,24 @@ public class BytesTest {
     }
 
     @Test
+    public void convert100MBValue() {
+        String newSize = Bytes.toHumanSize("100MB");
+        Assert.assertEquals("100MB", newSize);
+    }
+
+    @Test
+    public void convert200MBValue() {
+        String newSize = Bytes.toHumanSize("200MB");
+        Assert.assertEquals("200MB", newSize);
+    }
+
+    @Test
+    public void convert500MBValue() {
+        String newSize = Bytes.toHumanSize("500MB");
+        Assert.assertEquals("500MB", newSize);
+    }
+
+    @Test
     public void convert1024MiBValue() {
         String newSize = Bytes.toHumanSize("1024MiB");
         Assert.assertEquals("1GiB", newSize);

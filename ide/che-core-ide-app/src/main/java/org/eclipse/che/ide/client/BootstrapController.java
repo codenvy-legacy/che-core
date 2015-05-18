@@ -10,15 +10,15 @@
  *******************************************************************************/
 package org.eclipse.che.ide.client;
 
+import com.google.gwt.core.client.Callback;
+import com.google.inject.Provider;
+
 import elemental.client.Browser;
 import elemental.events.Event;
 import elemental.events.EventListener;
 
-import com.google.gwt.core.client.Callback;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.core.client.ScriptInjector;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
@@ -26,57 +26,33 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.SimpleLayoutPanel;
 import com.google.inject.Inject;
-import com.google.inject.Provider;
+import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import org.eclipse.che.api.analytics.logger.EventLogger;
-//import org.eclipse.che.api.factory.dto.Factory;
 //import org.eclipse.che.api.factory.dto.Ide;
-//import org.eclipse.che.api.factory.gwt.client.FactoryServiceClient;
-import org.eclipse.che.api.project.gwt.client.ProjectTemplateServiceClient;
-import org.eclipse.che.api.project.gwt.client.ProjectTypeServiceClient;
-import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
-import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
-import org.eclipse.che.api.user.gwt.client.UserProfileServiceClient;
-import org.eclipse.che.api.user.shared.dto.ProfileDescriptor;
-import org.eclipse.che.api.workspace.gwt.client.WorkspaceServiceClient;
-import org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor;
-import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.DocumentTitleDecorator;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.app.CurrentUser;
 import org.eclipse.che.ide.api.event.OpenProjectEvent;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.ProjectActionHandler;
 import org.eclipse.che.ide.api.event.WindowActionEvent;
-import org.eclipse.che.ide.api.icon.Icon;
-import org.eclipse.che.ide.api.icon.IconRegistry;
-import org.eclipse.che.ide.api.project.type.ProjectTemplateRegistry;
-import org.eclipse.che.ide.api.project.type.ProjectTypeRegistry;
-import org.eclipse.che.ide.api.theme.Style;
-import org.eclipse.che.ide.api.theme.Theme;
-import org.eclipse.che.ide.api.theme.ThemeAgent;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.core.ComponentException;
-import org.eclipse.che.ide.core.ComponentRegistry;
+import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.logger.AnalyticsEventLoggerExt;
-import org.eclipse.che.ide.preferences.PreferencesManagerImpl;
-import org.eclipse.che.ide.rest.AsyncRequestCallback;
-import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
-import org.eclipse.che.ide.rest.StringMapUnmarshaller;
+import org.eclipse.che.ide.statepersistance.AppStateManager;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.Config;
-import org.eclipse.che.ide.util.UUID;
 import org.eclipse.che.ide.util.loging.Log;
 import org.eclipse.che.ide.workspace.WorkspacePresenter;
 
+
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -85,253 +61,96 @@ import java.util.Map;
  *
  * @author Nikolay Zamosenchuk
  */
+@Singleton
 public class BootstrapController {
 
-    private final DtoUnmarshallerFactory       dtoUnmarshallerFactory;
     private final AnalyticsEventLoggerExt      analyticsEventLoggerExt;
-    private final IconRegistry                 iconRegistry;
-    private final ThemeAgent                   themeAgent;
-    private final Provider<ComponentRegistry>  componentRegistry;
     private final Provider<WorkspacePresenter> workspaceProvider;
     private final ExtensionInitializer         extensionInitializer;
-//    private final FactoryServiceClient         factoryService;
-    private final UserProfileServiceClient     userProfileService;
-    private final WorkspaceServiceClient       workspaceServiceClient;
-    private final ProjectTypeServiceClient     projectTypeService;
-    private final ProjectTemplateServiceClient projectTemplateServiceClient;
-    private final ProjectTypeRegistry          projectTypeRegistry;
-    private final ProjectTemplateRegistry      projectTemplateRegistry;
-    private final PreferencesManagerImpl       preferencesManager;
-    private final StyleInjector                styleInjector;
-    private final CoreLocalizationConstant     coreLocalizationConstant;
     private final EventBus                     eventBus;
     private final ActionManager                actionManager;
     private final AppCloseHandler              appCloseHandler;
-    private final DocumentTitleDecorator       documentTitleDecorator;
     private final PresentationFactory          presentationFactory;
     private final AppContext                   appContext;
-    private       CurrentUser                  currentUser;
+    private final DocumentTitleDecorator       documentTitleDecorator;
+    private final AppStateManager              appStateManager;
+    HandlerRegistration handlerRegistration = null;
+
 
     /** Create controller. */
     @Inject
-    public BootstrapController(Provider<ComponentRegistry> componentRegistry,
-                               Provider<WorkspacePresenter> workspaceProvider,
+    public BootstrapController(Provider<WorkspacePresenter> workspaceProvider,
                                ExtensionInitializer extensionInitializer,
-                               UserProfileServiceClient userProfileService,
-                               WorkspaceServiceClient workspaceServiceClient,
-                               ProjectTypeServiceClient projectTypeService,
-                               ProjectTemplateServiceClient projectTemplateServiceClient,
-                               ProjectTypeRegistry projectTypeRegistry,
-                               ProjectTemplateRegistry projectTemplateRegistry,
-                               PreferencesManagerImpl preferencesManager,
-                               StyleInjector styleInjector,
-                               CoreLocalizationConstant coreLocalizationConstant,
                                DtoRegistrar dtoRegistrar,
-                               DtoUnmarshallerFactory dtoUnmarshallerFactory,
                                AnalyticsEventLoggerExt analyticsEventLoggerExt,
-                               Resources resources,
-//                               FactoryServiceClient factoryService,
                                EventBus eventBus,
                                AppContext appContext,
-                               final IconRegistry iconRegistry,
-                               final ThemeAgent themeAgent,
                                ActionManager actionManager,
                                AppCloseHandler appCloseHandler,
+                               AppStateManager appStateManager,
                                DocumentTitleDecorator documentTitleDecorator) {
-        this.componentRegistry = componentRegistry;
         this.workspaceProvider = workspaceProvider;
         this.extensionInitializer = extensionInitializer;
-        this.userProfileService = userProfileService;
-        this.workspaceServiceClient = workspaceServiceClient;
-        this.projectTypeService = projectTypeService;
-        this.projectTemplateServiceClient = projectTemplateServiceClient;
-        this.projectTypeRegistry = projectTypeRegistry;
-        this.projectTemplateRegistry = projectTemplateRegistry;
-        this.preferencesManager = preferencesManager;
-        this.styleInjector = styleInjector;
-        this.coreLocalizationConstant = coreLocalizationConstant;
-//        this.factoryService = factoryService;
         this.eventBus = eventBus;
         this.appContext = appContext;
-        this.iconRegistry = iconRegistry;
-        this.themeAgent = themeAgent;
         this.actionManager = actionManager;
-        this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.analyticsEventLoggerExt = analyticsEventLoggerExt;
         this.appCloseHandler = appCloseHandler;
         this.documentTitleDecorator = documentTitleDecorator;
+        this.appStateManager = appStateManager;
+
         presentationFactory = new PresentationFactory();
 
         // Register DTO providers
         dtoRegistrar.registerDtoProviders();
-
-        // Register default icons
-        registerDefaultIcons(resources);
-
-        // Inject ZeroClipboard script
-        ScriptInjector.fromUrl(GWT.getModuleBaseForStaticFiles() + "ZeroClipboard.min.js").setWindow(ScriptInjector.TOP_WINDOW)
-                      .setCallback(new Callback<Void, Exception>() {
-                          @Override
-                          public void onSuccess(Void result) {
-                          }
-
-                          @Override
-                          public void onFailure(Exception e) {
-                              Log.error(getClass(), "Unable to inject ZeroClipboard.min.js", e);
-                          }
-                      }).inject();
-
-        currentUser = new CurrentUser();
-
-        loadWorkspace();
     }
 
-    /**
-     * Fetches current workspace and saves it to Config.
-     */
-    private void loadWorkspace() {
-        workspaceServiceClient.getWorkspace(Config.getWorkspaceId(),
-                                            new AsyncRequestCallback<WorkspaceDescriptor>(
-                                                    dtoUnmarshallerFactory.newUnmarshaller(WorkspaceDescriptor.class)) {
-                                                @Override
-                                                protected void onSuccess(WorkspaceDescriptor result) {
-                                                    Config.setCurrentWorkspace(result);
-                                                    appContext.setWorkspace(result);
-                                                    loadUserProfile();
-                                                }
-
-                                                @Override
-                                                protected void onFailure(Throwable throwable) {
-                                                    Log.error(BootstrapController.class, "Unable to get Workspace", throwable);
-                                                    initializationFailed("Unable to get Workspace");
-                                                }
-                                            }
-                                           );
+    @Inject
+    void startComponents(Map<String, Provider<Component>> startableMap) {
+        Iterator<Map.Entry<String, Provider<Component>>> iterator = startableMap.entrySet().iterator();
+        startComponent(iterator);
     }
 
-    /** Get User profile, restore preferences and theme */
-    private void loadUserProfile() {
-        userProfileService.getCurrentProfile(new AsyncRequestCallback<ProfileDescriptor>(
-                                                     dtoUnmarshallerFactory.newUnmarshaller(ProfileDescriptor.class)) {
-                                                 @Override
-                                                 protected void onSuccess(final ProfileDescriptor profile) {
-                                                     currentUser.setProfile(profile);
-                                                     loadPreferences();
-                                                 }
-
-                                                 @Override
-                                                 protected void onFailure(Throwable error) {
-                                                     Log.error(BootstrapController.class, "Unable to get Profile", error);
-                                                     initializationFailed("Unable to get Profile");
-                                                 }
-                                             }
-                                            );
-    }
-
-    private void loadPreferences() {
-        userProfileService.getPreferences(new AsyncRequestCallback<Map<String, String>>(new StringMapUnmarshaller()) {
-            @Override
-            protected void onSuccess(Map<String, String> preferences) {
-                currentUser.setPreferences(preferences);
-                appContext.setCurrentUser(currentUser);
-                preferencesManager.load(preferences);
-                setTheme();
-                styleInjector.inject();
-                loadProjectTypes();
-            }
-
-            @Override
-            protected void onFailure(Throwable exception) {
-                Log.error(BootstrapController.class, "Unable to load user preferences", exception);
-                initializationFailed("Unable to load preferences");
-            }
-        });
-    }
-
-    private void loadProjectTypes() {
-        projectTypeService.getProjectTypes(
-                new AsyncRequestCallback<Array<ProjectTypeDefinition>>(
-                        dtoUnmarshallerFactory.newArrayUnmarshaller(ProjectTypeDefinition.class)) {
-
-                    @Override
-                    protected void onSuccess(Array<ProjectTypeDefinition> result) {
-                        for (ProjectTypeDefinition projectType : result.asIterable()) {
-                            projectTypeRegistry.register(projectType);
-                        }
-                        loadProjectTemplates();
-                    }
-
-                    @Override
-                    protected void onFailure(Throwable exception) {
-                        Log.error(BootstrapController.class, exception);
-                    }
-                });
-    }
-
-    private void loadProjectTemplates() {
-        projectTemplateServiceClient.getProjectTemplates(new AsyncRequestCallback<Array<ProjectTemplateDescriptor>>(
-                dtoUnmarshallerFactory.newArrayUnmarshaller(ProjectTemplateDescriptor.class)) {
-            @Override
-            protected void onSuccess(Array<ProjectTemplateDescriptor> result) {
-                for (ProjectTemplateDescriptor template : result.asIterable()) {
-                    projectTemplateRegistry.register(template);
+    private void startComponent(final Iterator<Map.Entry<String, Provider<Component>>> iterator) {
+        if (iterator.hasNext()) {
+            final Map.Entry<String, Provider<Component>> componentEntry = iterator.next();
+//            Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+//                @Override
+//                public void execute() {
+            componentEntry.getValue().get().start(new Callback<Component, Exception>() {
+                @Override
+                public void onFailure(Exception reason) {
+                    Log.error(BootstrapController.class, reason);
+                    initializationFailed(reason.getMessage());
                 }
-                loadFactory();
-            }
 
-            @Override
-            protected void onFailure(Throwable exception) {
-                Log.error(BootstrapController.class, exception);
-            }
-        });
-    }
+                @Override
+                public void onSuccess(Component result) {
+                    startComponent(iterator);
+                }
+            });
 
-    private void loadFactory() {
-        String factoryParams = Config.getStartupParam("id");
-        if (factoryParams != null) {
-            /*factoryService.getFactory(factoryParams,
-                                      new AsyncRequestCallback<Factory>(dtoUnmarshallerFactory.newUnmarshaller(Factory.class)) {
-                                          @Override
-                                          protected void onSuccess(Factory factory) {
-                                              appContext.setFactory(factory);
-                                              initializeComponentRegistry();
-                                          }
-
-                                          @Override
-                                          protected void onFailure(Throwable error) {
-                                              Log.error(BootstrapController.class, "Unable to load Factory", error);
-                                              initializeComponentRegistry();
-                                          }
-                                      }
-                                     );*/
+//                }
+//            });
         } else {
-            initializeComponentRegistry();
+            startExtensions();
         }
     }
 
-    /** Initialize Component Registry, start extensions */
-    private void initializeComponentRegistry() {
+    /** Start extensions */
+    private void startExtensions() {
         Scheduler.get().scheduleDeferred(new ScheduledCommand() {
             @Override
             public void execute() {
-                componentRegistry.get().start(new Callback<Void, ComponentException>() {
-                    @Override
-                    public void onSuccess(Void result) {
-                        // Instantiate extensions
-                        extensionInitializer.startExtensions();
+                // Instantiate extensions
+                extensionInitializer.startExtensions();
 
-                        Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-                            @Override
-                            public void execute() {
-                                displayIDE();
-                            }
-                        });
-                    }
-
+                Scheduler.get().scheduleDeferred(new ScheduledCommand() {
                     @Override
-                    public void onFailure(ComponentException caught) {
-                        Log.error(BootstrapController.class, "Unable to start component " + caught.getComponent(), caught);
-                        initializationFailed("Unable to start component " + caught.getComponent());
+                    public void execute() {
+                        displayIDE();
+                        boolean openLastProject = Config.getProjectName() == null && Config.getStartupParam("action") == null;
+                        appStateManager.start(openLastProject);
                     }
                 });
             }
@@ -429,7 +248,6 @@ public class BootstrapController {
         }
     }
 
-    HandlerRegistration handlerRegistration = null;
 
     private void processStartupParameters() {
         final String projectNameToOpen = Config.getProjectName();
@@ -439,44 +257,48 @@ public class BootstrapController {
         } else {
             processStartupAction();
 
-            handlerRegistration = eventBus.addHandler(ProjectActionEvent.TYPE, getFactoryActionHandler());
+//            handlerRegistration = eventBus.addHandler(ProjectActionEvent.TYPE, getFactoryActionHandler());
         }
 
-        /*if (appContext.getFactory() != null && appContext.getFactory().getIde() != null) {
-            final Ide ide = appContext.getFactory().getIde();
-
-            if (ide.getOnAppClosed() != null && ide.getOnAppClosed().getActions() != null) {
-                appCloseHandler.performBeforeClose(ide.getOnAppClosed().getActions());
-            }
-
-            if (ide.getOnAppLoaded() != null && ide.getOnAppLoaded().getActions() != null) {
-                performActions(ide.getOnAppLoaded().getActions());
-            }
-        }*/
+//        if (appContext.getFactory() != null && appContext.getFactory().getIde() != null) {
+//            final Ide ide = appContext.getFactory().getIde();
+//
+//            if (ide.getOnAppClosed() != null && ide.getOnAppClosed().getActions() != null) {
+//                appCloseHandler.performBeforeClose(ide.getOnAppClosed().getActions());
+//            }
+//
+//            if (ide.getOnAppLoaded() != null && ide.getOnAppLoaded().getActions() != null) {
+//                performActions(ide.getOnAppLoaded().getActions());
+//            }
+//        }
     }
 
-    private ProjectActionHandler getFactoryActionHandler() {
-        return new ProjectActionHandler() {
-            @Override
-            public void onProjectOpened(ProjectActionEvent event) {
-                if (handlerRegistration != null) {
-                    handlerRegistration.removeHandler();
-                }
-
+//    private ProjectActionHandler getFactoryActionHandler() {
+//        return new ProjectActionHandler() {
+//            @Override
+//            public void onProjectOpened(ProjectActionEvent event) {
+//                if (handlerRegistration != null) {
+//                    handlerRegistration.removeHandler();
+//                }
+//
 //                if (appContext.getFactory() != null && appContext.getFactory().getIde() != null
 //                    && appContext.getFactory().getIde().getOnProjectOpened() != null
 //                    && appContext.getFactory().getIde().getOnProjectOpened().getActions() != null) {
 //
 //                    performActions(appContext.getFactory().getIde().getOnProjectOpened().getActions());
 //                }
-            }
-
-            @Override
-            public void onProjectClosed(ProjectActionEvent event) {
-                //do nothing
-            }
-        };
-    }
+//            }
+//
+//            @Override
+//            public void onProjectClosing(ProjectActionEvent event) {
+//            }
+//
+//            @Override
+//            public void onProjectClosed(ProjectActionEvent event) {
+//                //do nothing
+//            }
+//        };
+//    }
 
     private ProjectActionHandler getStartupActionHandler() {
         return new ProjectActionHandler() {
@@ -484,12 +306,14 @@ public class BootstrapController {
             @Override
             public void onProjectOpened(ProjectActionEvent event) {
                 processStartupAction();
+            }
 
+            @Override
+            public void onProjectClosing(ProjectActionEvent event) {
             }
 
             @Override
             public void onProjectClosed(ProjectActionEvent event) {
-
             }
         };
     }
@@ -528,23 +352,6 @@ public class BootstrapController {
         }
     }
 
-
-    /** Applying user defined Theme. */
-    private void setTheme() {
-        String storedThemeId = preferencesManager.getValue("Theme");
-        storedThemeId = storedThemeId != null ? storedThemeId : themeAgent.getCurrentThemeId();
-        Theme themeToSet = storedThemeId != null ? themeAgent.getTheme(storedThemeId) : themeAgent.getDefault();
-        Style.setTheme(themeToSet);
-        themeAgent.setCurrentThemeId(themeToSet.getId());
-    }
-
-    private void registerDefaultIcons(Resources resources) {
-        iconRegistry.registerIcon(new Icon("default.projecttype.small.icon", "default/project.png", resources.defaultProject()));
-        iconRegistry.registerIcon(new Icon("default.folder.small.icon", "default/folder.png", resources.defaultFolder()));
-        iconRegistry.registerIcon(new Icon("default.file.small.icon", "default/file.png", resources.defaultFile()));
-        iconRegistry.registerIcon(new Icon("default", "default/default.jpg", resources.defaultIcon()));
-    }
-
     /**
      * Handles any of initialization errors.
      * Tries to call predefined IDE.eventHandlers.ideInitializationFailed function.
@@ -560,40 +367,4 @@ public class BootstrapController {
         }
     }-*/;
 
-
-    private static class AnalyticsSessions {
-        private String id;
-        private long   lastLogTime;
-        private long   lastUsageTime;
-
-        private AnalyticsSessions() {
-            makeNew();
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public void updateLogTime() {
-            lastLogTime = System.currentTimeMillis();
-        }
-
-        public void updateUsageTime() {
-            lastUsageTime = System.currentTimeMillis();
-        }
-
-        public void makeNew() {
-            this.id = UUID.uuid();
-            this.lastUsageTime = System.currentTimeMillis();
-            this.lastLogTime = lastUsageTime;
-        }
-
-        public long getIdleUsageTime() {
-            return System.currentTimeMillis() - lastUsageTime;
-        }
-
-        public long getIdleLogTime() {
-            return System.currentTimeMillis() - lastUsageTime;
-        }
-    }
 }

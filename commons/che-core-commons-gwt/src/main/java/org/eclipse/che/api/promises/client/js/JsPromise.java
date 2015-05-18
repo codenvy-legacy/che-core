@@ -10,16 +10,21 @@
  *******************************************************************************/
 package org.eclipse.che.api.promises.client.js;
 
+import com.google.gwt.core.client.JavaScriptObject;
+
 import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.PromiseError;
 import org.eclipse.che.api.promises.client.Thenable;
-import com.google.gwt.core.client.JavaScriptObject;
 
 /**
  * Implementation of {@link org.eclipse.che.api.promises.client.Promise} around ES6 promises.
- * @param <V> the type of the promised value
+ *
+ * @param <V>
+ *         the type of the promised value
+ * @author Mickaël Leduque
+ * @author Artem Zatsarynnyy
  */
 public class JsPromise<V> extends JavaScriptObject implements Promise<V> {
 
@@ -33,6 +38,13 @@ public class JsPromise<V> extends JavaScriptObject implements Promise<V> {
 
     @Override
     public final native <B> Promise<B> then(Function<V, B> onFulfilled) /*-{
+        return this.then(function(value) {
+            return onFulfilled.@org.eclipse.che.api.promises.client.Function::apply(*)(value);
+        });
+    }-*/;
+
+    @Override
+    public final native <B> Promise<B> thenPromise(Function<V, Promise<B>> onFulfilled) /*-{
         return this.then(function(value) {
             return onFulfilled.@org.eclipse.che.api.promises.client.Function::apply(*)(value);
         });
@@ -57,6 +69,13 @@ public class JsPromise<V> extends JavaScriptObject implements Promise<V> {
 
     @Override
     public final native <B> Promise<B> catchError(Function<PromiseError, B> onRejected) /*-{
+        return this.then(undefined, function(reason) {
+            return onRejected.@org.eclipse.che.api.promises.client.Function::apply(*)(reason);
+        });
+    }-*/;
+
+    @Override
+    public final native <B> Promise<B> catchErrorPromise(Function<PromiseError, Promise<B>> onRejected) /*-{
         return this.then(undefined, function(reason) {
             return onRejected.@org.eclipse.che.api.promises.client.Function::apply(*)(reason);
         });
@@ -104,13 +123,6 @@ public class JsPromise<V> extends JavaScriptObject implements Promise<V> {
     }-*/;
 
     @Override
-    public final native Promise<V> catchError(Operation<PromiseError> onRejected) /*-{
-        return this.then(undefined, function(reason) {
-            onRejected.@org.eclipse.che.api.promises.client.Operation::apply(*)(reason);
-        });
-    }-*/;
-
-    @Override
     public final <B> Promise<B> then(final Thenable<B> thenable) {
         if (thenable instanceof JavaScriptObject) {
             return this.thenJs((JavaScriptObject)thenable);
@@ -118,6 +130,13 @@ public class JsPromise<V> extends JavaScriptObject implements Promise<V> {
             return this.thenJava(thenable);
         }
     }
+
+    @Override
+    public final native Promise<V> catchError(Operation<PromiseError> onRejected) /*-{
+        return this.then(undefined, function(reason) {
+            onRejected.@org.eclipse.che.api.promises.client.Operation::apply(*)(reason);
+        });
+    }-*/;
 
     private final native <B> Promise<B> thenJs(JavaScriptObject thenable) /*-{
         return this.then(thenable);

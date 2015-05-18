@@ -590,6 +590,52 @@ public class AccountServiceTest {
     }
 
     @Test
+    public void shouldRespondForbiddenIfUserTryOverrideSubscriptionAttributes() throws Exception {
+        prepareSuccessfulSubscriptionAddition();
+
+        newSubscription.getProperties().put("key", "123");
+        ContainerResponse response =
+                makeRequest(HttpMethod.POST, SERVICE_PATH + "/subscriptions", MediaType.APPLICATION_JSON, newSubscription);
+
+        assertNotEquals(response.getStatus(), Response.Status.FORBIDDEN.getStatusCode());
+        assertEquals(response.getEntity(), "User not authorized to add subscription with custom properties, please contact support");
+    }
+
+    @Test
+    public void shouldRespondForbiddenIfAdminTryOverrideNonExistentSubscriptionAttributes() throws Exception {
+        prepareSuccessfulSubscriptionAddition();
+
+        prepareSecurityContext("system/admin");
+
+        newSubscription.getProperties().put("nonExistentKey", "123");
+        ContainerResponse response =
+                makeRequest(HttpMethod.POST, SERVICE_PATH + "/subscriptions", MediaType.APPLICATION_JSON, newSubscription);
+
+        assertNotEquals(response.getStatus(), Response.Status.FORBIDDEN.getStatusCode());
+        assertEquals(response.getEntity(), "Forbidden overriding of non-existent plan properties");
+    }
+
+    @Test
+    public void shouldBeAbleToAddSubscriptionWithCustomAttributes() throws Exception {
+        prepareSuccessfulSubscriptionAddition();
+
+        prepareSecurityContext("system/admin");
+
+        Map<String, String> properties = new HashMap<>();
+        properties.put("custom", "0");
+        plan.setProperties(properties);
+        when(planDao.getPlanById(PLAN_ID)).thenReturn(plan);
+
+        newSubscription.getProperties().put("custom", "123");
+        ContainerResponse response =
+                makeRequest(HttpMethod.POST, SERVICE_PATH + "/subscriptions", MediaType.APPLICATION_JSON, newSubscription);
+
+        assertEquals(response.getStatus(), Response.Status.CREATED.getStatusCode());
+        SubscriptionDescriptor subscription = (SubscriptionDescriptor)response.getEntity();
+        assertEquals(subscription.getProperties().get("custom"), "123");
+    }
+
+    @Test
     public void shouldRespondNotFoundIfPlanNotFoundOnAddSubscription() throws Exception {
         prepareSuccessfulSubscriptionAddition();
 

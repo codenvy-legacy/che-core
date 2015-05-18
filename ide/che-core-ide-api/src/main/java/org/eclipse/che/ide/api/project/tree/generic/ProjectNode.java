@@ -156,11 +156,6 @@ public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements 
 
     /** {@inheritDoc} */
     @Override
-    public void rename(String newName, RenameCallback callback) {
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public boolean isDeletable() {
         return true;
     }

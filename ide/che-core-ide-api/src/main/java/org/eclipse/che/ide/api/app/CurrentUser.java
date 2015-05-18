@@ -11,7 +11,7 @@
 package org.eclipse.che.ide.api.app;
 
 import org.eclipse.che.api.user.shared.dto.ProfileDescriptor;
-
+import com.google.inject.Singleton;
 import java.util.Map;
 
 /**
@@ -19,6 +19,7 @@ import java.util.Map;
  *
  * @author Vitaly Parfonov
  */
+@Singleton
 public class CurrentUser {
 
     private ProfileDescriptor   profileDescriptor;

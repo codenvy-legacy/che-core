@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.gwt.client;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -19,16 +20,21 @@ import org.eclipse.che.api.machine.shared.dto.CreateMachineFromSnapshot;
 import org.eclipse.che.api.machine.shared.dto.MachineDescriptor;
 import org.eclipse.che.api.machine.shared.dto.ProcessDescriptor;
 import org.eclipse.che.api.machine.shared.dto.RecipeDescriptor;
+import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper.RequestCall;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.dto.DtoFactory;
-import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
+import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
+import org.eclipse.che.ide.rest.RestContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import static com.google.gwt.http.client.RequestBuilder.DELETE;
+import static org.eclipse.che.api.machine.gwt.client.Utils.newCallback;
+import static org.eclipse.che.api.machine.gwt.client.Utils.newPromise;
 import static org.eclipse.che.ide.MimeType.APPLICATION_JSON;
 import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
 import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
@@ -39,30 +45,45 @@ import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
  * @author Artem Zatsarynnyy
  */
 public class MachineServiceClientImpl implements MachineServiceClient {
-    private final DtoFactory          dtoFactory;
-    private final AsyncRequestFactory asyncRequestFactory;
-    private final AsyncRequestLoader  loader;
-    private final String              baseHttpUrl;
+    private final DtoFactory             dtoFactory;
+    private final DtoUnmarshallerFactory dtoUnmarshallerFactory;
+    private final AsyncRequestFactory    asyncRequestFactory;
+    private final AsyncRequestLoader     loader;
+    private final String                 baseHttpUrl;
 
     @Inject
-    protected MachineServiceClientImpl(@Named("restContext") String restContext,
+    protected MachineServiceClientImpl(@RestContext String restContext,
                                        DtoFactory dtoFactory,
+                                       DtoUnmarshallerFactory dtoUnmarshallerFactory,
                                        AsyncRequestFactory asyncRequestFactory,
                                        AsyncRequestLoader loader) {
         this.dtoFactory = dtoFactory;
+        this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.asyncRequestFactory = asyncRequestFactory;
         this.loader = loader;
         this.baseHttpUrl = restContext + "/machine";
     }
 
-    /** {@inheritDoc} */
     @Override
-    public void createMachineFromRecipe(@Nonnull String workspaceId,
-                                        @Nonnull String machineType,
-                                        @Nonnull String recipeType,
-                                        @Nonnull String recipeScript,
-                                        @Nullable String outputChannel,
-                                        @Nonnull AsyncRequestCallback<MachineDescriptor> callback) {
+    public Promise<MachineDescriptor> createMachineFromRecipe(@Nonnull final String workspaceId,
+                                                              @Nonnull final String machineType,
+                                                              @Nonnull final String recipeType,
+                                                              @Nonnull final String recipeScript,
+                                                              @Nullable final String outputChannel) {
+        return newPromise(new RequestCall<MachineDescriptor>() {
+            @Override
+            public void makeCall(AsyncCallback<MachineDescriptor> callback) {
+                createMachineFromRecipe(workspaceId, machineType, recipeType, recipeScript, outputChannel, callback);
+            }
+        });
+    }
+
+    private void createMachineFromRecipe(@Nonnull String workspaceId,
+                                         @Nonnull String machineType,
+                                         @Nonnull String recipeType,
+                                         @Nonnull String recipeScript,
+                                         @Nullable String outputChannel,
+                                         @Nonnull AsyncCallback<MachineDescriptor> callback) {
         final RecipeDescriptor recipeDescriptor = dtoFactory.createDto(RecipeDescriptor.class)
                                                             .withType(recipeType)
                                                             .withScript(recipeScript);
@@ -77,14 +98,22 @@ public class MachineServiceClientImpl implements MachineServiceClient {
                            .header(ACCEPT, APPLICATION_JSON)
                            .header(CONTENT_TYPE, APPLICATION_JSON)
                            .loader(loader, "Creating machine from recipe...")
-                           .send(callback);
+                           .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(MachineDescriptor.class)));
     }
 
-    /** {@inheritDoc} */
     @Override
-    public void createMachineFromSnapshot(@Nonnull String snapshotId,
-                                          @Nullable String outputChannel,
-                                          @Nonnull AsyncRequestCallback<MachineDescriptor> callback) {
+    public Promise<MachineDescriptor> createMachineFromSnapshot(@Nonnull final String snapshotId, @Nullable final String outputChannel) {
+        return newPromise(new RequestCall<MachineDescriptor>() {
+            @Override
+            public void makeCall(AsyncCallback<MachineDescriptor> callback) {
+                createMachineFromSnapshot(snapshotId, outputChannel, callback);
+            }
+        });
+    }
+
+    private void createMachineFromSnapshot(@Nonnull String snapshotId,
+                                           @Nullable String outputChannel,
+                                           @Nonnull AsyncCallback<MachineDescriptor> callback) {
         final CreateMachineFromSnapshot request = dtoFactory.createDto(CreateMachineFromSnapshot.class)
                                                             .withSnapshotId(snapshotId)
                                                             .withOutputChannel(outputChannel);
@@ -93,35 +122,60 @@ public class MachineServiceClientImpl implements MachineServiceClient {
                            .header(ACCEPT, APPLICATION_JSON)
                            .header(CONTENT_TYPE, APPLICATION_JSON)
                            .loader(loader, "Creating machine from snapshot...")
-                           .send(callback);
+                           .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(MachineDescriptor.class)));
     }
 
-    /** {@inheritDoc} */
     @Override
-    public void getMachines(@Nonnull String workspaceId,
-                            @Nullable String projectPath,
-                            @Nonnull AsyncRequestCallback<Array<MachineDescriptor>> callback) {
-        asyncRequestFactory.createGetRequest(
-                baseHttpUrl + "?workspace=" + workspaceId + (projectPath != null ? "&project=" + projectPath : ""))
+    public Promise<Array<MachineDescriptor>> getMachines(@Nonnull final String workspaceId, @Nullable final String projectPath) {
+        return newPromise(new RequestCall<Array<MachineDescriptor>>() {
+            @Override
+            public void makeCall(AsyncCallback<Array<MachineDescriptor>> callback) {
+                getMachines(workspaceId, projectPath, callback);
+            }
+        });
+    }
+
+    private void getMachines(@Nonnull String workspaceId, @Nullable String projectPath,
+                             @Nonnull AsyncCallback<Array<MachineDescriptor>> callback) {
+        final String url = baseHttpUrl + "?workspace=" + workspaceId + (projectPath != null ? "&project=" + projectPath : "");
+        asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
                            .loader(loader, "Getting info about bound machines...")
-                           .send(callback);
+                           .send(newCallback(callback, dtoUnmarshallerFactory.newArrayUnmarshaller(MachineDescriptor.class)));
     }
 
-    /** {@inheritDoc} */
     @Override
-    public void destroyMachine(@Nonnull String machineId, @Nonnull AsyncRequestCallback<Void> callback) {
+    public Promise<Void> destroyMachine(@Nonnull final String machineId) {
+        return newPromise(new RequestCall<Void>() {
+            @Override
+            public void makeCall(AsyncCallback<Void> callback) {
+                destroyMachine(machineId, callback);
+            }
+        });
+    }
+
+    private void destroyMachine(@Nonnull String machineId, @Nonnull AsyncCallback<Void> callback) {
         asyncRequestFactory.createRequest(DELETE, baseHttpUrl + '/' + machineId, null, false)
                            .loader(loader, "Destroying machine...")
-                           .send(callback);
+                           .send(newCallback(callback));
     }
 
-    /** {@inheritDoc} */
     @Override
-    public void executeCommandInMachine(@Nonnull String machineId,
-                                        @Nonnull String commandLine,
-                                        @Nullable String outputChannel,
-                                        @Nonnull AsyncRequestCallback<ProcessDescriptor> callback) {
+    public Promise<ProcessDescriptor> executeCommand(@Nonnull final String machineId,
+                                                     @Nonnull final String commandLine,
+                                                     @Nullable final String outputChannel) {
+        return newPromise(new RequestCall<ProcessDescriptor>() {
+            @Override
+            public void makeCall(AsyncCallback<ProcessDescriptor> callback) {
+                executeCommand(machineId, commandLine, outputChannel, callback);
+            }
+        });
+    }
+
+    private void executeCommand(@Nonnull String machineId,
+                                @Nonnull String commandLine,
+                                @Nullable String outputChannel,
+                                @Nonnull AsyncCallback<ProcessDescriptor> callback) {
         final CommandDescriptor request = dtoFactory.createDto(CommandDescriptor.class)
                                                     .withCommandLine(commandLine)
                                                     .withOutputChannel(outputChannel);
@@ -129,27 +183,38 @@ public class MachineServiceClientImpl implements MachineServiceClient {
         asyncRequestFactory.createPostRequest(baseHttpUrl + '/' + machineId + "/command", request)
                            .header(ACCEPT, APPLICATION_JSON)
                            .loader(loader, "Executing command...")
-                           .send(callback);
+                           .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(ProcessDescriptor.class)));
     }
 
-    /** {@inheritDoc} */
     @Override
-    public void bindProject(@Nonnull String machineId, @Nonnull String projectPath, @Nonnull AsyncRequestCallback<Void> callback) {
+    public Promise<Void> bindProject(@Nonnull final String machineId, @Nonnull final String projectPath) {
+        return newPromise(new RequestCall<Void>() {
+            @Override
+            public void makeCall(AsyncCallback<Void> callback) {
+                bindProject(machineId, projectPath, callback);
+            }
+        });
+    }
+
+    private void bindProject(@Nonnull String machineId, @Nonnull String projectPath, @Nonnull AsyncCallback<Void> callback) {
         asyncRequestFactory.createPostRequest(baseHttpUrl + '/' + machineId + "/binding/" + (projectPath), null)
                            .loader(loader, "Binding project to machine...")
-                           .send(callback);
+                           .send(newCallback(callback));
     }
 
-    /** {@inheritDoc} */
     @Override
-    public void unbindProject(@Nonnull String machineId, @Nonnull String projectPath, @Nonnull AsyncRequestCallback<Void> callback) {
+    public Promise<Void> unbindProject(@Nonnull final String machineId, @Nonnull final String projectPath) {
+        return newPromise(new RequestCall<Void>() {
+            @Override
+            public void makeCall(AsyncCallback<Void> callback) {
+                unbindProject(machineId, projectPath, callback);
+            }
+        });
+    }
+
+    private void unbindProject(@Nonnull String machineId, @Nonnull String projectPath, @Nonnull AsyncCallback<Void> callback) {
         asyncRequestFactory.createDeleteRequest(baseHttpUrl + '/' + machineId + "/binding/" + (projectPath))
                            .loader(loader, "Unbinding project from machine...")
-                           .send(callback);
-    }
-
-    /** Returns the given path without leading slash character. */
-    private String normalizePath(String path) {
-        return path.startsWith("/") ? path.substring(1) : path;
+                           .send(newCallback(callback));
     }
 }

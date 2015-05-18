@@ -27,6 +27,7 @@ import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
+import org.eclipse.che.ide.rest.RestContext;
 
 import java.util.List;
 import java.util.Map;
@@ -64,7 +65,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     private final AsyncRequestFactory asyncRequestFactory;
 
     @Inject
-    protected ProjectServiceClientImpl(@Named("restContext") String restContext,
+    protected ProjectServiceClientImpl(@RestContext String restContext,
                                        @Named("workspaceId") String workspaceId,
                                        AsyncRequestLoader loader,
                                        AsyncRequestFactory asyncRequestFactory) {
@@ -365,12 +366,22 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     /**
      * Normalizes the path by adding a leading '/' if it doesn't exist.
+     * Also escapes some special characters.
+     *
+     * See following javascript functions for details:
+     *     escape() will not encode: @ * / +
+     *     encodeURI() will not encode: ~ ! @ # $ & * ( ) = : / , ; ? + '
+     *     encodeURIComponent() will not encode: ~ ! * ( ) '
      *
      * @param path
      *         path to normalize
      * @return normalized path
      */
     private String normalizePath(String path) {
+        while (path.indexOf('+') >= 0) {
+            path = path.replace("+", "%2B");
+        }
+
         return path.startsWith("/") ? path : '/' + path;
     }
 }

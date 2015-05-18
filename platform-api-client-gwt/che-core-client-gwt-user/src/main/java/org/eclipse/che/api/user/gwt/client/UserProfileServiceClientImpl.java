@@ -15,6 +15,8 @@ import org.eclipse.che.ide.json.JsonHelper;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
+import org.eclipse.che.ide.rest.RestContext;
+
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -37,7 +39,7 @@ public class UserProfileServiceClientImpl implements UserProfileServiceClient {
     private final AsyncRequestFactory asyncRequestFactory;
 
     @Inject
-    protected UserProfileServiceClientImpl(@Named("restContext") String restContext,
+    protected UserProfileServiceClientImpl(@RestContext String restContext,
                                            AsyncRequestLoader loader,
                                            AsyncRequestFactory asyncRequestFactory) {
         this.loader = loader;

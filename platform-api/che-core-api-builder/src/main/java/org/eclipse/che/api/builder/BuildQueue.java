@@ -349,7 +349,7 @@ public class BuildQueue {
         final Long id = sequence.getAndIncrement();
         final InternalBuildTask future = new InternalBuildTask(ThreadLocalPropagateContext.wrap(callable), id, wsId, project, reuse);
         request.setId(id);
-        final BuildQueueTask task = new BuildQueueTask(id, request, waitingTimeMillis, future, serviceContext.getServiceUriBuilder());
+        final BuildQueueTask task = new BuildQueueTask(id, request, waitingTimeMillis, future, eventService, serviceContext.getServiceUriBuilder());
         tasks.put(id, task);
         eventService.publish(BuilderEvent.queueStartedEvent(id, wsId, project));
         executor.execute(future);
@@ -406,7 +406,7 @@ public class BuildQueue {
         final Long id = sequence.getAndIncrement();
         final InternalBuildTask future = new InternalBuildTask(ThreadLocalPropagateContext.wrap(callable), id, wsId, project, false);
         request.setId(id);
-        final BuildQueueTask task = new BuildQueueTask(id, request, waitingTimeMillis, future, serviceContext.getServiceUriBuilder());
+        final BuildQueueTask task = new BuildQueueTask(id, request, waitingTimeMillis, future, eventService, serviceContext.getServiceUriBuilder());
         tasks.put(id, task);
         executor.execute(future);
         return task;

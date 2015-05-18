@@ -43,6 +43,7 @@ import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.collections.StringMap;
+import org.eclipse.che.ide.part.editor.EditorPartStackPresenter;
 import org.eclipse.che.ide.part.projectexplorer.ProjectListStructure;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
@@ -85,6 +86,7 @@ public class RenameItemAction extends Action {
     private final InputValidator           fileNameValidator;
     private final InputValidator           folderNameValidator;
     private final InputValidator           projectNameValidator;
+    private final EditorPartStackPresenter partStackPresenter;
 
     @Inject
     public RenameItemAction(Resources resources,
@@ -97,7 +99,8 @@ public class RenameItemAction extends Action {
 //                            RunnerServiceClient runnerServiceClient,
                             DtoUnmarshallerFactory dtoUnmarshallerFactory,
                             DialogFactory dialogFactory,
-                            AppContext appContext) {
+                            AppContext appContext,
+                            EditorPartStackPresenter partStackPresenter) {
         super(localization.renameItemActionText(), localization.renameItemActionDescription(), null, resources.rename());
         this.selectionAgent = selectionAgent;
         this.eventLogger = eventLogger;
@@ -109,6 +112,7 @@ public class RenameItemAction extends Action {
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.dialogFactory = dialogFactory;
         this.appContext = appContext;
+        this.partStackPresenter = partStackPresenter;
         this.fileNameValidator = new FileNameValidator();
         this.folderNameValidator = new FolderNameValidator();
         this.projectNameValidator = new ProjectNameValidator();
@@ -120,9 +124,10 @@ public class RenameItemAction extends Action {
         eventLogger.log(this);
 
         Selection<?> selection = selectionAgent.getSelection();
-        if (selection != null && selection.getFirstElement() != null && selection.getFirstElement() instanceof StorableNode) {
-            final StorableNode selectedNode = (StorableNode)selection.getFirstElement();
-
+        if (selection == null) {
+            return;
+        }
+        final StorableNode selectedNode = (StorableNode)selection.getHeadElement();
             if (selectedNode instanceof ProjectNode) {
                 dialogFactory.createMessageDialog("", localization.closeProjectBeforeRenaming(), null).show();
             } else if (selectedNode instanceof ProjectListStructure.ProjectNode) {
@@ -135,6 +140,7 @@ public class RenameItemAction extends Action {
                             askForRenamingNode(selectedNode);
                         }
                     }
+        final StorableNode selectedNode = (StorableNode)selection.getHeadElement();
 
                     @Override
                     public void onFailure(Throwable caught) {
@@ -144,7 +150,6 @@ public class RenameItemAction extends Action {
             } else {
                 askForRenamingNode(selectedNode);
             }
-        }
     }
 
     /** {@inheritDoc} */
@@ -179,6 +184,13 @@ public class RenameItemAction extends Action {
                 nodeToRename.rename(value, new RenameCallback() {
                     @Override
                     public void onRenamed() {
+                        StringMap<EditorPartPresenter> editors = editorAgent.getOpenedEditors();
+                        Array<EditorPartPresenter> openedEditors = editors.getValues();
+
+                        for (EditorPartPresenter editor : openedEditors.asIterable()) {
+                            partStackPresenter.removePart(editor);
+                        }
+
                         if (finalItemReferenceBeforeRenaming != null) {
                             checkOpenedFiles(finalItemReferenceBeforeRenaming, value);
                         }
@@ -209,14 +221,14 @@ public class RenameItemAction extends Action {
         inputDialog.show();
     }
 
-    /**
-     * Check whether project has any running processes.
-     *
-     * @param projectNode
-     *         project to check
-     * @param callback
-     *         callback returns true if project has any running processes and false - otherwise
-     */
+//    /**
+//     * Check whether project has any running processes.
+//     *
+//     * @param projectNode
+//     *         project to check
+//     * @param callback
+//     *         callback returns true if project has any running processes and false - otherwise
+//     */
     /*private void checkRunningProcessesForProject(StorableNode projectNode, final AsyncCallback<Boolean> callback) {
         Unmarshallable<Array<ApplicationProcessDescriptor>> unmarshaller =
                 dtoUnmarshallerFactory.newArrayUnmarshaller(ApplicationProcessDescriptor.class);

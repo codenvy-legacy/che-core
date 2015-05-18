@@ -53,6 +53,10 @@ public interface ToolbarResources extends ClientBundle {
 
         String tooltip();
 
+        String tooltipBody();
+
+        String tooltipArrow();
+
         String caret();
 
         String rightPanel();

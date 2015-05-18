@@ -42,7 +42,7 @@ public class RecipeId {
         }
     }
 
-    private static final Pattern ENV_FQN_PATTERN = Pattern.compile("(system|project):/(.*)?/(.+)?");
+    private static final Pattern ENV_FQN_PATTERN = Pattern.compile("(system|project):(/.*)?/(.+)?");
 
     private final Scope  scope;
     private final String category;
@@ -111,10 +111,8 @@ public class RecipeId {
 
     public String getFqn() {
         String category = this.category;
-        if (category == null) {
-            category = "";
-        }
-        return scope + ":/" + category + "/" + name;
+        String fqn = scope + ":/";
+        return category != null && !category.isEmpty() ? fqn + category + "/" + name : fqn + name;
     }
 
     @Override
@@ -133,6 +131,10 @@ public class RecipeId {
      * represent recipe as hierarchically-organized system.
      */
     public String getCategory() {
+        if (category.startsWith("/")) {
+            return category.substring(1);
+        }
+
         return category;
     }
 

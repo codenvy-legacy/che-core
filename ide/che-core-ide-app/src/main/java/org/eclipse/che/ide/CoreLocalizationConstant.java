@@ -74,6 +74,9 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("navigateToFile.canNotOpenFile")
     String navigateToFileCanNotOpenFile();
 
+    @Key("navigateToFile.searchIsCaseSensitive")
+    String navigateToFileSearchIsCaseSensitive();
+
     @Key("appearance.title")
     String appearanceTitle();
 
@@ -423,8 +426,32 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("messages.promptSaveChanges")
     String messagesPromptSaveChanges();
 
-    @Key("messages.unableOpenFile")
-    public String unableOpenFile(String path);
+    @Key("messages.unableOpenResource")
+    String unableOpenResource(String path);
+
+    @Key("messages.unableSelectResource")
+    String unableSelectResource(String path);
+
+    @Key("messages.canNotOpenFileWithoutParams")
+    String canNotOpenFileWithoutParams();
+
+    @Key("messages.fileToOpenIsNotSpecified")
+    String fileToOpenIsNotSpecified();
+
+    @Key("messages.canNotOpenNodeWithoutParams")
+    String canNotOpenNodeWithoutParams();
+
+    @Key("messages.canNotSelectNodeWithoutParams")
+    String canNotSelectNodeWithoutParams();
+
+    @Key("messages.nodeToOpenIsNotSpecified")
+    String nodeToOpenIsNotSpecified();
+
+    @Key("messages.nodeToSelectIsNotSpecified")
+    String nodeToSelectIsNotSpecified();
+
+    @Key("messages.noOpenedProject")
+    String noOpenedProject();
 
     /* Buttons */
     @Key("ok")
