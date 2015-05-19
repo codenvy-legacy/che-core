@@ -41,6 +41,11 @@ import javax.annotation.Nullable;
  * @author Valeriy Svydenko
  */
 public class DropDownHeaderWidgetImpl extends Composite implements ClickHandler, MouseOutHandler, MouseOverHandler, DropDownHeaderWidget {
+    private static final Resources resources = GWT.create(Resources.class);
+
+    static {
+        resources.dropdownListCss().ensureInjected();
+    }
 
     interface HeaderWidgetImplUiBinder extends UiBinder<Widget, DropDownHeaderWidgetImpl> {
     }
@@ -58,7 +63,6 @@ public class DropDownHeaderWidgetImpl extends Composite implements ClickHandler,
     @UiField
     FlowPanel         listHeader;
 
-    private final Resources        resources;
     private final DropDownListMenu dropDownListMenu;
     private final String           listId;
 
@@ -66,7 +70,6 @@ public class DropDownHeaderWidgetImpl extends Composite implements ClickHandler,
 
     @AssistedInject
     public DropDownHeaderWidgetImpl(Resources resources, DropDownListMenu dropDownListMenu, @Nonnull @Assisted String listId) {
-        this.resources = resources;
         this.dropDownListMenu = dropDownListMenu;
         this.listId = listId;
 
@@ -132,7 +135,7 @@ public class DropDownHeaderWidgetImpl extends Composite implements ClickHandler,
     }
 
     /** Item style selectors for a categories list item. */
-    public interface Css extends CssResource {
+    public interface DropdownCss extends CssResource {
         String expandedImage();
 
         String onMouseOver();
@@ -142,7 +145,7 @@ public class DropDownHeaderWidgetImpl extends Composite implements ClickHandler,
 
     public interface Resources extends ClientBundle {
         @Source("DropdownList.css")
-        Css dropdownListCss();
+        DropdownCss dropdownListCss();
 
         @Source("expansionIcon.svg")
         SVGResource expansionImage();
