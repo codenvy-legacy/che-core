@@ -88,14 +88,14 @@ public class CommandServiceClientImpl implements CommandServiceClient {
                                                                       "ls");
         final CommandDescriptor command2 = dtoFactory.createDto(CommandDescriptor.class)
                                                      .withId(uuid(3))
-                                                     .withName("Build module 1")
+                                                     .withName("Build")
                                                      .withType("mvn")
                                                      .withCommandLine("mvn clean install");
         final CommandDescriptor command3 = dtoFactory.createDto(CommandDescriptor.class)
                                                      .withId(uuid(3))
-                                                     .withName("Build module 2")
+                                                     .withName("Test")
                                                      .withType("mvn")
-                                                     .withCommandLine("mvn clean install");
+                                                     .withCommandLine("mvn clean test");
         fakeCommands.put(command1.getId(), command1);
         fakeCommands.put(command2.getId(), command2);
         fakeCommands.put(command3.getId(), command3);
