@@ -394,7 +394,7 @@ public class MachineService {
         return dtoFactory.createDto(SnapshotDescriptor.class)
                          .withId(snapshot.getId())
                          .withOwner(snapshot.getOwner())
-                         .withImageType(snapshot.getImageType())
+                         .withImageType(snapshot.getInstanceType())
                          .withDescription(snapshot.getDescription())
                          .withCreationDate(snapshot.getCreationDate())
                          .withWorkspaceId(snapshot.getWorkspaceId())

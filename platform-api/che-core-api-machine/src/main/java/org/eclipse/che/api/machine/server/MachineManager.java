@@ -20,9 +20,8 @@ import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.util.CompositeLineConsumer;
 import org.eclipse.che.api.core.util.FileLineConsumer;
 import org.eclipse.che.api.core.util.LineConsumer;
-import org.eclipse.che.api.machine.server.spi.Image;
-import org.eclipse.che.api.machine.server.spi.ImageKey;
-import org.eclipse.che.api.machine.server.spi.ImageProvider;
+import org.eclipse.che.api.machine.server.spi.InstanceSnapshotKey;
+import org.eclipse.che.api.machine.server.spi.InstanceProvider;
 import org.eclipse.che.api.machine.server.spi.Instance;
 import org.eclipse.che.api.machine.server.spi.InstanceProcess;
 import org.eclipse.che.api.machine.shared.Command;
@@ -61,32 +60,34 @@ import java.util.concurrent.TimeUnit;
  * Facade for Machine level operations.
  *
  * @author gazarenkov
+ * @author Alexander Garagatyi
  */
 @Singleton
 public class MachineManager {
     private static final Logger LOG = LoggerFactory.getLogger(MachineManager.class);
 
-    private final SnapshotStorage            snapshotStorage;
-    private final File                       machineLogsDir;
-    private final Map<String, ImageProvider> imageProviders;
-    private final ExecutorService            executor;
-    private final MachineRegistry            machineRegistry;
-    private final EventService               eventService;
+    private final SnapshotStorage               snapshotStorage;
+    private final File                          machineLogsDir;
+    private final Map<String, InstanceProvider> instanceProviders;
+    private final ExecutorService               executor;
+    private final MachineRegistry               machineRegistry;
+    private final EventService                  eventService;
 
-    private final DtoFactory                 dtoFactory = DtoFactory.getInstance();
+    private final DtoFactory dtoFactory = DtoFactory.getInstance();
 
     @Inject
     public MachineManager(SnapshotStorage snapshotStorage,
-                          Set<ImageProvider> imageProviders,
+                          Set<InstanceProvider> instanceProviders,
                           MachineRegistry machineRegistry,
-                          @Named("machine.logs.location") String machineLogsDir, EventService eventService) {
+                          @Named("machine.logs.location") String machineLogsDir,
+                          EventService eventService) {
         this.snapshotStorage = snapshotStorage;
         this.eventService = eventService;
         this.machineLogsDir = new File(machineLogsDir);
-        this.imageProviders = new HashMap<>();
+        this.instanceProviders = new HashMap<>();
         this.machineRegistry = machineRegistry;
-        for (ImageProvider provider : imageProviders) {
-            this.imageProviders.put(provider.getType(), provider);
+        for (InstanceProvider provider : instanceProviders) {
+            this.instanceProviders.put(provider.getType(), provider);
         }
         executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("MachineManager-%d").setDaemon(true).build());
     }
@@ -118,16 +119,16 @@ public class MachineManager {
                               final String owner,
                               final LineConsumer machineLogsOutput)
             throws UnsupportedRecipeException, InvalidRecipeException, MachineException, NotFoundException {
-        final ImageProvider imageProvider = imageProviders.get(machineType);
-        if (imageProvider == null) {
+        final InstanceProvider instanceProvider = instanceProviders.get(machineType);
+        if (instanceProvider == null) {
             throw new NotFoundException(String.format("Unable create machine from recipe, unsupported machine type '%s'", machineType));
         }
         final String recipeType = recipe.getType();
-        if (imageProvider.getRecipeTypes().contains(recipeType)) {
+        if (instanceProvider.getRecipeTypes().contains(recipeType)) {
             final String machineId = generateMachineId();
             createMachineLogsDir(machineId);
             final CompositeLineConsumer machineLogger = new CompositeLineConsumer(machineLogsOutput, getMachineFileLogger(machineId));
-            final MachineImpl machine = new MachineImpl(machineId, imageProvider.getType(), workspaceId, owner, machineLogger);
+            final MachineImpl machine = new MachineImpl(machineId, instanceProvider.getType(), workspaceId, owner, machineLogger);
             machine.setState(MachineState.CREATING);
             machineRegistry.put(machine);
             executor.execute(new Runnable() {
@@ -138,8 +139,7 @@ public class MachineManager {
                                                        .withEventType(MachineStateEvent.EventType.CREATING)
                                                        .withMachineId(machineId));
 
-                        final Image image = imageProvider.createImage(recipe, machineLogger);
-                        final Instance instance = image.createInstance();
+                        final Instance instance = instanceProvider.createInstance(recipe, machineLogger);
                         machine.setInstance(instance);
                         machine.setState(MachineState.RUNNING);
 
@@ -181,7 +181,7 @@ public class MachineManager {
      * @return new Machine
      * @throws NotFoundException
      *         if snapshot not found
-     * @throws InvalidImageException
+     * @throws InvalidInstanceSnapshotException
      *         if Image pointed by snapshot is not valid
      * @throws MachineException
      *         if any other exception occurs during starting
@@ -189,17 +189,17 @@ public class MachineManager {
     public MachineImpl create(final String snapshotId, final String owner, final LineConsumer machineLogsOutput)
             throws NotFoundException, ServerException {
         final SnapshotImpl snapshot = snapshotStorage.getSnapshot(snapshotId);
-        final String imageType = snapshot.getImageType();
-        final ImageProvider imageProvider = imageProviders.get(imageType);
-        if (imageProvider == null) {
+        final String instanceType = snapshot.getInstanceType();
+        final InstanceProvider instanceProvider = instanceProviders.get(instanceType);
+        if (instanceProvider == null) {
             throw new MachineException(
-                    String.format("Unable create machine from snapshot '%s', unsupported image type '%s'", snapshotId, imageType));
+                    String.format("Unable create machine from snapshot '%s', unsupported instance type '%s'", snapshotId, instanceType));
         }
         final String machineId = generateMachineId();
         createMachineLogsDir(machineId);
         final CompositeLineConsumer machineLogger = new CompositeLineConsumer(machineLogsOutput, getMachineFileLogger(machineId));
         final MachineImpl machine = new MachineImpl(machineId,
-                                                    imageProvider.getType(),
+                                                    instanceProvider.getType(),
                                                     snapshot.getWorkspaceId(),
                                                     owner,
                                                     machineLogger);
@@ -213,8 +213,7 @@ public class MachineManager {
                                                    .withEventType(MachineStateEvent.EventType.CREATING)
                                                    .withMachineId(machineId));
 
-                    final Image image = imageProvider.createImage(snapshot.getImageKey(), machineLogger);
-                    final Instance instance = image.createInstance();
+                    final Instance instance = instanceProvider.createInstance(snapshot.getInstanceSnapshotKey(), machineLogger);
                     machine.setInstance(instance);
                     machine.setState(MachineState.RUNNING);
 
@@ -361,7 +360,7 @@ public class MachineManager {
         final Instance instance = machine.getInstance();
         if (instance == null) {
             throw new MachineException(
-                    String.format("Unable save machine '%s' in image, machine isn't properly initialized yet", machineId));
+                    String.format("Unable save machine '%s' in instance, machine isn't properly initialized yet", machineId));
         }
 
         final SnapshotImpl snapshot = new SnapshotImpl(generateSnapshotId(),
@@ -378,8 +377,8 @@ public class MachineManager {
             @Override
             public void run() {
                 try {
-                    final ImageKey imageKey = instance.saveToImage(machine.getOwner(), label);
-                    snapshot.setImageKey(imageKey);
+                    final InstanceSnapshotKey instanceSnapshotKey = instance.saveToSnapshot(machine.getOwner(), label);
+                    snapshot.setInstanceSnapshotKey(instanceSnapshotKey);
 
                     snapshotStorage.saveSnapshot(snapshot);
                 } catch (Exception e) {
@@ -435,13 +434,13 @@ public class MachineManager {
      */
     public void removeSnapshot(String snapshotId) throws NotFoundException, ServerException {
         final SnapshotImpl snapshot = getSnapshot(snapshotId);
-        final String imageType = snapshot.getImageType();
-        final ImageProvider imageProvider = imageProviders.get(imageType);
-        if (imageProvider == null) {
+        final String instanceType = snapshot.getInstanceType();
+        final InstanceProvider instanceProvider = instanceProviders.get(instanceType);
+        if (instanceProvider == null) {
             throw new MachineException(
-                    String.format("Unable remove image from snapshot '%s', unsupported image type '%s'", snapshotId, imageType));
+                    String.format("Unable remove instance from snapshot '%s', unsupported instance type '%s'", snapshotId, instanceType));
         }
-        imageProvider.removeImage(snapshot.getImageKey());
+        instanceProvider.removeInstanceSnapshot(snapshot.getInstanceSnapshotKey());
 
         snapshotStorage.removeSnapshot(snapshotId);
     }
@@ -491,7 +490,7 @@ public class MachineManager {
         final Instance instance = machine.getInstance();
         if (instance == null) {
             throw new MachineException(
-                    String.format("Unable execute command in machine '%s' in image, machine isn't properly initialized yet", machineId));
+                    String.format("Unable execute command in machine '%s' in instance, machine isn't properly initialized yet", machineId));
         }
         final InstanceProcess instanceProcess = instance.createProcess(command.getCommandLine());
         final int pid = instanceProcess.getPid();

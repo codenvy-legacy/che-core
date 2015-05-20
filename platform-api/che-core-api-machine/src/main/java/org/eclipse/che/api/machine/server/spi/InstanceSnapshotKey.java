@@ -10,15 +10,21 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.server.spi;
 
-import org.eclipse.che.api.machine.server.MachineException;
+import java.util.Map;
 
 /**
- * Provides instances of {@link org.eclipse.che.api.machine.server.spi.Instance} in implementation specific way.
+ * Describes set of keys that uniquely identifies snapshot of instance in implementation specific way.
  *
  * @author andrew00x
+ * @author Alexander Garagatyi
  */
-public interface Image {
-    ImageMetadata getMetadata() throws MachineException;
+public interface InstanceSnapshotKey {
+    Map<String, String> getFields();
 
-    Instance createInstance() throws MachineException;
+    boolean equals(Object o);
+
+    int hashCode();
+
+    /** Serializes this {@code InstanceKey} in JSON format. */
+    String toJson();
 }

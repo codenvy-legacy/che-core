@@ -25,7 +25,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * Send machine process events to websocket channel to the clients
+ * Send machine process events using websocket channel to the clients
  *
  * @author Alexander Garagatyi
  */

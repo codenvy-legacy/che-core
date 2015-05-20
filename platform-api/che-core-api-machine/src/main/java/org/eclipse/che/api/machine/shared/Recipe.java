@@ -13,7 +13,7 @@ package org.eclipse.che.api.machine.shared;
 import java.util.List;
 
 /**
- * Recipe to create new {@link org.eclipse.che.api.machine.server.spi.Image}.
+ * Recipe to create new {@link org.eclipse.che.api.machine.server.spi.Instance}.
  *
  * @author gazarenkov
  */
