@@ -43,7 +43,6 @@ import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.collections.StringMap;
-import org.eclipse.che.ide.part.editor.EditorPartStackPresenter;
 import org.eclipse.che.ide.part.projectexplorer.ProjectListStructure;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
@@ -82,7 +81,6 @@ public class RenameItemAction extends Action {
     private final InputValidator           fileNameValidator;
     private final InputValidator           folderNameValidator;
     private final InputValidator           projectNameValidator;
-    private final EditorPartStackPresenter partStackPresenter;
 
     @Inject
     public RenameItemAction(Resources resources,
@@ -95,8 +93,7 @@ public class RenameItemAction extends Action {
                             RunnerServiceClient runnerServiceClient,
                             DtoUnmarshallerFactory dtoUnmarshallerFactory,
                             DialogFactory dialogFactory,
-                            AppContext appContext,
-                            EditorPartStackPresenter partStackPresenter) {
+                            AppContext appContext) {
         super(localization.renameItemActionText(), localization.renameItemActionDescription(), null, resources.rename());
         this.selectionAgent = selectionAgent;
         this.eventLogger = eventLogger;
@@ -108,7 +105,6 @@ public class RenameItemAction extends Action {
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.dialogFactory = dialogFactory;
         this.appContext = appContext;
-        this.partStackPresenter = partStackPresenter;
         this.fileNameValidator = new FileNameValidator();
         this.folderNameValidator = new FolderNameValidator();
         this.projectNameValidator = new ProjectNameValidator();
@@ -185,13 +181,6 @@ public class RenameItemAction extends Action {
                 nodeToRename.rename(value, new RenameCallback() {
                     @Override
                     public void onRenamed() {
-                        StringMap<EditorPartPresenter> editors = editorAgent.getOpenedEditors();
-                        Array<EditorPartPresenter> openedEditors = editors.getValues();
-
-                        for (EditorPartPresenter editor : openedEditors.asIterable()) {
-                            partStackPresenter.removePart(editor);
-                        }
-
                         if (finalItemReferenceBeforeRenaming != null) {
                             checkOpenedFiles(finalItemReferenceBeforeRenaming, value);
                         }
