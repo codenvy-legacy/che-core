@@ -17,7 +17,7 @@ import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
- * Client for Command service.
+ * Client for Command API.
  *
  * @author Artem Zatsarynnyy
  */
@@ -33,9 +33,7 @@ public interface CommandServiceClient {
      * @param type
      *         type of the command
      */
-    Promise<CommandDescriptor> createCommand(@Nonnull String name,
-                                             @Nonnull String commandLine,
-                                             @Nonnull String type);
+    Promise<CommandDescriptor> createCommand(@Nonnull String name, @Nonnull String commandLine, @Nonnull String type);
 
     /** Get all commands. */
     Promise<List<CommandDescriptor>> getCommands();
@@ -52,11 +50,6 @@ public interface CommandServiceClient {
      */
     Promise<CommandDescriptor> updateCommand(@Nonnull String id, @Nonnull String name, @Nonnull String commandLine);
 
-    /**
-     * Remove command with the specified ID.
-     *
-     * @param id
-     *         ID of command that should be removed
-     */
+    /** Remove command with the specified ID. */
     Promise<Void> removeCommand(@Nonnull String id);
 }

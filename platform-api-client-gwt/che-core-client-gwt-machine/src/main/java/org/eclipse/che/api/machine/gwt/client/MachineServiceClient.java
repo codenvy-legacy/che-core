@@ -19,7 +19,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * Client for Machine service.
+ * Client for Machine API.
  *
  * @author Artem Zatsarynnyy
  */
@@ -31,9 +31,9 @@ public interface MachineServiceClient {
      * @param workspaceId
      *         ID of a workspace machine should be bound to
      * @param machineType
-     *         type of machine
+     *         type of machine (e.g., docker)
      * @param recipeType
-     *         type of recipe
+     *         type of recipe (e.g., Dockerfile)
      * @param recipeScript
      *         recipe script
      * @param outputChannel

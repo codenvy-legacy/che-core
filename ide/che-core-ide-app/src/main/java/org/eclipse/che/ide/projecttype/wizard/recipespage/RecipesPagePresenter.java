@@ -14,7 +14,11 @@ import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+import org.eclipse.che.api.machine.gwt.client.RecipeServiceClient;
+import org.eclipse.che.api.machine.shared.dto.RecipeDescriptor;
 import org.eclipse.che.api.project.shared.dto.ImportProject;
+import org.eclipse.che.api.promises.client.Operation;
+import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.ide.api.wizard.AbstractWizardPage;
 
 import java.util.ArrayList;
@@ -29,11 +33,13 @@ import java.util.List;
 @Singleton
 public class RecipesPagePresenter extends AbstractWizardPage<ImportProject> implements RecipesPageView.ActionDelegate {
 
-    private RecipesPageView view;
+    private final RecipesPageView     view;
+    private final RecipeServiceClient recipeServiceClient;
 
     @Inject
-    protected RecipesPagePresenter(RecipesPageView view) {
+    protected RecipesPagePresenter(RecipesPageView view, RecipeServiceClient recipeServiceClient) {
         this.view = view;
+        this.recipeServiceClient = recipeServiceClient;
         this.view.setDelegate(this);
     }
 
@@ -46,18 +52,18 @@ public class RecipesPagePresenter extends AbstractWizardPage<ImportProject> impl
     }
 
     private void requestRecipes() {
-        List<String> recipes = new ArrayList<>();
+        recipeServiceClient.getAllRecipes(0, 10).then(new Operation<List<RecipeDescriptor>>() {
+            @Override
+            public void apply(List<RecipeDescriptor> arg) throws OperationException {
+                final List<String> recipes = new ArrayList<>();
+                for (RecipeDescriptor descriptor : arg) {
+                    recipes.add(descriptor.getId());
+                }
 
-        // TODO: request appropriate recipes by tags
-
-        final String defaultRecipe = dataObject.getProject().getRecipe();
-
-        if (defaultRecipe != null) {
-            recipes.add(defaultRecipe);
-        }
-        view.setRecipes(recipes);
-
-        updateView();
+                view.setRecipes(recipes);
+                updateView();
+            }
+        });
     }
 
     /** Updates view from data-object. */

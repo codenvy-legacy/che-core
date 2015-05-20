@@ -29,6 +29,8 @@ import org.eclipse.che.api.machine.gwt.client.CommandServiceClient;
 import org.eclipse.che.api.machine.gwt.client.CommandServiceClientImpl;
 import org.eclipse.che.api.machine.gwt.client.MachineServiceClient;
 import org.eclipse.che.api.machine.gwt.client.MachineServiceClientImpl;
+import org.eclipse.che.api.machine.gwt.client.RecipeServiceClient;
+import org.eclipse.che.api.machine.gwt.client.RecipeServiceClientImpl;
 import org.eclipse.che.api.project.gwt.client.ProjectImportersServiceClient;
 import org.eclipse.che.api.project.gwt.client.ProjectImportersServiceClientImpl;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
@@ -301,6 +303,7 @@ public class CoreGinModule extends AbstractGinModule {
         bind(ProjectImportersServiceClient.class).to(ProjectImportersServiceClientImpl.class).in(Singleton.class);
         bind(ProjectTypeServiceClient.class).to(ProjectTypeServiceClientImpl.class).in(Singleton.class);
         bind(ProjectTemplateServiceClient.class).to(ProjectTemplateServiceClientImpl.class).in(Singleton.class);
+        bind(RecipeServiceClient.class).to(RecipeServiceClientImpl.class).in(Singleton.class);
         bind(MachineServiceClient.class).to(MachineServiceClientImpl.class).in(Singleton.class);
         bind(CommandServiceClient.class).to(CommandServiceClientImpl.class).in(Singleton.class);
 //        bind(BuilderServiceClient.class).to(BuilderServiceClientImpl.class).in(Singleton.class);

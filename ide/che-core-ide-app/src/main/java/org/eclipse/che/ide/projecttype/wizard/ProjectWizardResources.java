@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projecttype.wizard;
 
-import org.eclipse.che.ide.projecttype.wizard.categoriespage.CategoriesPageViewImpl;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 
@@ -22,7 +21,16 @@ import org.vectomatic.dom.svg.ui.SVGResource;
  */
 public interface ProjectWizardResources extends ClientBundle {
 
-    public interface Css extends CssResource {
+    @Source({"Wizard.css", "org/eclipse/che/ide/api/ui/style.css"})
+    Css wizardCss();
+
+    @Source({"categoriespage/MainPage.css", "org/eclipse/che/ide/api/ui/style.css", "org/eclipse/che/ide/ui/Styles.css"})
+    CategoriesPageViewImpl.Style mainPageStyle();
+
+    @Source("recipespage/recipe.svg")
+    SVGResource recipe();
+
+    interface Css extends CssResource {
         String buttonPanel();
 
         String button();
@@ -43,13 +51,4 @@ public interface ProjectWizardResources extends ClientBundle {
 
         String inputError();
     }
-
-    @Source({"Wizard.css", "org/eclipse/che/ide/api/ui/style.css"})
-    Css wizardCss();
-
-    @Source({"categoriespage/MainPage.css", "org/eclipse/che/ide/api/ui/style.css", "org/eclipse/che/ide/ui/Styles.css"})
-    CategoriesPageViewImpl.Style mainPageStyle();
-
-    @Source("runnerspage/environment.svg")
-    SVGResource environment();
 }
