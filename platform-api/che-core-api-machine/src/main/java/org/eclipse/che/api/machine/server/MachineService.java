@@ -93,7 +93,8 @@ public class MachineService {
                                                           RecipeImpl.fromDescriptor(createMachineRequest.getRecipeDescriptor()),
                                                           createMachineRequest.getWorkspaceId(),
                                                           EnvironmentContext.getCurrent().getUser().getId(),
-                                                          lineConsumer);
+                                                          lineConsumer,
+                                                          createMachineRequest.isBindWorkspace());
 
         return toDescriptor(machine);
     }
@@ -113,7 +114,7 @@ public class MachineService {
 
         final LineConsumer lineConsumer = getLineConsumer(createMachineRequest.getOutputChannel());
 
-        final MachineImpl machine = machineManager.create(createMachineRequest.getSnapshotId(),
+        final MachineImpl machine = machineManager.create(snapshot,
                                                           EnvironmentContext.getCurrent().getUser().getId(),
                                                           lineConsumer);
 
@@ -394,7 +395,7 @@ public class MachineService {
         return dtoFactory.createDto(SnapshotDescriptor.class)
                          .withId(snapshot.getId())
                          .withOwner(snapshot.getOwner())
-                         .withImageType(snapshot.getImageType())
+                         .withImageType(snapshot.getInstanceType())
                          .withDescription(snapshot.getDescription())
                          .withCreationDate(snapshot.getCreationDate())
                          .withWorkspaceId(snapshot.getWorkspaceId())

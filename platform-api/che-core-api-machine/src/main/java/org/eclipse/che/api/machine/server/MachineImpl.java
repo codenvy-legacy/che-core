@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.server;
 
+import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.util.LineConsumer;
 import org.eclipse.che.api.machine.server.spi.Instance;
@@ -36,16 +37,18 @@ public class MachineImpl implements Machine {
     private final LineConsumer        machineLogsOutput;
     private final Set<ProjectBinding> projectBindings;
     private final String              workspaceId;
+    private final boolean             isWorkspaceBound;
 
     private Instance     instance;
     private MachineState state;
 
-    MachineImpl(String id, String type, String workspaceId, String owner, LineConsumer machineLogsOutput) {
+    MachineImpl(String id, String type, String workspaceId, String owner, LineConsumer machineLogsOutput, boolean isWorkspaceBound) {
         this.id = id;
         this.type = type;
         this.owner = owner;
         this.machineLogsOutput = machineLogsOutput;
         this.workspaceId = workspaceId;
+        this.isWorkspaceBound = isWorkspaceBound;
         projectBindings = new CopyOnWriteArraySet<>();
     }
 
@@ -77,6 +80,11 @@ public class MachineImpl implements Machine {
     @Override
     public String getWorkspaceId() {
         return workspaceId;
+    }
+
+    @Override
+    public boolean isWorkspaceBound() {
+        return isWorkspaceBound;
     }
 
     public synchronized MachineState getState() {
@@ -123,8 +131,12 @@ public class MachineImpl implements Machine {
     /**
      * Binds project to machine
      */
-    void bindProject(ProjectBinding project) throws MachineException {
-        if(instance == null) {
+    void bindProject(ProjectBinding project) throws MachineException, ForbiddenException {
+        if (isWorkspaceBound) {
+            throw new ForbiddenException("Workspace is bound to machine. Project binding is disabled");
+        }
+
+        if (instance == null) {
             throw new MachineException(String.format("Machine %s is not ready to bind the project", id));
         }
 
@@ -136,8 +148,12 @@ public class MachineImpl implements Machine {
     /**
      * Unbinds project from machine
      */
-    void unbindProject(ProjectBinding project) throws MachineException, NotFoundException {
-        if(instance == null) {
+    void unbindProject(ProjectBinding project) throws MachineException, NotFoundException, ForbiddenException {
+        if (isWorkspaceBound) {
+            throw new ForbiddenException("Workspace is bound to machine. Project unbinding is disabled");
+        }
+
+        if (instance == null) {
             throw new MachineException(String.format("Machine %s is not ready to unbind the project", id));
         }
 
