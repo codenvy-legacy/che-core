@@ -28,8 +28,6 @@ public interface MachineServiceClient {
     /**
      * Create and start machine from scratch using recipe.
      *
-     * @param workspaceId
-     *         ID of a workspace machine should be bound to
      * @param machineType
      *         type of machine (e.g., docker)
      * @param recipeType
@@ -39,8 +37,7 @@ public interface MachineServiceClient {
      * @param outputChannel
      *         websocket chanel where machine logs should be put
      */
-    Promise<MachineDescriptor> createMachineFromRecipe(@Nonnull String workspaceId,
-                                                       @Nonnull String machineType,
+    Promise<MachineDescriptor> createMachineFromRecipe(@Nonnull String machineType,
                                                        @Nonnull String recipeType,
                                                        @Nonnull String recipeScript,
                                                        @Nullable String outputChannel);
@@ -56,14 +53,12 @@ public interface MachineServiceClient {
     Promise<MachineDescriptor> createMachineFromSnapshot(@Nonnull String snapshotId, @Nullable String outputChannel);
 
     /**
-     * Find machines connected with specific workspace/project.
+     * Find machines connected with the specified project.
      *
-     * @param workspaceId
-     *         workspace binding
      * @param projectPath
      *         project binding
      */
-    Promise<Array<MachineDescriptor>> getMachines(@Nonnull String workspaceId, @Nullable String projectPath);
+    Promise<Array<MachineDescriptor>> getMachines(@Nullable String projectPath);
 
     /**
      * Destroy machine with the specified ID.

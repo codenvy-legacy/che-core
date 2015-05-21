@@ -12,6 +12,7 @@ package org.eclipse.che.api.machine.gwt.client;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 import org.eclipse.che.api.machine.shared.dto.CommandDescriptor;
 import org.eclipse.che.api.machine.shared.dto.CreateMachineFromRecipe;
@@ -44,7 +45,8 @@ import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
  * @author Artem Zatsarynnyy
  */
 public class MachineServiceClientImpl implements MachineServiceClient {
-    private final DtoFactory             dtoFactory;
+    private final String workspaceId;
+    private final DtoFactory dtoFactory;
     private final DtoUnmarshallerFactory dtoUnmarshallerFactory;
     private final AsyncRequestFactory    asyncRequestFactory;
     private final AsyncRequestLoader     loader;
@@ -52,10 +54,12 @@ public class MachineServiceClientImpl implements MachineServiceClient {
 
     @Inject
     protected MachineServiceClientImpl(@RestContext String restContext,
+                                       @Named("workspaceId") String workspaceId,
                                        DtoFactory dtoFactory,
                                        DtoUnmarshallerFactory dtoUnmarshallerFactory,
                                        AsyncRequestFactory asyncRequestFactory,
                                        AsyncRequestLoader loader) {
+        this.workspaceId = workspaceId;
         this.dtoFactory = dtoFactory;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.asyncRequestFactory = asyncRequestFactory;
@@ -64,8 +68,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     }
 
     @Override
-    public Promise<MachineDescriptor> createMachineFromRecipe(@Nonnull final String workspaceId,
-                                                              @Nonnull final String machineType,
+    public Promise<MachineDescriptor> createMachineFromRecipe(@Nonnull final String machineType,
                                                               @Nonnull final String recipeType,
                                                               @Nonnull final String recipeScript,
                                                               @Nullable final String outputChannel) {
@@ -125,7 +128,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     }
 
     @Override
-    public Promise<Array<MachineDescriptor>> getMachines(@Nonnull final String workspaceId, @Nullable final String projectPath) {
+    public Promise<Array<MachineDescriptor>> getMachines(@Nullable final String projectPath) {
         return newPromise(new RequestCall<Array<MachineDescriptor>>() {
             @Override
             public void makeCall(AsyncCallback<Array<MachineDescriptor>> callback) {
