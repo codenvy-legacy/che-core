@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.account.server.dao;
 
+import com.google.common.annotations.Beta;
+
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
@@ -108,6 +110,7 @@ public interface AccountDao {
      * @param subscription
      *         subscription POJO
      */
+    @Beta
     void addSubscription(Subscription subscription) throws NotFoundException, ConflictException, ServerException;
 
     /**
@@ -119,6 +122,7 @@ public interface AccountDao {
      * @throws org.eclipse.che.api.core.NotFoundException
      *         when subscription doesn't exist
      */
+    @Beta
     Subscription getSubscriptionById(String subscriptionId) throws NotFoundException, ServerException;
 
     /**
@@ -128,6 +132,7 @@ public interface AccountDao {
      *         account id
      * @return list of subscriptions, or empty list if no subscriptions found
      */
+    @Beta
     List<Subscription> getActiveSubscriptions(String accountId) throws NotFoundException, ServerException;
 
     /**
@@ -139,6 +144,7 @@ public interface AccountDao {
      *         service id
      * @return subscription or {@code null} if no subscription found
      */
+    @Beta
     Subscription getActiveSubscription(String accountId, String serviceId) throws ServerException, NotFoundException;
 
     /**
@@ -147,6 +153,7 @@ public interface AccountDao {
      * @param subscription
      *         new subscription
      */
+    @Beta
     void updateSubscription(Subscription subscription) throws NotFoundException, ServerException;
 
     /**
@@ -155,6 +162,7 @@ public interface AccountDao {
      * @param subscriptionId
      *         subscription identifier for removal
      */
+    @Beta
     void removeSubscription(String subscriptionId) throws NotFoundException, ServerException;
 
     /**

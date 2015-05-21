@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.account.server;
 
+import com.google.common.annotations.Beta;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -594,6 +595,7 @@ public class AccountService extends Service {
      *         when some error occurred while retrieving subscriptions
      * @see SubscriptionDescriptor
      */
+    @Beta
     @ApiOperation(value = "Get account subscriptions",
             notes = "Get information on account subscriptions. This API call requires account/owner, account/member, system/admin or system/manager role.",
             response = SubscriptionDescriptor.class,
@@ -643,6 +645,7 @@ public class AccountService extends Service {
      * @see #getSubscriptions(String, String serviceId, SecurityContext)
      * @see #removeSubscription(String, SecurityContext)
      */
+    @Beta
     @ApiOperation(value = "Get subscription details",
             notes = "Get information on a particular subscription by its unique ID.",
             response = SubscriptionDescriptor.class,
@@ -691,6 +694,7 @@ public class AccountService extends Service {
      * @see #getSubscriptionById(String, SecurityContext)
      * @see #removeSubscription(String, SecurityContext)
      */
+    @Beta
     @ApiOperation(value = "Add new subscription",
             notes = "Add a new subscription to an account. JSON with subscription details is sent. Roles: account/owner, system/admin.",
             response = SubscriptionDescriptor.class,
@@ -830,6 +834,7 @@ public class AccountService extends Service {
      * @see #addSubscription(NewSubscription, SecurityContext)
      * @see #getSubscriptions(String, String, SecurityContext)
      */
+    @Beta
     @ApiOperation(value = "Remove subscription",
             notes = "Remove subscription from account. Roles: account/owner, system/admin.",
             position = 13)
