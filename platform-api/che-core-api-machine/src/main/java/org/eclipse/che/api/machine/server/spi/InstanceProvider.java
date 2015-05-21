@@ -49,14 +49,20 @@ public interface InstanceProvider {
      *         instance creation {@link Recipe}
      * @param creationLogsOutput
      *         output for instance creation logs
+     * @param workspaceId
+     *         workspace this instance belongs to
+     * @param bindWorkspace
+     *         is workspace should be bound on instance start
      * @return newly created {@link Instance}
      * @throws UnsupportedRecipeException
      *         if specified {@code recipe} is not supported
      * @throws InvalidRecipeException
      *         if {@code recipe} is invalid
      */
-    Instance createInstance(Recipe recipe, LineConsumer creationLogsOutput)
-            throws UnsupportedRecipeException, InvalidRecipeException, MachineException;
+    Instance createInstance(Recipe recipe,
+                            LineConsumer creationLogsOutput,
+                            String workspaceId,
+                            boolean bindWorkspace) throws UnsupportedRecipeException, InvalidRecipeException, MachineException;
 
     /**
      * Creates instance using implementation specific {@link InstanceSnapshotKey}.
@@ -65,20 +71,28 @@ public interface InstanceProvider {
      *         implementation specific {@link InstanceSnapshotKey}
      * @param creationLogsOutput
      *         output for instance creation logs
+     * @param workspaceId
+     *         workspace this instance belongs to
+     * @param bindWorkspace
+     *         is workspace should be bound on instance start
      * @return newly created instance
      * @throws NotFoundException
      *         if instance described by {@code InstanceKey} doesn't exists
      * @throws InvalidInstanceSnapshotException
      *         if other errors occurs while restoring instance
      */
-    Instance createInstance(InstanceSnapshotKey instanceSnapshotKey, LineConsumer creationLogsOutput)
-            throws NotFoundException, InvalidInstanceSnapshotException, MachineException;
+    Instance createInstance(InstanceSnapshotKey instanceSnapshotKey,
+                            LineConsumer creationLogsOutput,
+                            String workspaceId,
+                            boolean bindWorkspace) throws NotFoundException, InvalidInstanceSnapshotException, MachineException;
 
     /**
      * Removes snapshot of the instance in implementation specific way.
      *
-     * @param instanceSnapshotKey key of the snapshot of the instance that should be removed
-     * @throws MachineException if exception occurs on instance snapshot removal
+     * @param instanceSnapshotKey
+     *         key of the snapshot of the instance that should be removed
+     * @throws MachineException
+     *         if exception occurs on instance snapshot removal
      */
     void removeInstanceSnapshot(InstanceSnapshotKey instanceSnapshotKey) throws MachineException;
 }

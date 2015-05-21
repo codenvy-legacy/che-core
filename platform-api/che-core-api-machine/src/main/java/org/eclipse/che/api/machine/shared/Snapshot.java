@@ -44,6 +44,12 @@ public interface Snapshot {
      */
     String getWorkspaceId();
 
+    boolean isWorkspaceBound();
+
+    void setWorkspaceBound(boolean isWorkspaceBound);
+
+    Snapshot withWorkspaceBound(boolean isWorkspaceBound);
+
     List<? extends ProjectBinding> getProjects();
 
     String getLabel();

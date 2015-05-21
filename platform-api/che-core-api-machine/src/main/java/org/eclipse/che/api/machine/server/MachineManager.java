@@ -20,10 +20,10 @@ import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.util.CompositeLineConsumer;
 import org.eclipse.che.api.core.util.FileLineConsumer;
 import org.eclipse.che.api.core.util.LineConsumer;
-import org.eclipse.che.api.machine.server.spi.InstanceSnapshotKey;
-import org.eclipse.che.api.machine.server.spi.InstanceProvider;
 import org.eclipse.che.api.machine.server.spi.Instance;
 import org.eclipse.che.api.machine.server.spi.InstanceProcess;
+import org.eclipse.che.api.machine.server.spi.InstanceProvider;
+import org.eclipse.che.api.machine.server.spi.InstanceSnapshotKey;
 import org.eclipse.che.api.machine.shared.Command;
 import org.eclipse.che.api.machine.shared.MachineState;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
@@ -117,7 +117,8 @@ public class MachineManager {
                               final Recipe recipe,
                               final String workspaceId,
                               final String owner,
-                              final LineConsumer machineLogsOutput)
+                              final LineConsumer machineLogsOutput,
+                              final boolean bindWorkspaceOnStart)
             throws UnsupportedRecipeException, InvalidRecipeException, MachineException, NotFoundException {
         final InstanceProvider instanceProvider = instanceProviders.get(machineType);
         if (instanceProvider == null) {
@@ -128,7 +129,12 @@ public class MachineManager {
             final String machineId = generateMachineId();
             createMachineLogsDir(machineId);
             final CompositeLineConsumer machineLogger = new CompositeLineConsumer(machineLogsOutput, getMachineFileLogger(machineId));
-            final MachineImpl machine = new MachineImpl(machineId, instanceProvider.getType(), workspaceId, owner, machineLogger);
+            final MachineImpl machine = new MachineImpl(machineId,
+                                                        instanceProvider.getType(),
+                                                        workspaceId,
+                                                        owner,
+                                                        machineLogger,
+                                                        bindWorkspaceOnStart);
             machine.setState(MachineState.CREATING);
             machineRegistry.put(machine);
             executor.execute(new Runnable() {
@@ -139,7 +145,7 @@ public class MachineManager {
                                                        .withEventType(MachineStateEvent.EventType.CREATING)
                                                        .withMachineId(machineId));
 
-                        final Instance instance = instanceProvider.createInstance(recipe, machineLogger);
+                        final Instance instance = instanceProvider.createInstance(recipe, machineLogger, workspaceId, bindWorkspaceOnStart);
                         machine.setInstance(instance);
                         machine.setState(MachineState.RUNNING);
 
@@ -172,8 +178,8 @@ public class MachineManager {
     /**
      * Restores and starts machine from snapshot.
      *
-     * @param snapshotId
-     *         id of snapshot
+     * @param snapshot
+     *         snapshot to create machine from
      * @param owner
      *         owner for new machine
      * @param machineLogsOutput
@@ -186,14 +192,16 @@ public class MachineManager {
      * @throws MachineException
      *         if any other exception occurs during starting
      */
-    public MachineImpl create(final String snapshotId, final String owner, final LineConsumer machineLogsOutput)
+    public MachineImpl create(final SnapshotImpl snapshot,
+                              final String owner,
+                              final LineConsumer machineLogsOutput)
             throws NotFoundException, ServerException {
-        final SnapshotImpl snapshot = snapshotStorage.getSnapshot(snapshotId);
         final String instanceType = snapshot.getInstanceType();
         final InstanceProvider instanceProvider = instanceProviders.get(instanceType);
         if (instanceProvider == null) {
             throw new MachineException(
-                    String.format("Unable create machine from snapshot '%s', unsupported instance type '%s'", snapshotId, instanceType));
+                    String.format("Unable create machine from snapshot '%s', unsupported instance type '%s'", snapshot.getId(),
+                                  instanceType));
         }
         final String machineId = generateMachineId();
         createMachineLogsDir(machineId);
@@ -202,7 +210,8 @@ public class MachineManager {
                                                     instanceProvider.getType(),
                                                     snapshot.getWorkspaceId(),
                                                     owner,
-                                                    machineLogger);
+                                                    machineLogger,
+                                                    snapshot.isWorkspaceBound());
         machine.setState(MachineState.CREATING);
         machineRegistry.put(machine);
         executor.execute(new Runnable() {
@@ -213,7 +222,10 @@ public class MachineManager {
                                                    .withEventType(MachineStateEvent.EventType.CREATING)
                                                    .withMachineId(machineId));
 
-                    final Instance instance = instanceProvider.createInstance(snapshot.getInstanceSnapshotKey(), machineLogger);
+                    final Instance instance = instanceProvider.createInstance(snapshot.getInstanceSnapshotKey(),
+                                                                              machineLogger,
+                                                                              snapshot.getWorkspaceId(),
+                                                                              snapshot.isWorkspaceBound());
                     machine.setInstance(instance);
                     machine.setState(MachineState.RUNNING);
 
@@ -333,7 +345,7 @@ public class MachineManager {
      * @throws MachineException
      *         if other error occur
      */
-    public void unbindProject(String machineId, ProjectBinding project) throws NotFoundException, MachineException {
+    public void unbindProject(String machineId, ProjectBinding project) throws NotFoundException, MachineException, ForbiddenException {
         final MachineImpl machine = getMachine(machineId);
 
         machine.unbindProject(project);

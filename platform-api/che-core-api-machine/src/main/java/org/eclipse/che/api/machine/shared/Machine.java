@@ -48,6 +48,11 @@ public interface Machine {
     String getWorkspaceId();
 
     /**
+     * Is workspace bound to machine or not
+     */
+    boolean isWorkspaceBound();
+
+    /**
      * Machine specific metadata
      */
     InstanceMetadata getMetadata() throws MachineException;

@@ -54,4 +54,10 @@ public interface CreateMachineFromRecipe {
     void setWorkspaceId(String workspaceId);
 
     CreateMachineFromRecipe withWorkspaceId(String workspaceId);
+
+    boolean isBindWorkspace();
+
+    void setBindWorkspace(boolean bindWorkspace);
+
+    CreateMachineFromRecipe withBindWorkspace(boolean bindWorkspace);
 }
