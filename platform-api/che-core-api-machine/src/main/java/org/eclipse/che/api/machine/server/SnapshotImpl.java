@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.server;
 
-import org.eclipse.che.api.machine.server.spi.ImageKey;
+import org.eclipse.che.api.machine.server.spi.InstanceKey;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
 import org.eclipse.che.api.machine.shared.Snapshot;
 
@@ -25,10 +25,11 @@ import java.util.List;
 public class SnapshotImpl implements Snapshot {
     private String               id;
     private String               type;
-    private ImageKey             imageKey;
+    private InstanceKey          instanceKey;
     private String               owner;
     private long                 creationDate;
     private String               workspaceId;
+    private boolean              isWorkspaceBound;
     private List<ProjectBinding> projects;
     private String               description;
     private String               label;
@@ -38,19 +39,21 @@ public class SnapshotImpl implements Snapshot {
 
     public SnapshotImpl(String id,
                         String type,
-                        ImageKey imageKey,
+                        InstanceKey instanceKey,
                         String owner,
                         long creationDate,
                         String workspaceId,
                         List<ProjectBinding> projects,
                         String description,
-                        String label) {
+                        String label,
+                        boolean isWorkspaceBound) {
         this.id = id;
         this.type = type;
-        this.imageKey = imageKey;
+        this.instanceKey = instanceKey;
         this.owner = owner;
         this.creationDate = creationDate;
         this.workspaceId = workspaceId;
+        this.isWorkspaceBound = isWorkspaceBound;
         this.projects = Collections.unmodifiableList(projects);
         this.description = description;
         this.label = label;
@@ -71,29 +74,29 @@ public class SnapshotImpl implements Snapshot {
     }
 
     @Override
-    public String getImageType() {
+    public String getType() {
         return type;
     }
 
-    public void setImageType(String imageType) {
-        this.type = imageType;
+    public void setType(String type) {
+        this.type = type;
     }
 
-    public SnapshotImpl withImageType(String imageType) {
-        this.type = imageType;
+    public SnapshotImpl withType(String type) {
+        this.type = type;
         return this;
     }
 
-    public ImageKey getImageKey() {
-        return imageKey;
+    public InstanceKey getInstanceKey() {
+        return instanceKey;
     }
 
-    public void setImageKey(ImageKey imageKey) {
-        this.imageKey = imageKey;
+    public void setInstanceKey(InstanceKey instanceKey) {
+        this.instanceKey = instanceKey;
     }
 
-    public SnapshotImpl withImageKey(ImageKey imageKey) {
-        this.imageKey = imageKey;
+    public SnapshotImpl withInstanceKey(InstanceKey instanceKey) {
+        this.instanceKey = instanceKey;
         return this;
     }
 
@@ -178,6 +181,20 @@ public class SnapshotImpl implements Snapshot {
 
     public SnapshotImpl withLabel(String label) {
         this.label = label;
+        return this;
+    }
+
+    @Override
+    public boolean isWorkspaceBound() {
+        return this.isWorkspaceBound;
+    }
+
+    public void setWorkspaceBound(boolean isWorkspaceBound) {
+        this.isWorkspaceBound = isWorkspaceBound;
+    }
+
+    public SnapshotImpl withWorkspaceBound(boolean isWorkspaceBound) {
+        this.isWorkspaceBound = isWorkspaceBound;
         return this;
     }
 }

@@ -8,22 +8,16 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.machine.server.spi;
+package org.eclipse.che.api.machine.server;
 
-import java.util.Map;
+import org.eclipse.che.api.core.ServerException;
 
 /**
- * Describes set of keys that uniquely identifies in implementation specific way.
- *
- * @author andrew00x
+ * @author gazarenkov
  */
-public interface ImageKey {
-    Map<String, String> getFields();
-
-    boolean equals(Object o);
-
-    int hashCode();
-
-    /** Serializes this {@code ImageKey} in JSON format. */
-    String toJson();
+@SuppressWarnings("serial")
+public class InvalidInstanceSnapshotException extends ServerException {
+    public InvalidInstanceSnapshotException(String message) {
+        super(message);
+    }
 }

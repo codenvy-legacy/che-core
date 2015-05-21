@@ -34,11 +34,11 @@ public interface SnapshotDescriptor extends Hyperlinks {
 
     SnapshotDescriptor withOwner(String owner);
 
-    String getImageType();
+    String getType();
 
-    void setImageType(String imageType);
+    void setType(String type);
 
-    SnapshotDescriptor withImageType(String imageType);
+    SnapshotDescriptor withType(String type);
 
     String getDescription();
 
@@ -69,6 +69,12 @@ public interface SnapshotDescriptor extends Hyperlinks {
     void setProjects(List<ProjectBindingDescriptor> projects);
 
     SnapshotDescriptor withProjects(List<ProjectBindingDescriptor> projects);
+
+    boolean isWorkspaceBound();
+
+    void setWorkspaceBound(boolean workspaceBound);
+
+    SnapshotDescriptor withWorkspaceBound(boolean workspaceBound);
 
     @Override
     SnapshotDescriptor withLinks(List<Link> links);

@@ -19,19 +19,43 @@ import java.util.List;
  */
 public interface Snapshot {
 
+    /**
+     * Unique identifier of snapshot
+     */
     String getId();
 
-    String getImageType();
+    /**
+     * Type of the instance implementation, e.g. docker
+     */
+    String getType();
 
+    /**
+     * Id of the user that is owner of the snapshot
+     */
     String getOwner();
 
+    /**
+     * Creation date of the snapshot
+     */
     long getCreationDate();
 
+    /**
+     * Id of the workspace that is bound to snapshot
+     */
     String getWorkspaceId();
+
+    boolean isWorkspaceBound();
+
+    void setWorkspaceBound(boolean isWorkspaceBound);
+
+    Snapshot withWorkspaceBound(boolean isWorkspaceBound);
 
     List<? extends ProjectBinding> getProjects();
 
     String getLabel();
 
+    /**
+     * Description of the snapshot
+     */
     String getDescription();
 }

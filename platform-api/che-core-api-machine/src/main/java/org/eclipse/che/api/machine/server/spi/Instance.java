@@ -20,13 +20,37 @@ import java.util.List;
  * Representation of machine instance in implementation specific way.
  *
  * @author gazarenkov
+ * @author Alexander Garagatyi
  */
 public interface Instance {
 
+    /**
+     * Get metadata of the instance
+     *
+     * @throws MachineException
+     *         if error occurs on retrieving metadata
+     */
     InstanceMetadata getMetadata() throws MachineException;
 
+    /**
+     * Get {@link InstanceProcess} by its id
+     *
+     * @param pid
+     *         id of the process
+     * @throws NotFoundException
+     *         if process with specified id is not found. Process can be finished already or doesn't exist.
+     * @throws MachineException
+     *         if any other error occurs
+     */
     InstanceProcess getProcess(int pid) throws NotFoundException, MachineException;
 
+    /**
+     * Get list of all running processes in the instance
+     *
+     * @return list of running processes or empty list if no process is running
+     * @throws MachineException
+     *         if any error occurs on the processes list retrieving
+     */
     List<InstanceProcess> getProcesses() throws MachineException;
 
     /**
@@ -42,8 +66,25 @@ public interface Instance {
      */
     InstanceProcess createProcess(String commandLine) throws MachineException;
 
-    ImageKey saveToImage(String owner, String label) throws MachineException;
+    /**
+     * Save state of the instance
+     *
+     * @param owner
+     *         id of the user that is owner of the snapshot
+     * @param label
+     *         description of the snapshot
+     * @return {@code InstanceSnapshotKey} that describe implementation specific keys of snapshot
+     * @throws MachineException
+     *         if error occurs on storing state of the instance
+     */
+    InstanceKey saveToSnapshot(String owner, String label) throws MachineException;
 
+    /**
+     * Destroy instance
+     *
+     * @throws MachineException
+     *         if error occurs on instance destroying
+     */
     void destroy() throws MachineException;
 
     /**
