@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.server;
 
-import org.eclipse.che.api.machine.server.spi.InstanceSnapshotKey;
+import org.eclipse.che.api.machine.server.spi.InstanceKey;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
 import org.eclipse.che.api.machine.shared.Snapshot;
 
@@ -25,7 +25,7 @@ import java.util.List;
 public class SnapshotImpl implements Snapshot {
     private String               id;
     private String               type;
-    private InstanceSnapshotKey  instanceSnapshotKey;
+    private InstanceKey          instanceKey;
     private String               owner;
     private long                 creationDate;
     private String               workspaceId;
@@ -38,7 +38,7 @@ public class SnapshotImpl implements Snapshot {
 
     public SnapshotImpl(String id,
                         String type,
-                        InstanceSnapshotKey instanceSnapshotKey,
+                        InstanceKey instanceKey,
                         String owner,
                         long creationDate,
                         String workspaceId,
@@ -47,7 +47,7 @@ public class SnapshotImpl implements Snapshot {
                         String label) {
         this.id = id;
         this.type = type;
-        this.instanceSnapshotKey = instanceSnapshotKey;
+        this.instanceKey = instanceKey;
         this.owner = owner;
         this.creationDate = creationDate;
         this.workspaceId = workspaceId;
@@ -84,16 +84,16 @@ public class SnapshotImpl implements Snapshot {
         return this;
     }
 
-    public InstanceSnapshotKey getInstanceSnapshotKey() {
-        return instanceSnapshotKey;
+    public InstanceKey getInstanceKey() {
+        return instanceKey;
     }
 
-    public void setInstanceSnapshotKey(InstanceSnapshotKey instanceSnapshotKey) {
-        this.instanceSnapshotKey = instanceSnapshotKey;
+    public void setInstanceKey(InstanceKey instanceKey) {
+        this.instanceKey = instanceKey;
     }
 
-    public SnapshotImpl withImageKey(InstanceSnapshotKey instanceSnapshotKey) {
-        this.instanceSnapshotKey = instanceSnapshotKey;
+    public SnapshotImpl withImageKey(InstanceKey instanceKey) {
+        this.instanceKey = instanceKey;
         return this;
     }
 

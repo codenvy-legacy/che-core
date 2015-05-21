@@ -20,10 +20,10 @@ import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.util.CompositeLineConsumer;
 import org.eclipse.che.api.core.util.FileLineConsumer;
 import org.eclipse.che.api.core.util.LineConsumer;
+import org.eclipse.che.api.machine.server.spi.InstanceKey;
+import org.eclipse.che.api.machine.server.spi.InstanceProvider;
 import org.eclipse.che.api.machine.server.spi.Instance;
 import org.eclipse.che.api.machine.server.spi.InstanceProcess;
-import org.eclipse.che.api.machine.server.spi.InstanceProvider;
-import org.eclipse.che.api.machine.server.spi.InstanceSnapshotKey;
 import org.eclipse.che.api.machine.shared.Command;
 import org.eclipse.che.api.machine.shared.MachineState;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
@@ -222,7 +222,7 @@ public class MachineManager {
                                                    .withEventType(MachineStateEvent.EventType.CREATING)
                                                    .withMachineId(machineId));
 
-                    final Instance instance = instanceProvider.createInstance(snapshot.getInstanceSnapshotKey(),
+                    final Instance instance = instanceProvider.createInstance(snapshot.getInstanceKey(),
                                                                               machineLogger,
                                                                               snapshot.getWorkspaceId(),
                                                                               snapshot.isWorkspaceBound());
@@ -389,8 +389,8 @@ public class MachineManager {
             @Override
             public void run() {
                 try {
-                    final InstanceSnapshotKey instanceSnapshotKey = instance.saveToSnapshot(machine.getOwner(), label);
-                    snapshot.setInstanceSnapshotKey(instanceSnapshotKey);
+                    final InstanceKey instanceKey = instance.saveToSnapshot(machine.getOwner(), label);
+                    snapshot.setInstanceKey(instanceKey);
 
                     snapshotStorage.saveSnapshot(snapshot);
                 } catch (Exception e) {
@@ -452,7 +452,7 @@ public class MachineManager {
             throw new MachineException(
                     String.format("Unable remove instance from snapshot '%s', unsupported instance type '%s'", snapshotId, instanceType));
         }
-        instanceProvider.removeInstanceSnapshot(snapshot.getInstanceSnapshotKey());
+        instanceProvider.removeInstanceSnapshot(snapshot.getInstanceKey());
 
         snapshotStorage.removeSnapshot(snapshotId);
     }

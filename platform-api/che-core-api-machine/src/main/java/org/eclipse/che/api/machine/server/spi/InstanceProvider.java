@@ -65,10 +65,10 @@ public interface InstanceProvider {
                             boolean bindWorkspace) throws UnsupportedRecipeException, InvalidRecipeException, MachineException;
 
     /**
-     * Creates instance using implementation specific {@link InstanceSnapshotKey}.
+     * Creates instance using implementation specific {@link InstanceKey}.
      *
-     * @param instanceSnapshotKey
-     *         implementation specific {@link InstanceSnapshotKey}
+     * @param instanceKey
+     *         implementation specific {@link InstanceKey}
      * @param creationLogsOutput
      *         output for instance creation logs
      * @param workspaceId
@@ -81,7 +81,7 @@ public interface InstanceProvider {
      * @throws InvalidInstanceSnapshotException
      *         if other errors occurs while restoring instance
      */
-    Instance createInstance(InstanceSnapshotKey instanceSnapshotKey,
+    Instance createInstance(InstanceKey instanceKey,
                             LineConsumer creationLogsOutput,
                             String workspaceId,
                             boolean bindWorkspace) throws NotFoundException, InvalidInstanceSnapshotException, MachineException;
@@ -89,10 +89,10 @@ public interface InstanceProvider {
     /**
      * Removes snapshot of the instance in implementation specific way.
      *
-     * @param instanceSnapshotKey
+     * @param instanceKey
      *         key of the snapshot of the instance that should be removed
      * @throws MachineException
      *         if exception occurs on instance snapshot removal
      */
-    void removeInstanceSnapshot(InstanceSnapshotKey instanceSnapshotKey) throws MachineException;
+    void removeInstanceSnapshot(InstanceKey instanceKey) throws MachineException;
 }

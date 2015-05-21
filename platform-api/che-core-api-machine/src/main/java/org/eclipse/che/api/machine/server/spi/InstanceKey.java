@@ -18,7 +18,7 @@ import java.util.Map;
  * @author andrew00x
  * @author Alexander Garagatyi
  */
-public interface InstanceSnapshotKey {
+public interface InstanceKey {
     Map<String, String> getFields();
 
     boolean equals(Object o);
