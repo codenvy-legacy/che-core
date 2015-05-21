@@ -131,11 +131,7 @@ public class MachineImpl implements Machine {
     /**
      * Binds project to machine
      */
-    void bindProject(ProjectBinding project) throws MachineException, ForbiddenException {
-        if (isWorkspaceBound) {
-            throw new ForbiddenException("Workspace is bound to machine. Project binding is disabled");
-        }
-
+    void bindProject(ProjectBinding project) throws MachineException {
         if (instance == null) {
             throw new MachineException(String.format("Machine %s is not ready to bind the project", id));
         }
@@ -148,11 +144,7 @@ public class MachineImpl implements Machine {
     /**
      * Unbinds project from machine
      */
-    void unbindProject(ProjectBinding project) throws MachineException, NotFoundException, ForbiddenException {
-        if (isWorkspaceBound) {
-            throw new ForbiddenException("Workspace is bound to machine. Project unbinding is disabled");
-        }
-
+    void unbindProject(ProjectBinding project) throws MachineException, NotFoundException {
         if (instance == null) {
             throw new MachineException(String.format("Machine %s is not ready to unbind the project", id));
         }

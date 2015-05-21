@@ -345,7 +345,7 @@ public class MachineManager {
      * @throws MachineException
      *         if other error occur
      */
-    public void unbindProject(String machineId, ProjectBinding project) throws NotFoundException, MachineException, ForbiddenException {
+    public void unbindProject(String machineId, ProjectBinding project) throws NotFoundException, MachineException {
         final MachineImpl machine = getMachine(machineId);
 
         machine.unbindProject(project);
