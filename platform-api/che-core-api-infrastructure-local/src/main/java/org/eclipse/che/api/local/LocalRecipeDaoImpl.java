@@ -120,7 +120,7 @@ public class LocalRecipeDaoImpl implements RecipeDao {
                                      }
                                  })
                                  .limit(maxItems)
-                                 .toImmutableList();
+                                 .toList();
         } finally {
             lock.readLock().unlock();
         }
@@ -139,7 +139,7 @@ public class LocalRecipeDaoImpl implements RecipeDao {
                                      }
                                  })
                                  .limit(maxItems)
-                                 .toImmutableList();
+                                 .toList();
         } finally {
             lock.readLock().unlock();
         }
