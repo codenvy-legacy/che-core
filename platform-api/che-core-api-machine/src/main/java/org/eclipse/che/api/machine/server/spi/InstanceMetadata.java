@@ -26,6 +26,6 @@ public interface InstanceMetadata {
      */
     Map<String, String> getProperties();
 
-    /** Serializes this {@code ImageMetadata} to JSON format. */
+    /** Serializes this {@code InstanceMetadata} to JSON format. */
     String toJson();
 }

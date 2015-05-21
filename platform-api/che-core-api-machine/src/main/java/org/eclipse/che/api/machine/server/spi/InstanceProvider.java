@@ -12,7 +12,7 @@ package org.eclipse.che.api.machine.server.spi;
 
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.util.LineConsumer;
-import org.eclipse.che.api.machine.server.InvalidImageException;
+import org.eclipse.che.api.machine.server.InvalidInstanceSnapshotException;
 import org.eclipse.che.api.machine.server.InvalidRecipeException;
 import org.eclipse.che.api.machine.server.MachineException;
 import org.eclipse.che.api.machine.server.UnsupportedRecipeException;
@@ -21,15 +21,16 @@ import org.eclipse.che.api.machine.shared.Recipe;
 import java.util.Set;
 
 /**
- * Provides instances of {@link Image} in implementation specific way.
+ * Provides instances of {@link Instance} in implementation specific way.
  *
  * @author gazarenkov
+ * @author Alexander Garagatyi
  */
-public interface ImageProvider {
+public interface InstanceProvider {
     /**
-     * Gets type of image that this provider supports. Must be unique per system.
+     * Gets type of instance that this provider supports. Must be unique per system.
      *
-     * @return type of image that this provider supports
+     * @return type of instance that this provider supports
      */
     String getType();
 
@@ -42,42 +43,42 @@ public interface ImageProvider {
     Set<String> getRecipeTypes();
 
     /**
-     * Creates image from scratch.
+     * Creates instance from scratch.
      *
      * @param recipe
-     *         image creation {@link Recipe}
+     *         instance creation {@link Recipe}
      * @param creationLogsOutput
-     *         output for image creation logs
-     * @return newly created {@link Image}
+     *         output for instance creation logs
+     * @return newly created {@link Instance}
      * @throws UnsupportedRecipeException
      *         if specified {@code recipe} is not supported
      * @throws InvalidRecipeException
      *         if {@code recipe} is invalid
      */
-    Image createImage(Recipe recipe, LineConsumer creationLogsOutput)
+    Instance createInstance(Recipe recipe, LineConsumer creationLogsOutput)
             throws UnsupportedRecipeException, InvalidRecipeException, MachineException;
 
     /**
-     * Creates image using implementation specific {@link ImageKey}.
+     * Creates instance using implementation specific {@link InstanceKey}.
      *
-     * @param imageKey
-     *         implementation specific {@link ImageKey}
+     * @param instanceKey
+     *         implementation specific {@link InstanceKey}
      * @param creationLogsOutput
-     *         output for image creation logs
-     * @return newly created image
+     *         output for instance creation logs
+     * @return newly created instance
      * @throws NotFoundException
-     *         if image described by {@code imageKey} doesn't exists
-     * @throws InvalidImageException
-     *         if other errors occurs while restoring image
+     *         if instance described by {@code InstanceKey} doesn't exists
+     * @throws InvalidInstanceSnapshotException
+     *         if other errors occurs while restoring instance
      */
-    Image createImage(ImageKey imageKey, LineConsumer creationLogsOutput)
-            throws NotFoundException, InvalidImageException, MachineException;
+    Instance createInstance(InstanceKey instanceKey, LineConsumer creationLogsOutput)
+            throws NotFoundException, InvalidInstanceSnapshotException, MachineException;
 
     /**
-     * Removes image in implementation specific way.
+     * Removes snapshot of the instance in implementation specific way.
      *
-     * @param imageKey key of the image that should be removed
-     * @throws MachineException if exception occurs on image removal
+     * @param instanceKey key of the snapshot of the instance that should be removed
+     * @throws MachineException if exception occurs on instance snapshot removal
      */
-    void removeImage(ImageKey imageKey) throws MachineException;
+    void removeInstanceSnapshot(InstanceKey instanceKey) throws MachineException;
 }
