@@ -59,10 +59,10 @@ public interface InstanceProvider {
             throws UnsupportedRecipeException, InvalidRecipeException, MachineException;
 
     /**
-     * Creates instance using implementation specific {@link InstanceSnapshotKey}.
+     * Creates instance using implementation specific {@link InstanceKey}.
      *
-     * @param instanceSnapshotKey
-     *         implementation specific {@link InstanceSnapshotKey}
+     * @param instanceKey
+     *         implementation specific {@link InstanceKey}
      * @param creationLogsOutput
      *         output for instance creation logs
      * @return newly created instance
@@ -71,14 +71,14 @@ public interface InstanceProvider {
      * @throws InvalidInstanceSnapshotException
      *         if other errors occurs while restoring instance
      */
-    Instance createInstance(InstanceSnapshotKey instanceSnapshotKey, LineConsumer creationLogsOutput)
+    Instance createInstance(InstanceKey instanceKey, LineConsumer creationLogsOutput)
             throws NotFoundException, InvalidInstanceSnapshotException, MachineException;
 
     /**
      * Removes snapshot of the instance in implementation specific way.
      *
-     * @param instanceSnapshotKey key of the snapshot of the instance that should be removed
+     * @param instanceKey key of the snapshot of the instance that should be removed
      * @throws MachineException if exception occurs on instance snapshot removal
      */
-    void removeInstanceSnapshot(InstanceSnapshotKey instanceSnapshotKey) throws MachineException;
+    void removeInstanceSnapshot(InstanceKey instanceKey) throws MachineException;
 }

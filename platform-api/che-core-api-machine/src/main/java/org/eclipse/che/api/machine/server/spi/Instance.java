@@ -77,7 +77,7 @@ public interface Instance {
      * @throws MachineException
      *         if error occurs on storing state of the instance
      */
-    InstanceSnapshotKey saveToSnapshot(String owner, String label) throws MachineException;
+    InstanceKey saveToSnapshot(String owner, String label) throws MachineException;
 
     /**
      * Destroy instance
