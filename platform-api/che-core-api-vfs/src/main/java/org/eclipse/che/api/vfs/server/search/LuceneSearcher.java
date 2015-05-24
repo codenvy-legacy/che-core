@@ -19,7 +19,10 @@ import org.eclipse.che.api.vfs.server.VirtualFileFilter;
 import org.eclipse.che.api.vfs.server.util.MediaTypeFilter;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.core.SimpleAnalyzer;
+import org.apache.lucene.analysis.Tokenizer;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.core.LowerCaseFilter;
+import org.apache.lucene.analysis.core.WhitespaceTokenizer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
@@ -74,7 +77,14 @@ public abstract class LuceneSearcher implements Searcher {
     }
 
     protected Analyzer makeAnalyzer() {
-        return new SimpleAnalyzer();
+        return new Analyzer() {
+			@Override
+			protected TokenStreamComponents createComponents(String fieldName) {
+				Tokenizer tokenizer = new WhitespaceTokenizer();
+				TokenStream filter = new LowerCaseFilter(tokenizer);
+				return new TokenStreamComponents(tokenizer, filter);
+			}
+		};
     }
 
     protected abstract Directory makeDirectory() throws ServerException;
@@ -134,6 +144,9 @@ public abstract class LuceneSearcher implements Searcher {
         }
         if (text != null) {
             QueryParser qParser = new QueryParser("text", makeAnalyzer());
+			if (text.startsWith("*") || text.startsWith("?")) {
+				qParser.setAllowLeadingWildcard(true);
+			}
             try {
                 luceneQuery.add(qParser.parse(text), BooleanClause.Occur.MUST);
             } catch (ParseException e) {
