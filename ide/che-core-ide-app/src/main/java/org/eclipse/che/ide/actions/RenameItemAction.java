@@ -57,6 +57,9 @@ import org.eclipse.che.ide.util.loging.Log;
 
 import javax.annotation.Nullable;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.eclipse.che.api.runner.ApplicationStatus.NEW;
 import static org.eclipse.che.api.runner.ApplicationStatus.RUNNING;
 import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
@@ -188,9 +191,9 @@ public class RenameItemAction extends Action {
                         StringMap<EditorPartPresenter> editors = editorAgent.getOpenedEditors();
                         Array<EditorPartPresenter> openedEditors = editors.getValues();
 
-                        for (EditorPartPresenter editor : openedEditors.asIterable()) {
-                            partStackPresenter.removePart(editor);
-                        }
+//                        for (EditorPartPresenter editor : openedEditors.asIterable()) {
+//                            partStackPresenter.removePart(editor);
+//                        }
 
                         if (finalItemReferenceBeforeRenaming != null) {
                             checkOpenedFiles(finalItemReferenceBeforeRenaming, value);
@@ -270,6 +273,7 @@ public class RenameItemAction extends Action {
                 protected void onSuccess(Array<ItemReference> result) {
                     StringMap<ItemReference> children = Collections.createStringMap();
                     for (ItemReference itemReference : result.asIterable()) {
+                        Log.info(getClass(), "server get index " + itemReference.getPath());
                         children.put(itemReference.getPath(), itemReference);
                     }
 

@@ -218,13 +218,55 @@ public abstract class LuceneSearcher implements Searcher {
     }
 
     @Override
-    public final void delete(String path) throws ServerException {
-        doDelete(new Term("path", path));
+    public final void delete(String path, boolean isFile) throws ServerException {
+        LOG.info("===============================================delete worked" + path);
+        String[] result = search((new QueryExpression()).setPath("/"));
+        LOG.info("Before *************************************************************");
+        for (String search: result) {
+            LOG.info(search);
+        }
+
+
+
+
+        if (isFile) {
+            LOG.info("rename file " + path);
+            Term term = new Term("path", path);
+            doDelete(term);
+        } else {
+            LOG.info("rename not file " + path);
+
+            if (path.charAt(path.length() - 1) != '/') {
+                path += "/";
+            }
+
+            Term term = new Term("path", path);
+            doDelete(new PrefixQuery(term));
+        }
+
+
+
+        result = search((new QueryExpression()).setPath("/"));
+        LOG.info("After *************************************************************");
+        for (String search: result) {
+            LOG.info(search);
+        }
     }
 
     protected void doDelete(Term deleteTerm) throws ServerException {
         try {
-            getIndexWriter().deleteDocuments(new PrefixQuery(deleteTerm));
+            getIndexWriter().deleteDocuments(deleteTerm);
+        } catch (OutOfMemoryError oome) {
+            close();
+            throw oome;
+        } catch (IOException e) {
+            throw new ServerException(e.getMessage(), e);
+        }
+    }
+
+    protected void doDelete(PrefixQuery query) throws ServerException {
+        try {
+            getIndexWriter().deleteDocuments(query);
         } catch (OutOfMemoryError oome) {
             close();
             throw oome;
