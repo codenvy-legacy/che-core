@@ -144,6 +144,9 @@ public abstract class LuceneSearcher implements Searcher {
         }
         if (text != null) {
             QueryParser qParser = new QueryParser("text", makeAnalyzer());
+			if (text.startsWith("*") || text.startsWith("?")) {
+				qParser.setAllowLeadingWildcard(true);
+			}
             try {
                 luceneQuery.add(qParser.parse(text), BooleanClause.Occur.MUST);
             } catch (ParseException e) {
