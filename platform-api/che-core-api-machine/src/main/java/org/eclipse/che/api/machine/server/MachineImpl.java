@@ -73,7 +73,10 @@ public class MachineImpl implements Machine {
 
     @Override
     public InstanceMetadata getMetadata() throws MachineException {
-        return instance.getMetadata();
+        if (instance != null) {
+            return instance.getMetadata();
+        }
+        throw new MachineException("Instance of machine is not ready yet");
     }
 
     @Override
