@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.server;
 
-import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.util.LineConsumer;
 import org.eclipse.che.api.machine.server.spi.Instance;
@@ -132,30 +131,34 @@ public class MachineImpl implements Machine {
      * Binds project to machine
      */
     void bindProject(ProjectBinding project) throws MachineException {
-        if (instance == null) {
-            throw new MachineException(String.format("Machine %s is not ready to bind the project", id));
+        if (!isWorkspaceBound) {
+            if (instance == null) {
+                throw new MachineException(String.format("Machine %s is not ready to bind the project", id));
+            }
+
+            instance.bindProject(workspaceId, project);
+
+            this.projectBindings.add(project);
         }
-
-        instance.bindProject(workspaceId, project);
-
-        this.projectBindings.add(project);
     }
 
     /**
      * Unbinds project from machine
      */
     void unbindProject(ProjectBinding project) throws MachineException, NotFoundException {
-        if (instance == null) {
-            throw new MachineException(String.format("Machine %s is not ready to unbind the project", id));
-        }
-
-        for (ProjectBinding projectBinding : projectBindings) {
-            if (projectBinding.getPath().equals(project.getPath())) {
-                instance.unbindProject(workspaceId, project);
-                this.projectBindings.remove(project);
-                return;
+        if (!isWorkspaceBound) {
+            if (instance == null) {
+                throw new MachineException(String.format("Machine %s is not ready to unbind the project", id));
             }
+
+            for (ProjectBinding projectBinding : projectBindings) {
+                if (projectBinding.getPath().equals(project.getPath())) {
+                    instance.unbindProject(workspaceId, project);
+                    this.projectBindings.remove(project);
+                    return;
+                }
+            }
+            throw new NotFoundException(String.format("Binding of project %s in machine %s not found", project.getPath(), id));
         }
-        throw new NotFoundException(String.format("Binding of project %s in machine %s not found", project.getPath(), id));
     }
 }
