@@ -18,10 +18,7 @@ import org.eclipse.che.ide.api.text.TypedRegion;
 import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.collections.StringMap.IterationCallback;
 import org.eclipse.che.ide.jseditor.client.annotation.AnnotationModel;
-import org.eclipse.che.ide.jseditor.client.annotation.AnnotationModelEvent;
-import org.eclipse.che.ide.jseditor.client.annotation.ClearAnnotationModelEvent;
-import org.eclipse.che.ide.jseditor.client.annotation.InlineAnnotationRenderer;
-import org.eclipse.che.ide.jseditor.client.annotation.MinimapAnnotationRenderer;
+import org.eclipse.che.ide.jseditor.client.annotation.HasAnnotationRendering;
 import org.eclipse.che.ide.jseditor.client.annotation.QueryAnnotationsEvent;
 import org.eclipse.che.ide.jseditor.client.changeintercept.ChangeInterceptorProvider;
 import org.eclipse.che.ide.jseditor.client.changeintercept.TextChange;
@@ -42,10 +39,8 @@ import org.eclipse.che.ide.jseditor.client.events.TextChangeEvent;
 import org.eclipse.che.ide.jseditor.client.events.TextChangeHandler;
 import org.eclipse.che.ide.jseditor.client.events.doc.DocReadyWrapper;
 import org.eclipse.che.ide.jseditor.client.events.doc.DocReadyWrapper.DocReadyInit;
-import org.eclipse.che.ide.jseditor.client.gutter.HasGutter;
 import org.eclipse.che.ide.jseditor.client.keymap.KeyBindingAction;
 import org.eclipse.che.ide.jseditor.client.keymap.Keybinding;
-import org.eclipse.che.ide.jseditor.client.minimap.HasMinimap;
 import org.eclipse.che.ide.jseditor.client.partition.DocumentPartitioner;
 import org.eclipse.che.ide.jseditor.client.position.PositionConverter;
 import org.eclipse.che.ide.jseditor.client.quickfix.QuickAssistAssistant;
@@ -148,37 +143,44 @@ public class TextEditorInit<T extends EditorWidget> {
             return;
         }
         // add the renderers (event handler) before the model (event source)
-
-        // gutter renderer
-        if (textEditor instanceof HasGutter && ((HasGutter)this.textEditor).getGutter() != null) {
-//            final GutterAnnotationRenderer annotationRenderer = new GutterAnnotationRenderer();
-//            annotationRenderer.setDocument(documentHandle.getDocument());
-//            annotationRenderer.setHasGutter(((HasGutter)this.textEditor).getGutter());
-//            documentHandle.getDocEventBus().addHandler(AnnotationModelEvent.TYPE, annotationRenderer);
-//            documentHandle.getDocEventBus().addHandler(ClearAnnotationModelEvent.TYPE, annotationRenderer);
+        if(textEditor instanceof HasAnnotationRendering){
+            ((HasAnnotationRendering)textEditor).configure(annotationModel, documentHandle);
         }
-
-        // inline renderer
-        final InlineAnnotationRenderer inlineAnnotationRenderer = new InlineAnnotationRenderer();
-        inlineAnnotationRenderer.setDocument(documentHandle.getDocument());
-        inlineAnnotationRenderer.setHasTextMarkers(this.textEditor.getHasTextMarkers());
-        documentHandle.getDocEventBus().addHandler(AnnotationModelEvent.TYPE, inlineAnnotationRenderer);
-        documentHandle.getDocEventBus().addHandler(ClearAnnotationModelEvent.TYPE, inlineAnnotationRenderer);
-
-        // minimap renderer
-        if (this.textEditor instanceof HasMinimap && ((HasMinimap)this.textEditor).getMinimap() != null) {
-            final MinimapAnnotationRenderer minimapAnnotationRenderer = new MinimapAnnotationRenderer();
-            minimapAnnotationRenderer.setDocument(documentHandle.getDocument());
-            minimapAnnotationRenderer.setMinimap(((HasMinimap)this.textEditor).getMinimap());
-            documentHandle.getDocEventBus().addHandler(AnnotationModelEvent.TYPE, minimapAnnotationRenderer);
-            documentHandle.getDocEventBus().addHandler(ClearAnnotationModelEvent.TYPE, minimapAnnotationRenderer);
-        }
-
         annotationModel.setDocumentHandle(documentHandle);
         documentHandle.getDocEventBus().addHandler(DocumentChangeEvent.TYPE, annotationModel);
 
         // the model listens to QueryAnnotation events
         documentHandle.getDocEventBus().addHandler(QueryAnnotationsEvent.TYPE, annotationModel);
+//        // gutter renderer
+//        if (textEditor instanceof HasGutter && ((HasGutter)this.textEditor).getGutter() != null) {
+////            final GutterAnnotationRenderer annotationRenderer = new GutterAnnotationRenderer();
+////            annotationRenderer.setDocument(documentHandle.getDocument());
+////            annotationRenderer.setHasGutter(((HasGutter)this.textEditor).getGutter());
+////            documentHandle.getDocEventBus().addHandler(AnnotationModelEvent.TYPE, annotationRenderer);
+////            documentHandle.getDocEventBus().addHandler(ClearAnnotationModelEvent.TYPE, annotationRenderer);
+//        }
+//
+//        // inline renderer
+//        final InlineAnnotationRenderer inlineAnnotationRenderer = new InlineAnnotationRenderer();
+//        inlineAnnotationRenderer.setDocument(documentHandle.getDocument());
+//        inlineAnnotationRenderer.setHasTextMarkers(this.textEditor.getHasTextMarkers());
+//        documentHandle.getDocEventBus().addHandler(AnnotationModelEvent.TYPE, inlineAnnotationRenderer);
+//        documentHandle.getDocEventBus().addHandler(ClearAnnotationModelEvent.TYPE, inlineAnnotationRenderer);
+//
+//        // minimap renderer
+//        if (this.textEditor instanceof HasMinimap && ((HasMinimap)this.textEditor).getMinimap() != null) {
+//            final MinimapAnnotationRenderer minimapAnnotationRenderer = new MinimapAnnotationRenderer();
+//            minimapAnnotationRenderer.setDocument(documentHandle.getDocument());
+//            minimapAnnotationRenderer.setMinimap(((HasMinimap)this.textEditor).getMinimap());
+//            documentHandle.getDocEventBus().addHandler(AnnotationModelEvent.TYPE, minimapAnnotationRenderer);
+//            documentHandle.getDocEventBus().addHandler(ClearAnnotationModelEvent.TYPE, minimapAnnotationRenderer);
+//        }
+//
+//        annotationModel.setDocumentHandle(documentHandle);
+//        documentHandle.getDocEventBus().addHandler(DocumentChangeEvent.TYPE, annotationModel);
+//
+//        // the model listens to QueryAnnotation events
+//        documentHandle.getDocEventBus().addHandler(QueryAnnotationsEvent.TYPE, annotationModel);
     }
 
     /**
@@ -305,13 +307,13 @@ public class TextEditorInit<T extends EditorWidget> {
                         final int offset = textEditor.getCursorModel().getCursorPosition().getOffset();
                         final PositionConverter.PixelCoordinates pixelPos = positionConverter.textToPixel(cursor);
                         //TODO add to pixelPos.getY()  line height to assist widget doesn't cover current line
-                        showQuickAssistant(offset, pixelPos.getX(), pixelPos.getY() + 16);
+                        showQuickAssistant(offset, pixelPos.getX(), pixelPos.getY());
                     }
                 }
             };
             final HasKeybindings hasKeybindings = this.textEditor.getHasKeybindings();
             hasKeybindings.addKeybinding(new Keybinding(false, false, true, false, KeyCode.ENTER, action));
-            hasKeybindings.addKeybinding(new Keybinding(true, false, false, false, KeyCode.ONE, action));
+//            hasKeybindings.addKeybinding(new Keybinding(true, false, false, false, KeyCode.ONE, action));
         }
     }
 

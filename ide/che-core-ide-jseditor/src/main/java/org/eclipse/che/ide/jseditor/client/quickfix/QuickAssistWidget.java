@@ -109,14 +109,14 @@ public class QuickAssistWidget extends PopupWidget<CompletionProposal> {
         element.addEventListener(Event.FOCUS, new EventListener() {
             @Override
             public void handleEvent(Event event) {
-                Elements.addClassName("CodeMirror-hint-active ", element);
+                Elements.addClassName(popupResources.popupStyle().hintActive(), element);
             }
         },false);
 
         element.addEventListener(Event.BLUR, new EventListener() {
             @Override
             public void handleEvent(Event event) {
-                Elements.removeClassName("CodeMirror-hint-active ", element);
+                Elements.removeClassName(popupResources.popupStyle().hintActive(), element);
             }
         },false);
 

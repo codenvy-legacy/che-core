@@ -10,10 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.popup;
 
-import static elemental.css.CSSStyleDeclaration.Unit.PX;
-
-import org.eclipse.che.ide.util.dom.Elements;
-
 import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.dom.Node;
@@ -23,6 +19,10 @@ import elemental.events.EventTarget;
 import elemental.events.MouseEvent;
 import elemental.html.ClientRect;
 import elemental.html.Window;
+
+import org.eclipse.che.ide.util.dom.Elements;
+
+import static elemental.css.CSSStyleDeclaration.Unit.PX;
 
 /**
  * Popup widow that hides itself on outside mouse down actions..
@@ -50,7 +50,7 @@ public abstract class PopupWidget<T> {
      */
     private final EventListener keyboardListener;
 
-    private final PopupResources popupResources;
+    protected final PopupResources popupResources;
 
     /**
      * The previously focused element.

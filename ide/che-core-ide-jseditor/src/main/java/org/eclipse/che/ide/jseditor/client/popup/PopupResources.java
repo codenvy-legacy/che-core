@@ -24,5 +24,8 @@ public interface PopupResources extends ClientBundle {
     public interface PopupStyle extends CssResource {
         String window();
         String item();
+
+        @ClassName("hint-active")
+        String hintActive();
     }
 }
