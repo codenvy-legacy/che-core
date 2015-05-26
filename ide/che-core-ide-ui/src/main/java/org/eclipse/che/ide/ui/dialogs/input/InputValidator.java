@@ -36,5 +36,13 @@ public interface InputValidator {
         /** Returns an error message for violation of validation constraints. */
         @Nullable
         String getMessage();
+
+        /**
+         * Returns the corrected value for replacement.
+         * Note that not {@code null} value returned by this method is treated that not error state and no message to display.
+         * In this case the wrong value will be replaced with the result of this method.
+         */
+        @Nullable
+        String getCorrectedValue();
     }
 }
