@@ -962,9 +962,10 @@ public class FSMountPoint implements MountPoint {
         clearMetadataCache();
 
         final String path = virtualFile.getPath();
+        boolean isFile = virtualFile.isFile();
         if (!deleteRecursive(virtualFile.getIoFile())) {
             LOG.error("Unable delete file {}", virtualFile.getIoFile());
-            throw new ServerException(String.format("Unable delete item '%s'. ", virtualFile.getPath()));
+            throw new ServerException(String.format("Unable delete item '%s'. ", path));
         }
 
         // delete ACL file
@@ -972,7 +973,7 @@ public class FSMountPoint implements MountPoint {
         if (aclFile.delete()) {
             if (aclFile.exists()) {
                 LOG.error("Unable delete ACL file {}", aclFile);
-                throw new ServerException(String.format("Unable delete item '%s'. ", virtualFile.getPath()));
+                throw new ServerException(String.format("Unable delete item '%s'. ", path));
             }
         }
 
@@ -981,13 +982,13 @@ public class FSMountPoint implements MountPoint {
         if (metadataFile.delete()) {
             if (metadataFile.exists()) {
                 LOG.error("Unable delete file metadata {}", metadataFile);
-                throw new ServerException(String.format("Unable delete item '%s'. ", virtualFile.getPath()));
+                throw new ServerException(String.format("Unable delete item '%s'. ", path));
             }
         }
 
         if (searcherProvider != null) {
             try {
-                searcherProvider.getSearcher(this, true).delete(path);
+                searcherProvider.getSearcher(this, true).delete(path, isFile);
             } catch (ServerException e) {
                 LOG.error(e.getMessage(), e);
             }

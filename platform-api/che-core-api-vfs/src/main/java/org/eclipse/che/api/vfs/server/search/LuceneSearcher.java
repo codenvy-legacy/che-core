@@ -218,13 +218,15 @@ public abstract class LuceneSearcher implements Searcher {
     }
 
     @Override
-    public final void delete(String path) throws ServerException {
-        doDelete(new Term("path", path));
-    }
-
-    protected void doDelete(Term deleteTerm) throws ServerException {
+    public final void delete(String path, boolean isFile) throws ServerException {
         try {
-            getIndexWriter().deleteDocuments(new PrefixQuery(deleteTerm));
+            if (isFile) {
+                Term term = new Term("path", path);
+                getIndexWriter().deleteDocuments(term);
+            } else {
+                Term term = new Term("path", path + "/");
+                getIndexWriter().deleteDocuments(new PrefixQuery(term));
+            }
         } catch (OutOfMemoryError oome) {
             close();
             throw oome;
