@@ -18,6 +18,7 @@ import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.user.shared.dto.ProfileDescriptor;
+import org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionManager;
@@ -32,6 +33,7 @@ import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 import org.eclipse.che.ide.statepersistance.dto.AppState;
+import org.eclipse.che.ide.statepersistance.dto.LastProject;
 import org.eclipse.che.ide.statepersistance.dto.ProjectState;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.Pair;
@@ -55,6 +57,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -72,6 +75,7 @@ public class AppStateManagerTest {
     private static final String SERIALIZED_STATE  = "text";
     private static final String PROJECT_PATH      = "/project";
     private static final String WORKSPACE_NAME    = "someWorkspace";
+    private static final String WORKSPACE_ID      = "workspaceg13rj45zkespwtxm";
     private static final String FULL_PROJECT_PATH = "/" + WORKSPACE_NAME + PROJECT_PATH;
     private List<ActionDescriptor>    actions;
     private Map<String, ProjectState> stateMap;
@@ -95,6 +99,10 @@ public class AppStateManagerTest {
 
     @Mock
     private AppState             appState;
+    @Mock
+    private WorkspaceDescriptor  workspaceDescriptor;
+    @Mock
+    private LastProject          lastProject;
     @Mock
     private ProjectDescriptor    rootProject;
     @Mock
@@ -136,8 +144,12 @@ public class AppStateManagerTest {
 
         when(preferencesManager.getValue(anyString())).thenReturn(SERIALIZED_STATE);
         when(dtoFactory.createDtoFromJson(anyString(), Matchers.<Class<AppState>>anyObject())).thenReturn(appState);
-        when(appState.getLastProjectPath()).thenReturn("/project");
+        when(appState.getLastProject()).thenReturn(lastProject);
+        when(lastProject.getPath()).thenReturn("/project");
+        when(lastProject.getWorkspaceId()).thenReturn(WORKSPACE_ID);
         when(appContext.getCurrentProject()).thenReturn(currentProject);
+        when(appContext.getWorkspace()).thenReturn(workspaceDescriptor);
+        when(workspaceDescriptor.getId()).thenReturn(WORKSPACE_ID);
         when(currentProject.getRootProject()).thenReturn(rootProject);
         when(rootProject.getPath()).thenReturn(PROJECT_PATH);
         when(rootProject.getWorkspaceName()).thenReturn(WORKSPACE_NAME);
@@ -204,7 +216,9 @@ public class AppStateManagerTest {
         method.invoke(asyncRequestCallback, exception);
 
         verify(appState).getProjects();
-        verify(appState).setLastProjectPath("");
+        verify(appState, times(4)).getLastProject();
+        verify(lastProject).setPath("");
+
         verify(dtoFactory).toJson(appState);
         preferencesManager.setValue(PREFERENCE_PROPERTY_NAME, SERIALIZED_STATE);
         verify(preferencesManager).flushPreferences(Matchers.<AsyncCallback<ProfileDescriptor>>anyObject());
@@ -216,8 +230,13 @@ public class AppStateManagerTest {
 
         appStateManager.onWindowClosing(mock(WindowActionEvent.class));
 
-        verify(appState).setLastProjectPath(eq(""));
+        verify(appContext).getWorkspace();
+        verify(workspaceDescriptor).getId();
+        verify(lastProject).setWorkspaceId(WORKSPACE_ID);
+        verify(appState, times(3)).getLastProject();
+        verify(lastProject).setPath("");
 
+        verify(dtoFactory).toJson(appState);
         verify(preferencesManager).setValue(anyString(), eq(SERIALIZED_STATE));
         verify(preferencesManager).flushPreferences(Matchers.<AsyncCallback<ProfileDescriptor>>anyObject());
     }
@@ -233,10 +252,15 @@ public class AppStateManagerTest {
         appStateManager.onWindowClosing(mock(WindowActionEvent.class));
 
         verify(appContext, times(2)).getCurrentProject();
+        verify(appState, times(3)).getLastProject();
+        verify(appContext).getWorkspace();
+        verify(workspaceDescriptor).getId();
+        verify(lastProject).setWorkspaceId(WORKSPACE_ID);
         verify(currentProject, times(2)).getRootProject();
         verify(rootProject, times(2)).getPath();
         verify(rootProject, times(2)).getWorkspaceName();
-        verify(appState).setLastProjectPath(FULL_PROJECT_PATH);
+        verify(appState, times(3)).getLastProject();
+        verify(lastProject).setPath(FULL_PROJECT_PATH);
         verify(dtoFactory).createDto(ProjectState.class);
         verify(appState).getProjects();
         verify(projectState).getActions();
