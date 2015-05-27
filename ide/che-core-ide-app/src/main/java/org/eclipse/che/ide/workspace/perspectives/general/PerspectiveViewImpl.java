@@ -8,12 +8,11 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.workspace;
+package org.eclipse.che.ide.workspace.perspectives.general;
 
-import org.eclipse.che.ide.api.parts.WorkBenchView;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
-import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
@@ -21,28 +20,30 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
-import com.google.inject.Singleton;
+
+import org.eclipse.che.ide.api.parts.WorkBenchView;
+import org.eclipse.che.ide.workspace.WorkBenchResources;
 
 /**
  * General-purpose Perspective View
  *
  * @author Nikolay Zamosenchuk
+ * @author Dmitry Shnurenko
  */
-@Singleton
-public class WorkBenchViewImpl extends LayoutPanel implements WorkBenchView<WorkBenchView.ActionDelegate> {
+public class PerspectiveViewImpl extends LayoutPanel implements WorkBenchView<WorkBenchView.ActionDelegate> {
 
-    interface WorkBenchViewImplUiBinder extends UiBinder<Widget, WorkBenchViewImpl> {
+    interface PerspectiveViewImplUiBinder extends UiBinder<Widget, PerspectiveViewImpl> {
     }
+
+    private static final PerspectiveViewImplUiBinder UI_BINDER = GWT.create(PerspectiveViewImplUiBinder.class);
 
     @UiField(provided = true)
     SplitLayoutPanel splitPanel = new SplitLayoutPanel(3);
 
     @UiField
     ScrollPanel editorPanel;
-
     @UiField
     SimplePanel navPanel;
-
     @UiField
     SimplePanel infoPanel;
 
@@ -56,14 +57,13 @@ public class WorkBenchViewImpl extends LayoutPanel implements WorkBenchView<Work
     FlowPanel   bottomPanel;
 
     @UiField(provided = true)
-    final WorkBenchResources res;
+    final WorkBenchResources resources;
 
     @Inject
-    public WorkBenchViewImpl(WorkBenchResources resources,
-                             WorkBenchViewImplUiBinder uiBinder) {
-        this.res = resources;
+    public PerspectiveViewImpl(WorkBenchResources resources) {
+        this.resources = resources;
         resources.workBenchCss().ensureInjected();
-        add(uiBinder.createAndBindUi(this));
+        add(UI_BINDER.createAndBindUi(this));
     }
 
     /** {@inheritDoc} */
@@ -74,26 +74,49 @@ public class WorkBenchViewImpl extends LayoutPanel implements WorkBenchView<Work
 
     /** {@inheritDoc} */
     @Override
-    public AcceptsOneWidget getEditorPanel() {
+    public SimplePanel getEditorPanel() {
         return editorPanel;
     }
 
     /** {@inheritDoc} */
     @Override
-    public AcceptsOneWidget getNavigationPanel() {
+    public SimplePanel getNavigationPanel() {
         return navPanel;
     }
 
     /** {@inheritDoc} */
     @Override
-    public AcceptsOneWidget getInformationPanel() {
+    public SimplePanel getInformationPanel() {
         return infoPanel;
     }
 
     /** {@inheritDoc} */
     @Override
-    public AcceptsOneWidget getToolPanel() {
+    public SimplePanel getToolPanel() {
         return toolPanel;
+    }
+
+    /** Returns split panel. */
+    public SplitLayoutPanel getSplitPanel() {
+        return splitPanel;
+    }
+
+    /** Returns right panel.Outline tab is located on this panel. */
+    public FlowPanel getRightPanel() {
+        return rightPanel;
+    }
+
+    /** Returns left panel.Project explorer tab is located on this panel. */
+    public FlowPanel getLeftPanel() {
+        return leftPanel;
+    }
+
+    /**
+     * Returns bottom panel. This panel can contains different tabs. When perspective is project, this panel contains Events and
+     * Outputs tabs.
+     */
+    public FlowPanel getBottomPanel() {
+        return bottomPanel;
     }
 
     /** {@inheritDoc} */

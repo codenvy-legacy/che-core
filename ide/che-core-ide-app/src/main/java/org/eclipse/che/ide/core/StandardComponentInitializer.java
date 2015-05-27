@@ -16,6 +16,7 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 import org.eclipse.che.ide.Resources;
+import org.eclipse.che.ide.actions.ChangePerspectiveAction;
 import org.eclipse.che.ide.actions.CloseProjectAction;
 import org.eclipse.che.ide.actions.CreateModuleAction;
 import org.eclipse.che.ide.actions.DeleteItemAction;
@@ -27,8 +28,8 @@ import org.eclipse.che.ide.actions.ImportProjectFromLocationAction;
 import org.eclipse.che.ide.actions.NavigateToFileAction;
 import org.eclipse.che.ide.actions.NewProjectAction;
 import org.eclipse.che.ide.actions.OpenFileAction;
-import org.eclipse.che.ide.actions.OpenProjectAction;
 import org.eclipse.che.ide.actions.OpenNodeAction;
+import org.eclipse.che.ide.actions.OpenProjectAction;
 import org.eclipse.che.ide.actions.OpenSelectedFileAction;
 import org.eclipse.che.ide.actions.ProjectConfigurationAction;
 import org.eclipse.che.ide.actions.RedirectToFeedbackAction;
@@ -45,7 +46,6 @@ import org.eclipse.che.ide.actions.ShowPreferencesAction;
 import org.eclipse.che.ide.actions.UndoAction;
 import org.eclipse.che.ide.actions.UploadFileAction;
 import org.eclipse.che.ide.actions.UploadFolderFromZipAction;
-import org.eclipse.che.ide.projecttype.BlankProjectWizardRegistrar;
 import org.eclipse.che.ide.actions.find.FindActionAction;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.DefaultActionGroup;
@@ -67,6 +67,7 @@ import org.eclipse.che.ide.xml.NewXmlFileAction;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 import static org.eclipse.che.ide.api.action.IdeActions.GROUP_FILE_NEW;
+import static org.eclipse.che.ide.projecttype.BlankProjectWizardRegistrar.BLANK_CATEGORY;
 
 /**
  * Initializer for standard components i.e. some basic menu commands (Save, Save As etc)
@@ -80,6 +81,9 @@ public class StandardComponentInitializer {
         @Source("org/eclipse/che/ide/blank.svg")
         SVGResource samplesCategoryBlank();
     }
+
+    @Inject
+    private ChangePerspectiveAction changePerspective;
 
     @Inject
     private EditorRegistry editorRegistry;
@@ -252,7 +256,7 @@ public class StandardComponentInitializer {
     /** Instantiates {@link StandardComponentInitializer} an creates standard content. */
     @Inject
     public StandardComponentInitializer(IconRegistry iconRegistry, StandardComponentInitializer.ParserResource parserResource) {
-        iconRegistry.registerIcon(new Icon(BlankProjectWizardRegistrar.BLANK_CATEGORY + ".samples.category.icon", parserResource.samplesCategoryBlank()));
+        iconRegistry.registerIcon(new Icon(BLANK_CATEGORY + ".samples.category.icon", parserResource.samplesCategoryBlank()));
     }
 
     public void initialize() {
@@ -431,6 +435,8 @@ public class StandardComponentInitializer {
 
         DefaultActionGroup rightToolbarGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_RIGHT_TOOLBAR);
         toolbarPresenter.bindRightGroup(rightToolbarGroup);
+
+        rightToolbarGroup.add(changePerspective);
 
         // Define hot-keys
         keyBinding.getGlobal().addKey(new KeyBuilder().action().alt().charCode('n').build(), "navigateToFile");

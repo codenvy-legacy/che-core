@@ -10,11 +10,14 @@
  *******************************************************************************/
 package org.eclipse.che.ide.workspace;
 
+import com.google.inject.ImplementedBy;
+
 /**
  * This interface give ability part stack manipulate visibility an size in container.
  *
  * @author Evgen Vidolob
  */
+@ImplementedBy(WorkBenchPartControllerImpl.class)
 public interface WorkBenchPartController {
 
     /**
@@ -28,6 +31,7 @@ public interface WorkBenchPartController {
      * Set part stack size.
      *
      * @param size
+     *         size which need set
      */
     void setSize(double size);
 
@@ -35,6 +39,7 @@ public interface WorkBenchPartController {
      * Show/hide part stack.
      *
      * @param hidden
+     *         <code>true</code> hides part, <code>false</code> display part
      */
     void setHidden(boolean hidden);
 }

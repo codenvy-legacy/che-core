@@ -192,7 +192,7 @@ public interface Resources extends Tree.Resources,
     @Source("project/public-project.svg")
     SVGResource publicProject();
 
-    @Source("workspace/codenvy-placeholder.png")
+    @Source("workspace/perspectives/general/codenvy-placeholder.png")
     ImageResource codenvyPlaceholder();
 
     @Source("defaulticons/file.svg")

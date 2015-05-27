@@ -14,8 +14,8 @@ import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 
 /**
- * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
- * @version $Id:
+ * @author Evgen Vidolob
+ * @author Dmitry Shnurenko
  */
 public interface WorkBenchResources extends ClientBundle {
     public interface WorkBenchCss extends CssResource {
@@ -39,6 +39,6 @@ public interface WorkBenchResources extends ClientBundle {
         String ideWorkBenchParentPanel();
     }
 
-    @Source({"WorkBench.css", "org/eclipse/che/ide/api/ui/style.css"})
+    @Source({"perspectives/general/WorkBench.css", "org/eclipse/che/ide/api/ui/style.css"})
     WorkBenchCss workBenchCss();
 }

@@ -10,10 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.part;
 
-import org.eclipse.che.ide.api.parts.PartStackUIResources;
-import org.eclipse.che.ide.api.parts.PartStackView;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -29,57 +25,53 @@ import com.google.gwt.user.client.ui.DeckLayoutPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.InlineLabel;
-import com.google.gwt.user.client.ui.InsertPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.ResizeComposite;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
+import org.eclipse.che.ide.api.parts.PartStackUIResources;
+import org.eclipse.che.ide.api.parts.PartStackView;
 import org.vectomatic.dom.svg.ui.SVGImage;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import static com.google.gwt.user.client.ui.InsertPanel.ForIsWidget;
 import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.BELOW;
 import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.LEFT;
 import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.RIGHT;
-import static com.google.gwt.user.client.ui.InsertPanel.ForIsWidget;
 
 /**
  * PartStack view class. Implements UI that manages Parts organized in a Tab-like widget.
  *
  * @author Nikolay Zamosenchuk
+ * @author Dmitry Shnurenko
  */
 public class PartStackViewImpl extends ResizeComposite implements PartStackView {
 
+    final int margin = 8;//tabButtons text margin
+
     private final PartStackUIResources resources;
+    private final List<PartButton>     tabButtons;
 
-    // list of tabs
-    private final Array<PartButton>     tabButtons = Collections.createArray();
-    private PartButton       activeTabButton;
-
-    final         int                   margin     = 8;//tabButtons text margin
-    private InsertPanel     tabsPanel;
+    private PartButton      activeTabButton;
+    private FlowPanel       tabsPanel;
     private DeckLayoutPanel contentPanel;
     private ActionDelegate  delegate;
+    private TabPosition     tabPosition;
+    private int             top;
 
-    private TabPosition tabPosition;
-    private int         top;
-
-    /**
-     * Create View.
-     *
-     * @param resources
-     * @param tabPosition
-     * @param tabsPanel
-     */
     @Inject
     public PartStackViewImpl(PartStackUIResources resources,
                              @Assisted TabPosition tabPosition,
-                             @Assisted InsertPanel tabsPanel) {
+                             @Assisted FlowPanel tabsPanel) {
         this.resources = resources;
         this.tabPosition = tabPosition;
         this.tabsPanel = tabsPanel;
+
+        this.tabButtons = new ArrayList<>();
         contentPanel = new DeckLayoutPanel();
 
         if (tabPosition == RIGHT) {
@@ -217,14 +209,6 @@ public class PartStackViewImpl extends ResizeComposite implements PartStackView 
         private SVGImage    icon;
         private IsWidget    widget;
 
-        /**
-         * Create button.
-         *
-         * @param icon
-         * @param title
-         * @param toolTip
-         * @param closable
-         */
         public PartButton(SVGImage icon, String title, String toolTip, IsWidget widget, boolean closable) {
             this.icon = icon;
             this.widget = widget;
@@ -296,6 +280,7 @@ public class PartStackViewImpl extends ResizeComposite implements PartStackView 
 
         @Override
         protected void onLoad() {
+            //TODO need add ability change top of element via html not via gwt
             final int padding = 15;//div(button) padding
             final int marginPicture = 4;//picture margin
             int offsetWidth;
@@ -305,23 +290,23 @@ public class PartStackViewImpl extends ResizeComposite implements PartStackView 
                 offsetWidth = getElement().getOffsetWidth();
                 if (icon != null) {
                     getElement().getStyle().setWidth(offsetWidth - padding * 2 - marginPicture, Style.Unit.PX);
-                    offsetWidth -= marginPicture;
+//                    offsetWidth -= marginPicture;
                 } else {
                     getElement().getStyle().setWidth(offsetWidth - padding * 2, Style.Unit.PX);
                 }
                 getElement().getStyle().setTop(top, Style.Unit.PX);
-                top += offsetWidth - margin * 2 - 1;
+//                top += offsetWidth - margin * 2 - 1;
             } else if (tabPosition == LEFT) {
                 tabItem.addStyleName(resources.partStackCss().idePartStackTabLeft());
                 offsetWidth = getElement().getOffsetWidth();
                 if (icon != null) {
                     getElement().getStyle().setWidth((offsetWidth - padding * 2), Style.Unit.PX);
-                    offsetWidth -= marginPicture;
+//                    offsetWidth -= marginPicture;
                 } else {
                     getElement().getStyle().setWidth((offsetWidth - padding * 2), Style.Unit.PX);
                 }
-                top += offsetWidth - margin * 2 - 3;
-                tabItem.getElement().getStyle().setTop(top, Style.Unit.PX);
+//                top += offsetWidth - margin * 2 - 3;
+                tabItem.getElement().getStyle().setTop(63, Style.Unit.PX);
             } else {
                 tabItem.addStyleName(resources.partStackCss().idePartStackTabBelow());
             }

@@ -13,12 +13,23 @@ package org.eclipse.che.ide.workspace;
 import org.eclipse.che.ide.api.parts.PartStack;
 import org.eclipse.che.ide.api.parts.PartStackView;
 
+import javax.annotation.Nonnull;
+
 /**
  * Gin factory for PartStack
  *
- * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
- * @version $Id:
+ * @author Evgen Vidolob
+ * @author Dmitry Shnurenko
  */
 public interface PartStackPresenterFactory {
-    PartStack create(PartStackView view, WorkBenchPartController workBenchPartController);
+    /**
+     * Creates new instance of {@link PartStack}. Each call of this method returns new object.
+     *
+     * @param view
+     *         special view which is required for creating part stack
+     * @param workBenchPartController
+     *         controller which is used by part stack
+     * @return an instance of {@link PartStack}
+     */
+    PartStack create(@Nonnull PartStackView view, @Nonnull WorkBenchPartController workBenchPartController);
 }

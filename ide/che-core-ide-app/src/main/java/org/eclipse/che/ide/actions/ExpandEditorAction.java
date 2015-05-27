@@ -10,17 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.actions;
 
-import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
-
-import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.workspace.WorkBenchPresenter;
-
-import org.eclipse.che.ide.api.action.Action;
-import org.eclipse.che.ide.api.action.ActionEvent;
-import org.eclipse.che.ide.api.action.CustomComponentAction;
-import org.eclipse.che.ide.api.action.Presentation;
-
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -33,6 +22,14 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
+import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.Resources;
+import org.eclipse.che.ide.api.action.Action;
+import org.eclipse.che.ide.api.action.ActionEvent;
+import org.eclipse.che.ide.api.action.CustomComponentAction;
+import org.eclipse.che.ide.api.action.Presentation;
+import org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective;
 import org.vectomatic.dom.svg.ui.SVGButtonBase;
 import org.vectomatic.dom.svg.ui.SVGToggleButton;
 
@@ -41,12 +38,13 @@ import java.util.List;
 
 /**
  * @author Evgen Vidolob
+ * @author Dmitry Shnurenko
  */
 @Singleton
 public class ExpandEditorAction extends Action implements CustomComponentAction {
 
     private final Resources                resources;
-    private final WorkBenchPresenter       workBenchPresenter;
+    private final ProjectPerspective       projectPerspective;
     private final CoreLocalizationConstant constant;
     private final AnalyticsEventLogger     eventLogger;
 
@@ -54,11 +52,13 @@ public class ExpandEditorAction extends Action implements CustomComponentAction 
     private List<SVGToggleButton> toggleButtons = new ArrayList<>();
 
     @Inject
-    public ExpandEditorAction(Resources resources, CoreLocalizationConstant constant, WorkBenchPresenter workBenchPresenter,
+    public ExpandEditorAction(Resources resources,
+                              CoreLocalizationConstant constant,
+                              ProjectPerspective projectPerspective,
                               AnalyticsEventLogger eventLogger) {
         super(constant.actionExpandEditorTitle(), null, null, resources.fullscreen());
         this.resources = resources;
-        this.workBenchPresenter = workBenchPresenter;
+        this.projectPerspective = projectPerspective;
         this.constant = constant;
         this.eventLogger = eventLogger;
 
@@ -118,13 +118,13 @@ public class ExpandEditorAction extends Action implements CustomComponentAction 
      */
     public void expandEditor() {
         if (expanded) {
-            workBenchPresenter.restoreEditorPart();
+            projectPerspective.restoreEditorPart();
             for (SVGToggleButton toggleButton : toggleButtons) {
                 toggleButton.setDown(false);
             }
             expanded = false;
         } else {
-            workBenchPresenter.expandEditorPart();
+            projectPerspective.expandEditorPart();
             for (SVGToggleButton toggleButton : toggleButtons) {
                 toggleButton.setDown(true);
             }
