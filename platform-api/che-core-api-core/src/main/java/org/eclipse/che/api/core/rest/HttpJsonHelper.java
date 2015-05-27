@@ -469,8 +469,7 @@ public class HttpJsonHelper {
                 }
                 final String contentType = conn.getContentType();
                 if (!(contentType == null || contentType.startsWith("application/json"))) {
-                    throw new IOException("We received an error response from the Codenvy server." +
-                                          " Retry the request. If this issue continues, contact. support.");
+                    throw new IOException(conn.getResponseMessage());
                 }
 
                 return CharStreams.toString(new InputStreamReader(conn.getInputStream()));
