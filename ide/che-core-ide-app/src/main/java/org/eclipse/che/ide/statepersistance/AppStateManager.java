@@ -38,6 +38,7 @@ import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 import org.eclipse.che.ide.statepersistance.dto.AppState;
+import org.eclipse.che.ide.statepersistance.dto.LastProject;
 import org.eclipse.che.ide.statepersistance.dto.ProjectState;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.Pair;
@@ -93,13 +94,19 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
     @Override
     public void onWindowClosing(WindowActionEvent event) {
         final CurrentProject currentProject = appContext.getCurrentProject();
+        final LastProject lastProject = appState.getLastProject();
+
+        final String workspaceId = appContext.getWorkspace().getId();
+        lastProject.setWorkspaceId(workspaceId);
+
         if (currentProject == null) {
-            appState.setLastProjectPath("");
+            lastProject.setPath("");
         } else {
             ProjectDescriptor descriptor = currentProject.getRootProject();
             final String projectPath = "/" + descriptor.getWorkspaceName() + descriptor.getPath();
 
-            appState.setLastProjectPath(projectPath);
+            lastProject.setPath(projectPath);
+
             persistCurrentProjectState();
         }
         writeStateToPreferences();
@@ -149,7 +156,8 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
     }
 
     private void openLastProject(final boolean openLastProject) {
-        final String lastProjectPath = appState.getLastProjectPath();
+        final LastProject lastProject = appState.getLastProject();
+        final String lastProjectPath = lastProject.getPath();
 
         if (lastProjectPath != null && !lastProjectPath.isEmpty()) {
 
@@ -168,7 +176,7 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
                 @Override
                 protected void onFailure(Throwable exception) {
                     appState.getProjects().remove(lastProjectPath);
-                    appState.setLastProjectPath("");
+                    lastProject.setPath("");
                     writeStateToPreferences();
                 }
             });
@@ -179,16 +187,30 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
     private void readStateFromPreferences() {
         final String json = preferencesManager.getValue(PREFERENCE_PROPERTY_NAME);
         if (json == null) {
-            appState = dtoFactory.createDto(AppState.class).withLastProjectPath("");
+            appState = dtoFactory.createDto(AppState.class);
+            initClearLastProject(appState);
         } else {
             try {
                 appState = dtoFactory.createDtoFromJson(json, AppState.class);
+                if (appState.getLastProject() == null) {
+                    initClearLastProject(appState);
+                }
             } catch (Exception e) {
                 // create 'clear' state if there's any error
                 Log.error(getClass(), "Restore application state failed.");
-                appState = dtoFactory.createDto(AppState.class).withLastProjectPath("");
+                appState = dtoFactory.createDto(AppState.class);
+                initClearLastProject(appState);
             }
         }
+    }
+
+    private void initClearLastProject(AppState appState) {
+        final LastProject lastProject = dtoFactory.createDto(LastProject.class);
+        String workspaceId = appContext.getWorkspace().getId();
+
+        appState.setLastProject(lastProject);
+        lastProject.setPath("");
+        lastProject.setWorkspaceId(workspaceId);
     }
 
     private void writeStateToPreferences() {
@@ -207,17 +229,19 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
     }
 
     private void openLastProject() {
-        final String projectPath = appState.getLastProjectPath();
-        if (projectPath != null && !projectPath.isEmpty()) {
+        LastProject lastProject = appState.getLastProject();
+        if (lastProject != null) {
+            final String projectPath = lastProject.getPath();
 
-            int start = projectPath.lastIndexOf("/");
-            String projectName = projectPath.substring(start);
+            if (projectPath != null && !projectPath.isEmpty()) {
 
-            eventBus.fireEvent(new OpenProjectEvent(projectName));
+                int start = projectPath.lastIndexOf("/");
+                String projectName = projectPath.substring(start);
+
+                eventBus.fireEvent(new OpenProjectEvent(projectName));
+            }
         }
     }
-
-
 
     /** Restores state of the currently opened project. */
     private void restoreCurrentProjectState(@Nonnull ProjectState projectState) {
