@@ -13,10 +13,10 @@ package org.eclipse.che.api.machine.gwt.client;
 import org.eclipse.che.api.machine.shared.dto.MachineDescriptor;
 import org.eclipse.che.api.machine.shared.dto.ProcessDescriptor;
 import org.eclipse.che.api.promises.client.Promise;
-import org.eclipse.che.ide.collections.Array;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * Client for Machine API.
@@ -58,7 +58,7 @@ public interface MachineServiceClient {
      * @param projectPath
      *         project binding
      */
-    Promise<Array<MachineDescriptor>> getMachines(@Nullable String projectPath);
+    Promise<List<MachineDescriptor>> getMachines(@Nullable String projectPath);
 
     /**
      * Destroy machine with the specified ID.

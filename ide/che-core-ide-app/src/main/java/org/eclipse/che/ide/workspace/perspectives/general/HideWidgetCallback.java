@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.workspace;
+package org.eclipse.che.ide.workspace.perspectives.general;
 
 import com.google.gwt.layout.client.Layout;
 import com.google.gwt.user.client.ui.Widget;
@@ -25,15 +25,15 @@ import java.util.Set;
  * Scheduler#scheduleFinally}.
  *
  * @author Kevin Pollet
- * @see WorkBenchPartControllerImpl#setHidden(boolean)
+ * @see org.eclipse.che.ide.workspace.WorkBenchPartControllerImpl#setHidden(boolean)
  */
 @Singleton
 public class HideWidgetCallback implements Layout.AnimationCallback {
-    private final WorkBenchViewImpl workBenchView;
-    private final Set<Widget>       widgetsToHide;
+    private final PerspectiveViewImpl workBenchView;
+    private final Set<Widget>         widgetsToHide;
 
     @Inject
-    public HideWidgetCallback(WorkBenchViewImpl workBenchView) {
+    public HideWidgetCallback(PerspectiveViewImpl workBenchView) {
         this.workBenchView = workBenchView;
         this.widgetsToHide = new HashSet<>();
     }

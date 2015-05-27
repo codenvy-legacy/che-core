@@ -10,15 +10,28 @@
  *******************************************************************************/
 package org.eclipse.che.ide.workspace;
 
+import com.google.gwt.user.client.ui.FlowPanel;
+
 import org.eclipse.che.ide.api.parts.PartStackView;
-import com.google.gwt.user.client.ui.InsertPanel;
+import org.eclipse.che.ide.api.parts.PartStackView.TabPosition;
+
+import javax.annotation.Nonnull;
 
 /**
  * Gin factory for PartStackView.
  *
- * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
- * @version $Id:
+ * @author Evgen Vidolob
+ * @author Dmitry Shnurenko
  */
 public interface PartStackViewFactory {
-    PartStackView create(PartStackView.TabPosition tabPosition, InsertPanel tabsPanel);
+    /**
+     * Creates new instance of {@link PartStackView}. Each call of this method returns new object.
+     *
+     * @param tabPosition
+     *         position in which part stack must be located
+     * @param tabsPanel
+     *         panel on which tab will be added
+     * @return an instance of {@link PartStackView}
+     */
+    PartStackView create(@Nonnull TabPosition tabPosition, @Nonnull FlowPanel tabsPanel);
 }

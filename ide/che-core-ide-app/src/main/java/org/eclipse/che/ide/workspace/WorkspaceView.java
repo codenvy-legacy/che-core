@@ -10,14 +10,16 @@
  *******************************************************************************/
 package org.eclipse.che.ide.workspace;
 
-import org.eclipse.che.ide.api.mvp.View;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
+
+import org.eclipse.che.ide.api.mvp.View;
 
 
 /**
  * The view of {@link WorkspacePresenter}.
  *
- * @author <a href="mailto:aplotnikov@exoplatform.com">Andrey Plotnikov</a>
+ * @author Andrey Plotnikov
+ * @author Dmitry Shnurenko
  */
 public interface WorkspaceView extends View<WorkspaceView.ActionDelegate> {
     /** Required for delegating functions in the view. */
@@ -36,42 +38,12 @@ public interface WorkspaceView extends View<WorkspaceView.ActionDelegate> {
     AcceptsOneWidget getToolbarPanel();
 
     /**
-     * Shows or hides toolbar.
-     *
-     * @param visible
-     *         set <b>true</b> to show the toolbar or <b>false</b> to hide it
-     */
-    void setToolbarVisible(boolean visible);
-
-    /** @return actions panel */
-
-    /**
-     * Returns actions panel ( panel like toolbar but located at the bottom )
-     *
-     * @return actions panel
-     */
-    AcceptsOneWidget getActionsPanel();
-
-    /**
-     * Shows or hides actions panel.
-     *
-     * @param visible
-     */
-    void setActionsPanelVisible(boolean visible);
-
-    /**
      * Returns status panel ( an information panel located under actions panel )
      *
      * @return status panel
      */
     AcceptsOneWidget getStatusPanel();
 
-    /**
-     * Shows or hides status panel
-     *
-     * @param visible
-     */
-    void setStatusPanelVisible(boolean visible);
 
     /**
      * Sets whether 'Update extension' button is visible.

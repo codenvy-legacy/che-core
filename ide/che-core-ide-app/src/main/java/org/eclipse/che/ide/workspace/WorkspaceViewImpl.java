@@ -30,6 +30,7 @@ import com.google.inject.Singleton;
  * Implements {@link WorkspaceView}
  *
  * @author Andrey Plotnikov
+ * @author Dmitry Shnurenko
  */
 @Singleton
 public class WorkspaceViewImpl extends LayoutPanel implements WorkspaceView {
@@ -98,41 +99,8 @@ public class WorkspaceViewImpl extends LayoutPanel implements WorkspaceView {
     }
 
     @Override
-    public void setToolbarVisible(boolean visible) {
-        ideMainDockPanel.setWidgetHidden(toolbarPanel, !visible);
-        ideMainDockPanel.setWidgetHidden(noToolbarPanel, visible);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public AcceptsOneWidget getActionsPanel() {
-        return actionsPanel;
-    }
-
-    /**
-     * Shows or hides actions panel.
-     *
-     * @param visible
-     */
-    @Override
-    public void setActionsPanelVisible(boolean visible) {
-        ideMainDockPanel.setWidgetHidden(actionsPanel, !visible);
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public AcceptsOneWidget getStatusPanel() {
         return statusPanel;
-    }
-
-    /**
-     * Shows or hides status panel
-     *
-     * @param visible
-     */
-    @Override
-    public void setStatusPanelVisible(boolean visible) {
-        ideMainDockPanel.setWidgetHidden(statusPanel, !visible);
     }
 
     /** {@inheritDoc} */
@@ -143,7 +111,7 @@ public class WorkspaceViewImpl extends LayoutPanel implements WorkspaceView {
     }
 
     @UiHandler("btnUpdate")
-    public void onUpdateClicked(ClickEvent event) {
+    public void onUpdateClicked(@SuppressWarnings("UnusedParameters") ClickEvent event) {
         delegate.onUpdateClicked();
     }
 }

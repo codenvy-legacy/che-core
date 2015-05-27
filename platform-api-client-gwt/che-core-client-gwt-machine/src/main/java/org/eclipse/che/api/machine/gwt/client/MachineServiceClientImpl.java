@@ -20,6 +20,8 @@ import org.eclipse.che.api.machine.shared.dto.CreateMachineFromSnapshot;
 import org.eclipse.che.api.machine.shared.dto.MachineDescriptor;
 import org.eclipse.che.api.machine.shared.dto.ProcessDescriptor;
 import org.eclipse.che.api.machine.shared.dto.RecipeDescriptor;
+import org.eclipse.che.api.promises.client.Function;
+import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper.RequestCall;
 import org.eclipse.che.ide.collections.Array;
@@ -31,6 +33,8 @@ import org.eclipse.che.ide.rest.RestContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.google.gwt.http.client.RequestBuilder.DELETE;
 import static org.eclipse.che.api.machine.gwt.client.Utils.newCallback;
@@ -128,11 +132,20 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     }
 
     @Override
-    public Promise<Array<MachineDescriptor>> getMachines(@Nullable final String projectPath) {
+    public Promise<List<MachineDescriptor>> getMachines(@Nullable final String projectPath) {
         return newPromise(new RequestCall<Array<MachineDescriptor>>() {
             @Override
             public void makeCall(AsyncCallback<Array<MachineDescriptor>> callback) {
                 getMachines(workspaceId, projectPath, callback);
+            }
+        }).then(new Function<Array<MachineDescriptor>, List<MachineDescriptor>>() {
+            @Override
+            public List<MachineDescriptor> apply(Array<MachineDescriptor> arg) throws FunctionException {
+                final List<MachineDescriptor> descriptors = new ArrayList<>();
+                for (MachineDescriptor descriptor : arg.asIterable()) {
+                    descriptors.add(descriptor);
+                }
+                return descriptors;
             }
         });
     }

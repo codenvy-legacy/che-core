@@ -13,7 +13,6 @@ package org.eclipse.che.ide.workspace;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 import org.eclipse.che.ide.api.constraints.Constraints;
@@ -26,6 +25,15 @@ import org.eclipse.che.ide.menu.MainMenuPresenter;
 import org.eclipse.che.ide.menu.StatusPanelGroupPresenter;
 import org.eclipse.che.ide.ui.toolbar.MainToolbar;
 import org.eclipse.che.ide.ui.toolbar.ToolbarPresenter;
+import org.eclipse.che.ide.workspace.perspectives.general.Perspective;
+import org.eclipse.che.ide.workspace.perspectives.general.Perspective.Type;
+import org.eclipse.che.ide.workspace.perspectives.general.PerspectiveType;
+import org.eclipse.che.ide.workspace.perspectives.general.PerspectiveType.PerspectiveTypeListener;
+
+import javax.annotation.Nonnull;
+import java.util.Set;
+
+import static org.eclipse.che.ide.workspace.perspectives.general.Perspective.Type.PROJECT;
 
 /**
  * Root Presenter that implements Workspace logic. Descendant Presenters are injected
@@ -34,38 +42,39 @@ import org.eclipse.che.ide.ui.toolbar.ToolbarPresenter;
  * maintain their interactions.
  *
  * @author Nikolay Zamosenchuk
+ * @author Dmitry Shnurenko
  */
 @Singleton
-public class WorkspacePresenter implements Presenter, WorkspaceView.ActionDelegate, WorkspaceAgent {
+public class WorkspacePresenter implements Presenter, WorkspaceView.ActionDelegate, WorkspaceAgent, PerspectiveTypeListener {
 
     private final WorkspaceView             view;
     private final MainMenuPresenter         mainMenu;
     private final StatusPanelGroupPresenter bottomMenu;
     private final ToolbarPresenter          toolbarPresenter;
-    private       WorkBenchPresenter        workBenchPresenter;
+    private final PerspectiveType           perspectiveType;
+    private final Set<Perspective>          perspectives;
 
-    /**
-     * Instantiates Presenter.
-     *
-     * @param view
-     * @param mainMenu
-     * @param bottomMenu
-     * @param toolbarPresenter
-     * @param genericPerspectiveProvider
-     */
+    private Perspective activePerspective;
+
     @Inject
     protected WorkspacePresenter(WorkspaceView view,
+                                 PerspectiveType perspectiveType,
                                  MainMenuPresenter mainMenu,
                                  StatusPanelGroupPresenter bottomMenu,
                                  @MainToolbar ToolbarPresenter toolbarPresenter,
-                                 Provider<WorkBenchPresenter> genericPerspectiveProvider) {
-        super();
+                                 Set<Perspective> perspectives) {
         this.view = view;
         this.view.setDelegate(this);
+
         this.toolbarPresenter = toolbarPresenter;
         this.mainMenu = mainMenu;
         this.bottomMenu = bottomMenu;
-        this.workBenchPresenter = genericPerspectiveProvider.get();
+        this.perspectives = perspectives;
+
+        this.perspectiveType = perspectiveType;
+        this.perspectiveType.addListener(this);
+
+        setPerspectiveType(PROJECT);
     }
 
     /** {@inheritDoc} */
@@ -73,15 +82,33 @@ public class WorkspacePresenter implements Presenter, WorkspaceView.ActionDelega
     public void go(AcceptsOneWidget container) {
         mainMenu.go(view.getMenuPanel());
         toolbarPresenter.go(view.getToolbarPanel());
-        workBenchPresenter.go(view.getPerspectivePanel());
         bottomMenu.go(view.getStatusPanel());
+
         container.setWidget(view);
+    }
+
+    private void setPerspectiveType(@Nonnull Type perspectiveType) {
+        for (Perspective perspective : perspectives) {
+            if (perspectiveType.equals(perspective.getType())) {
+                perspective.go(view.getPerspectivePanel());
+
+                activePerspective = perspective;
+            }
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void onPerspectiveChanged() {
+        Type type = perspectiveType.getType();
+
+        setPerspectiveType(type);
     }
 
     /** {@inheritDoc} */
     @Override
     public void setActivePart(PartPresenter part) {
-        workBenchPresenter.setActivePart(part);
+        activePerspective.setActivePart(part);
     }
 
     /** {@inheritDoc} */
@@ -93,29 +120,30 @@ public class WorkspacePresenter implements Presenter, WorkspaceView.ActionDelega
     /** {@inheritDoc} */
     @Override
     public void openPart(PartPresenter part, PartStackType type, Constraints constraint) {
-        workBenchPresenter.openPart(part, type, constraint);
+        activePerspective.openPart(part, type, constraint);
     }
 
     /** {@inheritDoc} */
     @Override
     public void hidePart(PartPresenter part) {
-        workBenchPresenter.hidePart(part);
+        activePerspective.hidePart(part);
     }
 
     /** {@inheritDoc} */
     @Override
     public void removePart(PartPresenter part) {
-        workBenchPresenter.removePart(part);
+        activePerspective.removePart(part);
     }
 
     /**
      * Retrieves the instance of the {@link org.eclipse.che.ide.api.parts.PartStack} for given {@link PartStackType}
      *
-     * @param type one of the enumerated type {@link org.eclipse.che.ide.api.parts.PartStackType}
+     * @param type
+     *         one of the enumerated type {@link org.eclipse.che.ide.api.parts.PartStackType}
      * @return the part stack found, else null
      */
     public PartStack getPartStack(PartStackType type) {
-        return workBenchPresenter.getPartStack(type);
+        return activePerspective.getPartStack(type);
     }
 
     /** {@inheritDoc} */
@@ -142,15 +170,5 @@ public class WorkspacePresenter implements Presenter, WorkspaceView.ActionDelega
      */
     public void setUpdateButtonVisibility(boolean visible) {
         view.setUpdateButtonVisibility(visible);
-    }
-
-    /**
-     * Shows or hides status panel
-     *
-     * @param visible
-     *         <code>true</code> to show the panel, <code>false</code> to hide it
-     */
-    public void setStatusPanelVisible(boolean visible) {
-        view.setStatusPanelVisible(visible);
     }
 }
