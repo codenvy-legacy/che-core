@@ -14,7 +14,6 @@ import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ProjectAction;
@@ -224,6 +223,12 @@ public abstract class AbstractNewResourceAction extends ProjectAction {
                     public String getMessage() {
                         return coreLocalizationConstant.invalidName();
                     }
+
+                    @Nullable
+                    @Override
+                    public String getCorrectedValue() {
+                        return null;
+                    }
                 };
             }
             return null;
@@ -239,6 +244,12 @@ public abstract class AbstractNewResourceAction extends ProjectAction {
                     @Override
                     public String getMessage() {
                         return coreLocalizationConstant.invalidName();
+                    }
+
+                    @Nullable
+                    @Override
+                    public String getCorrectedValue() {
+                        return null;
                     }
                 };
             }
