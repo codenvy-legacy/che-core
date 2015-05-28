@@ -11,6 +11,7 @@
 package org.eclipse.che.ide.api.editor;
 
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
+import org.eclipse.che.ide.api.project.tree.generic.FileNode;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.StringMap;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -74,6 +75,14 @@ public interface EditorAgent {
      */
     @Nullable
     EditorPartPresenter getActiveEditor();
+
+    /**
+     * Updates editor node. This method replace old editor node to new one
+     *
+     * @param oldEditorPath old editor path
+     * @param newFileNode new node for editor
+     */
+    void updateEditorNode(@Nonnull String oldEditorPath, @Nonnull FileNode newFileNode);
 
     interface OpenEditorCallback{
         void onEditorOpened(EditorPartPresenter editor);
