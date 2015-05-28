@@ -12,25 +12,17 @@ package org.eclipse.che.ide.statepersistance.dto;
 
 import org.eclipse.che.dto.shared.DTO;
 
-import java.util.Map;
-
 /**
- * DTO describes Codenvy application's state that may be saved/restored.
  *
- * @author Artem Zatsarynnyy
+ * @author Alexander Andrienko
  */
 @DTO
-public interface AppState {
+public interface RecentlyProject {
+    String getPath();
 
-    /** Get recently project info. */
-    RecentlyProject getRecentlyProject();
+    void setPath(String path);
 
-    void setRecentlyProject(RecentlyProject recentlyProject);
+    String getWorkspaceId();
 
-    /** Get the mapping of project's path to it's state. */
-    Map<String, ProjectState> getProjects();
-
-    void setProjects(Map<String, ProjectState> projects);
-
-    AppState withProjects(Map<String, ProjectState> projects);
+    void setWorkspaceId(String workspaceId);
 }
