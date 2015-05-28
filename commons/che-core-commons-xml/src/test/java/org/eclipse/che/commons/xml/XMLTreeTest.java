@@ -1639,6 +1639,12 @@ public class XMLTreeTest {
         assertEquals(tree.toString(), "<parent><child>new text</child></parent>");
     }
 
+    @Test(enabled = false)
+    public void shouldParseWithCarriageReturnCharacter() {
+        final String XML = "\r\n<parent><child>\r\nchild text\r\n</child></parent>";
+        XMLTree.from(XML);
+    }
+
     @Test(dataProvider = "custom-xml-files")
     public void shouldBeAbleToCreateTreeFromCustomXML(File xml) throws IOException {
         //should be able to parse file
