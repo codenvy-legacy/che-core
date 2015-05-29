@@ -270,10 +270,13 @@ public final class XMLTreeUtil {
         return indexOfAttributeName(src, target, idx + 1);
     }
 
-    public static byte[] replaceAll(byte[] src, byte target, byte[] replacement) {
+    public static byte[] replaceAll(byte[] src, byte target, byte[] replacement, int startFrom) {
+        if (startFrom >= src.length) {
+            throw new IndexOutOfBoundsException("Start from index is out of range");
+        }
         int matches = 0;
-        for (byte b : src) {
-            if (b == target) {
+        for (int i = startFrom; i < src.length; i++) {
+            if (src[i] == target) {
                 matches++;
             }
         }
@@ -281,7 +284,8 @@ public final class XMLTreeUtil {
             return src;
         }
         final byte[] newSrc = new byte[src.length - matches + matches * replacement.length];
-        for (int i = 0, j = 0; i < src.length; i++) {
+        arraycopy(src, 0, newSrc, 0, startFrom);
+        for (int i = startFrom, j = startFrom; i < src.length; i++) {
             if (target != src[i]) {
                 newSrc[j++] = src[i];
             } else {
@@ -290,6 +294,18 @@ public final class XMLTreeUtil {
             }
         }
         return newSrc;
+    }
+
+    public static int rootStart(byte[] xml) {
+        final byte[] open = {'<'};
+        int pos = indexOf(xml, open, 0);
+        while (xml[pos + 1] == '?' || xml[pos + 1] == '!') {
+            if (xml[pos + 1] == '!' && xml[pos + 2] == '-' && xml[pos + 3] == '-') {
+                pos = indexOf(xml, new byte[] {'-', '-', '>'}, pos + 1);
+            }
+            pos = indexOf(xml, open, pos + 1);
+        }
+        return pos;
     }
 
     private XMLTreeUtil() {

@@ -1639,10 +1639,26 @@ public class XMLTreeTest {
         assertEquals(tree.toString(), "<parent><child>new text</child></parent>");
     }
 
-    @Test(enabled = false)
-    public void shouldParseWithCarriageReturnCharacter() {
-        final String XML = "\r\n<parent><child>\r\nchild text\r\n</child></parent>";
-        XMLTree.from(XML);
+    @Test
+    public void shouldParseWithCarriageReturnCharacterInDocumentPrologue() {
+        XMLTree tree = XMLTree.from("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                                    "<!-- <<<<< COMMENT >>>>> -->\n" +
+                                    "\r\r\r\r\r\r\r\r\r\r\r\r\r\r" +
+                                    "<project>\r\r\r\r\n" +
+                                    "   <name>\r\n\r\nname\r\n\r\n</name>" +
+                                    "   <packaging>\r\r\r\n\n\nwar</packaging>" +
+                                    "</project>");
+
+        tree.updateText("/project/packaging", "jar");
+
+        assertEquals(tree.getSingleText("/project/name"), "\r\n\r\nname\r\n\r\n");
+        assertEquals(tree.toString(), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                                      "<!-- <<<<< COMMENT >>>>> -->\n" +
+                                      "\r\r\r\r\r\r\r\r\r\r\r\r\r\r" +
+                                      "<project>\r\r\r\r\n" +
+                                      "   <name>\r\n\r\nname\r\n\r\n</name>" +
+                                      "   <packaging>jar</packaging>" +
+                                      "</project>");
     }
 
     @Test(dataProvider = "custom-xml-files")

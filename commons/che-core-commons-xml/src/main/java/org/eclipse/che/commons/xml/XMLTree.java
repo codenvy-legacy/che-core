@@ -45,6 +45,7 @@ import static org.eclipse.che.commons.xml.XMLTreeUtil.closeTagLength;
 import static org.eclipse.che.commons.xml.XMLTreeUtil.indexOf;
 import static org.eclipse.che.commons.xml.XMLTreeUtil.indexOfAttributeName;
 import static org.eclipse.che.commons.xml.XMLTreeUtil.replaceAll;
+import static org.eclipse.che.commons.xml.XMLTreeUtil.rootStart;
 import static org.eclipse.che.commons.xml.XMLTreeUtil.single;
 import static org.eclipse.che.commons.xml.XMLTreeUtil.level;
 import static org.eclipse.che.commons.xml.XMLTreeUtil.insertBetween;
@@ -182,7 +183,13 @@ public final class XMLTree {
         //reason: parser is going to replace all '\r\n' sequences with single '\n'
         //which will affect elements position in source xml and produce incorrect XMLTree behaviour
         //the solution comes from spec http://www.w3.org/TR/2004/REC-xml11-20040204/
-        document = parseQuietly(replaceAll(xml, (byte)'\r', "&#xD;".getBytes()));
+        //character references are not allowed in document prologue
+        //so only characters which are placed after root element should be replaced
+        int rootStart = rootStart(xml);
+        if (rootStart == -1) {
+            throw new XMLTreeException("XML document should contain root element");
+        }
+        document = parseQuietly(replaceAll(xml, (byte)'\r', "&#xD;".getBytes(), rootStart));
         constructTreeQuietly();
     }
 
@@ -422,7 +429,7 @@ public final class XMLTree {
         final XMLStreamReader reader = newXMLStreamReader();
         final LinkedList<Element> stack = new LinkedList<>();
         //before element open tag index
-        int beforeStart = rootStart() - 1;
+        int beforeStart = rootStart(xml) - 1;
         //used to associate each element with document node
         Node node = document.getDocumentElement();
         //used to hold previous reader event
@@ -969,21 +976,6 @@ public final class XMLTree {
         relatedToNew.text.add(new Segment(childRight + 1, beforeCloseLeft));
         relatedToNew.end = new Segment(beforeCloseLeft + 1, beforeCloseLeft + closeTagLength(newElement));
         return relatedToNew.end.right;
-    }
-
-    /**
-     * Searches for root start index in source bytes.
-     * Root start index equal to first occurrence of '<'
-     * when document doesn't start with {@literal <?xml} and
-     * it equal to second occurrence when document does.
-     */
-    private int rootStart() {
-        final byte[] open = {'<'};
-        int pos = indexOf(xml, open, 0);
-        while (xml[pos + 1] == '?' || xml[pos + 1] == '!') {
-            pos = indexOf(xml, open, pos + 1);
-        }
-        return pos;
     }
 
     /**
