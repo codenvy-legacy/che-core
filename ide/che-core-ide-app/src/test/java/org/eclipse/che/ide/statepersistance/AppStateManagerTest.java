@@ -33,7 +33,7 @@ import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 import org.eclipse.che.ide.statepersistance.dto.AppState;
-import org.eclipse.che.ide.statepersistance.dto.RecentlyProject;
+import org.eclipse.che.ide.statepersistance.dto.RecentProject;
 import org.eclipse.che.ide.statepersistance.dto.ProjectState;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.Pair;
@@ -101,7 +101,7 @@ public class AppStateManagerTest {
     @Mock
     private WorkspaceDescriptor  workspaceDescriptor;
     @Mock
-    private RecentlyProject      recentlyProject;
+    private RecentProject        recentProject;
     @Mock
     private ProjectDescriptor    rootProject;
     @Mock
@@ -143,9 +143,9 @@ public class AppStateManagerTest {
 
         when(preferencesManager.getValue(anyString())).thenReturn(SERIALIZED_STATE);
         when(dtoFactory.createDtoFromJson(anyString(), Matchers.<Class<AppState>>anyObject())).thenReturn(appState);
-        when(appState.getRecentlyProject()).thenReturn(recentlyProject);
-        when(recentlyProject.getPath()).thenReturn("/project");
-        when(recentlyProject.getWorkspaceId()).thenReturn(WORKSPACE_ID);
+        when(appState.getRecentProject()).thenReturn(recentProject);
+        when(recentProject.getPath()).thenReturn("/project");
+        when(recentProject.getWorkspaceId()).thenReturn(WORKSPACE_ID);
         when(appContext.getCurrentProject()).thenReturn(currentProject);
         when(appContext.getWorkspace()).thenReturn(workspaceDescriptor);
         when(workspaceDescriptor.getId()).thenReturn(WORKSPACE_ID);
@@ -215,8 +215,8 @@ public class AppStateManagerTest {
         method.invoke(asyncRequestCallback, exception);
 
         verify(appState).getProjects();
-        verify(appState, times(4)).getRecentlyProject();
-        verify(recentlyProject).setPath("");
+        verify(appState, times(4)).getRecentProject();
+        verify(recentProject).setPath("");
 
         verify(dtoFactory).toJson(appState);
         preferencesManager.setValue(PREFERENCE_PROPERTY_NAME, SERIALIZED_STATE);
@@ -231,9 +231,9 @@ public class AppStateManagerTest {
 
         verify(appContext).getWorkspace();
         verify(workspaceDescriptor).getId();
-        verify(recentlyProject).setWorkspaceId(WORKSPACE_ID);
-        verify(appState, times(3)).getRecentlyProject();
-        verify(recentlyProject).setPath("");
+        verify(recentProject).setWorkspaceId(WORKSPACE_ID);
+        verify(appState, times(3)).getRecentProject();
+        verify(recentProject).setPath("");
 
         verify(dtoFactory).toJson(appState);
         verify(preferencesManager).setValue(anyString(), eq(SERIALIZED_STATE));
@@ -251,15 +251,15 @@ public class AppStateManagerTest {
         appStateManager.onWindowClosing(mock(WindowActionEvent.class));
 
         verify(appContext, times(2)).getCurrentProject();
-        verify(appState, times(3)).getRecentlyProject();
+        verify(appState, times(3)).getRecentProject();
         verify(appContext).getWorkspace();
         verify(workspaceDescriptor).getId();
-        verify(recentlyProject).setWorkspaceId(WORKSPACE_ID);
+        verify(recentProject).setWorkspaceId(WORKSPACE_ID);
         verify(currentProject, times(2)).getRootProject();
         verify(rootProject, times(2)).getPath();
         verify(rootProject, times(2)).getWorkspaceName();
-        verify(appState, times(3)).getRecentlyProject();
-        verify(recentlyProject).setPath(FULL_PROJECT_PATH);
+        verify(appState, times(3)).getRecentProject();
+        verify(recentProject).setPath(FULL_PROJECT_PATH);
         verify(dtoFactory).createDto(ProjectState.class);
         verify(appState).getProjects();
         verify(projectState).getActions();
