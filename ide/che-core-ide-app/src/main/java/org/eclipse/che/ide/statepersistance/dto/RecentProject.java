@@ -17,7 +17,7 @@ import org.eclipse.che.dto.shared.DTO;
  * @author Alexander Andrienko
  */
 @DTO
-public interface RecentlyProject {
+public interface RecentProject {
     String getPath();
 
     void setPath(String path);
