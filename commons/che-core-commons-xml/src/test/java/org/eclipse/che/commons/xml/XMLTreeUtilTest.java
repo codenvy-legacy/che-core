@@ -14,10 +14,11 @@ package org.eclipse.che.commons.xml;
 import org.testng.annotations.Test;
 
 
-import static org.eclipse.che.commons.xml.NewElement.createElement;
 import static org.eclipse.che.commons.xml.XMLTreeUtil.closeTagLength;
 import static org.eclipse.che.commons.xml.XMLTreeUtil.indexOf;
 import static org.eclipse.che.commons.xml.XMLTreeUtil.indexOfAttributeName;
+import static org.eclipse.che.commons.xml.XMLTreeUtil.replaceAll;
+import static org.eclipse.che.commons.xml.XMLTreeUtil.rootStart;
 import static org.eclipse.che.commons.xml.XMLTreeUtil.single;
 import static org.eclipse.che.commons.xml.XMLTreeUtil.insertBetween;
 import static org.eclipse.che.commons.xml.XMLTreeUtil.insertInto;
@@ -139,5 +140,61 @@ public class XMLTreeUtilTest {
         final byte[] byteSrc = src.getBytes();
 
         assertEquals(indexOfAttributeName(byteSrc, "attribute1".getBytes(), 0), -1);
+    }
+
+    @Test
+    public void shouldBeAbleToReplaceAllBytesWithGivenBytes() {
+        final byte[] src = "\r text \r".getBytes();
+
+        final byte[] newSrc = XMLTreeUtil.replaceAll(src, (byte)'\r', "&#xD;".getBytes(), 0);
+
+        assertEquals(newSrc, "&#xD; text &#xD;".getBytes());
+    }
+
+    @Test
+    public void shouldBeAbleToReplaceAllBytesWithGivenBytesStartingFromSpecifiedIndex() {
+        final byte[] src = "\r \r text \r \r".getBytes();
+
+        final byte[] newSrc = XMLTreeUtil.replaceAll(src, (byte)'\r', "&#xD;".getBytes(), 5);
+
+        assertEquals(newSrc, "\r \r text &#xD; &#xD;".getBytes());
+    }
+
+    @Test(expectedExceptions = IndexOutOfBoundsException.class)
+    public void shouldThrowExceptionWhenReplacingBytesWithStartFromParamWhichIsOutOfSourceBounds() {
+        replaceAll("abc".getBytes(), (byte)'a', "ab".getBytes(), 3);
+    }
+
+    @Test
+    public void shouldReturnSameArrayWhenSourceBytesDoNotContainTargetByte() {
+        final byte[] src = "text".getBytes();
+
+        final byte[] newSrc = XMLTreeUtil.replaceAll(src, (byte)'\r', "&#xD;".getBytes(), 0);
+
+        assertEquals(newSrc, "text".getBytes());
+    }
+
+    @Test
+    public void shouldFindRootStart() {
+        final String src = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                           "<!-- Comment -->" +
+                           "<!-- Another comment -->" +
+                           "<root></root>";
+
+        int start = rootStart(src.getBytes());
+
+        assertEquals(start, src.indexOf("<root>"));
+    }
+
+    @Test
+    public void shouldFindRootStartEvenIfCommentContainsStartCharacter() {
+        final String src = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                           "<!-- Comment < < -->" +
+                           "<!-- Another < < comment -->" +
+                           "<root></root>";
+
+        int start = rootStart(src.getBytes());
+
+        assertEquals(start, src.indexOf("<root>"));
     }
 }

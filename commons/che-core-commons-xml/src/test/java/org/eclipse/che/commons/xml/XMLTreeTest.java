@@ -493,8 +493,8 @@ public class XMLTreeTest {
 
         tree.getRoot()
             .insertChild(NewElement.createElement("groupId", "test-group-id"), after("artifactId").or(after("version"))
-                                                                                       .or(after("parent"))
-                                                                                       .or(after("build")));
+                                                                                                  .or(after("parent"))
+                                                                                                  .or(after("build")));
     }
 
     @Test
@@ -590,8 +590,8 @@ public class XMLTreeTest {
         //second tree
         final NewElement dependency = NewElement
                 .createElement("dependency").appendChild(NewElement.createElement("artifactId", "test-artifact"))
-                                                                 .appendChild(NewElement.createElement("groupId", "test-group"))
-                                                                 .appendChild(NewElement.createElement("version", "test-version"));
+                .appendChild(NewElement.createElement("groupId", "test-group"))
+                .appendChild(NewElement.createElement("version", "test-version"));
         tree2.getSingleElement("//dependencies")
              .appendChild(dependency);
 
@@ -820,9 +820,9 @@ public class XMLTreeTest {
                                                   NewElement.createElement("artifactId", "test-artifact"),
                                                   NewElement.createElement("groupId", "test-group"),
                                                   NewElement.createElement("version", "test-version").setAttribute("attribute1", "value1"))
-                                 .setAttribute("attribute1", "value1")
-                                 .setAttribute("attribute2", "value2")
-                                 .setAttribute("attribute3", "value3"));
+                                   .setAttribute("attribute1", "value1")
+                                   .setAttribute("attribute2", "value2")
+                                   .setAttribute("attribute3", "value3"));
 
         assertEquals(tree.toString(), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                                       "<project>\n" +
@@ -1628,7 +1628,38 @@ public class XMLTreeTest {
                                       "</parent>");
     }
 
+    @Test
+    public void shouldRespectContentPositionsWhenUpdatingTextWithCarriageReturnCharacter() {
+        final String XML = "<parent><child>\r\nchild text\r\n</child></parent>";
 
+        XMLTree tree = XMLTree.from(XML);
+
+        tree.updateText("/parent/child", "new text");
+
+        assertEquals(tree.toString(), "<parent><child>new text</child></parent>");
+    }
+
+    @Test
+    public void shouldParseWithCarriageReturnCharacterInDocumentPrologue() {
+        XMLTree tree = XMLTree.from("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                                    "<!-- <<<<< COMMENT >>>>> -->\n" +
+                                    "\r\r\r\r\r\r\r\r\r\r\r\r\r\r" +
+                                    "<project>\r\r\r\r\n" +
+                                    "   <name>\r\n\r\nname\r\n\r\n</name>" +
+                                    "   <packaging>\r\r\r\n\n\nwar</packaging>" +
+                                    "</project>");
+
+        tree.updateText("/project/packaging", "jar");
+
+        assertEquals(tree.getSingleText("/project/name"), "\r\n\r\nname\r\n\r\n");
+        assertEquals(tree.toString(), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                                      "<!-- <<<<< COMMENT >>>>> -->\n" +
+                                      "\r\r\r\r\r\r\r\r\r\r\r\r\r\r" +
+                                      "<project>\r\r\r\r\n" +
+                                      "   <name>\r\n\r\nname\r\n\r\n</name>" +
+                                      "   <packaging>jar</packaging>" +
+                                      "</project>");
+    }
 
     @Test(dataProvider = "custom-xml-files")
     public void shouldBeAbleToCreateTreeFromCustomXML(File xml) throws IOException {
