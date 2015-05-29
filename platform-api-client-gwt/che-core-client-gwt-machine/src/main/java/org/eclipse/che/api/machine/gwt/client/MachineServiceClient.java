@@ -53,7 +53,15 @@ public interface MachineServiceClient {
     Promise<MachineDescriptor> createMachineFromSnapshot(@Nonnull String snapshotId, @Nullable String outputChannel);
 
     /**
-     * Find machines connected with the specified project.
+     * Get machine information by it's id.
+     *
+     * @param machineId
+     *         ID of the machine
+     */
+    Promise<MachineDescriptor> getMachine(@Nonnull String machineId);
+
+    /**
+     * Find machines bound to the specified project.
      *
      * @param projectPath
      *         project binding

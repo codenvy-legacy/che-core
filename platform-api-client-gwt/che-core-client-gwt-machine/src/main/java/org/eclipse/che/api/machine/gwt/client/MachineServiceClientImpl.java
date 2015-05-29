@@ -132,6 +132,24 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     }
 
     @Override
+    public Promise<MachineDescriptor> getMachine(@Nonnull final String machineId) {
+        return newPromise(new RequestCall<MachineDescriptor>() {
+            @Override
+            public void makeCall(AsyncCallback<MachineDescriptor> callback) {
+                getMachine(machineId, callback);
+            }
+        });
+    }
+
+    private void getMachine(@Nonnull String machineId, @Nonnull AsyncCallback<MachineDescriptor> callback) {
+        final String url = baseHttpUrl + '/' + machineId;
+        asyncRequestFactory.createGetRequest(url)
+                           .header(ACCEPT, APPLICATION_JSON)
+                           .loader(loader, "Getting info about machine...")
+                           .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(MachineDescriptor.class)));
+    }
+
+    @Override
     public Promise<List<MachineDescriptor>> getMachines(@Nullable final String projectPath) {
         return newPromise(new RequestCall<Array<MachineDescriptor>>() {
             @Override
