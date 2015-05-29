@@ -8,12 +8,20 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.machine.shared;
+package org.eclipse.che.api.machine.shared.dto;
+
+import org.eclipse.che.dto.shared.DTO;
 
 /**
+ * Describes how to access to exposed ports for servers inside machine
  *
- * @author gazarenkov
+ * @author Alexander Garagatyi
  */
-public interface Server {
+@DTO
+public interface ServerDescriptor {
     String getAddress();
+
+    void setAddress(String address);
+
+    ServerDescriptor withAddress(String address);
 }

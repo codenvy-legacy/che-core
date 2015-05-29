@@ -22,6 +22,7 @@ import java.util.Map;
  * Describes created machine
  *
  * @author andrew00x
+ * @author Alexander Garagatyi
  */
 @DTO
 public interface MachineDescriptor extends Hyperlinks {
@@ -82,11 +83,20 @@ public interface MachineDescriptor extends Hyperlinks {
     /**
      * Implementation specific information about machine
      */
-    Map<String, String> getMetadata();
+    Map<String, String> getProperties();
 
-    void setMetadata(Map<String, String> metadata);
+    void setProperties(Map<String, String> metadata);
 
-    MachineDescriptor withMetadata(Map<String, String> metadata);
+    MachineDescriptor withProperties(Map<String, String> metadata);
+
+    /**
+     * Port mapping for machine
+     */
+    Map<String, ServerDescriptor> getServers();
+
+    void setServers(Map<String, ServerDescriptor> exposedPorts);
+
+    MachineDescriptor withServers(Map<String, ServerDescriptor> exposedPorts);
 
     @Override
     MachineDescriptor withLinks(List<Link> links);

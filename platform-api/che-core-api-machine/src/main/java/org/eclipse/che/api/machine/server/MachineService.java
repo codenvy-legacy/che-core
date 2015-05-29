@@ -18,7 +18,9 @@ import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.util.LineConsumer;
 import org.eclipse.che.api.core.util.WebsocketLineConsumer;
 import org.eclipse.che.api.machine.server.recipe.RecipeImpl;
+import org.eclipse.che.api.machine.server.spi.InstanceMetadata;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
+import org.eclipse.che.api.machine.shared.Server;
 import org.eclipse.che.api.machine.shared.dto.CommandDescriptor;
 import org.eclipse.che.api.machine.shared.dto.CreateMachineFromRecipe;
 import org.eclipse.che.api.machine.shared.dto.CreateMachineFromSnapshot;
@@ -26,6 +28,7 @@ import org.eclipse.che.api.machine.shared.dto.MachineDescriptor;
 import org.eclipse.che.api.machine.shared.dto.NewSnapshotDescriptor;
 import org.eclipse.che.api.machine.shared.dto.ProcessDescriptor;
 import org.eclipse.che.api.machine.shared.dto.ProjectBindingDescriptor;
+import org.eclipse.che.api.machine.shared.dto.ServerDescriptor;
 import org.eclipse.che.api.machine.shared.dto.SnapshotDescriptor;
 import org.eclipse.che.api.workspace.server.dao.Member;
 import org.eclipse.che.api.workspace.server.dao.MemberDao;
@@ -48,8 +51,10 @@ import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Machine API
@@ -365,15 +370,29 @@ public class MachineService {
                                              .withLinks(null)); // TODO
         }
 
-        return dtoFactory.createDto(MachineDescriptor.class)
-                         .withId(machine.getId())
-                         .withType(machine.getType())
-                         .withState(machine.getState())
-                         .withOwner(machine.getOwner())
-                         .withWorkspaceId(machine.getWorkspaceId())
-                         .withProjects(projectDescriptors)
-                         .withMetadata(machine.getInstance() != null ? machine.getInstance().getMetadata().getProperties() : null)
-                         .withLinks(null); // TODO
+        final MachineDescriptor machineDescriptor = dtoFactory.createDto(MachineDescriptor.class)
+                                                              .withId(machine.getId())
+                                                              .withType(machine.getType())
+                                                              .withState(machine.getState())
+                                                              .withOwner(machine.getOwner())
+                                                              .withWorkspaceId(machine.getWorkspaceId())
+                                                              .withProjects(projectDescriptors);
+
+        if (machine.getInstance() != null) {
+            final InstanceMetadata metadata = machine.getInstance().getMetadata();
+
+            Map<String, Server> servers = metadata.getServers();
+            final Map<String, ServerDescriptor> serverDescriptors = new HashMap<>(servers.size());
+            for (Map.Entry<String, Server> serverEntry : servers.entrySet()) {
+                serverDescriptors.put(serverEntry.getKey(),
+                                      dtoFactory.createDto(ServerDescriptor.class).withAddress(serverEntry.getValue().getAddress()));
+            }
+            machineDescriptor.withProperties(metadata.getProperties())
+                             .withServers(serverDescriptors);
+        }
+        machineDescriptor.setLinks(null); // TODO
+
+        return machineDescriptor;
     }
 
     private ProcessDescriptor toDescriptor(ProcessImpl process) throws ServerException {
