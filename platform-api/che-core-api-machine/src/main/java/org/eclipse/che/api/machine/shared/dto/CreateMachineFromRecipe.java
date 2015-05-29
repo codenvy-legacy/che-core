@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.shared.dto;
 
+import org.eclipse.che.api.machine.shared.dto.recipe.RecipeDescriptor;
 import org.eclipse.che.dto.shared.DTO;
 
 /**

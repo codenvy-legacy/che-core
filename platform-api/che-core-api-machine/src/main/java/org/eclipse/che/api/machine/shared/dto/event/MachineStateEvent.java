@@ -8,22 +8,24 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.machine.shared.dto;
+package org.eclipse.che.api.machine.shared.dto.event;
 
 import org.eclipse.che.api.core.notification.EventOrigin;
 import org.eclipse.che.dto.shared.DTO;
 
 /**
- * Describes event about state of process in machine machine
+ * Describes event about state of machine
  *
  * @author Alexander Garagatyi
  */
 @EventOrigin("machine")
 @DTO
-public interface MachineProcessEvent {
-    public enum EventType {
-        STARTED,
-        STOPPED,
+public interface MachineStateEvent {
+    enum EventType {
+        CREATING,
+        RUNNING,
+        DESTROYING,
+        DESTROYED,
         ERROR
     }
 
@@ -31,23 +33,17 @@ public interface MachineProcessEvent {
 
     void setEventType(EventType eventType);
 
-    MachineProcessEvent withEventType(EventType eventType);
+    MachineStateEvent withEventType(EventType eventType);
 
     String getMachineId();
 
     void setMachineId(String machineId);
 
-    MachineProcessEvent withMachineId(String machineId);
-
-    int getProcessId();
-
-    void setProcessId(int processId);
-
-    MachineProcessEvent withProcessId(int processId);
+    MachineStateEvent withMachineId(String machineId);
 
     String getError();
 
     void setError(String error);
 
-    MachineProcessEvent withError(String error);
+    MachineStateEvent withError(String error);
 }

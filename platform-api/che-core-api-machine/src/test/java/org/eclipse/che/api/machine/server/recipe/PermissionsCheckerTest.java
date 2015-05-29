@@ -11,8 +11,8 @@
 package org.eclipse.che.api.machine.server.recipe;
 
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.machine.shared.Group;
-import org.eclipse.che.api.machine.shared.Recipe;
+import org.eclipse.che.api.machine.shared.recipe.Group;
+import org.eclipse.che.api.machine.shared.recipe.Recipe;
 import org.eclipse.che.api.workspace.server.dao.Member;
 import org.eclipse.che.api.workspace.server.dao.MemberDao;
 import org.mockito.InjectMocks;

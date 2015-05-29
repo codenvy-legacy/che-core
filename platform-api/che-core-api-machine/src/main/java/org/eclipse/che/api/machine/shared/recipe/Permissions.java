@@ -8,16 +8,25 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.machine.server;
+package org.eclipse.che.api.machine.shared.recipe;
 
-import org.eclipse.che.api.core.ServerException;
+import java.util.List;
+import java.util.Map;
 
 /**
- * @author gazarenkov
+ * @author Eugene Voevodin
  */
-@SuppressWarnings("serial")
-public class InvalidRecipeException extends ServerException {
-    public InvalidRecipeException(String message) {
-        super(message);
-    }
+public interface Permissions {
+
+    Map<String, List<String>> getUsers();
+
+    void setUsers(Map<String, List<String>> users);
+
+    Permissions withUsers(Map<String, List<String>> users);
+
+    List<Group> getGroups();
+
+    void setGroups(List<Group> groups);
+
+    Permissions withGroups(List<Group> groups);
 }

@@ -8,28 +8,39 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.machine.shared.dto;
+package org.eclipse.che.api.machine.shared.dto.recipe;
 
 import org.eclipse.che.dto.shared.DTO;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Eugene Voevodin
  */
 @DTO
-public interface PermissionsDescriptor {
+public interface RecipeUpdate {
 
-    Map<String, List<String>> getUsers();
+    String getType();
 
-    void setUsers(Map<String, List<String>> users);
+    void setType(String type);
 
-    PermissionsDescriptor withUsers(Map<String, List<String>> users);
+    RecipeUpdate withType(String type);
 
-    List<GroupDescriptor> getGroups();
+    String getScript();
 
-    void setGroups(List<GroupDescriptor> groups);
+    void setScript(String script);
 
-    PermissionsDescriptor withGroups(List<GroupDescriptor> groups);
+    RecipeUpdate withScript(String script);
+
+    List<String> getTags();
+
+    void setTags(List<String> tags);
+
+    RecipeUpdate withTags(List<String> tags);
+
+    PermissionsDescriptor getPermissions();
+
+    void setPermissions(PermissionsDescriptor permissions);
+
+    RecipeUpdate withPermissions(PermissionsDescriptor permissions);
 }

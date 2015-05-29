@@ -8,48 +8,45 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.machine.server;
+package org.eclipse.che.api.machine.server.impl;
 
-import org.eclipse.che.api.machine.shared.ProjectBinding;
+import com.google.common.base.Objects;
+
+import org.eclipse.che.api.machine.shared.Server;
 
 /**
- * Implementation of {@link ProjectBinding}
- *
  * @author Alexander Garagatyi
  */
-public class ProjectBindingImpl implements ProjectBinding {
-    private String path;
+public class ServerImpl implements Server {
+    private String address;
 
-    @Override
-    public String getPath() {
-        return path;
+    public ServerImpl() {
+    }
+
+    public ServerImpl(String address) {
+        this.address = address;
     }
 
     @Override
-    public void setPath(String path) {
-        this.path = path;
+    public String getAddress() {
+        return address;
     }
 
-    @Override
-    public ProjectBinding withPath(String path) {
-        this.path = path;
+    public ServerImpl setAddress(String address) {
+        this.address = address;
         return this;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        ProjectBindingImpl that = (ProjectBindingImpl)o;
-
-        if (path != null ? !path.equals(that.path) : that.path != null) return false;
-
-        return true;
+        if (!(o instanceof ServerImpl)) return false;
+        ServerImpl server = (ServerImpl)o;
+        return Objects.equal(address, server.address);
     }
 
     @Override
     public int hashCode() {
-        return path != null ? path.hashCode() : 0;
+        return Objects.hashCode(address);
     }
 }

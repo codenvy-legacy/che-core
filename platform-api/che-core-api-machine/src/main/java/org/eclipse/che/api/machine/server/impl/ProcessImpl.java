@@ -8,8 +8,9 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.machine.server;
+package org.eclipse.che.api.machine.server.impl;
 
+import org.eclipse.che.api.machine.server.exception.MachineException;
 import org.eclipse.che.api.machine.server.spi.InstanceProcess;
 import org.eclipse.che.api.machine.shared.Process;
 
@@ -21,7 +22,7 @@ import org.eclipse.che.api.machine.shared.Process;
 public class ProcessImpl implements Process {
     private final InstanceProcess instanceProcess;
 
-    ProcessImpl(InstanceProcess instanceProcess) {
+    public ProcessImpl(InstanceProcess instanceProcess) {
         this.instanceProcess = instanceProcess;
     }
 

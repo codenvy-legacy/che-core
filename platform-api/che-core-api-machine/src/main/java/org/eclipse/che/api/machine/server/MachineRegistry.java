@@ -11,6 +11,7 @@
 package org.eclipse.che.api.machine.server;
 
 import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.machine.server.impl.MachineImpl;
 
 import javax.inject.Singleton;
 import java.util.ArrayList;

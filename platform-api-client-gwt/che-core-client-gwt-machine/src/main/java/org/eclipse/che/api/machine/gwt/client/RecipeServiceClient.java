@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.gwt.client;
 
-import org.eclipse.che.api.machine.shared.dto.RecipeDescriptor;
+import org.eclipse.che.api.machine.shared.dto.recipe.RecipeDescriptor;
 import org.eclipse.che.api.promises.client.Promise;
 
 import javax.annotation.Nonnull;

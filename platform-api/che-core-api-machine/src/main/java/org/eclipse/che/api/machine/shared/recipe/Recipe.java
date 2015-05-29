@@ -8,39 +8,50 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.machine.shared.dto;
-
-import org.eclipse.che.dto.shared.DTO;
+package org.eclipse.che.api.machine.shared.recipe;
 
 import java.util.List;
 
 /**
- * @author Eugene Voevodin
+ * Recipe to create new {@link org.eclipse.che.api.machine.server.spi.Instance}.
+ *
+ * @author gazarenkov
  */
-@DTO
-public interface RecipeUpdate {
+public interface Recipe {
+
+    String getId();
+
+    void setId(String id);
+
+    Recipe withId(String id);
 
     String getType();
 
     void setType(String type);
 
-    RecipeUpdate withType(String type);
+    Recipe withType(String type);
 
     String getScript();
 
     void setScript(String script);
 
-    RecipeUpdate withScript(String script);
+    Recipe withScript(String script);
+
+    String getCreator();
+
+    void setCreator(String creator);
+
+    Recipe withCreator(String creator);
 
     List<String> getTags();
 
     void setTags(List<String> tags);
 
-    RecipeUpdate withTags(List<String> tags);
+    Recipe withTags(List<String> tags);
 
-    PermissionsDescriptor getPermissions();
+    Permissions getPermissions();
 
-    void setPermissions(PermissionsDescriptor permissions);
+    void setPermissions(Permissions permissions);
 
-    RecipeUpdate withPermissions(PermissionsDescriptor permissions);
+    Recipe withPermissions(Permissions permissions);
 }

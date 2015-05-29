@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.machine.server;
+package org.eclipse.che.api.machine.server.exception;
 
 import org.eclipse.che.api.core.ServerException;
 
@@ -16,8 +16,8 @@ import org.eclipse.che.api.core.ServerException;
  * @author gazarenkov
  */
 @SuppressWarnings("serial")
-public class InvalidInstanceSnapshotException extends ServerException {
-    public InvalidInstanceSnapshotException(String message) {
+public class UnsupportedRecipeException extends ServerException {
+    public UnsupportedRecipeException(String message) {
         super(message);
     }
 }

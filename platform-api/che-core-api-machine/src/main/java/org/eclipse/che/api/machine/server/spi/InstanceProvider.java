@@ -12,11 +12,11 @@ package org.eclipse.che.api.machine.server.spi;
 
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.util.LineConsumer;
-import org.eclipse.che.api.machine.server.InvalidInstanceSnapshotException;
-import org.eclipse.che.api.machine.server.InvalidRecipeException;
-import org.eclipse.che.api.machine.server.MachineException;
-import org.eclipse.che.api.machine.server.UnsupportedRecipeException;
-import org.eclipse.che.api.machine.shared.Recipe;
+import org.eclipse.che.api.machine.server.exception.InvalidInstanceSnapshotException;
+import org.eclipse.che.api.machine.server.exception.InvalidRecipeException;
+import org.eclipse.che.api.machine.server.exception.MachineException;
+import org.eclipse.che.api.machine.server.exception.UnsupportedRecipeException;
+import org.eclipse.che.api.machine.shared.recipe.Recipe;
 
 import java.util.Set;
 
@@ -38,7 +38,7 @@ public interface InstanceProvider {
      * Gets supported recipe types.
      *
      * @return supported recipe types
-     * @see org.eclipse.che.api.machine.shared.Recipe#getType()
+     * @see Recipe#getType()
      */
     Set<String> getRecipeTypes();
 

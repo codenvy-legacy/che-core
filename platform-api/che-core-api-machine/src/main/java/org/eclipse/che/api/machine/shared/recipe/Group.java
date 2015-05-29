@@ -8,16 +8,30 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.machine.server;
+package org.eclipse.che.api.machine.shared.recipe;
 
-import org.eclipse.che.api.core.ServerException;
+import java.util.List;
 
 /**
- * @author gazarenkov
+ * @author Eugene Voevodin
  */
-@SuppressWarnings("serial")
-public class UnsupportedRecipeException extends ServerException {
-    public UnsupportedRecipeException(String message) {
-        super(message);
-    }
+public interface Group {
+
+    String getName();
+
+    void setName(String name);
+
+    Group withName(String name);
+
+    String getUnit();
+
+    void setUnit(String unit);
+
+    Group withUnit(String unit);
+
+    List<String> getAcl();
+
+    void setAcl(List<String> acl);
+
+    Group withAcl(List<String> acl);
 }

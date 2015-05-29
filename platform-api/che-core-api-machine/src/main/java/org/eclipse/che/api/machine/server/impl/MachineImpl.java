@@ -8,10 +8,11 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.machine.server;
+package org.eclipse.che.api.machine.server.impl;
 
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.util.LineConsumer;
+import org.eclipse.che.api.machine.server.exception.MachineException;
 import org.eclipse.che.api.machine.server.spi.Instance;
 import org.eclipse.che.api.machine.server.spi.InstanceMetadata;
 import org.eclipse.che.api.machine.server.spi.InstanceProcess;
@@ -41,7 +42,7 @@ public class MachineImpl implements Machine {
     private Instance     instance;
     private MachineState state;
 
-    MachineImpl(String id, String type, String workspaceId, String owner, LineConsumer machineLogsOutput, boolean isWorkspaceBound) {
+    public MachineImpl(String id, String type, String workspaceId, String owner, LineConsumer machineLogsOutput, boolean isWorkspaceBound) {
         this.id = id;
         this.type = type;
         this.owner = owner;
@@ -93,7 +94,7 @@ public class MachineImpl implements Machine {
         return state;
     }
 
-    ProcessImpl getProcess(int pid) throws NotFoundException, MachineException {
+    public ProcessImpl getProcess(int pid) throws NotFoundException, MachineException {
         final Instance myInstance = getInstance();
         if (myInstance == null) {
             throw new MachineException(String.format("Machine %s is not ready to perform this action", id));
@@ -101,7 +102,7 @@ public class MachineImpl implements Machine {
         return new ProcessImpl(myInstance.getProcess(pid));
     }
 
-    List<ProcessImpl> getProcesses() throws MachineException {
+    public List<ProcessImpl> getProcesses() throws MachineException {
         final Instance myInstance = getInstance();
         if (myInstance == null) {
             throw new MachineException(String.format("Machine %s is not ready to perform this action", id));
@@ -114,26 +115,26 @@ public class MachineImpl implements Machine {
         return processes;
     }
 
-    LineConsumer getMachineLogsOutput() {
+    public LineConsumer getMachineLogsOutput() {
         return machineLogsOutput;
     }
 
-    synchronized void setState(MachineState state) {
+    public synchronized void setState(MachineState state) {
         this.state = state;
     }
 
-    synchronized Instance getInstance() {
+    public synchronized Instance getInstance() {
         return instance;
     }
 
-    synchronized void setInstance(Instance instance) {
+    public synchronized void setInstance(Instance instance) {
         this.instance = instance;
     }
 
     /**
      * Binds project to machine
      */
-    void bindProject(ProjectBinding project) throws MachineException {
+    public void bindProject(ProjectBinding project) throws MachineException {
         if (!isWorkspaceBound) {
             if (instance == null) {
                 throw new MachineException(String.format("Machine %s is not ready to bind the project", id));
@@ -148,7 +149,7 @@ public class MachineImpl implements Machine {
     /**
      * Unbinds project from machine
      */
-    void unbindProject(ProjectBinding project) throws MachineException, NotFoundException {
+    public void unbindProject(ProjectBinding project) throws MachineException, NotFoundException {
         if (!isWorkspaceBound) {
             if (instance == null) {
                 throw new MachineException(String.format("Machine %s is not ready to unbind the project", id));

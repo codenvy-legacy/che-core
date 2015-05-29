@@ -8,41 +8,51 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.machine.shared.dto;
+package org.eclipse.che.api.machine.shared.dto.recipe;
 
+import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
 import org.eclipse.che.dto.shared.DTO;
 
 import java.util.List;
 
 /**
- * Describes new recipe
- *
  * @author Eugene Voevodin
  */
 @DTO
-public interface NewRecipe {
+public interface RecipeDescriptor extends Hyperlinks {
+    String getId();
+
+    void setId(String id);
+
+    RecipeDescriptor withId(String id);
 
     String getType();
 
     void setType(String type);
 
-    NewRecipe withType(String type);
+    RecipeDescriptor withType(String type);
 
     String getScript();
 
     void setScript(String script);
 
-    NewRecipe withScript(String script);
+    RecipeDescriptor withScript(String script);
+
+    String getCreator();
+
+    void setCreator(String creator);
+
+    RecipeDescriptor withCreator(String creator);
 
     List<String> getTags();
 
     void setTags(List<String> tags);
 
-    NewRecipe withTags(List<String> tags);
+    RecipeDescriptor withTags(List<String> tags);
 
     PermissionsDescriptor getPermissions();
 
     void setPermissions(PermissionsDescriptor permissions);
 
-    NewRecipe withPermissions(PermissionsDescriptor permissions);
+    RecipeDescriptor withPermissions(PermissionsDescriptor permissions);
 }

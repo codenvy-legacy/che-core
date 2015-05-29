@@ -8,10 +8,11 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.machine.server;
+package org.eclipse.che.api.machine.server.dao;
 
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.machine.server.impl.SnapshotImpl;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
 
 import java.util.List;
@@ -21,7 +22,7 @@ import java.util.List;
  *
  * @author andrew00x
  */
-public interface SnapshotStorage {
+public interface SnapshotDao {
     /**
      * Retrieve snapshot metadata by id
      *

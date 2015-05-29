@@ -8,30 +8,33 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.machine.shared;
+package org.eclipse.che.api.machine.shared.dto.recipe;
+
+import org.eclipse.che.dto.shared.DTO;
 
 import java.util.List;
 
 /**
  * @author Eugene Voevodin
  */
-public interface Group {
+@DTO
+public interface GroupDescriptor {
 
     String getName();
 
     void setName(String name);
 
-    Group withName(String name);
+    GroupDescriptor withName(String name);
 
     String getUnit();
 
     void setUnit(String unit);
 
-    Group withUnit(String unit);
+    GroupDescriptor withUnit(String unit);
 
     List<String> getAcl();
 
     void setAcl(List<String> acl);
 
-    Group withAcl(List<String> acl);
+    GroupDescriptor withAcl(List<String> acl);
 }

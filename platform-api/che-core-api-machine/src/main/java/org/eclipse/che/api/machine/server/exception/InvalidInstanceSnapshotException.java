@@ -8,33 +8,16 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.machine.shared.dto;
+package org.eclipse.che.api.machine.server.exception;
 
-import org.eclipse.che.dto.shared.DTO;
-
-import java.util.List;
+import org.eclipse.che.api.core.ServerException;
 
 /**
- * @author Eugene Voevodin
+ * @author gazarenkov
  */
-@DTO
-public interface GroupDescriptor {
-
-    String getName();
-
-    void setName(String name);
-
-    GroupDescriptor withName(String name);
-
-    String getUnit();
-
-    void setUnit(String unit);
-
-    GroupDescriptor withUnit(String unit);
-
-    List<String> getAcl();
-
-    void setAcl(List<String> acl);
-
-    GroupDescriptor withAcl(List<String> acl);
+@SuppressWarnings("serial")
+public class InvalidInstanceSnapshotException extends ServerException {
+    public InvalidInstanceSnapshotException(String message) {
+        super(message);
+    }
 }

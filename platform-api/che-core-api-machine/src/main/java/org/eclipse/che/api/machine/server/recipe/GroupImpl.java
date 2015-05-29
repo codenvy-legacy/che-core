@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.server.recipe;
 
-import org.eclipse.che.api.machine.shared.Group;
-import org.eclipse.che.api.machine.shared.dto.GroupDescriptor;
+import org.eclipse.che.api.machine.shared.recipe.Group;
+import org.eclipse.che.api.machine.shared.dto.recipe.GroupDescriptor;
 
 import java.util.ArrayList;
 import java.util.List;

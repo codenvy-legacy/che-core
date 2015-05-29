@@ -13,9 +13,9 @@ package org.eclipse.che.api.machine.gwt.client;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 
-import org.eclipse.che.api.machine.shared.dto.NewRecipe;
-import org.eclipse.che.api.machine.shared.dto.RecipeDescriptor;
-import org.eclipse.che.api.machine.shared.dto.RecipeUpdate;
+import org.eclipse.che.api.machine.shared.dto.recipe.NewRecipe;
+import org.eclipse.che.api.machine.shared.dto.recipe.RecipeDescriptor;
+import org.eclipse.che.api.machine.shared.dto.recipe.RecipeUpdate;
 import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Promise;
