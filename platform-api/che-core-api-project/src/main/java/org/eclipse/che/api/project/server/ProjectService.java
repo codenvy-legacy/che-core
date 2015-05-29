@@ -1156,6 +1156,19 @@ public class ProjectService extends Service {
         return VirtualFileSystemImpl.exportZipMultipart(folder.getVirtualFile(), in);
     }
 
+    @GET
+    @Path("/export/file/{path:.*}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response exportFile(@ApiParam(value = "Workspace ID", required = true)
+                               @PathParam("ws-id") String workspace,
+                               @ApiParam(value = "Path to resource to be imported")
+                               @PathParam("path") String path)
+            throws NotFoundException, ForbiddenException, ServerException {
+        final FileEntry file = asFile(workspace, path);
+        ContentStream content = file.getVirtualFile().getContent();
+        return VirtualFileSystemImpl.downloadFile(content);
+    }
+
     @ApiOperation(value = "Get project children items",
                   notes = "Request all children items for a project, such as files and folders",
                   response = ItemReference.class,
@@ -1477,7 +1490,7 @@ public class ProjectService extends Service {
     private FolderEntry asFolder(String workspace, String path) throws ForbiddenException, NotFoundException, ServerException {
         final VirtualFileEntry entry = getVirtualFileEntry(workspace, path);
         if (!entry.isFolder()) {
-            throw new ForbiddenException(String.format("Item '%s' isn't a file. ", path));
+            throw new ForbiddenException(String.format("Item '%s' isn't a folder. ", path));
         }
         return (FolderEntry)entry;
     }

@@ -229,8 +229,17 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("uploadFolderFromZip.description")
     String uploadFolderFromZipDescription();
 
-    @Key("uploadFolderFromZip.title")
-    String uploadFolderFromZipTitle();
+    @Key("downloadZip.project.name")
+    String downloadProjectAsZipName();
+
+    @Key("downloadZip.project.description")
+    String downloadProjectAsZipDescription();
+
+    @Key("download.item.name")
+    String downloadItemName();
+
+    @Key("download.item.description")
+    String downloadItemDescription();
 
     @Key("uploadFolderFromZip.overwrite")
     String uploadFolderFromZipOverwrite();

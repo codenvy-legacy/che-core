@@ -27,7 +27,7 @@ import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
 
 /**
- * The purpose of this class is upload file
+ * The purpose of this class is upload folder from zip
  *
  * @author Roman Nikitenko.
  */
