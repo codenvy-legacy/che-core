@@ -498,8 +498,8 @@ public class MemoryVirtualFile implements VirtualFile {
             }
         }
         if (child != null) {
-            if (!child.getPath().endsWith(".codenvy/misc.xml")) {
-                // Don't check permissions for file "misc.xml" in folder ".codenvy". Dirty huck :( but seems simplest solution for now.
+            if (!child.getPath().endsWith(".che/misc.xml")) {
+                // Don't check permissions for file "misc.xml" in folder ".che". Dirty huck :( but seems simplest solution for now.
                 // Need to work with 'misc.xml' independently to user.
                 if (!child.hasPermission(BasicPermissions.READ.value(), false)) {
                     throw new ForbiddenException(String.format("We were unable to get an item '%s'.  " +
@@ -552,8 +552,8 @@ public class MemoryVirtualFile implements VirtualFile {
         if (!isFile()) {
             throw new ForbiddenException(String.format("We were unable to update the content. Item '%s' is not a file. ", getPath()));
         }
-        if (!getPath().endsWith(".codenvy/misc.xml")) {
-            // Don't check permissions when update file ".codenvy/misc.xml". Dirty huck :( but seems simplest solution for now.
+        if (!getPath().endsWith(".che/misc.xml")) {
+            // Don't check permissions when update file ".che/misc.xml". Dirty huck :( but seems simplest solution for now.
             // Need to work with 'misc.xml' independently to user.
             if (!hasPermission(BasicPermissions.WRITE.value(), true)) {
                 throw new ForbiddenException(String.format("We were unable to update item '%s'." +
@@ -1129,8 +1129,8 @@ public class MemoryVirtualFile implements VirtualFile {
         if (!isFolder()) {
             throw new ForbiddenException("Unable create new file. Item specified as parent is not a folder. ");
         }
-        if (!".codenvy".equals(getName()) && !"misc.xml".equals(name)) {
-            // Don't check permissions when create file "misc.xml" in folder ".codenvy". Dirty huck :( but seems simplest solution for now.
+        if (!".che".equals(getName()) && !"misc.xml".equals(name)) {
+            // Don't check permissions when create file "misc.xml" in folder ".che". Dirty huck :( but seems simplest solution for now.
             // Need to work with 'misc.xml' independently to user.
             if (!hasPermission(BasicPermissions.WRITE.value(), true)) {
                 throw new ForbiddenException(String.format("Unable create new file in '%s'. Operation not permitted. ", getPath()));

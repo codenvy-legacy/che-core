@@ -26,7 +26,7 @@ public class VirtualFileSystemFSModule extends AbstractModule {
         multibinder.addBinding().toInstance(new VirtualFileFilter() {
             @Override
             public boolean accept(VirtualFile virtualFile) {
-                return !virtualFile.getPath().endsWith("/.codenvy/misc.xml");
+                return !virtualFile.getPath().endsWith("/.che/misc.xml");
             }
         });
         //bind(LocalFSMountStrategy.class).to(WorkspaceHashLocalFSMountStrategy.class);

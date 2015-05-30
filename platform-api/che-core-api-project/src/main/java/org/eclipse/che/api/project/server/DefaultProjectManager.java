@@ -26,7 +26,6 @@ import org.eclipse.che.api.project.server.type.ProjectType;
 import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
 import org.eclipse.che.api.project.server.type.Variable;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
-
 import org.eclipse.che.api.vfs.server.Path;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
 import org.eclipse.che.api.vfs.server.observation.VirtualFileEvent;
@@ -34,7 +33,6 @@ import org.eclipse.che.commons.lang.Pair;
 import org.eclipse.che.commons.lang.cache.Cache;
 import org.eclipse.che.commons.lang.cache.SLRUCache;
 import org.eclipse.che.dto.server.DtoFactory;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +40,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -165,7 +164,7 @@ public final class DefaultProjectManager implements ProjectManager {
         return projects;
     }
 
-    /**
+	/**
      * Gets single project by id of workspace and project's path in this workspace.
      *
      * @param workspace
@@ -433,7 +432,7 @@ public final class DefaultProjectManager implements ProjectManager {
                     try {
                         codenvy = project.getBaseFolder().createFolder(Constants.CODENVY_DIR);
                     } catch (ConflictException e) {
-                        // Already checked existence of folder ".codenvy".
+                        // Already checked existence of folder Constants.CODENVY_DIR.
                         throw new ServerException(e.getServiceError());
                     }
                 }
@@ -561,7 +560,7 @@ public final class DefaultProjectManager implements ProjectManager {
 
     /**
      * Converts existed Folder to Project
-     * - using projectConfig if it is not null or use internal metainformation (/.codenvy)
+     * - using projectConfig if it is not null or use internal metainformation (/Constants.CODENVY_DIR)
      *
      * @param workspace
      * @param projectConfig
@@ -606,6 +605,5 @@ public final class DefaultProjectManager implements ProjectManager {
 
         return project;
     }
-
 
 }

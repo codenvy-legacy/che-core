@@ -206,6 +206,7 @@ public class FolderEntry extends VirtualFileEntry {
      *         if an error occurs
      */
     public boolean isProjectFolder() throws ServerException {
+    	fixProjectFolderName();
         final VirtualFileEntry projectFile;
         try {
             projectFile = getChild(Constants.CODENVY_PROJECT_FILE_RELATIVE_PATH);
@@ -226,4 +227,23 @@ public class FolderEntry extends VirtualFileEntry {
     private boolean isRoot(VirtualFile virtualFile) {
         return virtualFile.isRoot();
     }
+    
+    /**
+     * If this is a project folder that has the old ".codenvy" projects directory but not
+     * the new ".che" folder (Constants.CODEVNY_DIR) then fix it, otherwise don't do anything.
+     * @throws ServerException
+     */
+    private void fixProjectFolderName() throws ServerException {
+		try {
+			VirtualFileEntry folderEntry = getChild(Constants.CODENVY_DIR);
+			if (folderEntry == null) {
+				folderEntry = getChild(".codenvy");
+				if (folderEntry != null && folderEntry.isFolder()) {
+					folderEntry.rename(Constants.CODENVY_DIR);
+				}
+			}
+		} catch (ForbiddenException | ConflictException e) {
+			throw new ServerException(e.getMessage(), e);
+		}
+	}    
 }

@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Part of project meta-data that is stored in file &lt;project folder&gt;/.codenvy/project.json.
+ * Part of project meta-data that is stored in file &lt;project folder&gt;/.che/project.json.
  *
  * @author andrew00x
  */
@@ -62,8 +62,6 @@ public class ProjectJson {
             // If have access to the project then must have access to its meta-information. If don't have access then treat that as server error.
             throw new ServerException(e.getServiceError());
         }
-
-
         if (projectFile == null || !projectFile.isFile()) {
             return new ProjectJson();
         }
@@ -109,7 +107,7 @@ public class ProjectJson {
                     try {
                         codenvyDir = baseFolder.createFolder(Constants.CODENVY_DIR);
                     } catch (ConflictException e) {
-                        // Already checked existence of folder ".codenvy".
+                        // Already checked existence of folder "Constants.CODENVY_DIR".
                         throw new ServerException(e.getServiceError());
                     }
                 } else if (!codenvyDir.isFolder()) {
@@ -120,7 +118,7 @@ public class ProjectJson {
                 try {
                     ((FolderEntry)codenvyDir).createFile(Constants.CODENVY_PROJECT_FILE, JsonHelper.toJson(this).getBytes(), null);
                 } catch (ConflictException e) {
-                    // Already checked existence of file ".codenvy/project.json".
+                    // Already checked existence of file Constants.CODENVY_PROJECT_FILE.
                     throw new ServerException(e.getServiceError());
                 }
             }
