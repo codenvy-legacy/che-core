@@ -439,8 +439,8 @@ public class FSMountPoint implements MountPoint {
         final Path childPath = parent.getVirtualFilePath().newPath(name);
         final VirtualFileImpl child = new VirtualFileImpl(new java.io.File(parent.getIoFile(), name), childPath, pathToId(childPath), this);
         if (child.exists()) {
-            if (!child.getPath().endsWith(".codenvy/misc.xml")) {
-                // Don't check permissions for file "misc.xml" in folder ".codenvy". Dirty huck :( but seems simplest solution for now.
+            if (!child.getPath().endsWith(".che/misc.xml")) {
+                // Don't check permissions for file "misc.xml" in folder ".che". Dirty huck :( but seems simplest solution for now.
                 // Need to work with 'misc.xml' independently to user.
                 if (!hasPermission(child, BasicPermissions.READ.value(), true)) {
                     throw new ForbiddenException(String.format("Unable get item '%s'. Operation not permitted. ", child.getPath()));
@@ -503,8 +503,8 @@ public class FSMountPoint implements MountPoint {
             throw new ForbiddenException("Unable create new file. Item specified as parent is not a folder. ");
         }
 
-        if (!".codenvy".equals(parent.getName()) && !"misc.xml".equals(name)) {
-            // Don't check permissions when create file "misc.xml" in folder ".codenvy". Dirty huck :( but seems simplest solution for now.
+        if (!".che".equals(parent.getName()) && !"misc.xml".equals(name)) {
+            // Don't check permissions when create file "misc.xml" in folder ".che". Dirty huck :( but seems simplest solution for now.
             // Need to work with 'misc.xml' independently to user.
             if (!hasPermission(parent, BasicPermissions.WRITE.value(), true)) {
                 throw new ForbiddenException(String.format("Unable create new file in '%s'. Operation not permitted. ", parent.getPath()));
@@ -840,8 +840,8 @@ public class FSMountPoint implements MountPoint {
             throw new ForbiddenException(String.format("Unable update content. Item '%s' is not file. ", virtualFile.getPath()));
         }
 
-        if (!virtualFile.getPath().endsWith(".codenvy/misc.xml")) {
-            // Don't check permissions when update file ".codenvy/misc.xml". Dirty huck :( but seems simplest solution for now.
+        if (!virtualFile.getPath().endsWith(".che/misc.xml")) {
+            // Don't check permissions when update file ".che/misc.xml". Dirty huck :( but seems simplest solution for now.
             // Need to work with 'misc.xml' independently to user.
             if (!hasPermission(virtualFile, BasicPermissions.WRITE.value(), true)) {
                 throw new ForbiddenException(
