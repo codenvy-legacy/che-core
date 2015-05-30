@@ -20,6 +20,8 @@ import org.eclipse.che.ide.actions.ChangePerspectiveAction;
 import org.eclipse.che.ide.actions.CloseProjectAction;
 import org.eclipse.che.ide.actions.CreateModuleAction;
 import org.eclipse.che.ide.actions.DeleteItemAction;
+import org.eclipse.che.ide.actions.DownloadItemAction;
+import org.eclipse.che.ide.actions.DownloadProjectAsZipAction;
 import org.eclipse.che.ide.actions.ExpandEditorAction;
 import org.eclipse.che.ide.actions.FindReplaceAction;
 import org.eclipse.che.ide.actions.FormatterAction;
@@ -177,6 +179,12 @@ public class StandardComponentInitializer {
     private UploadFolderFromZipAction uploadFolderFromZipAction;
 
     @Inject
+    private DownloadProjectAsZipAction downloadProjectAsZipAction;
+
+    @Inject
+    private DownloadItemAction downloadItemAction;
+
+    @Inject
     private ImportProjectFromLocationAction importProjectFromLocationAction;
 
     @Inject
@@ -319,6 +327,8 @@ public class StandardComponentInitializer {
 
         actionManager.registerAction("uploadFile", uploadFileAction);
         actionManager.registerAction("uploadFolderFromZip", uploadFolderFromZipAction);
+        actionManager.registerAction("downloadProjectAsZipAction", downloadProjectAsZipAction);
+        actionManager.registerAction("downloadItemAction", downloadItemAction);
         actionManager.registerAction("navigateToFile", navigateToFileAction);
         actionManager.registerAction("projectConfiguration", projectConfigurationAction);
         actionManager.registerAction("createModuleAction", createModuleAction);
@@ -342,6 +352,7 @@ public class StandardComponentInitializer {
         fileGroup.add(projectConfigurationAction);
         fileGroup.add(uploadFileAction);
         fileGroup.add(uploadFolderFromZipAction);
+        fileGroup.add(downloadProjectAsZipAction);
         fileGroup.add(navigateToFileAction);
         fileGroup.add(showHiddenFilesAction);
         fileGroup.add(renameItemAction);
@@ -387,6 +398,8 @@ public class StandardComponentInitializer {
         resourceOperation.add(openSelectedFileAction);
         resourceOperation.add(renameItemAction);
         resourceOperation.add(deleteItemAction);
+        resourceOperation.addSeparator();
+        resourceOperation.add(downloadItemAction);
         resourceOperation.addSeparator();
         resourceOperation.add(createModuleAction);
 
