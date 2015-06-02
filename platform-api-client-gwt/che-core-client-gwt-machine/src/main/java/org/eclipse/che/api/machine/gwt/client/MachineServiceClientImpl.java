@@ -75,11 +75,12 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     public Promise<MachineDescriptor> createMachineFromRecipe(@Nonnull final String machineType,
                                                               @Nonnull final String recipeType,
                                                               @Nonnull final String recipeScript,
+                                                              final boolean bindWorkspace,
                                                               @Nullable final String outputChannel) {
         return newPromise(new RequestCall<MachineDescriptor>() {
             @Override
             public void makeCall(AsyncCallback<MachineDescriptor> callback) {
-                createMachineFromRecipe(workspaceId, machineType, recipeType, recipeScript, outputChannel, callback);
+                createMachineFromRecipe(workspaceId, machineType, recipeType, recipeScript, bindWorkspace, outputChannel, callback);
             }
         });
     }
@@ -88,6 +89,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
                                          @Nonnull String machineType,
                                          @Nonnull String recipeType,
                                          @Nonnull String recipeScript,
+                                         boolean bindWorkspace,
                                          @Nullable String outputChannel,
                                          @Nonnull AsyncCallback<MachineDescriptor> callback) {
         final RecipeDescriptor recipeDescriptor = dtoFactory.createDto(RecipeDescriptor.class)
@@ -98,6 +100,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
                                                           .withWorkspaceId(workspaceId)
                                                           .withType(machineType)
                                                           .withRecipeDescriptor(recipeDescriptor)
+                                                          .withBindWorkspace(bindWorkspace)
                                                           .withOutputChannel(outputChannel);
 
         asyncRequestFactory.createPostRequest(baseHttpUrl + "/recipe", request)

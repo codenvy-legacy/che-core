@@ -34,12 +34,15 @@ public interface MachineServiceClient {
      *         type of recipe (e.g., Dockerfile)
      * @param recipeScript
      *         recipe script
+     * @param bindWorkspace
+     *         {@code true} if workspace should be bound, {@code false} - otherwise
      * @param outputChannel
      *         websocket chanel where machine logs should be put
      */
     Promise<MachineDescriptor> createMachineFromRecipe(@Nonnull String machineType,
                                                        @Nonnull String recipeType,
                                                        @Nonnull String recipeScript,
+                                                       boolean bindWorkspace,
                                                        @Nullable String outputChannel);
 
     /**
@@ -61,7 +64,7 @@ public interface MachineServiceClient {
     Promise<MachineDescriptor> getMachine(@Nonnull String machineId);
 
     /**
-     * Find machines bound to the specified project.
+     * Find machines bound to the specified project or to the workspace if {@code projectPath} is {code null}.
      *
      * @param projectPath
      *         project binding
