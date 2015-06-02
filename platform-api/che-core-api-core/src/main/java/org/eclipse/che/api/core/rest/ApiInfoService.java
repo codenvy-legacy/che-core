@@ -15,13 +15,24 @@ import org.eclipse.che.api.core.rest.annotations.OPTIONS;
 import org.eclipse.che.api.core.rest.shared.dto.ApiInfo;
 import org.eclipse.che.dto.server.DtoFactory;
 
+import org.everrest.core.ObjectFactory;
+import org.everrest.core.ResourceBinder;
+import org.everrest.core.resource.AbstractResourceDescriptor;
+import org.everrest.services.RestServicesList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
+import javax.servlet.ServletContext;
+import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -34,7 +45,7 @@ import java.util.jar.Manifest;
 public class ApiInfoService {
     private static final Logger LOG = LoggerFactory.getLogger(ApiInfoService.class);
 
-    private volatile ApiInfo apiInfo;
+    private volatile ApiInfo        apiInfo;
 
     @OPTIONS
     public ApiInfo info() throws ServerException {
@@ -65,5 +76,24 @@ public class ApiInfoService {
             LOG.error(e.getMessage(), e);
             throw new ServerException("Unable read info about API. Contact support for assistance.");
         }
+    }
+
+    @GET
+    @Produces({MediaType.APPLICATION_JSON})
+    public RestServicesList.RootResourcesList listJSON(@Context ServletContext context) {
+        return rootResources(context);
+    }
+
+    protected RestServicesList.RootResourcesList rootResources(ServletContext servletContext) {
+        ResourceBinder binder = (ResourceBinder)servletContext.getAttribute(ResourceBinder.class.getName());
+        List<ObjectFactory<AbstractResourceDescriptor>> l = binder.getResources();
+        List<RestServicesList.RootResource> resources = new ArrayList<>(l.size());
+        for (ObjectFactory<AbstractResourceDescriptor> om : l) {
+            AbstractResourceDescriptor descriptor = om.getObjectModel();
+            resources.add(new RestServicesList.RootResource(descriptor.getObjectClass().getName(), //
+                                                            descriptor.getPathValue().getPath(), //
+                                                            descriptor.getUriPattern().getRegex()));
+        }
+        return new RestServicesList.RootResourcesList(resources);
     }
 }
