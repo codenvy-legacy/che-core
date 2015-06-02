@@ -100,6 +100,8 @@ import java.util.zip.ZipOutputStream;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.AssertJUnit.assertFalse;
+import static org.testng.AssertJUnit.assertTrue;
 
 /**
  * @author andrew00x
@@ -1174,7 +1176,70 @@ public class ProjectServiceTest {
         Assert.assertNull(myProject.getBaseFolder().getChild("a/b"));
     }
 
+    @Test
+    public void testRenameModule() throws Exception {
+        //create new module
+        phRegistry.register(new CreateProjectHandler() {
 
+            @Override
+            public String getProjectType() {
+                return "my_project_type";
+            }
+
+            @Override
+            public void onCreateProject(FolderEntry baseFolder, Map<String, AttributeValue> attributes, Map<String, String> options)
+                    throws ConflictException, ForbiddenException, ServerException {
+                baseFolder.createFolder("a");
+                baseFolder.createFolder("b");
+                baseFolder.createFile("test.txt", "test".getBytes(), "text/plain");
+            }
+        });
+
+        Map<String, List<String>> headers = new HashMap<>();
+        headers.put("Content-Type", Arrays.asList("application/json"));
+
+
+        Map<String, List<String>> attributeValues = new LinkedHashMap<>();
+        attributeValues.put("new module attribute", Arrays.asList("to be or not to be"));
+        GeneratorDescription generatorDescription = DtoFactory.getInstance().createDto(GeneratorDescription.class);
+
+        NewProject descriptor = DtoFactory.getInstance().createDto(NewProject.class)
+                .withType("my_project_type")
+                .withDescription("new module")
+                .withAttributes(attributeValues)
+                .withGeneratorDescription(generatorDescription);
+
+        ContainerResponse response = launcher.service("POST",
+                String.format("http://localhost:8080/api/project/%s/my_project?path=%s",
+                        workspace, "new_module"),
+                "http://localhost:8080/api",
+                headers,
+                DtoFactory.getInstance().toJson(descriptor).getBytes(),
+                null);
+        assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
+
+        //rename module
+        Project myProject = pm.getProject(workspace, "my_project");
+
+        assertTrue(pm.getProject(workspace, "my_project").getModules().get().contains("new_module"));
+
+        final String newName = "moduleRenamed";
+
+        response = launcher.service("POST",
+                String.format("http://localhost:8080/api/project/%s/rename/my_project/new_module?name=%s",
+                        workspace, newName),
+                "http://localhost:8080/api", null, null, null);
+        assertEquals(response.getStatus(), 201, "Error: " + response.getEntity());
+        assertEquals(response.getHttpHeaders().getFirst("Location"),
+                URI.create(String.format("http://localhost:8080/api/project/%s/children/my_project/%s",
+                        workspace, newName)));
+        assertNotNull(myProject.getBaseFolder().getChild(newName + "/a"));
+        assertNotNull(myProject.getBaseFolder().getChild(newName + "/b"));
+        assertNotNull(myProject.getBaseFolder().getChild(newName + "/test.txt"));
+
+        assertTrue(pm.getProject(workspace, "my_project").getModules().get().contains(newName));
+        assertFalse(pm.getProject(workspace, "my_project").getModules().get().contains("new_module"));
+    }
 
     @Test
     public void testImportProject() throws Exception {

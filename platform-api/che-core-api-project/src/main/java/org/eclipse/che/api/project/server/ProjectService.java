@@ -796,6 +796,11 @@ public class ProjectService extends Service {
             ((FileEntry)entry).rename(newName, newMediaType);
         } else {
             entry.rename(newName);
+
+            String projectPath = projectPath(path);
+            if (projectManager.isModule(workspace, projectPath, path)) {
+                projectManager.updateModuleName(workspace, projectPath, path, newName);
+            }
         }
         final URI location = getServiceContext().getServiceUriBuilder()
                                                 .path(getClass(), entry.isFile() ? "getFile" : "getChildren")
@@ -1514,6 +1519,10 @@ public class ProjectService extends Service {
     }
 
     private String projectPath(String path) {
-        return path.substring(0, path.indexOf("/"));
+        int end = path.indexOf("/");
+        if (end == -1) {
+            return path;
+        }
+        return path.substring(0, end);
     }
 }

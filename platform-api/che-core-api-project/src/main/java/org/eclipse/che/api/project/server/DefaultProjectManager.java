@@ -50,6 +50,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -607,5 +608,48 @@ public final class DefaultProjectManager implements ProjectManager {
         return project;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean isModule(String workspace, String projectPath, String path)
+            throws ServerException, ForbiddenException {
+        if (path.equals(projectPath)) {
+            return false;
+        }
 
+        Project project = getProject(workspace, projectPath);
+
+        if (project == null) {
+            return false;
+        }
+
+        if (path.startsWith(projectPath + "/")) {
+            path = path.replaceFirst(projectPath + "/", "");
+        }
+
+        Set<String> modules = project.getModules().get();
+        return modules.contains(path);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void updateModuleName(String workspaceName, String projectPath, String modulePath, String newName)
+            throws ServerException, ForbiddenException, ConflictException {
+        Project project = getProject(workspaceName, projectPath);
+
+        if (project == null) {
+            return;
+        }
+
+        if (modulePath.startsWith(projectPath + "/")) {
+            modulePath = modulePath.replaceFirst(projectPath + "/", "");
+        }
+        String newPath = modulePath.substring(0, modulePath.lastIndexOf("/") + 1) + newName;
+
+        Set<String> modules = project.getModules().get();
+
+        if (modules.contains(modulePath)) {
+            project.getModules().remove(modulePath);
+        }
+        project.getModules().add(newPath);
+    }
 }
