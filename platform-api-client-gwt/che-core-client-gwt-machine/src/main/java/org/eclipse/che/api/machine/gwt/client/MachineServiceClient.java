@@ -64,10 +64,11 @@ public interface MachineServiceClient {
     Promise<MachineDescriptor> getMachine(@Nonnull String machineId);
 
     /**
-     * Find machines bound to the specified project or to the workspace if {@code projectPath} is {code null}.
+     * Find machines bound to the workspace/project.
      *
      * @param projectPath
-     *         project binding
+     *         project binding. If {@code projectPath} is {@code null} returns machines which bound to the current workspace,
+     *         if {@code projectPath} is not {@code null} - returns machines which bound to the specified project
      */
     Promise<List<MachineDescriptor>> getMachines(@Nullable String projectPath);
 
