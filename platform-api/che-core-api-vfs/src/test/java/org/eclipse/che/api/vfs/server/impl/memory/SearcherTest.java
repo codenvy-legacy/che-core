@@ -70,8 +70,11 @@ public class SearcherTest extends MemoryFileSystemTest {
         VirtualFile folder = searchTestFolder.createFolder("folder01");
         String folder1 = folder.getPath();
         file3 = folder.createFile("SearcherTest_File03", "text/plain", new ByteArrayInputStream("to be or not to be".getBytes())).getPath();
+        
+        String file4 = searchTestFolder.createFile("SearcherTest_File04", "text/plain", new ByteArrayInputStream("(1+1):2=1 is right".getBytes())).getPath();
+        String file5 = searchTestFolder.createFile("SearcherTest_File05", "text/plain", new ByteArrayInputStream("Copyright (c) 2012-2015 * All rights reserved".getBytes())).getPath();
 
-        queryToResult = new Pair[10];
+        queryToResult = new Pair[16];
         // text
         queryToResult[0] = new Pair<>(new String[]{file1, file2, file3}, "text=to%20be%20or%20not%20to%20be");
         queryToResult[1] = new Pair<>(new String[]{file1, file2, file3}, "text=to%20be%20or");
@@ -85,8 +88,17 @@ public class SearcherTest extends MemoryFileSystemTest {
         queryToResult[6] = new Pair<>(new String[]{file3}, "text=to%20be%20or&path=" + folder1);
         queryToResult[7] = new Pair<>(new String[]{file1, file2, file3}, "text=to%20be%20or&path=" + searchTestPath);
         // name + media type
-        queryToResult[8] = new Pair<>(new String[]{file2, file3}, "name=SearcherTest*&mediaType=text/plain");
+        queryToResult[8] = new Pair<>(new String[]{file2, file3, file4, file5}, "name=SearcherTest*&mediaType=text/plain");
         queryToResult[9] = new Pair<>(new String[]{file1}, "name=SearcherTest*&mediaType=text/xml");
+        // text is a "contains" query
+        queryToResult[10] = new Pair<>(new String[]{file4, file5}, "text=/.*right.*/");
+        queryToResult[11] = new Pair<>(new String[]{file5}, "text=/.*rights.*/");
+        // text is a regular expression
+        queryToResult[12] = new Pair<>(new String[]{file4, file5}, "text=/.*\\(.*\\).*/");
+        queryToResult[13] = new Pair<>(new String[]{file5}, "text=/.*\\([a-z]\\).*/");
+        // text contains special characters
+        queryToResult[14] = new Pair<>(new String[]{file4}, "text=\\(1\\%2B1\\)\\:2=1");
+        queryToResult[15] = new Pair<>(new String[]{file5}, "text=\\(c\\)%202012\\-2015%20\\*");
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -134,7 +146,7 @@ public class SearcherTest extends MemoryFileSystemTest {
         searcherManager.maybeRefresh();
         IndexSearcher luceneSearcher = searcherManager.acquire();
         TopDocs topDocs = luceneSearcher.search(new PrefixQuery(new Term("path", searchTestPath)), 10);
-        assertEquals(3, topDocs.totalHits);
+        assertEquals(5, topDocs.totalHits);
         searcherManager.release(luceneSearcher);
 
         mountPoint.getVirtualFile(searchTestPath).delete(null);
@@ -149,14 +161,14 @@ public class SearcherTest extends MemoryFileSystemTest {
         searcherManager.maybeRefresh();
         IndexSearcher luceneSearcher = searcherManager.acquire();
         TopDocs topDocs = luceneSearcher.search(new PrefixQuery(new Term("path", searchTestPath)), 10);
-        assertEquals(3, topDocs.totalHits);
+        assertEquals(5, topDocs.totalHits);
         searcherManager.release(luceneSearcher);
         mountPoint.getVirtualFile(searchTestPath).createFile("new_file", "text/plain", new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
 
         searcherManager.maybeRefresh();
         luceneSearcher = searcherManager.acquire();
         topDocs = luceneSearcher.search(new PrefixQuery(new Term("path", searchTestPath)), 10);
-        assertEquals(4, topDocs.totalHits);
+        assertEquals(6, topDocs.totalHits);
         searcherManager.release(luceneSearcher);
     }
 
