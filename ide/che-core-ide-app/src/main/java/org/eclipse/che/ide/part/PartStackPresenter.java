@@ -54,54 +54,54 @@ import java.util.Map;
  *
  * @author Nikolay Zamosenchuk
  * @author Stéphane Daviet
+ * @author Dmitry Shnurenko
  */
 public class PartStackPresenter implements Presenter, PartStackView.ActionDelegate, PartStack {
 
-    /** Handles PartStack actions */
-    public interface PartStackEventHandler {
-        /** PartStack is being clicked and requests Focus */
-        void onRequestFocus(PartStack partStack);
-    }
+    private final Comparator                     partPresenterComparator;
+    private final WorkBenchPartController        workBenchPartController;
+    private final HashMap<PartPresenter, Double> partSizes;
 
-    private         HashMap<PartPresenter, Double>  partSizes         = new HashMap<>();
-    /** list of parts */
-    protected final List<PartPresenter>             parts             = new ArrayList<>();
-    protected final List<Integer>                   viewPartPositions = new ArrayList<>();
-    protected final Map<PartPresenter, Constraints> constraints       = new HashMap<>();
-    /** view implementation */
-    protected final PartStackView view;
-    private final   EventBus      eventBus;
-    private final Comparator partPresenterComparator = getPartPresenterComparator();
-    protected     boolean    partsClosable           = false;
+    protected final PartStackView                   view;
+    protected final List<PartPresenter>             parts;
+    protected final List<Integer>                   viewPartPositions;
+    protected final PropertyListener                propertyListener;
+    protected final PartStackEventHandler           partStackHandler;
+    protected final AcceptsOneWidget                partViewContainer;
+    protected final Map<PartPresenter, Constraints> constraints;
 
-    protected PropertyListener propertyListener = new PropertyListener() {
-        @Override
-        public void propertyChanged(PartPresenter source, int propId) {
-            if (PartPresenter.TITLE_PROPERTY == propId) {
-                updatePartTab(source);
-            } else if (EditorPartPresenter.PROP_DIRTY == propId) {
-                eventBus.fireEvent(new EditorDirtyStateChangedEvent(
-                        (EditorPartPresenter)source));
-            }
-        }
-    };
-
-    /** current active part */
-    protected PartPresenter           activePart;
-    protected PartStackEventHandler   partStackHandler;
-    /** Container for every new PartPresenter which will be added to this PartStack. */
-    protected AcceptsOneWidget        partViewContainer;
-    private   WorkBenchPartController workBenchPartController;
+    protected PartPresenter activePart;
+    protected boolean       partsClosable;
 
     @Inject
-    public PartStackPresenter(EventBus eventBus,
+    public PartStackPresenter(final EventBus eventBus,
                               PartStackEventHandler partStackEventHandler,
                               @Assisted final PartStackView view,
                               @Assisted WorkBenchPartController workBenchPartController) {
         this.view = view;
-        this.eventBus = eventBus;
-        partStackHandler = partStackEventHandler;
+        this.partStackHandler = partStackEventHandler;
         this.workBenchPartController = workBenchPartController;
+        this.partPresenterComparator = getPartPresenterComparator();
+
+        this.parts = new ArrayList<>();
+        this.viewPartPositions = new ArrayList<>();
+        this.constraints = new HashMap<>();
+        this.partSizes = new HashMap<>();
+
+        this.partsClosable = false;
+
+        this.propertyListener = new PropertyListener() {
+            @Override
+            public void propertyChanged(PartPresenter source, int propId) {
+                if (PartPresenter.TITLE_PROPERTY == propId) {
+                    updatePartTab(source);
+                } else if (EditorPartPresenter.PROP_DIRTY == propId) {
+                    eventBus.fireEvent(new EditorDirtyStateChangedEvent(
+                            (EditorPartPresenter)source));
+                }
+            }
+        };
+
         partViewContainer = new AcceptsOneWidget() {
             @Override
             public void setWidget(IsWidget w) {
@@ -444,5 +444,11 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
         sortedParts.addAll(parts);
         java.util.Collections.sort(sortedParts, partPresenterComparator);
         return sortedParts;
+    }
+
+    /** Handles PartStack actions */
+    public interface PartStackEventHandler {
+        /** PartStack is being clicked and requests Focus */
+        void onRequestFocus(PartStack partStack);
     }
 }
