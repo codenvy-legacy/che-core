@@ -622,11 +622,11 @@ public abstract class Runner {
             if (!(deployDirectory.exists() || deployDirectory.mkdirs())) {
                 throw new IllegalStateException(String.format("Unable create directory %s", deployDirectory.getAbsolutePath()));
             }
-            executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat(getName() + "-Runner-")
+            executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat(getName() + "-Runner-%d")
                                                                                .setDaemon(true).build());
             cleanScheduler =
                     Executors.newSingleThreadScheduledExecutor(
-                            new ThreadFactoryBuilder().setNameFormat(getName() + "-RunnerCleanSchedulerPool-").setDaemon(true).build());
+                            new ThreadFactoryBuilder().setNameFormat(getName() + "-RunnerCleanSchedulerPool-%d").setDaemon(true).build());
             cleanScheduler.scheduleAtFixedRate(new CleanupTask(), 1, 1, TimeUnit.MINUTES);
         } else {
             throw new IllegalStateException("Already started");

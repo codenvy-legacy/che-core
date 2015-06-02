@@ -1,4 +1,4 @@
-This repository contains core components of Che.
+This repository contains core components of Che. [![Build Status](https://travis-ci.org/codenvy/che-core.svg?branch=master)](https://travis-ci.org/codenvy/che-core) 
 
 ## How to build
 

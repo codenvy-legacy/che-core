@@ -43,7 +43,7 @@ public interface Searcher {
      * @throws ServerException
      *         if an error occurs
      */
-    void delete(String path) throws ServerException;
+    void delete(String path, boolean isFile) throws ServerException;
 
     /**
      * Updated indexed VirtualFile.

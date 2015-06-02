@@ -128,7 +128,7 @@ public class RunnerService extends Service {
     @Produces(MediaType.APPLICATION_JSON)
     public List<ApplicationProcessDescriptor> getRunningProcesses(@ApiParam(value = "Workspace ID", required = true)
                                                                   @PathParam("ws-id") String workspace,
-                                                                  @ApiParam(value = "Project name", required = false)
+                                                                  @ApiParam(value = "Project name", required = true)
                                                                   @Required @Description("project name")
                                                                   @QueryParam("project") String project) {
         if (project != null && !project.startsWith("/")) {

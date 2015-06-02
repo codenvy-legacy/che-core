@@ -36,7 +36,7 @@ public class MountPointCacheCleaner {
             FSMountPoint.SERVICE_DIR + java.io.File.separatorChar + "cache" + java.io.File.separatorChar + "reset";
 
     private static ScheduledExecutorService exec = Executors
-            .newSingleThreadScheduledExecutor(new ThreadFactoryBuilder().setNameFormat("MountPointCacheCleaner").setDaemon(true).build());
+            .newSingleThreadScheduledExecutor(new ThreadFactoryBuilder().setNameFormat("MountPointCacheCleaner-%d").setDaemon(true).build());
 
     private static Map<java.io.File, Entry> watched = new ConcurrentHashMap<>();
 

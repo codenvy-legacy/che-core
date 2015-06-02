@@ -23,12 +23,7 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 
-import org.eclipse.che.ide.ui.UILocalizationConstant;
-import org.eclipse.che.ide.ui.window.Window;
-
 import javax.annotation.Nonnull;
-
-import static org.eclipse.che.ide.ui.dialogs.input.InputValidator.Violation;
 
 /**
  * Implementation of the input dialog view.
@@ -51,7 +46,6 @@ public class InputDialogViewImpl extends Window implements InputDialogView {
     private ActionDelegate         delegate;
     private int                    selectionStartIndex;
     private int                    selectionLength;
-    private InputValidator         validator;
     private UILocalizationConstant localizationConstant;
 
     @Inject
@@ -70,7 +64,6 @@ public class InputDialogViewImpl extends Window implements InputDialogView {
     @Override
     public void show() {
         super.show();
-        footer.okButton.setEnabled(isInputValid());
         value.setSelectionRange(selectionStartIndex, selectionLength);
         new Timer() {
             @Override
@@ -92,9 +85,7 @@ public class InputDialogViewImpl extends Window implements InputDialogView {
 
     @Override
     protected void onEnterClicked() {
-        if (isInputValid()) {
-            delegate.accepted();
-        }
+        delegate.onEnterClicked();
     }
 
     @Override
@@ -133,51 +124,20 @@ public class InputDialogViewImpl extends Window implements InputDialogView {
     }
 
     @Override
-    public void setValidator(InputValidator inputValidator) {
-        this.validator = inputValidator;
-    }
-
-    @Override
     public void showErrorHint(String text) {
         errorHint.setText(text);
+        footer.getOkButton().setEnabled(false);
     }
 
     @Override
     public void hideErrorHint() {
         errorHint.setText("");
+        footer.getOkButton().setEnabled(true);
     }
 
     @UiHandler("value")
     void onKeyUp(KeyUpEvent event) {
-        final boolean inputValid = isInputValid();
-        footer.getOkButton().setEnabled(inputValid);
-
-        if (!inputValid) {
-            if (validator == null) {
-                showErrorHint(localizationConstant.validationErrorMessage());
-            } else {
-                final InputValidator.Violation violation = validator.validate(value.getValue());
-                if (violation != null) {
-                    final String message = violation.getMessage();
-                    showErrorHint(message != null ? message : localizationConstant.validationErrorMessage());
-                } else {
-                    showErrorHint(localizationConstant.validationErrorMessage());
-                }
-            }
-        } else {
-            hideErrorHint();
-        }
-    }
-
-    private boolean isInputValid() {
-        if (value.getValue().trim().isEmpty()) {
-            return false;
-        }
-        if (validator != null) {
-            final InputValidator.Violation violation = validator.validate(value.getValue());
-            return violation == null;
-        }
-        return true;
+        delegate.inputValueChanged();
     }
 
     /** The UI binder interface for this components. */

@@ -571,7 +571,7 @@ public class BuildQueue {
     public void start() {
         if (started.compareAndSet(false, true)) {
             executor = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
-                                              new ThreadFactoryBuilder().setNameFormat("BuildQueue-").setDaemon(true).build()) {
+                                              new ThreadFactoryBuilder().setNameFormat("BuildQueue-[%d]").setDaemon(true).build()) {
                 @Override
                 protected void afterExecute(Runnable runnable, Throwable error) {
                     super.afterExecute(runnable, error);
@@ -588,7 +588,7 @@ public class BuildQueue {
                     }
                 }
             };
-            scheduler = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder().setNameFormat("BuildQueueScheduler-")
+            scheduler = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder().setNameFormat("BuildQueueScheduler-%d")
                                                                                              .setDaemon(true).build());
             scheduler.scheduleAtFixedRate(new Runnable() {
                 @Override

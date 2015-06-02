@@ -19,7 +19,10 @@ import org.eclipse.che.api.vfs.server.VirtualFileFilter;
 import org.eclipse.che.api.vfs.server.util.MediaTypeFilter;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.core.SimpleAnalyzer;
+import org.apache.lucene.analysis.Tokenizer;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.core.LowerCaseFilter;
+import org.apache.lucene.analysis.core.WhitespaceTokenizer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
@@ -74,7 +77,14 @@ public abstract class LuceneSearcher implements Searcher {
     }
 
     protected Analyzer makeAnalyzer() {
-        return new SimpleAnalyzer();
+        return new Analyzer() {
+			@Override
+			protected TokenStreamComponents createComponents(String fieldName) {
+				Tokenizer tokenizer = new WhitespaceTokenizer();
+				TokenStream filter = new LowerCaseFilter(tokenizer);
+				return new TokenStreamComponents(tokenizer, filter);
+			}
+		};
     }
 
     protected abstract Directory makeDirectory() throws ServerException;
@@ -218,13 +228,15 @@ public abstract class LuceneSearcher implements Searcher {
     }
 
     @Override
-    public final void delete(String path) throws ServerException {
-        doDelete(new Term("path", path));
-    }
-
-    protected void doDelete(Term deleteTerm) throws ServerException {
+    public final void delete(String path, boolean isFile) throws ServerException {
         try {
-            getIndexWriter().deleteDocuments(new PrefixQuery(deleteTerm));
+            if (isFile) {
+                Term term = new Term("path", path);
+                getIndexWriter().deleteDocuments(term);
+            } else {
+                Term term = new Term("path", path + "/");
+                getIndexWriter().deleteDocuments(new PrefixQuery(term));
+            }
         } catch (OutOfMemoryError oome) {
             close();
             throw oome;

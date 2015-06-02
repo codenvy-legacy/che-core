@@ -79,7 +79,7 @@ public class SourcesManagerImpl implements SourcesManager {
         tasks = new ConcurrentHashMap<>();
         projectKeyHolder = new AtomicReference<>();
         executor = Executors.newSingleThreadScheduledExecutor(
-                new ThreadFactoryBuilder().setNameFormat(getClass().getSimpleName() + "_FileCleaner").setDaemon(true).build());
+                new ThreadFactoryBuilder().setNameFormat(getClass().getSimpleName() + "-FileCleaner-%d").setDaemon(true).build());
         listeners = new CopyOnWriteArraySet<>();
     }
 

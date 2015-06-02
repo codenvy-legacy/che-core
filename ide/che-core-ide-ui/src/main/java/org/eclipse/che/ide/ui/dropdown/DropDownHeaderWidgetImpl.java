@@ -69,7 +69,7 @@ public class DropDownHeaderWidgetImpl extends Composite implements ClickHandler,
     private String selectedName;
 
     @AssistedInject
-    public DropDownHeaderWidgetImpl(Resources resources, DropDownListMenu dropDownListMenu, @Nonnull @Assisted String listId) {
+    public DropDownHeaderWidgetImpl(DropDownListMenu dropDownListMenu, @Nonnull @Assisted String listId) {
         this.dropDownListMenu = dropDownListMenu;
         this.listId = listId;
 

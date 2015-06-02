@@ -332,6 +332,12 @@ public class RenameItemAction extends Action {
                     public String getMessage() {
                         return localization.invalidName();
                     }
+
+                    @Nullable
+                    @Override
+                    public String getCorrectedValue() {
+                        return null;
+                    }
                 };
             }
             return null;
@@ -348,6 +354,12 @@ public class RenameItemAction extends Action {
                     public String getMessage() {
                         return localization.invalidName();
                     }
+
+                    @Nullable
+                    @Override
+                    public String getCorrectedValue() {
+                        return null;
+                    }
                 };
             }
             return null;
@@ -358,11 +370,19 @@ public class RenameItemAction extends Action {
         @Nullable
         @Override
         public Violation validate(String value) {
-            if (!NameUtils.checkProjectName(value)) {
+            final String correctValue = value.contains(" ") ? value.replaceAll(" ", "-") : null;
+            final String errormessage = !NameUtils.checkFileName(value) ? localization.invalidName() : null;
+            if (correctValue != null || errormessage != null) {
                 return new Violation() {
                     @Override
                     public String getMessage() {
-                        return localization.invalidName();
+                        return errormessage;
+                    }
+
+                    @Nullable
+                    @Override
+                    public String getCorrectedValue() {
+                        return correctValue;
                     }
                 };
             }
