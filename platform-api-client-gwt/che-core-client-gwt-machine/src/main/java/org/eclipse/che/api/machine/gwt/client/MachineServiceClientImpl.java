@@ -47,10 +47,11 @@ import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
  * Implementation for {@link MachineServiceClient}.
  *
  * @author Artem Zatsarynnyy
+ * @author Dmitry Shnurenko
  */
 public class MachineServiceClientImpl implements MachineServiceClient {
-    private final String workspaceId;
-    private final DtoFactory dtoFactory;
+    private final String                 workspaceId;
+    private final DtoFactory             dtoFactory;
     private final DtoUnmarshallerFactory dtoUnmarshallerFactory;
     private final AsyncRequestFactory    asyncRequestFactory;
     private final AsyncRequestLoader     loader;
@@ -178,6 +179,29 @@ public class MachineServiceClientImpl implements MachineServiceClient {
                            .header(ACCEPT, APPLICATION_JSON)
                            .loader(loader, "Getting info about bound machines...")
                            .send(newCallback(callback, dtoUnmarshallerFactory.newArrayUnmarshaller(MachineDescriptor.class)));
+    }
+
+    @Override
+    public Promise<List<ProcessDescriptor>> getProcesses(@Nonnull final String machineId) {
+        return newPromise(new RequestCall<Array<ProcessDescriptor>>() {
+            @Override
+            public void makeCall(AsyncCallback<Array<ProcessDescriptor>> callback) {
+                final String url = baseHttpUrl + "/" + machineId + "/process";
+                asyncRequestFactory.createGetRequest(url)
+                                   .header(ACCEPT, APPLICATION_JSON)
+                                   .loader(loader, "Getting machine processes...")
+                                   .send(newCallback(callback, dtoUnmarshallerFactory.newArrayUnmarshaller(ProcessDescriptor.class)));
+            }
+        }).then(new Function<Array<ProcessDescriptor>, List<ProcessDescriptor>>() {
+            @Override
+            public List<ProcessDescriptor> apply(Array<ProcessDescriptor> arg) throws FunctionException {
+                final List<ProcessDescriptor> descriptors = new ArrayList<>();
+                for (ProcessDescriptor descriptor : arg.asIterable()) {
+                    descriptors.add(descriptor);
+                }
+                return descriptors;
+            }
+        });
     }
 
     @Override
