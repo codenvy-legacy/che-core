@@ -22,6 +22,7 @@ import java.util.List;
  * Client for Machine API.
  *
  * @author Artem Zatsarynnyy
+ * @author Dmitry Shnurenko
  */
 public interface MachineServiceClient {
 
@@ -71,6 +72,14 @@ public interface MachineServiceClient {
      *         if {@code projectPath} is not {@code null} - returns machines which bound to the specified project
      */
     Promise<List<MachineDescriptor>> getMachines(@Nullable String projectPath);
+
+    /**
+     * Find processes related to the specified machine.
+     *
+     * @param machineId
+     *         machine id which allows defines needed machine
+     */
+    Promise<List<ProcessDescriptor>> getProcesses(@Nonnull String machineId);
 
     /**
      * Destroy machine with the specified ID.
