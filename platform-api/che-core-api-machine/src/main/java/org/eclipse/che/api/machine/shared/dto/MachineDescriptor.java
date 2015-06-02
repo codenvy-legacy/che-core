@@ -98,6 +98,12 @@ public interface MachineDescriptor extends Hyperlinks {
 
     MachineDescriptor withServers(Map<String, ServerDescriptor> exposedPorts);
 
+    boolean isWorkspaceBound();
+
+    void setWorkspaceBound(boolean isWorkspaceBound);
+
+    MachineDescriptor withWorkspaceBound(boolean isWorkspaceBound);
+
     @Override
     MachineDescriptor withLinks(List<Link> links);
 }

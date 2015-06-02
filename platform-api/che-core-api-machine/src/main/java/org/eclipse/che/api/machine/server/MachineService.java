@@ -377,6 +377,7 @@ public class MachineService {
                                                               .withState(machine.getState())
                                                               .withOwner(machine.getOwner())
                                                               .withWorkspaceId(machine.getWorkspaceId())
+                                                              .withWorkspaceBound(machine.isWorkspaceBound())
                                                               .withProjects(projectDescriptors);
 
         if (machine.getInstance() != null) {
