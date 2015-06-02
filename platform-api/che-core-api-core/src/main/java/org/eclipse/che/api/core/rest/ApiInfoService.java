@@ -45,7 +45,7 @@ import java.util.jar.Manifest;
 public class ApiInfoService {
     private static final Logger LOG = LoggerFactory.getLogger(ApiInfoService.class);
 
-    private volatile ApiInfo        apiInfo;
+    private volatile ApiInfo apiInfo;
 
     @OPTIONS
     public ApiInfo info() throws ServerException {
@@ -81,12 +81,12 @@ public class ApiInfoService {
     @GET
     @Produces({MediaType.APPLICATION_JSON})
     public RestServicesList.RootResourcesList listJSON(@Context ServletContext context) {
-        return rootResources(context);
+        ResourceBinder binder = (ResourceBinder)context.getAttribute(ResourceBinder.class.getName());
+        return rootResources(binder);
     }
 
-    protected RestServicesList.RootResourcesList rootResources(ServletContext servletContext) {
-        ResourceBinder binder = (ResourceBinder)servletContext.getAttribute(ResourceBinder.class.getName());
-        List<ObjectFactory<AbstractResourceDescriptor>> l = binder.getResources();
+    protected RestServicesList.RootResourcesList rootResources(ResourceBinder resourceBinder) {
+        List<ObjectFactory<AbstractResourceDescriptor>> l = resourceBinder.getResources();
         List<RestServicesList.RootResource> resources = new ArrayList<>(l.size());
         for (ObjectFactory<AbstractResourceDescriptor> om : l) {
             AbstractResourceDescriptor descriptor = om.getObjectModel();
