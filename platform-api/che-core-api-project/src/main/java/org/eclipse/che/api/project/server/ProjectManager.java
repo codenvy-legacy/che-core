@@ -145,6 +145,29 @@ public interface ProjectManager {
             String> options, String visibility)
             throws ConflictException, ForbiddenException, ServerException, NotFoundException;
 
+    /**
+     * Verify resource is project module by path
+     * @param workspace
+     * @param projectPath
+     * @param path for checking
+     * @return true if resource is module, false otherwise
+     * @throws ServerException
+     * @throws ForbiddenException
+     */
+    boolean isModule(String workspace, String projectPath, String path) throws ServerException, ForbiddenException;
+
+    /**
+     * Updates module name
+     * @param workspaceName workspace name
+     * @param projectPath path to project
+     * @param modulePath path to module
+     * @param newName new module name
+     * @throws ServerException
+     * @throws ForbiddenException
+     * @throws ConflictException
+     */
+    void updateModuleName(String workspaceName, String projectPath, String modulePath, String newName) throws ServerException, ForbiddenException, ConflictException;
+
     List<SourceEstimation> resolveSources(String workspace, String path, boolean transientOnly) throws ServerException, ForbiddenException,
             NotFoundException, ValueStorageException, ProjectTypeConstraintException;
 
