@@ -193,7 +193,6 @@ public class RecipeService extends Service {
     @Path("/{id}")
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
-    @GenerateLink(rel = LINK_REL_UPDATE_RECIPE)
     @RolesAllowed({"user", "system/admin", "system/manager"})
     public RecipeDescriptor updateRecipe(@PathParam("id") String id, RecipeUpdate update) throws ApiException {
         final Recipe recipe = recipeDao.getById(id);

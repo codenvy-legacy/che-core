@@ -21,6 +21,12 @@ public class Constants {
     public static final String LINK_REL_GET_RECIPES_BY_CREATOR = "get created recipes";
     public static final String LINK_REL_SEARCH_RECIPES         = "search recipes";
     public static final String LINK_REL_UPDATE_RECIPE          = "update recipe";
+    public static final String LINK_REL_CREATE_COMMAND         = "create command";
+    public static final String LINK_REL_REMOVE_COMMAND         = "remove command";
+    public static final String LINK_REL_GET_COMMAND            = "get command";
+    public static final String LINK_REL_GET_ALL_COMMANDS       = "get workspace commands";
+    public static final String LINK_REL_UPDATE_COMMAND         = "update command";
 
-    private Constants() { }
+    private Constants() {
+    }
 }
