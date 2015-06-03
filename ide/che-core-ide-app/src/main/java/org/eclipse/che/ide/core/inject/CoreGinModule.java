@@ -262,6 +262,12 @@ public class CoreGinModule extends AbstractGinModule {
         componentMultibinder.addBinding().to(ActiveFilePersistenceComponent.class);
         componentMultibinder.addBinding().to(OpenedNodesPersistenceComponent.class);
         componentMultibinder.addBinding().to(ActiveNodePersistentComponent.class);
+
+        GinMapBinder<String, PersistenceComponent> projectTreeComponentBinder =
+                GinMapBinder.newMapBinder(binder(), String.class, PersistenceComponent.class);
+        projectTreeComponentBinder.addBinding("openedNodes").to(OpenedNodesPersistenceComponent.class);
+        projectTreeComponentBinder.addBinding("activeNode").to(ActiveNodePersistentComponent.class);
+        projectTreeComponentBinder.addBinding("showHiddenFiles").to(ShowHiddenFilesPersistenceComponent.class);
     }
 
     private void configureComponents() {
