@@ -10,6 +10,28 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.server;
 
+import static org.testng.Assert.*;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.Application;
+
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
@@ -20,6 +42,7 @@ import org.eclipse.che.api.core.rest.CodenvyJsonProvider;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.core.util.LineConsumerFactory;
 import org.eclipse.che.api.core.util.ValueHolder;
+import org.eclipse.che.api.project.server.Project.Modules;
 import org.eclipse.che.api.project.server.handlers.CreateProjectHandler;
 import org.eclipse.che.api.project.server.handlers.GetItemHandler;
 import org.eclipse.che.api.project.server.handlers.GetModulesHandler;
@@ -79,28 +102,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Application;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
-
 /**
  * @author andrew00x
  * @author Eugene Voevodin
@@ -112,7 +113,7 @@ public class ProjectServiceTest {
     private static final Set<String> vfsUserGroups = new LinkedHashSet<>(Arrays.asList("workspace/developer"));
     private static final String      workspace     = "my_ws";
 
-    private ProjectManager          pm;
+    private DefaultProjectManager          pm;
     private ResourceLauncher        launcher;
     private ProjectImporterRegistry importerRegistry;
     private ProjectHandlerRegistry  phRegistry;
@@ -222,12 +223,36 @@ public class ProjectServiceTest {
         env.setWorkspaceName(workspace);
         env.setWorkspaceId(workspace);
     }
+    
+    @Test
+    public void testProjectFolderRename() throws Exception {
+    	Project project = pm.getProject(workspace, "my_project");
+    	VirtualFileEntry projectFolder = project.getBaseFolder().getChild(".che");
+    	assertNotNull(projectFolder);
+    	projectFolder.rename(".codenvy");
+    	projectFolder = project.getBaseFolder().getChild(".che");
+    	assertNull(projectFolder);
+    	// This next getProject() call should cause the ".codenvy" folder to revert to being called ".che"
+    	project = pm.getProject(workspace, "my_project");
+    	projectFolder = project.getBaseFolder().getChild(".che");
+    	assertNotNull(projectFolder);
+    	
+    	pm.addModule(workspace, "my_project", "module1", new ProjectConfig("my test project", "my_project_type",
+                new HashMap<String, AttributeValue>(), null, null, null), null, null);
+    	Modules modules = project.getModules();
+    	assertFalse(modules.get().isEmpty());
+    	VirtualFileEntry moduleConfDir = project.getBaseFolder().getChild("module1/"+Constants.CODENVY_DIR);
+    	assertNotNull(moduleConfDir);
+    	moduleConfDir.rename(".codenvy");
+    	assertNotNull(pm.getProject(workspace, "my_project/module1"));
+    	
+    }
 
     @Test
     @SuppressWarnings("unchecked")
     public void testGetProjects() throws Exception {
 
-        List p = pm.getProjects(workspace);
+        List<Project> p = pm.getProjects(workspace);
 
         assertEquals(p.size(), 1);
 
@@ -2459,7 +2484,7 @@ public class ProjectServiceTest {
     @Test
     public void testGetRunnerEnvironments() throws Exception {
         Project myProject = pm.getProject(workspace, "my_project");
-        FolderEntry environmentsFolder = myProject.getBaseFolder().createFolder(".codenvy/runners/environments");
+        FolderEntry environmentsFolder = myProject.getBaseFolder().createFolder(Constants.CODENVY_DIR+"/runners/environments");
         environmentsFolder.createFolder("my_env_1");
         environmentsFolder.createFolder("my_env_2");
         ContainerResponse response = launcher.service("GET",
