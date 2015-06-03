@@ -29,8 +29,12 @@ import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.event.OpenProjectEvent;
+import org.eclipse.che.ide.api.event.PersistProjectTreeStateHandler;
+import org.eclipse.che.ide.api.event.PersistProjectTreeStateEvent;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.ProjectActionHandler;
+import org.eclipse.che.ide.api.event.RestoreProjectTreeStateHandler;
+import org.eclipse.che.ide.api.event.RestoreProjectTreeStateEvent;
 import org.eclipse.che.ide.api.event.WindowActionEvent;
 import org.eclipse.che.ide.api.event.WindowActionHandler;
 import org.eclipse.che.ide.api.preferences.PreferencesManager;
@@ -46,7 +50,9 @@ import org.eclipse.che.ide.util.loging.Log;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -63,17 +69,19 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
 
     private AppState appState;
 
-    private final Set<PersistenceComponent> persistenceComponents;
-    private final EventBus                  eventBus;
-    private final PreferencesManager        preferencesManager;
-    private final AppContext                appContext;
-    private final DtoFactory                dtoFactory;
-    private final ActionManager             actionManager;
-    private final PresentationFactory       presentationFactory;
-    private final ProjectServiceClient      projectServiceClient;
+    private final Set<PersistenceComponent>         persistenceComponents;
+    private final Map<String, PersistenceComponent> projectTreePersistenceComponents;
+    private final EventBus                          eventBus;
+    private final PreferencesManager                preferencesManager;
+    private final AppContext                        appContext;
+    private final DtoFactory                        dtoFactory;
+    private final ActionManager                     actionManager;
+    private final PresentationFactory               presentationFactory;
+    private final ProjectServiceClient              projectServiceClient;
 
     @Inject
     public AppStateManager(Set<PersistenceComponent> persistenceComponents,
+                           Map<String, PersistenceComponent> projectTreePersistenceComponents,
                            EventBus eventBus,
                            PreferencesManager preferencesManager,
                            AppContext appContext,
@@ -82,6 +90,7 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
                            PresentationFactory presentationFactory,
                            ProjectServiceClient projectServiceClient) {
         this.persistenceComponents = persistenceComponents;
+        this.projectTreePersistenceComponents = projectTreePersistenceComponents;
         this.eventBus = eventBus;
         this.preferencesManager = preferencesManager;
         this.appContext = appContext;
@@ -89,6 +98,26 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
         this.actionManager = actionManager;
         this.presentationFactory = presentationFactory;
         this.projectServiceClient = projectServiceClient;
+
+        bind();
+    }
+
+    private void bind() {
+        eventBus.addHandler(PersistProjectTreeStateEvent.TYPE, new PersistProjectTreeStateHandler() {
+            @Override
+            public void onPersist(PersistProjectTreeStateEvent event) {
+                persistCurrentProjectState(projectTreePersistenceComponents.values());
+            }
+        });
+
+        eventBus.addHandler(RestoreProjectTreeStateEvent.TYPE, new RestoreProjectTreeStateHandler() {
+            @Override
+            public void onRestore(RestoreProjectTreeStateEvent event) {
+                final String projectPath = event.getProjectPath();
+                final ProjectState projectState = appState.getProjects().get(projectPath);
+                restoreCurrentProjectState(projectState);
+            }
+        });
     }
 
     @Override
@@ -107,7 +136,7 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
 
             recentProject.setPath(projectPath);
 
-            persistCurrentProjectState();
+            persistCurrentProjectState(persistenceComponents);
         }
         writeStateToPreferences();
     }
@@ -133,7 +162,7 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
 
     @Override
     public void onProjectClosing(ProjectActionEvent event) {
-        persistCurrentProjectState();
+        persistCurrentProjectState(persistenceComponents);
         writeStateToPreferences();
     }
 
@@ -269,7 +298,7 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
     }
 
     /** Persist state of the currently opened project. */
-    private void persistCurrentProjectState() {
+    private void persistCurrentProjectState(Collection<PersistenceComponent> persistenceComponents) {
         final CurrentProject currentProject = appContext.getCurrentProject();
         if (currentProject == null) {
             return;
