@@ -1,5 +1,3 @@
-package org.eclipse.che.api.machine.shared;
-
 /*******************************************************************************
  * Copyright (c) 2012-2015 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
@@ -10,6 +8,8 @@ package org.eclipse.che.api.machine.shared;
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
+package org.eclipse.che.api.machine.shared;
+
 
 /**
  * Command that can be used to create {@link Process} in a machine
