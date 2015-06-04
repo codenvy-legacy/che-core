@@ -789,13 +789,28 @@ public class ProjectService extends Service {
                            @QueryParam("name") String newName,
                            @ApiParam(value = "New media type")
                            @QueryParam("mediaType") String newMediaType)
-            throws NotFoundException, ConflictException, ForbiddenException, ServerException {
+            throws NotFoundException, ConflictException, ForbiddenException, ServerException, IOException {
         final VirtualFileEntry entry = getVirtualFileEntry(workspace, path);
         if (entry.isFile() && newMediaType != null) {
             // Use the same rules as in method createFile to make client side simpler.
             ((FileEntry)entry).rename(newName, newMediaType);
         } else {
             entry.rename(newName);
+
+            String projectName = projectPath(path);
+
+            /* We should not edit Modules if resource to rename is project */
+            if (!projectName.equals(path) && entry.isFolder() && ((FolderEntry)entry).isProjectFolder()) {
+                Project project = projectManager.getProject(workspace, projectName);
+
+                /* We need module path without projectName, f.e projectName/module1/oldModuleName -> module1/oldModuleName */
+                String oldModulePath = path.replaceFirst(projectName + "/", "");
+                /* Calculates new module path, f.e module1/oldModuleName -> module1/newModuleName */
+                String newModulePath = oldModulePath.substring(0, oldModulePath.lastIndexOf("/") + 1) + newName;
+
+                project.getModules().remove(oldModulePath);
+                project.getModules().add(newModulePath);
+            }
         }
         final URI location = getServiceContext().getServiceUriBuilder()
                                                 .path(getClass(), entry.isFile() ? "getFile" : "getChildren")
@@ -1525,6 +1540,10 @@ public class ProjectService extends Service {
     }
 
     private String projectPath(String path) {
-        return path.substring(0, path.indexOf("/"));
+        int end = path.indexOf("/");
+        if (end == -1) {
+            return path;
+        }
+        return path.substring(0, end);
     }
 }
