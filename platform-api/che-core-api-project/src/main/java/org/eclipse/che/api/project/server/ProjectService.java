@@ -317,8 +317,11 @@ public class ProjectService extends Service {
 
         for (String modulePath : modulePaths) {
             Project module = projectManager.getProject(workspace, modulePath);
-            modules.add(DtoConverter.toDescriptorDto2(module,
-                                                      getServiceContext().getServiceUriBuilder(), projectManager.getProjectTypeRegistry()));
+            if (module != null) {
+                modules.add(DtoConverter.toDescriptorDto2(module,
+                                                          getServiceContext().getServiceUriBuilder(),
+                                                          projectManager.getProjectTypeRegistry()));
+            }
         }
         return modules;
     }
