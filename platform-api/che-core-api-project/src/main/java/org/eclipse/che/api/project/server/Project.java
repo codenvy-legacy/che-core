@@ -391,8 +391,10 @@ public class Project {
         public void remove(String path) throws ForbiddenException, ServerException, ConflictException {
 
             Set<String> all = read();
-            all.remove(path);
-            write(all);
+            if (all.contains(path)) {
+                all.remove(path);
+                write(all);
+            }
 
         }
 
