@@ -26,7 +26,11 @@ import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.event.OpenProjectEvent;
+import org.eclipse.che.ide.api.event.PersistProjectTreeStateEvent;
+import org.eclipse.che.ide.api.event.PersistProjectTreeStateHandler;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
+import org.eclipse.che.ide.api.event.RestoreProjectTreeStateEvent;
+import org.eclipse.che.ide.api.event.RestoreProjectTreeStateHandler;
 import org.eclipse.che.ide.api.event.WindowActionEvent;
 import org.eclipse.che.ide.api.preferences.PreferencesManager;
 import org.eclipse.che.ide.dto.DtoFactory;
@@ -54,6 +58,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -80,21 +85,23 @@ public class AppStateManagerTest {
     private Map<String, ProjectState> stateMap;
 
     @Mock
-    private Set<PersistenceComponent> persistenceComponents;
+    private Set<PersistenceComponent>         persistenceComponents;
     @Mock
-    private EventBus                  eventBus;
+    private Map<String, PersistenceComponent> projectTreePersistenceComponents;
     @Mock
-    private PreferencesManager        preferencesManager;
+    private EventBus                          eventBus;
     @Mock
-    private AppContext                appContext;
+    private PreferencesManager                preferencesManager;
     @Mock
-    private DtoFactory                dtoFactory;
+    private AppContext                        appContext;
     @Mock
-    private ActionManager             actionManager;
+    private DtoFactory                        dtoFactory;
     @Mock
-    private PresentationFactory       presentationFactory;
+    private ActionManager                     actionManager;
     @Mock
-    private ProjectServiceClient      projectServiceClient;
+    private PresentationFactory               presentationFactory;
+    @Mock
+    private ProjectServiceClient              projectServiceClient;
 
     @Mock
     private AppState             appState;
@@ -164,6 +171,7 @@ public class AppStateManagerTest {
         when(dtoFactory.toJson(eq(appState))).thenReturn(SERIALIZED_STATE);
 
         appStateManager = new AppStateManager(persistenceComponents,
+                                              projectTreePersistenceComponents,
                                               eventBus,
                                               preferencesManager,
                                               appContext,
@@ -178,6 +186,8 @@ public class AppStateManagerTest {
     public void shouldAddEventHandlers() {
         verify(eventBus).addHandler(eq(WindowActionEvent.TYPE), eq(appStateManager));
         verify(eventBus).addHandler(eq(ProjectActionEvent.TYPE), eq(appStateManager));
+        verify(eventBus).addHandler(eq(PersistProjectTreeStateEvent.TYPE), (PersistProjectTreeStateHandler)anyObject());
+        verify(eventBus).addHandler(eq(RestoreProjectTreeStateEvent.TYPE), (RestoreProjectTreeStateHandler)anyObject());
     }
 
     @Test
