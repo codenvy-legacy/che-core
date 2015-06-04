@@ -11,7 +11,7 @@
 package org.eclipse.che.api.machine.server.spi;
 
 import org.eclipse.che.api.core.NotFoundException;
-import org.eclipse.che.api.machine.server.MachineException;
+import org.eclipse.che.api.machine.server.exception.MachineException;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
 
 import java.util.List;

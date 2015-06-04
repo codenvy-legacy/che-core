@@ -682,6 +682,7 @@ public class MemoryVirtualFile implements VirtualFile {
     public VirtualFile moveTo(VirtualFile parent, final String lockToken) throws ConflictException, ForbiddenException, ServerException {
         checkExist();
         ((MemoryVirtualFile)parent).checkExist();
+        boolean isFile = isFile();
         if (isRoot()) {
             throw new ForbiddenException("Unable move root folder. ");
         }
@@ -748,7 +749,7 @@ public class MemoryVirtualFile implements VirtualFile {
         SearcherProvider searcherProvider = mountPoint.getSearcherProvider();
         if (searcherProvider != null) {
             try {
-                searcherProvider.getSearcher(mountPoint, true).delete(myPath);
+                searcherProvider.getSearcher(mountPoint, true).delete(myPath, isFile);
             } catch (ServerException e) {
                 LOG.error(e.getMessage(), e);
             }
@@ -767,6 +768,7 @@ public class MemoryVirtualFile implements VirtualFile {
             throws ForbiddenException, ConflictException, ServerException {
         checkExist();
         checkName(newName);
+        boolean isFile = isFile();
         if (isRoot()) {
             throw new ForbiddenException("We were unable to rename a root folder.");
         }
@@ -835,7 +837,7 @@ public class MemoryVirtualFile implements VirtualFile {
         SearcherProvider searcherProvider = mountPoint.getSearcherProvider();
         if (searcherProvider != null) {
             try {
-                searcherProvider.getSearcher(mountPoint, true).delete(myPath);
+                searcherProvider.getSearcher(mountPoint, true).delete(myPath, isFile);
             } catch (ServerException e) {
                 LOG.error(e.getMessage(), e);
             }
@@ -852,6 +854,7 @@ public class MemoryVirtualFile implements VirtualFile {
     @Override
     public void delete(final String lockToken) throws ForbiddenException, ServerException {
         checkExist();
+        boolean isFile = isFile();
         if (isRoot()) {
             throw new ForbiddenException("Unable delete root folder. ");
         }
@@ -916,7 +919,7 @@ public class MemoryVirtualFile implements VirtualFile {
         SearcherProvider searcherProvider = mountPoint.getSearcherProvider();
         if (searcherProvider != null) {
             try {
-                searcherProvider.getSearcher(mountPoint, true).delete(myPath);
+                searcherProvider.getSearcher(mountPoint, true).delete(myPath, isFile);
             } catch (ServerException e) {
                 LOG.error(e.getMessage(), e);
             }

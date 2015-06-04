@@ -244,7 +244,7 @@ public class RunQueue {
     public void start() {
         if (started.compareAndSet(false, true)) {
             executor = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
-                                              new ThreadFactoryBuilder().setNameFormat("RunQueue-").setDaemon(true).build()) {
+                                              new ThreadFactoryBuilder().setNameFormat("RunQueue-[%d]").setDaemon(true).build()) {
                 @Override
                 protected void afterExecute(Runnable runnable, Throwable error) {
                     boolean isInterrupted = Thread.interrupted();
@@ -291,7 +291,7 @@ public class RunQueue {
                     }
                 }
             };
-            cleanScheduler = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder().setNameFormat("RunQueueScheduler-")
+            cleanScheduler = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder().setNameFormat("RunQueueScheduler-%d")
                                                                                                   .setDaemon(true).build());
             cleanScheduler.scheduleAtFixedRate(new Runnable() {
                 @Override

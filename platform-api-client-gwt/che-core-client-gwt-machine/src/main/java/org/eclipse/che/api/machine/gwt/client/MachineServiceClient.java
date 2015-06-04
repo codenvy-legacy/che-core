@@ -13,15 +13,16 @@ package org.eclipse.che.api.machine.gwt.client;
 import org.eclipse.che.api.machine.shared.dto.MachineDescriptor;
 import org.eclipse.che.api.machine.shared.dto.ProcessDescriptor;
 import org.eclipse.che.api.promises.client.Promise;
-import org.eclipse.che.ide.collections.Array;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * Client for Machine API.
  *
  * @author Artem Zatsarynnyy
+ * @author Dmitry Shnurenko
  */
 public interface MachineServiceClient {
 
@@ -34,12 +35,15 @@ public interface MachineServiceClient {
      *         type of recipe (e.g., Dockerfile)
      * @param recipeScript
      *         recipe script
+     * @param bindWorkspace
+     *         {@code true} if workspace should be bound, {@code false} - otherwise
      * @param outputChannel
      *         websocket chanel where machine logs should be put
      */
     Promise<MachineDescriptor> createMachineFromRecipe(@Nonnull String machineType,
                                                        @Nonnull String recipeType,
                                                        @Nonnull String recipeScript,
+                                                       boolean bindWorkspace,
                                                        @Nullable String outputChannel);
 
     /**
@@ -53,12 +57,29 @@ public interface MachineServiceClient {
     Promise<MachineDescriptor> createMachineFromSnapshot(@Nonnull String snapshotId, @Nullable String outputChannel);
 
     /**
-     * Find machines connected with the specified project.
+     * Get machine information by it's id.
+     *
+     * @param machineId
+     *         ID of the machine
+     */
+    Promise<MachineDescriptor> getMachine(@Nonnull String machineId);
+
+    /**
+     * Find machines bound to the workspace/project.
      *
      * @param projectPath
-     *         project binding
+     *         project binding. If {@code projectPath} is {@code null} returns machines which bound to the current workspace,
+     *         if {@code projectPath} is not {@code null} - returns machines which bound to the specified project
      */
-    Promise<Array<MachineDescriptor>> getMachines(@Nullable String projectPath);
+    Promise<List<MachineDescriptor>> getMachines(@Nullable String projectPath);
+
+    /**
+     * Find processes related to the specified machine.
+     *
+     * @param machineId
+     *         machine id which allows defines needed machine
+     */
+    Promise<List<ProcessDescriptor>> getProcesses(@Nonnull String machineId);
 
     /**
      * Destroy machine with the specified ID.

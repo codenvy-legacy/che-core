@@ -20,14 +20,14 @@ import org.eclipse.che.api.core.rest.annotations.GenerateLink;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.core.util.LinksHelper;
 import org.eclipse.che.api.machine.server.dao.RecipeDao;
-import org.eclipse.che.api.machine.shared.Group;
-import org.eclipse.che.api.machine.shared.Permissions;
-import org.eclipse.che.api.machine.shared.Recipe;
-import org.eclipse.che.api.machine.shared.dto.GroupDescriptor;
-import org.eclipse.che.api.machine.shared.dto.NewRecipe;
-import org.eclipse.che.api.machine.shared.dto.PermissionsDescriptor;
-import org.eclipse.che.api.machine.shared.dto.RecipeDescriptor;
-import org.eclipse.che.api.machine.shared.dto.RecipeUpdate;
+import org.eclipse.che.api.machine.shared.recipe.Group;
+import org.eclipse.che.api.machine.shared.recipe.Permissions;
+import org.eclipse.che.api.machine.shared.recipe.Recipe;
+import org.eclipse.che.api.machine.shared.dto.recipe.GroupDescriptor;
+import org.eclipse.che.api.machine.shared.dto.recipe.NewRecipe;
+import org.eclipse.che.api.machine.shared.dto.recipe.PermissionsDescriptor;
+import org.eclipse.che.api.machine.shared.dto.recipe.RecipeDescriptor;
+import org.eclipse.che.api.machine.shared.dto.recipe.RecipeUpdate;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.eclipse.che.commons.user.User;
@@ -193,7 +193,6 @@ public class RecipeService extends Service {
     @Path("/{id}")
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
-    @GenerateLink(rel = LINK_REL_UPDATE_RECIPE)
     @RolesAllowed({"user", "system/admin", "system/manager"})
     public RecipeDescriptor updateRecipe(@PathParam("id") String id, RecipeUpdate update) throws ApiException {
         final Recipe recipe = recipeDao.getById(id);

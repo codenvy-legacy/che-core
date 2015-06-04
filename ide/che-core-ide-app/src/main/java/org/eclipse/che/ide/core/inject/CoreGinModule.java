@@ -210,18 +210,29 @@ import org.eclipse.che.ide.websocket.WebSocketUrl;
 import org.eclipse.che.ide.websocket.WebSocketUrlProvider;
 import org.eclipse.che.ide.workspace.PartStackPresenterFactory;
 import org.eclipse.che.ide.workspace.PartStackViewFactory;
-import org.eclipse.che.ide.workspace.WorkBenchViewImpl;
+import org.eclipse.che.ide.workspace.WorkBenchControllerFactory;
+import org.eclipse.che.ide.workspace.WorkBenchPartController;
+import org.eclipse.che.ide.workspace.WorkBenchPartControllerImpl;
 import org.eclipse.che.ide.workspace.WorkspacePresenter;
 import org.eclipse.che.ide.workspace.WorkspaceView;
 import org.eclipse.che.ide.workspace.WorkspaceViewImpl;
+import org.eclipse.che.ide.workspace.perspectives.general.Perspective;
+import org.eclipse.che.ide.workspace.perspectives.general.PerspectiveViewImpl;
+import org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective;
 
-/** @author Nikolay Zamosenchuk */
+/**
+ * @author Nikolay Zamosenchuk
+ * @author Dmitry Shnurenko
+ */
 @ExtensionGinModule
 public class CoreGinModule extends AbstractGinModule {
 
     /** {@inheritDoc} */
     @Override
     protected void configure() {
+        GinMultibinder.newSetBinder(binder(), Perspective.class).addBinding().to(ProjectPerspective.class);
+        install(new GinFactoryModuleBuilder().implement(WorkBenchPartController.class,
+                                                        WorkBenchPartControllerImpl.class).build(WorkBenchControllerFactory.class));
         // generic bindings
         bind(EventBus.class).to(SimpleEventBus.class).in(Singleton.class);
         bind(AsyncRequestLoader.class).to(IdeLoader.class).in(Singleton.class);
@@ -342,7 +353,7 @@ public class CoreGinModule extends AbstractGinModule {
         bind(PartStackUIResources.class).to(Resources.class).in(Singleton.class);
         // Views
         bind(WorkspaceView.class).to(WorkspaceViewImpl.class).in(Singleton.class);
-        bind(WorkBenchView.class).to(WorkBenchViewImpl.class).in(Singleton.class);
+        bind(WorkBenchView.class).to(PerspectiveViewImpl.class).in(Singleton.class);
         bind(MainMenuView.class).to(MainMenuViewImpl.class).in(Singleton.class);
         bind(StatusPanelGroupView.class).to(StatusPanelGroupViewImpl.class).in(Singleton.class);
 

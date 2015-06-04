@@ -1993,6 +1993,80 @@ public class ProjectServiceTest {
         Assert.assertTrue(names.contains("x/y"));
     }
 
+
+    @Test
+    public void testGetTreeWithDepthAndIncludeFiles() throws Exception {
+        Project myProject = pm.getProject(workspace, "my_project");
+        FolderEntry a = myProject.getBaseFolder().createFolder("a");
+        a.createFolder("b/c");
+        a.createFolder("x").createFile("test.txt", "test".getBytes(), "text/plain");
+        ContainerResponse response = launcher.service("GET",
+                                                      String.format("http://localhost:8080/api/project/%s/tree/my_project/a?depth=100&includeFiles=true",
+                                                                    workspace),
+                                                      "http://localhost:8080/api", null, null, null);
+        assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
+        TreeElement tree = (TreeElement)response.getEntity();
+        ItemReference a_node = tree.getNode();
+        assertEquals(a_node.getName(), "a");
+        List<TreeElement> children = tree.getChildren();
+        assertNotNull(children);
+        Set<String> names = new LinkedHashSet<>(4);
+        for (TreeElement subTree : children) {
+            ItemReference _node = subTree.getNode();
+            validateFolderLinks(_node);
+            String name = _node.getName();
+            names.add(name);
+            for (TreeElement subSubTree : subTree.getChildren()) {
+                ItemReference __node = subSubTree.getNode();
+                if (__node.getType().equals("folder")) {
+                	validateFolderLinks(__node);
+                } else if (__node.getType().equals("file")){
+                	validateFileLinks(__node);
+                }
+                names.add(name + "/" + __node.getName());
+            }
+        }
+        Assert.assertTrue(names.contains("b"));
+        Assert.assertTrue(names.contains("x"));
+        Assert.assertTrue(names.contains("b/c"));
+        Assert.assertTrue(names.contains("x/test.txt"));
+    }
+    
+    @Test
+    public void testGetTreeWithDepthAndIncludeFilesNoFiles() throws Exception {
+        Project myProject = pm.getProject(workspace, "my_project");
+        FolderEntry a = myProject.getBaseFolder().createFolder("a");
+        a.createFolder("b/c");
+        a.createFolder("x");
+        ContainerResponse response = launcher.service("GET",
+                                                      String.format("http://localhost:8080/api/project/%s/tree/my_project/a?depth=100&includeFiles=true",
+                                                                    workspace),
+                                                      "http://localhost:8080/api", null, null, null);
+        assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
+        TreeElement tree = (TreeElement)response.getEntity();
+        ItemReference a_node = tree.getNode();
+        assertEquals(a_node.getName(), "a");
+        List<TreeElement> children = tree.getChildren();
+        assertNotNull(children);
+        Set<String> names = new LinkedHashSet<>(4);
+        for (TreeElement subTree : children) {
+            ItemReference _node = subTree.getNode();
+            validateFolderLinks(_node);
+            String name = _node.getName();
+            names.add(name);
+            for (TreeElement subSubTree : subTree.getChildren()) {
+                ItemReference __node = subSubTree.getNode();
+                validateFolderLinks(__node);
+                names.add(name + "/" + __node.getName());
+            }
+        }
+        Assert.assertTrue(names.contains("b"));
+        Assert.assertTrue(names.contains("x"));
+        Assert.assertTrue(names.contains("b/c"));
+        Assert.assertFalse(names.contains("x/test.txt"));
+    }
+
+
     @Test
     public void testSwitchProjectVisibilityToPrivate() throws Exception {
         Project myProject = pm.getProject(workspace, "my_project");

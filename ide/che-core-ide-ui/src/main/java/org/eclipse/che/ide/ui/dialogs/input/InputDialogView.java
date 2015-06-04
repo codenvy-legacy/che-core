@@ -46,14 +46,6 @@ public interface InputDialogView {
     void setSelectionLength(int selectionEndIndex);
 
     /**
-     * Sets the {@link InputValidator} for validating the user's input.
-     *
-     * @param inputValidator
-     *         validator to use
-     */
-    void setValidator(InputValidator inputValidator);
-
-    /**
      * Show the validation error message.
      *
      * @param message
@@ -71,5 +63,11 @@ public interface InputDialogView {
 
         /** Defines what's done when the user clicks OK. */
         void accepted();
+
+        /** Performs any actions appropriate in response to the user having changed the input value. */
+        void inputValueChanged();
+
+        /** Performs any actions appropriate in response to the user having clicked the Enter key. */
+        void onEnterClicked();
     }
 }

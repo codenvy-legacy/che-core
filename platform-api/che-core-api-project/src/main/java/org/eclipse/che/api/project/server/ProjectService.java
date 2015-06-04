@@ -1151,6 +1151,19 @@ public class ProjectService extends Service {
         return VirtualFileSystemImpl.exportZipMultipart(folder.getVirtualFile(), in);
     }
 
+    @GET
+    @Path("/export/file/{path:.*}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response exportFile(@ApiParam(value = "Workspace ID", required = true)
+                               @PathParam("ws-id") String workspace,
+                               @ApiParam(value = "Path to resource to be imported")
+                               @PathParam("path") String path)
+            throws NotFoundException, ForbiddenException, ServerException {
+        final FileEntry file = asFile(workspace, path);
+        ContentStream content = file.getVirtualFile().getContent();
+        return VirtualFileSystemImpl.downloadFile(content);
+    }
+
     @ApiOperation(value = "Get project children items",
                   notes = "Request all children items for a project, such as files and folders",
                   response = ItemReference.class,
@@ -1201,14 +1214,16 @@ public class ProjectService extends Service {
                                @ApiParam(value = "Path to resource. Can be project or its folders", required = true)
                                @PathParam("parent") String path,
                                @ApiParam(value = "Tree depth. This parameter can be dropped. If not specified ?depth=1 is used by default")
-                               @DefaultValue("1") @QueryParam("depth") int depth)
+                               @DefaultValue("1") @QueryParam("depth") int depth,
+                               @ApiParam(value = "include children files (in addition to children folders). This parameter can be dropped. If not specified ?includeFiles=false is used by default")
+    						   @DefaultValue("false") @QueryParam("includeFiles") boolean includeFiles)
             throws NotFoundException, ForbiddenException, ServerException {
         final FolderEntry folder = asFolder(workspace, path);
         final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
         final DtoFactory dtoFactory = DtoFactory.getInstance();
         return dtoFactory.createDto(TreeElement.class)
                          .withNode(DtoConverter.toItemReferenceDto(folder, uriBuilder.clone()))
-                         .withChildren(getTree(folder, depth, uriBuilder, dtoFactory));
+                         .withChildren(getTree(folder, depth, includeFiles, uriBuilder, dtoFactory));
     }
 
     @ApiOperation(value = "Get file or folder",
@@ -1244,16 +1259,25 @@ public class ProjectService extends Service {
         return item;
     }
 
-    private List<TreeElement> getTree(FolderEntry folder, int depth, UriBuilder uriBuilder, DtoFactory dtoFactory) throws ServerException {
+    private List<TreeElement> getTree(FolderEntry folder, int depth, boolean includeFiles, UriBuilder uriBuilder, DtoFactory dtoFactory) throws ServerException {
         if (depth == 0) {
             return null;
         }
-        final List<FolderEntry> childFolders = folder.getChildFolders();
-        final List<TreeElement> nodes = new ArrayList<>(childFolders.size());
-        for (FolderEntry childFolder : childFolders) {
-            nodes.add(dtoFactory.createDto(TreeElement.class)
-                                .withNode(DtoConverter.toItemReferenceDto(childFolder, uriBuilder.clone()))
-                                .withChildren(getTree(childFolder, depth - 1, uriBuilder, dtoFactory)));
+        final List<? extends VirtualFileEntry> children;
+        
+        if (includeFiles) {
+        	children = folder.getChildFoldersFiles();        	
+        }else { 
+        	children = folder.getChildFolders();
+        }
+        
+        final List<TreeElement> nodes = new ArrayList<>(children.size());
+        for (VirtualFileEntry child : children) {
+        	if (child.isFolder()) {
+        		nodes.add(dtoFactory.createDto(TreeElement.class).withNode(DtoConverter.toItemReferenceDto((FolderEntry)child, uriBuilder.clone())).withChildren(getTree((FolderEntry)child, depth - 1, includeFiles, uriBuilder, dtoFactory)));
+        	} else { // child.isFile()
+        		nodes.add(dtoFactory.createDto(TreeElement.class).withNode(DtoConverter.toItemReferenceDto((FileEntry)child, uriBuilder.clone())));
+        	}
         }
         return nodes;
     }
@@ -1472,7 +1496,7 @@ public class ProjectService extends Service {
     private FolderEntry asFolder(String workspace, String path) throws ForbiddenException, NotFoundException, ServerException {
         final VirtualFileEntry entry = getVirtualFileEntry(workspace, path);
         if (!entry.isFolder()) {
-            throw new ForbiddenException(String.format("Item '%s' isn't a file. ", path));
+            throw new ForbiddenException(String.format("Item '%s' isn't a folder. ", path));
         }
         return (FolderEntry)entry;
     }

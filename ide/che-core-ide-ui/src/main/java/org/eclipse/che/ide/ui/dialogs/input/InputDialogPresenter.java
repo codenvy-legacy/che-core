@@ -10,13 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ui.dialogs.input;
 
+import org.eclipse.che.ide.ui.UILocalizationConstant;
 import org.eclipse.che.ide.ui.dialogs.CancelCallback;
 import org.eclipse.che.ide.ui.dialogs.InputCallback;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-
-import org.eclipse.che.ide.ui.dialogs.CancelCallback;
-import org.eclipse.che.ide.ui.dialogs.InputCallback;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -38,13 +36,18 @@ public class InputDialogPresenter implements InputDialog, InputDialogView.Action
     /** The callback used on cancel. */
     private final CancelCallback cancelCallback;
 
+    private final UILocalizationConstant localizationConstant;
+    /** Validator for validating the user's input. */
+    private       InputValidator         inputValidator;
+
     @AssistedInject
     public InputDialogPresenter(final @Nonnull InputDialogView view,
                                 final @Nonnull @Assisted("title") String title,
                                 final @Nonnull @Assisted("label") String label,
                                 final @Nullable @Assisted InputCallback inputCallback,
-                                final @Nullable @Assisted CancelCallback cancelCallback) {
-        this(view, title, label, "", 0, 0, inputCallback, cancelCallback);
+                                final @Nullable @Assisted CancelCallback cancelCallback,
+                                final UILocalizationConstant localizationConstant) {
+        this(view, title, label, "", 0, 0, inputCallback, cancelCallback, localizationConstant);
     }
 
     @AssistedInject
@@ -55,7 +58,8 @@ public class InputDialogPresenter implements InputDialog, InputDialogView.Action
                                 final @Nonnull @Assisted("selectionStartIndex") Integer selectionStartIndex,
                                 final @Nonnull @Assisted("selectionLength") Integer selectionLength,
                                 final @Nullable @Assisted InputCallback inputCallback,
-                                final @Nullable @Assisted CancelCallback cancelCallback) {
+                                final @Nullable @Assisted CancelCallback cancelCallback,
+                                final UILocalizationConstant localizationConstant) {
         this.view = view;
         this.view.setContent(label);
         this.view.setTitle(title);
@@ -65,6 +69,7 @@ public class InputDialogPresenter implements InputDialog, InputDialogView.Action
         this.inputCallback = inputCallback;
         this.cancelCallback = cancelCallback;
         this.view.setDelegate(this);
+        this.localizationConstant = localizationConstant;
     }
 
     @Override
@@ -84,13 +89,62 @@ public class InputDialogPresenter implements InputDialog, InputDialogView.Action
     }
 
     @Override
+    public void inputValueChanged() {
+        isInputValid();
+    }
+
+    @Override
+    public void onEnterClicked() {
+        if (isInputValid()) {
+            accepted();
+        }
+    }
+
+    @Override
     public void show() {
+        isInputValid();
         this.view.showDialog();
     }
 
     @Override
     public InputDialog withValidator(InputValidator inputValidator) {
-        this.view.setValidator(inputValidator);
+        this.inputValidator = inputValidator;
         return this;
+    }
+
+    private boolean isInputValid() {
+        String currentValue = view.getValue();
+        if (currentValue.trim().isEmpty()) {
+            view.showErrorHint(localizationConstant.validationErrorMessage());
+            return false;
+        }
+
+        InputValidator.Violation violation = null;
+
+        if (inputValidator != null) {
+            violation = inputValidator.validate(currentValue);
+        }
+
+        if (violation == null) {
+            view.hideErrorHint();
+            return true;
+        }
+
+        String correctValue = violation.getCorrectedValue();
+        if (correctValue != null) {
+            view.setValue(correctValue);
+            view.hideErrorHint();
+            return true;
+        }
+
+        String errorMessage = violation.getMessage();
+        if (errorMessage != null) {
+            errorMessage = errorMessage.isEmpty() ? localizationConstant.validationErrorMessage() : errorMessage;
+            view.showErrorHint(errorMessage);
+            return false;
+        }
+
+        view.hideErrorHint();
+        return true;
     }
 }

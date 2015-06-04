@@ -10,10 +10,10 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.server.recipe;
 
-import org.eclipse.che.api.machine.shared.Group;
-import org.eclipse.che.api.machine.shared.Permissions;
-import org.eclipse.che.api.machine.shared.dto.GroupDescriptor;
-import org.eclipse.che.api.machine.shared.dto.PermissionsDescriptor;
+import org.eclipse.che.api.machine.shared.recipe.Group;
+import org.eclipse.che.api.machine.shared.recipe.Permissions;
+import org.eclipse.che.api.machine.shared.dto.recipe.GroupDescriptor;
+import org.eclipse.che.api.machine.shared.dto.recipe.PermissionsDescriptor;
 
 import java.util.ArrayList;
 import java.util.HashMap;

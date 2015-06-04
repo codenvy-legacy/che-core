@@ -10,13 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.ide.client;
 
-import com.google.gwt.core.client.Callback;
-import com.google.inject.Provider;
-
 import elemental.client.Browser;
 import elemental.events.Event;
 import elemental.events.EventListener;
 
+import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Document;
@@ -26,6 +24,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.SimpleLayoutPanel;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
@@ -49,7 +48,6 @@ import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.Config;
 import org.eclipse.che.ide.util.loging.Log;
 import org.eclipse.che.ide.workspace.WorkspacePresenter;
-
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -121,7 +119,7 @@ public class BootstrapController {
                 @Override
                 public void onFailure(Exception reason) {
                     Log.error(BootstrapController.class, reason);
-                    initializationFailed(reason.getMessage());
+                    initializationFailed(reason);
                 }
 
                 @Override
@@ -356,12 +354,11 @@ public class BootstrapController {
      * Handles any of initialization errors.
      * Tries to call predefined IDE.eventHandlers.ideInitializationFailed function.
      *
-     * @param message
-     *         error message
+     * @param reason failure encountered
      */
-    private native void initializationFailed(String message) /*-{
+    private native void initializationFailed(Exception reason) /*-{
         try {
-            $wnd.IDE.eventHandlers.initializationFailed(message);
+            $wnd.IDE.eventHandlers.initializationFailed(reason);
         } catch (e) {
             console.log(e.message);
         }

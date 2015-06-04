@@ -108,7 +108,7 @@ public final class WSocketEventBusClient {
                     }
                 }
                 if (!cfg.isEmpty()) {
-                    executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("WSocketEventBusClient")
+                    executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("WSocketEventBusClient-%d")
                                                                                        .setDaemon(true).build());
                     for (Map.Entry<URI, Set<String>> entry : cfg.entrySet()) {
                         executor.execute(new ConnectTask(entry.getKey(), entry.getValue()));

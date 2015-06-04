@@ -12,7 +12,7 @@ package org.eclipse.che.api.machine.server.event;
 
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.notification.EventSubscriber;
-import org.eclipse.che.api.machine.shared.dto.MachineStateEvent;
+import org.eclipse.che.api.machine.shared.dto.event.MachineStateEvent;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.everrest.websockets.WSConnectionContext;
 import org.everrest.websockets.message.ChannelBroadcastMessage;

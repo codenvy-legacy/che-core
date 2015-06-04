@@ -10,9 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.server.recipe;
 
-import org.eclipse.che.api.machine.shared.Permissions;
-import org.eclipse.che.api.machine.shared.Recipe;
-import org.eclipse.che.api.machine.shared.dto.RecipeDescriptor;
+import org.eclipse.che.api.machine.shared.recipe.Permissions;
+import org.eclipse.che.api.machine.shared.recipe.Recipe;
+import org.eclipse.che.api.machine.shared.dto.recipe.RecipeDescriptor;
 
 import java.util.ArrayList;
 import java.util.List;

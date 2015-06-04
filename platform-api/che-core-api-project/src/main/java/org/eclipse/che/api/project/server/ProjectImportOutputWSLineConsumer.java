@@ -44,7 +44,7 @@ public class ProjectImportOutputWSLineConsumer implements LineConsumer {
         this.fWorkspace = fWorkspace;
         lineToSendQueue = new ArrayBlockingQueue<>(1024);
         executor = Executors.newSingleThreadScheduledExecutor(
-                new ThreadFactoryBuilder().setNameFormat(ProjectImportOutputWSLineConsumer.class.getSimpleName()).setDaemon(true).build());
+                new ThreadFactoryBuilder().setNameFormat(ProjectImportOutputWSLineConsumer.class.getSimpleName()+"-%d").setDaemon(true).build());
         executor.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {

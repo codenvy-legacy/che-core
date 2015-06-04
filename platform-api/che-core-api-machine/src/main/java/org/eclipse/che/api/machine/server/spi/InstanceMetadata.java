@@ -10,12 +10,15 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.server.spi;
 
+import org.eclipse.che.api.machine.shared.Server;
+
 import java.util.Map;
 
 /**
  * Describe implementation specific properties of machine instance
  *
  * @author andrew00x
+ * @author Alexander Garagatyi
  */
 public interface InstanceMetadata {
 
@@ -28,4 +31,12 @@ public interface InstanceMetadata {
 
     /** Serializes this {@code InstanceMetadata} to JSON format. */
     String toJson();
+
+    /**
+     * Returns mapping of exposed ports to external address in format:
+     *<p>
+     * 22 : {"address":"host:port"}<br>
+     * 234/udp : {"address":"host:port"}
+     */
+    Map<String, Server> getServers();
 }

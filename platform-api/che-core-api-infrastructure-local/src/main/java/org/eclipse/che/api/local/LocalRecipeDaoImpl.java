@@ -17,7 +17,7 @@ import com.google.inject.Inject;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.machine.server.dao.RecipeDao;
-import org.eclipse.che.api.machine.shared.Recipe;
+import org.eclipse.che.api.machine.shared.recipe.Recipe;
 
 import javax.inject.Named;
 import javax.inject.Singleton;

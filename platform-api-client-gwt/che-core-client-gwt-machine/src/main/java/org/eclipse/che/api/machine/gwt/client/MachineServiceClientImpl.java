@@ -19,7 +19,9 @@ import org.eclipse.che.api.machine.shared.dto.CreateMachineFromRecipe;
 import org.eclipse.che.api.machine.shared.dto.CreateMachineFromSnapshot;
 import org.eclipse.che.api.machine.shared.dto.MachineDescriptor;
 import org.eclipse.che.api.machine.shared.dto.ProcessDescriptor;
-import org.eclipse.che.api.machine.shared.dto.RecipeDescriptor;
+import org.eclipse.che.api.machine.shared.dto.recipe.RecipeDescriptor;
+import org.eclipse.che.api.promises.client.Function;
+import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper.RequestCall;
 import org.eclipse.che.ide.collections.Array;
@@ -31,6 +33,8 @@ import org.eclipse.che.ide.rest.RestContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.google.gwt.http.client.RequestBuilder.DELETE;
 import static org.eclipse.che.api.machine.gwt.client.Utils.newCallback;
@@ -43,10 +47,11 @@ import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
  * Implementation for {@link MachineServiceClient}.
  *
  * @author Artem Zatsarynnyy
+ * @author Dmitry Shnurenko
  */
 public class MachineServiceClientImpl implements MachineServiceClient {
-    private final String workspaceId;
-    private final DtoFactory dtoFactory;
+    private final String                 workspaceId;
+    private final DtoFactory             dtoFactory;
     private final DtoUnmarshallerFactory dtoUnmarshallerFactory;
     private final AsyncRequestFactory    asyncRequestFactory;
     private final AsyncRequestLoader     loader;
@@ -71,11 +76,12 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     public Promise<MachineDescriptor> createMachineFromRecipe(@Nonnull final String machineType,
                                                               @Nonnull final String recipeType,
                                                               @Nonnull final String recipeScript,
+                                                              final boolean bindWorkspace,
                                                               @Nullable final String outputChannel) {
         return newPromise(new RequestCall<MachineDescriptor>() {
             @Override
             public void makeCall(AsyncCallback<MachineDescriptor> callback) {
-                createMachineFromRecipe(workspaceId, machineType, recipeType, recipeScript, outputChannel, callback);
+                createMachineFromRecipe(workspaceId, machineType, recipeType, recipeScript, bindWorkspace, outputChannel, callback);
             }
         });
     }
@@ -84,6 +90,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
                                          @Nonnull String machineType,
                                          @Nonnull String recipeType,
                                          @Nonnull String recipeScript,
+                                         boolean bindWorkspace,
                                          @Nullable String outputChannel,
                                          @Nonnull AsyncCallback<MachineDescriptor> callback) {
         final RecipeDescriptor recipeDescriptor = dtoFactory.createDto(RecipeDescriptor.class)
@@ -94,6 +101,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
                                                           .withWorkspaceId(workspaceId)
                                                           .withType(machineType)
                                                           .withRecipeDescriptor(recipeDescriptor)
+                                                          .withBindWorkspace(bindWorkspace)
                                                           .withOutputChannel(outputChannel);
 
         asyncRequestFactory.createPostRequest(baseHttpUrl + "/recipe", request)
@@ -128,11 +136,38 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     }
 
     @Override
-    public Promise<Array<MachineDescriptor>> getMachines(@Nullable final String projectPath) {
+    public Promise<MachineDescriptor> getMachine(@Nonnull final String machineId) {
+        return newPromise(new RequestCall<MachineDescriptor>() {
+            @Override
+            public void makeCall(AsyncCallback<MachineDescriptor> callback) {
+                getMachine(machineId, callback);
+            }
+        });
+    }
+
+    private void getMachine(@Nonnull String machineId, @Nonnull AsyncCallback<MachineDescriptor> callback) {
+        final String url = baseHttpUrl + '/' + machineId;
+        asyncRequestFactory.createGetRequest(url)
+                           .header(ACCEPT, APPLICATION_JSON)
+                           .loader(loader, "Getting info about machine...")
+                           .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(MachineDescriptor.class)));
+    }
+
+    @Override
+    public Promise<List<MachineDescriptor>> getMachines(@Nullable final String projectPath) {
         return newPromise(new RequestCall<Array<MachineDescriptor>>() {
             @Override
             public void makeCall(AsyncCallback<Array<MachineDescriptor>> callback) {
                 getMachines(workspaceId, projectPath, callback);
+            }
+        }).then(new Function<Array<MachineDescriptor>, List<MachineDescriptor>>() {
+            @Override
+            public List<MachineDescriptor> apply(Array<MachineDescriptor> arg) throws FunctionException {
+                final List<MachineDescriptor> descriptors = new ArrayList<>();
+                for (MachineDescriptor descriptor : arg.asIterable()) {
+                    descriptors.add(descriptor);
+                }
+                return descriptors;
             }
         });
     }
@@ -144,6 +179,29 @@ public class MachineServiceClientImpl implements MachineServiceClient {
                            .header(ACCEPT, APPLICATION_JSON)
                            .loader(loader, "Getting info about bound machines...")
                            .send(newCallback(callback, dtoUnmarshallerFactory.newArrayUnmarshaller(MachineDescriptor.class)));
+    }
+
+    @Override
+    public Promise<List<ProcessDescriptor>> getProcesses(@Nonnull final String machineId) {
+        return newPromise(new RequestCall<Array<ProcessDescriptor>>() {
+            @Override
+            public void makeCall(AsyncCallback<Array<ProcessDescriptor>> callback) {
+                final String url = baseHttpUrl + "/" + machineId + "/process";
+                asyncRequestFactory.createGetRequest(url)
+                                   .header(ACCEPT, APPLICATION_JSON)
+                                   .loader(loader, "Getting machine processes...")
+                                   .send(newCallback(callback, dtoUnmarshallerFactory.newArrayUnmarshaller(ProcessDescriptor.class)));
+            }
+        }).then(new Function<Array<ProcessDescriptor>, List<ProcessDescriptor>>() {
+            @Override
+            public List<ProcessDescriptor> apply(Array<ProcessDescriptor> arg) throws FunctionException {
+                final List<ProcessDescriptor> descriptors = new ArrayList<>();
+                for (ProcessDescriptor descriptor : arg.asIterable()) {
+                    descriptors.add(descriptor);
+                }
+                return descriptors;
+            }
+        });
     }
 
     @Override

@@ -23,7 +23,7 @@ import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.api.project.tree.generic.FileNode;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.dto.DtoFactory;
-import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerViewImpl;
+import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerView;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 
 import javax.validation.constraints.NotNull;
@@ -42,15 +42,15 @@ public class ActiveNodePersistentComponent implements PersistenceComponent {
     private Provider<EditorAgent> editorAgentProvider;
     private DtoFactory            dtoFactory;
     private ActionManager         actionManager;
-    private SelectNodeAction selectNodeAction;
-    private ProjectExplorerViewImpl projectExplorerView;
+    private SelectNodeAction      selectNodeAction;
+    private ProjectExplorerView   projectExplorerView;
 
     @Inject
     public ActiveNodePersistentComponent(Provider<EditorAgent> editorAgentProvider,
                                          DtoFactory dtoFactory,
                                          ActionManager actionManager,
                                          SelectNodeAction selectNodeAction,
-                                         ProjectExplorerViewImpl projectExplorerView) {
+                                         ProjectExplorerView projectExplorerView) {
         this.editorAgentProvider = editorAgentProvider;
         this.dtoFactory = dtoFactory;
         this.actionManager = actionManager;

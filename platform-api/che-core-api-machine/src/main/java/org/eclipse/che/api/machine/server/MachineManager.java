@@ -20,6 +20,12 @@ import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.util.CompositeLineConsumer;
 import org.eclipse.che.api.core.util.FileLineConsumer;
 import org.eclipse.che.api.core.util.LineConsumer;
+import org.eclipse.che.api.machine.server.dao.SnapshotDao;
+import org.eclipse.che.api.machine.server.exception.InvalidInstanceSnapshotException;
+import org.eclipse.che.api.machine.server.exception.InvalidRecipeException;
+import org.eclipse.che.api.machine.server.exception.MachineException;
+import org.eclipse.che.api.machine.server.exception.UnsupportedRecipeException;
+import org.eclipse.che.api.machine.server.impl.*;
 import org.eclipse.che.api.machine.server.spi.InstanceKey;
 import org.eclipse.che.api.machine.server.spi.InstanceProvider;
 import org.eclipse.che.api.machine.server.spi.Instance;
@@ -27,9 +33,9 @@ import org.eclipse.che.api.machine.server.spi.InstanceProcess;
 import org.eclipse.che.api.machine.shared.Command;
 import org.eclipse.che.api.machine.shared.MachineState;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
-import org.eclipse.che.api.machine.shared.Recipe;
-import org.eclipse.che.api.machine.shared.dto.MachineProcessEvent;
-import org.eclipse.che.api.machine.shared.dto.MachineStateEvent;
+import org.eclipse.che.api.machine.shared.recipe.Recipe;
+import org.eclipse.che.api.machine.shared.dto.event.MachineProcessEvent;
+import org.eclipse.che.api.machine.shared.dto.event.MachineStateEvent;
 import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.eclipse.che.dto.server.DtoFactory;
@@ -66,7 +72,7 @@ import java.util.concurrent.TimeUnit;
 public class MachineManager {
     private static final Logger LOG = LoggerFactory.getLogger(MachineManager.class);
 
-    private final SnapshotStorage               snapshotStorage;
+    private final SnapshotDao                   snapshotDao;
     private final File                          machineLogsDir;
     private final Map<String, InstanceProvider> instanceProviders;
     private final ExecutorService               executor;
@@ -76,12 +82,12 @@ public class MachineManager {
     private final DtoFactory dtoFactory = DtoFactory.getInstance();
 
     @Inject
-    public MachineManager(SnapshotStorage snapshotStorage,
+    public MachineManager(SnapshotDao snapshotDao,
                           Set<InstanceProvider> instanceProviders,
                           MachineRegistry machineRegistry,
                           @Named("machine.logs.location") String machineLogsDir,
                           EventService eventService) {
-        this.snapshotStorage = snapshotStorage;
+        this.snapshotDao = snapshotDao;
         this.eventService = eventService;
         this.machineLogsDir = new File(machineLogsDir);
         this.instanceProviders = new HashMap<>();
@@ -393,7 +399,7 @@ public class MachineManager {
                     final InstanceKey instanceKey = instance.saveToSnapshot(machine.getOwner(), label);
                     snapshot.setInstanceKey(instanceKey);
 
-                    snapshotStorage.saveSnapshot(snapshot);
+                    snapshotDao.saveSnapshot(snapshot);
                 } catch (Exception e) {
                     try {
                         machine.getMachineLogsOutput().writeLine("Snapshot storing failed. " + e.getLocalizedMessage());
@@ -418,7 +424,7 @@ public class MachineManager {
      *         if other error occur
      */
     public SnapshotImpl getSnapshot(String snapshotId) throws NotFoundException, ServerException {
-        return snapshotStorage.getSnapshot(snapshotId);
+        return snapshotDao.getSnapshot(snapshotId);
     }
 
     /**
@@ -433,7 +439,7 @@ public class MachineManager {
      * @return list of Snapshots
      */
     public List<SnapshotImpl> getSnapshots(String owner, String workspaceId, ProjectBinding project) throws ServerException {
-        return snapshotStorage.findSnapshots(owner, workspaceId, project);
+        return snapshotDao.findSnapshots(owner, workspaceId, project);
     }
 
     /**
@@ -455,7 +461,7 @@ public class MachineManager {
         }
         instanceProvider.removeInstanceSnapshot(snapshot.getInstanceKey());
 
-        snapshotStorage.removeSnapshot(snapshotId);
+        snapshotDao.removeSnapshot(snapshotId);
     }
 
     /**
@@ -471,7 +477,7 @@ public class MachineManager {
      *         error occur
      */
     public void removeSnapshots(String owner, String workspaceId, ProjectBinding project) throws ServerException {
-        for (SnapshotImpl snapshot : snapshotStorage.findSnapshots(owner, workspaceId, project)) {
+        for (SnapshotImpl snapshot : snapshotDao.findSnapshots(owner, workspaceId, project)) {
             try {
                 removeSnapshot(snapshot.getId());
             } catch (NotFoundException ignored) {
@@ -491,7 +497,7 @@ public class MachineManager {
      *         command that should be executed in the machine
      * @param commandOutput
      *         line consumer for execution logs
-     * @return {@link ProcessImpl} that represents started process in machine
+     * @return {@link org.eclipse.che.api.machine.server.impl.ProcessImpl} that represents started process in machine
      * @throws NotFoundException
      *         if machine with specified id not found
      * @throws MachineException
@@ -548,7 +554,7 @@ public class MachineManager {
      *
      * @param machineId
      *         id of machine to get processes information from
-     * @return list of {@link ProcessImpl}
+     * @return list of {@link org.eclipse.che.api.machine.server.impl.ProcessImpl}
      * @throws NotFoundException
      *         if machine with specified id not found
      * @throws MachineException

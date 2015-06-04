@@ -12,11 +12,16 @@ package org.eclipse.che.ide.workspace;
 
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
+
+import org.eclipse.che.ide.workspace.perspectives.general.HideWidgetCallback;
 
 /**
  * Implementation of WorkBenchPartController, used with SplitLayoutPanel as container
  *
- * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
+ * @author Evgen Vidolob
+ * @author Dmitry Shnurenko
  */
 public class WorkBenchPartControllerImpl implements WorkBenchPartController {
     public static final int DURATION = 200;
@@ -25,7 +30,10 @@ public class WorkBenchPartControllerImpl implements WorkBenchPartController {
     private final SimplePanel        widget;
     private final HideWidgetCallback hideWidgetCallback;
 
-    public WorkBenchPartControllerImpl(SplitLayoutPanel splitLayoutPanel, SimplePanel widget, HideWidgetCallback hideWidgetCallback) {
+    @Inject
+    public WorkBenchPartControllerImpl(HideWidgetCallback hideWidgetCallback,
+                                       @Assisted SplitLayoutPanel splitLayoutPanel,
+                                       @Assisted SimplePanel widget) {
         this.splitLayoutPanel = splitLayoutPanel;
         this.widget = widget;
         this.hideWidgetCallback = hideWidgetCallback;

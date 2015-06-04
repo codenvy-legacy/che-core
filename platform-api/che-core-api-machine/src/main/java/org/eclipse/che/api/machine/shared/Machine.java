@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.shared;
 
-import org.eclipse.che.api.machine.server.MachineException;
+import org.eclipse.che.api.machine.server.exception.MachineException;
 import org.eclipse.che.api.machine.server.spi.InstanceMetadata;
 
 import java.util.Set;
