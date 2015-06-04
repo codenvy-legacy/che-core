@@ -31,7 +31,6 @@ import static org.eclipse.che.ide.api.parts.PartStackType.EDITING;
 import static org.eclipse.che.ide.api.parts.PartStackType.INFORMATION;
 import static org.eclipse.che.ide.api.parts.PartStackType.NAVIGATION;
 import static org.eclipse.che.ide.api.parts.PartStackType.TOOLING;
-import static org.eclipse.che.ide.workspace.perspectives.general.Perspective.Type.PROJECT;
 
 
 /**
@@ -46,6 +45,8 @@ import static org.eclipse.che.ide.workspace.perspectives.general.Perspective.Typ
  */
 @Singleton
 public class ProjectPerspective extends AbstractPerspective {
+
+    public final static String PROJECT_PERSPECTIVE_ID = "Project Perspective";
 
     @Inject
     public ProjectPerspective(PerspectiveViewImpl view,
@@ -85,12 +86,5 @@ public class ProjectPerspective extends AbstractPerspective {
         infoPanel.go(view.getInformationPanel());
 
         container.setWidget(view);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    @Nonnull
-    public Type getType() {
-        return PROJECT;
     }
 }

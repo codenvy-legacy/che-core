@@ -220,6 +220,8 @@ import org.eclipse.che.ide.workspace.perspectives.general.Perspective;
 import org.eclipse.che.ide.workspace.perspectives.general.PerspectiveViewImpl;
 import org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective;
 
+import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
+
 /**
  * @author Nikolay Zamosenchuk
  * @author Dmitry Shnurenko
@@ -230,7 +232,9 @@ public class CoreGinModule extends AbstractGinModule {
     /** {@inheritDoc} */
     @Override
     protected void configure() {
-        GinMultibinder.newSetBinder(binder(), Perspective.class).addBinding().to(ProjectPerspective.class);
+        GinMapBinder<String, Perspective> mapBinder = GinMapBinder.newMapBinder(binder(), String.class, Perspective.class);
+        mapBinder.addBinding(PROJECT_PERSPECTIVE_ID).to(ProjectPerspective.class);
+
         install(new GinFactoryModuleBuilder().implement(WorkBenchPartController.class,
                                                         WorkBenchPartControllerImpl.class).build(WorkBenchControllerFactory.class));
         // generic bindings

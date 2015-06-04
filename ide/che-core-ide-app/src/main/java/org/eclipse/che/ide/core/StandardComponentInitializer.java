@@ -16,7 +16,7 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.actions.ChangePerspectiveAction;
+import org.eclipse.che.ide.actions.ProjectPerspectiveAction;
 import org.eclipse.che.ide.actions.CloseProjectAction;
 import org.eclipse.che.ide.actions.CreateModuleAction;
 import org.eclipse.che.ide.actions.DeleteItemAction;
@@ -86,7 +86,7 @@ public class StandardComponentInitializer {
     }
 
     @Inject
-    private ChangePerspectiveAction changePerspective;
+    private ProjectPerspectiveAction changePerspective;
 
     @Inject
     private EditorRegistry editorRegistry;

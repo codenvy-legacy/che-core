@@ -26,14 +26,8 @@ import org.eclipse.che.ide.menu.StatusPanelGroupPresenter;
 import org.eclipse.che.ide.ui.toolbar.MainToolbar;
 import org.eclipse.che.ide.ui.toolbar.ToolbarPresenter;
 import org.eclipse.che.ide.workspace.perspectives.general.Perspective;
-import org.eclipse.che.ide.workspace.perspectives.general.Perspective.Type;
-import org.eclipse.che.ide.workspace.perspectives.general.PerspectiveType;
-import org.eclipse.che.ide.workspace.perspectives.general.PerspectiveType.PerspectiveTypeListener;
-
-import javax.annotation.Nonnull;
-import java.util.Set;
-
-import static org.eclipse.che.ide.workspace.perspectives.general.Perspective.Type.PROJECT;
+import org.eclipse.che.ide.workspace.perspectives.general.PerspectiveManager;
+import org.eclipse.che.ide.workspace.perspectives.general.PerspectiveManager.PerspectiveTypeListener;
 
 /**
  * Root Presenter that implements Workspace logic. Descendant Presenters are injected
@@ -51,30 +45,27 @@ public class WorkspacePresenter implements Presenter, WorkspaceView.ActionDelega
     private final MainMenuPresenter         mainMenu;
     private final StatusPanelGroupPresenter bottomMenu;
     private final ToolbarPresenter          toolbarPresenter;
-    private final PerspectiveType           perspectiveType;
-    private final Set<Perspective>          perspectives;
+    private final PerspectiveManager        perspectiveManager;
 
     private Perspective activePerspective;
 
     @Inject
     protected WorkspacePresenter(WorkspaceView view,
-                                 PerspectiveType perspectiveType,
+                                 PerspectiveManager perspectiveManager,
                                  MainMenuPresenter mainMenu,
                                  StatusPanelGroupPresenter bottomMenu,
-                                 @MainToolbar ToolbarPresenter toolbarPresenter,
-                                 Set<Perspective> perspectives) {
+                                 @MainToolbar ToolbarPresenter toolbarPresenter) {
         this.view = view;
         this.view.setDelegate(this);
 
         this.toolbarPresenter = toolbarPresenter;
         this.mainMenu = mainMenu;
         this.bottomMenu = bottomMenu;
-        this.perspectives = perspectives;
 
-        this.perspectiveType = perspectiveType;
-        this.perspectiveType.addListener(this);
+        this.perspectiveManager = perspectiveManager;
+        this.perspectiveManager.addListener(this);
 
-        setPerspectiveType(PROJECT);
+        onPerspectiveChanged();
     }
 
     /** {@inheritDoc} */
@@ -87,22 +78,16 @@ public class WorkspacePresenter implements Presenter, WorkspaceView.ActionDelega
         container.setWidget(view);
     }
 
-    private void setPerspectiveType(@Nonnull Type perspectiveType) {
-        for (Perspective perspective : perspectives) {
-            if (perspectiveType.equals(perspective.getType())) {
-                perspective.go(view.getPerspectivePanel());
-
-                activePerspective = perspective;
-            }
-        }
-    }
-
     /** {@inheritDoc} */
     @Override
     public void onPerspectiveChanged() {
-        Type type = perspectiveType.getType();
+        activePerspective = perspectiveManager.getActivePerspective();
 
-        setPerspectiveType(type);
+        if (activePerspective == null) {
+            throw new IllegalStateException("Current perspective isn't defined " + perspectiveManager.getPerspectiveId());
+        }
+
+        activePerspective.go(view.getPerspectivePanel());
     }
 
     /** {@inheritDoc} */

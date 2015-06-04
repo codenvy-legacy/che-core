@@ -13,13 +13,13 @@ package org.eclipse.che.ide.workspace.perspectives.general;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import org.eclipse.che.ide.workspace.perspectives.general.Perspective.Type;
-
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-import static org.eclipse.che.ide.workspace.perspectives.general.Perspective.Type.PROJECT;
+import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
 
 /**
  * The class stores current perspective type. Contains listeners which do some actions when type is changed. By default PROJECT
@@ -28,35 +28,44 @@ import static org.eclipse.che.ide.workspace.perspectives.general.Perspective.Typ
  * @author Dmitry Shnurenko
  */
 @Singleton
-public class PerspectiveType {
+public class PerspectiveManager {
 
     private final List<PerspectiveTypeListener> listeners;
+    private final Map<String, Perspective>      perspectives;
 
-    private Type type;
+    private String currentPerspectiveId;
 
     @Inject
-    public PerspectiveType() {
-        listeners = new ArrayList<>();
+    public PerspectiveManager(Map<String, Perspective> perspectives) {
+        this.listeners = new ArrayList<>();
+        this.perspectives = perspectives;
 
-        type = PROJECT;
+        //perspective by default
+        currentPerspectiveId = PROJECT_PERSPECTIVE_ID;
+    }
+
+    /** Returns current active perspective. The method can return null, if current perspective isn't found. */
+    @Nullable
+    public Perspective getActivePerspective() {
+        return perspectives.get(currentPerspectiveId);
     }
 
     /**
      * Changes perspective type and notifies listeners.
      *
-     * @param type
+     * @param perspectiveId
      *         type which need set
      */
-    public void setType(@Nonnull Type type) {
-        this.type = type;
+    public void setPerspectiveId(@Nonnull String perspectiveId) {
+        currentPerspectiveId = perspectiveId;
 
         notifyListeners();
     }
 
     /** Returns current perspective type. */
     @Nonnull
-    public Type getType() {
-        return type;
+    public String getPerspectiveId() {
+        return currentPerspectiveId;
     }
 
     /**

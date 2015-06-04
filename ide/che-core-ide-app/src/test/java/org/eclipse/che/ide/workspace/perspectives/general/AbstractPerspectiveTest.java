@@ -222,12 +222,6 @@ public class AbstractPerspectiveTest {
             partStacks.put(EDITING, partStackPresenter);
         }
 
-        @Nonnull
-        @Override
-        public Type getType() {
-            throw new NotSupportedException("This method will be tested in the class which extends AbstractPerspective");
-        }
-
         @Override
         public void go(@Nonnull AcceptsOneWidget container) {
             throw new NotSupportedException("This method will be tested in the class which extends AbstractPerspective");

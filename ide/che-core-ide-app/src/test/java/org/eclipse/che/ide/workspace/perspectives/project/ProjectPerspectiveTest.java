@@ -26,7 +26,6 @@ import org.eclipse.che.ide.workspace.PartStackPresenterFactory;
 import org.eclipse.che.ide.workspace.PartStackViewFactory;
 import org.eclipse.che.ide.workspace.WorkBenchControllerFactory;
 import org.eclipse.che.ide.workspace.WorkBenchPartController;
-import org.eclipse.che.ide.workspace.perspectives.general.Perspective.Type;
 import org.eclipse.che.ide.workspace.perspectives.general.PerspectiveViewImpl;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,9 +33,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 
-import static org.eclipse.che.ide.workspace.perspectives.general.Perspective.Type.PROJECT;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -46,7 +42,6 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(GwtMockitoTestRunner.class)
 public class ProjectPerspectiveTest {
-
 
     //constructor mocks
     @Mock
@@ -135,13 +130,6 @@ public class ProjectPerspectiveTest {
         verify(partStackPresenter).addPart(projectExplorerPart, null);
 
         verify(partStackPresenter).setActivePart(projectExplorerPart);
-    }
-
-    @Test
-    public void projectTypeShouldBeReturned() {
-        Type type = perspective.getType();
-
-        assertThat(type, equalTo(PROJECT));
     }
 
     @Test

@@ -28,10 +28,6 @@ import javax.annotation.Nullable;
  */
 public interface Perspective {
 
-    /** Returns perspective type. */
-    @Nonnull
-    Type getType();
-
     /**
      * Removes part.
      *
@@ -95,8 +91,4 @@ public interface Perspective {
      *         container in which need expose view
      */
     void go(@Nonnull AcceptsOneWidget container);
-
-    enum Type {
-        PROJECT, MACHINE
-    }
 }
