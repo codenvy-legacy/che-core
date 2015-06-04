@@ -10,16 +10,29 @@
  *******************************************************************************/
 package org.eclipse.che.api.core.rest;
 
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
+
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.rest.annotations.OPTIONS;
 import org.eclipse.che.api.core.rest.shared.dto.ApiInfo;
 import org.eclipse.che.dto.server.DtoFactory;
 
+import org.everrest.core.ObjectFactory;
+import org.everrest.core.ResourceBinder;
+import org.everrest.core.resource.AbstractResourceDescriptor;
+import org.everrest.services.RestServicesList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import javax.inject.Singleton;
+import javax.servlet.ServletContext;
+import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.net.URL;
 import java.util.jar.Attributes;
@@ -65,5 +78,22 @@ public class ApiInfoService {
             LOG.error(e.getMessage(), e);
             throw new ServerException("Unable read info about API. Contact support for assistance.");
         }
+    }
+
+    @GET
+    @Produces({MediaType.APPLICATION_JSON})
+    public RestServicesList.RootResourcesList listJSON(@Context ServletContext context) {
+        ResourceBinder binder = (ResourceBinder)context.getAttribute(ResourceBinder.class.getName());
+        return new RestServicesList.RootResourcesList(FluentIterable.from(binder.getResources()).transform(
+                new Function<ObjectFactory<AbstractResourceDescriptor>, RestServicesList.RootResource>() {
+                    @Nullable
+                    @Override
+                    public RestServicesList.RootResource apply(ObjectFactory<AbstractResourceDescriptor> input) {
+                        AbstractResourceDescriptor descriptor = input.getObjectModel();
+                        return new RestServicesList.RootResource(descriptor.getObjectClass().getName(), //
+                                                                 descriptor.getPathValue().getPath(), //
+                                                                 descriptor.getUriPattern().getRegex());
+                    }
+                }).toList());
     }
 }

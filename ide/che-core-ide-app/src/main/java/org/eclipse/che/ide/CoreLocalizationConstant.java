@@ -211,6 +211,12 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("redo.description")
     String redoDescription();
 
+    @Key("refresh.projectTree.name")
+    String refreshProjectTreeName();
+
+    @Key("refresh.projectTree.description")
+    String refreshProjectTreeDescription();
+
     @Key("uploadFile.name")
     String uploadFileName();
 
