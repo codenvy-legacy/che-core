@@ -74,14 +74,6 @@ public interface MachineServiceClient {
     Promise<List<MachineDescriptor>> getMachines(@Nullable String projectPath);
 
     /**
-     * Find processes related to the specified machine.
-     *
-     * @param machineId
-     *         machine id which allows defines needed machine
-     */
-    Promise<List<ProcessDescriptor>> getProcesses(@Nonnull String machineId);
-
-    /**
      * Destroy machine with the specified ID.
      *
      * @param machineId
@@ -100,6 +92,14 @@ public interface MachineServiceClient {
      *         websocket chanel for execution logs
      */
     Promise<ProcessDescriptor> executeCommand(@Nonnull String machineId, @Nonnull String commandLine, @Nullable String outputChannel);
+
+    /**
+     * Get processes from the specified machine.
+     *
+     * @param machineId
+     *         ID of machine to get processes information from
+     */
+    Promise<List<ProcessDescriptor>> getProcesses(@Nonnull String machineId);
 
     /**
      * Bind project to machine.

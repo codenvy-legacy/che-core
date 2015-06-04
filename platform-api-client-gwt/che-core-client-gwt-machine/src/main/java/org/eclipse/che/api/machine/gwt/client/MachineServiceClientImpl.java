@@ -182,29 +182,6 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     }
 
     @Override
-    public Promise<List<ProcessDescriptor>> getProcesses(@Nonnull final String machineId) {
-        return newPromise(new RequestCall<Array<ProcessDescriptor>>() {
-            @Override
-            public void makeCall(AsyncCallback<Array<ProcessDescriptor>> callback) {
-                final String url = baseHttpUrl + "/" + machineId + "/process";
-                asyncRequestFactory.createGetRequest(url)
-                                   .header(ACCEPT, APPLICATION_JSON)
-                                   .loader(loader, "Getting machine processes...")
-                                   .send(newCallback(callback, dtoUnmarshallerFactory.newArrayUnmarshaller(ProcessDescriptor.class)));
-            }
-        }).then(new Function<Array<ProcessDescriptor>, List<ProcessDescriptor>>() {
-            @Override
-            public List<ProcessDescriptor> apply(Array<ProcessDescriptor> arg) throws FunctionException {
-                final List<ProcessDescriptor> descriptors = new ArrayList<>();
-                for (ProcessDescriptor descriptor : arg.asIterable()) {
-                    descriptors.add(descriptor);
-                }
-                return descriptors;
-            }
-        });
-    }
-
-    @Override
     public Promise<Void> destroyMachine(@Nonnull final String machineId) {
         return newPromise(new RequestCall<Void>() {
             @Override
@@ -244,6 +221,29 @@ public class MachineServiceClientImpl implements MachineServiceClient {
                            .header(ACCEPT, APPLICATION_JSON)
                            .loader(loader, "Executing command...")
                            .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(ProcessDescriptor.class)));
+    }
+
+    @Override
+    public Promise<List<ProcessDescriptor>> getProcesses(@Nonnull final String machineId) {
+        return newPromise(new RequestCall<Array<ProcessDescriptor>>() {
+            @Override
+            public void makeCall(AsyncCallback<Array<ProcessDescriptor>> callback) {
+                final String url = baseHttpUrl + "/" + machineId + "/process";
+                asyncRequestFactory.createGetRequest(url)
+                                   .header(ACCEPT, APPLICATION_JSON)
+                                   .loader(loader, "Getting machine processes...")
+                                   .send(newCallback(callback, dtoUnmarshallerFactory.newArrayUnmarshaller(ProcessDescriptor.class)));
+            }
+        }).then(new Function<Array<ProcessDescriptor>, List<ProcessDescriptor>>() {
+            @Override
+            public List<ProcessDescriptor> apply(Array<ProcessDescriptor> arg) throws FunctionException {
+                final List<ProcessDescriptor> descriptors = new ArrayList<>();
+                for (ProcessDescriptor descriptor : arg.asIterable()) {
+                    descriptors.add(descriptor);
+                }
+                return descriptors;
+            }
+        });
     }
 
     @Override
