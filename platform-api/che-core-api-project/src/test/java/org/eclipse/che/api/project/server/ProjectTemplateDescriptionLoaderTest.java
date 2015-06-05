@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.server;
 
+import com.google.common.io.Resources;
+
 import org.eclipse.che.api.project.server.type.ProjectType;
 import org.eclipse.che.api.project.shared.dto.ImportSourceDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
@@ -18,7 +20,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.net.URI;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -73,9 +78,10 @@ public class ProjectTemplateDescriptionLoaderTest {
     @Test
     //load templates from given dir
     public void testWithConfig() {
-        URL resource = Thread.currentThread().getContextClassLoader().getResource("pt-tmpl");
+        URL resource = Resources.getResource(getClass(), "pt-tmpl");
+        Path path = Paths.get(URI.create(resource.toString()));
         Assert.assertNotNull(resource);
-        ProjectTemplateDescriptionLoader loader = new ProjectTemplateDescriptionLoader(resource.getFile(), null, pts, templateRegistry);
+        ProjectTemplateDescriptionLoader loader = new ProjectTemplateDescriptionLoader(path.toString(), null, pts, templateRegistry);
         loader.start();
         verify(templateRegistry, never()).register(eq(embedTypeId), anyListOf(ProjectTemplateDescriptor.class));
         verify(templateRegistry).register(eq(projectType1), anyListOf(ProjectTemplateDescriptor.class));
@@ -88,9 +94,10 @@ public class ProjectTemplateDescriptionLoaderTest {
         ProjectType type3 = mock(ProjectType.class);
         when(type3.getId()).thenReturn("type3");
         pts.add(type3);
-        URL resource = Thread.currentThread().getContextClassLoader().getResource("pt-tmpl");
+        URL resource = Resources.getResource(getClass(), "pt-tmpl");
+        Path path = Paths.get(URI.create(resource.toString()));
         Assert.assertNotNull(resource);
-        ProjectTemplateDescriptionLoader loader = new ProjectTemplateDescriptionLoader(resource.getFile(), null, pts, templateRegistry);
+        ProjectTemplateDescriptionLoader loader = new ProjectTemplateDescriptionLoader(path.toString(), null, pts, templateRegistry);
         loader.start();
         verify(templateRegistry).register(eq(projectType1), anyListOf(ProjectTemplateDescriptor.class));
         verify(templateRegistry).register(eq(projectType2), anyListOf(ProjectTemplateDescriptor.class));
@@ -104,10 +111,11 @@ public class ProjectTemplateDescriptionLoaderTest {
         ProjectType type2 = mock(ProjectType.class);
         when(type2.getId()).thenReturn(projectType2);
         pts.add(type2);
-        URL resource = Thread.currentThread().getContextClassLoader().getResource("pt-tmpl");
+        URL resource = Resources.getResource(getClass(), "pt-tmpl");
+        Path path = Paths.get(URI.create(resource.toString()));
         Assert.assertNotNull(resource);
         String location = NameGenerator.generate("location", 5);
-        ProjectTemplateDescriptionLoader loader = new ProjectTemplateDescriptionLoader(resource.getFile(), location, pts, templateRegistry);
+        ProjectTemplateDescriptionLoader loader = new ProjectTemplateDescriptionLoader(path.toString(), location, pts, templateRegistry);
         loader.start();
         List<ProjectTemplateDescriptor> type = templateRegistry.getTemplates(projectType2);
         Assert.assertNotNull(type);
