@@ -109,7 +109,7 @@ public class FolderEntryTest {
         String name = myFolder.getName();
         String newPath = vfProject.getVirtualFilePath().newPath(name).toString();
 
-        FolderEntry copy = myFolder.copyTo(vfProject.getPath());
+        FolderEntry copy = myFolder.copyTo(vfProject.getPath(), null);
         Assert.assertNotNull(myVfProject.getChild(name));
         Assert.assertNotNull(vfProject.getChild(name));
         Assert.assertEquals(copy.getName(), name);

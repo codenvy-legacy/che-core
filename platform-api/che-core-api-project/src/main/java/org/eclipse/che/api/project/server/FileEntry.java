@@ -35,13 +35,26 @@ public class FileEntry extends VirtualFileEntry {
         super(workspace, virtualFile);
     }
 
-    public FileEntry copyTo(String newParent) throws NotFoundException, ForbiddenException, ConflictException, ServerException {
+    /**
+     * Copies this file to new parent.
+     *
+     * @param newParent
+     *         path of new parent
+     * @param newName
+     *         new item name
+     * @return
+     * @throws NotFoundException
+     * @throws ForbiddenException
+     * @throws ConflictException
+     * @throws ServerException
+     */
+    public FileEntry copyTo(String newParent, String newName) throws NotFoundException, ForbiddenException, ConflictException, ServerException {
         if (Path.fromString(newParent).isRoot()) {
             throw new ServerException(String.format("Invalid path %s. Can't create file outside of project.", newParent));
         }
         final VirtualFile vf = getVirtualFile();
         final MountPoint mp = vf.getMountPoint();
-        return new FileEntry(getWorkspace(), vf.copyTo(mp.getVirtualFile(newParent)));
+        return new FileEntry(getWorkspace(), vf.copyTo(mp.getVirtualFile(newParent), newName));
     }
 
     public void moveTo(String newParent) throws ConflictException, NotFoundException, ForbiddenException, ServerException {

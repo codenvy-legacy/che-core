@@ -48,6 +48,7 @@ import org.eclipse.che.ide.part.projectexplorer.ProjectListStructure;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.Unmarshallable;
+import org.eclipse.che.ide.ui.dialogs.CancelCallback;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.ui.dialogs.InputCallback;
 import org.eclipse.che.ide.ui.dialogs.input.InputDialog;
@@ -139,13 +140,13 @@ public class RenameItemAction extends Action {
                     if (hasRunningProcesses) {
                         dialogFactory.createMessageDialog("", localization.stopProcessesBeforeRenamingProject(), null).show();
                     } else {
-                        askForRenamingNode(selectedNode);
+                        renameNode(selectedNode);
                     }
                 }
 
                 @Override
                 public void onFailure(Throwable caught) {
-                    askForRenamingNode(selectedNode);
+                    renameNode(selectedNode);
                 }
             });
         } else {
@@ -172,17 +173,22 @@ public class RenameItemAction extends Action {
         e.getPresentation().setEnabled(enabled);
     }
 
-    private void askForRenamingNode(final StorableNode nodeToRename) {
+    /**
+     * Asks the user for new name and renames the node.
+     *
+     * @param node node to rename
+     */
+    private void renameNode(final StorableNode node) {
         final InputCallback inputCallback = new InputCallback() {
             @Override
             public void accepted(final String value) {
                 ItemReference itemReferenceBeforeRenaming = null;
-                if (nodeToRename instanceof ItemNode) {
-                    itemReferenceBeforeRenaming = ((ItemNode)nodeToRename).getData();
+                if (node instanceof ItemNode) {
+                    itemReferenceBeforeRenaming = ((ItemNode)node).getData();
                 }
 
                 final ItemReference finalItemReferenceBeforeRenaming = itemReferenceBeforeRenaming;
-                nodeToRename.rename(value, new RenameCallback() {
+                node.rename(value, new RenameCallback() {
                     @Override
                     public void onRenamed() {
                         StringMap<EditorPartPresenter> editors = editorAgent.getOpenedEditors();
@@ -205,18 +211,29 @@ public class RenameItemAction extends Action {
             }
         };
 
-        final int selectionLength = nodeToRename.getName().indexOf('.') >= 0
-                                    ? nodeToRename.getName().lastIndexOf('.')
-                                    : nodeToRename.getName().length();
+        askForNewName(node, inputCallback, null);
+    }
 
-        InputDialog inputDialog = dialogFactory.createInputDialog(getDialogTitle(nodeToRename),
-                                                                  localization.renameDialogNewNameLabel(),
-                                                                  nodeToRename.getName(), 0, selectionLength, inputCallback, null);
-        if (nodeToRename instanceof FileNode) {
+    /**
+     * Asks the user for new node name.
+     *
+     * @param node
+     * @param inputCallback
+     * @param cancelCallback
+     */
+    public void askForNewName(final StorableNode node, final InputCallback inputCallback, final CancelCallback cancelCallback) {
+        final int selectionLength = node.getName().indexOf('.') >= 0
+                ? node.getName().lastIndexOf('.')
+                : node.getName().length();
+
+        InputDialog inputDialog = dialogFactory.createInputDialog(getDialogTitle(node),
+                localization.renameDialogNewNameLabel(),
+                node.getName(), 0, selectionLength, inputCallback, null);
+        if (node instanceof FileNode) {
             inputDialog.withValidator(fileNameValidator);
-        } else if (nodeToRename instanceof FolderNode) {
+        } else if (node instanceof FolderNode) {
             inputDialog.withValidator(folderNameValidator);
-        } else if (nodeToRename instanceof ProjectNode || nodeToRename instanceof ProjectListStructure.ProjectNode) {
+        } else if (node instanceof ProjectNode || node instanceof ProjectListStructure.ProjectNode) {
             inputDialog.withValidator(projectNameValidator);
         }
         inputDialog.show();

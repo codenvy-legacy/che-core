@@ -579,7 +579,7 @@ public class FSMountPoint implements MountPoint {
     }
 
 
-    VirtualFileImpl copy(VirtualFileImpl source, VirtualFileImpl parent) throws ForbiddenException, ConflictException, ServerException {
+    VirtualFileImpl copy(VirtualFileImpl source, VirtualFileImpl parent, String newName) throws ForbiddenException, ConflictException, ServerException {
         if (source.getVirtualFilePath().equals(parent.getVirtualFilePath())) {
             throw new ForbiddenException("Item cannot be copied to itself. ");
         }
@@ -590,7 +590,7 @@ public class FSMountPoint implements MountPoint {
             throw new ForbiddenException(String.format("Unable copy item '%s' to %s. Operation not permitted. ",
                                                        source.getPath(), parent.getPath()));
         }
-        final Path newPath = parent.getVirtualFilePath().newPath(source.getName());
+        final Path newPath = parent.getVirtualFilePath().newPath(newName != null ? newName : source.getName());
         final VirtualFileImpl destination =
                 new VirtualFileImpl(new java.io.File(ioRoot, toIoPath(newPath)), newPath, pathToId(newPath), this);
         if (destination.exists()) {

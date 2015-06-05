@@ -264,11 +264,12 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void copy(String path, String newParentPath, AsyncRequestCallback<Void> callback) {
-        final String requestUrl = COPY + normalizePath(path) + "?to=" + newParentPath;
+    public void copy(String path, String newParentPath, String newName, AsyncRequestCallback<Void> callback) {
+        final String requestUrl = COPY + normalizePath(path) + "?to=" + newParentPath +
+                (newName != null ? "&name=" + newName : "");
         asyncRequestFactory.createPostRequest(requestUrl, null)
-                           .loader(loader, "Copying item...")
-                           .send(callback);
+                .loader(loader, "Copying item...")
+                .send(callback);
     }
 
     @Override
@@ -298,8 +299,8 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
             requestUrl.append("?force=true");
         }
         asyncRequestFactory.createPostRequest(requestUrl.toString(), importProject, true)
-                           .header(ACCEPT, MimeType.APPLICATION_JSON)
-                           .loader(loader, "Importing sources into project...")
+                .header(ACCEPT, MimeType.APPLICATION_JSON)
+                .loader(loader, "Importing sources into project...")
                            .send(callback);
     }
 
@@ -307,15 +308,15 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     public void getChildren(String path, AsyncRequestCallback<Array<ItemReference>> callback) {
         final String requestUrl = GET_CHILDREN + normalizePath(path);
         asyncRequestFactory.createGetRequest(requestUrl)
-                           .header(ACCEPT, MimeType.APPLICATION_JSON)
-                           .send(callback);
+                .header(ACCEPT, MimeType.APPLICATION_JSON)
+                .send(callback);
     }
 
     @Override
     public void getTree(String path, int depth, AsyncRequestCallback<TreeElement> callback) {
         final String requestUrl = GET_TREE + normalizePath(path) + "?depth=" + depth;
         asyncRequestFactory.createGetRequest(requestUrl)
-                           .header(ACCEPT, MimeType.APPLICATION_JSON)
+                .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .send(callback);
     }
 
@@ -341,7 +342,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         }
 
         asyncRequestFactory.createGetRequest(requestUrl + queryParameters.toString().replaceFirst("&", "?"))
-                           .header(ACCEPT, MimeType.APPLICATION_JSON)
+                .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .send(callback);
     }
 

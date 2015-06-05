@@ -203,8 +203,8 @@ public class VirtualFileImpl implements VirtualFile {
     //
 
     @Override
-    public VirtualFile copyTo(VirtualFile parent) throws ForbiddenException, ConflictException, ServerException {
-        return mountPoint.copy(this, (VirtualFileImpl)parent);
+    public VirtualFile copyTo(VirtualFile parent, String newName) throws ForbiddenException, ConflictException, ServerException {
+        return mountPoint.copy(this, (VirtualFileImpl)parent, newName);
     }
 
     @Override

@@ -625,7 +625,7 @@ public class MemoryVirtualFile implements VirtualFile {
     }
 
     @Override
-    public VirtualFile copyTo(VirtualFile parent) throws ForbiddenException, ConflictException, ServerException {
+    public VirtualFile copyTo(VirtualFile parent, String newName) throws ForbiddenException, ConflictException, ServerException {
         checkExist();
         ((MemoryVirtualFile)parent).checkExist();
         if (isRoot()) {
@@ -639,7 +639,7 @@ public class MemoryVirtualFile implements VirtualFile {
             throw new ForbiddenException(String.format("Unable copy item '%s' to '%s'. Operation not permitted. ",
                                                        getPath(), parent.getPath()));
         }
-        VirtualFile copy = doCopy(parent);
+        VirtualFile copy = doCopy(parent, newName);
         mountPoint.putItem((MemoryVirtualFile)copy);
         SearcherProvider searcherProvider = mountPoint.getSearcherProvider();
         if (searcherProvider != null) {
@@ -653,15 +653,15 @@ public class MemoryVirtualFile implements VirtualFile {
         return copy;
     }
 
-    private VirtualFile doCopy(VirtualFile parent) throws ConflictException {
+    private VirtualFile doCopy(VirtualFile parent, String newName) throws ConflictException {
         VirtualFile virtualFile;
         if (isFile()) {
-            virtualFile = newFile((MemoryVirtualFile)parent, name, Arrays.copyOf(content, content.length), getMediaType());
+            virtualFile = newFile((MemoryVirtualFile)parent, newName != null ? newName : name, Arrays.copyOf(content, content.length), getMediaType());
         } else {
-            virtualFile = newFolder((MemoryVirtualFile)parent, name);
+            virtualFile = newFolder((MemoryVirtualFile)parent, newName != null ? newName : name);
             LazyIterator<VirtualFile> children = getChildren(VirtualFileFilter.ALL);
             while (children.hasNext()) {
-                ((MemoryVirtualFile)children.next()).doCopy(virtualFile);
+                ((MemoryVirtualFile)children.next()).doCopy(virtualFile, null);
             }
         }
         for (Map.Entry<String, List<String>> e : properties.entrySet()) {
@@ -673,7 +673,7 @@ public class MemoryVirtualFile implements VirtualFile {
             }
         }
         if (!((MemoryVirtualFile)parent).addChild(virtualFile)) {
-            throw new ConflictException(String.format("Item '%s' already exists. ", (parent.getPath() + '/' + name)));
+            throw new ConflictException(String.format("Item '%s' already exists. ", (parent.getPath() + '/' + (newName != null ? newName : name))));
         }
         return virtualFile;
     }

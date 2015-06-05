@@ -18,7 +18,9 @@ import com.google.inject.name.Named;
 import org.eclipse.che.api.project.shared.Constants;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.actions.CloseProjectAction;
+import org.eclipse.che.ide.actions.CopyAction;
 import org.eclipse.che.ide.actions.CreateModuleAction;
+import org.eclipse.che.ide.actions.CutAction;
 import org.eclipse.che.ide.actions.DeleteItemAction;
 import org.eclipse.che.ide.actions.ExpandEditorAction;
 import org.eclipse.che.ide.actions.FindReplaceAction;
@@ -31,6 +33,7 @@ import org.eclipse.che.ide.actions.OpenFileAction;
 import org.eclipse.che.ide.actions.OpenProjectAction;
 import org.eclipse.che.ide.actions.OpenNodeAction;
 import org.eclipse.che.ide.actions.OpenSelectedFileAction;
+import org.eclipse.che.ide.actions.PasteAction;
 import org.eclipse.che.ide.actions.ProjectConfigurationAction;
 import org.eclipse.che.ide.actions.RedirectToFeedbackAction;
 import org.eclipse.che.ide.actions.RedirectToForumsAction;
@@ -129,6 +132,15 @@ public class StandardComponentInitializer {
     @Inject
     @MainToolbar
     private ToolbarPresenter toolbarPresenter;
+
+    @Inject
+    private CutAction cutAction;
+
+    @Inject
+    private CopyAction copyAction;
+
+    @Inject
+    private PasteAction pasteAction;
 
     @Inject
     private DeleteItemAction deleteItemAction;
@@ -340,6 +352,11 @@ public class StandardComponentInitializer {
         fileGroup.add(uploadFolderFromZipAction);
         fileGroup.add(navigateToFileAction);
         fileGroup.add(showHiddenFilesAction);
+
+        fileGroup.add(cutAction);
+        fileGroup.add(copyAction);
+        fileGroup.add(pasteAction);
+
         fileGroup.add(renameItemAction);
         fileGroup.add(deleteItemAction);
         fileGroup.addSeparator();
@@ -381,6 +398,11 @@ public class StandardComponentInitializer {
         actionManager.registerAction("resourceOperation", resourceOperation);
         resourceOperation.addSeparator();
         resourceOperation.add(openSelectedFileAction);
+
+        resourceOperation.add(cutAction);
+        resourceOperation.add(copyAction);
+        resourceOperation.add(pasteAction);
+
         resourceOperation.add(renameItemAction);
         resourceOperation.add(deleteItemAction);
         resourceOperation.addSeparator();
@@ -407,6 +429,11 @@ public class StandardComponentInitializer {
         actionManager.registerAction("openProject", openProjectAction);
         actionManager.registerAction("closeProject", closeProjectAction);
         actionManager.registerAction("openSelectedFile", openSelectedFileAction);
+
+        actionManager.registerAction("cut", cutAction);
+        actionManager.registerAction("copy", copyAction);
+        actionManager.registerAction("paste", pasteAction);
+
         actionManager.registerAction("renameResource", renameItemAction);
         actionManager.registerAction("deleteItem", deleteItemAction);
 
@@ -416,6 +443,9 @@ public class StandardComponentInitializer {
         actionManager.registerAction("selectNode", selectNodeAction);
 
         changeResourceGroup.add(closeProjectAction);
+        changeResourceGroup.add(cutAction);
+        changeResourceGroup.add(copyAction);
+        changeResourceGroup.add(pasteAction);
         changeResourceGroup.add(deleteItemAction);
         changeResourceGroup.addSeparator();
 

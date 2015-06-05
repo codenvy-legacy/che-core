@@ -110,9 +110,11 @@ public abstract class VirtualFileSystemImpl implements VirtualFileSystem {
 
     @Path("copy/{id}")
     @Override
-    public Item copy(@PathParam("id") String id, @QueryParam("parentId") String parentId)
+    public Item copy(@PathParam("id") String id,
+                     @QueryParam("parentId") String parentId,
+                     @QueryParam("name") String newName)
             throws NotFoundException, ForbiddenException, ConflictException, ServerException {
-        final VirtualFile virtualFileCopy = mountPoint.getVirtualFileById(id).copyTo(mountPoint.getVirtualFileById(parentId));
+        final VirtualFile virtualFileCopy = mountPoint.getVirtualFileById(id).copyTo(mountPoint.getVirtualFileById(parentId), newName);
         return fromVirtualFile(virtualFileCopy, false, PropertyFilter.ALL_FILTER);
     }
 

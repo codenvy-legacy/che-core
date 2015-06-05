@@ -158,7 +158,7 @@ public class FileEntryTest {
         byte[] b = myFile.contentAsBytes();
         String mt = myFile.getMediaType();
 
-        FileEntry copy = myFile.copyTo(vfProject.getPath());
+        FileEntry copy = myFile.copyTo(vfProject.getPath(), null);
         Assert.assertNotNull(myVfProject.getChild(name));
         Assert.assertNotNull(vfProject.getChild(name));
         Assert.assertEquals(copy.getName(), name);

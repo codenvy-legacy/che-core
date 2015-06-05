@@ -119,10 +119,12 @@ public abstract class VirtualFileEntry {
     }
 
     /**
-     * Creates copy of this item in new parent.
+     * Creates copy of this item with new name in new parent.
      *
      * @param newParent
      *         path of new parent
+     * @param newName
+     *         new item name
      * @throws NotFoundException
      *         if {@code newParent} doesn't exist
      * @throws ForbiddenException
@@ -132,7 +134,7 @@ public abstract class VirtualFileEntry {
      * @throws ServerException
      *         if other error occurs
      */
-    public abstract VirtualFileEntry copyTo(String newParent)
+    public abstract VirtualFileEntry copyTo(String newParent, String newName)
             throws NotFoundException, ForbiddenException, ConflictException, ServerException;
 
     /**

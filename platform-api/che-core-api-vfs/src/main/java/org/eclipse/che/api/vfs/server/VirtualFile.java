@@ -246,8 +246,12 @@ public interface VirtualFile extends Comparable<VirtualFile> {
     String[] getPropertyValues(String name) throws ServerException;
 
     /**
-     * Copies this file to the new parent.
+     * Copies this file with new name to the new parent. Original file name is used when the new name is not set.
      *
+     * @param parent
+     *         parent to copy
+     * @param newName
+     *         new file name
      * @throws ForbiddenException
      *         if specified {@code parent} doesn't denote a folder or user doesn't have write permission to the specified {@code parent}
      * @throws ConflictException
@@ -256,7 +260,7 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      *         if other error occurs
      * @see #isFolder()
      */
-    VirtualFile copyTo(VirtualFile parent) throws ForbiddenException, ConflictException, ServerException;
+    VirtualFile copyTo(VirtualFile parent, String newName) throws ForbiddenException, ConflictException, ServerException;
 
     /**
      * Moves this file to the new parent.
