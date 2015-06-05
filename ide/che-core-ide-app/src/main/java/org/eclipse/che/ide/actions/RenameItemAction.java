@@ -15,9 +15,6 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
-import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
-import org.eclipse.che.api.project.gwt.client.QueryExpression;
-import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.runner.dto.ApplicationProcessDescriptor;
 import org.eclipse.che.api.runner.gwt.client.RunnerServiceClient;
 import org.eclipse.che.ide.CoreLocalizationConstant;
@@ -25,25 +22,15 @@ import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.editor.EditorAgent;
-import org.eclipse.che.ide.api.editor.EditorPartPresenter;
-import org.eclipse.che.ide.api.notification.Notification;
-import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.project.tree.AbstractTreeNode;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
-import org.eclipse.che.ide.api.project.tree.TreeStructure;
-import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.api.project.tree.generic.FileNode;
 import org.eclipse.che.ide.api.project.tree.generic.FolderNode;
-import org.eclipse.che.ide.api.project.tree.generic.ItemNode;
 import org.eclipse.che.ide.api.project.tree.generic.ProjectNode;
 import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
-import org.eclipse.che.ide.collections.StringMap;
-import org.eclipse.che.ide.part.editor.EditorPartStackPresenter;
 import org.eclipse.che.ide.part.projectexplorer.ProjectListStructure;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
@@ -53,13 +40,11 @@ import org.eclipse.che.ide.ui.dialogs.InputCallback;
 import org.eclipse.che.ide.ui.dialogs.input.InputDialog;
 import org.eclipse.che.ide.ui.dialogs.input.InputValidator;
 import org.eclipse.che.ide.util.NameUtils;
-import org.eclipse.che.ide.util.loging.Log;
 
 import javax.annotation.Nullable;
 
 import static org.eclipse.che.api.runner.ApplicationStatus.NEW;
 import static org.eclipse.che.api.runner.ApplicationStatus.RUNNING;
-import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
 import static org.eclipse.che.ide.api.project.tree.TreeNode.RenameCallback;
 
 /**
@@ -70,10 +55,7 @@ import static org.eclipse.che.ide.api.project.tree.TreeNode.RenameCallback;
 @Singleton
 public class RenameItemAction extends Action {
     private final AnalyticsEventLogger     eventLogger;
-    private final NotificationManager      notificationManager;
-    private final EditorAgent              editorAgent;
     private final CoreLocalizationConstant localization;
-    private final ProjectServiceClient     projectServiceClient;
     private final RunnerServiceClient      runnerServiceClient;
     private final DtoUnmarshallerFactory   dtoUnmarshallerFactory;
     private final DialogFactory            dialogFactory;
@@ -82,33 +64,24 @@ public class RenameItemAction extends Action {
     private final InputValidator           fileNameValidator;
     private final InputValidator           folderNameValidator;
     private final InputValidator           projectNameValidator;
-    private final EditorPartStackPresenter partStackPresenter;
 
     @Inject
     public RenameItemAction(Resources resources,
                             AnalyticsEventLogger eventLogger,
                             SelectionAgent selectionAgent,
-                            NotificationManager notificationManager,
-                            EditorAgent editorAgent,
                             CoreLocalizationConstant localization,
-                            ProjectServiceClient projectServiceClient,
                             RunnerServiceClient runnerServiceClient,
                             DtoUnmarshallerFactory dtoUnmarshallerFactory,
                             DialogFactory dialogFactory,
-                            AppContext appContext,
-                            EditorPartStackPresenter partStackPresenter) {
+                            AppContext appContext) {
         super(localization.renameItemActionText(), localization.renameItemActionDescription(), null, resources.rename());
         this.selectionAgent = selectionAgent;
         this.eventLogger = eventLogger;
-        this.notificationManager = notificationManager;
-        this.editorAgent = editorAgent;
         this.localization = localization;
-        this.projectServiceClient = projectServiceClient;
         this.runnerServiceClient = runnerServiceClient;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.dialogFactory = dialogFactory;
         this.appContext = appContext;
-        this.partStackPresenter = partStackPresenter;
         this.fileNameValidator = new FileNameValidator();
         this.folderNameValidator = new FolderNameValidator();
         this.projectNameValidator = new ProjectNameValidator();
@@ -176,30 +149,14 @@ public class RenameItemAction extends Action {
         final InputCallback inputCallback = new InputCallback() {
             @Override
             public void accepted(final String value) {
-                ItemReference itemReferenceBeforeRenaming = null;
-                if (nodeToRename instanceof ItemNode) {
-                    itemReferenceBeforeRenaming = ((ItemNode)nodeToRename).getData();
-                }
-
-                final ItemReference finalItemReferenceBeforeRenaming = itemReferenceBeforeRenaming;
                 nodeToRename.rename(value, new RenameCallback() {
                     @Override
                     public void onRenamed() {
-                        StringMap<EditorPartPresenter> editors = editorAgent.getOpenedEditors();
-                        Array<EditorPartPresenter> openedEditors = editors.getValues();
-
-                        for (EditorPartPresenter editor : openedEditors.asIterable()) {
-                            partStackPresenter.removePart(editor);
-                        }
-
-                        if (finalItemReferenceBeforeRenaming != null) {
-                            checkOpenedFiles(finalItemReferenceBeforeRenaming, value);
-                        }
+                        //nothing do
                     }
 
                     @Override
-                    public void onFailure(Throwable caught) {
-                        notificationManager.showNotification(new Notification(caught.getMessage(), ERROR));
+                    public void onFailure(Throwable exception) {
                     }
                 });
             }
@@ -252,64 +209,6 @@ public class RenameItemAction extends Action {
                                                         callback.onFailure(exception);
                                                     }
                                                 });
-    }
-
-    private void checkOpenedFiles(ItemReference itemBeforeRenaming, String newName) {
-        final String itemPathBeforeRenaming = itemBeforeRenaming.getPath();
-        final String parentPathBeforeRenaming =
-                itemPathBeforeRenaming.substring(0, itemPathBeforeRenaming.length() - itemBeforeRenaming.getName().length());
-        final String itemPathAfterRenaming = parentPathBeforeRenaming + newName;
-
-        if ("file".equals(itemBeforeRenaming.getType())) {
-            checkEditor(itemPathBeforeRenaming, itemPathAfterRenaming);
-        } else if ("folder".equals(itemBeforeRenaming.getType())) {
-            QueryExpression query = new QueryExpression().setPath(itemPathAfterRenaming);
-            Unmarshallable<Array<ItemReference>> unmarshaller = dtoUnmarshallerFactory.newArrayUnmarshaller(ItemReference.class);
-            projectServiceClient.search(query, new AsyncRequestCallback<Array<ItemReference>>(unmarshaller) {
-                @Override
-                protected void onSuccess(Array<ItemReference> result) {
-                    StringMap<ItemReference> children = Collections.createStringMap();
-                    for (ItemReference itemReference : result.asIterable()) {
-                        children.put(itemReference.getPath(), itemReference);
-                    }
-
-                    for (EditorPartPresenter editor : editorAgent.getOpenedEditors().getValues().asIterable()) {
-                        VirtualFile openedFile = editor.getEditorInput().getFile();
-
-                        if (children.get(openedFile.getPath()) != null) {
-                            String pathBeforeRenaming = openedFile.getPath().replaceFirst(itemPathAfterRenaming, itemPathBeforeRenaming);
-                            checkEditor(pathBeforeRenaming, openedFile.getPath());
-                        }
-                    }
-                }
-
-                @Override
-                protected void onFailure(Throwable exception) {
-                    Log.error(RenameItemAction.class, exception);
-                }
-            });
-        }
-    }
-
-    private void checkEditor(String filePathBeforeRename, String filePathAfterRename) {
-        final EditorPartPresenter editor = editorAgent.getOpenedEditors().remove(filePathBeforeRename);
-        if (editor != null) {
-            TreeStructure currentTreeStructure = appContext.getCurrentProject().getCurrentTree();
-            currentTreeStructure.getNodeByPath(filePathAfterRename, new AsyncCallback<TreeNode<?>>() {
-                @Override
-                public void onFailure(Throwable caught) {
-
-                }
-
-                @Override
-                public void onSuccess(TreeNode<?> result) {
-                    FileNode fileNode = (FileNode)result;
-                    editor.getEditorInput().setFile(fileNode);
-                    editorAgent.getOpenedEditors().put(fileNode.getPath(), editor);
-                    editor.onFileChanged();
-                }
-            });
-        }
     }
 
     private String getDialogTitle(StorableNode node) {

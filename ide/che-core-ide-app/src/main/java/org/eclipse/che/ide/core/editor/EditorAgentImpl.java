@@ -36,6 +36,7 @@ import org.eclipse.che.ide.api.parts.PartStackType;
 import org.eclipse.che.ide.api.parts.PropertyListener;
 import org.eclipse.che.ide.api.parts.WorkspaceAgent;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
+import org.eclipse.che.ide.api.project.tree.generic.FileNode;
 import org.eclipse.che.ide.api.project.tree.generic.FolderNode;
 import org.eclipse.che.ide.api.project.tree.generic.ItemNode;
 import org.eclipse.che.ide.api.texteditor.HasReadOnlyProperty;
@@ -276,6 +277,17 @@ public class EditorAgentImpl implements EditorAgent {
                 }
             }
         });
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void updateEditorNode(@Nonnull String path, @Nonnull VirtualFile virtualFile) {
+        final EditorPartPresenter editor = getOpenedEditors().remove(path);
+        if (editor != null) {
+            editor.getEditorInput().setFile(virtualFile);
+            getOpenedEditors().put(virtualFile.getPath(), editor);
+            editor.onFileChanged();
+        }
     }
 
     /** {@inheritDoc} */
