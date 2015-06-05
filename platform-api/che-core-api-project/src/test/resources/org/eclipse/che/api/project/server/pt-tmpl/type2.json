@@ -1,0 +1,22 @@
+[
+    {
+        "displayName": "Ant Java Console",
+        "category": "Samples - Hello World",
+        "description": "A simple JAR project based on Ant.",
+        "source": {
+            "type": "zip",
+            "location": "${project.template_location_dir}codenvy-templates/desktop-ant-java-simple.zip"
+        },
+        "runners": {
+            "default": "system:/java/standalone/simple/cli",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
+            }
+        },
+        "builders": {
+            "default": "ant"
+        }
+    }
+]
