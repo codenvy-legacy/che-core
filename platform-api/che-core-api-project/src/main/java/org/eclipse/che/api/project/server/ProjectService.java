@@ -317,8 +317,11 @@ public class ProjectService extends Service {
 
         for (String modulePath : modulePaths) {
             Project module = projectManager.getProject(workspace, modulePath);
-            modules.add(DtoConverter.toDescriptorDto2(module,
-                                                      getServiceContext().getServiceUriBuilder(), projectManager.getProjectTypeRegistry()));
+            if (module != null) {
+                modules.add(DtoConverter.toDescriptorDto2(module,
+                                                          getServiceContext().getServiceUriBuilder(),
+                                                          projectManager.getProjectTypeRegistry()));
+            }
         }
         return modules;
     }
@@ -808,8 +811,7 @@ public class ProjectService extends Service {
                 /* Calculates new module path, f.e module1/oldModuleName -> module1/newModuleName */
                 String newModulePath = oldModulePath.substring(0, oldModulePath.lastIndexOf("/") + 1) + newName;
 
-                project.getModules().remove(oldModulePath);
-                project.getModules().add(newModulePath);
+                project.getModules().update(oldModulePath, newModulePath);
             }
         }
         final URI location = getServiceContext().getServiceUriBuilder()
