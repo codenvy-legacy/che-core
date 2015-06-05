@@ -232,7 +232,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
                             childNode.setChildren(Collections.<TreeNode<?>>createArray());
                             refreshAndSelectNode(childNode);
 
-                            ProjectDescriptor projectDescriptor = appContext.getCurrentProject().getProjectDescription();
+                            ProjectDescriptor projectDescriptor = appContext.getCurrentProject().getRootProject();
                             String workspaceName = projectDescriptor.getWorkspaceName();
                             String fullProjectPath = "/" + workspaceName + projectDescriptor.getPath();
                             eventBus.fireEvent(new RestoreProjectTreeStateEvent(fullProjectPath));
