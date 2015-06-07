@@ -13,7 +13,7 @@ package org.eclipse.che.vfs.impl.fs;
 import java.net.URI;
 
 /** @author andrew00x */
-public class GitUrlResolveTest extends LocalFileSystemTest {
+public class GitUrlResolverTest extends LocalFileSystemTest {
     private String file;
 
     @Override
