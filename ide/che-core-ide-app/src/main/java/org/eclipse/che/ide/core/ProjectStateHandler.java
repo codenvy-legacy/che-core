@@ -152,6 +152,7 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
                             }
                         }, false);
                     } else {
+                        eventBus.fireEvent(new RefreshProjectTreeEvent());
                         openProblemProject(project);
                     }
                 } else {
@@ -209,8 +210,6 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
                                                                getAskHandler(project));
 
         dialog.show();
-
-        eventBus.fireEvent(new RefreshProjectTreeEvent());
     }
 
     private ProjectProblemDialog.AskHandler getAskHandler(final ProjectDescriptor project) {
