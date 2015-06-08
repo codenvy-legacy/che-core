@@ -34,7 +34,6 @@ import org.eclipse.che.ide.api.event.OpenProjectHandler;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.ProjectDescriptorChangedEvent;
 import org.eclipse.che.ide.api.event.ProjectDescriptorChangedHandler;
-import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
 import org.eclipse.che.ide.core.problemDialog.ProjectProblemDialog;
 import org.eclipse.che.ide.projecttype.wizard.presenter.ProjectWizardPresenter;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
@@ -209,8 +208,6 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
                                                                getAskHandler(project));
 
         dialog.show();
-
-        eventBus.fireEvent(new RefreshProjectTreeEvent());
     }
 
     private ProjectProblemDialog.AskHandler getAskHandler(final ProjectDescriptor project) {
