@@ -13,6 +13,8 @@ package org.eclipse.che.api.machine.server;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.machine.server.spi.InstanceProvider;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -22,9 +24,11 @@ import java.util.Set;
  *
  * @author Alexander Garagatyi
  */
+@Singleton
 public class MachineInstanceProviders {
     private final Map<String, InstanceProvider> instanceProviders;
 
+    @Inject
     public MachineInstanceProviders(Set<InstanceProvider> instanceProviders) {
         this.instanceProviders = new HashMap<>(instanceProviders.size());
         for (InstanceProvider provider : instanceProviders) {
