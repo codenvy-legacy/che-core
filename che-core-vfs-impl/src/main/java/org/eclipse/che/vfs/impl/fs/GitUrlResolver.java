@@ -51,10 +51,10 @@ public class GitUrlResolver {
     public String resolve(URI baseUri, VirtualFileImpl virtualFile) {
         final String localPath = pathResolver.resolve(virtualFile);
 
-        URI uriLocalPath = Paths.get(localPath).toUri();
+        URI uriLocalPath = URI.create(localPath);
         String localPathNormalized = uriLocalPath.getPath();
 
-        URI uriMountPath = Paths.get(mountPath).toUri();
+        URI uriMountPath = URI.create(mountPath);
         String mountPathNormalized = uriMountPath.getPath();
 
         StringBuilder result = new StringBuilder();
@@ -68,7 +68,7 @@ public class GitUrlResolver {
         }
         result.append('/');
         result.append("git");
-        result.append(localPathNormalized.substring(mountPathNormalized.length() - 1));
+        result.append(localPathNormalized.substring(mountPathNormalized.length()));
         return result.toString();
     }
 }
