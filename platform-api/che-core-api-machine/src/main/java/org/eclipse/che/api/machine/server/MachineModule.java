@@ -11,6 +11,7 @@
 package org.eclipse.che.api.machine.server;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.name.Names;
 
 import org.eclipse.che.api.machine.server.event.MachineProcessMessenger;
 import org.eclipse.che.api.machine.server.event.MachineStateMessenger;
@@ -27,5 +28,7 @@ public class MachineModule extends AbstractModule {
     protected void configure() {
         bind(MachineStateMessenger.class).asEagerSingleton();
         bind(MachineProcessMessenger.class).asEagerSingleton();
+
+        bindConstant().annotatedWith(Names.named("machine.extension.api_port")).to(4400);
     }
 }
