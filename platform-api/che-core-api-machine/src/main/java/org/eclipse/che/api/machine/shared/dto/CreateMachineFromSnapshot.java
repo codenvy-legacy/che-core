@@ -36,4 +36,10 @@ public interface CreateMachineFromSnapshot {
     void setSnapshotId(String snapshotId);
 
     CreateMachineFromSnapshot withSnapshotId(String snapshotId);
+
+    String getDisplayName();
+
+    void setDisplayName(String displayName);
+
+    CreateMachineFromSnapshot withDisplayName(String displayName);
 }

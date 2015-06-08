@@ -124,7 +124,8 @@ public class MachineManager {
                               final String workspaceId,
                               final String owner,
                               final LineConsumer machineLogsOutput,
-                              final boolean bindWorkspaceOnStart)
+                              final boolean bindWorkspaceOnStart,
+                              final String displayName)
             throws UnsupportedRecipeException, InvalidRecipeException, MachineException, NotFoundException {
         final InstanceProvider instanceProvider = instanceProviders.get(machineType);
         if (instanceProvider == null) {
@@ -140,7 +141,8 @@ public class MachineManager {
                                                         workspaceId,
                                                         owner,
                                                         machineLogger,
-                                                        bindWorkspaceOnStart);
+                                                        bindWorkspaceOnStart,
+                                                        displayName);
             machine.setState(MachineState.CREATING);
             machineRegistry.put(machine);
             executor.execute(new Runnable() {
@@ -200,7 +202,8 @@ public class MachineManager {
      */
     public MachineImpl create(final SnapshotImpl snapshot,
                               final String owner,
-                              final LineConsumer machineLogsOutput)
+                              final LineConsumer machineLogsOutput,
+                              final String displayName)
             throws NotFoundException, ServerException {
         final String instanceType = snapshot.getType();
         final InstanceProvider instanceProvider = instanceProviders.get(instanceType);
@@ -217,7 +220,8 @@ public class MachineManager {
                                                     snapshot.getWorkspaceId(),
                                                     owner,
                                                     machineLogger,
-                                                    snapshot.isWorkspaceBound());
+                                                    snapshot.isWorkspaceBound(),
+                                                    displayName);
         machine.setState(MachineState.CREATING);
         machineRegistry.put(machine);
         executor.execute(new Runnable() {

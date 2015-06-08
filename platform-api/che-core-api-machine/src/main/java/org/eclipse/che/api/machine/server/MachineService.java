@@ -100,7 +100,8 @@ public class MachineService {
                                                           createMachineRequest.getWorkspaceId(),
                                                           EnvironmentContext.getCurrent().getUser().getId(),
                                                           lineConsumer,
-                                                          createMachineRequest.isBindWorkspace());
+                                                          createMachineRequest.isBindWorkspace(),
+                                                          createMachineRequest.getDisplayName());
 
         return toDescriptor(machine);
     }
@@ -122,7 +123,8 @@ public class MachineService {
 
         final MachineImpl machine = machineManager.create(snapshot,
                                                           EnvironmentContext.getCurrent().getUser().getId(),
-                                                          lineConsumer);
+                                                          lineConsumer,
+                                                          createMachineRequest.getDisplayName());
 
         return toDescriptor(machine);
     }
@@ -378,7 +380,8 @@ public class MachineService {
                                                               .withOwner(machine.getOwner())
                                                               .withWorkspaceId(machine.getWorkspaceId())
                                                               .withWorkspaceBound(machine.isWorkspaceBound())
-                                                              .withProjects(projectDescriptors);
+                                                              .withProjects(projectDescriptors)
+                                                              .withDisplayName(machine.getDisplayName());
 
         if (machine.getInstance() != null) {
             final InstanceMetadata metadata = machine.getInstance().getMetadata();

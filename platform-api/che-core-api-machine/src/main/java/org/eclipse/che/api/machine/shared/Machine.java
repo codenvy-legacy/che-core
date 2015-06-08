@@ -56,4 +56,6 @@ public interface Machine {
      * Machine specific metadata
      */
     InstanceMetadata getMetadata() throws MachineException;
+
+    String getDisplayName();
 }

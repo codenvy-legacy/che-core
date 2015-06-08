@@ -38,17 +38,25 @@ public class MachineImpl implements Machine {
     private final Set<ProjectBinding> projectBindings;
     private final String              workspaceId;
     private final boolean             isWorkspaceBound;
+    private final String              displayName;
 
     private Instance     instance;
     private MachineState state;
 
-    public MachineImpl(String id, String type, String workspaceId, String owner, LineConsumer machineLogsOutput, boolean isWorkspaceBound) {
+    public MachineImpl(String id,
+                       String type,
+                       String workspaceId,
+                       String owner,
+                       LineConsumer machineLogsOutput,
+                       boolean isWorkspaceBound,
+                       String displayName) {
         this.id = id;
         this.type = type;
         this.owner = owner;
         this.machineLogsOutput = machineLogsOutput;
         this.workspaceId = workspaceId;
         this.isWorkspaceBound = isWorkspaceBound;
+        this.displayName = displayName;
         projectBindings = new CopyOnWriteArraySet<>();
     }
 
@@ -83,6 +91,11 @@ public class MachineImpl implements Machine {
     @Override
     public String getWorkspaceId() {
         return workspaceId;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return displayName;
     }
 
     @Override

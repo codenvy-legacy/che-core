@@ -102,6 +102,12 @@ public interface MachineDescriptor extends Hyperlinks {
 
     void setWorkspaceBound(boolean isWorkspaceBound);
 
+    String getDisplayName();
+
+    void setDisplayName(String displayName);
+
+    MachineDescriptor withDisplayName(String displayName);
+
     MachineDescriptor withWorkspaceBound(boolean isWorkspaceBound);
 
     @Override
