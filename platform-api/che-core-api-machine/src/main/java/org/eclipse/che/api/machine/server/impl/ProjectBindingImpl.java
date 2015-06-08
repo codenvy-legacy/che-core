@@ -20,6 +20,13 @@ import org.eclipse.che.api.machine.shared.ProjectBinding;
 public class ProjectBindingImpl implements ProjectBinding {
     private String path;
 
+    public ProjectBindingImpl() {
+    }
+
+    public ProjectBindingImpl(String path) {
+        this.path = path;
+    }
+
     @Override
     public String getPath() {
         return path;

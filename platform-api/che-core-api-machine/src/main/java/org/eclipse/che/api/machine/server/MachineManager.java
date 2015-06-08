@@ -15,27 +15,33 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
-import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.util.CompositeLineConsumer;
 import org.eclipse.che.api.core.util.FileLineConsumer;
 import org.eclipse.che.api.core.util.LineConsumer;
+import org.eclipse.che.api.core.util.WebsocketLineConsumer;
 import org.eclipse.che.api.machine.server.dao.SnapshotDao;
 import org.eclipse.che.api.machine.server.exception.InvalidInstanceSnapshotException;
 import org.eclipse.che.api.machine.server.exception.InvalidRecipeException;
 import org.eclipse.che.api.machine.server.exception.MachineException;
+import org.eclipse.che.api.machine.server.exception.SnapshotException;
 import org.eclipse.che.api.machine.server.exception.UnsupportedRecipeException;
-import org.eclipse.che.api.machine.server.impl.*;
-import org.eclipse.che.api.machine.server.spi.InstanceKey;
-import org.eclipse.che.api.machine.server.spi.InstanceProvider;
+import org.eclipse.che.api.machine.server.impl.MachineImpl;
+import org.eclipse.che.api.machine.server.impl.ProcessImpl;
+import org.eclipse.che.api.machine.server.impl.SnapshotImpl;
+import org.eclipse.che.api.machine.server.recipe.RecipeImpl;
 import org.eclipse.che.api.machine.server.spi.Instance;
+import org.eclipse.che.api.machine.server.spi.InstanceKey;
 import org.eclipse.che.api.machine.server.spi.InstanceProcess;
+import org.eclipse.che.api.machine.server.spi.InstanceProvider;
 import org.eclipse.che.api.machine.shared.Command;
 import org.eclipse.che.api.machine.shared.MachineState;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
-import org.eclipse.che.api.machine.shared.recipe.Recipe;
+import org.eclipse.che.api.machine.shared.dto.MachineFromRecipeMetadata;
+import org.eclipse.che.api.machine.shared.dto.MachineFromSnapshotMetadata;
 import org.eclipse.che.api.machine.shared.dto.event.MachineProcessEvent;
 import org.eclipse.che.api.machine.shared.dto.event.MachineStateEvent;
+import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.eclipse.che.dto.server.DtoFactory;
@@ -53,11 +59,8 @@ import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -72,79 +75,66 @@ import java.util.concurrent.TimeUnit;
 public class MachineManager {
     private static final Logger LOG = LoggerFactory.getLogger(MachineManager.class);
 
-    private final SnapshotDao                   snapshotDao;
-    private final File                          machineLogsDir;
-    private final Map<String, InstanceProvider> instanceProviders;
-    private final ExecutorService               executor;
-    private final MachineRegistry               machineRegistry;
-    private final EventService                  eventService;
+    private final SnapshotDao              snapshotDao;
+    private final File                     machineLogsDir;
+    private final MachineInstanceProviders machineInstanceProviders;
+    private final ExecutorService          executor;
+    private final MachineRegistry          machineRegistry;
+    private final EventService             eventService;
 
     private final DtoFactory dtoFactory = DtoFactory.getInstance();
 
     @Inject
     public MachineManager(SnapshotDao snapshotDao,
-                          Set<InstanceProvider> instanceProviders,
                           MachineRegistry machineRegistry,
+                          MachineInstanceProviders machineInstanceProviders,
                           @Named("machine.logs.location") String machineLogsDir,
                           EventService eventService) {
         this.snapshotDao = snapshotDao;
+        this.machineInstanceProviders = machineInstanceProviders;
         this.eventService = eventService;
         this.machineLogsDir = new File(machineLogsDir);
-        this.instanceProviders = new HashMap<>();
         this.machineRegistry = machineRegistry;
-        for (InstanceProvider provider : instanceProviders) {
-            this.instanceProviders.put(provider.getType(), provider);
-        }
+
         executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("MachineManager-%d").setDaemon(true).build());
     }
 
     /**
      * Creates and starts machine from scratch using recipe.
      *
-     * @param machineType
-     *         type of machine
-     * @param recipe
-     *         machine's recipe
-     * @param owner
-     *         owner for new machine
-     * @param workspaceId
-     *         workspace the machine is bound to
-     * @param machineLogsOutput
-     *         output for machine's logs
+     * @param machineFromRecipeMetadata
+     *         metadata that contains all information needed for creation machine from scratch
      * @return new Machine
      * @throws UnsupportedRecipeException
      *         if recipe isn't supported
      * @throws InvalidRecipeException
      *         if recipe is not valid
+     * @throws NotFoundException
+     *         if machine type from recipe is unsupported
      * @throws MachineException
      *         if any other exception occurs during starting
      */
-    public MachineImpl create(final String machineType,
-                              final Recipe recipe,
-                              final String workspaceId,
-                              final String owner,
-                              final LineConsumer machineLogsOutput,
-                              final boolean bindWorkspaceOnStart,
-                              final String displayName)
+    public MachineImpl create(final MachineFromRecipeMetadata machineFromRecipeMetadata)
             throws UnsupportedRecipeException, InvalidRecipeException, MachineException, NotFoundException {
-        final InstanceProvider instanceProvider = instanceProviders.get(machineType);
-        if (instanceProvider == null) {
-            throw new NotFoundException(String.format("Unable create machine from recipe, unsupported machine type '%s'", machineType));
-        }
-        final String recipeType = recipe.getType();
+
+        final InstanceProvider instanceProvider = machineInstanceProviders.getProvider(machineFromRecipeMetadata.getType());
+        final String recipeType = machineFromRecipeMetadata.getRecipeDescriptor().getType();
+
         if (instanceProvider.getRecipeTypes().contains(recipeType)) {
             final String machineId = generateMachineId();
+
             createMachineLogsDir(machineId);
-            final CompositeLineConsumer machineLogger = new CompositeLineConsumer(machineLogsOutput, getMachineFileLogger(machineId));
+            final LineConsumer machineLogger = getMachineLogger(machineId, machineFromRecipeMetadata.getOutputChannel());
+
             final MachineImpl machine = new MachineImpl(machineId,
                                                         instanceProvider.getType(),
-                                                        workspaceId,
-                                                        owner,
+                                                        machineFromRecipeMetadata.getWorkspaceId(),
+                                                        EnvironmentContext.getCurrent().getUser().getId(),
                                                         machineLogger,
-                                                        bindWorkspaceOnStart,
-                                                        displayName);
+                                                        machineFromRecipeMetadata.isBindWorkspace(),
+                                                        machineFromRecipeMetadata.getDisplayName());
             machine.setState(MachineState.CREATING);
-            machineRegistry.put(machine);
+            machineRegistry.add(machine);
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -153,7 +143,12 @@ public class MachineManager {
                                                        .withEventType(MachineStateEvent.EventType.CREATING)
                                                        .withMachineId(machineId));
 
-                        final Instance instance = instanceProvider.createInstance(recipe, machineLogger, workspaceId, bindWorkspaceOnStart);
+                        final Instance instance = instanceProvider.createInstance(
+                                RecipeImpl.fromDescriptor(machineFromRecipeMetadata.getRecipeDescriptor()),
+                                machineLogger,
+                                machineFromRecipeMetadata.getWorkspaceId(),
+                                machineFromRecipeMetadata.isBindWorkspace());
+
                         machine.setInstance(instance);
                         machine.setState(MachineState.RUNNING);
 
@@ -186,44 +181,39 @@ public class MachineManager {
     /**
      * Restores and starts machine from snapshot.
      *
-     * @param snapshot
-     *         snapshot to create machine from
-     * @param owner
-     *         owner for new machine
-     * @param machineLogsOutput
-     *         output for machine's creation logs
-     * @return new Machine
+     * @param machineFromSnapshotMetadata
+     *         metadata that contains all information needed for creation machine from snapshot
+     * @return new machine
      * @throws NotFoundException
      *         if snapshot not found
      * @throws InvalidInstanceSnapshotException
      *         if instance pointed by snapshot is not valid
+     * @throws SnapshotException
+     *         if error occurs on retrieving snapshot information
      * @throws MachineException
      *         if any other exception occurs during starting
      */
-    public MachineImpl create(final SnapshotImpl snapshot,
-                              final String owner,
-                              final LineConsumer machineLogsOutput,
-                              final String displayName)
-            throws NotFoundException, ServerException {
+    public MachineImpl create(MachineFromSnapshotMetadata machineFromSnapshotMetadata)
+            throws NotFoundException, MachineException, InvalidInstanceSnapshotException, SnapshotException {
+        final SnapshotImpl snapshot = getSnapshot(machineFromSnapshotMetadata.getSnapshotId());
         final String instanceType = snapshot.getType();
-        final InstanceProvider instanceProvider = instanceProviders.get(instanceType);
-        if (instanceProvider == null) {
-            throw new MachineException(
-                    String.format("Unable create machine from snapshot '%s', unsupported instance type '%s'", snapshot.getId(),
-                                  instanceType));
-        }
+
+        final InstanceProvider instanceProvider = machineInstanceProviders.getProvider(instanceType);
+
         final String machineId = generateMachineId();
         createMachineLogsDir(machineId);
-        final CompositeLineConsumer machineLogger = new CompositeLineConsumer(machineLogsOutput, getMachineFileLogger(machineId));
+
+        final LineConsumer machineLogger = getMachineLogger(machineId, machineFromSnapshotMetadata.getOutputChannel());
+
         final MachineImpl machine = new MachineImpl(machineId,
                                                     instanceProvider.getType(),
                                                     snapshot.getWorkspaceId(),
-                                                    owner,
+                                                    EnvironmentContext.getCurrent().getUser().getId(),
                                                     machineLogger,
                                                     snapshot.isWorkspaceBound(),
-                                                    displayName);
+                                                    machineFromSnapshotMetadata.getDisplayName());
         machine.setState(MachineState.CREATING);
-        machineRegistry.put(machine);
+        machineRegistry.add(machine);
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -424,10 +414,10 @@ public class MachineManager {
      * @return snapshot with specified id
      * @throws NotFoundException
      *         if snapshot with provided id not found
-     * @throws ServerException
+     * @throws SnapshotException
      *         if other error occur
      */
-    public SnapshotImpl getSnapshot(String snapshotId) throws NotFoundException, ServerException {
+    public SnapshotImpl getSnapshot(String snapshotId) throws NotFoundException, SnapshotException {
         return snapshotDao.getSnapshot(snapshotId);
     }
 
@@ -441,8 +431,10 @@ public class MachineManager {
      * @param project
      *         project binding
      * @return list of Snapshots
+     * @throws SnapshotException
+     *         if error occur
      */
-    public List<SnapshotImpl> getSnapshots(String owner, String workspaceId, ProjectBinding project) throws ServerException {
+    public List<SnapshotImpl> getSnapshots(String owner, String workspaceId, ProjectBinding project) throws SnapshotException {
         return snapshotDao.findSnapshots(owner, workspaceId, project);
     }
 
@@ -452,17 +444,13 @@ public class MachineManager {
      * @param snapshotId
      * @throws NotFoundException
      *         if snapshot with specified id not found
-     * @throws ServerException
+     * @throws SnapshotException
      *         if other error occurs
      */
-    public void removeSnapshot(String snapshotId) throws NotFoundException, ServerException {
+    public void removeSnapshot(String snapshotId) throws NotFoundException, SnapshotException {
         final SnapshotImpl snapshot = getSnapshot(snapshotId);
         final String instanceType = snapshot.getType();
-        final InstanceProvider instanceProvider = instanceProviders.get(instanceType);
-        if (instanceProvider == null) {
-            throw new MachineException(
-                    String.format("Unable remove instance from snapshot '%s', unsupported instance type '%s'", snapshotId, instanceType));
-        }
+        final InstanceProvider instanceProvider = machineInstanceProviders.getProvider(instanceType);
         instanceProvider.removeInstanceSnapshot(snapshot.getInstanceKey());
 
         snapshotDao.removeSnapshot(snapshotId);
@@ -477,16 +465,16 @@ public class MachineManager {
      *         workspace binding
      * @param project
      *         project binding
-     * @throws ServerException
+     * @throws SnapshotException
      *         error occur
      */
-    public void removeSnapshots(String owner, String workspaceId, ProjectBinding project) throws ServerException {
+    public void removeSnapshots(String owner, String workspaceId, ProjectBinding project) throws SnapshotException {
         for (SnapshotImpl snapshot : snapshotDao.findSnapshots(owner, workspaceId, project)) {
             try {
                 removeSnapshot(snapshot.getId());
             } catch (NotFoundException ignored) {
                 // This is not expected since we just get list of snapshots from DAO.
-            } catch (ServerException e) {
+            } catch (SnapshotException e) {
                 LOG.error(e.getLocalizedMessage(), e);
             }
         }
@@ -499,15 +487,15 @@ public class MachineManager {
      *         id of the machine where command should be executed
      * @param command
      *         command that should be executed in the machine
-     * @param commandOutput
-     *         line consumer for execution logs
+     * @param clientOutputChannel
+     *         channel where client expects to see output of the command
      * @return {@link org.eclipse.che.api.machine.server.impl.ProcessImpl} that represents started process in machine
      * @throws NotFoundException
      *         if machine with specified id not found
      * @throws MachineException
      *         if other error occur
      */
-    public ProcessImpl exec(final String machineId, final Command command, final LineConsumer commandOutput)
+    public ProcessImpl exec(final String machineId, final Command command, String clientOutputChannel)
             throws NotFoundException, MachineException {
         final MachineImpl machine = getMachine(machineId);
         final Instance instance = machine.getInstance();
@@ -517,8 +505,7 @@ public class MachineManager {
         }
         final InstanceProcess instanceProcess = instance.createProcess(command.getCommandLine());
         final int pid = instanceProcess.getPid();
-        final CompositeLineConsumer processLogger =
-                new CompositeLineConsumer(commandOutput, getProcessFileLogger(machineId, pid));
+        final LineConsumer processLogger = getProcessLogger(machineId, pid, clientOutputChannel);
         final Runnable execTask = new Runnable() {
             @Override
             public void run() {
@@ -642,7 +629,7 @@ public class MachineManager {
         }
     }
 
-    public List<MachineImpl> getMachines() throws ServerException {
+    public List<MachineImpl> getMachines() {
         return machineRegistry.getAll();
     }
 
@@ -712,6 +699,21 @@ public class MachineManager {
 
     private String generateSnapshotId() {
         return NameGenerator.generate("snapshot", 16);
+    }
+
+    private LineConsumer getMachineLogger(String machineId, String outputChannel) throws MachineException {
+        return getLogger(getMachineFileLogger(machineId), outputChannel);
+    }
+
+    private LineConsumer getProcessLogger(String machineId, int pid, String outputChannel) throws MachineException {
+        return getLogger(getProcessFileLogger(machineId, pid), outputChannel);
+    }
+
+    private LineConsumer getLogger(LineConsumer fileLogger, String outputChannel) throws MachineException {
+        if (outputChannel != null) {
+            return new CompositeLineConsumer(fileLogger, new WebsocketLineConsumer(outputChannel));
+        }
+        return fileLogger;
     }
 
     @PostConstruct

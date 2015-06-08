@@ -19,7 +19,7 @@ import org.eclipse.che.dto.shared.DTO;
  * @author Alexander Garagatyi
  */
 @DTO
-public interface CreateMachineFromRecipe {
+public interface MachineFromRecipeMetadata {
     /**
      * Channel of websocket where machine logs should be put
      */
@@ -27,7 +27,7 @@ public interface CreateMachineFromRecipe {
 
     void setOutputChannel(String outputChannel);
 
-    CreateMachineFromRecipe withOutputChannel(String outputChannel);
+    MachineFromRecipeMetadata withOutputChannel(String outputChannel);
 
     /**
      * Type of machine implementation
@@ -36,7 +36,7 @@ public interface CreateMachineFromRecipe {
 
     void setType(String type);
 
-    CreateMachineFromRecipe withType(String type);
+    MachineFromRecipeMetadata withType(String type);
 
     /**
      * Description of recipe for machine instance
@@ -45,7 +45,7 @@ public interface CreateMachineFromRecipe {
 
     void setRecipeDescriptor(RecipeDescriptor recipeDescriptor);
 
-    CreateMachineFromRecipe withRecipeDescriptor(RecipeDescriptor recipeDescriptor);
+    MachineFromRecipeMetadata withRecipeDescriptor(RecipeDescriptor recipeDescriptor);
 
     /**
      * Id of a workspace machine should be bound to
@@ -54,17 +54,17 @@ public interface CreateMachineFromRecipe {
 
     void setWorkspaceId(String workspaceId);
 
-    CreateMachineFromRecipe withWorkspaceId(String workspaceId);
+    MachineFromRecipeMetadata withWorkspaceId(String workspaceId);
 
     boolean isBindWorkspace();
 
     void setBindWorkspace(boolean bindWorkspace);
 
-    CreateMachineFromRecipe withBindWorkspace(boolean bindWorkspace);
+    MachineFromRecipeMetadata withBindWorkspace(boolean bindWorkspace);
 
     String getDisplayName();
 
     void setDisplayName(String displayName);
 
-    CreateMachineFromRecipe withDisplayName(String displayName);
+    MachineFromRecipeMetadata withDisplayName(String displayName);
 }

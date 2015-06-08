@@ -11,7 +11,7 @@
 package org.eclipse.che.api.machine.server.dao;
 
 import org.eclipse.che.api.core.NotFoundException;
-import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.machine.server.exception.SnapshotException;
 import org.eclipse.che.api.machine.server.impl.SnapshotImpl;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
 
@@ -31,20 +31,20 @@ public interface SnapshotDao {
      * @return {@link SnapshotImpl} with specified id
      * @throws NotFoundException
      *         if snapshot with specified id not found
-     * @throws ServerException
+     * @throws SnapshotException
      *         if other error occurs
      */
-    SnapshotImpl getSnapshot(String snapshotId) throws NotFoundException, ServerException;
+    SnapshotImpl getSnapshot(String snapshotId) throws NotFoundException, SnapshotException;
 
     /**
      * Save snapshot metadata
      *
      * @param snapshot
      *         snapshot metadata to store
-     * @throws ServerException
+     * @throws SnapshotException
      *         if error occurs
      */
-    void saveSnapshot(SnapshotImpl snapshot) throws ServerException;
+    void saveSnapshot(SnapshotImpl snapshot) throws SnapshotException ;
 
     /**
      * Find snapshots by owner, workspace, project
@@ -56,10 +56,10 @@ public interface SnapshotDao {
      * @param project
      *         project specified in desired snapshot, optional
      * @return list of snapshot that satisfy provided queries, or empty list if no desired snapshots found
-     * @throws ServerException
+     * @throws SnapshotException
      *         if error occurs
      */
-    List<SnapshotImpl> findSnapshots(String owner, String workspaceId, ProjectBinding project) throws ServerException;
+    List<SnapshotImpl> findSnapshots(String owner, String workspaceId, ProjectBinding project) throws SnapshotException ;
 
     /**
      * Remove snapshot by id
@@ -68,8 +68,8 @@ public interface SnapshotDao {
      *         id of snapshot that should be removed
      * @throws NotFoundException
      *         if snapshot with specified id not found
-     * @throws ServerException
+     * @throws SnapshotException
      *         if other error occur
      */
-    void removeSnapshot(String snapshotId) throws NotFoundException, ServerException;
+    void removeSnapshot(String snapshotId) throws NotFoundException, SnapshotException ;
 }

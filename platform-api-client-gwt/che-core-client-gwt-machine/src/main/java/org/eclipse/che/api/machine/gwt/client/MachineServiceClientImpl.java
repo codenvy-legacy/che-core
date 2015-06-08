@@ -15,8 +15,8 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import org.eclipse.che.api.machine.shared.dto.CommandDescriptor;
-import org.eclipse.che.api.machine.shared.dto.CreateMachineFromRecipe;
-import org.eclipse.che.api.machine.shared.dto.CreateMachineFromSnapshot;
+import org.eclipse.che.api.machine.shared.dto.MachineFromRecipeMetadata;
+import org.eclipse.che.api.machine.shared.dto.MachineFromSnapshotMetadata;
 import org.eclipse.che.api.machine.shared.dto.MachineDescriptor;
 import org.eclipse.che.api.machine.shared.dto.ProcessDescriptor;
 import org.eclipse.che.api.machine.shared.dto.recipe.RecipeDescriptor;
@@ -97,7 +97,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
                                                             .withType(recipeType)
                                                             .withScript(recipeScript);
 
-        final CreateMachineFromRecipe request = dtoFactory.createDto(CreateMachineFromRecipe.class)
+        final MachineFromRecipeMetadata request = dtoFactory.createDto(MachineFromRecipeMetadata.class)
                                                           .withWorkspaceId(workspaceId)
                                                           .withType(machineType)
                                                           .withRecipeDescriptor(recipeDescriptor)
@@ -124,7 +124,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     private void createMachineFromSnapshot(@Nonnull String snapshotId,
                                            @Nullable String outputChannel,
                                            @Nonnull AsyncCallback<MachineDescriptor> callback) {
-        final CreateMachineFromSnapshot request = dtoFactory.createDto(CreateMachineFromSnapshot.class)
+        final MachineFromSnapshotMetadata request = dtoFactory.createDto(MachineFromSnapshotMetadata.class)
                                                             .withSnapshotId(snapshotId)
                                                             .withOutputChannel(outputChannel);
 

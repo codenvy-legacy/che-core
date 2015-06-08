@@ -15,6 +15,7 @@ import org.eclipse.che.api.core.util.LineConsumer;
 import org.eclipse.che.api.machine.server.exception.InvalidInstanceSnapshotException;
 import org.eclipse.che.api.machine.server.exception.InvalidRecipeException;
 import org.eclipse.che.api.machine.server.exception.MachineException;
+import org.eclipse.che.api.machine.server.exception.SnapshotException;
 import org.eclipse.che.api.machine.server.exception.UnsupportedRecipeException;
 import org.eclipse.che.api.machine.shared.recipe.Recipe;
 
@@ -91,8 +92,8 @@ public interface InstanceProvider {
      *
      * @param instanceKey
      *         key of the snapshot of the instance that should be removed
-     * @throws MachineException
+     * @throws SnapshotException
      *         if exception occurs on instance snapshot removal
      */
-    void removeInstanceSnapshot(InstanceKey instanceKey) throws MachineException;
+    void removeInstanceSnapshot(InstanceKey instanceKey) throws SnapshotException;
 }

@@ -42,7 +42,7 @@ public class MachineRegistry {
     /**
      * Add new machine
      */
-    public void put(MachineImpl machine) {
+    public void add(MachineImpl machine) {
         machines.put(machine.getId(), machine);
     }
 

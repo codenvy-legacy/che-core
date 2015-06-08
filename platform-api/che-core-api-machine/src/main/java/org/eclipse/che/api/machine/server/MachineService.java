@@ -15,17 +15,17 @@ import com.google.common.io.CharStreams;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.core.util.LineConsumer;
-import org.eclipse.che.api.core.util.WebsocketLineConsumer;
-import org.eclipse.che.api.machine.server.impl.*;
-import org.eclipse.che.api.machine.server.recipe.RecipeImpl;
+import org.eclipse.che.api.machine.server.impl.MachineImpl;
+import org.eclipse.che.api.machine.server.impl.ProcessImpl;
+import org.eclipse.che.api.machine.server.impl.ProjectBindingImpl;
+import org.eclipse.che.api.machine.server.impl.SnapshotImpl;
 import org.eclipse.che.api.machine.server.spi.InstanceMetadata;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
 import org.eclipse.che.api.machine.shared.Server;
 import org.eclipse.che.api.machine.shared.dto.CommandDescriptor;
-import org.eclipse.che.api.machine.shared.dto.CreateMachineFromRecipe;
-import org.eclipse.che.api.machine.shared.dto.CreateMachineFromSnapshot;
 import org.eclipse.che.api.machine.shared.dto.MachineDescriptor;
+import org.eclipse.che.api.machine.shared.dto.MachineFromRecipeMetadata;
+import org.eclipse.che.api.machine.shared.dto.MachineFromSnapshotMetadata;
 import org.eclipse.che.api.machine.shared.dto.NewSnapshotDescriptor;
 import org.eclipse.che.api.machine.shared.dto.ProcessDescriptor;
 import org.eclipse.che.api.machine.shared.dto.ProjectBindingDescriptor;
@@ -34,6 +34,7 @@ import org.eclipse.che.api.machine.shared.dto.SnapshotDescriptor;
 import org.eclipse.che.api.workspace.server.dao.Member;
 import org.eclipse.che.api.workspace.server.dao.MemberDao;
 import org.eclipse.che.commons.env.EnvironmentContext;
+import org.eclipse.che.commons.lang.Strings;
 import org.eclipse.che.dto.server.DtoFactory;
 
 import javax.annotation.security.RolesAllowed;
@@ -64,8 +65,6 @@ import java.util.Map;
  */
 @Path("/machine")
 public class MachineService {
-    private static LineConsumer defaultLineConsumer = LineConsumer.DEV_NULL;
-
     private MachineManager machineManager;
     private DtoFactory     dtoFactory;
     private MemberDao      memberDao;
@@ -82,26 +81,18 @@ public class MachineService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
-    public MachineDescriptor createMachineFromRecipe(final CreateMachineFromRecipe createMachineRequest)
+    public MachineDescriptor createMachineFromRecipe(final MachineFromRecipeMetadata machineFromRecipeMetadata)
             throws ServerException, ForbiddenException, NotFoundException {
-        requiredNotNull(createMachineRequest, "Machine description");
-        requiredNotNull(createMachineRequest.getRecipeDescriptor(), "Machine type");
-        requiredNotNull(createMachineRequest.getWorkspaceId(), "Workspace id");
-        requiredNotNull(createMachineRequest.getRecipeDescriptor(), "Recipe descriptor");
-        requiredNotNull(createMachineRequest.getRecipeDescriptor().getScript(), "Recipe script");
-        requiredNotNull(createMachineRequest.getRecipeDescriptor().getType(), "Recipe type");
+        requiredNotNull(machineFromRecipeMetadata, "Machine description");
+        requiredNotNull(machineFromRecipeMetadata.getRecipeDescriptor(), "Machine type");
+        requiredNotNull(machineFromRecipeMetadata.getWorkspaceId(), "Workspace id");
+        requiredNotNull(machineFromRecipeMetadata.getRecipeDescriptor(), "Recipe descriptor");
+        requiredNotNull(machineFromRecipeMetadata.getRecipeDescriptor().getScript(), "Recipe script");
+        requiredNotNull(machineFromRecipeMetadata.getRecipeDescriptor().getType(), "Recipe type");
 
-        checkCurrentUserPermissionsForWorkspace(createMachineRequest.getWorkspaceId());
+        checkCurrentUserPermissions(machineFromRecipeMetadata.getWorkspaceId());
 
-        final LineConsumer lineConsumer = getLineConsumer(createMachineRequest.getOutputChannel());
-
-        final MachineImpl machine = machineManager.create(createMachineRequest.getType(),
-                                                          RecipeImpl.fromDescriptor(createMachineRequest.getRecipeDescriptor()),
-                                                          createMachineRequest.getWorkspaceId(),
-                                                          EnvironmentContext.getCurrent().getUser().getId(),
-                                                          lineConsumer,
-                                                          createMachineRequest.isBindWorkspace(),
-                                                          createMachineRequest.getDisplayName());
+        final MachineImpl machine = machineManager.create(machineFromRecipeMetadata);
 
         return toDescriptor(machine);
     }
@@ -111,20 +102,16 @@ public class MachineService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
-    public MachineDescriptor createMachineFromSnapshot(CreateMachineFromSnapshot createMachineRequest)
+    public MachineDescriptor createMachineFromSnapshot(MachineFromSnapshotMetadata machineFromSnapshotMetadata)
             throws ForbiddenException, NotFoundException, ServerException {
-        requiredNotNull(createMachineRequest, "Snapshot description");
-        requiredNotNull(createMachineRequest.getSnapshotId(), "Snapshot id");
-        final SnapshotImpl snapshot = machineManager.getSnapshot(createMachineRequest.getSnapshotId());
-        checkCurrentUserPermissionsForSnapshot(snapshot);
-        checkCurrentUserPermissionsForWorkspace(snapshot.getWorkspaceId());
+        requiredNotNull(machineFromSnapshotMetadata, "Snapshot description");
+        requiredNotNull(machineFromSnapshotMetadata.getSnapshotId(), "Snapshot id");
 
-        final LineConsumer lineConsumer = getLineConsumer(createMachineRequest.getOutputChannel());
+        final SnapshotImpl snapshot = machineManager.getSnapshot(machineFromSnapshotMetadata.getSnapshotId());
+        checkCurrentUserPermissions(snapshot);
+        checkCurrentUserPermissions(snapshot.getWorkspaceId());
 
-        final MachineImpl machine = machineManager.create(snapshot,
-                                                          EnvironmentContext.getCurrent().getUser().getId(),
-                                                          lineConsumer,
-                                                          createMachineRequest.getDisplayName());
+        final MachineImpl machine = machineManager.create(machineFromSnapshotMetadata);
 
         return toDescriptor(machine);
     }
@@ -137,7 +124,7 @@ public class MachineService {
             throws ServerException, ForbiddenException, NotFoundException {
         final MachineImpl machine = machineManager.getMachine(machineId);
 
-        checkCurrentUserPermissionsForMachine(machine);
+        checkCurrentUserPermissions(machine);
 
         return toDescriptor(machine);
     }
@@ -153,8 +140,7 @@ public class MachineService {
         final String userId = EnvironmentContext.getCurrent().getUser().getId();
         final List<MachineImpl> machines = machineManager.getMachines(userId,
                                                                       workspaceId,
-                                                                      path != null && !path.isEmpty() ? new ProjectBindingImpl().withPath(
-                                                                              path) : null);
+                                                                      Strings.isNullOrEmpty(path) ? null : new ProjectBindingImpl(path));
 
         final List<MachineDescriptor> machinesDescriptors = new LinkedList<>();
         for (MachineImpl machine : machines) {
@@ -170,7 +156,7 @@ public class MachineService {
     @RolesAllowed("user")
     public void destroyMachine(@PathParam("machineId") String machineId)
             throws NotFoundException, ServerException, ForbiddenException {
-        checkCurrentUserPermissionsForMachine(machineManager.getMachine(machineId));
+        checkCurrentUserPermissions(machineManager.getMachine(machineId));
 
         machineManager.destroy(machineId);
     }
@@ -180,14 +166,13 @@ public class MachineService {
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
     public List<SnapshotDescriptor> getSnapshots(@QueryParam("workspace") String workspaceId,
-                                                 @QueryParam("project") String path)
-            throws ServerException, ForbiddenException {
+                                                 @QueryParam("project") String path) throws ServerException, ForbiddenException {
+
         requiredNotNull(workspaceId, "Parameter workspace");
 
         final List<SnapshotImpl> snapshots = machineManager.getSnapshots(EnvironmentContext.getCurrent().getUser().getId(),
                                                                          workspaceId,
-                                                                         path != null && !path.isEmpty() ? new ProjectBindingImpl()
-                                                                                 .withPath(path) : null);
+                                                                         Strings.isNullOrEmpty(path) ? null : new ProjectBindingImpl(path));
 
         final List<SnapshotDescriptor> snapshotDescriptors = new LinkedList<>();
         for (SnapshotImpl snapshot : snapshots) {
@@ -204,8 +189,9 @@ public class MachineService {
     @RolesAllowed("user")
     public SnapshotDescriptor saveSnapshot(@PathParam("machineId") String machineId, NewSnapshotDescriptor newSnapshotDescriptor)
             throws NotFoundException, ServerException, ForbiddenException {
+
         requiredNotNull(newSnapshotDescriptor, "Snapshot description");
-        checkCurrentUserPermissionsForMachine(machineManager.getMachine(machineId));
+        checkCurrentUserPermissions(machineManager.getMachine(machineId));
 
         return toDescriptor(machineManager.save(machineId,
                                                 EnvironmentContext.getCurrent().getUser().getId(),
@@ -218,7 +204,7 @@ public class MachineService {
     @RolesAllowed("user")
     public void removeSnapshot(@PathParam("snapshotId") String snapshotId)
             throws ForbiddenException, NotFoundException, ServerException {
-        checkCurrentUserPermissionsForSnapshot(machineManager.getSnapshot(snapshotId));
+        checkCurrentUserPermissions(machineManager.getSnapshot(snapshotId));
 
         machineManager.removeSnapshot(snapshotId);
     }
@@ -229,12 +215,11 @@ public class MachineService {
     @RolesAllowed("user")
     public ProcessDescriptor executeCommandInMachine(@PathParam("machineId") String machineId, final CommandDescriptor command)
             throws NotFoundException, ServerException, ForbiddenException {
+
         requiredNotNull(command, "Command description");
-        checkCurrentUserPermissionsForMachine(machineManager.getMachine(machineId));
+        checkCurrentUserPermissions(machineManager.getMachine(machineId));
 
-        final LineConsumer lineConsumer = getLineConsumer(command.getOutputChannel());
-
-        return toDescriptor(machineManager.exec(machineId, command, lineConsumer));
+        return toDescriptor(machineManager.exec(machineId, command, command.getOutputChannel()));
     }
 
     @Path("/{machineId}/process")
@@ -243,7 +228,8 @@ public class MachineService {
     @RolesAllowed("user")
     public List<ProcessDescriptor> getProcesses(@PathParam("machineId") String machineId)
             throws NotFoundException, ServerException, ForbiddenException {
-        checkCurrentUserPermissionsForMachine(machineManager.getMachine(machineId));
+
+        checkCurrentUserPermissions(machineManager.getMachine(machineId));
 
         final List<ProcessDescriptor> processesDescriptors = new LinkedList<>();
         for (ProcessImpl process : machineManager.getProcesses(machineId)) {
@@ -259,7 +245,7 @@ public class MachineService {
     public void stopProcess(@PathParam("machineId") String machineId,
                             @PathParam("processId") int processId)
             throws NotFoundException, ForbiddenException, ServerException {
-        checkCurrentUserPermissionsForMachine(machineManager.getMachine(machineId));
+        checkCurrentUserPermissions(machineManager.getMachine(machineId));
 
         machineManager.stopProcess(machineId, processId);
     }
@@ -270,7 +256,7 @@ public class MachineService {
     public void bindProject(@PathParam("machineId") String machineId,
                             @PathParam("path") String path)
             throws NotFoundException, ServerException, ForbiddenException {
-        checkCurrentUserPermissionsForMachine(machineManager.getMachine(machineId));
+        checkCurrentUserPermissions(machineManager.getMachine(machineId));
 
         machineManager.bindProject(machineId, new ProjectBindingImpl().withPath(path));
     }
@@ -281,7 +267,7 @@ public class MachineService {
     public void unbindProject(@PathParam("machineId") String machineId,
                               @PathParam("path") String path)
             throws NotFoundException, ServerException, ForbiddenException {
-        checkCurrentUserPermissionsForMachine(machineManager.getMachine(machineId));
+        checkCurrentUserPermissions(machineManager.getMachine(machineId));
 
         machineManager.unbindProject(machineId, new ProjectBindingImpl().withPath(path));
     }
@@ -293,13 +279,9 @@ public class MachineService {
     public void getMachineLogs(@PathParam("machineId") String machineId,
                                @Context HttpServletResponse httpServletResponse)
             throws NotFoundException, ForbiddenException, ServerException, IOException {
-        // Response is written directly to the servlet request stream
-        checkCurrentUserPermissionsForMachine(machineManager.getMachine(machineId));
+        checkCurrentUserPermissions(machineManager.getMachine(machineId));
 
-        final Reader machineLogReader = machineManager.getMachineLogReader(machineId);
-        httpServletResponse.setContentType("text/plain");
-        CharStreams.copy(machineLogReader, httpServletResponse.getWriter());
-        httpServletResponse.getWriter().flush();
+        addLogsToResponse(machineManager.getMachineLogReader(machineId), httpServletResponse);
     }
 
     @GET
@@ -310,24 +292,27 @@ public class MachineService {
                                @PathParam("pid") int pid,
                                @Context HttpServletResponse httpServletResponse)
             throws NotFoundException, ForbiddenException, ServerException, IOException {
-        // Response is written directly to the servlet request stream
-        checkCurrentUserPermissionsForMachine(machineManager.getMachine(machineId));
+        checkCurrentUserPermissions(machineManager.getMachine(machineId));
 
-        final Reader machineLogReader = machineManager.getProcessLogReader(machineId, pid);
+        addLogsToResponse(machineManager.getProcessLogReader(machineId, pid), httpServletResponse);
+    }
+
+    private void addLogsToResponse(Reader logsReader, HttpServletResponse httpServletResponse) throws IOException {
+        // Response is written directly to the servlet request stream
         httpServletResponse.setContentType("text/plain");
-        CharStreams.copy(machineLogReader, httpServletResponse.getWriter());
+        CharStreams.copy(logsReader, httpServletResponse.getWriter());
         httpServletResponse.getWriter().flush();
     }
 
-    private void checkCurrentUserPermissionsForSnapshot(SnapshotImpl snapshot) throws ForbiddenException, ServerException {
-        checkCurrentUserPermissionsForWorkspace(snapshot.getWorkspaceId());
+    private void checkCurrentUserPermissions(SnapshotImpl snapshot) throws ForbiddenException, ServerException {
+        checkCurrentUserPermissions(snapshot.getWorkspaceId());
     }
 
-    private void checkCurrentUserPermissionsForMachine(MachineImpl machine) throws ForbiddenException, ServerException {
-        checkCurrentUserPermissionsForWorkspace(machine.getWorkspaceId());
+    private void checkCurrentUserPermissions(MachineImpl machine) throws ForbiddenException, ServerException {
+        checkCurrentUserPermissions(machine.getWorkspaceId());
     }
 
-    private void checkCurrentUserPermissionsForWorkspace(String workspaceId) throws ForbiddenException, ServerException {
+    private void checkCurrentUserPermissions(String workspaceId) throws ForbiddenException, ServerException {
         try {
             final Member member = memberDao.getWorkspaceMember(workspaceId, EnvironmentContext.getCurrent().getUser().getId());
             if (member.getRoles().contains("workspace/admin") || member.getRoles().contains("workspace/developer")) {
@@ -352,17 +337,6 @@ public class MachineService {
         if (object == null) {
             throw new ForbiddenException(subject + " required");
         }
-    }
-
-    private LineConsumer getLineConsumer(String outputChannel) {
-        final LineConsumer lineConsumer;
-        if (outputChannel != null) {
-            lineConsumer = new WebsocketLineConsumer(outputChannel);
-        } else {
-            // for testing purposes, can be replaced with mock by reflection
-            lineConsumer = defaultLineConsumer;
-        }
-        return lineConsumer;
     }
 
     private MachineDescriptor toDescriptor(MachineImpl machine) throws ServerException {
