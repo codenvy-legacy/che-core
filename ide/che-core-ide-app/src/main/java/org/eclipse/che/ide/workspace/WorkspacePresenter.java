@@ -23,7 +23,7 @@ import org.eclipse.che.ide.api.parts.PartStack;
 import org.eclipse.che.ide.api.parts.PartStackType;
 import org.eclipse.che.ide.api.parts.WorkspaceAgent;
 import org.eclipse.che.ide.menu.MainMenuPresenter;
-import org.eclipse.che.ide.menu.StatusPanelGroupPresenter;
+import org.eclipse.che.ide.statuspanel.StatusPanelGroupPresenter;
 import org.eclipse.che.ide.ui.toolbar.MainToolbar;
 import org.eclipse.che.ide.ui.toolbar.ToolbarPresenter;
 
