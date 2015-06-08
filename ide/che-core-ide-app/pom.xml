@@ -29,6 +29,11 @@
     </properties>
     <dependencies>
         <dependency>
+            <groupId>com.codenvy.plugin-hosted</groupId>
+            <artifactId>codenvy-ext-subscriptions</artifactId>
+            <version>${codenvy.plugin.hosted.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>${com.googlecode.gson.version}</version>

@@ -8,8 +8,9 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.menu;
+package org.eclipse.che.ide.statuspanel;
 
+import com.codenvy.ide.subscriptions.client.SubscriptionsResources;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Timer;
@@ -28,6 +29,10 @@ import org.eclipse.che.ide.api.action.CustomComponentAction;
 import org.eclipse.che.ide.api.action.IdeActions;
 import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.action.Separator;
+import org.eclipse.che.ide.menu.MainMenuViewImpl;
+import org.eclipse.che.ide.menu.MenuBarItem;
+import org.eclipse.che.ide.menu.MenuItemPresentationFactory;
+import org.eclipse.che.ide.menu.MenuResources;
 import org.eclipse.che.ide.ui.toolbar.CloseMenuHandler;
 import org.eclipse.che.ide.ui.toolbar.MenuLockLayer;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
@@ -75,7 +80,7 @@ public class StatusPanelGroupViewImpl extends Composite implements StatusPanelGr
 
     /** Create new {@link MainMenuViewImpl} */
     @Inject
-    public StatusPanelGroupViewImpl(MenuResources resources, ActionManager actionManager) {
+    public StatusPanelGroupViewImpl(SubscriptionsResources subscriptionsResources, MenuResources resources, ActionManager actionManager) {
         this.resources = resources;
         this.actionManager = actionManager;
 
@@ -94,6 +99,7 @@ public class StatusPanelGroupViewImpl extends Composite implements StatusPanelGr
         rightPanel.getElement().getStyle().setPropertyPx("marginRight", 1);
         rootPanel.add(rightPanel);
 
+        subscriptionsResources.subscriptionsCSS().ensureInjected();
     }
 
     @Override

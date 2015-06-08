@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.menu;
+package org.eclipse.che.ide.statuspanel;
 
 import org.eclipse.che.ide.api.mvp.View;
 
