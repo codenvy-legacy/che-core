@@ -151,7 +151,7 @@ public class ProjectNodeTest extends BaseNodeTest {
         ItemReference fileItem = mock(ItemReference.class);
         when(fileItem.getType()).thenReturn("file");
 
-        projectNode.createChildNode(fileItem);
+        projectNode.createChildNode(fileItem, null);
 
         verify(treeStructure).newFileNode(eq(projectNode), eq(fileItem));
     }
@@ -161,7 +161,7 @@ public class ProjectNodeTest extends BaseNodeTest {
         ItemReference folderItem = mock(ItemReference.class);
         when(folderItem.getType()).thenReturn("folder");
 
-        projectNode.createChildNode(folderItem);
+        projectNode.createChildNode(folderItem, null);
 
         verify(treeStructure).newFolderNode(eq(projectNode), eq(folderItem));
     }
@@ -171,7 +171,7 @@ public class ProjectNodeTest extends BaseNodeTest {
         ItemReference folderItem = mock(ItemReference.class);
         when(folderItem.getType()).thenReturn("project");
 
-        projectNode.createChildNode(folderItem);
+        projectNode.createChildNode(folderItem, Collections.<ProjectDescriptor>createArray());
 
         verify(treeStructure).newFolderNode(eq(projectNode), eq(folderItem));
     }

@@ -15,6 +15,7 @@ import com.google.gwt.event.shared.EventHandler;
 /**
  * @author Vitaly Parfonov
  */
+@Deprecated
 public interface ProjectDescriptorChangedHandler extends EventHandler {
 
 

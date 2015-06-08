@@ -16,6 +16,7 @@ import com.google.gwt.event.shared.GwtEvent;
 /**
  * @author Vitaly Parfonov
  */
+@Deprecated
 public class ProjectDescriptorChangedEvent extends GwtEvent<ProjectDescriptorChangedHandler> {
 
     private ProjectDescriptor projectDescriptor;
