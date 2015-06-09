@@ -125,7 +125,7 @@ public class PreferencesViewImpl extends Window implements PreferencesView {
         btnSave = createButton(locale.save(), "window-preferences-storeChanges", new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-                Log.trace("< SAVE");
+                Log.debug(this.getClass(), "< SAVE");
                 delegate.onSaveClicked();
             }
         });
@@ -141,7 +141,7 @@ public class PreferencesViewImpl extends Window implements PreferencesView {
         btnRefresh = createButton(locale.refresh(), "window-preferences-refresh", new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-                Log.trace("< REFRESH");
+                Log.debug(this.getClass(), "< REFRESH");
                 delegate.onRefreshClicked();
             }
         });
@@ -155,7 +155,7 @@ public class PreferencesViewImpl extends Window implements PreferencesView {
         btnClose = createButton(locale.close(), "window-preferences-close", new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-                Log.trace("< CLOSE");
+                Log.debug(this.getClass(), "< CLOSE");
                 delegate.onCloseClicked();
             }
         });
