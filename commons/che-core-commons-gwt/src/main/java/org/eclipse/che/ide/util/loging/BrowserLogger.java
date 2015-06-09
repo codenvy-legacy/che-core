@@ -12,17 +12,18 @@ package org.eclipse.che.ide.util.loging;
 
 import org.eclipse.che.ide.util.ExceptionUtils;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 
 
 /**
- * @author <a href="mailto:evidolob@exoplatform.com">Evgen Vidolob</a>
+ * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
  * @version $Id:
  */
-class DevModeLogger implements Logger {
+class BrowserLogger implements Logger {
 
-    /** @see com.codenvy.ide.util.loging.Logger#debug(java.lang.Class, java.lang.Object[]) */
+
+
+    /** @see org.eclipse.che.ide.util.loging.Logger#debug(java.lang.Class, java.lang.Object[]) */
     @Override
     public void debug(Class<?> clazz, Object... args) {
         // DEBUG is the lowest log level, but we use <= for consistency, and in
@@ -33,13 +34,13 @@ class DevModeLogger implements Logger {
 
     }
 
-    /** @see com.codenvy.ide.util.loging.Logger#error(java.lang.Class, java.lang.Object[]) */
+    /** @see org.eclipse.che.ide.util.loging.Logger#error(java.lang.Class, java.lang.Object[]) */
     @Override
     public void error(Class<?> clazz, Object... args) {
         log(clazz, LogConfig.LogLevel.ERROR, args);
     }
 
-    /** @see com.codenvy.ide.util.loging.Logger#info(java.lang.Class, java.lang.Object[]) */
+    /** @see org.eclipse.che.ide.util.loging.Logger#info(java.lang.Class, java.lang.Object[]) */
     @Override
     public void info(Class<?> clazz, Object... args) {
         if (LogConfig.getLogLevel().ordinal() <= LogConfig.LogLevel.INFO.ordinal()) {
@@ -47,13 +48,13 @@ class DevModeLogger implements Logger {
         }
     }
 
-    /** @see com.codenvy.ide.util.loging.Logger#isLoggingEnabled() */
+    /** @see org.eclipse.che.ide.util.loging.Logger#isLoggingEnabled() */
     @Override
     public boolean isLoggingEnabled() {
         return true;
     }
 
-    /** @see com.codenvy.ide.util.loging.Logger#warn(java.lang.Class, java.lang.Object[]) */
+    /** @see org.eclipse.che.ide.util.loging.Logger#warn(java.lang.Class, java.lang.Object[]) */
     @Override
     public void warn(Class<?> clazz, Object... args) {
         if (LogConfig.getLogLevel().ordinal() <= LogConfig.LogLevel.WARNING.ordinal()) {
@@ -77,18 +78,14 @@ class DevModeLogger implements Logger {
 
         for (Object o : args) {
             if (o instanceof String) {
-                logToDevMode(prefix + (String)o);
                 logToBrowser(logLevel, prefix + (String)o);
             } else if (o instanceof Throwable) {
                 Throwable t = (Throwable)o;
-                logToDevMode(prefix + "(click for stack)", t);
                 logToBrowser(logLevel, prefix + ExceptionUtils.getStackTraceAsString(t));
             } else if (o instanceof JavaScriptObject) {
-                logToDevMode(prefix + "(JSO, see browser's console log for details)");
                 logToBrowser(logLevel, prefix + "(JSO below)");
                 logToBrowser(logLevel, o);
             } else {
-                logToDevMode(prefix + (o != null ? o.toString() : "(null)"));
                 logToBrowser(logLevel, prefix + (o != null ? o.toString() : "(null)"));
             }
         }
@@ -110,18 +107,6 @@ class DevModeLogger implements Logger {
                 break;
             default:
                 invokeBrowserLogger("log", o);
-        }
-    }
-
-    private static void logToDevMode(String msg) {
-        if (!GWT.isScript()) {
-            GWT.log(msg);
-        }
-    }
-
-    private static void logToDevMode(String msg, Throwable t) {
-        if (!GWT.isScript()) {
-            GWT.log(msg, t);
         }
     }
 
