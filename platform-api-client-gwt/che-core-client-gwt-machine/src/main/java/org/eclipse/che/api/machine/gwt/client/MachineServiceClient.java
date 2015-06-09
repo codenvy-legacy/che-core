@@ -35,6 +35,8 @@ public interface MachineServiceClient {
      *         type of recipe (e.g., Dockerfile)
      * @param recipeScript
      *         recipe script
+     * @param displayName
+     *         machine's display name
      * @param bindWorkspace
      *         {@code true} if workspace should be bound, {@code false} - otherwise
      * @param outputChannel
@@ -43,6 +45,7 @@ public interface MachineServiceClient {
     Promise<MachineDescriptor> createMachineFromRecipe(@Nonnull String machineType,
                                                        @Nonnull String recipeType,
                                                        @Nonnull String recipeScript,
+                                                       @Nullable String displayName,
                                                        boolean bindWorkspace,
                                                        @Nullable String outputChannel);
 
@@ -51,10 +54,14 @@ public interface MachineServiceClient {
      *
      * @param snapshotId
      *         ID of snapshot machine should be restored from
+     * @param displayName
+     *         machine's display name
      * @param outputChannel
      *         websocket chanel where machine logs should be put
      */
-    Promise<MachineDescriptor> createMachineFromSnapshot(@Nonnull String snapshotId, @Nullable String outputChannel);
+    Promise<MachineDescriptor> createMachineFromSnapshot(@Nonnull String snapshotId,
+                                                         @Nullable String displayName,
+                                                         @Nullable String outputChannel);
 
     /**
      * Get machine information by it's id.

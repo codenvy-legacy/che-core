@@ -15,9 +15,9 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import org.eclipse.che.api.machine.shared.dto.CommandDescriptor;
+import org.eclipse.che.api.machine.shared.dto.MachineDescriptor;
 import org.eclipse.che.api.machine.shared.dto.MachineFromRecipeMetadata;
 import org.eclipse.che.api.machine.shared.dto.MachineFromSnapshotMetadata;
-import org.eclipse.che.api.machine.shared.dto.MachineDescriptor;
 import org.eclipse.che.api.machine.shared.dto.ProcessDescriptor;
 import org.eclipse.che.api.machine.shared.dto.recipe.RecipeDescriptor;
 import org.eclipse.che.api.promises.client.Function;
@@ -76,12 +76,14 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     public Promise<MachineDescriptor> createMachineFromRecipe(@Nonnull final String machineType,
                                                               @Nonnull final String recipeType,
                                                               @Nonnull final String recipeScript,
+                                                              @Nullable final String displayName,
                                                               final boolean bindWorkspace,
                                                               @Nullable final String outputChannel) {
         return newPromise(new RequestCall<MachineDescriptor>() {
             @Override
             public void makeCall(AsyncCallback<MachineDescriptor> callback) {
-                createMachineFromRecipe(workspaceId, machineType, recipeType, recipeScript, bindWorkspace, outputChannel, callback);
+                createMachineFromRecipe(workspaceId, machineType, recipeType, recipeScript, displayName, bindWorkspace, outputChannel,
+                                        callback);
             }
         });
     }
@@ -90,6 +92,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
                                          @Nonnull String machineType,
                                          @Nonnull String recipeType,
                                          @Nonnull String recipeScript,
+                                         @Nullable final String displayName,
                                          boolean bindWorkspace,
                                          @Nullable String outputChannel,
                                          @Nonnull AsyncCallback<MachineDescriptor> callback) {
@@ -98,11 +101,12 @@ public class MachineServiceClientImpl implements MachineServiceClient {
                                                             .withScript(recipeScript);
 
         final MachineFromRecipeMetadata request = dtoFactory.createDto(MachineFromRecipeMetadata.class)
-                                                          .withWorkspaceId(workspaceId)
-                                                          .withType(machineType)
-                                                          .withRecipeDescriptor(recipeDescriptor)
-                                                          .withBindWorkspace(bindWorkspace)
-                                                          .withOutputChannel(outputChannel);
+                                                            .withWorkspaceId(workspaceId)
+                                                            .withType(machineType)
+                                                            .withRecipeDescriptor(recipeDescriptor)
+                                                            .withDisplayName(displayName)
+                                                            .withBindWorkspace(bindWorkspace)
+                                                            .withOutputChannel(outputChannel);
 
         asyncRequestFactory.createPostRequest(baseHttpUrl + "/recipe", request)
                            .header(ACCEPT, APPLICATION_JSON)
@@ -112,21 +116,25 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     }
 
     @Override
-    public Promise<MachineDescriptor> createMachineFromSnapshot(@Nonnull final String snapshotId, @Nullable final String outputChannel) {
+    public Promise<MachineDescriptor> createMachineFromSnapshot(@Nonnull final String snapshotId,
+                                                                @Nullable final String displayName,
+                                                                @Nullable final String outputChannel) {
         return newPromise(new RequestCall<MachineDescriptor>() {
             @Override
             public void makeCall(AsyncCallback<MachineDescriptor> callback) {
-                createMachineFromSnapshot(snapshotId, outputChannel, callback);
+                createMachineFromSnapshot(snapshotId, displayName, outputChannel, callback);
             }
         });
     }
 
     private void createMachineFromSnapshot(@Nonnull String snapshotId,
+                                           @Nullable final String displayName,
                                            @Nullable String outputChannel,
                                            @Nonnull AsyncCallback<MachineDescriptor> callback) {
         final MachineFromSnapshotMetadata request = dtoFactory.createDto(MachineFromSnapshotMetadata.class)
-                                                            .withSnapshotId(snapshotId)
-                                                            .withOutputChannel(outputChannel);
+                                                              .withSnapshotId(snapshotId)
+                                                              .withDisplayName(displayName)
+                                                              .withOutputChannel(outputChannel);
 
         asyncRequestFactory.createPostRequest(baseHttpUrl + "/snapshot", request)
                            .header(ACCEPT, APPLICATION_JSON)
