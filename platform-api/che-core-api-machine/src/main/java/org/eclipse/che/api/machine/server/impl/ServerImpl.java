@@ -19,12 +19,19 @@ import org.eclipse.che.api.machine.shared.Server;
  */
 public class ServerImpl implements Server {
     private String address;
+    private String url;
+    private String ref;
 
     public ServerImpl() {
     }
 
-    public ServerImpl(String address) {
+    public ServerImpl(String ref, String address, String url) {
         this.address = address;
+    }
+
+    @Override
+    public String getRef() {
+        return ref;
     }
 
     @Override
@@ -32,8 +39,23 @@ public class ServerImpl implements Server {
         return address;
     }
 
+    @Override
+    public String getUrl() {
+        return url;
+    }
+
+    public ServerImpl setRef(String ref) {
+        this.ref = ref;
+        return this;
+    }
+
     public ServerImpl setAddress(String address) {
         this.address = address;
+        return this;
+    }
+
+    public ServerImpl setUrl(String url) {
+        this.url = url;
         return this;
     }
 
@@ -42,11 +64,13 @@ public class ServerImpl implements Server {
         if (this == o) return true;
         if (!(o instanceof ServerImpl)) return false;
         ServerImpl server = (ServerImpl)o;
-        return Objects.equal(address, server.address);
+        return Objects.equal(address, server.address) &&
+               Objects.equal(url, server.url) &&
+               Objects.equal(ref, server.ref);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(address);
+        return Objects.hashCode(address, url, ref);
     }
 }

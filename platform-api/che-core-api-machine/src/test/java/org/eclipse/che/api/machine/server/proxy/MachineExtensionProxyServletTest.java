@@ -12,6 +12,7 @@ package org.eclipse.che.api.machine.server.proxy;
 
 import org.eclipse.che.api.machine.server.MachineManager;
 import org.eclipse.che.api.machine.server.impl.MachineImpl;
+import org.eclipse.che.api.machine.server.impl.ServerImpl;
 import org.eclipse.che.api.machine.server.spi.InstanceMetadata;
 import org.eclipse.che.api.machine.shared.Server;
 import org.eclipse.che.commons.lang.IoUtil;
@@ -98,8 +99,10 @@ public class MachineExtensionProxyServletTest {
         jettyServer.start();
 
         final Connector connector = jettyServer.getConnectors()[0];
-        machineServers = Collections
-                .<String, Server>singletonMap(String.valueOf(EXTENSIONS_API_PORT), new ServerImpl("localhost:" + connector.getPort()));
+        machineServers = Collections.<String, Server>singletonMap(String.valueOf(EXTENSIONS_API_PORT),
+                                                                  new ServerImpl(null,
+                                                                                 "localhost:" + connector.getPort(),
+                                                                                 null));
     }
 
     @BeforeMethod
@@ -371,18 +374,5 @@ public class MachineExtensionProxyServletTest {
         String                    entity;
         String                    method;
         StringBuffer              url;
-    }
-
-    private static class ServerImpl implements Server {
-        private String address;
-
-        public ServerImpl(String address) {
-            this.address = address;
-        }
-
-        @Override
-        public String getAddress() {
-            return address;
-        }
     }
 }

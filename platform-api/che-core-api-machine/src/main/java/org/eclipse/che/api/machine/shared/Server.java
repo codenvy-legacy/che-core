@@ -11,9 +11,24 @@
 package org.eclipse.che.api.machine.shared;
 
 /**
+ * Provides description of the Che server in machine
  *
  * @author gazarenkov
+ * @author Alexander Garagatyi
  */
 public interface Server {
+    /**
+     * Reference to this Che server
+     */
+    String getRef();
+
+    /**
+     * Address of the server in form <b>host:port</b>
+     */
     String getAddress();
+
+    /**
+     * Url of the server, e.g. http://localhost:8080
+     */
+    String getUrl();
 }

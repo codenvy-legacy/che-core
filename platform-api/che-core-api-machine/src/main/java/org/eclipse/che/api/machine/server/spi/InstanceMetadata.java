@@ -33,10 +33,7 @@ public interface InstanceMetadata {
     String toJson();
 
     /**
-     * Returns mapping of exposed ports to external address in format:
-     *<p>
-     * 22 : {"address":"host:port"}<br>
-     * 234/udp : {"address":"host:port"}
+     * Returns mapping of exposed ports to {link Server}
      */
     Map<String, Server> getServers();
 }
