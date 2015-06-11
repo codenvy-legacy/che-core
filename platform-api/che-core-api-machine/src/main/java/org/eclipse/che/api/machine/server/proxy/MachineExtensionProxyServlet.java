@@ -45,7 +45,7 @@ import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
  */
 @Singleton
 public class MachineExtensionProxyServlet extends HttpServlet {
-    private static final Pattern EXTENSION_API_URI = Pattern.compile("/api/ext/(?<machineId>[^/]+)/.*");
+    private static final Pattern EXTENSION_API_URI = Pattern.compile("/[^/]+/ext/(?<machineId>[^/]+)(?<destpath>/.*)");
 
     private final int extServicesPort;
 
@@ -86,9 +86,9 @@ public class MachineExtensionProxyServlet extends HttpServlet {
     }
 
     private HttpURLConnection prepareProxyConnection(HttpServletRequest req) throws NotFoundException, MachineException {
-        String machineId = getMachineId(req);
+//        String machineId = getMachineId(req);
 
-        String extensionApiUrl = getExtensionApiUrl(machineId, req);
+        String extensionApiUrl = getExtensionApiUrl(req);
         try {
             final HttpURLConnection conn = (HttpURLConnection)new URL(extensionApiUrl).openConnection();
 
@@ -112,15 +112,26 @@ public class MachineExtensionProxyServlet extends HttpServlet {
         }
     }
 
-    private String getExtensionApiUrl(String machineId, HttpServletRequest req) throws NotFoundException, MachineException {
+    private String getExtensionApiUrl(HttpServletRequest req) throws NotFoundException, MachineException {
+        String machineId;
+        final Matcher matcher = EXTENSION_API_URI.matcher(req.getRequestURI());
+        if (matcher.matches()) {
+            machineId = matcher.group("machineId");
+        } else {
+            throw new NotFoundException("No machine id is found in request.");
+        }
+
         final MachineImpl machine = machineManager.getMachine(machineId);
         final Server server = machine.getMetadata().getServers().get(Integer.toString(extServicesPort));
-        final StringBuilder url = new StringBuilder("http://")
-                .append(server.getAddress())
-                .append(req.getRequestURI());
+        final StringBuilder url = new StringBuilder("http://").append(server.getAddress());
+
+        final String extPath = matcher.group("destpath");
+        url.append(extPath);
+
         if (req.getQueryString() != null) {
             url.append("?").append(req.getQueryString());
         }
+
         return url.toString();
     }
 

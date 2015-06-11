@@ -53,7 +53,7 @@ public class MachineExtensionProxyServletTest {
     private static final String MACHINE_ID              = "machine123";
     private static final int    EXTENSIONS_API_PORT     = 4301;
     private static final String PROXY_ENDPOINT          = "http://localhost:8080";
-    private static final String DESTINATION_BASEPATH    = "/api/ext/" + MACHINE_ID;
+    private static final String DESTINATION_BASEPATH    = "/java/";
     private static final String DEFAULT_RESPONSE_ENTITY = "{\"key1\":\"value1\",\"key2\":\"value2\"}";
 
     private Map<String, Server> machineServers;
@@ -132,7 +132,7 @@ public class MachineExtensionProxyServletTest {
         when(instanceMetadata.getServers()).thenReturn(machineServers);
 
         MockHttpServletRequest mockRequest =
-                new MockHttpServletRequest(PROXY_ENDPOINT + "/api/ext/" + MACHINE_ID + "/path/to/something",
+                new MockHttpServletRequest(PROXY_ENDPOINT + "/api/ext/" + MACHINE_ID + DESTINATION_BASEPATH,
                                            new ByteArrayInputStream(new byte[0]),
                                            0,
                                            method,
@@ -157,7 +157,7 @@ public class MachineExtensionProxyServletTest {
         when(instanceMetadata.getServers()).thenReturn(machineServers);
 
         MockHttpServletRequest mockRequest =
-                new MockHttpServletRequest(PROXY_ENDPOINT + "/api/ext/" + MACHINE_ID + "/path/to/something",
+                new MockHttpServletRequest(PROXY_ENDPOINT + "/api/ext/" + MACHINE_ID + DESTINATION_BASEPATH,
                                            new ByteArrayInputStream(new byte[0]),
                                            0,
                                            "GET",
@@ -169,6 +169,73 @@ public class MachineExtensionProxyServletTest {
 
         assertEquals(mockResponse.getStatus(), 200);
         assertEquals(mockResponse.getOutputContent(), DEFAULT_RESPONSE_ENTITY);
+    }
+
+    @Test
+    public void shouldBeAbleToProxyWithRightPath() throws Exception {
+        when(machineManager.getMachine(MACHINE_ID)).thenReturn(machine);
+        when(machine.getMetadata()).thenReturn(instanceMetadata);
+        when(instanceMetadata.getServers()).thenReturn(machineServers);
+
+        final String destPath = DESTINATION_BASEPATH + "codeassistant/index";
+
+        MockHttpServletRequest mockRequest =
+                new MockHttpServletRequest(PROXY_ENDPOINT + "/che/ext/" + MACHINE_ID + destPath,
+                                           new ByteArrayInputStream(new byte[0]),
+                                           0,
+                                           "GET",
+                                           Collections.<String, List<String>>emptyMap());
+
+        MockHttpServletResponse mockResponse = new MockHttpServletResponse();
+
+        proxyServlet.service(mockRequest, mockResponse);
+
+        assertEquals(mockResponse.getStatus(), 200);
+        assertEquals(extensionApiRequest.uri, destPath);
+    }
+
+    @Test
+    public void shouldProxyWithQueryString() throws Exception {
+        when(machineManager.getMachine(MACHINE_ID)).thenReturn(machine);
+        when(machine.getMetadata()).thenReturn(instanceMetadata);
+        when(instanceMetadata.getServers()).thenReturn(machineServers);
+
+        final String query = "key1=value1&key2=value2&key2=value3";
+
+        MockHttpServletRequest mockRequest =
+                new MockHttpServletRequest(PROXY_ENDPOINT + "/api/ext/" + MACHINE_ID + DESTINATION_BASEPATH + "?" + query,
+                                           new ByteArrayInputStream(new byte[0]),
+                                           0,
+                                           "GET",
+                                           Collections.<String, List<String>>emptyMap());
+
+        MockHttpServletResponse mockResponse = new MockHttpServletResponse();
+
+        proxyServlet.service(mockRequest, mockResponse);
+
+        assertEquals(mockResponse.getStatus(), 200);
+        assertEquals(extensionApiRequest.query, query);
+    }
+
+    @Test
+    public void shouldProxyResponseWithError() throws Exception {
+        when(machineManager.getMachine(MACHINE_ID)).thenReturn(machine);
+        when(machine.getMetadata()).thenReturn(instanceMetadata);
+        when(instanceMetadata.getServers()).thenReturn(machineServers);
+
+        MockHttpServletRequest mockRequest =
+                new MockHttpServletRequest(PROXY_ENDPOINT + "/api/ext/" + MACHINE_ID + "/not/existing/path",
+                                           new ByteArrayInputStream(new byte[0]),
+                                           0,
+                                           "GET",
+                                           Collections.<String, List<String>>emptyMap());
+
+        MockHttpServletResponse mockResponse = new MockHttpServletResponse();
+
+        proxyServlet.service(mockRequest, mockResponse);
+
+        assertEquals(mockResponse.getStatus(), 404);
+        assertEquals(mockResponse.getOutputContent(), "Che service not found");
     }
 
     @Test
@@ -188,7 +255,7 @@ public class MachineExtensionProxyServletTest {
         when(extensionApiResponse.getHeaders()).thenReturn(headers);
 
         MockHttpServletRequest mockRequest =
-                new MockHttpServletRequest(PROXY_ENDPOINT + "/api/ext/" + MACHINE_ID + "/path/to/something",
+                new MockHttpServletRequest(PROXY_ENDPOINT + "/api/ext/" + MACHINE_ID + DESTINATION_BASEPATH,
                                            new ByteArrayInputStream(new byte[0]),
                                            0,
                                            "POST",
@@ -208,9 +275,6 @@ public class MachineExtensionProxyServletTest {
         actualHeaders.remove(null);
 
         assertEqualsHeaders(actualHeaders, headers);
-//        for (Map.Entry<String, List<String>> expectedHeader : headers.entrySet()) {
-//            assertEquals(headers.get(expectedHeader.getKey()), mockResponse.getHeaders(expectedHeader.getKey()));
-//        }
     }
 
     @Test
@@ -242,7 +306,7 @@ public class MachineExtensionProxyServletTest {
         when(instanceMetadata.getServers()).thenReturn(machineServers);
 
         MockHttpServletRequest mockRequest =
-                new MockHttpServletRequest(PROXY_ENDPOINT + "/api/ext/" + MACHINE_ID + "/path/to/something",
+                new MockHttpServletRequest(PROXY_ENDPOINT + "/api/ext/" + MACHINE_ID + DESTINATION_BASEPATH,
                                            new ByteArrayInputStream(new byte[0]),
                                            0,
                                            "POST",
@@ -331,14 +395,16 @@ public class MachineExtensionProxyServletTest {
         public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
                 throws IOException, ServletException {
             if (!target.startsWith(DESTINATION_BASEPATH)) {
-                response.sendError(404);
+                response.setStatus(404);
+                response.getWriter().format("Che service not found").close();
                 return;
             }
 
             // to be able validate request received by extension API server
             extensionApiRequest.headers = getHeaders(request);
             extensionApiRequest.method = request.getMethod();
-            extensionApiRequest.url = request.getRequestURL();
+            extensionApiRequest.uri = request.getRequestURI();
+            extensionApiRequest.query = request.getQueryString();
             try (InputStream is = request.getInputStream()) {
                 extensionApiRequest.entity = IoUtil.readStream(is);
             }
@@ -373,6 +439,7 @@ public class MachineExtensionProxyServletTest {
         Map<String, List<String>> headers;
         String                    entity;
         String                    method;
-        StringBuffer              url;
+        String                    uri;
+        String                    query;
     }
 }
