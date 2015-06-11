@@ -214,7 +214,7 @@ public class BuildQueue {
     // private
     boolean doRegisterBuilderServer(RemoteBuilderServer builderServer) throws BuilderException {
         builderServices.put(builderServer.getBaseUrl(), builderServer);
-        final BuilderListKey key = new BuilderListKey(builderServer.getAssignedWorkspace(), builderServer.getAssignedProject());
+        final BuilderListKey key = new BuilderListKey(builderServer.getAssignedProject(), builderServer.getAssignedWorkspace());
         BuilderList builderList = builderListMapping.get(key);
         if (builderList == null) {
             final BuilderList newBuilderList = new BuilderList(builderSelector);
@@ -768,7 +768,7 @@ public class BuildQueue {
         final String project;
         final String workspace;
 
-        BuilderListKey(String project, String workspace) {
+         BuilderListKey(String project, String workspace) {
             this.project = project;
             this.workspace = workspace;
         }
