@@ -184,7 +184,7 @@ public class SearcherTest extends MemoryFileSystemTest {
         TopDocs topDocs = luceneSearcher.search(new PrefixQuery(new Term("path", expected)), 10);
         assertEquals(0, topDocs.totalHits);
         searcherManager.release(luceneSearcher);
-        mountPoint.getVirtualFile(file3).moveTo(mountPoint.getVirtualFile(destination), null);
+        mountPoint.getVirtualFile(file3).moveTo(mountPoint.getVirtualFile(destination), null, null);
 
         searcherManager.maybeRefresh();
         luceneSearcher = searcherManager.acquire();

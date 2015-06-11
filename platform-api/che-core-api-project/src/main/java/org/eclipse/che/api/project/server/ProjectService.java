@@ -701,7 +701,7 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Copy resource",
-                  notes = "Copy resource with new name to a new location which is specified in a query parameter. " +
+                  notes = "Copy resource with new name to a new location which are specified in a query parameter. " +
                           "Original resource name is used if the new name isn't set.",
                   position = 14)
     @ApiResponses(value = {
@@ -738,7 +738,8 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Move resource",
-                  notes = "Move resource to a new location which is specified in a query parameter",
+                  notes = "Move resource with new name to a new location which are specified in a query parameter. " +
+                          "Original resource name is used if the new name isn't set.",
                   position = 15)
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = ""),
@@ -753,10 +754,12 @@ public class ProjectService extends Service {
                          @ApiParam(value = "Path to a resource to be moved", required = true)
                          @PathParam("path") String path,
                          @ApiParam(value = "Path to a new location", required = true)
-                         @QueryParam("to") String newParent)
+                         @QueryParam("to") String newParent,
+                         @ApiParam(value = "New name", required = false)
+                         @QueryParam("name") String newName)
             throws NotFoundException, ForbiddenException, ConflictException, ServerException {
         final VirtualFileEntry entry = getVirtualFileEntry(workspace, path);
-        entry.moveTo(newParent);
+        entry.moveTo(newParent, newName);
         final URI location = getServiceContext().getServiceUriBuilder()
                                                 .path(getClass(), entry.isFile() ? "getFile" : "getChildren")
                                                 .build(workspace, entry.getPath().substring(1));

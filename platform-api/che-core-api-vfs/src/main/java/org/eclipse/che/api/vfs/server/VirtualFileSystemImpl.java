@@ -430,9 +430,10 @@ public abstract class VirtualFileSystemImpl implements VirtualFileSystem {
     @Override
     public Item move(@PathParam("id") String id,
                      @QueryParam("parentId") String parentId,
+                     @QueryParam("name") String newName,
                      @QueryParam("lockToken") String lockToken)
             throws NotFoundException, ForbiddenException, ConflictException, ServerException {
-        return fromVirtualFile(mountPoint.getVirtualFileById(id).moveTo(mountPoint.getVirtualFileById(parentId), lockToken),
+        return fromVirtualFile(mountPoint.getVirtualFileById(id).moveTo(mountPoint.getVirtualFileById(parentId), newName, lockToken),
                                false, PropertyFilter.ALL_FILTER);
     }
 

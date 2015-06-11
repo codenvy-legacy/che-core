@@ -140,7 +140,7 @@ public class FileEntryTest {
         byte[] b = myFile.contentAsBytes();
         String mt = myFile.getMediaType();
 
-        myFile.moveTo(vfProject.getPath());
+        myFile.moveTo(vfProject.getPath(), null);
         Assert.assertNull(myVfProject.getChild(name));
         Assert.assertNotNull(vfProject.getChild(name));
         Assert.assertEquals(myFile.getName(), name);

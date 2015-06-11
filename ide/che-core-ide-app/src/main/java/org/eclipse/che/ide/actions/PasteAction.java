@@ -28,6 +28,7 @@ import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.commons.exception.ServerException;
+import org.eclipse.che.ide.json.JsonHelper;
 import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerPartPresenter;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.ui.dialogs.CancelCallback;
@@ -293,7 +294,7 @@ public class PasteAction extends Action {
      * Asks the user for a decision when copying existent resource.
      */
     private void resolveCopyConflict(String cause) {
-        ChoiceDialog dialog = dialogFactory.createChoiceDialog("Conflict", cause, "Rename", "Skip", "Overwrite",
+        ChoiceDialog dialog = dialogFactory.createChoiceDialog("Copy conflict", cause, "Rename", "Skip", "Overwrite",
                 new ConfirmCallback() {
                     @Override
                     public void accepted() {
@@ -347,8 +348,34 @@ public class PasteAction extends Action {
 
     /**
      * Copies with overwriting.
+     * Delete destination resource and copy again.
      */
     private void copyWithOverwriting() {
+        /** Get item to copy */
+        final StorableNode item = items.get(itemIndex);
+
+        try {
+            /** Delete destination item */
+            String deletePath = destination.getPath() + "/" + item.getName();
+            projectServiceClient.delete(deletePath, new AsyncRequestCallback<Void>() {
+                @Override
+                protected void onSuccess(Void result) {
+                    /** Copy the item */
+                    projectServiceClient.copy(item.getPath(), destination.getPath(), null, copyCallback);
+                }
+
+                @Override
+                protected void onFailure(Throwable error) {
+                    /** Handle error and stop copying */
+                    notificationManager.showNotification(new Notification(error.getMessage(), ERROR));
+                    dialogFactory.createMessageDialog("ERROR", error.getMessage(), null).show();
+                }
+            });
+        } catch (Exception error) {
+            /** Handle error and stop copying */
+            notificationManager.showNotification(new Notification(error.getMessage(), ERROR));
+            dialogFactory.createMessageDialog("ERROR", error.getMessage(), null).show();
+        }
     }
 
     /**
@@ -362,7 +389,7 @@ public class PasteAction extends Action {
                 @Override
                 public void onFailure(Throwable caught) {
                     /** Ignore errors and continue copying */
-                    dialogFactory.createMessageDialog("ERROR", caught.getMessage(), null);
+                    notificationManager.showNotification(new Notification(caught.getMessage(), ERROR));
                     copy();
                 }
 
@@ -379,7 +406,8 @@ public class PasteAction extends Action {
             /** Check for conflict */
             if (exception instanceof ServerException && ((ServerException)exception).getHTTPStatus() == 409) {
                 /** Resolve conflicting situation */
-                resolveCopyConflict(exception.getMessage());
+                String message = JsonHelper.parseJsonMessage(exception.getMessage());
+                resolveCopyConflict(message);
                 return;
             }
 
@@ -390,9 +418,198 @@ public class PasteAction extends Action {
     };
 
     /**
-     * Moves items to destination directory.
+     * Moves next item to destination.
      */
     private void move() {
+        /** Switch to next item and check item list */
+        itemIndex++;
+        if (items.isEmpty() || itemIndex == items.size()) {
+            items.clear();
+            /** Moving finished */
+            return;
+        }
+
+        /** Get item to move */
+        final StorableNode item = items.get(itemIndex);
+
+        try {
+            /** Move the item */
+            projectServiceClient.move(item.getPath(), destination.getPath(), null, moveCallback);
+        } catch (Exception error) {
+            /** Handle error and stop moving */
+            notificationManager.showNotification(new Notification(error.getMessage(), ERROR));
+            dialogFactory.createMessageDialog("ERROR", error.getMessage(), null).show();
+
+            /** Clears item list to disable Paste button */
+            items.clear();
+        }
+    }
+
+    /**
+     * Asks the user for a decision when moving existent resource.
+     */
+    private void resolveMoveConflict(String cause) {
+        ChoiceDialog dialog = dialogFactory.createChoiceDialog("Move conflict", cause, "Rename", "Skip", "Overwrite",
+                new ConfirmCallback() {
+                    @Override
+                    public void accepted() {
+                        /** Rename */
+                        moveWithNewName();
+                    }
+                }, new ConfirmCallback() {
+                    @Override
+                    public void accepted() {
+                        /** Skip */
+                        move();
+                    }
+                }, new ConfirmCallback() {
+                    @Override
+                    public void accepted() {
+                        /** Overwrite */
+                        moveWithOverwriting();
+                    }
+                }
+        );
+        dialog.show();
+    }
+
+    /**
+     * Asks the user for new item name and retries moving.
+     */
+    private void moveWithNewName() {
+        /** Get item to move */
+        final StorableNode item = items.get(itemIndex);
+
+        /** Ask user for new resource name. */
+        renameItemAction.askForNewName(item, new InputCallback() {
+            @Override
+            public void accepted(String value) {
+                try {
+                    /** Move the item, giving new name */
+                    projectServiceClient.move(item.getPath(), destination.getPath(), value, moveCallback);
+                } catch (Exception error) {
+                    /** Handle error and stop moving */
+                    notificationManager.showNotification(new Notification(error.getMessage(), ERROR));
+                    dialogFactory.createMessageDialog("ERROR", error.getMessage(), null).show();
+
+                    /** Clears item list to disable Paste button */
+                    items.clear();
+                }
+            }
+        }, new CancelCallback() {
+            @Override
+            public void cancelled() {
+                /** Stop moving and clears item list to disable Paste button */
+                items.clear();
+            }
+        });
+    }
+
+    /**
+     * Moves with overwriting.
+     * Delete destination resource and move again.
+     */
+    private void moveWithOverwriting() {
+        /** Get item to move */
+        final StorableNode item = items.get(itemIndex);
+
+        try {
+            /** Delete destination item */
+            String deletePath = destination.getPath() + "/" + item.getName();
+            projectServiceClient.delete(deletePath, new AsyncRequestCallback<Void>() {
+                @Override
+                protected void onSuccess(Void result) {
+                    /** Move the item */
+                    projectServiceClient.move(item.getPath(), destination.getPath(), null, moveCallback);
+                }
+
+                @Override
+                protected void onFailure(Throwable error) {
+                    /** Handle error and stop moving */
+                    notificationManager.showNotification(new Notification(error.getMessage(), ERROR));
+                    dialogFactory.createMessageDialog("ERROR", error.getMessage(), null).show();
+
+                    /** Clears item list to disable Paste button */
+                    items.clear();
+                }
+            });
+        } catch (Exception error) {
+            /** Handle error and stop copying */
+            notificationManager.showNotification(new Notification(error.getMessage(), ERROR));
+            dialogFactory.createMessageDialog("ERROR", error.getMessage(), null).show();
+
+            /** Clears item list to disable Paste button */
+            items.clear();
+        }
+    }
+
+    /**
+     * Callback for move operation.
+     */
+    private final AsyncRequestCallback<Void> moveCallback = new AsyncRequestCallback<Void>() {
+        @Override
+        protected void onSuccess(Void result) {
+            /** Item moved, refresh project explorer */
+            /** Source and destination directories are to be refreshed */
+            refreshSourcePath();
+        }
+
+        @Override
+        protected void onFailure(Throwable exception) {
+            /** Check for conflict */
+            if (exception instanceof ServerException && ((ServerException)exception).getHTTPStatus() == 409) {
+                /** Resolve conflicting situation */
+                String message = JsonHelper.parseJsonMessage(exception.getMessage());
+                resolveMoveConflict(message);
+                return;
+            }
+
+            /** Handle error and stop moving */
+            notificationManager.showNotification(new Notification(exception.getMessage(), ERROR));
+            dialogFactory.createMessageDialog("ERROR", exception.getMessage(), null).show();
+
+            /** Clears item list to disable Paste button */
+            items.clear();
+        }
+    };
+
+    /**
+     * Refreshes item parent directory.
+     */
+    private void refreshSourcePath() {
+        projectExplorerPartPresenter.refreshNode(items.get(itemIndex).getParent(), new AsyncCallback<TreeNode<?>>() {
+            @Override
+            public void onSuccess(TreeNode<?> result) {
+                refreshDestinationPath();
+            }
+
+            @Override
+            public void onFailure(Throwable caught) {
+                /** Ignore error and refresh destination */
+                notificationManager.showNotification(new Notification(caught.getMessage(), ERROR));
+                refreshDestinationPath();
+            }
+        });
+    }
+
+    /**
+     * Refreshes destination directory.
+     */
+    private void refreshDestinationPath() {
+        projectExplorerPartPresenter.refreshNode(destination, new AsyncCallback<TreeNode<?>>() {
+            @Override
+            public void onSuccess(TreeNode<?> result) {
+                /** Refreshing complete, move next item */
+                move();
+            }
+
+            @Override
+            public void onFailure(Throwable caught) {
+                /** Ignore error and continue moving */
+                notificationManager.showNotification(new Notification(caught.getMessage(), ERROR));
+                move();
+            }
+        });
     }
 
     /**

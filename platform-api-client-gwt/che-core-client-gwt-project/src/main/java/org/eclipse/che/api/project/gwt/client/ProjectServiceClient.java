@@ -246,10 +246,12 @@ public interface ProjectServiceClient {
      *         path to the item to move
      * @param newParentPath
      *         path to the target item
+     * @param newName
+     *         new resource name. Set <code>null</code> to move without renaming
      * @param callback
      *         the callback to use for the response
      */
-    void move(String path, String newParentPath, AsyncRequestCallback<Void> callback);
+    void move(String path, String newParentPath, String newName, AsyncRequestCallback<Void> callback);
 
     /**
      * Rename and/or set new media type for item.

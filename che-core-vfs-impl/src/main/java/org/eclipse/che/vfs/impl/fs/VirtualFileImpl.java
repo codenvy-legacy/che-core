@@ -208,8 +208,8 @@ public class VirtualFileImpl implements VirtualFile {
     }
 
     @Override
-    public VirtualFile moveTo(VirtualFile parent, String lockToken) throws ForbiddenException, ConflictException, ServerException {
-        return mountPoint.move(this, (VirtualFileImpl)parent, lockToken);
+    public VirtualFile moveTo(VirtualFile parent, String newName, String lockToken) throws ForbiddenException, ConflictException, ServerException {
+        return mountPoint.move(this, (VirtualFileImpl)parent, newName, lockToken);
     }
 
     @Override

@@ -679,7 +679,7 @@ public class MemoryVirtualFile implements VirtualFile {
     }
 
     @Override
-    public VirtualFile moveTo(VirtualFile parent, final String lockToken) throws ConflictException, ForbiddenException, ServerException {
+    public VirtualFile moveTo(VirtualFile parent, String newName, final String lockToken) throws ConflictException, ForbiddenException, ServerException {
         checkExist();
         ((MemoryVirtualFile)parent).checkExist();
         boolean isFile = isFile();

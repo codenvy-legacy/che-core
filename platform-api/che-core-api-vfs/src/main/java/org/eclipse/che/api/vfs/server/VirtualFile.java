@@ -267,6 +267,8 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      *
      * @param parent
      *         parent to move
+     * @param newName
+     *         new file name
      * @param lockToken
      *         lock token. This parameter is required if the file is locked
      * @throws ForbiddenException
@@ -282,7 +284,7 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      *         if other error occurs
      * @see #isFolder()
      */
-    VirtualFile moveTo(VirtualFile parent, String lockToken) throws ForbiddenException, ConflictException, ServerException;
+    VirtualFile moveTo(VirtualFile parent, String newName, String lockToken) throws ForbiddenException, ConflictException, ServerException;
 
     /**
      * Renames and (or) update media type of this VirtualFile.

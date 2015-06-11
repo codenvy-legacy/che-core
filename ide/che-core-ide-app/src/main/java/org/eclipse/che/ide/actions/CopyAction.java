@@ -72,6 +72,10 @@ public class CopyAction extends Action {
             return false;
         }
 
+        if (appContext.getCurrentProject() == null || appContext.getCurrentProject().getRootProject() == null) {
+            return false;
+        }
+
         String projectPath = appContext.getCurrentProject().getRootProject().getPath();
 
         List<?> selectedItems = selection.getAllElements();

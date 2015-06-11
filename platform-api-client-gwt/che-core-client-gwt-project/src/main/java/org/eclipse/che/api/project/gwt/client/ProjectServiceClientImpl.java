@@ -273,8 +273,9 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void move(String path, String newParentPath, AsyncRequestCallback<Void> callback) {
-        final String requestUrl = MOVE + normalizePath(path) + "?to=" + newParentPath;
+    public void move(String path, String newParentPath, String newName, AsyncRequestCallback<Void> callback) {
+        final String requestUrl = MOVE + normalizePath(path) + "?to=" + newParentPath +
+                (newName != null ? "&name=" + newName : "");
         asyncRequestFactory.createPostRequest(requestUrl, null)
                            .loader(loader, "Moving item...")
                            .send(callback);

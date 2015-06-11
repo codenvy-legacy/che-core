@@ -142,6 +142,8 @@ public abstract class VirtualFileEntry {
      *
      * @param newParent
      *         path of new parent
+     * @param newName
+     *         new item name
      * @throws NotFoundException
      *         if {@code newParent} doesn't exist
      * @throws ForbiddenException
@@ -151,9 +153,9 @@ public abstract class VirtualFileEntry {
      * @throws ServerException
      *         if other error occurs
      */
-    public void moveTo(String newParent) throws NotFoundException, ForbiddenException, ConflictException, ServerException {
+    public void moveTo(String newParent, String newName) throws NotFoundException, ForbiddenException, ConflictException, ServerException {
         final MountPoint mp = virtualFile.getMountPoint();
-        virtualFile = virtualFile.moveTo(mp.getVirtualFile(newParent), null);
+        virtualFile = virtualFile.moveTo(mp.getVirtualFile(newParent), newName, null);
     }
 
     /**

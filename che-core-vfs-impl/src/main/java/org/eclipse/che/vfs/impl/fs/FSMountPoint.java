@@ -737,7 +737,7 @@ public class FSMountPoint implements MountPoint {
     }
 
 
-    VirtualFileImpl move(VirtualFileImpl source, VirtualFileImpl parent, String lockToken)
+    VirtualFileImpl move(VirtualFileImpl source, VirtualFileImpl parent, String newName, String lockToken)
             throws ForbiddenException, ConflictException, ServerException {
         final String sourcePath = source.getPath();
         final String parentPath = parent.getPath();
@@ -765,7 +765,7 @@ public class FSMountPoint implements MountPoint {
         if (source.isFile() && !validateLockTokenIfLocked(source, lockToken)) {
             throw new ForbiddenException(String.format("Unable move file '%s'. File is locked. ", sourcePath));
         }
-        final Path newPath = parent.getVirtualFilePath().newPath(source.getName());
+        final Path newPath = parent.getVirtualFilePath().newPath(newName != null ? newName : source.getName());
         VirtualFileImpl destination =
                 new VirtualFileImpl(new java.io.File(ioRoot, toIoPath(newPath)), newPath, pathToId(newPath), this);
         if (destination.exists()) {

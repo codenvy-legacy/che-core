@@ -57,11 +57,11 @@ public class FileEntry extends VirtualFileEntry {
         return new FileEntry(getWorkspace(), vf.copyTo(mp.getVirtualFile(newParent), newName));
     }
 
-    public void moveTo(String newParent) throws ConflictException, NotFoundException, ForbiddenException, ServerException {
+    public void moveTo(String newParent, String newName) throws ConflictException, NotFoundException, ForbiddenException, ServerException {
         if (Path.fromString(newParent).isRoot()) {
             throw new ServerException(String.format("Invalid path %s. Can't move this item outside of project.", newParent));
         }
-        super.moveTo(newParent);
+        super.moveTo(newParent, newName);
     }
 
     /**
