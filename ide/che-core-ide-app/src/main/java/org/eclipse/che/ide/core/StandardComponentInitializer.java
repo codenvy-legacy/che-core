@@ -22,6 +22,8 @@ import org.eclipse.che.ide.actions.CopyAction;
 import org.eclipse.che.ide.actions.CreateModuleAction;
 import org.eclipse.che.ide.actions.CutAction;
 import org.eclipse.che.ide.actions.DeleteItemAction;
+import org.eclipse.che.ide.actions.DownloadItemAction;
+import org.eclipse.che.ide.actions.DownloadProjectAsZipAction;
 import org.eclipse.che.ide.actions.ExpandEditorAction;
 import org.eclipse.che.ide.actions.FindReplaceAction;
 import org.eclipse.che.ide.actions.FormatterAction;
@@ -39,6 +41,7 @@ import org.eclipse.che.ide.actions.RedirectToFeedbackAction;
 import org.eclipse.che.ide.actions.RedirectToForumsAction;
 import org.eclipse.che.ide.actions.RedirectToHelpAction;
 import org.eclipse.che.ide.actions.RedoAction;
+import org.eclipse.che.ide.actions.RefreshProjectTreeAction;
 import org.eclipse.che.ide.actions.RenameItemAction;
 import org.eclipse.che.ide.actions.SaveAction;
 import org.eclipse.che.ide.actions.SaveAllAction;
@@ -185,6 +188,12 @@ public class StandardComponentInitializer {
     private UploadFolderFromZipAction uploadFolderFromZipAction;
 
     @Inject
+    private DownloadProjectAsZipAction downloadProjectAsZipAction;
+
+    @Inject
+    private DownloadItemAction downloadItemAction;
+
+    @Inject
     private ImportProjectFromLocationAction importProjectFromLocationAction;
 
     @Inject
@@ -210,6 +219,9 @@ public class StandardComponentInitializer {
 
     @Inject
     private ProjectConfigurationAction projectConfigurationAction;
+
+    @Inject
+    private RefreshProjectTreeAction refreshProjectTreeAction;
 
     @Inject
     private ExpandEditorAction expandEditorAction;
@@ -327,6 +339,8 @@ public class StandardComponentInitializer {
 
         actionManager.registerAction("uploadFile", uploadFileAction);
         actionManager.registerAction("uploadFolderFromZip", uploadFolderFromZipAction);
+        actionManager.registerAction("downloadProjectAsZipAction", downloadProjectAsZipAction);
+        actionManager.registerAction("downloadItemAction", downloadItemAction);
         actionManager.registerAction("navigateToFile", navigateToFileAction);
         actionManager.registerAction("projectConfiguration", projectConfigurationAction);
         actionManager.registerAction("createModuleAction", createModuleAction);
@@ -350,6 +364,7 @@ public class StandardComponentInitializer {
         fileGroup.add(projectConfigurationAction);
         fileGroup.add(uploadFileAction);
         fileGroup.add(uploadFolderFromZipAction);
+        fileGroup.add(downloadProjectAsZipAction);
         fileGroup.add(navigateToFileAction);
         fileGroup.add(showHiddenFilesAction);
 
@@ -406,6 +421,10 @@ public class StandardComponentInitializer {
         resourceOperation.add(renameItemAction);
         resourceOperation.add(deleteItemAction);
         resourceOperation.addSeparator();
+        resourceOperation.add(downloadItemAction);
+        resourceOperation.addSeparator();
+        resourceOperation.add(refreshProjectTreeAction);
+        resourceOperation.addSeparator();
         resourceOperation.add(createModuleAction);
 
         DefaultActionGroup closeProjectGroup = new DefaultActionGroup(actionManager);
@@ -436,12 +455,14 @@ public class StandardComponentInitializer {
 
         actionManager.registerAction("renameResource", renameItemAction);
         actionManager.registerAction("deleteItem", deleteItemAction);
+        actionManager.registerAction("refreshProjectTreeAction", refreshProjectTreeAction);
 
         actionManager.registerAction("findReplace", findReplaceAction);
         actionManager.registerAction("openFile", openFileAction);
         actionManager.registerAction("openNode", openNodeAction);
         actionManager.registerAction("selectNode", selectNodeAction);
 
+        changeResourceGroup.add(refreshProjectTreeAction);
         changeResourceGroup.add(closeProjectAction);
         changeResourceGroup.add(cutAction);
         changeResourceGroup.add(copyAction);

@@ -97,7 +97,7 @@ public class OutlinePartViewImpl extends BaseView<OutlinePartView.ActionDelegate
                 outlineContainer.getElement().getFirstChildElement().getFirstChildElement().focus();
             }
         } catch (Exception e) {
-            Log.trace(e.getMessage());
+            Log.error(this.getClass(), e.getMessage());
         }
     }
 

@@ -20,6 +20,7 @@ import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.Unmarshallable;
+import org.eclipse.che.ide.util.loging.Log;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
 
@@ -123,19 +124,8 @@ public abstract class ItemNode extends AbstractTreeNode<ItemReference> implement
                                 break;
                             }
                         }
-                        updateChildrenData(ItemNode.this);
-
-                        ItemNode.super.rename(newName, new RenameCallback() {
-                            @Override
-                            public void onRenamed() {
-                                callback.onRenamed();
-                            }
-
-                            @Override
-                            public void onFailure(Throwable caught) {
-                                callback.onFailure(caught);
-                            }
-                        });
+                        onNodeRenamed(ItemNode.this.getPath());
+                        ItemNode.super.rename(newName, callback);
                     }
 
                     @Override
@@ -153,7 +143,9 @@ public abstract class ItemNode extends AbstractTreeNode<ItemReference> implement
     }
 
     /** Updates inner ItemReference object for all hierarchy of child nodes. */
-    private void updateChildrenData(final ItemNode itemNode) {
+    public void onNodeRenamed(String oldNodePath) {
+        final ItemNode itemNode = ItemNode.this;
+
         Unmarshallable<Array<ItemReference>> unmarshaller = dtoUnmarshallerFactory.newArrayUnmarshaller(ItemReference.class);
         projectServiceClient.getChildren(itemNode.getPath(), new AsyncRequestCallback<Array<ItemReference>>(unmarshaller) {
             @Override
@@ -163,12 +155,11 @@ public abstract class ItemNode extends AbstractTreeNode<ItemReference> implement
                         final ItemNode childItemNode = (ItemNode)childNode;
                         for (ItemReference itemReference : result.asIterable()) {
                             if (childItemNode.getName().equals(itemReference.getName())) {
-                                childItemNode.setData(itemReference);
 
-                                if (childNode instanceof FolderNode) {
-                                    updateChildrenData(childItemNode);
-                                }
-                                break;
+                                String nodePath = childItemNode.getPath();
+
+                                childItemNode.setData(itemReference);
+                                childItemNode.onNodeRenamed(nodePath);
                             }
                         }
                     }
@@ -177,6 +168,7 @@ public abstract class ItemNode extends AbstractTreeNode<ItemReference> implement
 
             @Override
             protected void onFailure(Throwable exception) {
+                Log.info(getClass(), "Failed get children " + exception);
             }
         });
     }

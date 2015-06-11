@@ -12,10 +12,14 @@ package org.eclipse.che.ide.api.project.tree.generic;
 
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.ide.api.editor.EditorAgent;
+import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.event.FileEvent;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.Collections;
+import org.eclipse.che.ide.collections.StringMap;
+import org.eclipse.che.ide.collections.java.JsonStringMapAdapter;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.test.GwtReflectionUtils;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -26,6 +30,9 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.eclipse.che.ide.api.project.tree.TreeNode.DeleteCallback;
 import static org.eclipse.che.ide.api.project.tree.TreeNode.RenameCallback;
@@ -47,13 +54,23 @@ import static org.mockito.Mockito.when;
 public class FileNodeTest extends BaseNodeTest {
     private static final String ITEM_PATH = "/project/folder/file_name";
     private static final String ITEM_NAME = "file_name";
+
+    private StringMap<EditorPartPresenter>   openedEditors;
+    private Map<String, EditorPartPresenter> openedEditorsMap;
+
     @Mock
     private ItemReference     itemReference;
     @Mock
     private ProjectDescriptor projectDescriptor;
     @Mock
     private ProjectNode       projectNode;
-    private FileNode          fileNode;
+    @Mock
+    private EditorAgent       editorAgent;
+
+    @Mock
+    private EditorPartPresenter editorPartPresenter;
+
+    private FileNode fileNode;
 
     @Before
     public void setUp() {
@@ -61,10 +78,22 @@ public class FileNodeTest extends BaseNodeTest {
 
         when(itemReference.getPath()).thenReturn(ITEM_PATH);
         when(itemReference.getName()).thenReturn(ITEM_NAME);
-        fileNode = new FileNode(projectNode, itemReference, treeStructure, eventBus, projectServiceClient, dtoUnmarshallerFactory);
+        fileNode = new FileNode(projectNode,
+                                itemReference,
+                                treeStructure,
+                                eventBus,
+                                projectServiceClient,
+                                dtoUnmarshallerFactory,
+                                editorAgent);
 
         final Array<TreeNode<?>> children = Collections.createArray();
         when(projectNode.getChildren()).thenReturn(children);
+
+        openedEditorsMap = new HashMap<>();
+        openedEditorsMap.put(ITEM_NAME, editorPartPresenter);
+        openedEditors = new JsonStringMapAdapter<>(openedEditorsMap);
+
+        when(editorAgent.getOpenedEditors()).thenReturn(openedEditors);
     }
 
     @Test
@@ -265,5 +294,13 @@ public class FileNodeTest extends BaseNodeTest {
         verify(projectServiceClient).updateFile(eq(ITEM_PATH), eq(newContent), anyString(),
                                                 Matchers.<AsyncRequestCallback<Void>>anyObject());
         verify(callback).onFailure(Matchers.<Throwable>anyObject());
+    }
+
+    @Test
+    public void actionShouldBePerformedIfNodeRenamed() {
+        fileNode.onNodeRenamed(ITEM_NAME);
+
+        verify(editorAgent).getOpenedEditors();
+        verify(editorAgent).updateEditorNode(ITEM_NAME, fileNode);
     }
 }

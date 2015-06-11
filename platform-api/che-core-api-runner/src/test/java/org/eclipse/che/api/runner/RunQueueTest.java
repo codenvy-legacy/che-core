@@ -118,10 +118,7 @@ public class RunQueueTest {
             }
         }).when(eventService).publish(any(RunnerEvent.class));
         RunnerSelectionStrategy selectionStrategy = new LastInUseRunnerSelectionStrategy();
-        runQueue = spy(new RunQueue("http://localhost:8080/api/workspace",
-                                    "http://localhost:8080/api/project",
-                                    "http://localhost:8080/api/builder",
-                                    256,
+        runQueue = spy(new RunQueue(256,
                                     5,
                                     5,
                                     5,

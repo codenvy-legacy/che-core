@@ -22,13 +22,10 @@ import java.util.Map;
 @DTO
 public interface AppState {
 
-    /** Get last opened project path. */
-    String getLastProjectPath();
+    /** Get recent project info. */
+    RecentProject getRecentProject();
 
-    void setLastProjectPath(String lastProjectPath);
-
-    AppState withLastProjectPath(String lastProjectPath);
-
+    void setRecentProject(RecentProject recentProject);
 
     /** Get the mapping of project's path to it's state. */
     Map<String, ProjectState> getProjects();

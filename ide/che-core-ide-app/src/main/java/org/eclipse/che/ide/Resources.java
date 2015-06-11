@@ -195,6 +195,9 @@ public interface Resources extends Tree.Resources,
     @Source("actions/resize-icon.svg")
     SVGResource fullscreen();
 
+    @Source("actions/refresh.svg")
+    SVGResource refresh();
+
     @Source("project/private-project.svg")
     SVGResource privateProject();
 

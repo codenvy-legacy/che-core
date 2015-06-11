@@ -20,7 +20,7 @@ import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
 import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerViewImpl;
+import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerView;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 
 import java.util.ArrayList;
@@ -34,13 +34,13 @@ import static org.eclipse.che.ide.actions.OpenNodeAction.NODE_PARAM_ID;
 @Singleton
 public class OpenedNodesPersistenceComponent implements PersistenceComponent {
 
-    private final ProjectExplorerViewImpl projectExplorerView;
+    private final ProjectExplorerView projectExplorerView;
     private final OpenNodeAction openNodeAction;
     private final ActionManager actionManager;
     private final DtoFactory dtoFactory;
 
     @Inject
-    public OpenedNodesPersistenceComponent(ProjectExplorerViewImpl projectExplorerView,
+    public OpenedNodesPersistenceComponent(ProjectExplorerView projectExplorerView,
                                            ActionManager actionManager,
                                            OpenNodeAction openNodeAction,
                                            DtoFactory dtoFactory) {

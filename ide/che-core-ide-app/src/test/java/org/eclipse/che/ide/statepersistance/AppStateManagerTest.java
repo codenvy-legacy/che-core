@@ -18,6 +18,7 @@ import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.user.shared.dto.ProfileDescriptor;
+import org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionManager;
@@ -25,13 +26,18 @@ import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.event.OpenProjectEvent;
+import org.eclipse.che.ide.api.event.PersistProjectTreeStateEvent;
+import org.eclipse.che.ide.api.event.PersistProjectTreeStateHandler;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
+import org.eclipse.che.ide.api.event.RestoreProjectTreeStateEvent;
+import org.eclipse.che.ide.api.event.RestoreProjectTreeStateHandler;
 import org.eclipse.che.ide.api.event.WindowActionEvent;
 import org.eclipse.che.ide.api.preferences.PreferencesManager;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 import org.eclipse.che.ide.statepersistance.dto.AppState;
+import org.eclipse.che.ide.statepersistance.dto.RecentProject;
 import org.eclipse.che.ide.statepersistance.dto.ProjectState;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.Pair;
@@ -52,6 +58,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -72,29 +79,36 @@ public class AppStateManagerTest {
     private static final String SERIALIZED_STATE  = "text";
     private static final String PROJECT_PATH      = "/project";
     private static final String WORKSPACE_NAME    = "someWorkspace";
+    private static final String WORKSPACE_ID      = "workspaceg13rj45zkespwtxm";
     private static final String FULL_PROJECT_PATH = "/" + WORKSPACE_NAME + PROJECT_PATH;
     private List<ActionDescriptor>    actions;
     private Map<String, ProjectState> stateMap;
 
     @Mock
-    private Set<PersistenceComponent> persistenceComponents;
+    private Set<PersistenceComponent>         persistenceComponents;
     @Mock
-    private EventBus                  eventBus;
+    private Map<String, PersistenceComponent> projectTreePersistenceComponents;
     @Mock
-    private PreferencesManager        preferencesManager;
+    private EventBus                          eventBus;
     @Mock
-    private AppContext                appContext;
+    private PreferencesManager                preferencesManager;
     @Mock
-    private DtoFactory                dtoFactory;
+    private AppContext                        appContext;
     @Mock
-    private ActionManager             actionManager;
+    private DtoFactory                        dtoFactory;
     @Mock
-    private PresentationFactory       presentationFactory;
+    private ActionManager                     actionManager;
     @Mock
-    private ProjectServiceClient      projectServiceClient;
+    private PresentationFactory               presentationFactory;
+    @Mock
+    private ProjectServiceClient              projectServiceClient;
 
     @Mock
     private AppState             appState;
+    @Mock
+    private WorkspaceDescriptor  workspaceDescriptor;
+    @Mock
+    private RecentProject        recentProject;
     @Mock
     private ProjectDescriptor    rootProject;
     @Mock
@@ -136,8 +150,12 @@ public class AppStateManagerTest {
 
         when(preferencesManager.getValue(anyString())).thenReturn(SERIALIZED_STATE);
         when(dtoFactory.createDtoFromJson(anyString(), Matchers.<Class<AppState>>anyObject())).thenReturn(appState);
-        when(appState.getLastProjectPath()).thenReturn("/project");
+        when(appState.getRecentProject()).thenReturn(recentProject);
+        when(recentProject.getPath()).thenReturn("/project");
+        when(recentProject.getWorkspaceId()).thenReturn(WORKSPACE_ID);
         when(appContext.getCurrentProject()).thenReturn(currentProject);
+        when(appContext.getWorkspace()).thenReturn(workspaceDescriptor);
+        when(workspaceDescriptor.getId()).thenReturn(WORKSPACE_ID);
         when(currentProject.getRootProject()).thenReturn(rootProject);
         when(rootProject.getPath()).thenReturn(PROJECT_PATH);
         when(rootProject.getWorkspaceName()).thenReturn(WORKSPACE_NAME);
@@ -153,6 +171,7 @@ public class AppStateManagerTest {
         when(dtoFactory.toJson(eq(appState))).thenReturn(SERIALIZED_STATE);
 
         appStateManager = new AppStateManager(persistenceComponents,
+                                              projectTreePersistenceComponents,
                                               eventBus,
                                               preferencesManager,
                                               appContext,
@@ -167,6 +186,8 @@ public class AppStateManagerTest {
     public void shouldAddEventHandlers() {
         verify(eventBus).addHandler(eq(WindowActionEvent.TYPE), eq(appStateManager));
         verify(eventBus).addHandler(eq(ProjectActionEvent.TYPE), eq(appStateManager));
+        verify(eventBus).addHandler(eq(PersistProjectTreeStateEvent.TYPE), (PersistProjectTreeStateHandler)anyObject());
+        verify(eventBus).addHandler(eq(RestoreProjectTreeStateEvent.TYPE), (RestoreProjectTreeStateHandler)anyObject());
     }
 
     @Test
@@ -175,7 +196,7 @@ public class AppStateManagerTest {
     }
 
     @Test
-    public void shouldOpenLastProjectOnStart() throws Exception {
+    public void shouldOpenRecentlyProjectOnStart() throws Exception {
         appStateManager.start(true);
 
         ProjectDescriptor result = mock(ProjectDescriptor.class);
@@ -204,20 +225,27 @@ public class AppStateManagerTest {
         method.invoke(asyncRequestCallback, exception);
 
         verify(appState).getProjects();
-        verify(appState).setLastProjectPath("");
+        verify(appState, times(4)).getRecentProject();
+        verify(recentProject).setPath("");
+
         verify(dtoFactory).toJson(appState);
         preferencesManager.setValue(PREFERENCE_PROPERTY_NAME, SERIALIZED_STATE);
         verify(preferencesManager).flushPreferences(Matchers.<AsyncCallback<ProfileDescriptor>>anyObject());
     }
 
     @Test
-    public void shouldEraseLastProjectPathOnWindowClosingWhenNoOpenedProject() {
+    public void shouldEraseRecentlyProjectPathOnWindowClosingWhenNoOpenedProject() {
         when(appContext.getCurrentProject()).thenReturn(null);
 
         appStateManager.onWindowClosing(mock(WindowActionEvent.class));
 
-        verify(appState).setLastProjectPath(eq(""));
+        verify(appContext).getWorkspace();
+        verify(workspaceDescriptor).getId();
+        verify(recentProject).setWorkspaceId(WORKSPACE_ID);
+        verify(appState, times(3)).getRecentProject();
+        verify(recentProject).setPath("");
 
+        verify(dtoFactory).toJson(appState);
         verify(preferencesManager).setValue(anyString(), eq(SERIALIZED_STATE));
         verify(preferencesManager).flushPreferences(Matchers.<AsyncCallback<ProfileDescriptor>>anyObject());
     }
@@ -233,10 +261,15 @@ public class AppStateManagerTest {
         appStateManager.onWindowClosing(mock(WindowActionEvent.class));
 
         verify(appContext, times(2)).getCurrentProject();
+        verify(appState, times(3)).getRecentProject();
+        verify(appContext).getWorkspace();
+        verify(workspaceDescriptor).getId();
+        verify(recentProject).setWorkspaceId(WORKSPACE_ID);
         verify(currentProject, times(2)).getRootProject();
         verify(rootProject, times(2)).getPath();
         verify(rootProject, times(2)).getWorkspaceName();
-        verify(appState).setLastProjectPath(FULL_PROJECT_PATH);
+        verify(appState, times(3)).getRecentProject();
+        verify(recentProject).setPath(FULL_PROJECT_PATH);
         verify(dtoFactory).createDto(ProjectState.class);
         verify(appState).getProjects();
         verify(projectState).getActions();

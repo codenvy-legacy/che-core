@@ -29,8 +29,12 @@ import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.event.OpenProjectEvent;
+import org.eclipse.che.ide.api.event.PersistProjectTreeStateHandler;
+import org.eclipse.che.ide.api.event.PersistProjectTreeStateEvent;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.ProjectActionHandler;
+import org.eclipse.che.ide.api.event.RestoreProjectTreeStateHandler;
+import org.eclipse.che.ide.api.event.RestoreProjectTreeStateEvent;
 import org.eclipse.che.ide.api.event.WindowActionEvent;
 import org.eclipse.che.ide.api.event.WindowActionHandler;
 import org.eclipse.che.ide.api.preferences.PreferencesManager;
@@ -38,6 +42,7 @@ import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 import org.eclipse.che.ide.statepersistance.dto.AppState;
+import org.eclipse.che.ide.statepersistance.dto.RecentProject;
 import org.eclipse.che.ide.statepersistance.dto.ProjectState;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.Pair;
@@ -45,7 +50,9 @@ import org.eclipse.che.ide.util.loging.Log;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -62,17 +69,19 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
 
     private AppState appState;
 
-    private final Set<PersistenceComponent> persistenceComponents;
-    private final EventBus                  eventBus;
-    private final PreferencesManager        preferencesManager;
-    private final AppContext                appContext;
-    private final DtoFactory                dtoFactory;
-    private final ActionManager             actionManager;
-    private final PresentationFactory       presentationFactory;
-    private final ProjectServiceClient      projectServiceClient;
+    private final Set<PersistenceComponent>         persistenceComponents;
+    private final Map<String, PersistenceComponent> projectTreePersistenceComponents;
+    private final EventBus                          eventBus;
+    private final PreferencesManager                preferencesManager;
+    private final AppContext                        appContext;
+    private final DtoFactory                        dtoFactory;
+    private final ActionManager                     actionManager;
+    private final PresentationFactory               presentationFactory;
+    private final ProjectServiceClient              projectServiceClient;
 
     @Inject
     public AppStateManager(Set<PersistenceComponent> persistenceComponents,
+                           Map<String, PersistenceComponent> projectTreePersistenceComponents,
                            EventBus eventBus,
                            PreferencesManager preferencesManager,
                            AppContext appContext,
@@ -81,6 +90,7 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
                            PresentationFactory presentationFactory,
                            ProjectServiceClient projectServiceClient) {
         this.persistenceComponents = persistenceComponents;
+        this.projectTreePersistenceComponents = projectTreePersistenceComponents;
         this.eventBus = eventBus;
         this.preferencesManager = preferencesManager;
         this.appContext = appContext;
@@ -88,19 +98,45 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
         this.actionManager = actionManager;
         this.presentationFactory = presentationFactory;
         this.projectServiceClient = projectServiceClient;
+
+        bind();
+    }
+
+    private void bind() {
+        eventBus.addHandler(PersistProjectTreeStateEvent.TYPE, new PersistProjectTreeStateHandler() {
+            @Override
+            public void onPersist(PersistProjectTreeStateEvent event) {
+                persistCurrentProjectState(projectTreePersistenceComponents.values());
+            }
+        });
+
+        eventBus.addHandler(RestoreProjectTreeStateEvent.TYPE, new RestoreProjectTreeStateHandler() {
+            @Override
+            public void onRestore(RestoreProjectTreeStateEvent event) {
+                final String projectPath = event.getProjectPath();
+                final ProjectState projectState = appState.getProjects().get(projectPath);
+                restoreCurrentProjectState(projectState);
+            }
+        });
     }
 
     @Override
     public void onWindowClosing(WindowActionEvent event) {
         final CurrentProject currentProject = appContext.getCurrentProject();
+        final RecentProject recentProject = appState.getRecentProject();
+
+        final String workspaceId = appContext.getWorkspace().getId();
+        recentProject.setWorkspaceId(workspaceId);
+
         if (currentProject == null) {
-            appState.setLastProjectPath("");
+            recentProject.setPath("");
         } else {
             ProjectDescriptor descriptor = currentProject.getRootProject();
             final String projectPath = "/" + descriptor.getWorkspaceName() + descriptor.getPath();
 
-            appState.setLastProjectPath(projectPath);
-            persistCurrentProjectState();
+            recentProject.setPath(projectPath);
+
+            persistCurrentProjectState(persistenceComponents);
         }
         writeStateToPreferences();
     }
@@ -126,7 +162,7 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
 
     @Override
     public void onProjectClosing(ProjectActionEvent event) {
-        persistCurrentProjectState();
+        persistCurrentProjectState(persistenceComponents);
         writeStateToPreferences();
     }
 
@@ -137,38 +173,39 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
     /**
      * Start the manager.
      *
-     * @param openLastProject
-     *         specifies whether the last opened project should be re-opened
+     * @param openRecentProject
+     *         specifies whether the recent opened project should be re-opened
      */
-    public void start(boolean openLastProject) {
+    public void start(boolean openRecentProject) {
         eventBus.addHandler(WindowActionEvent.TYPE, this);
         eventBus.addHandler(ProjectActionEvent.TYPE, this);
 
         readStateFromPreferences();
-        openLastProject(openLastProject);
+        openRecentProject(openRecentProject);
     }
 
-    private void openLastProject(final boolean openLastProject) {
-        final String lastProjectPath = appState.getLastProjectPath();
+    private void openRecentProject(final boolean openRecentProject) {
+        final RecentProject recentProject = appState.getRecentProject();
+        final String recentProjectPath = recentProject.getPath();
 
-        if (lastProjectPath != null && !lastProjectPath.isEmpty()) {
+        if (recentProjectPath != null && !recentProjectPath.isEmpty()) {
 
-            int start = lastProjectPath.lastIndexOf("/");
-            String projectPath = lastProjectPath.substring(start);
+            int start = recentProjectPath.lastIndexOf("/");
+            String projectPath = recentProjectPath.substring(start);
 
             projectServiceClient.getProject(projectPath, new AsyncRequestCallback<ProjectDescriptor>() {
                 @Override
                 protected void onSuccess(ProjectDescriptor result) {
-                    // don't re-open last project if some project name was provided
-                    if (openLastProject) {
-                        openLastProject();
+                    // don't re-open recent project if some project name was provided
+                    if (openRecentProject) {
+                        openRecentProject();
                     }
                 }
 
                 @Override
                 protected void onFailure(Throwable exception) {
-                    appState.getProjects().remove(lastProjectPath);
-                    appState.setLastProjectPath("");
+                    appState.getProjects().remove(recentProjectPath);
+                    recentProject.setPath("");
                     writeStateToPreferences();
                 }
             });
@@ -179,16 +216,30 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
     private void readStateFromPreferences() {
         final String json = preferencesManager.getValue(PREFERENCE_PROPERTY_NAME);
         if (json == null) {
-            appState = dtoFactory.createDto(AppState.class).withLastProjectPath("");
+            appState = dtoFactory.createDto(AppState.class);
+            initClearRecentProject(appState);
         } else {
             try {
                 appState = dtoFactory.createDtoFromJson(json, AppState.class);
+                if (appState.getRecentProject() == null) {
+                    initClearRecentProject(appState);
+                }
             } catch (Exception e) {
                 // create 'clear' state if there's any error
                 Log.error(getClass(), "Restore application state failed.");
-                appState = dtoFactory.createDto(AppState.class).withLastProjectPath("");
+                appState = dtoFactory.createDto(AppState.class);
+                initClearRecentProject(appState);
             }
         }
+    }
+
+    private void initClearRecentProject(AppState appState) {
+        final RecentProject recentProject = dtoFactory.createDto(RecentProject.class);
+        String workspaceId = appContext.getWorkspace().getId();
+
+        appState.setRecentProject(recentProject);
+        recentProject.setPath("");
+        recentProject.setWorkspaceId(workspaceId);
     }
 
     private void writeStateToPreferences() {
@@ -206,18 +257,20 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
         });
     }
 
-    private void openLastProject() {
-        final String projectPath = appState.getLastProjectPath();
-        if (projectPath != null && !projectPath.isEmpty()) {
+    private void openRecentProject() {
+        RecentProject recentProject = appState.getRecentProject();
+        if (recentProject != null) {
+            final String projectPath = recentProject.getPath();
 
-            int start = projectPath.lastIndexOf("/");
-            String projectName = projectPath.substring(start);
+            if (projectPath != null && !projectPath.isEmpty()) {
 
-            eventBus.fireEvent(new OpenProjectEvent(projectName));
+                int start = projectPath.lastIndexOf("/");
+                String projectName = projectPath.substring(start);
+
+                eventBus.fireEvent(new OpenProjectEvent(projectName));
+            }
         }
     }
-
-
 
     /** Restores state of the currently opened project. */
     private void restoreCurrentProjectState(@Nonnull ProjectState projectState) {
@@ -245,7 +298,7 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
     }
 
     /** Persist state of the currently opened project. */
-    private void persistCurrentProjectState() {
+    private void persistCurrentProjectState(Collection<PersistenceComponent> persistenceComponents) {
         final CurrentProject currentProject = appContext.getCurrentProject();
         if (currentProject == null) {
             return;

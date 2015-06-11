@@ -15,6 +15,8 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.event.NodeExpandedEvent;
+import org.eclipse.che.ide.api.event.PersistProjectTreeStateEvent;
+import org.eclipse.che.ide.api.event.RestoreProjectTreeStateEvent;
 import org.eclipse.che.ide.menu.ContextMenu;
 
 import org.eclipse.che.ide.api.app.AppContext;
@@ -205,6 +207,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
         eventBus.addHandler(RefreshProjectTreeEvent.TYPE, new RefreshProjectTreeHandler() {
             @Override
             public void onRefresh(RefreshProjectTreeEvent event) {
+                eventBus.fireEvent(new PersistProjectTreeStateEvent());
                 if (appContext.getCurrentProject() == null) {
                     setTree(projectListStructureProvider.get());
                     return;
@@ -228,6 +231,11 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
                             // clear children in order to force to refresh
                             childNode.setChildren(Collections.<TreeNode<?>>createArray());
                             refreshAndSelectNode(childNode);
+
+                            ProjectDescriptor projectDescriptor = appContext.getCurrentProject().getRootProject();
+                            String workspaceName = projectDescriptor.getWorkspaceName();
+                            String fullProjectPath = "/" + workspaceName + projectDescriptor.getPath();
+                            eventBus.fireEvent(new RestoreProjectTreeStateEvent(fullProjectPath));
                         }
                     }
 

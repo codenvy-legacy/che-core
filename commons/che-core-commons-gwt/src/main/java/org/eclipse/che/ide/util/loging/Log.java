@@ -18,9 +18,7 @@ import com.google.gwt.core.client.GWT;
 
 
 /**
- * Simple Logging class that logs to the browser's console and to the DevMode
- * console (if you are in DevMode).
- * <p/>
+ * Simple Logging class that logs to the browser's console
  * So long as generating the parameters to pass to the logging methods is free
  * of side effects, all Logging code should compile out of your application if
  * logging is disabled.
@@ -31,7 +29,7 @@ public class Log {
 
     static {
         LogConfig.setLogLevel(LogConfig.LogLevel.INFO);
-        delegate = GWT.isClient() ? new DevModeLogger() : new DummyLogger();
+        delegate = GWT.isClient() ? new BrowserLogger() : new DummyLogger();
     }
 
     public static void debug(Class<?> clazz, Object... args) {
@@ -53,13 +51,5 @@ public class Log {
     public static boolean isLoggingEnabled() {
         return delegate.isLoggingEnabled();
     }
-
-    /**
-     * Logs to browser's console.
-     *
-     * @param msg message to print
-     */
-    public static final void trace(String msg) {}
-//    public static final native void trace(String msg) /*-{ console.log(msg); }-*/;
 
 }

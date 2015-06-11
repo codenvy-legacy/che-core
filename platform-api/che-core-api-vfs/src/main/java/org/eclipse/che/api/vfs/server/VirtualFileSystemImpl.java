@@ -821,7 +821,10 @@ public abstract class VirtualFileSystemImpl implements VirtualFileSystem {
     @Path("downloadfile/{id}")
     @Override
     public Response downloadFile(@PathParam("id") String id) throws NotFoundException, ForbiddenException, ServerException {
-        final ContentStream content = getContent(id);
+        return downloadFile(getContent(id));
+    }
+
+    public static Response downloadFile(ContentStream content) {
         return Response
                 .ok(content.getStream(), content.getMimeType())
                 .lastModified(content.getLastModificationDate())

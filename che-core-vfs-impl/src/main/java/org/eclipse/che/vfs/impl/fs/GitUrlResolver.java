@@ -20,6 +20,7 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.ws.rs.core.UriInfo;
 import java.net.URI;
+import java.nio.file.Paths;
 
 /**
  * Resolves Git URL for public access.
@@ -49,6 +50,13 @@ public class GitUrlResolver {
 
     public String resolve(URI baseUri, VirtualFileImpl virtualFile) {
         final String localPath = pathResolver.resolve(virtualFile);
+
+        URI uriLocalPath = Paths.get(localPath).toUri();
+        String localPathNormalized = uriLocalPath.getPath();
+
+        URI uriMountPath = Paths.get(mountPath).toUri();
+        String mountPathNormalized = uriMountPath.getPath();
+
         StringBuilder result = new StringBuilder();
         result.append("http");
         result.append("://");
@@ -60,7 +68,13 @@ public class GitUrlResolver {
         }
         result.append('/');
         result.append("git");
-        result.append(localPath.substring(mountPath.length()));
+        result.append(localPathNormalized.substring(mountPathNormalized.length() - 1));
+
+        int lastSymbol = result.length() - 1;
+        if (result.lastIndexOf("/")  == lastSymbol) {
+            result.deleteCharAt(lastSymbol);
+        }
+
         return result.toString();
     }
 }

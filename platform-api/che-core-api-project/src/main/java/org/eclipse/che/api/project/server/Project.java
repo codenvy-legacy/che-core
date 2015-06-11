@@ -42,6 +42,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * Server side representation for codenvy project.
@@ -392,14 +393,35 @@ public class Project {
         public void remove(String path) throws ForbiddenException, ServerException, ConflictException {
 
             Set<String> all = read();
-            all.remove(path);
-            write(all);
+            if (all.contains(path)) {
+                all.remove(path);
+                write(all);
+            }
 
         }
 
         public void add(String path) throws ForbiddenException, ServerException, ConflictException {
             Set<String> all = read();
             all.add(path);
+            write(all);
+        }
+
+        public void update(String oldPath, String newPath) throws ForbiddenException, ServerException, ConflictException {
+            Set<String> all = new CopyOnWriteArraySet<>(read());
+
+            all.remove(oldPath);
+            all.add(newPath);
+
+            //update subModule paths
+            for (String modulePath: all) {
+                if (modulePath.startsWith(oldPath + "/")) {
+                    all.remove(modulePath);
+
+                    String subModulePath = modulePath.replaceFirst(oldPath, newPath);
+                    all.add(subModulePath);
+                }
+            }
+
             write(all);
         }
 

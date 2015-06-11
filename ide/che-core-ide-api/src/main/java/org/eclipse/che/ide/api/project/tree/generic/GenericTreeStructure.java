@@ -21,6 +21,7 @@ import org.eclipse.che.ide.api.project.tree.TreeSettings;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
+
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
 
@@ -153,6 +154,19 @@ public class GenericTreeStructure implements TreeStructure {
      */
     public ProjectNode newProjectNode(@Nonnull ProjectDescriptor data) {
         return getNodeFactory().newProjectNode(null, data, this);
+    }
+
+    /**
+     * Creates a new {@link ModuleNode} owned by this tree with the specified associated {@code data}.
+     *
+     * @param parent
+     *         the parent node
+     * @param data
+     *         the associated {@link ProjectDescriptor}
+     * @return a new {@link ModuleNode}
+     */
+    public ModuleNode newModuleNode(@Nonnull TreeNode parent, @Nonnull ProjectDescriptor data) {
+        return getNodeFactory().newModuleNode(parent, data, this);
     }
 
     /**
