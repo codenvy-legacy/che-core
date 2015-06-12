@@ -158,4 +158,12 @@ public class Config {
     public static WorkspaceDescriptor getCurrentWorkspace() {
         return _workspace;
     }
+
+    public static native String getCheExtensionPath() /*-{
+        try {
+            return $wnd.IDE.config.cheExtensionPath;
+        } catch (e) {
+            return null;
+        }
+    }-*/;
 }

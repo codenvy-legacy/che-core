@@ -464,4 +464,11 @@ public class CoreGinModule extends AbstractGinModule {
         return (isSecureConnection ? "wss://" : "ws://") + Window.Location.getHost() + Config.getRestContext() + "/ws/" +
                Config.getWorkspaceId();
     }
+
+    @Provides
+    @Named("cheExtensionPath")
+    @Singleton
+    protected String getJavaCAPath() {
+        return Config.getCheExtensionPath();
+    }
 }
