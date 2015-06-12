@@ -102,7 +102,7 @@ public class TreeNodeElement<D> extends JsLIElement {
             int depth = Integer.parseInt(parent.getAttribute("___depth"));
 
             Element expandElement = (Element)getNodeBody().getChildren().item(0);
-            expandElement.getStyle().setMarginLeft("" + (depth * 16) + "px");
+            expandElement.getStyle().setMarginLeft("" + (depth * 8) + "px");
 
             if (! hasChildNodes()) {
                 return;
