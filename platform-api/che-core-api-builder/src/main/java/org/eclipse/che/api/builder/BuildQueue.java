@@ -51,7 +51,6 @@ import org.everrest.websockets.message.ChannelBroadcastMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
@@ -104,8 +103,6 @@ public class BuildQueue {
     private final BuilderSelectionStrategy                   builderSelector;
     private final ConcurrentMap<Long, BuildQueueTask>        tasks;
     private final ConcurrentMap<BuilderListKey, BuilderList> builderListMapping;
-    private final String                                     baseWorkspaceApiUrl;
-    private final String                                     baseProjectApiUrl;
     private final int                                        maxExecutionTimeMillis;
     private final EventService                               eventService;
     /** Max time for request to be in queue in milliseconds. */
@@ -123,18 +120,6 @@ public class BuildQueue {
     private String[] slaves = new String[0];
 
     /**
-     * @param baseWorkspaceApiUrl
-     *         workspace api url. Configuration parameter that points to the Workspace API location. If such parameter isn't specified than
-     *         use the same base URL as builder API has, e.g. suppose we have builder API at URL: <i>http://codenvy
-     *         .com/api/builder/my_workspace</i>,
-     *         in this case base URL is <i>http://codenvy.com/api</i> so we will try to find workspace API at URL:
-     *         <i>http://codenvy.com/api/workspace/my_workspace</i>
-     * @param baseProjectApiUrl
-     *         project api url. Configuration parameter that points to the Project API location. If such parameter isn't specified than use
-     *         the same base URL as builder API has, e.g. suppose we have builder API at URL: <i>http://codenvy
-     *         .com/api/builder/my_workspace</i>,
-     *         in this case base URL is <i>http://codenvy.com/api</i> so we will try to find project API at URL:
-     *         <i>http://codenvy.com/api/project/my_workspace</i>
      * @param waitingTime
      *         max time for request to be in queue in seconds. Configuration parameter that sets max time (in seconds) which request may be
      *         in this queue. After this time the results of build may be removed.
@@ -142,15 +127,11 @@ public class BuildQueue {
      *         build timeout. Configuration parameter that provides build timeout is seconds. After this time build may be terminated.
      */
     @Inject
-    public BuildQueue(@Nullable @Named("workspace.base_api_url") String baseWorkspaceApiUrl,
-                      @Nullable @Named("project.base_api_url") String baseProjectApiUrl,
-                      @Named(Constants.WAITING_TIME) int waitingTime,
+    public BuildQueue(@Named(Constants.WAITING_TIME) int waitingTime,
                       @Named(Constants.MAX_EXECUTION_TIME) int maxExecutionTime,
                       @Named(Constants.KEEP_RESULT_TIME) int keepResultTime,
                       BuilderSelectionStrategy builderSelector,
                       EventService eventService) {
-        this.baseWorkspaceApiUrl = baseWorkspaceApiUrl;
-        this.baseProjectApiUrl = baseProjectApiUrl;
         this.maxExecutionTimeMillis = maxExecutionTime;
         this.eventService = eventService;
         this.waitingTimeMillis = TimeUnit.SECONDS.toMillis(waitingTime);
@@ -233,7 +214,7 @@ public class BuildQueue {
     // private
     boolean doRegisterBuilderServer(RemoteBuilderServer builderServer) throws BuilderException {
         builderServices.put(builderServer.getBaseUrl(), builderServer);
-        final BuilderListKey key = new BuilderListKey(builderServer.getAssignedWorkspace(), builderServer.getAssignedProject());
+        final BuilderListKey key = new BuilderListKey(builderServer.getAssignedProject(), builderServer.getAssignedWorkspace());
         BuilderList builderList = builderListMapping.get(key);
         if (builderList == null) {
             final BuilderList newBuilderList = new BuilderList(builderSelector);
@@ -465,9 +446,7 @@ public class BuildQueue {
 
     private ProjectDescriptor getProjectDescription(String workspace, String project, ServiceContext serviceContext)
             throws BuilderException {
-        final UriBuilder baseProjectUriBuilder = baseProjectApiUrl == null || baseProjectApiUrl.isEmpty()
-                                                 ? serviceContext.getBaseUriBuilder()
-                                                 : UriBuilder.fromUri(baseProjectApiUrl);
+        final UriBuilder baseProjectUriBuilder = serviceContext.getBaseUriBuilder();
         final String projectUrl = baseProjectUriBuilder.path(ProjectService.class)
                                                        .path(ProjectService.class, "getProject")
                                                        .build(workspace, project.startsWith("/") ? project.substring(1) : project)
@@ -482,9 +461,7 @@ public class BuildQueue {
     }
 
     private WorkspaceDescriptor getWorkspaceDescriptor(String workspace, ServiceContext serviceContext) throws BuilderException {
-        final UriBuilder baseWorkspaceUriBuilder = baseWorkspaceApiUrl == null || baseWorkspaceApiUrl.isEmpty()
-                                                   ? serviceContext.getBaseUriBuilder()
-                                                   : UriBuilder.fromUri(baseWorkspaceApiUrl);
+        final UriBuilder baseWorkspaceUriBuilder = serviceContext.getBaseUriBuilder();
         final String workspaceUrl = baseWorkspaceUriBuilder.path(WorkspaceService.class)
                                                            .path(WorkspaceService.class, "getById")
                                                            .build(workspace).toString();
@@ -791,7 +768,7 @@ public class BuildQueue {
         final String project;
         final String workspace;
 
-        BuilderListKey(String project, String workspace) {
+         BuilderListKey(String project, String workspace) {
             this.project = project;
             this.workspace = workspace;
         }

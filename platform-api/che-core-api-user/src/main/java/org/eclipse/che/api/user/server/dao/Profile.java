@@ -23,6 +23,13 @@ public class Profile {
     private String              userId;
     private Map<String, String> attributes;
 
+    public Profile() {}
+
+    public Profile(String id) {
+        this.id = id;
+        this.userId = id;
+    }
+
     public String getId() {
         return id;
     }

@@ -10,10 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.account.server.dao;
 
-import com.google.common.annotations.Beta;
-
 import org.eclipse.che.api.core.ConflictException;
-import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 
@@ -103,67 +100,6 @@ public interface AccountDao {
      *         account member to be removed
      */
     void removeMember(Member member) throws NotFoundException, ServerException, ConflictException;
-
-    /**
-     * Adds new subscription to account that already exists in persistent layer
-     *
-     * @param subscription
-     *         subscription POJO
-     */
-    @Beta
-    void addSubscription(Subscription subscription) throws NotFoundException, ConflictException, ServerException;
-
-    /**
-     * Get subscription from persistent layer
-     *
-     * @param subscriptionId
-     *         subscription identifier
-     * @return Subscription POJO
-     * @throws org.eclipse.che.api.core.NotFoundException
-     *         when subscription doesn't exist
-     */
-    @Beta
-    Subscription getSubscriptionById(String subscriptionId) throws NotFoundException, ServerException;
-
-    /**
-     * Gets list of active subscriptions related to given account.
-     *
-     * @param accountId
-     *         account id
-     * @return list of subscriptions, or empty list if no subscriptions found
-     */
-    @Beta
-    List<Subscription> getActiveSubscriptions(String accountId) throws NotFoundException, ServerException;
-
-    /**
-     * Gets active subscription with given service related to given account.
-     *
-     * @param accountId
-     *         account id
-     * @param serviceId
-     *         service id
-     * @return subscription or {@code null} if no subscription found
-     */
-    @Beta
-    Subscription getActiveSubscription(String accountId, String serviceId) throws ServerException, NotFoundException;
-
-    /**
-     * Update existing subscription.
-     *
-     * @param subscription
-     *         new subscription
-     */
-    @Beta
-    void updateSubscription(Subscription subscription) throws NotFoundException, ServerException;
-
-    /**
-     * Remove subscription related to existing account
-     *
-     * @param subscriptionId
-     *         subscription identifier for removal
-     */
-    @Beta
-    void removeSubscription(String subscriptionId) throws NotFoundException, ServerException;
 
     /**
      * Gets list of existing in persistent layer members related to given account

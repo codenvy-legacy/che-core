@@ -8,13 +8,27 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.account.shared.dto;
+package org.eclipse.che.api.user.shared.dto;
+
+import org.eclipse.che.dto.shared.DTO;
 
 /**
- * Types of dilling cycles
+ * Describes new user
  *
- * @author Alexander Garagatyi
+ * @author Eugene Voevodin
  */
-public enum BillingCycleType {
-    AutoRenew, OneTime, NoRenewal
+@DTO
+public interface NewUser {
+
+    String getEmail();
+
+    void setEmail(String email);
+
+    NewUser withEmail(String email);
+
+    String getPassword();
+
+    void setPassword(String password);
+
+    NewUser withPassword(String password);
 }

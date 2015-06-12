@@ -126,9 +126,6 @@ public class RunQueue {
     private final ConcurrentMap<Long, RunQueueTask>               tasks;
     private final int                                             defMemSize;
     private final EventService                                    eventService;
-    private final String                                          baseWorkspaceApiUrl;
-    private final String                                          baseProjectApiUrl;
-    private final String                                          baseBuilderApiUrl;
     private final int                                             defLifetime;
     private final long                                            maxWaitingTimeMillis;
     private final AtomicBoolean                                   started;
@@ -170,23 +167,6 @@ public class RunQueue {
     long checkBuildResultPeriod     = CHECK_BUILD_RESULT_PERIOD;
 
     /**
-     * @param baseWorkspaceApiUrl
-     *         workspace api url. Configuration parameter that points to the Workspace API location. If such parameter isn't specified than
-     *         use the same base URL as runner API has, e.g. suppose we have runner API at URL: <i>http://codenvy
-     *         .com/api/runner/my_workspace</i>,
-     *         in this case base URL is <i>http://codenvy.com/api</i> so we will try to find workspace API at URL:
-     *         <i>http://codenvy.com/api/workspace/my_workspace</i>
-     * @param baseProjectApiUrl
-     *         project api url. Configuration parameter that points to the Project API location. If such parameter isn't specified than use
-     *         the same base URL as runner API has, e.g. suppose we have runner API at URL: <i>http://codenvy
-     *         .com/api/runner/my_workspace</i>,
-     *         in this case base URL is <i>http://codenvy.com/api</i> so we will try to find project API at URL:
-     *         <i>http://codenvy.com/api/project/my_workspace</i>
-     * @param baseBuilderApiUrl
-     *         builder api url. Configuration parameter that points to the base Builder API location. If such parameter isn't specified
-     *         than use the same base URL as runner API has, e.g. suppose we have runner API at URL:
-     *         <i>http://codenvy.com/api/runner/my_workspace</i>, in this case base URL is <i>http://codenvy.com/api</i> so we will try to
-     *         find builder API at URL: <i>http://codenvy.com/api/builder/my_workspace</i>.
      * @param defMemSize
      *         default size of memory for application in megabytes. This value used is there is nothing specified in properties of project.
      * @param maxWaitingTime
@@ -196,18 +176,12 @@ public class RunQueue {
      */
     @Inject
     @SuppressWarnings("unchecked")
-    public RunQueue(@Nullable @Named("workspace.base_api_url") String baseWorkspaceApiUrl,
-                    @Nullable @Named("project.base_api_url") String baseProjectApiUrl,
-                    @Nullable @Named("builder.base_api_url") String baseBuilderApiUrl,
-                    @Named(Constants.APP_DEFAULT_MEM_SIZE) int defMemSize,
+    public RunQueue(@Named(Constants.APP_DEFAULT_MEM_SIZE) int defMemSize,
                     @Named(Constants.WAITING_TIME) int maxWaitingTime,
                     @Named(Constants.APP_LIFETIME) int defLifetime,
                     @Named(Constants.APP_CLEANUP_TIME) int appCleanupTime,
                     RunnerSelectionStrategy runnerSelector,
                     EventService eventService) {
-        this.baseWorkspaceApiUrl = baseWorkspaceApiUrl;
-        this.baseProjectApiUrl = baseProjectApiUrl;
-        this.baseBuilderApiUrl = baseBuilderApiUrl;
         this.defMemSize = defMemSize;
         this.eventService = eventService;
         this.maxWaitingTimeMillis = TimeUnit.SECONDS.toMillis(maxWaitingTime);
@@ -602,9 +576,7 @@ public class RunQueue {
     // Switched to default for test.
     // private
     WorkspaceDescriptor getWorkspaceDescriptor(String workspace, ServiceContext serviceContext) throws RunnerException {
-        final UriBuilder baseWorkspaceUriBuilder = baseWorkspaceApiUrl == null || baseWorkspaceApiUrl.isEmpty()
-                                                   ? serviceContext.getBaseUriBuilder()
-                                                   : UriBuilder.fromUri(baseWorkspaceApiUrl);
+        final UriBuilder baseWorkspaceUriBuilder = serviceContext.getBaseUriBuilder();
         final String workspaceUrl = baseWorkspaceUriBuilder.path(WorkspaceService.class)
                                                            .path(WorkspaceService.class, "getById")
                                                            .build(workspace).toString();
@@ -620,9 +592,7 @@ public class RunQueue {
     // Switched to default for test.
     // private
     ProjectDescriptor getProjectDescriptor(String workspace, String project, ServiceContext serviceContext) throws RunnerException {
-        final UriBuilder baseProjectUriBuilder = baseProjectApiUrl == null || baseProjectApiUrl.isEmpty()
-                                                 ? serviceContext.getBaseUriBuilder()
-                                                 : UriBuilder.fromUri(baseProjectApiUrl);
+        final UriBuilder baseProjectUriBuilder = serviceContext.getBaseUriBuilder();
         final String projectUrl = baseProjectUriBuilder.path(ProjectService.class)
                                                        .path(ProjectService.class, "getProject")
                                                        .build(workspace, project.startsWith("/") ? project.substring(1) : project)
@@ -771,9 +741,7 @@ public class RunQueue {
     // Switched to default for test.
     // private
     RemoteServiceDescriptor getBuilderServiceDescriptor(String workspace, ServiceContext serviceContext) {
-        final UriBuilder baseBuilderUriBuilder = baseBuilderApiUrl == null || baseBuilderApiUrl.isEmpty()
-                                                 ? serviceContext.getBaseUriBuilder()
-                                                 : UriBuilder.fromUri(baseBuilderApiUrl);
+        final UriBuilder baseBuilderUriBuilder = serviceContext.getBaseUriBuilder();
         final String builderUrl = baseBuilderUriBuilder.path(BuilderService.class).build(workspace).toString();
         return new RemoteServiceDescriptor(builderUrl);
     }

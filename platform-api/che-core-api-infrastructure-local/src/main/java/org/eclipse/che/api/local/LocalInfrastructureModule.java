@@ -15,7 +15,6 @@ import com.google.inject.Provides;
 
 import org.eclipse.che.api.account.server.dao.Account;
 import org.eclipse.che.api.account.server.dao.AccountDao;
-import org.eclipse.che.api.account.server.dao.Subscription;
 import org.eclipse.che.api.auth.AuthenticationDao;
 import org.eclipse.che.api.machine.server.command.CommandImpl;
 import org.eclipse.che.api.machine.server.dao.CommandDao;
@@ -82,12 +81,6 @@ public class LocalInfrastructureModule extends AbstractModule {
         Collections.addAll(member.getRoles(), "account/owner", "account/member");
         members.add(member);
         return members;
-    }
-
-    @Provides
-    @Named("codenvy.local.infrastructure.account.subscriptions")
-    Set<Subscription> subscriptions() {
-        return Collections.emptySet();
     }
 
     // AccountDao ~~~

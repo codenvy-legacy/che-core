@@ -12,6 +12,7 @@ package org.eclipse.che.dto;
 
 import org.eclipse.che.dto.definitions.ComplicatedDto;
 import org.eclipse.che.dto.definitions.DtoWithDelegate;
+import org.eclipse.che.dto.definitions.DtoWithFieldNames;
 import org.eclipse.che.dto.definitions.SimpleDto;
 import org.eclipse.che.dto.server.DtoFactory;
 import com.google.gson.JsonArray;
@@ -79,6 +80,34 @@ public class ServerDtoTest {
 
         // Check to make sure things are in a sane state.
         checkSimpleDto(dto, fooString, fooId, _default);
+    }
+
+    @Test
+    public void testSerializerWithFieldNames() throws Exception {
+        final String fooString = "Something";
+        final String _default = "test_default_keyword";
+
+        DtoWithFieldNames dto = dtoFactory.createDto(DtoWithFieldNames.class).withTheName(fooString).withTheDefault(_default);
+        final String json = dtoFactory.toJson(dto);
+
+        JsonObject jsonObject = new JsonParser().parse(json).getAsJsonObject();
+        Assert.assertEquals(jsonObject.get(DtoWithFieldNames.THENAME_FIELD).getAsString(), fooString);
+        Assert.assertEquals(jsonObject.get(DtoWithFieldNames.THEDEFAULT_FIELD).getAsString(), _default);
+    }
+
+    @Test
+    public void testDeerializerWithFieldNames() throws Exception {
+        final String fooString = "Something";
+        final String _default = "test_default_keyword";
+
+        JsonObject json = new JsonObject();
+        json.add(DtoWithFieldNames.THENAME_FIELD, new JsonPrimitive(fooString));
+        json.add(DtoWithFieldNames.THEDEFAULT_FIELD, new JsonPrimitive(_default));
+
+        DtoWithFieldNames dto = dtoFactory.createDtoFromJson(json.toString(), DtoWithFieldNames.class);
+
+        Assert.assertEquals(dto.getTheName(), fooString);
+        Assert.assertEquals(dto.getTheDefault(), _default);
     }
 
     @Test

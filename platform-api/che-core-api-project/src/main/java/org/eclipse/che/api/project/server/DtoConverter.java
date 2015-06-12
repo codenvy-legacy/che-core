@@ -128,34 +128,40 @@ public class DtoConverter {
 
 
     /*================================ Methods for conversion to DTO. ===============================*/
-//
-//    public static Builders fromDto(BuildersDescriptor dto) {
-//        if (dto == null)
-//            return null;
-//        final Builders builders = new Builders(dto.getDefault());
-//        for (Map.Entry<String, BuilderConfiguration> e : dto.getConfigs().entrySet()) {
-//            final BuilderConfiguration config = e.getValue();
-//            if (config != null) {
-//                builders.getConfigs().put(e.getKey(), new Builders.Config(config.getOptions(), config.getTargets()));
-//            }
-//        }
-//        return builders;
-//
-//    }
-//
-//    public static Runners fromDto(RunnersDescriptor dto) {
-//        if(dto == null)
-//            return null;
-//        final Runners runners = new Runners(dto.getDefault());
-//        for (Map.Entry<String, RunnerConfiguration> e : dto.getConfigs().entrySet()) {
-//            final RunnerConfiguration config = e.getValue();
-//            if (config != null) {
-//                runners.getConfigs().put(e.getKey(), new Runners.Config(config.getRam(), config.getOptions(), config.getVariables()));
-//            }
-//        }
-//        return runners;
-//    }
-//
+/*
+    public static Builders fromDto(BuildersDescriptor dto) {
+        if (dto == null)
+            return null;
+        if (dto.getConfigs() == null) {
+            return null;
+        }
+        final Builders builders = new Builders(dto.getDefault());
+        for (Map.Entry<String, BuilderConfiguration> e : dto.getConfigs().entrySet()) {
+            final BuilderConfiguration config = e.getValue();
+            if (config != null) {
+                builders.getConfigs().put(e.getKey(), new Builders.Config(config.getOptions(), config.getTargets()));
+            }
+        }
+        return builders;
+
+    }
+
+    public static Runners fromDto(RunnersDescriptor dto) {
+        if(dto == null)
+            return null;
+        if (dto.getConfigs() == null) {
+            return null;
+        }
+        final Runners runners = new Runners(dto.getDefault());
+        for (Map.Entry<String, RunnerConfiguration> e : dto.getConfigs().entrySet()) {
+            final RunnerConfiguration config = e.getValue();
+            if (config != null) {
+                runners.getConfigs().put(e.getKey(), new Runners.Config(config.getRam(), config.getOptions(), config.getVariables()));
+            }
+        }
+        return runners;
+    }
+*/
 
     public static ProjectTypeDefinition toTypeDescriptor2(ProjectType projectType) {
 

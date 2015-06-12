@@ -13,10 +13,16 @@ package org.eclipse.che.dto.generator;
 import org.eclipse.che.dto.shared.CompactJsonDto;
 import org.eclipse.che.dto.shared.DTO;
 import org.eclipse.che.dto.shared.DelegateTo;
+import org.eclipse.che.dto.shared.JsonFieldName;
 import org.eclipse.che.dto.shared.SerializationIndex;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.gson.JsonParser;
+import com.google.gson.stream.JsonWriter;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -112,7 +118,10 @@ abstract class DtoImpl {
         return "ensure" + getCamelCaseName(fieldName);
     }
 
-    protected String getJsonFieldName(String getterName) {
+    /**
+     * Get the canonical name of the field by deriving it from a getter method's name.
+     */
+    protected String getFieldNameFromGetterName(String getterName) {
         String fieldName;
         if (getterName.startsWith("get")) {
             fieldName = getterName.substring(3);
@@ -121,6 +130,22 @@ abstract class DtoImpl {
             fieldName = getterName.substring(2);
         }
         return Character.toLowerCase(fieldName.charAt(0)) + fieldName.substring(1);
+    }
+
+    /**
+     * Get the name of the JSON field that corresponds to the given getter method in a DTO-annotated type.
+     */
+    protected String getJsonFieldName(Method getterMethod) {
+        // First, check if a custom field name is defined for the getter
+        JsonFieldName fieldNameAnn = getterMethod.getAnnotation(JsonFieldName.class);
+        if (fieldNameAnn != null) {
+            String customFieldName = fieldNameAnn.value();
+            if (customFieldName != null && !customFieldName.isEmpty()) {
+                return customFieldName;
+            }
+        }
+        // If no custom name is given for the field, deduce it from the camel notation
+        return getFieldNameFromGetterName(getterMethod.getName());
     }
 
     /**
@@ -340,6 +365,21 @@ abstract class DtoImpl {
     protected boolean isLastMethod(Method method) {
         Preconditions.checkNotNull(method);
         return method == dtoMethods.get(dtoMethods.size() - 1);
+    }
+    
+    /**
+     * Create a textual representation of a string literal that evaluates to the given value.
+     */
+    protected String quoteStringLiteral(String value) {
+        StringWriter sw = new StringWriter();
+        try (JsonWriter writer = new JsonWriter(sw)) {
+            writer.setLenient(true);
+            writer.value(value);
+            writer.flush();
+        } catch (IOException ex) {
+            throw new RuntimeException("Unexpected I/O failure: " + ex.getLocalizedMessage(), ex);
+        }
+        return sw.toString();
     }
 
     /**

@@ -8,24 +8,23 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.account.shared.dto;
+package org.eclipse.che.dto.shared;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import com.wordnik.swagger.annotations.ApiModelProperty;
-
-import org.eclipse.che.dto.shared.DTO;
-
-import java.util.List;
+import com.google.common.annotations.Beta;
 
 /**
- * @author Sergii Leschenko
+ * Use a custom name for the JSON element that corresponds to a class field
+ * 
+ * @author Tareq Sharafy (tareq.sharafy@sap.com)
  */
-@DTO
-public interface UsedAccountResources {
-    @ApiModelProperty(value = "Consumed resources during current billing period grouped by workspaces")
-    List<WorkspaceResources> getUsed();
-
-    void setUsed(List<WorkspaceResources> used);
-
-    UsedAccountResources withUsed(List<WorkspaceResources> used);
+@Beta
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface JsonFieldName {
+    String value();
 }

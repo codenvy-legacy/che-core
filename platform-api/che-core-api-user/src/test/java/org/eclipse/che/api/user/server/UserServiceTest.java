@@ -14,12 +14,15 @@ import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.rest.ApiExceptionMapper;
 import org.eclipse.che.api.user.server.dao.PreferenceDao;
+import org.eclipse.che.api.user.server.dao.Profile;
 import org.eclipse.che.api.user.server.dao.User;
 import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.api.user.server.dao.UserProfileDao;
+import org.eclipse.che.api.user.shared.dto.NewUser;
 import org.eclipse.che.api.user.shared.dto.UserDescriptor;
 import org.eclipse.che.api.user.shared.dto.UserInRoleDescriptor;
 import org.eclipse.che.commons.json.JsonHelper;
+import org.eclipse.che.dto.server.DtoFactory;
 import org.everrest.core.impl.ApplicationContextImpl;
 import org.everrest.core.impl.ApplicationProviderBinder;
 import org.everrest.core.impl.ContainerResponse;
@@ -43,10 +46,12 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.Collections.singletonList;
-import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -66,7 +71,7 @@ public class UserServiceTest {
     private final String SERVICE_PATH = BASE_URI + "/user";
 
     @Mock
-    UserProfileDao     userProfileDao;
+    UserProfileDao     profileDao;
     @Mock
     UserDao            userDao;
     @Mock
@@ -86,7 +91,7 @@ public class UserServiceTest {
     public void setUp() throws Exception {
         ResourceBinderImpl resources = new ResourceBinderImpl();
         DependencySupplierImpl dependencies = new DependencySupplierImpl();
-        dependencies.addComponent(UserProfileDao.class, userProfileDao);
+        dependencies.addComponent(UserProfileDao.class, profileDao);
         dependencies.addComponent(UserDao.class, userDao);
         dependencies.addComponent(TokenValidator.class, tokenValidator);
         dependencies.addComponent(PreferenceDao.class, preferenceDao);
@@ -142,8 +147,92 @@ public class UserServiceTest {
         final ContainerResponse response = makeRequest("POST", SERVICE_PATH + "/create?token=" + token, null);
 
         assertEquals(response.getStatus(), CREATED.getStatusCode());
-        final UserDescriptor user = (UserDescriptor)response.getEntity();
+        final UserDescriptor user = (UserDescriptor) response.getEntity();
         assertEquals(user.getEmail(), userEmail);
+        assertEquals(user.getPassword(), "<none>");
+        verify(userDao).create(any(User.class));
+        verify(profileDao).create(any(Profile.class));
+    }
+
+    @Test
+    public void shouldBeAbleToCreateNewUserForSystemAdmin() throws Exception {
+        final NewUser newUser = DtoFactory.getInstance()
+                                          .createDto(NewUser.class)
+                                          .withEmail("test@mail.com")
+                                          .withPassword("password123");
+        when(securityContext.isUserInRole("system/admin")).thenReturn(true);
+
+        final ContainerResponse response = makeRequest("POST", SERVICE_PATH + "/create", newUser);
+
+        assertEquals(response.getStatus(), CREATED.getStatusCode());
+        final UserDescriptor descriptor = (UserDescriptor)response.getEntity();
+        assertEquals(descriptor.getEmail(), newUser.getEmail());
+        assertEquals(descriptor.getPassword(), "<none>");
+        verify(userDao).create(any(User.class));
+        verify(profileDao).create(any(Profile.class));
+    }
+
+    @Test
+    public void shouldThrowForbiddenExceptionWhenCreatingUserWithInvalidPassword() throws Exception {
+        final NewUser newUser = DtoFactory.getInstance()
+                                          .createDto(NewUser.class)
+                                          .withEmail("test@mail.com")
+                                          .withPassword("password");
+        when(securityContext.isUserInRole("system/admin")).thenReturn(true);
+
+        final ContainerResponse response = makeRequest("POST", SERVICE_PATH + "/create", newUser);
+
+        assertEquals(response.getStatus(), FORBIDDEN.getStatusCode());
+        verify(userDao, never()).create(any(User.class));
+        verify(profileDao, never()).create(any(Profile.class));
+    }
+
+    @Test
+    public void shouldGeneratedPasswordWhenCreatingUserAndItIsMissing() throws Exception {
+        final NewUser newUser = DtoFactory.getInstance()
+                                          .createDto(NewUser.class)
+                                          .withEmail("test@mail.com");
+        when(securityContext.isUserInRole("system/admin")).thenReturn(true);
+
+        final ContainerResponse response = makeRequest("POST", SERVICE_PATH + "/create", newUser);
+
+        final UserDescriptor descriptor = (UserDescriptor)response.getEntity();
+        assertEquals(descriptor.getEmail(), newUser.getEmail());
+        assertEquals(descriptor.getPassword(), "<none>");
+        verify(userDao).create(any(User.class));
+        verify(profileDao).create(any(Profile.class));
+    }
+
+    @Test
+    public void shouldThrowUnauthorizedExceptionWhenCreatingUserBasedOnTokenAndItIsNull() throws Exception {
+        final ContainerResponse response = makeRequest("POST", SERVICE_PATH + "/create", null);
+
+        assertEquals(response.getStatus(), UNAUTHORIZED.getStatusCode());
+        verify(userDao, never()).create(any(User.class));
+        verify(profileDao, never()).create(any(Profile.class));
+    }
+
+    @Test
+    public void shouldThrowForbiddenExceptionWhenCreatingUserBasedOnEntityWhichIsNull() throws Exception {
+        when(securityContext.isUserInRole("system/admin")).thenReturn(true);
+
+        final ContainerResponse response = makeRequest("POST", SERVICE_PATH + "/create", null);
+
+        assertEquals(response.getStatus(), FORBIDDEN.getStatusCode());
+        verify(userDao, never()).create(any(User.class));
+        verify(profileDao, never()).create(any(Profile.class));
+    }
+
+    @Test
+    public void shouldThrowForbiddenExceptionWhenCreatingUserBasedOnEntityWhichContainsNullEmail() throws Exception {
+        final NewUser newUser = DtoFactory.getInstance().createDto(NewUser.class);
+        when(securityContext.isUserInRole("system/admin")).thenReturn(true);
+
+        final ContainerResponse response = makeRequest("POST", SERVICE_PATH + "/create", newUser);
+
+        assertEquals(response.getStatus(), FORBIDDEN.getStatusCode());
+        verify(userDao, never()).create(any(User.class));
+        verify(profileDao, never()).create(any(Profile.class));
     }
 
     @Test
@@ -219,7 +308,7 @@ public class UserServiceTest {
                                                             null,
                                                             environmentContext);
 
-        assertEquals(response.getStatus(), CONFLICT.getStatusCode());
+        assertEquals(response.getStatus(), FORBIDDEN.getStatusCode());
         verify(userDao, never()).update(user.withPassword(newPassword));
     }
 
@@ -238,7 +327,7 @@ public class UserServiceTest {
                                                             null,
                                                             environmentContext);
 
-        assertEquals(response.getStatus(), CONFLICT.getStatusCode());
+        assertEquals(response.getStatus(), FORBIDDEN.getStatusCode());
         verify(userDao, never()).update(user.withPassword(newPassword));
     }
 
@@ -257,7 +346,7 @@ public class UserServiceTest {
                                                             null,
                                                             environmentContext);
 
-        assertEquals(response.getStatus(), CONFLICT.getStatusCode());
+        assertEquals(response.getStatus(), FORBIDDEN.getStatusCode());
         verify(userDao, never()).update(user.withPassword(newPassword));
     }
 
@@ -274,7 +363,6 @@ public class UserServiceTest {
 
     /**
      * Check we have a valid user which has the 'user' role
-     * @throws Exception
      */
     @Test
     public void checkUserWithDefaultScope() throws Exception {
@@ -283,7 +371,7 @@ public class UserServiceTest {
         final ContainerResponse response = makeRequest("GET", SERVICE_PATH + "/inrole?role=user", null);
 
         assertEquals(response.getStatus(), OK.getStatusCode());
-        final UserInRoleDescriptor userInRoleDescriptor = (UserInRoleDescriptor) response.getEntity();
+        final UserInRoleDescriptor userInRoleDescriptor = (UserInRoleDescriptor)response.getEntity();
 
         assertNotNull(userInRoleDescriptor);
         assertEquals(userInRoleDescriptor.getIsInRole(), true);
@@ -294,7 +382,6 @@ public class UserServiceTest {
 
     /**
      * Check we have a valid user which has the 'user' role with 'system' scope
-     * @throws Exception
      */
     @Test
     public void checkUserWithSystemScope() throws Exception {
@@ -303,7 +390,7 @@ public class UserServiceTest {
         final ContainerResponse response = makeRequest("GET", SERVICE_PATH + "/inrole?role=user&scope=system", null);
 
         assertEquals(response.getStatus(), OK.getStatusCode());
-        final UserInRoleDescriptor userInRoleDescriptor = (UserInRoleDescriptor) response.getEntity();
+        final UserInRoleDescriptor userInRoleDescriptor = (UserInRoleDescriptor)response.getEntity();
 
         assertNotNull(userInRoleDescriptor);
         assertEquals(userInRoleDescriptor.getIsInRole(), true);
@@ -314,6 +401,7 @@ public class UserServiceTest {
 
     /**
      * Check the current user has the temp_user role
+     *
      * @throws Exception
      */
     @Test
@@ -323,7 +411,7 @@ public class UserServiceTest {
         final ContainerResponse response = makeRequest("GET", SERVICE_PATH + "/inrole?role=temp_user&scope=system", null);
 
         assertEquals(response.getStatus(), OK.getStatusCode());
-        final UserInRoleDescriptor userInRoleDescriptor = (UserInRoleDescriptor) response.getEntity();
+        final UserInRoleDescriptor userInRoleDescriptor = (UserInRoleDescriptor)response.getEntity();
 
         assertNotNull(userInRoleDescriptor);
         assertEquals(userInRoleDescriptor.getIsInRole(), true);
@@ -333,6 +421,7 @@ public class UserServiceTest {
 
     /**
      * Check admin user is 'true' for isUserInRole' with admin role
+     *
      * @throws Exception
      */
     @Test
@@ -342,7 +431,7 @@ public class UserServiceTest {
         final ContainerResponse response = makeRequest("GET", SERVICE_PATH + "/inrole?role=admin", null);
 
         assertEquals(response.getStatus(), OK.getStatusCode());
-        final UserInRoleDescriptor userInRoleDescriptor = (UserInRoleDescriptor) response.getEntity();
+        final UserInRoleDescriptor userInRoleDescriptor = (UserInRoleDescriptor)response.getEntity();
 
         assertNotNull(userInRoleDescriptor);
         assertEquals(userInRoleDescriptor.getIsInRole(), true);
@@ -352,6 +441,7 @@ public class UserServiceTest {
 
     /**
      * Check admin user is 'false' for isUserInRole' with admin role
+     *
      * @throws Exception
      */
     @Test
@@ -361,7 +451,7 @@ public class UserServiceTest {
         final ContainerResponse response = makeRequest("GET", SERVICE_PATH + "/inrole?role=admin", null);
 
         assertEquals(response.getStatus(), OK.getStatusCode());
-        final UserInRoleDescriptor userInRoleDescriptor = (UserInRoleDescriptor) response.getEntity();
+        final UserInRoleDescriptor userInRoleDescriptor = (UserInRoleDescriptor)response.getEntity();
 
         assertNotNull(userInRoleDescriptor);
         assertEquals(userInRoleDescriptor.getIsInRole(), false);
@@ -372,6 +462,7 @@ public class UserServiceTest {
 
     /**
      * Check admin user is 'true' for isUserInRole' with manager role
+     *
      * @throws Exception
      */
     @Test
@@ -381,7 +472,7 @@ public class UserServiceTest {
         final ContainerResponse response = makeRequest("GET", SERVICE_PATH + "/inrole?role=manager&scope=system", null);
 
         assertEquals(response.getStatus(), OK.getStatusCode());
-        final UserInRoleDescriptor userInRoleDescriptor = (UserInRoleDescriptor) response.getEntity();
+        final UserInRoleDescriptor userInRoleDescriptor = (UserInRoleDescriptor)response.getEntity();
 
         assertNotNull(userInRoleDescriptor);
         assertEquals(userInRoleDescriptor.getIsInRole(), true);

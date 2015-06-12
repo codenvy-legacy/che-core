@@ -213,9 +213,11 @@
     </build>
     <profiles>
         <profile>
-            <id>default</id>
+            <id>nonLinux</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <os>
+                    <family>!unix</family>
+                </os>
             </activation>
             <build>
                 <plugins>
@@ -227,8 +229,8 @@
                                 <include>**/*Test.java</include>
                             </includes>
                             <excludes>
-                                <exclude>com/codenvy/api/core/util/ProcessUtilTest.java</exclude>
-                                <exclude>com/codenvy/api/core/util/StandardLinuxShellTest.java</exclude>
+                                <exclude>org/eclipse/che/api/core/util/ProcessUtilTest.java</exclude>
+                                <exclude>org/eclipse/che/api/core/util/StandardLinuxShellTest.java</exclude>
                             </excludes>
                         </configuration>
                     </plugin>
@@ -250,7 +252,7 @@
                         <configuration>
                             <includes>
                                 <include>org/eclipse/che/api/core/util/ProcessUtilTest.java</include>
-                                <include>org/elipse/che/api/core/util/StandardLinuxShellTest.java</include>
+                                <include>org/eclipse/che/api/core/util/StandardLinuxShellTest.java</include>
                                 <include>**/*Test.java</include>
                             </includes>
                         </configuration>

@@ -286,15 +286,17 @@ public class DtoImplClientTemplate extends DtoImpl {
     }
 
     private void emitSerializeFieldForMethod(Method getter, final StringBuilder builder) {
-        final String jsonFieldName = getJsonFieldName(getter.getName());
-        final String fieldNameOut = jsonFieldName + "Out";
+        final String fieldName = getFieldNameFromGetterName(getter.getName());
+        final String fieldNameOut = fieldName + "Out";
         final String baseIndentation = "      ";
+        final String jsonFieldName = getJsonFieldName(getter);
+        final String jsonFieldNameLiteral = quoteStringLiteral(jsonFieldName);
         builder.append("\n");
         List<Type> expandedTypes = expandType(getter.getGenericReturnType());
         emitSerializerImpl(expandedTypes, 0, builder, getJavaFieldName(getter.getName()), fieldNameOut, baseIndentation);
-        builder.append("      result.put(\"");
-        builder.append(jsonFieldName);
-        builder.append("\", ");
+        builder.append("      result.put(");
+        builder.append(jsonFieldNameLiteral);
+        builder.append(", ");
         builder.append(fieldNameOut);
         builder.append(");\n");
     }
@@ -304,7 +306,7 @@ public class DtoImplClientTemplate extends DtoImpl {
             builder.append("      result.set(0, JSONNull.getInstance());\n");
             return;
         }
-        final String jsonFieldName = getJsonFieldName(getter.getName());
+        final String jsonFieldName = getFieldNameFromGetterName(getter.getName());
         final String fieldNameOut = jsonFieldName + "Out";
         final String baseIndentation = "      ";
         builder.append("\n");
@@ -448,22 +450,24 @@ public class DtoImplClientTemplate extends DtoImpl {
     }
 
     private void emitDeserializeFieldForMethod(Method getter, StringBuilder builder) {
-        final String fieldName = getJsonFieldName(getter.getName());
+        final String fieldName = getFieldNameFromGetterName(getter.getName());
         final String fieldNameIn = fieldName + "In";
         final String fieldNameOut = fieldName + "Out";
         final String baseIndentation = "        ";
+        final String jsonFieldName = getJsonFieldName(getter);
+        final String jsonFieldNameLiteral = quoteStringLiteral(jsonFieldName);
         builder.append("\n");
-        builder.append("      if (json.containsKey(\"").append(fieldName).append("\")) {\n");
+        builder.append("      if (json.containsKey(").append(jsonFieldNameLiteral).append(")) {\n");
         List<Type> expandedTypes = expandType(getter.getGenericReturnType());
-        builder.append("        JSONValue ").append(fieldNameIn).append(" = json.get(\"").append(fieldName).append(
-                "\");\n");
+        builder.append("        JSONValue ").append(fieldNameIn).append(" = json.get(").append(jsonFieldNameLiteral).append(
+                ");\n");
         emitDeserializerImpl(expandedTypes, 0, builder, fieldNameIn, fieldNameOut, baseIndentation);
         builder.append("        dto.").append(getSetterName(fieldName)).append("(").append(fieldNameOut).append(");\n");
         builder.append("      }\n");
     }
 
     private void emitDeserializeFieldForMethodCompact(Method method, final StringBuilder builder) {
-        final String fieldName = getJsonFieldName(method.getName());
+        final String fieldName = getFieldNameFromGetterName(method.getName());
         final String fieldNameIn = fieldName + "In";
         final String fieldNameOut = fieldName + "Out";
         final String baseIndentation = "        ";
