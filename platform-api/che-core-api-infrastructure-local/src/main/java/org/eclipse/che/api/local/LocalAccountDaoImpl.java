@@ -13,7 +13,6 @@ package org.eclipse.che.api.local;
 import org.eclipse.che.api.account.server.dao.Account;
 import org.eclipse.che.api.account.server.dao.AccountDao;
 import org.eclipse.che.api.account.server.dao.Member;
-import org.eclipse.che.api.account.server.dao.Subscription;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
@@ -31,30 +30,25 @@ import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import static org.eclipse.che.api.account.shared.dto.SubscriptionState.ACTIVE;
-
 /**
  * @author Eugene Voevodin
  */
 @Singleton
 public class LocalAccountDaoImpl implements AccountDao {
 
-    private final List<Account>      accounts;
-    private final List<Member>       members;
-    private final List<Subscription> subscriptions;
-    private final ReadWriteLock      lock;
+    private final List<Account> accounts;
+    private final List<Member>  members;
+    private final ReadWriteLock lock;
 
     private final WorkspaceDao workspaceDao;
 
     @Inject
     public LocalAccountDaoImpl(@Named("codenvy.local.infrastructure.accounts") Set<Account> accounts,
                                @Named("codenvy.local.infrastructure.account.members") Set<Member> members,
-                               @Named("codenvy.local.infrastructure.account.subscriptions") Set<Subscription> subscriptions,
                                WorkspaceDao workspaceDao) {
         this.workspaceDao = workspaceDao;
         this.accounts = new LinkedList<>();
         this.members = new LinkedList<>();
-        this.subscriptions = new LinkedList<>();
         lock = new ReentrantReadWriteLock();
         try {
             for (Account account : accounts) {
@@ -62,9 +56,6 @@ public class LocalAccountDaoImpl implements AccountDao {
             }
             for (Member member : members) {
                 addMember(member);
-            }
-            for (Subscription subscription : subscriptions) {
-                addSubscription(subscription);
             }
         } catch (Exception e) {
             // fail if can't validate this instance properly
@@ -281,116 +272,6 @@ public class LocalAccountDaoImpl implements AccountDao {
             }
 
             members.remove(myMember);
-        } finally {
-            lock.writeLock().unlock();
-        }
-    }
-
-    @Override
-    public void addSubscription(Subscription subscription) throws NotFoundException {
-        lock.writeLock().lock();
-        try {
-            Account myAccount = null;
-            for (int i = 0, size = accounts.size(); i < size && myAccount == null; i++) {
-                if (accounts.get(i).getId().equals(subscription.getAccountId())) {
-                    myAccount = accounts.get(i);
-                }
-            }
-            if (myAccount == null) {
-                throw new NotFoundException(String.format("Not found account %s", subscription.getAccountId()));
-            }
-            subscriptions.add(new Subscription(subscription));
-        } finally {
-            lock.writeLock().unlock();
-        }
-    }
-
-    @Override
-    public void removeSubscription(String subscriptionId) throws NotFoundException {
-        lock.writeLock().lock();
-        try {
-            Subscription subscription = null;
-            for (int i = 0, size = subscriptions.size(); i < size && subscription == null; i++) {
-                if (subscriptions.get(i).getId().equals(subscriptionId)) {
-                    subscription = subscriptions.get(i);
-                }
-            }
-            if (subscription == null) {
-                throw new NotFoundException(String.format("Not found subscription %s", subscriptionId));
-            }
-            subscriptions.remove(subscription);
-        } finally {
-            lock.writeLock().unlock();
-        }
-    }
-
-    @Override
-    public Subscription getSubscriptionById(String subscriptionId) throws NotFoundException {
-        lock.readLock().lock();
-        try {
-            Subscription subscription = null;
-            for (int i = 0, size = subscriptions.size(); i < size && subscription == null; i++) {
-                if (subscriptions.get(i).getId().equals(subscriptionId)) {
-                    subscription = subscriptions.get(i);
-                }
-            }
-            if (subscription == null) {
-                throw new NotFoundException(String.format("Not found subscription %s", subscriptionId));
-            }
-            return new Subscription(subscription);
-        } finally {
-            lock.readLock().unlock();
-        }
-    }
-
-    @Override
-    public List<Subscription> getActiveSubscriptions(String accountId) {
-        final List<Subscription> result = new LinkedList<>();
-        lock.readLock().lock();
-        try {
-            for (Subscription subscription : subscriptions) {
-                if (accountId.equals(subscription.getAccountId()) && ACTIVE.equals(subscription.getState())) {
-                    result.add(new Subscription(subscription));
-                }
-            }
-        } finally {
-            lock.readLock().unlock();
-        }
-        return result;
-    }
-
-    @Override
-    public Subscription getActiveSubscription(String accountId, String serviceId) {
-        lock.readLock().lock();
-        try {
-            for (Subscription subscription : subscriptions) {
-                if (accountId.equals(subscription.getAccountId()) && serviceId.equals(subscription.getServiceId())
-                    && ACTIVE.equals(subscription.getState())) {
-                    return new Subscription(subscription);
-                }
-            }
-        } finally {
-            lock.readLock().unlock();
-        }
-        return null;
-    }
-
-    @Override
-    public void updateSubscription(Subscription subscription) throws NotFoundException, ServerException {
-        lock.writeLock().lock();
-        try {
-            int i = 0;
-            Subscription mySubscription = null;
-            for (int size = subscriptions.size(); i < size && mySubscription == null; i++) {
-                if (subscriptions.get(i).getId().equals(subscription.getId())) {
-                    mySubscription = subscriptions.get(i);
-                }
-            }
-            if (mySubscription == null) {
-                throw new NotFoundException(String.format("Not found subscription %s", subscription.getId()));
-            }
-            subscriptions.remove(i);
-            subscriptions.add(i, new Subscription(subscription));
         } finally {
             lock.writeLock().unlock();
         }

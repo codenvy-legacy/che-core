@@ -14,7 +14,6 @@ import sun.security.acl.PrincipalImpl;
 
 import org.eclipse.che.api.account.server.dao.Account;
 import org.eclipse.che.api.account.server.dao.AccountDao;
-import org.eclipse.che.api.account.server.dao.Subscription;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.rest.ApiExceptionMapper;
@@ -34,10 +33,8 @@ import org.eclipse.che.api.workspace.shared.dto.NewMembership;
 import org.eclipse.che.api.workspace.shared.dto.NewWorkspace;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceUpdate;
-
 import org.eclipse.che.commons.json.JsonHelper;
 import org.eclipse.che.dto.server.DtoFactory;
-
 import org.everrest.core.impl.ApplicationContextImpl;
 import org.everrest.core.impl.ApplicationProviderBinder;
 import org.everrest.core.impl.ContainerRequest;
@@ -57,7 +54,6 @@ import org.testng.annotations.Test;
 import javax.ws.rs.core.SecurityContext;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -65,8 +61,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.eclipse.che.api.project.server.Constants.LINK_REL_GET_PROJECTS;
-import static org.eclipse.che.api.user.server.Constants.LINK_REL_GET_USER_BY_ID;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
@@ -76,9 +70,10 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
+import static org.eclipse.che.api.project.server.Constants.LINK_REL_GET_PROJECTS;
+import static org.eclipse.che.api.user.server.Constants.LINK_REL_GET_USER_BY_ID;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -118,6 +113,7 @@ public class WorkspaceServiceTest {
     ResourceLauncher launcher;
     WorkspaceService service;
     User             testUser;
+
     @BeforeMethod
     public void before() throws Exception {
         //set up launcher

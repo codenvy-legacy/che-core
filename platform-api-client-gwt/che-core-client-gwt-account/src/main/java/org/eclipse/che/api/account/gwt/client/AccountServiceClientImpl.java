@@ -10,21 +10,19 @@
  *******************************************************************************/
 package org.eclipse.che.api.account.gwt.client;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import org.eclipse.che.api.account.shared.dto.AccountDescriptor;
 import org.eclipse.che.api.account.shared.dto.MemberDescriptor;
-import org.eclipse.che.api.account.shared.dto.SubscriptionDescriptor;
 import org.eclipse.che.api.account.shared.dto.UpdateResourcesDescriptor;
 import org.eclipse.che.ide.MimeType;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.HTTPHeader;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Implementation of {@link AccountServiceClient} service.
@@ -40,31 +38,13 @@ public class AccountServiceClientImpl implements AccountServiceClient {
         this.asyncRequestFactory = asyncRequestFactory;
     }
 
-    /** {@inheritDoc} */
     @Override
-    public void getSubscriptions(@Nonnull String accountId, AsyncRequestCallback<Array<SubscriptionDescriptor>> callback) {
-        final String requestUrl = "/api/account/" + accountId + "/subscriptions";
-        asyncRequestFactory.createGetRequest(requestUrl)
-                           .header(HTTPHeader.ACCEPT, MimeType.APPLICATION_JSON)
-                           .send(callback);
-    }
-
-    @Override
-    public void getSubscriptionByServiceId(@Nonnull String accountId,
-                                           @Nonnull String serviceId,
-                                           AsyncRequestCallback<Array<SubscriptionDescriptor>> callback) {
-        final String requestUrl = "/api/account/" + accountId + "/subscriptions?service=" + serviceId;
-        asyncRequestFactory.createGetRequest(requestUrl)
-                           .header(HTTPHeader.ACCEPT, MimeType.APPLICATION_JSON)
-                           .send(callback);
-    }
-
-    @Override
-    public void redistributeResources(@Nonnull String accountId, @Nonnull Array<UpdateResourcesDescriptor> updateResources, AsyncRequestCallback<Void> callback) {
+    public void redistributeResources(@Nonnull String accountId, @Nonnull Array<UpdateResourcesDescriptor> updateResources,
+                                      AsyncRequestCallback<Void> callback) {
         final String requestUrl = "/api/account/" + accountId + "/resources";
         asyncRequestFactory.createPostRequest(requestUrl, updateResources)
-                .header(HTTPHeader.CONTENT_TYPE, MimeType.APPLICATION_JSON)
-                .send(callback);
+                           .header(HTTPHeader.CONTENT_TYPE, MimeType.APPLICATION_JSON)
+                           .send(callback);
     }
 
     /** {@inheritDoc} */
