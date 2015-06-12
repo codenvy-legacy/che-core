@@ -13,9 +13,13 @@ package org.eclipse.che.ide.rest;
 import org.eclipse.che.ide.commons.exception.ServerDisconnectedException;
 import org.eclipse.che.ide.commons.exception.ServerException;
 import org.eclipse.che.ide.commons.exception.UnauthorizedException;
+import org.eclipse.che.ide.util.loging.Log;
+
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.Response;
+import static org.eclipse.che.ide.MimeType.APPLICATION_JSON;
+import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
 
 /**
  * Callback class for receiving the {@link Response}.
@@ -125,7 +129,18 @@ public abstract class AsyncRequestCallback<T> implements RequestCallback {
                 onFailure(e);
             }
         } else {
-            onFailure(new ServerException(response));
+            Exception exception;
+            String contentType = response.getHeader(CONTENT_TYPE);
+
+            if (contentType != null && !contentType.contains(APPLICATION_JSON)) {
+                String message = response.getStatusCode() + " " + response.getStatusText() + " "
+                                 + this.request.getRequestBuilder().getUrl();
+                exception = new Exception(message);
+            } else {
+                exception = new ServerException(response);
+            }
+            Log.info(getClass(), exception.getMessage());
+            onFailure(exception);
         }
     }
 
