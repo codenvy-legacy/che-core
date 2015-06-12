@@ -992,7 +992,7 @@ public class GenericTreeStructureTest {
         verify(projectNode).refreshChildren(treeNodeAsyncCallback.capture());
         treeNodeAsyncCallback.getValue().onSuccess(projectNode);
 
-        verify(asyncCallback).onSuccess(null);
+        verify(asyncCallback).onFailure(any(IllegalStateException.class));
     }
 
     @Test
