@@ -24,7 +24,7 @@ public class ProcessUtilTest {
 
     @Test
     public void testKill() throws Exception {
-        final Process p = Runtime.getRuntime().exec(new String[]{"/bin/bash", "-c", "sleep 10; echo wake\\ up"});
+        final Process p = Runtime.getRuntime().exec(new String[]{"ping", "google.com"});
         final List<String> stdout = new ArrayList<>();
         final List<String> stderr = new ArrayList<>();
         final IOException[] processError = new IOException[1];
@@ -72,6 +72,7 @@ public class ProcessUtilTest {
         final long end = System.currentTimeMillis();
 
         // System process sleeps 10 seconds. It is safety to check we done in less then 3 sec.
+        Assert.assertFalse(ProcessUtil.isAlive(p));
         Assert.assertTrue((end - start) < 3000, "Fail kill process");
 
         System.out.println(processError[0]);

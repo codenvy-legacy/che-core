@@ -69,6 +69,12 @@ public class GitUrlResolver {
         result.append('/');
         result.append("git");
         result.append(localPathNormalized.substring(mountPathNormalized.length() - 1));
+
+        int lastSymbol = result.length() - 1;
+        if (result.lastIndexOf("/")  == lastSymbol) {
+            result.deleteCharAt(lastSymbol);
+        }
+
         return result.toString();
     }
 }

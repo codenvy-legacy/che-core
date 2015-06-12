@@ -13,7 +13,7 @@ package org.eclipse.che.vfs.impl.fs;
 import java.net.URI;
 
 /** @author andrew00x */
-public class GitUrlResolveTest extends LocalFileSystemTest {
+public class GitUrlResolverTest extends LocalFileSystemTest {
     private String file;
 
     @Override
@@ -33,6 +33,18 @@ public class GitUrlResolveTest extends LocalFileSystemTest {
         assertEquals(expectedUrl, url);
     }
 
+    public void testResolveGitUrlWithPort2() throws Exception {
+        String folder = file.substring(0, file.lastIndexOf("/"));
+        System.out.println(folder);
+        String path = root.toPath().relativize(getIoFile(folder).toPath()).toString();
+        path = path.replaceAll("[\\\\]", "/");
+        String expectedUrl = String.format("http://localhost:9000/git/%s", path);
+
+        GitUrlResolver resolver = new GitUrlResolver(root, new LocalPathResolver());
+        final String url = resolver.resolve(URI.create("http://localhost:9000/some/path"), mountPoint.getVirtualFile(folder));
+        assertEquals(expectedUrl, url);
+    }
+
     public void testResolveGitUrlWithoutPort() throws Exception {
         String path = root.toPath().relativize(getIoFile(file).toPath()).toString();
         path = path.replaceAll("[\\\\]", "/");
@@ -40,6 +52,17 @@ public class GitUrlResolveTest extends LocalFileSystemTest {
 
         GitUrlResolver resolver = new GitUrlResolver(root, new LocalPathResolver());
         final String url = resolver.resolve(URI.create("http://localhost/some/path"), mountPoint.getVirtualFile(file));
+        assertEquals(expectedUrl, url);
+    }
+
+    public void testResolveGitUrlWithoutPort2() throws Exception {
+        String folder = file.substring(0, file.lastIndexOf("/"));
+        String path = root.toPath().relativize(getIoFile(folder).toPath()).toString();
+        path = path.replaceAll("[\\\\]", "/");
+        String expectedUrl = String.format("http://localhost/git/%s", path);
+
+        GitUrlResolver resolver = new GitUrlResolver(root, new LocalPathResolver());
+        final String url = resolver.resolve(URI.create("http://localhost/some/path"), mountPoint.getVirtualFile(folder));
         assertEquals(expectedUrl, url);
     }
 }
