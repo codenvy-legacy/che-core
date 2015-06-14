@@ -422,8 +422,8 @@ public abstract class Builder {
         }
     }
     
-    public HashMap<String, String> getEnvironmentVariables(){
-    	return new HashMap<String, String>();
+    public Map<String, String> updateEnvironmentVariables(Map<String, String> env){
+    	return env;
     }
 
     protected Callable<Boolean> createTaskFor(final CommandLine commandLine,
@@ -447,7 +447,7 @@ public abstract class Builder {
                     ProcessBuilder processBuilder = new ProcessBuilder().command(commandLine.toShellCommand()).directory(
                             configuration.getWorkDir()).redirectErrorStream(true);
                     Map<String, String> env = processBuilder.environment();
-                    env.putAll(getEnvironmentVariables());
+                    updateEnvironmentVariables(env);
                     
                     Process process = processBuilder.start();
 
