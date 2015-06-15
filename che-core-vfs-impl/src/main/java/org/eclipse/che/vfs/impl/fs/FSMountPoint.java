@@ -64,6 +64,7 @@ import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -578,8 +579,27 @@ public class FSMountPoint implements MountPoint {
         return newVirtualFile;
     }
 
-
     VirtualFileImpl copy(VirtualFileImpl source, VirtualFileImpl parent) throws ForbiddenException, ConflictException, ServerException {
+        return copy(source, parent, null, false);
+    }
+
+    /**
+     * Copy a VirtualFileImpl to a given location
+     *
+     * @param source the VirtualFileImpl instance to copy
+     * @param parent the VirtualFileImpl (must be a folder) which will become
+     * the parent of the source
+     * @param name the name of the copy, can be left {@code null} or empty
+     * {@code String} for current source name
+     * @param overWrite should the destination be overwritten, set to true to
+     * overwrite, false otherwise
+     * @return an instance of VirtualFileImpl, which is the actual copy of
+     * source under parent
+     * @throws ForbiddenException
+     * @throws ConflictException
+     * @throws ServerException
+     */
+    public VirtualFileImpl copy(VirtualFileImpl source, VirtualFileImpl parent, String name, boolean overWrite) throws ForbiddenException, ConflictException, ServerException {
         if (source.getVirtualFilePath().equals(parent.getVirtualFilePath())) {
             throw new ForbiddenException("Item cannot be copied to itself. ");
         }
@@ -590,17 +610,25 @@ public class FSMountPoint implements MountPoint {
             throw new ForbiddenException(String.format("Unable copy item '%s' to %s. Operation not permitted. ",
                                                        source.getPath(), parent.getPath()));
         }
-        final Path newPath = parent.getVirtualFilePath().newPath(source.getName());
-        final VirtualFileImpl destination =
-                new VirtualFileImpl(new java.io.File(ioRoot, toIoPath(newPath)), newPath, pathToId(newPath), this);
+        String newName = selectName(name, source);
+        final Path newPath = parent.getVirtualFilePath().newPath(newName); // TODO: change name here
+        final File theFile = new File(ioRoot, toIoPath(newPath));
+        final VirtualFileImpl destination
+                = new VirtualFileImpl(theFile, newPath, pathToId(newPath), this);
+
+        // checking override
         if (destination.exists()) {
-            throw new ConflictException(String.format("Item '%s' already exists. ", newPath));
+            doOverWrite(overWrite, destination, newPath);
         }
+
         doCopy(source, destination);
         eventService.publish(new CreateEvent(workspaceId, destination.getPath(), source.isFolder()));
         return destination;
     }
 
+    private String selectName(String name, VirtualFileImpl source) {
+        return ("".equals(String.valueOf(name).trim()) || null == name) ? source.getName() : name;
+    }
 
     private void doCopy(VirtualFileImpl source, VirtualFileImpl destination) throws ServerException {
         try {
@@ -739,6 +767,26 @@ public class FSMountPoint implements MountPoint {
 
     VirtualFileImpl move(VirtualFileImpl source, VirtualFileImpl parent, String lockToken)
             throws ForbiddenException, ConflictException, ServerException {
+        return move(source, parent, null, false, lockToken);
+    }
+
+    /**
+     * Move a VirtualFileImpl to a given location
+     *
+     * @param source the VirtualFileImpl instance to move
+     * @param parent the VirtualFileImpl (must be a folder) which will become
+     * the parent of the source
+     * @param name a new name for the moved source, can be left {@code null} or
+     * empty {@code String} for current source name
+     * @param overWrite should the destination be overwritten, set to true to
+     * overwrite, false otherwise
+     * @return an instance of VirtualFileImpl, source under parent
+     * @throws ForbiddenException
+     * @throws ConflictException
+     * @throws ServerException
+     */
+    VirtualFileImpl move(VirtualFileImpl source, VirtualFileImpl parent, String name, boolean overWrite, String lockToken)
+            throws ForbiddenException, ConflictException, ServerException {
         final String sourcePath = source.getPath();
         final String parentPath = parent.getPath();
         if (source.isRoot()) {
@@ -765,12 +813,17 @@ public class FSMountPoint implements MountPoint {
         if (source.isFile() && !validateLockTokenIfLocked(source, lockToken)) {
             throw new ForbiddenException(String.format("Unable move file '%s'. File is locked. ", sourcePath));
         }
-        final Path newPath = parent.getVirtualFilePath().newPath(source.getName());
-        VirtualFileImpl destination =
-                new VirtualFileImpl(new java.io.File(ioRoot, toIoPath(newPath)), newPath, pathToId(newPath), this);
+
+        String newName = selectName(name, source);
+        final Path newPath = parent.getVirtualFilePath().newPath(newName);
+        VirtualFileImpl destination
+                = new VirtualFileImpl(new java.io.File(ioRoot, toIoPath(newPath)), newPath, pathToId(newPath), this);
+
+        // checking override
         if (destination.exists()) {
-            throw new ConflictException(String.format("Item '%s' already exists. ", newPath));
+            doOverWrite(overWrite, destination, newPath);
         }
+
         // use copy and delete
         doCopy(source, destination);
         doDelete(source, lockToken);
@@ -778,6 +831,18 @@ public class FSMountPoint implements MountPoint {
         return destination;
     }
 
+    private void doOverWrite(boolean overWrite, VirtualFileImpl destination, final Path newPath) throws ForbiddenException, ConflictException, ServerException {
+        // if we override, then dest needs to be erased before proceeding with copy
+        if (overWrite) {
+            String token = null;
+            if (destination.isFile()) {
+                token = destination.lock(0);
+            }
+            destination.delete(token);
+        } else {
+            throw new ConflictException(String.format("Item '%s' already exists. ", newPath));
+        }
+    }
 
     ContentStream getContent(VirtualFileImpl virtualFile) throws ForbiddenException, ServerException {
         if (!virtualFile.isFile()) {
