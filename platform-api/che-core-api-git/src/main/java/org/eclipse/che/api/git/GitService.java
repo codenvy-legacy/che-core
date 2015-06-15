@@ -47,7 +47,6 @@ import org.eclipse.che.api.git.shared.TagCreateRequest;
 import org.eclipse.che.api.git.shared.TagDeleteRequest;
 import org.eclipse.che.api.git.shared.TagListRequest;
 import org.eclipse.che.api.project.server.DefaultProjectManager;
-import org.eclipse.che.api.project.server.ProjectManager;
 import org.eclipse.che.api.project.shared.dto.ImportSourceDescriptor;
 import org.eclipse.che.api.vfs.server.MountPoint;
 import org.eclipse.che.api.vfs.server.VirtualFile;
