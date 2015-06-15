@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.api.vfs.server;
 
-import com.google.common.annotations.Beta;
-
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
