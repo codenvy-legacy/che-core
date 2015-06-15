@@ -19,7 +19,6 @@ import org.eclipse.che.api.machine.server.impl.MachineImpl;
 import org.eclipse.che.api.machine.server.impl.ProcessImpl;
 import org.eclipse.che.api.machine.server.impl.ProjectBindingImpl;
 import org.eclipse.che.api.machine.server.impl.SnapshotImpl;
-import org.eclipse.che.api.machine.server.spi.InstanceMetadata;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
 import org.eclipse.che.api.machine.shared.Server;
 import org.eclipse.che.api.machine.shared.dto.CommandDescriptor;
@@ -358,9 +357,7 @@ public class MachineService {
                                                               .withDisplayName(machine.getDisplayName());
 
         if (machine.getInstance() != null) {
-            final InstanceMetadata metadata = machine.getInstance().getMetadata();
-
-            Map<String, Server> servers = metadata.getServers();
+            Map<String, Server> servers = machine.getServers();
             final Map<String, ServerDescriptor> serverDescriptors = new HashMap<>(servers.size());
             for (Map.Entry<String, Server> serverEntry : servers.entrySet()) {
                 serverDescriptors.put(serverEntry.getKey(),
@@ -369,7 +366,7 @@ public class MachineService {
                                                 .withRef(serverEntry.getValue().getRef())
                                                 .withUrl(serverEntry.getValue().getUrl()));
             }
-            machineDescriptor.withProperties(metadata.getProperties())
+            machineDescriptor.withProperties(machine.getMetadata().getProperties())
                              .withServers(serverDescriptors);
         }
         machineDescriptor.setLinks(null); // TODO
