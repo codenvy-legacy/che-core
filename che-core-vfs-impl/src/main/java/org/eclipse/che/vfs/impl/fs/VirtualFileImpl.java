@@ -201,15 +201,22 @@ public class VirtualFileImpl implements VirtualFile {
     }
 
     //
-
     @Override
-    public VirtualFile copyTo(VirtualFile parent) throws ForbiddenException, ConflictException, ServerException {
-        return mountPoint.copy(this, (VirtualFileImpl)parent);
+    public VirtualFileImpl copyTo(VirtualFile parent) throws ForbiddenException, ConflictException, ServerException {
+        return copyTo(parent, null, false); // default behaviour
+    }
+
+    public VirtualFileImpl copyTo(VirtualFile parent, String name, boolean overWrite) throws ForbiddenException, ConflictException, ServerException {
+        return mountPoint.copy(this, (VirtualFileImpl) parent, name, overWrite);
     }
 
     @Override
-    public VirtualFile moveTo(VirtualFile parent, String lockToken) throws ForbiddenException, ConflictException, ServerException {
-        return mountPoint.move(this, (VirtualFileImpl)parent, lockToken);
+    public VirtualFileImpl moveTo(VirtualFile parent, String lockToken) throws ForbiddenException, ConflictException, ServerException {
+        return moveTo(parent, null, false, lockToken);
+    }
+
+    public VirtualFileImpl moveTo(VirtualFile parent, String name, boolean overWrite, String lockToken) throws ForbiddenException, ConflictException, ServerException {
+        return mountPoint.move(this, (VirtualFileImpl) parent, name, overWrite, lockToken);
     }
 
     @Override
