@@ -364,7 +364,10 @@ public class MachineService {
             final Map<String, ServerDescriptor> serverDescriptors = new HashMap<>(servers.size());
             for (Map.Entry<String, Server> serverEntry : servers.entrySet()) {
                 serverDescriptors.put(serverEntry.getKey(),
-                                      dtoFactory.createDto(ServerDescriptor.class).withAddress(serverEntry.getValue().getAddress()));
+                                      dtoFactory.createDto(ServerDescriptor.class)
+                                                .withAddress(serverEntry.getValue().getAddress())
+                                                .withRef(serverEntry.getValue().getRef())
+                                                .withUrl(serverEntry.getValue().getUrl()));
             }
             machineDescriptor.withProperties(metadata.getProperties())
                              .withServers(serverDescriptors);

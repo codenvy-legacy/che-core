@@ -24,4 +24,16 @@ public interface ServerDescriptor {
     void setAddress(String address);
 
     ServerDescriptor withAddress(String address);
+
+    String getUrl();
+
+    void setUrl(String url);
+
+    ServerDescriptor withUrl(String url);
+
+    String getRef();
+
+    void setRef(String ref);
+
+    ServerDescriptor withRef(String ref);
 }
