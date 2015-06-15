@@ -19,9 +19,11 @@ import org.eclipse.che.api.machine.server.spi.InstanceProcess;
 import org.eclipse.che.api.machine.shared.Machine;
 import org.eclipse.che.api.machine.shared.MachineState;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
+import org.eclipse.che.api.machine.shared.Server;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -96,6 +98,11 @@ public class MachineImpl implements Machine {
     @Override
     public String getDisplayName() {
         return displayName;
+    }
+
+    @Override
+    public Map<String, Server> getServers() throws MachineException {
+        return getMetadata().getServers();
     }
 
     @Override

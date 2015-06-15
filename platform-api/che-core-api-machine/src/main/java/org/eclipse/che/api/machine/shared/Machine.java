@@ -13,6 +13,7 @@ package org.eclipse.che.api.machine.shared;
 import org.eclipse.che.api.machine.server.exception.MachineException;
 import org.eclipse.che.api.machine.server.spi.InstanceMetadata;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -58,4 +59,9 @@ public interface Machine {
     InstanceMetadata getMetadata() throws MachineException;
 
     String getDisplayName();
+
+    /**
+     * Returns mapping of exposed ports to {link Server}
+     */
+    Map<String, Server> getServers() throws MachineException;
 }

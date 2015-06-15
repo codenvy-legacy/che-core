@@ -122,7 +122,7 @@ public class MachineExtensionProxyServlet extends HttpServlet {
         }
 
         final MachineImpl machine = machineManager.getMachine(machineId);
-        final Server server = machine.getMetadata().getServers().get(Integer.toString(extServicesPort));
+        final Server server = machine.getServers().get(Integer.toString(extServicesPort));
         final StringBuilder url = new StringBuilder("http://").append(server.getAddress());
 
         final String extPath = matcher.group("destpath");
