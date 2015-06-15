@@ -10,12 +10,15 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.shared.dto;
 
+import com.google.common.annotations.Beta;
+
 import org.eclipse.che.dto.shared.DTO;
 
 /**
  *
  * @author Ori Libhaber
  */
+@Beta
 @DTO
 public interface CopyOptions {
     /**

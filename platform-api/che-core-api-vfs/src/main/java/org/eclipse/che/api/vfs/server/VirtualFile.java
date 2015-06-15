@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.vfs.server;
 
+import com.google.common.annotations.Beta;
+
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
@@ -273,6 +275,7 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      * @throws ServerException if other error occurs
      * @see #isFolder()
      */
+    @Beta
     VirtualFile copyTo(VirtualFile parent, String name, boolean overWrite) throws ForbiddenException, ConflictException, ServerException;
 
     /**
@@ -295,6 +298,7 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      *         if other error occurs
      * @see #isFolder()
      */
+    @Beta
     VirtualFile moveTo(VirtualFile parent, String lockToken) throws ForbiddenException, ConflictException, ServerException;
 
     /**

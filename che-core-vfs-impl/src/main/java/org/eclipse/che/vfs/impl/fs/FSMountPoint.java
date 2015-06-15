@@ -45,10 +45,13 @@ import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo;
 import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.eclipse.che.commons.lang.Pair;
+import org.eclipse.che.commons.lang.Strings;
 import org.eclipse.che.commons.lang.cache.Cache;
 import org.eclipse.che.commons.lang.cache.LoadingValueSLRUCache;
 import org.eclipse.che.commons.lang.cache.SynchronizedCache;
 import org.eclipse.che.dto.server.DtoFactory;
+
+import com.google.common.annotations.Beta;
 import com.google.common.collect.Sets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
@@ -87,6 +90,7 @@ import java.util.zip.ZipOutputStream;
 import static org.eclipse.che.commons.lang.IoUtil.GIT_FILTER;
 import static org.eclipse.che.commons.lang.IoUtil.deleteRecursive;
 import static org.eclipse.che.commons.lang.IoUtil.nioCopy;
+import static org.eclipse.che.commons.lang.Strings.nullToEmpty;
 
 /**
  * Local filesystem implementation of MountPoint.
@@ -599,6 +603,7 @@ public class FSMountPoint implements MountPoint {
      * @throws ConflictException
      * @throws ServerException
      */
+    @Beta
     public VirtualFileImpl copy(VirtualFileImpl source, VirtualFileImpl parent, String name, boolean overWrite) throws ForbiddenException, ConflictException, ServerException {
         if (source.getVirtualFilePath().equals(parent.getVirtualFilePath())) {
             throw new ForbiddenException("Item cannot be copied to itself. ");
@@ -610,7 +615,7 @@ public class FSMountPoint implements MountPoint {
             throw new ForbiddenException(String.format("Unable copy item '%s' to %s. Operation not permitted. ",
                                                        source.getPath(), parent.getPath()));
         }
-        String newName = selectName(name, source);
+        String newName = nullToEmpty(name).trim().isEmpty() ? source.getName() : name;
         final Path newPath = parent.getVirtualFilePath().newPath(newName); // TODO: change name here
         final File theFile = new File(ioRoot, toIoPath(newPath));
         final VirtualFileImpl destination
@@ -626,9 +631,6 @@ public class FSMountPoint implements MountPoint {
         return destination;
     }
 
-    private String selectName(String name, VirtualFileImpl source) {
-        return ("".equals(String.valueOf(name).trim()) || null == name) ? source.getName() : name;
-    }
 
     private void doCopy(VirtualFileImpl source, VirtualFileImpl destination) throws ServerException {
         try {
@@ -785,6 +787,7 @@ public class FSMountPoint implements MountPoint {
      * @throws ConflictException
      * @throws ServerException
      */
+    @Beta
     VirtualFileImpl move(VirtualFileImpl source, VirtualFileImpl parent, String name, boolean overWrite, String lockToken)
             throws ForbiddenException, ConflictException, ServerException {
         final String sourcePath = source.getPath();
@@ -814,7 +817,7 @@ public class FSMountPoint implements MountPoint {
             throw new ForbiddenException(String.format("Unable move file '%s'. File is locked. ", sourcePath));
         }
 
-        String newName = selectName(name, source);
+        String newName = nullToEmpty(name).trim().isEmpty() ? source.getName() : name;
         final Path newPath = parent.getVirtualFilePath().newPath(newName);
         VirtualFileImpl destination
                 = new VirtualFileImpl(new java.io.File(ioRoot, toIoPath(newPath)), newPath, pathToId(newPath), this);
