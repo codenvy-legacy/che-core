@@ -29,6 +29,6 @@ public class MachineModule extends AbstractModule {
         bind(MachineStateMessenger.class).asEagerSingleton();
         bind(MachineProcessMessenger.class).asEagerSingleton();
 
-        bindConstant().annotatedWith(Names.named("machine.extension.api_port")).to(4400);
+        bindConstant().annotatedWith(Names.named("machine.extension.api_port")).to(4401);
     }
 }

@@ -13,8 +13,8 @@ package org.eclipse.che.api.machine.server.proxy;
 import com.google.common.io.ByteStreams;
 
 import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.machine.server.MachineManager;
-import org.eclipse.che.api.machine.server.exception.MachineException;
 import org.eclipse.che.api.machine.server.impl.MachineImpl;
 import org.eclipse.che.api.machine.shared.Server;
 
@@ -80,14 +80,12 @@ public class MachineExtensionProxyServlet extends HttpServlet {
 
         } catch (NotFoundException e) {
             resp.sendError(SC_NOT_FOUND, "Request can't be forwarded to machine. " + e.getLocalizedMessage());
-        } catch (MachineException e) {
+        } catch (ServerException e) {
             resp.sendError(SC_INTERNAL_SERVER_ERROR, "Request can't be forwarded to machine. " + e.getLocalizedMessage());
         }
     }
 
-    private HttpURLConnection prepareProxyConnection(HttpServletRequest req) throws NotFoundException, MachineException {
-//        String machineId = getMachineId(req);
-
+    private HttpURLConnection prepareProxyConnection(HttpServletRequest req) throws NotFoundException, ServerException {
         String extensionApiUrl = getExtensionApiUrl(req);
         try {
             final HttpURLConnection conn = (HttpURLConnection)new URL(extensionApiUrl).openConnection();
@@ -108,11 +106,11 @@ public class MachineExtensionProxyServlet extends HttpServlet {
 
             return conn;
         } catch (IOException e) {
-            throw new MachineException(e.getLocalizedMessage());
+            throw new ServerException(e.getLocalizedMessage());
         }
     }
 
-    private String getExtensionApiUrl(HttpServletRequest req) throws NotFoundException, MachineException {
+    private String getExtensionApiUrl(HttpServletRequest req) throws NotFoundException, ServerException {
         String machineId;
         final Matcher matcher = EXTENSION_API_URI.matcher(req.getRequestURI());
         if (matcher.matches()) {
@@ -123,6 +121,10 @@ public class MachineExtensionProxyServlet extends HttpServlet {
 
         final MachineImpl machine = machineManager.getMachine(machineId);
         final Server server = machine.getServers().get(Integer.toString(extServicesPort));
+        if (server == null) {
+            throw new ServerException("No extension server found in machine");
+        }
+
         final StringBuilder url = new StringBuilder("http://").append(server.getAddress());
 
         final String extPath = matcher.group("destpath");
@@ -135,7 +137,7 @@ public class MachineExtensionProxyServlet extends HttpServlet {
         return url.toString();
     }
 
-    private void setResponse(HttpServletResponse resp, HttpURLConnection conn) throws MachineException {
+    private void setResponse(HttpServletResponse resp, HttpURLConnection conn) throws ServerException {
         try {
             resp.setStatus(conn.getResponseCode());
 
@@ -155,18 +157,11 @@ public class MachineExtensionProxyServlet extends HttpServlet {
             // copy content of input or error stream from destination response to output stream of origin response
             try (OutputStream os = resp.getOutputStream()) {
                 ByteStreams.copy(responseStream, os);
+                os.flush();
             }
         } catch (IOException e) {
-            throw new MachineException(e.getLocalizedMessage());
+            throw new ServerException(e.getLocalizedMessage());
         }
-    }
-
-    private String getMachineId(HttpServletRequest req) throws NotFoundException {
-        final Matcher matcher = EXTENSION_API_URI.matcher(req.getRequestURI());
-        if (matcher.matches()) {
-            return matcher.group("machineId");
-        }
-        throw new NotFoundException("No machine id is found in request.");
     }
 
     private void copyHeaders(HttpURLConnection conn, HttpServletRequest request) {

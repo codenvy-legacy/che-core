@@ -239,6 +239,29 @@ public class MachineExtensionProxyServletTest {
     }
 
     @Test
+    public void shouldRespondInternalServerErrorIfExtServerIsNotFoundInMachine() throws Exception {
+        when(machineManager.getMachine(MACHINE_ID)).thenReturn(machine);
+        when(machine.getMetadata()).thenReturn(instanceMetadata);
+        when(machine.getServers()).thenReturn(Collections.<String, Server>emptyMap());
+
+        MockHttpServletRequest mockRequest =
+                new MockHttpServletRequest(PROXY_ENDPOINT + "/api/ext/" + MACHINE_ID + DESTINATION_BASEPATH,
+                                           new ByteArrayInputStream(new byte[0]),
+                                           0,
+                                           "GET",
+                                           Collections.<String, List<String>>emptyMap());
+
+        MockHttpServletResponse mockResponse = new MockHttpServletResponse();
+
+        proxyServlet.service(mockRequest, mockResponse);
+
+        assertEquals(mockResponse.getStatus(), 500);
+        // TODO look like bug in everrest test library, if {@code HttpServletResponse#sendError(int code, String message)}
+        // is used no response message in output stream can be found
+//        assertEquals(mockResponse.getOutputContent(), "Request can't be forwarded to machine. No extension server found in machine");
+    }
+
+    @Test
     public void shouldCopyHeadersFromResponse() throws Exception {
         Map<String, List<String>> headers = new HashMap<>();
         headers.put("Accept-Ranges", Collections.singletonList("bytes"));
