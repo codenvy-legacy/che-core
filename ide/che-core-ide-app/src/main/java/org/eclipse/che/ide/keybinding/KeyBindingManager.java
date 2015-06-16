@@ -53,11 +53,15 @@ public class KeyBindingManager implements KeyBindingAgent {
             int digest = CharCodeWithModifiers.computeKeyDigest(signalEvent);
             Array<String> actionIds = activeScheme.getActionIds(digest);
             if (!actionIds.isEmpty()) {
-                runActions(actionIds, event);
+                runActions(actionIds);
+                event.preventDefault();
+                event.stopPropagation();
             }
             //else handle event in global scheme
             else if (!(actionIds = globalScheme.getActionIds(digest)).isEmpty()) {
-                runActions(actionIds, event);
+                runActions(actionIds);
+                event.preventDefault();
+                event.stopPropagation();
             }
             //default, lets this event handle other part of the IDE
         }
@@ -80,33 +84,20 @@ public class KeyBindingManager implements KeyBindingAgent {
         // Attach the listeners.
         final Element documentElement = Elements.getDocument().getDocumentElement();
         if (UserAgent.isFirefox()) {
-            // firefox fires keypress events
+            // firefox fiers keypress events
             documentElement.addEventListener(Event.KEYPRESS, downListener, true);
         } else {
-            //webkit fires keydown events
+            //webkit browsers fiers keydown events
             documentElement.addEventListener(Event.KEYDOWN, downListener, true);
         }
     }
 
-    /**
-     * Finds and runs an action cancelling original key event
-     *
-     * @param actionIds list containing action ids
-     * @param keyEvent original key event
-     */
-    private void runActions(Array<String> actionIds, Event keyEvent) {
+    private void runActions(Array<String> actionIds) {
         for (String actionId : actionIds.asIterable()) {
             Action action = actionManager.getAction(actionId);
-
             ActionEvent e = new ActionEvent("", presentationFactory.getPresentation(action), actionManager, 0);
             action.update(e);
-
             if (e.getPresentation().isEnabled() && e.getPresentation().isVisible()) {
-                /** Stop handling the key event */
-                keyEvent.preventDefault();
-                keyEvent.stopPropagation();
-
-                /** Perform the action */
                 action.actionPerformed(e);
             }
         }

@@ -36,9 +36,6 @@ public class ChoiceDialogPresenter implements ChoiceDialog, ChoiceDialogView.Act
     /** The callback used on second button. */
     private final ConfirmCallback secondChoiceCallback;
 
-    /** The callback used on third button. */
-    private final ConfirmCallback thirdChoiceCallback;
-
     @AssistedInject
     public ChoiceDialogPresenter(final @Nonnull ChoiceDialogView view,
                                  final @Nonnull @Assisted("title") String title,
@@ -47,9 +44,7 @@ public class ChoiceDialogPresenter implements ChoiceDialog, ChoiceDialogView.Act
                                  final @Nonnull @Assisted("secondChoice") String secondChoiceLabel,
                                  final @Nullable @Assisted("firstCallback") ConfirmCallback firstChoiceCallback,
                                  final @Nullable @Assisted("secondCallback") ConfirmCallback secondChoiceCallback) {
-        this(view, title, new InlineHTML(message),
-                firstChoiceLabel, secondChoiceLabel, "",
-                firstChoiceCallback, secondChoiceCallback, null);
+        this(view, title, new InlineHTML(message), firstChoiceLabel, secondChoiceLabel, firstChoiceCallback, secondChoiceCallback);
     }
 
     @AssistedInject
@@ -60,45 +55,13 @@ public class ChoiceDialogPresenter implements ChoiceDialog, ChoiceDialogView.Act
                                  final @Nonnull @Assisted("secondChoice") String secondChoiceLabel,
                                  final @Nullable @Assisted("firstCallback") ConfirmCallback firstChoiceCallback,
                                  final @Nullable @Assisted("secondCallback") ConfirmCallback secondChoiceCallback) {
-        this(view, title, content,
-                firstChoiceLabel, secondChoiceLabel, "",
-                firstChoiceCallback, secondChoiceCallback, null);
-    }
-
-    @AssistedInject
-    public ChoiceDialogPresenter(final @Nonnull ChoiceDialogView view,
-                                 final @Nonnull @Assisted("title") String title,
-                                 final @Nonnull @Assisted("message") String message,
-                                 final @Nonnull @Assisted("firstChoice") String firstChoiceLabel,
-                                 final @Nonnull @Assisted("secondChoice") String secondChoiceLabel,
-                                 final @Nonnull @Assisted("thirdChoice") String thirdChoiceLabel,
-                                 final @Nullable @Assisted("firstCallback") ConfirmCallback firstChoiceCallback,
-                                 final @Nullable @Assisted("secondCallback") ConfirmCallback secondChoiceCallback,
-                                 final @Nullable @Assisted("thirdCallback") ConfirmCallback thirdChoiceCallback) {
-        this(view, title, new InlineHTML(message),
-                firstChoiceLabel, secondChoiceLabel, thirdChoiceLabel,
-                firstChoiceCallback, secondChoiceCallback, thirdChoiceCallback);
-    }
-
-    @AssistedInject
-    public ChoiceDialogPresenter(final @Nonnull ChoiceDialogView view,
-                                 final @Nonnull @Assisted String title,
-                                 final @Nonnull @Assisted IsWidget content,
-                                 final @Nonnull @Assisted("firstChoice") String firstChoiceLabel,
-                                 final @Nonnull @Assisted("secondChoice") String secondChoiceLabel,
-                                 final @Nonnull @Assisted("thirdChoice") String thirdChoiceLabel,
-                                 final @Nullable @Assisted("firstCallback") ConfirmCallback firstChoiceCallback,
-                                 final @Nullable @Assisted("secondCallback") ConfirmCallback secondChoiceCallback,
-                                 final @Nullable @Assisted("thirdCallback") ConfirmCallback thirdChoiceCallback) {
         this.view = view;
         this.view.setContent(content);
         this.view.setTitle(title);
         this.view.setFirstChoiceLabel(firstChoiceLabel);
         this.view.setSecondChoiceLabel(secondChoiceLabel);
-        this.view.setThirdChoiceLabel(thirdChoiceLabel);
         this.firstChoiceCallback = firstChoiceCallback;
         this.secondChoiceCallback = secondChoiceCallback;
-        this.thirdChoiceCallback = thirdChoiceCallback;
         this.view.setDelegate(this);
     }
 
@@ -119,16 +82,7 @@ public class ChoiceDialogPresenter implements ChoiceDialog, ChoiceDialogView.Act
     }
 
     @Override
-    public void thirdChoiceClicked() {
-        this.view.closeDialog();
-        if (this.thirdChoiceCallback != null) {
-            this.thirdChoiceCallback.accepted();
-        }
-    }
-
-    @Override
     public void show() {
         this.view.showDialog();
     }
-
 }

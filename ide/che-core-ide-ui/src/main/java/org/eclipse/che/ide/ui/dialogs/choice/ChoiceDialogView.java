@@ -41,9 +41,6 @@ public interface ChoiceDialogView {
     /** Sets the text of the second choice. */
     void setSecondChoiceLabel(String secondChoiceLabel);
 
-    /** Sets the text of the third choice. */
-    void setThirdChoiceLabel(String thirdChoiceLabel);
-
     /** The interface for the action delegate. */
     public interface ActionDelegate {
 
@@ -52,8 +49,5 @@ public interface ChoiceDialogView {
 
         /** Defines what's done when the user clicks the second choice. */
         void secondChoiceClicked();
-
-        /** Defines what's done when the user clicks the third choice. */
-        void thirdChoiceClicked();
     }
 }

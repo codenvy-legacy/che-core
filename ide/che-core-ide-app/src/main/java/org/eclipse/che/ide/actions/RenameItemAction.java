@@ -22,8 +22,6 @@ import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.notification.Notification;
-import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.project.tree.AbstractTreeNode;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.api.project.tree.generic.FileNode;
@@ -37,7 +35,6 @@ import org.eclipse.che.ide.part.projectexplorer.ProjectListStructure;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.Unmarshallable;
-import org.eclipse.che.ide.ui.dialogs.CancelCallback;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.ui.dialogs.InputCallback;
 import org.eclipse.che.ide.ui.dialogs.input.InputDialog;
@@ -48,7 +45,6 @@ import javax.annotation.Nullable;
 
 import static org.eclipse.che.api.runner.ApplicationStatus.NEW;
 import static org.eclipse.che.api.runner.ApplicationStatus.RUNNING;
-import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
 import static org.eclipse.che.ide.api.project.tree.TreeNode.RenameCallback;
 
 /**
@@ -59,7 +55,6 @@ import static org.eclipse.che.ide.api.project.tree.TreeNode.RenameCallback;
 @Singleton
 public class RenameItemAction extends Action {
     private final AnalyticsEventLogger     eventLogger;
-    private final NotificationManager      notificationManager;
     private final CoreLocalizationConstant localization;
     private final RunnerServiceClient      runnerServiceClient;
     private final DtoUnmarshallerFactory   dtoUnmarshallerFactory;
@@ -74,7 +69,6 @@ public class RenameItemAction extends Action {
     public RenameItemAction(Resources resources,
                             AnalyticsEventLogger eventLogger,
                             SelectionAgent selectionAgent,
-                            NotificationManager notificationManager,
                             CoreLocalizationConstant localization,
                             RunnerServiceClient runnerServiceClient,
                             DtoUnmarshallerFactory dtoUnmarshallerFactory,
@@ -83,7 +77,6 @@ public class RenameItemAction extends Action {
         super(localization.renameItemActionText(), localization.renameItemActionDescription(), null, resources.rename());
         this.selectionAgent = selectionAgent;
         this.eventLogger = eventLogger;
-        this.notificationManager = notificationManager;
         this.localization = localization;
         this.runnerServiceClient = runnerServiceClient;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
@@ -119,13 +112,13 @@ public class RenameItemAction extends Action {
                     if (hasRunningProcesses) {
                         dialogFactory.createMessageDialog("", localization.stopProcessesBeforeRenamingProject(), null).show();
                     } else {
-                        renameNode(selectedNode);
+                        askForRenamingNode(selectedNode);
                     }
                 }
 
                 @Override
                 public void onFailure(Throwable caught) {
-                    renameNode(selectedNode);
+                    askForRenamingNode(selectedNode);
                 }
             });
         } else {
@@ -152,51 +145,35 @@ public class RenameItemAction extends Action {
         e.getPresentation().setEnabled(enabled);
     }
 
-    /**
-     * Asks the user for new name and renames the node.
-     *
-     * @param node node to rename
-     */
-    private void renameNode(final StorableNode node) {
+    private void askForRenamingNode(final StorableNode nodeToRename) {
         final InputCallback inputCallback = new InputCallback() {
             @Override
             public void accepted(final String value) {
-                node.rename(value, new RenameCallback() {
+                nodeToRename.rename(value, new RenameCallback() {
                     @Override
                     public void onRenamed() {
+                        //nothing do
                     }
 
                     @Override
-                    public void onFailure(Throwable caught) {
-                        notificationManager.showNotification(new Notification(caught.getMessage(), ERROR));
+                    public void onFailure(Throwable exception) {
                     }
                 });
             }
         };
 
-        askForNewName(node, inputCallback, null);
-    }
+        final int selectionLength = nodeToRename.getName().indexOf('.') >= 0
+                                    ? nodeToRename.getName().lastIndexOf('.')
+                                    : nodeToRename.getName().length();
 
-    /**
-     * Asks the user for new node name.
-     *
-     * @param node
-     * @param inputCallback
-     * @param cancelCallback
-     */
-    public void askForNewName(final StorableNode node, final InputCallback inputCallback, final CancelCallback cancelCallback) {
-        final int selectionLength = node.getName().indexOf('.') >= 0
-                ? node.getName().lastIndexOf('.')
-                : node.getName().length();
-
-        InputDialog inputDialog = dialogFactory.createInputDialog(getDialogTitle(node),
-                localization.renameDialogNewNameLabel(),
-                node.getName(), 0, selectionLength, inputCallback, null);
-        if (node instanceof FileNode) {
+        InputDialog inputDialog = dialogFactory.createInputDialog(getDialogTitle(nodeToRename),
+                                                                  localization.renameDialogNewNameLabel(),
+                                                                  nodeToRename.getName(), 0, selectionLength, inputCallback, null);
+        if (nodeToRename instanceof FileNode) {
             inputDialog.withValidator(fileNameValidator);
-        } else if (node instanceof FolderNode) {
+        } else if (nodeToRename instanceof FolderNode) {
             inputDialog.withValidator(folderNameValidator);
-        } else if (node instanceof ProjectNode || node instanceof ProjectListStructure.ProjectNode) {
+        } else if (nodeToRename instanceof ProjectNode || nodeToRename instanceof ProjectListStructure.ProjectNode) {
             inputDialog.withValidator(projectNameValidator);
         }
         inputDialog.show();
