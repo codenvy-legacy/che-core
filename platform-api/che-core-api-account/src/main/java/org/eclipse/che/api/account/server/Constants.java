@@ -22,10 +22,6 @@ public final class Constants {
     public static final String LINK_REL_GET_ACCOUNT_BY_ID     = "get by id";
     public static final String LINK_REL_GET_ACCOUNT_BY_NAME   = "get by name";
     public static final String LINK_REL_UPDATE_ACCOUNT        = "update";
-    public static final String LINK_REL_GET_SUBSCRIPTION      = "get subscription by id";
-    public static final String LINK_REL_GET_SUBSCRIPTIONS     = "subscriptions";
-    public static final String LINK_REL_ADD_SUBSCRIPTION      = "add subscription";
-    public static final String LINK_REL_REMOVE_SUBSCRIPTION   = "remove subscription";
     public static final String LINK_REL_REMOVE_ACCOUNT        = "remove";
     public static final String LINK_REL_GET_MEMBERS           = "members";
     public static final String LINK_REL_ADD_MEMBER            = "add member";
@@ -33,11 +29,9 @@ public final class Constants {
     public static final String LINK_REL_GET_ACCOUNTS          = "get accounts";
     public static final String LINK_REL_ADD_ATTRIBUTE         = "add attribute";
     public static final String LINK_REL_REMOVE_ATTRIBUTE      = "remove attribute";
-    public static final String LINK_REL_GET_ACCOUNT_RESOURCES = "account resources";
     public static final int    ID_LENGTH                      = 16;
     public static final String RESOURCES_LOCKED_PROPERTY      = "codenvy:resources_locked";
     public static final String PAYMENT_LOCKED_PROPERTY        = "codenvy:payment_locked";
 
-    private Constants() {
-    }
+    private Constants() {}
 }

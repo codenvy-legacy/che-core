@@ -55,7 +55,7 @@ public class AsyncRequest {
             callback.onError(null, exception);
         }
     };
-    private Timer                        requestTimer = new Timer() {
+    private Timer requestTimer = new Timer() {
         @Override
         public void run() {
             RequestBuilder request = new RequestBuilder(RequestBuilder.GET, requestStatusUrl);
@@ -311,4 +311,7 @@ public class AsyncRequest {
         }
     }
 
+    public RequestBuilder getRequestBuilder() {
+        return builder;
+    }
 }

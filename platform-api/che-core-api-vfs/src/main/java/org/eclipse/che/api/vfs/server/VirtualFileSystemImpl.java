@@ -114,7 +114,7 @@ public abstract class VirtualFileSystemImpl implements VirtualFileSystem {
                      @QueryParam("parentId") String parentId,
                      @QueryParam("name") String newName)
             throws NotFoundException, ForbiddenException, ConflictException, ServerException {
-        final VirtualFile virtualFileCopy = mountPoint.getVirtualFileById(id).copyTo(mountPoint.getVirtualFileById(parentId), newName);
+        final VirtualFile virtualFileCopy = mountPoint.getVirtualFileById(id).copyTo(mountPoint.getVirtualFileById(parentId), newName, false);
         return fromVirtualFile(virtualFileCopy, false, PropertyFilter.ALL_FILTER);
     }
 
@@ -433,8 +433,8 @@ public abstract class VirtualFileSystemImpl implements VirtualFileSystem {
                      @QueryParam("name") String newName,
                      @QueryParam("lockToken") String lockToken)
             throws NotFoundException, ForbiddenException, ConflictException, ServerException {
-        return fromVirtualFile(mountPoint.getVirtualFileById(id).moveTo(mountPoint.getVirtualFileById(parentId), newName, lockToken),
-                               false, PropertyFilter.ALL_FILTER);
+        return fromVirtualFile(mountPoint.getVirtualFileById(id).moveTo(mountPoint.getVirtualFileById(parentId), newName, false, lockToken),
+                false, PropertyFilter.ALL_FILTER);
     }
 
     @Path("rename/{id}")

@@ -13,9 +13,14 @@ package org.eclipse.che.ide.rest;
 import org.eclipse.che.ide.commons.exception.ServerDisconnectedException;
 import org.eclipse.che.ide.commons.exception.ServerException;
 import org.eclipse.che.ide.commons.exception.UnauthorizedException;
+
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.Response;
+import com.google.gwt.user.client.Window;
+
+import static org.eclipse.che.ide.MimeType.APPLICATION_JSON;
+import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
 
 /**
  * Callback class for receiving the {@link Response}.
@@ -125,8 +130,38 @@ public abstract class AsyncRequestCallback<T> implements RequestCallback {
                 onFailure(e);
             }
         } else {
-            onFailure(new ServerException(response));
+            Exception exception;
+            String contentType = response.getHeader(CONTENT_TYPE);
+
+            if (contentType != null && !contentType.contains(APPLICATION_JSON)) {
+                String message = generateErrorMessage(response);
+                exception = new Exception(message);
+            } else {
+                exception = new ServerException(response);
+            }
+            onFailure(exception);
         }
+    }
+
+    private String generateErrorMessage(Response response) {
+        StringBuilder message = new StringBuilder();
+        String protocol = Window.Location.getProtocol();
+        String host = Window.Location.getHost();
+        String url = this.request.getRequestBuilder().getUrl();
+
+        //deletes query params
+        url = url.substring(0, url.indexOf('?'));
+
+        message.append(response.getStatusCode())
+               .append(" ")
+               .append(response.getStatusText())
+               .append(" ")
+               .append(protocol)
+               .append("//")
+               .append(host)
+               .append(url);
+
+        return message.toString();
     }
 
     protected final boolean isSuccessful(Response response) {

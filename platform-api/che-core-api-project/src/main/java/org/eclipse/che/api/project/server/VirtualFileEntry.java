@@ -119,12 +119,10 @@ public abstract class VirtualFileEntry {
     }
 
     /**
-     * Creates copy of this item with new name in new parent.
+     * Creates copy of this item in new parent.
      *
      * @param newParent
      *         path of new parent
-     * @param newName
-     *         new item name
      * @throws NotFoundException
      *         if {@code newParent} doesn't exist
      * @throws ForbiddenException
@@ -134,7 +132,22 @@ public abstract class VirtualFileEntry {
      * @throws ServerException
      *         if other error occurs
      */
-    public abstract VirtualFileEntry copyTo(String newParent, String newName)
+    public abstract VirtualFileEntry copyTo(String newParent)
+            throws NotFoundException, ForbiddenException, ConflictException, ServerException;
+
+    /**
+     * Creates copy of this item in new parent.
+     *
+     * @param newParent path of new parent
+     * @param name new name for destination
+     * @param override true to overwrite destination
+     * @throws NotFoundException if {@code newParent} doesn't exist
+     * @throws ForbiddenException if copy operation is forbidden
+     * @throws ConflictException if copy operation causes conflict, e.g. name
+     * conflict
+     * @throws ServerException if other error occurs
+     */
+    public abstract VirtualFileEntry copyTo(String newParent, String name, boolean override)
             throws NotFoundException, ForbiddenException, ConflictException, ServerException;
 
     /**
@@ -142,8 +155,6 @@ public abstract class VirtualFileEntry {
      *
      * @param newParent
      *         path of new parent
-     * @param newName
-     *         new item name
      * @throws NotFoundException
      *         if {@code newParent} doesn't exist
      * @throws ForbiddenException
@@ -153,9 +164,25 @@ public abstract class VirtualFileEntry {
      * @throws ServerException
      *         if other error occurs
      */
-    public void moveTo(String newParent, String newName) throws NotFoundException, ForbiddenException, ConflictException, ServerException {
+    public void moveTo(String newParent) throws NotFoundException, ForbiddenException, ConflictException, ServerException {
+        moveTo(newParent, null, false);
+    }
+
+    /**
+     * Moves this item to the new parent.
+     *
+     * @param newParent path of new parent
+     * @param name new name for destination
+     * @param overWrite true to overwrite destination
+     * @throws NotFoundException if {@code newParent} doesn't exist
+     * @throws ForbiddenException if move operation is forbidden
+     * @throws ConflictException if move operation causes conflict, e.g. name
+     * conflict
+     * @throws ServerException if other error occurs
+     */
+    public void moveTo(String newParent, String name, boolean overWrite) throws NotFoundException, ForbiddenException, ConflictException, ServerException {
         final MountPoint mp = virtualFile.getMountPoint();
-        virtualFile = virtualFile.moveTo(mp.getVirtualFile(newParent), newName, null);
+        virtualFile = virtualFile.moveTo(mp.getVirtualFile(newParent), name, overWrite, null);
     }
 
     /**

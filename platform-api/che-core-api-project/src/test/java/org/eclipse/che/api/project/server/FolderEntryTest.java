@@ -93,7 +93,7 @@ public class FolderEntryTest {
         String name = myFolder.getName();
         String newPath = vfProject.getVirtualFilePath().newPath(name).toString();
 
-        myFolder.moveTo(vfProject.getPath(), null);
+        myFolder.moveTo(vfProject.getPath());
         Assert.assertNull(myVfProject.getChild(name));
         Assert.assertNotNull(vfProject.getChild(name));
         Assert.assertEquals(myFolder.getName(), name);
@@ -109,7 +109,7 @@ public class FolderEntryTest {
         String name = myFolder.getName();
         String newPath = vfProject.getVirtualFilePath().newPath(name).toString();
 
-        FolderEntry copy = myFolder.copyTo(vfProject.getPath(), null);
+        FolderEntry copy = myFolder.copyTo(vfProject.getPath());
         Assert.assertNotNull(myVfProject.getChild(name));
         Assert.assertNotNull(vfProject.getChild(name));
         Assert.assertEquals(copy.getName(), name);

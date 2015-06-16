@@ -140,7 +140,7 @@ public class FileEntryTest {
         byte[] b = myFile.contentAsBytes();
         String mt = myFile.getMediaType();
 
-        myFile.moveTo(vfProject.getPath(), null);
+        myFile.moveTo(vfProject.getPath());
         Assert.assertNull(myVfProject.getChild(name));
         Assert.assertNotNull(vfProject.getChild(name));
         Assert.assertEquals(myFile.getName(), name);
@@ -158,7 +158,7 @@ public class FileEntryTest {
         byte[] b = myFile.contentAsBytes();
         String mt = myFile.getMediaType();
 
-        FileEntry copy = myFile.copyTo(vfProject.getPath(), null);
+        FileEntry copy = myFile.copyTo(vfProject.getPath());
         Assert.assertNotNull(myVfProject.getChild(name));
         Assert.assertNotNull(vfProject.getChild(name));
         Assert.assertEquals(copy.getName(), name);

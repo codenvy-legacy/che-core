@@ -103,6 +103,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import org.eclipse.che.api.project.shared.dto.CopyOptions;
+import org.eclipse.che.api.project.shared.dto.MoveOptions;
 
 /**
  * @author andrew00x
@@ -704,8 +706,7 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Copy resource",
-                  notes = "Copy resource with new name to a new location which are specified in a query parameter. " +
-                          "Original resource name is used if the new name isn't set.",
+                  notes = "Copy resource to a new location which is specified in a query parameter",
                   position = 14)
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = ""),
@@ -715,17 +716,25 @@ public class ProjectService extends Service {
             @ApiResponse(code = 500, message = "Internal Server Error")})
     @POST
     @Path("/copy/{path:.*}")
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response copy(@ApiParam(value = "Workspace ID", required = true)
                          @PathParam("ws-id") String workspace,
                          @ApiParam(value = "Path to a resource", required = true)
                          @PathParam("path") String path,
                          @ApiParam(value = "Path to a new location", required = true)
-                         @QueryParam("to") String newParent,
-                         @ApiParam(value = "New name", required = false)
-                         @QueryParam("name") String newName)
+            @QueryParam("to") String newParent,
+            @DefaultValue("{}") @Description("options for copy operation") CopyOptions copyOptions)
             throws NotFoundException, ForbiddenException, ConflictException, ServerException {
         final VirtualFileEntry entry = getVirtualFileEntry(workspace, path);
-        final VirtualFileEntry copy = entry.copyTo(newParent, newName);
+        // used to indicate over write of destination
+        boolean isOverWrite = false;
+        // used to hold new name set in request body
+        String newName = entry.getName();
+        if (copyOptions != null) {
+            isOverWrite = copyOptions.getOverWrite();
+            newName = copyOptions.getName();
+        }
+        final VirtualFileEntry copy = entry.copyTo(newParent, newName, isOverWrite);
         final URI location = getServiceContext().getServiceUriBuilder()
                                                 .path(getClass(), copy.isFile() ? "getFile" : "getChildren")
                                                 .build(workspace, copy.getPath().substring(1));
@@ -741,8 +750,7 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Move resource",
-                  notes = "Move resource with new name to a new location which are specified in a query parameter. " +
-                          "Original resource name is used if the new name isn't set.",
+                  notes = "Move resource to a new location which is specified in a query parameter",
                   position = 15)
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = ""),
@@ -757,12 +765,21 @@ public class ProjectService extends Service {
                          @ApiParam(value = "Path to a resource to be moved", required = true)
                          @PathParam("path") String path,
                          @ApiParam(value = "Path to a new location", required = true)
-                         @QueryParam("to") String newParent,
-                         @ApiParam(value = "New name", required = false)
-                         @QueryParam("name") String newName)
+            @QueryParam("to") String newParent,
+            @DefaultValue("{}") @Description("options for move operation") MoveOptions moveOptions)
             throws NotFoundException, ForbiddenException, ConflictException, ServerException {
         final VirtualFileEntry entry = getVirtualFileEntry(workspace, path);
-        entry.moveTo(newParent, newName);
+        
+// used to indicate over write of destination
+        boolean isOverWrite = false;
+        // used to hold new name set in request body
+        String newName = entry.getName();
+        if (moveOptions != null) {
+            isOverWrite = moveOptions.getOverWrite();
+            newName = moveOptions.getName();
+        }
+        
+        entry.moveTo(newParent, newName, isOverWrite);
         final URI location = getServiceContext().getServiceUriBuilder()
                                                 .path(getClass(), entry.isFile() ? "getFile" : "getChildren")
                                                 .build(workspace, entry.getPath().substring(1));
