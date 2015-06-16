@@ -15,7 +15,7 @@ import com.google.gwtmockito.GwtMockitoTestRunner;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.ActionEvent;
-import org.eclipse.che.ide.workspace.perspectives.general.PerspectiveManager;
+import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;

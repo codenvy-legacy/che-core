@@ -10,25 +10,30 @@
  *******************************************************************************/
 package org.eclipse.che.ide.actions;
 
-import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
-
-import org.eclipse.che.ide.projectimport.wizard.presenter.ImportProjectWizardPresenter;
-import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.api.action.Action;
-import org.eclipse.che.ide.api.action.ActionEvent;
-import org.eclipse.che.ide.api.app.AppContext;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
+import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
+import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.Resources;
+import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
+import org.eclipse.che.ide.api.action.ActionEvent;
+import org.eclipse.che.ide.api.app.AppContext;
+import org.eclipse.che.ide.projectimport.wizard.presenter.ImportProjectWizardPresenter;
+
+import javax.annotation.Nonnull;
+import java.util.Arrays;
+
+import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
 
 /**
  * Import project from location action
  *
  * @author Roman Nikitenko
+ * @author Dmitry Shnurenko
  */
 @Singleton
-public class ImportProjectFromLocationAction extends Action {
+public class ImportProjectFromLocationAction extends AbstractPerspectiveAction {
 
     private final ImportProjectWizardPresenter presenter;
     private final AnalyticsEventLogger         eventLogger;
@@ -40,7 +45,10 @@ public class ImportProjectFromLocationAction extends Action {
                                            AnalyticsEventLogger eventLogger,
                                            Resources resources,
                                            AppContext appContext) {
-        super(locale.importProjectFromLocationName(), locale.importProjectFromLocationDescription(), null, resources.importProject());
+        super(Arrays.asList(PROJECT_PERSPECTIVE_ID), locale.importProjectFromLocationName(),
+              locale.importProjectFromLocationDescription(),
+              null,
+              resources.importProject());
         this.presenter = presenter;
         this.eventLogger = eventLogger;
         this.appContext = appContext;
@@ -53,12 +61,13 @@ public class ImportProjectFromLocationAction extends Action {
         presenter.show();
     }
 
+    /** {@inheritDoc} */
     @Override
-    public void update(ActionEvent e) {
+    public void updatePerspective(@Nonnull ActionEvent event) {
         if (appContext.getCurrentProject() == null) {
-            e.getPresentation().setEnabled(appContext.getCurrentUser().isUserPermanent());
+            event.getPresentation().setEnabled(appContext.getCurrentUser().isUserPermanent());
         } else {
-            e.getPresentation().setEnabled(!appContext.getCurrentProject().isReadOnly());
+            event.getPresentation().setEnabled(!appContext.getCurrentProject().isReadOnly());
         }
     }
 }

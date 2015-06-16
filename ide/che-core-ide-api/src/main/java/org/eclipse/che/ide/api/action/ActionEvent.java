@@ -10,9 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.action;
 
-import org.eclipse.che.ide.collections.Collections;
-import org.eclipse.che.ide.collections.StringMap;
-import org.eclipse.che.ide.util.StringUtils;
+import org.eclipse.che.ide.api.parts.PerspectiveManager;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -22,18 +20,14 @@ import java.util.Map;
  * Container for the information necessary to execute or update an {@link Action}.
  *
  * @author Evgen Vidolob
- * @see Action#actionPerformed(ActionEvent)
- * @see Action#update(ActionEvent)
+ * @author Dmitry Shnurenko
  */
 public class ActionEvent {
-    private static final String            ourInjectedPrefix = "$injected$.";
-    private static final StringMap<String> ourInjectedIds    = Collections.createStringMap();
-    private final ActionManager       myActionManager;
-    private final String              myPlace;
-    private final Presentation        myPresentation;
-    private final int                 myModifiers;
-    private final Map<String, String> myParameters;
-    private       boolean             myWorksInInjected;
+    private final ActionManager       actionManager;
+    private final String              place;
+    private final Presentation        presentation;
+    private final PerspectiveManager  perspectiveManager;
+    private final Map<String, String> parameters;
 
     /**
      * Create new action event.
@@ -44,14 +38,14 @@ public class ActionEvent {
      *         the presentation which represents the action in the place from where it is invoked or updated
      * @param actionManager
      *         the manager for actions
-     * @param modifiers
-     *         the modifier keys held down during this action event
+     * @param perspectiveManager
+     *         perspective manager which contains information about current perspective
      */
     public ActionEvent(@Nonnull String place,
                        @Nonnull Presentation presentation,
                        @Nonnull ActionManager actionManager,
-                       int modifiers) {
-        this(place, presentation, actionManager, modifiers, null);
+                       @Nonnull PerspectiveManager perspectiveManager) {
+        this(place, presentation, actionManager, perspectiveManager, null);
     }
 
     /**
@@ -63,36 +57,21 @@ public class ActionEvent {
      *         the presentation which represents the action in the place from where it is invoked or updated
      * @param actionManager
      *         the manager for actions
-     * @param modifiers
-     *         the modifier keys held down during this action event
+     * @param perspectiveManager
+     *         perspective manager which contains information about current perspective
      * @param parameters
      *         the parameters with which the action is invoked or updated
      */
     public ActionEvent(@Nonnull String place,
                        @Nonnull Presentation presentation,
                        @Nonnull ActionManager actionManager,
-                       int modifiers,
+                       @Nonnull PerspectiveManager perspectiveManager,
                        @Nullable Map<String, String> parameters) {
-        myActionManager = actionManager;
-        myPlace = place;
-        myPresentation = presentation;
-        myModifiers = modifiers;
-        myParameters = parameters;
-    }
-
-    public static String injectedId(String dataId) {
-        synchronized (ourInjectedIds) {
-            String injected = ourInjectedIds.get(dataId);
-            if (injected == null) {
-                injected = ourInjectedPrefix + dataId;
-                ourInjectedIds.put(dataId, injected);
-            }
-            return injected;
-        }
-    }
-
-    public static String uninjectedId(String dataId) {
-        return StringUtils.trimStart(dataId, ourInjectedPrefix);
+        this.actionManager = actionManager;
+        this.place = place;
+        this.presentation = presentation;
+        this.perspectiveManager = perspectiveManager;
+        this.parameters = parameters;
     }
 
     /**
@@ -102,7 +81,7 @@ public class ActionEvent {
      * @see ActionPlaces
      */
     public String getPlace() {
-        return myPlace;
+        return place;
     }
 
     /**
@@ -111,16 +90,11 @@ public class ActionEvent {
      * @return the presentation instance
      */
     public Presentation getPresentation() {
-        return myPresentation;
+        return presentation;
     }
 
-    /**
-     * Returns the modifier keys held down during this action event.
-     *
-     * @return the modifier keys
-     */
-    public int getModifiers() {
-        return myModifiers;
+    public PerspectiveManager getPerspectiveManager() {
+        return perspectiveManager;
     }
 
     /**
@@ -130,18 +104,10 @@ public class ActionEvent {
      */
     @Nullable
     public Map<String, String> getParameters() {
-        return myParameters;
+        return parameters;
     }
 
     public ActionManager getActionManager() {
-        return myActionManager;
-    }
-
-    public void setInjectedContext(boolean worksInInjected) {
-        myWorksInInjected = worksInInjected;
-    }
-
-    public boolean isInInjectedContext() {
-        return myWorksInInjected;
+        return actionManager;
     }
 }

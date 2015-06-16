@@ -10,22 +10,24 @@
  *******************************************************************************/
 package org.eclipse.che.ide.client;
 
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.google.inject.Singleton;
+
+import org.eclipse.che.ide.api.extension.ExtensionDescription;
+import org.eclipse.che.ide.api.extension.ExtensionRegistry;
 import org.eclipse.che.ide.api.preferences.PreferencesManager;
 import org.eclipse.che.ide.collections.Jso;
 import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.collections.StringMap.IterationCallback;
-import org.eclipse.che.ide.api.extension.ExtensionDescription;
-import org.eclipse.che.ide.api.extension.ExtensionRegistry;
 import org.eclipse.che.ide.util.loging.Log;
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-import com.google.inject.Singleton;
 
 /**
  * {@link ExtensionInitializer} responsible for bringing up Extensions. It uses ExtensionRegistry to acquire
  * Extension description and dependencies.
  *
- * @author <a href="mailto:nzamosenchuk@exoplatform.com">Nikolay Zamosenchuk</a>
+ * @author Nikolay Zamosenchuk
+ * @author Dmitry Shnurenko
  */
 @Singleton
 public class ExtensionInitializer {
@@ -38,7 +40,8 @@ public class ExtensionInitializer {
      *
      */
     @Inject
-    public ExtensionInitializer(final ExtensionRegistry extensionRegistry, final ExtensionManager extensionManager,
+    public ExtensionInitializer(final ExtensionRegistry extensionRegistry,
+                                final ExtensionManager extensionManager,
                                 PreferencesManager preferencesManager) {
         this.extensionRegistry = extensionRegistry;
         this.extensionManager = extensionManager;

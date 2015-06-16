@@ -10,7 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.ide.workspace.perspectives.general;
 
-import org.eclipse.che.ide.workspace.perspectives.general.PerspectiveManager.PerspectiveTypeListener;
+import org.eclipse.che.ide.api.parts.Perspective;
+import org.eclipse.che.ide.api.parts.PerspectiveManager;
+import org.eclipse.che.ide.api.parts.PerspectiveManager.PerspectiveTypeListener;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

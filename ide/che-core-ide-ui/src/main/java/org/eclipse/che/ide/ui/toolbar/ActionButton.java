@@ -36,26 +36,32 @@ import org.eclipse.che.ide.api.action.CustomComponentAction;
 import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.action.PropertyChangeEvent;
 import org.eclipse.che.ide.api.action.PropertyChangeListener;
+import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.vectomatic.dom.svg.ui.SVGImage;
 
 /**
  * Toolbar image button.
  *
  * @author Evgen Vidolob
+ * @author Dmitry Shnurenko
  */
-public class ActionButton extends Composite implements MouseOverHandler, MouseOutHandler, MouseDownHandler, MouseUpHandler,
+public class ActionButton extends Composite implements MouseOverHandler,
+                                                       MouseOutHandler,
+                                                       MouseDownHandler,
+                                                       MouseUpHandler,
                                                        ClickHandler {
 
     protected static final ToolbarResources.Css css = Toolbar.RESOURCES.toolbar();
-    private final Presentation presentation;
-    private final String       place;
-    private final Element      tooltip;
-    private final Element      tooltipBody;
-    private final Element      tooltipArrow;
+    private final Presentation       presentation;
+    private final PerspectiveManager perspectiveManager;
+    private final String             place;
+    private final Element            tooltip;
+    private final Element            tooltipBody;
+    private final Element            tooltipArrow;
     /** Command which will be executed when button was pressed. */
-    protected     Action       action;
-    private       FlowPanel    panel;
-    private       Element      image;
+    protected     Action             action;
+    private       FlowPanel          panel;
+    private       Element            image;
     /** Is enabled. */
     private boolean enabled  = true;
     /** Is button selected. */
@@ -63,8 +69,13 @@ public class ActionButton extends Composite implements MouseOverHandler, MouseOu
     private ActionManager            actionManager;
     private ActionButtonSynchronizer actionButtonSynchronizer;
 
-    public ActionButton(final Action action, ActionManager actionManager, final Presentation presentation, String place) {
+    public ActionButton(final Action action,
+                        ActionManager actionManager,
+                        final Presentation presentation,
+                        String place,
+                        PerspectiveManager perspectiveManager) {
         this.actionManager = actionManager;
+        this.perspectiveManager = perspectiveManager;
         panel = new FlowPanel();
         tooltip = DOM.createDiv();
         tooltipBody = DOM.createDiv();
@@ -158,14 +169,13 @@ public class ActionButton extends Composite implements MouseOverHandler, MouseOu
         } else {
             panel.setStyleName(css.iconButtonPanelOver());
         }
-
     }
 
     /** Mouse Over handler. */
     @Override
     public void onMouseOver(MouseOverEvent event) {
         tooltip.getStyle().setTop(0, Style.Unit.PX);
-        tooltip.getStyle().setLeft((image.getOffsetWidth() + 2 ) / 2 - tooltipArrow.getOffsetWidth() / 2, Style.Unit.PX);
+        tooltip.getStyle().setLeft((image.getOffsetWidth() + 2) / 2 - tooltipArrow.getOffsetWidth() / 2, Style.Unit.PX);
 
         int screenSize = Document.get().getClientWidth();
         if (image.getAbsoluteLeft() + tooltip.getOffsetWidth() > screenSize) {
@@ -228,12 +238,7 @@ public class ActionButton extends Composite implements MouseOverHandler, MouseOu
         }
 
         //todo handle popup group
-        ActionEvent e = new ActionEvent(
-                place,
-                presentation,
-                actionManager,
-                0
-        );
+        ActionEvent e = new ActionEvent(place, presentation, actionManager, perspectiveManager);
         if (action instanceof ActionGroup && !(action instanceof CustomComponentAction) && ((ActionGroup)action).isPopup()) {
 
         } else {

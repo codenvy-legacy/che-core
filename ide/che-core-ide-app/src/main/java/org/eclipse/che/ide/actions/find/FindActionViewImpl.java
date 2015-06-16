@@ -35,6 +35,7 @@ import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.Action;
@@ -43,6 +44,7 @@ import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.autocomplete.AutoCompleteResources;
 import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
+import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.eclipse.che.ide.ui.list.SimpleList;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.ui.toolbar.Toolbar;
@@ -55,6 +57,7 @@ import java.util.Map;
 
 /**
  * @author Evgen Vidolob
+ * @author Dmitry Shnurenko
  */
 public class FindActionViewImpl extends PopupPanel implements FindActionView {
     private static FindActionViewImplUiBinder ourUiBinder = GWT.create(FindActionViewImplUiBinder.class);
@@ -80,7 +83,7 @@ public class FindActionViewImpl extends PopupPanel implements FindActionView {
                     TableCellElement group = Elements.createTDElement(css.proposalGroup());
 
                     Presentation presentation = presentationFactory.getPresentation(itemData);
-                    itemData.update(new ActionEvent("find_action", presentation, actionManager, 0));
+                    itemData.update(new ActionEvent("find_action", presentation, actionManager, perspectiveManager.get()));
                     if (presentation.getIcon() != null) {
                         Image image = new Image(presentation.getIcon());
                         icon.appendChild((Node)image.getElement());
@@ -119,20 +122,25 @@ public class FindActionViewImpl extends PopupPanel implements FindActionView {
     TextBox  nameField;
     @UiField
     CheckBox includeNonMenu;
-    private ActionDelegate      delegate;
-    private Resources           resources;
-    private KeyBindingAgent     keyBindingAgent;
-    private ActionManager       actionManager;
-    private PopupPanel          popupPanel;
-    private SimpleList<Action>  list;
-    private Map<Action, String> actions;
+    private ActionDelegate               delegate;
+    private Resources                    resources;
+    private KeyBindingAgent              keyBindingAgent;
+    private ActionManager                actionManager;
+    private PopupPanel                   popupPanel;
+    private SimpleList<Action>           list;
+    private Map<Action, String>          actions;
+    private Provider<PerspectiveManager> perspectiveManager;
 
     @Inject
-    public FindActionViewImpl(Resources resources, KeyBindingAgent keyBindingAgent,
-                              ActionManager actionManager, AutoCompleteResources autoCompleteResources) {
+    public FindActionViewImpl(Resources resources,
+                              KeyBindingAgent keyBindingAgent,
+                              ActionManager actionManager,
+                              AutoCompleteResources autoCompleteResources,
+                              Provider<PerspectiveManager> perspectiveManager) {
         this.resources = resources;
         this.keyBindingAgent = keyBindingAgent;
         this.actionManager = actionManager;
+        this.perspectiveManager = perspectiveManager;
         this.presentationFactory = new PresentationFactory();
         css = autoCompleteResources.autocompleteComponentCss();
         css.ensureInjected();

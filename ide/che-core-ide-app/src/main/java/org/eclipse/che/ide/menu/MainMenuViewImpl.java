@@ -19,6 +19,7 @@ import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
@@ -31,6 +32,7 @@ import org.eclipse.che.ide.api.action.IdeActions;
 import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.action.Separator;
 import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
+import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.eclipse.che.ide.ui.toolbar.CloseMenuHandler;
 import org.eclipse.che.ide.ui.toolbar.MenuLockLayer;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
@@ -49,7 +51,8 @@ import java.util.Map;
  * @author Oleksii Orel
  */
 public class MainMenuViewImpl extends Composite implements MainMenuView, CloseMenuHandler, ActionSelectedHandler {
-    private final MenuResources resources;
+    private final MenuResources                resources;
+    private final Provider<PerspectiveManager> managerProvider;
 
     private final MenuItemPresentationFactory presentationFactory = new MenuItemPresentationFactory();
     /** Working table, cells of which are contains element of Menu. */
@@ -72,18 +75,19 @@ public class MainMenuViewImpl extends Composite implements MainMenuView, CloseMe
     private List<Action> leftVisibleActions  = new ArrayList<>();
     private List<Action> menuVisibleActions  = new ArrayList<>();
     private List<Action> rightVisibleActions = new ArrayList<>();
-    private List<Action>    newLeftVisibleActions;
-    private List<Action>    newMenuVisibleActions;
-    private List<Action>    newRightVisibleActions;
     private ActionManager   actionManager;
     private KeyBindingAgent keyBindingAgent;
 
     /** Create new {@link MainMenuViewImpl} */
     @Inject
-    public MainMenuViewImpl(MenuResources resources, ActionManager actionManager, KeyBindingAgent keyBindingAgent) {
+    public MainMenuViewImpl(MenuResources resources,
+                            ActionManager actionManager,
+                            KeyBindingAgent keyBindingAgent,
+                            Provider<PerspectiveManager> managerProvider) {
         this.resources = resources;
         this.actionManager = actionManager;
         this.keyBindingAgent = keyBindingAgent;
+        this.managerProvider = managerProvider;
 
         initWidget(rootPanel);
 
@@ -120,7 +124,7 @@ public class MainMenuViewImpl extends Composite implements MainMenuView, CloseMe
             return;
         }
 
-        newMenuVisibleActions = new ArrayList<>();
+        List<Action> newMenuVisibleActions = new ArrayList<>();
         expandActionGroup(IdeActions.GROUP_MAIN_MENU, newMenuVisibleActions, actionManager);
         if (!newMenuVisibleActions.equals(menuVisibleActions)) {
             removeAll();
@@ -129,7 +133,7 @@ public class MainMenuViewImpl extends Composite implements MainMenuView, CloseMe
             }
             menuVisibleActions = newMenuVisibleActions;
         }
-        newRightVisibleActions = new ArrayList<>();
+        List<Action> newRightVisibleActions = new ArrayList<>();
         expandActionGroup(IdeActions.GROUP_RIGHT_MAIN_MENU, newRightVisibleActions, actionManager);
         if (!newRightVisibleActions.equals(rightVisibleActions)) {
             rightPanel.clear();
@@ -138,7 +142,7 @@ public class MainMenuViewImpl extends Composite implements MainMenuView, CloseMe
             }
             rightVisibleActions = newRightVisibleActions;
         }
-        newLeftVisibleActions = new ArrayList<>();
+        List<Action> newLeftVisibleActions = new ArrayList<>();
         expandActionGroup(IdeActions.GROUP_LEFT_MAIN_MENU, newLeftVisibleActions, actionManager);
         if (!newLeftVisibleActions.equals(leftVisibleActions)) {
             leftPanel.clear();
@@ -183,7 +187,7 @@ public class MainMenuViewImpl extends Composite implements MainMenuView, CloseMe
         final Action[] children = mainActionGroup.getChildren(null);
         for (final Action action : children) {
             final Presentation presentation = presentationFactory.getPresentation(action);
-            final ActionEvent e = new ActionEvent(ActionPlaces.MAIN_MENU, presentation, actionManager, 0);
+            final ActionEvent e = new ActionEvent(ActionPlaces.MAIN_MENU, presentation, actionManager, managerProvider.get());
             action.update(e);
             if (presentation.isVisible()) { // add only visible items
                 newVisibleActions.add(action);
@@ -203,8 +207,15 @@ public class MainMenuViewImpl extends Composite implements MainMenuView, CloseMe
             ActionGroup group = (ActionGroup)action;
             table.setText(0, menuBarItems.size(), presentation.getText());
             Element element = table.getCellFormatter().getElement(0, menuBarItems.size());
-            MenuBarItem item =
-                    new MenuBarItem(group, actionManager, presentationFactory, place, element, this, keyBindingAgent, resources.menuCss());
+            MenuBarItem item = new MenuBarItem(group,
+                                               actionManager,
+                                               managerProvider,
+                                               presentationFactory,
+                                               place,
+                                               element,
+                                               this,
+                                               keyBindingAgent,
+                                               resources.menuCss());
 
             item.onMouseOut();
             menuBarItems.put(element, item);

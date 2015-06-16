@@ -16,18 +16,24 @@ import com.google.inject.Singleton;
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.api.action.Action;
+import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.projectimport.local.LocalZipImporterPagePresenter;
+
+import javax.annotation.Nonnull;
+import java.util.Arrays;
+
+import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
 
 /**
  * Import project from local zip action
  *
  * @author Roman Nikitenko
+ * @author Dmitry Shnurenko
  */
 @Singleton
-public class ImportLocalProjectAction extends Action {
+public class ImportLocalProjectAction extends AbstractPerspectiveAction {
 
     private final LocalZipImporterPagePresenter presenter;
     private final AnalyticsEventLogger          eventLogger;
@@ -39,7 +45,11 @@ public class ImportLocalProjectAction extends Action {
                                     AnalyticsEventLogger eventLogger,
                                     Resources resources,
                                     AppContext appContext) {
-        super(locale.importLocalProjectName(), locale.importLocalProjectDescription(), null, resources.importProject());
+        super(Arrays.asList(PROJECT_PERSPECTIVE_ID),
+              locale.importLocalProjectName(),
+              locale.importLocalProjectDescription(),
+              null,
+              resources.importProject());
         this.presenter = presenter;
         this.eventLogger = eventLogger;
         this.appContext = appContext;
@@ -52,12 +62,13 @@ public class ImportLocalProjectAction extends Action {
         presenter.show();
     }
 
+    /** {@inheritDoc} */
     @Override
-    public void update(ActionEvent e) {
+    public void updatePerspective(@Nonnull ActionEvent event) {
         if (appContext.getCurrentProject() == null) {
-            e.getPresentation().setEnabled(appContext.getCurrentUser().isUserPermanent());
+            event.getPresentation().setEnabled(appContext.getCurrentUser().isUserPermanent());
         } else {
-            e.getPresentation().setEnabled(!appContext.getCurrentProject().isReadOnly());
+            event.getPresentation().setEnabled(!appContext.getCurrentProject().isReadOnly());
         }
     }
 }

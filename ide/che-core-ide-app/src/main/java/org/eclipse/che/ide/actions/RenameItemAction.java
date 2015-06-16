@@ -10,54 +10,46 @@
  *******************************************************************************/
 package org.eclipse.che.ide.actions;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
-//import org.eclipse.che.api.runner.dto.ApplicationProcessDescriptor;
-//import org.eclipse.che.api.runner.gwt.client.RunnerServiceClient;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.api.action.Action;
+import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.project.tree.AbstractTreeNode;
-import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.api.project.tree.generic.FileNode;
 import org.eclipse.che.ide.api.project.tree.generic.FolderNode;
 import org.eclipse.che.ide.api.project.tree.generic.ProjectNode;
 import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.part.projectexplorer.ProjectListStructure;
-import org.eclipse.che.ide.rest.AsyncRequestCallback;
-import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
-import org.eclipse.che.ide.rest.Unmarshallable;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.ui.dialogs.InputCallback;
 import org.eclipse.che.ide.ui.dialogs.input.InputDialog;
 import org.eclipse.che.ide.ui.dialogs.input.InputValidator;
 import org.eclipse.che.ide.util.NameUtils;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Arrays;
 
-//import static org.eclipse.che.api.runner.ApplicationStatus.NEW;
-//import static org.eclipse.che.api.runner.ApplicationStatus.RUNNING;
 import static org.eclipse.che.ide.api.project.tree.TreeNode.RenameCallback;
+import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
 
 /**
  * Action for renaming an item which is selected in 'Project Explorer'.
  *
  * @author Artem Zatsarynnyy
+ * @author Dmitry Shnurenko
  */
 @Singleton
-public class RenameItemAction extends Action {
+public class RenameItemAction extends AbstractPerspectiveAction {
     private final AnalyticsEventLogger     eventLogger;
     private final CoreLocalizationConstant localization;
-//    private final RunnerServiceClient      runnerServiceClient;
-    private final DtoUnmarshallerFactory   dtoUnmarshallerFactory;
     private final DialogFactory            dialogFactory;
     private final AppContext               appContext;
     private final SelectionAgent           selectionAgent;
@@ -70,16 +62,16 @@ public class RenameItemAction extends Action {
                             AnalyticsEventLogger eventLogger,
                             SelectionAgent selectionAgent,
                             CoreLocalizationConstant localization,
-//                            RunnerServiceClient runnerServiceClient,
-                            DtoUnmarshallerFactory dtoUnmarshallerFactory,
                             DialogFactory dialogFactory,
                             AppContext appContext) {
-        super(localization.renameItemActionText(), localization.renameItemActionDescription(), null, resources.rename());
+        super(Arrays.asList(PROJECT_PERSPECTIVE_ID),
+              localization.renameItemActionText(),
+              localization.renameItemActionDescription(),
+              null,
+              resources.rename());
         this.selectionAgent = selectionAgent;
         this.eventLogger = eventLogger;
         this.localization = localization;
-//        this.runnerServiceClient = runnerServiceClient;
-        this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.dialogFactory = dialogFactory;
         this.appContext = appContext;
         this.fileNameValidator = new FileNameValidator();
@@ -97,9 +89,9 @@ public class RenameItemAction extends Action {
             return;
         }
         final StorableNode selectedNode = (StorableNode)selection.getHeadElement();
-            if (selectedNode instanceof ProjectNode) {
-                dialogFactory.createMessageDialog("", localization.closeProjectBeforeRenaming(), null).show();
-            } else if (selectedNode instanceof ProjectListStructure.ProjectNode) {
+        if (selectedNode instanceof ProjectNode) {
+            dialogFactory.createMessageDialog("", localization.closeProjectBeforeRenaming(), null).show();
+        } else if (selectedNode instanceof ProjectListStructure.ProjectNode) {
                 /*checkRunningProcessesForProject(selectedNode, new AsyncCallback<Boolean>() {
                     @Override
                     public void onSuccess(Boolean hasRunningProcesses) {
@@ -116,18 +108,18 @@ public class RenameItemAction extends Action {
                         askForRenamingNode(selectedNode);
                     }
                 });*/
-            } else {
-                askForRenamingNode(selectedNode);
-            }
+        } else {
+            askForRenamingNode(selectedNode);
+        }
     }
 
     /** {@inheritDoc} */
     @Override
-    public void update(ActionEvent e) {
+    public void updatePerspective(@Nonnull ActionEvent event) {
         if ((appContext.getCurrentProject() == null && !appContext.getCurrentUser().isUserPermanent()) ||
             (appContext.getCurrentProject() != null && appContext.getCurrentProject().isReadOnly())) {
-            e.getPresentation().setVisible(true);
-            e.getPresentation().setEnabled(false);
+            event.getPresentation().setVisible(true);
+            event.getPresentation().setEnabled(false);
             return;
         }
 
@@ -137,7 +129,7 @@ public class RenameItemAction extends Action {
             enabled = selection.getFirstElement() instanceof StorableNode
                       && ((AbstractTreeNode)selection.getFirstElement()).isRenamable();
         }
-        e.getPresentation().setEnabled(enabled);
+        event.getPresentation().setEnabled(enabled);
     }
 
     private void askForRenamingNode(final StorableNode nodeToRename) {
@@ -174,7 +166,7 @@ public class RenameItemAction extends Action {
         inputDialog.show();
     }
 
-//    /**
+    //    /**
 //     * Check whether project has any running processes.
 //     *
 //     * @param projectNode

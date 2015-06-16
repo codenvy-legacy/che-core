@@ -10,26 +10,31 @@
  *******************************************************************************/
 package org.eclipse.che.ide.actions;
 
-import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
-
-import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.upload.file.UploadFilePresenter;
-import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.api.action.ActionEvent;
-import org.eclipse.che.ide.api.action.ProjectAction;
-import org.eclipse.che.ide.api.selection.Selection;
-import org.eclipse.che.ide.api.selection.SelectionAgent;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
+import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
+import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.Resources;
+import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
+import org.eclipse.che.ide.api.action.ActionEvent;
+import org.eclipse.che.ide.api.selection.Selection;
+import org.eclipse.che.ide.api.selection.SelectionAgent;
+import org.eclipse.che.ide.upload.file.UploadFilePresenter;
+
+import javax.annotation.Nonnull;
+import java.util.Arrays;
+
+import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
 
 /**
  * Upload file Action
  *
  * @author Roman Nikitenko
+ * @author Dmitry Shnurenko
  */
 @Singleton
-public class UploadFileAction extends ProjectAction {
+public class UploadFileAction extends AbstractPerspectiveAction {
 
     private final UploadFilePresenter  presenter;
     private final SelectionAgent       selectionAgent;
@@ -41,7 +46,7 @@ public class UploadFileAction extends ProjectAction {
                             SelectionAgent selectionAgent,
                             AnalyticsEventLogger eventLogger,
                             Resources resources) {
-        super(locale.uploadFileName(), locale.uploadFileDescription(), resources.uploadFile());
+        super(Arrays.asList(PROJECT_PERSPECTIVE_ID), locale.uploadFileName(), locale.uploadFileDescription(), null, resources.uploadFile());
         this.presenter = presenter;
         this.selectionAgent = selectionAgent;
         this.eventLogger = eventLogger;
@@ -56,7 +61,7 @@ public class UploadFileAction extends ProjectAction {
 
     /** {@inheritDoc} */
     @Override
-    public void updateProjectAction(ActionEvent event) {
+    public void updatePerspective(@Nonnull ActionEvent event) {
         event.getPresentation().setVisible(true);
         boolean enabled = false;
         Selection<?> selection = selectionAgent.getSelection();

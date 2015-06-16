@@ -16,6 +16,7 @@ import org.eclipse.che.ide.api.action.ActionGroup;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.action.Separator;
+import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.util.loging.Log;
 
@@ -23,7 +24,7 @@ import javax.annotation.Nonnull;
 
 /**
  * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
- * @version $Id:
+ * @author Dmitry Shnurenko
  */
 public class Utils {
 
@@ -38,44 +39,44 @@ public class Utils {
                                          PresentationFactory presentationFactory,
                                          @Nonnull String place,
                                          ActionManager actionManager,
-                                         boolean transparentOnly) {
+                                         boolean transparentOnly,
+                                         PerspectiveManager perspectiveManager) {
         Presentation presentation = presentationFactory.getPresentation(group);
-        ActionEvent e = new ActionEvent(
-                place,
-                presentation,
-                actionManager,
-                0
-        );
-        if (!doUpdate(group, e, presentation)) return;
+        ActionEvent event = new ActionEvent(place, presentation, actionManager, perspectiveManager);
 
-        if (!presentation.isVisible()) { // don't process invisible groups
+        if (!presentation.isVisible()) {
             return;
         }
-        Action[] children = group.getChildren(e);
-        for (int i = 0; i < children.length; i++) {
-            Action child = children[i];
+
+        Action[] children = group.getChildren(event);
+
+        for (Action child : children) {
             if (child == null) {
                 String groupId = actionManager.getId(group);
-                Log.error(Utils.class, "action is null: i=" + i + " group=" + group + " group id=" + groupId);
+                Log.error(Utils.class, "action is null: group=" + group + " group id=" + groupId);
                 continue;
             }
 
             presentation = presentationFactory.getPresentation(child);
-            ActionEvent e1 = new ActionEvent(place, presentation, actionManager, 0);
-//            e1.setInjectedContext(child.isInInjectedContext());
+            ActionEvent e1 = new ActionEvent(place, presentation, actionManager, perspectiveManager);
 
             if (transparentOnly && child.isTransparentUpdate() || !transparentOnly) {
-                if (!doUpdate(child, e1, presentation)) continue;
+                if (!doUpdate(child, e1)) continue;
             }
 
             if (!presentation.isVisible()) { // don't create invisible items in the menu
                 continue;
             }
+
             if (child instanceof ActionGroup) {
                 ActionGroup actionGroup = (ActionGroup)child;
                 if (actionGroup.isPopup()) { // popup menu has its own presentation
                     if (actionGroup.disableIfNoVisibleChildren()) {
-                        final boolean visibleChildren = hasVisibleChildren(actionGroup, presentationFactory, actionManager, place);
+                        final boolean visibleChildren = hasVisibleChildren(actionGroup,
+                                                                           presentationFactory,
+                                                                           actionManager,
+                                                                           place,
+                                                                           perspectiveManager);
                         if (actionGroup.hideIfNoVisibleChildren() && !visibleChildren) {
                             continue;
                         }
@@ -84,7 +85,7 @@ public class Utils {
 
                     list.add(child);
                 } else {
-                    expandActionGroup((ActionGroup)child, list, presentationFactory, place, actionManager);
+                    expandActionGroup((ActionGroup)child, list, presentationFactory, place, actionManager, perspectiveManager);
                 }
             } else if (child instanceof Separator) {
                 if (!list.isEmpty() && !(list.get(list.size() - 1) instanceof Separator)) {
@@ -107,36 +108,24 @@ public class Utils {
                                          Array<Action> list,
                                          PresentationFactory presentationFactory,
                                          String place,
-                                         ActionManager actionManager) {
-        expandActionGroup(group, list, presentationFactory, place, actionManager, false);
+                                         ActionManager actionManager,
+                                         PerspectiveManager perspectiveManager) {
+        expandActionGroup(group, list, presentationFactory, place, actionManager, false, perspectiveManager);
     }
 
     // returns false if exception was thrown and handled
-    private static boolean doUpdate(final Action action, final ActionEvent e, final Presentation presentation) {
-//        if (ApplicationManager.getApplication().isDisposed()) return false;
-
-//        long startTime = System.currentTimeMillis();
+    private static boolean doUpdate(final Action action, final ActionEvent event) {
         final boolean result = true;
-//        try {
-//            result = !ActionUtil.performDumbAwareUpdate(action, e, false);
-//        }
-//        catch (ProcessCanceledException ex) {
-//            throw ex;
-//        }
-//        catch (Throwable exc) {
-//            handleUpdateException(action, presentation, exc);
-//            return false;
-//        }
-        action.update(e);
-//        long endTime = System.currentTimeMillis();
-//        if (endTime - startTime > 10) {
-//            Log.debug(Utils.class, "Action " + action + ": updated in " + (endTime-startTime) + " ms");
-//        }
+        action.update(event);
         return result;
     }
 
-    public static boolean hasVisibleChildren(ActionGroup group, PresentationFactory factory, ActionManager actionManager, String place) {
-        ActionEvent event = new ActionEvent(place, factory.getPresentation(group), actionManager, 0);
+    public static boolean hasVisibleChildren(ActionGroup group,
+                                             PresentationFactory factory,
+                                             ActionManager actionManager,
+                                             String place,
+                                             PerspectiveManager perspectiveManager) {
+        ActionEvent event = new ActionEvent(place, factory.getPresentation(group), actionManager, perspectiveManager);
 //        event.setInjectedContext(group.isInInjectedContext());
         for (Action anAction : group.getChildren(event)) {
             if (anAction == null) {
@@ -146,13 +135,9 @@ public class Utils {
             if (anAction instanceof Separator) {
                 continue;
             }
-//            final Project project = PlatformDataKeys.PROJECT.getData(context);
-//            if (project != null && DumbService.getInstance(project).isDumb() && !anAction.isDumbAware()) {
-//                continue;
-//            }
 
             final Presentation presentation = factory.getPresentation(anAction);
-            updateGroupChild(place, anAction, presentation, actionManager);
+            updateGroupChild(place, anAction, presentation, actionManager, perspectiveManager);
             if (anAction instanceof ActionGroup) {
                 ActionGroup childGroup = (ActionGroup)anAction;
 
@@ -163,7 +148,7 @@ public class Utils {
                     }
                 }
 
-                if (hasVisibleChildren(childGroup, factory, actionManager, place)) {
+                if (hasVisibleChildren(childGroup, factory, actionManager, place, perspectiveManager)) {
                     return true;
                 }
             } else if (presentation.isVisible()) {
@@ -174,9 +159,12 @@ public class Utils {
         return false;
     }
 
-    public static void updateGroupChild(String place, Action anAction, final Presentation presentation, ActionManager actionManager) {
-        ActionEvent event1 = new ActionEvent(place, presentation, actionManager, 0);
-//        event1.setInjectedContext(anAction.isInInjectedContext());
-        doUpdate(anAction, event1, presentation);
+    public static void updateGroupChild(String place,
+                                        Action anAction,
+                                        final Presentation presentation,
+                                        ActionManager actionManager,
+                                        PerspectiveManager perspectiveManager) {
+        ActionEvent event1 = new ActionEvent(place, presentation, actionManager, perspectiveManager);
+        doUpdate(anAction, event1);
     }
 }

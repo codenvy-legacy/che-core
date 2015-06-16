@@ -13,6 +13,7 @@ package org.eclipse.che.ide.menu;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 import org.eclipse.che.ide.api.action.Action;
@@ -25,6 +26,7 @@ import org.eclipse.che.ide.api.action.DefaultActionGroup;
 import org.eclipse.che.ide.api.action.IdeActions;
 import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
+import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.eclipse.che.ide.ui.toolbar.CloseMenuHandler;
 import org.eclipse.che.ide.ui.toolbar.MenuLockLayer;
 import org.eclipse.che.ide.ui.toolbar.PopupMenu;
@@ -36,6 +38,7 @@ import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
  * Also this manager filters the list of actions and displays only actions that are belong to Main Context menu group.
  *
  * @author Vitaliy Guliy
+ * @author Dmitry Shnurenko
  */
 @Singleton
 public class ContextMenu implements CloseMenuHandler, ActionSelectedHandler {
@@ -43,24 +46,20 @@ public class ContextMenu implements CloseMenuHandler, ActionSelectedHandler {
     private final ActionManager   actionManager;
     private final KeyBindingAgent keyBindingAgent;
 
-    private final PresentationFactory presentationFactory;
-    private final DefaultActionGroup  actions;
+    private final PresentationFactory          presentationFactory;
+    private final DefaultActionGroup           actions;
+    private final Provider<PerspectiveManager> managerProvider;
 
     private PopupMenu     popupMenu;
     private MenuLockLayer lockLayer;
 
     private static final String place = ActionPlaces.MAIN_CONTEXT_MENU;
 
-    /**
-     * Creates an instance of this ContextMenu manager.
-     *
-     * @param actionManager
-     * @param keyBindingAgent
-     */
     @Inject
-    public ContextMenu(ActionManager actionManager, KeyBindingAgent keyBindingAgent) {
+    public ContextMenu(ActionManager actionManager, KeyBindingAgent keyBindingAgent, Provider<PerspectiveManager> managerProvider) {
         this.actionManager = actionManager;
         this.keyBindingAgent = keyBindingAgent;
+        this.managerProvider = managerProvider;
 
         presentationFactory = new PresentationFactory();
         actions = new DefaultActionGroup(actionManager);
@@ -96,8 +95,15 @@ public class ContextMenu implements CloseMenuHandler, ActionSelectedHandler {
         updateActions();
 
         lockLayer = new MenuLockLayer(this);
-        popupMenu =
-                new PopupMenu(actions, actionManager, place, presentationFactory, lockLayer, this, keyBindingAgent, "contextMenu");
+        popupMenu = new PopupMenu(actions,
+                                  actionManager,
+                                  managerProvider,
+                                  place,
+                                  presentationFactory,
+                                  lockLayer,
+                                  this,
+                                  keyBindingAgent,
+                                  "contextMenu");
         lockLayer.add(popupMenu);
 
         popupMenu.getElement().getStyle().setTop(y, com.google.gwt.dom.client.Style.Unit.PX);
@@ -118,7 +124,7 @@ public class ContextMenu implements CloseMenuHandler, ActionSelectedHandler {
         final Action[] children = mainActionGroup.getChildren(null);
         for (final Action action : children) {
             final Presentation presentation = presentationFactory.getPresentation(action);
-            final ActionEvent e = new ActionEvent(ActionPlaces.MAIN_CONTEXT_MENU, presentation, actionManager, 0);
+            final ActionEvent e = new ActionEvent(ActionPlaces.MAIN_CONTEXT_MENU, presentation, actionManager, managerProvider.get());
 
             action.update(e);
             if (presentation.isVisible()) {

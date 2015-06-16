@@ -12,6 +12,7 @@ package org.eclipse.che.ide.ui.dropdown;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
@@ -22,6 +23,7 @@ import org.eclipse.che.ide.api.action.ActionSelectedHandler;
 import org.eclipse.che.ide.api.action.DefaultActionGroup;
 import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
+import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.eclipse.che.ide.ui.toolbar.MenuLockLayer;
 import org.eclipse.che.ide.ui.toolbar.PopupMenu;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
@@ -34,22 +36,25 @@ import static com.google.gwt.dom.client.Style.Unit.PX;
  * Class describes the popup window which contains all elements of list.
  *
  * @author Valeriy Svydenko
+ * @author Dmitry Shnurenko
  */
 public class DropDownListMenu implements ActionSelectedHandler {
     private static final String place = ActionPlaces.DROPDOWN_MENU;
 
-    private final ActionManager       actionManager;
-    private final KeyBindingAgent     keyBindingAgent;
-    private final PresentationFactory presentationFactory;
-    private final DefaultActionGroup  actions;
+    private final ActionManager                actionManager;
+    private final KeyBindingAgent              keyBindingAgent;
+    private final PresentationFactory          presentationFactory;
+    private final DefaultActionGroup           actions;
+    private final Provider<PerspectiveManager> managerProvider;
 
     private PopupMenu     popupMenu;
     private MenuLockLayer lockLayer;
 
     @Inject
-    public DropDownListMenu(ActionManager actionManager, KeyBindingAgent keyBindingAgent) {
+    public DropDownListMenu(ActionManager actionManager, KeyBindingAgent keyBindingAgent, Provider<PerspectiveManager> managerProvider) {
         this.actionManager = actionManager;
         this.keyBindingAgent = keyBindingAgent;
+        this.managerProvider = managerProvider;
 
         presentationFactory = new PresentationFactory();
         actions = new DefaultActionGroup(actionManager);
@@ -76,8 +81,15 @@ public class DropDownListMenu implements ActionSelectedHandler {
         updateActions(itemIdPrefix);
 
         lockLayer = new MenuLockLayer();
-        popupMenu =
-                new PopupMenu(actions, actionManager, place, presentationFactory, lockLayer, this, keyBindingAgent, itemIdPrefix);
+        popupMenu = new PopupMenu(actions,
+                                  actionManager,
+                                  managerProvider,
+                                  place,
+                                  presentationFactory,
+                                  lockLayer,
+                                  this,
+                                  keyBindingAgent,
+                                  itemIdPrefix);
         popupMenu.getElement().getStyle().setOpacity(0);
         lockLayer.add(popupMenu);
 
@@ -114,7 +126,7 @@ public class DropDownListMenu implements ActionSelectedHandler {
         Action[] children = mainActionGroup.getChildren(null);
         for (Action action : children) {
             Presentation presentation = presentationFactory.getPresentation(action);
-            ActionEvent e = new ActionEvent(ActionPlaces.DROPDOWN_MENU, presentation, actionManager, 0);
+            ActionEvent e = new ActionEvent(ActionPlaces.DROPDOWN_MENU, presentation, actionManager, managerProvider.get());
 
             action.update(e);
             if (presentation.isVisible()) {

@@ -10,24 +10,31 @@
  *******************************************************************************/
 package org.eclipse.che.ide.actions;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.Resources;
+import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
 import org.eclipse.che.ide.api.action.ActionEvent;
-import org.eclipse.che.ide.api.action.ProjectAction;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.upload.folder.UploadFolderFromZipPresenter;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
+
+import javax.annotation.Nonnull;
+import java.util.Arrays;
+
+import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
 
 /**
  * Upload folder from zip Action
  *
  * @author Roman Nikitenko
+ * @author Dmitry Shnurenko
  */
 @Singleton
-public class UploadFolderFromZipAction extends ProjectAction {
+public class UploadFolderFromZipAction extends AbstractPerspectiveAction {
 
     private final UploadFolderFromZipPresenter presenter;
     private final SelectionAgent               selectionAgent;
@@ -39,7 +46,11 @@ public class UploadFolderFromZipAction extends ProjectAction {
                                      SelectionAgent selectionAgent,
                                      AnalyticsEventLogger eventLogger,
                                      Resources resources) {
-        super(locale.uploadFolderFromZipName(), locale.uploadFolderFromZipDescription(), resources.uploadFile());
+        super(Arrays.asList(PROJECT_PERSPECTIVE_ID),
+              locale.uploadFolderFromZipName(),
+              locale.uploadFolderFromZipDescription(),
+              null,
+              resources.uploadFile());
         this.presenter = presenter;
         this.selectionAgent = selectionAgent;
         this.eventLogger = eventLogger;
@@ -54,7 +65,7 @@ public class UploadFolderFromZipAction extends ProjectAction {
 
     /** {@inheritDoc} */
     @Override
-    public void updateProjectAction(ActionEvent event) {
+    public void updatePerspective(@Nonnull ActionEvent event) {
         event.getPresentation().setVisible(true);
         boolean enabled = false;
         Selection<?> selection = selectionAgent.getSelection();

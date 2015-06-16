@@ -10,22 +10,29 @@
  *******************************************************************************/
 package org.eclipse.che.ide.actions;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.api.action.Action;
+import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.navigation.NavigateToFilePresenter;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
+
+import javax.annotation.Nonnull;
+import java.util.Arrays;
+
+import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
 
 /**
  * Action for finding file by name and opening it.
  *
  * @author Ann Shumilova
+ * @author Dmitry Shnurenko
  */
 @Singleton
-public class NavigateToFileAction extends Action {
+public class NavigateToFileAction extends AbstractPerspectiveAction {
 
     private final NavigateToFilePresenter presenter;
     private final AppContext              appContext;
@@ -35,7 +42,7 @@ public class NavigateToFileAction extends Action {
     public NavigateToFileAction(NavigateToFilePresenter presenter,
                                 AppContext appContext,
                                 AnalyticsEventLogger eventLogger, Resources resources) {
-        super("Navigate to File", "Navigate to file", null, resources.navigateToFile());
+        super(Arrays.asList(PROJECT_PERSPECTIVE_ID), "Navigate to File", "Navigate to file", null, resources.navigateToFile());
         this.presenter = presenter;
         this.appContext = appContext;
         this.eventLogger = eventLogger;
@@ -51,7 +58,7 @@ public class NavigateToFileAction extends Action {
 
     /** {@inheritDoc} */
     @Override
-    public void update(ActionEvent e) {
-        e.getPresentation().setEnabled(appContext.getCurrentProject() != null);
+    public void updatePerspective(@Nonnull ActionEvent event) {
+        event.getPresentation().setEnabled(appContext.getCurrentProject() != null);
     }
 }

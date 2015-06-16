@@ -11,7 +11,6 @@
 package org.eclipse.che.ide.api.action;
 
 
-import org.eclipse.che.ide.util.StringUtils;
 import com.google.gwt.resources.client.ImageResource;
 
 import org.vectomatic.dom.svg.ui.SVGResource;
@@ -27,10 +26,10 @@ import org.vectomatic.dom.svg.ui.SVGResource;
  * The same action can have various presentations.
  *
  * @author Evgen Vidolob
+ * @author Dmitry Shnurenko
  */
 public abstract class Action {
     private Presentation myTemplatePresentation;
-    private boolean      myEnabledInModalContext;
 
     /** Creates a new action with its text, description and icon set to <code>null</code>. */
     public Action() {
@@ -104,41 +103,11 @@ public abstract class Action {
      *         Action's SVG icon
      */
     public Action(String text, String description, ImageResource icon, SVGResource svgIcon) {
-        myEnabledInModalContext = false;
         Presentation presentation = getTemplatePresentation();
         presentation.setText(text);
         presentation.setDescription(description);
         presentation.setIcon(icon);
         presentation.setSVGIcon(svgIcon);
-    }
-
-    /**
-     * Copies template presentation and shortcuts set from <code>sourceAction</code>.
-     *
-     * @param sourceAction
-     *         cannot be <code>null</code>
-     */
-    public final void copyFrom(Action sourceAction) {
-        Presentation sourcePresentation = sourceAction.getTemplatePresentation();
-        Presentation presentation = getTemplatePresentation();
-        presentation.setIcon(sourcePresentation.getIcon());
-        presentation.setSVGIcon(sourcePresentation.getSVGIcon());
-        presentation.setText(sourcePresentation.getTextWithMnemonic());
-        presentation.setDescription(sourcePresentation.getDescription());
-    }
-
-
-    public final boolean isEnabledInModalContext() {
-        return myEnabledInModalContext;
-    }
-
-    protected final void setEnabledInModalContext(boolean enabledInModalContext) {
-        myEnabledInModalContext = enabledInModalContext;
-    }
-
-    /** Override with true returned if your action has to display its text along with the icon when placed in the toolbar */
-    public boolean displayTextInToolbar() {
-        return false;
     }
 
     /**
@@ -158,21 +127,6 @@ public abstract class Action {
      *         Carries information on the invocation place and data available
      */
     public void update(ActionEvent e) {
-    }
-
-    /**
-     * Same as {@link #update(ActionEvent)} but is calls immediately before actionPerformed() as final check guard.
-     * Default implementation delegates to {@link #update(ActionEvent)}.
-     *
-     * @param e
-     *         Carries information on the invocation place and data available
-     */
-    public void beforeActionPerformedUpdate(ActionEvent e) {
-        update(e);
-        if (!e.getPresentation().isEnabled()) {
-            e.setInjectedContext(false);
-            update(e);
-        }
     }
 
     /**
@@ -196,20 +150,6 @@ public abstract class Action {
      *         Carries information on the invocation place
      */
     public abstract void actionPerformed(ActionEvent e);
-
-    public static String createTooltipText(String s, Action action) {
-        String toolTipText = s == null ? "" : s;
-        while (StringUtils.endsWithChar(toolTipText, '.')) {
-            toolTipText = toolTipText.substring(0, toolTipText.length() - 1);
-        }
-        //TODO add shortcuts to tooltip text
-        String shortcutsText = ""; //KeyMapUtil.getShortcutText(action.getShortcut());
-        if (!shortcutsText.isEmpty()) {
-            toolTipText += " (" + shortcutsText + ")";
-        }
-        return toolTipText;
-    }
-
 
     public boolean isTransparentUpdate() {
         return this instanceof TransparentUpdate;

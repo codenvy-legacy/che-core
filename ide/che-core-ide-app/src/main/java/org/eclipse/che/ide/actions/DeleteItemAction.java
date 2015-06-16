@@ -10,28 +10,34 @@
  *******************************************************************************/
 package org.eclipse.che.ide.actions;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.api.action.Action;
+import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.part.projectexplorer.DeleteNodeHandler;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 
+import javax.annotation.Nonnull;
+import java.util.Arrays;
 import java.util.List;
+
+import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
 
 /**
  * Action for deleting an item which is selected in 'Project Explorer'.
  *
  * @author Artem Zatsarynnyy
+ * @author Dmitry Shnurenko
  */
 @Singleton
-public class DeleteItemAction extends Action {
+public class DeleteItemAction extends AbstractPerspectiveAction {
     private final AnalyticsEventLogger eventLogger;
     private       SelectionAgent       selectionAgent;
     private       DeleteNodeHandler    deleteNodeHandler;
@@ -42,7 +48,11 @@ public class DeleteItemAction extends Action {
                             AnalyticsEventLogger eventLogger,
                             SelectionAgent selectionAgent,
                             DeleteNodeHandler deleteNodeHandler, CoreLocalizationConstant localization, AppContext appContext) {
-        super(localization.deleteItemActionText(), localization.deleteItemActionDescription(), null, resources.delete());
+        super(Arrays.asList(PROJECT_PERSPECTIVE_ID),
+              localization.deleteItemActionText(),
+              localization.deleteItemActionDescription(),
+              null,
+              resources.delete());
         this.selectionAgent = selectionAgent;
         this.eventLogger = eventLogger;
         this.deleteNodeHandler = deleteNodeHandler;
@@ -66,11 +76,11 @@ public class DeleteItemAction extends Action {
 
     /** {@inheritDoc} */
     @Override
-    public void update(ActionEvent e) {
+    public void updatePerspective(@Nonnull ActionEvent event) {
         if ((appContext.getCurrentProject() == null && !appContext.getCurrentUser().isUserPermanent()) ||
             (appContext.getCurrentProject() != null && appContext.getCurrentProject().isReadOnly())) {
-            e.getPresentation().setVisible(true);
-            e.getPresentation().setEnabled(false);
+            event.getPresentation().setVisible(true);
+            event.getPresentation().setEnabled(false);
             return;
         }
 
@@ -79,6 +89,6 @@ public class DeleteItemAction extends Action {
         if (selection != null && selection.getFirstElement() instanceof StorableNode) {
             isEnabled = ((StorableNode)selection.getFirstElement()).isDeletable();
         }
-        e.getPresentation().setEnabled(isEnabled);
+        event.getPresentation().setEnabled(isEnabled);
     }
 }

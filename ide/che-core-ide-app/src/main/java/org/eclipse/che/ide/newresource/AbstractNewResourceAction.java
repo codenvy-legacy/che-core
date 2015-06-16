@@ -10,13 +10,17 @@
  *******************************************************************************/
 package org.eclipse.che.ide.newresource;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.inject.Inject;
+import com.google.web.bindery.event.shared.EventBus;
+
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
-import org.eclipse.che.ide.api.action.ProjectAction;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.editor.EditorAgent;
@@ -37,15 +41,14 @@ import org.eclipse.che.ide.ui.dialogs.input.InputDialog;
 import org.eclipse.che.ide.ui.dialogs.input.InputValidator;
 import org.eclipse.che.ide.util.NameUtils;
 import org.eclipse.che.ide.util.loging.Log;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.inject.Inject;
-import com.google.web.bindery.event.shared.EventBus;
-
 import org.vectomatic.dom.svg.ui.SVGResource;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Arrays;
 
 import static org.eclipse.che.ide.api.event.ItemEvent.ItemOperation.CREATED;
+import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
 
 /**
  * Implementation of an {@link Action} that provides an ability to create new resource (e.g. file, folder).
@@ -53,8 +56,9 @@ import static org.eclipse.che.ide.api.event.ItemEvent.ItemOperation.CREATED;
  * and then creates resource in the selected folder.
  *
  * @author Artem Zatsarynnyy
+ * @author Dmitry Shnurenko
  */
-public abstract class AbstractNewResourceAction extends ProjectAction {
+public abstract class AbstractNewResourceAction extends AbstractPerspectiveAction {
     protected final InputValidator           fileNameValidator;
     protected final InputValidator           folderNameValidator;
     protected final String                   title;
@@ -79,7 +83,7 @@ public abstract class AbstractNewResourceAction extends ProjectAction {
      *         action's SVG icon
      */
     public AbstractNewResourceAction(String title, String description, @Nullable SVGResource svgIcon) {
-        super(title, description, svgIcon);
+        super(Arrays.asList(PROJECT_PERSPECTIVE_ID), title, description, null, svgIcon);
         fileNameValidator = new FileNameValidator();
         folderNameValidator = new FolderNameValidator();
         this.title = title;
@@ -148,8 +152,8 @@ public abstract class AbstractNewResourceAction extends ProjectAction {
     }
 
     @Override
-    public void updateProjectAction(ActionEvent e) {
-        e.getPresentation().setEnabled(getNewResourceParent() != null);
+    public void updatePerspective(@Nonnull ActionEvent event) {
+        event.getPresentation().setEnabled(getNewResourceParent() != null);
     }
 
     /**

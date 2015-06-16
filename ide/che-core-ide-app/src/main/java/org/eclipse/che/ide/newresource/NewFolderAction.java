@@ -10,11 +10,13 @@
  *******************************************************************************/
 package org.eclipse.che.ide.newresource;
 
-import org.eclipse.che.api.project.shared.dto.ItemReference;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
+import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.Resources;
-
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.event.ItemEvent;
@@ -27,9 +29,7 @@ import org.eclipse.che.ide.ui.dialogs.InputCallback;
 import org.eclipse.che.ide.ui.dialogs.input.InputDialog;
 import org.eclipse.che.ide.util.loging.Log;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
+import javax.annotation.Nonnull;
 
 import static org.eclipse.che.ide.api.event.ItemEvent.ItemOperation.CREATED;
 
@@ -103,8 +103,8 @@ public class NewFolderAction extends AbstractNewResourceAction {
     }
 
     @Override
-    public void updateProjectAction(ActionEvent e) {
+    public void updatePerspective(@Nonnull ActionEvent event) {
         final StorableNode parent = getNewResourceParent();
-        e.getPresentation().setEnabledAndVisible(parent != null && parent.canContainsFolder());
+        event.getPresentation().setEnabledAndVisible(parent != null && parent.canContainsFolder());
     }
 }
