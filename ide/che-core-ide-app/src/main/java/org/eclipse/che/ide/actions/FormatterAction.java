@@ -67,7 +67,7 @@ public class FormatterAction extends AbstractPerspectiveAction {
     }
 
     @Override
-    public void updatePerspective(@Nonnull ActionEvent event) {
+    public void updateInPerspective(@Nonnull ActionEvent event) {
         final EditorPartPresenter editor = editorAgent.getActiveEditor();
         boolean isCanDoOperation = false;
 

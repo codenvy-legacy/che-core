@@ -80,7 +80,7 @@ public class DownloadProjectAsZipAction extends AbstractPerspectiveAction {
 
     /** {@inheritDoc} */
     @Override
-    public void updatePerspective(@Nonnull ActionEvent event) {
+    public void updateInPerspective(@Nonnull ActionEvent event) {
         Selection<?> selection = selectionAgent.getSelection();
 
         boolean enabled = appContext.getCurrentProject() != null ||

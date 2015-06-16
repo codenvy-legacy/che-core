@@ -61,7 +61,7 @@ public class UploadFileAction extends AbstractPerspectiveAction {
 
     /** {@inheritDoc} */
     @Override
-    public void updatePerspective(@Nonnull ActionEvent event) {
+    public void updateInPerspective(@Nonnull ActionEvent event) {
         event.getPresentation().setVisible(true);
         boolean enabled = false;
         Selection<?> selection = selectionAgent.getSelection();

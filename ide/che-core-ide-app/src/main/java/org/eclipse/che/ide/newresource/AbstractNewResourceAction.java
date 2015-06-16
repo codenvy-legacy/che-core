@@ -152,7 +152,7 @@ public abstract class AbstractNewResourceAction extends AbstractPerspectiveActio
     }
 
     @Override
-    public void updatePerspective(@Nonnull ActionEvent event) {
+    public void updateInPerspective(@Nonnull ActionEvent event) {
         event.getPresentation().setEnabled(getNewResourceParent() != null);
     }
 

@@ -103,7 +103,7 @@ public class NewFolderAction extends AbstractNewResourceAction {
     }
 
     @Override
-    public void updatePerspective(@Nonnull ActionEvent event) {
+    public void updateInPerspective(@Nonnull ActionEvent event) {
         final StorableNode parent = getNewResourceParent();
         event.getPresentation().setEnabledAndVisible(parent != null && parent.canContainsFolder());
     }

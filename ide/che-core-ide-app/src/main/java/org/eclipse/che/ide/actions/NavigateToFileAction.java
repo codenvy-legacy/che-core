@@ -58,7 +58,7 @@ public class NavigateToFileAction extends AbstractPerspectiveAction {
 
     /** {@inheritDoc} */
     @Override
-    public void updatePerspective(@Nonnull ActionEvent event) {
+    public void updateInPerspective(@Nonnull ActionEvent event) {
         event.getPresentation().setEnabled(appContext.getCurrentProject() != null);
     }
 }

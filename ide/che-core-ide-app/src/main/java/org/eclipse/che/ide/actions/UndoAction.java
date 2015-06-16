@@ -63,7 +63,7 @@ public class UndoAction extends AbstractPerspectiveAction {
     }
 
     @Override
-    public void updatePerspective(@Nonnull ActionEvent event) {
+    public void updateInPerspective(@Nonnull ActionEvent event) {
         EditorPartPresenter activeEditor = editorAgent.getActiveEditor();
 
         boolean mustEnable = false;

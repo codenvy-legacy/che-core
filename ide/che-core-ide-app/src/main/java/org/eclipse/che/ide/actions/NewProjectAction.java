@@ -51,7 +51,7 @@ public class NewProjectAction extends AbstractPerspectiveAction {
     }
 
     @Override
-    public void updatePerspective(@Nonnull ActionEvent event) {
+    public void updateInPerspective(@Nonnull ActionEvent event) {
         if (appContext.getCurrentProject() == null) {
             event.getPresentation().setEnabled(appContext.getCurrentUser().isUserPermanent());
         } else {

@@ -48,7 +48,7 @@ public class OpenProjectAction extends AbstractPerspectiveAction {
     }
 
     @Override
-    public void updatePerspective(@Nonnull ActionEvent event) {
+    public void updateInPerspective(@Nonnull ActionEvent event) {
         //to do nothing
     }
 }

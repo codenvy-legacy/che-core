@@ -50,7 +50,7 @@ public class CloseProjectAction extends AbstractPerspectiveAction {
 
     /** {@inheritDoc} */
     @Override
-    public void updatePerspective(@Nonnull ActionEvent event) {
+    public void updateInPerspective(@Nonnull ActionEvent event) {
         event.getPresentation().setVisible(appContext.getCurrentProject() != null);
     }
 

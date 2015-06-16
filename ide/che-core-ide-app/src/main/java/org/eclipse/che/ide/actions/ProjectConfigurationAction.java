@@ -67,7 +67,7 @@ public class ProjectConfigurationAction extends AbstractPerspectiveAction {
     }
 
     @Override
-    public void updatePerspective(@Nonnull ActionEvent event) {
+    public void updateInPerspective(@Nonnull ActionEvent event) {
         event.getPresentation().setEnabledAndVisible(true);
     }
 }

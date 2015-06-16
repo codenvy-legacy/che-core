@@ -50,7 +50,7 @@ public abstract class AbstractPerspectiveAction extends Action {
         presentation.setEnabledAndVisible(isActivePerspective);
 
         if (isActivePerspective) {
-            updatePerspective(event);
+            updateInPerspective(event);
         }
     }
 
@@ -60,5 +60,5 @@ public abstract class AbstractPerspectiveAction extends Action {
      * @param event
      *         update action
      */
-    public abstract void updatePerspective(@Nonnull ActionEvent event);
+    public abstract void updateInPerspective(@Nonnull ActionEvent event);
 }

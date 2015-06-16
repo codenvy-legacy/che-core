@@ -115,7 +115,7 @@ public class RenameItemAction extends AbstractPerspectiveAction {
 
     /** {@inheritDoc} */
     @Override
-    public void updatePerspective(@Nonnull ActionEvent event) {
+    public void updateInPerspective(@Nonnull ActionEvent event) {
         if ((appContext.getCurrentProject() == null && !appContext.getCurrentUser().isUserPermanent()) ||
             (appContext.getCurrentProject() != null && appContext.getCurrentProject().isReadOnly())) {
             event.getPresentation().setVisible(true);

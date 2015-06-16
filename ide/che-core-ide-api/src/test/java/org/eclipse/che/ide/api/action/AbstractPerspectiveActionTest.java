@@ -72,7 +72,7 @@ public class AbstractPerspectiveActionTest {
         }
 
         @Override
-        public void updatePerspective(@Nonnull ActionEvent event) {
+        public void updateInPerspective(@Nonnull ActionEvent event) {
             throw new NotSupportedException("Method isn't supported in current mode...");
         }
 
