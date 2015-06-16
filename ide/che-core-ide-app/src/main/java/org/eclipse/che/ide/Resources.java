@@ -156,15 +156,6 @@ public interface Resources extends Tree.Resources,
     @Source("actions/delete.svg")
     SVGResource delete();
 
-    @Source("actions/cut.svg")
-    SVGResource cut();
-
-    @Source("actions/copy.svg")
-    SVGResource copy();
-
-    @Source("actions/paste.svg")
-    SVGResource paste();
-
     @Source("actions/new-resource.svg")
     SVGResource newResource();
 
