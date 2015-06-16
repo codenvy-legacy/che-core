@@ -90,6 +90,26 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("action.delete.description")
     String deleteItemActionDescription();
 
+    /* Cut */
+    @Key("action.cut.text")
+    String cutItemsActionText();
+    @Key("action.cut.description")
+    String cutItemsActionDescription();
+
+    /* Copy */
+    @Key("action.copy.text")
+    String copyItemsActionText();
+    @Key("action.copy.description")
+    String copyItemsActionDescription();
+
+    /* Paste */
+    @Key("action.paste.text")
+    String pasteItemsActionText();
+    @Key("action.paste.description")
+    String pasteItemsActionDescription();
+
+    /* */
+
     @Key("deleteNodeDialogTitle")
     String deleteNodeDialogTitle();
 
