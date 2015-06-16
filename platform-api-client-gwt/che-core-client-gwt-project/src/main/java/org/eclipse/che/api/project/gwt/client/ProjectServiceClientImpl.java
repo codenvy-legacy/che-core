@@ -13,9 +13,11 @@ package org.eclipse.che.api.project.gwt.client;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
+import org.eclipse.che.api.project.shared.dto.CopyOptions;
 import org.eclipse.che.api.project.shared.dto.ImportProject;
 import org.eclipse.che.api.project.shared.dto.ImportResponse;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
+import org.eclipse.che.api.project.shared.dto.MoveOptions;
 import org.eclipse.che.api.project.shared.dto.NewProject;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
@@ -24,6 +26,7 @@ import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentTree;
 import org.eclipse.che.api.project.shared.dto.TreeElement;
 import org.eclipse.che.ide.MimeType;
 import org.eclipse.che.ide.collections.Array;
+import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
@@ -63,14 +66,18 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     private final String              ESTIMATE;
     private final AsyncRequestLoader  loader;
     private final AsyncRequestFactory asyncRequestFactory;
+    private final DtoFactory          dtoFactory;
 
     @Inject
     protected ProjectServiceClientImpl(@RestContext String restContext,
                                        @Named("workspaceId") String workspaceId,
                                        AsyncRequestLoader loader,
-                                       AsyncRequestFactory asyncRequestFactory) {
+                                       AsyncRequestFactory asyncRequestFactory,
+                                       DtoFactory dtoFactory) {
         this.loader = loader;
         this.asyncRequestFactory = asyncRequestFactory;
+        this.dtoFactory = dtoFactory;
+
         PROJECT = restContext + "/project/" + workspaceId;
         PROJECTS_IN_SPECIFIC_WORKSPACE = restContext + "/project";
         MODULES = restContext + "/project/" + workspaceId + "/modules";
@@ -265,18 +272,26 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void copy(String path, String newParentPath, String newName, AsyncRequestCallback<Void> callback) {
-        final String requestUrl = COPY + normalizePath(path) + "?to=" + newParentPath +
-                (newName != null ? "&name=" + newName : "");
-        asyncRequestFactory.createPostRequest(requestUrl, null)
+        final String requestUrl = COPY + normalizePath(path) + "?to=" + newParentPath;
+
+        final CopyOptions copyOptions = dtoFactory.createDto(CopyOptions.class);
+        copyOptions.setName(newName);
+        copyOptions.setOverWrite(false);
+
+        asyncRequestFactory.createPostRequest(requestUrl, copyOptions)
                 .loader(loader, "Copying item...")
                 .send(callback);
     }
 
     @Override
     public void move(String path, String newParentPath, String newName, AsyncRequestCallback<Void> callback) {
-        final String requestUrl = MOVE + normalizePath(path) + "?to=" + newParentPath +
-                (newName != null ? "&name=" + newName : "");
-        asyncRequestFactory.createPostRequest(requestUrl, null)
+        final String requestUrl = MOVE + normalizePath(path) + "?to=" + newParentPath;
+
+        final MoveOptions moveOptions = dtoFactory.createDto(MoveOptions.class);
+        moveOptions.setName(newName);
+        moveOptions.setOverWrite(false);
+
+        asyncRequestFactory.createPostRequest(requestUrl, moveOptions)
                            .loader(loader, "Moving item...")
                            .send(callback);
     }
