@@ -19,34 +19,39 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.InlineLabel;
+import com.google.inject.Provider;
 
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionGroup;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.ActionSelectedHandler;
+import org.eclipse.che.ide.api.action.Presentation;
+import org.eclipse.che.ide.api.action.PropertyChangeEvent;
+import org.eclipse.che.ide.api.action.PropertyChangeListener;
 import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
-import org.eclipse.che.ide.util.loging.Log;
+import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import java.util.Deque;
-import java.util.Stack;
-
 /**
- * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
- * @version $Id:
+ * @author Evgen Vidolob
+ * @author Dmitry Shnurenko
  */
 public class ActionPopupButton extends Composite implements CloseMenuHandler, ActionSelectedHandler {
 
     private static final ToolbarResources.Css css = Toolbar.RESOURCES.toolbar();
-    private final ActionGroup         action;
-    private final ActionManager       actionManager;
-    private final Element             tooltip;
-    private final Element             tooltipBody;
-    private final Element             tooltipArrow;
-    private       KeyBindingAgent     keyBindingAgent;
-    private       PresentationFactory presentationFactory;
-    private final String              place;
+    private final ActionGroup                  action;
+    private final ActionManager                actionManager;
+    private final Provider<PerspectiveManager> managerProvider;
+    private final Element                      tooltip;
+    private final Element                      tooltipBody;
+    private final Element                      tooltipArrow;
+    private final Presentation                 presentation;
+    private final String                       place;
+
+    private ActionButtonSynchronizer actionButtonSynchronizer;
+    private KeyBindingAgent          keyBindingAgent;
+    private PresentationFactory      presentationFactory;
 
     /** Enabled state. True as default. */
     private boolean enabled = true;
@@ -58,14 +63,20 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
     private PopupMenu     popupMenu;
 
     /** Create Popup Menu Button with specified icons for enabled and disabled states. */
-    public ActionPopupButton(final ActionGroup action, ActionManager actionManager, KeyBindingAgent keyBindingAgent,
+    public ActionPopupButton(final ActionGroup action,
+                             ActionManager actionManager,
+                             KeyBindingAgent keyBindingAgent,
                              final PresentationFactory presentationFactory,
-                             String place) {
+                             String place,
+                             Provider<PerspectiveManager> managerProvider) {
         this.action = action;
         this.actionManager = actionManager;
         this.keyBindingAgent = keyBindingAgent;
         this.presentationFactory = presentationFactory;
         this.place = place;
+        this.managerProvider = managerProvider;
+
+        this.presentation = presentationFactory.getPresentation(action);
 
         panel = new ButtonPanel();
         tooltip = DOM.createDiv();
@@ -98,6 +109,26 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
             panel.getElement().appendChild(tooltip);
         }
         this.ensureDebugId(place + "/" + action.getTemplatePresentation().getText());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void onLoad() {
+        super.onLoad();
+        if (actionButtonSynchronizer == null) {
+            actionButtonSynchronizer = new ActionButtonSynchronizer();
+            presentation.addPropertyChangeListener(actionButtonSynchronizer);
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void onUnload() {
+        super.onUnload();
+        if (actionButtonSynchronizer != null) {
+            presentation.removePropertyChangeListener(actionButtonSynchronizer);
+            actionButtonSynchronizer = null;
+        }
     }
 
     /** Closes Popup Menu ( if opened ) and sets style of this Popup Menu Button to default. */
@@ -180,7 +211,15 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
     public void openPopupMenu() {
         lockLayer = new MenuLockLayer(this);
 
-        popupMenu = new PopupMenu(action, actionManager, place, presentationFactory, lockLayer, this, keyBindingAgent, "toolbar");
+        popupMenu = new PopupMenu(action,
+                                  actionManager,
+                                  managerProvider,
+                                  place,
+                                  presentationFactory,
+                                  lockLayer,
+                                  this,
+                                  keyBindingAgent,
+                                  "toolbar");
         lockLayer.add(popupMenu);
 
         int left = getAbsoluteLeft();
@@ -242,6 +281,46 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
                 case Event.ONCLICK:
                     onMouseClick();
                     break;
+            }
+        }
+    }
+
+    private class ActionButtonSynchronizer implements PropertyChangeListener {
+        protected static final String SELECTED_PROPERTY_NAME = "selected";
+
+        @Override
+        public void onPropertyChange(PropertyChangeEvent e) {
+            String propertyName = e.getPropertyName();
+
+            if (Presentation.PROP_ENABLED.equals(propertyName)) {
+                setEnabled((Boolean)e.getNewValue());
+            } else if (Presentation.PROP_ICON.equals(propertyName)) {
+                renderImage();
+            } else if (Presentation.PROP_VISIBLE.equals(propertyName)) {
+                setVisible((Boolean)e.getNewValue());
+            } else if (SELECTED_PROPERTY_NAME.equals(propertyName)) {
+                setSelected((Boolean)e.getNewValue());
+            }
+        }
+
+        private void renderImage() {
+            panel.clear();
+            if (presentation.getSVGIcon() != null) {
+                SVGImage image = new SVGImage(presentation.getSVGIcon());
+                image.getElement().setAttribute("class", css.iconButtonIcon());
+                panel.add(image);
+            } else if (presentation.getIcon() != null) {
+                Image img = new Image(presentation.getIcon());
+                img.setStyleName(css.iconButtonIcon());
+                panel.add(img);
+            }
+        }
+
+        private void setSelected(boolean selected) {
+            if (selected) {
+                panel.setStyleName(css.iconButtonPanelSelected());
+            } else {
+                panel.setStyleName(css.iconButtonPanelOver());
             }
         }
     }

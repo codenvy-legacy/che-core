@@ -31,6 +31,7 @@ import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.UIObject;
+import com.google.inject.Provider;
 
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
@@ -41,6 +42,7 @@ import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.action.Separator;
 import org.eclipse.che.ide.api.action.ToggleAction;
 import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
+import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.util.input.KeyMapUtil;
@@ -61,18 +63,18 @@ public class PopupMenu extends Composite {
         POPUP_RESOURCES.popup().ensureInjected();
     }
 
-    private final ActionGroup           actionGroup;
-    private final ActionManager         actionManager;
-    private final String                place;
+    private final ActionManager                actionManager;
+    private final Provider<PerspectiveManager> managerProvider;
+    private final String                       place;
     /** Working variable is needs to indicate when PopupMenu has at list one MenuItem with selected state. */
-    private       boolean               hasCheckedItems;
+    private       boolean                      hasCheckedItems;
     /** Callback uses for notify Parent Menu when menu item is selecred. */
-    private       ActionSelectedHandler actionSelectedHandler;
+    private       ActionSelectedHandler        actionSelectedHandler;
     /**
      * Lock layer uses as root for displaying this PopupMenu and uses for locking screen and hiding menu when user just clicked outside
      * menu.
      */
-    private       MenuLockLayer         lockLayer;
+    private       MenuLockLayer                lockLayer;
 
     /** Contains opened sub Popup Menu. */
     private PopupMenu openedSubPopup;
@@ -127,18 +129,24 @@ public class PopupMenu extends Composite {
      * @param actionSelectedHandler
      *         - callback, uses for notifying parent menu when menu item is selected.
      */
-    public PopupMenu(ActionGroup actionGroup, ActionManager actionManager, String place, PresentationFactory presentationFactory,
-                     MenuLockLayer lockLayer, ActionSelectedHandler actionSelectedHandler, KeyBindingAgent keyBindingAgent,
+    public PopupMenu(ActionGroup actionGroup,
+                     ActionManager actionManager,
+                     Provider<PerspectiveManager> managerProvider,
+                     String place,
+                     PresentationFactory presentationFactory,
+                     MenuLockLayer lockLayer,
+                     ActionSelectedHandler actionSelectedHandler,
+                     KeyBindingAgent keyBindingAgent,
                      String itemIdPrefix) {
-        this.actionGroup = actionGroup;
         this.actionManager = actionManager;
+        this.managerProvider = managerProvider;
         this.place = place;
         this.presentationFactory = presentationFactory;
         this.keyBindingAgent = keyBindingAgent;
         this.itemIdPrefix = itemIdPrefix;
 
         list = Collections.createArray();
-        Utils.expandActionGroup(actionGroup, list, presentationFactory, place, actionManager);
+        Utils.expandActionGroup(actionGroup, list, presentationFactory, place, actionManager, managerProvider.get());
 
         this.lockLayer = lockLayer;
         this.actionSelectedHandler = actionSelectedHandler;
@@ -242,9 +250,11 @@ public class PopupMenu extends Composite {
                 int work = 1;
 
                 if (hasCheckedItems && menuItem instanceof ToggleAction) {
-                    String checkImage;
                     ToggleAction toggleAction = (ToggleAction)menuItem;
-                    ActionEvent e = new ActionEvent(place, presentationFactory.getPresentation(toggleAction), actionManager, 0);
+                    ActionEvent e = new ActionEvent(place,
+                                                    presentationFactory.getPresentation(toggleAction),
+                                                    actionManager,
+                                                    managerProvider.get());
                     if (toggleAction.isSelected(e)) {
                         table.setHTML(i, work, AbstractImagePrototype.create(POPUP_RESOURCES.check()).getHTML());
                     }
@@ -279,9 +289,11 @@ public class PopupMenu extends Composite {
                 work++;
 
                 if (menuItem instanceof ActionGroup && !(((ActionGroup)menuItem).canBePerformed() &&
-                                                         !Utils.hasVisibleChildren((ActionGroup)menuItem, presentationFactory,
+                                                         !Utils.hasVisibleChildren((ActionGroup)menuItem,
+                                                                                   presentationFactory,
                                                                                    actionManager,
-                                                                                   place))) {
+                                                                                   place,
+                                                                                   managerProvider.get()))) {
                     table.setWidget(i, work, new SVGImage(POPUP_RESOURCES.subMenu()));
                     table.getCellFormatter().setStyleName(i, work,
                                                           presentation.isEnabled() ? POPUP_RESOURCES.popup().popupMenuSubMenuField()
@@ -319,7 +331,7 @@ public class PopupMenu extends Composite {
             Action action = list.get(i);
             if (action instanceof ToggleAction) {
 
-                ActionEvent e = new ActionEvent(place, presentationFactory.getPresentation(action), actionManager, 0);
+                ActionEvent e = new ActionEvent(place, presentationFactory.getPresentation(action), actionManager, managerProvider.get());
                 if (((ToggleAction)action).isSelected(e)) {
                     return true;
                 }
@@ -419,8 +431,11 @@ public class PopupMenu extends Composite {
         Action menuItem = list.get(itemIndex);
         openSubPopupTimer.cancel();
         if (menuItem instanceof ActionGroup && !(((ActionGroup)menuItem).canBePerformed() &&
-                                                 !Utils.hasVisibleChildren((ActionGroup)menuItem, presentationFactory, actionManager,
-                                                                           place))) {
+                                                 !Utils.hasVisibleChildren((ActionGroup)menuItem,
+                                                                           presentationFactory,
+                                                                           actionManager,
+                                                                           place,
+                                                                           managerProvider.get()))) {
             openSubPopupTimer.schedule(300);
         } else {
             closeSubPopupTimer.cancel();
@@ -441,14 +456,17 @@ public class PopupMenu extends Composite {
         int itemIndex = Integer.parseInt(tr.getAttribute("item-index"));
         Action menuItem = list.get(itemIndex);
         if (menuItem instanceof ActionGroup && (!((ActionGroup)menuItem).canBePerformed() &&
-                                                Utils.hasVisibleChildren((ActionGroup)menuItem, presentationFactory, actionManager,
-                                                                         place))) {
+                                                Utils.hasVisibleChildren((ActionGroup)menuItem,
+                                                                         presentationFactory,
+                                                                         actionManager,
+                                                                         place,
+                                                                         managerProvider.get()))) {
             openSubPopup(tr);
         } else {
             if (actionSelectedHandler != null) {
                 actionSelectedHandler.onActionSelected(menuItem);
             }
-            ActionEvent e = new ActionEvent(place, presentationFactory.getPresentation(menuItem), actionManager, 0);
+            ActionEvent e = new ActionEvent(place, presentationFactory.getPresentation(menuItem), actionManager, managerProvider.get());
             menuItem.actionPerformed(e);
         }
     }
@@ -483,9 +501,15 @@ public class PopupMenu extends Composite {
             idPrefix += "/" + presentationFactory.getPresentation(menuItem).getText();
         }
 
-        openedSubPopup =
-                new PopupMenu((ActionGroup)menuItem, actionManager, place, presentationFactory, lockLayer, actionSelectedHandler,
-                              keyBindingAgent, idPrefix);
+        openedSubPopup = new PopupMenu((ActionGroup)menuItem,
+                                       actionManager,
+                                       managerProvider,
+                                       place,
+                                       presentationFactory,
+                                       lockLayer,
+                                       actionSelectedHandler,
+                                       keyBindingAgent,
+                                       idPrefix);
 
         final int HORIZONTAL_OFFSET = 3;
         final int VERTICAL_OFFSET = 1;

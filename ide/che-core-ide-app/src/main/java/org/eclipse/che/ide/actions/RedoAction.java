@@ -10,24 +10,31 @@
  *******************************************************************************/
 package org.eclipse.che.ide.actions;
 
+import com.google.inject.Inject;
+
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.api.action.Action;
+import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.texteditor.HandlesUndoRedo;
 import org.eclipse.che.ide.api.texteditor.UndoableEditor;
-import com.google.inject.Inject;
+
+import javax.annotation.Nonnull;
+import java.util.Arrays;
+
+import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
 
 /**
  * Redo Action
  *
  * @author Roman Nikitenko
+ * @author Dmitry Shnurenko
  */
 
-public class RedoAction extends Action {
+public class RedoAction extends AbstractPerspectiveAction {
 
     private       EditorAgent          editorAgent;
     private final AnalyticsEventLogger eventLogger;
@@ -37,7 +44,11 @@ public class RedoAction extends Action {
                       CoreLocalizationConstant localization,
                       AnalyticsEventLogger eventLogger,
                       Resources resources) {
-        super(localization.redoName(), localization.redoDescription(), null, resources.redo());
+        super(Arrays.asList(PROJECT_PERSPECTIVE_ID),
+              localization.redoName(),
+              localization.redoDescription(),
+              null,
+              resources.redo());
         this.editorAgent = editorAgent;
         this.eventLogger = eventLogger;
     }
@@ -57,7 +68,7 @@ public class RedoAction extends Action {
     }
 
     @Override
-    public void update(ActionEvent e) {
+    public void updateInPerspective(@Nonnull ActionEvent event) {
         EditorPartPresenter activeEditor = editorAgent.getActiveEditor();
 
         boolean mustEnable = false;
@@ -67,6 +78,6 @@ public class RedoAction extends Action {
                 mustEnable = undoRedo.redoable();
             }
         }
-        e.getPresentation().setEnabled(mustEnable);
+        event.getPresentation().setEnabled(mustEnable);
     }
 }

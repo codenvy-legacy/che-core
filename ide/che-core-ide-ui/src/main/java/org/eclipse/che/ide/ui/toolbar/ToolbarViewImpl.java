@@ -14,6 +14,7 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionGroup;
@@ -22,6 +23,7 @@ import org.eclipse.che.ide.api.action.CustomComponentAction;
 import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.action.Separator;
 import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
+import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.Collections;
 
@@ -31,24 +33,25 @@ import javax.annotation.Nonnull;
 /**
  * The implementation of {@link ToolbarView}
  *
- * @author <a href="mailto:aplotnikov@exoplatform.com">Andrey Plotnikov</a>
+ * @author Andrey Plotnikov
+ * @author Dmitry Shnurenko
  */
 public class ToolbarViewImpl extends Composite implements ToolbarView {
 
     public static final int DELAY_MILLIS = 1000;
     Toolbar toolbar;
-    private String          place;
-    private ActionGroup     leftActionGroup;
-    private ActionGroup     rightActionGroup;
-    private ActionManager   actionManager;
-    private KeyBindingAgent keyBindingAgent;
+    private String                       place;
+    private ActionGroup                  leftActionGroup;
+    private ActionGroup                  rightActionGroup;
+    private ActionManager                actionManager;
+    private KeyBindingAgent              keyBindingAgent;
+    private Provider<PerspectiveManager> managerProvider;
 
     private Array<Action> newLeftVisibleActions;
     private Array<Action> leftVisibleActions;
 
     private Array<Action> newRightVisibleActions;
     private Array<Action> rightVisibleActions;
-
 
     private PresentationFactory presentationFactory;
     private boolean             addSeparatorFirst;
@@ -62,9 +65,10 @@ public class ToolbarViewImpl extends Composite implements ToolbarView {
 
     /** Create view with given instance of resources. */
     @Inject
-    public ToolbarViewImpl(ActionManager actionManager, KeyBindingAgent keyBindingAgent) {
+    public ToolbarViewImpl(ActionManager actionManager, KeyBindingAgent keyBindingAgent, Provider<PerspectiveManager> managerProvider) {
         this.actionManager = actionManager;
         this.keyBindingAgent = keyBindingAgent;
+        this.managerProvider = managerProvider;
         toolbar = new Toolbar();
         initWidget(toolbar);
 
@@ -80,8 +84,7 @@ public class ToolbarViewImpl extends Composite implements ToolbarView {
     /** {@inheritDoc} */
     @Override
     public void setDelegate(ActionDelegate delegate) {
-        // ok
-        // there are no events for now
+        //to do nothing
     }
 
     @Override
@@ -109,7 +112,13 @@ public class ToolbarViewImpl extends Composite implements ToolbarView {
     private void updateActions() {
         if (leftActionGroup != null) {
             newLeftVisibleActions.clear();
-            Utils.expandActionGroup(leftActionGroup, newLeftVisibleActions, presentationFactory, place, actionManager, false);
+            Utils.expandActionGroup(leftActionGroup,
+                                    newLeftVisibleActions,
+                                    presentationFactory,
+                                    place,
+                                    actionManager,
+                                    false,
+                                    managerProvider.get());
             if (!Collections.equals(newLeftVisibleActions, leftVisibleActions)) {
                 final Array<Action> temp = leftVisibleActions;
                 leftVisibleActions = newLeftVisibleActions;
@@ -120,7 +129,13 @@ public class ToolbarViewImpl extends Composite implements ToolbarView {
         }
         if (rightActionGroup != null) {
             newRightVisibleActions.clear();
-            Utils.expandActionGroup(rightActionGroup, newRightVisibleActions, presentationFactory, place, actionManager, false);
+            Utils.expandActionGroup(rightActionGroup,
+                                    newRightVisibleActions,
+                                    presentationFactory,
+                                    place,
+                                    actionManager,
+                                    false,
+                                    managerProvider.get());
             if (!Collections.equals(newRightVisibleActions, rightVisibleActions)) {
                 final Array<Action> temp = rightVisibleActions;
                 rightVisibleActions = newRightVisibleActions;
@@ -147,9 +162,13 @@ public class ToolbarViewImpl extends Composite implements ToolbarView {
                 Presentation presentation = presentationFactory.getPresentation(action);
                 Widget customComponent = ((CustomComponentAction)action).createCustomComponent(presentation);
                 toolbar.addToMainPanel(customComponent);
-            } else if (action instanceof ActionGroup && !(action instanceof CustomComponentAction) && ((ActionGroup)action).isPopup()) {
-                ActionPopupButton button =
-                        new ActionPopupButton((ActionGroup)action, actionManager, keyBindingAgent, presentationFactory, place);
+            } else if (action instanceof ActionGroup && ((ActionGroup)action).isPopup()) {
+                ActionPopupButton button = new ActionPopupButton((ActionGroup)action,
+                                                                 actionManager,
+                                                                 keyBindingAgent,
+                                                                 presentationFactory,
+                                                                 place,
+                                                                 managerProvider);
                 toolbar.addToMainPanel(button);
             } else {
                 final ActionButton button = createToolbarButton(action);
@@ -171,8 +190,12 @@ public class ToolbarViewImpl extends Composite implements ToolbarView {
                 Widget customComponent = ((CustomComponentAction)action).createCustomComponent(presentation);
                 toolbar.addToRightPanel(customComponent);
             } else if (action instanceof ActionGroup && !(action instanceof CustomComponentAction) && ((ActionGroup)action).isPopup()) {
-                ActionPopupButton button =
-                        new ActionPopupButton((ActionGroup)action, actionManager, keyBindingAgent, presentationFactory, place);
+                ActionPopupButton button = new ActionPopupButton((ActionGroup)action,
+                                                                 actionManager,
+                                                                 keyBindingAgent,
+                                                                 presentationFactory,
+                                                                 place,
+                                                                 managerProvider);
                 toolbar.addToRightPanel(button);
             } else {
                 final ActionButton button = createToolbarButton(action);
@@ -181,11 +204,9 @@ public class ToolbarViewImpl extends Composite implements ToolbarView {
         }
     }
 
-
     private ActionButton createToolbarButton(Action action) {
-        return new ActionButton(action, actionManager, presentationFactory.getPresentation(action), place);
+        return new ActionButton(action, actionManager, presentationFactory.getPresentation(action), place, managerProvider.get());
     }
-
 
     @Override
     public void setAddSeparatorFirst(boolean addSeparatorFirst) {

@@ -17,6 +17,7 @@ import com.google.inject.Inject;
  * Manages Toolbar items, change style.
  *
  * @author Oleksii Orel
+ * @author Dmitry Shnurenko
  */
 public class ToolbarMainPresenter extends ToolbarPresenter {
 

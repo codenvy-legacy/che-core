@@ -12,6 +12,7 @@ package org.eclipse.che.ide.statepersistance;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwtmockito.GwtMockitoTestRunner;
+import com.google.inject.Provider;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
@@ -32,13 +33,14 @@ import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.RestoreProjectTreeStateEvent;
 import org.eclipse.che.ide.api.event.RestoreProjectTreeStateHandler;
 import org.eclipse.che.ide.api.event.WindowActionEvent;
+import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.eclipse.che.ide.api.preferences.PreferencesManager;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 import org.eclipse.che.ide.statepersistance.dto.AppState;
-import org.eclipse.che.ide.statepersistance.dto.RecentProject;
 import org.eclipse.che.ide.statepersistance.dto.ProjectState;
+import org.eclipse.che.ide.statepersistance.dto.RecentProject;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.Pair;
 import org.junit.Before;
@@ -57,6 +59,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.eclipse.che.ide.statepersistance.AppStateManager.PREFERENCE_PROPERTY_NAME;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
@@ -66,12 +69,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static org.eclipse.che.ide.statepersistance.AppStateManager.PREFERENCE_PROPERTY_NAME;
 
 /**
  * Test covers {@link AppStateManager} functionality.
  *
  * @author Artem Zatsarynnyy
+ * @author Dmitry Shnurenko
  */
 @RunWith(GwtMockitoTestRunner.class)
 public class AppStateManagerTest {
@@ -81,8 +84,6 @@ public class AppStateManagerTest {
     private static final String WORKSPACE_NAME    = "someWorkspace";
     private static final String WORKSPACE_ID      = "workspaceg13rj45zkespwtxm";
     private static final String FULL_PROJECT_PATH = "/" + WORKSPACE_NAME + PROJECT_PATH;
-    private List<ActionDescriptor>    actions;
-    private Map<String, ProjectState> stateMap;
 
     @Mock
     private Set<PersistenceComponent>         persistenceComponents;
@@ -104,33 +105,37 @@ public class AppStateManagerTest {
     private ProjectServiceClient              projectServiceClient;
 
     @Mock
-    private AppState             appState;
+    private AppState                     appState;
     @Mock
-    private WorkspaceDescriptor  workspaceDescriptor;
+    private WorkspaceDescriptor          workspaceDescriptor;
     @Mock
-    private RecentProject        recentProject;
+    private RecentProject                recentProject;
     @Mock
-    private ProjectDescriptor    rootProject;
+    private ProjectDescriptor            rootProject;
     @Mock
-    private CurrentProject       currentProject;
+    private CurrentProject               currentProject;
     @Mock
-    private ProjectActionEvent   event;
+    private ProjectActionEvent           event;
     @Mock
-    private ActionDescriptor     actionDescriptor;
+    private ActionDescriptor             actionDescriptor;
     @Mock
-    private ProjectState         projectState;
+    private ProjectState                 projectState;
     @Mock
-    private PersistenceComponent persistenceComponent;
+    private PersistenceComponent         persistenceComponent;
     @Mock
-    private PersistenceComponent c1;
+    private PersistenceComponent         c1;
     @Mock
-    private PersistenceComponent c2;
+    private PersistenceComponent         c2;
     @Mock
-    private Promise<Void>        promise;
+    private Promise<Void>                promise;
     @Mock
-    private Action               action;
+    private Action                       action;
     @Mock
-    private Presentation         presentation;
+    private Presentation                 presentation;
+    @Mock
+    private Provider<PerspectiveManager> managerProvider;
+    @Mock
+    private PerspectiveManager           perspectiveManager;
 
     @Captor
     private ArgumentCaptor<AsyncRequestCallback<ProjectDescriptor>> projectDescriptorCaptor;
@@ -139,9 +144,9 @@ public class AppStateManagerTest {
 
     @Before
     public void setUp() {
-        actions = new ArrayList<>();
+        List<ActionDescriptor> actions = new ArrayList<>();
         actions.add(actionDescriptor);
-        stateMap = new HashMap<>();
+        Map<String, ProjectState> stateMap = new HashMap<>();
         stateMap.put(FULL_PROJECT_PATH, projectState);
 
         List<PersistenceComponent> componentList = new ArrayList<>();
@@ -169,6 +174,7 @@ public class AppStateManagerTest {
         when(actionManager.getAction(SERIALIZED_STATE)).thenReturn(action);
         when(presentationFactory.getPresentation(action)).thenReturn(presentation);
         when(dtoFactory.toJson(eq(appState))).thenReturn(SERIALIZED_STATE);
+        when(managerProvider.get()).thenReturn(perspectiveManager);
 
         appStateManager = new AppStateManager(persistenceComponents,
                                               projectTreePersistenceComponents,
@@ -178,7 +184,8 @@ public class AppStateManagerTest {
                                               dtoFactory,
                                               actionManager,
                                               presentationFactory,
-                                              projectServiceClient);
+                                              projectServiceClient,
+                                              managerProvider);
         appStateManager.start(false);
     }
 
@@ -204,6 +211,7 @@ public class AppStateManagerTest {
         verify(projectServiceClient, times(2)).getProject(anyString(), projectDescriptorCaptor.capture());
         AsyncRequestCallback<ProjectDescriptor> asyncRequestCallback = projectDescriptorCaptor.getValue();
 
+        //noinspection NonJREEmulationClassesInClientCode
         Method method = asyncRequestCallback.getClass().getDeclaredMethod("onSuccess", Object.class);
         method.setAccessible(true);
         method.invoke(asyncRequestCallback, result);
@@ -220,6 +228,7 @@ public class AppStateManagerTest {
         verify(projectServiceClient, times(2)).getProject(anyString(), projectDescriptorCaptor.capture());
         AsyncRequestCallback<ProjectDescriptor> asyncRequestCallback = projectDescriptorCaptor.getValue();
 
+        //noinspection NonJREEmulationClassesInClientCode
         Method method = asyncRequestCallback.getClass().getDeclaredMethod("onFailure", Throwable.class);
         method.setAccessible(true);
         method.invoke(asyncRequestCallback, exception);

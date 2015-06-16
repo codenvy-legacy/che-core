@@ -16,8 +16,7 @@ import com.google.inject.name.Named;
 
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.api.action.Action;
+import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
@@ -28,13 +27,19 @@ import org.eclipse.che.ide.download.DownloadContainer;
 import org.eclipse.che.ide.part.projectexplorer.ProjectListStructure;
 import org.eclipse.che.ide.rest.RestContext;
 
+import javax.annotation.Nonnull;
+import java.util.Arrays;
+
+import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
+
 /**
  * Download project as zip action
  *
  * @author Roman Nikitenko
+ * @author Dmitry Shnurenko
  */
 @Singleton
-public class DownloadProjectAsZipAction extends Action {
+public class DownloadProjectAsZipAction extends AbstractPerspectiveAction {
 
     private final String BASE_URL;
 
@@ -50,9 +55,12 @@ public class DownloadProjectAsZipAction extends Action {
                                       CoreLocalizationConstant locale,
                                       SelectionAgent selectionAgent,
                                       AnalyticsEventLogger eventLogger,
-                                      Resources resources,
                                       DownloadContainer downloadContainer) {
-        super(locale.downloadProjectAsZipName(), locale.downloadProjectAsZipDescription(), null);
+        super(Arrays.asList(PROJECT_PERSPECTIVE_ID),
+              locale.downloadProjectAsZipName(),
+              locale.downloadProjectAsZipDescription(),
+              null,
+              null);
         this.appContext = appContext;
         this.eventLogger = eventLogger;
         this.selectionAgent = selectionAgent;
@@ -72,7 +80,7 @@ public class DownloadProjectAsZipAction extends Action {
 
     /** {@inheritDoc} */
     @Override
-    public void update(ActionEvent event) {
+    public void updateInPerspective(@Nonnull ActionEvent event) {
         Selection<?> selection = selectionAgent.getSelection();
 
         boolean enabled = appContext.getCurrentProject() != null ||

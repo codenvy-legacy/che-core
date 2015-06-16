@@ -8,14 +8,11 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.workspace.perspectives.general;
+package org.eclipse.che.ide.api.parts;
 
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 
 import org.eclipse.che.ide.api.constraints.Constraints;
-import org.eclipse.che.ide.api.parts.PartPresenter;
-import org.eclipse.che.ide.api.parts.PartStack;
-import org.eclipse.che.ide.api.parts.PartStackType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

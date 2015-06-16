@@ -12,6 +12,7 @@ package org.eclipse.che.ide.menu;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.UIObject;
+import com.google.inject.Provider;
 
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionGroup;
@@ -19,23 +20,26 @@ import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.ActionSelectedHandler;
 import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
+import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.eclipse.che.ide.ui.toolbar.MenuLockLayer;
 import org.eclipse.che.ide.ui.toolbar.PopupMenu;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.ui.toolbar.Utils;
 
 /**
- * @author <a href="mailto:gavrikvetal@gmail.com">Vitaliy Gulyy</a>
+ * @author Vitaliy Gulyy
+ * @author Dmitry Shnurenko
  * @version $
  *          <p/>
  *          Menu bar is implementation of Menu interface and represents a visual component.
  */
 public class MenuBarItem implements ActionSelectedHandler {
 
-    private final ActionGroup         group;
-    private final ActionManager       actionManager;
-    private final PresentationFactory presentationFactory;
-    private final String              place;
+    private final ActionGroup                  group;
+    private final ActionManager                actionManager;
+    private final Provider<PerspectiveManager> managerProvider;
+    private final PresentationFactory          presentationFactory;
+    private final String                       place;
     /**
      * Working variable:
      * is need to store hovered or normal state.
@@ -63,10 +67,18 @@ public class MenuBarItem implements ActionSelectedHandler {
     /** Title of Menu Bar Item */
     private String title;
 
-    public MenuBarItem(ActionGroup group, ActionManager actionManager, PresentationFactory presentationFactory, String place,
-                       Element element, ActionSelectedHandler handler, KeyBindingAgent keyBindingAgent, MenuResources.Css css) {
+    public MenuBarItem(ActionGroup group,
+                       ActionManager actionManager,
+                       Provider<PerspectiveManager> managerProvider,
+                       PresentationFactory presentationFactory,
+                       String place,
+                       Element element,
+                       ActionSelectedHandler handler,
+                       KeyBindingAgent keyBindingAgent,
+                       MenuResources.Css css) {
         this.group = group;
         this.actionManager = actionManager;
+        this.managerProvider = managerProvider;
         this.presentationFactory = presentationFactory;
         this.place = place;
         this.element = element;
@@ -76,7 +88,7 @@ public class MenuBarItem implements ActionSelectedHandler {
         Presentation presentation = presentationFactory.getPresentation(group);
         title = presentation.getText();
         element.setInnerText(presentation.getText());
-        setEnabled(Utils.hasVisibleChildren(group, presentationFactory, actionManager, place));
+        setEnabled(Utils.hasVisibleChildren(group, presentationFactory, actionManager, place, managerProvider.get()));
     }
 
     /** Close opened Popup Menu. */
@@ -141,8 +153,15 @@ public class MenuBarItem implements ActionSelectedHandler {
     public void openPopupMenu(MenuLockLayer menuLockLayer) {
         int x = element.getAbsoluteLeft();
         int y = 0;
-        popupMenu =
-                new PopupMenu(group, actionManager, place, presentationFactory, menuLockLayer, this, keyBindingAgent, "topmenu/" + title);
+        popupMenu = new PopupMenu(group,
+                                  actionManager,
+                                  managerProvider,
+                                  place,
+                                  presentationFactory,
+                                  menuLockLayer,
+                                  this,
+                                  keyBindingAgent,
+                                  "topmenu/" + title);
         menuLockLayer.add(popupMenu, x, y);
     }
 
@@ -174,6 +193,6 @@ public class MenuBarItem implements ActionSelectedHandler {
     }
 
     public void update() {
-        setEnabled(Utils.hasVisibleChildren(group, presentationFactory, actionManager, place));
+        setEnabled(Utils.hasVisibleChildren(group, presentationFactory, actionManager, place, managerProvider.get()));
     }
 }

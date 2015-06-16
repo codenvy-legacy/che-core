@@ -14,11 +14,11 @@ import org.eclipse.che.ide.api.constraints.Anchor;
 import org.eclipse.che.ide.api.constraints.Constraints;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.LinkedHashMap;
-import java.util.Collection;
 
 
 /**
@@ -30,6 +30,7 @@ import java.util.Collection;
  * to implement your own <code>ActionGroup</code>.
  *
  * @author Evgen Vidolob
+ * @author Dmitry Shnurenko
  */
 public class DefaultActionGroup extends ActionGroup {
     private static final Action[] EMPTY_ACTIONS = new Action[0];
@@ -180,6 +181,7 @@ public class DefaultActionGroup extends ActionGroup {
         constraintsList.clear();
         needSorting = true;
     }
+
     /**
      * Returns group's children in the order determined by constraints.
      *
@@ -199,6 +201,7 @@ public class DefaultActionGroup extends ActionGroup {
 
     /**
      * Sorts actions depending on their constraints and their input order.
+     *
      * @return An array of sorted actions
      */
     //TODO: to complicate 
@@ -245,9 +248,13 @@ public class DefaultActionGroup extends ActionGroup {
     /**
      * This method checks unsorted map for actions, that depend
      * on action, received in parameter. If found ones, adds it
-     * @param unsortedMap - map with unsorted actions
-     * @param action - action, that is a condition for actions in unsorted list
-     * @param result - result list
+     *
+     * @param unsortedMap
+     *         - map with unsorted actions
+     * @param action
+     *         - action, that is a condition for actions in unsorted list
+     * @param result
+     *         - result list
      */
     private void checkUnsorted(Map<Action, Constraints> unsortedMap,
                                Action action,

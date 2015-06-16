@@ -10,30 +10,33 @@
  *******************************************************************************/
 package org.eclipse.che.ide.actions;
 
-import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
-
-import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.openproject.OpenProjectPresenter;
-
-import org.eclipse.che.ide.api.action.Action;
-import org.eclipse.che.ide.api.action.ActionEvent;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
+import org.eclipse.che.ide.Resources;
+import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
+import org.eclipse.che.ide.api.action.ActionEvent;
+import org.eclipse.che.ide.openproject.OpenProjectPresenter;
+
+import javax.annotation.Nonnull;
+import java.util.Arrays;
+
+import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
+
 /**
- * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
- * @version $Id:
+ * @author Evgen Vidolob
+ * @author Dmitry Shnurenko
  */
 @Singleton
-public class OpenProjectAction extends Action {
+public class OpenProjectAction extends AbstractPerspectiveAction {
 
     private final OpenProjectPresenter presenter;
     private final AnalyticsEventLogger eventLogger;
 
     @Inject
     public OpenProjectAction(OpenProjectPresenter presenter, AnalyticsEventLogger eventLogger, Resources resources) {
-        super("Open Project", "Open project", null, resources.openProject());
+        super(Arrays.asList(PROJECT_PERSPECTIVE_ID), "Open Project", "Open project", null, resources.openProject());
         this.presenter = presenter;
         this.eventLogger = eventLogger;
     }
@@ -45,7 +48,7 @@ public class OpenProjectAction extends Action {
     }
 
     @Override
-    public void update(ActionEvent e) {
-        super.update(e);
+    public void updateInPerspective(@Nonnull ActionEvent event) {
+        //to do nothing
     }
 }
