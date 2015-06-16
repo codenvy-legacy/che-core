@@ -1,22 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-
-<svg id="svg2" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" xml:space="preserve"
-height="48" width="48" version="1.1" xmlns:cc="http://web.resource.org/cc/" xmlns:dc="http://purl.org/dc/elements/1.1/"
-viewBox="0 0 48 48">
-	<rect style="fill:none" rx="0" ry="0" height="48" width="48" y="0" x="0"/>
-	<path style="stroke-linejoin:round;stroke:#fff;stroke-linecap:round;stroke-width:9px;fill:none"
-		d="m20 39a4.5 6 0 1 1 -9 0 4.5 6 0 1 1 9 0z" transform="translate(-.5 -2.5)"/>
-	<path style="stroke-linejoin:round;stroke:#fff;stroke-linecap:round;stroke-width:9px;fill:none"
-		d="m20 39a4.5 6 0 1 1 -9 0 4.5 6 0 1 1 9 0z" transform="translate(17.5,-2.5)"/>
-	<path style="stroke-linejoin:round;stroke:#fff;stroke-linecap:round;stroke-width:6px;fill:none"
-		d="m29.5 30.4l-2.5-4.4c2.9-2 6.3-4.2 9-9 3.9-6.8-2-12-2-12l-10 16-10-16s-5.9 5.2-2 12c2.7 4.7 6.1 7.1
-		9 9l-2.5 4.4 2.5 5.6c0.1-1.6 2-7 2-7s0.3-1.6 1-2c0.6 0.5 1 2 1 2s1.9 5.3 2 7l2.5-5.6z"/>
-	<path d="m29.5 30.4l-2.5-4.4c2.9-2 6.3-4.2 9-9 3.9-6.8-2-12-2-12l-10 16-10-16s-5.9 5.2-2 12c2.7
-		4.7 6.1 7.1 9 9l-2.5 4.4 2.5 5.6c0.1-1.6 2-7 2-7s0.3-1.6 1-2c0.6 0.5 1 2 1 2s1.9 5.3 2 7l2.5-5.6z"/>
-	<path style="stroke-linejoin:round;stroke:#000;stroke-linecap:round;stroke-width:3;fill:none"
-		d="m20 39a4.5 6 0 1 1 -9 0 4.5 6 0 1 1 9 0z" transform="translate(-.5 -2.5)"/>
-	<path style="stroke-linejoin:round;stroke:#000;stroke-linecap:round;stroke-width:3;fill:none"
-		d="m20 39a4.5 6 0 1 1 -9 0 4.5 6 0 1 1 9 0z" transform="translate(17.5,-2.5)"/>
+<svg width="22px" height="20px" viewBox="0 0 22 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <g transform="translate(1.5, 0.6) scale(0.92, 0.92)">
+        <path d="M4,0 C1.8,0 0,1.8 0,4 C0,6.2 1.8,8 4,8 C4.6,8 5.1,7.9 5.6,7.6 L8,10 L5.6,12.4 C5.1,12.1 4.6,12 4,12 C1.8,12 0,13.8 0,16 C0,18.2 1.8,20 4,20 C6.2,20 8,18.2 8,16 C8,15.4 7.9,14.9 7.6,14.4 L10,12 C10,12 15.4452297,18.0106007 17,19 C18.5547703,19.9893993 21,19 21,19 L7.6,5.6 C7.9,5.1 8,4.6 8,4 C8,1.8 6.2,0 4,0 Z M4,6 C2.9,6 2,5.1 2,4 C2,2.9 2.9,2 4,2 C5.1,2 6,2.9 6,4 C6,5.1 5.1,6 4,6 L4,6 L4,6 Z M4,18 C2.9,18 2,17.1 2,16 C2,14.9 2.9,14 4,14 C5.1,14 6,14.9 6,16 C6,17.1 5.1,18 4,18 L4,18 L4,18 Z M10,9.5 C10.3,9.5 10.5,9.7 10.5,10 C10.5,10.3 10.3,10.5 10,10.5 C9.7,10.5 9.5,10.3 9.5,10 C9.5,9.7 9.7,9.5 10,9.5 L10,9.5 L10,9.5 Z M17,1 C15.370872,2 11,7 11,7 L13,9 L21,1 C21,1 18.629128,0 17,1 Z" ></path>
+    </g>
 </svg>
