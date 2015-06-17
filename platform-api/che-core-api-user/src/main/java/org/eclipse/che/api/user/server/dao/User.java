@@ -21,6 +21,7 @@ public class User {
 
     private String       id;
     private String       email;
+    private String       name;
     private String       password;
     private List<String> aliases;
 
@@ -79,6 +80,19 @@ public class User {
         return this;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public User withName(String name) {
+        this.name = name;
+        return this;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -91,7 +105,8 @@ public class User {
         return Objects.equals(id, other.id) &&
                Objects.equals(email, other.email) &&
                Objects.equals(password, other.password) &&
-               Objects.equals(getAliases(), other.getAliases());
+               Objects.equals(name, other.name) &&
+               getAliases().equals(other.getAliases());
     }
 
     @Override
@@ -100,7 +115,8 @@ public class User {
         hash = 31 * hash + Objects.hashCode(id);
         hash = 31 * hash + Objects.hashCode(email);
         hash = 31 * hash + Objects.hashCode(password);
-        hash = 31 * hash + Objects.hashCode(getAliases());
+        hash = 31 * hash + Objects.hashCode(name);
+        hash = 31 * hash + getAliases().hashCode();
         return hash;
     }
 }

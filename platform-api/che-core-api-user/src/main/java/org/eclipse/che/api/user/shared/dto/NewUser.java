@@ -20,11 +20,11 @@ import org.eclipse.che.dto.shared.DTO;
 @DTO
 public interface NewUser {
 
-    String getEmail();
+    String getName();
 
-    void setEmail(String email);
+    void setName(String name);
 
-    NewUser withEmail(String email);
+    NewUser withName(String name);
 
     String getPassword();
 
