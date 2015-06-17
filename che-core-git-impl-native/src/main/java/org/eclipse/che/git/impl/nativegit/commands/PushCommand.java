@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.git.impl.nativegit.commands;
 
+import com.google.common.base.MoreObjects;
+
 import org.eclipse.che.api.git.GitException;
 
 import java.io.File;
@@ -20,11 +22,10 @@ import java.util.List;
  *
  * @author Eugene Voevodin
  */
-public class PushCommand extends GitCommand<Void> {
+public class PushCommand extends RemoteUperationCommand<Void> {
 
     private List<String> refSpec;
-    private String   remote;
-    private boolean  force;
+    private boolean      force;
 
     public PushCommand(File repository) {
         super(repository);
@@ -33,10 +34,9 @@ public class PushCommand extends GitCommand<Void> {
     /** @see GitCommand#execute() */
     @Override
     public Void execute() throws GitException {
-        remote = remote == null ? "origin" : remote;
         reset();
         commandLine.add("push");
-        commandLine.add(remote);
+        commandLine.add(MoreObjects.firstNonNull(getRemoteUrl(), "origin"));
         if (refSpec != null) {
             commandLine.add(refSpec);
         }
@@ -57,17 +57,6 @@ public class PushCommand extends GitCommand<Void> {
         return this;
     }
 
-    /**
-     * If remote name is null "origin" will be used
-     *
-     * @param remoteName
-     *         remote name
-     * @return PushCommand with established remote name
-     */
-    public PushCommand setRemote(String remoteName) {
-        this.remote = remoteName;
-        return this;
-    }
 
     /**
      * @param force

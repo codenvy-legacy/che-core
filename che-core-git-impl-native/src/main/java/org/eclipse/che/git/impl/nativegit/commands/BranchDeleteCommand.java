@@ -19,7 +19,7 @@ import java.io.File;
  *
  * @author Eugene Voevodin
  */
-public class BranchDeleteCommand extends GitCommand<Void> {
+public class BranchDeleteCommand  extends RemoteUperationCommand<Void> {
 
     private boolean deleteFullyMerged;
     private String  branchName;

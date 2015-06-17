@@ -42,6 +42,7 @@ import org.eclipse.che.git.impl.nativegit.commands.StatusCommand;
 import org.eclipse.che.git.impl.nativegit.commands.TagCreateCommand;
 import org.eclipse.che.git.impl.nativegit.commands.TagDeleteCommand;
 import org.eclipse.che.git.impl.nativegit.commands.TagListCommand;
+import org.eclipse.che.git.impl.nativegit.ssh.SshKeysManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,7 +108,7 @@ public class NativeGit {
      * @return clone command
      */
     public CloneCommand createCloneCommand() {
-        CloneCommand cloneCommand = new CloneCommand(repository);
+        CloneCommand cloneCommand = new CloneCommand(repository, );
         cloneCommand.setLineConsumerFactory(gitOutputPublisherFactory);
         return cloneCommand;
     }
@@ -123,7 +124,7 @@ public class NativeGit {
      */
     public CloneCommand createCloneCommand(String sshKeyPath) throws GitException {
         storeSshScript(sshKeyPath);
-        CloneCommand command = new CloneCommand(repository);
+        CloneCommand command = new CloneCommand(repository, );
         command.setLineConsumerFactory(gitOutputPublisherFactory);
         command.setSSHScriptPath(SshKeysManager.getKeyDirectoryPath() + '/' + SSH_SCRIPT);
         return command;

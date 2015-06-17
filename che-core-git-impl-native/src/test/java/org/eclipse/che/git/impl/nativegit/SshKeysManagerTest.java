@@ -12,6 +12,7 @@ package org.eclipse.che.git.impl.nativegit;
 
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.IoUtil;
+import org.eclipse.che.git.impl.nativegit.ssh.SshKeyUploader;
 import org.eclipse.che.ide.ext.ssh.server.SshKey;
 import org.eclipse.che.ide.ext.ssh.server.SshKeyPair;
 import org.eclipse.che.ide.ext.ssh.server.SshKeyStore;

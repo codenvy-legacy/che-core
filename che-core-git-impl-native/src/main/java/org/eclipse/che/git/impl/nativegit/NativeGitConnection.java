@@ -68,6 +68,7 @@ import org.eclipse.che.git.impl.nativegit.commands.LsRemoteCommand;
 import org.eclipse.che.git.impl.nativegit.commands.PullCommand;
 import org.eclipse.che.git.impl.nativegit.commands.PushCommand;
 import org.eclipse.che.git.impl.nativegit.commands.RemoteListCommand;
+import org.eclipse.che.git.impl.nativegit.ssh.SshKeyProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,7 +93,7 @@ public class NativeGitConnection implements GitConnection {
     private final CredentialsLoader credentialsLoader;
     private final GitAskPassScript  gitAskPassScript;
     private final GitUser           user;
-    private final SshKeysManager    keysManager;
+    private final SshKeyProvider    keysManager;
 
     private static final Pattern authErrorPattern =
             Pattern.compile(
@@ -114,7 +115,7 @@ public class NativeGitConnection implements GitConnection {
      * @throws GitException
      *         when some error occurs
      */
-    public NativeGitConnection(File repository, GitUser user, SshKeysManager keysManager, CredentialsLoader credentialsLoader)
+    public NativeGitConnection(File repository, GitUser user, SshKeyProvider keysManager, CredentialsLoader credentialsLoader)
             throws GitException {
         this(new NativeGit(repository), user, keysManager, credentialsLoader, new GitAskPassScript());
     }
@@ -133,7 +134,7 @@ public class NativeGitConnection implements GitConnection {
      */
     public NativeGitConnection(NativeGit nativeGit,
                                GitUser user,
-                               SshKeysManager keysManager,
+                               SshKeyProvider keysManager,
                                CredentialsLoader credentialsLoader,
                                GitAskPassScript gitAskPassScript
                               )

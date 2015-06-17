@@ -26,7 +26,7 @@ import org.eclipse.che.commons.user.UserImpl;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.eclipse.che.git.impl.nativegit.CredentialsProvider;
 import org.eclipse.che.git.impl.nativegit.NativeGitConnectionFactory;
-import org.eclipse.che.git.impl.nativegit.SshKeyUploader;
+import org.eclipse.che.git.impl.nativegit.ssh.SshKeyUploader;
 import org.eclipse.che.ide.ext.git.shared.Branch;
 import org.eclipse.che.ide.ext.git.shared.BranchCheckoutRequest;
 import org.eclipse.che.ide.ext.git.shared.BranchCreateRequest;

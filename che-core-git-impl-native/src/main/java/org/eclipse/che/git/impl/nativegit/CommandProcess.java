@@ -21,6 +21,7 @@ import org.eclipse.che.api.core.util.Watchdog;
 import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.git.impl.nativegit.commands.GitCommand;
 
+import org.eclipse.che.git.impl.nativegit.ssh.SshGitCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +37,26 @@ import java.util.concurrent.TimeUnit;
  */
 public class CommandProcess {
     private static final Logger LOG = LoggerFactory.getLogger(CommandProcess.class);
+
+
+    /**
+     * @param command
+     *         GitCommand that will be executed
+     * @param lineConsumerFactory
+     *         factory that provides LineConsumer for propagate output of this command
+     * @throws GitException
+     *         when command execution error occurs
+     */
+    public static void executeGitCommand(SshGitCommand command, LineConsumerFactory lineConsumerFactory) throws GitException {
+
+        try {
+
+            executeGitCommand(command, lineConsumerFactory);
+        } finally {
+
+        }
+
+    }
 
     /**
      * @param command

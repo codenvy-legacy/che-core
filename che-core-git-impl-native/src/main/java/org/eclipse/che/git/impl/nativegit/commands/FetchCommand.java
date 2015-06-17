@@ -20,7 +20,7 @@ import java.util.List;
  *
  * @author Eugene Voevodin
  */
-public class FetchCommand extends GitCommand<Void> {
+public class FetchCommand extends RemoteUperationCommand<Void> {
 
     private List<String> refSpec;
     private String   remote;
@@ -33,9 +33,8 @@ public class FetchCommand extends GitCommand<Void> {
     /** @see GitCommand#execute() */
     @Override
     public Void execute() throws GitException {
-        remote = remote == null ? "origin" : remote;
         reset();
-        commandLine.add("fetch", remote);
+        commandLine.add("fetch", getRemoteUrl());
         commandLine.add(refSpec);
         if (prune) {
             commandLine.add("--prune");
@@ -53,16 +52,6 @@ public class FetchCommand extends GitCommand<Void> {
      */
     public FetchCommand setRefSpec(List<String> refSpec) {
         this.refSpec = refSpec;
-        return this;
-    }
-
-    /**
-     * @param remote
-     *         remote name
-     * @return FetchCommand with established remote fetch
-     */
-    public FetchCommand setRemote(String remote) {
-        this.remote = remote;
         return this;
     }
 

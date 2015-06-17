@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
  *
  * @author Eugene Voevodin
  */
-public class BranchRenameCommand extends GitCommand<Void> {
+public class BranchRenameCommand extends RemoteUperationCommand<Void> {
 
     private static final Pattern checkoutErrorPattern = Pattern.compile(".*fatal: A branch named '.*' already exists.*");
 

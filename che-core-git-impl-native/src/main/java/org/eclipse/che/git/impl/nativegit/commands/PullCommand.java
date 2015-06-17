@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.git.impl.nativegit.commands;
 
+import com.google.common.base.MoreObjects;
+
 import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.api.git.shared.GitUser;
 
@@ -22,9 +24,8 @@ import java.util.Map;
  *
  * @author Eugene Voevodin
  */
-public class PullCommand extends GitCommand<Void> {
+public class PullCommand extends RemoteUperationCommand<Void> {
 
-    private String  remote;
     private String  refSpec;
     private GitUser author;
 
@@ -35,7 +36,7 @@ public class PullCommand extends GitCommand<Void> {
     /** @see GitCommand#execute() */
     @Override
     public Void execute() throws GitException {
-        remote = remote == null ? "origin" : remote;
+        String remote = MoreObjects.firstNonNull(getRemoteUrl(), "origin");
         reset();
         commandLine.add("pull");
         if (remote != null) {
@@ -56,15 +57,7 @@ public class PullCommand extends GitCommand<Void> {
         return null;
     }
 
-    /**
-     * @param remoteName
-     *         remote name
-     * @return PullCommand with established remote name
-     */
-    public PullCommand setRemote(String remoteName) {
-        this.remote = remoteName;
-        return this;
-    }
+
 
     /**
      * @param refSpec

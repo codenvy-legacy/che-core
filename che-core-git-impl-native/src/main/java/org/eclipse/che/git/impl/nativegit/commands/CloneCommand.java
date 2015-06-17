@@ -10,22 +10,21 @@
  *******************************************************************************/
 package org.eclipse.che.git.impl.nativegit.commands;
 
-import java.io.File;
-
 import org.eclipse.che.api.git.GitException;
+
+import java.io.File;
 
 /**
  * This command used for cloning repositories.
  *
  * @author Eugene Voevodin
  */
-public class CloneCommand extends GitCommand<Void> {
+public class CloneCommand extends RemoteUperationCommand<Void> {
 
-    private String uri;
     private String remoteName;
 
-    public CloneCommand(File place) {
-        super(place);
+    public CloneCommand(File repository) {
+        super(repository);
     }
 
     /** @see GitCommand#execute() */
@@ -36,21 +35,11 @@ public class CloneCommand extends GitCommand<Void> {
         if (remoteName != null) {
             commandLine.add("--origin", remoteName);
         } //else default origin name
-        commandLine.add(uri, getRepository().getAbsolutePath());
+        commandLine.add(getRemoteUrl(), getRepository().getAbsolutePath());
         // Progress not shown if not a terminal. Activating progress output. See git clone man page.
         commandLine.add("--progress");
         start();
         return null;
-    }
-
-    /**
-     * @param uri
-     *         link to repository that will be cloned
-     * @return CloneCommand with established uri
-     */
-    public CloneCommand setUri(String uri) {
-        this.uri = uri;
-        return this;
     }
 
     /**

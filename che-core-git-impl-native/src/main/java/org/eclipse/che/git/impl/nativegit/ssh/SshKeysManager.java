@@ -8,11 +8,12 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.git.impl.nativegit;
+package org.eclipse.che.git.impl.nativegit.ssh;
 
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.commons.env.EnvironmentContext;
+import org.eclipse.che.git.impl.nativegit.GitUrl;
 import org.eclipse.che.ide.ext.ssh.server.SshKey;
 import org.eclipse.che.ide.ext.ssh.server.SshKeyPair;
 import org.eclipse.che.ide.ext.ssh.server.SshKeyStore;
@@ -129,7 +130,7 @@ public class SshKeysManager {
 
         for (Iterator<SshKeyUploader> itr = sshKeyUploaders.iterator(); uploader == null && itr.hasNext(); ) {
             SshKeyUploader next = itr.next();
-            if (next.match(url)) {
+            if (next.canUpload(url)) {
                 uploader = next;
             }
         }
@@ -153,10 +154,9 @@ public class SshKeysManager {
     }
 
     /**
-     *
      * /home/jumper/code/plugin-git/codenvy-ext-git/target/ssh-keys/host.com/codenvy/identity
      * /home/jumper/code/plugin-git/codenvy-ext-git/target/ssh-keys/codenvy/host.com/identity
-     *
+     * <p/>
      * Removes ssh key from file system.
      * If ssh key doesn't exist - nothing will be done.
      * <p/>
