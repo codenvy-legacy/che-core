@@ -10,18 +10,27 @@
  *******************************************************************************/
 package org.eclipse.che.ide.actions;
 
-import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
-import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.api.action.Action;
-import org.eclipse.che.ide.api.action.ActionEvent;
-import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.projecttype.wizard.presenter.ProjectWizardPresenter;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-/** @author Evgen Vidolob */
+import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
+import org.eclipse.che.ide.Resources;
+import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
+import org.eclipse.che.ide.api.action.ActionEvent;
+import org.eclipse.che.ide.api.app.AppContext;
+import org.eclipse.che.ide.projecttype.wizard.presenter.ProjectWizardPresenter;
+
+import javax.annotation.Nonnull;
+import java.util.Arrays;
+
+import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
+
+/**
+ * @author Evgen Vidolob
+ * @author Dmitry Shnurenko
+ */
 @Singleton
-public class NewProjectAction extends Action {
+public class NewProjectAction extends AbstractPerspectiveAction {
 
     private final ProjectWizardPresenter wizard;
     private final AnalyticsEventLogger   eventLogger;
@@ -29,7 +38,7 @@ public class NewProjectAction extends Action {
 
     @Inject
     public NewProjectAction(Resources resources, ProjectWizardPresenter wizard, AnalyticsEventLogger eventLogger, AppContext appContext) {
-        super("Project...", "Create new project", resources.project());
+        super(Arrays.asList(PROJECT_PERSPECTIVE_ID), "Project...", "Create new project", resources.project(), null);
         this.wizard = wizard;
         this.eventLogger = eventLogger;
         this.appContext = appContext;
@@ -42,11 +51,11 @@ public class NewProjectAction extends Action {
     }
 
     @Override
-    public void update(ActionEvent e) {
+    public void updateInPerspective(@Nonnull ActionEvent event) {
         if (appContext.getCurrentProject() == null) {
-            e.getPresentation().setEnabled(appContext.getCurrentUser().isUserPermanent());
+            event.getPresentation().setEnabled(appContext.getCurrentUser().isUserPermanent());
         } else {
-            e.getPresentation().setEnabled(!appContext.getCurrentProject().isReadOnly());
+            event.getPresentation().setEnabled(!appContext.getCurrentProject().isReadOnly());
         }
     }
 }

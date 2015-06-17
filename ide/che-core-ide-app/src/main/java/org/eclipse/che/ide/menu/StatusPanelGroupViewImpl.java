@@ -17,6 +17,7 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
@@ -28,6 +29,7 @@ import org.eclipse.che.ide.api.action.CustomComponentAction;
 import org.eclipse.che.ide.api.action.IdeActions;
 import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.action.Separator;
+import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.eclipse.che.ide.ui.toolbar.CloseMenuHandler;
 import org.eclipse.che.ide.ui.toolbar.MenuLockLayer;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
@@ -41,9 +43,11 @@ import java.util.Map;
  * Implements {@link StatusPanelGroupView}
  *
  * @author Oleksii Orel
+ * @author Dmitry Shnurenko
  */
 public class StatusPanelGroupViewImpl extends Composite implements StatusPanelGroupView, CloseMenuHandler, ActionSelectedHandler {
-    private final MenuResources resources;
+    private final MenuResources                resources;
+    private final Provider<PerspectiveManager> perspectiveManager;
 
     private final MenuItemPresentationFactory presentationFactory = new MenuItemPresentationFactory();
 
@@ -68,16 +72,14 @@ public class StatusPanelGroupViewImpl extends Composite implements StatusPanelGr
     private List<Action> rightVisibleActions  = new ArrayList<>();
     private List<Action> centerVisibleActions = new ArrayList<>();
     private List<Action> leftVisibleActions   = new ArrayList<>();
-    private List<Action>  newLeftVisibleActions;
-    private List<Action>  newCenterVisibleActions;
-    private List<Action>  newRightVisibleActions;
     private ActionManager actionManager;
 
     /** Create new {@link MainMenuViewImpl} */
     @Inject
-    public StatusPanelGroupViewImpl(MenuResources resources, ActionManager actionManager) {
+    public StatusPanelGroupViewImpl(MenuResources resources, ActionManager actionManager, Provider<PerspectiveManager> perspectiveManager) {
         this.resources = resources;
         this.actionManager = actionManager;
+        this.perspectiveManager = perspectiveManager;
 
         initWidget(rootPanel);
 
@@ -117,7 +119,7 @@ public class StatusPanelGroupViewImpl extends Composite implements StatusPanelGr
         if (selectedMenuBarItem != null) {
             return;
         }
-        newCenterVisibleActions = new ArrayList<>();
+        List<Action> newCenterVisibleActions = new ArrayList<>();
         expandActionGroup(IdeActions.GROUP_CENTER_STATUS_PANEL, newCenterVisibleActions, actionManager);
         if (!newCenterVisibleActions.equals(centerVisibleActions)) {
             centerPanel.clear();
@@ -126,7 +128,7 @@ public class StatusPanelGroupViewImpl extends Composite implements StatusPanelGr
             }
             centerVisibleActions = newCenterVisibleActions;
         }
-        newRightVisibleActions = new ArrayList<>();
+        List<Action> newRightVisibleActions = new ArrayList<>();
         expandActionGroup(IdeActions.GROUP_RIGHT_STATUS_PANEL, newRightVisibleActions, actionManager);
         if (!newRightVisibleActions.equals(rightVisibleActions)) {
             rightPanel.clear();
@@ -135,7 +137,7 @@ public class StatusPanelGroupViewImpl extends Composite implements StatusPanelGr
             }
             rightVisibleActions = newRightVisibleActions;
         }
-        newLeftVisibleActions = new ArrayList<>();
+        List<Action> newLeftVisibleActions = new ArrayList<>();
         expandActionGroup(IdeActions.GROUP_LEFT_STATUS_PANEL, newLeftVisibleActions, actionManager);
         if (!newLeftVisibleActions.equals(leftVisibleActions)) {
             leftPanel.clear();
@@ -177,7 +179,7 @@ public class StatusPanelGroupViewImpl extends Composite implements StatusPanelGr
         final Action[] children = mainActionGroup.getChildren(null);
         for (final Action action : children) {
             final Presentation presentation = presentationFactory.getPresentation(action);
-            final ActionEvent e = new ActionEvent(ActionPlaces.MAIN_MENU, presentation, actionManager, 0);
+            final ActionEvent e = new ActionEvent(ActionPlaces.MAIN_MENU, presentation, actionManager, perspectiveManager.get());
             action.update(e);
             if (presentation.isVisible()) { // add only visible items
                 newVisibleActions.add(action);

@@ -20,14 +20,14 @@ import org.eclipse.che.ide.api.mvp.Presenter;
 import org.eclipse.che.ide.api.parts.PartPresenter;
 import org.eclipse.che.ide.api.parts.PartStack;
 import org.eclipse.che.ide.api.parts.PartStackType;
+import org.eclipse.che.ide.api.parts.Perspective;
+import org.eclipse.che.ide.api.parts.PerspectiveManager;
+import org.eclipse.che.ide.api.parts.PerspectiveManager.PerspectiveTypeListener;
 import org.eclipse.che.ide.api.parts.WorkspaceAgent;
 import org.eclipse.che.ide.menu.MainMenuPresenter;
 import org.eclipse.che.ide.menu.StatusPanelGroupPresenter;
 import org.eclipse.che.ide.ui.toolbar.MainToolbar;
 import org.eclipse.che.ide.ui.toolbar.ToolbarPresenter;
-import org.eclipse.che.ide.workspace.perspectives.general.Perspective;
-import org.eclipse.che.ide.workspace.perspectives.general.PerspectiveManager;
-import org.eclipse.che.ide.workspace.perspectives.general.PerspectiveManager.PerspectiveTypeListener;
 
 /**
  * Root Presenter that implements Workspace logic. Descendant Presenters are injected

@@ -27,20 +27,18 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
-import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import org.eclipse.che.api.analytics.logger.EventLogger;
-//import org.eclipse.che.api.factory.dto.Ide;
 import org.eclipse.che.ide.api.DocumentTitleDecorator;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.Presentation;
-import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.OpenProjectEvent;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.ProjectActionHandler;
 import org.eclipse.che.ide.api.event.WindowActionEvent;
+import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.logger.AnalyticsEventLoggerExt;
 import org.eclipse.che.ide.statepersistance.AppStateManager;
@@ -51,13 +49,13 @@ import org.eclipse.che.ide.workspace.WorkspacePresenter;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 /**
  * Performs initial application startup.
  *
  * @author Nikolay Zamosenchuk
+ * @author Dmitry Shnurenko
  */
 @Singleton
 public class BootstrapController {
@@ -67,35 +65,29 @@ public class BootstrapController {
     private final ExtensionInitializer         extensionInitializer;
     private final EventBus                     eventBus;
     private final ActionManager                actionManager;
-    private final AppCloseHandler              appCloseHandler;
     private final PresentationFactory          presentationFactory;
-    private final AppContext                   appContext;
     private final DocumentTitleDecorator       documentTitleDecorator;
     private final AppStateManager              appStateManager;
-    HandlerRegistration handlerRegistration = null;
+    private final Provider<PerspectiveManager> managerProvider;
 
-
-    /** Create controller. */
     @Inject
     public BootstrapController(Provider<WorkspacePresenter> workspaceProvider,
                                ExtensionInitializer extensionInitializer,
                                DtoRegistrar dtoRegistrar,
                                AnalyticsEventLoggerExt analyticsEventLoggerExt,
                                EventBus eventBus,
-                               AppContext appContext,
                                ActionManager actionManager,
-                               AppCloseHandler appCloseHandler,
                                AppStateManager appStateManager,
-                               DocumentTitleDecorator documentTitleDecorator) {
+                               DocumentTitleDecorator documentTitleDecorator,
+                               Provider<PerspectiveManager> managerProvider) {
         this.workspaceProvider = workspaceProvider;
         this.extensionInitializer = extensionInitializer;
         this.eventBus = eventBus;
-        this.appContext = appContext;
         this.actionManager = actionManager;
         this.analyticsEventLoggerExt = analyticsEventLoggerExt;
-        this.appCloseHandler = appCloseHandler;
         this.documentTitleDecorator = documentTitleDecorator;
         this.appStateManager = appStateManager;
+        this.managerProvider = managerProvider;
 
         presentationFactory = new PresentationFactory();
 
@@ -112,9 +104,6 @@ public class BootstrapController {
     private void startComponent(final Iterator<Map.Entry<String, Provider<Component>>> iterator) {
         if (iterator.hasNext()) {
             final Map.Entry<String, Provider<Component>> componentEntry = iterator.next();
-//            Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-//                @Override
-//                public void execute() {
             componentEntry.getValue().get().start(new Callback<Component, Exception>() {
                 @Override
                 public void onFailure(Exception reason) {
@@ -127,9 +116,6 @@ public class BootstrapController {
                     startComponent(iterator);
                 }
             });
-
-//                }
-//            });
         } else {
             startExtensions();
         }
@@ -250,53 +236,12 @@ public class BootstrapController {
     private void processStartupParameters() {
         final String projectNameToOpen = Config.getProjectName();
         if (projectNameToOpen != null) {
-            handlerRegistration = eventBus.addHandler(ProjectActionEvent.TYPE, getStartupActionHandler());
+            eventBus.addHandler(ProjectActionEvent.TYPE, getStartupActionHandler());
             eventBus.fireEvent(new OpenProjectEvent(projectNameToOpen));
         } else {
             processStartupAction();
-
-//            handlerRegistration = eventBus.addHandler(ProjectActionEvent.TYPE, getFactoryActionHandler());
         }
-
-//        if (appContext.getFactory() != null && appContext.getFactory().getIde() != null) {
-//            final Ide ide = appContext.getFactory().getIde();
-//
-//            if (ide.getOnAppClosed() != null && ide.getOnAppClosed().getActions() != null) {
-//                appCloseHandler.performBeforeClose(ide.getOnAppClosed().getActions());
-//            }
-//
-//            if (ide.getOnAppLoaded() != null && ide.getOnAppLoaded().getActions() != null) {
-//                performActions(ide.getOnAppLoaded().getActions());
-//            }
-//        }
     }
-
-//    private ProjectActionHandler getFactoryActionHandler() {
-//        return new ProjectActionHandler() {
-//            @Override
-//            public void onProjectOpened(ProjectActionEvent event) {
-//                if (handlerRegistration != null) {
-//                    handlerRegistration.removeHandler();
-//                }
-//
-//                if (appContext.getFactory() != null && appContext.getFactory().getIde() != null
-//                    && appContext.getFactory().getIde().getOnProjectOpened() != null
-//                    && appContext.getFactory().getIde().getOnProjectOpened().getActions() != null) {
-//
-//                    performActions(appContext.getFactory().getIde().getOnProjectOpened().getActions());
-//                }
-//            }
-//
-//            @Override
-//            public void onProjectClosing(ProjectActionEvent event) {
-//            }
-//
-//            @Override
-//            public void onProjectClosed(ProjectActionEvent event) {
-//                //do nothing
-//            }
-//        };
-//    }
 
     private ProjectActionHandler getStartupActionHandler() {
         return new ProjectActionHandler() {
@@ -323,12 +268,6 @@ public class BootstrapController {
         }
     }
 
-//    private void performActions(List<org.eclipse.che.api.factory.dto.Action> actions) {
-//        for (org.eclipse.che.api.factory.dto.Action action : actions) {
-//            performAction(action.getId(), action.getProperties());
-//        }
-//    }
-
     private void performAction(String actionId) {
         performAction(actionId, null);
     }
@@ -342,7 +281,9 @@ public class BootstrapController {
 
         final Presentation presentation = presentationFactory.getPresentation(action);
 
-        ActionEvent e = new ActionEvent("", presentation, actionManager, 0, parameters);
+        PerspectiveManager manager = managerProvider.get();
+
+        ActionEvent e = new ActionEvent("", presentation, actionManager, manager, parameters);
         action.update(e);
 
         if (presentation.isEnabled() && presentation.isVisible()) {
@@ -354,7 +295,8 @@ public class BootstrapController {
      * Handles any of initialization errors.
      * Tries to call predefined IDE.eventHandlers.ideInitializationFailed function.
      *
-     * @param reason failure encountered
+     * @param reason
+     *         failure encountered
      */
     private native void initializationFailed(Exception reason) /*-{
         try {

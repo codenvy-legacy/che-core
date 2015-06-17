@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.vfs.server;
 
+import com.google.common.annotations.Beta;
+
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
@@ -259,6 +261,24 @@ public interface VirtualFile extends Comparable<VirtualFile> {
     VirtualFile copyTo(VirtualFile parent) throws ForbiddenException, ConflictException, ServerException;
 
     /**
+     * Copies this file to the new parent.
+     *
+     * @param parent the new parent
+     * @param name a new name for the moved source, can be left {@code null} or empty {@code String} for current source name
+     * @param overWrite should the destination be overwritten, set to true to overwrite, false otherwise
+     * @return reference to copy
+     * @throws ForbiddenException if specified {@code parent} doesn't denote a
+     * folder or user doesn't have write permission to the specified
+     * {@code parent}
+     * @throws ConflictException if {@code parent} already contains item with
+     * the same name as this virtual file has
+     * @throws ServerException if other error occurs
+     * @see #isFolder()
+     */
+    @Beta
+    VirtualFile copyTo(VirtualFile parent, String name, boolean overWrite) throws ForbiddenException, ConflictException, ServerException;
+
+    /**
      * Moves this file to the new parent.
      *
      * @param parent
@@ -278,8 +298,32 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      *         if other error occurs
      * @see #isFolder()
      */
+    @Beta
     VirtualFile moveTo(VirtualFile parent, String lockToken) throws ForbiddenException, ConflictException, ServerException;
 
+    /**
+     * Moves this VirtualFile under new parent.
+     *
+     * @param parent parent to move
+     * @param name a new name for the moved source, can be left {@code null} or empty {@code String} for current source name
+     * @param overWrite should the destination be overwritten, set to true to overwrite, false otherwise
+     * @param lockToken lock token. This parameter is required if the file is
+     * locked
+     * @throws ForbiddenException if any of following conditions are met:
+     * <ul>
+     * <li>specified {@code parent} doesn't denote a folder</li>
+     * <li>user doesn't have write permission to the specified {@code parent} or
+     * this item</li>
+     * <li>this item is locked file and {@code lockToken} is {@code null} or
+     * doesn't match</li>
+     * </ul>
+     * @throws ConflictException if {@code parent} already contains item with
+     * the same name as this virtual file has
+     * @throws ServerException if other error occurs
+     * @see #isFolder()
+     */
+    VirtualFile moveTo(VirtualFile parent, String name, boolean overWrite, String lockToken) throws ForbiddenException, ConflictException, ServerException;
+    
     /**
      * Renames and (or) update media type of this VirtualFile.
      *

@@ -16,7 +16,6 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.actions.ProjectPerspectiveAction;
 import org.eclipse.che.ide.actions.CloseProjectAction;
 import org.eclipse.che.ide.actions.CreateModuleAction;
 import org.eclipse.che.ide.actions.DeleteItemAction;
@@ -34,6 +33,7 @@ import org.eclipse.che.ide.actions.OpenNodeAction;
 import org.eclipse.che.ide.actions.OpenProjectAction;
 import org.eclipse.che.ide.actions.OpenSelectedFileAction;
 import org.eclipse.che.ide.actions.ProjectConfigurationAction;
+import org.eclipse.che.ide.actions.ProjectPerspectiveAction;
 import org.eclipse.che.ide.actions.RedirectToFeedbackAction;
 import org.eclipse.che.ide.actions.RedirectToForumsAction;
 import org.eclipse.che.ide.actions.RedirectToHelpAction;
@@ -86,7 +86,7 @@ public class StandardComponentInitializer {
     }
 
     @Inject
-    private ProjectPerspectiveAction changePerspective;
+    private ProjectPerspectiveAction projectPerspectiveAction;
 
     @Inject
     private EditorRegistry editorRegistry;
@@ -445,11 +445,7 @@ public class StandardComponentInitializer {
         changeResourceGroup.addSeparator();
 
         DefaultActionGroup mainToolbarGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_MAIN_TOOLBAR);
-        mainToolbarGroup.addSeparator();
         mainToolbarGroup.add(newGroup);
-        mainToolbarGroup.addSeparator();
-        mainToolbarGroup.addSeparator();
-        mainToolbarGroup.add(saveAllAction);
         mainToolbarGroup.addSeparator();
         mainToolbarGroup.add(changeResourceGroup);
         toolbarPresenter.bindMainGroup(mainToolbarGroup);
@@ -457,7 +453,7 @@ public class StandardComponentInitializer {
         DefaultActionGroup rightToolbarGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_RIGHT_TOOLBAR);
         toolbarPresenter.bindRightGroup(rightToolbarGroup);
 
-        rightToolbarGroup.add(changePerspective);
+        rightToolbarGroup.add(projectPerspectiveAction);
 
         // Define hot-keys
         keyBinding.getGlobal().addKey(new KeyBuilder().action().alt().charCode('n').build(), "navigateToFile");

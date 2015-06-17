@@ -10,45 +10,50 @@
  *******************************************************************************/
 package org.eclipse.che.ide.actions;
 
-import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
-
-import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.api.action.ActionEvent;
-import org.eclipse.che.ide.api.action.ProjectAction;
-import org.eclipse.che.ide.api.event.ConfigureProjectEvent;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
+
+import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
+import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.Resources;
+import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
+import org.eclipse.che.ide.api.action.ActionEvent;
+import org.eclipse.che.ide.api.app.AppContext;
+import org.eclipse.che.ide.api.event.ConfigureProjectEvent;
+
+import javax.annotation.Nonnull;
+import java.util.Arrays;
+
+import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
 
 /**
  * Call Project wizard to change project type
  *
  * @author Evgen Vidolob
+ * @author Dmitry Shnurenko
  */
 @Singleton
-public class ProjectConfigurationAction extends ProjectAction {
+public class ProjectConfigurationAction extends AbstractPerspectiveAction {
 
     private final AnalyticsEventLogger eventLogger;
     private final EventBus             eventBus;
+    private final AppContext           appContext;
 
     @Inject
-    public ProjectConfigurationAction(CoreLocalizationConstant localization,
+    public ProjectConfigurationAction(AppContext appContext,
+                                      CoreLocalizationConstant localization,
                                       AnalyticsEventLogger eventLogger,
                                       Resources resources,
                                       EventBus eventBus) {
-        super(localization.actionProjectConfigurationDescription(), localization.actionProjectConfigurationTitle(),
+        super(Arrays.asList(PROJECT_PERSPECTIVE_ID),
+              localization.actionProjectConfigurationDescription(),
+              localization.actionProjectConfigurationTitle(),
+              null,
               resources.projectConfiguration());
         this.eventLogger = eventLogger;
         this.eventBus = eventBus;
-    }
-
-    @Override
-    public void updateProjectAction(ActionEvent e) {
-        e.getPresentation().setEnabledAndVisible(true);
+        this.appContext = appContext;
     }
 
     @Override
@@ -59,5 +64,10 @@ public class ProjectConfigurationAction extends ProjectAction {
 
         eventLogger.log(this);
         eventBus.fireEvent(new ConfigureProjectEvent(appContext.getCurrentProject().getRootProject()));
+    }
+
+    @Override
+    public void updateInPerspective(@Nonnull ActionEvent event) {
+        event.getPresentation().setEnabledAndVisible(true);
     }
 }

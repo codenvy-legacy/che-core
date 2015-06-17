@@ -55,10 +55,16 @@ public class FolderEntry extends VirtualFileEntry {
         super(workspace, virtualFile);
     }
 
+    @Override
     public FolderEntry copyTo(String newParent) throws NotFoundException, ForbiddenException, ConflictException, ServerException {
+        return copyTo(newParent, getName(), false);
+    }
+
+    @Override
+    public FolderEntry copyTo(String newParent, String name, boolean overWrite) throws NotFoundException, ForbiddenException, ConflictException, ServerException {
         final VirtualFile vf = getVirtualFile();
         final MountPoint mp = vf.getMountPoint();
-        return new FolderEntry(getWorkspace(), vf.copyTo(mp.getVirtualFile(newParent)));
+        return new FolderEntry(getWorkspace(), vf.copyTo(mp.getVirtualFile(newParent),name,overWrite));
     }
 
     /**

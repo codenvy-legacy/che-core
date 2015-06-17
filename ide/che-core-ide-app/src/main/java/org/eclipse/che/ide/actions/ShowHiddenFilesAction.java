@@ -11,13 +11,17 @@
 package org.eclipse.che.ide.actions;
 
 import com.google.gwt.core.client.Callback;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.web.bindery.event.shared.EventBus;
+
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper;
 import org.eclipse.che.api.promises.client.js.JsPromiseError;
 import org.eclipse.che.api.promises.client.js.Promises;
 import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.api.action.Action;
+import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.PromisableAction;
 import org.eclipse.che.ide.api.app.AppContext;
@@ -26,26 +30,35 @@ import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
 import org.eclipse.che.ide.api.project.tree.TreeSettings;
 import org.eclipse.che.ide.util.loging.Log;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.google.web.bindery.event.shared.EventBus;
+import javax.annotation.Nonnull;
+import java.util.Arrays;
 
 import static org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper.createFromCallback;
+import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
 
-/** @author Artem Zatsarynnyy */
+/**
+ * @author Artem Zatsarynnyy
+ * @author Dmitry Shnurenko
+ */
 @Singleton
-public class ShowHiddenFilesAction extends Action implements PromisableAction {
+public class ShowHiddenFilesAction extends AbstractPerspectiveAction implements PromisableAction {
 
     public static final String SHOW_HIDDEN_FILES_PARAM_ID = "showHiddenFiles";
-    private final AppContext           appContext;
-    private final AnalyticsEventLogger eventLogger;
-    private final EventBus             eventBus;
+    private final AppContext               appContext;
+    private final AnalyticsEventLogger     eventLogger;
+    private final EventBus                 eventBus;
     private final CoreLocalizationConstant localizationConstant;
 
     @Inject
-    public ShowHiddenFilesAction(AppContext appContext, AnalyticsEventLogger eventLogger, EventBus eventBus,
+    public ShowHiddenFilesAction(AppContext appContext,
+                                 AnalyticsEventLogger eventLogger,
+                                 EventBus eventBus,
                                  CoreLocalizationConstant localizationConstant) {
-        super(localizationConstant.actionShowHiddenFilesTitle(), localizationConstant.actionShowHiddenFilesDescription(), null, null);
+        super(Arrays.asList(PROJECT_PERSPECTIVE_ID),
+              localizationConstant.actionShowHiddenFilesTitle(),
+              localizationConstant.actionShowHiddenFilesDescription(),
+              null,
+              null);
         this.appContext = appContext;
         this.eventLogger = eventLogger;
         this.eventBus = eventBus;
@@ -54,8 +67,8 @@ public class ShowHiddenFilesAction extends Action implements PromisableAction {
 
     /** {@inheritDoc} */
     @Override
-    public void update(ActionEvent e) {
-        e.getPresentation().setVisible(appContext.getCurrentProject() != null);
+    public void updateInPerspective(@Nonnull ActionEvent event) {
+        event.getPresentation().setVisible(appContext.getCurrentProject() != null);
     }
 
     /** {@inheritDoc} */

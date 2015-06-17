@@ -15,12 +15,14 @@ import elemental.events.Event;
 import elemental.events.EventListener;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
 import org.eclipse.che.ide.api.keybinding.Scheme;
+import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.browser.UserAgent;
@@ -35,45 +37,23 @@ import javax.annotation.Nullable;
 /**
  * Implementation of the {@link KeyBindingAgent}.
  *
- * @author <a href="mailto:evidolob@exoplatform.com">Evgen Vidolob</a>
- * @version $Id:
+ * @author Evgen Vidolob
+ * @author Dmitry Shnurenko
  */
 public class KeyBindingManager implements KeyBindingAgent {
 
-    private final PresentationFactory presentationFactory;
-    private final EventListener downListener = new EventListener() {
-        @Override
-        public void handleEvent(Event event) {
-            SignalEvent signalEvent = SignalEventUtils.create(event, false);
-            if (signalEvent == null) {
-                return;
-            }
-            //handle event in active scheme
+    private final PresentationFactory          presentationFactory;
+    private final Provider<PerspectiveManager> perspectiveManager;
 
-            int digest = CharCodeWithModifiers.computeKeyDigest(signalEvent);
-            Array<String> actionIds = activeScheme.getActionIds(digest);
-            if (!actionIds.isEmpty()) {
-                runActions(actionIds);
-                event.preventDefault();
-                event.stopPropagation();
-            }
-            //else handle event in global scheme
-            else if (!(actionIds = globalScheme.getActionIds(digest)).isEmpty()) {
-                runActions(actionIds);
-                event.preventDefault();
-                event.stopPropagation();
-            }
-            //default, lets this event handle other part of the IDE
-        }
-    };
     private SchemeImpl    globalScheme;
     private SchemeImpl    activeScheme;
     private SchemeImpl    eclipseScheme;
     private ActionManager actionManager;
 
     @Inject
-    public KeyBindingManager(ActionManager actionManager) {
+    public KeyBindingManager(ActionManager actionManager, Provider<PerspectiveManager> perspectiveManager) {
         this.actionManager = actionManager;
+        this.perspectiveManager = perspectiveManager;
         globalScheme = new SchemeImpl("ide.ui.keyBinding.global", "Global");
         eclipseScheme = new SchemeImpl("ide.ui.keyBinding.eclipse", "Eclipse Scheme");
         //TODO check user settings
@@ -83,6 +63,31 @@ public class KeyBindingManager implements KeyBindingAgent {
 
         // Attach the listeners.
         final Element documentElement = Elements.getDocument().getDocumentElement();
+        EventListener downListener = new EventListener() {
+            @Override
+            public void handleEvent(Event event) {
+                SignalEvent signalEvent = SignalEventUtils.create(event, false);
+                if (signalEvent == null) {
+                    return;
+                }
+                //handle event in active scheme
+
+                int digest = CharCodeWithModifiers.computeKeyDigest(signalEvent);
+                Array<String> actionIds = activeScheme.getActionIds(digest);
+                if (!actionIds.isEmpty()) {
+                    runActions(actionIds);
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                //else handle event in global scheme
+                else if (!(actionIds = globalScheme.getActionIds(digest)).isEmpty()) {
+                    runActions(actionIds);
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                //default, lets this event handle other part of the IDE
+            }
+        };
         if (UserAgent.isFirefox()) {
             // firefox fiers keypress events
             documentElement.addEventListener(Event.KEYPRESS, downListener, true);
@@ -95,10 +100,10 @@ public class KeyBindingManager implements KeyBindingAgent {
     private void runActions(Array<String> actionIds) {
         for (String actionId : actionIds.asIterable()) {
             Action action = actionManager.getAction(actionId);
-            if(action == null){
+            if (action == null) {
                 continue;
             }
-            ActionEvent e = new ActionEvent("", presentationFactory.getPresentation(action), actionManager, 0);
+            ActionEvent e = new ActionEvent("", presentationFactory.getPresentation(action), actionManager, perspectiveManager.get());
             action.update(e);
             if (e.getPresentation().isEnabled() && e.getPresentation().isVisible()) {
                 action.actionPerformed(e);

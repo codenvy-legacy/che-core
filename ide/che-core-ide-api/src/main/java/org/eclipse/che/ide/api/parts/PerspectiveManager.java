@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.workspace.perspectives.general;
+package org.eclipse.che.ide.api.parts;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -18,8 +18,6 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
 
 /**
  * The class stores current perspective type. Contains listeners which do some actions when type is changed. By default PROJECT
@@ -41,7 +39,7 @@ public class PerspectiveManager {
         this.perspectives = perspectives;
 
         //perspective by default
-        currentPerspectiveId = PROJECT_PERSPECTIVE_ID;
+        currentPerspectiveId = "Project Perspective";
     }
 
     /** Returns current active perspective. The method can return null, if current perspective isn't found. */

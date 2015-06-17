@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.action;
 
+import org.eclipse.che.ide.api.parts.PerspectiveManager;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -25,18 +27,18 @@ public class AppCloseActionEvent extends ActionEvent {
     public AppCloseActionEvent(@Nonnull String place,
                                @Nonnull Presentation presentation,
                                @Nonnull ActionManager actionManager,
-                               int modifiers) {
+                               @Nonnull PerspectiveManager perspectiveManager) {
 
-        super(place, presentation, actionManager, modifiers);
+        super(place, presentation, actionManager, perspectiveManager);
     }
 
     public AppCloseActionEvent(@Nonnull String place,
                                @Nonnull Presentation presentation,
                                @Nonnull ActionManager actionManager,
-                               int modifiers,
+                               @Nonnull PerspectiveManager perspectiveManager,
                                @Nullable Map<String, String> parameters) {
 
-        super(place, presentation, actionManager, modifiers, parameters);
+        super(place, presentation, actionManager, perspectiveManager, parameters);
     }
 
     /**

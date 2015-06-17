@@ -93,9 +93,12 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import org.eclipse.che.api.project.shared.dto.CopyOptions;
+import org.eclipse.che.api.project.shared.dto.MoveOptions;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
@@ -1074,6 +1077,82 @@ public class ProjectServiceTest {
     }
 
     @Test
+    public void testCopyFileWithRename() throws Exception {
+        Project myProject = pm.getProject(workspace, "my_project");
+        myProject.getBaseFolder().createFolder("a/b/c");
+        ((FolderEntry) myProject.getBaseFolder().getChild("a/b")).createFile("test.txt", "to be or not no be".getBytes(), "text/plain");
+
+        Map<String, List<String>> headers = new HashMap<>();
+        headers.put("Content-Type", Arrays.asList("application/json"));
+
+        CopyOptions descriptor = DtoFactory.getInstance().createDto(CopyOptions.class);
+        descriptor.setName("copyOfTest.txt");
+        descriptor.setOverWrite(false);
+
+        ContainerResponse response = launcher.service("POST",
+                String.format(
+                        "http://localhost:8080/api/project/%s/copy/my_project/a/b/test.txt?to=/my_project/a/b/c",
+                        workspace),
+                "http://localhost:8080/api", headers, DtoFactory.getInstance().toJson(descriptor).getBytes(), null);
+        assertEquals(response.getStatus(), 201, "Error: " + response.getEntity());
+        assertEquals(response.getHttpHeaders().getFirst("Location"),
+                URI.create(String.format("http://localhost:8080/api/project/%s/file/my_project/a/b/c/copyOfTest.txt", workspace)));
+        assertNotNull(myProject.getBaseFolder().getChild("a/b/c/copyOfTest.txt")); // new
+        assertNotNull(myProject.getBaseFolder().getChild("a/b/test.txt")); // old
+    }
+
+    @Test
+    public void testCopyFileWithRenameAndOverwrite() throws Exception {
+        Project myProject = pm.getProject(workspace, "my_project");
+        myProject.getBaseFolder().createFolder("a/b/c");
+
+        // File names
+        String originFileName = "test.txt";
+        String destinationFileName = "overwriteMe.txt";
+
+        // File contents
+        String originContent = "to be or not no be";
+        String overwritenContent = "that is the question";
+
+        ((FolderEntry) myProject.getBaseFolder().getChild("a/b")).createFile(originFileName, originContent.getBytes(), "text/plain");
+        ((FolderEntry) myProject.getBaseFolder().getChild("a/b/c")).createFile(destinationFileName, overwritenContent.getBytes(), "text/plain");
+
+        Map<String, List<String>> headers = new HashMap<>();
+        headers.put("Content-Type", Arrays.asList("application/json"));
+
+        CopyOptions descriptor = DtoFactory.getInstance().createDto(CopyOptions.class);
+        descriptor.setName(destinationFileName);
+        descriptor.setOverWrite(true);
+
+        ContainerResponse response = launcher.service("POST",
+                String.format(
+                        "http://localhost:8080/api/project/%s/copy/my_project/a/b/" + originFileName + "?to=/my_project/a/b/c",
+                        workspace),
+                "http://localhost:8080/api", headers, DtoFactory.getInstance().toJson(descriptor).getBytes(), null);
+        assertEquals(response.getStatus(), 201, "Error: " + response.getEntity());
+        assertEquals(response.getHttpHeaders().getFirst("Location"),
+                URI.create(String.format("http://localhost:8080/api/project/%s/file/my_project/a/b/c/" + destinationFileName, workspace)));
+        assertNotNull(myProject.getBaseFolder().getChild("a/b/c/" + destinationFileName)); // new
+        assertNotNull(myProject.getBaseFolder().getChild("a/b/" + originFileName)); // old
+
+        Scanner inputStreamScanner = null;
+        String theFirstLineFromDestinationFile = null;
+
+        try {
+            inputStreamScanner = new Scanner(myProject.getBaseFolder().getChild("a/b/c/" + destinationFileName).getVirtualFile().getContent().getStream());
+            theFirstLineFromDestinationFile = inputStreamScanner.nextLine();
+            // destination should contain original file's content
+            assertEquals(theFirstLineFromDestinationFile, originContent);
+        } catch (ForbiddenException | ServerException e) {
+            Assert.fail(e.getMessage());
+        } finally {
+            if (inputStreamScanner != null) {
+                inputStreamScanner.close();
+            }
+        }
+    }
+
+    @Test
     public void testCopyFolder() throws Exception {
         Project myProject = pm.getProject(workspace, "my_project");
         myProject.getBaseFolder().createFolder("a/b/c");
@@ -1088,6 +1167,73 @@ public class ProjectServiceTest {
                      URI.create(String.format("http://localhost:8080/api/project/%s/children/my_project/a/b/c/b", workspace)));
         assertNotNull(myProject.getBaseFolder().getChild("a/b/test.txt"));
         assertNotNull(myProject.getBaseFolder().getChild("a/b/c/b/test.txt"));
+    }
+
+    @Test
+    public void testCopyFolderWithRename() throws Exception {
+        Project myProject = pm.getProject(workspace, "my_project");
+        myProject.getBaseFolder().createFolder("a/b/c");
+        ((FolderEntry) myProject.getBaseFolder().getChild("a/b")).createFile("test.txt", "to be or not no be".getBytes(), "text/plain");
+
+        // new name for folder
+        final String renamedFolder = "renamedFolder";
+
+        Map<String, List<String>> headers = new HashMap<>();
+        headers.put("Content-Type", Arrays.asList("application/json"));
+
+        CopyOptions descriptor = DtoFactory.getInstance().createDto(CopyOptions.class);
+        descriptor.setName(renamedFolder);
+        descriptor.setOverWrite(false);
+
+        ContainerResponse response = launcher.service("POST",
+                String.format(
+                        "http://localhost:8080/api/project/%s/copy/my_project/a/b?to=/my_project/a/b/c",
+                        workspace),
+                "http://localhost:8080/api", headers, DtoFactory.getInstance().toJson(descriptor).getBytes(), null);
+        assertEquals(response.getStatus(), 201, "Error: " + response.getEntity());
+        assertEquals(response.getHttpHeaders().getFirst("Location"),
+                URI.create(String.format("http://localhost:8080/api/project/%s/children/my_project/a/b/c/%s", workspace, renamedFolder)));
+        assertNotNull(myProject.getBaseFolder().getChild("a/b/test.txt"));
+        assertNotNull(myProject.getBaseFolder().getChild(String.format("a/b/c/%s/test.txt", renamedFolder)));
+    }
+    
+    @Test
+    public void testCopyFolderWithRenameAndOverwrite() throws Exception {
+        Project myProject = pm.getProject(workspace, "my_project");
+        myProject.getBaseFolder().createFolder("a/b/c");
+
+        // File names
+        String originFileName = "test.txt";
+        String destinationFileName = "overwriteMe.txt";
+
+        // File contents
+        String originContent = "to be or not no be";
+        String overwritenContent = "that is the question";
+        
+        // new name for folder
+        final String renamedFolder = "renamedFolder";
+
+        ((FolderEntry) myProject.getBaseFolder().getChild("a/b")).createFile(originFileName, originContent.getBytes(), "text/plain");
+        ((FolderEntry) myProject.getBaseFolder().getChild("a/b/c")).createFile(destinationFileName, overwritenContent.getBytes(), "text/plain");
+
+        Map<String, List<String>> headers = new HashMap<>();
+        headers.put("Content-Type", Arrays.asList("application/json"));
+
+        CopyOptions descriptor = DtoFactory.getInstance().createDto(CopyOptions.class);
+        descriptor.setName(renamedFolder);
+        descriptor.setOverWrite(true);
+
+        ContainerResponse response = launcher.service("POST",
+                String.format(
+                        "http://localhost:8080/api/project/%s/copy/my_project/a/b?to=/my_project/a/b/c",
+                        workspace),
+                "http://localhost:8080/api", headers, DtoFactory.getInstance().toJson(descriptor).getBytes(), null);
+        assertEquals(response.getStatus(), 201, "Error: " + response.getEntity());
+        assertEquals(response.getHttpHeaders().getFirst("Location"),
+                URI.create(String.format("http://localhost:8080/api/project/%s/children/my_project/a/b/c/%s", workspace, renamedFolder)));
+        assertNotNull(myProject.getBaseFolder().getChild("a/b/test.txt"));
+        assertNotNull(myProject.getBaseFolder().getChild(String.format("a/b/c/%s/test.txt", renamedFolder)));
+        assertEquals(myProject.getBaseFolder().getChild("a/b/test.txt").getName(), myProject.getBaseFolder().getChild(String.format("a/b/c/%s/%s", renamedFolder, originFileName)).getName());
     }
 
     @Test
@@ -1108,6 +1254,84 @@ public class ProjectServiceTest {
     }
 
     @Test
+    public void testMoveFileWithRename() throws Exception {
+        Project myProject = pm.getProject(workspace, "my_project");
+        myProject.getBaseFolder().createFolder("a/b/c");
+        ((FolderEntry) myProject.getBaseFolder().getChild("a/b")).createFile("test.txt", "to be or not no be".getBytes(), "text/plain");
+        
+        // name for file after move
+        final String destinationName = "copyOfTestForMove.txt";
+
+        Map<String, List<String>> headers = new HashMap<>();
+        headers.put("Content-Type", Arrays.asList("application/json"));
+
+        MoveOptions descriptor = DtoFactory.getInstance().createDto(MoveOptions.class);
+        descriptor.setName(destinationName);
+        descriptor.setOverWrite(false);
+
+        ContainerResponse response = launcher.service("POST",
+                String.format(
+                        "http://localhost:8080/api/project/%s/move/my_project/a/b/test.txt?to=/my_project/a/b/c",
+                        workspace),
+                "http://localhost:8080/api", headers, DtoFactory.getInstance().toJson(descriptor).getBytes(), null);
+        assertEquals(response.getStatus(), 201, "Error: " + response.getEntity());
+        assertEquals(response.getHttpHeaders().getFirst("Location"),
+                URI.create(String.format("http://localhost:8080/api/project/%s/file/my_project/a/b/c/%s", workspace,destinationName)));
+        VirtualFileEntry theTargetFile = myProject.getBaseFolder().getChild(String.format("a/b/c/%s", destinationName));
+        assertNotNull(theTargetFile); // new
+    }
+    
+    @Test
+    public void testMoveFileWithRenameAndOverwrite() throws Exception {
+        Project myProject = pm.getProject(workspace, "my_project");
+        myProject.getBaseFolder().createFolder("a/b/c");
+
+        // File names
+        String originFileName = "test.txt";
+        String destinationFileName = "overwriteMe.txt";
+
+        // File contents
+        String originContent = "to be or not no be";
+        String overwritenContent = "that is the question";
+
+        ((FolderEntry) myProject.getBaseFolder().getChild("a/b")).createFile(originFileName, originContent.getBytes(), "text/plain");
+        ((FolderEntry) myProject.getBaseFolder().getChild("a/b/c")).createFile(destinationFileName, overwritenContent.getBytes(), "text/plain");
+
+        Map<String, List<String>> headers = new HashMap<>();
+        headers.put("Content-Type", Arrays.asList("application/json"));
+
+        MoveOptions descriptor = DtoFactory.getInstance().createDto(MoveOptions.class);
+        descriptor.setName(destinationFileName);
+        descriptor.setOverWrite(true);
+
+        ContainerResponse response = launcher.service("POST",
+                String.format(
+                        "http://localhost:8080/api/project/%s/move/my_project/a/b/" + originFileName + "?to=/my_project/a/b/c",
+                        workspace),
+                "http://localhost:8080/api", headers, DtoFactory.getInstance().toJson(descriptor).getBytes(), null);
+        assertEquals(response.getStatus(), 201, "Error: " + response.getEntity());
+        assertEquals(response.getHttpHeaders().getFirst("Location"),
+                URI.create(String.format("http://localhost:8080/api/project/%s/file/my_project/a/b/c/" + destinationFileName, workspace)));
+        assertNotNull(myProject.getBaseFolder().getChild("a/b/c/" + destinationFileName)); // new
+
+        Scanner inputStreamScanner = null;
+        String theFirstLineFromDestinationFile = null;
+
+        try {
+            inputStreamScanner = new Scanner(myProject.getBaseFolder().getChild("a/b/c/" + destinationFileName).getVirtualFile().getContent().getStream());
+            theFirstLineFromDestinationFile = inputStreamScanner.nextLine();
+            // destination should contain original file's content
+            assertEquals(theFirstLineFromDestinationFile, originContent);
+        } catch (ForbiddenException | ServerException e) {
+            Assert.fail(e.getMessage());
+        } finally {
+            if (inputStreamScanner != null) {
+                inputStreamScanner.close();
+            }
+        }
+    }
+
+    @Test
     public void testMoveFolder() throws Exception {
         Project myProject = pm.getProject(workspace, "my_project");
         myProject.getBaseFolder().createFolder("a/b/c");
@@ -1123,6 +1347,70 @@ public class ProjectServiceTest {
         assertNotNull(myProject.getBaseFolder().getChild("a/c/test.txt"));
         Assert.assertNull(myProject.getBaseFolder().getChild("a/b/c/test.txt"));
         Assert.assertNull(myProject.getBaseFolder().getChild("a/b/c"));
+    }
+
+    @Test
+    public void testMoveFolderWithRename() throws Exception {
+        Project myProject = pm.getProject(workspace, "my_project");
+        myProject.getBaseFolder().createFolder("a/b/c");
+        ((FolderEntry) myProject.getBaseFolder().getChild("a/b")).createFile("test.txt", "to be or not no be".getBytes(), "text/plain");
+
+        // new name for folder
+        final String renamedFolder = "renamedFolder";
+
+        Map<String, List<String>> headers = new HashMap<>();
+        headers.put("Content-Type", Arrays.asList("application/json"));
+
+        MoveOptions descriptor = DtoFactory.getInstance().createDto(MoveOptions.class);
+        descriptor.setName(renamedFolder);
+        descriptor.setOverWrite(false);
+
+        ContainerResponse response = launcher.service("POST",
+                String.format(
+                        "http://localhost:8080/api/project/%s/copy/my_project/a/b?to=/my_project/a/b/c",
+                        workspace),
+                "http://localhost:8080/api", headers, DtoFactory.getInstance().toJson(descriptor).getBytes(), null);
+        assertEquals(response.getStatus(), 201, "Error: " + response.getEntity());
+        assertEquals(response.getHttpHeaders().getFirst("Location"),
+                URI.create(String.format("http://localhost:8080/api/project/%s/children/my_project/a/b/c/%s", workspace, renamedFolder)));
+        assertNotNull(myProject.getBaseFolder().getChild(String.format("a/b/c/%s/test.txt", renamedFolder)));
+    }
+    
+    @Test
+    public void testMoveFolderWithRenameAndOverwrite() throws Exception {
+        Project myProject = pm.getProject(workspace, "my_project");
+        myProject.getBaseFolder().createFolder("a/b/c");
+
+        // File names
+        String originFileName = "test.txt";
+        String destinationFileName = "overwriteMe.txt";
+
+        // File contents
+        String originContent = "to be or not no be";
+        String overwritenContent = "that is the question";
+        
+        // new name for folder
+        final String renamedFolder = "renamedFolder";
+
+        ((FolderEntry) myProject.getBaseFolder().getChild("a/b")).createFile(originFileName, originContent.getBytes(), "text/plain");
+        ((FolderEntry) myProject.getBaseFolder().getChild("a/b/c")).createFile(destinationFileName, overwritenContent.getBytes(), "text/plain");
+
+        Map<String, List<String>> headers = new HashMap<>();
+        headers.put("Content-Type", Arrays.asList("application/json"));
+
+        MoveOptions descriptor = DtoFactory.getInstance().createDto(MoveOptions.class);
+        descriptor.setName(renamedFolder);
+        descriptor.setOverWrite(true);
+
+        ContainerResponse response = launcher.service("POST",
+                String.format(
+                        "http://localhost:8080/api/project/%s/copy/my_project/a/b?to=/my_project/a/b/c",
+                        workspace),
+                "http://localhost:8080/api", headers, DtoFactory.getInstance().toJson(descriptor).getBytes(), null);
+        assertEquals(response.getStatus(), 201, "Error: " + response.getEntity());
+        assertEquals(response.getHttpHeaders().getFirst("Location"),
+                URI.create(String.format("http://localhost:8080/api/project/%s/children/my_project/a/b/c/%s", workspace, renamedFolder)));
+        assertNotNull(myProject.getBaseFolder().getChild(String.format("a/b/c/%s/test.txt", renamedFolder)));
     }
 
     @Test

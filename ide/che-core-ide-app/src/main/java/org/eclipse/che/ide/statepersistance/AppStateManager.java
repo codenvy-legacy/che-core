@@ -12,6 +12,7 @@ package org.eclipse.che.ide.statepersistance;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
@@ -29,21 +30,22 @@ import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.event.OpenProjectEvent;
-import org.eclipse.che.ide.api.event.PersistProjectTreeStateHandler;
 import org.eclipse.che.ide.api.event.PersistProjectTreeStateEvent;
+import org.eclipse.che.ide.api.event.PersistProjectTreeStateHandler;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.ProjectActionHandler;
-import org.eclipse.che.ide.api.event.RestoreProjectTreeStateHandler;
 import org.eclipse.che.ide.api.event.RestoreProjectTreeStateEvent;
+import org.eclipse.che.ide.api.event.RestoreProjectTreeStateHandler;
 import org.eclipse.che.ide.api.event.WindowActionEvent;
 import org.eclipse.che.ide.api.event.WindowActionHandler;
+import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.eclipse.che.ide.api.preferences.PreferencesManager;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 import org.eclipse.che.ide.statepersistance.dto.AppState;
-import org.eclipse.che.ide.statepersistance.dto.RecentProject;
 import org.eclipse.che.ide.statepersistance.dto.ProjectState;
+import org.eclipse.che.ide.statepersistance.dto.RecentProject;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.Pair;
 import org.eclipse.che.ide.util.loging.Log;
@@ -78,6 +80,7 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
     private final ActionManager                     actionManager;
     private final PresentationFactory               presentationFactory;
     private final ProjectServiceClient              projectServiceClient;
+    private final Provider<PerspectiveManager>      managerProvider;
 
     @Inject
     public AppStateManager(Set<PersistenceComponent> persistenceComponents,
@@ -88,7 +91,8 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
                            DtoFactory dtoFactory,
                            ActionManager actionManager,
                            PresentationFactory presentationFactory,
-                           ProjectServiceClient projectServiceClient) {
+                           ProjectServiceClient projectServiceClient,
+                           Provider<PerspectiveManager> managerProvider) {
         this.persistenceComponents = persistenceComponents;
         this.projectTreePersistenceComponents = projectTreePersistenceComponents;
         this.eventBus = eventBus;
@@ -98,6 +102,7 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
         this.actionManager = actionManager;
         this.presentationFactory = presentationFactory;
         this.projectServiceClient = projectServiceClient;
+        this.managerProvider = managerProvider;
 
         bind();
     }
@@ -284,7 +289,9 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
             }
 
             final Presentation presentation = presentationFactory.getPresentation(action);
-            final ActionEvent event = new ActionEvent("", presentation, actionManager, 0, a.getParameters());
+
+            PerspectiveManager manager = managerProvider.get();
+            final ActionEvent event = new ActionEvent("", presentation, actionManager, manager, a.getParameters());
             actionsToPerform.add(new Pair<>(action, event));
         }
 

@@ -35,20 +35,32 @@ public class FileEntry extends VirtualFileEntry {
         super(workspace, virtualFile);
     }
 
+    @Override
     public FileEntry copyTo(String newParent) throws NotFoundException, ForbiddenException, ConflictException, ServerException {
+        return copyTo(newParent, getName(), false);
+    }
+
+    @Override
+    public FileEntry copyTo(String newParent, String newName, boolean override) throws NotFoundException, ForbiddenException, ConflictException, ServerException {
         if (Path.fromString(newParent).isRoot()) {
             throw new ServerException(String.format("Invalid path %s. Can't create file outside of project.", newParent));
         }
         final VirtualFile vf = getVirtualFile();
         final MountPoint mp = vf.getMountPoint();
-        return new FileEntry(getWorkspace(), vf.copyTo(mp.getVirtualFile(newParent)));
+        return new FileEntry(getWorkspace(), vf.copyTo(mp.getVirtualFile(newParent), newName, override));
     }
 
+    @Override
     public void moveTo(String newParent) throws ConflictException, NotFoundException, ForbiddenException, ServerException {
+        moveTo(newParent,null,false);
+    }
+
+    @Override
+    public void moveTo(String newParent, String name, boolean overWrite) throws NotFoundException, ForbiddenException, ConflictException, ServerException {
         if (Path.fromString(newParent).isRoot()) {
             throw new ServerException(String.format("Invalid path %s. Can't move this item outside of project.", newParent));
         }
-        super.moveTo(newParent);
+        super.moveTo(newParent, name, overWrite); //To change body of generated methods, choose Tools | Templates.
     }
 
     /**

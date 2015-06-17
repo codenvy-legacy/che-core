@@ -21,21 +21,16 @@ import org.eclipse.che.ide.api.mvp.Presenter;
 /**
  * Manages Toolbar items, changes item state and other.
  *
- * @author <a href="mailto:aplotnikov@exoplatform.com">Andrey Plotnikov</a>
+ * @author Andrey Plotnikov
+ * @author Dmitry Shnurenko
  */
 public class ToolbarPresenter implements Presenter, ToolbarView.ActionDelegate {
     private ToolbarView view;
 
-    /**
-     * Create presenter.
-     *
-     * @param view
-     */
     @Inject
     public ToolbarPresenter(ToolbarView view) {
         this.view = view;
         this.view.setDelegate(this);
-        this.view.setAddSeparatorFirst(true);
         this.view.setPlace(ActionPlaces.MAIN_TOOLBAR);
     }
 
