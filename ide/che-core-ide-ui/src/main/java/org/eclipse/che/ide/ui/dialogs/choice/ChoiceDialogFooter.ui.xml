@@ -43,6 +43,7 @@
     </ui:style>
 
     <g:HTMLPanel addStyleNames="{style.button-block}">
+        <g:Button ui:field="thirdChoiceButton" addStyleNames="{style.action-button}" />
         <g:Button ui:field="secondChoiceButton" addStyleNames="{style.action-button}" />
         <g:Button ui:field="firstChoiceButton" addStyleNames="{style.action-button}" />
     </g:HTMLPanel>
