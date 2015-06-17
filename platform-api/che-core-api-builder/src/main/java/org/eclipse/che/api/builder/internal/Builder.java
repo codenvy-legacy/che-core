@@ -422,8 +422,13 @@ public abstract class Builder {
         }
     }
     
-    public Map<String, String> updateEnvironmentVariables(Map<String, String> env){
-    	return env;
+    private void updateEnvironment(final BuilderConfiguration configuration , ProcessBuilder processBuilder){
+    	Map<String, String> env = configuration.getEnv();
+    	// Check if the build process Environment should be updated from BuilderConfiguration or use current process environment
+    	if(!configuration.getEnv().isEmpty()){
+    		processBuilder.environment().clear();
+    		processBuilder.environment().putAll(env);
+    	}
     }
 
     protected Callable<Boolean> createTaskFor(final CommandLine commandLine,
@@ -446,8 +451,7 @@ public abstract class Builder {
                 try {
                     ProcessBuilder processBuilder = new ProcessBuilder().command(commandLine.toShellCommand()).directory(
                             configuration.getWorkDir()).redirectErrorStream(true);
-                    Map<String, String> env = processBuilder.environment();
-                    updateEnvironmentVariables(env);
+                    updateEnvironment(configuration,processBuilder);
                     
                     Process process = processBuilder.start();
 
