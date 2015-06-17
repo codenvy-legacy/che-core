@@ -27,6 +27,6 @@ public abstract class TransientMixin extends ProjectType {
      * @param displayName
      */
     protected TransientMixin(String id, String displayName) {
-        super(id, displayName, false, true);
+        super(id, displayName, false, true, false, null);
     }
 }
