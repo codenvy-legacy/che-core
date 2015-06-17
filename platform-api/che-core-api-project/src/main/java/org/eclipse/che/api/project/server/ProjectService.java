@@ -10,6 +10,14 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.server;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
+
+import org.apache.commons.fileupload.FileItem;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
@@ -42,7 +50,6 @@ import org.eclipse.che.api.project.shared.dto.ProjectUpdate;
 import org.eclipse.che.api.project.shared.dto.Source;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.project.shared.dto.TreeElement;
-
 import org.eclipse.che.api.vfs.server.ContentStream;
 import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemImpl;
@@ -52,14 +59,6 @@ import org.eclipse.che.api.vfs.shared.dto.AccessControlEntry;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.dto.server.DtoFactory;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
-
-import org.apache.commons.fileupload.FileItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -765,6 +764,8 @@ public class ProjectService extends Service {
 
             logProjectCreatedEvent(name, projectType);
         }
+        eventService.publish(new ProjectItemModifiedEvent(ProjectItemModifiedEvent.EventType.MOVED,
+                                                          workspace, projectPath(entry.getPath()), entry.getPath(), entry.isFolder(), path));
         return Response.created(location).build();
     }
 
@@ -812,6 +813,8 @@ public class ProjectService extends Service {
         final URI location = getServiceContext().getServiceUriBuilder()
                                                 .path(getClass(), entry.isFile() ? "getFile" : "getChildren")
                                                 .build(workspace, entry.getPath().substring(1));
+        eventService.publish(new ProjectItemModifiedEvent(ProjectItemModifiedEvent.EventType.RENAMED,
+                                                          workspace, projectPath(entry.getPath()), entry.getPath(), entry.isFolder(), path));
         return Response.created(location).build();
     }
 

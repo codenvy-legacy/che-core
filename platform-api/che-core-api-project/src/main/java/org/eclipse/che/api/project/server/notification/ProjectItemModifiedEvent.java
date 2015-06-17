@@ -10,6 +10,7 @@ package org.eclipse.che.api.project.server.notification;
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
+
 import org.eclipse.che.api.core.notification.EventOrigin;
 
 /**
@@ -18,14 +19,16 @@ import org.eclipse.che.api.core.notification.EventOrigin;
 @EventOrigin("project")
 public class ProjectItemModifiedEvent {
 
-    public static enum EventType {
+    public enum EventType {
         UPDATED("updated"),
         CREATED("created"),
-        DELETED("deleted");
+        DELETED("deleted"),
+        MOVED("moved"),
+        RENAMED("renamed");
 
         private final String value;
 
-        private EventType(String value) {
+        EventType(String value) {
             this.value = value;
         }
 
@@ -44,6 +47,7 @@ public class ProjectItemModifiedEvent {
     private String    project;
     private String    path;
     private boolean   folder;
+    private String    oldPath;
 
     public ProjectItemModifiedEvent(EventType type, String workspace, String project, String path, boolean folder) {
         this.type = type;
@@ -51,6 +55,15 @@ public class ProjectItemModifiedEvent {
         this.project = project;
         this.path = path;
         this.folder = folder;
+    }
+
+    public ProjectItemModifiedEvent(EventType type, String workspace, String project, String path, boolean folder, String oldPath) {
+        this.type = type;
+        this.workspace = workspace;
+        this.project = project;
+        this.path = path;
+        this.folder = folder;
+        this.oldPath = oldPath;
     }
 
     public ProjectItemModifiedEvent() {
@@ -96,14 +109,23 @@ public class ProjectItemModifiedEvent {
         this.folder = folder;
     }
 
+    public String getOldPath() {
+        return oldPath;
+    }
+
+    public void setOldPath(String oldPath) {
+        this.oldPath = oldPath;
+    }
+
     @Override
     public String toString() {
         return "ProjectItemModifiedEvent{" +
-                "type=" + type +
-                ", workspace='" + workspace + '\'' +
-                ", project='" + project + '\'' +
-                ", path='" + path + '\'' +
-                ", folder='" + folder + '\'' +
-                '}';
+               "type=" + type +
+               ", workspace='" + workspace + '\'' +
+               ", project='" + project + '\'' +
+               ", path='" + path + '\'' +
+               ", folder=" + folder +
+               ", oldPath='" + oldPath + '\'' +
+               '}';
     }
 }
