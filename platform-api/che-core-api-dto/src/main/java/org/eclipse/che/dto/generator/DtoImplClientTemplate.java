@@ -17,6 +17,7 @@ import org.eclipse.che.dto.shared.DelegateTo;
 import org.eclipse.che.dto.shared.JsonArray;
 import org.eclipse.che.dto.shared.JsonStringMap;
 import org.eclipse.che.dto.shared.SerializationIndex;
+
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.Primitives;
 
@@ -260,6 +261,10 @@ public class DtoImplClientTemplate extends DtoImpl {
 
     private void emitSerializer(List<Method> getters, StringBuilder builder) {
         builder.append("    public JSONObject toJsonObject() {\n");
+        // The default toJsonElement() returns JSONs for unsafe use thus 'any' properties should be copied
+        builder.append("      return toJsonObjectInt(true);\n");
+        builder.append("    }\n");
+        builder.append("    public JSONObject toJsonObjectInt(boolean ").append(COPY_JSONS_PARAM).append(") {\n");
         if (isCompactJson()) {
             builder.append("      JSONArray result = new JSONArray();\n");
             for (Method method : getters) {
@@ -276,7 +281,7 @@ public class DtoImplClientTemplate extends DtoImpl {
         builder.append("\n");
         builder.append("    @Override\n");
         builder.append("    public String toJson() {\n");
-        builder.append("      return toJsonObject().toString();\n");
+        builder.append("      return toJsonObjectInt(false).toString();\n");
         builder.append("    }\n");
         builder.append("\n");
         builder.append("    @Override\n");
@@ -391,6 +396,12 @@ public class DtoImplClientTemplate extends DtoImpl {
                         " == null ? JSONNull.getInstance() : JSONBoolean.getInstance(").append(depth == 0 ? "this." + inVar : inVar)
                        .append(");\n");
             }
+        } else if (isAny(rawClass)) {
+            // TODO a better method to clone instances of 
+            // outVar = inVar == null ? JsonNull.INSTNACE : (copyJsons ? new JsonParser().parse(inVar) : inVar);
+            builder.append(i).append("JSONValue ").append(outVar).append(depth == 0 ? " = this." + inVar : inVar)
+                    .append(" == null ? JSONNull.getInstance() : (");
+            appendCopyJsonExpression(inVar, builder).append(");\n");
         } else {
             final Class<?> dtoImplementation = getEnclosingTemplate().getDtoImplementation(rawClass);
             if (dtoImplementation != null) {
@@ -416,10 +427,28 @@ public class DtoImplClientTemplate extends DtoImpl {
             builder.append(i).append("}\n");
         }
     }
+    
+    /**
+     * Append the expression that clones the given JsonElement variable into a new value. If the copyJons run-time
+     * parameter is set to false, then the expression won't perform a clone but instead will reuse the variable by
+     * reference.
+     */
+    private static StringBuilder appendCopyJsonExpression(String inVar, StringBuilder builder) {
+        builder.append(COPY_JSONS_PARAM).append(" ? ");
+        appendNaiveCopyJsonExpression(inVar, builder).append(" : (JSONValue)(").append(inVar).append(")");
+        return builder;
+    }
+    private static StringBuilder appendNaiveCopyJsonExpression(String inValue, StringBuilder builder) {
+        return builder.append("JSONParser.parseStrict((").append(inValue).append(").toString())");
+    }
 
     /** Generates a static factory method that creates a new instance based on a JsonElement. */
     private void emitDeserializer(List<Method> getters, StringBuilder builder) {
+        // The default fromJsonObject(json) works in unsafe mode and clones the JSON's for 'any' properties
         builder.append("    public static ").append(getImplClassName()).append(" fromJsonObject(JSONValue jsonValue) {\n");
+        builder.append("      return fromJsonObjectInt(jsonValue, true);\n");
+        builder.append("    }\n");
+        builder.append("    public static ").append(getImplClassName()).append(" fromJsonObjectInt(JSONValue jsonValue, boolean ").append(COPY_JSONS_PARAM).append(") {\n");
         builder.append("      if (jsonValue == null || jsonValue.isNull() != null) {\n");
         builder.append("        return null;\n");
         builder.append("      }\n\n");
@@ -445,7 +474,7 @@ public class DtoImplClientTemplate extends DtoImpl {
         builder.append("      if (jsonString == null) {\n");
         builder.append("        return null;\n");
         builder.append("      }\n\n");
-        builder.append("      return fromJsonObject(JSONParser.parseStrict(jsonString));\n");
+        builder.append("      return fromJsonObjectInt(JSONParser.parseStrict(jsonString), false);\n");
         builder.append("    }\n\n");
     }
 
@@ -580,6 +609,11 @@ public class DtoImplClientTemplate extends DtoImpl {
                 builder.append(i).append(primitiveName).append(" ").append(outVar).append(" = ").append(inVar)
                        .append(".isBoolean() != null ? ").append(inVar).append(".isBoolean().booleanValue() : null;\n");
             }
+        } else if (isAny(rawClass)) {
+            // TODO JsonElement.deepCopy() is package-protected, JSONs are serialized to strings then parsed for copying them
+            // outVar = copyJsons ? new JsonParser().parse(inVar) : inVar;
+            builder.append(i).append("JSONValue ").append(outVar).append(" = ");
+            appendCopyJsonExpression(inVar, builder).append(";\n");
         } else {
             final Class<?> dtoImplementation = getEnclosingTemplate().getDtoImplementation(rawClass);
             if (dtoImplementation != null) {
@@ -765,6 +799,9 @@ public class DtoImplClientTemplate extends DtoImpl {
             builder.append(i).append("this.").append(fieldName).append(" = ");
             emitCheckNullAndCopyDto(rawClass, fieldNameIn, builder);
             builder.append(";\n");
+        } else if (isAny(rawClass)) {
+            builder.append(i).append("this.").append(fieldName).append(" = ");
+            appendNaiveCopyJsonExpression(origin + "." + getterName + "()", builder).append(";\n");
         } else {
             builder.append(i).append("this.").append(fieldName).append(" = ")
                    .append(origin).append(".").append(getterName).append("();\n");

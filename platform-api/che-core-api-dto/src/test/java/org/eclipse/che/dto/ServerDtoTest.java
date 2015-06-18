@@ -11,11 +11,14 @@
 package org.eclipse.che.dto;
 
 import org.eclipse.che.dto.definitions.ComplicatedDto;
+import org.eclipse.che.dto.definitions.DtoWithAny;
 import org.eclipse.che.dto.definitions.DtoWithDelegate;
 import org.eclipse.che.dto.definitions.DtoWithFieldNames;
 import org.eclipse.che.dto.definitions.SimpleDto;
 import org.eclipse.che.dto.server.DtoFactory;
+
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
@@ -108,6 +111,32 @@ public class ServerDtoTest {
 
         Assert.assertEquals(dto.getTheName(), fooString);
         Assert.assertEquals(dto.getTheDefault(), _default);
+    }
+
+    @Test
+    public void testSerializerWithAny() throws Exception {
+        DtoWithAny dto = dtoFactory.createDto(DtoWithAny.class).withStuff(createTestValueForAny());
+        final String json = dtoFactory.toJson(dto);
+
+        JsonObject jsonObject = new JsonParser().parse(json).getAsJsonObject();
+        Assert.assertEquals(jsonObject.get("stuff"), createTestValueForAny());
+    }
+
+    @Test
+    public void testDeerializerWithAny() throws Exception {
+        final JsonElement stuff = createTestValueForAny();
+
+        JsonObject json = new JsonObject();
+        json.add("stuff", stuff);
+
+        DtoWithAny dto = dtoFactory.createDtoFromJson(json.toString(), DtoWithAny.class);
+
+        Assert.assertEquals(dto.getStuff(), createTestValueForAny());
+    }
+
+    /** Intentionally call several times to ensure non-reference equality */
+    private static JsonElement createTestValueForAny() {
+        return new JsonParser().parse("{a:100,b:{c:'blah',d:null}}");
     }
 
     @Test
