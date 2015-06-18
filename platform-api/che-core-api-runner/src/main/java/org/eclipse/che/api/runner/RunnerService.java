@@ -63,7 +63,7 @@ import java.util.List;
  */
 @Api(value = "/runner",
      description = "Runner manager")
-@Path("/runner/{ws-id}")
+@Path("/runner")
 @Description("Runner REST API")
 public class RunnerService extends Service {
     private static final Logger LOG   = LoggerFactory.getLogger(RunnerService.class);
@@ -82,7 +82,7 @@ public class RunnerService extends Service {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 500, message = "Internal Server Error")})
     @GenerateLink(rel = Constants.LINK_REL_RUN)
-    @Path("/run")
+    @Path("/{ws-id}/run")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -106,7 +106,7 @@ public class RunnerService extends Service {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 500, message = "Internal Server Error")})
     @GET
-    @Path("/status/{id}")
+    @Path("/{ws-id}/status/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public ApplicationProcessDescriptor getStatus(@ApiParam(value = "Workspace ID", required = true)
                                                   @PathParam("ws-id") String workspace,
@@ -115,7 +115,10 @@ public class RunnerService extends Service {
         return runQueue.getTask(id).getDescriptor();
     }
 
-    @ApiOperation(value = "Get run processes",
+
+
+
+    @ApiOperation(value = "Get all user running processes",
                   notes = "Get info on all running processes",
                   response = ApplicationProcessDescriptor.class,
                   responseContainer = "List",
@@ -126,11 +129,32 @@ public class RunnerService extends Service {
     @GET
     @Path("/processes")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<ApplicationProcessDescriptor> getRunningProcesses(@ApiParam(value = "Workspace ID", required = true)
+    public List<ApplicationProcessDescriptor> getAllRunningProcesses(@ApiParam(value = "Project name")
+                                                                     @Description("project name")
+                                                                     @QueryParam("project") String project) {
+        return getRunningProcesses(null, project);
+    }
+
+    @ApiOperation(value = "Get run processes for a given workspace",
+                  notes = "Get info on all running processes for a given workspace",
+                  response = ApplicationProcessDescriptor.class,
+                  responseContainer = "List",
+                  position = 4)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 500, message = "Internal Server Error")})
+    @GET
+    @Path("/{ws-id}/processes")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<ApplicationProcessDescriptor> getWorkspaceRunningProcesses(@ApiParam(value = "Workspace ID", required = true)
                                                                   @PathParam("ws-id") String workspace,
-                                                                  @ApiParam(value = "Project name", required = true)
-                                                                  @Required @Description("project name")
+                                                                  @ApiParam(value = "Project name")
+                                                                  @Description("project name")
                                                                   @QueryParam("project") String project) {
+        return getRunningProcesses(workspace, project);
+    }
+
+    protected List<ApplicationProcessDescriptor> getRunningProcesses(String workspace, String project) {
         if (project != null && !project.startsWith("/")) {
             project = '/' + project;
         }
@@ -140,9 +164,22 @@ public class RunnerService extends Service {
             final String userId = user.getId();
             for (RunQueueTask task : runQueue.getTasks()) {
                 final RunRequest request = task.getRequest();
-                if (request.getWorkspace().equals(workspace)
-                    && request.getProject().equals(project)
-                    && request.getUserId().equals(userId)) {
+
+                // add matching task
+                // first, check user
+                if (request.getUserId().equals(userId)) {
+                    // now check workspace or project if they're given
+
+                    // skip task if not correct workspace
+                    if (workspace != null && !request.getWorkspace().equals(workspace)) {
+                        continue;
+                    }
+
+                    // skip task if not correct project
+                    if (project != null && !request.getProject().equals(project)) {
+                        continue;
+                    }
+
                     try {
                         processes.add(task.getDescriptor());
                     } catch (NotFoundException ignored) {
@@ -162,12 +199,12 @@ public class RunnerService extends Service {
     @ApiOperation(value = "Stop run process",
                   notes = "Stop running process",
                   response = ApplicationProcessDescriptor.class,
-                  position = 4)
+                  position = 5)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 500, message = "Internal Server Error")})
     @POST
-    @Path("/stop/{id}")
+    @Path("/{ws-id}/stop/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public ApplicationProcessDescriptor stop(@ApiParam(value = "Workspace ID", required = true)
                                              @PathParam("ws-id") String workspace,
@@ -180,12 +217,12 @@ public class RunnerService extends Service {
 
     @ApiOperation(value = "Get logs",
                   notes = "Get logs from a running application",
-                  position = 5)
+                  position = 6)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 500, message = "Internal Server Error")})
     @GET
-    @Path("/logs/{id}")
+    @Path("/{ws-id}/logs/{id}")
     @Produces(MediaType.TEXT_PLAIN)
     public void getLogs(@ApiParam(value = "Workspace ID", required = true)
                         @PathParam("ws-id") String workspace,
@@ -198,12 +235,12 @@ public class RunnerService extends Service {
     @ApiOperation(value = "Get available RAM resources",
                   notes = "Get RAM resources of a workspace: used and free RAM",
                   response = ResourcesDescriptor.class,
-                  position = 6)
+                  position = 7)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 500, message = "Internal Server Error")})
     @GET
-    @Path("/resources")
+    @Path("/{ws-id}/resources")
     @Produces(MediaType.APPLICATION_JSON)
     public ResourcesDescriptor getResources(@ApiParam(value = "Workspace ID", required = true)
                                             @PathParam("ws-id") String workspace) throws Exception {
@@ -215,13 +252,13 @@ public class RunnerService extends Service {
     @ApiOperation(value = "Get available runner environments",
                   notes = "Get available runner environments",
                   response = RunnerEnvironmentTree.class,
-                  position = 7)
+                  position = 8)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 500, message = "Internal Server Error")})
     @GenerateLink(rel = Constants.LINK_REL_AVAILABLE_RUNNERS)
     @GET
-    @Path("/available")
+    @Path("/{ws-id}/available")
     @Produces(MediaType.APPLICATION_JSON)
     public RunnerEnvironmentTree getRunnerEnvironments(@ApiParam(value = "Workspace ID", required = true)
                                                        @PathParam("ws-id") String workspace,
@@ -291,12 +328,12 @@ public class RunnerService extends Service {
 
     @ApiOperation(value = "Get runtime recipe",
                   notes = "Get content of a Dockerfile used to 'cook' runtime environment",
-                  position = 8)
+                  position = 9)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 500, message = "Internal Server Error")})
     @GET
-    @Path("/recipe/{id}")
+    @Path("/{ws-id}/recipe/{id}")
     public void getRecipeFile(@ApiParam(value = "Workspace ID", required = true)
                               @PathParam("ws-id") String workspace,
                               @ApiParam(value = "Run ID", required = true)
@@ -308,14 +345,14 @@ public class RunnerService extends Service {
 
     @ApiOperation(value = "Get recipe",
                   notes = "Get content of a Dockerfile",
-                  position = 9)
+                  position = 10)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 404, message = "Not found"),
             @ApiResponse(code = 500, message = "Internal Server Error")})
     @GenerateLink(rel = Constants.LINK_REL_GET_RECIPE)
     @GET
-    @Path("/recipe")
+    @Path("/{ws-id}/recipe")
     @Produces(MediaType.TEXT_PLAIN)
     public String getRecipe(@QueryParam("id") String id) throws Exception {
         List<RemoteRunnerServer> servers = runQueue.getRegisterRunnerServers();
