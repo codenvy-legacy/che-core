@@ -48,6 +48,7 @@ import org.eclipse.che.ide.jseditor.client.quickfix.QuickAssistProcessor;
 import org.eclipse.che.ide.jseditor.client.quickfix.QuickAssistantFactory;
 import org.eclipse.che.ide.jseditor.client.reconciler.Reconciler;
 import org.eclipse.che.ide.jseditor.client.text.TextPosition;
+import org.eclipse.che.ide.util.browser.UserAgent;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -228,8 +229,12 @@ public class TextEditorInit<T extends EditorWidget> {
                 }
             };
             final HasKeybindings hasKeybindings = this.textEditor.getHasKeybindings();
-            hasKeybindings.addKeybinding(new Keybinding(true, false, false, false, KeyCode.SPACE, action));
-
+            if(UserAgent.isMac()){
+                hasKeybindings.addKeybinding(new Keybinding(false,false,false, true, KeyCode.SPACE, action));
+                hasKeybindings.addKeybinding(new Keybinding(false,false,true, true, KeyCode.SPACE, action));
+            } else {
+                hasKeybindings.addKeybinding(new Keybinding(true, false, false, false, KeyCode.SPACE, action));
+            }
             // handle CompletionRequest events that come from text operations instead of simple key binding
             documentHandle.getDocEventBus().addHandler(CompletionRequestEvent.TYPE, new CompletionRequestHandler() {
                 @Override
