@@ -74,7 +74,7 @@ public class FileNode extends ItemNode implements VirtualFile {
                     protected void onSuccess(ItemReference result) {
                         setData(result);
 
-                        onNodeRenamed(oldNodePath);
+                        updateEditor(oldNodePath);
 
                         eventBus.fireEvent(NodeChangedEvent.createNodeRenamedEvent(fileNode));
                         callback.onRenamed();
@@ -94,12 +94,32 @@ public class FileNode extends ItemNode implements VirtualFile {
         });
     }
 
+    /** {@inheritDoc} */
     @Override
-    public void onNodeRenamed(String oldNodePath) {
+    public void updateData(final AsyncCallback<Void> asyncCallback, final String updatedParentNodePath) {
+        final String oldNodePath = FileNode.this.getPath();
+
+        AsyncCallback<Void> updateEditorCallBack = new AsyncCallback<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                updateEditor(oldNodePath);
+                asyncCallback.onSuccess(null);
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                asyncCallback.onFailure(throwable);
+            }
+        };
+
+        super.updateData(updateEditorCallBack, updatedParentNodePath);
+    }
+
+    private void updateEditor(String oldPath) {
         final Array<String> pathOpenedEditors = editorAgent.getOpenedEditors().getKeys();
 
-        if (pathOpenedEditors.contains(oldNodePath)) {
-            editorAgent.updateEditorNode(oldNodePath, this);
+        if (pathOpenedEditors.contains(oldPath)) {
+            editorAgent.updateEditorNode(oldPath, FileNode.this);
         }
     }
 
