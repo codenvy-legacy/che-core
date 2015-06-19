@@ -10,17 +10,18 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.project.tree.generic;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
+import org.eclipse.che.ide.api.event.UpdateTreeNodeChildrenEvent;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.api.project.tree.TreeStructure;
 import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.java.JsonArrayListAdapter;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
-import org.eclipse.che.ide.rest.Unmarshallable;
+import org.eclipse.che.test.GwtReflectionUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,17 +30,12 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -49,10 +45,13 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ItemNodeTest {
-    private static final String TEXT     = "some text";
-    private static final String NEW_NAME = "new name";
-    private Array<ItemReference> result;
-    private Array<TreeNode<?>>   children;
+    private static final String PARENT_PATH             = "/project/test/someParent";
+    private static final String RENAMED_SOME_ITEM_PATH1 = "/project/test1";
+    private static final String RENAMED_SOME_ITEM_PATH2 = "/project/tes";
+    private static final String RENAMED_SOME_ITEM_PATH3 = "/project/tes3";
+    private static final String NAME                    = "someFolder";
+    private static final String PATH                    = PARENT_PATH + "/" + NAME;
+    private static final String NEW_NAME                = "new name";
 
     @Mock
     private StorableNode           parent;
@@ -68,26 +67,28 @@ public class ItemNodeTest {
     private DtoUnmarshallerFactory dtoUnmarshallerFactory;
 
     @Mock
-    private Unmarshallable<Array<ItemReference>> unmarshaller;
+    private ItemReference           newData;
     @Mock
-    private ItemReference                        itemParent;
+    private ItemReference           childReference1;
     @Mock
-    private ItemReference                        childReference1;
+    private ItemReference           childReference2;
     @Mock
-    private ItemReference                        childReference2;
+    private FolderNode              child1;
     @Mock
-    private FolderNode                           child1;
+    private FileNode                child2;
     @Mock
-    private FileNode                             child2;
+    private TreeNode.RenameCallback renameCallback;
     @Mock
-    private TreeNode.RenameCallback              renameCallback;
+    private Throwable               throwable;
+    @Mock
+    private AsyncCallback<Void>     asyncCallback;
 
     @Captor
     private ArgumentCaptor<AsyncRequestCallback<Array<ItemReference>>> itemReferenceCaptor;
     @Captor
     private ArgumentCaptor<AsyncRequestCallback<Void>>                 argumentCaptor;
     @Captor
-    private ArgumentCaptor<AsyncRequestCallback<Array<ItemReference>>> asyncRequestCallbackArgumentCaptor;
+    private ArgumentCaptor<AsyncRequestCallback<ItemReference>>        asyncRequestCallbackArgumentCaptor;
 
     private ItemNodeImpl itemNode;
 
@@ -100,72 +101,107 @@ public class ItemNodeTest {
                                     projectServiceClient,
                                     dtoUnmarshallerFactory);
 
-        when(dtoUnmarshallerFactory.newArrayUnmarshaller(ItemReference.class)).thenReturn(unmarshaller);
-        when(parent.getPath()).thenReturn(TEXT);
-        when(itemParent.getPath()).thenReturn(TEXT);
-        when(child1.getName()).thenReturn(TEXT + 1);
-        when(child2.getName()).thenReturn(TEXT + 1);
-        when(childReference1.getName()).thenReturn(TEXT + 1);
-        when(childReference2.getName()).thenReturn(TEXT + 1);
-        itemNode.setData(itemParent);
+        when(data.getPath()).thenReturn(PATH);
+        when(parent.getPath()).thenReturn(PARENT_PATH);
 
-        List<TreeNode<?>> list = new ArrayList<>();
-        list.add(child1);
-        list.add(child2);
-        children = new JsonArrayListAdapter<TreeNode<?>>(list);
-        itemNode.setChildren(children);
-        result = new JsonArrayListAdapter<>(Arrays.asList(childReference1, childReference2));
-    }
-
-    @Test
-    public void actionShouldBePerformedWhenNodeRenamed() throws Exception {
-        itemNode.onNodeRenamed(TEXT);
-
-        verify(dtoUnmarshallerFactory).newArrayUnmarshaller(ItemReference.class);
-        verify(projectServiceClient).getChildren(eq(TEXT), itemReferenceCaptor.capture());
-
-        AsyncRequestCallback<Array<ItemReference>> callback = itemReferenceCaptor.getValue();
-
-        Method method = callback.getClass().getDeclaredMethod("onSuccess", Object.class);
-        method.setAccessible(true);
-        method.invoke(callback, result);
-
-        verify(child1, times(2)).getName();
-        verify(child2, times(2)).getName();
-
-        verify(child1, times(2)).getPath();
-        verify(child2, times(2)).getPath();
-
-        verify(child1).setData(childReference1);
-        verify(child2).setData(childReference2);
+        itemNode.setData(data);
     }
 
     @Test
     public void nodeShouldBeRenamed() throws Exception {
         itemNode.rename(NEW_NAME, renameCallback);
 
-        verify(projectServiceClient).rename(eq(TEXT), eq(NEW_NAME), isNull(String.class), argumentCaptor.capture());
-        AsyncRequestCallback<Void> callback = argumentCaptor.getValue();
+        verify(projectServiceClient).rename(eq(PATH), eq(NEW_NAME), isNull(String.class), argumentCaptor.capture());
 
-        Method method = callback.getClass().getDeclaredMethod("onSuccess", Object.class);
-        method.setAccessible(true);
-        method.invoke(callback, (Void)null);
+        GwtReflectionUtils.callOnSuccess(argumentCaptor.getValue(), (Void)null);
 
         verify(parent).getPath();
-        verify(dtoUnmarshallerFactory).newArrayUnmarshaller(ItemReference.class);
-        verify(projectServiceClient).getChildren(eq(TEXT), asyncRequestCallbackArgumentCaptor.capture());
-        AsyncRequestCallback<Array<ItemReference>> callback2 = asyncRequestCallbackArgumentCaptor.getValue();
+        verify(projectServiceClient).getItem(eq(PARENT_PATH + "/" + NEW_NAME), asyncRequestCallbackArgumentCaptor.capture());
 
         ItemReference itemReference = mock(ItemReference.class);
-        result = new JsonArrayListAdapter<>(Arrays.asList(itemReference, childReference1));
+
         when(itemReference.getName()).thenReturn(NEW_NAME);
 
-        method = callback2.getClass().getDeclaredMethod("onSuccess", Object.class);
-        method.setAccessible(true);
-        method.invoke(callback2, result);
+        GwtReflectionUtils.callOnSuccess(asyncRequestCallbackArgumentCaptor.getValue(), newData);
 
-        verify(itemReference).getName();
-        assertThat(itemNode.getData(), is(itemReference));
+        assertThat(itemNode.getData(), is(newData));
+        verify(eventBus).fireEvent(any(UpdateTreeNodeChildrenEvent.class));
+    }
+
+    @Test
+    public void itemNodeShouldNotBeRenamed() {
+        itemNode.rename(NEW_NAME, renameCallback);
+
+        verify(projectServiceClient).rename(eq(PATH), eq(NEW_NAME), isNull(String.class), argumentCaptor.capture());
+
+        GwtReflectionUtils.callOnFailure(argumentCaptor.getValue(), throwable);
+        renameCallback.onFailure(throwable);
+    }
+
+    @Test
+    public void itemNodeShouldNotBeRenamedBecauseFailedGetItemReference() {
+        itemNode.rename(NEW_NAME, renameCallback);
+
+        verify(projectServiceClient).rename(eq(PATH), eq(NEW_NAME), isNull(String.class), argumentCaptor.capture());
+
+        GwtReflectionUtils.callOnSuccess(argumentCaptor.getValue(), (Void)null);
+
+        verify(parent).getPath();
+        verify(projectServiceClient).getItem(eq(PARENT_PATH + "/" + NEW_NAME), asyncRequestCallbackArgumentCaptor.capture());
+
+        ItemReference itemReference = mock(ItemReference.class);
+
+        when(itemReference.getName()).thenReturn(NEW_NAME);
+
+        GwtReflectionUtils.callOnFailure(asyncRequestCallbackArgumentCaptor.getValue(), throwable);
+        renameCallback.onFailure(throwable);
+    }
+
+    @Test
+    public void dataShouldBeUpdated1() {
+        String expectedNewNodePath = RENAMED_SOME_ITEM_PATH1 + "/someParent/" + NAME;
+        itemNode.updateData(asyncCallback, RENAMED_SOME_ITEM_PATH1);
+
+        verify(projectServiceClient).getItem(eq(expectedNewNodePath), asyncRequestCallbackArgumentCaptor.capture());
+        GwtReflectionUtils.callOnSuccess(asyncRequestCallbackArgumentCaptor.getValue(), newData);
+
+        assertThat(itemNode.getData(), is(newData));
+        asyncCallback.onSuccess(null);
+    }
+
+    @Test
+    public void dataShouldBeUpdated2() {
+        String expectedNewNodePath = RENAMED_SOME_ITEM_PATH2 + "/someParent/" + NAME;
+        itemNode.updateData(asyncCallback, RENAMED_SOME_ITEM_PATH2);
+
+        verify(projectServiceClient).getItem(eq(expectedNewNodePath), asyncRequestCallbackArgumentCaptor.capture());
+        GwtReflectionUtils.callOnSuccess(asyncRequestCallbackArgumentCaptor.getValue(), newData);
+
+        assertThat(itemNode.getData(), is(newData));
+        asyncCallback.onSuccess(null);
+    }
+
+    @Test
+    public void dataShouldBeUpdated3() {
+        String expectedNewNodePath = RENAMED_SOME_ITEM_PATH3 + "/someParent/" + NAME;
+        itemNode.updateData(asyncCallback, RENAMED_SOME_ITEM_PATH3);
+
+        verify(projectServiceClient).getItem(eq(expectedNewNodePath), asyncRequestCallbackArgumentCaptor.capture());
+        GwtReflectionUtils.callOnSuccess(asyncRequestCallbackArgumentCaptor.getValue(), newData);
+
+        assertThat(itemNode.getData(), is(newData));
+        asyncCallback.onSuccess(null);
+    }
+
+    @Test
+    public void dataShouldBeUpdatedFailed() {
+        String expectedNewNodePath = RENAMED_SOME_ITEM_PATH3 + "/someParent/" + NAME;
+        itemNode.updateData(asyncCallback, RENAMED_SOME_ITEM_PATH3);
+
+        verify(projectServiceClient).getItem(eq(expectedNewNodePath), asyncRequestCallbackArgumentCaptor.capture());
+        GwtReflectionUtils.callOnFailure(asyncRequestCallbackArgumentCaptor.getValue(), throwable);
+
+        asyncCallback.onFailure(throwable);
     }
 
     class ItemNodeImpl extends ItemNode {

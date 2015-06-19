@@ -14,20 +14,24 @@ import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 
 import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.api.event.NodeExpandedEvent;
-import org.eclipse.che.ide.api.event.PersistProjectTreeStateEvent;
-import org.eclipse.che.ide.api.event.RestoreProjectTreeStateEvent;
-import org.eclipse.che.ide.menu.ContextMenu;
-
-import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.ItemEvent;
 import org.eclipse.che.ide.api.event.ItemHandler;
 import org.eclipse.che.ide.api.event.NodeChangedEvent;
 import org.eclipse.che.ide.api.event.NodeChangedHandler;
+import org.eclipse.che.ide.api.event.NodeExpandedEvent;
+import org.eclipse.che.ide.api.event.PersistProjectTreeStateEvent;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.ProjectActionHandler;
 import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
 import org.eclipse.che.ide.api.event.RefreshProjectTreeHandler;
+import org.eclipse.che.ide.api.event.RestoreProjectTreeStateEvent;
+import org.eclipse.che.ide.api.event.UpdateTreeNodeChildrenEvent;
+import org.eclipse.che.ide.api.event.UpdateTreeNodeChildrenEventHandler;
+import org.eclipse.che.ide.api.project.tree.generic.UpdateTreeNodeDataIterable;
+import org.eclipse.che.ide.collections.js.JsoArray;
+import org.eclipse.che.ide.menu.ContextMenu;
+
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.parts.HasView;
 import org.eclipse.che.ide.api.parts.ProjectExplorerPart;
@@ -58,6 +62,7 @@ import org.vectomatic.dom.svg.ui.SVGResource;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -273,6 +278,62 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
                 }
             }
         });
+
+        eventBus.addHandler(UpdateTreeNodeChildrenEvent.TYPE, new UpdateTreeNodeChildrenEventHandler() {
+            @Override
+            public void updateChildrenData(TreeNode<?> parentNode, AsyncCallback<Void> callback) {
+                Iterator<TreeNode<?>> treeNodeIterator = getAllChildren(parentNode, JsoArray.<TreeNode<?>>create()).asIterable().iterator();
+
+                if (parentNode instanceof StorableNode) {
+                    updateChildren((StorableNode) parentNode, treeNodeIterator, callback);
+                }
+            }
+        });
+    }
+
+    private void updateChildren(final StorableNode parent, final Iterator<TreeNode<?>> children, final AsyncCallback<Void> callback) {
+        if (!children.hasNext()) {
+            callback.onSuccess(null);
+            return;
+        }
+
+        TreeNode treeNode = children.next();
+
+        String renamedNodePath = parent.getPath();
+
+        if (treeNode instanceof UpdateTreeNodeDataIterable && treeNode instanceof StorableNode) {
+            ((UpdateTreeNodeDataIterable) treeNode).updateData(new AsyncCallback<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    updateChildren(parent, children, callback);
+                }
+
+                @Override
+                public void onFailure(Throwable throwable) {
+                    Log.error(getClass(), "Error update children " + throwable);
+                    eventBus.fireEvent(new RefreshProjectTreeEvent());
+                }
+            }, renamedNodePath);
+            return;
+        }
+
+        updateChildren(parent, children, callback);
+    }
+
+    private Array<TreeNode<?>> getAllChildren(TreeNode<?> parent, Array<TreeNode<?>> children) {
+        Array<TreeNode<?>> childrenForCurrentDeep = parent.getChildren();
+
+        if (childrenForCurrentDeep.isEmpty()) {
+            return children;
+        }
+
+        children.addAll(childrenForCurrentDeep);
+
+        for (TreeNode<?> node: childrenForCurrentDeep.asIterable()) {
+            getAllChildren(node, children);
+        }
+
+        return children;
     }
 
 
