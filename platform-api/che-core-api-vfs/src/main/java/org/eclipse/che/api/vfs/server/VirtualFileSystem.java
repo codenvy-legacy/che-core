@@ -53,6 +53,8 @@ public interface VirtualFileSystem {
      *         id of source item
      * @param parentId
      *         id of parent for new copy
+     * @param newName
+     *         new name for new copy
      * @return newly created copy of item
      * @throws NotFoundException
      *         if {@code id} or {@code parentId} doesn't exist
@@ -70,7 +72,7 @@ public interface VirtualFileSystem {
     @POST
     @Path("copy")
     @Produces({MediaType.APPLICATION_JSON})
-    Item copy(String id, String parentId) throws NotFoundException, ForbiddenException, ConflictException, ServerException;
+    Item copy(String id, String parentId, String newName) throws NotFoundException, ForbiddenException, ConflictException, ServerException;
 
     /**
      * Clone item to destination Virtual File System.
@@ -600,6 +602,8 @@ public interface VirtualFileSystem {
      *         id of item to be moved
      * @param parentId
      *         id of new parent
+     * @param newName
+     *         new name for destination
      * @param lockToken
      *         lock token. This lock token will be used if {@code id} is locked. Pass {@code null} if there is no lock token, e.g. item is
      *         not locked
@@ -621,7 +625,7 @@ public interface VirtualFileSystem {
     @POST
     @Path("move")
     @Produces({MediaType.APPLICATION_JSON})
-    Item move(String id, String parentId, String lockToken)
+    Item move(String id, String parentId, String newName, String lockToken)
             throws NotFoundException, ForbiddenException, ConflictException, ServerException;
 
     /**

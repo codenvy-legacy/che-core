@@ -400,7 +400,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
         });
     }
 
-    private void refreshNode(TreeNode<?> node, final AsyncCallback<TreeNode<?>> callback) {
+    public void refreshNode(TreeNode<?> node, final AsyncCallback<TreeNode<?>> callback) {
         node.refreshChildren(new AsyncCallback<TreeNode<?>>() {
             @Override
             public void onSuccess(TreeNode<?> result) {

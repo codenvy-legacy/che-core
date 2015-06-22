@@ -164,6 +164,7 @@ public interface DialogFactory {
 
     /**
      * Create a choice dialog with only text as content.
+     * Use empty string for button label to hide button.
      *
      * @param title
      *         the window title
@@ -188,6 +189,7 @@ public interface DialogFactory {
 
     /**
      * Create a choice dialog with a widget as content.
+     * Use empty string for button label to hide button.
      *
      * @param title
      *         the window title
@@ -209,4 +211,67 @@ public interface DialogFactory {
                                      @Nonnull @Assisted("secondChoice") String secondChoiceLabel,
                                     @Nullable @Assisted("firstCallback") ConfirmCallback firstChoiceCallback,
                                     @Nullable @Assisted("secondCallback") ConfirmCallback secondChoiceCallback);
+
+    /**
+     * Create a choice dialog with only text as content.
+     * Use empty string for button label to hide button.
+     *
+     * @param title
+     *         the window title
+     * @param content
+     *         the window content/text
+     * @param firstChoiceLabel
+     *         the label for the first choice
+     * @param secondChoiceLabel
+     *         the label for the second choice
+     * @param thirdChoiceLabel
+     *         the label for the third choice
+     * @param firstChoiceCallback
+     *         the callback used on fist choice
+     * @param secondChoiceCallback
+     *         the callback used on second choice
+     * @param thirdChoiceCallback
+     *         the callback used on third choice
+     * @return a {@link ConfirmDialog} instance
+     */
+    ChoiceDialog createChoiceDialog(@Nonnull @Assisted("title") String title,
+                                    @Nonnull @Assisted("message") String content,
+                                    @Nonnull @Assisted("firstChoice") String firstChoiceLabel,
+                                    @Nonnull @Assisted("secondChoice") String secondChoiceLabel,
+                                    @Nonnull @Assisted("thirdChoice") String thirdChoiceLabel,
+                                    @Nullable @Assisted("firstCallback") ConfirmCallback firstChoiceCallback,
+                                    @Nullable @Assisted("secondCallback") ConfirmCallback secondChoiceCallback,
+                                    @Nullable @Assisted("thirdCallback") ConfirmCallback thirdChoiceCallback);
+
+    /**
+     * Create a choice dialog with a widget as content.
+     * Use empty string for button label to hide button.
+     *
+     * @param title
+     *         the window title
+     * @param content
+     *         the window content
+     * @param firstChoiceLabel
+     *         the label for the first choice
+     * @param secondChoiceLabel
+     *         the label for the second choice
+     * @param thirdChoiceLabel
+     *         the label for the third choice
+     * @param firstChoiceCallback
+     *         the callback used on fist choice
+     * @param secondChoiceCallback
+     *         the callback used on second choice
+     * @param thirdChoiceCallback
+     *         the callback used on third choice
+     * @return a {@link ConfirmDialog} instance
+     */
+    ChoiceDialog createChoiceDialog(@Nonnull String title,
+                                    @Nonnull IsWidget content,
+                                    @Nonnull @Assisted("firstChoice") String firstChoiceLabel,
+                                    @Nonnull @Assisted("secondChoice") String secondChoiceLabel,
+                                    @Nonnull @Assisted("thirdChoice") String thirdChoiceLabel,
+                                    @Nullable @Assisted("firstCallback") ConfirmCallback firstChoiceCallback,
+                                    @Nullable @Assisted("secondCallback") ConfirmCallback secondChoiceCallback,
+                                    @Nullable @Assisted("thirdCallback") ConfirmCallback thirdChoiceCallback);
+
 }

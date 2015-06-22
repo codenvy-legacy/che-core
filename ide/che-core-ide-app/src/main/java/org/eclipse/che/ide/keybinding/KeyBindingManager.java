@@ -10,12 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.ide.keybinding;
 
+import com.google.inject.Provider;
 import elemental.dom.Element;
 import elemental.events.Event;
 import elemental.events.EventListener;
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
@@ -70,34 +70,39 @@ public class KeyBindingManager implements KeyBindingAgent {
                 if (signalEvent == null) {
                     return;
                 }
-                //handle event in active scheme
 
+                //handle event in active scheme
                 int digest = CharCodeWithModifiers.computeKeyDigest(signalEvent);
+
                 Array<String> actionIds = activeScheme.getActionIds(digest);
+
                 if (!actionIds.isEmpty()) {
-                    runActions(actionIds);
-                    event.preventDefault();
-                    event.stopPropagation();
+                    runActions(actionIds, event);
                 }
                 //else handle event in global scheme
                 else if (!(actionIds = globalScheme.getActionIds(digest)).isEmpty()) {
-                    runActions(actionIds);
-                    event.preventDefault();
-                    event.stopPropagation();
+                    runActions(actionIds, event);
                 }
+
                 //default, lets this event handle other part of the IDE
             }
         };
         if (UserAgent.isFirefox()) {
-            // firefox fiers keypress events
+            // firefox fires keypress events
             documentElement.addEventListener(Event.KEYPRESS, downListener, true);
         } else {
-            //webkit browsers fiers keydown events
+            //webkit fires keydown events
             documentElement.addEventListener(Event.KEYDOWN, downListener, true);
         }
     }
 
-    private void runActions(Array<String> actionIds) {
+    /**
+     * Finds and runs an action cancelling original key event
+     *
+     * @param actionIds list containing action ids
+     * @param keyEvent original key event
+     */
+    private void runActions(Array<String> actionIds, Event keyEvent) {
         for (String actionId : actionIds.asIterable()) {
             Action action = actionManager.getAction(actionId);
             if (action == null) {
@@ -105,9 +110,15 @@ public class KeyBindingManager implements KeyBindingAgent {
             }
             ActionEvent e = new ActionEvent("", presentationFactory.getPresentation(action), actionManager, perspectiveManager.get());
             action.update(e);
+
             if (e.getPresentation().isEnabled() && e.getPresentation().isVisible()) {
+                /** Stop handling the key event */
+                keyEvent.preventDefault();
+                keyEvent.stopPropagation();
+
+                /** Perform the action */
                 action.actionPerformed(e);
-            }
+            }        
         }
     }
 

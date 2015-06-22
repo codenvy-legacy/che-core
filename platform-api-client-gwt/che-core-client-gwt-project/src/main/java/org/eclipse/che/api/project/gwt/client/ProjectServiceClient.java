@@ -226,28 +226,32 @@ public interface ProjectServiceClient {
     void deleteModule(String path, String modulePath, AsyncRequestCallback<Void> callback);
 
     /**
-     * Copy an item to the specified target path.
+     * Copy an item with new name to the specified target path. Original item name is used if new name isn't set.
      *
      * @param path
      *         path to the item to copy
      * @param newParentPath
      *         path to the target item
+     * @param newName
+     *         new resource name. Set <code>null</code> to copy without renaming
      * @param callback
      *         the callback to use for the response
      */
-    void copy(String path, String newParentPath, AsyncRequestCallback<Void> callback);
+    void copy(String path, String newParentPath, String newName, AsyncRequestCallback<Void> callback);
 
     /**
-     * Move an item to the specified target path.
+     * Move an item to the specified target path. Set new name to rename the resource when moving.
      *
      * @param path
      *         path to the item to move
      * @param newParentPath
      *         path to the target item
+     * @param newName
+     *         new resource name. Set <code>null</code> to move without renaming
      * @param callback
      *         the callback to use for the response
      */
-    void move(String path, String newParentPath, AsyncRequestCallback<Void> callback);
+    void move(String path, String newParentPath, String newName, AsyncRequestCallback<Void> callback);
 
     /**
      * Rename and/or set new media type for item.
