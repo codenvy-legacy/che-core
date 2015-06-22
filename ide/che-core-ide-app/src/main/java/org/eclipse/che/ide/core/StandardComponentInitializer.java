@@ -36,7 +36,6 @@ import org.eclipse.che.ide.actions.OpenProjectAction;
 import org.eclipse.che.ide.actions.OpenSelectedFileAction;
 import org.eclipse.che.ide.actions.PasteAction;
 import org.eclipse.che.ide.actions.ProjectConfigurationAction;
-import org.eclipse.che.ide.actions.ProjectPerspectiveAction;
 import org.eclipse.che.ide.actions.RedirectToFeedbackAction;
 import org.eclipse.che.ide.actions.RedirectToForumsAction;
 import org.eclipse.che.ide.actions.RedirectToHelpAction;
@@ -87,9 +86,6 @@ public class StandardComponentInitializer {
         @Source("org/eclipse/che/ide/blank.svg")
         SVGResource samplesCategoryBlank();
     }
-
-    @Inject
-    private ProjectPerspectiveAction projectPerspectiveAction;
 
     @Inject
     private EditorRegistry editorRegistry;
@@ -482,8 +478,6 @@ public class StandardComponentInitializer {
 
         DefaultActionGroup rightToolbarGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_RIGHT_TOOLBAR);
         toolbarPresenter.bindRightGroup(rightToolbarGroup);
-
-        rightToolbarGroup.add(projectPerspectiveAction);
 
         // Define hot-keys
         keyBinding.getGlobal().addKey(new KeyBuilder().action().alt().charCode('n').build(), "navigateToFile");

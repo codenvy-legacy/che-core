@@ -566,10 +566,4 @@ public interface CoreLocalizationConstant extends Messages {
 
     @Key("uploadFolderFromZip.title")
     String uploadFolderFromZipTitle();
-
-    @Key("perspective.action.description")
-    String perspectiveActionDescription();
-
-    @Key("perspective.action.tooltip")
-    String perspectiveActionTooltip();
 }
