@@ -13,14 +13,13 @@ package org.eclipse.che.ide.api.project.tree.generic;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.ide.api.event.ItemEvent;
+import org.eclipse.che.ide.api.event.RenameNodeEvent;
 import org.eclipse.che.ide.api.project.tree.AbstractTreeNode;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.api.project.tree.TreeStructure;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.Unmarshallable;
-import org.eclipse.che.ide.util.loging.Log;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
 
@@ -34,7 +33,7 @@ import javax.annotation.Nonnull;
  * @see FileNode
  * @see FolderNode
  */
-public abstract class ItemNode extends AbstractTreeNode<ItemReference> implements StorableNode<ItemReference> {
+public abstract class ItemNode extends AbstractTreeNode<ItemReference> implements StorableNode<ItemReference>, UpdateTreeNodeDataIterable {
     protected ProjectServiceClient   projectServiceClient;
     protected DtoUnmarshallerFactory dtoUnmarshallerFactory;
 
@@ -110,29 +109,21 @@ public abstract class ItemNode extends AbstractTreeNode<ItemReference> implement
         projectServiceClient.rename(getPath(), newName, null, new AsyncRequestCallback<Void>() {
             @Override
             protected void onSuccess(final Void result) {
-                // parent node should be StorableNode instance
-                final String parentPath = ((StorableNode)getParent()).getPath();
-                Unmarshallable<Array<ItemReference>> unmarshaller = dtoUnmarshallerFactory.newArrayUnmarshaller(ItemReference.class);
-
-                // update inner ItemReference object
-                projectServiceClient.getChildren(parentPath, new AsyncRequestCallback<Array<ItemReference>>(unmarshaller) {
+                AsyncCallback<Void> asyncCallback = new AsyncCallback<Void>() {
                     @Override
-                    protected void onSuccess(Array<ItemReference> items) {
-                        for (ItemReference item : items.asIterable()) {
-                            if (newName.equals(item.getName())) {
-                                setData(item);
-                                break;
-                            }
-                        }
-                        onNodeRenamed(ItemNode.this.getPath());
+                    public void onSuccess(Void aVoid) {
                         ItemNode.super.rename(newName, callback);
                     }
 
                     @Override
-                    protected void onFailure(Throwable exception) {
-                        callback.onFailure(exception);
+                    public void onFailure(Throwable throwable) {
+                        callback.onFailure(throwable);
                     }
-                });
+                };
+
+                String parentPath = ((StorableNode)getParent()).getPath();
+                String newPath = parentPath + "/" + newName;
+                eventBus.fireEvent(new RenameNodeEvent(ItemNode.this, newPath, asyncCallback));
             }
 
             @Override
@@ -142,33 +133,19 @@ public abstract class ItemNode extends AbstractTreeNode<ItemReference> implement
         });
     }
 
-    /** Updates inner ItemReference object for all hierarchy of child nodes. */
-    public void onNodeRenamed(String oldNodePath) {
-        final ItemNode itemNode = ItemNode.this;
-
-        Unmarshallable<Array<ItemReference>> unmarshaller = dtoUnmarshallerFactory.newArrayUnmarshaller(ItemReference.class);
-        projectServiceClient.getChildren(itemNode.getPath(), new AsyncRequestCallback<Array<ItemReference>>(unmarshaller) {
+    /** {@inheritDoc} */
+    public void updateData(final AsyncCallback<Void> asyncCallback, String newPath) {
+        Unmarshallable<ItemReference> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ItemReference.class);
+        projectServiceClient.getItem(newPath, new AsyncRequestCallback<ItemReference>(unmarshaller) {
             @Override
-            protected void onSuccess(Array<ItemReference> result) {
-                for (TreeNode<?> childNode : itemNode.getChildren().asIterable()) {
-                    if (childNode instanceof ItemNode) {
-                        final ItemNode childItemNode = (ItemNode)childNode;
-                        for (ItemReference itemReference : result.asIterable()) {
-                            if (childItemNode.getName().equals(itemReference.getName())) {
-
-                                String nodePath = childItemNode.getPath();
-
-                                childItemNode.setData(itemReference);
-                                childItemNode.onNodeRenamed(nodePath);
-                            }
-                        }
-                    }
-                }
+            protected void onSuccess(ItemReference result) {
+                setData(result);
+                asyncCallback.onSuccess(null);
             }
 
             @Override
             protected void onFailure(Throwable exception) {
-                Log.info(getClass(), "Failed get children " + exception);
+                asyncCallback.onFailure(exception);
             }
         });
     }
