@@ -38,6 +38,10 @@ public interface PartPresenter extends Presenter {
     @Nonnull
     String getTitle();
 
+    void setVisible(boolean visible);
+
+    IsWidget getView();
+
     /**
      * Returns the title image of this part.  If this value changes the part must fire a property listener event with
      * <code>PROP_TITLE</code>.

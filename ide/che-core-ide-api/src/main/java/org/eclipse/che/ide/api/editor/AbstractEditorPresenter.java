@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.editor;
 
+import com.google.gwt.user.client.ui.IsWidget;
+
 import org.eclipse.che.ide.api.parts.AbstractPartPresenter;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.Collections;
@@ -21,6 +23,7 @@ import javax.annotation.Nonnull;
  * to be used by subclassing instead of directly implementing an interface.
  *
  * @author Evgen Vidolob
+ * @author Dmitry Shnurenko
  */
 public abstract class AbstractEditorPresenter extends AbstractPartPresenter implements EditorPartPresenter {
     protected boolean     dirtyState;
@@ -46,6 +49,18 @@ public abstract class AbstractEditorPresenter extends AbstractPartPresenter impl
         dirtyState = dirty;
         firePropertyChange(EditorPartPresenter.TITLE_PROPERTY);
         firePropertyChange(PROP_DIRTY);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setVisible(boolean visible) {
+        throw new UnsupportedOperationException("This method isn't supported in this class " + getClass());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public IsWidget getView() {
+        throw new UnsupportedOperationException("This method isn't supported in this class " + getClass());
     }
 
     /** {@inheritDoc} */

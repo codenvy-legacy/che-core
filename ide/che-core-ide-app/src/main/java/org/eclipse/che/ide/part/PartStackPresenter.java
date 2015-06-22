@@ -10,15 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.ide.part;
 
-import com.google.gwt.event.dom.client.MouseDownEvent;
-import com.google.gwt.event.dom.client.MouseDownHandler;
-import com.google.gwt.event.logical.shared.CloseEvent;
-import com.google.gwt.event.logical.shared.CloseHandler;
-import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
-import com.google.gwt.user.client.ui.IsWidget;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import com.google.web.bindery.event.shared.EventBus;
@@ -34,13 +27,13 @@ import org.eclipse.che.ide.api.parts.PartStackView;
 import org.eclipse.che.ide.api.parts.PartStackView.TabItem;
 import org.eclipse.che.ide.api.parts.PropertyListener;
 import org.eclipse.che.ide.api.parts.base.BasePresenter;
-import org.eclipse.che.ide.collections.Array;
+import org.eclipse.che.ide.client.inject.factories.TabItemFactory;
 import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerPartPresenter;
 import org.eclipse.che.ide.workspace.WorkBenchPartController;
-import org.vectomatic.dom.svg.ui.SVGImage;
-import org.vectomatic.dom.svg.ui.SVGResource;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -56,18 +49,18 @@ import java.util.Map;
  * @author Stéphane Daviet
  * @author Dmitry Shnurenko
  */
-public class PartStackPresenter implements Presenter, PartStackView.ActionDelegate, PartStack {
+public class PartStackPresenter implements Presenter, PartStackView.ActionDelegate, TabItem.ActionDelegate, PartStack {
 
-    private final Comparator                     partPresenterComparator;
+    private final Comparator<PartPresenter>      partPresenterComparator;
     private final WorkBenchPartController        workBenchPartController;
     private final HashMap<PartPresenter, Double> partSizes;
+    private final TabItemFactory                 tabItemFactory;
 
     protected final PartStackView                   view;
-    protected final List<PartPresenter>             parts;
+    protected final Map<TabItem, PartPresenter>     parts;
     protected final List<Integer>                   viewPartPositions;
     protected final PropertyListener                propertyListener;
     protected final PartStackEventHandler           partStackHandler;
-    protected final AcceptsOneWidget                partViewContainer;
     protected final Map<PartPresenter, Constraints> constraints;
 
     protected PartPresenter activePart;
@@ -76,14 +69,16 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
     @Inject
     public PartStackPresenter(final EventBus eventBus,
                               PartStackEventHandler partStackEventHandler,
+                              TabItemFactory tabItemFactory,
                               @Assisted final PartStackView view,
-                              @Assisted WorkBenchPartController workBenchPartController) {
+                              @Assisted @Nonnull WorkBenchPartController workBenchPartController) {
         this.view = view;
         this.partStackHandler = partStackEventHandler;
         this.workBenchPartController = workBenchPartController;
+        this.tabItemFactory = tabItemFactory;
         this.partPresenterComparator = getPartPresenterComparator();
 
-        this.parts = new ArrayList<>();
+        this.parts = new HashMap<>();
         this.viewPartPositions = new ArrayList<>();
         this.constraints = new HashMap<>();
         this.partSizes = new HashMap<>();
@@ -96,21 +91,15 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
                 if (PartPresenter.TITLE_PROPERTY == propId) {
                     updatePartTab(source);
                 } else if (EditorPartPresenter.PROP_DIRTY == propId) {
-                    eventBus.fireEvent(new EditorDirtyStateChangedEvent(
-                            (EditorPartPresenter)source));
+                    eventBus.fireEvent(new EditorDirtyStateChangedEvent((EditorPartPresenter)source));
                 }
             }
         };
 
-        partViewContainer = new AcceptsOneWidget() {
-            @Override
-            public void setWidget(IsWidget w) {
-                view.getContentPanel().add(w);
-            }
-        };
         view.setDelegate(this);
     }
 
+    @Nonnull
     private Comparator<PartPresenter> getPartPresenterComparator() {
         return new Comparator<PartPresenter>() {
             @Override
@@ -171,15 +160,11 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
      * @param part
      */
     private void updatePartTab(PartPresenter part) {
-        if (!parts.contains(part)) {
+        if (!containsPart(part)) {
             throw new IllegalArgumentException("This part stack not contains: " + part.getTitle());
         }
-        int index = parts.indexOf(part);
-        view.updateTabItem(index,
-                           part.decorateIcon(part.getTitleSVGImage() != null ? new SVGImage(part.getTitleSVGImage()) : null),
-                           part.getTitle(),
-                           part.getTitleToolTip(),
-                           part.getTitleWidget());
+
+        view.updateTabItem(part);
     }
 
     /** {@inheritDoc} */
@@ -187,7 +172,7 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
     public void go(AcceptsOneWidget container) {
         container.setWidget(view);
         if (activePart != null) {
-            view.setActiveTab(parts.indexOf(activePart));
+            view.setActiveTab(activePart);
         }
     }
 
@@ -200,7 +185,7 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
     /** {@inheritDoc} */
     @Override
     public void addPart(PartPresenter part, Constraints constraint) {
-        if (parts.contains(part)) {
+        if (containsPart(part)) {
             setActivePart(part);
             return;
         }
@@ -209,31 +194,31 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
             ((BasePresenter)part).setPartStack(this);
         }
 
-        parts.add(part);
         constraints.put(part, constraint);
         partSizes.put(part, (double)part.getSize());
 
         part.addPropertyListener(propertyListener);
-        // include close button
-        SVGResource titleSVGResource = part.getTitleSVGImage();
-        SVGImage titleSVGImage = null;
-        if (titleSVGResource != null) {
-            titleSVGImage = part.decorateIcon(new SVGImage(titleSVGResource));
-        }
-        TabItem tabItem = view.addTab(titleSVGImage, part.getTitle(), part.getTitleToolTip(), part.getTitleWidget(), partsClosable);
-        bindEvents(tabItem, part);
-        part.go(partViewContainer);
+
+        TabItem partButton = tabItemFactory.createPartButton(part.getTitle())
+                                           .addTooltip(part.getTitleToolTip())
+                                           .addIcon(part.getTitleSVGImage())
+                                           .addWidget(part.getTitleWidget());
+        partButton.setDelegate(this);
+
+        parts.put(partButton, part);
+
+        view.addTab(partButton, part);
+
         sortPartsOnView();
         part.onOpen();
 
-        // request focus
         onRequestFocus();
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean containsPart(PartPresenter part) {
-        return parts.contains(part);
+        return parts.values().contains(part);
     }
 
     /** {@inheritDoc} */
@@ -258,7 +243,7 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
         }
 
         // remember size of the previous active part
-        if (activePart != null && workBenchPartController != null) {
+        if (activePart != null) {
             double size = workBenchPartController.getSize();
             partSizes.put(activePart, size);
         }
@@ -266,16 +251,18 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
         activePart = part;
 
         if (part == null) {
-            view.setActiveTab(-1);
+            view.unSelectTabs();
             workBenchPartController.setHidden(true);
+
+            return;
         } else {
-            view.setActiveTab(parts.indexOf(activePart));
+            view.setActiveTab(part);
         }
 
         // request part stack to get the focus
         onRequestFocus();
 
-        if (activePart != null && workBenchPartController != null) {
+        if (activePart != null) {
             workBenchPartController.setHidden(false);
             if (partSizes.containsKey(activePart)) {
                 workBenchPartController.setSize(partSizes.get(activePart));
@@ -290,7 +277,7 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
      */
     public List<PartPresenter> getPartPresenters() {
         List<PartPresenter> presenters = new ArrayList<>();
-        for (PartPresenter part : parts) {
+        for (PartPresenter part : parts.values()) {
             presenters.add(part);
         }
         return presenters;
@@ -300,13 +287,12 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
     @Override
     public void hidePart(PartPresenter part) {
         if (activePart == part) {
-            if (workBenchPartController != null) {
-                double size = workBenchPartController.getSize();
-                partSizes.put(activePart, size);
-                workBenchPartController.setHidden(true);
-            }
+            double size = workBenchPartController.getSize();
+            partSizes.put(activePart, size);
+
+            workBenchPartController.setHidden(true);
+
             activePart = null;
-            view.setActiveTab(-1);
         }
     }
 
@@ -330,10 +316,9 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
 
             @Override
             public void onSuccess(Void aVoid) {
-                int partIndex = parts.indexOf(part);
                 if (activePart == part) {
                     PartPresenter newActivePart = null;
-                    for (PartPresenter tmpPart : parts) {
+                    for (PartPresenter tmpPart : parts.values()) {
                         if (tmpPart instanceof ProjectExplorerPartPresenter) {
                             newActivePart = tmpPart;
                             break;
@@ -341,80 +326,13 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
                     }
                     setActivePart(newActivePart);
                 }
-                view.removeTab(partIndex);
+                view.removeTab(part);
                 constraints.remove(part);
-                parts.remove(part);
                 partSizes.remove(part);
                 sortPartsOnView();
                 part.removePropertyListener(propertyListener);
             }
         });
-    }
-
-    HandlerRegistration eventsBlocker;
-
-    /**
-     * Bind Activate and Close events to the Tab
-     *
-     * @param item
-     * @param part
-     */
-    protected void bindEvents(final TabItem item, final PartPresenter part) {
-        item.addCloseHandler(new CloseHandler<PartStackView.TabItem>() {
-            @Override
-            public void onClose(CloseEvent<TabItem> event) {
-                close(part);
-            }
-        });
-
-        item.addMouseDownHandler(new MouseDownHandler() {
-            @Override
-            public void onMouseDown(MouseDownEvent event) {
-                /* Blocking any events excepting Mouse UP */
-                eventsBlocker = Event.addNativePreviewHandler(new Event.NativePreviewHandler() {
-                    @Override
-                    public void onPreviewNativeEvent(Event.NativePreviewEvent event) {
-                        if (event.getTypeInt() == Event.ONMOUSEUP) {
-                            eventsBlocker.removeHandler();
-                            return;
-                        }
-
-                        event.cancel();
-                        event.getNativeEvent().preventDefault();
-                        event.getNativeEvent().stopPropagation();
-                    }
-                });
-
-                if (activePart == part) {
-                    if (partsClosable) {
-                        // request part stack to get the focus
-                        onRequestFocus();
-                    } else {
-                        if (workBenchPartController != null) {
-                            //partsSize = workBenchPartController.getSize();
-                            double size = workBenchPartController.getSize();
-                            partSizes.put(activePart, size);
-                            workBenchPartController.setHidden(true);
-                        }
-                        activePart = null;
-                        view.setActiveTab(-1);
-                    }
-                } else {
-                    // make active
-                    setActivePart(part);
-                }
-            }
-        });
-
-    }
-
-    /**
-     * Returns the list of parts.
-     *
-     * @return {@link Array} array of parts
-     */
-    protected List<PartPresenter> getParts() {
-        return parts;
     }
 
     /** {@inheritDoc} */
@@ -431,19 +349,34 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
 
     /** Sort parts depending on constraint. */
     protected void sortPartsOnView() {
-        viewPartPositions.clear();
-        List<PartPresenter> sortedParts = getSortedParts();
-        for (PartPresenter partPresenter : sortedParts) {
-            viewPartPositions.add(sortedParts.indexOf(partPresenter), parts.indexOf(partPresenter));
-        }
-        view.setTabpositions(viewPartPositions);
+//        viewPartPositions.clear();
+//        List<PartPresenter> sortedParts = getSortedParts();
+//        for (PartPresenter partPresenter : sortedParts) {
+//            viewPartPositions.add(sortedParts.indexOf(partPresenter), parts.indexOf(partPresenter));
+//        }
+//        view.setTabpositions(viewPartPositions);
     }
 
     protected List<PartPresenter> getSortedParts() {
         List<PartPresenter> sortedParts = new ArrayList<>();
-        sortedParts.addAll(parts);
-        java.util.Collections.sort(sortedParts, partPresenterComparator);
+        sortedParts.addAll(parts.values());
+        Collections.sort(sortedParts, partPresenterComparator);
         return sortedParts;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void onTabClicked(@Nonnull TabItem selectedTab, boolean isSelected) {
+        for (PartPresenter presenter : parts.values()) {
+            presenter.setVisible(false);
+        }
+
+        PartPresenter selectedPart = parts.get(selectedTab);
+
+        selectedPart.setVisible(true);
+
+        workBenchPartController.setSize(350);
+        workBenchPartController.setHidden(!isSelected);
     }
 
     /** Handles PartStack actions */

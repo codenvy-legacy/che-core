@@ -50,6 +50,8 @@ public interface ConsolePartView extends View<ConsolePartView.ActionDelegate> {
      */
     void setTitle(String title);
 
+    void setVisible(boolean visible);
+
     /** Clear console. Remove all messages. */
     void clear();
 

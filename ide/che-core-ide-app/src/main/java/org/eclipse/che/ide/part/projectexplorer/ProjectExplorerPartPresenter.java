@@ -10,24 +10,29 @@
  *******************************************************************************/
 package org.eclipse.che.ide.part.projectexplorer;
 
+import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.AcceptsOneWidget;
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.google.inject.Singleton;
+import com.google.web.bindery.event.shared.EventBus;
+
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-
 import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.api.event.NodeExpandedEvent;
-import org.eclipse.che.ide.api.event.PersistProjectTreeStateEvent;
-import org.eclipse.che.ide.api.event.RestoreProjectTreeStateEvent;
-import org.eclipse.che.ide.menu.ContextMenu;
-
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.ItemEvent;
 import org.eclipse.che.ide.api.event.ItemHandler;
 import org.eclipse.che.ide.api.event.NodeChangedEvent;
 import org.eclipse.che.ide.api.event.NodeChangedHandler;
+import org.eclipse.che.ide.api.event.NodeExpandedEvent;
+import org.eclipse.che.ide.api.event.PersistProjectTreeStateEvent;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.ProjectActionHandler;
 import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
 import org.eclipse.che.ide.api.event.RefreshProjectTreeHandler;
+import org.eclipse.che.ide.api.event.RestoreProjectTreeStateEvent;
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.parts.HasView;
 import org.eclipse.che.ide.api.parts.ProjectExplorerPart;
@@ -41,26 +46,17 @@ import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.logger.AnalyticsEventLoggerExt;
+import org.eclipse.che.ide.menu.ContextMenu;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.ui.tree.SelectionModel;
-import org.eclipse.che.ide.util.loging.Log;
-
-import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.AcceptsOneWidget;
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-import com.google.inject.Singleton;
-import com.google.web.bindery.event.shared.EventBus;
-
 import org.eclipse.che.ide.util.Config;
+import org.eclipse.che.ide.util.loging.Log;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import javax.annotation.Nonnull;
 
 import static org.eclipse.che.ide.api.event.ItemEvent.ItemOperation.CREATED;
 import static org.eclipse.che.ide.api.event.ItemEvent.ItemOperation.DELETED;
@@ -70,10 +66,12 @@ import static org.eclipse.che.ide.api.event.ItemEvent.ItemOperation.DELETED;
  *
  * @author Nikolay Zamosenchuk
  * @author Artem Zatsarynnyy
+ * @author Dmitry Shnurenko
  */
 @Singleton
 public class ProjectExplorerPartPresenter extends BasePresenter implements ProjectExplorerView.ActionDelegate,
-        ProjectExplorerPart, HasView {
+                                                                           ProjectExplorerPart,
+                                                                           HasView {
     private ProjectExplorerView            view;
     private EventBus                       eventBus;
     private ContextMenu                    contextMenu;
@@ -87,7 +85,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
     private AnalyticsEventLoggerExt        eventLogger;
 
     /** A list of nodes is used for asynchronously refreshing the tree. */
-    private Array<TreeNode<?>>             nodesToRefresh;
+    private Array<TreeNode<?>> nodesToRefresh;
 
     /** Instantiates the Project Explorer presenter. */
     @Inject
@@ -151,6 +149,12 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
     @Override
     public String getTitle() {
         return coreLocalizationConstant.projectExplorerButtonTitle();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setVisible(boolean visible) {
+        view.setVisible(visible);
     }
 
     /** {@inheritDoc} */
@@ -303,8 +307,8 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
 
     /** {@inheritDoc} */
     @Override
-    public void onNodeSelected(final TreeNode< ? > node, final SelectionModel< ? > model) {
-        final Array< ? > allSelected = model.getSelectedNodes();
+    public void onNodeSelected(final TreeNode<?> node, final SelectionModel<?> model) {
+        final Array<?> allSelected = model.getSelectedNodes();
         final List<Object> newSelection = new ArrayList<>();
         for (final Object item : allSelected.asIterable()) {
             newSelection.add(item);
@@ -370,7 +374,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
         List<StorableNode> selectedNodes = new ArrayList<>();
         for (Object node : view.getSelectedNodes().asIterable()) {
             if (node instanceof StorableNode) {
-                selectedNodes.add((StorableNode) node);
+                selectedNodes.add((StorableNode)node);
             }
         }
         deleteNodeHandler.deleteNodes(selectedNodes);

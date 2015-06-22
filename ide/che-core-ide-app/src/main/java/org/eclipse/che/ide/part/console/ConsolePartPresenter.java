@@ -10,18 +10,18 @@
  *******************************************************************************/
 package org.eclipse.che.ide.part.console;
 
-import org.eclipse.che.ide.api.parts.ConsolePart;
-import org.eclipse.che.ide.api.parts.PartPresenter;
-import org.eclipse.che.ide.api.parts.base.BasePresenter;
-
-import org.eclipse.che.ide.workspace.WorkBenchPartControllerImpl;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.RepeatingCommand;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
+import com.google.gwt.user.client.ui.IsWidget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+import org.eclipse.che.ide.api.parts.ConsolePart;
+import org.eclipse.che.ide.api.parts.PartPresenter;
+import org.eclipse.che.ide.api.parts.base.BasePresenter;
+import org.eclipse.che.ide.workspace.WorkBenchPartControllerImpl;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.annotation.Nonnull;
@@ -50,6 +50,18 @@ public class ConsolePartPresenter extends BasePresenter implements ConsolePartVi
     @Override
     public String getTitle() {
         return TITLE;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setVisible(boolean visible) {
+        view.setVisible(visible);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public IsWidget getView() {
+        return view;
     }
 
     /** {@inheritDoc} */

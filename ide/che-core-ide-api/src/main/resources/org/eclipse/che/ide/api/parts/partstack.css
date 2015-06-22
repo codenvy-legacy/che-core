@@ -193,6 +193,7 @@
 
 .ide-PartStack-Tool-Tab-selected {
     /* tab that is currently selected (active) */
+    border-top: 1px solid #47afdd;
     cursor: default;
     color: #ffffff;
 }

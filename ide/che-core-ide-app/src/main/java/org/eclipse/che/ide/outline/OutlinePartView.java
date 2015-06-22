@@ -10,9 +10,10 @@
  *******************************************************************************/
 package org.eclipse.che.ide.outline;
 
+import com.google.gwt.user.client.ui.AcceptsOneWidget;
+
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.parts.base.BaseActionDelegate;
-import com.google.gwt.user.client.ui.AcceptsOneWidget;
 
 /**
  * @author Evgen Vidolob
@@ -35,14 +36,18 @@ public interface OutlinePartView extends View<OutlinePartView.ActionDelegate> {
     /**
      * Disables outline and displays a message.
      *
-     * @param cause message to display
+     * @param cause
+     *         message to display
      */
     void disableOutline(String cause);
+
+    void setVisible(boolean visible);
 
     /**
      * Sets new title for outline part.
      *
-     * @param title new title
+     * @param title
+     *         new title
      */
     void setTitle(String title);
 

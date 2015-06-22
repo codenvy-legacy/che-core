@@ -10,38 +10,29 @@
  *******************************************************************************/
 package org.eclipse.che.ide.part;
 
-import com.google.gwt.dom.client.Style;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ContextMenuEvent;
 import com.google.gwt.event.dom.client.ContextMenuHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
-import com.google.gwt.event.logical.shared.CloseEvent;
-import com.google.gwt.event.logical.shared.CloseHandler;
-import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.gwt.user.client.ui.DeckLayoutPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.Image;
-import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.ResizeComposite;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
+import org.eclipse.che.ide.api.parts.PartPresenter;
 import org.eclipse.che.ide.api.parts.PartStackUIResources;
 import org.eclipse.che.ide.api.parts.PartStackView;
-import org.vectomatic.dom.svg.ui.SVGImage;
 
-import java.util.ArrayList;
+import javax.annotation.Nonnull;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.google.gwt.user.client.ui.InsertPanel.ForIsWidget;
-import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.BELOW;
-import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.LEFT;
-import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.RIGHT;
 
 /**
  * PartStack view class. Implements UI that manages Parts organized in a Tab-like widget.
@@ -51,17 +42,14 @@ import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.RIGHT;
  */
 public class PartStackViewImpl extends ResizeComposite implements PartStackView {
 
-    final int margin = 8;//tabButtons text margin
+    private final PartStackUIResources        resources;
+    private final Map<PartPresenter, TabItem> tabs;
+    private final AcceptsOneWidget            partViewContainer;
+    private final DeckLayoutPanel             contentPanel;
+    private final FlowPanel                   tabsPanel;
 
-    private final PartStackUIResources resources;
-    private final List<PartButton>     tabButtons;
-
-    private PartButton      activeTabButton;
-    private FlowPanel       tabsPanel;
-    private DeckLayoutPanel contentPanel;
-    private ActionDelegate  delegate;
-    private TabPosition     tabPosition;
-    private int             top;
+    private ActionDelegate delegate;
+    private TabPosition    tabPosition;
 
     @Inject
     public PartStackViewImpl(PartStackUIResources resources,
@@ -71,12 +59,16 @@ public class PartStackViewImpl extends ResizeComposite implements PartStackView 
         this.tabPosition = tabPosition;
         this.tabsPanel = tabsPanel;
 
-        this.tabButtons = new ArrayList<>();
+        this.tabs = new HashMap<>();
         contentPanel = new DeckLayoutPanel();
 
-        if (tabPosition == RIGHT) {
-            top -= 1;
-        }
+        partViewContainer = new AcceptsOneWidget() {
+            @Override
+            public void setWidget(IsWidget widget) {
+                contentPanel.add(widget);
+            }
+        };
+
         contentPanel.setStyleName(resources.partStackCss().idePartStackContent());
         initWidget(contentPanel);
 
@@ -113,57 +105,41 @@ public class PartStackViewImpl extends ResizeComposite implements PartStackView 
 
     /** {@inheritDoc} */
     @Override
-    public TabItem addTab(SVGImage icon, String title, String toolTip, IsWidget widget, boolean closable) {
-        PartButton tabItem = new PartButton(icon, title, toolTip, widget, closable);
-        tabItem.ensureDebugId("tabButton-" + title);
-        tabsPanel.add(tabItem);
-        tabButtons.add(tabItem);
-        return tabItem;
+    public void addTab(@Nonnull TabItem tabItem, @Nonnull PartPresenter presenter) {
+        tabsPanel.add(tabItem.getView());
+        presenter.go(partViewContainer);
+
+        tabs.put(presenter, tabItem);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void removeTab(int index) {
-        if (index < tabButtons.size()) {
-            PartButton removed = tabButtons.remove(index);
-            if (tabPosition != BELOW) {
-                top -= removed.getElement().getOffsetWidth() - margin * 2 - 1;
-                if (tabPosition == LEFT) {
-                    top += 3;
-                } else if (tabPosition == RIGHT) {
-                    top += 1;
-                }
-            }
-            tabsPanel.remove(tabsPanel.getWidgetIndex(removed));
-            contentPanel.remove(contentPanel.getWidget(index));
-        }
+    public void removeTab(@Nonnull PartPresenter presenter) {
+        TabItem tab = tabs.get(presenter);
+
+        tabsPanel.remove(tab.getView());
+        contentPanel.remove(presenter.getView());
     }
 
     /** {@inheritDoc} */
     @Override
     public void setTabpositions(List<Integer> partPositions) {
-        // if this method is called, we reset the top position in case the tabitem is added after a first display of the part stack
-        top = 0;
-        if (tabPosition == RIGHT) {
-            top -= 1;
-        }
-        for (Integer pos : partPositions) {
-            tabsPanel.insert(tabButtons.get(pos), partPositions.indexOf(pos));
-        }
+        //TODO need add ability add tab in special position
     }
 
     /** {@inheritDoc} */
     @Override
-    public void setActiveTab(int index) {
-        if (activeTabButton != null) {
-            activeTabButton.removeStyleName(resources.partStackCss().idePartStackToolTabSelected());
-        }
+    public void setActiveTab(@Nonnull PartPresenter part) {
+        unSelectTabs();
 
-        if (index >= 0 && index < tabButtons.size()) {
-            activeTabButton = tabButtons.get(index);
-            activeTabButton.addStyleName(resources.partStackCss().idePartStackToolTabSelected());
-            contentPanel.getWidget(index).getElement().setAttribute("tab-index", "" + index);
-            contentPanel.showWidget(index);
+        tabs.get(part).select();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void unSelectTabs() {
+        for (TabItem tab : tabs.values()) {
+            tab.unSelect();
         }
     }
 
@@ -193,125 +169,9 @@ public class PartStackViewImpl extends ResizeComposite implements PartStackView 
 
     /** {@inheritDoc} */
     @Override
-    public void updateTabItem(int index, SVGImage icon, String title, String toolTip, IsWidget widget) {
-        PartButton tabButton = tabButtons.get(index);
-        tabButton.tabItemTitle.setText(title);
-        tabButton.setTitle(toolTip);
-        tabButton.update(icon, widget);
+    public void updateTabItem(@Nonnull PartPresenter partPresenter) {
+        TabItem tabItem = tabs.get(partPresenter);
+
+        tabItem.update(partPresenter);
     }
-
-    /** Special button for tab title. */
-    private class PartButton extends Composite implements PartStackView.TabItem {
-
-        private Image       image;
-        private FlowPanel   tabItem;
-        private InlineLabel tabItemTitle;
-        private SVGImage    icon;
-        private IsWidget    widget;
-
-        public PartButton(SVGImage icon, String title, String toolTip, IsWidget widget, boolean closable) {
-            this.icon = icon;
-            this.widget = widget;
-
-            tabItem = new FlowPanel();
-            tabItem.setTitle(toolTip);
-            tabItem.ensureDebugId("partStack-TabButton");
-            initWidget(tabItem);
-
-            this.setStyleName(resources.partStackCss().idePartStackToolTab());
-
-            if (icon != null) {
-                tabItem.add(icon);
-            }
-
-            tabItemTitle = new InlineLabel(title);
-            tabItemTitle.addStyleName(resources.partStackCss().idePartStackTabLabel());
-            tabItem.add(tabItemTitle);
-
-            if (widget != null) {
-                tabItem.add(widget);
-            }
-
-            if (closable) {
-                image = new Image(resources.close());
-                image.setStyleName(resources.partStackCss().idePartStackTabCloseButton());
-                tabItem.add(image);
-                image.addClickHandler(new ClickHandler() {
-                    @Override
-                    public void onClick(ClickEvent event) {
-                        CloseEvent.fire(PartButton.this, PartButton.this);
-                    }
-                });
-            }
-        }
-
-        protected void update(SVGImage icon, IsWidget widget) {
-            if (this.icon != null) {
-                tabItem.remove(this.icon);
-            }
-            this.icon = icon;
-            if (this.icon != null) {
-                tabItem.add(this.icon);
-            }
-
-            if (this.widget != null) {
-                tabItem.remove(this.widget);
-            }
-            this.widget = widget;
-            if (this.widget != null) {
-                tabItem.add(this.widget);
-            }
-        }
-
-        @Override
-        public HandlerRegistration addMouseDownHandler(MouseDownHandler handler) {
-            return addDomHandler(handler, MouseDownEvent.getType());
-        }
-
-        @Override
-        public HandlerRegistration addClickHandler(ClickHandler handler) {
-            return addDomHandler(handler, ClickEvent.getType());
-        }
-
-        @Override
-        public HandlerRegistration addCloseHandler(CloseHandler<TabItem> handler) {
-            return addHandler(handler, CloseEvent.getType());
-        }
-
-        @Override
-        protected void onLoad() {
-            //TODO need add ability change top of element via html not via gwt
-            final int padding = 15;//div(button) padding
-            final int marginPicture = 4;//picture margin
-            int offsetWidth;
-            super.onLoad();
-            if (tabPosition == RIGHT) {
-                tabItem.addStyleName(resources.partStackCss().idePartStackTabRight());
-                offsetWidth = getElement().getOffsetWidth();
-                if (icon != null) {
-                    getElement().getStyle().setWidth(offsetWidth - padding * 2 - marginPicture, Style.Unit.PX);
-//                    offsetWidth -= marginPicture;
-                } else {
-                    getElement().getStyle().setWidth(offsetWidth - padding * 2, Style.Unit.PX);
-                }
-                getElement().getStyle().setTop(top, Style.Unit.PX);
-//                top += offsetWidth - margin * 2 - 1;
-            } else if (tabPosition == LEFT) {
-                tabItem.addStyleName(resources.partStackCss().idePartStackTabLeft());
-                offsetWidth = getElement().getOffsetWidth();
-                if (icon != null) {
-                    getElement().getStyle().setWidth((offsetWidth - padding * 2), Style.Unit.PX);
-//                    offsetWidth -= marginPicture;
-                } else {
-                    getElement().getStyle().setWidth((offsetWidth - padding * 2), Style.Unit.PX);
-                }
-//                top += offsetWidth - margin * 2 - 3;
-                tabItem.getElement().getStyle().setTop(63, Style.Unit.PX);
-            } else {
-                tabItem.addStyleName(resources.partStackCss().idePartStackTabBelow());
-            }
-        }
-
-    }
-
 }

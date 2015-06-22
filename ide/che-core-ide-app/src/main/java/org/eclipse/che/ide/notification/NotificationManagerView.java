@@ -10,9 +10,10 @@
  *******************************************************************************/
 package org.eclipse.che.ide.notification;
 
+import com.google.gwt.user.client.ui.IsWidget;
+
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.parts.base.BaseActionDelegate;
-import com.google.gwt.user.client.ui.IsWidget;
 
 /**
  * The view of {@link NotificationManagerImpl}.
@@ -41,6 +42,8 @@ public interface NotificationManagerView extends View<NotificationManagerView.Ac
     void setNotificationCount(int count);
 
     void setContainer(NotificationContainer container);
+
+    void setVisible(boolean visible);
 
     /**
      * Set title of event log part.

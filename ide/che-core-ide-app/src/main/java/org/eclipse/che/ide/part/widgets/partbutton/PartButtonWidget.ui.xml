@@ -1,0 +1,33 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+
+    <ui:style>
+        .main {
+            width: 80px;
+            height: 17px;
+            font-size: 11px;
+            border-left: 1px solid black;
+            border-right: 1px solid black;
+            cursor: pointer;
+            float: left;
+        }
+
+        .icon {
+            float: left;
+        }
+
+        .label {
+            margin-top: 2px;
+            float: left;
+        }
+    </ui:style>
+
+    <g:DockLayoutPanel ui:field="main" addStyleNames="{style.main}">
+        <g:west size="20">
+            <g:SimplePanel ui:field="icon" addStyleNames="{style.icon}"/>
+        </g:west>
+        <g:center>
+            <g:Label ui:field="buttonName" addStyleNames="{style.label}"/>
+        </g:center>
+    </g:DockLayoutPanel>
+</ui:UiBinder>

@@ -10,14 +10,14 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.parts;
 
-import org.eclipse.che.ide.api.mvp.View;
-import com.google.gwt.event.dom.client.HasClickHandlers;
-import com.google.gwt.event.dom.client.HasMouseDownHandlers;
-import com.google.gwt.event.logical.shared.HasCloseHandlers;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.IsWidget;
 
-import org.vectomatic.dom.svg.ui.SVGImage;
+import org.eclipse.che.ide.api.mvp.View;
+import org.vectomatic.dom.svg.ui.SVGResource;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 
 import static com.google.gwt.user.client.ui.InsertPanel.ForIsWidget;
@@ -30,17 +30,37 @@ public interface PartStackView extends View<PartStackView.ActionDelegate> {
     }
 
     /** Tab which can be clicked and closed */
-    public interface TabItem extends HasCloseHandlers<PartStackView.TabItem>, HasClickHandlers, HasMouseDownHandlers {
+    interface TabItem extends View<TabItem.ActionDelegate>, ClickHandler {
+
+        IsWidget getView();
+
+        TabItem addTooltip(@Nullable String tooltip);
+
+        TabItem addWidget(@Nullable IsWidget widget);
+
+        TabItem addIcon(@Nullable SVGResource resource);
+
+        void update(@Nonnull PartPresenter part);
+
+        void select();
+
+        void unSelect();
+
+        interface ActionDelegate {
+            void onTabClicked(@Nonnull TabItem selectedTab, boolean isSelected);
+        }
     }
 
     /** Add Tab */
-    public PartStackView.TabItem addTab(SVGImage icon, String title, String toolTip, IsWidget widget, boolean closable);
+    public void addTab(@Nonnull TabItem tabItem, @Nonnull PartPresenter presenter);
 
     /** Remove Tab */
-    public void removeTab(int index);
+    public void removeTab(@Nonnull PartPresenter presenter);
 
     /** Set Active Tab */
-    public void setActiveTab(int index);
+    public void setActiveTab(@Nonnull PartPresenter partPresenter);
+
+    public void unSelectTabs();
 
     /** Set new Tabs positions */
     public void setTabpositions(List<Integer> partPositions);
@@ -52,7 +72,7 @@ public interface PartStackView extends View<PartStackView.ActionDelegate> {
     public void setFocus(boolean focused);
 
     /** Update Tab */
-    public void updateTabItem(int index, SVGImage icon, String title, String toolTip, IsWidget widget);
+    public void updateTabItem(@Nonnull PartPresenter partPresenter);
 
     /** Handles Focus Request Event. It is generated, when user clicks a stack anywhere */
     public interface ActionDelegate {
