@@ -18,7 +18,6 @@ import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
-import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
 import org.eclipse.che.ide.api.icon.IconRegistry;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
@@ -45,33 +44,6 @@ public class ModuleNode extends ProjectNode {
 
         this.appContext = appContext;
         setDisplayIcon(iconRegistry.getIcon("maven.module").getSVGImage());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void rename(final String newName, final RenameCallback callback) {
-        projectServiceClient.rename(getPath(), newName, null, new AsyncRequestCallback<Void>() {
-            @Override
-            protected void onSuccess(Void result) {
-                ModuleNode.super.rename(newName, new RenameCallback() {
-                    @Override
-                    public void onRenamed() {
-                        callback.onRenamed();
-                        eventBus.fireEvent(new RefreshProjectTreeEvent(ModuleNode.this.getParent()));
-                    }
-
-                    @Override
-                    public void onFailure(Throwable caught) {
-                        callback.onFailure(caught);
-                    }
-                });
-            }
-
-            @Override
-            protected void onFailure(Throwable exception) {
-                callback.onFailure(exception);
-            }
-        });
     }
 
     /** {@inheritDoc} */

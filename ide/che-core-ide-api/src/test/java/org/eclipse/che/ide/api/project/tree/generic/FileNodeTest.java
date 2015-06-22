@@ -15,17 +15,22 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.event.FileEvent;
+import org.eclipse.che.ide.api.event.NodeChangedEvent;
+import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.collections.java.JsonStringMapAdapter;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
+import org.eclipse.che.ide.rest.Unmarshallable;
 import org.eclipse.che.test.GwtReflectionUtils;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
@@ -36,13 +41,18 @@ import java.util.Map;
 
 import static org.eclipse.che.ide.api.project.tree.TreeNode.DeleteCallback;
 import static org.eclipse.che.ide.api.project.tree.TreeNode.RenameCallback;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -52,23 +62,43 @@ import static org.mockito.Mockito.when;
  * @author Artem Zatsarynnyy
  */
 public class FileNodeTest extends BaseNodeTest {
-    private static final String ITEM_PATH = "/project/folder/file_name";
-    private static final String ITEM_NAME = "file_name";
+    private static final String PARENT_PATH       = "/project/folder";
+    private static final String ITEM_NAME         = "file_name";
+    private static final String ITEM_PATH         = PARENT_PATH + "/" + ITEM_NAME;
+    private static final String NEW_NAME          = "new_name";
+    private static final String RENAMED_ITEM_PATH = PARENT_PATH + "/" + NEW_NAME;
 
     private StringMap<EditorPartPresenter>   openedEditors;
     private Map<String, EditorPartPresenter> openedEditorsMap;
 
     @Mock
-    private ItemReference     itemReference;
+    private ItemReference       itemReference;
     @Mock
-    private ProjectDescriptor projectDescriptor;
+    private ProjectDescriptor   projectDescriptor;
     @Mock
-    private ProjectNode       projectNode;
+    private ProjectNode         projectNode;
     @Mock
-    private EditorAgent       editorAgent;
+    private EditorAgent         editorAgent;
+    @Mock
+    private NotificationManager notificationManager;
 
     @Mock
-    private EditorPartPresenter editorPartPresenter;
+    private EditorPartPresenter           editorPartPresenter;
+    @Mock
+    private Unmarshallable<ItemReference> unmarshaller;
+    @Mock
+    private ItemReference                 result;
+    @Mock
+    private Throwable                     throwable;
+    @Mock
+    private RenameCallback                renameCallback;
+
+    @Mock
+    private AsyncCallback<Void>                                 asyncCallback;
+    @Captor
+    private ArgumentCaptor<AsyncRequestCallback<ItemReference>> itemArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<AsyncRequestCallback<Void>>          voidArgumentCaptor;
 
     private FileNode fileNode;
 
@@ -88,10 +118,13 @@ public class FileNodeTest extends BaseNodeTest {
 
         final Array<TreeNode<?>> children = Collections.createArray();
         when(projectNode.getChildren()).thenReturn(children);
+        when(projectNode.getPath()).thenReturn(PARENT_PATH);
 
         openedEditorsMap = new HashMap<>();
-        openedEditorsMap.put(ITEM_NAME, editorPartPresenter);
+        openedEditorsMap.put(ITEM_PATH, editorPartPresenter);
         openedEditors = new JsonStringMapAdapter<>(openedEditorsMap);
+
+        when(dtoUnmarshallerFactory.newUnmarshaller(ItemReference.class)).thenReturn(unmarshaller);
 
         when(editorAgent.getOpenedEditors()).thenReturn(openedEditors);
     }
@@ -128,45 +161,49 @@ public class FileNodeTest extends BaseNodeTest {
     }
 
     @Test
-    public void testRenameWhenRenameIsSuccessful() throws Exception {
-        final String newName = "new_name";
+    public void fileShouldBeRenamedSuccessfully() throws Exception {
+        openedEditorsMap.put(RENAMED_ITEM_PATH, editorPartPresenter);
 
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                Object[] arguments = invocation.getArguments();
-                AsyncRequestCallback<Void> callback = (AsyncRequestCallback<Void>)arguments[3];
-                GwtReflectionUtils.callOnSuccess(callback, (Void)null);
-                return callback;
-            }
-        }).when(projectServiceClient).rename(anyString(), anyString(), anyString(), (AsyncRequestCallback<Void>)anyObject());
-        RenameCallback callback = mock(RenameCallback.class);
+        fileNode.rename(NEW_NAME, renameCallback);
 
-        fileNode.rename(newName, callback);
+        verify(projectServiceClient).rename(eq(ITEM_PATH), eq(NEW_NAME), isNull(String.class), voidArgumentCaptor.capture());
+        GwtReflectionUtils.callOnSuccess(voidArgumentCaptor.getValue(), (Void)null);
 
-        verify(projectServiceClient).rename(eq(ITEM_PATH), eq(newName), anyString(), Matchers.<AsyncRequestCallback<Void>>anyObject());
-//        verify(callback).onRenamed();
+        verify(projectServiceClient).getItem(eq(RENAMED_ITEM_PATH), itemArgumentCaptor.capture());
+        GwtReflectionUtils.callOnSuccess(itemArgumentCaptor.getValue(), result);
+
+        assertThat(fileNode.getData(), is(result));
+        verify(editorAgent).getOpenedEditors();
+        verify(editorAgent).updateEditorNode(ITEM_PATH, fileNode);
+
+        verify(eventBus).fireEvent(any(NodeChangedEvent.class));
     }
 
     @Test
-    public void testRenameWhenRenameIsFailed() throws Exception {
-        final String newName = "new_name";
+    public void fileShouldBeRenamedFailed() throws Exception {
+        openedEditorsMap.put(RENAMED_ITEM_PATH, editorPartPresenter);
 
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                Object[] arguments = invocation.getArguments();
-                AsyncRequestCallback<Void> callback = (AsyncRequestCallback<Void>)arguments[3];
-                GwtReflectionUtils.callOnFailure(callback, mock(Throwable.class));
-                return callback;
-            }
-        }).when(projectServiceClient).rename(anyString(), anyString(), anyString(), (AsyncRequestCallback<Void>)anyObject());
-        RenameCallback callback = mock(RenameCallback.class);
+        fileNode.rename(NEW_NAME, renameCallback);
 
-        fileNode.rename(newName, callback);
+        verify(projectServiceClient).rename(eq(ITEM_PATH), eq(NEW_NAME), isNull(String.class), voidArgumentCaptor.capture());
+        GwtReflectionUtils.callOnFailure(voidArgumentCaptor.getValue(), throwable);
 
-        verify(projectServiceClient).rename(eq(ITEM_PATH), eq(newName), anyString(), Matchers.<AsyncRequestCallback<Void>>anyObject());
-        verify(callback).onFailure(Matchers.<Throwable>anyObject());
+        verify(renameCallback).onFailure(throwable);
+    }
+
+    @Test
+    public void fileShouldBeRenamedSuccessButGettingItemFailed() {
+        openedEditorsMap.put(RENAMED_ITEM_PATH, editorPartPresenter);
+
+        fileNode.rename(NEW_NAME, renameCallback);
+
+        verify(projectServiceClient).rename(eq(ITEM_PATH), eq(NEW_NAME), isNull(String.class), voidArgumentCaptor.capture());
+        GwtReflectionUtils.callOnSuccess(voidArgumentCaptor.getValue(), (Void)null);
+
+        verify(projectServiceClient).getItem(eq(RENAMED_ITEM_PATH), itemArgumentCaptor.capture());
+        GwtReflectionUtils.callOnFailure(itemArgumentCaptor.getValue(), throwable);
+
+        renameCallback.onFailure(throwable);
     }
 
     @Test
@@ -297,10 +334,49 @@ public class FileNodeTest extends BaseNodeTest {
     }
 
     @Test
-    public void actionShouldBePerformedIfNodeRenamed() {
-        fileNode.onNodeRenamed(ITEM_NAME);
+    public void dataShouldBeUpdated() {
+        String expectedPath = "/project/folderRenamed/file_name";
+        openedEditorsMap.put(expectedPath, editorPartPresenter);
 
+        fileNode.updateData(asyncCallback, PARENT_PATH + "/" + NEW_NAME);
+
+        verify(projectServiceClient).getItem(eq(PARENT_PATH + "/" + NEW_NAME), itemArgumentCaptor.capture());
+        GwtReflectionUtils.callOnSuccess(itemArgumentCaptor.getValue(), result);
+
+        assertThat(fileNode.getData(), is(result));
+        verify(asyncCallback).onSuccess(null);
         verify(editorAgent).getOpenedEditors();
-        verify(editorAgent).updateEditorNode(ITEM_NAME, fileNode);
+        verify(editorAgent).updateEditorNode(ITEM_PATH, fileNode);
+    }
+
+    @Test
+    public void dataShouldBeUpdatedButEditorReferenceShouldNotBeUpdatedBecauseThisFileIsNotOpened() {
+        openedEditorsMap = new HashMap<>();
+        openedEditors = new JsonStringMapAdapter<>(openedEditorsMap);
+        when(editorAgent.getOpenedEditors()).thenReturn(openedEditors);
+
+        fileNode.updateData(asyncCallback, PARENT_PATH + "/" + NEW_NAME);
+
+        verify(projectServiceClient).getItem(eq(PARENT_PATH + "/" + NEW_NAME), itemArgumentCaptor.capture());
+        GwtReflectionUtils.callOnSuccess(itemArgumentCaptor.getValue(), result);
+
+        assertThat(fileNode.getData(), is(result));
+        verify(asyncCallback).onSuccess(null);
+        verify(editorAgent).getOpenedEditors();
+        verify(editorAgent, never()).updateEditorNode(anyString(), eq(fileNode));
+    }
+
+    @Test
+    public void dataShouldBeUpdatedFailed() {
+        String expectedPath = "/project/folderRenamed/file_name";
+        openedEditorsMap.put(expectedPath, editorPartPresenter);
+
+        fileNode.updateData(asyncCallback, PARENT_PATH + "/" + NEW_NAME);
+
+        verify(projectServiceClient).getItem(eq(PARENT_PATH + "/" + NEW_NAME), itemArgumentCaptor.capture());
+        GwtReflectionUtils.callOnFailure(itemArgumentCaptor.getValue(), throwable);
+
+        verify(asyncCallback).onFailure(throwable);
+        verify(editorAgent, never()).getOpenedEditors();
     }
 }
