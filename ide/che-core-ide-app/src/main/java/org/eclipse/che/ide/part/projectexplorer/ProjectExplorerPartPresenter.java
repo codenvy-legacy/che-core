@@ -14,20 +14,29 @@ import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 
 import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.api.event.NodeExpandedEvent;
-import org.eclipse.che.ide.api.event.PersistProjectTreeStateEvent;
-import org.eclipse.che.ide.api.event.RestoreProjectTreeStateEvent;
-import org.eclipse.che.ide.menu.ContextMenu;
-
-import org.eclipse.che.ide.api.app.AppContext;
+import org.eclipse.che.ide.api.editor.EditorAgent;
+import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.event.ItemEvent;
 import org.eclipse.che.ide.api.event.ItemHandler;
 import org.eclipse.che.ide.api.event.NodeChangedEvent;
 import org.eclipse.che.ide.api.event.NodeChangedHandler;
+import org.eclipse.che.ide.api.event.NodeExpandedEvent;
+import org.eclipse.che.ide.api.event.PersistProjectTreeStateEvent;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.ProjectActionHandler;
 import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
 import org.eclipse.che.ide.api.event.RefreshProjectTreeHandler;
+import org.eclipse.che.ide.api.event.RestoreProjectTreeStateEvent;
+import org.eclipse.che.ide.api.event.RenameNodeEvent;
+import org.eclipse.che.ide.api.event.RenameNodeEventHandler;
+import org.eclipse.che.ide.api.project.tree.VirtualFile;
+import org.eclipse.che.ide.api.project.tree.generic.FileNode;
+import org.eclipse.che.ide.api.project.tree.generic.UpdateTreeNodeDataIterable;
+import org.eclipse.che.ide.collections.StringMap;
+import org.eclipse.che.ide.collections.js.JsoArray;
+import org.eclipse.che.ide.menu.ContextMenu;
+
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.parts.HasView;
 import org.eclipse.che.ide.api.parts.ProjectExplorerPart;
@@ -58,6 +67,7 @@ import org.vectomatic.dom.svg.ui.SVGResource;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -85,9 +95,10 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
     private DeleteNodeHandler              deleteNodeHandler;
     private Provider<ProjectListStructure> projectListStructureProvider;
     private AnalyticsEventLoggerExt        eventLogger;
+    private Provider<EditorAgent>          editorAgentProvider;
 
     /** A list of nodes is used for asynchronously refreshing the tree. */
-    private Array<TreeNode<?>>             nodesToRefresh;
+    private Array<TreeNode<?>> nodesToRefresh;
 
     /** Instantiates the Project Explorer presenter. */
     @Inject
@@ -100,7 +111,8 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
                                         TreeStructureProviderRegistry treeStructureProviderRegistry,
                                         DeleteNodeHandler deleteNodeHandler,
                                         AnalyticsEventLoggerExt eventLogger,
-                                        Provider<ProjectListStructure> projectListStructureProvider) {
+                                        Provider<ProjectListStructure> projectListStructureProvider,
+                                        Provider<EditorAgent> editorAgentProvider) {
         this.view = view;
         this.eventBus = eventBus;
         this.contextMenu = contextMenu;
@@ -112,6 +124,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
         this.eventLogger = eventLogger;
         this.projectListStructureProvider = projectListStructureProvider;
         this.view.setTitle(coreLocalizationConstant.projectExplorerTitleBarText());
+        this.editorAgentProvider = editorAgentProvider;
 
         bind();
     }
@@ -273,8 +286,100 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
                 }
             }
         });
+
+        eventBus.addHandler(RenameNodeEvent.TYPE, new RenameNodeEventHandler() {
+            @Override
+            public void onNodeRenamed(TreeNode<?> parentNode, String newParenNodePath, final AsyncCallback<Void> callback) {
+                if (parentNode instanceof UpdateTreeNodeDataIterable) {
+                    final StorableNode parent = (StorableNode) parentNode;
+                    Array<TreeNode<?>> children = JsoArray.create();
+                    children.add(parent);
+                    getAllChildren(parentNode, children);
+                    getOpenedUnCashedFiles(parent, children);
+                    final Iterator<TreeNode<?>> treeNodeIterator = children.asIterable().iterator();
+
+                    updateDataTreeNode(parent, newParenNodePath, treeNodeIterator, callback);
+                }
+            }
+         });
     }
 
+    private void updateDataTreeNode(final StorableNode parent,
+                                    final String renamedNodeNewPath,
+                                    final Iterator<TreeNode<?>> children,
+                                    final AsyncCallback<Void> callback) {
+        if (!children.hasNext()) {
+            callback.onSuccess(null);
+            return;
+        }
+
+        TreeNode treeNode = children.next();
+
+        if (treeNode instanceof UpdateTreeNodeDataIterable && treeNode instanceof StorableNode) {
+            String newPath = solveNewPath(renamedNodeNewPath, ((StorableNode)treeNode).getPath());
+
+            if (treeNode.equals(parent)) {
+                newPath = renamedNodeNewPath;
+            }
+
+            ((UpdateTreeNodeDataIterable)treeNode).updateData(new AsyncCallback<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    updateDataTreeNode(parent, renamedNodeNewPath, children, callback);
+                }
+
+                @Override
+                public void onFailure(Throwable throwable) {
+                    Log.error(getClass(), "Error update treeNode data " + throwable);
+                    eventBus.fireEvent(new RefreshProjectTreeEvent());
+                }
+            }, newPath);
+            return;
+        }
+
+        updateDataTreeNode(parent, renamedNodeNewPath, children, callback);
+    }
+
+    private String solveNewPath(String nodeRenamedPath, String currentPath) {
+        String prefixPath = nodeRenamedPath.substring(0, nodeRenamedPath.lastIndexOf("/") + 1);
+        currentPath = currentPath.replace(prefixPath, "");
+        currentPath = currentPath.substring(currentPath.indexOf("/"), currentPath.length());
+        nodeRenamedPath = nodeRenamedPath.substring(nodeRenamedPath.lastIndexOf("/") + 1, nodeRenamedPath.length());
+
+        return prefixPath + nodeRenamedPath + currentPath;
+    }
+
+    private void getAllChildren(TreeNode<?> parent, Array<TreeNode<?>> children) {
+        Array<TreeNode<?>> childrenForCurrentDeep = parent.getChildren();
+
+        if (childrenForCurrentDeep.isEmpty()) {
+            return;
+        }
+
+        children.addAll(childrenForCurrentDeep);
+
+        for (TreeNode<?> node: childrenForCurrentDeep.asIterable()) {
+            getAllChildren(node, children);
+        }
+    }
+
+    private void getOpenedUnCashedFiles(StorableNode parentNode, Array<TreeNode<?>> children) {
+        StringMap<EditorPartPresenter> editorParts = editorAgentProvider.get().getOpenedEditors();
+        for (EditorPartPresenter editorPart: editorParts.getValues().asIterable()) {
+            VirtualFile file = editorPart.getEditorInput().getFile();
+
+            if (!(file instanceof FileNode)) {
+                continue;
+            }
+
+            FileNode fileNode = (FileNode)file;
+            String path = fileNode.getPath();
+
+            if (path.startsWith(parentNode.getPath() + "/") && !children.contains(fileNode)) {
+                children.add(fileNode);
+            }
+        }
+    }
 
     /**
      * Asynchronously refreshes all nodes from the nodesToRefresh list.

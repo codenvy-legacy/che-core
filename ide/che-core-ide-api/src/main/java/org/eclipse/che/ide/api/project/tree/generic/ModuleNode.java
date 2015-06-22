@@ -49,33 +49,6 @@ public class ModuleNode extends ProjectNode {
 
     /** {@inheritDoc} */
     @Override
-    public void rename(final String newName, final RenameCallback callback) {
-        projectServiceClient.rename(getPath(), newName, null, new AsyncRequestCallback<Void>() {
-            @Override
-            protected void onSuccess(Void result) {
-                ModuleNode.super.rename(newName, new RenameCallback() {
-                    @Override
-                    public void onRenamed() {
-                        callback.onRenamed();
-                        eventBus.fireEvent(new RefreshProjectTreeEvent(ModuleNode.this.getParent()));
-                    }
-
-                    @Override
-                    public void onFailure(Throwable caught) {
-                        callback.onFailure(caught);
-                    }
-                });
-            }
-
-            @Override
-            protected void onFailure(Throwable exception) {
-                callback.onFailure(exception);
-            }
-        });
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public void delete(final DeleteCallback callback) {
         final CurrentProject currentProject = appContext.getCurrentProject();
         if (currentProject == null) {
