@@ -48,7 +48,7 @@ public interface UserDao {
      * @param user
      *         POJO representation of user entity
      */
-    void update(User user) throws NotFoundException, ServerException;
+    void update(User user) throws NotFoundException, ServerException, ConflictException;
 
     /**
      * Removes user from persistent layer by his identifier.

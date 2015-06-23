@@ -75,12 +75,20 @@ public class ChoiceDialogViewImpl extends Window implements ChoiceDialogView {
 
     @Override
     public void setFirstChoiceLabel(final String firstChoiceLabel) {
-        this.footer.firstChoiceButton.setText(firstChoiceLabel);
+        footer.firstChoiceButton.setText(firstChoiceLabel);
+        footer.firstChoiceButton.setVisible(!firstChoiceLabel.isEmpty());
     }
 
     @Override
     public void setSecondChoiceLabel(final String secondChoiceLabel) {
-        this.footer.secondChoiceButton.setText(secondChoiceLabel);
+        footer.secondChoiceButton.setText(secondChoiceLabel);
+        footer.secondChoiceButton.setVisible(!secondChoiceLabel.isEmpty());
+    }
+
+    @Override
+    public void setThirdChoiceLabel(final String thirdChoiceLabel) {
+        footer.thirdChoiceButton.setText(thirdChoiceLabel);
+        footer.thirdChoiceButton.setVisible(!thirdChoiceLabel.isEmpty());
     }
 
     /** The UI binder interface for this components. */
