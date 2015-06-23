@@ -116,7 +116,9 @@ public class RenameItemAction extends AbstractPerspectiveAction {
                         if (hasRunningProcesses) {
                             dialogFactory.createMessageDialog("", localization.stopProcessesBeforeRenamingProject(), null).show();
                         } else {
-                            askForRenamingNode(selectedNode);
+                        */
+            renameNode(selectedNode);
+                        /*
                         }
                     }
         final StorableNode selectedNode = (StorableNode)selection.getHeadElement();
