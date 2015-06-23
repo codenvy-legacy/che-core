@@ -12,7 +12,6 @@ package org.eclipse.che.api.account;
 
 import org.eclipse.che.api.account.server.AccountService;
 import org.eclipse.che.api.account.server.Constants;
-import org.eclipse.che.api.account.server.ResourcesManager;
 import org.eclipse.che.api.account.server.dao.Account;
 import org.eclipse.che.api.account.server.dao.AccountDao;
 import org.eclipse.che.api.account.server.dao.Member;
@@ -20,8 +19,6 @@ import org.eclipse.che.api.account.shared.dto.AccountDescriptor;
 import org.eclipse.che.api.account.shared.dto.AccountUpdate;
 import org.eclipse.che.api.account.shared.dto.MemberDescriptor;
 import org.eclipse.che.api.account.shared.dto.NewMembership;
-import org.eclipse.che.api.account.shared.dto.UpdateResourcesDescriptor;
-import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.rest.Service;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
@@ -64,10 +61,7 @@ import java.util.Map;
 
 import static java.util.Collections.singletonList;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -101,9 +95,6 @@ public class AccountServiceTest {
     private UserDao userDao;
 
     @Mock
-    private ResourcesManager resourcesManager;
-
-    @Mock
     private SecurityContext securityContext;
 
     @Mock
@@ -122,7 +113,6 @@ public class AccountServiceTest {
         providers = new ApplicationProviderBinder();
         DependencySupplierImpl dependencies = new DependencySupplierImpl();
         dependencies.addComponent(UserDao.class, userDao);
-        dependencies.addComponent(ResourcesManager.class, resourcesManager);
         dependencies.addComponent(AccountDao.class, accountDao);
         resources.addResource(AccountService.class, null);
         EverrestProcessor processor = new EverrestProcessor(resources, providers, dependencies, new EverrestConfiguration(), null);
@@ -335,32 +325,6 @@ public class AccountServiceTest {
     }
 
     @Test
-    public void shouldBeAbleToRedistributeResourcesByAccountOwner() throws Exception {
-        prepareSecurityContext("account/owner");
-
-        ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/" + ACCOUNT_ID + "/resources",
-                                                 MediaType.APPLICATION_JSON,
-                                                 DtoFactory.getInstance().createDto(UpdateResourcesDescriptor.class)
-                                                           .withWorkspaceId("some_workspace"));
-
-        assertEquals(response.getStatus(), Response.Status.NO_CONTENT.getStatusCode());
-        verify(resourcesManager).redistributeResources(eq(ACCOUNT_ID), anyListOf(UpdateResourcesDescriptor.class));
-    }
-
-    @Test
-    public void shouldBeAbleToRedistributeResourcesBySystemAdminWithoutLimitation() throws Exception {
-        prepareSecurityContext("system/admin");
-
-        ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/" + ACCOUNT_ID + "/resources",
-                                                 MediaType.APPLICATION_JSON,
-                                                 DtoFactory.getInstance().createDto(UpdateResourcesDescriptor.class)
-                                                           .withWorkspaceId("some_workspace"));
-
-        assertEquals(response.getStatus(), Response.Status.NO_CONTENT.getStatusCode());
-        verify(resourcesManager).redistributeResources(eq(ACCOUNT_ID), anyListOf(UpdateResourcesDescriptor.class));
-    }
-
-    @Test
     public void shouldNotBeAbleToUpdateAccountWithAlreadyExistedName() throws Exception {
         when(accountDao.getById(ACCOUNT_ID)).thenReturn(account);
         when(accountDao.getByName("TO_UPDATE")).thenReturn(new Account().withName("TO_UPDATE"));
@@ -370,25 +334,6 @@ public class AccountServiceTest {
         ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/" + ACCOUNT_ID, MediaType.APPLICATION_JSON, toUpdate);
         assertNotEquals(response.getStatus(), Response.Status.OK);
         assertEquals(response.getEntity().toString(), "Account with name TO_UPDATE already exists");
-    }
-
-    @Test
-    public void shouldThrowExceptionWhenResourcesManagerThrowsIt() throws Exception {
-        prepareSecurityContext("account/owner");
-
-        prepareSecurityContext("account/owner");
-
-        doThrow(new ConflictException("Error"))
-                .when(resourcesManager).redistributeResources(anyString(), anyListOf(UpdateResourcesDescriptor.class));
-
-        ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/" + ACCOUNT_ID + "/resources",
-                                                 MediaType.APPLICATION_JSON,
-                                                 DtoFactory.getInstance().createDto(UpdateResourcesDescriptor.class)
-                                                           .withWorkspaceId("some_workspace"));
-
-        assertEquals(response.getStatus(), Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
-        assertEquals(response.getEntity().toString(), "Error");
-        verify(resourcesManager).redistributeResources(eq(ACCOUNT_ID), anyListOf(UpdateResourcesDescriptor.class));
     }
 
     @Test
