@@ -20,7 +20,7 @@ import java.util.List;
  *
  * @author Eugene Voevodin
  */
-public class FetchCommand extends RemoteUperationCommand<Void> {
+public class FetchCommand extends RemoteOperationCommand<Void> {
 
     private List<String> refSpec;
     private String   remote;

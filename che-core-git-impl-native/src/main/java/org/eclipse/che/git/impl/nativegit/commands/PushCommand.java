@@ -22,7 +22,7 @@ import java.util.List;
  *
  * @author Eugene Voevodin
  */
-public class PushCommand extends RemoteUperationCommand<Void> {
+public class PushCommand extends RemoteOperationCommand<Void> {
 
     private List<String> refSpec;
     private boolean      force;

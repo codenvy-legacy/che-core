@@ -19,7 +19,7 @@ import java.io.File;
  *
  * @author Eugene Voevodin
  */
-public class CloneCommand extends RemoteUperationCommand<Void> {
+public class CloneCommand extends RemoteOperationCommand<Void> {
 
     private String remoteName;
 

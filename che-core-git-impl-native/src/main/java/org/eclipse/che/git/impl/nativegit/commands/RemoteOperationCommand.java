@@ -8,15 +8,33 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.git.impl.nativegit.ssh;
+package org.eclipse.che.git.impl.nativegit.commands;
 
-import java.io.InputStream;
+import java.io.File;
+
 
 /**
  * @author Sergii Kabashniuk
  */
-public interface SshKeyProvider {
-    InputStream getPublicKey(String host);
+public abstract class RemoteOperationCommand<T> extends GitCommand<T> {
 
-    InputStream getPrivateKey(String host);
+    private String remoteUrl;
+
+    /**
+     * @param repository
+     *         directory where command will be executed
+     */
+    public RemoteOperationCommand(File repository) {
+        super(repository);
+    }
+
+
+    public String getRemoteUrl() {
+        return remoteUrl;
+    }
+
+    public void setRemoteUrl(String remoteUrl) {
+        this.remoteUrl = remoteUrl;
+    }
+
 }

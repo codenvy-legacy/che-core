@@ -108,7 +108,7 @@ public class NativeGit {
      * @return clone command
      */
     public CloneCommand createCloneCommand() {
-        CloneCommand cloneCommand = new CloneCommand(repository, );
+        CloneCommand cloneCommand = new CloneCommand(repository);
         cloneCommand.setLineConsumerFactory(gitOutputPublisherFactory);
         return cloneCommand;
     }
@@ -124,7 +124,7 @@ public class NativeGit {
      */
     public CloneCommand createCloneCommand(String sshKeyPath) throws GitException {
         storeSshScript(sshKeyPath);
-        CloneCommand command = new CloneCommand(repository, );
+        CloneCommand command = new CloneCommand(repository );
         command.setLineConsumerFactory(gitOutputPublisherFactory);
         command.setSSHScriptPath(SshKeysManager.getKeyDirectoryPath() + '/' + SSH_SCRIPT);
         return command;

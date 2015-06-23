@@ -24,7 +24,7 @@ import java.util.Map;
  *
  * @author Eugene Voevodin
  */
-public class PullCommand extends RemoteUperationCommand<Void> {
+public class PullCommand extends RemoteOperationCommand<Void> {
 
     private String  refSpec;
     private GitUser author;
