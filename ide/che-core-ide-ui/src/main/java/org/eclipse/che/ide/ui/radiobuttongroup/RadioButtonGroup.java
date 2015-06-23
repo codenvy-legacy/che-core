@@ -23,6 +23,7 @@ import org.eclipse.che.ide.util.UUID;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,8 +69,7 @@ public class RadioButtonGroup extends Composite {
      * @param clickHandler
      *         click handler
      */
-    public void addButton(String label, String title, SVGResource icon, ClickHandler clickHandler) {
-        // TODO: consider button model that should encapsulate label, title, icon etc.
+    public void addButton(String label, String title, @Nullable SVGResource icon, ClickHandler clickHandler) {
         final RadioButton radioButton = new RadioButton(GROUP_NAME, label);
         radioButton.setTitle(title);
         radioButton.setStyleName(resources.getCSS().button());
