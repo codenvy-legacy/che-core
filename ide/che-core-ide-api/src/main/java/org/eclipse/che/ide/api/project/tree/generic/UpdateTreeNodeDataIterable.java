@@ -8,27 +8,21 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.user.shared.dto;
+package org.eclipse.che.ide.api.project.tree.generic;
 
-import org.eclipse.che.dto.shared.DTO;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**
- * Describes new user
  *
- * @author Eugene Voevodin
+ * Interface uses for update TreeNode data after changing TreeNode path
+ *
+ * @author Alexander Andrienko
  */
-@DTO
-public interface NewUser {
-
-    String getName();
-
-    void setName(String name);
-
-    NewUser withName(String name);
-
-    String getPassword();
-
-    void setPassword(String password);
-
-    NewUser withPassword(String password);
+public interface UpdateTreeNodeDataIterable {
+    /**
+     * Takes away new node data from server, update node and launch action in callBack
+     * @param callback callback with some action
+     * @param newPath new TreeNode path
+     */
+    void updateData(AsyncCallback<Void> callback, String newPath);
 }

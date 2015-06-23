@@ -148,30 +148,10 @@ public class UserService extends Service {
                            @ApiParam(value = "Authentication token") @QueryParam("token") String token,
                            @ApiParam(value = "User type") @QueryParam("temporary") @DefaultValue("false") Boolean isTemporary,
                            @Context SecurityContext context) throws ApiException {
-        String email;
-        String password = null;
-        if (context.isUserInRole("system/admin")) {
-            if (newUser == null) {
-                throw new ForbiddenException("New user required");
-            }
-            if (isNullOrEmpty(newUser.getEmail())) {
-                throw new ForbiddenException("User email required");
-            }
-            email = newUser.getEmail();
-            if (newUser.getPassword() != null) {
-                checkPassword(newUser.getPassword());
-                password = newUser.getPassword();
-            }
-        } else {
-            if (token == null) {
-                throw new UnauthorizedException("Missed token parameter");
-            }
-            email = tokenValidator.validateToken(token);
-        }
-        final User user = new User().withId(generate("user", ID_LENGTH))
-                                    .withEmail(email)
-                                    .withPassword(firstNonNull(password, generate("", PASSWORD_LENGTH)));
-        userDao.create(user);
+        final User user = context.isUserInRole("system/admin") ? fromEntity(newUser) : fromToken(token);
+
+        userDao.create(user.withId(generate("user", ID_LENGTH))
+                           .withPassword(firstNonNull(user.getPassword(), generate("", PASSWORD_LENGTH))));
 
         profileDao.create(new Profile(user.getId()));
 
@@ -231,7 +211,7 @@ public class UserService extends Service {
     @Consumes(APPLICATION_FORM_URLENCODED)
     public void updatePassword(@ApiParam(value = "New password", required = true)
                                @FormParam("password")
-                               String password) throws NotFoundException, ServerException, ForbiddenException {
+                               String password) throws NotFoundException, ServerException, ForbiddenException, ConflictException {
         checkPassword(password);
 
         final User user = userDao.getById(currentUser().getId());
@@ -354,9 +334,9 @@ public class UserService extends Service {
      *         when unable to perform the check
      */
     @ApiOperation(value = "Check role for the authenticated user",
-            notes = "Check if user has a role in given scope (default is system) and with an optional scope id. Roles allowed: user, system/admin, system/manager.",
-            response = UserInRoleDescriptor.class,
-            position = 7)
+                  notes = "Check if user has a role in given scope (default is system) and with an optional scope id. Roles allowed: user, system/admin, system/manager.",
+                  response = UserInRoleDescriptor.class,
+                  position = 7)
     @ApiResponses({@ApiResponse(code = 200, message = "OK"),
                    @ApiResponse(code = 403, message = "Unable to check for the given scope"),
                    @ApiResponse(code = 500, message = "Internal Server Error")})
@@ -391,6 +371,28 @@ public class UserService extends Service {
                          .withScopeId(
                                  scopeId);
 
+    }
+
+    private User fromEntity(NewUser newUser) throws ForbiddenException {
+        if (newUser == null) {
+            throw new ForbiddenException("New user required");
+        }
+        if (isNullOrEmpty(newUser.getName())) {
+            throw new ForbiddenException("User name required");
+        }
+        final User user = new User().withName(newUser.getName());
+        if (newUser.getPassword() != null) {
+            checkPassword(newUser.getPassword());
+            user.setPassword(newUser.getPassword());
+        }
+        return user;
+    }
+
+    private User fromToken(String token) throws UnauthorizedException, ConflictException {
+        if (token == null) {
+            throw new UnauthorizedException("Missed token parameter");
+        }
+        return new User().withEmail(tokenValidator.validateToken(token));
     }
 
     private void checkPassword(String password) throws ForbiddenException {
@@ -461,15 +463,17 @@ public class UserService extends Service {
                                              null,
                                              APPLICATION_JSON,
                                              LINK_REL_GET_USER_PROFILE_BY_ID));
-            links.add(LinksHelper.createLink("GET",
-                                             uriBuilder.clone()
-                                                       .path(getClass(), "getByEmail")
-                                                       .queryParam("email", user.getEmail())
-                                                       .build()
-                                                       .toString(),
-                                             null,
-                                             APPLICATION_JSON,
-                                             LINK_REL_GET_USER_BY_EMAIL));
+            if (user.getEmail() != null) {
+                links.add(LinksHelper.createLink("GET",
+                                                 uriBuilder.clone()
+                                                           .path(getClass(), "getByEmail")
+                                                           .queryParam("email", user.getEmail())
+                                                           .build()
+                                                           .toString(),
+                                                 null,
+                                                 APPLICATION_JSON,
+                                                 LINK_REL_GET_USER_BY_EMAIL));
+            }
         }
         if (context.isUserInRole("system/admin")) {
             links.add(LinksHelper.createLink("DELETE",
@@ -484,6 +488,7 @@ public class UserService extends Service {
         return DtoFactory.getInstance().createDto(UserDescriptor.class)
                          .withId(user.getId())
                          .withEmail(user.getEmail())
+                         .withName(user.getName())
                          .withAliases(user.getAliases())
                          .withPassword("<none>")
                          .withLinks(links);

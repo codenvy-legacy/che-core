@@ -30,11 +30,14 @@ public class DocumentChangeEvent extends GwtEvent<DocumentChangeHandler> {
     /** Text inserted into the document */
     private final String text;
 
-    public DocumentChangeEvent(final DocumentHandle document, final int offset, final int length, final String text) {
+    private final int removedCharCount;
+
+    public DocumentChangeEvent(final DocumentHandle document, final int offset, final int length, final String text, int removedCharCount) {
         this.offset = offset;
         this.length = length;
         this.text = text;
         this.document = document;
+        this.removedCharCount = removedCharCount;
     }
 
     @Override
@@ -61,5 +64,9 @@ public class DocumentChangeEvent extends GwtEvent<DocumentChangeHandler> {
 
     public DocumentHandle getDocument() {
         return document;
+    }
+
+    public int getRemoveCharCount() {
+        return removedCharCount;
     }
 }

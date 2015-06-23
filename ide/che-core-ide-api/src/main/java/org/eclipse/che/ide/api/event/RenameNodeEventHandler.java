@@ -8,27 +8,23 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.user.shared.dto;
+package org.eclipse.che.ide.api.event;
 
-import org.eclipse.che.dto.shared.DTO;
+import com.google.gwt.event.shared.EventHandler;
+import org.eclipse.che.ide.api.project.tree.TreeNode;
 
 /**
- * Describes new user
  *
- * @author Eugene Voevodin
+ * Handler for {@link RenameNodeEvent}
+ *
+ * @author Alexander Andrienko
  */
-@DTO
-public interface NewUser {
+public interface RenameNodeEventHandler extends EventHandler {
 
-    String getName();
-
-    void setName(String name);
-
-    NewUser withName(String name);
-
-    String getPassword();
-
-    void setPassword(String password);
-
-    NewUser withPassword(String password);
+    /**
+     * Updates data for renamed node subTree
+     * @param newParentNodePath new path
+     * @param parentNode parent Node which was renamed
+     */
+    void onNodeRenamed(TreeNode<?> parentNode, String newParentNodePath);
 }

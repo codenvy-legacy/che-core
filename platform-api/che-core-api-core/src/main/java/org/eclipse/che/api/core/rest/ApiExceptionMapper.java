@@ -11,6 +11,7 @@
 package org.eclipse.che.api.core.rest;
 
 import org.eclipse.che.api.core.ApiException;
+import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
@@ -46,6 +47,11 @@ public class ApiExceptionMapper implements ExceptionMapper<ApiException> {
                            .build();
         else if (exception instanceof UnauthorizedException)
             return Response.status(Response.Status.UNAUTHORIZED)
+                           .entity(DtoFactory.getInstance().toJson(exception.getServiceError()))
+                           .type(MediaType.APPLICATION_JSON)
+                           .build();
+        else if (exception instanceof BadRequestException)
+            return Response.status(Response.Status.BAD_REQUEST)
                            .entity(DtoFactory.getInstance().toJson(exception.getServiceError()))
                            .type(MediaType.APPLICATION_JSON)
                            .build();
