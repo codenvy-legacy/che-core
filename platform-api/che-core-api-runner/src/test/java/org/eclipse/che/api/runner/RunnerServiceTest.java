@@ -53,11 +53,16 @@ public class RunnerServiceTest {
 
     @BeforeMethod
     public void beforeMethod() {
+        // define environment
+        EnvironmentContext.reset();
+
         doNothing().when(runQueue).checkStarted();
     }
 
     @AfterMethod
     public void afterMethod() {
+        // cleanup environment
+        EnvironmentContext.reset();
     }
 
     @Test
