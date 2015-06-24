@@ -30,6 +30,7 @@ import org.eclipse.che.api.git.shared.FetchRequest;
 import org.eclipse.che.api.git.shared.GitUser;
 import org.eclipse.che.api.git.shared.InitRequest;
 import org.eclipse.che.api.git.shared.LogRequest;
+import org.eclipse.che.api.git.shared.LsFilesRequest;
 import org.eclipse.che.api.git.shared.LsRemoteRequest;
 import org.eclipse.che.api.git.shared.MergeRequest;
 import org.eclipse.che.api.git.shared.MergeResult;
@@ -87,15 +88,7 @@ import java.util.regex.Pattern;
  */
 public class NativeGitConnection implements GitConnection {
 
-    private static final Logger LOG = LoggerFactory.getLogger(NativeGitConnection.class);
-
-    private final NativeGit            nativeGit;
-    private final CredentialsLoader    credentialsLoader;
-    private final GitAskPassScript     gitAskPassScript;
-    private final GitUser              user;
-    private final GitSshScriptProvider gitSshScriptProvider;
-
-
+    private static final Logger  LOG              = LoggerFactory.getLogger(NativeGitConnection.class);
     private static final Pattern authErrorPattern =
             Pattern.compile(
                     ".*fatal: could not read (Username|Password) for '.*': No such device or address.*|" +
@@ -103,6 +96,11 @@ public class NativeGitConnection implements GitConnection {
                     ".*fatal: Authentication failed for '.*'.*|.*fatal: Could not read from remote repository\\.\\n\\nPlease make sure " +
                     "you have the correct access rights\\nand the repository exists\\.\\n.*",
                     Pattern.MULTILINE);
+    private final NativeGit            nativeGit;
+    private final CredentialsLoader    credentialsLoader;
+    private final GitAskPassScript     gitAskPassScript;
+    private final GitUser              user;
+    private final GitSshScriptProvider gitSshScriptProvider;
 
     /**
      * @param repository
@@ -291,6 +289,19 @@ public class NativeGitConnection implements GitConnection {
     }
 
     @Override
+    public List<String> listFiles(LsFilesRequest request) throws GitException {
+        return nativeGit.createListFilesCommand()
+                        .setOthers(request.isOthers())
+                        .setModified(request.isModified())
+                        .setStaged(request.isStaged())
+                        .setCached(request.isCached())
+                        .setDeleted(request.isDeleted())
+                        .setIgnored(request.isIgnored())
+                        .setExcludeStandard(request.isExcludeStandard())
+                        .execute();
+    }
+
+    @Override
     public void clone(CloneRequest request) throws URISyntaxException, UnauthorizedException, GitException {
         CloneCommand clone;
         final String remoteUri = request.getRemoteUri();
@@ -369,11 +380,11 @@ public class NativeGitConnection implements GitConnection {
         }
         fetchCommand = nativeGit.createFetchCommand();
         fetchCommand
-                    .setPrune(request.isRemoveDeletedRefs())
-                    .setRefSpec(request.getRefSpec())
-                    .setRemoteUrl(request.getRemote())
-                    .setTimeout(request.getTimeout())
-                    ;
+                .setPrune(request.isRemoveDeletedRefs())
+                .setRefSpec(request.getRefSpec())
+                .setRemoteUrl(request.getRemote())
+                .setTimeout(request.getTimeout())
+        ;
         executeRemoteCommand(fetchCommand, remoteUri);
     }
 
@@ -453,10 +464,10 @@ public class NativeGitConnection implements GitConnection {
         }
         pullCommand = nativeGit.createPullCommand();
         pullCommand
-                   .setRefSpec(request.getRefSpec())
-                   .setAuthor(getLocalCommitter())
-                   .setRemoteUrl(remoteUri)
-                   .setTimeout(request.getTimeout());
+                .setRefSpec(request.getRefSpec())
+                .setAuthor(getLocalCommitter())
+                .setRemoteUrl(remoteUri)
+                .setTimeout(request.getTimeout());
 
         executeRemoteCommand(pullCommand, remoteUri);
 
@@ -481,10 +492,10 @@ public class NativeGitConnection implements GitConnection {
         pushCommand = nativeGit.createPushCommand();
 
         pushCommand
-                   .setForce(request.isForce())
-                   .setRefSpec(request.getRefSpec())
-                   .setRemoteUrl(request.getRemote())
-                   .setTimeout(request.getTimeout());
+                .setForce(request.isForce())
+                .setRefSpec(request.getRefSpec())
+                .setRemoteUrl(request.getRemote())
+                .setTimeout(request.getTimeout());
 
         executeRemoteCommand(pushCommand, remoteUri);
 

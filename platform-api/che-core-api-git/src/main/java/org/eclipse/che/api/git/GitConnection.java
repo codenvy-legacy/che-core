@@ -26,6 +26,7 @@ import org.eclipse.che.api.git.shared.FetchRequest;
 import org.eclipse.che.api.git.shared.GitUser;
 import org.eclipse.che.api.git.shared.InitRequest;
 import org.eclipse.che.api.git.shared.LogRequest;
+import org.eclipse.che.api.git.shared.LsFilesRequest;
 import org.eclipse.che.api.git.shared.LsRemoteRequest;
 import org.eclipse.che.api.git.shared.MergeRequest;
 import org.eclipse.che.api.git.shared.MergeResult;
@@ -130,6 +131,17 @@ public interface GitConnection extends Closeable {
      * @see BranchListRequest
      */
     List<Branch> branchList(BranchListRequest request) throws GitException;
+
+    /**
+     * Show information about files in the index and the working tree
+     *
+     * @param request
+     *         list files request
+     * @return list of files.
+     * @throws GitException
+     *         if any error occurs
+     */
+    List<String> listFiles(LsFilesRequest request) throws GitException;
 
     /**
      * Clone repository.
