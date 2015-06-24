@@ -17,7 +17,7 @@ import org.eclipse.che.api.machine.server.exception.InvalidRecipeException;
 import org.eclipse.che.api.machine.server.exception.MachineException;
 import org.eclipse.che.api.machine.server.exception.SnapshotException;
 import org.eclipse.che.api.machine.server.exception.UnsupportedRecipeException;
-import org.eclipse.che.api.machine.shared.recipe.Recipe;
+import org.eclipse.che.api.machine.shared.Recipe;
 
 import java.util.Set;
 

@@ -8,50 +8,22 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.machine.shared.recipe;
-
-import java.util.List;
+package org.eclipse.che.api.machine.shared;
 
 /**
  * Recipe to create new {@link org.eclipse.che.api.machine.server.spi.Instance}.
  *
- * @author gazarenkov
+ * @author Eugene Voevodin
  */
 public interface Recipe {
 
-    String getId();
-
-    void setId(String id);
-
-    Recipe withId(String id);
-
+    /**
+     * Returns recipe type (i.e. 'Dockerfile')
+     */
     String getType();
 
-    void setType(String type);
-
-    Recipe withType(String type);
-
+    /**
+     * Returns recipe script, which is used to instantiate new {@link org.eclipse.che.api.machine.server.spi.Instance}
+     */
     String getScript();
-
-    void setScript(String script);
-
-    Recipe withScript(String script);
-
-    String getCreator();
-
-    void setCreator(String creator);
-
-    Recipe withCreator(String creator);
-
-    List<String> getTags();
-
-    void setTags(List<String> tags);
-
-    Recipe withTags(List<String> tags);
-
-    Permissions getPermissions();
-
-    void setPermissions(Permissions permissions);
-
-    Recipe withPermissions(Permissions permissions);
 }

@@ -17,7 +17,8 @@ import com.google.inject.Inject;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.machine.server.dao.RecipeDao;
-import org.eclipse.che.api.machine.shared.recipe.Recipe;
+import org.eclipse.che.api.machine.server.recipe.RecipeImpl;
+import org.eclipse.che.api.machine.shared.ManagedRecipe;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -36,15 +37,15 @@ import static java.lang.String.format;
 @Singleton
 public class LocalRecipeDaoImpl implements RecipeDao {
 
-    private final Map<String, Recipe> recipes;
-    private final ReadWriteLock       lock;
+    private final Map<String, ManagedRecipe> recipes;
+    private final ReadWriteLock              lock;
 
     @Inject
-    public LocalRecipeDaoImpl(@Named("codenvy.local.infrastructure.recipes") Set<Recipe> recipes) {
+    public LocalRecipeDaoImpl(@Named("codenvy.local.infrastructure.recipes") Set<ManagedRecipe> recipes) {
         this.recipes = new HashMap<>();
         lock = new ReentrantReadWriteLock();
         try {
-            for (Recipe recipe : recipes) {
+            for (ManagedRecipe recipe : recipes) {
                 create(recipe);
             }
         } catch (Exception ex) {
@@ -54,7 +55,7 @@ public class LocalRecipeDaoImpl implements RecipeDao {
     }
 
     @Override
-    public void create(Recipe recipe) throws ConflictException {
+    public void create(ManagedRecipe recipe) throws ConflictException {
         lock.writeLock().lock();
         try {
             if (recipes.containsKey(recipe.getId())) {
@@ -67,10 +68,10 @@ public class LocalRecipeDaoImpl implements RecipeDao {
     }
 
     @Override
-    public void update(Recipe recipe) throws NotFoundException {
+    public void update(ManagedRecipe recipe) throws NotFoundException {
         lock.writeLock().lock();
         try {
-            final Recipe target = recipes.get(recipe.getId());
+            final RecipeImpl target = (RecipeImpl)recipes.get(recipe.getId());
             if (target == null) {
                 throw new NotFoundException(format("Recipe with id %s was not found", recipe.getId()));
             }
@@ -94,10 +95,10 @@ public class LocalRecipeDaoImpl implements RecipeDao {
     }
 
     @Override
-    public Recipe getById(String id) throws NotFoundException {
+    public ManagedRecipe getById(String id) throws NotFoundException {
         lock.readLock().lock();
         try {
-            final Recipe recipe = recipes.get(id);
+            final ManagedRecipe recipe = recipes.get(id);
             if (recipe == null) {
                 throw new NotFoundException(format("Recipe with id %s was not found", id));
             }
@@ -108,14 +109,14 @@ public class LocalRecipeDaoImpl implements RecipeDao {
     }
 
     @Override
-    public List<Recipe> search(final List<String> tags, final String type, int skipCount, int maxItems) {
+    public List<ManagedRecipe> search(final List<String> tags, final String type, int skipCount, int maxItems) {
         lock.readLock().lock();
         try {
             return FluentIterable.from(recipes.values())
                                  .skip(skipCount)
-                                 .filter(new Predicate<Recipe>() {
+                                 .filter(new Predicate<ManagedRecipe>() {
                                      @Override
-                                     public boolean apply(Recipe recipe) {
+                                     public boolean apply(ManagedRecipe recipe) {
                                          return recipe.getTags().containsAll(tags) && (type == null || type.equals(recipe.getType()));
                                      }
                                  })
@@ -127,14 +128,14 @@ public class LocalRecipeDaoImpl implements RecipeDao {
     }
 
     @Override
-    public List<Recipe> getByCreator(final String creator, int skipCount, int maxItems) {
+    public List<ManagedRecipe> getByCreator(final String creator, int skipCount, int maxItems) {
         lock.readLock().lock();
         try {
             return FluentIterable.from(recipes.values())
                                  .skip(skipCount)
-                                 .filter(new Predicate<Recipe>() {
+                                 .filter(new Predicate<ManagedRecipe>() {
                                      @Override
-                                     public boolean apply(Recipe recipe) {
+                                     public boolean apply(ManagedRecipe recipe) {
                                          return recipe.getCreator().equals(creator);
                                      }
                                  })

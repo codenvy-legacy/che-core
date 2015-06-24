@@ -20,9 +20,9 @@ import org.eclipse.che.api.core.rest.annotations.GenerateLink;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.core.util.LinksHelper;
 import org.eclipse.che.api.machine.server.dao.RecipeDao;
-import org.eclipse.che.api.machine.shared.recipe.Group;
-import org.eclipse.che.api.machine.shared.recipe.Permissions;
-import org.eclipse.che.api.machine.shared.recipe.Recipe;
+import org.eclipse.che.api.machine.shared.Group;
+import org.eclipse.che.api.machine.shared.ManagedRecipe;
+import org.eclipse.che.api.machine.shared.Permissions;
 import org.eclipse.che.api.machine.shared.dto.recipe.GroupDescriptor;
 import org.eclipse.che.api.machine.shared.dto.recipe.NewRecipe;
 import org.eclipse.che.api.machine.shared.dto.recipe.PermissionsDescriptor;
@@ -63,7 +63,6 @@ import static org.eclipse.che.api.machine.server.Constants.LINK_REL_GET_RECIPES_
 import static org.eclipse.che.api.machine.server.Constants.LINK_REL_GET_RECIPE_SCRIPT;
 import static org.eclipse.che.api.machine.server.Constants.LINK_REL_REMOVE_RECIPE;
 import static org.eclipse.che.api.machine.server.Constants.LINK_REL_SEARCH_RECIPES;
-import static org.eclipse.che.api.machine.server.Constants.LINK_REL_UPDATE_RECIPE;
 
 /**
  * Recipe API
@@ -103,7 +102,7 @@ public class RecipeService extends Service {
             permissions = PermissionsImpl.fromDescriptor(newRecipe.getPermissions());
         }
 
-        final Recipe recipe = new RecipeImpl().withId(NameGenerator.generate("recipe", 16))
+        final ManagedRecipe recipe = new RecipeImpl().withId(NameGenerator.generate("recipe", 16))
                                               .withCreator(EnvironmentContext.getCurrent().getUser().getId())
                                               .withType(newRecipe.getType())
                                               .withScript(newRecipe.getScript())
@@ -121,7 +120,7 @@ public class RecipeService extends Service {
     @Produces(TEXT_PLAIN)
     @RolesAllowed({"user", "system/admin", "system/manager"})
     public String getRecipeScript(@PathParam("id") String id) throws ApiException {
-        final Recipe recipe = recipeDao.getById(id);
+        final ManagedRecipe recipe = recipeDao.getById(id);
 
         final User user = EnvironmentContext.getCurrent().getUser();
         if (!user.isMemberOf("system/admin") &&
@@ -138,7 +137,7 @@ public class RecipeService extends Service {
     @Produces(APPLICATION_JSON)
     @RolesAllowed({"user", "system/admin", "system/manager"})
     public RecipeDescriptor getRecipe(@PathParam("id") String id) throws ApiException {
-        final Recipe recipe = recipeDao.getById(id);
+        final ManagedRecipe recipe = recipeDao.getById(id);
 
         final User user = EnvironmentContext.getCurrent().getUser();
         if (!user.isMemberOf("system/admin") &&
@@ -156,12 +155,12 @@ public class RecipeService extends Service {
     @RolesAllowed({"user", "system/admin", "system/manager"})
     public List<RecipeDescriptor> getCreatedRecipes(@DefaultValue("0") @QueryParam("skipCount") Integer skipCount,
                                                     @DefaultValue("30") @QueryParam("maxItems") Integer maxItems) throws ApiException {
-        final List<Recipe> recipes = recipeDao.getByCreator(EnvironmentContext.getCurrent().getUser().getId(), skipCount, maxItems);
+        final List<ManagedRecipe> recipes = recipeDao.getByCreator(EnvironmentContext.getCurrent().getUser().getId(), skipCount, maxItems);
         return FluentIterable.from(recipes)
-                             .transform(new Function<Recipe, RecipeDescriptor>() {
+                             .transform(new Function<ManagedRecipe, RecipeDescriptor>() {
                                  @Nullable
                                  @Override
-                                 public RecipeDescriptor apply(@Nullable Recipe recipe) {
+                                 public RecipeDescriptor apply(@Nullable ManagedRecipe recipe) {
                                      return asRecipeDescriptor(recipe);
                                  }
                              })
@@ -177,12 +176,12 @@ public class RecipeService extends Service {
                                                 @QueryParam("type") String type,
                                                 @DefaultValue("0") @QueryParam("skipCount") Integer skipCount,
                                                 @DefaultValue("30") @QueryParam("maxItems") Integer maxItems) throws ApiException {
-        final List<Recipe> recipes = recipeDao.search(tags, type, skipCount, maxItems);
+        final List<ManagedRecipe> recipes = recipeDao.search(tags, type, skipCount, maxItems);
         return FluentIterable.from(recipes)
-                             .transform(new Function<Recipe, RecipeDescriptor>() {
+                             .transform(new Function<ManagedRecipe, RecipeDescriptor>() {
                                  @Nullable
                                  @Override
-                                 public RecipeDescriptor apply(@Nullable Recipe recipe) {
+                                 public RecipeDescriptor apply(@Nullable ManagedRecipe recipe) {
                                      return asRecipeDescriptor(recipe);
                                  }
                              })
@@ -195,7 +194,8 @@ public class RecipeService extends Service {
     @Produces(APPLICATION_JSON)
     @RolesAllowed({"user", "system/admin", "system/manager"})
     public RecipeDescriptor updateRecipe(@PathParam("id") String id, RecipeUpdate update) throws ApiException {
-        final Recipe recipe = recipeDao.getById(id);
+        //TODO move update logic to implementation
+        final RecipeImpl recipe = (RecipeImpl)recipeDao.getById(id);
 
         final User user = EnvironmentContext.getCurrent().getUser();
         if (!user.isMemberOf("system/admin") && !permissionsChecker.hasAccess(recipe, user.getId(), "write")) {
@@ -233,7 +233,7 @@ public class RecipeService extends Service {
     @Path("/{id}")
     @RolesAllowed({"user", "system/admin", "system/manager"})
     public void removeRecipe(@PathParam("id") String id) throws ApiException {
-        final Recipe recipe = recipeDao.getById(id);
+        final ManagedRecipe recipe = recipeDao.getById(id);
 
         final User user = EnvironmentContext.getCurrent().getUser();
         if (!user.isMemberOf("system/admin") && !permissionsChecker.hasAccess(recipe, user.getId(), "write")) {
@@ -260,9 +260,9 @@ public class RecipeService extends Service {
     }
 
     /**
-     * Transforms {@link Recipe} to {@link RecipeDescriptor}.
+     * Transforms {@link ManagedRecipe} to {@link RecipeDescriptor}.
      */
-    private RecipeDescriptor asRecipeDescriptor(Recipe recipe) {
+    private RecipeDescriptor asRecipeDescriptor(ManagedRecipe recipe) {
         final RecipeDescriptor descriptor = DtoFactory.getInstance()
                                                       .createDto(RecipeDescriptor.class)
                                                       .withId(recipe.getId())

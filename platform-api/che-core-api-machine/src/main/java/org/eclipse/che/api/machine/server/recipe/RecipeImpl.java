@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.server.recipe;
 
-import org.eclipse.che.api.machine.shared.recipe.Permissions;
-import org.eclipse.che.api.machine.shared.recipe.Recipe;
+import org.eclipse.che.api.machine.shared.ManagedRecipe;
+import org.eclipse.che.api.machine.shared.Permissions;
 import org.eclipse.che.api.machine.shared.dto.recipe.RecipeDescriptor;
 
 import java.util.ArrayList;
@@ -19,18 +19,18 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Implementation of {@link Recipe}
+ * Implementation of {@link ManagedRecipe}
  *
  * @author Eugene Voevodin
  */
-public class RecipeImpl implements Recipe {
+public class RecipeImpl implements ManagedRecipe {
 
-    public static Recipe fromDescriptor(RecipeDescriptor descriptor) {
-        final Recipe recipe = new RecipeImpl().withId(descriptor.getId())
-                                              .withType(descriptor.getType())
-                                              .withScript(descriptor.getScript())
-                                              .withTags(descriptor.getTags())
-                                              .withCreator(descriptor.getCreator());
+    public static RecipeImpl fromDescriptor(RecipeDescriptor descriptor) {
+        final RecipeImpl recipe = new RecipeImpl().withId(descriptor.getId())
+                                                  .withType(descriptor.getType())
+                                                  .withScript(descriptor.getScript())
+                                                  .withTags(descriptor.getTags())
+                                                  .withCreator(descriptor.getCreator());
         if (descriptor.getPermissions() != null) {
             recipe.setPermissions(PermissionsImpl.fromDescriptor(descriptor.getPermissions()));
         }
@@ -49,12 +49,10 @@ public class RecipeImpl implements Recipe {
         return id;
     }
 
-    @Override
     public void setId(String id) {
         this.id = id;
     }
 
-    @Override
     public RecipeImpl withId(String id) {
         this.id = id;
         return this;
@@ -65,12 +63,10 @@ public class RecipeImpl implements Recipe {
         return type;
     }
 
-    @Override
     public void setType(String type) {
         this.type = type;
     }
 
-    @Override
     public RecipeImpl withType(String type) {
         this.type = type;
         return this;
@@ -81,12 +77,10 @@ public class RecipeImpl implements Recipe {
         return script;
     }
 
-    @Override
     public void setScript(String script) {
         this.script = script;
     }
 
-    @Override
     public RecipeImpl withScript(String script) {
         this.script = script;
         return this;
@@ -97,12 +91,10 @@ public class RecipeImpl implements Recipe {
         return creator;
     }
 
-    @Override
     public void setCreator(String creator) {
         this.creator = creator;
     }
 
-    @Override
     public RecipeImpl withCreator(String creator) {
         this.creator = creator;
         return this;
@@ -116,12 +108,10 @@ public class RecipeImpl implements Recipe {
         return tags;
     }
 
-    @Override
     public void setTags(List<String> tags) {
         this.tags = tags;
     }
 
-    @Override
     public RecipeImpl withTags(List<String> tags) {
         this.tags = tags;
         return this;
@@ -132,13 +122,11 @@ public class RecipeImpl implements Recipe {
         return permissions;
     }
 
-    @Override
     public void setPermissions(Permissions permissions) {
         this.permissions = permissions;
     }
 
-    @Override
-    public Recipe withPermissions(Permissions permissions) {
+    public RecipeImpl withPermissions(Permissions permissions) {
         this.permissions = permissions;
         return this;
     }

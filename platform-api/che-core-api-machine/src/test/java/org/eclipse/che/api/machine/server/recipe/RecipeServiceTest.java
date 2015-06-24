@@ -16,7 +16,7 @@ import com.jayway.restassured.response.Response;
 import org.eclipse.che.api.core.rest.ApiExceptionMapper;
 import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 import org.eclipse.che.api.machine.server.dao.RecipeDao;
-import org.eclipse.che.api.machine.shared.recipe.Recipe;
+import org.eclipse.che.api.machine.shared.ManagedRecipe;
 import org.eclipse.che.api.machine.shared.dto.recipe.GroupDescriptor;
 import org.eclipse.che.api.machine.shared.dto.recipe.NewRecipe;
 import org.eclipse.che.api.machine.shared.dto.recipe.PermissionsDescriptor;
@@ -156,7 +156,7 @@ public class RecipeServiceTest {
                                          .post(SECURE_PATH + "/recipe");
 
         assertEquals(response.getStatusCode(), 201);
-        verify(recipeDao).create(any(Recipe.class));
+        verify(recipeDao).create(any(ManagedRecipe.class));
         final RecipeDescriptor descriptor = unwrapDto(response, RecipeDescriptor.class);
         assertNotNull(descriptor.getId());
         assertEquals(descriptor.getCreator(), USER_ID);
@@ -210,10 +210,10 @@ public class RecipeServiceTest {
     @Test
     public void shouldBeAbleToGetRecipeScript() throws Exception {
         final Map<String, List<String>> users = Collections.singletonMap(USER_ID, asList("read", "write"));
-        final Recipe recipe = new RecipeImpl().withCreator("other-user")
-                                              .withId("recipe123")
-                                              .withScript("FROM ubuntu\n")
-                                              .withPermissions(new PermissionsImpl(users, null));
+        final ManagedRecipe recipe = new RecipeImpl().withCreator("other-user")
+                                                     .withId("recipe123")
+                                                     .withScript("FROM ubuntu\n")
+                                                     .withPermissions(new PermissionsImpl(users, null));
         when(recipeDao.getById(recipe.getId())).thenReturn(recipe);
         when(permissionsChecker.hasAccess(recipe, USER_ID, "read")).thenReturn(true);
 
@@ -228,7 +228,7 @@ public class RecipeServiceTest {
 
     @Test
     public void shouldThrowForbiddenExceptionWhenUserDoesNotHaveReadAccessToRecipeScript() throws Exception {
-        final Recipe recipe = new RecipeImpl().withCreator("someone2")
+        final ManagedRecipe recipe = new RecipeImpl().withCreator("someone2")
                                               .withId("recipe123")
                                               .withScript("FROM ubuntu\n");
         when(recipeDao.getById(recipe.getId())).thenReturn(recipe);
@@ -247,7 +247,7 @@ public class RecipeServiceTest {
     @Test
     public void shouldBeAbleToGetRecipe() throws Exception {
         final Map<String, List<String>> users = Collections.singletonMap(USER_ID, asList("read", "write"));
-        final Recipe recipe = new RecipeImpl().withCreator("someone2")
+        final ManagedRecipe recipe = new RecipeImpl().withCreator("someone2")
                                               .withId("recipe123")
                                               .withType("docker")
                                               .withScript("FROM ubuntu\n")
@@ -273,7 +273,7 @@ public class RecipeServiceTest {
 
     @Test
     public void shouldThrowForbiddenExceptionWhenUserDoesNotHaveReadAccessToRecipe() throws Exception {
-        final Recipe recipe = new RecipeImpl().withCreator("someone2")
+        final ManagedRecipe recipe = new RecipeImpl().withCreator("someone2")
                                               .withId("recipe123")
                                               .withScript("FROM ubuntu\n");
         when(recipeDao.getById(recipe.getId())).thenReturn(recipe);
@@ -291,11 +291,11 @@ public class RecipeServiceTest {
 
     @Test
     public void shouldBeAbleToGetCreatedRecipes() throws Exception {
-        final Recipe recipe1 = new RecipeImpl().withId("id1")
+        final ManagedRecipe recipe1 = new RecipeImpl().withId("id1")
                                                .withCreator(USER_ID)
                                                .withType("docker")
                                                .withScript("script1 content");
-        final Recipe recipe2 = new RecipeImpl().withId("id2")
+        final ManagedRecipe recipe2 = new RecipeImpl().withId("id2")
                                                .withCreator(USER_ID)
                                                .withType("docker")
                                                .withScript("script2 content");
@@ -312,12 +312,12 @@ public class RecipeServiceTest {
 
     @Test
     public void shouldBeAbleToSearchRecipes() throws Exception {
-        final Recipe recipe1 = new RecipeImpl().withId("id1")
+        final ManagedRecipe recipe1 = new RecipeImpl().withId("id1")
                                                .withCreator(USER_ID)
                                                .withType("docker")
                                                .withScript("script1 content")
                                                .withTags(asList("java"));
-        final Recipe recipe2 = new RecipeImpl().withId("id2")
+        final ManagedRecipe recipe2 = new RecipeImpl().withId("id2")
                                                .withCreator(USER_ID)
                                                .withType("docker")
                                                .withScript("script2 content")
@@ -340,7 +340,7 @@ public class RecipeServiceTest {
 
     @Test
     public void shouldBeAbleToRemoveRecipe() throws Exception {
-        final Recipe recipe = new RecipeImpl().withId("id")
+        final ManagedRecipe recipe = new RecipeImpl().withId("id")
                                               .withCreator(USER_ID)
                                               .withType("docker")
                                               .withScript("script1 content")
@@ -359,7 +359,7 @@ public class RecipeServiceTest {
 
     @Test
     public void shouldNotBeAbleToRemoveRecipeIfUserDoesNotHaveWritePermission() throws Exception {
-        final Recipe recipe = new RecipeImpl().withId("id")
+        final ManagedRecipe recipe = new RecipeImpl().withId("id")
                                               .withCreator(USER_ID)
                                               .withType("docker")
                                               .withScript("script1 content")
@@ -379,7 +379,7 @@ public class RecipeServiceTest {
 
     @Test
     public void shouldBeAbleToUpdateRecipe() throws Exception {
-        final Recipe recipe = new RecipeImpl().withId("id")
+        final ManagedRecipe recipe = new RecipeImpl().withId("id")
                                               .withCreator(USER_ID)
                                               .withType("docker")
                                               .withScript("script1 content")
@@ -412,7 +412,7 @@ public class RecipeServiceTest {
 
     @Test
     public void shouldThrowForbiddenExceptionWhenUserDoesNotHaveAccessToUpdateRecipe() throws Exception {
-        final Recipe recipe = new RecipeImpl().withId("id")
+        final ManagedRecipe recipe = new RecipeImpl().withId("id")
                                               .withCreator(USER_ID)
                                               .withType("docker")
                                               .withScript("script1 content")
@@ -433,7 +433,7 @@ public class RecipeServiceTest {
 
     @Test
     public void shouldThrowForbiddenExceptionWhenUserDoesNotHaveAccessToUpdateRecipePermissions() throws Exception {
-        final Recipe recipe = new RecipeImpl().withId("id")
+        final ManagedRecipe recipe = new RecipeImpl().withId("id")
                                               .withCreator(USER_ID)
                                               .withType("docker")
                                               .withScript("script1 content")

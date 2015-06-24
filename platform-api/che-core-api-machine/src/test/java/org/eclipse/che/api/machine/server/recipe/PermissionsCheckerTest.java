@@ -11,8 +11,8 @@
 package org.eclipse.che.api.machine.server.recipe;
 
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.machine.shared.recipe.Group;
-import org.eclipse.che.api.machine.shared.recipe.Recipe;
+import org.eclipse.che.api.machine.shared.Group;
+import org.eclipse.che.api.machine.shared.ManagedRecipe;
 import org.eclipse.che.api.workspace.server.dao.Member;
 import org.eclipse.che.api.workspace.server.dao.MemberDao;
 import org.mockito.InjectMocks;
@@ -43,7 +43,7 @@ public class PermissionsCheckerTest {
 
     @Test
     public void recipeCreatorShouldHaveAccessToRecipeWithAnyPermission() throws ServerException {
-        final Recipe recipe = new RecipeImpl().withCreator("user-id");
+        final ManagedRecipe recipe = new RecipeImpl().withCreator("user-id");
 
         assertTrue(permissionsChecker.hasAccess(recipe, "user-id", "write"));
     }
@@ -51,7 +51,7 @@ public class PermissionsCheckerTest {
     @Test
     public void userShouldHaveAccessToRecipeWhenHeIsListedInRecipeUsersPermissions() throws ServerException {
         final Map<String, List<String>> users = singletonMap("user-id", asList("read", "write"));
-        final Recipe recipe = new RecipeImpl().withCreator("someone")
+        final ManagedRecipe recipe = new RecipeImpl().withCreator("someone")
                                               .withPermissions(new PermissionsImpl(users, null));
 
         assertTrue(permissionsChecker.hasAccess(recipe, "user-id", "read"), "should have read permission");
@@ -62,7 +62,7 @@ public class PermissionsCheckerTest {
     @Test
     public void userShouldHaveAccessToRecipeWhenHeIsInTheGroupWhichIsListedInRecipePermissions() throws ServerException {
         final Group group = new GroupImpl("workspace/admin", "workspace123", asList("read", "write"));
-        final Recipe recipe = new RecipeImpl().withCreator("someone")
+        final ManagedRecipe recipe = new RecipeImpl().withCreator("someone")
                                               .withPermissions(new PermissionsImpl(null, asList(group)));
         when(memberDao.getUserRelationships("user-id")).thenReturn(asList(new Member().withUserId("user-id")
                                                                                       .withWorkspaceId("workspace123")
@@ -76,7 +76,7 @@ public class PermissionsCheckerTest {
     @Test
     public void userShouldNotHaveAccessToRecipeWhenHeIsNotInTheGroupWhichIsListedInRecipePermissions() throws ServerException {
         final Group group = new GroupImpl("workspace/admin", "workspace123", asList("read", "write"));
-        final Recipe recipe = new RecipeImpl().withCreator("someone")
+        final ManagedRecipe recipe = new RecipeImpl().withCreator("someone")
                                               .withPermissions(new PermissionsImpl(null, asList(group)));
         when(memberDao.getUserRelationships("user-id")).thenReturn(asList(new Member().withUserId("user-id")
                                                                                       .withWorkspaceId("workspace123")
@@ -90,7 +90,7 @@ public class PermissionsCheckerTest {
     @Test
     public void userShouldHaveAccessToRecipeWhenRecipePermissionsContainsPublicGroup() throws ServerException {
         final Group group = new GroupImpl("public", null, asList("read"));
-        final Recipe recipe = new RecipeImpl().withCreator("someone")
+        final ManagedRecipe recipe = new RecipeImpl().withCreator("someone")
                                               .withPermissions(new PermissionsImpl(null, asList(group)));
 
         assertTrue(permissionsChecker.hasAccess(recipe, "user-id", "read"), "should have read permission");
@@ -102,7 +102,7 @@ public class PermissionsCheckerTest {
     public void groupPermissionsShouldHaveLessPriorityThenUserPermissions() throws ServerException {
         final Group group = new GroupImpl("workspace/developer", "workspace123", asList("read", "write", "update_acl"));
         final Map<String, List<String>> users = singletonMap("user-id", asList("read"));
-        final Recipe recipe = new RecipeImpl().withCreator("someone")
+        final ManagedRecipe recipe = new RecipeImpl().withCreator("someone")
                                               .withPermissions(new PermissionsImpl(users, asList(group)));
         when(memberDao.getUserRelationships("user-id")).thenReturn(asList(new Member().withUserId("user-id")
                                                                                       .withWorkspaceId("workspace123")
@@ -115,7 +115,7 @@ public class PermissionsCheckerTest {
 
     @Test
     public void shouldReturnFalseIfRecipeDoesNotHavePermissions() throws ServerException {
-        final Recipe recipe = new RecipeImpl().withCreator("user-id");
+        final ManagedRecipe recipe = new RecipeImpl().withCreator("user-id");
 
         assertFalse(permissionsChecker.hasAccess(recipe, "someone", "read"));
     }
