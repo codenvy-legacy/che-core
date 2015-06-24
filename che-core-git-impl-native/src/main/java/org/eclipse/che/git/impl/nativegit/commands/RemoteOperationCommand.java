@@ -10,6 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.git.impl.nativegit.commands;
 
+import com.google.common.collect.ImmutableMap;
+
+import org.eclipse.che.api.git.GitException;
+import org.eclipse.che.git.impl.nativegit.GitUrl;
+import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
+
 import java.io.File;
 
 
@@ -18,14 +24,17 @@ import java.io.File;
  */
 public abstract class RemoteOperationCommand<T> extends GitCommand<T> {
 
-    private String remoteUrl;
+    private final GitSshScriptProvider gitSshScriptProvider;
+    private       String               remoteUrl;
 
     /**
      * @param repository
      *         directory where command will be executed
      */
-    public RemoteOperationCommand(File repository) {
+    public RemoteOperationCommand(File repository, GitSshScriptProvider gitSshScriptProvider) {
         super(repository);
+        this.gitSshScriptProvider = gitSshScriptProvider;
+
     }
 
 
@@ -33,8 +42,30 @@ public abstract class RemoteOperationCommand<T> extends GitCommand<T> {
         return remoteUrl;
     }
 
-    public void setRemoteUrl(String remoteUrl) {
+    public RemoteOperationCommand setRemoteUrl(String remoteUrl) {
         this.remoteUrl = remoteUrl;
+        return this;
     }
+
+    @Override
+    protected void start() throws GitException {
+        if (!GitUrl.isSSH(remoteUrl)) {
+            super.start();
+        } else {
+            File sshScript = gitSshScriptProvider.gitSshScript();
+            sshScript.deleteOnExit();
+            setCommandEnvironment(ImmutableMap.<String, String>builder()
+                                              .putAll(getCommandEnvironment())
+                                              .put("GIT_SSH", sshScript.getAbsolutePath())
+                                              .build());
+            try {
+                super.start();
+            } finally {
+                sshScript.delete();
+            }
+
+        }
+    }
+
 
 }

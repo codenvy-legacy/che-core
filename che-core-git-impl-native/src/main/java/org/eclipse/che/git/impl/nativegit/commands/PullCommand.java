@@ -14,6 +14,7 @@ import com.google.common.base.MoreObjects;
 
 import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.api.git.shared.GitUser;
+import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
 
 import java.io.File;
 import java.util.HashMap;
@@ -29,8 +30,8 @@ public class PullCommand extends RemoteOperationCommand<Void> {
     private String  refSpec;
     private GitUser author;
 
-    public PullCommand(File repository) {
-        super(repository);
+    public PullCommand(File repository, GitSshScriptProvider gitSshScriptProvider) {
+        super(repository, gitSshScriptProvider);
     }
 
     /** @see GitCommand#execute() */

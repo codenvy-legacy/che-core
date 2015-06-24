@@ -68,7 +68,7 @@ import org.eclipse.che.git.impl.nativegit.commands.LsRemoteCommand;
 import org.eclipse.che.git.impl.nativegit.commands.PullCommand;
 import org.eclipse.che.git.impl.nativegit.commands.PushCommand;
 import org.eclipse.che.git.impl.nativegit.commands.RemoteListCommand;
-import org.eclipse.che.git.impl.nativegit.ssh.SshKeyProvider;
+import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,11 +89,12 @@ public class NativeGitConnection implements GitConnection {
 
     private static final Logger LOG = LoggerFactory.getLogger(NativeGitConnection.class);
 
-    private final NativeGit         nativeGit;
-    private final CredentialsLoader credentialsLoader;
-    private final GitAskPassScript  gitAskPassScript;
-    private final GitUser           user;
-    private final SshKeyProvider    keysManager;
+    private final NativeGit            nativeGit;
+    private final CredentialsLoader    credentialsLoader;
+    private final GitAskPassScript     gitAskPassScript;
+    private final GitUser              user;
+    private final GitSshScriptProvider gitSshScriptProvider;
+
 
     private static final Pattern authErrorPattern =
             Pattern.compile(
@@ -108,16 +109,17 @@ public class NativeGitConnection implements GitConnection {
      *         directory where commands will be invoked
      * @param user
      *         git user
-     * @param keysManager
+     * @param gitSshScriptProvider
      *         manager for ssh keys. If it is null default ssh will be used;
      * @param credentialsLoader
      *         loader for credentials
      * @throws GitException
      *         when some error occurs
      */
-    public NativeGitConnection(File repository, GitUser user, SshKeyProvider keysManager, CredentialsLoader credentialsLoader)
+    public NativeGitConnection(File repository, GitUser user, GitSshScriptProvider gitSshScriptProvider,
+                               CredentialsLoader credentialsLoader)
             throws GitException {
-        this(new NativeGit(repository), user, keysManager, credentialsLoader, new GitAskPassScript());
+        this(new NativeGit(repository, gitSshScriptProvider), user, gitSshScriptProvider, credentialsLoader, new GitAskPassScript());
     }
 
     /**
@@ -125,7 +127,7 @@ public class NativeGitConnection implements GitConnection {
      *         native git client
      * @param user
      *         git user
-     * @param keysManager
+     * @param gitSshScriptProvider
      *         manager for ssh keys. If it is null default ssh will be used;
      * @param credentialsLoader
      *         loader for credentials
@@ -134,13 +136,13 @@ public class NativeGitConnection implements GitConnection {
      */
     public NativeGitConnection(NativeGit nativeGit,
                                GitUser user,
-                               SshKeyProvider keysManager,
+                               GitSshScriptProvider gitSshScriptProvider,
                                CredentialsLoader credentialsLoader,
                                GitAskPassScript gitAskPassScript
                               )
             throws GitException {
         this.user = user;
-        this.keysManager = keysManager;
+        this.gitSshScriptProvider = gitSshScriptProvider;
         this.credentialsLoader = credentialsLoader;
         this.nativeGit = nativeGit;
         this.gitAskPassScript = gitAskPassScript;
@@ -215,7 +217,8 @@ public class NativeGitConnection implements GitConnection {
                 remoteUri = remoteName;
             }
             if (GitUrl.isSSH(remoteUri)) {
-                branchDeleteCommand = nativeGit.createBranchDeleteCommand(keysManager.writeKeyFile(remoteUri).getAbsolutePath());
+                branchDeleteCommand = nativeGit.createBranchDeleteCommand();
+                branchDeleteCommand.setRemoteUrl(remoteUri);
             }
         }
         branchName = parseBranchName(branchName);
@@ -251,7 +254,7 @@ public class NativeGitConnection implements GitConnection {
                 remoteUri = remoteName;
             }
             if (GitUrl.isSSH(remoteUri)) {
-                branchRenameCommand = nativeGit.createBranchRenameCommand(keysManager.writeKeyFile(remoteUri).getAbsolutePath());
+                branchRenameCommand = nativeGit.createBranchRenameCommand();
             }
         }
 
@@ -291,12 +294,8 @@ public class NativeGitConnection implements GitConnection {
     public void clone(CloneRequest request) throws URISyntaxException, UnauthorizedException, GitException {
         CloneCommand clone;
         final String remoteUri = request.getRemoteUri();
-        if (GitUrl.isSSH(remoteUri)) {
-            clone = nativeGit.createCloneCommand(keysManager.writeKeyFile(remoteUri).getAbsolutePath());
-        } else {
-            clone = nativeGit.createCloneCommand();
-        }
-        clone.setUri(remoteUri);
+        clone = nativeGit.createCloneCommand();
+        clone.setRemoteUrl(remoteUri);
         clone.setRemoteName(request.getRemoteName());
         if (clone.getTimeout() > 0) {
             clone.setTimeout(request.getTimeout());
@@ -368,15 +367,13 @@ public class NativeGitConnection implements GitConnection {
         } catch (GitException ignored) {
             remoteUri = request.getRemote();
         }
-        if (GitUrl.isSSH(remoteUri)) {
-            fetchCommand = nativeGit.createFetchCommand(keysManager.writeKeyFile(remoteUri).getAbsolutePath());
-        } else {
-            fetchCommand = nativeGit.createFetchCommand();
-        }
-        fetchCommand.setRemote(request.getRemote())
+        fetchCommand = nativeGit.createFetchCommand();
+        fetchCommand
                     .setPrune(request.isRemoveDeletedRefs())
                     .setRefSpec(request.getRefSpec())
-                    .setTimeout(request.getTimeout());
+                    .setRemoteUrl(request.getRemote())
+                    .setTimeout(request.getTimeout())
+                    ;
         executeRemoteCommand(fetchCommand, remoteUri);
     }
 
@@ -454,14 +451,11 @@ public class NativeGitConnection implements GitConnection {
         } catch (GitException ignored) {
             remoteUri = request.getRemote();
         }
-        if (GitUrl.isSSH(remoteUri)) {
-            pullCommand = nativeGit.createPullCommand(keysManager.writeKeyFile(remoteUri).getAbsolutePath());
-        } else {
-            pullCommand = nativeGit.createPullCommand();
-        }
-        pullCommand.setRemote(remoteUri)
+        pullCommand = nativeGit.createPullCommand();
+        pullCommand
                    .setRefSpec(request.getRefSpec())
                    .setAuthor(getLocalCommitter())
+                   .setRemoteUrl(remoteUri)
                    .setTimeout(request.getTimeout());
 
         executeRemoteCommand(pullCommand, remoteUri);
@@ -484,15 +478,12 @@ public class NativeGitConnection implements GitConnection {
         } catch (GitException ignored) {
             remoteUri = request.getRemote();
         }
-        if (GitUrl.isSSH(remoteUri)) {
-            pushCommand = nativeGit.createPushCommand(keysManager.writeKeyFile(remoteUri).getAbsolutePath());
-        } else {
-            pushCommand = nativeGit.createPushCommand();
-        }
+        pushCommand = nativeGit.createPushCommand();
 
-        pushCommand.setRemote(request.getRemote())
+        pushCommand
                    .setForce(request.isForce())
                    .setRefSpec(request.getRefSpec())
+                   .setRemoteUrl(request.getRemote())
                    .setTimeout(request.getTimeout());
 
         executeRemoteCommand(pushCommand, remoteUri);
@@ -668,10 +659,6 @@ public class NativeGitConnection implements GitConnection {
                 throw new UnauthorizedException("Not authorized");
             } finally {
                 gitAskPassScript.remove();
-            }
-        } finally {
-            if (url != null && GitUrl.isSSH(url)) {
-                keysManager.removeKey(url);
             }
         }
     }

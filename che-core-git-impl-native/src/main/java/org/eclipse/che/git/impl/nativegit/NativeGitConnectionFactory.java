@@ -24,6 +24,7 @@ import org.eclipse.che.dto.server.DtoFactory;
 
 import com.google.common.base.Joiner;
 
+import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,28 +43,32 @@ public class NativeGitConnectionFactory extends GitConnectionFactory {
 
     private static final Logger LOG = LoggerFactory.getLogger(NativeGitConnectionFactory.class);
 
-    private final SshKeysManager    keysManager;
-    private final CredentialsLoader credentialsLoader;
-    private final UserProfileDao    userProfileDao;
+    private final CredentialsLoader    credentialsLoader;
+    private final UserProfileDao       userProfileDao;
+    private final GitSshScriptProvider gitSshScriptProvider;
 
     @Inject
-    public NativeGitConnectionFactory(SshKeysManager keysManager, CredentialsLoader credentialsLoader, UserProfileDao userProfileDao) {
-        this.keysManager = keysManager;
+    public NativeGitConnectionFactory(CredentialsLoader credentialsLoader, GitSshScriptProvider gitSshScriptProvider,
+                                      UserProfileDao userProfileDao) {
         this.credentialsLoader = credentialsLoader;
         this.userProfileDao = userProfileDao;
+        this.gitSshScriptProvider = gitSshScriptProvider;
     }
 
     @Override
     public GitConnection getConnection(File workDir, GitUser user, LineConsumerFactory outputPublisherFactory) throws GitException {
-        final GitConnection gitConnection = new NativeGitConnection(workDir, user, keysManager, credentialsLoader);
+        final GitConnection gitConnection = new NativeGitConnection(workDir, user, gitSshScriptProvider, credentialsLoader);
         gitConnection.setOutputLineConsumerFactory(outputPublisherFactory);
         return gitConnection;
     }
 
     @Override
     public GitConnection getConnection(File workDir, LineConsumerFactory outputPublisherFactory) throws GitException {
-        return getConnection(workDir, getGitUser(), outputPublisherFactory);
+        final GitConnection gitConnection = new NativeGitConnection(workDir, getGitUser(), gitSshScriptProvider, credentialsLoader);
+        gitConnection.setOutputLineConsumerFactory(outputPublisherFactory);
+        return gitConnection;
     }
+
 
     private GitUser getGitUser() {
         final User user = EnvironmentContext.getCurrent().getUser();

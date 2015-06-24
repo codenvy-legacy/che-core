@@ -13,6 +13,7 @@ package org.eclipse.che.git.impl.nativegit.commands;
 import com.google.common.base.MoreObjects;
 
 import org.eclipse.che.api.git.GitException;
+import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
 
 import java.io.File;
 import java.util.List;
@@ -27,8 +28,8 @@ public class PushCommand extends RemoteOperationCommand<Void> {
     private List<String> refSpec;
     private boolean      force;
 
-    public PushCommand(File repository) {
-        super(repository);
+    public PushCommand(File repository, GitSshScriptProvider gitSshScriptProvider) {
+        super(repository, gitSshScriptProvider);
     }
 
     /** @see GitCommand#execute() */

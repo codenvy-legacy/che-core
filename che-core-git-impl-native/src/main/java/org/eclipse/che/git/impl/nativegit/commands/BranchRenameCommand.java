@@ -11,6 +11,7 @@
 package org.eclipse.che.git.impl.nativegit.commands;
 
 import org.eclipse.che.api.git.GitException;
+import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
 
 import java.io.File;
 import java.util.regex.Pattern;
@@ -28,8 +29,8 @@ public class BranchRenameCommand extends RemoteOperationCommand<Void> {
     private String newName;
     private String remote;
 
-    public BranchRenameCommand(File repository) {
-        super(repository);
+    public BranchRenameCommand(File repository, GitSshScriptProvider gitSshScriptProvider) {
+        super(repository, gitSshScriptProvider);
     }
 
     /** @see GitCommand#execute() */

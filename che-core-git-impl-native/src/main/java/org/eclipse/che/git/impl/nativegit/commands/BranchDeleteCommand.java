@@ -11,6 +11,7 @@
 package org.eclipse.che.git.impl.nativegit.commands;
 
 import org.eclipse.che.api.git.GitException;
+import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
 
 import java.io.File;
 
@@ -19,14 +20,14 @@ import java.io.File;
  *
  * @author Eugene Voevodin
  */
-public class BranchDeleteCommand  extends RemoteOperationCommand<Void> {
+public class BranchDeleteCommand extends RemoteOperationCommand<Void> {
 
     private boolean deleteFullyMerged;
     private String  branchName;
     private String  remote;
 
-    public BranchDeleteCommand(File repository) {
-        super(repository);
+    public BranchDeleteCommand(File repository, GitSshScriptProvider gitSshScriptProvider) {
+        super(repository, gitSshScriptProvider);
     }
 
     /**

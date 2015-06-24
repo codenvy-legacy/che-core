@@ -13,10 +13,10 @@ package org.eclipse.che.git.impl.nativegit;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
-import org.eclipse.che.ide.ext.git.server.GitException;
+import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.git.impl.nativegit.commands.ListFilesCommand;
-import org.eclipse.che.ide.ext.git.shared.AddRequest;
-import org.eclipse.che.ide.ext.git.shared.CommitRequest;
+import org.eclipse.che.api.git.shared.AddRequest;
+import org.eclipse.che.api.git.shared.CommitRequest;
 import com.google.common.collect.ImmutableList;
 
 import org.testng.annotations.Test;
