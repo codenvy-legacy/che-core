@@ -14,6 +14,7 @@ import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.api.event.CloseCurrentProjectEvent;
+import org.eclipse.che.ide.api.event.DeleteModuleEvent;
 import org.eclipse.che.ide.api.event.ProjectDescriptorChangedEvent;
 import org.eclipse.che.ide.api.event.ProjectDescriptorChangedHandler;
 import org.eclipse.che.ide.api.event.RenameNodeEvent;
@@ -242,18 +243,10 @@ public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements 
             protected void onSuccess(Void result) {
                 if (isRootProject()) {
                     eventBus.fireEvent(new CloseCurrentProjectEvent());
+                } else {
+                    eventBus.fireEvent(new DeleteModuleEvent(ProjectNode.this));
                 }
-                ProjectNode.super.delete(new DeleteCallback() {
-                    @Override
-                    public void onDeleted() {
-                        callback.onDeleted();
-                    }
-
-                    @Override
-                    public void onFailure(Throwable caught) {
-                        callback.onFailure(caught);
-                    }
-                });
+                ProjectNode.super.delete(callback);
             }
 
             @Override
