@@ -86,8 +86,8 @@ public class LocalProfileDaoImpl implements UserProfileDao {
             // Add default entry if file doesn't exist or invalid or empty.
             if (profiles.isEmpty()) {
                 final Map<String, String> attributes = new HashMap<>(2);
-                attributes.put("First Name", "Codenvy");
-                attributes.put("Last Name", "Codenvy");
+                attributes.put("firstName", "Che");
+                attributes.put("lastName", "Codenvy");
                 Profile profile = new Profile().withId("codenvy")
                                                .withUserId("codenvy")
                                                .withAttributes(attributes);
