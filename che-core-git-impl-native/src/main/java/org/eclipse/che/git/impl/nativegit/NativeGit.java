@@ -140,21 +140,6 @@ public class NativeGit {
         return command;
     }
 
-    /**
-     * Creates branch rename command that will be used with ssh key for rename origin branch
-     *
-     * @param sshKeyPath
-     *         path to ssh key that will be used with branch rename command
-     * @return branch rename command with ssh key parameter
-     * @throws GitException
-     *         when some error with script storing occurs
-     */
-    public BranchRenameCommand createBranchRenameCommand(String sshKeyPath) throws GitException {
-        BranchRenameCommand command = new BranchRenameCommand(repository, gitSshScriptProvider);
-        command.setLineConsumerFactory(gitOutputPublisherFactory);
-        return command;
-    }
-
     /** @return remote add command */
     public RemoteAddCommand createRemoteAddCommand() {
         RemoteAddCommand command = new RemoteAddCommand(repository);
