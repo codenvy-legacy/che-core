@@ -65,6 +65,18 @@ public final class DtoFactory {
         return INSTANCE;
     }
 
+    /**
+     * Creates new instance of class which implements specified DTO interface.
+     *
+     * @param dtoInterface
+     *         DTO interface
+     * @throws IllegalArgumentException
+     *         if can't provide any implementation for specified interface
+     */
+    public static <T> T newDto(Class<T> dtoInterface) {
+        return getInstance().createDto(dtoInterface);
+    }
+
     private final Map<Class<?>, DtoProvider<?>> dtoInterface2Providers = new ConcurrentHashMap<>();
     // Additional mapping for implementation of DTO interfaces.
     // It helps avoid reflection when need create copy of exited DTO instance.
