@@ -60,7 +60,7 @@
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
             <artifactId>che-core-commons-gwt</artifactId>
-            <version>${che.core.version}</version>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
