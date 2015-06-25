@@ -12,6 +12,7 @@ package org.eclipse.che.api.account.gwt.client;
 
 import org.eclipse.che.api.account.shared.dto.AccountDescriptor;
 import org.eclipse.che.api.account.shared.dto.MemberDescriptor;
+import org.eclipse.che.api.account.shared.dto.UpdateResourcesDescriptor;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 
@@ -41,4 +42,8 @@ public interface AccountServiceClient {
      *         the callback to use for the response
      */
     void getMemberships(AsyncRequestCallback<Array<MemberDescriptor>> callback);
+
+    void redistributeResources(@Nonnull String accountId,
+                               @Nonnull Array<UpdateResourcesDescriptor> updateResources,
+                               AsyncRequestCallback<Void> callback);
 }

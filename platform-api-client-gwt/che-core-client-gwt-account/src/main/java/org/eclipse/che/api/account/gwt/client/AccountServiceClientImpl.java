@@ -15,6 +15,7 @@ import com.google.inject.Singleton;
 
 import org.eclipse.che.api.account.shared.dto.AccountDescriptor;
 import org.eclipse.che.api.account.shared.dto.MemberDescriptor;
+import org.eclipse.che.api.account.shared.dto.UpdateResourcesDescriptor;
 import org.eclipse.che.ide.MimeType;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
@@ -35,6 +36,15 @@ public class AccountServiceClientImpl implements AccountServiceClient {
     @Inject
     public AccountServiceClientImpl(AsyncRequestFactory asyncRequestFactory) {
         this.asyncRequestFactory = asyncRequestFactory;
+    }
+
+    @Override
+    public void redistributeResources(@Nonnull String accountId, @Nonnull Array<UpdateResourcesDescriptor> updateResources,
+                                      AsyncRequestCallback<Void> callback) {
+        final String requestUrl = "/api/account/" + accountId + "/resources";
+        asyncRequestFactory.createPostRequest(requestUrl, updateResources)
+                           .header(HTTPHeader.CONTENT_TYPE, MimeType.APPLICATION_JSON)
+                           .send(callback);
     }
 
     /** {@inheritDoc} */

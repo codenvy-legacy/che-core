@@ -25,7 +25,9 @@ import org.eclipse.che.api.account.shared.dto.AccountUpdate;
 import org.eclipse.che.api.account.shared.dto.MemberDescriptor;
 import org.eclipse.che.api.account.shared.dto.NewAccount;
 import org.eclipse.che.api.account.shared.dto.NewMembership;
+import org.eclipse.che.api.account.shared.dto.UpdateResourcesDescriptor;
 import org.eclipse.che.api.core.ConflictException;
+import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.rest.Service;
@@ -70,17 +72,20 @@ import static java.util.Collections.singletonList;
  * @author Alex Garagatyi
  */
 @Api(value = "/account",
-     description = "Account manager")
+        description = "Account manager")
 @Path("/account")
 public class AccountService extends Service {
-    private final AccountDao accountDao;
-    private final UserDao    userDao;
+    private final AccountDao       accountDao;
+    private final UserDao          userDao;
+    private final ResourcesManager resourcesManager;
 
     @Inject
     public AccountService(AccountDao accountDao,
-                          UserDao userDao) {
+                          UserDao userDao,
+                          ResourcesManager resourcesManager) {
         this.accountDao = accountDao;
         this.userDao = userDao;
+        this.resourcesManager = resourcesManager;
     }
 
     /**
@@ -104,9 +109,9 @@ public class AccountService extends Service {
      * @see #getByName(String, SecurityContext)
      */
     @ApiOperation(value = "Create a new account",
-                  notes = "Create a new account",
-                  response = Account.class,
-                  position = 1)
+            notes = "Create a new account",
+            response = Account.class,
+            position = 1)
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "CREATED"),
             @ApiResponse(code = 404, message = "Not Found"),
@@ -170,10 +175,10 @@ public class AccountService extends Service {
      * @see MemberDescriptor
      */
     @ApiOperation(value = "Get current user memberships",
-                  notes = "This API call returns a JSON with all user membership in a single or multiple accounts",
-                  response = MemberDescriptor.class,
-                  responseContainer = "List",
-                  position = 2)
+            notes = "This API call returns a JSON with all user membership in a single or multiple accounts",
+            response = MemberDescriptor.class,
+            responseContainer = "List",
+            position = 2)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 404, message = "Not Found"),
@@ -208,10 +213,10 @@ public class AccountService extends Service {
      * @see MemberDescriptor
      */
     @ApiOperation(value = "Get memberships of a specific user",
-                  notes = "ID of a user should be specified as a query parameter. JSON with membership details is returned. For this API call system/admin or system/manager role is required",
-                  response = MemberDescriptor.class,
-                  responseContainer = "List",
-                  position = 3)
+            notes = "ID of a user should be specified as a query parameter. JSON with membership details is returned. For this API call system/admin or system/manager role is required",
+            response = MemberDescriptor.class,
+            responseContainer = "List",
+            position = 3)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 404, message = "Not Found"),
@@ -252,8 +257,8 @@ public class AccountService extends Service {
      *         when some error occurred while getting/updating account
      */
     @ApiOperation(value = "Delete account attribute",
-                  notes = "Remove attribute from an account. Attribute name is used as a quary parameter. For this API request account/owner, system/admin or system/manager role is required",
-                  position = 4)
+            notes = "Remove attribute from an account. Attribute name is used as a quary parameter. For this API request account/owner, system/admin or system/manager role is required",
+            position = 4)
     @ApiResponses(value = {
             @ApiResponse(code = 204, message = "OK"),
             @ApiResponse(code = 404, message = "Not Found"),
@@ -286,9 +291,9 @@ public class AccountService extends Service {
      * @see #getByName(String, SecurityContext)
      */
     @ApiOperation(value = "Get account by ID",
-                  notes = "Get account information by its ID. JSON with account details is returned. This API call requires account/owner, system/admin or system/manager role.",
-                  response = AccountDescriptor.class,
-                  position = 5)
+            notes = "Get account information by its ID. JSON with account details is returned. This API call requires account/owner, system/admin or system/manager role.",
+            response = AccountDescriptor.class,
+            position = 5)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 404, message = "Not Found"),
@@ -320,9 +325,9 @@ public class AccountService extends Service {
      * @see #getById(String, SecurityContext)
      */
     @ApiOperation(value = "Get account by name",
-                  notes = "Get account information by its name. JSON with account details is returned. This API call requires system/admin or system/manager role.",
-                  response = AccountDescriptor.class,
-                  position = 5)
+            notes = "Get account information by its name. JSON with account details is returned. This API call requires system/admin or system/manager role.",
+            response = AccountDescriptor.class,
+            position = 5)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 404, message = "Not Found"),
@@ -362,9 +367,9 @@ public class AccountService extends Service {
      * @see #getMembers(String, SecurityContext)
      */
     @ApiOperation(value = "Add a new member to account",
-                  notes = "Add a new user to an account. This user will have account/member role. This API call requires account/owner, system/admin or system/manager role.",
-                  response = MemberDescriptor.class,
-                  position = 6)
+            notes = "Add a new user to an account. This user will have account/member role. This API call requires account/owner, system/admin or system/manager role.",
+            response = MemberDescriptor.class,
+            position = 6)
     @ApiResponses(value = {
             @ApiResponse(code = 204, message = "OK"),
             @ApiResponse(code = 404, message = "Not Found"),
@@ -415,10 +420,10 @@ public class AccountService extends Service {
      * @see #removeMember(String, String)
      */
     @ApiOperation(value = "Get account members",
-                  notes = "Get all members for a specific account. This API call requires account/owner, system/admin or system/manager role.",
-                  response = MemberDescriptor.class,
-                  responseContainer = "List",
-                  position = 7)
+            notes = "Get all members for a specific account. This API call requires account/owner, system/admin or system/manager role.",
+            response = MemberDescriptor.class,
+            responseContainer = "List",
+            position = 7)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 404, message = "Account ID not found"),
@@ -456,8 +461,8 @@ public class AccountService extends Service {
      * @see #getMembers(String, SecurityContext)
      */
     @ApiOperation(value = "Remove user from account",
-                  notes = "Remove user from a specific account. This API call requires account/owner, system/admin or system/manager role.",
-                  position = 8)
+            notes = "Remove user from a specific account. This API call requires account/owner, system/admin or system/manager role.",
+            position = 8)
     @ApiResponses(value = {
             @ApiResponse(code = 204, message = "OK"),
             @ApiResponse(code = 404, message = "Account ID not found"),
@@ -508,9 +513,9 @@ public class AccountService extends Service {
      * @see AccountDescriptor
      */
     @ApiOperation(value = "Update account",
-                  notes = "Update account. This API call requires account/owner role.",
-                  response = AccountDescriptor.class,
-                  position = 9)
+            notes = "Update account. This API call requires account/owner role.",
+            response = AccountDescriptor.class,
+            position = 9)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 404, message = "Account ID not found"),
@@ -548,8 +553,8 @@ public class AccountService extends Service {
     }
 
     @ApiOperation(value = "Remove account",
-                  notes = "Remove subscription from account. JSON with subscription details is sent. Can be performed only by system/admin.",
-                  position = 16)
+            notes = "Remove subscription from account. JSON with subscription details is sent. Can be performed only by system/admin.",
+            position = 16)
     @ApiResponses(value = {
             @ApiResponse(code = 204, message = "OK"),
             @ApiResponse(code = 403, message = "Access denied"),
@@ -562,6 +567,46 @@ public class AccountService extends Service {
     public void remove(@ApiParam(value = "Account ID", required = true)
                        @PathParam("id") String id) throws NotFoundException, ServerException, ConflictException {
         accountDao.remove(id);
+    }
+
+    /**
+     * Redistributes resources between workspaces
+     *
+     * @param id
+     *         account id
+     * @param updateResourcesDescriptors
+     *         descriptor of resources for updating
+     * @throws ForbiddenException
+     *         when account hasn't permission for setting attribute in workspace
+     * @throws NotFoundException
+     *         when account or workspace with given id doesn't exist
+     * @throws ConflictException
+     *         when account hasn't required Saas subscription
+     *         or user want to use more RAM than he has
+     * @throws ServerException
+     */
+    @ApiOperation(value = "Redistributes resources",
+            notes = "Redistributes resources between workspaces. Roles: account/owner, system/manager, system/admin.",
+            position = 17)
+    @ApiResponses(value = {
+            @ApiResponse(code = 204, message = "OK"),
+            @ApiResponse(code = 403, message = "Access denied"),
+            @ApiResponse(code = 404, message = "Not found"),
+            @ApiResponse(code = 409, message = "Conflict Error"),
+            @ApiResponse(code = 500, message = "Internal Server Error")})
+    @POST
+    @Path("/{id}/resources")
+    @RolesAllowed({"account/owner", "system/manager", "system/admin"})
+    @Consumes(MediaType.APPLICATION_JSON)
+    public void redistributeResources(@ApiParam(value = "Account ID", required = true)
+                                      @PathParam("id") String id,
+                                      @ApiParam(value = "Resources description", required = true)
+                                      @Required
+                                      List<UpdateResourcesDescriptor> updateResourcesDescriptors) throws ForbiddenException,
+                                                                                                         ConflictException,
+                                                                                                         NotFoundException,
+                                                                                                         ServerException {
+        resourcesManager.redistributeResources(id, updateResourcesDescriptors);
     }
 
     private void validateAttributeName(String attributeName) throws ConflictException {
