@@ -28,6 +28,7 @@ import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.ui.list.SimpleList;
 import org.eclipse.che.ide.util.dom.Elements;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -77,12 +78,12 @@ public class RecipesPageViewImpl implements RecipesPageView {
         final SimpleList.ListEventDelegate<String> listDelegate = new SimpleList.ListEventDelegate<String>() {
             public void onListItemClicked(Element itemElement, String itemData) {
                 list.getSelectionModel().setSelectedItem(itemData);
-                delegate.recipeSelected(itemData);
+                delegate.onRecipeSelected(itemData);
             }
 
             public void onListItemDoubleClicked(Element listItemBase, String itemData) {
                 list.getSelectionModel().setSelectedItem(itemData);
-                delegate.recipeSelected(itemData);
+                delegate.onRecipeSelected(itemData);
             }
         };
 
@@ -106,6 +107,11 @@ public class RecipesPageViewImpl implements RecipesPageView {
     @Override
     public void setRecipes(List<String> recipes) {
         list.render(recipes);
+    }
+
+    @Override
+    public void clearRecipes() {
+        list.render(Collections.<String>emptyList());
     }
 
     /** {@inheritDoc} */

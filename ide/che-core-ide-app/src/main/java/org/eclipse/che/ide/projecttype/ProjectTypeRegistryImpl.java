@@ -14,31 +14,35 @@ import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
 import org.eclipse.che.ide.api.project.type.ProjectTypeRegistry;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Vitaly Parfonov
+ * @author Artem Zatsarynnyy
  */
 public class ProjectTypeRegistryImpl implements ProjectTypeRegistry {
 
-    private List<ProjectTypeDefinition> types;
+    private final List<ProjectTypeDefinition> types;
 
-    @Override
-    public void setProjectTypes(@Nonnull List<ProjectTypeDefinition> projectTypes) {
-        types = projectTypes;
+    public ProjectTypeRegistryImpl() {
+        this.types = new ArrayList<>();
     }
 
+    @Nullable
     @Override
-    public  ProjectTypeDefinition getProjectType(@Nonnull String id) {
-        if (types == null || types.isEmpty()) {
+    public ProjectTypeDefinition getProjectType(@Nonnull String id) {
+        if (types.isEmpty()) {
             return null;
         }
+
         for (ProjectTypeDefinition type : types) {
             if (id.equals(type.getId())) {
                 return type;
             }
         }
+
         return null;
     }
 
@@ -49,9 +53,11 @@ public class ProjectTypeRegistryImpl implements ProjectTypeRegistry {
 
     @Override
     public void register(ProjectTypeDefinition projectType) {
-        if (types == null) {
-            types = new ArrayList<>();
-        }
         types.add(projectType);
+    }
+
+    @Override
+    public void registerAll(List<ProjectTypeDefinition> projectTypesList) {
+        types.addAll(projectTypesList);
     }
 }

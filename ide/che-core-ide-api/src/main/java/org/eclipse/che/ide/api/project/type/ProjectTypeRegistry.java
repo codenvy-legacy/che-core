@@ -13,17 +13,21 @@ package org.eclipse.che.ide.api.project.type;
 import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
  * @author Vitaly Parfonov
+ * @author Artem Zatsarynnyy
  */
 public interface ProjectTypeRegistry {
-    void setProjectTypes(@Nonnull List<ProjectTypeDefinition> projectTypes);
 
+    @Nullable
     ProjectTypeDefinition getProjectType(@Nonnull String id);
 
     List<ProjectTypeDefinition> getProjectTypes();
 
     void register(ProjectTypeDefinition projectType);
+
+    void registerAll(List<ProjectTypeDefinition> projectTypesList);
 }

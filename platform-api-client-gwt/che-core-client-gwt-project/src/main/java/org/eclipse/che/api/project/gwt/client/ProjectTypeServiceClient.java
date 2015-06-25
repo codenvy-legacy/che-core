@@ -11,20 +11,25 @@
 package org.eclipse.che.api.project.gwt.client;
 
 import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.rest.AsyncRequestCallback;
+import org.eclipse.che.api.promises.client.Promise;
+
+import java.util.List;
 
 /**
- * Client for Project Type service.
+ * Client for Project Type API.
  *
  * @author Artem Zatsarynnyy
  */
 public interface ProjectTypeServiceClient {
+
+    /** Get information about all registered project types. */
+    Promise<List<ProjectTypeDefinition>> getProjectTypes();
+
     /**
-     * Get information about all registered project types.
+     * Get information about project type with the specified ID.
      *
-     * @param callback
-     *         the callback to use for the response
+     * @param id
+     *         id of the project type to get
      */
-    void getProjectTypes(AsyncRequestCallback<Array<ProjectTypeDefinition>> callback);
+    Promise<ProjectTypeDefinition> getProjectType(String id);
 }

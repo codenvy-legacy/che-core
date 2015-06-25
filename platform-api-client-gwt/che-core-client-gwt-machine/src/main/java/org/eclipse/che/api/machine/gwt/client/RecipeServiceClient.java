@@ -40,15 +40,18 @@ public interface RecipeServiceClient {
     /** Get recipe by ID. */
     Promise<RecipeDescriptor> getRecipe(@Nonnull String id);
 
+    /** Get all recipes. */
+    Promise<List<RecipeDescriptor>> getAllRecipes();
+
     /**
-     * Get all recipes.
+     * Get recipes with pagination.
      *
      * @param skipCount
      *         count of items which should be skipped
      * @param maxItems
      *         max count of items to fetch
      */
-    Promise<List<RecipeDescriptor>> getAllRecipes(int skipCount, int maxItems);
+    Promise<List<RecipeDescriptor>> getRecipes(int skipCount, int maxItems);
 
     /**
      * Search for recipes which type is equal to the specified {@code type}

@@ -32,6 +32,9 @@ public interface RecipesPageView extends View<RecipesPageView.ActionDelegate> {
      */
     void setRecipes(List<String> recipes);
 
+    /** Clear recipes list. */
+    void clearRecipes();
+
     /**
      * Select the specified recipe.
      *
@@ -48,6 +51,6 @@ public interface RecipesPageView extends View<RecipesPageView.ActionDelegate> {
          * @param recipe
          *         selected recipe
          */
-        void recipeSelected(String recipe);
+        void onRecipeSelected(String recipe);
     }
 }

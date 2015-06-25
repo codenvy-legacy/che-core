@@ -35,8 +35,8 @@ import java.util.List;
 
 import static com.google.gwt.http.client.RequestBuilder.DELETE;
 import static com.google.gwt.http.client.RequestBuilder.PUT;
-import static org.eclipse.che.api.machine.gwt.client.Utils.newCallback;
-import static org.eclipse.che.api.machine.gwt.client.Utils.newPromise;
+import static org.eclipse.che.api.promises.client.callback.PromiseHelper.newCallback;
+import static org.eclipse.che.api.promises.client.callback.PromiseHelper.newPromise;
 import static org.eclipse.che.ide.MimeType.APPLICATION_JSON;
 import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
 import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
@@ -127,7 +127,26 @@ public class RecipeServiceClientImpl implements RecipeServiceClient {
     }
 
     @Override
-    public Promise<List<RecipeDescriptor>> getAllRecipes(final int skipCount, final int maxItems) {
+    public Promise<List<RecipeDescriptor>> getAllRecipes() {
+        return newPromise(new RequestCall<Array<RecipeDescriptor>>() {
+            @Override
+            public void makeCall(AsyncCallback<Array<RecipeDescriptor>> callback) {
+                getRecipes(0, -1, callback);
+            }
+        }).then(new Function<Array<RecipeDescriptor>, List<RecipeDescriptor>>() {
+            @Override
+            public List<RecipeDescriptor> apply(Array<RecipeDescriptor> arg) throws FunctionException {
+                final ArrayList<RecipeDescriptor> descriptors = new ArrayList<>();
+                for (RecipeDescriptor descriptor : arg.asIterable()) {
+                    descriptors.add(descriptor);
+                }
+                return descriptors;
+            }
+        });
+    }
+
+    @Override
+    public Promise<List<RecipeDescriptor>> getRecipes(final int skipCount, final int maxItems) {
         return newPromise(new RequestCall<Array<RecipeDescriptor>>() {
             @Override
             public void makeCall(AsyncCallback<Array<RecipeDescriptor>> callback) {
@@ -145,10 +164,12 @@ public class RecipeServiceClientImpl implements RecipeServiceClient {
         });
     }
 
-    private void getRecipes(int skipCount,
-                            int maxItems,
-                            @Nonnull AsyncCallback<Array<RecipeDescriptor>> callback) {
-        final String url = baseHttpUrl + "?skipCount=" + skipCount + "&maxItems=" + maxItems;
+    private void getRecipes(int skipCount, int maxItems, @Nonnull AsyncCallback<Array<RecipeDescriptor>> callback) {
+        String url = baseHttpUrl + "?skipCount=" + skipCount;
+        if (maxItems > 0) {
+            url += "&maxItems=" + maxItems;
+        }
+
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
                            .loader(loader, "Getting recipes...")

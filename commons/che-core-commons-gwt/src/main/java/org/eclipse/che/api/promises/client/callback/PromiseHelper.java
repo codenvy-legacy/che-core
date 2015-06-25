@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.machine.gwt.client;
+package org.eclipse.che.api.promises.client.callback;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -16,7 +16,6 @@ import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.PromiseError;
-import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.Unmarshallable;
 import org.eclipse.che.ide.util.loging.Log;
@@ -28,9 +27,9 @@ import static org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper.cr
  *
  * @author Artem Zatsarynnyy
  */
-public class Utils {
+public class PromiseHelper {
 
-    private Utils() {
+    private PromiseHelper() {
     }
 
     /**
@@ -42,7 +41,7 @@ public class Utils {
         promise.catchError(new Operation<PromiseError>() {
             @Override
             public void apply(PromiseError error) throws OperationException {
-                Log.error(Utils.class, error.toString());
+                Log.error(PromiseHelper.class, error.toString());
             }
         });
         return promise;
