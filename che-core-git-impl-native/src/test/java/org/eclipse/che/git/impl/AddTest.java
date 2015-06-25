@@ -11,66 +11,89 @@
 package org.eclipse.che.git.impl
         ;
 
+import static org.eclipse.che.dto.server.DtoFactory.newDto;
 import static org.eclipse.che.git.impl.GitTestUtil.CONTENT;
 import static org.eclipse.che.git.impl.GitTestUtil.addFile;
-import static org.eclipse.che.git.impl.GitTestUtil.newDTO;
+import static org.eclipse.che.git.impl.GitTestUtil.cleanupTestRepo;
+import static org.eclipse.che.git.impl.GitTestUtil.*;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.io.Files;
 
 import org.eclipse.che.api.git.GitConnection;
+import org.eclipse.che.api.git.GitConnectionFactory;
 import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.api.git.shared.AddRequest;
 import org.eclipse.che.api.git.shared.CommitRequest;
 import org.eclipse.che.api.git.shared.LsFilesRequest;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
 /**
  * @author Eugene Voevodin
  * @author Sergii Kabnashniuk.
- *
  */
 public class AddTest {
 
-    @Test
-    public void testSimpleAdd(GitConnection connection) throws GitException, IOException {
+    public File repository;
+
+
+    @BeforeMethod
+    public void setUp() {
+        repository = Files.createTempDir();
+    }
+
+    @AfterMethod
+    public void cleanUp() {
+        cleanupTestRepo(repository);
+    }
+
+    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = GitConnectionFactoryProvider.class)
+    public void testSimpleAdd(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
         //given
         addFile(connection, "testAdd", GitTestUtil.CONTENT);
         //when
-        connection.add(newDTO(AddRequest.class).withFilepattern(AddRequest.DEFAULT_PATTERN));
+        connection.add(newDto(AddRequest.class).withFilepattern(AddRequest.DEFAULT_PATTERN));
         //then
         //check added files
-        List<String> files = connection.listFiles(newDTO(LsFilesRequest.class));
+        List<String> files = connection.listFiles(newDto(LsFilesRequest.class));
         assertEquals(files.size(), 1);
         assertTrue(files.contains("testAdd"));
     }
 
-    @Test(expectedExceptions = GitException.class)
-    public void testNoAddWithWrongFilePattern(GitConnection connection) throws GitException {
-        connection.add(newDTO(AddRequest.class)
+    @Test(expectedExceptions = GitException.class, dataProvider = "GitConnectionFactory", dataProviderClass =
+            GitConnectionFactoryProvider.class)
+    public void testNoAddWithWrongFilePattern(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
+        connection.add(newDto(AddRequest.class)
                                .withFilepattern(ImmutableList.of("otherFile"))
                                .withUpdate(false));
     }
 
-    @Test
-    public void testAddUpdate(GitConnection connection) throws GitException, IOException {
+    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = GitConnectionFactoryProvider.class)
+    public void testAddUpdate(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
         addFile(connection, "README.txt", CONTENT);
-        connection.add(newDTO(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));
-        connection.commit(newDTO(CommitRequest.class).withMessage("Initial add"));
+        connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));
+        connection.commit(newDto(CommitRequest.class).withMessage("Initial add"));
 
         //modify README.txt
         addFile(connection, "README.txt", "SOME NEW CONTENT");
 
-        List<String> listFiles = connection.listFiles(newDTO(LsFilesRequest.class).withModified(true));
+        List<String> listFiles = connection.listFiles(newDto(LsFilesRequest.class).withModified(true));
 
         //modified but not added to stage
         assertTrue(listFiles.contains("README.txt"));
-        connection.add(newDTO(AddRequest.class).withFilepattern(AddRequest.DEFAULT_PATTERN).withUpdate(true));
-        listFiles = connection.listFiles(newDTO(LsFilesRequest.class).withModified(true));
+        connection.add(newDto(AddRequest.class).withFilepattern(AddRequest.DEFAULT_PATTERN).withUpdate(true));
+        listFiles = connection.listFiles(newDto(LsFilesRequest.class).withModified(true));
         //added to stage
         assertTrue(listFiles.contains("README.txt"));
     }
