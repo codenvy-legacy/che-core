@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.git.impl;
 
-import org.eclipse.che.git.impl.nativegit.NativeGitConnectionFactory;
 import org.testng.annotations.DataProvider;
 
 /**
@@ -21,8 +20,6 @@ public class GitConnectionFactoryProvider {
 
     @DataProvider(name = "GitConnectionFactory")
     public static Object[][] createConnection() {
-        return new Object[][]{
-                new Object[]{new NativeGitConnectionFactory(null, null, null)}
-        };
+        throw new UnsupportedOperationException();
     }
 }

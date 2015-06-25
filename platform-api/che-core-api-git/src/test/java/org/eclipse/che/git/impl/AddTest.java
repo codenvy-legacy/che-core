@@ -8,8 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.git.impl
-        ;
+package org.eclipse.che.git.impl;
 
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 import static org.eclipse.che.git.impl.GitTestUtil.CONTENT;
@@ -55,11 +54,11 @@ public class AddTest {
         cleanupTestRepo(repository);
     }
 
-    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = GitConnectionFactoryProvider.class)
+    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testSimpleAdd(GitConnectionFactory connectionFactory) throws GitException, IOException {
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
         //given
-        addFile(connection, "testAdd", GitTestUtil.CONTENT);
+        addFile(connection, "testAdd", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
         //when
         connection.add(newDto(AddRequest.class).withFilepattern(AddRequest.DEFAULT_PATTERN));
         //then

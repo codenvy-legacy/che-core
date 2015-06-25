@@ -17,8 +17,6 @@ import static java.nio.file.Files.write;
 import static org.eclipse.che.api.core.util.LineConsumerFactory.NULL;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
-import com.google.common.io.Files;
-
 import org.eclipse.che.api.git.GitConnection;
 import org.eclipse.che.api.git.GitConnectionFactory;
 import org.eclipse.che.api.git.GitException;
@@ -29,9 +27,6 @@ import org.eclipse.che.api.git.shared.InitRequest;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.commons.user.UserImpl;
-import org.eclipse.che.dto.server.DtoFactory;
-import org.eclipse.che.git.impl.nativegit.NativeGitConnectionFactory;
-import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
 
 import java.io.File;
 import java.io.FileReader;
