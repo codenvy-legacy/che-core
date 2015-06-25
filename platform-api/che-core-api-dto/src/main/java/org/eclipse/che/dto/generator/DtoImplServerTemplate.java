@@ -280,6 +280,10 @@ public class DtoImplServerTemplate extends DtoImpl {
 
     private void emitSerializer(List<Method> getters, StringBuilder builder) {
         builder.append("    public JsonElement toJsonElement() {\n");
+        // The default toJsonElement() returns JSONs for unsafe use thus 'any' properties should be copied
+        builder.append("      return toJsonElementInt(true);\n");
+        builder.append("    }\n");
+        builder.append("    public JsonElement toJsonElementInt(boolean ").append(COPY_JSONS_PARAM).append(") {\n");
         if (isCompactJson()) {
             builder.append("      JsonArray result = new JsonArray();\n");
             for (Method method : getters) {
@@ -296,7 +300,8 @@ public class DtoImplServerTemplate extends DtoImpl {
         builder.append("\n");
         builder.append("    @Override\n");
         builder.append("    public String toJson() {\n");
-        builder.append("      return gson.toJson(toJsonElement());\n");
+        // The default toJson() creates its own JSON for internal printing, thus keeping JSONs values is safe
+        builder.append("      return gson.toJson(toJsonElementInt(false));\n");
         builder.append("    }\n");
         builder.append("\n");
         builder.append("    @Override\n");
@@ -391,7 +396,7 @@ public class DtoImplServerTemplate extends DtoImpl {
         } else if (getEnclosingTemplate().isDtoInterface(rawClass)) {
             builder.append(i).append("JsonElement ").append(outVar).append(" = ").append(depth == 0 ? "this." + inVar : inVar).append(
                     " == null ? JsonNull.INSTANCE : ((").append(getImplNameForDto((Class<?>)expandedTypes.get(depth))).append(")")
-                   .append(depth == 0 ? "this." + inVar : inVar).append(").toJsonElement();\n");
+                   .append(depth == 0 ? "this." + inVar : inVar).append(").toJsonElementInt(").append(COPY_JSONS_PARAM).append(");\n");
         } else if (rawClass.equals(String.class)) {
             builder.append(i).append("JsonElement ").append(outVar).append(" = (").append(depth == 0 ? "this." + inVar : inVar).append(
                     " == null) ? JsonNull.INSTANCE : new JsonPrimitive(").append(depth == 0 ? "this." + inVar : inVar).append(");\n");
@@ -413,12 +418,18 @@ public class DtoImplServerTemplate extends DtoImpl {
                    || rawClass == Byte.class) {
             builder.append(i).append("JsonElement ").append(outVar).append(depth == 0 ? " = this." + inVar : inVar).append(
                     " == null ? JsonNull.INSTANCE : new JsonPrimitive(").append(depth == 0 ? "this." + inVar : inVar).append(");\n");
+        } else if (isAny(rawClass)) {
+            // TODO JsonElement.deepCopy() is package-protected, JSONs are serialized to strings then parsed for copying them
+            // outVar = inVar == null ? JsonNull.INSTNACE : (copyJsons ? new JsonParser().parse(inVar) : inVar);
+            builder.append(i).append("JsonElement ").append(outVar).append(depth == 0 ? " = this." + inVar : inVar)
+                    .append(" == null || !(").append(inVar).append(" instanceof JsonElement) ? JsonNull.INSTANCE : (");
+            appendCopyJsonExpression(inVar, builder).append(");\n");
         } else {
             final Class<?> dtoImplementation = getEnclosingTemplate().getDtoImplementation(rawClass);
             if (dtoImplementation != null) {
                 builder.append(i).append("JsonElement ").append(outVar).append(" = ").append(depth == 0 ? "this." + inVar : inVar).append(
                         " == null ? JsonNull.INSTANCE : ((").append(dtoImplementation.getCanonicalName()).append(")")
-                       .append(depth == 0 ? "this." + inVar : inVar).append(").toJsonElement();\n");
+                       .append(depth == 0 ? "this." + inVar : inVar).append(").toJsonElementInt(").append(COPY_JSONS_PARAM).append(");\n");
             } else {
                 throw new IllegalArgumentException("Unable to generate server implementation for DTO interface " +
                                                    getDtoInterface().getCanonicalName() + ". Type " + rawClass +
@@ -441,7 +452,11 @@ public class DtoImplServerTemplate extends DtoImpl {
 
     /** Generates a static factory method that creates a new instance based on a JsonElement. */
     private void emitDeserializer(List<Method> getters, StringBuilder builder) {
+        // The default fromJsonElement(json) works in unsafe mode and clones the JSON's for 'any' properties
         builder.append("    public static ").append(getImplClassName()).append(" fromJsonElement(JsonElement jsonElem) {\n");
+        builder.append("      return fromJsonElement(jsonElem, true);\n");
+        builder.append("    }\n");
+        builder.append("    public static ").append(getImplClassName()).append(" fromJsonElement(JsonElement jsonElem, boolean ").append(COPY_JSONS_PARAM).append(") {\n");
         builder.append("      if (jsonElem == null || jsonElem.isJsonNull()) {\n");
         builder.append("        return null;\n");
         builder.append("      }\n\n");
@@ -468,7 +483,8 @@ public class DtoImplServerTemplate extends DtoImpl {
         builder.append("      if (jsonString == null) {\n");
         builder.append("        return null;\n");
         builder.append("      }\n\n");
-        builder.append("      return fromJsonElement(new JsonParser().parse(jsonString));\n");
+        // The default fromJsonElement(json) creates its own JSON thus keeping parts of its as value is OK
+        builder.append("      return fromJsonElement(new JsonParser().parse(jsonString), false);\n");
         builder.append("    }\n\n");
     }
 
@@ -562,18 +578,23 @@ public class DtoImplServerTemplate extends DtoImpl {
         } else if (getEnclosingTemplate().isDtoInterface(rawClass)) {
             String className = getImplName(rawClass, false);
             builder.append(i).append(className).append(" ").append(outVar).append(" = ").append(getImplNameForDto(rawClass))
-                   .append(".fromJsonElement(").append(inVar).append(");\n");
+                   .append(".fromJsonElement(").append(inVar).append(", ").append(COPY_JSONS_PARAM).append(");\n");
         } else if (rawClass.isPrimitive()) {
             String primitiveName = rawClass.getSimpleName();
             String primitiveNameCap = primitiveName.substring(0, 1).toUpperCase() + primitiveName.substring(1);
             builder.append(i).append(primitiveName).append(" ").append(outVar).append(" = ").append(inVar).append(
                     ".getAs").append(primitiveNameCap).append("();\n");
+        } else if (isAny(rawClass)) {
+            // TODO JsonElement.deepCopy() is package-protected, JSONs are serialized to strings then parsed for copying them
+            // outVar = copyJsons ? new JsonParser().parse(inVar) : inVar;
+            builder.append(i).append("JsonElement ").append(outVar).append(" = ");
+            appendCopyJsonExpression(inVar, builder).append(";\n");
         } else {
             final Class<?> dtoImplementation = getEnclosingTemplate().getDtoImplementation(rawClass);
             if (dtoImplementation != null) {
                 String className = getImplName(rawClass, false);
                 builder.append(i).append(className).append(" ").append(outVar).append(" = ")
-                       .append(dtoImplementation.getCanonicalName()).append(".fromJsonElement(").append(inVar).append(");\n");
+                       .append(dtoImplementation.getCanonicalName()).append(".fromJsonElement(").append(inVar).append(", ").append(COPY_JSONS_PARAM).append(");\n");
             } else {
                 // Use gson to handle all other types.
                 String rawClassName = rawClass.getName().replace('$', '.');
@@ -581,6 +602,20 @@ public class DtoImplServerTemplate extends DtoImpl {
                         inVar).append(", ").append(rawClassName).append(".class);\n");
             }
         }
+    }
+    
+    /**
+     * Append the expression that clones the given JsonElement variable into a new value. If the copyJons run-time
+     * parameter is set to false, then the expression won't perform a clone but instead will reuse the variable by
+     * reference.
+     */
+    private static StringBuilder appendCopyJsonExpression(String inVar, StringBuilder builder) {
+        builder.append(COPY_JSONS_PARAM).append(" ? ");
+        appendNaiveCopyJsonExpression(inVar, builder).append(" : (JsonElement)(").append(inVar).append(")");
+        return builder;
+    }
+    private static StringBuilder appendNaiveCopyJsonExpression(String inValue, StringBuilder builder) {
+        return builder.append("new JsonParser().parse((").append(inValue).append(").toString())");
     }
 
     private void emitPreamble(Class<?> dtoInterface, StringBuilder builder) {
@@ -754,6 +789,9 @@ public class DtoImplServerTemplate extends DtoImpl {
             emitDeepCopyCollections(expandedTypes, depth, builder, fieldNameIn, fieldNameOut, i);
             builder.append(i).append("  ").append("this.").append(fieldName).append(" = ").append(fieldNameOut).append(";\n");
             builder.append(i).append("}\n");
+        } else if (isAny(rawClass)) {
+            builder.append(i).append("this.").append(fieldName).append(" = ");
+            appendNaiveCopyJsonExpression(origin + "." + getterName + "()", builder).append(";\n");
         } else if (getEnclosingTemplate().isDtoInterface(rawClass)) {
             builder.append(i).append(rawTypeName).append(" ").append(fieldNameIn).append(" = ").append(origin).append(".")
                    .append(getterName).append("();\n");

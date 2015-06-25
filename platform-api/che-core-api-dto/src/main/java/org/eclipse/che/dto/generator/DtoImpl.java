@@ -17,6 +17,7 @@ import org.eclipse.che.dto.shared.SerializationIndex;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonWriter;
 
@@ -33,6 +34,8 @@ import java.util.Map;
 
 /** Abstract base class for the source generating template for a single DTO. */
 abstract class DtoImpl {
+    protected static final String COPY_JSONS_PARAM = "copyJsons";
+    
     private final Class<?>     dtoInterface;
     private final DtoTemplate  enclosingTemplate;
     private final boolean      compactJson;
@@ -252,6 +255,10 @@ abstract class DtoImpl {
     /** Tests whether or not a given return type is a java.util.Map. */
     public static boolean isMap(Class<?> returnType) {
         return returnType.equals(Map.class);
+    }
+
+    public static boolean isAny(Class<?> returnType) {
+        return returnType.equals(Object.class);
     }
 
     /**
