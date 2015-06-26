@@ -130,7 +130,7 @@ public class DeleteNodeHandler {
     /**
      * Ask the user to confirm the (multiple) delete operation.
      *
-     * @param nodeToDelete
+     * @param nodesToDelete node list for deletion
      */
     private void askForDeletingNodes(final List<StorableNode> nodesToDelete) {
         final ConfirmDialog dialog = dialogFactory.createConfirmDialog(localization.deleteMultipleDialogTitle(),
