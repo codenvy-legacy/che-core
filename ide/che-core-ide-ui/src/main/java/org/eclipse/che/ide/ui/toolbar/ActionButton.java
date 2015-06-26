@@ -46,7 +46,8 @@ import org.vectomatic.dom.svg.ui.SVGImage;
 public class ActionButton extends Composite implements MouseOverHandler, MouseOutHandler, MouseDownHandler, MouseUpHandler,
                                                        ClickHandler {
 
-    protected static final ToolbarResources.Css css = Toolbar.RESOURCES.toolbar();
+    protected static final ToolbarResources.Css css = ToolbarViewImpl.RESOURCES.toolbar();
+
     private final Presentation presentation;
     private final String       place;
     private final Element      tooltip;

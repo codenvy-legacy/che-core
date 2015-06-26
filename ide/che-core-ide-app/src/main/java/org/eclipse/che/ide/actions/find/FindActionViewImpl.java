@@ -45,7 +45,7 @@ import org.eclipse.che.ide.api.autocomplete.AutoCompleteResources;
 import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
 import org.eclipse.che.ide.ui.list.SimpleList;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
-import org.eclipse.che.ide.ui.toolbar.Toolbar;
+import org.eclipse.che.ide.ui.toolbar.ToolbarViewImpl;
 import org.eclipse.che.ide.util.dom.Elements;
 import org.eclipse.che.ide.util.input.KeyMapUtil;
 import org.vectomatic.dom.svg.ui.SVGImage;
@@ -86,7 +86,7 @@ public class FindActionViewImpl extends PopupPanel implements FindActionView {
                         icon.appendChild((Node)image.getElement());
                     } else if (presentation.getSVGIcon() != null) {
                         SVGImage image = new SVGImage(presentation.getSVGIcon());
-                        image.getElement().setAttribute("class", Toolbar.RESOURCES.toolbar().iconButtonIcon());
+                        image.getElement().setAttribute("class", ToolbarViewImpl.RESOURCES.toolbar().iconButtonIcon());
                         image.getElement().getStyle().setMargin(0, Style.Unit.PX);
                         icon.appendChild((Node)image.getElement());
                     }

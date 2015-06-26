@@ -38,7 +38,8 @@ import java.util.Stack;
  */
 public class ActionPopupButton extends Composite implements CloseMenuHandler, ActionSelectedHandler {
 
-    private static final ToolbarResources.Css css = Toolbar.RESOURCES.toolbar();
+    private static final ToolbarResources.Css css = ToolbarViewImpl.RESOURCES.toolbar();
+
     private final ActionGroup         action;
     private final ActionManager       actionManager;
     private final Element             tooltip;

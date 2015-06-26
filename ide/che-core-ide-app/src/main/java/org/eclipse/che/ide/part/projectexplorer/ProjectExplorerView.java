@@ -88,8 +88,10 @@ public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDele
 
     Array<TreeNode<?>> getOpenedTreeNodes();
 
-    /** Needs for delegate some function into ProjectTree view. */
-    public interface ActionDelegate extends BaseActionDelegate {
+    /**
+     * Delegates view actions to its presenter.
+     * */
+    interface ActionDelegate extends BaseActionDelegate {
         /**
          * Performs any actions in response to node selection.
          *
@@ -131,5 +133,8 @@ public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDele
 
         /** Performs any actions appropriate in response to the user having pressed the ENTER key. */
         void onEnterKey();
+
+        /** Requests to refresh the tree. */
+        void onRefreshTree();
     }
 }

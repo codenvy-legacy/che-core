@@ -74,6 +74,6 @@ public class RefreshProjectTreeEvent extends GwtEvent<RefreshProjectTreeHandler>
 
     @Override
     protected void dispatch(RefreshProjectTreeHandler handler) {
-        handler.onRefresh(this);
+        handler.onRefreshProjectTree(this);
     }
 }
