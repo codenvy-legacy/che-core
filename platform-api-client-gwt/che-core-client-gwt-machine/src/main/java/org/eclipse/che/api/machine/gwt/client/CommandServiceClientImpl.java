@@ -34,8 +34,8 @@ import java.util.List;
 
 import static com.google.gwt.http.client.RequestBuilder.DELETE;
 import static com.google.gwt.http.client.RequestBuilder.PUT;
-import static org.eclipse.che.api.machine.gwt.client.Utils.newCallback;
-import static org.eclipse.che.api.machine.gwt.client.Utils.newPromise;
+import static org.eclipse.che.api.promises.client.callback.PromiseHelper.newCallback;
+import static org.eclipse.che.api.promises.client.callback.PromiseHelper.newPromise;
 import static org.eclipse.che.ide.MimeType.APPLICATION_JSON;
 import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
 import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;

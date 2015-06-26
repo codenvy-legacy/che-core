@@ -13,12 +13,12 @@ package org.eclipse.che.api.machine.server.dao;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.machine.shared.recipe.Recipe;
+import org.eclipse.che.api.machine.shared.ManagedRecipe;
 
 import java.util.List;
 
 /**
- * Data access object for {@link Recipe}.
+ * Data access object for {@link ManagedRecipe}.
  *
  * @author Eugene Voevodin
  */
@@ -36,7 +36,7 @@ public interface RecipeDao {
      * @throws ServerException
      *         when any other error occurs
      */
-    void create(Recipe recipe) throws ConflictException, ServerException;
+    void create(ManagedRecipe recipe) throws ConflictException, ServerException;
 
     /**
      * Updates existing recipe
@@ -52,7 +52,7 @@ public interface RecipeDao {
      * @throws ServerException
      *         when any other error occurs
      */
-    void update(Recipe recipe) throws NotFoundException, ServerException;
+    void update(ManagedRecipe recipe) throws NotFoundException, ServerException;
 
     /**
      * Removes existing recipe
@@ -82,7 +82,7 @@ public interface RecipeDao {
      * @throws ServerException
      *         when any error occurs
      */
-    Recipe getById(String id) throws NotFoundException, ServerException;
+    ManagedRecipe getById(String id) throws NotFoundException, ServerException;
 
     /**
      * Searches for recipes which type is equal to specified {@code type}
@@ -113,7 +113,7 @@ public interface RecipeDao {
      * @throws ServerException
      *         when any error occurs
      */
-    List<Recipe> search(List<String> tags, String type, int skipCount, int maxItems) throws ServerException;
+    List<ManagedRecipe> search(List<String> tags, String type, int skipCount, int maxItems) throws ServerException;
 
     /**
      * Returns recipes which creator is equal to specified {@code creator} or
@@ -133,5 +133,5 @@ public interface RecipeDao {
      * @throws ServerException
      *         when any error occurs
      */
-    List<Recipe> getByCreator(String creator, int skipCount, int maxItems) throws ServerException;
+    List<ManagedRecipe> getByCreator(String creator, int skipCount, int maxItems) throws ServerException;
 }

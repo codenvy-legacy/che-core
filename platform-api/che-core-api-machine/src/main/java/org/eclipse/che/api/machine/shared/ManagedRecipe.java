@@ -8,30 +8,35 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.machine.shared.recipe;
+package org.eclipse.che.api.machine.shared;
+
 
 import java.util.List;
 
 /**
+ * Serves as base model for Recipe API
+ *
  * @author Eugene Voevodin
  */
-public interface Group {
+public interface ManagedRecipe extends Recipe {
 
-    String getName();
+    /**
+     * Returns recipe identifier
+     */
+    String getId();
 
-    void setName(String name);
+    /**
+     * Returns identifier of user who is the recipe creator
+     */
+    String getCreator();
 
-    Group withName(String name);
+    /**
+     * Returns recipe tags (i.e. 'java'). Tags used for recipes search
+     */
+    List<String> getTags();
 
-    String getUnit();
-
-    void setUnit(String unit);
-
-    Group withUnit(String unit);
-
-    List<String> getAcl();
-
-    void setAcl(List<String> acl);
-
-    Group withAcl(List<String> acl);
+    /**
+     * Returns recipe permissions
+     */
+    Permissions getPermissions();
 }

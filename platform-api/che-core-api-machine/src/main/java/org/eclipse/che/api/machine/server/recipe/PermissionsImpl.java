@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.server.recipe;
 
-import org.eclipse.che.api.machine.shared.recipe.Group;
-import org.eclipse.che.api.machine.shared.recipe.Permissions;
+import org.eclipse.che.api.machine.shared.Group;
+import org.eclipse.che.api.machine.shared.Permissions;
 import org.eclipse.che.api.machine.shared.dto.recipe.GroupDescriptor;
 import org.eclipse.che.api.machine.shared.dto.recipe.PermissionsDescriptor;
 
@@ -49,12 +49,10 @@ public class PermissionsImpl implements Permissions {
         return users;
     }
 
-    @Override
     public void setUsers(Map<String, List<String>> users) {
         this.users = users;
     }
 
-    @Override
     public PermissionsImpl withUsers(Map<String, List<String>> users) {
         this.users = users;
         return this;
@@ -68,12 +66,10 @@ public class PermissionsImpl implements Permissions {
         return groups;
     }
 
-    @Override
     public void setGroups(List<Group> groups) {
         this.groups = groups;
     }
 
-    @Override
     public PermissionsImpl withGroups(List<Group> groups) {
         this.groups = groups;
         return this;

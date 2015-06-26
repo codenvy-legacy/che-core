@@ -17,7 +17,9 @@ import com.google.inject.name.Named;
 
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.actions.CloseProjectAction;
+import org.eclipse.che.ide.actions.CopyAction;
 import org.eclipse.che.ide.actions.CreateModuleAction;
+import org.eclipse.che.ide.actions.CutAction;
 import org.eclipse.che.ide.actions.DeleteItemAction;
 import org.eclipse.che.ide.actions.DownloadItemAction;
 import org.eclipse.che.ide.actions.DownloadProjectAsZipAction;
@@ -32,8 +34,8 @@ import org.eclipse.che.ide.actions.OpenFileAction;
 import org.eclipse.che.ide.actions.OpenNodeAction;
 import org.eclipse.che.ide.actions.OpenProjectAction;
 import org.eclipse.che.ide.actions.OpenSelectedFileAction;
+import org.eclipse.che.ide.actions.PasteAction;
 import org.eclipse.che.ide.actions.ProjectConfigurationAction;
-import org.eclipse.che.ide.actions.ProjectPerspectiveAction;
 import org.eclipse.che.ide.actions.RedirectToFeedbackAction;
 import org.eclipse.che.ide.actions.RedirectToForumsAction;
 import org.eclipse.che.ide.actions.RedirectToHelpAction;
@@ -86,9 +88,6 @@ public class StandardComponentInitializer {
     }
 
     @Inject
-    private ProjectPerspectiveAction projectPerspectiveAction;
-
-    @Inject
     private EditorRegistry editorRegistry;
 
     @Inject
@@ -136,6 +135,15 @@ public class StandardComponentInitializer {
     @Inject
     @MainToolbar
     private ToolbarPresenter toolbarPresenter;
+
+    @Inject
+    private CutAction cutAction;
+
+    @Inject
+    private CopyAction copyAction;
+
+    @Inject
+    private PasteAction pasteAction;
 
     @Inject
     private DeleteItemAction deleteItemAction;
@@ -359,6 +367,11 @@ public class StandardComponentInitializer {
         fileGroup.add(downloadProjectAsZipAction);
         fileGroup.add(navigateToFileAction);
         fileGroup.add(showHiddenFilesAction);
+
+        fileGroup.add(cutAction);
+        fileGroup.add(copyAction);
+        fileGroup.add(pasteAction);
+
         fileGroup.add(renameItemAction);
         fileGroup.add(deleteItemAction);
         fileGroup.addSeparator();
@@ -400,6 +413,11 @@ public class StandardComponentInitializer {
         actionManager.registerAction("resourceOperation", resourceOperation);
         resourceOperation.addSeparator();
         resourceOperation.add(openSelectedFileAction);
+
+        resourceOperation.add(cutAction);
+        resourceOperation.add(copyAction);
+        resourceOperation.add(pasteAction);
+
         resourceOperation.add(renameItemAction);
         resourceOperation.add(deleteItemAction);
         resourceOperation.addSeparator();
@@ -430,6 +448,11 @@ public class StandardComponentInitializer {
         actionManager.registerAction("openProject", openProjectAction);
         actionManager.registerAction("closeProject", closeProjectAction);
         actionManager.registerAction("openSelectedFile", openSelectedFileAction);
+
+        actionManager.registerAction("cut", cutAction);
+        actionManager.registerAction("copy", copyAction);
+        actionManager.registerAction("paste", pasteAction);
+
         actionManager.registerAction("renameResource", renameItemAction);
         actionManager.registerAction("deleteItem", deleteItemAction);
         actionManager.registerAction("refreshProjectTreeAction", refreshProjectTreeAction);
@@ -441,6 +464,9 @@ public class StandardComponentInitializer {
 
         changeResourceGroup.add(refreshProjectTreeAction);
         changeResourceGroup.add(closeProjectAction);
+        changeResourceGroup.add(cutAction);
+        changeResourceGroup.add(copyAction);
+        changeResourceGroup.add(pasteAction);
         changeResourceGroup.add(deleteItemAction);
         changeResourceGroup.addSeparator();
 
@@ -453,10 +479,13 @@ public class StandardComponentInitializer {
         DefaultActionGroup rightToolbarGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_RIGHT_TOOLBAR);
         toolbarPresenter.bindRightGroup(rightToolbarGroup);
 
-        rightToolbarGroup.add(projectPerspectiveAction);
-
         // Define hot-keys
         keyBinding.getGlobal().addKey(new KeyBuilder().action().alt().charCode('n').build(), "navigateToFile");
         keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('A').build(), "findActionAction");
+
+        keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('c').build(), "copy");
+        keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('x').build(), "cut");
+        keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('v').build(), "paste");
     }
+
 }

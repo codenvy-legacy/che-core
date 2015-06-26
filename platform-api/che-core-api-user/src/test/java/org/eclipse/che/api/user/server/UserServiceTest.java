@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.Collections.singletonList;
+import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
@@ -158,7 +159,7 @@ public class UserServiceTest {
     public void shouldBeAbleToCreateNewUserForSystemAdmin() throws Exception {
         final NewUser newUser = DtoFactory.getInstance()
                                           .createDto(NewUser.class)
-                                          .withEmail("test@mail.com")
+                                          .withName("test")
                                           .withPassword("password123");
         when(securityContext.isUserInRole("system/admin")).thenReturn(true);
 
@@ -166,7 +167,7 @@ public class UserServiceTest {
 
         assertEquals(response.getStatus(), CREATED.getStatusCode());
         final UserDescriptor descriptor = (UserDescriptor)response.getEntity();
-        assertEquals(descriptor.getEmail(), newUser.getEmail());
+        assertEquals(descriptor.getName(), newUser.getName());
         assertEquals(descriptor.getPassword(), "<none>");
         verify(userDao).create(any(User.class));
         verify(profileDao).create(any(Profile.class));
@@ -176,7 +177,7 @@ public class UserServiceTest {
     public void shouldThrowForbiddenExceptionWhenCreatingUserWithInvalidPassword() throws Exception {
         final NewUser newUser = DtoFactory.getInstance()
                                           .createDto(NewUser.class)
-                                          .withEmail("test@mail.com")
+                                          .withName("test")
                                           .withPassword("password");
         when(securityContext.isUserInRole("system/admin")).thenReturn(true);
 
@@ -191,13 +192,13 @@ public class UserServiceTest {
     public void shouldGeneratedPasswordWhenCreatingUserAndItIsMissing() throws Exception {
         final NewUser newUser = DtoFactory.getInstance()
                                           .createDto(NewUser.class)
-                                          .withEmail("test@mail.com");
+                                          .withName("test");
         when(securityContext.isUserInRole("system/admin")).thenReturn(true);
 
         final ContainerResponse response = makeRequest("POST", SERVICE_PATH + "/create", newUser);
 
         final UserDescriptor descriptor = (UserDescriptor)response.getEntity();
-        assertEquals(descriptor.getEmail(), newUser.getEmail());
+        assertEquals(descriptor.getName(), newUser.getName());
         assertEquals(descriptor.getPassword(), "<none>");
         verify(userDao).create(any(User.class));
         verify(profileDao).create(any(Profile.class));

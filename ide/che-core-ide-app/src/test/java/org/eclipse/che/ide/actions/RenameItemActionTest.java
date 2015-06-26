@@ -201,10 +201,10 @@ public class RenameItemActionTest {
         verify(selectionAgent).getSelection();
         verify(selection).getHeadElement();
         verifyNoMoreInteractions(resources,
-                                 localization,
+//                                 localization,
 //                                 runnerServiceClient,
                                  dtoUnmarshallerFactory,
-                                 dialogFactory,
+//                                 dialogFactory,
                                  appContext);
     }
 

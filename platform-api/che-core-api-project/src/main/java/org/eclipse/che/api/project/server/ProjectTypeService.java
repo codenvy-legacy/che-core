@@ -14,16 +14,18 @@ import org.eclipse.che.api.core.rest.Service;
 import org.eclipse.che.api.core.rest.annotations.GenerateLink;
 import org.eclipse.che.api.project.server.type.ProjectType;
 import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
-
 import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.util.LinkedList;
 import java.util.List;
+
+import static org.eclipse.che.api.project.server.DtoConverter.toTypeDescriptor2;
 
 /**
  * ProjectTypeService
@@ -46,8 +48,16 @@ public class ProjectTypeService extends Service {
     public List<ProjectTypeDefinition> getProjectTypes() {
         final List<ProjectTypeDefinition> types = new LinkedList<>();
         for (ProjectType type : registry.getProjectTypes()) {
-            types.add(DtoConverter.toTypeDescriptor2(type));
+            types.add(toTypeDescriptor2(type));
         }
         return types;
+    }
+
+    @GET
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ProjectTypeDefinition getProjectType(@PathParam("id") String id) {
+        final ProjectType projectType = registry.getProjectType(id);
+        return toTypeDescriptor2(projectType);
     }
 }

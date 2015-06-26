@@ -23,8 +23,8 @@ import org.eclipse.che.api.machine.server.recipe.PermissionsImpl;
 import org.eclipse.che.api.machine.server.recipe.RecipeImpl;
 import org.eclipse.che.api.machine.server.dao.RecipeDao;
 import org.eclipse.che.api.machine.shared.ManagedCommand;
-import org.eclipse.che.api.machine.shared.recipe.Group;
-import org.eclipse.che.api.machine.shared.recipe.Recipe;
+import org.eclipse.che.api.machine.shared.Group;
+import org.eclipse.che.api.machine.shared.ManagedRecipe;
 import org.eclipse.che.api.user.server.TokenValidator;
 import org.eclipse.che.api.user.server.dao.PreferenceDao;
 import org.eclipse.che.api.user.server.dao.User;
@@ -133,20 +133,20 @@ public class LocalInfrastructureModule extends AbstractModule {
 
     @Provides
     @Named("codenvy.local.infrastructure.recipes")
-    Set<Recipe> recipes() {
+    Set<ManagedRecipe> recipes() {
         final Group group = new GroupImpl("public", null, asList("read", "search"));
-        final Recipe recipe1 = new RecipeImpl().withId("recipe1234567890")
-                                               .withCreator("codenvy")
-                                               .withType("docker")
-                                               .withScript("FROM ubuntu\ntail -f \\dev\\null")
-                                               .withTags(asList("ubuntu"))
-                                               .withPermissions(new PermissionsImpl(null, asList(group)));
-        final Recipe recipe2 = new RecipeImpl().withId("recipe2345678901")
-                                               .withCreator("codenvy")
-                                               .withType("docker")
-                                               .withScript("FROM bosybox\ntail -f \\dev\\null")
-                                               .withTags(asList("java", "busybox"))
-                                               .withPermissions(new PermissionsImpl(null, asList(group)));
+        final ManagedRecipe recipe1 = new RecipeImpl().withId("recipe1234567890")
+                                                      .withCreator("codenvy")
+                                                      .withType("docker")
+                                                      .withScript("FROM ubuntu\ntail -f \\dev\\null")
+                                                      .withTags(asList("ubuntu"))
+                                                      .withPermissions(new PermissionsImpl(null, asList(group)));
+        final ManagedRecipe recipe2 = new RecipeImpl().withId("recipe2345678901")
+                                                      .withCreator("codenvy")
+                                                      .withType("docker")
+                                                      .withScript("FROM bosybox\ntail -f \\dev\\null")
+                                                      .withTags(asList("java", "busybox"))
+                                                      .withPermissions(new PermissionsImpl(null, asList(group)));
 
         return unmodifiableSet(new HashSet<>(asList(recipe1, recipe2)));
     }

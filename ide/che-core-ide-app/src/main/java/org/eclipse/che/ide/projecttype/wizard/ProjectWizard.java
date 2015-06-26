@@ -28,7 +28,6 @@ import org.eclipse.che.ide.api.event.OpenProjectEvent;
 import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode;
 import org.eclipse.che.ide.api.wizard.AbstractWizard;
-import org.eclipse.che.ide.api.wizard.Wizard;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
@@ -191,7 +190,7 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
         final NewProject project = dataObject.getProject();
         final Unmarshallable<ImportResponse> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ImportResponse.class);
         projectServiceClient.importProject(
-                project.getName(), true, dataObject, new AsyncRequestCallback<ImportResponse>(unmarshaller) {
+                project.getName(), false, dataObject, new AsyncRequestCallback<ImportResponse>(unmarshaller) {
                     @Override
                     protected void onSuccess(ImportResponse result) {
                         eventBus.fireEvent(new OpenProjectEvent(result.getProjectDescriptor().getName()));

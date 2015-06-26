@@ -16,9 +16,14 @@ import com.google.inject.Singleton;
 
 import org.eclipse.che.api.machine.gwt.client.RecipeServiceClient;
 import org.eclipse.che.api.machine.shared.dto.recipe.RecipeDescriptor;
+import org.eclipse.che.api.project.gwt.client.ProjectTypeServiceClient;
 import org.eclipse.che.api.project.shared.dto.ImportProject;
+import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
+import org.eclipse.che.api.promises.client.Function;
+import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
+import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.ide.api.wizard.AbstractWizardPage;
 
 import java.util.ArrayList;
@@ -33,34 +38,58 @@ import java.util.List;
 @Singleton
 public class RecipesPagePresenter extends AbstractWizardPage<ImportProject> implements RecipesPageView.ActionDelegate {
 
-    private final RecipesPageView     view;
-    private final RecipeServiceClient recipeServiceClient;
+    private final RecipesPageView          view;
+    private final RecipeServiceClient      recipeServiceClient;
+    private final ProjectTypeServiceClient projectTypeServiceClient;
 
     @Inject
-    protected RecipesPagePresenter(RecipesPageView view, RecipeServiceClient recipeServiceClient) {
+    protected RecipesPagePresenter(RecipesPageView view,
+                                   RecipeServiceClient recipeServiceClient,
+                                   ProjectTypeServiceClient projectTypeServiceClient) {
         this.view = view;
         this.recipeServiceClient = recipeServiceClient;
-        this.view.setDelegate(this);
+        this.projectTypeServiceClient = projectTypeServiceClient;
+
+        view.setDelegate(this);
     }
 
-    /** {@inheritDoc} */
     @Override
     public void go(AcceptsOneWidget container) {
         container.setWidget(view);
-        view.setRecipes(Collections.<String>emptyList());
-        requestRecipes();
+        view.clearRecipes();
+        requestRecipesAndUpdateView();
     }
 
-    private void requestRecipes() {
-        recipeServiceClient.getAllRecipes(0, 10).then(new Operation<List<RecipeDescriptor>>() {
+    @Override
+    public void onRecipeSelected(String recipe) {
+        dataObject.getProject().setRecipe(recipe);
+    }
+
+    private void requestRecipesAndUpdateView() {
+        final String projectTypeID = dataObject.getProject().getType();
+        final Promise<ProjectTypeDefinition> projectTypePromise = projectTypeServiceClient.getProjectType(projectTypeID);
+        final Promise<List<RecipeDescriptor>> recipesPromise = recipeServiceClient.getAllRecipes();
+
+        final List<String> recipesList = new ArrayList<>();
+
+        projectTypePromise.thenPromise(new Function<ProjectTypeDefinition, Promise<List<RecipeDescriptor>>>() {
             @Override
-            public void apply(List<RecipeDescriptor> arg) throws OperationException {
-                final List<String> recipes = new ArrayList<>();
-                for (RecipeDescriptor descriptor : arg) {
-                    recipes.add(descriptor.getId());
+            public Promise<List<RecipeDescriptor>> apply(ProjectTypeDefinition arg) throws FunctionException {
+                final String defaultRecipeURL = arg.getDefaultRecipe();
+                if (defaultRecipeURL != null) {
+                    recipesList.add(defaultRecipeURL);
                 }
 
-                view.setRecipes(recipes);
+                return recipesPromise;
+            }
+        }).then(new Operation<List<RecipeDescriptor>>() {
+            @Override
+            public void apply(List<RecipeDescriptor> arg) throws OperationException {
+                for (RecipeDescriptor descriptor : arg) {
+                    recipesList.add(descriptor.getLink("get recipe script").getHref());
+                }
+
+                view.setRecipes(recipesList);
                 updateView();
             }
         });
@@ -72,11 +101,5 @@ public class RecipesPagePresenter extends AbstractWizardPage<ImportProject> impl
         if (recipe != null) {
             view.selectRecipe(recipe);
         }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void recipeSelected(String recipe) {
-        dataObject.getProject().setRecipe(recipe);
     }
 }

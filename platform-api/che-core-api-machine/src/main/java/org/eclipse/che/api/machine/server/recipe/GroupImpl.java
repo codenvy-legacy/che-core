@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.server.recipe;
 
-import org.eclipse.che.api.machine.shared.recipe.Group;
+import org.eclipse.che.api.machine.shared.Group;
 import org.eclipse.che.api.machine.shared.dto.recipe.GroupDescriptor;
 
 import java.util.ArrayList;
@@ -41,12 +41,10 @@ public class GroupImpl implements Group {
         return name;
     }
 
-    @Override
     public void setName(String name) {
         this.name = name;
     }
 
-    @Override
     public GroupImpl withName(String name) {
         this.name = name;
         return this;
@@ -57,12 +55,10 @@ public class GroupImpl implements Group {
         return unit;
     }
 
-    @Override
     public void setUnit(String unit) {
         this.unit = unit;
     }
 
-    @Override
     public Group withUnit(String unit) {
         this.unit = unit;
         return this;
@@ -76,12 +72,10 @@ public class GroupImpl implements Group {
         return acl;
     }
 
-    @Override
     public void setAcl(List<String> acl) {
         this.acl = acl;
     }
 
-    @Override
     public Group withAcl(List<String> acl) {
         this.acl = acl;
         return this;

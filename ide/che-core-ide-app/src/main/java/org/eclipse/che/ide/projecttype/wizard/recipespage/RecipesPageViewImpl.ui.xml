@@ -19,7 +19,7 @@
             padding: 6px;
         }
     </ui:style>
-    <g:DockLayoutPanel unit="PX" width="320px" height="320px">
+    <g:DockLayoutPanel unit="PX" width="100%" height="100%">
         <g:center>
             <g:ScrollPanel ui:field="listPanel" addStyleNames="{style.emptyBorder}" debugId="selectRecipePage-list"/>
         </g:center>

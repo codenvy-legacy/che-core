@@ -11,12 +11,12 @@
 package org.eclipse.che.api.machine.server.recipe;
 
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.machine.shared.recipe.Recipe;
+import org.eclipse.che.api.machine.shared.ManagedRecipe;
 
 //TODO add methods for 'all' 'any' strategies
 
 /**
- * Helps to check access to {@link Recipe}.
+ * Helps to check access to {@link ManagedRecipe}.
  *
  * @author Eugene Voevodin
  */
@@ -36,5 +36,5 @@ public interface PermissionsChecker {
      * @throws ServerException
      *         when any error occurs while checking access
      */
-    boolean hasAccess(Recipe recipe, String userId, String permission) throws ServerException;
+    boolean hasAccess(ManagedRecipe recipe, String userId, String permission) throws ServerException;
 }

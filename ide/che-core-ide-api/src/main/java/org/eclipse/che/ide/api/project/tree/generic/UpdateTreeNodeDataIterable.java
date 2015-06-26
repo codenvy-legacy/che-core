@@ -8,25 +8,21 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.machine.shared.recipe;
+package org.eclipse.che.ide.api.project.tree.generic;
 
-import java.util.List;
-import java.util.Map;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**
- * @author Eugene Voevodin
+ *
+ * Interface uses for update TreeNode data after changing TreeNode path
+ *
+ * @author Alexander Andrienko
  */
-public interface Permissions {
-
-    Map<String, List<String>> getUsers();
-
-    void setUsers(Map<String, List<String>> users);
-
-    Permissions withUsers(Map<String, List<String>> users);
-
-    List<Group> getGroups();
-
-    void setGroups(List<Group> groups);
-
-    Permissions withGroups(List<Group> groups);
+public interface UpdateTreeNodeDataIterable {
+    /**
+     * Takes away new node data from server, update node and launch action in callBack
+     * @param callback callback with some action
+     * @param newPath new TreeNode path
+     */
+    void updateData(AsyncCallback<Void> callback, String newPath);
 }

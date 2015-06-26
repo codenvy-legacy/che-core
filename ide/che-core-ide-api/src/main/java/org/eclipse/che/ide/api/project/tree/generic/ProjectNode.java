@@ -16,6 +16,7 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.api.event.CloseCurrentProjectEvent;
 import org.eclipse.che.ide.api.event.ProjectDescriptorChangedEvent;
 import org.eclipse.che.ide.api.event.ProjectDescriptorChangedHandler;
+import org.eclipse.che.ide.api.event.RenameNodeEvent;
 import org.eclipse.che.ide.api.project.tree.AbstractTreeNode;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.collections.Array;
@@ -38,7 +39,8 @@ import java.util.List;
  * @author Artem Zatsarynnyy
  */
 public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements StorableNode<ProjectDescriptor>, Openable,
-                                                                                ProjectDescriptorChangedHandler {
+                                                                                ProjectDescriptorChangedHandler,
+                                                                                UpdateTreeNodeDataIterable {
     protected final ProjectServiceClient   projectServiceClient;
     protected final DtoUnmarshallerFactory dtoUnmarshallerFactory;
     protected final EventBus               eventBus;
@@ -110,6 +112,41 @@ public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements 
     @Override
     public boolean isLeaf() {
         return false;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void rename(final String newName, final RenameCallback renameCallback) {
+        projectServiceClient.rename(getPath(), newName, null, new AsyncRequestCallback<Void>() {
+            @Override
+            protected void onSuccess(Void result) {
+                final String parentPath = ((StorableNode)getParent()).getPath();
+                final String newPath = parentPath + "/" + newName;
+                eventBus.fireEvent(new RenameNodeEvent(ProjectNode.this, newPath));
+            }
+
+            @Override
+            protected void onFailure(Throwable exception) {
+                renameCallback.onFailure(exception);
+            }
+        });
+    }
+
+    /** {@inheritDoc} */
+    public void updateData(final AsyncCallback<Void> asyncCallback, String newPath) {
+        Unmarshallable<ProjectDescriptor> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class);
+        projectServiceClient.getProject(newPath, new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
+            @Override
+            protected void onSuccess(ProjectDescriptor result) {
+                setData(result);
+                asyncCallback.onSuccess(null);
+            }
+
+            @Override
+            protected void onFailure(Throwable exception) {
+                asyncCallback.onFailure(exception);
+            }
+        });
     }
 
     /** {@inheritDoc} */

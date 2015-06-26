@@ -11,52 +11,49 @@
 
 package org.eclipse.che.ide.bootstrap;
 
-import org.eclipse.che.api.project.gwt.client.ProjectTypeServiceClient;
-import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
-import org.eclipse.che.ide.api.project.type.ProjectTypeRegistry;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.core.Component;
-import org.eclipse.che.ide.rest.AsyncRequestCallback;
-import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import com.google.gwt.core.client.Callback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+import org.eclipse.che.api.project.gwt.client.ProjectTypeServiceClient;
+import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
+import org.eclipse.che.api.promises.client.Operation;
+import org.eclipse.che.api.promises.client.OperationException;
+import org.eclipse.che.api.promises.client.PromiseError;
+import org.eclipse.che.ide.api.project.type.ProjectTypeRegistry;
+import org.eclipse.che.ide.core.Component;
+
+import java.util.List;
+
 /**
  * @author Evgen Vidolob
+ * @author Artem Zatsarynnyy
  */
 @Singleton
 public class ProjectTypeComponent implements Component {
+
     private final ProjectTypeServiceClient projectTypeService;
-    private final ProjectTypeRegistry projectTypeRegistry;
-    private final DtoUnmarshallerFactory   dtoUnmarshallerFactory;
+    private final ProjectTypeRegistry      projectTypeRegistry;
 
     @Inject
-    public ProjectTypeComponent(ProjectTypeServiceClient projectTypeService,
-                                ProjectTypeRegistry projectTypeRegistry, DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+    public ProjectTypeComponent(ProjectTypeServiceClient projectTypeService, ProjectTypeRegistry projectTypeRegistry) {
         this.projectTypeService = projectTypeService;
         this.projectTypeRegistry = projectTypeRegistry;
-        this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
     }
 
     @Override
     public void start(final Callback<Component, Exception> callback) {
-        projectTypeService.getProjectTypes(
-                new AsyncRequestCallback<Array<ProjectTypeDefinition>>(
-                        dtoUnmarshallerFactory.newArrayUnmarshaller(ProjectTypeDefinition.class)) {
-
-                    @Override
-                    protected void onSuccess(Array<ProjectTypeDefinition> result) {
-                        for (ProjectTypeDefinition projectType : result.asIterable()) {
-                            projectTypeRegistry.register(projectType);
-                        }
-                        callback.onSuccess(ProjectTypeComponent.this);
-                    }
-
-                    @Override
-                    protected void onFailure(Throwable exception) {
-                        callback.onFailure(new Exception("Can't load project types", exception));
-                    }
-                });
+        projectTypeService.getProjectTypes().then(new Operation<List<ProjectTypeDefinition>>() {
+            @Override
+            public void apply(List<ProjectTypeDefinition> arg) throws OperationException {
+                projectTypeRegistry.registerAll(arg);
+                callback.onSuccess(ProjectTypeComponent.this);
+            }
+        }).catchError(new Operation<PromiseError>() {
+            @Override
+            public void apply(PromiseError arg) throws OperationException {
+                callback.onFailure(new Exception("Can't load project types: " + arg.toString()));
+            }
+        });
     }
 }

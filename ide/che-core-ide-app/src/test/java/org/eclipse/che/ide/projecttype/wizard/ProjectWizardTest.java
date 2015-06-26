@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projecttype.wizard;
 
+import com.google.web.bindery.event.shared.Event;
+import com.google.web.bindery.event.shared.EventBus;
+
 import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ImportProject;
@@ -24,16 +27,11 @@ import org.eclipse.che.ide.api.wizard.Wizard;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
-
-import org.eclipse.che.ide.projecttype.wizard.ProjectWizard;
 import org.eclipse.che.ide.ui.dialogs.CancelCallback;
 import org.eclipse.che.ide.ui.dialogs.ConfirmCallback;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.ui.dialogs.confirm.ConfirmDialog;
 import org.eclipse.che.test.GwtReflectionUtils;
-import com.google.web.bindery.event.shared.Event;
-import com.google.web.bindery.event.shared.EventBus;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,7 +44,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode.CREATE;
 import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode.IMPORT;
 import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode.UPDATE;
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -138,7 +138,7 @@ public class ProjectWizardTest {
 
         wizard.complete(completeCallback);
 
-        verify(projectServiceClient).importProject(eq(PROJECT_NAME), eq(true), eq(importProject), importCallbackCaptor.capture());
+        verify(projectServiceClient).importProject(eq(PROJECT_NAME), eq(false), eq(importProject), importCallbackCaptor.capture());
 
         ImportResponse importResponse = mock(ImportResponse.class);
         when(importResponse.getProjectDescriptor()).thenReturn(mock(ProjectDescriptor.class));
@@ -156,7 +156,7 @@ public class ProjectWizardTest {
 
         wizard.complete(completeCallback);
 
-        verify(projectServiceClient).importProject(eq(PROJECT_NAME), eq(true), eq(importProject), importCallbackCaptor.capture());
+        verify(projectServiceClient).importProject(eq(PROJECT_NAME), eq(false), eq(importProject), importCallbackCaptor.capture());
 
         AsyncRequestCallback<ImportResponse> callback = importCallbackCaptor.getValue();
         GwtReflectionUtils.callOnFailure(callback, mock(Throwable.class));
