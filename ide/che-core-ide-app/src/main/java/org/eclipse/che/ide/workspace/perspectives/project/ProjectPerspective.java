@@ -57,7 +57,9 @@ public class ProjectPerspective extends AbstractPerspective {
                               OutlinePart outlinePart,
                               ProjectExplorerPart projectExplorerPart,
                               NotificationManager notificationManager) {
-        super(view, stackPresenterFactory, partViewFactory, controllerFactory);
+        super(PROJECT_PERSPECTIVE_ID, view, stackPresenterFactory, partViewFactory, controllerFactory);
+
+        notificationManager.addRule(PROJECT_PERSPECTIVE_ID);
 
         partStacks.put(EDITING, editorPartStackPresenter);
 

@@ -232,7 +232,7 @@ public class PartStackPresenterTest {
 //        presenter.addPart(first, firstConstr);
 //
 //        assertThat(presenter.getSortedParts()).hasSize(2).containsExactly(first, last);
-//        verify(view, times(2)).setTabpositions((List<Integer>)anyObject());
+//        verify(view, times(2)).setTabPositions((List<Integer>)anyObject());
     }
 
     @Test
@@ -245,7 +245,7 @@ public class PartStackPresenterTest {
 //
 //
 //        assertThat(presenter.getSortedParts()).hasSize(2).containsExactly(first, withoutConstr);
-//        verify(view, times(2)).setTabpositions((List<Integer>)anyObject());
+//        verify(view, times(2)).setTabPositions((List<Integer>)anyObject());
     }
 
     @Test
@@ -257,7 +257,7 @@ public class PartStackPresenterTest {
 //        presenter.addPart(withoutConstr, null);
 //
 //        assertThat(presenter.getSortedParts()).hasSize(2).containsExactly(withoutConstr, last);
-//        verify(view, times(2)).setTabpositions((List<Integer>)anyObject());
+//        verify(view, times(2)).setTabPositions((List<Integer>)anyObject());
     }
 
     @Test
@@ -270,7 +270,7 @@ public class PartStackPresenterTest {
 //        presenter.addPart(first, firstConstr);
 //
 //        assertThat(presenter.getSortedParts()).hasSize(3).containsExactly(first, withoutConstr, last);
-//        verify(view, times(3)).setTabpositions((List<Integer>)anyObject());
+//        verify(view, times(3)).setTabPositions((List<Integer>)anyObject());
     }
 
     @Test
@@ -283,7 +283,7 @@ public class PartStackPresenterTest {
 //        presenter.addPart(before, beforeConstr);
 //
 //        assertThat(presenter.getSortedParts()).hasSize(3).containsExactly(withoutConstr, before, after);
-//        verify(view, times(3)).setTabpositions((List<Integer>)anyObject());
+//        verify(view, times(3)).setTabPositions((List<Integer>)anyObject());
     }
 
     @Test
@@ -299,7 +299,7 @@ public class PartStackPresenterTest {
 //        presenter.addPart(beforeBefore, beforeBeforeConstr);
 //
 //        assertThat(presenter.getSortedParts()).hasSize(6).containsExactly(first, withoutConstr, beforeBefore, before, after, last);
-//        verify(view, times(6)).setTabpositions((List<Integer>)anyObject());
+//        verify(view, times(6)).setTabPositions((List<Integer>)anyObject());
     }
 
     @Test
@@ -315,7 +315,7 @@ public class PartStackPresenterTest {
 //        presenter.addPart(afterAfter, afterAfterConstr);
 //
 //        assertThat(presenter.getSortedParts()).hasSize(6).containsExactly(first, withoutConstr, before, after, afterAfter, last);
-//        verify(view, times(6)).setTabpositions((List<Integer>)anyObject());
+//        verify(view, times(6)).setTabPositions((List<Integer>)anyObject());
     }
 
     @Test
@@ -332,6 +332,6 @@ public class PartStackPresenterTest {
 //        presenter.addPart(before, beforeConstr);
 //
 //        assertThat(presenter.getSortedParts()).hasSize(7).containsExactly(first, withoutConstr, beforeBefore, before, after, afterAfter, last);
-//        verify(view, times(7)).setTabpositions((List<Integer>)anyObject());
+//        verify(view, times(7)).setTabPositions((List<Integer>)anyObject());
     }
 }

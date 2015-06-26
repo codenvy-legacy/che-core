@@ -1,0 +1,101 @@
+<!--
+
+    Copyright (c) 2012-2015 Codenvy, S.A.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the Eclipse Public License v1.0
+    which accompanies this distribution, and is available at
+    http://www.eclipse.org/legal/epl-v10.html
+
+    Contributors:
+      Codenvy, S.A. - initial API and implementation
+
+-->
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+
+    <ui:with field="resources" type="org.eclipse.che.ide.api.parts.PartStackUIResources"/>
+
+    <ui:style>
+        .main {
+            margin-left: 3px;
+            float: left;
+            cursor: pointer;
+            border: 1px solid #232323;
+            height: 25px;
+            background: #484848;
+            color: #dbdbdb;
+        }
+
+        .iconPanel {
+            float: left;
+            width: 25px;
+            height: 15px;
+            margin-top: 2px;
+        }
+
+        .icon {
+            margin-left: 6px;
+            margin-top: 1px;
+        }
+
+        .icon svg {
+            width: 15px;
+            height: 15px;
+        }
+
+        .closeIconPanel {
+            float: left;
+            width: 25px;
+            margin-top: 3px;
+        }
+
+        .closeIconPanel:not(:hover) img {
+            opacity: 0.4;
+        }
+
+        .closeIconPanel:active {
+            opacity: 0.7;
+        }
+
+        .closeIcon {
+            opacity: 0.4;
+            cursor: default;
+            color: #989898;
+            margin-left: 8px;
+        }
+
+        .closeIcon:hover {
+            opacity: 1;
+        }
+
+        .title {
+            padding: 2px;
+            float: left;
+            margin-top: 3px;
+            margin-left: 3px;
+            color: #989898;
+            font-size: 11px;
+            text-shadow: 0 0 1px #000000;
+            font-family: "Helvetica Neue", "Myriad Pro", arial, Verdana, Verdana, sans-serif;
+        }
+
+        .title:hover {
+            color: #dbdbdb;
+        }
+
+    </ui:style>
+
+    <g:FlowPanel addStyleNames="{style.main}">
+        <g:FlowPanel addStyleNames="{style.iconPanel}">
+            <g:SimplePanel ui:field="icon" addStyleNames="{style.icon}"/>
+        </g:FlowPanel>
+
+        <g:FlowPanel addStyleNames="{style.title}">
+            <g:Label ui:field="title"/>
+        </g:FlowPanel>
+
+        <g:FlowPanel addStyleNames="{style.closeIconPanel}">
+            <g:Image ui:field="closeIcon" resource="{resources.close}" addStyleNames="{style.closeIcon}"/>
+        </g:FlowPanel>
+    </g:FlowPanel>
+</ui:UiBinder>

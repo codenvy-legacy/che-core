@@ -10,24 +10,35 @@
  *******************************************************************************/
 package org.eclipse.che.ide.part.editor;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.ide.api.constraints.Constraints;
-import org.eclipse.che.ide.api.editor.EditorPartPresenter;
+import org.eclipse.che.ide.api.editor.EditorWithErrors;
+import org.eclipse.che.ide.api.editor.EditorWithErrors.EditorState;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.ProjectActionHandler;
 import org.eclipse.che.ide.api.parts.EditorPartStack;
 import org.eclipse.che.ide.api.parts.PartPresenter;
-import org.eclipse.che.ide.api.project.tree.VirtualFile;
+import org.eclipse.che.ide.api.parts.PartStackView.TabItem;
+import org.eclipse.che.ide.api.parts.PropertyListener;
 import org.eclipse.che.ide.client.inject.factories.TabItemFactory;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.part.PartStackPresenter;
-import org.eclipse.che.ide.texteditor.openedfiles.ListOpenedFilesPresenter;
-import org.eclipse.che.ide.util.loging.Log;
+import org.eclipse.che.ide.part.PartsComparator;
+import org.eclipse.che.ide.part.widgets.editortab.EditorTab;
+import org.eclipse.che.ide.part.widgets.listtab.ListButton;
+import org.eclipse.che.ide.part.widgets.listtab.item.ListItem;
+import org.eclipse.che.ide.part.widgets.listtab.item.ListItemWidget;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import static org.eclipse.che.ide.api.editor.EditorWithErrors.EditorState.ERROR;
+import static org.eclipse.che.ide.api.editor.EditorWithErrors.EditorState.WARNING;
 
 /**
  * EditorPartStackPresenter is a special PartStackPresenter that is shared among all
@@ -35,27 +46,32 @@ import org.eclipse.che.ide.util.loging.Log;
  *
  * @author Nikolay Zamosenchuk
  * @author Stéphane Daviet
+ * @author Dmitry Shnurenko
  */
 @Singleton
-public class EditorPartStackPresenter extends PartStackPresenter implements EditorPartStack, ShowListButtonClickHandler {
-
-    private ListOpenedFilesPresenter listOpenedFilesPresenter;
-
-    private interface CloseTabCallback {
-        void onTabsClosed();
-    }
+public class EditorPartStackPresenter extends PartStackPresenter implements EditorPartStack,
+                                                                            EditorTab.ActionDelegate,
+                                                                            ListButton.ActionDelegate,
+                                                                            ListItem.ActionDelegate {
+    private final ListButton             listButton;
+    private final Map<ListItem, TabItem> items;
 
     @Inject
     public EditorPartStackPresenter(final EditorPartStackView view,
+                                    PartsComparator partsComparator,
                                     EventBus eventBus,
                                     TabItemFactory tabItemFactory,
                                     PartStackEventHandler partStackEventHandler,
-                                    ListOpenedFilesPresenter listOpenedFilesPresenter) {
-        super(eventBus, partStackEventHandler, tabItemFactory, view, null);
-        partsClosable = true;
-        this.listOpenedFilesPresenter = listOpenedFilesPresenter;
+                                    ListButton listButton) {
+        super(eventBus, partStackEventHandler, tabItemFactory, partsComparator, view, null);
 
-//        view.setShowListButtonHandler(this);
+        this.listButton = listButton;
+        this.listButton.setDelegate(this);
+
+        this.view.setDelegate(this);
+        view.setListButton(listButton);
+
+        this.items = new HashMap<>();
 
         eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
             @Override
@@ -68,162 +84,143 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
 
             @Override
             public void onProjectClosed(ProjectActionEvent event) {
-                if (!parts.isEmpty()) {
-                    close(activePart, new CloseTabCallback() {
-                        @Override
-                        public void onTabsClosed() {
-                            closeActivePart(this);
-                        }
-                    });
+                Iterator<TabItem> itemIterator = parts.keySet().iterator();
+
+                while (itemIterator.hasNext()) {
+                    TabItem tabItem = itemIterator.next();
+
+                    view.removeTab(parts.get(tabItem));
+
+                    itemIterator.remove();
+
+                    removeItemFromList(tabItem);
                 }
             }
         });
     }
 
+    private void removeItemFromList(@Nonnull TabItem tab) {
+        ListItem listItem = getListItemByTab(tab);
+
+        if (listItem != null) {
+            listButton.removeListItem(listItem);
+        }
+    }
+
+
+    @Nullable
+    private ListItem getListItemByTab(@Nonnull TabItem tabItem) {
+        for (Map.Entry<ListItem, TabItem> entry : items.entrySet()) {
+            if (tabItem.equals(entry.getValue())) {
+                return entry.getKey();
+            }
+        }
+
+        return null;
+    }
+
     /** {@inheritDoc} */
     @Override
-    public void addPart(PartPresenter part, Constraints constraint) {
+    public void addPart(@Nonnull PartPresenter part, Constraints constraint) {
         addPart(part);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void addPart(PartPresenter part) {
-//        if (!(part instanceof EditorPartPresenter)) {
-//            Log.warn(getClass(), "EditorPartStack is not intended to be used to open non-Editor Parts.");
-//        }
-//
-//        if (parts.contains(part)) {
-//            // part already exists
-//            // activate it
-//            setActivePart(part);
-//            // and return
-//            return;
-//        }
-//        parts.add(part);
-//        part.addPropertyListener(propertyListener);
-//        // include close button
-//        SVGResource titleSVGResource = part.getTitleSVGImage();
-//        SVGImage titleSVGImage = null;
-//        if (titleSVGResource != null) {
-//            titleSVGImage = part.decorateIcon(new SVGImage(titleSVGResource));
-//        }
-//
-//        PartStackView.TabItem tabItem = view.addTab(titleSVGImage, part.getTitle(),
-//                part.getTitleToolTip(), null, partsClosable);
-//
-//        if (part instanceof EditorWithErrors) {
-//            final EditorWithErrors presenter = ((EditorWithErrors)part);
-//            final TabItemWithMarks tab = (TabItemWithMarks)tabItem;
-//
-//            part.addPropertyListener(new PropertyListener() {
-//                @Override
-//                public void propertyChanged(PartPresenter source, int propId) {
-//                    if (presenter.getErrorState() != null) {
-//                        if (presenter.getErrorState().equals(EditorWithErrors.EditorState.ERROR)) {
-//                            tab.setErrorMark(true);
-//                        } else {
-//                            tab.setErrorMark(false);
-//                        }
-//                        if (presenter.getErrorState().equals(EditorWithErrors.EditorState.WARNING)) {
-//                            tab.setWarningMark(true);
-//                        } else {
-//                            tab.setWarningMark(false);
-//                        }
-//                    }
-//                }
-//            });
-//        }
-//
-//        bindEvents(tabItem, part);
-//        part.go(partViewContainer);
-//        setActivePart(part);
-    }
+    public void addPart(@Nonnull PartPresenter part) {
+        if (!containsPart(part)) {
+            part.addPropertyListener(propertyListener);
 
-    /** {@inheritDoc} */
-    @Override
-    public void setActivePart(PartPresenter part) {
-//        if (!(part instanceof EditorPartPresenter)) {
-//            Log.warn(getClass(), "EditorPartStack is not intended to be used to open non-Editor Parts.");
-//        }
-//
-//        if (activePart == part) {
-//            return;
-//        }
-//        activePart = part;
-//
-//        if (part == null) {
-//            view.setActiveTab(-1);
-//        } else {
-//            view.setActiveTab(parts.indexOf(activePart));
-//        }
-//
-//        // request part stack to get the focus
-//        onRequestFocus();
-    }
+            final EditorTab editorTab = tabItemFactory.createEditorPartButton(part.getTitleSVGImage(), part.getTitle());
 
-    /*close active part and do action from callBack*/
-    protected void closeActivePart(final CloseTabCallback closeTabCallback) {
-        if (activePart != null) {
-            close(activePart, closeTabCallback);
-        } else {
-            Log.warn(getClass(), "No active part");
-        }
-    }
+            editorTab.setDelegate(this);
 
-    /** {@inheritDoc} */
-    @Override
-    protected void close(final PartPresenter part) {
-        close(part, null);
-    }
+            parts.put(editorTab, part);
 
-    /*close tab and do action from callBack*/
-    protected void close(final PartPresenter part, final CloseTabCallback closeTabCallback) {
-//        part.onClose(new AsyncCallback<Void>() {
-//            @Override
-//            public void onFailure(Throwable throwable) {
-//            }
-//
-//            @Override
-//            public void onSuccess(Void aVoid) {
-//                view.removeTab(parts.indexOf(part));
-//                parts.remove(part);
-//                part.removePropertyListener(propertyListener);
-//                if (activePart == part) {
-//                    //select another part
-//                    setActivePart(parts.isEmpty() ? null : parts.get(parts.size() - 1));
-//
-//                    Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-//                        @Override
-//                        public void execute() {
-//                            if (closeTabCallback != null) {
-//                                closeTabCallback.onTabsClosed();
-//                            }
-//                        }
-//                    });
-//
-//
-//
-//                }
-//            }
-//        });
-    }
+            view.addTab(editorTab, part);
 
-    /** {@inheritDoc} */
-    @Override
-    public void onShowListClicked(int x, int y, AsyncCallback<Void> callback) {
-        Array<VirtualFile> openedFiles = Collections.createArray();
-        for (PartPresenter part : parts.values()) {
-            if (part instanceof EditorPartPresenter) {
-                openedFiles.add(((EditorPartPresenter)part).getEditorInput().getFile());
+            TabItem tabItem = getTabByPart(part);
+
+            if (tabItem != null) {
+                ListItem item = ListItemWidget.create(tabItem.getTitle());
+
+                item.setDelegate(this);
+
+                listButton.addListItem(item);
+
+                items.put(item, tabItem);
+            }
+
+            if (part instanceof EditorWithErrors) {
+                final EditorWithErrors presenter = ((EditorWithErrors)part);
+
+                part.addPropertyListener(new PropertyListener() {
+                    @Override
+                    public void propertyChanged(PartPresenter source, int propId) {
+                        EditorState editorState = presenter.getErrorState();
+
+                        if (editorState == null) {
+                            return;
+                        }
+
+                        editorTab.setErrorMark(ERROR.equals(editorState));
+                        editorTab.setWarningMark(WARNING.equals(editorState));
+                    }
+                });
             }
         }
 
-        listOpenedFilesPresenter.showDialog(openedFiles, x, y, callback);
+        view.selectTab(part);
     }
 
+    /** {@inheritDoc} */
     @Override
-    protected void sortPartsOnView() {
+    public void setActivePart(@Nonnull PartPresenter part) {
+        addPart(part);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void onTabClicked(@Nonnull TabItem tab) {
+        view.selectTab(parts.get(tab));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void onTabClose(@Nonnull TabItem tab) {
+        view.removeTab(parts.get(tab));
+
+        parts.remove(tab);
+
+        removeItemFromList(tab);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void onListButtonClicked() {
+        listButton.showList();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void onListButtonMouseOver() {
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void onListButtonMouseOut() {
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void onCloseItemClicked(@Nonnull ListItem listItem) {
+        TabItem closedItem = items.get(listItem);
+
+        removePart(parts.get(closedItem));
+
+        listButton.removeListItem(listItem);
+        listButton.hide();
+    }
 }

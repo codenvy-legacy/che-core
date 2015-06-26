@@ -10,13 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.ide.part;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import com.google.web.bindery.event.shared.EventBus;
 
-import org.eclipse.che.ide.api.constraints.Anchor;
 import org.eclipse.che.ide.api.constraints.Constraints;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.event.EditorDirtyStateChangedEvent;
@@ -28,13 +26,13 @@ import org.eclipse.che.ide.api.parts.PartStackView.TabItem;
 import org.eclipse.che.ide.api.parts.PropertyListener;
 import org.eclipse.che.ide.api.parts.base.BasePresenter;
 import org.eclipse.che.ide.client.inject.factories.TabItemFactory;
-import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerPartPresenter;
+import org.eclipse.che.ide.part.widgets.partbutton.PartButton;
 import org.eclipse.che.ide.workspace.WorkBenchPartController;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,41 +47,42 @@ import java.util.Map;
  * @author Stéphane Daviet
  * @author Dmitry Shnurenko
  */
-public class PartStackPresenter implements Presenter, PartStackView.ActionDelegate, TabItem.ActionDelegate, PartStack {
+public class PartStackPresenter implements Presenter, PartStackView.ActionDelegate, PartButton.ActionDelegate, PartStack {
 
-    private final Comparator<PartPresenter>      partPresenterComparator;
-    private final WorkBenchPartController        workBenchPartController;
-    private final HashMap<PartPresenter, Double> partSizes;
-    private final TabItemFactory                 tabItemFactory;
+    private static final double DEFAULT_PART_SIZE = 285;
 
-    protected final PartStackView                   view;
-    protected final Map<TabItem, PartPresenter>     parts;
-    protected final List<Integer>                   viewPartPositions;
-    protected final PropertyListener                propertyListener;
-    protected final PartStackEventHandler           partStackHandler;
-    protected final Map<PartPresenter, Constraints> constraints;
+    private final WorkBenchPartController         workBenchPartController;
+    private final PartsComparator                 partsComparator;
+    private final Map<PartPresenter, Constraints> constraints;
+    private final PartStackEventHandler           partStackHandler;
+
+    protected final Map<TabItem, PartPresenter> parts;
+    protected final TabItemFactory              tabItemFactory;
+    protected final PartStackView               view;
+    protected final PropertyListener            propertyListener;
+
+    private TabItem previousSelectedTab;
+    private double  partSize;
 
     protected PartPresenter activePart;
-    protected boolean       partsClosable;
 
     @Inject
     public PartStackPresenter(final EventBus eventBus,
                               PartStackEventHandler partStackEventHandler,
                               TabItemFactory tabItemFactory,
+                              PartsComparator partsComparator,
                               @Assisted final PartStackView view,
                               @Assisted @Nonnull WorkBenchPartController workBenchPartController) {
         this.view = view;
+        this.view.setDelegate(this);
+
         this.partStackHandler = partStackEventHandler;
         this.workBenchPartController = workBenchPartController;
         this.tabItemFactory = tabItemFactory;
-        this.partPresenterComparator = getPartPresenterComparator();
+        this.partsComparator = partsComparator;
 
         this.parts = new HashMap<>();
-        this.viewPartPositions = new ArrayList<>();
         this.constraints = new HashMap<>();
-        this.partSizes = new HashMap<>();
-
-        this.partsClosable = false;
 
         this.propertyListener = new PropertyListener() {
             @Override
@@ -96,70 +95,10 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
             }
         };
 
-        view.setDelegate(this);
+        partSize = DEFAULT_PART_SIZE;
     }
 
-    @Nonnull
-    private Comparator<PartPresenter> getPartPresenterComparator() {
-        return new Comparator<PartPresenter>() {
-            @Override
-            public int compare(PartPresenter part1, PartPresenter part2) {
-                String title1 = part1.getTitle();
-                String title2 = part2.getTitle();
-                Constraints constr1 = constraints.get(part1);
-                Constraints constr2 = constraints.get(part2);
-
-                if (constr1 == null && constr2 == null) {
-                    return 0;
-                }
-
-                if ((constr1 != null && constr1.myAnchor == Anchor.FIRST) || (constr2 != null && constr2.myAnchor == Anchor.LAST)) {
-                    return -1;
-                }
-
-                if ((constr2 != null && constr2.myAnchor == Anchor.FIRST) || (constr1 != null && constr1.myAnchor == Anchor.LAST)) {
-                    return 1;
-                }
-
-                if (constr1 != null && constr1.myRelativeToActionId != null) {
-                    Anchor anchor1 = constr1.myAnchor;
-                    String relative1 = constr1.myRelativeToActionId;
-                    if (anchor1 == Anchor.BEFORE && relative1.equals(title2)) {
-                        return -1;
-                    }
-                    if (anchor1 == Anchor.AFTER && relative1.equals(title2)) {
-                        return 1;
-                    }
-                }
-
-                if (constr2 != null && constr2.myRelativeToActionId != null) {
-                    Anchor anchor2 = constr2.myAnchor;
-                    String relative2 = constr2.myRelativeToActionId;
-                    if (anchor2 == Anchor.BEFORE && relative2.equals(title1)) {
-                        return 1;
-                    }
-                    if (anchor2 == Anchor.AFTER && relative2.equals(title1)) {
-                        return -1;
-                    }
-                }
-
-                if (constr1 != null && constr2 == null) {
-                    return 1;
-                }
-                if (constr1 == null) {
-                    return -1;
-                }
-                return 0;
-            }
-        };
-    }
-
-    /**
-     * Update part tab, it's may be title, icon or tooltip
-     *
-     * @param part
-     */
-    private void updatePartTab(PartPresenter part) {
+    private void updatePartTab(@Nonnull PartPresenter part) {
         if (!containsPart(part)) {
             throw new IllegalArgumentException("This part stack not contains: " + part.getTitle());
         }
@@ -172,21 +111,28 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
     public void go(AcceptsOneWidget container) {
         container.setWidget(view);
         if (activePart != null) {
-            view.setActiveTab(activePart);
+            view.selectTab(activePart);
         }
     }
 
     /** {@inheritDoc} */
     @Override
-    public void addPart(PartPresenter part) {
+    public void addPart(@Nonnull PartPresenter part) {
         addPart(part, null);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void addPart(PartPresenter part, Constraints constraint) {
+    public void addPart(@Nonnull PartPresenter part, @Nullable Constraints constraint) {
         if (containsPart(part)) {
-            setActivePart(part);
+            workBenchPartController.setHidden(true);
+
+            TabItem selectedItem = getTabByPart(part);
+
+            if (selectedItem != null) {
+                selectedItem.unSelect();
+            }
+
             return;
         }
 
@@ -194,25 +140,32 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
             ((BasePresenter)part).setPartStack(this);
         }
 
-        constraints.put(part, constraint);
-        partSizes.put(part, (double)part.getSize());
-
         part.addPropertyListener(propertyListener);
 
-        TabItem partButton = tabItemFactory.createPartButton(part.getTitle())
-                                           .addTooltip(part.getTitleToolTip())
-                                           .addIcon(part.getTitleSVGImage())
-                                           .addWidget(part.getTitleWidget());
+        PartButton partButton = tabItemFactory.createPartButton(part.getTitle())
+                                              .addTooltip(part.getTitleToolTip())
+                                              .addIcon(part.getTitleSVGImage())
+                                              .addWidget(part.getTitleWidget());
         partButton.setDelegate(this);
 
         parts.put(partButton, part);
+        constraints.put(part, constraint);
 
         view.addTab(partButton, part);
 
         sortPartsOnView();
-        part.onOpen();
 
         onRequestFocus();
+    }
+
+    private void sortPartsOnView() {
+        List<PartPresenter> sortedParts = new ArrayList<>();
+        sortedParts.addAll(parts.values());
+        partsComparator.setConstraints(constraints);
+
+        Collections.sort(sortedParts, partsComparator);
+
+        view.setTabPositions(sortedParts);
     }
 
     /** {@inheritDoc} */
@@ -223,116 +176,55 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
 
     /** {@inheritDoc} */
     @Override
-    public int getNumberOfParts() {
-        return parts.size();
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public PartPresenter getActivePart() {
         return activePart;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void setActivePart(PartPresenter part) {
-        if (activePart != null && activePart == part) {
-            // request part stack to get the focus
-            onRequestFocus();
-            return;
-        }
+    public void setActivePart(@Nonnull PartPresenter part) {
+        TabItem activeTab = getTabByPart(part);
 
-        // remember size of the previous active part
-        if (activePart != null) {
-            double size = workBenchPartController.getSize();
-            partSizes.put(activePart, size);
+        if (activeTab == null) {
+            return;
         }
 
         activePart = part;
-
-        if (part == null) {
-            view.unSelectTabs();
-            workBenchPartController.setHidden(true);
-
-            return;
-        } else {
-            view.setActiveTab(part);
-        }
-
-        // request part stack to get the focus
-        onRequestFocus();
-
-        if (activePart != null) {
-            workBenchPartController.setHidden(false);
-            if (partSizes.containsKey(activePart)) {
-                workBenchPartController.setSize(partSizes.get(activePart));
-            } else {
-                workBenchPartController.setSize(activePart.getSize());
-            }
-        }
+        selectActiveTab(activeTab);
     }
 
-    /**
-     * Gets all the parts registered.
-     */
-    public List<PartPresenter> getPartPresenters() {
-        List<PartPresenter> presenters = new ArrayList<>();
-        for (PartPresenter part : parts.values()) {
-            presenters.add(part);
+    @Nullable
+    protected TabItem getTabByPart(@Nonnull PartPresenter part) {
+        for (Map.Entry<TabItem, PartPresenter> entry : parts.entrySet()) {
+
+            if (part.equals(entry.getValue())) {
+                return entry.getKey();
+            }
         }
-        return presenters;
+
+        return null;
     }
 
     /** {@inheritDoc} */
     @Override
     public void hidePart(PartPresenter part) {
-        if (activePart == part) {
-            double size = workBenchPartController.getSize();
-            partSizes.put(activePart, size);
+        TabItem activeTab = getTabByPart(part);
 
-            workBenchPartController.setHidden(true);
-
-            activePart = null;
+        if (activeTab == null) {
+            return;
         }
+
+        previousSelectedTab = activeTab;
+
+        onTabClicked(activeTab);
     }
 
     /** {@inheritDoc} */
     @Override
     public void removePart(PartPresenter part) {
-        close(part);
-    }
+        parts.remove(getTabByPart(part));
 
-    /**
-     * Close Part
-     *
-     * @param part
-     */
-    protected void close(final PartPresenter part) {
-        part.onClose(new AsyncCallback<Void>() {
-            @Override
-            public void onFailure(Throwable throwable) {
-
-            }
-
-            @Override
-            public void onSuccess(Void aVoid) {
-                if (activePart == part) {
-                    PartPresenter newActivePart = null;
-                    for (PartPresenter tmpPart : parts.values()) {
-                        if (tmpPart instanceof ProjectExplorerPartPresenter) {
-                            newActivePart = tmpPart;
-                            break;
-                        }
-                    }
-                    setActivePart(newActivePart);
-                }
-                view.removeTab(part);
-                constraints.remove(part);
-                partSizes.remove(part);
-                sortPartsOnView();
-                part.removePropertyListener(propertyListener);
-            }
-        });
+        view.removeTab(part);
     }
 
     /** {@inheritDoc} */
@@ -347,36 +239,34 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
         view.setFocus(focused);
     }
 
-    /** Sort parts depending on constraint. */
-    protected void sortPartsOnView() {
-//        viewPartPositions.clear();
-//        List<PartPresenter> sortedParts = getSortedParts();
-//        for (PartPresenter partPresenter : sortedParts) {
-//            viewPartPositions.add(sortedParts.indexOf(partPresenter), parts.indexOf(partPresenter));
-//        }
-//        view.setTabpositions(viewPartPositions);
-    }
-
-    protected List<PartPresenter> getSortedParts() {
-        List<PartPresenter> sortedParts = new ArrayList<>();
-        sortedParts.addAll(parts.values());
-        Collections.sort(sortedParts, partPresenterComparator);
-        return sortedParts;
-    }
-
     /** {@inheritDoc} */
     @Override
-    public void onTabClicked(@Nonnull TabItem selectedTab, boolean isSelected) {
-        for (PartPresenter presenter : parts.values()) {
-            presenter.setVisible(false);
+    public void onTabClicked(@Nonnull TabItem selectedTab) {
+        if (selectedTab.equals(previousSelectedTab)) {
+            selectedTab.unSelect();
+
+            partSize = workBenchPartController.getSize();
+
+            workBenchPartController.setSize(0);
+
+            previousSelectedTab = null;
+
+            return;
         }
+
+        previousSelectedTab = selectedTab;
+        activePart = parts.get(selectedTab);
+
+        selectActiveTab(selectedTab);
+    }
+
+    private void selectActiveTab(@Nonnull TabItem selectedTab) {
+        workBenchPartController.setSize(partSize);
+        workBenchPartController.setHidden(false);
 
         PartPresenter selectedPart = parts.get(selectedTab);
 
-        selectedPart.setVisible(true);
-
-        workBenchPartController.setSize(350);
-        workBenchPartController.setHidden(!isSelected);
+        view.selectTab(selectedPart);
     }
 
     /** Handles PartStack actions */

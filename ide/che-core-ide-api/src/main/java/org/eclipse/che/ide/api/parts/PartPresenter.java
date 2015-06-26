@@ -10,17 +10,18 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.parts;
 
-import org.eclipse.che.ide.api.mvp.Presenter;
-import org.eclipse.che.ide.api.selection.Selection;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.IsWidget;
 
+import org.eclipse.che.ide.api.mvp.Presenter;
+import org.eclipse.che.ide.api.selection.Selection;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * Part is a main UI block of the IDE.
@@ -37,6 +38,10 @@ public interface PartPresenter extends Presenter {
     /** @return Title of the Part */
     @Nonnull
     String getTitle();
+
+    void addRule(@Nonnull String perspectiveId);
+
+    List<String> getRules();
 
     void setVisible(boolean visible);
 
@@ -114,8 +119,10 @@ public interface PartPresenter extends Presenter {
     void onOpen();
 
     /**
-     * This method is called when part is going to be closed. Part itself can deny blocking, by calling onFailure() on callback, i.e. when document is
+     * This method is called when part is going to be closed. Part itself can deny blocking, by calling onFailure() on callback, i.e. when
+     * document is
      * being edited and accidentally close button pressed.
+     *
      * @param callback
      */
     void onClose(@Nonnull AsyncCallback<Void> callback);

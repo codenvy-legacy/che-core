@@ -1,11 +1,24 @@
+/*******************************************************************************
+ * Copyright (c) 2012-2015 Codenvy, S.A.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Codenvy, S.A. - initial API and implementation
+ *******************************************************************************/
 package org.eclipse.che.ide.part.widgets.partbutton;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.MouseOutEvent;
+import com.google.gwt.event.dom.client.MouseOutHandler;
+import com.google.gwt.event.dom.client.MouseOverEvent;
+import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SimplePanel;
@@ -15,17 +28,20 @@ import com.google.inject.assistedinject.Assisted;
 
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.parts.PartPresenter;
-import org.eclipse.che.ide.api.parts.PartStackView.TabItem;
+import org.eclipse.che.ide.api.parts.PartStackView.TabPosition;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.BELOW;
+import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.LEFT;
+
 /**
  * @author Dmitry Shnurenko
  */
-public class PartButtonWidget extends Composite implements TabItem {
+public class PartButtonWidget extends Composite implements PartButton, MouseOverHandler, MouseOutHandler {
     interface PartButtonWidgetUiBinder extends UiBinder<Widget, PartButtonWidget> {
     }
 
@@ -34,16 +50,13 @@ public class PartButtonWidget extends Composite implements TabItem {
     private final Resources resources;
 
     @UiField
-    DockLayoutPanel main;
+    SimplePanel icon;
     @UiField
-    SimplePanel     icon;
-    @UiField
-    Label           buttonName;
+    Label       buttonName;
 
     private IsWidget       widget;
     private ActionDelegate delegate;
-
-    private boolean isSelected;
+    private TabPosition    tabPosition;
 
     @Inject
     public PartButtonWidget(Resources resources, @Assisted String title) {
@@ -51,11 +64,14 @@ public class PartButtonWidget extends Composite implements TabItem {
         initWidget(UI_BINDER.createAndBindUi(this));
 
         addDomHandler(this, ClickEvent.getType());
+        addDomHandler(this, MouseOverEvent.getType());
+        addDomHandler(this, MouseOutEvent.getType());
 
         buttonName.setText(title);
     }
 
     /** {@inheritDoc} */
+    @Nonnull
     @Override
     public IsWidget getView() {
         return this.asWidget();
@@ -63,18 +79,25 @@ public class PartButtonWidget extends Composite implements TabItem {
 
     /** {@inheritDoc} */
     @Nonnull
-    public TabItem addTooltip(@Nullable String tooltip) {
+    public PartButton addTooltip(@Nullable String tooltip) {
         return this;
     }
 
     /** {@inheritDoc} */
     @Nonnull
-    public TabItem addIcon(@Nullable SVGResource resource) {
+    public PartButton addIcon(@Nullable SVGResource resource) {
         if (resource != null) {
             SVGImage image = new SVGImage(resource);
             icon.getElement().setInnerHTML(image.toString());
         }
 
+        return this;
+    }
+
+    /** {@inheritDoc} */
+    @Nonnull
+    public PartButton addWidget(@Nullable IsWidget widget) {
+        this.widget = widget;
         return this;
     }
 
@@ -85,30 +108,59 @@ public class PartButtonWidget extends Composite implements TabItem {
     }
 
     /** {@inheritDoc} */
-    @Nonnull
-    public TabItem addWidget(@Nullable IsWidget widget) {
-        this.widget = widget;
-        return this;
+    @Override
+    public void onClick(@Nonnull ClickEvent event) {
+        delegate.onTabClicked(this);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void onClick(@Nonnull ClickEvent event) {
-        isSelected = !isSelected;
+    public void onMouseOut(@Nonnull MouseOutEvent event) {
+        removeStyleName(resources.partStackCss().onTabMouseOver());
+    }
 
-        delegate.onTabClicked(this, isSelected);
+    /** {@inheritDoc} */
+    @Override
+    public void onMouseOver(@Nonnull MouseOverEvent event) {
+        addStyleName(resources.partStackCss().onTabMouseOver());
     }
 
     /** {@inheritDoc} */
     @Override
     public void select() {
+        if (!BELOW.equals(tabPosition)) {
+            addStyleName(resources.partStackCss().selectedRightOrLeftTab());
+
+            return;
+        }
+
         addStyleName(resources.partStackCss().idePartStackToolTabSelected());
     }
 
     /** {@inheritDoc} */
     @Override
     public void unSelect() {
+        if (!BELOW.equals(tabPosition)) {
+            removeStyleName(resources.partStackCss().selectedRightOrLeftTab());
+
+            return;
+        }
+
         removeStyleName(resources.partStackCss().idePartStackToolTabSelected());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setTabPosition(@Nonnull TabPosition tabPosition) {
+        this.tabPosition = tabPosition;
+
+        if (LEFT.equals(tabPosition)) {
+            addStyleName(resources.partStackCss().leftTabBorders());
+
+            return;
+        }
+
+        addStyleName(resources.partStackCss().tabBordersDefault());
     }
 
     /** {@inheritDoc} */

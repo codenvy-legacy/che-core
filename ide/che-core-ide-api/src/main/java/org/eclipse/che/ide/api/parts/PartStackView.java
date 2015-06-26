@@ -14,13 +14,9 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.IsWidget;
 
 import org.eclipse.che.ide.api.mvp.View;
-import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.List;
-
-import static com.google.gwt.user.client.ui.InsertPanel.ForIsWidget;
 
 /** PartStack View interface */
 public interface PartStackView extends View<PartStackView.ActionDelegate> {
@@ -30,15 +26,13 @@ public interface PartStackView extends View<PartStackView.ActionDelegate> {
     }
 
     /** Tab which can be clicked and closed */
-    interface TabItem extends View<TabItem.ActionDelegate>, ClickHandler {
+    interface TabItem extends ClickHandler {
 
+        @Nonnull
         IsWidget getView();
 
-        TabItem addTooltip(@Nullable String tooltip);
-
-        TabItem addWidget(@Nullable IsWidget widget);
-
-        TabItem addIcon(@Nullable SVGResource resource);
+        @Nonnull
+        String getTitle();
 
         void update(@Nonnull PartPresenter part);
 
@@ -46,9 +40,7 @@ public interface PartStackView extends View<PartStackView.ActionDelegate> {
 
         void unSelect();
 
-        interface ActionDelegate {
-            void onTabClicked(@Nonnull TabItem selectedTab, boolean isSelected);
-        }
+        void setTabPosition(@Nonnull TabPosition tabPosition);
     }
 
     /** Add Tab */
@@ -57,16 +49,10 @@ public interface PartStackView extends View<PartStackView.ActionDelegate> {
     /** Remove Tab */
     public void removeTab(@Nonnull PartPresenter presenter);
 
-    /** Set Active Tab */
-    public void setActiveTab(@Nonnull PartPresenter partPresenter);
-
-    public void unSelectTabs();
+    public void selectTab(@Nonnull PartPresenter partPresenter);
 
     /** Set new Tabs positions */
-    public void setTabpositions(List<Integer> partPositions);
-
-    /** Get Content Panel */
-    public ForIsWidget getContentPanel();
+    public void setTabPositions(List<PartPresenter> partPositions);
 
     /** Set PartStack focused */
     public void setFocus(boolean focused);

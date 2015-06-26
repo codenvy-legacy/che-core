@@ -8,21 +8,21 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.client.inject.factories;
+package org.eclipse.che.ide.part.widgets.listtab.item;
 
-import org.eclipse.che.ide.part.widgets.editortab.EditorTab;
-import org.eclipse.che.ide.part.widgets.partbutton.PartButton;
-import org.vectomatic.dom.svg.ui.SVGResource;
+import org.eclipse.che.ide.api.mvp.View;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * @author Dmitry Shnurenko
  */
-public interface TabItemFactory {
+public interface ListItem extends View<ListItem.ActionDelegate> {
 
-    PartButton createPartButton(@Nonnull String title);
+    @Nonnull
+    String getTitle();
 
-    EditorTab createEditorPartButton(@Nullable SVGResource icon, @Nonnull String title);
+    interface ActionDelegate {
+        void onCloseItemClicked(@Nonnull ListItem listItem);
+    }
 }

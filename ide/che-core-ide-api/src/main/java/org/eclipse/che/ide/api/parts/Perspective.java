@@ -25,6 +25,12 @@ import javax.annotation.Nullable;
  */
 public interface Perspective {
 
+    public void restoreEditorPart();
+
+    public void expandEditorPart();
+
+    void setActivePart(@Nonnull PartPresenter part, @Nonnull PartStackType type);
+
     /**
      * Removes part.
      *

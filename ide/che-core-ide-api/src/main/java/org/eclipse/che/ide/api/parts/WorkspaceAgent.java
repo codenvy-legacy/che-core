@@ -14,6 +14,8 @@ package org.eclipse.che.ide.api.parts;
 import org.eclipse.che.ide.api.constraints.Constraints;
 import org.eclipse.che.ide.api.extension.SDK;
 
+import javax.annotation.Nonnull;
+
 
 /**
  * Handles IDE Perspective, allows to open/close/switch Parts,
@@ -30,6 +32,8 @@ public interface WorkspaceAgent {
      * @param part
      */
     void setActivePart(PartPresenter part);
+
+    void setActivePart(@Nonnull PartPresenter part, PartStackType type);
 
     /**
      * Opens given Part
@@ -65,7 +69,8 @@ public interface WorkspaceAgent {
     /**
      * Retrieves the instance of the {@link PartStack} for given {@link PartStackType}
      *
-     * @param type one of the enumerated type {@link PartStackType}
+     * @param type
+     *         one of the enumerated type {@link PartStackType}
      * @return the part stack found, else null
      */
     PartStack getPartStack(PartStackType type);

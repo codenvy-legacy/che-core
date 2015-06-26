@@ -32,35 +32,43 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.google.gwt.user.client.ui.InsertPanel.ForIsWidget;
-
 /**
  * PartStack view class. Implements UI that manages Parts organized in a Tab-like widget.
  *
  * @author Nikolay Zamosenchuk
  * @author Dmitry Shnurenko
  */
-public class PartStackViewImpl extends ResizeComposite implements PartStackView {
+public class PartStackViewImpl extends ResizeComposite implements PartStackView, MouseDownHandler, ContextMenuHandler {
 
     private final PartStackUIResources        resources;
     private final Map<PartPresenter, TabItem> tabs;
     private final AcceptsOneWidget            partViewContainer;
     private final DeckLayoutPanel             contentPanel;
     private final FlowPanel                   tabsPanel;
+    private final FlowPanel                   tabsRotationPanel;
+    private final TabPosition                 tabPosition;
 
     private ActionDelegate delegate;
-    private TabPosition    tabPosition;
+    private Widget         focusedWidget;
 
     @Inject
-    public PartStackViewImpl(PartStackUIResources resources,
-                             @Assisted TabPosition tabPosition,
-                             @Assisted FlowPanel tabsPanel) {
+    public PartStackViewImpl(final PartStackUIResources resources,
+                             FlowPanel tabsRotationPanel,
+                             final DeckLayoutPanel contentPanel,
+                             @Assisted @Nonnull TabPosition tabPosition,
+                             @Assisted @Nonnull FlowPanel tabsPanel) {
         this.resources = resources;
-        this.tabPosition = tabPosition;
         this.tabsPanel = tabsPanel;
+        this.tabPosition = tabPosition;
+        this.tabsRotationPanel = tabsRotationPanel;
+
+        this.contentPanel = contentPanel;
+        this.contentPanel.setStyleName(resources.partStackCss().idePartStackContent());
+        initWidget(contentPanel);
 
         this.tabs = new HashMap<>();
-        contentPanel = new DeckLayoutPanel();
+
+        defineTabsPosition(tabPosition, tabsRotationPanel);
 
         partViewContainer = new AcceptsOneWidget() {
             @Override
@@ -69,26 +77,36 @@ public class PartStackViewImpl extends ResizeComposite implements PartStackView 
             }
         };
 
-        contentPanel.setStyleName(resources.partStackCss().idePartStackContent());
-        initWidget(contentPanel);
+        addDomHandler(this, MouseDownEvent.getType());
+        addDomHandler(this, ContextMenuEvent.getType());
+    }
 
-        addDomHandler(new MouseDownHandler() {
-            @Override
-            public void onMouseDown(MouseDownEvent event) {
-                if (delegate != null) {
-                    delegate.onRequestFocus();
-                }
-            }
-        }, MouseDownEvent.getType());
+    private void defineTabsPosition(@Nonnull TabPosition tabPosition, @Nonnull FlowPanel tabsRotationPanel) {
+        switch (tabPosition) {
+            case LEFT:
+                tabsRotationPanel.addStyleName(resources.partStackCss().rotateLeftPanel());
+                break;
 
-        addDomHandler(new ContextMenuHandler() {
-            @Override
-            public void onContextMenu(ContextMenuEvent event) {
-                if (delegate != null) {
-                    delegate.onRequestFocus();
-                }
-            }
-        }, ContextMenuEvent.getType());
+            case RIGHT:
+                tabsRotationPanel.addStyleName(resources.partStackCss().rotateRightPanel());
+                break;
+
+            default:
+        }
+
+        tabsPanel.add(tabsRotationPanel);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void onMouseDown(@Nonnull MouseDownEvent event) {
+        delegate.onRequestFocus();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void onContextMenu(@Nonnull ContextMenuEvent event) {
+        delegate.onRequestFocus();
     }
 
     /** {@inheritDoc} */
@@ -99,14 +117,10 @@ public class PartStackViewImpl extends ResizeComposite implements PartStackView 
 
     /** {@inheritDoc} */
     @Override
-    public ForIsWidget getContentPanel() {
-        return contentPanel;
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public void addTab(@Nonnull TabItem tabItem, @Nonnull PartPresenter presenter) {
-        tabsPanel.add(tabItem.getView());
+        tabItem.setTabPosition(tabPosition);
+
+        tabsRotationPanel.add(tabItem.getView());
         presenter.go(partViewContainer);
 
         tabs.put(presenter, tabItem);
@@ -119,32 +133,50 @@ public class PartStackViewImpl extends ResizeComposite implements PartStackView 
 
         tabsPanel.remove(tab.getView());
         contentPanel.remove(presenter.getView());
+
+        tabs.remove(presenter);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void setTabpositions(List<Integer> partPositions) {
-        //TODO need add ability add tab in special position
-    }
+    public void setTabPositions(List<PartPresenter> presenters) {
+        for (PartPresenter partPresenter : presenters) {
+            int tabIndex = presenters.indexOf(partPresenter);
 
-    /** {@inheritDoc} */
-    @Override
-    public void setActiveTab(@Nonnull PartPresenter part) {
-        unSelectTabs();
+            TabItem tabItem = tabs.get(partPresenter);
 
-        tabs.get(part).select();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void unSelectTabs() {
-        for (TabItem tab : tabs.values()) {
-            tab.unSelect();
+            tabsRotationPanel.insert(tabItem.getView(), tabIndex);
         }
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void selectTab(@Nonnull PartPresenter partPresenter) {
+        IsWidget view = partPresenter.getView();
+        int viewIndex = contentPanel.getWidgetIndex(view);
 
-    private Widget focusedWidget;
+        boolean isWidgetExist = viewIndex != -1;
+
+        if (!isWidgetExist) {
+            partPresenter.go(partViewContainer);
+
+            viewIndex = contentPanel.getWidgetIndex(view);
+        }
+
+        contentPanel.showWidget(viewIndex);
+
+        setActiveTab(partPresenter);
+    }
+
+    private void setActiveTab(@Nonnull PartPresenter part) {
+        for (TabItem tab : tabs.values()) {
+            tab.unSelect();
+        }
+
+        tabs.get(part).select();
+
+        delegate.onRequestFocus();
+    }
 
     /** {@inheritDoc} */
     @Override
@@ -157,13 +189,6 @@ public class PartStackViewImpl extends ResizeComposite implements PartStackView 
 
         if (focused && focusedWidget != null) {
             focusedWidget.getElement().setAttribute("active", "");
-        }
-
-        /* the style doesn't change the style of the panel, was left for future */
-        if (focused) {
-            contentPanel.addStyleName(resources.partStackCss().idePartStackFocused());
-        } else {
-            contentPanel.removeStyleName(resources.partStackCss().idePartStackFocused());
         }
     }
 

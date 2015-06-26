@@ -8,21 +8,27 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.client.inject.factories;
+package org.eclipse.che.ide.part.widgets.editortab;
 
-import org.eclipse.che.ide.part.widgets.editortab.EditorTab;
-import org.eclipse.che.ide.part.widgets.partbutton.PartButton;
-import org.vectomatic.dom.svg.ui.SVGResource;
+import com.google.gwt.event.dom.client.DoubleClickHandler;
+
+import org.eclipse.che.ide.api.mvp.View;
+import org.eclipse.che.ide.api.parts.PartStackView.TabItem;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * @author Dmitry Shnurenko
  */
-public interface TabItemFactory {
+public interface EditorTab extends View<EditorTab.ActionDelegate>, TabItem, DoubleClickHandler {
 
-    PartButton createPartButton(@Nonnull String title);
+    void setErrorMark(boolean isVisible);
 
-    EditorTab createEditorPartButton(@Nullable SVGResource icon, @Nonnull String title);
+    void setWarningMark(boolean isVisible);
+
+    interface ActionDelegate {
+        void onTabClicked(@Nonnull TabItem tab);
+
+        void onTabClose(@Nonnull TabItem tab);
+    }
 }
