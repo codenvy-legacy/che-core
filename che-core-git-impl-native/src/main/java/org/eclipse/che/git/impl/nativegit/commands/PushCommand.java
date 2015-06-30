@@ -10,13 +10,17 @@
  *******************************************************************************/
 package org.eclipse.che.git.impl.nativegit.commands;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 
 import org.eclipse.che.api.git.GitException;
+import org.eclipse.che.api.git.shared.PushResponse;
 import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
 
 import java.io.File;
 import java.util.List;
+
+import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 /**
  * Update remote refs with associated objects
@@ -27,6 +31,7 @@ public class PushCommand extends RemoteOperationCommand<Void> {
 
     private List<String> refSpec;
     private boolean      force;
+    private PushResponse pushResponse;
 
     public PushCommand(File repository, GitSshScriptProvider gitSshScriptProvider) {
         super(repository, gitSshScriptProvider);
@@ -45,6 +50,7 @@ public class PushCommand extends RemoteOperationCommand<Void> {
             commandLine.add("--force");
         }
         start();
+        pushResponse = newDto(PushResponse.class).withCommandOutput(Joiner.on("\n").join(lines));
         return null;
     }
 
@@ -67,5 +73,13 @@ public class PushCommand extends RemoteOperationCommand<Void> {
     public PushCommand setForce(boolean force) {
         this.force = force;
         return this;
+    }
+
+    /**
+     * Get push response information
+     * @return PushResponse DTO
+     */
+    public PushResponse getPushResponse() {
+        return pushResponse;
     }
 }

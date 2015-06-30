@@ -36,7 +36,9 @@ import org.eclipse.che.api.git.shared.MergeRequest;
 import org.eclipse.che.api.git.shared.MergeResult;
 import org.eclipse.che.api.git.shared.MoveRequest;
 import org.eclipse.che.api.git.shared.PullRequest;
+import org.eclipse.che.api.git.shared.PullResponse;
 import org.eclipse.che.api.git.shared.PushRequest;
+import org.eclipse.che.api.git.shared.PushResponse;
 import org.eclipse.che.api.git.shared.Remote;
 import org.eclipse.che.api.git.shared.RemoteAddRequest;
 import org.eclipse.che.api.git.shared.RemoteListRequest;
@@ -450,7 +452,7 @@ public class NativeGitConnection implements GitConnection {
     }
 
     @Override
-    public void pull(PullRequest request) throws GitException, UnauthorizedException {
+    public PullResponse pull(PullRequest request) throws GitException, UnauthorizedException {
         PullCommand pullCommand;
         String remoteUri;
         try {
@@ -471,13 +473,11 @@ public class NativeGitConnection implements GitConnection {
 
         executeRemoteCommand(pullCommand, remoteUri);
 
-        if (pullCommand.getText().toLowerCase().contains("already up-to-date")) {
-            throw new AlreadyUpToDateException("Already up-to-date");
-        }
+        return pullCommand.getPullResponse();
     }
 
     @Override
-    public void push(PushRequest request) throws GitException, UnauthorizedException {
+    public PushResponse push(PushRequest request) throws GitException, UnauthorizedException {
         PushCommand pushCommand;
         String remoteUri;
         try {
@@ -499,9 +499,7 @@ public class NativeGitConnection implements GitConnection {
 
         executeRemoteCommand(pushCommand, remoteUri);
 
-        if (pushCommand.getText().toLowerCase().contains("everything up-to-date")) {
-            throw new AlreadyUpToDateException("Everything up-to-date");
-        }
+        return pushCommand.getPushResponse();
     }
 
     @Override

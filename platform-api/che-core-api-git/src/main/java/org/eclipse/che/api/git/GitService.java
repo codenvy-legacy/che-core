@@ -31,7 +31,9 @@ import org.eclipse.che.api.git.shared.MergeRequest;
 import org.eclipse.che.api.git.shared.MergeResult;
 import org.eclipse.che.api.git.shared.MoveRequest;
 import org.eclipse.che.api.git.shared.PullRequest;
+import org.eclipse.che.api.git.shared.PullResponse;
 import org.eclipse.che.api.git.shared.PushRequest;
+import org.eclipse.che.api.git.shared.PushResponse;
 import org.eclipse.che.api.git.shared.Remote;
 import org.eclipse.che.api.git.shared.RemoteAddRequest;
 import org.eclipse.che.api.git.shared.RemoteListRequest;
@@ -304,10 +306,10 @@ public class GitService {
     @Path("pull")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public void pull(PullRequest request) throws ApiException {
+    public PullResponse pull(PullRequest request) throws ApiException {
         GitConnection gitConnection = getGitConnection();
         try {
-            gitConnection.pull(request);
+            return gitConnection.pull(request);
         } finally {
             gitConnection.close();
         }
@@ -316,10 +318,10 @@ public class GitService {
     @Path("push")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public void push(PushRequest request) throws ApiException {
+    public PushResponse push(PushRequest request) throws ApiException {
         GitConnection gitConnection = getGitConnection();
         try {
-            gitConnection.push(request);
+            return gitConnection.push(request);
         } finally {
             gitConnection.close();
         }

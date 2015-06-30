@@ -10,15 +10,19 @@
  *******************************************************************************/
 package org.eclipse.che.git.impl.nativegit.commands;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 
 import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.api.git.shared.GitUser;
+import org.eclipse.che.api.git.shared.PullResponse;
 import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 /**
  * Fetch from and merge with another repository
@@ -27,8 +31,9 @@ import java.util.Map;
  */
 public class PullCommand extends RemoteOperationCommand<Void> {
 
-    private String  refSpec;
-    private GitUser author;
+    private String       refSpec;
+    private GitUser      author;
+    private PullResponse pullResponse;
 
     public PullCommand(File repository, GitSshScriptProvider gitSshScriptProvider) {
         super(repository, gitSshScriptProvider);
@@ -55,6 +60,7 @@ public class PullCommand extends RemoteOperationCommand<Void> {
             setCommandEnvironment(environment);
         }
         start();
+        pullResponse = newDto(PullResponse.class).withCommandOutput(Joiner.on("\n").join(lines));
         return null;
     }
 
@@ -78,5 +84,13 @@ public class PullCommand extends RemoteOperationCommand<Void> {
     public PullCommand setAuthor(GitUser author) {
         this.author = author;
         return this;
+    }
+
+    /**
+     * Get pull response information
+     * @return PullResponse DTO
+     */
+    public PullResponse getPullResponse() {
+        return pullResponse;
     }
 }
