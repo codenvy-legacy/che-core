@@ -56,8 +56,8 @@ public class AddTest {
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testSimpleAdd(GitConnectionFactory connectionFactory) throws GitException, IOException {
-        GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
         //given
+        GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
         addFile(connection, "testAdd", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
         //when
         connection.add(newDto(AddRequest.class).withFilepattern(AddRequest.DEFAULT_PATTERN));
@@ -79,21 +79,23 @@ public class AddTest {
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = GitConnectionFactoryProvider.class)
     public void testAddUpdate(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
         addFile(connection, "README.txt", CONTENT);
         connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));
         connection.commit(newDto(CommitRequest.class).withMessage("Initial add"));
-
         //modify README.txt
         addFile(connection, "README.txt", "SOME NEW CONTENT");
-
         List<String> listFiles = connection.listFiles(newDto(LsFilesRequest.class).withModified(true));
-
         //modified but not added to stage
         assertTrue(listFiles.contains("README.txt"));
+
+        //when
         connection.add(newDto(AddRequest.class).withFilepattern(AddRequest.DEFAULT_PATTERN).withUpdate(true));
-        listFiles = connection.listFiles(newDto(LsFilesRequest.class).withModified(true));
+        //then
+        listFiles = connection.listFiles(newDto(LsFilesRequest.class).withStaged(true));
         //added to stage
+        assertEquals(listFiles.size(), 1);
         assertTrue(listFiles.contains("README.txt"));
     }
 }
