@@ -54,15 +54,12 @@ public interface Policies {
     Policies withValidUntil(Long validUntil);
 
     /**
-     * Restrict access for factories only to authenticated users
+     * Re-open project on factory 2-nd click
      */
-    @Deprecated
     @FactoryParameter(obligation = OPTIONAL)
-    Boolean getRequireAuthentication();
+    String getMatch();
 
-    @Deprecated
-    void setRequireAuthentication(Boolean requireAuthentication);
+    void setMatch(String match);
 
-    @Deprecated
-    Policies withRequireAuthentication(Boolean requireAuthentication);
+    Policies withMatch(String match);
 }
