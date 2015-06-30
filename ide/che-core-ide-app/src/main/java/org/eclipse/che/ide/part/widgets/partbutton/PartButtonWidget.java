@@ -12,10 +12,6 @@ package org.eclipse.che.ide.part.widgets.partbutton;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.MouseOutEvent;
-import com.google.gwt.event.dom.client.MouseOutHandler;
-import com.google.gwt.event.dom.client.MouseOverEvent;
-import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
@@ -41,7 +37,7 @@ import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.LEFT;
 /**
  * @author Dmitry Shnurenko
  */
-public class PartButtonWidget extends Composite implements PartButton, MouseOverHandler, MouseOutHandler {
+public class PartButtonWidget extends Composite implements PartButton {
     interface PartButtonWidgetUiBinder extends UiBinder<Widget, PartButtonWidget> {
     }
 
@@ -54,7 +50,6 @@ public class PartButtonWidget extends Composite implements PartButton, MouseOver
     @UiField
     Label       buttonName;
 
-    private IsWidget       widget;
     private ActionDelegate delegate;
     private TabPosition    tabPosition;
 
@@ -64,8 +59,6 @@ public class PartButtonWidget extends Composite implements PartButton, MouseOver
         initWidget(UI_BINDER.createAndBindUi(this));
 
         addDomHandler(this, ClickEvent.getType());
-        addDomHandler(this, MouseOverEvent.getType());
-        addDomHandler(this, MouseOutEvent.getType());
 
         buttonName.setText(title);
     }
@@ -80,49 +73,37 @@ public class PartButtonWidget extends Composite implements PartButton, MouseOver
     /** {@inheritDoc} */
     @Nonnull
     public PartButton addTooltip(@Nullable String tooltip) {
+        setTitle(tooltip);
         return this;
     }
 
     /** {@inheritDoc} */
     @Nonnull
     public PartButton addIcon(@Nullable SVGResource resource) {
-        if (resource != null) {
-            SVGImage image = new SVGImage(resource);
-            icon.getElement().setInnerHTML(image.toString());
-        }
-
+        icon.getElement().setInnerHTML(getSvgDiv(resource));
         return this;
     }
 
-    /** {@inheritDoc} */
-    @Nonnull
-    public PartButton addWidget(@Nullable IsWidget widget) {
-        this.widget = widget;
-        return this;
+    private String getSvgDiv(@Nullable SVGResource resource) {
+        if (resource == null) {
+            return "";
+        }
+
+        SVGImage image = new SVGImage(resource);
+
+        return image.toString();
     }
 
     /** {@inheritDoc} */
     @Override
     public void update(@Nonnull PartPresenter part) {
-
+        icon.add(part.getTitleWidget());
     }
 
     /** {@inheritDoc} */
     @Override
     public void onClick(@Nonnull ClickEvent event) {
         delegate.onTabClicked(this);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void onMouseOut(@Nonnull MouseOutEvent event) {
-        removeStyleName(resources.partStackCss().onTabMouseOver());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void onMouseOver(@Nonnull MouseOverEvent event) {
-        addStyleName(resources.partStackCss().onTabMouseOver());
     }
 
     /** {@inheritDoc} */

@@ -56,6 +56,8 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
     private final ListButton             listButton;
     private final Map<ListItem, TabItem> items;
 
+    private PartPresenter activePart;
+
     @Inject
     public EditorPartStackPresenter(final EditorPartStackView view,
                                     PartsComparator partsComparator,
@@ -107,7 +109,6 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
         }
     }
 
-
     @Nullable
     private ListItem getListItemByTab(@Nonnull TabItem tabItem) {
         for (Map.Entry<ListItem, TabItem> entry : items.entrySet()) {
@@ -117,6 +118,12 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
         }
 
         return null;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setFocus(boolean focused) {
+        view.setFocus(focused);
     }
 
     /** {@inheritDoc} */
@@ -159,10 +166,6 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
                     public void propertyChanged(PartPresenter source, int propId) {
                         EditorState editorState = presenter.getErrorState();
 
-                        if (editorState == null) {
-                            return;
-                        }
-
                         editorTab.setErrorMark(ERROR.equals(editorState));
                         editorTab.setWarningMark(WARNING.equals(editorState));
                     }
@@ -175,7 +178,15 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
 
     /** {@inheritDoc} */
     @Override
+    public PartPresenter getActivePart() {
+        return activePart;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void setActivePart(@Nonnull PartPresenter part) {
+        activePart = part;
+
         addPart(part);
     }
 
@@ -199,18 +210,6 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
     @Override
     public void onListButtonClicked() {
         listButton.showList();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void onListButtonMouseOver() {
-
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void onListButtonMouseOut() {
-
     }
 
     /** {@inheritDoc} */

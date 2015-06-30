@@ -191,21 +191,21 @@ public class AbstractPerspectiveTest {
 
     @Test
     public void partShouldBeAddedWithoutConstraints() {
-        perspective.openPart(partPresenter, INFORMATION);
+        perspective.addPart(partPresenter, INFORMATION);
 
         verify(partStackPresenter).addPart(partPresenter, null);
     }
 
     @Test
     public void partShouldBeAddedWithConstraints() {
-        perspective.openPart(partPresenter, INFORMATION, constraints);
+        perspective.addPart(partPresenter, INFORMATION, constraints);
 
         verify(partStackPresenter).addPart(partPresenter, constraints);
     }
 
     @Test
     public void partStackShouldBeReturned() {
-        perspective.openPart(partPresenter, INFORMATION);
+        perspective.addPart(partPresenter, INFORMATION);
 
         PartStack partStack = perspective.getPartStack(INFORMATION);
 

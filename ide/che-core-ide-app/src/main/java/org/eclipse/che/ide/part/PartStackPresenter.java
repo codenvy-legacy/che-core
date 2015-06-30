@@ -61,7 +61,7 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
     protected final PartStackView               view;
     protected final PropertyListener            propertyListener;
 
-    private TabItem previousSelectedTab;
+    private TabItem activeTab;
     private double  partSize;
 
     protected PartPresenter activePart;
@@ -110,9 +110,6 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
     @Override
     public void go(AcceptsOneWidget container) {
         container.setWidget(view);
-        if (activePart != null) {
-            view.selectTab(activePart);
-        }
     }
 
     /** {@inheritDoc} */
@@ -144,8 +141,7 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
 
         PartButton partButton = tabItemFactory.createPartButton(part.getTitle())
                                               .addTooltip(part.getTitleToolTip())
-                                              .addIcon(part.getTitleSVGImage())
-                                              .addWidget(part.getTitleWidget());
+                                              .addIcon(part.getTitleSVGImage());
         partButton.setDelegate(this);
 
         parts.put(partButton, part);
@@ -214,7 +210,7 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
             return;
         }
 
-        previousSelectedTab = activeTab;
+        this.activeTab = activeTab;
 
         onTabClicked(activeTab);
     }
@@ -225,6 +221,20 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
         parts.remove(getTabByPart(part));
 
         view.removeTab(part);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void openPreviousActivePart() {
+        if (activePart == null) {
+            return;
+        }
+
+        TabItem selectedTab = getTabByPart(activePart);
+
+        if (selectedTab != null) {
+            selectActiveTab(selectedTab);
+        }
     }
 
     /** {@inheritDoc} */
@@ -242,22 +252,25 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
     /** {@inheritDoc} */
     @Override
     public void onTabClicked(@Nonnull TabItem selectedTab) {
-        if (selectedTab.equals(previousSelectedTab)) {
+        if (selectedTab.equals(activeTab)) {
             selectedTab.unSelect();
 
             partSize = workBenchPartController.getSize();
 
             workBenchPartController.setSize(0);
 
-            previousSelectedTab = null;
+            activeTab = null;
+            activePart = null;
 
             return;
         }
 
-        previousSelectedTab = selectedTab;
+        partSize = DEFAULT_PART_SIZE;
+
+        activeTab = selectedTab;
         activePart = parts.get(selectedTab);
 
-        selectActiveTab(selectedTab);
+        selectActiveTab(activeTab);
     }
 
     private void selectActiveTab(@Nonnull TabItem selectedTab) {

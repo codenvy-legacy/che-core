@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.part.widgets.partbutton;
 
-import com.google.gwt.user.client.ui.IsWidget;
-
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.parts.PartStackView;
 import org.eclipse.che.ide.api.parts.PartStackView.TabItem;
@@ -27,9 +25,6 @@ public interface PartButton extends View<PartButton.ActionDelegate>, TabItem {
 
     @Nonnull
     PartButton addTooltip(@Nullable String tooltip);
-
-    @Nonnull
-    PartButton addWidget(@Nullable IsWidget widget);
 
     @Nonnull
     PartButton addIcon(@Nullable SVGResource resource);

@@ -111,7 +111,7 @@ public class WorkspacePresenter implements Presenter, WorkspaceView.ActionDelega
     /** {@inheritDoc} */
     @Override
     public void openPart(PartPresenter part, PartStackType type, Constraints constraint) {
-        activePerspective.openPart(part, type, constraint);
+        activePerspective.addPart(part, type, constraint);
     }
 
     /** {@inheritDoc} */

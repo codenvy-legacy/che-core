@@ -12,8 +12,6 @@ package org.eclipse.che.ide.part.widgets.listtab;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.MouseOutEvent;
-import com.google.gwt.event.dom.client.MouseOverEvent;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
@@ -69,8 +67,6 @@ public class ListButtonWidget extends Composite implements ListButton {
         this.popupPanel.add(listPanel);
 
         addDomHandler(this, ClickEvent.getType());
-        addDomHandler(this, MouseOutEvent.getType());
-        addDomHandler(this, MouseOverEvent.getType());
 
         this.items = new ArrayList<>();
     }
@@ -127,18 +123,6 @@ public class ListButtonWidget extends Composite implements ListButton {
         }
 
         isShown = !isShown;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void onMouseOut(@Nonnull MouseOutEvent event) {
-        delegate.onListButtonMouseOut();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void onMouseOver(@Nonnull MouseOverEvent event) {
-        delegate.onListButtonMouseOver();
     }
 
     /** {@inheritDoc} */

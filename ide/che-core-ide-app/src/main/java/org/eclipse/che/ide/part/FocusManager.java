@@ -27,6 +27,7 @@ import org.eclipse.che.ide.part.PartStackPresenter.PartStackEventHandler;
  * FocusManager is responsible for granting a focus for a stack when requested.
  *
  * @author <a href="mailto:nzamosenchuk@exoplatform.com">Nikolay Zamosenchuk</a>
+ * @author Dmitry Shnurenko
  */
 @Singleton
 public class FocusManager {

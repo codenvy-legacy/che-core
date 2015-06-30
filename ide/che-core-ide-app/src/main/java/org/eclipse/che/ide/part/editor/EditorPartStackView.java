@@ -26,6 +26,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 
 import org.eclipse.che.ide.api.parts.PartPresenter;
+import org.eclipse.che.ide.api.parts.PartStackUIResources;
 import org.eclipse.che.ide.api.parts.PartStackView;
 import org.eclipse.che.ide.part.widgets.listtab.ListButton;
 
@@ -65,15 +66,19 @@ public class EditorPartStackView extends ResizeComposite implements PartStackVie
     private final Map<PartPresenter, TabItem> tabs;
     private final AcceptsOneWidget            partViewContainer;
     private final LinkedList<PartPresenter>   contents;
+    private final PartStackUIResources        resources;
 
     private ActionDelegate delegate;
     private ListButton     listButton;
+    private TabItem        activeTab;
 
     private int addedTabsWidth;
     private int tabsPanelWidth;
 
     @Inject
-    public EditorPartStackView() {
+    public EditorPartStackView(PartStackUIResources resources) {
+        this.resources = resources;
+
         initWidget(UI_BINDER.createAndBindUi(this));
 
         this.tabs = new HashMap<>();
@@ -209,7 +214,8 @@ public class EditorPartStackView extends ResizeComposite implements PartStackVie
             tab.unSelect();
         }
 
-        tabs.get(part).select();
+        activeTab = tabs.get(part);
+        activeTab.select();
 
         delegate.onRequestFocus();
     }
@@ -223,7 +229,15 @@ public class EditorPartStackView extends ResizeComposite implements PartStackVie
     /** {@inheritDoc} */
     @Override
     public void setFocus(boolean focused) {
-        //TODO
+        if (focused) {
+            contentPanel.removeStyleName(resources.partStackCss().unSelectEditorBorder());
+
+            activeTab.select();
+        } else {
+            contentPanel.addStyleName(resources.partStackCss().unSelectEditorBorder());
+
+            activeTab.unSelect();
+        }
     }
 
     /** {@inheritDoc} */

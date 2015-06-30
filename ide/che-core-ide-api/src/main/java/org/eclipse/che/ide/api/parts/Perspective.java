@@ -63,7 +63,7 @@ public interface Perspective {
      * @param type
      *         type of part
      */
-    void openPart(@Nonnull PartPresenter part, @Nonnull PartStackType type);
+    void addPart(@Nonnull PartPresenter part, @Nonnull PartStackType type);
 
     /**
      * Opens part with special constraint.
@@ -75,7 +75,7 @@ public interface Perspective {
      * @param constraint
      *         constraints with which need open part
      */
-    void openPart(@Nonnull PartPresenter part, @Nonnull PartStackType type, @Nullable Constraints constraint);
+    void addPart(@Nonnull PartPresenter part, @Nonnull PartStackType type, @Nullable Constraints constraint);
 
     /**
      * Retrieves the instance of the {@link PartStack} for given {@link PartStackType}

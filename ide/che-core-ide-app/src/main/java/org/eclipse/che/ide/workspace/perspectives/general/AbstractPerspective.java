@@ -82,6 +82,18 @@ public abstract class AbstractPerspective implements Presenter, Perspective {
         partStacks.put(TOOLING, toolingPartStack);
     }
 
+    /**
+     * Opens previous active tab on current perspective.
+     *
+     * @param partStackType
+     *         part type on which need open previous active part
+     */
+    protected void openActivePart(@Nonnull PartStackType partStackType) {
+        PartStack partStack = partStacks.get(partStackType);
+
+        partStack.openPreviousActivePart();
+    }
+
     /** {@inheritDoc} */
     @Override
     public void removePart(@Nonnull PartPresenter part) {
@@ -155,13 +167,13 @@ public abstract class AbstractPerspective implements Presenter, Perspective {
 
     /** {@inheritDoc} */
     @Override
-    public void openPart(@Nonnull PartPresenter part, @Nonnull PartStackType type) {
-        openPart(part, type, null);
+    public void addPart(@Nonnull PartPresenter part, @Nonnull PartStackType type) {
+        addPart(part, type, null);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void openPart(@Nonnull PartPresenter part, @Nonnull PartStackType type, @Nullable Constraints constraint) {
+    public void addPart(@Nonnull PartPresenter part, @Nonnull PartStackType type, @Nullable Constraints constraint) {
         PartStack destPartStack = partStacks.get(type);
 
         List<String> rules = part.getRules();

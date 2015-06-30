@@ -11,8 +11,6 @@
 package org.eclipse.che.ide.part.widgets.listtab;
 
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.MouseOutHandler;
-import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.inject.ImplementedBy;
 
 import org.eclipse.che.ide.api.mvp.View;
@@ -24,7 +22,7 @@ import javax.annotation.Nonnull;
  * @author Dmitry Shnurenko
  */
 @ImplementedBy(ListButtonWidget.class)
-public interface ListButton extends View<ListButton.ActionDelegate>, MouseOutHandler, MouseOverHandler, ClickHandler {
+public interface ListButton extends View<ListButton.ActionDelegate>, ClickHandler {
 
     void showList();
 
@@ -38,9 +36,5 @@ public interface ListButton extends View<ListButton.ActionDelegate>, MouseOutHan
 
     interface ActionDelegate {
         void onListButtonClicked();
-
-        void onListButtonMouseOver();
-
-        void onListButtonMouseOut();
     }
 }

@@ -80,4 +80,6 @@ public interface PartStack extends Presenter {
      * @param part
      */
     void removePart(PartPresenter part);
+
+    void openPreviousActivePart();
 }
