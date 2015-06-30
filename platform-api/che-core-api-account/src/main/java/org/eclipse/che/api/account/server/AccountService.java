@@ -38,6 +38,9 @@ import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.eclipse.che.dto.server.DtoFactory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -73,6 +76,8 @@ import static java.util.Collections.singletonList;
      description = "Account manager")
 @Path("/account")
 public class AccountService extends Service {
+    private static final Logger LOG = LoggerFactory.getLogger(AccountService.class);
+
     private final AccountDao accountDao;
     private final UserDao    userDao;
 
@@ -153,6 +158,7 @@ public class AccountService extends Service {
                                              .withUserId(current.getId())
                                              .withRoles(Arrays.asList("account/owner"));
             accountDao.addMember(owner);
+            logAnalyticsEventAddMember(accountId, current.getId(), Arrays.asList("account/owner"));
         }
         return Response.status(Response.Status.CREATED)
                        .entity(toDescriptor(account, securityContext))
@@ -395,6 +401,7 @@ public class AccountService extends Service {
                                              .withUserId(membership.getUserId())
                                              .withRoles(membership.getRoles());
         accountDao.addMember(newMember);
+        logAnalyticsEventAddMember(accountId, membership.getUserId(), membership.getRoles());
         return Response.status(Response.Status.CREATED)
                        .entity(toDescriptor(newMember, accountDao.getById(accountId), context))
                        .build();
@@ -486,6 +493,7 @@ public class AccountService extends Service {
             throw new ConflictException("Account should have at least 1 owner");
         }
         accountDao.removeMember(target);
+        logAnalyticsEventRemoveMember(accountId, userId);
     }
 
     /**
@@ -693,4 +701,18 @@ public class AccountService extends Service {
             throw new ConflictException(subject + " required");
         }
     }
+
+    private void logAnalyticsEventAddMember(String accountId, String userId, List<String> roles) {
+        LOG.info("EVENT#account-add-member# ACCOUNT-ID#{}# USER-ID#{}# ROLES#{}#",
+                 accountId,
+                 userId,
+                 roles.toString());
+    }
+
+    private void logAnalyticsEventRemoveMember(String accountId, String userId) {
+        LOG.info("EVENT#account-remove-member# ACCOUNT-ID#{}# USER-ID#{}#",
+                 accountId,
+                 userId);
+    }
 }
+
