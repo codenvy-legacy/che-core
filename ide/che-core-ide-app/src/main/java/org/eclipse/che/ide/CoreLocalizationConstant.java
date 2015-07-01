@@ -566,4 +566,7 @@ public interface CoreLocalizationConstant extends Messages {
 
     @Key("uploadFolderFromZip.title")
     String uploadFolderFromZipTitle();
+
+    @Key("action.completions.title")
+    String actionCompetionsTitle();
 }

@@ -17,6 +17,7 @@ import com.google.inject.name.Named;
 
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.actions.CloseProjectAction;
+import org.eclipse.che.ide.actions.CompleteAction;
 import org.eclipse.che.ide.actions.CopyAction;
 import org.eclipse.che.ide.actions.CreateModuleAction;
 import org.eclipse.che.ide.actions.CutAction;
@@ -227,6 +228,9 @@ public class StandardComponentInitializer {
     private ExpandEditorAction expandEditorAction;
 
     @Inject
+    private CompleteAction completeAction;
+
+    @Inject
     @Named("XMLFileType")
     private FileType xmlFile;
 
@@ -383,9 +387,11 @@ public class StandardComponentInitializer {
         actionManager.registerAction("format", formatterAction);
         actionManager.registerAction("undo", undoAction);
         actionManager.registerAction("redo", redoAction);
+        actionManager.registerAction("callCompletion", completeAction);
         codeGroup.add(formatterAction);
         codeGroup.add(undoAction);
         codeGroup.add(redoAction);
+        codeGroup.add(completeAction);
 
         // Compose Window menu
         DefaultActionGroup windowGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_WINDOW);
