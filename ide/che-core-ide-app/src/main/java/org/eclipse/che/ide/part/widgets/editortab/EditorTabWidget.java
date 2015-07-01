@@ -86,7 +86,7 @@ public class EditorTabWidget extends Composite implements EditorTab {
     /** {@inheritDoc} */
     @Override
     public void update(@Nonnull PartPresenter part) {
-
+        //to do nothing
     }
 
     /** {@inheritDoc} */

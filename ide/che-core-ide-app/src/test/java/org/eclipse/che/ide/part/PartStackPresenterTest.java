@@ -10,328 +10,252 @@
  *******************************************************************************/
 package org.eclipse.che.ide.part;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
-import com.google.gwt.user.client.ui.IsWidget;
 import com.google.web.bindery.event.shared.EventBus;
 
-import org.eclipse.che.ide.api.constraints.Anchor;
 import org.eclipse.che.ide.api.constraints.Constraints;
+import org.eclipse.che.ide.api.editor.EditorPartPresenter;
+import org.eclipse.che.ide.api.event.EditorDirtyStateChangedEvent;
 import org.eclipse.che.ide.api.parts.PartPresenter;
 import org.eclipse.che.ide.api.parts.PartStackView;
 import org.eclipse.che.ide.api.parts.PropertyListener;
 import org.eclipse.che.ide.api.parts.base.BasePresenter;
+import org.eclipse.che.ide.client.inject.factories.TabItemFactory;
+import org.eclipse.che.ide.part.PartStackPresenter.PartStackEventHandler;
+import org.eclipse.che.ide.part.widgets.partbutton.PartButton;
 import org.eclipse.che.ide.workspace.WorkBenchPartController;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.InjectMocks;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.vectomatic.dom.svg.ui.SVGImage;
+import org.vectomatic.dom.svg.ui.SVGResource;
 
 import java.util.List;
 
-import static org.fest.assertions.Assertions.assertThat;
-import static org.mockito.Matchers.anyBoolean;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anyDouble;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Testing {@link PartStackPresenter} functionality.
- *
  * @author Roman Nikitenko
+ * @author Dmitry Shnurenko
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PartStackPresenterTest {
-    private static final String BUILDER_TITLE = "builder";
-    private static final String RUNNER_TITLE  = "runner";
+
+    private static final String SOME_TEXT = "someText";
+
+    //constructor mocks
+    @Mock
+    private EventBus                eventBus;
+    @Mock
+    private WorkBenchPartController workBenchPartController;
+    @Mock
+    private PartsComparator         partsComparator;
+    @Mock
+    private PartStackEventHandler   partStackHandler;
+    @Mock
+    private TabItemFactory          tabItemFactory;
+    @Mock
+    private PartStackView           view;
+    @Mock
+    private PropertyListener        propertyListener;
+
+    //additional mocks
+    @Mock
+    private AcceptsOneWidget    container;
+    @Mock
+    private PartPresenter       partPresenter;
+    @Mock
+    private Constraints         constraints;
+    @Mock
+    private BasePresenter       basePresenter;
+    @Mock
+    private SVGResource         resource;
+    @Mock
+    private PartButton          partButton;
+    @Mock
+    private EditorPartPresenter editorPartPresenter;
 
     @Captor
-    private ArgumentCaptor<AsyncCallback<Void>> asyncCallbackCaptor;
+    public ArgumentCaptor<PropertyListener> listenerCaptor;
 
-    @Mock
-    PartStackView                            view;
-    @Mock
-    EventBus                                 eventBus;
-    @Mock
-    PartStackPresenter.PartStackEventHandler partStackHandler;
-    @Mock
-    WorkBenchPartController                  workBenchPartController;
-    @InjectMocks
-    PartStackPresenter                       presenter;
-
-    PartPresenter part         = mock(PartPresenter.class);
-    PartPresenter first        = mock(PartPresenter.class);
-    PartPresenter last         = mock(PartPresenter.class);
-    PartPresenter before       = mock(PartPresenter.class);
-    PartPresenter after        = mock(PartPresenter.class);
-    PartPresenter beforeBefore = mock(PartPresenter.class);
-    PartPresenter afterAfter   = mock(PartPresenter.class);
-
-    PartPresenter withoutConstr      = mock(PartPresenter.class);
-    Constraints   firstConstr        = new Constraints(Anchor.FIRST, null);
-    Constraints   lastConstr         = new Constraints(Anchor.LAST, null);
-    Constraints   beforeConstr       = new Constraints(Anchor.BEFORE, RUNNER_TITLE);
-    Constraints   afterConstr        = new Constraints(Anchor.AFTER, BUILDER_TITLE);
-    Constraints   beforeBeforeConstr = new Constraints(Anchor.BEFORE, BUILDER_TITLE);
-    Constraints   afterAfterConstr   = new Constraints(Anchor.AFTER, RUNNER_TITLE);
+    private PartStackPresenter presenter;
 
     @Before
     public void setUp() {
-        when(before.getTitle()).thenReturn(BUILDER_TITLE);
-        when(after.getTitle()).thenReturn(RUNNER_TITLE);
+        when(basePresenter.getTitle()).thenReturn(SOME_TEXT);
+        when(basePresenter.getTitleToolTip()).thenReturn(SOME_TEXT);
+        when(basePresenter.getTitleSVGImage()).thenReturn(resource);
+
+        when(partPresenter.getTitle()).thenReturn(SOME_TEXT);
+        when(partPresenter.getTitleToolTip()).thenReturn(SOME_TEXT);
+        when(partPresenter.getTitleSVGImage()).thenReturn(resource);
+
+        when(tabItemFactory.createPartButton(SOME_TEXT)).thenReturn(partButton);
+        when(partButton.addTooltip(SOME_TEXT)).thenReturn(partButton);
+        when(partButton.addIcon(resource)).thenReturn(partButton);
+
+        presenter = new PartStackPresenter(eventBus, partStackHandler, tabItemFactory, partsComparator, view, workBenchPartController);
     }
 
     @Test
-    public void testGo() throws Exception {
-//        AcceptsOneWidget container = mock(AcceptsOneWidget.class);
-//
-//        presenter.go(container);
-//
-//        verify(container).setWidget(eq(view));
-//        verify(view, never()).setActiveTab(anyInt());
+    public void partShouldBeUpdated() {
+        presenter.addPart(partPresenter);
+
+        verify(partPresenter).addPropertyListener(listenerCaptor.capture());
+        listenerCaptor.getValue().propertyChanged(partPresenter, PartPresenter.TITLE_PROPERTY);
+
+        verify(view).updateTabItem(partPresenter);
     }
 
     @Test
-    public void testGoWhenActivePartExists() throws Exception {
-//        AcceptsOneWidget container = mock(AcceptsOneWidget.class);
-//        presenter.setActivePart(mock(PartPresenter.class));
-//
-//        presenter.go(container);
-//
-//        verify(container).setWidget(eq(view));
-//        verify(view, times(2)).setActiveTab(anyInt());
+    public void dirtyStateChangedEventShouldBeFired() {
+        presenter.addPart(partPresenter);
+
+        verify(partPresenter).addPropertyListener(listenerCaptor.capture());
+        listenerCaptor.getValue().propertyChanged(editorPartPresenter, EditorPartPresenter.PROP_DIRTY);
+
+        verify(eventBus).fireEvent(Matchers.<EditorDirtyStateChangedEvent>anyObject());
     }
 
     @Test
-    public void testAddPartWhenPartAlreadyExists() throws Exception {
-//        presenter.parts.add(part);
-//
-//        presenter.addPart(part);
-//
-//        verify(view).setActiveTab(anyInt());
-//        verify(part, never()).addPropertyListener((PropertyListener)anyObject());
-//        verify(part, never()).go((AcceptsOneWidget)anyObject());
-//        verify(part, never()).onOpen();
-//        verify(view, never()).addTab((SVGImage)anyObject(), anyString(), anyString(), (IsWidget)anyObject(), anyBoolean());
+    public void goShouldBeActioned() {
+        presenter.go(container);
+
+        verify(container).setWidget(view);
     }
 
     @Test
-    public void testAddPartWhenPartInstanceOfBasePresenter() throws Exception {
-//        BasePresenter part = mock(BasePresenter.class);
-//        when(view.addTab((SVGImage)anyObject(), anyString(), anyString(), (IsWidget)anyObject(), anyBoolean()))
-//                .thenReturn(mock(PartStackView.TabItem.class));
-//
-//        presenter.addPart(part);
-//
-//        verify(part).setPartStack(eq(presenter));
-//        assertThat(presenter.parts).hasSize(1).containsExactly(part);
-//        assertThat(presenter.constraints).hasSize(1);
+    public void partShouldBeAddedWithoutConstraints() {
+        presenter.addPart(basePresenter);
+
+        verify(basePresenter).setPartStack(presenter);
+        verify(tabItemFactory).createPartButton(SOME_TEXT);
+
+        verify(partButton).addTooltip(SOME_TEXT);
+        verify(partButton).addIcon(resource);
+
+        verify(partButton).setDelegate(presenter);
+
+        verify(view).addTab(partButton, basePresenter);
+        verify(view).setTabPositions(Matchers.<List<PartPresenter>>anyObject());
+        verify(partStackHandler).onRequestFocus(presenter);
     }
 
     @Test
-    public void testAddPart() throws Exception {
-//        when(view.addTab((SVGImage)anyObject(), anyString(), anyString(), (IsWidget)anyObject(), anyBoolean()))
-//                .thenReturn(mock(PartStackView.TabItem.class));
-//
-//        presenter.addPart(part);
-//
-//        assertThat(presenter.parts).hasSize(1).containsExactly(part);
-//        assertThat(presenter.constraints).hasSize(1);
-//        verify(part).addPropertyListener(eq(presenter.propertyListener));
-//        verify(part).getTitleSVGImage();
-//        verify(view).addTab((SVGImage)anyObject(), anyString(), anyString(), (IsWidget)anyObject(), anyBoolean());
-//        verify(part).go((AcceptsOneWidget)anyObject());
-//        verify(part).onOpen();
+    public void partShouldNotBeAddedWhenItAlreadyExist() {
+        presenter.addPart(partPresenter);
+        reset(view);
+
+        presenter.addPart(partPresenter);
+
+        verify(workBenchPartController).setHidden(true);
+
+        verify(partButton).unSelect();
+
+        verify(view, never()).addTab(partButton, partPresenter);
     }
 
     @Test
-    public void testSetActivePartWhenPartIsNull() throws Exception {
-//        presenter.setActivePart(null);
-//
-//        verify(view).setActiveTab(eq(-1));
-//        verify(workBenchPartController).setHidden(eq(true));
+    public void partShouldBeContained() {
+        presenter.addPart(basePresenter);
+
+        boolean isContained = presenter.containsPart(basePresenter);
+
+        assertThat(isContained, is(true));
     }
 
     @Test
-    public void testSetActivePartWhenPartIsNotNull() throws Exception {
-//        presenter.parts.add(part);
-//        presenter.setActivePart(part);
-//
-//        verify(view, never()).setActiveTab(eq(-1));
-//        verify(workBenchPartController, never()).setHidden(eq(true));
-//        verify(workBenchPartController).setHidden(eq(false));
-//        verify(workBenchPartController).setSize(anyDouble());
-//        verify(partStackHandler).onRequestFocus(eq(presenter));
+    public void activePartShouldBeReturned() {
+        presenter.addPart(partPresenter);
+
+        presenter.setActivePart(partPresenter);
+
+        assertThat(presenter.getActivePart(), sameInstance(partPresenter));
     }
 
     @Test
-    public void testHidePart() {
-//        reset(view);
-//        presenter.activePart = part;
-//
-//        presenter.hidePart(part);
-//
-//        verify(view).setActiveTab(eq(-1));
-//        Assert.assertNull(presenter.activePart);
+    public void focusShouldBeSet() {
+        presenter.setFocus(true);
+
+        verify(view).setFocus(true);
     }
 
     @Test
-    public void testRemovePartWhenSuccess() {
-//        presenter.parts.add(part);
-//
-//        presenter.removePart(part);
-//
-//        verify(part).onClose(asyncCallbackCaptor.capture());
-//        AsyncCallback<Void> asyncCallback = asyncCallbackCaptor.getValue();
-//        asyncCallback.onSuccess(null);
-//
-//        verify(view).removeTab(eq(0));
-//        assertThat(presenter.parts).isEmpty();
-//        assertThat(presenter.constraints).isEmpty();
-//        verify(part).removePropertyListener((PropertyListener)anyObject());
+    public void activePartShouldNotBeSet() {
+        presenter.setActivePart(partPresenter);
+
+        assertThat(presenter.getActivePart(), nullValue());
     }
 
     @Test
-    public void testRemoveActivePart() {
-//        presenter.parts.add(part);
-//        presenter.activePart = part;
-//
-//        presenter.removePart(part);
-//
-//        verify(part).onClose(asyncCallbackCaptor.capture());
-//        AsyncCallback<Void> asyncCallback = asyncCallbackCaptor.getValue();
-//        asyncCallback.onSuccess(null);
-//
-//        verify(view).setActiveTab(eq(-1));
-//        verify(view).removeTab(eq(0));
-//        assertThat(presenter.parts).isEmpty();
-//        assertThat(presenter.constraints).isEmpty();
-//        verify(part).removePropertyListener((PropertyListener)anyObject());
+    public void partShouldBeHidden() {
+        presenter.addPart(partPresenter);
+
+        presenter.hidePart(partPresenter);
+
+        verify(partButton).unSelect();
+
+        verify(workBenchPartController).getSize();
+        verify(workBenchPartController).setSize(0);
+
+        assertThat(presenter.getActivePart(), nullValue());
     }
 
     @Test
-    public void testSortPartsWhenFirstAndLastAdded() {
-//        when(view.addTab((SVGImage)anyObject(), anyString(), anyString(), (IsWidget)anyObject(), anyBoolean()))
-//                .thenReturn(mock(PartStackView.TabItem.class));
-//
-//        presenter.addPart(last, lastConstr);
-//        presenter.addPart(first, firstConstr);
-//
-//        assertThat(presenter.getSortedParts()).hasSize(2).containsExactly(first, last);
-//        verify(view, times(2)).setTabPositions((List<Integer>)anyObject());
+    public void partShouldBeRemoved() {
+        presenter.addPart(partPresenter);
+
+        presenter.removePart(partPresenter);
+
+        verify(view).removeTab(partPresenter);
     }
 
     @Test
-    public void testSortPartsWhenFirstAndWithoutConstrAdded() {
-//        when(view.addTab((SVGImage)anyObject(), anyString(), anyString(), (IsWidget)anyObject(), anyBoolean()))
-//                .thenReturn(mock(PartStackView.TabItem.class));
-//
-//        presenter.addPart(withoutConstr, null);
-//        presenter.addPart(first, firstConstr);
-//
-//
-//        assertThat(presenter.getSortedParts()).hasSize(2).containsExactly(first, withoutConstr);
-//        verify(view, times(2)).setTabPositions((List<Integer>)anyObject());
+    public void previousActivePartShouldNotBeDisplayedWhenActivePartIsNull() {
+        presenter.openPreviousActivePart();
+
+        verify(view, never()).selectTab(partPresenter);
     }
 
     @Test
-    public void testSortPartsWhenLastAndWithoutConstrAdded() {
-//        when(view.addTab((SVGImage)anyObject(), anyString(), anyString(), (IsWidget)anyObject(), anyBoolean()))
-//                .thenReturn(mock(PartStackView.TabItem.class));
-//
-//        presenter.addPart(last, lastConstr);
-//        presenter.addPart(withoutConstr, null);
-//
-//        assertThat(presenter.getSortedParts()).hasSize(2).containsExactly(withoutConstr, last);
-//        verify(view, times(2)).setTabPositions((List<Integer>)anyObject());
+    public void previousPartShouldBeOpened() {
+        presenter.addPart(partPresenter);
+        presenter.setActivePart(partPresenter);
+        reset(view);
+
+        presenter.openPreviousActivePart();
+
+        verify(view).selectTab(partPresenter);
     }
 
     @Test
-    public void testSortPartsWhenFirstLastAndWithoutConstrAdded() {
-//        when(view.addTab((SVGImage)anyObject(), anyString(), anyString(), (IsWidget)anyObject(), anyBoolean()))
-//                .thenReturn(mock(PartStackView.TabItem.class));
-//
-//        presenter.addPart(last, lastConstr);
-//        presenter.addPart(withoutConstr, null);
-//        presenter.addPart(first, firstConstr);
-//
-//        assertThat(presenter.getSortedParts()).hasSize(3).containsExactly(first, withoutConstr, last);
-//        verify(view, times(3)).setTabPositions((List<Integer>)anyObject());
+    public void requestShouldBeOnFocus() {
+        presenter.onRequestFocus();
+
+        verify(partStackHandler).onRequestFocus(presenter);
     }
 
     @Test
-    public void testSortPartsWhenBeforeAndAfterAdded() {
-//        when(view.addTab((SVGImage)anyObject(), anyString(), anyString(), (IsWidget)anyObject(), anyBoolean()))
-//                .thenReturn(mock(PartStackView.TabItem.class));
-//
-//        presenter.addPart(withoutConstr, null);
-//        presenter.addPart(after, afterConstr);
-//        presenter.addPart(before, beforeConstr);
-//
-//        assertThat(presenter.getSortedParts()).hasSize(3).containsExactly(withoutConstr, before, after);
-//        verify(view, times(3)).setTabPositions((List<Integer>)anyObject());
-    }
+    public void onTabShouldBeClicked() {
+        presenter.addPart(partPresenter);
 
-    @Test
-    public void testSortPartsWhen2BeforeAdded() {
-//        when(view.addTab((SVGImage)anyObject(), anyString(), anyString(), (IsWidget)anyObject(), anyBoolean()))
-//                .thenReturn(mock(PartStackView.TabItem.class));
-//
-//        presenter.addPart(after, afterConstr);
-//        presenter.addPart(last, lastConstr);
-//        presenter.addPart(withoutConstr, null);
-//        presenter.addPart(first, firstConstr);
-//        presenter.addPart(before, beforeConstr);
-//        presenter.addPart(beforeBefore, beforeBeforeConstr);
-//
-//        assertThat(presenter.getSortedParts()).hasSize(6).containsExactly(first, withoutConstr, beforeBefore, before, after, last);
-//        verify(view, times(6)).setTabPositions((List<Integer>)anyObject());
-    }
+        presenter.onTabClicked(partButton);
 
-    @Test
-    public void testSortPartsWhen2AfterAdded() {
-//        when(view.addTab((SVGImage)anyObject(), anyString(), anyString(), (IsWidget)anyObject(), anyBoolean()))
-//                .thenReturn(mock(PartStackView.TabItem.class));
-//
-//        presenter.addPart(after, afterConstr);
-//        presenter.addPart(last, lastConstr);
-//        presenter.addPart(withoutConstr, null);
-//        presenter.addPart(first, firstConstr);
-//        presenter.addPart(before, beforeConstr);
-//        presenter.addPart(afterAfter, afterAfterConstr);
-//
-//        assertThat(presenter.getSortedParts()).hasSize(6).containsExactly(first, withoutConstr, before, after, afterAfter, last);
-//        verify(view, times(6)).setTabPositions((List<Integer>)anyObject());
-    }
+        verify(workBenchPartController).setSize(anyDouble());
+        verify(workBenchPartController).setHidden(false);
 
-    @Test
-    public void testSortPartsWhenAllKindConstrAdded() {
-//        when(view.addTab((SVGImage)anyObject(), anyString(), anyString(), (IsWidget)anyObject(), anyBoolean()))
-//                .thenReturn(mock(PartStackView.TabItem.class));
-//
-//        presenter.addPart(beforeBefore, beforeBeforeConstr);
-//        presenter.addPart(last, lastConstr);
-//        presenter.addPart(withoutConstr, null);
-//        presenter.addPart(afterAfter, afterAfterConstr);
-//        presenter.addPart(after, afterConstr);
-//        presenter.addPart(first, firstConstr);
-//        presenter.addPart(before, beforeConstr);
-//
-//        assertThat(presenter.getSortedParts()).hasSize(7).containsExactly(first, withoutConstr, beforeBefore, before, after, afterAfter, last);
-//        verify(view, times(7)).setTabPositions((List<Integer>)anyObject());
+        verify(view).selectTab(partPresenter);
     }
 }
