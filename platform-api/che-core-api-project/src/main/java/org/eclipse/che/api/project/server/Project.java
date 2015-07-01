@@ -245,6 +245,9 @@ public class Project {
             }
         }
 
+        if (projectJson.getRecipe() == null) {
+            projectJson.setRecipe(types.primary.getDefaultRecipe());
+        }
 
         // Default builders and runners
         // NOTE we take it from Primary type only (for the time)
