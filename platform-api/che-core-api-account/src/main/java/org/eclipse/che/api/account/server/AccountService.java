@@ -40,6 +40,9 @@ import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.eclipse.che.dto.server.DtoFactory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -75,6 +78,8 @@ import static java.util.Collections.singletonList;
         description = "Account manager")
 @Path("/account")
 public class AccountService extends Service {
+    private static final Logger LOG = LoggerFactory.getLogger(AccountService.class);
+
     private final AccountDao       accountDao;
     private final UserDao          userDao;
     private final ResourcesManager resourcesManager;
@@ -158,6 +163,10 @@ public class AccountService extends Service {
                                              .withUserId(current.getId())
                                              .withRoles(Arrays.asList("account/owner"));
             accountDao.addMember(owner);
+            LOG.info("EVENT#account-add-member# ACCOUNT-ID#{}# USER-ID#{}# ROLES#{}#",
+                     accountId,
+                     current.getId(),
+                     Arrays.asList("account/owner").toString());
         }
         return Response.status(Response.Status.CREATED)
                        .entity(toDescriptor(account, securityContext))
@@ -400,6 +409,10 @@ public class AccountService extends Service {
                                              .withUserId(membership.getUserId())
                                              .withRoles(membership.getRoles());
         accountDao.addMember(newMember);
+        LOG.info("EVENT#account-add-member# ACCOUNT-ID#{}# USER-ID#{}# ROLES#{}#",
+                 accountId,
+                 membership.getUserId(),
+                 membership.getRoles().toString());
         return Response.status(Response.Status.CREATED)
                        .entity(toDescriptor(newMember, accountDao.getById(accountId), context))
                        .build();
@@ -491,6 +504,9 @@ public class AccountService extends Service {
             throw new ConflictException("Account should have at least 1 owner");
         }
         accountDao.removeMember(target);
+        LOG.info("EVENT#account-remove-member# ACCOUNT-ID#{}# USER-ID#{}#",
+                 accountId,
+                 userId);
     }
 
     /**
