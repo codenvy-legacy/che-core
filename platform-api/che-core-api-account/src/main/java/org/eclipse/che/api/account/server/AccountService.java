@@ -158,7 +158,10 @@ public class AccountService extends Service {
                                              .withUserId(current.getId())
                                              .withRoles(Arrays.asList("account/owner"));
             accountDao.addMember(owner);
-            logAnalyticsEventAddMember(accountId, current.getId(), Arrays.asList("account/owner"));
+            LOG.info("EVENT#account-add-member# ACCOUNT-ID#{}# USER-ID#{}# ROLES#{}#",
+                     accountId,
+                     current.getId(),
+                     Arrays.asList("account/owner").toString());
         }
         return Response.status(Response.Status.CREATED)
                        .entity(toDescriptor(account, securityContext))
@@ -401,7 +404,10 @@ public class AccountService extends Service {
                                              .withUserId(membership.getUserId())
                                              .withRoles(membership.getRoles());
         accountDao.addMember(newMember);
-        logAnalyticsEventAddMember(accountId, membership.getUserId(), membership.getRoles());
+        LOG.info("EVENT#account-add-member# ACCOUNT-ID#{}# USER-ID#{}# ROLES#{}#",
+                 accountId,
+                 membership.getUserId(),
+                 membership.getRoles().toString());
         return Response.status(Response.Status.CREATED)
                        .entity(toDescriptor(newMember, accountDao.getById(accountId), context))
                        .build();
@@ -493,7 +499,9 @@ public class AccountService extends Service {
             throw new ConflictException("Account should have at least 1 owner");
         }
         accountDao.removeMember(target);
-        logAnalyticsEventRemoveMember(accountId, userId);
+        LOG.info("EVENT#account-remove-member# ACCOUNT-ID#{}# USER-ID#{}#",
+                 accountId,
+                 userId);
     }
 
     /**
@@ -701,18 +709,4 @@ public class AccountService extends Service {
             throw new ConflictException(subject + " required");
         }
     }
-
-    private void logAnalyticsEventAddMember(String accountId, String userId, List<String> roles) {
-        LOG.info("EVENT#account-add-member# ACCOUNT-ID#{}# USER-ID#{}# ROLES#{}#",
-                 accountId,
-                 userId,
-                 roles.toString());
-    }
-
-    private void logAnalyticsEventRemoveMember(String accountId, String userId) {
-        LOG.info("EVENT#account-remove-member# ACCOUNT-ID#{}# USER-ID#{}#",
-                 accountId,
-                 userId);
-    }
 }
-
