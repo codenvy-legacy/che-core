@@ -27,7 +27,7 @@ public class GitUrlResolverTest extends LocalFileSystemTest {
     public void testResolveGitUrlWithPort() throws Exception {
         String path = root.toPath().relativize(getIoFile(file).toPath()).toString();
         path = path.replaceAll("[\\\\]", "/");
-        String expectedUrl = String.format("http://localhost:9000/git/%s", path);
+        String expectedUrl = String.format("http://localhost:9000/git-server/%s", path);
 
         GitUrlResolver resolver = new GitUrlResolver(root, new LocalPathResolver());
         final String url = resolver.resolve(URI.create("http://localhost:9000/some/path"), mountPoint.getVirtualFile(file));
@@ -39,7 +39,7 @@ public class GitUrlResolverTest extends LocalFileSystemTest {
         System.out.println(folder);
         String path = root.toPath().relativize(getIoFile(folder).toPath()).toString();
         path = path.replaceAll("[\\\\]", "/");
-        String expectedUrl = String.format("http://localhost:9000/git/%s", path);
+        String expectedUrl = String.format("http://localhost:9000/git-server/%s", path);
 
         GitUrlResolver resolver = new GitUrlResolver(root, new LocalPathResolver());
         final String url = resolver.resolve(URI.create("http://localhost:9000/some/path"), mountPoint.getVirtualFile(folder));
@@ -49,7 +49,7 @@ public class GitUrlResolverTest extends LocalFileSystemTest {
     public void testResolveGitUrlWithoutPort() throws Exception {
         String path = root.toPath().relativize(getIoFile(file).toPath()).toString();
         path = path.replaceAll("[\\\\]", "/");
-        String expectedUrl = String.format("http://localhost/git/%s", path);
+        String expectedUrl = String.format("http://localhost/git-server/%s", path);
 
         GitUrlResolver resolver = new GitUrlResolver(root, new LocalPathResolver());
         final String url = resolver.resolve(URI.create("http://localhost/some/path"), mountPoint.getVirtualFile(file));
@@ -60,7 +60,7 @@ public class GitUrlResolverTest extends LocalFileSystemTest {
         String folder = file.substring(0, file.lastIndexOf("/"));
         String path = root.toPath().relativize(getIoFile(folder).toPath()).toString();
         path = path.replaceAll("[\\\\]", "/");
-        String expectedUrl = String.format("http://localhost/git/%s", path);
+        String expectedUrl = String.format("http://localhost/git-server/%s", path);
 
         GitUrlResolver resolver = new GitUrlResolver(root, new LocalPathResolver());
         final String url = resolver.resolve(URI.create("http://localhost/some/path"), mountPoint.getVirtualFile(folder));
