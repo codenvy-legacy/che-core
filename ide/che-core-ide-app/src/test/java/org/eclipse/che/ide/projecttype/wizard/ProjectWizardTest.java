@@ -138,7 +138,7 @@ public class ProjectWizardTest {
 
         wizard.complete(completeCallback);
 
-        verify(projectServiceClient).importProject(eq(PROJECT_NAME), eq(true), eq(importProject), importCallbackCaptor.capture());
+        verify(projectServiceClient).importProject(eq(PROJECT_NAME), eq(false), eq(importProject), importCallbackCaptor.capture());
 
         ImportResponse importResponse = mock(ImportResponse.class);
         when(importResponse.getProjectDescriptor()).thenReturn(mock(ProjectDescriptor.class));
@@ -156,7 +156,7 @@ public class ProjectWizardTest {
 
         wizard.complete(completeCallback);
 
-        verify(projectServiceClient).importProject(eq(PROJECT_NAME), eq(true), eq(importProject), importCallbackCaptor.capture());
+        verify(projectServiceClient).importProject(eq(PROJECT_NAME), eq(false), eq(importProject), importCallbackCaptor.capture());
 
         AsyncRequestCallback<ImportResponse> callback = importCallbackCaptor.getValue();
         GwtReflectionUtils.callOnFailure(callback, mock(Throwable.class));

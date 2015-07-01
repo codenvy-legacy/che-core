@@ -14,7 +14,6 @@ import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 
 import org.eclipse.che.ide.projecttype.wizard.categoriespage.CategoriesPageViewImpl;
-import org.vectomatic.dom.svg.ui.SVGResource;
 
 /**
  * @author Ann Shumilova
@@ -26,9 +25,6 @@ public interface ProjectWizardResources extends ClientBundle {
 
     @Source({"categoriespage/MainPage.css", "org/eclipse/che/ide/api/ui/style.css", "org/eclipse/che/ide/ui/Styles.css"})
     CategoriesPageViewImpl.Style mainPageStyle();
-
-    @Source("recipespage/recipe.svg")
-    SVGResource recipe();
 
     interface Css extends CssResource {
         String buttonPanel();
