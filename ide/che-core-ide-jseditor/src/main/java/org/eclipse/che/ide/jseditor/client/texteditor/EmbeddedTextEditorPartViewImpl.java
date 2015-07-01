@@ -11,18 +11,8 @@
 package org.eclipse.che.ide.jseditor.client.texteditor;
 
 
-import javax.inject.Inject;
+import elemental.dom.Element;
 
-import org.eclipse.che.ide.jseditor.client.codeassist.AdditionalInfoCallback;
-import org.eclipse.che.ide.jseditor.client.codeassist.AdditionalInformationWidget;
-import org.eclipse.che.ide.jseditor.client.codeassist.CompletionsSource;
-import org.eclipse.che.ide.jseditor.client.editortype.EditorType;
-import org.eclipse.che.ide.jseditor.client.events.CursorActivityEvent;
-import org.eclipse.che.ide.jseditor.client.events.CursorActivityHandler;
-import org.eclipse.che.ide.jseditor.client.infopanel.InfoPanel;
-import org.eclipse.che.ide.jseditor.client.keymap.Keymap;
-import org.eclipse.che.ide.jseditor.client.popup.PopupResources;
-import org.eclipse.che.ide.jseditor.client.text.TextPosition;
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
@@ -35,7 +25,18 @@ import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 
-import elemental.dom.Element;
+import org.eclipse.che.ide.jseditor.client.codeassist.AdditionalInfoCallback;
+import org.eclipse.che.ide.jseditor.client.codeassist.AdditionalInformationWidget;
+import org.eclipse.che.ide.jseditor.client.codeassist.CompletionsSource;
+import org.eclipse.che.ide.jseditor.client.editortype.EditorType;
+import org.eclipse.che.ide.jseditor.client.events.CursorActivityEvent;
+import org.eclipse.che.ide.jseditor.client.events.CursorActivityHandler;
+import org.eclipse.che.ide.jseditor.client.infopanel.InfoPanel;
+import org.eclipse.che.ide.jseditor.client.keymap.Keymap;
+import org.eclipse.che.ide.jseditor.client.popup.PopupResources;
+import org.eclipse.che.ide.jseditor.client.text.TextPosition;
+
+import javax.inject.Inject;
 
 /**
  * Implementation of the View part of the editors.
