@@ -11,9 +11,13 @@
 package org.eclipse.che.dto;
 
 import org.eclipse.che.dto.definitions.ComplicatedDto;
+import org.eclipse.che.dto.definitions.DTOHierarchy;
 import org.eclipse.che.dto.definitions.DtoWithAny;
 import org.eclipse.che.dto.definitions.DtoWithDelegate;
 import org.eclipse.che.dto.definitions.DtoWithFieldNames;
+import org.eclipse.che.dto.definitions.model.Model;
+import org.eclipse.che.dto.definitions.model.ModelComponentDto;
+import org.eclipse.che.dto.definitions.model.ModelDto;
 import org.eclipse.che.dto.definitions.SimpleDto;
 import org.eclipse.che.dto.server.DtoFactory;
 
@@ -30,6 +34,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static java.util.Arrays.asList;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 /**
  * Tests that the interfaces specified in org.eclipse.che.dto.definitions have
@@ -63,9 +71,9 @@ public class ServerDtoTest {
         final String json = dtoFactory.toJson(dto);
 
         JsonObject jsonObject = new JsonParser().parse(json).getAsJsonObject();
-        Assert.assertEquals(jsonObject.get("name").getAsString(), fooString);
-        Assert.assertEquals(jsonObject.get("id").getAsInt(), fooId);
-        Assert.assertEquals(jsonObject.get("default").getAsString(), _default);
+        assertEquals(jsonObject.get("name").getAsString(), fooString);
+        assertEquals(jsonObject.get("id").getAsInt(), fooId);
+        assertEquals(jsonObject.get("default").getAsString(), _default);
     }
 
     @Test
@@ -94,8 +102,8 @@ public class ServerDtoTest {
         final String json = dtoFactory.toJson(dto);
 
         JsonObject jsonObject = new JsonParser().parse(json).getAsJsonObject();
-        Assert.assertEquals(jsonObject.get(DtoWithFieldNames.THENAME_FIELD).getAsString(), fooString);
-        Assert.assertEquals(jsonObject.get(DtoWithFieldNames.THEDEFAULT_FIELD).getAsString(), _default);
+        assertEquals(jsonObject.get(DtoWithFieldNames.THENAME_FIELD).getAsString(), fooString);
+        assertEquals(jsonObject.get(DtoWithFieldNames.THEDEFAULT_FIELD).getAsString(), _default);
     }
 
     @Test
@@ -109,8 +117,8 @@ public class ServerDtoTest {
 
         DtoWithFieldNames dto = dtoFactory.createDtoFromJson(json.toString(), DtoWithFieldNames.class);
 
-        Assert.assertEquals(dto.getTheName(), fooString);
-        Assert.assertEquals(dto.getTheDefault(), _default);
+        assertEquals(dto.getTheName(), fooString);
+        assertEquals(dto.getTheDefault(), _default);
     }
 
     @Test
@@ -165,13 +173,13 @@ public class ServerDtoTest {
         org.eclipse.che.dto.shared.JsonArray<SimpleDto> listDtoFromJson =
                 dtoFactory.createListDtoFromJson(jsonArray.toString(), SimpleDto.class);
 
-        Assert.assertEquals(listDtoFromJson.get(0).getName(), fooString_1);
-        Assert.assertEquals(listDtoFromJson.get(0).getId(), fooId_1);
-        Assert.assertEquals(listDtoFromJson.get(0).getDefault(), _default_1);
+        assertEquals(listDtoFromJson.get(0).getName(), fooString_1);
+        assertEquals(listDtoFromJson.get(0).getId(), fooId_1);
+        assertEquals(listDtoFromJson.get(0).getDefault(), _default_1);
 
-        Assert.assertEquals(listDtoFromJson.get(1).getName(), fooString_2);
-        Assert.assertEquals(listDtoFromJson.get(1).getId(), fooId_2);
-        Assert.assertEquals(listDtoFromJson.get(1).getDefault(), _default_2);
+        assertEquals(listDtoFromJson.get(1).getName(), fooString_2);
+        assertEquals(listDtoFromJson.get(1).getId(), fooId_2);
+        assertEquals(listDtoFromJson.get(1).getDefault(), _default_2);
     }
 
     @Test
@@ -212,31 +220,31 @@ public class ServerDtoTest {
 
         Assert.assertTrue(jsonObject.has("strings"));
         JsonArray jsonArray = jsonObject.get("strings").getAsJsonArray();
-        Assert.assertEquals(jsonArray.get(0).getAsString(), listStrings.get(0));
-        Assert.assertEquals(jsonArray.get(1).getAsString(), listStrings.get(1));
+        assertEquals(jsonArray.get(0).getAsString(), listStrings.get(0));
+        assertEquals(jsonArray.get(1).getAsString(), listStrings.get(1));
 
         Assert.assertTrue(jsonObject.has("simpleEnum"));
-        Assert.assertEquals(jsonObject.get("simpleEnum").getAsString(), simpleEnum.name());
+        assertEquals(jsonObject.get("simpleEnum").getAsString(), simpleEnum.name());
 
         Assert.assertTrue(jsonObject.has("map"));
         JsonObject jsonMap = jsonObject.get("map").getAsJsonObject();
         JsonObject value = jsonMap.get(fooString).getAsJsonObject();
-        Assert.assertEquals(value.get("name").getAsString(), fooString);
-        Assert.assertEquals(value.get("id").getAsInt(), fooId);
-        Assert.assertEquals(value.get("default").getAsString(), _default);
+        assertEquals(value.get("name").getAsString(), fooString);
+        assertEquals(value.get("id").getAsInt(), fooId);
+        assertEquals(value.get("default").getAsString(), _default);
 
         Assert.assertTrue(jsonObject.has("simpleDtos"));
         JsonArray simpleDtos = jsonObject.get("simpleDtos").getAsJsonArray();
         JsonObject simpleDtoJsonObject = simpleDtos.get(0).getAsJsonObject();
-        Assert.assertEquals(simpleDtoJsonObject.get("name").getAsString(), fooString);
-        Assert.assertEquals(simpleDtoJsonObject.get("id").getAsInt(), fooId);
-        Assert.assertEquals(simpleDtoJsonObject.get("default").getAsString(), _default);
+        assertEquals(simpleDtoJsonObject.get("name").getAsString(), fooString);
+        assertEquals(simpleDtoJsonObject.get("id").getAsInt(), fooId);
+        assertEquals(simpleDtoJsonObject.get("default").getAsString(), _default);
 
         Assert.assertTrue(jsonObject.has("arrayOfArrayOfEnum"));
         JsonArray arrayOfArrayOfEnum = jsonObject.get("arrayOfArrayOfEnum").getAsJsonArray().get(0).getAsJsonArray();
-        Assert.assertEquals(arrayOfArrayOfEnum.get(0).getAsString(), ComplicatedDto.SimpleEnum.ONE.name());
-        Assert.assertEquals(arrayOfArrayOfEnum.get(1).getAsString(), ComplicatedDto.SimpleEnum.TWO.name());
-        Assert.assertEquals(arrayOfArrayOfEnum.get(2).getAsString(), ComplicatedDto.SimpleEnum.THREE.name());
+        assertEquals(arrayOfArrayOfEnum.get(0).getAsString(), ComplicatedDto.SimpleEnum.ONE.name());
+        assertEquals(arrayOfArrayOfEnum.get(1).getAsString(), ComplicatedDto.SimpleEnum.TWO.name());
+        assertEquals(arrayOfArrayOfEnum.get(2).getAsString(), ComplicatedDto.SimpleEnum.THREE.name());
     }
 
     @Test
@@ -276,23 +284,52 @@ public class ServerDtoTest {
         ComplicatedDto complicatedDto =
                 dtoFactory.createDtoFromJson(complicatedDtoJsonObject.toString(), ComplicatedDto.class);
 
-        Assert.assertEquals(complicatedDto.getStrings().get(0), fooString);
-        Assert.assertEquals(complicatedDto.getSimpleEnum(), ComplicatedDto.SimpleEnum.ONE);
+        assertEquals(complicatedDto.getStrings().get(0), fooString);
+        assertEquals(complicatedDto.getSimpleEnum(), ComplicatedDto.SimpleEnum.ONE);
         checkSimpleDto(complicatedDto.getMap().get(fooString), fooString, fooId, _default);
         checkSimpleDto(complicatedDto.getSimpleDtos().get(0), fooString, fooId, _default);
-        Assert.assertEquals(complicatedDto.getArrayOfArrayOfEnum().get(0).get(0), ComplicatedDto.SimpleEnum.ONE);
-        Assert.assertEquals(complicatedDto.getArrayOfArrayOfEnum().get(0).get(1), ComplicatedDto.SimpleEnum.TWO);
-        Assert.assertEquals(complicatedDto.getArrayOfArrayOfEnum().get(0).get(2), ComplicatedDto.SimpleEnum.THREE);
+        assertEquals(complicatedDto.getArrayOfArrayOfEnum().get(0).get(0), ComplicatedDto.SimpleEnum.ONE);
+        assertEquals(complicatedDto.getArrayOfArrayOfEnum().get(0).get(1), ComplicatedDto.SimpleEnum.TWO);
+        assertEquals(complicatedDto.getArrayOfArrayOfEnum().get(0).get(2), ComplicatedDto.SimpleEnum.THREE);
     }
 
     private void checkSimpleDto(SimpleDto dto, String expectedName, int expectedId, String expectedDefault) {
-        Assert.assertEquals(dto.getName(), expectedName);
-        Assert.assertEquals(dto.getId(), expectedId);
-        Assert.assertEquals(dto.getDefault(), expectedDefault);
+        assertEquals(dto.getName(), expectedName);
+        assertEquals(dto.getId(), expectedId);
+        assertEquals(dto.getDefault(), expectedDefault);
     }
 
     @Test
     public void testDelegate() {
-        Assert.assertEquals(DtoFactory.getInstance().createDto(DtoWithDelegate.class).withName("TEST").nameWithPrefix("### "), "### TEST");
+        assertEquals(DtoFactory.getInstance().createDto(DtoWithDelegate.class).withName("TEST").nameWithPrefix("### "), "### TEST");
+    }
+
+    @Test
+    public void shouldBeAbleToExtendModelSkeletonWithDTOs() {
+        final DtoFactory factory = DtoFactory.getInstance();
+        final Model model = factory.createDto(ModelDto.class)
+                                   .withPrimary(factory.createDto(ModelComponentDto.class).withName("primary name"))
+                                   .withComponents(asList(factory.createDto(ModelComponentDto.class).withName("name"),
+                                                          factory.createDto(ModelComponentDto.class).withName("name2"),
+                                                          factory.createDto(ModelComponentDto.class).withName("name3")));
+
+        assertEquals(model.getPrimary(), factory.createDto(ModelComponentDto.class).withName("primary name"));
+        assertEquals(model.getComponents().size(), 3);
+        assertTrue(model.getComponents().contains(factory.createDto(ModelComponentDto.class).withName("name")));
+        assertTrue(model.getComponents().contains(factory.createDto(ModelComponentDto.class).withName("name2")));
+        assertTrue(model.getComponents().contains(factory.createDto(ModelComponentDto.class).withName("name3")));
+    }
+
+    @Test
+    public void shouldBeAbleToExtendsNotDTOInterfacesHierarchyWithDTOInterface() {
+        final DTOHierarchy.ChildDto childDto = DtoFactory.getInstance()
+                                                         .createDto(DTOHierarchy.ChildDto.class)
+                                                         .withDtoField("dto-field")
+                                                         .withChildField("child-field")
+                                                         .withParentField("parent-field");
+
+        assertEquals(childDto.getDtoField(), "dto-field");
+        assertEquals(childDto.getChildField(), "child-field");
+        assertEquals(childDto.getParentField(), "parent-field");
     }
 }
