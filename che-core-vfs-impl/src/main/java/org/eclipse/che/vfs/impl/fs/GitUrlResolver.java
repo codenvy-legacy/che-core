@@ -67,7 +67,7 @@ public class GitUrlResolver {
             result.append(port);
         }
         result.append('/');
-        result.append("git");
+        result.append("git-server");
         result.append(localPathNormalized.substring(mountPathNormalized.length() - 1));
 
         int lastSymbol = result.length() - 1;
