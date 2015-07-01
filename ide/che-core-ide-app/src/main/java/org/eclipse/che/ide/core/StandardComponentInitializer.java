@@ -37,16 +37,12 @@ import org.eclipse.che.ide.actions.OpenNodeAction;
 import org.eclipse.che.ide.actions.OpenSelectedFileAction;
 import org.eclipse.che.ide.actions.PasteAction;
 import org.eclipse.che.ide.actions.ProjectConfigurationAction;
-import org.eclipse.che.ide.actions.RedirectToFeedbackAction;
-import org.eclipse.che.ide.actions.RedirectToForumsAction;
-import org.eclipse.che.ide.actions.RedirectToHelpAction;
 import org.eclipse.che.ide.actions.RedoAction;
 import org.eclipse.che.ide.actions.RefreshProjectTreeAction;
 import org.eclipse.che.ide.actions.RenameItemAction;
 import org.eclipse.che.ide.actions.SaveAction;
 import org.eclipse.che.ide.actions.SaveAllAction;
 import org.eclipse.che.ide.actions.SelectNodeAction;
-import org.eclipse.che.ide.actions.ShowAboutAction;
 import org.eclipse.che.ide.actions.ShowHiddenFilesAction;
 import org.eclipse.che.ide.actions.ShowPreferencesAction;
 import org.eclipse.che.ide.actions.UndoAction;
@@ -110,18 +106,6 @@ public class StandardComponentInitializer {
 
     @Inject
     private ShowPreferencesAction showPreferencesAction;
-
-    @Inject
-    private ShowAboutAction showAboutAction;
-
-    @Inject
-    private RedirectToHelpAction redirectToHelpAction;
-
-    @Inject
-    private RedirectToForumsAction redirectToForumsAction;
-
-    @Inject
-    private RedirectToFeedbackAction redirectToFeedbackAction;
 
     @Inject
     private FindActionAction findActionAction;
@@ -395,18 +379,9 @@ public class StandardComponentInitializer {
         // Compose Help menu
         DefaultActionGroup helpGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_HELP);
         actionManager.registerAction("findActionAction", findActionAction);
-        actionManager.registerAction("showAbout", showAboutAction);
-        actionManager.registerAction("redirectToHelp", redirectToHelpAction);
-        actionManager.registerAction("redirectToForums", redirectToForumsAction);
-        actionManager.registerAction("redirectToFeedback", redirectToFeedbackAction);
 
         helpGroup.add(findActionAction);
-        helpGroup.add(showAboutAction);
         helpGroup.addSeparator();
-        helpGroup.add(redirectToHelpAction);
-        helpGroup.addSeparator();
-        helpGroup.add(redirectToForumsAction);
-        helpGroup.add(redirectToFeedbackAction);
 
         // Compose main context menu
         DefaultActionGroup resourceOperation = new DefaultActionGroup(actionManager);
