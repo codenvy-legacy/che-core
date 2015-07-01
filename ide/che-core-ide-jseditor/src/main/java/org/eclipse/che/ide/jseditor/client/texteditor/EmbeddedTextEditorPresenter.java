@@ -300,11 +300,11 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
                             }
                         };
                         final ChoiceDialog choice = dialogFactory.createChoiceDialog(constant.fileUpdateTitle(),
-                                                          constant.fileUpdateMessage(event.getFilePath()),
-                                                          constant.fileUpdateOverwrite(),
-                                                          constant.fileUpdateKeepUnsaved(),
-                                                          callback,
-                                                          null);
+                                                                                     constant.fileUpdateMessage(event.getFilePath()),
+                                                                                     constant.fileUpdateOverwrite(),
+                                                                                     constant.fileUpdateKeepUnsaved(),
+                                                                                     callback,
+                                                                                     null);
                         choice.show();
                     } else {
                         updateContent();
@@ -323,13 +323,13 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
          */
         final TextPosition currentCursor = getCursorPosition();
         this.documentStorage.getDocument(document.getFile(), new EmbeddedDocumentCallback() {
-            
+
             @Override
             public void onDocumentReceived(final String content) {
                 editorWidget.setValue(content);
                 document.setCursorPosition(currentCursor);
             }
-            
+
             @Override
             public void onDocumentLoadFailure(final Throwable caught) {
                 displayErrorPanel(constant.editorFileErrorMessage());
@@ -687,6 +687,10 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
 
     public void showCompletionProposals(final CompletionsSource source) {
         this.editorView.showCompletionProposals(this.editorWidget, source);
+    }
+
+    public boolean isCompletionProposalsShowing(){
+        return editorWidget.isCompletionProposalsShowing();
     }
 
     public void showCompletionProposals() {

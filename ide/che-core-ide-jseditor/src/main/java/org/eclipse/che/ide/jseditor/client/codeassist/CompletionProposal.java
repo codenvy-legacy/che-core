@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.codeassist;
 
-import elemental.dom.Element;
+import com.google.gwt.user.client.ui.Widget;
 
 import org.eclipse.che.ide.api.icon.Icon;
 
@@ -31,7 +31,7 @@ public interface CompletionProposal {
      *
      * @return the additional information or <code>null</code>
      */
-    Element getAdditionalProposalInfo();
+    Widget getAdditionalProposalInfo();
 
     /**
      * Returns the string to be displayed in the list of completion proposals.

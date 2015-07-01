@@ -11,9 +11,11 @@
 package org.eclipse.che.ide.jseditor.client.texteditor;
 
 
-import java.util.List;
-
-import javax.annotation.Nonnull;
+import com.google.gwt.event.dom.client.HasBlurHandlers;
+import com.google.gwt.event.dom.client.HasChangeHandlers;
+import com.google.gwt.event.dom.client.HasFocusHandlers;
+import com.google.gwt.user.client.ui.IsWidget;
+import com.google.gwt.user.client.ui.RequiresResize;
 
 import org.eclipse.che.ide.api.text.Region;
 import org.eclipse.che.ide.api.texteditor.UndoableEditor;
@@ -27,11 +29,8 @@ import org.eclipse.che.ide.jseditor.client.events.HasGutterClickHandlers;
 import org.eclipse.che.ide.jseditor.client.keymap.Keymap;
 import org.eclipse.che.ide.jseditor.client.position.PositionConverter;
 
-import com.google.gwt.event.dom.client.HasBlurHandlers;
-import com.google.gwt.event.dom.client.HasChangeHandlers;
-import com.google.gwt.event.dom.client.HasFocusHandlers;
-import com.google.gwt.user.client.ui.IsWidget;
-import com.google.gwt.user.client.ui.RequiresResize;
+import javax.annotation.Nonnull;
+import java.util.List;
 
 /** An interface for editor widget implementations. */
 public interface EditorWidget extends IsWidget,
@@ -198,4 +197,6 @@ public interface EditorWidget extends IsWidget,
      * Refresh the editor widget.
      */
     void refresh();
+
+    boolean isCompletionProposalsShowing();
 }

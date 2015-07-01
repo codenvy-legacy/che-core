@@ -10,15 +10,15 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.texteditor;
 
+import com.google.gwt.user.client.ui.IsWidget;
+import com.google.gwt.user.client.ui.RequiresResize;
+import com.google.gwt.user.client.ui.Widget;
+
 import org.eclipse.che.ide.api.editor.EditorWithErrors;
 import org.eclipse.che.ide.jseditor.client.codeassist.CompletionsSource;
 import org.eclipse.che.ide.jseditor.client.editortype.EditorType;
 import org.eclipse.che.ide.jseditor.client.keymap.Keymap;
 import org.eclipse.che.ide.jseditor.client.text.TextPosition;
-
-import com.google.gwt.user.client.ui.IsWidget;
-import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.Widget;
 
 /**
  * View interface for the embedded editors components.
