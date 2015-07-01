@@ -22,6 +22,7 @@ import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.ResizeComposite;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 
 import org.eclipse.che.ide.api.parts.PartPresenter;
@@ -45,7 +46,7 @@ import static com.google.gwt.dom.client.Style.Unit.PCT;
  * @author Dmitry Shnurenko
  */
 public class EditorPartStackView extends ResizeComposite implements PartStackView, MouseDownHandler {
-    interface PartStackUiBinder extends UiBinder<ResizeComposite, EditorPartStackView> {
+    interface PartStackUiBinder extends UiBinder<Widget, EditorPartStackView> {
     }
 
     private static final PartStackUiBinder UI_BINDER = GWT.create(PartStackUiBinder.class);
