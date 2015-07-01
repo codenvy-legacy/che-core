@@ -16,7 +16,7 @@
     <parent>
         <artifactId>che-core-parent</artifactId>
         <groupId>org.eclipse.che.core</groupId>
-        <version>3.10.3-SNAPSHOT</version>
+        <version>3.10.3</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>che-core-client-gwt-parent</artifactId>
