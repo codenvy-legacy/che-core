@@ -623,7 +623,7 @@ public class DtoImplServerTemplate extends DtoImpl {
         builder.append("  public static class ");
         builder.append(getImplClassName());
 
-        Class<?> superType = getSuperInterface(getDtoInterface());
+        Class<?> superType = getSuperDtoInterface(getDtoInterface());
         if (superType != null && superType != JsonSerializable.class) {
             // We need to extend something.
             builder.append(" extends ");
@@ -948,7 +948,7 @@ public class DtoImplServerTemplate extends DtoImpl {
             return sb.toString();
 
         } else {
-            throw new IllegalArgumentException("We do not handle this type");
+            throw new IllegalArgumentException("We do not handle this type " + type.toString());
         }
     }
 

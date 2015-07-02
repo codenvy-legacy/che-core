@@ -36,8 +36,6 @@ import org.eclipse.che.api.vfs.gwt.client.VfsServiceClientImpl;
 import org.eclipse.che.api.workspace.gwt.client.WorkspaceServiceClient;
 import org.eclipse.che.api.workspace.gwt.client.WorkspaceServiceClientImpl;
 import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.about.AboutView;
-import org.eclipse.che.ide.about.AboutViewImpl;
 import org.eclipse.che.ide.actions.ActionManagerImpl;
 import org.eclipse.che.ide.actions.find.FindActionView;
 import org.eclipse.che.ide.actions.find.FindActionViewImpl;
@@ -382,7 +380,6 @@ public class CoreGinModule extends AbstractGinModule {
         bind(UploadFolderFromZipView.class).to(UploadFolderFromZipViewImpl.class);
         bind(PreferencesView.class).to(PreferencesViewImpl.class).in(Singleton.class);
         bind(NavigateToFileView.class).to(NavigateToFileViewImpl.class).in(Singleton.class);
-        bind(AboutView.class).to(AboutViewImpl.class);
         bind(ListOpenedFilesView.class).to(ListOpenedFilesViewImpl.class);
 
         bind(ExtensionManagerView.class).to(ExtensionManagerViewImpl.class).in(Singleton.class);
