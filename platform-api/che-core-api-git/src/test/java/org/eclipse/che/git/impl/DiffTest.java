@@ -56,10 +56,7 @@ public class DiffTest {
     public void testDiffNameStatus(GitConnectionFactory connectionFactory) throws GitException, IOException {
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
 
-        //make some changes
-        addFile(connection, "aaa", "AAA\n");
-        connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
-        addFile(connection, "aaa", "BBB\n");
+        prepare(connection);
 
         List<String> diff = readDiff(newDto(DiffRequest.class)
                                              .withType(DiffType.NAME_STATUS)
@@ -73,15 +70,7 @@ public class DiffTest {
     public void testDiffNameStatusWithCommits(GitConnectionFactory connectionFactory) throws GitException, IOException {
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
 
-        //create branch "master"
-        addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
-        connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));
-        connection.commit(newDto(CommitRequest.class).withMessage("Initial addd"));
-
-        //make some changes
-        addFile(connection, "aaa", "AAA\n");
-        connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
-        addFile(connection, "aaa", "BBB\n");
+        prepare(connection);
 
         connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
         connection.rm(newDto(RmRequest.class).withItems(Arrays.asList("README.txt")));
@@ -103,15 +92,7 @@ public class DiffTest {
     public void testDiffNameStatusWithFileFilterAndCommits(GitConnectionFactory connectionFactory) throws GitException, IOException {
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
 
-        //create branch "master"
-        addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
-        connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));
-        connection.commit(newDto(CommitRequest.class).withMessage("Initial addd"));
-
-        //make some changes
-        addFile(connection, "aaa", "AAA\n");
-        connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
-        addFile(connection, "aaa", "BBB\n");
+        prepare(connection);
 
         connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList("aaa")));
         connection.rm(newDto(RmRequest.class).withItems(Arrays.asList("README.txt")));
@@ -133,15 +114,7 @@ public class DiffTest {
     public void testDiffNameOnly(GitConnectionFactory connectionFactory) throws GitException, IOException {
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
 
-        //create branch "master"
-        addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
-        connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));
-        connection.commit(newDto(CommitRequest.class).withMessage("Initial addd"));
-
-        //make some changes
-        addFile(connection, "aaa", "AAA\n");
-        connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
-        addFile(connection, "aaa", "BBB\n");
+        prepare(connection);
 
         List<String> diff = readDiff(newDto(DiffRequest.class)
                                              .withFileFilter(null)
@@ -157,15 +130,7 @@ public class DiffTest {
     public void testDiffNameOnlyWithCommits(GitConnectionFactory connectionFactory) throws GitException, IOException {
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
 
-        //create branch "master"
-        addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
-        connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));
-        connection.commit(newDto(CommitRequest.class).withMessage("Initial addd"));
-
-        //make some changes
-        addFile(connection, "aaa", "AAA\n");
-        connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
-        addFile(connection, "aaa", "BBB\n");
+        prepare(connection);
 
         connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList("aaa")));
         connection.rm(newDto(RmRequest.class).withItems(Arrays.asList("README.txt")));
@@ -189,15 +154,7 @@ public class DiffTest {
     public void testDiffNameOnlyCached(GitConnectionFactory connectionFactory) throws GitException, IOException {
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
 
-        //create branch "master"
-        addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
-        connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));
-        connection.commit(newDto(CommitRequest.class).withMessage("Initial addd"));
-
-        //make some changes
-        addFile(connection, "aaa", "AAA\n");
-        connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
-        addFile(connection, "aaa", "BBB\n");
+        prepare(connection);
 
         connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList("aaa")));
         List<String> diff = readDiff(newDto(DiffRequest.class)
@@ -216,15 +173,7 @@ public class DiffTest {
     public void testDiffNameOnlyCachedNoCommit(GitConnectionFactory connectionFactory) throws GitException, IOException {
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
 
-        //create branch "master"
-        addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
-        connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));
-        connection.commit(newDto(CommitRequest.class).withMessage("Initial addd"));
-
-        //make some changes
-        addFile(connection, "aaa", "AAA\n");
-        connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
-        addFile(connection, "aaa", "BBB\n");
+        prepare(connection);
 
         connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList("aaa")));
         List<String> diff = readDiff(newDto(DiffRequest.class)
@@ -243,15 +192,7 @@ public class DiffTest {
     public void testDiffNameOnlyWorkingTree(GitConnectionFactory connectionFactory) throws GitException, IOException {
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
 
-        //create branch "master"
-        addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
-        connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));
-        connection.commit(newDto(CommitRequest.class).withMessage("Initial addd"));
-
-        //make some changes
-        addFile(connection, "aaa", "AAA\n");
-        connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
-        addFile(connection, "aaa", "BBB\n");
+        prepare(connection);
 
         List<String> diff = readDiff(newDto(DiffRequest.class)
                                              .withFileFilter(null)
@@ -269,15 +210,7 @@ public class DiffTest {
     public void testDiffNameOnlyWithFileFilter(GitConnectionFactory connectionFactory) throws GitException, IOException {
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
 
-        //create branch "master"
-        addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
-        connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));
-        connection.commit(newDto(CommitRequest.class).withMessage("Initial addd"));
-
-        //make some changes
-        addFile(connection, "aaa", "AAA\n");
-        connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
-        addFile(connection, "aaa", "BBB\n");
+        prepare(connection);
 
         List<String> diff = readDiff(newDto(DiffRequest.class)
                                              .withFileFilter(Arrays.asList("aaa"))
@@ -294,15 +227,7 @@ public class DiffTest {
     public void testDiffNameOnlyNotMatchingWithFileFilter(GitConnectionFactory connectionFactory) throws GitException, IOException {
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
 
-        //create branch "master"
-        addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
-        connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));
-        connection.commit(newDto(CommitRequest.class).withMessage("Initial addd"));
-
-        //make some changes
-        addFile(connection, "aaa", "AAA\n");
-        connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
-        addFile(connection, "aaa", "BBB\n");
+        prepare(connection);
 
         List<String> diff = readDiff(newDto(DiffRequest.class)
                                              .withFileFilter(Arrays.asList("anotherFile"))
@@ -317,15 +242,7 @@ public class DiffTest {
     public void testDiffNameOnlyWithFileFilterAndCommits(GitConnectionFactory connectionFactory) throws GitException, IOException {
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
 
-        //create branch "master"
-        addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
-        connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));
-        connection.commit(newDto(CommitRequest.class).withMessage("Initial addd"));
-
-        //make some changes
-        addFile(connection, "aaa", "AAA\n");
-        connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
-        addFile(connection, "aaa", "BBB\n");
+        prepare(connection);
 
         connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList("aaa")));
         connection.rm(newDto(RmRequest.class).withItems(Arrays.asList("README.txt")));
@@ -347,15 +264,7 @@ public class DiffTest {
     public void testDiffRaw(GitConnectionFactory connectionFactory) throws GitException, IOException {
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
 
-        //create branch "master"
-        addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
-        connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));
-        connection.commit(newDto(CommitRequest.class).withMessage("Initial addd"));
-
-        //make some changes
-        addFile(connection, "aaa", "AAA\n");
-        connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
-        addFile(connection, "aaa", "BBB\n");
+        prepare(connection);
 
         DiffRequest request = newDto(DiffRequest.class)
                 .withFileFilter(null)
@@ -370,15 +279,7 @@ public class DiffTest {
     public void testDiffRawWithCommits(GitConnectionFactory connectionFactory) throws GitException, IOException {
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
 
-        //create branch "master"
-        addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
-        connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));
-        connection.commit(newDto(CommitRequest.class).withMessage("Initial addd"));
-
-        //make some changes
-        addFile(connection, "aaa", "AAA\n");
-        connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
-        addFile(connection, "aaa", "BBB\n");
+        prepare(connection);
 
         connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList("aaa")));
         connection.rm(newDto(RmRequest.class).withItems(Arrays.asList("README.txt")));
@@ -408,5 +309,17 @@ public class DiffTest {
             diff.add(line);
 
         return diff;
+    }
+
+    private void prepare(GitConnection connection) throws GitException, IOException {
+        //create branch "master"
+        addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
+        connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));
+        connection.commit(newDto(CommitRequest.class).withMessage("Initial addd"));
+
+        //make some changes
+        addFile(connection, "aaa", "AAA\n");
+        connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
+        addFile(connection, "aaa", "BBB\n");
     }
 }
