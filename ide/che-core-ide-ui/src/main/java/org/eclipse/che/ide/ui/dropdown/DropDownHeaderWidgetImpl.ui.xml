@@ -46,6 +46,8 @@
         .imageContainer {
             width: 19px;
             height: 19px;
+            margin-right: 1px;
+            margin-left: 1px;
         }
     </ui:style>
 
