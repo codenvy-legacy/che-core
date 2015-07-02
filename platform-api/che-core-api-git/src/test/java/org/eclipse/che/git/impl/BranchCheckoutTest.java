@@ -22,8 +22,6 @@ import org.eclipse.che.api.git.shared.BranchCheckoutRequest;
 import org.eclipse.che.api.git.shared.BranchCreateRequest;
 import org.eclipse.che.api.git.shared.BranchListRequest;
 import org.eclipse.che.api.git.shared.CommitRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -46,13 +44,11 @@ public class BranchCheckoutTest {
     private static final String SECOND_BRANCH_NAME = "secondBranch";
 
     private File repository;
-    private static final Logger LOG = LoggerFactory.getLogger(BranchCheckoutTest.class);
 
     @BeforeMethod
     public void setUp() {
         repository = Files.createTempDir();
     }
-
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testSimpleCheckout(GitConnectionFactory connectionFactory) throws GitException, IOException {
@@ -113,9 +109,9 @@ public class BranchCheckoutTest {
 
         //when
         connection.branchCheckout(newDto(BranchCheckoutRequest.class)
-                .withName(SECOND_BRANCH_NAME)
-                .withStartPoint(FIRST_BRANCH_NAME)
-                .withCreateNew(true));
+                                          .withName(SECOND_BRANCH_NAME)
+                                          .withStartPoint(FIRST_BRANCH_NAME)
+                                          .withCreateNew(true));
         //then
         assertEquals(connection.branchList(newDto(BranchListRequest.class)).size(), 3);
         assertTrue(new File(repository, "newfile").exists());
