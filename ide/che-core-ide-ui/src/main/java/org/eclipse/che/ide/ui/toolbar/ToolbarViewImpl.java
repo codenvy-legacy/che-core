@@ -10,9 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ui.toolbar;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
@@ -40,33 +38,27 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
 
     public static final int DELAY_MILLIS = 1000;
 
-    public static final ToolbarResources RESOURCES = GWT.create(ToolbarResources.class);
+    private FlowPanel           leftToolbar;
+    private FlowPanel           rightToolbar;
 
-    static {
-        RESOURCES.toolbar().ensureInjected();
-    }
+    private String              place;
+    private ActionGroup         leftActionGroup;
+    private ActionGroup         rightActionGroup;
+    private ActionManager       actionManager;
+    private KeyBindingAgent     keyBindingAgent;
 
-//    Toolbar toolbar;
-    private FlowPanel leftToolbar;
-    private FlowPanel rightToolbar;
+    private Array<Action>       newLeftVisibleActions;
+    private Array<Action>       leftVisibleActions;
 
-    private String          place;
-    private ActionGroup     leftActionGroup;
-    private ActionGroup     rightActionGroup;
-    private ActionManager   actionManager;
-    private KeyBindingAgent keyBindingAgent;
-
-    private Array<Action> newLeftVisibleActions;
-    private Array<Action> leftVisibleActions;
-
-    private Array<Action> newRightVisibleActions;
-    private Array<Action> rightVisibleActions;
+    private Array<Action>       newRightVisibleActions;
+    private Array<Action>       rightVisibleActions;
 
 
     private PresentationFactory presentationFactory;
     private boolean             addSeparatorFirst;
+    private ToolbarResources    toolbarResources;
 
-    private ActionDelegate delegate;
+    private ActionDelegate      delegate;
 
     private final Timer timer = new Timer() {
         @Override
@@ -78,20 +70,22 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
 
     /** Create view with given instance of resources. */
     @Inject
-    public ToolbarViewImpl(ActionManager actionManager, KeyBindingAgent keyBindingAgent) {
+    public ToolbarViewImpl(ActionManager actionManager,
+                           KeyBindingAgent keyBindingAgent,
+                           ToolbarResources toolbarResources) {
         this.actionManager = actionManager;
         this.keyBindingAgent = keyBindingAgent;
+        this.toolbarResources = toolbarResources;
 
-//        toolbar = new Toolbar();
-//        initWidget(toolbar);
+        toolbarResources.toolbar().ensureInjected();
 
-        setStyleName(RESOURCES.toolbar().toolbarPanel());
+        setStyleName(toolbarResources.toolbar().toolbarPanel());
 
         leftToolbar = new FlowPanel();
         add(leftToolbar);
 
         rightToolbar = new FlowPanel();
-        rightToolbar.addStyleName(RESOURCES.toolbar().rightPanel());
+        rightToolbar.addStyleName(toolbarResources.toolbar().rightPanel());
         add(rightToolbar);
 
         newLeftVisibleActions = Collections.createArray();
@@ -139,7 +133,6 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
                 final Array<Action> temp = leftVisibleActions;
                 leftVisibleActions = newLeftVisibleActions;
                 newLeftVisibleActions = temp;
-//                toolbar.clearMainPanel();
                 leftToolbar.clear();
                 fillLeftToolbar(leftVisibleActions);
             }
@@ -151,7 +144,6 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
                 final Array<Action> temp = rightVisibleActions;
                 rightVisibleActions = newRightVisibleActions;
                 newRightVisibleActions = temp;
-//                toolbar.clearRightPanel();
                 rightToolbar.clear();
                 fillRightToolbar(rightVisibleActions);
             }
@@ -161,8 +153,6 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
     //TODO need improve code : dublicate code
     private void fillLeftToolbar(Array<Action> leftActions) {
         if (addSeparatorFirst) {
-//            toolbar.addToMainPanel(new DelimiterItem());
-//            toolbar.addToRightPanel(new DelimiterItem());
             leftToolbar.add(newDelimiter());
             rightToolbar.add(newDelimiter());
         }
@@ -171,22 +161,18 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
             final Action action = leftActions.get(i);
             if (action instanceof Separator) {
                 if (i > 0 && i < leftActions.size() - 1) {
-//                    toolbar.addToMainPanel(new DelimiterItem());
                     leftToolbar.add(newDelimiter());
                 }
             } else if (action instanceof CustomComponentAction) {
                 Presentation presentation = presentationFactory.getPresentation(action);
                 Widget customComponent = ((CustomComponentAction)action).createCustomComponent(presentation);
-//                toolbar.addToMainPanel(customComponent);
                 leftToolbar.add(customComponent);
             } else if (action instanceof ActionGroup && !(action instanceof CustomComponentAction) && ((ActionGroup)action).isPopup()) {
                 ActionPopupButton button =
-                        new ActionPopupButton((ActionGroup)action, actionManager, keyBindingAgent, presentationFactory, place);
-//                toolbar.addToMainPanel(button);
+                        new ActionPopupButton((ActionGroup)action, actionManager, keyBindingAgent, presentationFactory, place, toolbarResources);
                 leftToolbar.add(button);
             } else {
                 final ActionButton button = createToolbarButton(action);
-//                toolbar.addToMainPanel(button);
                 leftToolbar.add(button);
             }
         }
@@ -198,22 +184,18 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
             final Action action = rightActions.get(i);
             if (action instanceof Separator) {
                 if (i > 0 && i < rightActions.size() - 1) {
-//                    toolbar.addToRightPanel(new DelimiterItem());
                     rightToolbar.add(newDelimiter());
                 }
             } else if (action instanceof CustomComponentAction) {
                 Presentation presentation = presentationFactory.getPresentation(action);
                 Widget customComponent = ((CustomComponentAction)action).createCustomComponent(presentation);
-//                toolbar.addToRightPanel(customComponent);
                 rightToolbar.add(customComponent);
             } else if (action instanceof ActionGroup && !(action instanceof CustomComponentAction) && ((ActionGroup)action).isPopup()) {
                 ActionPopupButton button =
-                        new ActionPopupButton((ActionGroup)action, actionManager, keyBindingAgent, presentationFactory, place);
-//                toolbar.addToRightPanel(button);
+                        new ActionPopupButton((ActionGroup)action, actionManager, keyBindingAgent, presentationFactory, place, toolbarResources);
                 rightToolbar.add(button);
             } else {
                 final ActionButton button = createToolbarButton(action);
-//                toolbar.addToRightPanel(button);
                 rightToolbar.add(button);
             }
         }
@@ -226,12 +208,12 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
      */
     private Widget newDelimiter() {
         FlowPanel delimiter = new FlowPanel();
-        delimiter.setStyleName(ToolbarViewImpl.RESOURCES.toolbar().toolbarDelimiter());
+        delimiter.setStyleName(toolbarResources.toolbar().toolbarDelimiter());
         return delimiter;
     }
 
     private ActionButton createToolbarButton(Action action) {
-        return new ActionButton(action, actionManager, presentationFactory.getPresentation(action), place);
+        return new ActionButton(action, actionManager, presentationFactory.getPresentation(action), place, toolbarResources);
     }
 
     @Override
