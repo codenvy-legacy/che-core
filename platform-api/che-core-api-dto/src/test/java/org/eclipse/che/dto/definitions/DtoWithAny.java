@@ -8,29 +8,22 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.about;
+package org.eclipse.che.dto.definitions;
 
-import com.google.gwt.i18n.client.Messages;
-
+import org.eclipse.che.dto.shared.DTO;
 
 /**
- * Localization for About Codenvy dialog.
- *
- * @author Ann Shumilova
+ * Makes use of the 'any' (JsonElement) property type feature.
+ * 
+ * @author Tareq Sharafy (tareq.sharafy@sap.com)
  */
-public interface AboutLocalizationConstant extends Messages {
-    @Key("about.view.title")
-    String aboutViewTitle();
+@DTO
+public interface DtoWithAny {
+    int getId();
 
-    @Key("about.version")
-    String aboutVersion();
+    Object getStuff();
 
-    @Key("about.revision")
-    String aboutRevision();
+    void setStuff(Object stuff);
 
-    @Key("about.buildtime")
-    String aboutBuildTime();
-
-    @Key("about.control.title")
-    String aboutControlTitle();
+    DtoWithAny withStuff(Object stuff);
 }

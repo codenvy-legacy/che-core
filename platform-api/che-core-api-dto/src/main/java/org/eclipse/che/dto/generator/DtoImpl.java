@@ -18,6 +18,7 @@ import org.eclipse.che.dto.shared.SerializationIndex;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonWriter;
 
@@ -34,6 +35,8 @@ import java.util.Map;
 
 /** Abstract base class for the source generating template for a single DTO. */
 abstract class DtoImpl {
+    protected static final String COPY_JSONS_PARAM = "copyJsons";
+    
     private final Class<?>     dtoInterface;
     private final DtoTemplate  enclosingTemplate;
     private final boolean      compactJson;
@@ -165,20 +168,31 @@ abstract class DtoImpl {
     }
 
     protected List<Method> getDtoGetters(Class<?> dto) {
-        List<Method> getters = new ArrayList<>();
+        final Map<String, Method> getters = new HashMap<>();
         if (enclosingTemplate.isDtoInterface(dto)) {
             addDtoGetters(dto, getters);
+            addSuperGetters(dto, getters);
         }
+        return new ArrayList<>(getters.values());
+    }
+
+    /**
+     * Adds all getters from parent <b>NOT DTO</b> interfaces for given {@code dto} interface.
+     * Does not add method when it is already present in getters map.
+     */
+    private void addSuperGetters(Class<?> dto, Map<String, Method> getters) {
         for (Class<?> superInterface : dto.getInterfaces()) {
             if (!superInterface.isAnnotationPresent(DTO.class)) {
                 for (Method method : superInterface.getDeclaredMethods()) {
-                    if (isDtoGetter(method)) {
-                        getters.add(method);
+                    //when method is already present in map then child interface
+                    //overrides it, which means that it should not be put into getters
+                    if (isDtoGetter(method) && !getters.containsKey(method.getName())) {
+                        getters.put(method.getName(), method);
                     }
                 }
+                addSuperGetters(superInterface, getters);
             }
         }
-        return getters;
     }
 
     protected List<Method> getInheritedDtoGetters(Class<?> dto) {
@@ -193,6 +207,14 @@ abstract class DtoImpl {
             addDtoGetters(dto, getters);
         }
         return getters;
+    }
+
+    private void addDtoGetters(Class<?> dto, Map<String, Method> getters) {
+        for (Method method : dto.getDeclaredMethods()) {
+            if (isDtoGetter(method)) {
+                getters.put(method.getName(), method);
+            }
+        }
     }
 
     private void addDtoGetters(Class<?> dto, List<Method> getters) {
@@ -269,6 +291,10 @@ abstract class DtoImpl {
     /** Tests whether or not a given return type is a java.util.Map. */
     public static boolean isMap(Class<?> returnType) {
         return returnType.equals(Map.class);
+    }
+
+    public static boolean isAny(Class<?> returnType) {
+        return returnType.equals(Object.class);
     }
 
     /**
