@@ -23,7 +23,6 @@ import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.factory.dto.Author;
 import org.eclipse.che.api.factory.dto.Factory;
 import org.eclipse.che.api.factory.dto.FactoryV2_1;
-import org.eclipse.che.api.factory.dto.Workspace;
 import org.eclipse.che.api.project.server.ProjectConfig;
 import org.eclipse.che.api.project.server.ProjectJson;
 import org.eclipse.che.api.project.server.DtoConverter;
@@ -634,18 +633,8 @@ public class FactoryService extends Service {
             }
         }
 
-        if (factory.getWorkspace() ==  null) {
-            factory.setWorkspace(DtoFactory.getInstance().createDto(Workspace.class).withType("temp").withLocation("owner"));
-        } else {
-            if (isNullOrEmpty(factory.getWorkspace().getType())) {
-                factory.getWorkspace().setType("temp");
-            }
-            if (isNullOrEmpty(factory.getWorkspace().getLocation())) {
-                factory.getWorkspace().setLocation("owner");
-            }
-        }
-
-        if (factory.getWorkspace().getLocation().equals("owner") && factory.getCreator().getAccountId() == null) {
+        if (factory.getWorkspace() != null && "owner".equals(factory.getWorkspace().getLocation()) &&
+            factory.getCreator().getAccountId() == null) {
             List<Member> ownedAccounts = FluentIterable.from(accountDao.getByMember(currentUser.getId())).filter(new Predicate<Member>() {
                 @Override
                 public boolean apply(Member input) {
