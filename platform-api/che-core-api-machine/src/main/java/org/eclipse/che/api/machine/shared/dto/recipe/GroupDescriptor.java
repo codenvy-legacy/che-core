@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.shared.dto.recipe;
 
+import org.eclipse.che.api.machine.shared.Group;
 import org.eclipse.che.dto.shared.DTO;
 
 import java.util.List;
@@ -18,7 +19,7 @@ import java.util.List;
  * @author Eugene Voevodin
  */
 @DTO
-public interface GroupDescriptor {
+public interface GroupDescriptor extends Group {
 
     String getName();
 

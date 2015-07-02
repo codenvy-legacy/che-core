@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.shared.dto.recipe;
 
+import org.eclipse.che.api.machine.shared.Permissions;
 import org.eclipse.che.dto.shared.DTO;
 
 import java.util.List;
@@ -19,7 +20,7 @@ import java.util.Map;
  * @author Eugene Voevodin
  */
 @DTO
-public interface PermissionsDescriptor {
+public interface PermissionsDescriptor extends Permissions {
 
     Map<String, List<String>> getUsers();
 

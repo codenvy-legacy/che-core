@@ -37,7 +37,7 @@ public interface Permissions {
      * Returns list of groups which have access to recipe.
      * Always returns updatable list, never {@code null}
      */
-    List<Group> getGroups();
+    List<? extends Group> getGroups();
 }
 
 
