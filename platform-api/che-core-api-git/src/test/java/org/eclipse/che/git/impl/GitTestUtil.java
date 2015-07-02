@@ -16,6 +16,7 @@ import static java.nio.file.Files.exists;
 import static java.nio.file.Files.write;
 import static org.eclipse.che.api.core.util.LineConsumerFactory.NULL;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
+import static org.testng.Assert.fail;
 
 import org.eclipse.che.api.git.GitConnection;
 import org.eclipse.che.api.git.GitConnectionFactory;
@@ -24,6 +25,7 @@ import org.eclipse.che.api.git.shared.AddRequest;
 import org.eclipse.che.api.git.shared.CommitRequest;
 import org.eclipse.che.api.git.shared.GitUser;
 import org.eclipse.che.api.git.shared.InitRequest;
+import org.eclipse.che.api.git.shared.LsFilesRequest;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.commons.user.UserImpl;
@@ -33,6 +35,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Sergii Kabashniuk
@@ -115,6 +118,24 @@ public class GitTestUtil {
 
     public static void init(GitConnection connection) throws GitException {
         connection.init(newDto(InitRequest.class).withBare(false));
+    }
+
+    public static void checkCached(GitConnection connection, String... fileNames) throws GitException {
+        List<String> output = connection.listFiles(newDto(LsFilesRequest.class).withCached(true));
+        for (String fName : fileNames) {
+            if (!output.contains(fName)) {
+                fail("Cache does not contain " + fName);
+            }
+        }
+    }
+
+    public static void checkNotCached(GitConnection connection, String... fileNames) throws GitException {
+        List<String> output = connection.listFiles(newDto(LsFilesRequest.class).withCached(true));
+        for (String fName : fileNames) {
+            if (output.contains(fName)) {
+                fail("Cache contains " + fName);
+            }
+        }
     }
 
 }
