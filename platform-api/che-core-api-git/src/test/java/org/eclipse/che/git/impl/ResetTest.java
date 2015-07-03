@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.git.impl;
 
+import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import org.eclipse.che.api.git.GitConnection;
 import org.eclipse.che.api.git.GitConnectionFactory;
@@ -70,7 +71,7 @@ public class ResetTest {
         assertEquals(connection.log(newDto(LogRequest.class)).getCommits().get(0).getMessage(), initMessage);
         assertFalse(aaa.exists());
         checkNotCached(connection, "aaa");
-        assertEquals(CONTENT, readFile(new File(connection.getWorkingDir(), "README.txt")));
+        assertEquals(CONTENT, Files.toString(new File(connection.getWorkingDir(), "README.txt"), Charsets.UTF_8));
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
@@ -92,7 +93,7 @@ public class ResetTest {
         assertEquals(connection.log(newDto(LogRequest.class)).getCommits().get(0).getMessage(), initMessage);
         assertTrue(aaa.exists());
         checkCached(connection, "aaa");
-        assertEquals(readFile(new File(connection.getWorkingDir(), "README.txt")), "MODIFIED\n");
+        assertEquals(Files.toString(new File(connection.getWorkingDir(), "README.txt"), Charsets.UTF_8), "MODIFIED\n");
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
@@ -115,6 +116,6 @@ public class ResetTest {
         assertEquals(connection.log(newDto(LogRequest.class)).getCommits().get(0).getMessage(), initMessage);
         assertTrue(aaa.exists());
         checkNotCached(connection, "aaa");
-        assertEquals(readFile(new File(connection.getWorkingDir(), "README.txt")), "MODIFIED\n");
+        assertEquals(Files.toString(new File(connection.getWorkingDir(), "README.txt"), Charsets.UTF_8), "MODIFIED\n");
     }
 }

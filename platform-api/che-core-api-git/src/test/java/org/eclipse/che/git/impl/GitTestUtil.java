@@ -97,23 +97,6 @@ public class GitTestUtil {
         return write(parent.resolve(name), content.getBytes()).toFile();
     }
 
-    public static String readFile(File file) throws IOException {
-        if (file.isDirectory())
-            throw new IllegalArgumentException("Can't read content from directory " + file.getAbsolutePath());
-        FileReader reader = null;
-        StringBuilder content = new StringBuilder();
-        try {
-            reader = new FileReader(file);
-            int ch = -1;
-            while ((ch = reader.read()) != -1)
-                content.append((char)ch);
-        } finally {
-            if (reader != null)
-                reader.close();
-        }
-        return content.toString();
-    }
-
 //    public static <T> T newDTO(Class<T> dtoInterface) {
 //        return DtoFactory.getInstance().createDto(dtoInterface);
 //    }

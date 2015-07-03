@@ -10,23 +10,31 @@
  *******************************************************************************/
 package org.eclipse.che.git.impl;
 
+import com.google.common.base.Charsets;
 import com.google.common.io.Files;
+
 import org.eclipse.che.api.git.GitConnection;
 import org.eclipse.che.api.git.GitConnectionFactory;
-import org.eclipse.che.api.git.GitException;
-import org.eclipse.che.api.git.shared.*;
+import org.eclipse.che.api.git.shared.AddRequest;
+import org.eclipse.che.api.git.shared.BranchCheckoutRequest;
+import org.eclipse.che.api.git.shared.BranchCreateRequest;
+import org.eclipse.che.api.git.shared.CommitRequest;
+import org.eclipse.che.api.git.shared.LogRequest;
+import org.eclipse.che.api.git.shared.MergeRequest;
+import org.eclipse.che.api.git.shared.MergeResult;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
-import static org.eclipse.che.git.impl.GitTestUtil.*;
+import static org.eclipse.che.git.impl.GitTestUtil.addFile;
+import static org.eclipse.che.git.impl.GitTestUtil.cleanupTestRepo;
+import static org.eclipse.che.git.impl.GitTestUtil.connectToGitRepositoryWithContent;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
@@ -75,7 +83,7 @@ public class MergeTest {
         //then
         assertEquals(mergeResult.getMergeStatus(), MergeResult.MergeStatus.FAST_FORWARD);
         assertTrue(file.exists());
-        assertEquals(readFile(file), "aaa\n");
+        assertEquals(Files.toString(file, Charsets.UTF_8), "aaa\n");
         assertEquals(connection.log(newDto(LogRequest.class)).getCommits().get(0).getMessage(), "add file in new branch");
     }
 
@@ -106,7 +114,7 @@ public class MergeTest {
                 + "=======\n" //
                 + "aaa\n" //
                 + ">>>>>>> MergeTestBranch\n";
-        String actual = readFile(new File(connection.getWorkingDir(), "t-merge-conflict"));
+        String actual = Files.toString(new File(connection.getWorkingDir(), "t-merge-conflict"), Charsets.UTF_8);
         assertEquals(actual, expContent);
     }
 
