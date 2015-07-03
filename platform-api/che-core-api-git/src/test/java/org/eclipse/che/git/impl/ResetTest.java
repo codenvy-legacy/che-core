@@ -14,9 +14,11 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import org.eclipse.che.api.git.GitConnection;
 import org.eclipse.che.api.git.GitConnectionFactory;
+import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.api.git.shared.AddRequest;
 import org.eclipse.che.api.git.shared.CommitRequest;
 import org.eclipse.che.api.git.shared.LogRequest;
+import org.eclipse.che.api.git.shared.LsFilesRequest;
 import org.eclipse.che.api.git.shared.ResetRequest;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -26,12 +28,17 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
-import static org.eclipse.che.git.impl.GitTestUtil.*;
+import static org.eclipse.che.git.impl.GitTestUtil.addFile;
+import static org.eclipse.che.git.impl.GitTestUtil.cleanupTestRepo;
+import static org.eclipse.che.git.impl.GitTestUtil.connectToGitRepositoryWithContent;
+import static org.eclipse.che.git.impl.GitTestUtil.CONTENT;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 /**
  * @author Eugene Voevodin
@@ -70,7 +77,7 @@ public class ResetTest {
         //then
         assertEquals(connection.log(newDto(LogRequest.class)).getCommits().get(0).getMessage(), initMessage);
         assertFalse(aaa.exists());
-        checkNotCached(connection, "aaa");
+        assertNotCached(connection, "aaa");
         assertEquals(CONTENT, Files.toString(new File(connection.getWorkingDir(), "README.txt"), Charsets.UTF_8));
     }
 
@@ -92,7 +99,7 @@ public class ResetTest {
         //then
         assertEquals(connection.log(newDto(LogRequest.class)).getCommits().get(0).getMessage(), initMessage);
         assertTrue(aaa.exists());
-        checkCached(connection, "aaa");
+        assertCached(connection, "aaa");
         assertEquals(Files.toString(new File(connection.getWorkingDir(), "README.txt"), Charsets.UTF_8), "MODIFIED\n");
     }
 
@@ -115,7 +122,25 @@ public class ResetTest {
         //then
         assertEquals(connection.log(newDto(LogRequest.class)).getCommits().get(0).getMessage(), initMessage);
         assertTrue(aaa.exists());
-        checkNotCached(connection, "aaa");
+        assertNotCached(connection, "aaa");
         assertEquals(Files.toString(new File(connection.getWorkingDir(), "README.txt"), Charsets.UTF_8), "MODIFIED\n");
+    }
+
+    public static void assertCached(GitConnection connection, String... fileNames) throws GitException {
+        List<String> output = connection.listFiles(newDto(LsFilesRequest.class).withCached(true));
+        for (String fName : fileNames) {
+            if (!output.contains(fName)) {
+                fail("Cache does not contain " + fName);
+            }
+        }
+    }
+
+    private void assertNotCached(GitConnection connection, String... fileNames) throws GitException {
+        List<String> output = connection.listFiles(newDto(LsFilesRequest.class).withCached(true));
+        for (String fName : fileNames) {
+            if (output.contains(fName)) {
+                fail("Cache contains " + fName);
+            }
+        }
     }
 }

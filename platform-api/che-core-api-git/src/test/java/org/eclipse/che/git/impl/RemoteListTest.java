@@ -41,31 +41,25 @@ import static org.testng.Assert.assertEquals;
 public class RemoteListTest {
 
     private File repository;
-    private final List<File> forClean = new ArrayList<>();
+    private File remoteRepo;
 
     @BeforeMethod
     public void setUp() {
         repository = Files.createTempDir();
+        remoteRepo = Files.createTempDir();
     }
 
     @AfterMethod
     public void cleanUp() {
         cleanupTestRepo(repository);
-        for (File file : forClean) {
-            deleteRecursive(file);
-        }
-        forClean.clear();
+        cleanupTestRepo(remoteRepo);
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testRemoteList(GitConnectionFactory connectionFactory)
             throws ServerException, URISyntaxException, UnauthorizedException, IOException {
         GitConnection connection = connectToGitRepositoryWithContent(connectionFactory, repository);
-        File repository2 = new File(connection.getWorkingDir().getParent(), "repository2");
-        repository2.mkdir();
-        forClean.add(repository2);
-
-        GitConnection connection2 = connectToGitRepositoryWithContent(connectionFactory, repository2);
+        GitConnection connection2 = connectToGitRepositoryWithContent(connectionFactory, remoteRepo);
         connection2.clone(newDto(CloneRequest.class).withRemoteUri(connection.getWorkingDir().getAbsolutePath()));
         assertEquals(connection.remoteList(newDto(RemoteListRequest.class)).size(), 1);
         //create new remote

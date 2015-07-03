@@ -104,35 +104,4 @@ public class GitTestUtil {
     public static void init(GitConnection connection) throws GitException {
         connection.init(newDto(InitRequest.class).withBare(false));
     }
-
-    public static void checkCached(GitConnection connection, String... fileNames) throws GitException {
-        List<String> output = connection.listFiles(newDto(LsFilesRequest.class).withCached(true));
-        for (String fName : fileNames) {
-            if (!output.contains(fName)) {
-                fail("Cache does not contain " + fName);
-            }
-        }
-    }
-
-    public static void checkNotCached(GitConnection connection, String... fileNames) throws GitException {
-        List<String> output = connection.listFiles(newDto(LsFilesRequest.class).withCached(true));
-        for (String fName : fileNames) {
-            if (output.contains(fName)) {
-                fail("Cache contains " + fName);
-            }
-        }
-    }
-
-    public static void validateBranchList(List<Branch> toValidate, List<Branch> pattern) {
-        l1:
-        for (Branch tb : toValidate) {
-            for (Branch pb : pattern) {
-                if (tb.getName().equals(pb.getName()) //
-                        && tb.getDisplayName().equals(pb.getDisplayName()) //
-                        && tb.isActive() == pb.isActive())
-                    continue l1;
-            }
-            fail("List of branches is not matches to expected. Branch " + tb + " is not expected in result. ");
-        }
-    }
 }

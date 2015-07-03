@@ -47,31 +47,26 @@ import static org.testng.Assert.assertTrue;
 public class PushTest {
 
     private File repository;
-    private final List<File> forClean = new ArrayList<>();
+    private File remoteRepo;
 
     @BeforeMethod
     public void setUp() {
         repository = Files.createTempDir();
+        remoteRepo = Files.createTempDir();
     }
 
     @AfterMethod
     public void cleanUp() {
         cleanupTestRepo(repository);
-        for (File file : forClean) {
-            deleteRecursive(file);
-        }
-        forClean.clear();
+        cleanupTestRepo(remoteRepo);
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testSimplePush(GitConnectionFactory connectionFactory) throws IOException, ServerException, URISyntaxException, UnauthorizedException {
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
-        File pushTo = new File(connection.getWorkingDir().getParent(), "repo2");
-        pushTo.mkdir();
-        forClean.add(pushTo);
-        GitConnection remoteConnection = connectToInitializedGitRepository(connectionFactory, pushTo);
+        GitConnection remoteConnection = connectToInitializedGitRepository(connectionFactory, remoteRepo);
         remoteConnection.clone(newDto(CloneRequest.class).withRemoteUri(connection.getWorkingDir().getAbsolutePath()));
-        addFile(pushTo.toPath(), "newfile", "content");
+        addFile(remoteRepo.toPath(), "newfile", "content");
         remoteConnection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
         remoteConnection.commit(newDto(CommitRequest.class).withMessage("Fake commit"));
         //make push
@@ -89,10 +84,7 @@ public class PushTest {
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testPushRemote(GitConnectionFactory connectionFactory) throws GitException, IOException, URISyntaxException, UnauthorizedException {
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
-        File remoteRepo = new File(connection.getWorkingDir().getParent(), "remoteRepo");
-        remoteRepo.mkdir();
-        forClean.add(remoteRepo);
-        GitConnection remoteConnection = connectToInitializedGitRepository(connectionFactory, repository);
+        GitConnection remoteConnection = connectToInitializedGitRepository(connectionFactory, remoteRepo);
         addFile(remoteRepo.toPath(), "README", "README");
         remoteConnection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
         remoteConnection.commit(newDto(CommitRequest.class).withMessage("Init commit."));

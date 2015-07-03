@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.git.impl;
 
+import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.git.GitConnection;
@@ -28,14 +29,12 @@ import org.testng.annotations.Test;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
-import static org.eclipse.che.commons.lang.IoUtil.deleteRecursive;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 import static org.eclipse.che.git.impl.GitTestUtil.*;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 /**
  * @author Eugene Voevodin
@@ -43,20 +42,18 @@ import static org.testng.Assert.assertEquals;
 public class RemoteAddTest {
 
     private File repository;
-    private final List<File> forClean = new ArrayList<>();
+    private File remoteRepo;
 
     @BeforeMethod
     public void setUp() {
         repository = Files.createTempDir();
+        remoteRepo = Files.createTempDir();
     }
 
     @AfterMethod
     public void cleanUp() {
         cleanupTestRepo(repository);
-        for (File file : forClean) {
-            deleteRecursive(file);
-        }
-        forClean.clear();
+        cleanupTestRepo(remoteRepo);
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
@@ -73,14 +70,11 @@ public class RemoteAddTest {
     public void testAddNotAllBranchesTracked(GitConnectionFactory connectionFactory) throws GitException, URISyntaxException, IOException, UnauthorizedException {
         //given
         GitConnection connection = connectToGitRepositoryWithContent(connectionFactory, repository);
-        File repository2 = new File(connection.getWorkingDir().getParent(), "repository2");
-        repository2.mkdir();
-        forClean.add(repository2);
         connection.branchCreate(newDto(BranchCreateRequest.class).withName("b1"));
         connection.branchCreate(newDto(BranchCreateRequest.class).withName("b2"));
         connection.branchCreate(newDto(BranchCreateRequest.class).withName("b3"));
 
-        GitConnection connection2 = connectToInitializedGitRepository(connectionFactory, repository2);
+        GitConnection connection2 = connectToInitializedGitRepository(connectionFactory, remoteRepo);
         //add remote tracked only to b1 and b3 branches
         RemoteAddRequest remoteAddRequest = newDto(RemoteAddRequest.class)
                 .withName("origin")
@@ -91,14 +85,16 @@ public class RemoteAddTest {
         //then
         //make pull
         connection2.pull(newDto(PullRequest.class).withRemote("origin"));
-        validateBranchList(connection.branchList(newDto(BranchListRequest.class).withListMode(BranchListRequest.LIST_REMOTE)),
-                Arrays.asList(
+        assertTrue(Sets.symmetricDifference(
+                Sets.newHashSet(connection.branchList(newDto(BranchListRequest.class)
+                        .withListMode(BranchListRequest.LIST_REMOTE))),
+                Sets.newHashSet(
                         newDto(Branch.class).withName("refs/remotes/origin/b1")
                                 .withDisplayName("origin/b1").withActive(false).withRemote(true),
                         newDto(Branch.class).withName("refs/remotes/origin/b3")
                                 .withDisplayName("origin/b3").withActive(false).withRemote(true)
                 )
-        );
+        ).isEmpty());
     }
 }
 

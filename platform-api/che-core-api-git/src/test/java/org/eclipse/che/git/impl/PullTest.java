@@ -42,20 +42,18 @@ import static org.testng.Assert.assertTrue;
 public class PullTest {
 
     private File repository;
-    private final List<File> forClean = new ArrayList<>();
+    private File remoteRepo;
 
     @BeforeMethod
     public void setUp() {
         repository = Files.createTempDir();
+        remoteRepo = Files.createTempDir();
     }
 
     @AfterMethod
     public void cleanUp() {
         cleanupTestRepo(repository);
-        for (File file : forClean) {
-            deleteRecursive(file);
-        }
-        forClean.clear();
+        cleanupTestRepo(remoteRepo);
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
@@ -63,10 +61,7 @@ public class PullTest {
         //given
         //create new repository clone of default
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
-        File repo2 = new File(connection.getWorkingDir().getParent(), "repo2");
-        repo2.mkdir();
-        forClean.add(repo2);
-        GitConnection connection2 = connectToInitializedGitRepository(connectionFactory, repo2);
+        GitConnection connection2 = connectToInitializedGitRepository(connectionFactory, remoteRepo);
         connection2.clone(newDto(CloneRequest.class)
                 .withRemoteUri(connection.getWorkingDir().getAbsolutePath()));
         addFile(connection, "newfile1", "new file1 content");
@@ -75,7 +70,7 @@ public class PullTest {
         //when
         connection2.pull(newDto(PullRequest.class).withRemote("origin").withTimeout(-1));
         //then
-        assertTrue(new File(repo2.getAbsolutePath(), "newfile1").exists());
+        assertTrue(new File(remoteRepo.getAbsolutePath(), "newfile1").exists());
     }
 
 
@@ -85,12 +80,9 @@ public class PullTest {
         //given
         //create new repository clone of default
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
-        File repo2 = new File(connection.getWorkingDir().getParent(), "repo2");
-        repo2.mkdir();
-        forClean.add(repo2);
-        GitConnection connection2 = connectToInitializedGitRepository(connectionFactory, repo2);
+        GitConnection connection2 = connectToInitializedGitRepository(connectionFactory, remoteRepo);
         connection2.clone(newDto(CloneRequest.class).withRemoteUri(connection.getWorkingDir().getAbsolutePath())
-                .withWorkingDir(repo2.getAbsolutePath()));
+                .withWorkingDir(remoteRepo.getAbsolutePath()));
         //add new branch
         connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName("b1").withCreateNew(true));
         addFile(connection, "newfile1", "new file1 content");
@@ -117,11 +109,8 @@ public class PullTest {
         connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
         connection.commit(newDto(CommitRequest.class).withMessage("remote test"));
 
-        File newRepo = new File(connection.getWorkingDir().getParent(), "newRepo");
-        newRepo.mkdir();
-        forClean.add(newRepo);
-        GitConnection connection2 = connectToInitializedGitRepository(connectionFactory, newRepo);
-        addFile(newRepo.toPath(), "EMPTY", "");
+        GitConnection connection2 = connectToInitializedGitRepository(connectionFactory, remoteRepo);
+        addFile(remoteRepo.toPath(), "EMPTY", "");
         connection2.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
         connection2.commit(newDto(CommitRequest.class).withMessage("init"));
 
@@ -131,6 +120,6 @@ public class PullTest {
         request.setRefSpec(branchName);
         connection2.pull(request);
         //then
-        assertTrue(new File(newRepo.getAbsolutePath(), "remoteFile").exists());
+        assertTrue(new File(remoteRepo.getAbsolutePath(), "remoteFile").exists());
     }
 }

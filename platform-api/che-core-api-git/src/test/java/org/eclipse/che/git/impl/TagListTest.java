@@ -61,7 +61,7 @@ public class TagListTest {
         secondTag.setName("second-tag");
         connection.tagCreate(secondTag);
 
-        validateTags(connection.tagList(
+        assertTags(connection.tagList(
                 newDto(TagListRequest.class)), "first-tag", "first-tag-other", "second-tag");
     }
 
@@ -82,10 +82,10 @@ public class TagListTest {
         TagListRequest request = newDto(TagListRequest.class);
         request.setPattern("first*");
 
-        validateTags(connection.tagList(request), "first-tag", "first-tag-other");
+        assertTags(connection.tagList(request), "first-tag", "first-tag-other");
     }
 
-    protected void validateTags(List<Tag> tagList, String... expNames) {
+    protected void assertTags(List<Tag> tagList, String... expNames) {
         assertEquals(tagList.size(), expNames.length);
         List<String> names = new ArrayList<>(tagList.size());
         for (Tag t : tagList)

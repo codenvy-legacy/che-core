@@ -11,6 +11,7 @@
 package org.eclipse.che.git.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 
 import org.eclipse.che.api.core.UnauthorizedException;
@@ -38,6 +39,7 @@ import static org.eclipse.che.dto.server.DtoFactory.newDto;
 import static org.eclipse.che.git.impl.GitTestUtil.addFile;
 import static org.eclipse.che.git.impl.GitTestUtil.cleanupTestRepo;
 import static org.eclipse.che.git.impl.GitTestUtil.connectToInitializedGitRepository;
+import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
 /**
@@ -70,25 +72,26 @@ public class BranchDeleteTest {
         //given
         connection.branchCreate(newDto(BranchCreateRequest.class).withName("newbranch"));
 
-        validateBranchList(
-                connection.branchList(newDto(BranchListRequest.class).withListMode(LIST_LOCAL)),
-                Arrays.asList(
+        assertTrue(Sets.symmetricDifference(
+                Sets.newHashSet(
+                        connection.branchList(newDto(BranchListRequest.class).withListMode(LIST_LOCAL))),
+                Sets.newHashSet(
                         newDto(Branch.class).withName("refs/heads/master")
-                                            .withDisplayName("master").withActive(true).withRemote(false),
+                                .withDisplayName("master").withActive(true).withRemote(false),
                         newDto(Branch.class).withName("refs/heads/newbranch")
-                                            .withDisplayName("newbranch").withActive(false).withRemote(false)
-                             )
-                          );
+                                .withDisplayName("newbranch").withActive(false).withRemote(false)
+                )
+        ).isEmpty());
         //when
         connection.branchDelete(newDto(BranchDeleteRequest.class).withName("newbranch").withForce(false));
         //then
-        validateBranchList(
-                connection.branchList(newDto(BranchListRequest.class).withListMode(LIST_LOCAL)),
-                Arrays.asList(
+        assertTrue(Sets.symmetricDifference(
+                Sets.newHashSet(
+                        connection.branchList(newDto(BranchListRequest.class).withListMode(LIST_LOCAL))),
+                Sets.newHashSet(
                         newDto(Branch.class).withName("refs/heads/master")
-                                            .withDisplayName("master").withActive(true).withRemote(false)
-                             )
-                          );
+                                .withDisplayName("master").withActive(true).withRemote(false))
+        ).isEmpty());
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
@@ -110,13 +113,14 @@ public class BranchDeleteTest {
         //when
         connection.branchDelete(newDto(BranchDeleteRequest.class).withName("newbranch").withForce(true));
         //then
-        validateBranchList(
-                connection.branchList(newDto(BranchListRequest.class).withListMode(LIST_LOCAL)),
-                Arrays.asList(
-                        newDto(Branch.class).withName("refs/heads/master")
-                                .withDisplayName("master").withActive(true).withRemote(false)
+        assertTrue(Sets.symmetricDifference(
+                Sets.newHashSet(
+                        connection.branchList(newDto(BranchListRequest.class).withListMode(LIST_LOCAL))),
+                Sets.newHashSet(
+                                newDto(Branch.class).withName("refs/heads/master")
+                                        .withDisplayName("master").withActive(true).withRemote(false)
                 )
-        );
+        ).isEmpty());
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class,
@@ -137,17 +141,5 @@ public class BranchDeleteTest {
         connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName("master"));
 
         connection.branchDelete(newDto(BranchDeleteRequest.class).withName("newbranch").withForce(false));
-    }
-    private void validateBranchList(List<Branch> toValidate, List<Branch> pattern) {
-        l1:
-        for (Branch tb : toValidate) {
-            for (Branch pb : pattern) {
-                if (tb.getName().equals(pb.getName()) //
-                    && tb.getDisplayName().equals(pb.getDisplayName()) //
-                    && tb.isActive() == pb.isActive())
-                    continue l1;
-            }
-            fail("List of branches is not matches to expected. Branch " + tb + " is not expected in result. ");
-        }
     }
 }
