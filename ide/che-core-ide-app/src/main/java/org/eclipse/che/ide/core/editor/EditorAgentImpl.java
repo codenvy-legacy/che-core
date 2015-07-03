@@ -10,6 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.ide.core.editor;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.web.bindery.event.shared.EventBus;
+
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorInitException;
@@ -34,7 +39,6 @@ import org.eclipse.che.ide.api.filetypes.FileTypeRegistry;
 import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.parts.PartPresenter;
-import org.eclipse.che.ide.api.parts.PartStackType;
 import org.eclipse.che.ide.api.parts.PropertyListener;
 import org.eclipse.che.ide.api.parts.WorkspaceAgent;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
@@ -46,10 +50,6 @@ import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.util.loging.Log;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nonnull;
 
@@ -57,6 +57,7 @@ import static org.eclipse.che.ide.api.event.FileEvent.FileOperation.CLOSE;
 import static org.eclipse.che.ide.api.event.ItemEvent.ItemOperation.DELETED;
 import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
 import static org.eclipse.che.ide.api.notification.Notification.Type.INFO;
+import static org.eclipse.che.ide.api.parts.PartStackType.EDITING;
 
 /** @author Evgen Vidolob */
 @Singleton
@@ -188,7 +189,7 @@ public class EditorAgentImpl implements EditorAgent {
 
     private void doOpen(final VirtualFile file, final OpenEditorCallback callback) {
         if (openedEditors.containsKey(file.getPath())) {
-            workspace.setActivePart(openedEditors.get(file.getPath()));
+            workspace.setActivePart(openedEditors.get(file.getPath()), EDITING);
         } else {
             FileType fileType = fileTypeRegistry.getFileTypeByFile(file);
             EditorProvider editorProvider = editorRegistry.getEditor(fileType);
@@ -199,7 +200,7 @@ public class EditorAgentImpl implements EditorAgent {
             } catch (EditorInitException e) {
                 Log.error(getClass(), e);
             }
-            workspace.openPart(editor, PartStackType.EDITING);
+            workspace.openPart(editor, EDITING);
             openedEditors.put(file.getPath(), editor);
 
             workspace.setActivePart(editor);
@@ -207,10 +208,10 @@ public class EditorAgentImpl implements EditorAgent {
                 @Override
                 public void propertyChanged(PartPresenter source, int propId) {
                     if (propId == EditorPartPresenter.PROP_INPUT) {
-                        if(editor instanceof HasReadOnlyProperty) {
+                        if (editor instanceof HasReadOnlyProperty) {
                             ((HasReadOnlyProperty)editor).setReadOnly(file.isReadOnly());
                         }
-                        if(callback != null) {
+                        if (callback != null) {
                             callback.onEditorOpened(editor);
                         }
                     }

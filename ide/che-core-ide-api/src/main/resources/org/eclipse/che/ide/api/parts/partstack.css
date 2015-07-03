@@ -192,15 +192,83 @@
 }
 
 .ide-PartStack-Tool-Tab-selected {
-    /* tab that is currently selected (active) */
-    cursor: default;
+    background: #454545;
     color: #ffffff;
+}
+
+.ide-PartStack-Tool-Tab-selected::before {
+    position: absolute;
+    content: "";
+    width: 100%;
+    height: 1px;
+    background: #47afdd;
 }
 
 .ide-PartStack-Tool-Tab-selected:before {
     position: absolute;
-    height: 0px;
     content: "";
+    width: 100%;
+    height: 1px;
+    background: #47afdd;
+}
+
+.selectedRightOrLeftTab {
+    background: #454545;
+    color: #ffffff;
+}
+
+.selectedRightOrLeftTab:before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+}
+
+.selectedRightOrLeftTab::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+}
+
+.onTabMouseOver {
+    background: #8c9092 !important;
+}
+
+.leftTabBorders {
+    border-left: 1px solid #8c9092;
+    box-shadow: inset 1px 0 0 0 black;
+}
+
+.tabBordersDefault {
+    border-right: 1px solid #8c9092;
+    box-shadow: inset -1px 0 0 0 black;
+}
+
+.selectEditorTab {
+    background: #4D7191 !important;
+}
+
+.activeTabTextColor {
+    color: #dbdbdb !important;
+}
+
+.opacity {
+    opacity: 1 !important;
+}
+
+.unSelectEditorBorder {
+    border-left: 3px solid #5A5C5C !important;
+    border-top: 3px solid #5A5C5C !important;
+}
+
+.listItemPanel {
+    border-left: 1px solid #353535;
+    border-right: 1px solid #353535;
+    border-bottom: 1px solid #353535;
+    background: #5A5C5C;
+}
+
+.listShownButtonBackground {
+    background: #5A5C5C !important;
 }
 
 .ide-PartStack-Tab-Right.ide-PartStack-Tool-Tab-selected:before {
@@ -250,6 +318,24 @@
 .ide-part-stack-header-menu-button {
     float: right;
     margin-top: -1px;
+}
+
+.rotateLeftPanel {
+    -webkit-transform: rotate(270deg);
+    -moz-transform: rotate(270deg);
+    -webkit-transform-origin: 42px 42px;
+    -moz-transform-origin: 42px 42px;
+
+    background: #5a5c5c !important :;
+}
+
+.rotateRightPanel {
+    -webkit-transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+    -webkit-transform-origin: 8px 9px;
+    -moz-transform-origin: 8px 9px;
+
+    background: #5a5c5c !important :;
 }
 
 .ide-PartStack-Tool-Tab {
@@ -413,53 +499,3 @@
     margin-top: 4px;
     float: left;
 }
-
-/***********************************************************************************************************************
- *
- * Below styles are needed for IDEUI-40 [UI] Create rounded tabs for file in order to be conform to initial designs.
- * The main idea is restyling the tabs using CSS attribute selectors.
- *
- **********************************************************************************************************************/
-
-/*
-.ide-PartStack .ide-PartStack-Tab[visible][left] {
-    border-left: greenyellow 2px solid;
-}
-.ide-PartStack .ide-PartStack-Tab[visible][right] {
-    border-right: greenyellow 2px solid;
-}
-.ide-PartStack .ide-PartStack-Tab[visible] {
-    background-color: #082f8e;
-    color: #f4ffdb;
-}
-.ide-PartStack .ide-PartStack-Tab[visible]:HOVER {
-    text-decoration: underline;
-    color: red;
-}
-.ide-PartStack .ide-PartStack-Tab[visible][active] {
-    background-color: #08c7f8;
-    color: #593e59;
-}
-.ide-PartStack .ide-PartStack-Tab[visible][active]:HOVER {
-    color: #ffd600;
-}
-*/
-
-/*
-div[id="gwt-debug-editorPartStack-tabsPanel"] > div[visible] {
-    background-color: #6d9caa;
-    color: #F9FBA7;
-}
-div[id="gwt-debug-editorPartStack-tabsPanel"] > div[visible]:HOVER {
-    text-decoration: underline;
-    color: #593E59;
-    cursor: pointer;
-}
-div[id="gwt-debug-editorPartStack-tabsPanel"] > div[visible][active] {
-    background-color: #b6f1ff;
-    color: #D82D2D;
-}
-div[id="gwt-debug-editorPartStack-tabsPanel"] > div[visible][active]:HOVER {
-    color: #973E62;
-}
-*/

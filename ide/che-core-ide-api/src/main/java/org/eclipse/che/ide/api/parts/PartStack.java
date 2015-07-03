@@ -13,7 +13,7 @@ package org.eclipse.che.ide.api.parts;
 import org.eclipse.che.ide.api.constraints.Constraints;
 import org.eclipse.che.ide.api.mvp.Presenter;
 
-import java.util.List;
+import javax.annotation.Nonnull;
 
 /**
  * Part Stack is tabbed layout element, containing Parts.
@@ -53,13 +53,6 @@ public interface PartStack extends Presenter {
     boolean containsPart(PartPresenter part);
 
     /**
-     * Number of parts in the PartStack
-     *
-     * @return
-     */
-    int getNumberOfParts();
-
-    /**
      * Get active Part. Active is the part that is currently displayed on the screen
      *
      * @return
@@ -72,7 +65,7 @@ public interface PartStack extends Presenter {
      *
      * @param part
      */
-    void setActivePart(PartPresenter part);
+    void setActivePart(@Nonnull PartPresenter part);
 
     /**
      * Hide given part (remove from the screen). If part not active part that method has no effect.
@@ -88,9 +81,5 @@ public interface PartStack extends Presenter {
      */
     void removePart(PartPresenter part);
 
-    /**
-     * Gets all the parts registered.
-     */
-    List<PartPresenter> getPartPresenters();
-
+    void openPreviousActivePart();
 }

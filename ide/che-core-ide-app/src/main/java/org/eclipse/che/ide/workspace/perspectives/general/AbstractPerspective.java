@@ -12,7 +12,6 @@ package org.eclipse.che.ide.workspace.perspectives.general;
 
 import org.eclipse.che.ide.api.constraints.Constraints;
 import org.eclipse.che.ide.api.mvp.Presenter;
-import org.eclipse.che.ide.api.parts.EditorPartStack;
 import org.eclipse.che.ide.api.parts.PartPresenter;
 import org.eclipse.che.ide.api.parts.PartStack;
 import org.eclipse.che.ide.api.parts.PartStackType;
@@ -21,10 +20,10 @@ import org.eclipse.che.ide.api.parts.Perspective;
 import org.eclipse.che.ide.workspace.PartStackPresenterFactory;
 import org.eclipse.che.ide.workspace.PartStackViewFactory;
 import org.eclipse.che.ide.workspace.WorkBenchControllerFactory;
+import org.eclipse.che.ide.workspace.WorkBenchPartController;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,31 +45,53 @@ public abstract class AbstractPerspective implements Presenter, Perspective {
     protected final Map<PartStackType, PartStack> partStacks;
     protected final PerspectiveViewImpl           view;
 
-    private List<PartPresenter> activeParts;
+    private final String                  perspectiveId;
+    private final WorkBenchPartController leftPartController;
+    private final WorkBenchPartController rightPartController;
+    private final WorkBenchPartController belowPartController;
 
-    protected AbstractPerspective(@Nonnull PerspectiveViewImpl view,
+    private double leftPartSize;
+    private double rightPartSize;
+    private double belowPartSize;
+
+    protected AbstractPerspective(@Nonnull String perspectiveId,
+                                  @Nonnull PerspectiveViewImpl view,
                                   @Nonnull PartStackPresenterFactory stackPresenterFactory,
                                   @Nonnull PartStackViewFactory partViewFactory,
                                   @Nonnull WorkBenchControllerFactory controllerFactory) {
         this.view = view;
+        this.perspectiveId = perspectiveId;
         this.partStacks = new HashMap<>();
 
         PartStackView navigationView = partViewFactory.create(LEFT, view.getLeftPanel());
-        PartStack navigationPartStack = stackPresenterFactory.create(navigationView,
-                                                                     controllerFactory.createController(view.getSplitPanel(),
-                                                                                                        view.getNavigationPanel()));
+
+        leftPartController = controllerFactory.createController(view.getSplitPanel(), view.getNavigationPanel());
+        PartStack navigationPartStack = stackPresenterFactory.create(navigationView, leftPartController);
         partStacks.put(NAVIGATION, navigationPartStack);
 
         PartStackView informationView = partViewFactory.create(BELOW, view.getBottomPanel());
-        PartStack informationStack = stackPresenterFactory.create(informationView,
-                                                                  controllerFactory.createController(view.getSplitPanel(),
-                                                                                                     view.getInformationPanel()));
+
+        belowPartController = controllerFactory.createController(view.getSplitPanel(), view.getInformationPanel());
+        PartStack informationStack = stackPresenterFactory.create(informationView, belowPartController);
         partStacks.put(INFORMATION, informationStack);
 
         PartStackView toolingView = partViewFactory.create(RIGHT, view.getRightPanel());
-        PartStack toolingPartStack = stackPresenterFactory.create(toolingView, controllerFactory.createController(view.getSplitPanel(),
-                                                                                                                  view.getToolPanel()));
+
+        rightPartController = controllerFactory.createController(view.getSplitPanel(), view.getToolPanel());
+        PartStack toolingPartStack = stackPresenterFactory.create(toolingView, rightPartController);
         partStacks.put(TOOLING, toolingPartStack);
+    }
+
+    /**
+     * Opens previous active tab on current perspective.
+     *
+     * @param partStackType
+     *         part type on which need open previous active part
+     */
+    protected void openActivePart(@Nonnull PartStackType partStackType) {
+        PartStack partStack = partStacks.get(partStackType);
+
+        partStack.openPreviousActivePart();
     }
 
     /** {@inheritDoc} */
@@ -93,30 +114,20 @@ public abstract class AbstractPerspective implements Presenter, Perspective {
 
     /** Expands all editors parts. */
     public void expandEditorPart() {
-        activeParts = new ArrayList<>();
-        for (PartStack value : partStacks.values()) {
-            if (value instanceof EditorPartStack) {
-                continue;
-            }
+        leftPartSize = leftPartController.getSize();
+        rightPartSize = rightPartController.getSize();
+        belowPartSize = belowPartController.getSize();
 
-            PartPresenter part = value.getActivePart();
-            if (part != null) {
-                value.hidePart(part);
-                activeParts.add(part);
-            }
-        }
+        leftPartController.setHidden(true);
+        rightPartController.setHidden(true);
+        belowPartController.setHidden(true);
     }
 
     /** Restores editor parts. */
     public void restoreEditorPart() {
-        for (PartPresenter activePart : activeParts) {
-            PartStack destPartStack = findPartStackByPart(activePart);
-            PartPresenter newPart = destPartStack.getActivePart();
-
-            if (newPart == null) {
-                destPartStack.setActivePart(activePart);
-            }
-        }
+        leftPartController.setSize(leftPartSize);
+        rightPartController.setSize(rightPartSize);
+        belowPartController.setSize(belowPartSize);
     }
 
     /** {@inheritDoc} */
@@ -126,6 +137,14 @@ public abstract class AbstractPerspective implements Presenter, Perspective {
         if (destPartStack != null) {
             destPartStack.setActivePart(part);
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setActivePart(@Nonnull PartPresenter part, @Nonnull PartStackType type) {
+        PartStack destPartStack = partStacks.get(type);
+
+        destPartStack.setActivePart(part);
     }
 
     /**
@@ -148,16 +167,24 @@ public abstract class AbstractPerspective implements Presenter, Perspective {
 
     /** {@inheritDoc} */
     @Override
-    public void openPart(@Nonnull PartPresenter part, @Nonnull PartStackType type) {
-        openPart(part, type, null);
+    public void addPart(@Nonnull PartPresenter part, @Nonnull PartStackType type) {
+        addPart(part, type, null);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void openPart(@Nonnull PartPresenter part, @Nonnull PartStackType type, @Nullable Constraints constraint) {
+    public void addPart(@Nonnull PartPresenter part, @Nonnull PartStackType type, @Nullable Constraints constraint) {
         PartStack destPartStack = partStacks.get(type);
 
-        if (!destPartStack.containsPart(part)) {
+        List<String> rules = part.getRules();
+
+        if (rules.isEmpty() && !destPartStack.containsPart(part)) {
+            destPartStack.addPart(part, constraint);
+
+            return;
+        }
+
+        if (rules.contains(perspectiveId)) {
             destPartStack.addPart(part, constraint);
         }
     }

@@ -29,7 +29,8 @@ import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.CustomComponentAction;
 import org.eclipse.che.ide.api.action.Presentation;
-import org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective;
+import org.eclipse.che.ide.api.parts.Perspective;
+import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.vectomatic.dom.svg.ui.SVGButtonBase;
 import org.vectomatic.dom.svg.ui.SVGToggleButton;
 
@@ -44,23 +45,26 @@ import java.util.List;
 public class ExpandEditorAction extends Action implements CustomComponentAction {
 
     private final Resources                resources;
-    private final ProjectPerspective       projectPerspective;
     private final CoreLocalizationConstant constant;
     private final AnalyticsEventLogger     eventLogger;
+    private final PerspectiveManager       perspectiveManager;
+    private final List<SVGToggleButton>    toggleButtons;
 
-    private boolean               expanded      = false;
-    private List<SVGToggleButton> toggleButtons = new ArrayList<>();
+    private boolean expanded;
 
     @Inject
     public ExpandEditorAction(Resources resources,
+                              PerspectiveManager perspectiveManager,
                               CoreLocalizationConstant constant,
-                              ProjectPerspective projectPerspective,
                               AnalyticsEventLogger eventLogger) {
         super(constant.actionExpandEditorTitle(), null, null, resources.fullscreen());
         this.resources = resources;
-        this.projectPerspective = projectPerspective;
+        this.perspectiveManager = perspectiveManager;
         this.constant = constant;
         this.eventLogger = eventLogger;
+
+        this.expanded = false;
+        this.toggleButtons = new ArrayList<>();
 
         setExpandEditorEventHandler();
     }
@@ -117,19 +121,21 @@ public class ExpandEditorAction extends Action implements CustomComponentAction 
      * Handles the clicking on Expand button and expands or restores the editor.
      */
     public void expandEditor() {
-        if (expanded) {
-            projectPerspective.restoreEditorPart();
-            for (SVGToggleButton toggleButton : toggleButtons) {
-                toggleButton.setDown(false);
-            }
-            expanded = false;
-        } else {
-            projectPerspective.expandEditorPart();
-            for (SVGToggleButton toggleButton : toggleButtons) {
-                toggleButton.setDown(true);
-            }
-            expanded = true;
+        Perspective activePerspective = perspectiveManager.getActivePerspective();
+
+        if (activePerspective == null) {
+            return;
         }
+
+        if (expanded) {
+            activePerspective.restoreEditorPart();
+        } else {
+            activePerspective.expandEditorPart();
+        }
+
+        toggleButtons.get(0).setDown(!expanded);
+
+        expanded = !expanded;
     }
 
 }

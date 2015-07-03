@@ -10,264 +10,194 @@
  *******************************************************************************/
 package org.eclipse.che.ide.part.editor;
 
-import junit.framework.TestCase;
-
-import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.api.editor.EditorPartPresenter;
-import org.eclipse.che.ide.api.parts.PartPresenter;
-import org.eclipse.che.ide.api.parts.PartStackUIResources;
-import org.eclipse.che.ide.api.parts.PartStackView;
-import org.eclipse.che.ide.api.parts.PropertyListener;
-
-import org.eclipse.che.ide.part.editor.EditorPartStackPresenter;
-import org.eclipse.che.ide.part.editor.EditorPartStackView;
-import org.eclipse.che.ide.texteditor.openedfiles.ListOpenedFilesPresenter;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.logical.shared.CloseHandler;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.gwtmockito.GwtMockitoTestRunner;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.ide.api.editor.EditorWithErrors;
+import org.eclipse.che.ide.api.event.ProjectActionEvent;
+import org.eclipse.che.ide.api.event.ProjectActionHandler;
+import org.eclipse.che.ide.api.parts.PartPresenter;
+import org.eclipse.che.ide.api.parts.PropertyListener;
+import org.eclipse.che.ide.client.inject.factories.TabItemFactory;
+import org.eclipse.che.ide.part.PartStackPresenter.PartStackEventHandler;
+import org.eclipse.che.ide.part.PartsComparator;
+import org.eclipse.che.ide.part.widgets.editortab.EditorTab;
+import org.eclipse.che.ide.part.widgets.listtab.ListButton;
+import org.eclipse.che.ide.part.widgets.listtab.item.ListItem;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Matchers;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.vectomatic.dom.svg.OMSVGSVGElement;
-import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import java.util.List;
-
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.eq;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
- * @author Alexander Andrienko
+ * @author Dmitry Shnurenko
  */
 @RunWith(GwtMockitoTestRunner.class)
 public class EditorPartStackPresenterTest {
 
-    @Mock
-    private PartStackUIResources partStackUIResources;
-    @Mock
-    private Resources            resources;
+    private static final String SOME_TEXT = "someText";
 
+    //constructor mocks
     @Mock
-    private EditorPartPresenter part1;
+    private EditorPartStackView   view;
     @Mock
-    private EditorPartPresenter part2;
+    private PartsComparator       partsComparator;
     @Mock
-    private EditorPartPresenter part3;
+    private EventBus              eventBus;
     @Mock
-    private List<PartPresenter> parts;
+    private TabItemFactory        tabItemFactory;
+    @Mock
+    private PartStackEventHandler partStackEventHandler;
+    @Mock
+    private ListButton            listButton;
 
+    //additional mocks
     @Mock
-    private PartStackView.TabItem item;
+    private EditorTab          editorTab;
     @Mock
-    private PartStackView.TabItem item2;
+    private EditorWithErrors   withErrorsPart;
     @Mock
-    private PartStackView.TabItem item3;
+    private PartPresenter      partPresenter;
+    @Mock
+    private SVGResource        resource;
+    @Mock
+    private ProjectActionEvent actionEvent;
 
-    /*
-     * Variables for constructor
-     */
-    @Mock
-    private EditorPartStackView                            view;
-    @Mock
-    private EventBus                                       eventBus;
-    @Mock
-    private EditorPartStackPresenter.PartStackEventHandler partStackEventHandler;
-    @Mock
-    private ListOpenedFilesPresenter                       listOpenedFilesPresenter;
-
-    @Mock
-    private PartStackView.ActionDelegate actionDelegate;
-    @Mock
-    private AsyncCallback                asyncCallback;
-    @Mock
-    private SVGImage                     svgImage;
-    @Mock
-    private SVGResource                  titleSVGResource;
-    @Mock
-    private OMSVGSVGElement              svgElem;
-
-    private String partTitle1 = "someTitle";
-    private String toolTip1   = "someToolTipe";
+    @Captor
+    private ArgumentCaptor<ListItem>             itemCaptor;
+    @Captor
+    private ArgumentCaptor<ProjectActionHandler> projectActionHandlerCaptor;
 
     private EditorPartStackPresenter presenter;
 
     @Before
     public void setUp() {
-        presenter = new EditorPartStackPresenter(view, eventBus, partStackEventHandler, listOpenedFilesPresenter);
+        when(partPresenter.getTitle()).thenReturn(SOME_TEXT);
+        when(partPresenter.getTitleSVGImage()).thenReturn(resource);
 
-        doReturn(svgElem).when(titleSVGResource).getSvg();
-        doReturn(Mockito.mock(Element.class)).when(svgElem).getElement();
+        when(tabItemFactory.createEditorPartButton(resource, SOME_TEXT)).thenReturn(editorTab);
 
-        //define behavior part1
-        doReturn(titleSVGResource).when(part1).getTitleSVGImage();
-        doReturn(svgImage).when(part1).decorateIcon(any(SVGImage.class));
-        doReturn(partTitle1).when(part1).getTitle();
-        doReturn(toolTip1).when(part1).getTitleToolTip();
-
-        //define behavior part2
-        doReturn(titleSVGResource).when(part2).getTitleSVGImage();
-        doReturn(svgImage).when(part2).decorateIcon(any(SVGImage.class));
-        doReturn(partTitle1).when(part2).getTitle();
-        doReturn(toolTip1).when(part2).getTitleToolTip();
-
-        //define behavior part3
-        doReturn(titleSVGResource).when(part3).getTitleSVGImage();
-        doReturn(svgImage).when(part3).decorateIcon(any(SVGImage.class));
-        doReturn(partTitle1).when(part3).getTitle();
-        doReturn(toolTip1).when(part3).getTitleToolTip();
-
-        doReturn(item).when(view).addTab(svgImage, partTitle1, toolTip1, null, true);
+        presenter = new EditorPartStackPresenter(view, partsComparator, eventBus, tabItemFactory, partStackEventHandler, listButton);
     }
 
     @Test
-    public void closeTabTest() {
-        presenter.addPart(part1);
-        presenter.addPart(part2);
-        presenter.addPart(part3);
+    public void constructorShouldBeVerified() {
+        verify(listButton).setDelegate(presenter);
+        verify(view, times(2)).setDelegate(presenter);
+        verify(view).setListButton(listButton);
 
-        assertEquals(presenter.getActivePart(), part3);
-        assertTrue(presenter.getNumberOfParts() == 3);
-
-        presenter.close(part1);
-
-        //check closing first tab
-        ArgumentCaptor<AsyncCallback> asyncRequestCallbackCaptor = ArgumentCaptor.forClass(AsyncCallback.class);
-
-        verify(part1).onClose(asyncRequestCallbackCaptor.capture());
-
-        AsyncCallback callback1 = asyncRequestCallbackCaptor.getValue();
-        callback1.onSuccess(null);
-
-        verify(view).removeTab(anyInt());
-
-        assertTrue(presenter.getNumberOfParts() == 2);
-
-        verify(part1).removePropertyListener(any(PropertyListener.class));
-
-//        verify(partStackEventHandler, never()).onActivePartChanged(part2);
+        verify(eventBus).addHandler(eq(ProjectActionEvent.TYPE), Matchers.<ProjectActionHandler>anyObject());
     }
 
     @Test
-    public void closeAllTabsTest() throws Throwable {
-        presenter.addPart(part1);
-        presenter.addPart(part2);
-        presenter.addPart(part3);
+    public void allTabsShouldBeClosed() {
+        presenter.addPart(partPresenter);
 
-        assertEquals(presenter.getActivePart(), part3);
-        assertTrue(presenter.getNumberOfParts() == 3);
+        verify(eventBus).addHandler(eq(ProjectActionEvent.TYPE), projectActionHandlerCaptor.capture());
+        projectActionHandlerCaptor.getValue().onProjectClosed(actionEvent);
 
-        presenter.close(part1);
+        verify(listButton).addListItem(itemCaptor.capture());
+        ListItem item = itemCaptor.getValue();
 
-        //check closing first tab
-        ArgumentCaptor<AsyncCallback> asyncRequestCallbackCaptor = ArgumentCaptor.forClass(AsyncCallback.class);
-
-        verify(part1).onClose(asyncRequestCallbackCaptor.capture());
-
-        AsyncCallback callback1 = asyncRequestCallbackCaptor.getValue();
-
-        callback1.onSuccess(null);
-
-        verify(view).removeTab(anyInt());
-
-        assertTrue(presenter.getNumberOfParts() == 2);
-
-        verify(part1).removePropertyListener(any(PropertyListener.class));
-
-//        verify(partStackEventHandler, never()).onActivePartChanged(part2);
+        verify(view).removeTab(partPresenter);
+        verify(listButton).removeListItem(item);
     }
 
     @Test
-    public void setNewActivePartTest() {
-        presenter.addPart(part1);
+    public void focusShouldBeSet() {
+        presenter.setFocus(true);
 
-        presenter.setActivePart(part1);
-
-        TestCase.assertEquals(presenter.getActivePart(), part1);
-
-        verify(view).setActiveTab(0);
-
-        assertEquals(presenter.getActivePart(), part1);
+        verify(view).setFocus(true);
     }
 
     @Test
-    public void addFirstPartWithoutIconTest() {
-        doReturn(null).when(part1).decorateIcon(any(SVGImage.class));
+    public void partShouldBeAdded() {
+        presenter.addPart(partPresenter);
 
-        doReturn(item).when(view).addTab(null, partTitle1, toolTip1, null, true);
+        verify(partPresenter).addPropertyListener(Matchers.<PropertyListener>anyObject());
 
-        int amountOfPartsBefore = presenter.getNumberOfParts();
+        verify(tabItemFactory).createEditorPartButton(resource, SOME_TEXT);
 
-        presenter.addPart(part1);
+        verify(partPresenter).getTitleSVGImage();
+        verify(partPresenter).getTitle();
 
-        int amountOfPartsAfter = presenter.getNumberOfParts();
+        verify(editorTab).setDelegate(presenter);
 
-        assertTrue(++amountOfPartsBefore == amountOfPartsAfter);
+        verify(view).addTab(editorTab, partPresenter);
 
-        verify(part1).addPropertyListener(any(PropertyListener.class));
+        verify(listButton).addListItem(Matchers.<ListItem>anyObject());
 
-        verify(part1).getTitleSVGImage();
-
-        verify(view).addTab(null, partTitle1, toolTip1, null, true);
-
-//        verify(item).addClickHandler(any(ClickHandler.class));
-        verify(item).addCloseHandler(any(CloseHandler.class));
-
-        verify(part1).go(any(AcceptsOneWidget.class));
-
-        assertEquals(presenter.getActivePart(), part1);
-        //because this is first tab
-        verify(view).setActiveTab(eq(0));
-
-        verify(partStackEventHandler).onRequestFocus(eq(presenter));
+        verify(view).selectTab(partPresenter);
     }
 
     @Test
-    public void addFirstPartWithIconTest() {
-        presenter.addPart(part1);
-
-        verify(part1).getTitleSVGImage();
-
-        verify(part1).decorateIcon(any(SVGImage.class));
-    }
-
-    @Test
-    public void addTabWhichIsAlreadyExistTest() {
-        presenter.addPart(part1);
-        presenter.addPart(part2);
-
-        reset(partStackEventHandler);
+    public void partShouldNotBeAddedWhenItExist() {
+        presenter.addPart(partPresenter);
         reset(view);
-        reset(part1);
 
-        presenter.addPart(part1);
+        presenter.addPart(partPresenter);
 
-        assertTrue(presenter.getNumberOfParts() == 2);
+        verify(view, never()).addTab(editorTab, partPresenter);
 
-        verify(view).setActiveTab(eq(0));
-
-        verify(partStackEventHandler, times(1)).onRequestFocus(presenter);
-        verify(part1, never()).addPropertyListener(any(PropertyListener.class));
-        verify(view, never()).addTab(svgImage, partTitle1, toolTip1, null, true);
-
-        verify(part1, never()).go(any(AcceptsOneWidget.class));
-
-        assertEquals(presenter.getActivePart(), part1);
+        verify(view).selectTab(partPresenter);
     }
 
+    @Test
+    public void activePartShouldBeReturned() {
+        presenter.setActivePart(partPresenter);
+
+        assertThat(presenter.getActivePart(), sameInstance(partPresenter));
+    }
+
+    @Test
+    public void onTabShouldBeClicked() {
+        presenter.addPart(partPresenter);
+        reset(view);
+
+        presenter.onTabClicked(editorTab);
+
+        verify(view).selectTab(partPresenter);
+    }
+
+    @Test
+    public void tabShouldBeClosed() {
+        presenter.addPart(partPresenter);
+
+        presenter.onTabClose(editorTab);
+
+        verify(view).removeTab(partPresenter);
+    }
+
+    @Test
+    public void onListButtonShouldBeClicked() {
+        presenter.onListButtonClicked();
+
+        verify(listButton).showList();
+    }
+
+    @Test
+    public void onCloseItemShouldBeClicked() {
+        presenter.addPart(partPresenter);
+
+        verify(listButton).addListItem(itemCaptor.capture());
+        ListItem item = itemCaptor.getValue();
+
+        presenter.onCloseItemClicked(item);
+
+        verify(listButton).removeListItem(item);
+        verify(listButton).hide();
+    }
 }

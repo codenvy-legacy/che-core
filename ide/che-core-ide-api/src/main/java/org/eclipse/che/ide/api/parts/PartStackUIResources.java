@@ -106,6 +106,30 @@ public interface PartStackUIResources extends ClientBundle {
 
         @ClassName("ide-part-stack-header-menu-button")
         String headerMenuButton();
+
+        String rotateLeftPanel();
+
+        String rotateRightPanel();
+
+        String onTabMouseOver();
+
+        String leftTabBorders();
+
+        String tabBordersDefault();
+
+        String selectedRightOrLeftTab();
+
+        String selectEditorTab();
+
+        String opacity();
+
+        String activeTabTextColor();
+
+        String listItemPanel();
+
+        String listShownButtonBackground();
+
+        String unSelectEditorBorder();
     }
 
     @Source({"partstack.css", "org/eclipse/che/ide/api/ui/style.css"})

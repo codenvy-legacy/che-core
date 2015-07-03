@@ -10,17 +10,13 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.parts;
 
-import org.eclipse.che.ide.api.mvp.View;
-import com.google.gwt.event.dom.client.HasClickHandlers;
-import com.google.gwt.event.dom.client.HasMouseDownHandlers;
-import com.google.gwt.event.logical.shared.HasCloseHandlers;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.IsWidget;
 
-import org.vectomatic.dom.svg.ui.SVGImage;
+import org.eclipse.che.ide.api.mvp.View;
 
+import javax.annotation.Nonnull;
 import java.util.List;
-
-import static com.google.gwt.user.client.ui.InsertPanel.ForIsWidget;
 
 /** PartStack View interface */
 public interface PartStackView extends View<PartStackView.ActionDelegate> {
@@ -30,29 +26,39 @@ public interface PartStackView extends View<PartStackView.ActionDelegate> {
     }
 
     /** Tab which can be clicked and closed */
-    public interface TabItem extends HasCloseHandlers<PartStackView.TabItem>, HasClickHandlers, HasMouseDownHandlers {
+    interface TabItem extends ClickHandler {
+
+        @Nonnull
+        IsWidget getView();
+
+        @Nonnull
+        String getTitle();
+
+        void update(@Nonnull PartPresenter part);
+
+        void select();
+
+        void unSelect();
+
+        void setTabPosition(@Nonnull TabPosition tabPosition);
     }
 
     /** Add Tab */
-    public PartStackView.TabItem addTab(SVGImage icon, String title, String toolTip, IsWidget widget, boolean closable);
+    public void addTab(@Nonnull TabItem tabItem, @Nonnull PartPresenter presenter);
 
     /** Remove Tab */
-    public void removeTab(int index);
+    public void removeTab(@Nonnull PartPresenter presenter);
 
-    /** Set Active Tab */
-    public void setActiveTab(int index);
+    public void selectTab(@Nonnull PartPresenter partPresenter);
 
     /** Set new Tabs positions */
-    public void setTabpositions(List<Integer> partPositions);
-
-    /** Get Content Panel */
-    public ForIsWidget getContentPanel();
+    public void setTabPositions(List<PartPresenter> partPositions);
 
     /** Set PartStack focused */
     public void setFocus(boolean focused);
 
     /** Update Tab */
-    public void updateTabItem(int index, SVGImage icon, String title, String toolTip, IsWidget widget);
+    public void updateTabItem(@Nonnull PartPresenter partPresenter);
 
     /** Handles Focus Request Event. It is generated, when user clicks a stack anywhere */
     public interface ActionDelegate {

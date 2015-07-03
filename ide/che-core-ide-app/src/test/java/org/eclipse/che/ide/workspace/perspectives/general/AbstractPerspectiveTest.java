@@ -34,6 +34,7 @@ import org.mockito.Mock;
 
 import javax.annotation.Nonnull;
 import javax.ws.rs.NotSupportedException;
+import java.util.Arrays;
 
 import static junit.framework.Assert.assertSame;
 import static org.eclipse.che.ide.api.parts.PartStackType.EDITING;
@@ -41,6 +42,7 @@ import static org.eclipse.che.ide.api.parts.PartStackType.INFORMATION;
 import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.BELOW;
 import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.LEFT;
 import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.RIGHT;
+import static org.mockito.Matchers.anyDouble;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -50,6 +52,8 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(GwtMockitoTestRunner.class)
 public class AbstractPerspectiveTest {
+
+    private final static String SOME_TEXT = "someText";
 
     //constructor mocks
     @Mock
@@ -108,6 +112,13 @@ public class AbstractPerspectiveTest {
     }
 
     @Test
+    public void activePartShouldBeOpened() {
+        perspective.openActivePart(INFORMATION);
+
+        verify(partStackPresenter).openPreviousActivePart();
+    }
+
+    @Test
     public void constructorShouldBeVerified() {
         verify(view).getLeftPanel();
         verify(view).getBottomPanel();
@@ -143,23 +154,17 @@ public class AbstractPerspectiveTest {
 
     @Test
     public void partShouldBeExpanded() {
-        when(partStackPresenter.getActivePart()).thenReturn(partPresenter);
-
         perspective.expandEditorPart();
 
-        verify(partStackPresenter, times(4)).hidePart(partPresenter);
+        verify(workBenchController, times(3)).getSize();
+        verify(workBenchController, times(3)).setHidden(true);
     }
 
     @Test
     public void editorPartShouldBeRestored() {
-        when(partStackPresenter.containsPart(partPresenter)).thenReturn(true);
-        when(partStackPresenter.getActivePart()).thenReturn(partPresenter);
-        perspective.expandEditorPart();
-        when(partStackPresenter.getActivePart()).thenReturn(null);
-
         perspective.restoreEditorPart();
 
-        verify(partStackPresenter, times(4)).setActivePart(partPresenter);
+        verify(workBenchController, times(3)).setSize(anyDouble());
     }
 
     @Test
@@ -167,6 +172,13 @@ public class AbstractPerspectiveTest {
         when(partStackPresenter.containsPart(partPresenter)).thenReturn(true);
 
         perspective.setActivePart(partPresenter);
+
+        verify(partStackPresenter).setActivePart(partPresenter);
+    }
+
+    @Test
+    public void activePartShouldBeSetWithType() {
+        perspective.setActivePart(partPresenter, INFORMATION);
 
         verify(partStackPresenter).setActivePart(partPresenter);
     }
@@ -189,25 +201,34 @@ public class AbstractPerspectiveTest {
 
     @Test
     public void partShouldBeAddedWithoutConstraints() {
-        perspective.openPart(partPresenter, INFORMATION);
+        perspective.addPart(partPresenter, INFORMATION);
 
         verify(partStackPresenter).addPart(partPresenter, null);
     }
 
     @Test
     public void partShouldBeAddedWithConstraints() {
-        perspective.openPart(partPresenter, INFORMATION, constraints);
+        perspective.addPart(partPresenter, INFORMATION, constraints);
 
         verify(partStackPresenter).addPart(partPresenter, constraints);
     }
 
     @Test
     public void partStackShouldBeReturned() {
-        perspective.openPart(partPresenter, INFORMATION);
+        perspective.addPart(partPresenter, INFORMATION);
 
         PartStack partStack = perspective.getPartStack(INFORMATION);
 
         assertSame(partStack, partStackPresenter);
+    }
+
+    @Test
+    public void partShouldBeAddedWithRules() {
+        when(partPresenter.getRules()).thenReturn(Arrays.asList(SOME_TEXT));
+
+        perspective.addPart(partPresenter, INFORMATION);
+
+        verify(partStackPresenter).addPart(partPresenter, null);
     }
 
 
@@ -217,7 +238,7 @@ public class AbstractPerspectiveTest {
                                  @Nonnull PartStackPresenterFactory stackPresenterFactory,
                                  @Nonnull PartStackViewFactory partViewFactory,
                                  @Nonnull WorkBenchControllerFactory controllerFactory) {
-            super(view, stackPresenterFactory, partViewFactory, controllerFactory);
+            super(SOME_TEXT, view, stackPresenterFactory, partViewFactory, controllerFactory);
 
             partStacks.put(EDITING, partStackPresenter);
         }

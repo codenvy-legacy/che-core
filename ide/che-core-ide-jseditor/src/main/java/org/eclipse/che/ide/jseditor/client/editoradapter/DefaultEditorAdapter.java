@@ -10,12 +10,18 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.editoradapter;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.eclipse.che.ide.jseditor.client.texteditor.ConfigurableTextEditor;
-import org.vectomatic.dom.svg.ui.SVGImage;
-import org.vectomatic.dom.svg.ui.SVGResource;
+import com.google.gwt.core.shared.GWT;
+import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.uibinder.client.UiBinder;
+import com.google.gwt.uibinder.client.UiField;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.AcceptsOneWidget;
+import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.IsWidget;
+import com.google.gwt.user.client.ui.RequiresResize;
+import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.Widget;
+import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.ide.api.editor.EditorInitException;
 import org.eclipse.che.ide.api.editor.EditorInput;
@@ -34,19 +40,13 @@ import org.eclipse.che.ide.jseditor.client.keymap.Keybinding;
 import org.eclipse.che.ide.jseditor.client.text.LinearRange;
 import org.eclipse.che.ide.jseditor.client.text.TextPosition;
 import org.eclipse.che.ide.jseditor.client.text.TextRange;
+import org.eclipse.che.ide.jseditor.client.texteditor.ConfigurableTextEditor;
+import org.vectomatic.dom.svg.ui.SVGImage;
+import org.vectomatic.dom.svg.ui.SVGResource;
 
-import com.google.gwt.core.shared.GWT;
-import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.uibinder.client.UiBinder;
-import com.google.gwt.uibinder.client.UiField;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.AcceptsOneWidget;
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.IsWidget;
-import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.Widget;
-import com.google.web.bindery.event.shared.EventBus;
+import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Default implementation of {@link EditorAdapter}.
@@ -185,6 +185,21 @@ public class DefaultEditorAdapter extends Composite implements EditorAdapter, Fi
     }
 
     @Override
+    public void addRule(@Nonnull String perspectiveId) {
+        throw new UnsupportedOperationException("The method isn't available in this class " + getClass());
+    }
+
+    @Override
+    public List<String> getRules() {
+        throw new UnsupportedOperationException("The method isn't available in this class " + getClass());
+    }
+
+    @Override
+    public IsWidget getView() {
+        return this;
+    }
+
+    @Override
     public ImageResource getTitleImage() {
         return this.textEditor.getTitleImage();
     }
@@ -226,7 +241,7 @@ public class DefaultEditorAdapter extends Composite implements EditorAdapter, Fi
     }
 
     @Override
-    public Selection< ? > getSelection() {
+    public Selection<?> getSelection() {
         return this.textEditor.getSelection();
     }
 
@@ -237,7 +252,7 @@ public class DefaultEditorAdapter extends Composite implements EditorAdapter, Fi
             this.textEditor.addPropertyListener(new PropertyListener() {
                 @Override
                 public void propertyChanged(final PartPresenter source, final int propId) {
-                    for (final PropertyListener listener: propertylisteners) {
+                    for (final PropertyListener listener : propertylisteners) {
                         listener.propertyChanged(DefaultEditorAdapter.this, propId);
                     }
                 }
@@ -319,6 +334,7 @@ public class DefaultEditorAdapter extends Composite implements EditorAdapter, Fi
     }
 
     /** Interface for this component's UIBinder. */
-    interface DefaultEditorAdapterUiBinder extends UiBinder<SimplePanel, Composite> {}
+    interface DefaultEditorAdapterUiBinder extends UiBinder<SimplePanel, Composite> {
+    }
 
 }

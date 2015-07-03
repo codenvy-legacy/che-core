@@ -29,6 +29,8 @@ import org.eclipse.che.ide.menu.StatusPanelGroupPresenter;
 import org.eclipse.che.ide.ui.toolbar.MainToolbar;
 import org.eclipse.che.ide.ui.toolbar.ToolbarPresenter;
 
+import javax.annotation.Nonnull;
+
 /**
  * Root Presenter that implements Workspace logic. Descendant Presenters are injected
  * via constructor and exposed to corresponding UI containers. It contains Menu,
@@ -90,6 +92,10 @@ public class WorkspacePresenter implements Presenter, WorkspaceView.ActionDelega
         activePerspective.go(view.getPerspectivePanel());
     }
 
+    public void setActivePart(@Nonnull PartPresenter part, @Nonnull PartStackType type) {
+        activePerspective.setActivePart(part, type);
+    }
+
     /** {@inheritDoc} */
     @Override
     public void setActivePart(PartPresenter part) {
@@ -105,7 +111,7 @@ public class WorkspacePresenter implements Presenter, WorkspaceView.ActionDelega
     /** {@inheritDoc} */
     @Override
     public void openPart(PartPresenter part, PartStackType type, Constraints constraint) {
-        activePerspective.openPart(part, type, constraint);
+        activePerspective.addPart(part, type, constraint);
     }
 
     /** {@inheritDoc} */

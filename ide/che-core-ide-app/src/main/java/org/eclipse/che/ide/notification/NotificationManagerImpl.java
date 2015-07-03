@@ -10,16 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.notification;
 
-import org.eclipse.che.ide.api.event.ProjectActionEvent;
-import org.eclipse.che.ide.api.event.ProjectActionHandler;
-import org.eclipse.che.ide.api.parts.HasView;
-import org.eclipse.che.ide.api.mvp.View;
-import org.eclipse.che.ide.api.notification.Notification;
-import org.eclipse.che.ide.api.notification.NotificationManager;
-import org.eclipse.che.ide.api.parts.base.BasePresenter;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
-import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.resources.client.ImageResource;
@@ -29,6 +19,16 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.ide.api.event.ProjectActionEvent;
+import org.eclipse.che.ide.api.event.ProjectActionHandler;
+import org.eclipse.che.ide.api.mvp.View;
+import org.eclipse.che.ide.api.notification.Notification;
+import org.eclipse.che.ide.api.notification.NotificationManager;
+import org.eclipse.che.ide.api.parts.HasView;
+import org.eclipse.che.ide.api.parts.base.BasePresenter;
+import org.eclipse.che.ide.collections.Array;
+import org.eclipse.che.ide.collections.Collections;
+import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.annotation.Nonnull;
@@ -43,6 +43,7 @@ import static org.eclipse.che.ide.api.notification.Notification.Type.WARNING;
  * The implementation of {@link NotificationManager}.
  *
  * @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a>
+ * @author Dmitry Shnurenko
  */
 @Singleton
 public class NotificationManagerImpl extends BasePresenter implements NotificationManager,
@@ -59,15 +60,6 @@ public class NotificationManagerImpl extends BasePresenter implements Notificati
     private NotificationMessageStack notificationMessageStack;
     private Array<Notification>      notifications;
 
-    /**
-     * Create manager.
-     *
-     * @param eventBus
-     * @param view
-     * @param dialogFactory
-     * @param notificationContainer
-     * @param notificationMessageStack
-     */
     @Inject
     public NotificationManagerImpl(EventBus eventBus,
                                    NotificationManagerView view,
@@ -239,6 +231,11 @@ public class NotificationManagerImpl extends BasePresenter implements Notificati
     @Override
     public String getTitle() {
         return TITLE;
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        view.setVisible(visible);
     }
 
     @Nullable

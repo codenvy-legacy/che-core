@@ -10,23 +10,23 @@
  *******************************************************************************/
 package org.eclipse.che.ide.outline;
 
-import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.api.editor.EditorPartPresenter;
-import org.eclipse.che.ide.api.event.ActivePartChangedEvent;
-import org.eclipse.che.ide.api.event.ActivePartChangedHandler;
-import org.eclipse.che.ide.api.event.ProjectActionEvent;
-import org.eclipse.che.ide.api.event.ProjectActionHandler;
-import org.eclipse.che.ide.api.parts.HasView;
-import org.eclipse.che.ide.api.mvp.View;
-import org.eclipse.che.ide.api.parts.OutlinePart;
-import org.eclipse.che.ide.api.parts.base.BasePresenter;
-import org.eclipse.che.ide.api.texteditor.outline.HasOutline;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.api.editor.EditorPartPresenter;
+import org.eclipse.che.ide.api.event.ActivePartChangedEvent;
+import org.eclipse.che.ide.api.event.ActivePartChangedHandler;
+import org.eclipse.che.ide.api.event.ProjectActionEvent;
+import org.eclipse.che.ide.api.event.ProjectActionHandler;
+import org.eclipse.che.ide.api.mvp.View;
+import org.eclipse.che.ide.api.parts.HasView;
+import org.eclipse.che.ide.api.parts.OutlinePart;
+import org.eclipse.che.ide.api.parts.base.BasePresenter;
+import org.eclipse.che.ide.api.texteditor.outline.HasOutline;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 
@@ -34,10 +34,13 @@ import org.vectomatic.dom.svg.ui.SVGResource;
  * Part presenter for Outline.
  *
  * @author <a href="mailto:evidolob@exoplatform.com">Evgen Vidolob</a>
+ * @author Dmitry Shnurenko
  */
 @Singleton
-public class OutlinePartPresenter extends BasePresenter implements ActivePartChangedHandler, OutlinePart,
-                                                                   OutlinePartView.ActionDelegate, HasView {
+public class OutlinePartPresenter extends BasePresenter implements ActivePartChangedHandler,
+                                                                   OutlinePart,
+                                                                   OutlinePartView.ActionDelegate,
+                                                                   HasView {
     private final OutlinePartView          view;
     private final CoreLocalizationConstant coreLocalizationConstant;
     private       HasOutline               lastHasOutlineActivePart;
@@ -73,6 +76,12 @@ public class OutlinePartPresenter extends BasePresenter implements ActivePartCha
     @Override
     public String getTitle() {
         return coreLocalizationConstant.outlineButtonTitle();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setVisible(boolean visible) {
+        view.setVisible(visible);
     }
 
     @Override

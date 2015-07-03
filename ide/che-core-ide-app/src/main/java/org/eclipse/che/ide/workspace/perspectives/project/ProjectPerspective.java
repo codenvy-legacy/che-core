@@ -57,13 +57,15 @@ public class ProjectPerspective extends AbstractPerspective {
                               OutlinePart outlinePart,
                               ProjectExplorerPart projectExplorerPart,
                               NotificationManager notificationManager) {
-        super(view, stackPresenterFactory, partViewFactory, controllerFactory);
+        super(PROJECT_PERSPECTIVE_ID, view, stackPresenterFactory, partViewFactory, controllerFactory);
+
+        notificationManager.addRule(PROJECT_PERSPECTIVE_ID);
 
         partStacks.put(EDITING, editorPartStackPresenter);
 
-        openPart(outlinePart, TOOLING);
-        openPart(notificationManager, INFORMATION);
-        openPart(projectExplorerPart, NAVIGATION);
+        addPart(outlinePart, TOOLING);
+        addPart(notificationManager, INFORMATION);
+        addPart(projectExplorerPart, NAVIGATION);
 
         setActivePart(projectExplorerPart);
     }
@@ -84,6 +86,8 @@ public class ProjectPerspective extends AbstractPerspective {
         editorPanel.go(view.getEditorPanel());
         toolPanel.go(view.getToolPanel());
         infoPanel.go(view.getInformationPanel());
+
+        openActivePart(INFORMATION);
 
         container.setWidget(view);
     }

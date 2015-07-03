@@ -21,6 +21,8 @@ import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -31,11 +33,27 @@ import javax.annotation.Nullable;
  * @author Valeriy Svydenko
  */
 public abstract class AbstractPartPresenter implements PartPresenter {
-    private ListenerManager<PropertyListener> manager;
-    private Selection<?>                      selection;
+    private final ListenerManager<PropertyListener> manager;
+    private final List<String>                      rules;
+
+    private Selection<?> selection;
 
     public AbstractPartPresenter() {
         manager = ListenerManager.create();
+
+        rules = new ArrayList<>();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void addRule(@Nonnull String perspectiveId) {
+        rules.add(perspectiveId);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<String> getRules() {
+        return rules;
     }
 
     /** {@inheritDoc} */

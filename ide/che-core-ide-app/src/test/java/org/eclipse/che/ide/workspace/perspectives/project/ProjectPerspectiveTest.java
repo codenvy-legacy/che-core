@@ -142,6 +142,7 @@ public class ProjectPerspectiveTest {
         verify(view, times(2)).getInformationPanel();
 
         verify(partStackPresenter, times(3)).go(simplePanel);
+        verify(partStackPresenter).openPreviousActivePart();
         verify(container).setWidget(view);
     }
 }

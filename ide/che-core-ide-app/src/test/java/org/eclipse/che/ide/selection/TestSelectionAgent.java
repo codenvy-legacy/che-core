@@ -10,19 +10,19 @@
  *******************************************************************************/
 package org.eclipse.che.ide.selection;
 
+import com.google.gwt.junit.GWTMockUtilities;
+import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.user.client.ui.AcceptsOneWidget;
+import com.google.gwt.user.client.ui.IsWidget;
+import com.google.web.bindery.event.shared.EventBus;
+import com.google.web.bindery.event.shared.SimpleEventBus;
+
 import org.eclipse.che.ide.api.event.ActivePartChangedEvent;
 import org.eclipse.che.ide.api.event.SelectionChangedEvent;
 import org.eclipse.che.ide.api.event.SelectionChangedHandler;
 import org.eclipse.che.ide.api.parts.AbstractPartPresenter;
 import org.eclipse.che.ide.api.parts.PartPresenter;
 import org.eclipse.che.ide.api.selection.Selection;
-
-import com.google.gwt.junit.GWTMockUtilities;
-import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.user.client.ui.AcceptsOneWidget;
-import com.google.web.bindery.event.shared.EventBus;
-import com.google.web.bindery.event.shared.SimpleEventBus;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -122,6 +122,16 @@ public class TestSelectionAgent {
             public String getTitle() {
                 return null;
             }
+
+            @Override
+            public void setVisible(boolean visible) {
+                //to do nothing
+            }
+
+            @Override
+            public IsWidget getView() {
+                return null;
+            }
         };
 
         // fire event, for agent to get information about active part
@@ -163,6 +173,16 @@ public class TestSelectionAgent {
 
             @Override
             public String getTitle() {
+                return null;
+            }
+
+            @Override
+            public void setVisible(boolean visible) {
+                //to do nothing
+            }
+
+            @Override
+            public IsWidget getView() {
                 return null;
             }
         };

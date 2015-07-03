@@ -11,11 +11,17 @@
 package org.eclipse.che.ide.client.inject;
 
 import com.google.gwt.inject.client.AbstractGinModule;
+import com.google.gwt.inject.client.assistedinject.GinFactoryModuleBuilder;
 import com.google.inject.Singleton;
 
 import org.eclipse.che.ide.api.extension.ExtensionGinModule;
 import org.eclipse.che.ide.client.BootstrapController;
 import org.eclipse.che.ide.client.StyleInjector;
+import org.eclipse.che.ide.client.inject.factories.TabItemFactory;
+import org.eclipse.che.ide.part.widgets.editortab.EditorTab;
+import org.eclipse.che.ide.part.widgets.editortab.EditorTabWidget;
+import org.eclipse.che.ide.part.widgets.partbutton.PartButton;
+import org.eclipse.che.ide.part.widgets.partbutton.PartButtonWidget;
 
 
 /**
@@ -31,5 +37,9 @@ public class IDEClientModule extends AbstractGinModule {
     protected void configure() {
         bind(BootstrapController.class).in(Singleton.class);
         bind(StyleInjector.class).in(Singleton.class);
+
+        install(new GinFactoryModuleBuilder().implement(PartButton.class, PartButtonWidget.class)
+                                             .implement(EditorTab.class, EditorTabWidget.class)
+                                             .build(TabItemFactory.class));
     }
 }
