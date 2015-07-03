@@ -18,6 +18,7 @@ import org.eclipse.che.api.git.GitConnectionFactory;
 import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.api.git.shared.LsRemoteRequest;
 import org.eclipse.che.api.git.shared.RemoteReference;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -27,6 +28,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
+import static org.eclipse.che.git.impl.GitTestUtil.cleanupTestRepo;
 import static org.eclipse.che.git.impl.GitTestUtil.connectToInitializedGitRepository;
 import static org.testng.Assert.assertTrue;
 
@@ -40,6 +42,11 @@ public class LsRemoteTest {
     @BeforeMethod
     public void setUp() {
         repository = Files.createTempDir();
+    }
+
+    @AfterMethod
+    public void cleanUp() {
+        cleanupTestRepo(repository);
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)

@@ -23,6 +23,7 @@ import org.eclipse.che.api.git.shared.CommitRequest;
 import org.eclipse.che.api.git.shared.FetchRequest;
 import org.eclipse.che.api.git.shared.LogRequest;
 import org.eclipse.che.api.git.shared.MergeRequest;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -33,6 +34,7 @@ import java.util.Arrays;
 
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 import static org.eclipse.che.git.impl.GitTestUtil.addFile;
+import static org.eclipse.che.git.impl.GitTestUtil.cleanupTestRepo;
 import static org.eclipse.che.git.impl.GitTestUtil.connectToInitializedGitRepository;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -49,6 +51,12 @@ public class FetchTest {
     public void setUp() {
         repository = Files.createTempDir();
         fetchTestRepo = Files.createTempDir();
+    }
+
+    @AfterMethod
+    public void cleanUp() {
+        cleanupTestRepo(repository);
+        cleanupTestRepo(fetchTestRepo);
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)

@@ -20,6 +20,7 @@ import org.eclipse.che.api.git.shared.AddRequest;
 import org.eclipse.che.api.git.shared.CommitRequest;
 import org.eclipse.che.api.git.shared.LogRequest;
 import org.eclipse.che.api.git.shared.Revision;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -28,6 +29,7 @@ import java.io.IOException;
 
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 import static org.eclipse.che.git.impl.GitTestUtil.addFile;
+import static org.eclipse.che.git.impl.GitTestUtil.cleanupTestRepo;
 import static org.eclipse.che.git.impl.GitTestUtil.connectToInitializedGitRepository;
 import static org.testng.Assert.assertEquals;
 
@@ -41,6 +43,11 @@ public class CommitTest {
     @BeforeMethod
     public void setUp() {
         repository = Files.createTempDir();
+    }
+
+    @AfterMethod
+    public void cleanUp() {
+        cleanupTestRepo(repository);
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
