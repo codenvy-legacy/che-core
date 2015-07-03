@@ -31,7 +31,8 @@ import static org.testng.Assert.assertTrue;
  * @author Eugene Voevodin
  */
 public class StatusTest {
-    public File repository;
+
+    private File repository;
 
     @BeforeMethod
     public void setUp() {

@@ -45,7 +45,7 @@ import static org.testng.Assert.fail;
  */
 public class ResetTest {
 
-    public File repository;
+    private File repository;
 
     @BeforeMethod
     public void setUp() {

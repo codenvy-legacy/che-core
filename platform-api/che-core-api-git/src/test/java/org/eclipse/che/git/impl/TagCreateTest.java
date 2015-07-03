@@ -33,7 +33,7 @@ import java.io.IOException;
  */
 public class TagCreateTest {
 
-    public File repository;
+    private File repository;
 
     @BeforeMethod
     public void setUp() {

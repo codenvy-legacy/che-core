@@ -34,8 +34,7 @@ import static org.testng.Assert.assertTrue;
  */
 public class TagListTest {
 
-    public File repository;
-
+    private File repository;
 
     @BeforeMethod
     public void setUp() {

@@ -33,7 +33,7 @@ import static org.testng.Assert.assertTrue;
  */
 public class TagDeleteTest {
 
-    public File repository;
+    private File repository;
 
     @BeforeMethod
     public void setUp() {
