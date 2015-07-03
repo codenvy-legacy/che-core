@@ -49,12 +49,11 @@ public class TagCreateTest {
     public void testCreateTag(GitConnectionFactory connectionFactory) throws GitException, IOException {
         //given
         GitConnection connection = connectToGitRepositoryWithContent(connectionFactory, repository);
-
         int beforeTagCount = connection.tagList(newDto(TagListRequest.class)).size();
+        //when
         TagCreateRequest request = newDto(TagCreateRequest.class);
         request.setName("v1");
         request.setMessage("first version");
-        //when
         connection.tagCreate(request);
         //then
         int afterTagCount = connection.tagList(newDto(TagListRequest.class)).size();
@@ -63,12 +62,13 @@ public class TagCreateTest {
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testCreateTagForce(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
         GitConnection connection = connectToGitRepositoryWithContent(connectionFactory, repository);
-
         TagCreateRequest request = newDto(TagCreateRequest.class);
         request.setName("v1");
         request.setMessage("first version");
         connection.tagCreate(request);
+        //when
         try {
             //try add same tag
             connection.tagCreate(request);
@@ -79,6 +79,7 @@ public class TagCreateTest {
         request.setMessage("first version");
         request.setForce(true);
         connection.tagCreate(request);
+        //then
         assertTrue(connection.tagList(newDto(TagListRequest.class)).get(0).getName().equals("v1"));
     }
 }

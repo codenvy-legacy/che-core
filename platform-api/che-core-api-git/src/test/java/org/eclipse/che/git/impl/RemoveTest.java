@@ -51,16 +51,22 @@ public class RemoveTest {
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testNotCachedRemove(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
         GitConnection connection = connectToGitRepositoryWithContent(connectionFactory, repository);
+        //when
         connection.rm(newDto(RmRequest.class).withItems(Arrays.asList("README.txt")).withCached(false));
+        //then
         assertFalse(new File(connection.getWorkingDir(), "README.txt").exists());
         assertNotCached(connection, "README.txt");
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testCachedRemove(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
         GitConnection connection = connectToGitRepositoryWithContent(connectionFactory, repository);
+        //when
         connection.rm(newDto(RmRequest.class).withItems(Arrays.asList("README.txt")).withCached(true));
+        //then
         assertTrue(new File(connection.getWorkingDir(), "README.txt").exists());
         assertNotCached(connection, "README.txt");
     }

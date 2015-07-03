@@ -58,6 +58,7 @@ public class RemoteListTest {
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testRemoteList(GitConnectionFactory connectionFactory)
             throws ServerException, URISyntaxException, UnauthorizedException, IOException {
+        //given
         GitConnection connection = connectToGitRepositoryWithContent(connectionFactory, repository);
         GitConnection connection2 = connectToGitRepositoryWithContent(connectionFactory, remoteRepo);
         connection2.clone(newDto(CloneRequest.class).withRemoteUri(connection.getWorkingDir().getAbsolutePath()));
@@ -65,9 +66,11 @@ public class RemoteListTest {
         //create new remote
         connection2.remoteAdd(newDto(RemoteAddRequest.class).withName("newremote").withUrl("newremote.url"));
         assertEquals(connection.remoteList(newDto(RemoteListRequest.class)).size(), 2);
+        //when
         RemoteListRequest request = newDto(RemoteListRequest.class);
         request.setRemote("newremote");
         List<Remote> one = connection.remoteList(request);
+        //then
         assertEquals(one.get(0).getUrl(), "newremote.url");
         assertEquals(one.size(), 1);
     }

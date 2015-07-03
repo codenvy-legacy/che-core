@@ -61,7 +61,6 @@ public class ResetTest {
     public void testResetHard(GitConnectionFactory connectionFactory) throws Exception {
         //given
         GitConnection connection = connectToGitRepositoryWithContent(connectionFactory, repository);
-
         File aaa = addFile(connection.getWorkingDir().toPath(), "aaa", "aaa\n");
         FileOutputStream fos = new FileOutputStream(new File(connection.getWorkingDir(), "README.txt"));
         fos.write("MODIFIED\n".getBytes());
@@ -83,6 +82,7 @@ public class ResetTest {
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testResetSoft(GitConnectionFactory connectionFactory) throws Exception {
+        //given
         GitConnection connection = connectToGitRepositoryWithContent(connectionFactory, repository);
         File aaa = addFile(connection.getWorkingDir().toPath(), "aaa", "aaa\n");
         FileOutputStream fos = new FileOutputStream(new File(connection.getWorkingDir(), "README.txt"));
@@ -105,8 +105,8 @@ public class ResetTest {
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testResetMixed(GitConnectionFactory connectionFactory) throws Exception {
-        GitConnection connection = connectToGitRepositoryWithContent(connectionFactory, repository);
         //given
+        GitConnection connection = connectToGitRepositoryWithContent(connectionFactory, repository);
         File aaa = addFile(connection.getWorkingDir().toPath(), "aaa", "aaa\n");
         FileOutputStream fos = new FileOutputStream(new File(connection.getWorkingDir(), "README.txt"));
         fos.write("MODIFIED\n".getBytes());

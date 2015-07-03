@@ -62,18 +62,21 @@ public class PushTest {
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
-    public void testSimplePush(GitConnectionFactory connectionFactory) throws IOException, ServerException, URISyntaxException, UnauthorizedException {
+    public void testSimplePush(GitConnectionFactory connectionFactory)
+            throws IOException, ServerException, URISyntaxException, UnauthorizedException {
+        //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
         GitConnection remoteConnection = connectToInitializedGitRepository(connectionFactory, remoteRepo);
         remoteConnection.clone(newDto(CloneRequest.class).withRemoteUri(connection.getWorkingDir().getAbsolutePath()));
         addFile(remoteRepo.toPath(), "newfile", "content");
         remoteConnection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
         remoteConnection.commit(newDto(CommitRequest.class).withMessage("Fake commit"));
-        //make push
+        //when
         remoteConnection.push(newDto(PushRequest.class)
                 .withRefSpec(Arrays.asList("refs/heads/master:refs/heads/test"))
                 .withRemote("origin")
                 .withTimeout(-1));
+        //then
         //check branches in origin repository
         assertEquals(connection.branchList(newDto(BranchListRequest.class)).size(), 2);
         //checkout test branch
@@ -82,7 +85,9 @@ public class PushTest {
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
-    public void testPushRemote(GitConnectionFactory connectionFactory) throws GitException, IOException, URISyntaxException, UnauthorizedException {
+    public void testPushRemote(GitConnectionFactory connectionFactory)
+            throws GitException, IOException, URISyntaxException, UnauthorizedException {
+        //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
         GitConnection remoteConnection = connectToInitializedGitRepository(connectionFactory, remoteRepo);
         addFile(remoteRepo.toPath(), "README", "README");
@@ -90,8 +95,10 @@ public class PushTest {
         remoteConnection.commit(newDto(CommitRequest.class).withMessage("Init commit."));
         //make push
         int branchesBefore = remoteConnection.branchList(newDto(BranchListRequest.class)).size();
+        //when
         connection.push(newDto(PushRequest.class).withRefSpec(Arrays.asList("refs/heads/master:refs/heads/test"))
                 .withRemote(remoteRepo.getAbsolutePath()).withTimeout(-1));
+        //then
         int branchesAfter = remoteConnection.branchList(newDto(BranchListRequest.class)).size();
         assertEquals(branchesAfter - 1, branchesBefore);
     }

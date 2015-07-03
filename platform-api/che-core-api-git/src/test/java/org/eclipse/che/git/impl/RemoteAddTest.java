@@ -58,10 +58,12 @@ public class RemoteAddTest {
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testSimpleRemoteAdd(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
         int beforeCount = connection.remoteList(newDto(RemoteListRequest.class)).size();
-
+        //when
         connection.remoteAdd(newDto(RemoteAddRequest.class).withName("origin").withUrl("some.url"));
+        //then
         int afterCount = connection.remoteList(newDto(RemoteListRequest.class)).size();
         assertEquals(afterCount, beforeCount + 1);
     }
@@ -75,12 +77,12 @@ public class RemoteAddTest {
         connection.branchCreate(newDto(BranchCreateRequest.class).withName("b3"));
 
         GitConnection connection2 = connectToInitializedGitRepository(connectionFactory, remoteRepo);
+        //when
         //add remote tracked only to b1 and b3 branches
         RemoteAddRequest remoteAddRequest = newDto(RemoteAddRequest.class)
                 .withName("origin")
                 .withUrl(connection.getWorkingDir().getAbsolutePath());
         remoteAddRequest.setBranches(Arrays.asList("b1", "b3"));
-        //when
         connection.remoteAdd(remoteAddRequest);
         //then
         //make pull

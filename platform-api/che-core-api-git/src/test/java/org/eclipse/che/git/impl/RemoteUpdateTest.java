@@ -55,57 +55,69 @@ public class RemoteUpdateTest {
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testUpdateBranches(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
         GitConnection connection = connectToGitRepositoryWithContent(connectionFactory, repository);
         addInitialRemote(connection);
+        //when
         //change branch1 to branch2
         RemoteUpdateRequest request = newDto(RemoteUpdateRequest.class);
         request.setName("newRemote");
         request.setBranches(Arrays.asList("branch2"));
         connection.remoteUpdate(request);
+        //then
         assertEquals(parseAllConfig(connection).get("remote.newRemote.fetch").get(0),
                 "+refs/heads/branch2:refs/remotes/newRemote/branch2");
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testAddUrl(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
         GitConnection connection = connectToGitRepositoryWithContent(connectionFactory, repository);
         addInitialRemote(connection);
+        //when
         RemoteUpdateRequest request = newDto(RemoteUpdateRequest.class);
         request.setName("newRemote");
         request.setAddUrl(Arrays.asList("new.com"));
         connection.remoteUpdate(request);
+        //then
         assertTrue(parseAllConfig(connection).get("remote.newRemote.url").contains("new.com"));
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testAddPushUrl(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
         GitConnection connection = connectToGitRepositoryWithContent(connectionFactory, repository);
         addInitialRemote(connection);
+        //when
         RemoteUpdateRequest request = newDto(RemoteUpdateRequest.class);
         request.setName("newRemote");
         request.setAddPushUrl(Arrays.asList("pushurl1"));
         connection.remoteUpdate(request);
+        //then
         assertTrue(parseAllConfig(connection).get("remote.newRemote.pushurl").contains("pushurl1"));
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testDeleteUrl(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
         //add url
         GitConnection connection = connectToGitRepositoryWithContent(connectionFactory, repository);
         addInitialRemote(connection);
         RemoteUpdateRequest addRequest = newDto(RemoteUpdateRequest.class);
         addRequest.setName("newRemote");
         addRequest.setAddUrl(Arrays.asList("newRemote"));
-
+        //when
         RemoteUpdateRequest deleteRequest = newDto(RemoteUpdateRequest.class);
         deleteRequest.setName("newRemote");
         deleteRequest.setRemoveUrl(Arrays.asList("newurl"));
         connection.remoteUpdate(deleteRequest);
+        //then
         assertFalse(parseAllConfig(connection).get("remote.newRemote.url").contains("newurl"));
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testDeletePushUrl(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
         GitConnection connection = connectToGitRepositoryWithContent(connectionFactory, repository);
         addInitialRemote(connection);
         //add push url
@@ -114,10 +126,12 @@ public class RemoteUpdateTest {
         addRequest.setAddUrl(Arrays.asList("pushurl"));
         connection.remoteUpdate(addRequest);
 
+        //when
         RemoteUpdateRequest removeRequest = newDto(RemoteUpdateRequest.class);
         removeRequest.setName("newRemote");
         removeRequest.setRemovePushUrl(Arrays.asList("pushurl"));
         connection.remoteUpdate(removeRequest);
+        //then
         assertNull(parseAllConfig(connection).get("remote.newRemote.pushurl"));
     }
 
