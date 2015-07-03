@@ -217,7 +217,6 @@ public class RecipeServiceClientImpl implements RecipeServiceClient {
                            "&maxItems=" + maxItems;
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
-                           .loader(loader, "Searching recipes...")
                            .send(newCallback(callback, dtoUnmarshallerFactory.newArrayUnmarshaller(RecipeDescriptor.class)));
     }
 
