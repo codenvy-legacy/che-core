@@ -22,6 +22,7 @@ import org.eclipse.che.api.git.GitConnection;
 import org.eclipse.che.api.git.GitConnectionFactory;
 import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.api.git.shared.AddRequest;
+import org.eclipse.che.api.git.shared.Branch;
 import org.eclipse.che.api.git.shared.CommitRequest;
 import org.eclipse.che.api.git.shared.GitUser;
 import org.eclipse.che.api.git.shared.InitRequest;
@@ -40,6 +41,7 @@ import java.util.List;
 /**
  * @author Sergii Kabashniuk
  */
+
 public class GitTestUtil {
 
     public static final String CONTENT = "git repository content\n";
@@ -138,4 +140,16 @@ public class GitTestUtil {
         }
     }
 
+    public static void validateBranchList(List<Branch> toValidate, List<Branch> pattern) {
+        l1:
+        for (Branch tb : toValidate) {
+            for (Branch pb : pattern) {
+                if (tb.getName().equals(pb.getName()) //
+                        && tb.getDisplayName().equals(pb.getDisplayName()) //
+                        && tb.isActive() == pb.isActive())
+                    continue l1;
+            }
+            fail("List of branches is not matches to expected. Branch " + tb + " is not expected in result. ");
+        }
+    }
 }

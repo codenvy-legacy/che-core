@@ -34,6 +34,7 @@ import static org.testng.Assert.assertTrue;
  * @author Eugene Voevodin
  */
 public class MergeTest {
+
     private String branchName = "MergeTestBranch";
 
     private File repository;
@@ -108,6 +109,7 @@ public class MergeTest {
         String actual = readFile(new File(connection.getWorkingDir(), "t-merge-conflict"));
         assertEquals(actual, expContent);
     }
+
 //        TODO Uncomment as soon as IDEX-1776 is fixed
 //    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
 //    public void testFailed(GitConnectionFactory connectionFactory) throws GitException, IOException {
