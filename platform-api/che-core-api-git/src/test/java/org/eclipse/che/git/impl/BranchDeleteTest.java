@@ -62,14 +62,11 @@ public class BranchDeleteTest {
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testSimpleDelete(GitConnectionFactory connectionFactory) throws GitException, IOException, UnauthorizedException {
+        //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
-
-        //create branch "master"
         addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
         connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));
         connection.commit(newDto(CommitRequest.class).withMessage("Initial addd"));
-
-        //given
         connection.branchCreate(newDto(BranchCreateRequest.class).withName("newbranch"));
 
         assertTrue(Sets.symmetricDifference(
@@ -97,21 +94,21 @@ public class BranchDeleteTest {
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void shouldDeleteNotFullyMergedBranchWithForce(GitConnectionFactory connectionFactory)
             throws GitException, IOException, UnauthorizedException {
+        //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
-
-        //create branch "master"
         addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
         connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));
         connection.commit(newDto(CommitRequest.class).withMessage("Initial addd"));
-
-        //given
+        //create new branch and make a commit
         connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName("newbranch").withCreateNew(true));
         addFile(connection, "newfile", "new file content");
         connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
         connection.commit(newDto(CommitRequest.class).withMessage("second commit"));
         connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName("master"));
+
         //when
         connection.branchDelete(newDto(BranchDeleteRequest.class).withName("newbranch").withForce(true));
+
         //then
         assertTrue(Sets.symmetricDifference(
                 Sets.newHashSet(
@@ -127,13 +124,12 @@ public class BranchDeleteTest {
             expectedExceptions = GitException.class)
     public void shouldThrowExceptionOnDeletingNotFullyMergedBranchWithoutForce(GitConnectionFactory connectionFactory)
             throws GitException, IOException, UnauthorizedException, NoSuchFieldException, IllegalAccessException {
+        //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
-
-        //create branch "master"
         addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
         connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));
         connection.commit(newDto(CommitRequest.class).withMessage("Initial addd"));
-
+        //create new branch and make a commit
         connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName("newbranch").withCreateNew(true));
         addFile(connection, "newfile", "new file content");
         connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));

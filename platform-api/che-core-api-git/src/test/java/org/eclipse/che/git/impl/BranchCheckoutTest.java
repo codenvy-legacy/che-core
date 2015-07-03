@@ -59,51 +59,57 @@ public class BranchCheckoutTest {
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testSimpleCheckout(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
-
-        //create branch "master"
         addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
         connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));
         connection.commit(newDto(CommitRequest.class).withMessage("Initial addd"));
 
-        //create additional branch
+        //when
+        //create additional branch and make a commit
         connection.branchCreate(newDto(BranchCreateRequest.class).withName(FIRST_BRANCH_NAME));
         connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName(FIRST_BRANCH_NAME));
         addFile(connection, "newfile", "new file content");
-        connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
+        connection.add(newDto(AddRequest.class).withFilepattern(AddRequest.DEFAULT_PATTERN));
         connection.commit(newDto(CommitRequest.class).withMessage("Commit message"));
         connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName("master"));
-
+        //then
         assertFalse(new File(repository, "newf3ile").exists());
+
+        //when
         connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName(FIRST_BRANCH_NAME));
+        //then
         assertTrue(new File(repository, "newfile").exists());
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testCreateNewAndCheckout(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
-
-        //create branch "master"
         addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
         connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));
         connection.commit(newDto(CommitRequest.class).withMessage("Initial addd"));
 
+        //check existence of branch master
         assertEquals(connection.branchList(newDto(BranchListRequest.class)).size(), 1);
 
+        //when
         connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName("thirdBranch").withCreateNew(true));
+
+        //then
         assertEquals(connection.branchList(newDto(BranchListRequest.class)).size(), 2);
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testCheckoutFromStartPoint(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
-
-        //create branch "master"
         addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
         connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));
         connection.commit(newDto(CommitRequest.class).withMessage("Initial addd"));
 
-        //create branch additional branch
+        //when
+        //create branch additional branch and make a commit
         connection.branchCreate(newDto(BranchCreateRequest.class).withName(FIRST_BRANCH_NAME));
         connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName(FIRST_BRANCH_NAME));
         addFile(connection, "newfile", "new file content");

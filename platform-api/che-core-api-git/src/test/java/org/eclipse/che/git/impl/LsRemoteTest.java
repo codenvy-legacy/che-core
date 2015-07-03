@@ -55,11 +55,13 @@ public class LsRemoteTest {
 
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
 
+        //when
         Set<RemoteReference> remoteReferenceSet =
                 new HashSet<>(connection.lsRemote(newDto(LsRemoteRequest.class)
                                                           .withRemoteUrl("https://github.com/codenvy/everrest.git")
                                                           .withUseAuthorization(false)));
 
+        //then
         assertTrue(remoteReferenceSet.contains(newDto(RemoteReference.class)
                                                        .withCommitId("259e24c83c8a122af858c8306c3286586404ef3f")
                                                        .withReferenceName("refs/tags/1.1.9")));

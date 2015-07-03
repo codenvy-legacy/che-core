@@ -63,6 +63,7 @@ public class FetchTest {
     public void testSimpleFetch(GitConnectionFactory connectionFactory)
             throws ServerException, IOException, UnauthorizedException, URISyntaxException {
 
+        //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
         GitConnection fetchConnection = connectToInitializedGitRepository(connectionFactory, fetchTestRepo);
 
@@ -88,6 +89,7 @@ public class FetchTest {
     public void testFetchBranch(GitConnectionFactory connectionFactory)
             throws ServerException, IOException, UnauthorizedException, URISyntaxException {
 
+        //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
         GitConnection fetchConnection = connectToInitializedGitRepository(connectionFactory, fetchTestRepo);
 
@@ -100,7 +102,6 @@ public class FetchTest {
         connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
         connection.commit(newDto(CommitRequest.class).withMessage("fetch test"));
 
-        //given
         String branchName = "branch";
         connection.branchCheckout(newDto(BranchCheckoutRequest.class).withCreateNew(true).withName(branchName));
         addFile(connection, "otherfile1", "otherfile1 content");

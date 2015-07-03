@@ -52,24 +52,26 @@ public class CommitTest {
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testSimpleCommit(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
-
         //add new File
         addFile(connection, "DONTREADME", "secret");
-
         //add changes
         connection.add(newDto(AddRequest.class).withFilepattern(AddRequest.DEFAULT_PATTERN));
+
+        //when
         CommitRequest commitRequest = newDto(CommitRequest.class)
                 .withMessage("Commit message").withAmend(false).withAll(false);
         Revision revision = connection.commit(commitRequest);
+
+        //then
         assertEquals(revision.getMessage(), commitRequest.getMessage());
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testCommitWithAddAll(GitConnectionFactory connectionFactory) throws GitException, IOException {
-        GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
-
         //given
+        GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
         addFile(connection, "README.txt", CONTENT);
         connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));
         connection.commit(newDto(CommitRequest.class).withMessage("Initial addd"));
@@ -87,9 +89,8 @@ public class CommitTest {
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testAmendCommit(GitConnectionFactory connectionFactory) throws GitException, IOException {
-        GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
-
         //given
+        GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
         addFile(connection, "README.txt", CONTENT);
         connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));
         connection.commit(newDto(CommitRequest.class).withMessage("Initial addd"));

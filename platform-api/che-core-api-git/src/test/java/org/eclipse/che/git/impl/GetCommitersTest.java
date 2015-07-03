@@ -61,6 +61,7 @@ public class GetCommitersTest {
 
         //when
         List<GitUser> committers = connection.getCommiters();
+
         //then
         assertEquals(committers.size(), 1);
         assertEquals(committers.get(0).getEmail(), "test@email");

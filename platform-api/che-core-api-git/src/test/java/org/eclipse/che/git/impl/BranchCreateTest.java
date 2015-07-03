@@ -58,18 +58,17 @@ public class BranchCreateTest {
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testSimpleBranchCreate(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
-
-        //create branch "master"
         addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
         connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));
         connection.commit(newDto(CommitRequest.class).withMessage("Initial addd"));
 
-        //given
         int beforeCountOfBranches = connection.branchList(newDto(BranchListRequest.class)).size();
 
         //when
         connection.branchCreate(newDto(BranchCreateRequest.class).withName("new-branch"));
+
         //then
         int afterCountOfBranches = connection.branchList(newDto(BranchListRequest.class)).size();
         assertEquals(afterCountOfBranches, beforeCountOfBranches + 1);
@@ -77,9 +76,8 @@ public class BranchCreateTest {
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testBranchCreateWithStartPoint(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
-
-        //make a commit in default repository
         addFile(connection, "newfile1", "file 1 content");
         connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
         connection.commit(newDto(CommitRequest.class).withMessage("Commit message"));

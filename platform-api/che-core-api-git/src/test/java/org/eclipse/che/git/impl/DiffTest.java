@@ -61,28 +61,31 @@ public class DiffTest {
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testDiffNameStatus(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
+        makeCommitInMaster(connection);
 
-        prepare(connection);
-
+        //when
         List<String> diff = readDiff(newDto(DiffRequest.class)
                                              .withType(DiffType.NAME_STATUS)
                                              .withRenameLimit(0),
                                      connection);
+        //then
         assertEquals(diff.size(), 1);
         assertTrue(diff.contains("M\taaa"));
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testDiffNameStatusWithCommits(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
-
-        prepare(connection);
-
-        connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
+        makeCommitInMaster(connection);
+        //change README.txt
+        connection.add(newDto(AddRequest.class).withFilepattern(AddRequest.DEFAULT_PATTERN));
         connection.rm(newDto(RmRequest.class).withItems(Arrays.asList("README.txt")));
         connection.commit(newDto(CommitRequest.class).withMessage("testDiffNameStatusWithCommits"));
 
+        //when
         List<String> diff = readDiff(newDto(DiffRequest.class)
                                              .withFileFilter(null)
                                              .withType(DiffType.NAME_STATUS)
@@ -90,6 +93,8 @@ public class DiffTest {
                                              .withCommitA("HEAD^")
                                              .withCommitB("HEAD"),
                                      connection);
+
+        //then
         assertEquals(diff.size(), 2);
         assertTrue(diff.contains("D\tREADME.txt"));
         assertTrue(diff.contains("A\taaa"));
@@ -97,14 +102,15 @@ public class DiffTest {
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testDiffNameStatusWithFileFilterAndCommits(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
-
-        prepare(connection);
+        makeCommitInMaster(connection);
 
         connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList("aaa")));
         connection.rm(newDto(RmRequest.class).withItems(Arrays.asList("README.txt")));
         connection.commit(newDto(CommitRequest.class).withMessage("testDiffNameStatusWithCommits"));
 
+        //when
         List<String> diff = readDiff(newDto(DiffRequest.class)
                                              .withFileFilter(Arrays.asList("aaa"))
                                              .withType(DiffType.NAME_STATUS)
@@ -113,37 +119,42 @@ public class DiffTest {
                                              .withCommitA("HEAD^1")
                                              .withCommitB("HEAD"),
                                      connection);
+
+        //then
         assertEquals(diff.size(), 1);
         assertTrue(diff.contains("A\taaa"));
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testDiffNameOnly(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
+        makeCommitInMaster(connection);
 
-        prepare(connection);
-
+        //when
         List<String> diff = readDiff(newDto(DiffRequest.class)
                                              .withFileFilter(null)
                                              .withType(DiffType.NAME_ONLY)
                                              .withNoRenames(false)
                                              .withRenameLimit(0),
                                      connection);
+
+        //then
         assertEquals(diff.size(), 1);
         assertTrue(diff.contains("aaa"));
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testDiffNameOnlyWithCommits(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
-
-        prepare(connection);
+        makeCommitInMaster(connection);
 
         connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList("aaa")));
         connection.rm(newDto(RmRequest.class).withItems(Arrays.asList("README.txt")));
         connection.commit(newDto(CommitRequest.class).withMessage("testDiffNameStatusWithCommits"));
 
-
+        //when
         List<String> diff = readDiff(newDto(DiffRequest.class)
                                              .withFileFilter(null)
                                              .withType(DiffType.NAME_ONLY)
@@ -152,6 +163,8 @@ public class DiffTest {
                                              .withCommitA("HEAD^1")
                                              .withCommitB("HEAD"),
                                      connection);
+
+        //then
         assertEquals(diff.size(), 2);
         assertTrue(diff.contains("README.txt"));
         assertTrue(diff.contains("aaa"));
@@ -159,10 +172,11 @@ public class DiffTest {
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testDiffNameOnlyCached(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
+        makeCommitInMaster(connection);
 
-        prepare(connection);
-
+        //when
         connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList("aaa")));
         List<String> diff = readDiff(newDto(DiffRequest.class)
                                              .withFileFilter(null)
@@ -172,16 +186,19 @@ public class DiffTest {
                                              .withCommitA("HEAD")
                                              .withCached(true),
                                      connection);
+
+        //then
         assertEquals(diff.size(), 1);
         assertTrue(diff.contains("aaa"));
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testDiffNameOnlyCachedNoCommit(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
+        makeCommitInMaster(connection);
 
-        prepare(connection);
-
+        //when
         connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList("aaa")));
         List<String> diff = readDiff(newDto(DiffRequest.class)
                                              .withFileFilter(null)
@@ -191,16 +208,19 @@ public class DiffTest {
                                              .withCommitA(null)
                                              .withCached(true),
                                      connection);
+
+        //then
         assertEquals(diff.size(), 1);
         assertTrue(diff.contains("aaa"));
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testDiffNameOnlyWorkingTree(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
+        makeCommitInMaster(connection);
 
-        prepare(connection);
-
+        //when
         List<String> diff = readDiff(newDto(DiffRequest.class)
                                              .withFileFilter(null)
                                              .withType(DiffType.NAME_ONLY)
@@ -209,22 +229,27 @@ public class DiffTest {
                                              .withCommitA("HEAD")
                                              .withCached(false),
                                      connection);
+
+        //then
         assertEquals(diff.size(), 1);
         assertTrue(diff.contains("aaa"));
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testDiffNameOnlyWithFileFilter(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
+        makeCommitInMaster(connection);
 
-        prepare(connection);
-
+        //when
         List<String> diff = readDiff(newDto(DiffRequest.class)
                                              .withFileFilter(Arrays.asList("aaa"))
                                              .withType(DiffType.NAME_ONLY)
                                              .withNoRenames(false)
                                              .withRenameLimit(0),
                                      connection);
+
+        //then
         assertEquals(diff.size(), 1);
         assertTrue(diff.contains("aaa"));
     }
@@ -232,29 +257,32 @@ public class DiffTest {
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testDiffNameOnlyNotMatchingWithFileFilter(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
+        makeCommitInMaster(connection);
 
-        prepare(connection);
-
+        //when
         List<String> diff = readDiff(newDto(DiffRequest.class)
                                              .withFileFilter(Arrays.asList("anotherFile"))
                                              .withType(DiffType.NAME_ONLY)
                                              .withNoRenames(false)
                                              .withRenameLimit(0),
                                      connection);
+        //then
         assertEquals(diff.size(), 0);
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testDiffNameOnlyWithFileFilterAndCommits(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
-
-        prepare(connection);
+        makeCommitInMaster(connection);
 
         connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList("aaa")));
         connection.rm(newDto(RmRequest.class).withItems(Arrays.asList("README.txt")));
         connection.commit(newDto(CommitRequest.class).withMessage("testDiffNameStatusWithCommits"));
 
+        //when
         List<String> diff = readDiff(newDto(DiffRequest.class)
                                              .withFileFilter(Arrays.asList("aaa"))
                                              .withType(DiffType.NAME_ONLY)
@@ -263,35 +291,41 @@ public class DiffTest {
                                              .withCommitA("HEAD^1")
                                              .withCommitB("HEAD"),
                                      connection);
+
+        //then
         assertEquals(diff.size(), 1);
         assertTrue(diff.contains("aaa"));
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testDiffRaw(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
+        makeCommitInMaster(connection);
 
-        prepare(connection);
-
+        //when
         DiffRequest request = newDto(DiffRequest.class)
                 .withFileFilter(null)
                 .withType(DiffType.RAW)
                 .withNoRenames(false)
                 .withRenameLimit(0);
         DiffPage diffPage = connection.diff(request);
+
+        //then
         diffPage.writeTo(System.out);
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testDiffRawWithCommits(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
-
-        prepare(connection);
+        makeCommitInMaster(connection);
 
         connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList("aaa")));
         connection.rm(newDto(RmRequest.class).withItems(Arrays.asList("README.txt")));
         connection.commit(newDto(CommitRequest.class).withMessage("testDiffNameStatusWithCommits"));
 
+        //when
         DiffRequest request = newDto(DiffRequest.class)
                 .withFileFilter(null)
                 .withType(DiffType.RAW)
@@ -300,6 +334,8 @@ public class DiffTest {
                 .withCommitA("HEAD^1")
                 .withCommitB("HEAD");
         DiffPage diffPage = connection.diff(request);
+
+        //then
         diffPage.writeTo(System.out);
     }
 
@@ -318,7 +354,7 @@ public class DiffTest {
         return diff;
     }
 
-    private void prepare(GitConnection connection) throws GitException, IOException {
+    private void makeCommitInMaster(GitConnection connection) throws GitException, IOException {
         //create branch "master"
         addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
         connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));

@@ -51,16 +51,17 @@ public class ConfigTest {
     public void testAddProperty(GitConnectionFactory connectionFactory) throws GitException, IOException {
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
 
+        //when
         //write value
         connection.getConfig().add(PROPERTY_NAME, PROPERTY_VALUE);
 
+        //then
         //read written value
         String resultValue = connection.getConfig().get(PROPERTY_NAME);
+        assertEquals(resultValue, PROPERTY_VALUE);
 
         //clear
         connection.getConfig().unset(PROPERTY_NAME);
-
-        assertEquals(resultValue, PROPERTY_VALUE);
     }
 
     @Test(expectedExceptions = GitException.class,
