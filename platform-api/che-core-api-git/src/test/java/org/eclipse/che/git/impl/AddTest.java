@@ -59,8 +59,10 @@ public class AddTest {
         //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
         addFile(connection, "testAdd", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
+
         //when
         connection.add(newDto(AddRequest.class).withFilepattern(AddRequest.DEFAULT_PATTERN));
+
         //then
         //check added files
         List<String> files = connection.listFiles(newDto(LsFilesRequest.class));
@@ -84,9 +86,12 @@ public class AddTest {
         addFile(connection, "README.txt", CONTENT);
         connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));
         connection.commit(newDto(CommitRequest.class).withMessage("Initial add"));
+
+        //when
         //modify README.txt
         addFile(connection, "README.txt", "SOME NEW CONTENT");
         List<String> listFiles = connection.listFiles(newDto(LsFilesRequest.class).withModified(true));
+        //then
         //modified but not added to stage
         assertTrue(listFiles.contains("README.txt"));
 
@@ -96,6 +101,6 @@ public class AddTest {
         listFiles = connection.listFiles(newDto(LsFilesRequest.class).withStaged(true));
         //added to stage
         assertEquals(listFiles.size(), 1);
-        assertTrue(listFiles.contains("README.txt"));
+        assertTrue(listFiles.get(0).contains("README.txt"));
     }
 }
