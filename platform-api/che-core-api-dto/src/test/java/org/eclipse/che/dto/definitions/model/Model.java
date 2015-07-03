@@ -8,29 +8,18 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.machine.shared.dto.recipe;
-
-import org.eclipse.che.api.machine.shared.Permissions;
-import org.eclipse.che.dto.shared.DTO;
+package org.eclipse.che.dto.definitions.model;
 
 import java.util.List;
-import java.util.Map;
 
 /**
+ * Test interface serves as base model, should be extended with dto interface
+ *
  * @author Eugene Voevodin
  */
-@DTO
-public interface PermissionsDescriptor extends Permissions {
+public interface Model {
 
-    Map<String, List<String>> getUsers();
+    List<? extends ModelComponent> getComponents();
 
-    void setUsers(Map<String, List<String>> users);
-
-    PermissionsDescriptor withUsers(Map<String, List<String>> users);
-
-    List<GroupDescriptor> getGroups();
-
-    void setGroups(List<GroupDescriptor> groups);
-
-    PermissionsDescriptor withGroups(List<GroupDescriptor> groups);
+    ModelComponent getPrimary();
 }

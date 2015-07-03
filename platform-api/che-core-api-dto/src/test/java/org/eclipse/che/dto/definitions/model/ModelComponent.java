@@ -8,34 +8,14 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.machine.shared.dto.recipe;
-
-import org.eclipse.che.api.machine.shared.Group;
-import org.eclipse.che.dto.shared.DTO;
-
-import java.util.List;
+package org.eclipse.che.dto.definitions.model;
 
 /**
+ * Test interface, serves as part of model {@link Model}, should be extended with dto interface
+ *
  * @author Eugene Voevodin
  */
-@DTO
-public interface GroupDescriptor extends Group {
+public interface ModelComponent {
 
     String getName();
-
-    void setName(String name);
-
-    GroupDescriptor withName(String name);
-
-    String getUnit();
-
-    void setUnit(String unit);
-
-    GroupDescriptor withUnit(String unit);
-
-    List<String> getAcl();
-
-    void setAcl(List<String> acl);
-
-    GroupDescriptor withAcl(List<String> acl);
 }

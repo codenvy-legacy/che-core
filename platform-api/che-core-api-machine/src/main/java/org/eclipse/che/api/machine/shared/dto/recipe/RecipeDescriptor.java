@@ -11,6 +11,7 @@
 package org.eclipse.che.api.machine.shared.dto.recipe;
 
 import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
+import org.eclipse.che.api.machine.shared.ManagedRecipe;
 import org.eclipse.che.dto.shared.DTO;
 
 import java.util.List;
@@ -19,7 +20,7 @@ import java.util.List;
  * @author Eugene Voevodin
  */
 @DTO
-public interface RecipeDescriptor extends Hyperlinks {
+public interface RecipeDescriptor extends Hyperlinks, ManagedRecipe {
     String getId();
 
     void setId(String id);

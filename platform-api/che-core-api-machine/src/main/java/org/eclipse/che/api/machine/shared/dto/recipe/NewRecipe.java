@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.shared.dto.recipe;
 
+import org.eclipse.che.api.machine.shared.ManagedRecipe;
 import org.eclipse.che.dto.shared.DTO;
 
 import java.util.List;
@@ -20,7 +21,7 @@ import java.util.List;
  * @author Eugene Voevodin
  */
 @DTO
-public interface NewRecipe {
+public interface NewRecipe extends ManagedRecipe {
 
     String getType();
 

@@ -129,7 +129,7 @@ public abstract class FactoryBaseValidator {
 
     protected void validateCreator(Factory factory) throws ApiException {
         final Workspace workspace = factory.getWorkspace();
-        if (workspace == null || workspace.getLocation() == null || workspace.getLocation().equals("owner")) {
+        if (workspace != null && "owner".equals(workspace.getLocation())) {
             String accountId = factory.getCreator() != null ? emptyToNull(factory.getCreator().getAccountId()) : null;
             if (accountId == null) {
                 throw new ConflictException("Current workspace location requires factory creator accountId to be set.");
