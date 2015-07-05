@@ -48,6 +48,7 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -57,6 +58,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilder;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -421,7 +423,7 @@ public class UserService extends Service {
         final List<Link> links = new LinkedList<>();
         final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
         if (context.isUserInRole("user")) {
-            links.add(LinksHelper.createLink("GET",
+            links.add(LinksHelper.createLink(HttpMethod.GET,
                                              getServiceContext().getBaseUriBuilder().path(UserProfileService.class)
                                                                 .path(UserProfileService.class, "getCurrent")
                                                                 .build()
@@ -429,7 +431,7 @@ public class UserService extends Service {
                                              null,
                                              APPLICATION_JSON,
                                              LINK_REL_GET_CURRENT_USER_PROFILE));
-            links.add(LinksHelper.createLink("GET",
+            links.add(LinksHelper.createLink(HttpMethod.GET,
                                              uriBuilder.clone()
                                                        .path(getClass(), "getCurrent")
                                                        .build()
@@ -437,7 +439,7 @@ public class UserService extends Service {
                                              null,
                                              APPLICATION_JSON,
                                              LINK_REL_GET_CURRENT_USER));
-            links.add(LinksHelper.createLink("POST",
+            links.add(LinksHelper.createLink(HttpMethod.POST,
                                              uriBuilder.clone()
                                                        .path(getClass(), "updatePassword")
                                                        .build()
@@ -447,7 +449,7 @@ public class UserService extends Service {
                                              LINK_REL_UPDATE_PASSWORD));
         }
         if (context.isUserInRole("system/admin") || context.isUserInRole("system/manager")) {
-            links.add(LinksHelper.createLink("GET",
+            links.add(LinksHelper.createLink(HttpMethod.GET,
                                              uriBuilder.clone()
                                                        .path(getClass(), "getById")
                                                        .build(user.getId())
@@ -455,7 +457,7 @@ public class UserService extends Service {
                                              null,
                                              APPLICATION_JSON,
                                              LINK_REL_GET_USER_BY_ID));
-            links.add(LinksHelper.createLink("GET",
+            links.add(LinksHelper.createLink(HttpMethod.GET,
                                              getServiceContext().getBaseUriBuilder()
                                                                 .path(UserProfileService.class).path(UserProfileService.class, "getById")
                                                                 .build(user.getId())
@@ -464,7 +466,7 @@ public class UserService extends Service {
                                              APPLICATION_JSON,
                                              LINK_REL_GET_USER_PROFILE_BY_ID));
             if (user.getEmail() != null) {
-                links.add(LinksHelper.createLink("GET",
+                links.add(LinksHelper.createLink(HttpMethod.GET,
                                                  uriBuilder.clone()
                                                            .path(getClass(), "getByEmail")
                                                            .queryParam("email", user.getEmail())
@@ -476,7 +478,7 @@ public class UserService extends Service {
             }
         }
         if (context.isUserInRole("system/admin")) {
-            links.add(LinksHelper.createLink("DELETE",
+            links.add(LinksHelper.createLink(HttpMethod.DELETE,
                                              uriBuilder.clone()
                                                        .path(getClass(), "remove")
                                                        .build(user.getId())

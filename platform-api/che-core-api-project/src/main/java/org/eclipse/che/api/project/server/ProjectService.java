@@ -58,6 +58,7 @@ import org.eclipse.che.api.vfs.server.search.SearcherProvider;
 import org.eclipse.che.api.vfs.shared.dto.AccessControlEntry;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.commons.env.EnvironmentContext;
+import org.eclipse.che.commons.lang.ws.rs.ExtMediaType;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,6 +82,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -97,6 +99,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+
 import org.eclipse.che.api.project.shared.dto.CopyOptions;
 import org.eclipse.che.api.project.shared.dto.MoveOptions;
 
@@ -1133,7 +1136,7 @@ public class ProjectService extends Service {
             @ApiResponse(code = 500, message = "Internal Server Error")})
     @POST
     @Path("/import/{path:.*}")
-    @Consumes("application/zip")
+    @Consumes(ExtMediaType.APPLICATION_ZIP)
     public Response importZip(@ApiParam(value = "Workspace ID", required = true)
                               @PathParam("ws-id") String workspace,
                               @ApiParam(value = "Path to a location (where import to?)")
@@ -1164,7 +1167,7 @@ public class ProjectService extends Service {
             @ApiResponse(code = 500, message = "Internal Server Error")})
     @GET
     @Path("/export/{path:.*}")
-    @Produces("application/zip")
+    @Produces(ExtMediaType.APPLICATION_ZIP)
     public ContentStream exportZip(@ApiParam(value = "Workspace ID", required = true)
                                    @PathParam("ws-id") String workspace,
                                    @ApiParam(value = "Path to resource to be imported")
@@ -1177,7 +1180,7 @@ public class ProjectService extends Service {
     @POST
     @Path("/export/{path:.*}")
     @Consumes(MediaType.TEXT_PLAIN)
-    @Produces("application/zip")
+    @Produces(ExtMediaType.APPLICATION_ZIP)
     public Response exportDiffZip(@PathParam("ws-id") String workspace, @PathParam("path") String path, InputStream in)
             throws NotFoundException, ForbiddenException, ServerException {
         final FolderEntry folder = asFolder(workspace, path);

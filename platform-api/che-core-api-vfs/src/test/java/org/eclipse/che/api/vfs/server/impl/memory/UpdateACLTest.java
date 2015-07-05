@@ -14,6 +14,7 @@ import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.shared.dto.AccessControlEntry;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
+
 import com.google.common.collect.Sets;
 
 import org.everrest.core.impl.ContainerResponse;
@@ -26,6 +27,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+
 /** @author andrew00x */
 public class UpdateACLTest extends MemoryFileSystemTest {
     private String objectId;
@@ -36,7 +41,7 @@ public class UpdateACLTest extends MemoryFileSystemTest {
         String name = getClass().getName();
         VirtualFile updateAclTestFolder = mountPoint.getRoot().createFolder(name);
 
-        VirtualFile file = updateAclTestFolder.createFile("UpdateACLTest_FILE", "text/plain",
+        VirtualFile file = updateAclTestFolder.createFile("UpdateACLTest_FILE", MediaType.TEXT_PLAIN,
                                                           new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
         objectId = file.getId();
     }
@@ -46,8 +51,8 @@ public class UpdateACLTest extends MemoryFileSystemTest {
         String body = "[{\"principal\":{\"name\":\"admin\",\"type\":\"USER\"},\"permissions\":[\"all\"]}," + //
                       "{\"principal\":{\"name\":\"john\",\"type\":\"USER\"},\"permissions\":[\"read\"]}]";
         Map<String, List<String>> h = new HashMap<>(1);
-        h.put("Content-Type", Arrays.asList("application/json"));
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, h, body.getBytes(), null);
+        h.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, h, body.getBytes(), null);
         assertEquals(204, response.getStatus());
         List<AccessControlEntry> acl = mountPoint.getVirtualFileById(objectId).getACL();
         Map<String, List<String>> m = toMap(acl);
@@ -66,8 +71,8 @@ public class UpdateACLTest extends MemoryFileSystemTest {
         String body = "[{\"principal\":{\"name\":\"admin\",\"type\":\"USER\"},\"permissions\":[\"all\"]}," + //
                       "{\"principal\":{\"name\":\"john\",\"type\":\"USER\"},\"permissions\":[\"read\"]}]";
         Map<String, List<String>> h = new HashMap<>(1);
-        h.put("Content-Type", Arrays.asList("application/json"));
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, h, body.getBytes(), writer, null);
+        h.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, h, body.getBytes(), writer, null);
         assertEquals(204, response.getStatus());
 
         List<AccessControlEntry> acl = mountPoint.getVirtualFileById(objectId).getACL();
@@ -87,8 +92,8 @@ public class UpdateACLTest extends MemoryFileSystemTest {
         String body = "[{\"principal\":{\"name\":\"admin\",\"type\":\"USER\"},\"permissions\":[\"all\"]}," + //
                       "{\"principal\":{\"name\":\"john\",\"type\":\"USER\"},\"permissions\":[\"read\"]}]";
         Map<String, List<String>> h = new HashMap<>(1);
-        h.put("Content-Type", Arrays.asList("application/json"));
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, h, body.getBytes(), null);
+        h.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, h, body.getBytes(), null);
         assertEquals(204, response.getStatus());
 
         List<AccessControlEntry> acl = mountPoint.getVirtualFileById(objectId).getACL();
@@ -105,8 +110,8 @@ public class UpdateACLTest extends MemoryFileSystemTest {
         String body = "[{\"principal\":{\"name\":\"admin\",\"type\":\"USER\"},\"permissions\":[\"all\"]}," + //
                       "{\"principal\":{\"name\":\"john\",\"type\":\"USER\"},\"permissions\":[\"read\"]}]";
         Map<String, List<String>> h = new HashMap<>(1);
-        h.put("Content-Type", Arrays.asList("application/json"));
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, h, body.getBytes(), writer, null);
+        h.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, h, body.getBytes(), writer, null);
         assertEquals(204, response.getStatus());
 
         List<AccessControlEntry> acl = mountPoint.getVirtualFileById(objectId).getACL();
@@ -122,8 +127,8 @@ public class UpdateACLTest extends MemoryFileSystemTest {
         String body = "[{\"principal\":{\"name\":\"admin\",\"type\":\"USER\"},\"permissions\":[\"all\"]}," + //
                       "{\"principal\":{\"name\":\"john\",\"type\":\"USER\"},\"permissions\":[\"read\"]}]";
         Map<String, List<String>> h = new HashMap<>(1);
-        h.put("Content-Type", Arrays.asList("application/json"));
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, h, body.getBytes(), writer, null);
+        h.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, h, body.getBytes(), writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
     }
@@ -141,8 +146,8 @@ public class UpdateACLTest extends MemoryFileSystemTest {
         String body = "[{\"principal\":{\"name\":\"admin\",\"type\":\"USER\"},\"permissions\":[\"all\"]}," + //
                       "{\"principal\":{\"name\":\"john\",\"type\":\"USER\"},\"permissions\":[\"read\"]}]";
         Map<String, List<String>> h = new HashMap<>(1);
-        h.put("Content-Type", Arrays.asList("application/json"));
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, h, body.getBytes(), writer, null);
+        h.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, h, body.getBytes(), writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
     }

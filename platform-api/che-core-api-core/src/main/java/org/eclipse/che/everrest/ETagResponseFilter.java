@@ -23,10 +23,12 @@ import org.everrest.core.GenericContainerResponse;
 import org.everrest.core.ResponseFilter;
 import org.everrest.core.impl.ApplicationContextImpl;
 
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
+
 import java.nio.charset.Charset;
 import java.util.List;
 
@@ -76,7 +78,7 @@ public class ETagResponseFilter implements ResponseFilter {
         Request request = applicationContext.getRequest();
 
         // manage only GET requests
-        if (!"GET".equals(request.getMethod())) {
+        if (!HttpMethod.GET.equals(request.getMethod())) {
             return;
         }
 

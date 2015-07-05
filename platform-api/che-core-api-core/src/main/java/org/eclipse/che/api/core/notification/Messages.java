@@ -11,7 +11,6 @@
 package org.eclipse.che.api.core.notification;
 
 import org.eclipse.che.commons.lang.NameGenerator;
-
 import org.everrest.core.impl.provider.json.JsonGenerator;
 import org.everrest.core.impl.provider.json.JsonParser;
 import org.everrest.core.impl.provider.json.JsonValue;
@@ -27,6 +26,9 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.MediaType;
+
 /**
  * @author andrew00x
  */
@@ -34,9 +36,9 @@ class Messages {
     static RestInputMessage clientMessage(Object event) throws Exception {
         RestInputMessage message = new RestInputMessage();
         message.setBody(toJson(event));
-        message.setMethod("POST");
+        message.setMethod(HttpMethod.POST);
         message.setHeaders(new org.everrest.websockets.message.Pair[]{
-                new org.everrest.websockets.message.Pair("Content-type", "application/json")});
+                new org.everrest.websockets.message.Pair("Content-type", MediaType.APPLICATION_JSON)});
         message.setUuid(NameGenerator.generate(null, 8));
         message.setPath("/event-bus");
         return message;

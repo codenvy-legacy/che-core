@@ -15,7 +15,6 @@ import org.eclipse.che.api.vfs.server.VirtualFileFilter;
 import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.api.vfs.shared.dto.ItemList;
 import org.eclipse.che.commons.lang.Pair;
-
 import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -35,6 +34,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 
 public class SearcherTest extends LocalFileSystemTest {
     private static final String FILE_NAME          = "SearcherTest_File1";
@@ -63,11 +66,11 @@ public class SearcherTest extends LocalFileSystemTest {
                 .singletonMap("vfs:mimeType", new String[]{"text/xml"})); // text/xml just for test, it is not xml content
 
         file2 = createFile(searchTestPath, "SearcherTest_File02.txt", "to be or not to be".getBytes());
-        writeProperties(file2, Collections.singletonMap("vfs:mimeType", new String[]{"text/plain"}));
+        writeProperties(file2, Collections.singletonMap("vfs:mimeType", new String[]{MediaType.TEXT_PLAIN}));
 
         String folder1 = createDirectory(searchTestPath, "folder01");
         file3 = createFile(folder1, "SearcherTest_File03.txt", "to be or not to be".getBytes());
-        writeProperties(file3, Collections.singletonMap("vfs:mimeType", new String[]{"text/plain"}));
+        writeProperties(file3, Collections.singletonMap("vfs:mimeType", new String[]{MediaType.TEXT_PLAIN}));
 
         file4 = createFile(searchTestPath, FILE_NAME, "maybe you should think twice".getBytes());
 
@@ -119,9 +122,9 @@ public class SearcherTest extends LocalFileSystemTest {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "search";
         Map<String, List<String>> h = new HashMap<>(1);
-        h.put("Content-Type", Arrays.asList("application/x-www-form-urlencoded"));
+        h.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_FORM_URLENCODED));
         for (Pair<String[], String> pair : queryToResult) {
-            ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, h, pair.second.getBytes(), writer, null);
+            ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, h, pair.second.getBytes(), writer, null);
             //log.info(new String(writer.getBody()));
             assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
             List<Item> result = ((ItemList)response.getEntity()).getItems();

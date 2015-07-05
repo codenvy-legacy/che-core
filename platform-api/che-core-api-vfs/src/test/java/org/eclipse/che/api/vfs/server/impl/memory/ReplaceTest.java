@@ -14,10 +14,8 @@ package org.eclipse.che.api.vfs.server.impl.memory;
 import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.shared.dto.ReplacementSet;
 import org.eclipse.che.api.vfs.shared.dto.Variable;
-
 import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.dto.server.DtoFactory;
-
 import org.everrest.core.impl.ContainerResponse;
 
 import java.io.ByteArrayInputStream;
@@ -26,6 +24,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 
 public class ReplaceTest extends MemoryFileSystemTest {
     private VirtualFile replaceTestFolder;
@@ -48,7 +50,7 @@ public class ReplaceTest extends MemoryFileSystemTest {
     public void testSimpleReplaceVar() throws Exception {
         final String fileName = "test_file.txt";
         VirtualFile file = replaceTestFolder
-                .createFile(fileName, "text/plain",
+                .createFile(fileName, MediaType.TEXT_PLAIN,
                             new ByteArrayInputStream(String.format(template, find1, find2).getBytes()));
         List<Variable> variables = new ArrayList<>(2);
         variables.add(DtoFactory.getInstance().createDto(Variable.class).withFind(find1).withReplace(replace1));
@@ -59,10 +61,10 @@ public class ReplaceTest extends MemoryFileSystemTest {
         ReplacementSet replacementSet =
                 DtoFactory.getInstance().createDto(ReplacementSet.class).withEntries(variables).withFiles(expression);
         Map<String, List<String>> h = new HashMap<>(1);
-        h.put("Content-Type", Arrays.asList("application/json"));
+        h.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
 
         String path = SERVICE_URI + "replace/" + replaceTestFolder.getName();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, h,
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, h,
                                                       String.format("[%s]",
                                                                     DtoFactory.getInstance().toJson(replacementSet))
                                                             .getBytes(), null, null);
@@ -77,11 +79,11 @@ public class ReplaceTest extends MemoryFileSystemTest {
         final String fileName3 = "test_file.class";
 
         VirtualFile file1 = replaceTestFolder
-                .createFile(fileName1, "text/plain", new ByteArrayInputStream(String.format(template, find1, find2).getBytes()));
+                .createFile(fileName1, MediaType.TEXT_PLAIN, new ByteArrayInputStream(String.format(template, find1, find2).getBytes()));
         VirtualFile file2 = replaceTestFolder
-                .createFile(fileName2, "text/plain", new ByteArrayInputStream(String.format(template, find1, find2).getBytes()));
+                .createFile(fileName2, MediaType.TEXT_PLAIN, new ByteArrayInputStream(String.format(template, find1, find2).getBytes()));
         VirtualFile file3 = replaceTestFolder
-                .createFile(fileName3, "text/plain", new ByteArrayInputStream(String.format(template, find1, find2).getBytes()));
+                .createFile(fileName3, MediaType.TEXT_PLAIN, new ByteArrayInputStream(String.format(template, find1, find2).getBytes()));
 
         List<Variable> variables = new ArrayList<>(2);
         variables.add(DtoFactory.getInstance().createDto(Variable.class).withFind(find1).withReplace(replace1));
@@ -91,10 +93,10 @@ public class ReplaceTest extends MemoryFileSystemTest {
 
         ReplacementSet replacementSet = DtoFactory.getInstance().createDto(ReplacementSet.class).withEntries(variables).withFiles(expression);
         Map<String, List<String>> h = new HashMap<>(1);
-        h.put("Content-Type", Arrays.asList("application/json"));
+        h.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
 
         String path = SERVICE_URI + "replace/" + replaceTestFolder.getName();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, h,
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, h,
                                                       String.format("[%s]", DtoFactory.getInstance().toJson(replacementSet)).getBytes() , null, null);
         assertEquals(204, response.getStatus());
         assertEquals(String.format(templateReplaced, replace1, replace2), IoUtil.readAndCloseQuietly(mountPoint.getVirtualFileById(file2.getId()).getContent().getStream()));
@@ -107,7 +109,7 @@ public class ReplaceTest extends MemoryFileSystemTest {
         final String template_local = "some super content\n with ${%s} and another variable %s";
         final String fileName = "test_file.txt";
         VirtualFile file = replaceTestFolder
-                .createFile(fileName, "text/plain",
+                .createFile(fileName, MediaType.TEXT_PLAIN,
                             new ByteArrayInputStream(String.format(template_local, find1, find2).getBytes()));
         List<Variable> variables = new ArrayList<>(2);
         variables.add(DtoFactory.getInstance().createDto(Variable.class).withFind(find1).withReplace(replace1));
@@ -119,10 +121,10 @@ public class ReplaceTest extends MemoryFileSystemTest {
         ReplacementSet replacementSet =
                 DtoFactory.getInstance().createDto(ReplacementSet.class).withEntries(variables).withFiles(expression);
         Map<String, List<String>> h = new HashMap<>(1);
-        h.put("Content-Type", Arrays.asList("application/json"));
+        h.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
 
         String path = SERVICE_URI + "replace/" + replaceTestFolder.getName();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, h,
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, h,
                                                       String.format("[%s]",
                                                                     DtoFactory.getInstance().toJson(replacementSet))
                                                             .getBytes(), null, null);
@@ -137,13 +139,13 @@ public class ReplaceTest extends MemoryFileSystemTest {
         final String fileName3 = "test_file.class";
 
         VirtualFile file1 = replaceTestFolder
-                .createFile(fileName1, "text/plain",
+                .createFile(fileName1, MediaType.TEXT_PLAIN,
                             new ByteArrayInputStream(String.format(template, find1, find2).getBytes()));
         VirtualFile file2 = replaceTestFolder
-                .createFile(fileName2, "text/plain",
+                .createFile(fileName2, MediaType.TEXT_PLAIN,
                             new ByteArrayInputStream(String.format(template, find1, find2).getBytes()));
         VirtualFile file3 = replaceTestFolder
-                .createFile(fileName3, "text/plain",
+                .createFile(fileName3, MediaType.TEXT_PLAIN,
                             new ByteArrayInputStream(String.format(template, find1, find2).getBytes()));
 
         List<Variable> variables = new ArrayList<>(2);
@@ -155,10 +157,10 @@ public class ReplaceTest extends MemoryFileSystemTest {
         ReplacementSet replacementSet =
                 DtoFactory.getInstance().createDto(ReplacementSet.class).withEntries(variables).withFiles(expression);
         Map<String, List<String>> h = new HashMap<>(1);
-        h.put("Content-Type", Arrays.asList("application/json"));
+        h.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
 
         String path = SERVICE_URI + "replace/" + replaceTestFolder.getName();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, h,
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, h,
                                                       String.format("[%s]",
                                                                     DtoFactory.getInstance().toJson(replacementSet))
                                                             .getBytes(), null, null);
@@ -176,10 +178,10 @@ public class ReplaceTest extends MemoryFileSystemTest {
         final String fileName2 = "test_Mile.bat";
 
         VirtualFile file1 = replaceTestFolder
-                .createFile(fileName1, "text/plain",
+                .createFile(fileName1, MediaType.TEXT_PLAIN,
                             new ByteArrayInputStream(String.format(template, find1, find2).getBytes()));
         VirtualFile file2 = replaceTestFolder
-                .createFile(fileName2, "text/plain",
+                .createFile(fileName2, MediaType.TEXT_PLAIN,
                             new ByteArrayInputStream(String.format(template, find1, find2).getBytes()));
 
         List<Variable> variables = new ArrayList<>(2);
@@ -191,10 +193,10 @@ public class ReplaceTest extends MemoryFileSystemTest {
         ReplacementSet replacementSet =
                 DtoFactory.getInstance().createDto(ReplacementSet.class).withEntries(variables).withFiles(expression);
         Map<String, List<String>> h = new HashMap<>(1);
-        h.put("Content-Type", Arrays.asList("application/json"));
+        h.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
 
         String path = SERVICE_URI + "replace/" + replaceTestFolder.getName();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, h,
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, h,
                                                       String.format("[%s]",
                                                                     DtoFactory.getInstance().toJson(replacementSet))
                                                             .getBytes(), null, null);
@@ -210,7 +212,7 @@ public class ReplaceTest extends MemoryFileSystemTest {
         final String fileName = "test_file.txt";
         VirtualFile src = replaceTestFolder.createFolder("src/main/java");
         VirtualFile file = src
-                .createFile(fileName, "text/plain",
+                .createFile(fileName, MediaType.TEXT_PLAIN,
                             new ByteArrayInputStream(String.format(template, find1, find2).getBytes()));
         List<Variable> variables = new ArrayList<>(2);
         variables.add(DtoFactory.getInstance().createDto(Variable.class).withFind(find1).withReplace(replace1));
@@ -221,10 +223,10 @@ public class ReplaceTest extends MemoryFileSystemTest {
         ReplacementSet replacementSet =
                 DtoFactory.getInstance().createDto(ReplacementSet.class).withEntries(variables).withFiles(expression);
         Map<String, List<String>> h = new HashMap<>(1);
-        h.put("Content-Type", Arrays.asList("application/json"));
+        h.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
 
         String path = SERVICE_URI + "replace/" + replaceTestFolder.getName();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, h,
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, h,
                                                       String.format("[%s]",
                                                                     DtoFactory.getInstance().toJson(replacementSet))
                                                             .getBytes(), null, null);

@@ -56,6 +56,7 @@ import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -65,6 +66,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilder;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -871,7 +873,7 @@ public class WorkspaceService extends Service {
         if (context.isUserInRole("account/owner") ||
             context.isUserInRole("workspace/admin") ||
             context.isUserInRole("workspace/developer")) {
-            links.add(LinksHelper.createLink("GET",
+            links.add(LinksHelper.createLink(HttpMethod.GET,
                                              serviceUriBuilder.clone()
                                                               .path(getClass(), "getMembers")
                                                               .build(workspace.getId())
@@ -881,7 +883,7 @@ public class WorkspaceService extends Service {
                                              Constants.LINK_REL_GET_WORKSPACE_MEMBERS));
         }
         if (context.isUserInRole("account/owner") || context.isUserInRole("workspace/admin")) {
-            links.add(LinksHelper.createLink("DELETE",
+            links.add(LinksHelper.createLink(HttpMethod.DELETE,
                                              serviceUriBuilder.clone()
                                                               .path(getClass(), "removeMember")
                                                               .build(workspace.getId(), member.getUserId())
@@ -890,7 +892,7 @@ public class WorkspaceService extends Service {
                                              null,
                                              Constants.LINK_REL_REMOVE_WORKSPACE_MEMBER));
         }
-        links.add(LinksHelper.createLink("GET",
+        links.add(LinksHelper.createLink(HttpMethod.GET,
                                          baseUriBuilder.clone()
                                                        .path(UserService.class)
                                                        .path(UserService.class, "getById")
@@ -899,7 +901,7 @@ public class WorkspaceService extends Service {
                                          null,
                                          APPLICATION_JSON,
                                          LINK_REL_GET_USER_BY_ID));
-        final Link wsLink = LinksHelper.createLink("GET",
+        final Link wsLink = LinksHelper.createLink(HttpMethod.GET,
                                                    serviceUriBuilder.clone()
                                                                     .path(getClass(), "getById")
                                                                     .build(workspace.getId())
@@ -907,7 +909,7 @@ public class WorkspaceService extends Service {
                                                    null,
                                                    APPLICATION_JSON,
                                                    Constants.LINK_REL_GET_WORKSPACE_BY_ID);
-        final Link projectsLink = LinksHelper.createLink("GET",
+        final Link projectsLink = LinksHelper.createLink(HttpMethod.GET,
                                                          baseUriBuilder.clone()
                                                                        .path(ProjectService.class)
                                                                        .path(ProjectService.class, "getProjects")
@@ -941,7 +943,7 @@ public class WorkspaceService extends Service {
         final List<Link> links = new LinkedList<>();
         final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
         if (context.isUserInRole("user")) {
-            links.add(LinksHelper.createLink("GET",
+            links.add(LinksHelper.createLink(HttpMethod.GET,
                                              getServiceContext().getBaseUriBuilder().clone()
                                                                 .path(ProjectService.class)
                                                                 .path(ProjectService.class, "getProjects")
@@ -950,7 +952,7 @@ public class WorkspaceService extends Service {
                                              null,
                                              APPLICATION_JSON,
                                              org.eclipse.che.api.project.server.Constants.LINK_REL_GET_PROJECTS));
-            links.add(LinksHelper.createLink("GET",
+            links.add(LinksHelper.createLink(HttpMethod.GET,
                                              uriBuilder.clone()
                                                        .path(getClass(), "getMembershipsOfCurrentUser")
                                                        .build()
@@ -958,7 +960,7 @@ public class WorkspaceService extends Service {
                                              null,
                                              APPLICATION_JSON,
                                              Constants.LINK_REL_GET_CURRENT_USER_WORKSPACES));
-            links.add(LinksHelper.createLink("GET",
+            links.add(LinksHelper.createLink(HttpMethod.GET,
                                              uriBuilder.clone()
                                                        .path(getClass(), "getMembershipOfCurrentUser")
                                                        .build(workspaceDescriptor.getId())
@@ -969,7 +971,7 @@ public class WorkspaceService extends Service {
         }
         if (context.isUserInRole("workspace/admin") || context.isUserInRole("workspace/developer") ||
             context.isUserInRole("system/admin") || context.isUserInRole("system/manager") || context.isUserInRole("account/owner")) {
-            links.add(LinksHelper.createLink("GET",
+            links.add(LinksHelper.createLink(HttpMethod.GET,
                                              uriBuilder.clone().
                                                      path(getClass(), "getByName")
                                                        .queryParam("name", workspaceDescriptor.getName())
@@ -978,7 +980,7 @@ public class WorkspaceService extends Service {
                                              null,
                                              APPLICATION_JSON,
                                              Constants.LINK_REL_GET_WORKSPACE_BY_NAME));
-            links.add(LinksHelper.createLink("GET",
+            links.add(LinksHelper.createLink(HttpMethod.GET,
                                              uriBuilder.clone()
                                                        .path(getClass(), "getById")
                                                        .build(workspaceDescriptor.getId())
@@ -986,7 +988,7 @@ public class WorkspaceService extends Service {
                                              null,
                                              APPLICATION_JSON,
                                              Constants.LINK_REL_GET_WORKSPACE_BY_ID));
-            links.add(LinksHelper.createLink("GET",
+            links.add(LinksHelper.createLink(HttpMethod.GET,
                                              uriBuilder.clone()
                                                        .path(getClass(), "getMembers")
                                                        .build(workspaceDescriptor.getId())
@@ -996,7 +998,7 @@ public class WorkspaceService extends Service {
                                              Constants.LINK_REL_GET_WORKSPACE_MEMBERS));
         }
         if (context.isUserInRole("account/owner") || context.isUserInRole("workspace/admin") || context.isUserInRole("system/admin")) {
-            links.add(LinksHelper.createLink("DELETE",
+            links.add(LinksHelper.createLink(HttpMethod.DELETE,
                                              uriBuilder.clone()
                                                        .path(getClass(), "remove")
                                                        .build(workspaceDescriptor.getId())

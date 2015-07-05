@@ -26,10 +26,12 @@ import org.eclipse.che.dto.server.DtoFactory;
 import org.eclipse.che.dto.server.JsonArrayImpl;
 import org.eclipse.che.dto.server.JsonStringMapImpl;
 
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -68,7 +70,7 @@ public class RemoteMetricHandler implements MetricHandler {
             List<Pair<String, String>> pairs = mapToParisList(executionContext);
             return request(MetricValueDTO.class,
                            proxyUrl,
-                           "GET",
+                           HttpMethod.GET,
                            null,
                            pairs.toArray(new Pair[pairs.size()]));
         } catch (Exception e) {
@@ -90,7 +92,7 @@ public class RemoteMetricHandler implements MetricHandler {
             List<Pair<String, String>> pairs = mapToParisList(executionContext);
             return request(MetricValueListDTO.class,
                            proxyUrl,
-                           "POST",
+                           HttpMethod.POST,
                            new JsonArrayImpl<>(parameters),
                            pairs.toArray(new Pair[pairs.size()]));
         } catch (Exception e) {
@@ -108,7 +110,7 @@ public class RemoteMetricHandler implements MetricHandler {
             List<Pair<String, String>> pairs = mapToParisList(executionContext);
             return request(MetricValueDTO.class,
                            proxyUrl,
-                           "POST",
+                           HttpMethod.POST,
                            parameters,
                            pairs.toArray(new Pair[pairs.size()]));
         } catch (Exception e) {
@@ -126,7 +128,7 @@ public class RemoteMetricHandler implements MetricHandler {
             List<Pair<String, String>> pairs = mapToParisList(executionContext);
             return request(MetricValueDTO.class,
                            proxyUrl,
-                           "GET",
+                           HttpMethod.GET,
                            null,
                            pairs.toArray(new Pair[pairs.size()]));
         } catch (Exception e) {
@@ -144,7 +146,7 @@ public class RemoteMetricHandler implements MetricHandler {
             List<Pair<String, String>> pairs = mapToParisList(executionContext);
             return request(MetricValueListDTO.class,
                            proxyUrl,
-                           "POST",
+                           HttpMethod.POST,
                            metricNames,
                            pairs.toArray(new Pair[pairs.size()]));
         } catch (Exception e) {
@@ -160,7 +162,7 @@ public class RemoteMetricHandler implements MetricHandler {
             List<Pair<String, String>> pairs = mapToParisList(Collections.<String, String>emptyMap());
             MetricInfoDTO metricInfoDTO = request(MetricInfoDTO.class,
                                                   proxyUrl,
-                                                  "GET",
+                                                  HttpMethod.GET,
                                                   null,
                                                   pairs.toArray(new Pair[pairs.size()]));
             updateLinks(uriInfo, metricInfoDTO);
@@ -178,7 +180,7 @@ public class RemoteMetricHandler implements MetricHandler {
             @SuppressWarnings("unchecked")
             MetricInfoListDTO metricInfoListDTO = request(MetricInfoListDTO.class,
                                                           proxyUrl,
-                                                          "GET",
+                                                          HttpMethod.GET,
                                                           null,
                                                           pairs.toArray(new Pair[pairs.size()]));
             updateLinks(uriInfo, metricInfoListDTO);
@@ -255,7 +257,7 @@ public class RemoteMetricHandler implements MetricHandler {
         try {
             conn.setRequestMethod(method);
             if (body != null) {
-                conn.addRequestProperty("content-type", "application/json");
+                conn.addRequestProperty("content-type", MediaType.APPLICATION_JSON);
                 conn.setDoOutput(true);
                 try (OutputStream output = conn.getOutputStream()) {
                     output.write(DtoFactory.getInstance().toJson(body).getBytes());
@@ -272,7 +274,7 @@ public class RemoteMetricHandler implements MetricHandler {
                 throw new IOException(IoUtil.readAndCloseQuietly(in));
             }
             final String contentType = conn.getContentType();
-            if (!contentType.startsWith("application/json")) {
+            if (!contentType.startsWith(MediaType.APPLICATION_JSON)) {
                 throw new IOException("Unsupported type of response from remote server. ");
             }
             try (InputStream input = conn.getInputStream()) {
@@ -295,7 +297,7 @@ public class RemoteMetricHandler implements MetricHandler {
                                    .path(getMethod("getValue"))
                                    .build(metricName, "name")
                                    .toString());
-        statusLink.setMethod("GET");
+        statusLink.setMethod(HttpMethod.GET);
         statusLink.setProduces(MediaType.APPLICATION_JSON);
         links.add(statusLink);
         return links;

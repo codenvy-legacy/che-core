@@ -18,7 +18,6 @@ import org.eclipse.che.api.core.rest.shared.ParameterType;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.core.rest.shared.dto.LinkParameter;
 import org.eclipse.che.api.core.rest.shared.dto.ServiceDescriptor;
-
 import org.everrest.core.ResourceBinder;
 import org.everrest.core.impl.ApplicationContextImpl;
 import org.everrest.core.impl.ApplicationProviderBinder;
@@ -35,10 +34,13 @@ import org.testng.annotations.Test;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Application;
+import javax.ws.rs.core.MediaType;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -55,7 +57,7 @@ public class ServiceDescriptorTest {
         @GET
         @Path("my_method")
         @GenerateLink(rel = "echo")
-        @Produces("text/plain")
+        @Produces(MediaType.TEXT_PLAIN)
         public String echo(@Description("some text") @Required @Valid({"a", "b"}) @DefaultValue("a") @QueryParam("text") String test) {
             return test;
         }
@@ -114,9 +116,9 @@ public class ServiceDescriptorTest {
     @Test
     public void testLinkInfo() throws Exception {
         Link link = getLink("echo");
-        Assert.assertEquals(link.getMethod(), "GET");
+        Assert.assertEquals(link.getMethod(), HttpMethod.GET);
         Assert.assertEquals(link.getHref(), SERVICE_URI + "/my_method");
-        Assert.assertEquals(link.getProduces(), "text/plain");
+        Assert.assertEquals(link.getProduces(), MediaType.TEXT_PLAIN);
     }
 
     @Test
@@ -148,7 +150,7 @@ public class ServiceDescriptorTest {
 
     private ServiceDescriptor getDescriptor() throws Exception {
         String path = SERVICE_URI;
-        ContainerResponse response = launcher.service("OPTIONS", path, BASE_URI, null, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.OPTIONS, path, BASE_URI, null, null, null, null);
         Assert.assertEquals(response.getStatus(), 200);
         return (ServiceDescriptor)response.getEntity();
     }

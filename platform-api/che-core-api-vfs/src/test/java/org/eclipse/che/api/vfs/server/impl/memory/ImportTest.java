@@ -14,7 +14,6 @@ import org.eclipse.che.api.core.notification.EventSubscriber;
 import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.server.observation.CreateEvent;
 import org.eclipse.che.api.vfs.server.observation.VirtualFileEvent;
-
 import org.everrest.core.impl.ContainerResponse;
 
 import java.io.ByteArrayOutputStream;
@@ -23,6 +22,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.MediaType;
 
 /** @author andrew00x */
 public class ImportTest extends MemoryFileSystemTest {
@@ -72,7 +74,7 @@ public class ImportTest extends MemoryFileSystemTest {
 
     public void testImportFolder() throws Exception {
         String path = SERVICE_URI + "import/" + importTestRootId;
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, zipFolder, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, zipFolder, null);
         assertEquals(204, response.getStatus());
         VirtualFile parent = mountPoint.getVirtualFileById(importTestRootId);
         VirtualFile folder1 = parent.getChild("folder1");
@@ -83,13 +85,13 @@ public class ImportTest extends MemoryFileSystemTest {
         assertNotNull(folder3);
         VirtualFile file1 = folder1.getChild("file1.txt");
         assertNotNull(file1);
-        checkFileContext(DEFAULT_CONTENT, "text/plain", file1);
+        checkFileContext(DEFAULT_CONTENT, MediaType.TEXT_PLAIN, file1);
         VirtualFile file2 = folder2.getChild("file2.txt");
         assertNotNull(file2);
-        checkFileContext(DEFAULT_CONTENT, "text/plain", file2);
+        checkFileContext(DEFAULT_CONTENT, MediaType.TEXT_PLAIN, file2);
         VirtualFile file3 = folder3.getChild("file3.txt");
         assertNotNull(file3);
-        checkFileContext(DEFAULT_CONTENT, "text/plain", file3);
+        checkFileContext(DEFAULT_CONTENT, MediaType.TEXT_PLAIN, file3);
 
 
         assertEquals(6, events.size());

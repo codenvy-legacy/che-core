@@ -47,9 +47,11 @@ import org.testng.annotations.Test;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -192,7 +194,7 @@ public class AccountServiceTest {
     public void shouldNotBeAbleToCreateAccountWithNotValidAttributes() throws Exception {
         account.getAttributes().put("codenvy:god_mode", "true");
 
-        ContainerResponse response = makeRequest("POST", SERVICE_PATH, MediaType.APPLICATION_JSON, account);
+        ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH, MediaType.APPLICATION_JSON, account);
         assertEquals(response.getEntity().toString(), "Attribute name 'codenvy:god_mode' is not valid");
     }
 
@@ -386,9 +388,9 @@ public class AccountServiceTest {
                                                       .withUserId(USER_ID)
                                                       .withRoles(singletonList("account/member"));
 
-        final ContainerResponse response = makeRequest("POST",
+        final ContainerResponse response = makeRequest(HttpMethod.POST,
                                                        SERVICE_PATH + "/" + account.getId() + "/members",
-                                                       "application/json",
+                                                       MediaType.APPLICATION_JSON,
                                                        newMembership);
 
         assertEquals(response.getStatus(), Response.Status.CREATED.getStatusCode());
@@ -492,7 +494,7 @@ public class AccountServiceTest {
         Map<String, List<String>> headers = null;
         if (contentType != null) {
             headers = new HashMap<>();
-            headers.put("Content-Type", Arrays.asList(contentType));
+            headers.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(contentType));
         }
         byte[] data = null;
         if (toSend != null) {

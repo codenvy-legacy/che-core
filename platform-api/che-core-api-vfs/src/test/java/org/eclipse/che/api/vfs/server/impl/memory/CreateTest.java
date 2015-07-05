@@ -16,12 +16,16 @@ import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
+
 import com.google.common.collect.Sets;
 
 import org.everrest.core.impl.ContainerResponse;
 import org.everrest.core.tools.ByteArrayContainerResponseWriter;
 
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -49,10 +53,10 @@ public class CreateTest extends MemoryFileSystemTest {
         String path = SERVICE_URI + "file/" + createTestFolderId + '?' + "name=" + name; //
         Map<String, List<String>> headers = new HashMap<>();
         List<String> contentType = new ArrayList<>();
-        contentType.add("text/plain");
-        headers.put("Content-Type", contentType);
+        contentType.add(MediaType.TEXT_PLAIN);
+        headers.put(HttpHeaders.CONTENT_TYPE, contentType);
 
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, headers, content.getBytes(), null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, headers, content.getBytes(), null);
         assertEquals(200, response.getStatus());
         String expectedPath = createTestFolderPath + "/" + name;
         try {
@@ -66,7 +70,7 @@ public class CreateTest extends MemoryFileSystemTest {
             fail("Created file not accessible by id. ");
         }
         VirtualFile file = mountPoint.getVirtualFile(expectedPath);
-        checkFileContext(content, "text/plain", file);
+        checkFileContext(content, MediaType.TEXT_PLAIN, file);
     }
 
     public void testCreateFileInRoot() throws Exception {
@@ -75,10 +79,10 @@ public class CreateTest extends MemoryFileSystemTest {
         String path = SERVICE_URI + "file/" + mountPoint.getRoot().getId() + '?' + "name=" + name;
         Map<String, List<String>> headers = new HashMap<>();
         List<String> contentType = new ArrayList<>();
-        contentType.add("text/plain");
-        headers.put("Content-Type", contentType);
+        contentType.add(MediaType.TEXT_PLAIN);
+        headers.put(HttpHeaders.CONTENT_TYPE, contentType);
 
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, headers, content.getBytes(), null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, headers, content.getBytes(), null);
         assertEquals(200, response.getStatus());
         String expectedPath = "/" + name;
         try {
@@ -92,13 +96,13 @@ public class CreateTest extends MemoryFileSystemTest {
             fail("Created file not accessible by id. ");
         }
         VirtualFile file = mountPoint.getVirtualFile(expectedPath);
-        checkFileContext(content, "text/plain", file);
+        checkFileContext(content, MediaType.TEXT_PLAIN, file);
     }
 
     public void testCreateFileNoContent() throws Exception {
         String name = "testCreateFileNoContent";
         String path = SERVICE_URI + "file/" + createTestFolderId + '?' + "name=" + name;
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
 
         assertEquals(200, response.getStatus());
         String expectedPath = createTestFolderPath + "/" + name;
@@ -123,7 +127,7 @@ public class CreateTest extends MemoryFileSystemTest {
         String content = "test create file without media type";
         String path = SERVICE_URI + "file/" + createTestFolderId + '?' + "name=" + name;
 
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, content.getBytes(), writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, content.getBytes(), writer, null);
         assertEquals(200, response.getStatus());
         String expectedPath = createTestFolderPath + "/" + name;
         try {
@@ -143,7 +147,7 @@ public class CreateTest extends MemoryFileSystemTest {
     public void testCreateFileNoName() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "file/" + createTestFolderId;
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, DEFAULT_CONTENT.getBytes(), writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, DEFAULT_CONTENT.getBytes(), writer, null);
         assertEquals(500, response.getStatus());
         log.info(new String(writer.getBody()));
     }
@@ -159,7 +163,7 @@ public class CreateTest extends MemoryFileSystemTest {
         String name = "testCreateFileNoPermissions";
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "file/" + createTestFolderId + '?' + "name=" + name;
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, DEFAULT_CONTENT.getBytes(), writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, DEFAULT_CONTENT.getBytes(), writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
     }
@@ -169,7 +173,7 @@ public class CreateTest extends MemoryFileSystemTest {
         String name = "testCreateFileWrongParent";
         String path = SERVICE_URI + "file/" + createTestFolderId + "_WRONG_ID" + '?' + "name=" + name;
         ContainerResponse response =
-                launcher.service("POST", path, BASE_URI, null, DEFAULT_CONTENT.getBytes(), writer, null);
+                launcher.service(HttpMethod.POST, path, BASE_URI, null, DEFAULT_CONTENT.getBytes(), writer, null);
         assertEquals(404, response.getStatus());
         log.info(new String(writer.getBody()));
     }
@@ -177,7 +181,7 @@ public class CreateTest extends MemoryFileSystemTest {
     public void testCreateFolder() throws Exception {
         String name = "testCreateFolder";
         String path = SERVICE_URI + "folder/" + createTestFolderId + '?' + "name=" + name;
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals(200, response.getStatus());
         String expectedPath = createTestFolderPath + "/" + name;
         try {
@@ -195,7 +199,7 @@ public class CreateTest extends MemoryFileSystemTest {
     public void testCreateFolderInRoot() throws Exception {
         String name = "testCreateFolderInRoot";
         String path = SERVICE_URI + "folder/" + mountPoint.getRoot().getId() + '?' + "name=" + name;
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals(200, response.getStatus());
         String expectedPath = "/" + name;
         try {
@@ -213,7 +217,7 @@ public class CreateTest extends MemoryFileSystemTest {
     public void testCreateFolderNoName() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "folder/" + createTestFolderId;
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, writer, null);
         assertEquals(500, response.getStatus());
         log.info(new String(writer.getBody()));
     }
@@ -227,7 +231,7 @@ public class CreateTest extends MemoryFileSystemTest {
         String name = "testCreateFolderNoPermissions";
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "folder/" + createTestFolderId + '?' + "name=" + name;
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
     }
@@ -236,7 +240,7 @@ public class CreateTest extends MemoryFileSystemTest {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String name = "testCreateFolderWrongParent";
         String path = SERVICE_URI + "folder/" + createTestFolderId + "_WRONG_ID" + '?' + "name=" + name;
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, writer, null);
         assertEquals(404, response.getStatus());
         log.info(new String(writer.getBody()));
     }
@@ -244,7 +248,7 @@ public class CreateTest extends MemoryFileSystemTest {
     public void testCreateFolderHierarchy() throws Exception {
         String name = "testCreateFolderHierarchy/1/2/3/4/5";
         String path = SERVICE_URI + "folder/" + createTestFolderId + '?' + "name=" + name;
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null, null);
         assertEquals(200, response.getStatus());
         String expectedPath = createTestFolderPath + "/" + name;
         try {
@@ -263,7 +267,7 @@ public class CreateTest extends MemoryFileSystemTest {
         // create some items in path
         String name = "testCreateFolderHierarchy/1/2/3";
         String path = SERVICE_URI + "folder/" + createTestFolderId + '?' + "name=" + name;
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null, null);
         assertEquals(200, response.getStatus());
         String expectedPath = createTestFolderPath + "/" + name;
         try {
@@ -279,7 +283,7 @@ public class CreateTest extends MemoryFileSystemTest {
         // create the rest of path
         name += "/4/5";
         path = SERVICE_URI + "folder/" + createTestFolderId + '?' + "name=" + name;
-        response = launcher.service("POST", path, BASE_URI, null, null, null, null);
+        response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null, null);
         assertEquals(200, response.getStatus());
         expectedPath = createTestFolderPath + "/" + name;
         try {

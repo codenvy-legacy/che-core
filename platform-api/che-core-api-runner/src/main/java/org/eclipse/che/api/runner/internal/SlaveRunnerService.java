@@ -29,8 +29,8 @@ import org.eclipse.che.api.runner.dto.ServerState;
 import org.eclipse.che.api.runner.dto.ApplicationProcessDescriptor;
 import org.eclipse.che.api.runner.dto.PortMapping;
 import org.eclipse.che.api.runner.dto.RunnerState;
-
 import org.eclipse.che.dto.server.DtoFactory;
+
 import com.google.common.io.Files;
 
 import javax.annotation.CheckForNull;
@@ -39,6 +39,7 @@ import javax.inject.Named;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -48,6 +49,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
+
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
@@ -128,7 +130,7 @@ public class SlaveRunnerService extends Service {
         final Throwable error = process.getError();
         if (error != null) {
             final PrintWriter output = httpServletResponse.getWriter();
-            httpServletResponse.setContentType("text/plain");
+            httpServletResponse.setContentType(MediaType.TEXT_PLAIN);
             if (error instanceof RunnerException) {
                 // expect ot have nice messages from our API
                 output.write(error.getMessage());
@@ -157,7 +159,7 @@ public class SlaveRunnerService extends Service {
             throw new NotFoundException("Recipe file isn't available. ");
         }
         final PrintWriter output = httpServletResponse.getWriter();
-        httpServletResponse.setContentType("text/plain");
+        httpServletResponse.setContentType(MediaType.TEXT_PLAIN);
         Files.copy(recipeFile, Charset.forName("UTF-8"), output);
         output.flush();
     }
@@ -238,13 +240,13 @@ public class SlaveRunnerService extends Service {
                             .withRel(Constants.LINK_REL_GET_STATUS)
                             .withHref(servicePathBuilder.clone().path(getClass(), "getStatus")
                                                         .build(process.getRunner(), process.getId()).toString())
-                            .withMethod("GET")
+                            .withMethod(HttpMethod.GET)
                             .withProduces(MediaType.APPLICATION_JSON));
         links.add(dtoFactory.createDto(Link.class)
                             .withRel(Constants.LINK_REL_VIEW_LOG)
                             .withHref(servicePathBuilder.clone().path(getClass(), "getLogs")
                                                         .build(process.getRunner(), process.getId()).toString())
-                            .withMethod("GET"));
+                            .withMethod(HttpMethod.GET));
         switch (status) {
             case NEW:
             case RUNNING:
@@ -252,7 +254,7 @@ public class SlaveRunnerService extends Service {
                                     .withRel(Constants.LINK_REL_STOP)
                                     .withHref(servicePathBuilder.clone().path(getClass(), "stop")
                                                                 .build(process.getRunner(), process.getId()).toString())
-                                    .withMethod("POST")
+                                    .withMethod(HttpMethod.POST)
                                     .withProduces(MediaType.APPLICATION_JSON));
                 break;
         }
@@ -264,7 +266,7 @@ public class SlaveRunnerService extends Service {
                                 .withRel(Constants.LINK_REL_RUNNER_RECIPE)
                                 .withHref(servicePathBuilder.clone().path(getClass(), "getRecipeFile")
                                                             .build(process.getRunner(), process.getId()).toString())
-                                .withMethod("GET")
+                                .withMethod(HttpMethod.GET)
                                 .withProduces(MediaType.TEXT_PLAIN));
         }
         final List<Link> additionalLinks = new LinkedList<>();

@@ -14,10 +14,10 @@ import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.shared.dto.AccessControlEntry;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
-
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.user.User;
 import org.eclipse.che.commons.user.UserImpl;
+
 import com.google.common.collect.Sets;
 
 import org.everrest.core.impl.ContainerResponse;
@@ -30,6 +30,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.MediaType;
+
 /** @author andrew00x */
 public class GetACLTest extends MemoryFileSystemTest {
     private VirtualFile file;
@@ -41,7 +44,7 @@ public class GetACLTest extends MemoryFileSystemTest {
         String name = getClass().getName();
         VirtualFile getAclTestFolder = mountPoint.getRoot().createFolder(name);
 
-        file = getAclTestFolder.createFile(name, "text/plain", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+        file = getAclTestFolder.createFile(name, MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
 
         Principal adminPrincipal = createPrincipal("admin", Principal.Type.USER);
         Principal userPrincipal = createPrincipal("john", Principal.Type.USER);
@@ -55,7 +58,7 @@ public class GetACLTest extends MemoryFileSystemTest {
 
     public void testGetACL() throws Exception {
         String path = SERVICE_URI + "acl/" + fileId;
-        ContainerResponse response = launcher.service("GET", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, null);
         assertEquals(200, response.getStatus());
         @SuppressWarnings("unchecked")
         List<AccessControlEntry> acl = (List<AccessControlEntry>)response.getEntity();
@@ -80,7 +83,7 @@ public class GetACLTest extends MemoryFileSystemTest {
         EnvironmentContext.getCurrent().setUser(previousUser); // restore
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "acl/" + fileId;
-        ContainerResponse response = launcher.service("GET", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
     }

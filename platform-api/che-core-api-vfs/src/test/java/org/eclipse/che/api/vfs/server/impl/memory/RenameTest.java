@@ -14,6 +14,7 @@ import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
+
 import com.google.common.collect.Sets;
 
 import org.everrest.core.impl.ContainerResponse;
@@ -23,6 +24,9 @@ import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.MediaType;
 
 /** @author andrew00x */
 public class RenameTest extends MemoryFileSystemTest {
@@ -41,7 +45,7 @@ public class RenameTest extends MemoryFileSystemTest {
         folder = renameTestFolder.createFolder("RenameFileTest_FOLDER");
         folderId = folder.getId();
 
-        file = renameTestFolder.createFile("file", "text/plain", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+        file = renameTestFolder.createFile("file", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
         fileId = file.getId();
     }
 
@@ -49,7 +53,7 @@ public class RenameTest extends MemoryFileSystemTest {
         String path = SERVICE_URI + "rename/" + fileId + '?' + "newname=" + "_FILE_NEW_NAME_" + '&' + "mediaType=" +
                       "text/*;charset=ISO-8859-1";
         String originPath = file.getPath();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals(200, response.getStatus());
         String expectedPath = renameTestFolder.getPath() + '/' + "_FILE_NEW_NAME_";
         try {
@@ -67,10 +71,10 @@ public class RenameTest extends MemoryFileSystemTest {
     }
 
     public void testRenameFileAlreadyExists() throws Exception {
-        renameTestFolder.createFile("_FILE_NEW_NAME_", "text/plain", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+        renameTestFolder.createFile("_FILE_NEW_NAME_", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
         String path = SERVICE_URI + "rename/" + fileId + '?' + "newname=" + "_FILE_NEW_NAME_" + '&' + "mediaType=" +
                       "text/*;charset=ISO-8859-1";
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals(409, response.getStatus());
     }
 
@@ -79,7 +83,7 @@ public class RenameTest extends MemoryFileSystemTest {
         String path = SERVICE_URI + "rename/" + fileId + '?' + "newname=" + "_FILE_NEW_NAME_" + '&' + "mediaType=" +
                       "text/*;charset=ISO-8859-1" + '&' + "lockToken=" + lockToken;
         String originPath = file.getPath();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals(200, response.getStatus());
         String expectedPath = renameTestFolder.getPath() + '/' + "_FILE_NEW_NAME_";
         try {
@@ -100,7 +104,7 @@ public class RenameTest extends MemoryFileSystemTest {
         String path = SERVICE_URI + "rename/" + fileId + '?' + "newname=" + "_FILE_NEW_NAME_" + '&' + "mediaType=" +
                       "text/*;charset=ISO-8859-1";
         String originPath = file.getPath();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
         String expectedPath = renameTestFolder.getPath() + '/' + "_FILE_NEW_NAME_";
@@ -127,7 +131,7 @@ public class RenameTest extends MemoryFileSystemTest {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "rename/" + fileId + '?' + "newname=" + "_FILE_NEW_NAME_";
         String originPath = file.getPath();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
         String expectedPath = renameTestFolder.getPath() + '/' + "_FILE_NEW_NAME_";
@@ -146,7 +150,7 @@ public class RenameTest extends MemoryFileSystemTest {
     public void testRenameFolder() throws Exception {
         String path = SERVICE_URI + "rename/" + folderId + '?' + "newname=" + "_FOLDER_NEW_NAME_";
         String originPath = folder.getPath();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals(200, response.getStatus());
         String expectedPath = renameTestFolder.getPath() + '/' + "_FOLDER_NEW_NAME_";
         try {
@@ -162,10 +166,10 @@ public class RenameTest extends MemoryFileSystemTest {
     }
 
     public void testRenameFolderWithLockedFile() throws Exception {
-        folder.createFile("file", "text/plain", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes())).lock(0);
+        folder.createFile("file", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes())).lock(0);
         String path = SERVICE_URI + "rename/" + folderId + '?' + "newname=" + "_FOLDER_NEW_NAME_";
         String originPath = folder.getPath();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals(403, response.getStatus());
         String expectedPath = renameTestFolder.getPath() + '/' + "_FOLDER_NEW_NAME_";
         try {
@@ -181,7 +185,7 @@ public class RenameTest extends MemoryFileSystemTest {
     }
 
     public void testRenameFolderNoPermissionForChild() throws Exception {
-        VirtualFile myFile = folder.createFile("file", "text/plain", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+        VirtualFile myFile = folder.createFile("file", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
         Principal adminPrincipal = createPrincipal("admin", Principal.Type.USER);
         Principal userPrincipal = createPrincipal("john", Principal.Type.USER);
         Map<Principal, Set<String>> permissions = new HashMap<>(2);
@@ -191,7 +195,7 @@ public class RenameTest extends MemoryFileSystemTest {
 
         String path = SERVICE_URI + "rename/" + folderId + '?' + "newname=" + "_FOLDER_NEW_NAME_";
         String originPath = folder.getPath();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals(403, response.getStatus());
         String expectedPath = renameTestFolder.getPath() + '/' + "_FOLDER_NEW_NAME_";
         try {
