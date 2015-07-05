@@ -20,9 +20,7 @@ import org.eclipse.che.api.user.server.dao.User;
 import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.api.user.server.dao.UserProfileDao;
 import org.eclipse.che.api.user.shared.dto.ProfileDescriptor;
-
 import org.eclipse.che.commons.json.JsonHelper;
-
 import org.everrest.core.impl.ApplicationContextImpl;
 import org.everrest.core.impl.ApplicationProviderBinder;
 import org.everrest.core.impl.ContainerRequest;
@@ -40,6 +38,9 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
@@ -55,7 +56,6 @@ import static org.eclipse.che.api.user.server.Constants.LINK_REL_UPDATE_CURRENT_
 import static org.eclipse.che.api.user.server.Constants.LINK_REL_GET_CURRENT_USER_PROFILE;
 import static org.eclipse.che.api.user.server.Constants.LINK_REL_GET_USER_PROFILE_BY_ID;
 import static org.eclipse.che.api.user.server.Constants.LINK_REL_UPDATE_PREFERENCES;
-
 import static org.eclipse.che.api.user.server.Constants.LINK_REL_UPDATE_USER_PROFILE_BY_ID;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
@@ -64,7 +64,6 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
-
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -168,7 +167,7 @@ public class UserProfileServiceTest {
         final Profile current = new Profile().withId(testUser.getId()).withUserId(testUser.getId());
         when(profileDao.getById(current.getId())).thenReturn(current);
 
-        final ContainerResponse response = makeRequest("GET", SERVICE_PATH, null);
+        final ContainerResponse response = makeRequest(HttpMethod.GET, SERVICE_PATH, null);
 
         assertEquals(response.getStatus(), OK.getStatusCode());
         final ProfileDescriptor descriptor = (ProfileDescriptor)response.getEntity();
@@ -185,7 +184,7 @@ public class UserProfileServiceTest {
         preferences.put("test3", "test3");
         when(preferenceDao.getPreferences(testUser.getId())).thenReturn(preferences);
 
-        final ContainerResponse response = makeRequest("GET", SERVICE_PATH + "/prefs", null);
+        final ContainerResponse response = makeRequest(HttpMethod.GET, SERVICE_PATH + "/prefs", null);
 
         assertEquals(response.getStatus(), OK.getStatusCode());
         assertEquals(response.getEntity(), preferences);
@@ -200,7 +199,7 @@ public class UserProfileServiceTest {
         final Profile profile = new Profile().withId(testUser.getId()).withAttributes(attributes);
         when(profileDao.getById(profile.getId())).thenReturn(profile);
 
-        final ContainerResponse response = makeRequest("DELETE", SERVICE_PATH + "/attributes", asList("test", "test2"));
+        final ContainerResponse response = makeRequest(HttpMethod.DELETE, SERVICE_PATH + "/attributes", asList("test", "test2"));
 
         assertEquals(response.getStatus(), NO_CONTENT.getStatusCode());
         verify(profileDao, times(1)).update(profile);
@@ -217,7 +216,7 @@ public class UserProfileServiceTest {
         final Profile profile = new Profile().withId(testUser.getId()).withAttributes(attributes);
         when(profileDao.getById(profile.getId())).thenReturn(profile);
 
-        final ContainerResponse response = makeRequest("DELETE", SERVICE_PATH + "/attributes", null);
+        final ContainerResponse response = makeRequest(HttpMethod.DELETE, SERVICE_PATH + "/attributes", null);
 
         assertEquals(response.getStatus(), NO_CONTENT.getStatusCode());
         verify(profileDao, times(1)).update(profile);
@@ -233,7 +232,7 @@ public class UserProfileServiceTest {
         when(preferenceDao.getPreferences(testUser.getId())).thenReturn(preferences);
         final Map<String, String> update = singletonMap("test1", "new_value");
 
-        final ContainerResponse response = makeRequest("POST", SERVICE_PATH + "/prefs", update);
+        final ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/prefs", update);
 
         preferences.putAll(update);
         assertEquals(response.getStatus(), OK.getStatusCode());
@@ -243,14 +242,14 @@ public class UserProfileServiceTest {
 
     @Test
     public void shouldThrowExceptionIfPreferencesUpdateIsNull() throws Exception {
-        final ContainerResponse response = makeRequest("POST", SERVICE_PATH + "/prefs", null);
+        final ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/prefs", null);
 
         assertEquals(response.getStatus(), 409);
     }
 
     @Test
     public void shouldThrowExceptionIfPreferencesUpdateIsEmpty() throws Exception {
-        final ContainerResponse response = makeRequest("POST", SERVICE_PATH + "/prefs", emptyMap());
+        final ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/prefs", emptyMap());
 
         assertEquals(response.getStatus(), 409);
     }
@@ -263,7 +262,7 @@ public class UserProfileServiceTest {
         preferences.put("test3", "test3");
         when(preferenceDao.getPreferences(testUser.getId())).thenReturn(preferences);
 
-        final ContainerResponse response = makeRequest("DELETE", SERVICE_PATH + "/prefs", singletonList("test1"));
+        final ContainerResponse response = makeRequest(HttpMethod.DELETE, SERVICE_PATH + "/prefs", singletonList("test1"));
 
         assertEquals(response.getStatus(), NO_CONTENT.getStatusCode());
         assertNull(preferences.get("test1"));
@@ -272,7 +271,7 @@ public class UserProfileServiceTest {
 
     @Test
     public void shouldRemoveAllPreferencesIfNullWasSend() throws Exception {
-        final ContainerResponse response = makeRequest("DELETE", SERVICE_PATH + "/prefs", null);
+        final ContainerResponse response = makeRequest(HttpMethod.DELETE, SERVICE_PATH + "/prefs", null);
 
         assertEquals(response.getStatus(), NO_CONTENT.getStatusCode());
         verify(preferenceDao).remove(testUser.getId());
@@ -284,7 +283,7 @@ public class UserProfileServiceTest {
                                              .withUserId(testUser.getId());
         when(profileDao.getById(profile.getId())).thenReturn(profile);
 
-        final ContainerResponse response = makeRequest("GET", SERVICE_PATH + "/" + profile.getId(), null);
+        final ContainerResponse response = makeRequest(HttpMethod.GET, SERVICE_PATH + "/" + profile.getId(), null);
 
         assertEquals(response.getStatus(), OK.getStatusCode());
         final ProfileDescriptor descriptor = (ProfileDescriptor)response.getEntity();
@@ -302,7 +301,7 @@ public class UserProfileServiceTest {
         attributes.put("existed", "new");
         attributes.put("new", "value");
 
-        final ContainerResponse response = makeRequest("POST", SERVICE_PATH, attributes);
+        final ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH, attributes);
 
         assertEquals(response.getStatus(), OK.getStatusCode());
         verify(profileDao, times(1)).update(profile);
@@ -311,28 +310,28 @@ public class UserProfileServiceTest {
 
     @Test
     public void shouldThrowExceptionIfAttributesUpdateForCurrentProfileIsNull() throws Exception {
-        final ContainerResponse response = makeRequest("POST", SERVICE_PATH, null);
+        final ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH, null);
 
         assertEquals(response.getStatus(), 409);
     }
 
     @Test
     public void shouldThrowExceptionIfAttributesUpdateForCurrentProfileIsEmpty() throws Exception {
-        final ContainerResponse response = makeRequest("POST", SERVICE_PATH, emptyMap());
+        final ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH, emptyMap());
 
         assertEquals(response.getStatus(), 409);
     }
 
     @Test
     public void shouldThrowExceptionIfAttributesUpdateForSpecificProfileIsNull() throws Exception {
-        final ContainerResponse response = makeRequest("POST", SERVICE_PATH + "/any_profile_id", null);
+        final ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/any_profile_id", null);
 
         assertEquals(response.getStatus(), 409);
     }
 
     @Test
     public void shouldThrowExceptionIfAttributesUpdateForSpecificProfileIsEmpty() throws Exception {
-        final ContainerResponse response = makeRequest("POST", SERVICE_PATH + "/any_profile_id", emptyMap());
+        final ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/any_profile_id", emptyMap());
 
         assertEquals(response.getStatus(), 409);
     }
@@ -347,7 +346,7 @@ public class UserProfileServiceTest {
         attributes.put("existed", "new");
         attributes.put("new", "value");
 
-        final ContainerResponse response = makeRequest("POST", SERVICE_PATH + "/" + profile.getId(), attributes);
+        final ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/" + profile.getId(), attributes);
 
         assertEquals(response.getStatus(), OK.getStatusCode());
         assertEquals(((ProfileDescriptor)response.getEntity()).getAttributes(), attributes);
@@ -399,7 +398,7 @@ public class UserProfileServiceTest {
         byte[] data = null;
         if (entity != null) {
             headers = new HashMap<>();
-            headers.put("Content-Type", singletonList("application/json"));
+            headers.put(HttpHeaders.CONTENT_TYPE, singletonList(MediaType.APPLICATION_JSON));
             data = JsonHelper.toJson(entity).getBytes();
         }
         return launcher.service(method, path, BASE_URI, headers, data, null, environmentContext);

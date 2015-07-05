@@ -50,7 +50,9 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.UriBuilder;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -131,7 +133,7 @@ public class RunQueueTest {
         verify(runQueue, timeout(1000).times(1)).start();
 
         project = dto(ProjectDescriptor.class).withName(pName).withPath(pPath);
-        project.getLinks().add(dto(Link.class).withMethod("GET")
+        project.getLinks().add(dto(Link.class).withMethod(HttpMethod.GET)
                                               .withHref(String.format("http://localhost:8080/api/project/%s/%s", wsId, pPath))
                                               .withRel(org.eclipse.che.api.project.server.Constants.LINK_REL_EXPORT_ZIP));
         workspace = dto(WorkspaceDescriptor.class).withId(wsId).withName(wsName).withTemporary(false).withAccountId("my_account");
@@ -671,20 +673,20 @@ public class RunQueueTest {
         assertTrue(inProgressNum >= 1);
         final BuildTaskDescriptor buildTaskQueue = dto(BuildTaskDescriptor.class).withStatus(BuildStatus.IN_QUEUE);
         String statusLink = String.format("http://localhost:8080/api/builder/%s/status/%d", wsId, 1);
-        buildTaskQueue.getLinks().add(dto(Link.class).withMethod("GET")
+        buildTaskQueue.getLinks().add(dto(Link.class).withMethod(HttpMethod.GET)
                                                      .withHref(statusLink)
                                                      .withRel(org.eclipse.che.api.builder.internal.Constants.LINK_REL_GET_STATUS));
         doReturn(buildTaskQueue).when(runQueue).startBuild(any(RemoteServiceDescriptor.class), eq(pPath), any(BuildOptions.class));
 
         final BuildTaskDescriptor buildTaskProgress = dtoFactory.clone(buildTaskQueue).withStatus(BuildStatus.IN_PROGRESS);
         String cancelLink = String.format("http://localhost:8080/api/builder/%s/cancel/%d", wsId, 1);
-        buildTaskProgress.getLinks().add(dto(Link.class).withMethod("GET")
+        buildTaskProgress.getLinks().add(dto(Link.class).withMethod(HttpMethod.GET)
                                                         .withHref(cancelLink)
                                                         .withRel(org.eclipse.che.api.builder.internal.Constants.LINK_REL_CANCEL));
 
         final BuildTaskDescriptor buildTaskDone = dtoFactory.clone(buildTaskQueue).withStatus(BuildStatus.SUCCESSFUL);
         String downloadLink = String.format("http://localhost:8080/api/builder/%s/download/%d?path=artifact", wsId, 1);
-        buildTaskDone.getLinks().add(dto(Link.class).withMethod("GET")
+        buildTaskDone.getLinks().add(dto(Link.class).withMethod(HttpMethod.GET)
                                                     .withHref(downloadLink)
                                                     .withRel(org.eclipse.che.api.builder.internal.Constants.LINK_REL_DOWNLOAD_RESULT));
         doAnswer(new Answer<BuildTaskDescriptor>() {
@@ -701,7 +703,7 @@ public class RunQueueTest {
                 }
                 return buildTaskDone;
             }
-        }).when(httpJsonHelper).request(eq(BuildTaskDescriptor.class), eq(statusLink), eq("GET"), any());
+        }).when(httpJsonHelper).request(eq(BuildTaskDescriptor.class), eq(statusLink), eq(HttpMethod.GET), any());
         return downloadLink;
     }
 

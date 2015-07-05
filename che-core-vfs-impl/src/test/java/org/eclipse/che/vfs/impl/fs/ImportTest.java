@@ -14,7 +14,6 @@ import org.eclipse.che.api.core.notification.EventSubscriber;
 import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.server.observation.CreateEvent;
 import org.eclipse.che.api.vfs.server.observation.VirtualFileEvent;
-
 import org.everrest.core.impl.ContainerResponse;
 
 import java.io.ByteArrayOutputStream;
@@ -24,6 +23,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import javax.ws.rs.HttpMethod;
 
 /**
  * @author andrew00x
@@ -76,7 +77,7 @@ public class ImportTest extends LocalFileSystemTest {
 
     public void testImportFolder() throws Exception {
         String path = SERVICE_URI + "import/" + importTestRootId;
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, zipFolder, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, zipFolder, null);
         assertEquals(204, response.getStatus());
         VirtualFile parent = mountPoint.getVirtualFileById(importTestRootId);
         VirtualFile folder1 = parent.getChild("folder1");

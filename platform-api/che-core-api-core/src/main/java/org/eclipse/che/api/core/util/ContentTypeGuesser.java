@@ -18,6 +18,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Properties;
 
+import javax.ws.rs.core.MediaType;
+
 /**
  * Helps getting content type of file.
  *
@@ -26,7 +28,7 @@ import java.util.Properties;
 public class ContentTypeGuesser {
     private static final Logger LOG = LoggerFactory.getLogger(ContentTypeGuesser.class);
 
-    private static String defaultContentType = "application/octet-stream";
+    private static String defaultContentType = MediaType.APPLICATION_OCTET_STREAM;
 
     public synchronized static void setDefaultContentType(String myDefaultContentType) {
         defaultContentType = myDefaultContentType;

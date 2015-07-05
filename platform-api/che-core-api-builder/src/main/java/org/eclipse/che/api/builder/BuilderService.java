@@ -333,7 +333,7 @@ public class BuilderService extends Service {
                                       @PathParam("ws-id") String workspace,
                                       @ApiParam(value = "Build ID", required = true)
                                       @PathParam("id") Long id,
-                                      @ApiParam(value = "Archive type", defaultValue = "tar", allowableValues = "tar,zip")
+                                      @ApiParam(value = "Archive type", defaultValue = Constants.RESULT_ARCHIVE_TAR, allowableValues = "tar,zip")
                                       @Required @QueryParam("arch") String arch,
                                       @Context HttpServletResponse httpServletResponse) throws Exception {
         // Response write directly to the servlet request stream

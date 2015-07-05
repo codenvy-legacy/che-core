@@ -15,6 +15,7 @@ import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.user.UserImpl;
 import org.eclipse.che.dto.server.DtoFactory;
+
 import com.google.common.collect.Sets;
 
 import org.everrest.core.impl.ContainerResponse;
@@ -25,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.ws.rs.HttpMethod;
 
 public class RenameTest extends LocalFileSystemTest {
     private final String lockToken = "01234567890abcdef";
@@ -94,7 +97,7 @@ public class RenameTest extends LocalFileSystemTest {
         final String newMediaType = "text/*;charset=ISO-8859-1";
         String requestPath = SERVICE_URI + "rename/" + fileId + '?' + "newname=" + newName + '&' +
                              "mediaType=" + newMediaType;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, null);
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         assertFalse("File must be removed. ", exists(filePath));
         String expectedPath = testRootPath + '/' + newName;
@@ -111,7 +114,7 @@ public class RenameTest extends LocalFileSystemTest {
         final String existedFile = createFile(testRootPath, newName, existedFileContent);
         String requestPath = SERVICE_URI + "rename/" + fileId + '?' + "newname=" + newName + '&' + "mediaType=" +
                              "text/*;charset=ISO-8859-1";
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, null);
         assertEquals(409, response.getStatus());
         // Be sure file exists.
         assertTrue(exists(existedFile));
@@ -124,7 +127,7 @@ public class RenameTest extends LocalFileSystemTest {
         final String newMediaType = "text/*;charset=ISO-8859-1";
         String requestPath = SERVICE_URI + "rename/" + lockedFileId +
                              '?' + "newname=" + newName + '&' + "mediaType=" + newMediaType + '&' + "lockToken=" + lockToken;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, null);
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         String expectedPath = testRootPath + '/' + newName;
         assertFalse("File must be removed. ", exists(lockedFilePath));
@@ -141,7 +144,7 @@ public class RenameTest extends LocalFileSystemTest {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "rename/" + lockedFileId +
                              '?' + "newname=" + newName + '&' + "mediaType=" + "text/*;charset=ISO-8859-1";
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
         assertTrue("File must not be removed. ", exists(lockedFilePath));
@@ -154,7 +157,7 @@ public class RenameTest extends LocalFileSystemTest {
         final String newName = "_FILE_NEW_NAME_";
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "rename/" + protectedFileId + '?' + "newname=" + newName;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
         assertTrue("File must not be removed. ", exists(protectedFilePath));
@@ -168,7 +171,7 @@ public class RenameTest extends LocalFileSystemTest {
 
         final String newName = "_FOLDER_NEW_NAME_";
         String path = SERVICE_URI + "rename/" + folderId + '?' + "newname=" + newName;
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
 
         assertFalse("Folder must be removed. ", exists(folderPath));
@@ -188,7 +191,7 @@ public class RenameTest extends LocalFileSystemTest {
         List<String> before = flattenDirectory(protectedFolderPath);
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "rename/" + protectedFolderId + '?' + "newname=" + newName;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
         assertTrue("Folder must not be removed. ", exists(protectedFolderPath));
@@ -205,7 +208,7 @@ public class RenameTest extends LocalFileSystemTest {
         final String newMediaType = "text/directory%2BFOO"; // text/directory+FOO
         String path = SERVICE_URI + "rename/" + folderId + '?' + "newname=" + newName + '&' +
                       "mediaType=" + newMediaType;
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         String expectedPath = testRootPath + '/' + newName;
         assertTrue(exists(expectedPath));
@@ -220,7 +223,7 @@ public class RenameTest extends LocalFileSystemTest {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "rename/" + protectedFileId + '?' + "newname=" + newName;
         EnvironmentContext.getCurrent().setUser(new UserImpl("andrew", "andrew", null, Arrays.asList("workspace/developer"), false));
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
         assertEquals(200, response.getStatus());
         String expectedPath = testRootPath + '/' + newName;
         assertTrue(exists(expectedPath));

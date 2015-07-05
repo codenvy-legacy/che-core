@@ -15,7 +15,6 @@ import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemUser;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemUserContext;
 import org.eclipse.che.api.vfs.server.impl.memory.MemoryMountPoint;
-
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -24,6 +23,8 @@ import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
+
+import javax.ws.rs.core.MediaType;
 
 /**
  * @author andrew00x
@@ -50,7 +51,7 @@ public class FolderEntryTest {
         myVfProject = myVfRoot.createFolder("my_project");
         myVfProject.createFolder(".codenvy").createFile("project", null, null);
         myVfFolder = myVfProject.createFolder("test_folder");
-        myVfFolder.createFile("child_file", "text/plain", new ByteArrayInputStream("to be or not to be".getBytes()));
+        myVfFolder.createFile("child_file", MediaType.TEXT_PLAIN, new ByteArrayInputStream("to be or not to be".getBytes()));
         myVfFolder.createFolder("child_folder");
         myFolder = new FolderEntry(workspace, myVfFolder);
         Assert.assertTrue(myFolder.isFolder());

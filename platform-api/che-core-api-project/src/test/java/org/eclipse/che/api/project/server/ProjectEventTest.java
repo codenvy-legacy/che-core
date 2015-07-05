@@ -96,7 +96,7 @@ public class ProjectEventTest {
 //            }
 //        }));
 //
-//        pm.getProject("my_ws", "my_project").getBaseFolder().createFile("test.txt", "test".getBytes(), "text/plain");
+//        pm.getProject("my_ws", "my_project").getBaseFolder().createFile("test.txt", "test".getBytes(), MediaType.TEXT_PLAIN);
 //        Assert.assertEquals(events.size(), 1);
 //        Assert.assertEquals(events.get(0).getType(), ProjectEvent.EventType.CREATED);
 //        Assert.assertFalse(events.get(0).isFolder());
@@ -125,7 +125,7 @@ public class ProjectEventTest {
 //
 //    @Test
 //    public void testUpdateFile() throws Exception {
-//        FileEntry file = pm.getProject("my_ws", "my_project").getBaseFolder().createFile("test.txt", "test".getBytes(), "text/plain");
+//        FileEntry file = pm.getProject("my_ws", "my_project").getBaseFolder().createFile("test.txt", "test".getBytes(), MediaType.TEXT_PLAIN);
 //        final List<ProjectEvent> events = new ArrayList<>();
 //        Assert.assertTrue(projectEventService.addListener("my_ws", "my_project", new ProjectEventListener() {
 //            @Override
@@ -144,7 +144,7 @@ public class ProjectEventTest {
 //
 //    @Test
 //    public void testDelete() throws Exception {
-//        FileEntry file = pm.getProject("my_ws", "my_project").getBaseFolder().createFile("test.txt", "test".getBytes(), "text/plain");
+//        FileEntry file = pm.getProject("my_ws", "my_project").getBaseFolder().createFile("test.txt", "test".getBytes(), MediaType.TEXT_PLAIN);
 //        final List<ProjectEvent> events = new ArrayList<>();
 //        Assert.assertTrue(projectEventService.addListener("my_ws", "my_project", new ProjectEventListener() {
 //            @Override
@@ -163,7 +163,7 @@ public class ProjectEventTest {
 //
 //    @Test
 //    public void testMove() throws Exception {
-//        FileEntry file = pm.getProject("my_ws", "my_project").getBaseFolder().createFile("test.txt", "test".getBytes(), "text/plain");
+//        FileEntry file = pm.getProject("my_ws", "my_project").getBaseFolder().createFile("test.txt", "test".getBytes(), MediaType.TEXT_PLAIN);
 //        FolderEntry folder = pm.getProject("my_ws", "my_project").getBaseFolder().createFolder("a/b/c");
 //        final List<ProjectEvent> events = new ArrayList<>();
 //        Assert.assertTrue(projectEventService.addListener("my_ws", "my_project", new ProjectEventListener() {
@@ -188,7 +188,7 @@ public class ProjectEventTest {
 //
 //    @Test
 //    public void testRename() throws Exception {
-//        FileEntry file = pm.getProject("my_ws", "my_project").getBaseFolder().createFile("test.txt", "test".getBytes(), "text/plain");
+//        FileEntry file = pm.getProject("my_ws", "my_project").getBaseFolder().createFile("test.txt", "test".getBytes(), MediaType.TEXT_PLAIN);
 //        final List<ProjectEvent> events = new ArrayList<>();
 //        Assert.assertTrue(projectEventService.addListener("my_ws", "my_project", new ProjectEventListener() {
 //            @Override

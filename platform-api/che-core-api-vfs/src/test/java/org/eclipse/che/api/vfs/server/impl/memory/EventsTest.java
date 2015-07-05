@@ -20,7 +20,6 @@ import org.eclipse.che.api.vfs.server.observation.UpdateACLEvent;
 import org.eclipse.che.api.vfs.server.observation.UpdateContentEvent;
 import org.eclipse.che.api.vfs.server.observation.UpdatePropertiesEvent;
 import org.eclipse.che.api.vfs.server.observation.VirtualFileEvent;
-
 import org.everrest.core.impl.ContainerResponse;
 
 import java.io.ByteArrayInputStream;
@@ -28,6 +27,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 
 /** @author andrew00x */
 public class EventsTest extends MemoryFileSystemTest {
@@ -51,7 +54,7 @@ public class EventsTest extends MemoryFileSystemTest {
         testFolderPath = testEventsFolder.getPath();
         destinationFolderID = destinationFolder.getId();
         destinationFolderPath = destinationFolder.getPath();
-        VirtualFile testFile = testEventsFolder.createFile("file", "text/plain", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+        VirtualFile testFile = testEventsFolder.createFile("file", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
         testFileId = testFile.getId();
         testFilePath = testFile.getPath();
         events = new ArrayList<>();
@@ -106,8 +109,8 @@ public class EventsTest extends MemoryFileSystemTest {
         Map<String, List<String>> headers = new HashMap<>();
         List<String> contentType = new ArrayList<>();
         contentType.add("text/plain;charset=utf8");
-        headers.put("Content-Type", contentType);
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, headers, content.getBytes(), null);
+        headers.put(HttpHeaders.CONTENT_TYPE, contentType);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, headers, content.getBytes(), null);
         assertEquals(200, response.getStatus());
         assertEquals(1, events.size());
         assertEquals(VirtualFileEvent.ChangeType.CREATED, events.get(0).getType());
@@ -119,7 +122,7 @@ public class EventsTest extends MemoryFileSystemTest {
     public void testCreateFolder() throws Exception {
         String name = "testCreateFolder";
         String path = SERVICE_URI + "folder/" + testFolderId + '?' + "name=" + name;
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals(200, response.getStatus());
         assertEquals(1, events.size());
         assertEquals(VirtualFileEvent.ChangeType.CREATED, events.get(0).getType());
@@ -130,7 +133,7 @@ public class EventsTest extends MemoryFileSystemTest {
 
     public void testCopy() throws Exception {
         String path = SERVICE_URI + "copy/" + testFileId + '?' + "parentId=" + destinationFolderID;
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals(200, response.getStatus());
         assertEquals(1, events.size());
         assertEquals(VirtualFileEvent.ChangeType.CREATED, events.get(0).getType());
@@ -141,7 +144,7 @@ public class EventsTest extends MemoryFileSystemTest {
 
     public void testMove() throws Exception {
         String path = SERVICE_URI + "move/" + testFileId + '?' + "parentId=" + destinationFolderID;
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals(200, response.getStatus());
         assertEquals(1, events.size());
         assertEquals(VirtualFileEvent.ChangeType.MOVED, events.get(0).getType());
@@ -155,10 +158,10 @@ public class EventsTest extends MemoryFileSystemTest {
         String path = SERVICE_URI + "content/" + testFileId;
         Map<String, List<String>> headers = new HashMap<>();
         List<String> contentType = new ArrayList<>();
-        contentType.add("application/xml");
-        headers.put("Content-Type", contentType);
+        contentType.add(MediaType.APPLICATION_XML);
+        headers.put(HttpHeaders.CONTENT_TYPE, contentType);
         String content = "<?xml version='1.0'><root/>";
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, headers, content.getBytes(), null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, headers, content.getBytes(), null);
         assertEquals(204, response.getStatus());
         assertEquals(1, events.size());
         assertEquals(VirtualFileEvent.ChangeType.CONTENT_UPDATED, events.get(0).getType());
@@ -171,10 +174,10 @@ public class EventsTest extends MemoryFileSystemTest {
         String path = SERVICE_URI + "item/" + testFileId;
         Map<String, List<String>> headers = new HashMap<>();
         List<String> contentType = new ArrayList<>();
-        contentType.add("application/json");
-        headers.put("Content-Type", contentType);
+        contentType.add(MediaType.APPLICATION_JSON);
+        headers.put(HttpHeaders.CONTENT_TYPE, contentType);
         String properties = "[{\"name\":\"MyProperty\", \"value\":[\"MyValue\"]}]";
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, headers, properties.getBytes(), null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, headers, properties.getBytes(), null);
         assertEquals(200, response.getStatus());
         assertEquals(1, events.size());
         assertEquals(VirtualFileEvent.ChangeType.PROPERTIES_UPDATED, events.get(0).getType());
@@ -185,7 +188,7 @@ public class EventsTest extends MemoryFileSystemTest {
 
     public void testDelete() throws Exception {
         String path = SERVICE_URI + "delete/" + testFileId;
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals(204, response.getStatus());
         assertEquals(1, events.size());
         assertEquals(VirtualFileEvent.ChangeType.DELETED, events.get(0).getType());
@@ -196,7 +199,7 @@ public class EventsTest extends MemoryFileSystemTest {
 
     public void testRename() throws Exception {
         String path = SERVICE_URI + "rename/" + testFileId + '?' + "newname=" + "_FILE_NEW_NAME_";
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals(200, response.getStatus());
         assertEquals(1, events.size());
         assertEquals(VirtualFileEvent.ChangeType.RENAMED, events.get(0).getType());

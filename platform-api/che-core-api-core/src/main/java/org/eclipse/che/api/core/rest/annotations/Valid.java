@@ -49,7 +49,7 @@ import java.lang.annotation.Target;
  *       "href":"${base_uri}/echo/say",
  *       "produces":"plain/text",
  *       "rel":"message",
- *       "method":"GET",
+ *       "method":HttpMethod.GET,
  *       "parameters":[
  *         {
  *           "name":"message",

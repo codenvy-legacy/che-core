@@ -13,6 +13,8 @@ package org.eclipse.che.api.core.rest;
 import org.eclipse.che.commons.lang.Pair;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.HttpHeaders;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -45,7 +47,7 @@ public final class HttpServletProxyResponse implements HttpOutputMessage {
 
     @Override
     public void setContentType(String contentType) {
-        setHttpHeader("Content-Type", contentType);
+        setHttpHeader(HttpHeaders.CONTENT_TYPE, contentType);
     }
 
     @Override

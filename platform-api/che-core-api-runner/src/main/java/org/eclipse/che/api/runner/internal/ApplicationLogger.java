@@ -14,6 +14,8 @@ import org.eclipse.che.api.core.util.LineConsumer;
 
 import java.io.IOException;
 
+import javax.ws.rs.core.MediaType;
+
 /**
  * Collects application logs. A ApplicationLogger is open after creation, and may consumes applications logs with method {@link
  * #writeLine(String)}. Once a ApplicationLogger is closed, any attempt to write new lines upon it will cause a {@link java.io.IOException}
@@ -47,7 +49,7 @@ public interface ApplicationLogger extends LineConsumer {
 
         @Override
         public String getContentType() {
-            return "text/plain";
+            return MediaType.TEXT_PLAIN;
         }
 
         @Override
