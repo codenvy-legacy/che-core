@@ -39,8 +39,12 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -145,7 +149,7 @@ public class UserServiceTest {
         final String token = "test_token";
         when(tokenValidator.validateToken(token)).thenReturn(userEmail);
 
-        final ContainerResponse response = makeRequest("POST", SERVICE_PATH + "/create?token=" + token, null);
+        final ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/create?token=" + token, null);
 
         assertEquals(response.getStatus(), CREATED.getStatusCode());
         final UserDescriptor user = (UserDescriptor) response.getEntity();
@@ -163,7 +167,7 @@ public class UserServiceTest {
                                           .withPassword("password123");
         when(securityContext.isUserInRole("system/admin")).thenReturn(true);
 
-        final ContainerResponse response = makeRequest("POST", SERVICE_PATH + "/create", newUser);
+        final ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/create", newUser);
 
         assertEquals(response.getStatus(), CREATED.getStatusCode());
         final UserDescriptor descriptor = (UserDescriptor)response.getEntity();
@@ -181,7 +185,7 @@ public class UserServiceTest {
                                           .withPassword("password");
         when(securityContext.isUserInRole("system/admin")).thenReturn(true);
 
-        final ContainerResponse response = makeRequest("POST", SERVICE_PATH + "/create", newUser);
+        final ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/create", newUser);
 
         assertEquals(response.getStatus(), FORBIDDEN.getStatusCode());
         verify(userDao, never()).create(any(User.class));
@@ -195,7 +199,7 @@ public class UserServiceTest {
                                           .withName("test");
         when(securityContext.isUserInRole("system/admin")).thenReturn(true);
 
-        final ContainerResponse response = makeRequest("POST", SERVICE_PATH + "/create", newUser);
+        final ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/create", newUser);
 
         final UserDescriptor descriptor = (UserDescriptor)response.getEntity();
         assertEquals(descriptor.getName(), newUser.getName());
@@ -206,7 +210,7 @@ public class UserServiceTest {
 
     @Test
     public void shouldThrowUnauthorizedExceptionWhenCreatingUserBasedOnTokenAndItIsNull() throws Exception {
-        final ContainerResponse response = makeRequest("POST", SERVICE_PATH + "/create", null);
+        final ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/create", null);
 
         assertEquals(response.getStatus(), UNAUTHORIZED.getStatusCode());
         verify(userDao, never()).create(any(User.class));
@@ -217,7 +221,7 @@ public class UserServiceTest {
     public void shouldThrowForbiddenExceptionWhenCreatingUserBasedOnEntityWhichIsNull() throws Exception {
         when(securityContext.isUserInRole("system/admin")).thenReturn(true);
 
-        final ContainerResponse response = makeRequest("POST", SERVICE_PATH + "/create", null);
+        final ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/create", null);
 
         assertEquals(response.getStatus(), FORBIDDEN.getStatusCode());
         verify(userDao, never()).create(any(User.class));
@@ -229,7 +233,7 @@ public class UserServiceTest {
         final NewUser newUser = DtoFactory.getInstance().createDto(NewUser.class);
         when(securityContext.isUserInRole("system/admin")).thenReturn(true);
 
-        final ContainerResponse response = makeRequest("POST", SERVICE_PATH + "/create", newUser);
+        final ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/create", newUser);
 
         assertEquals(response.getStatus(), FORBIDDEN.getStatusCode());
         verify(userDao, never()).create(any(User.class));
@@ -240,7 +244,7 @@ public class UserServiceTest {
     public void shouldBeAbleToGetCurrentUser() throws Exception {
         final User user = createUser();
 
-        final ContainerResponse response = makeRequest("GET", SERVICE_PATH, null);
+        final ContainerResponse response = makeRequest(HttpMethod.GET, SERVICE_PATH, null);
 
         assertEquals(response.getStatus(), OK.getStatusCode());
         final UserDescriptor descriptor = (UserDescriptor)response.getEntity();
@@ -253,7 +257,7 @@ public class UserServiceTest {
     public void shouldBeAbleToGetUserById() throws Exception {
         final User user = createUser();
 
-        final ContainerResponse response = makeRequest("GET", SERVICE_PATH + "/" + user.getId(), null);
+        final ContainerResponse response = makeRequest(HttpMethod.GET, SERVICE_PATH + "/" + user.getId(), null);
 
         assertEquals(response.getStatus(), OK.getStatusCode());
         final UserDescriptor descriptor = (UserDescriptor)response.getEntity();
@@ -266,7 +270,7 @@ public class UserServiceTest {
     public void shouldBeAbleToGetUserByEmail() throws Exception {
         final User user = createUser();
 
-        final ContainerResponse response = makeRequest("GET", SERVICE_PATH + "?email=" + user.getEmail(), null);
+        final ContainerResponse response = makeRequest(HttpMethod.GET, SERVICE_PATH + "?email=" + user.getEmail(), null);
 
         assertEquals(response.getStatus(), OK.getStatusCode());
         final UserDescriptor descriptor = (UserDescriptor)response.getEntity();
@@ -280,9 +284,9 @@ public class UserServiceTest {
         final User user = createUser();
         final String newPassword = "validPass123";
         final Map<String, List<String>> headers = new HashMap<>();
-        headers.put("Content-Type", singletonList("application/x-www-form-urlencoded"));
+        headers.put(HttpHeaders.CONTENT_TYPE, singletonList(MediaType.APPLICATION_FORM_URLENCODED));
 
-        final ContainerResponse response = launcher.service("POST",
+        final ContainerResponse response = launcher.service(HttpMethod.POST,
                                                             SERVICE_PATH + "/password",
                                                             BASE_URI,
                                                             headers,
@@ -299,9 +303,9 @@ public class UserServiceTest {
         final User user = createUser();
         final String newPassword = "password";
         final Map<String, List<String>> headers = new HashMap<>();
-        headers.put("Content-Type", singletonList("application/x-www-form-urlencoded"));
+        headers.put(HttpHeaders.CONTENT_TYPE, singletonList(MediaType.APPLICATION_FORM_URLENCODED));
 
-        final ContainerResponse response = launcher.service("POST",
+        final ContainerResponse response = launcher.service(HttpMethod.POST,
                                                             SERVICE_PATH + "/password",
                                                             BASE_URI,
                                                             headers,
@@ -318,9 +322,9 @@ public class UserServiceTest {
         final User user = createUser();
         final String newPassword = "12345678";
         final Map<String, List<String>> headers = new HashMap<>();
-        headers.put("Content-Type", singletonList("application/x-www-form-urlencoded"));
+        headers.put(HttpHeaders.CONTENT_TYPE, singletonList(MediaType.APPLICATION_FORM_URLENCODED));
 
-        final ContainerResponse response = launcher.service("POST",
+        final ContainerResponse response = launcher.service(HttpMethod.POST,
                                                             SERVICE_PATH + "/password",
                                                             BASE_URI,
                                                             headers,
@@ -337,9 +341,9 @@ public class UserServiceTest {
         final User user = createUser();
         final String newPassword = "abc123";
         final Map<String, List<String>> headers = new HashMap<>();
-        headers.put("Content-Type", singletonList("application/x-www-form-urlencoded"));
+        headers.put(HttpHeaders.CONTENT_TYPE, singletonList(MediaType.APPLICATION_FORM_URLENCODED));
 
-        final ContainerResponse response = launcher.service("POST",
+        final ContainerResponse response = launcher.service(HttpMethod.POST,
                                                             SERVICE_PATH + "/password",
                                                             BASE_URI,
                                                             headers,
@@ -355,7 +359,7 @@ public class UserServiceTest {
     public void shouldBeAbleToRemoveUser() throws Exception {
         final User testUser = createUser();
 
-        final ContainerResponse response = makeRequest("DELETE", SERVICE_PATH + "/" + testUser.getId(), null);
+        final ContainerResponse response = makeRequest(HttpMethod.DELETE, SERVICE_PATH + "/" + testUser.getId(), null);
 
         assertEquals(response.getStatus(), NO_CONTENT.getStatusCode());
         verify(userDao).remove(testUser.getId());
@@ -369,7 +373,7 @@ public class UserServiceTest {
     public void checkUserWithDefaultScope() throws Exception {
         when(securityContext.isUserInRole("user")).thenReturn(true);
 
-        final ContainerResponse response = makeRequest("GET", SERVICE_PATH + "/inrole?role=user", null);
+        final ContainerResponse response = makeRequest(HttpMethod.GET, SERVICE_PATH + "/inrole?role=user", null);
 
         assertEquals(response.getStatus(), OK.getStatusCode());
         final UserInRoleDescriptor userInRoleDescriptor = (UserInRoleDescriptor)response.getEntity();
@@ -388,7 +392,7 @@ public class UserServiceTest {
     public void checkUserWithSystemScope() throws Exception {
         when(securityContext.isUserInRole("user")).thenReturn(true);
 
-        final ContainerResponse response = makeRequest("GET", SERVICE_PATH + "/inrole?role=user&scope=system", null);
+        final ContainerResponse response = makeRequest(HttpMethod.GET, SERVICE_PATH + "/inrole?role=user&scope=system", null);
 
         assertEquals(response.getStatus(), OK.getStatusCode());
         final UserInRoleDescriptor userInRoleDescriptor = (UserInRoleDescriptor)response.getEntity();
@@ -409,7 +413,7 @@ public class UserServiceTest {
     public void checkTempUserWithSystemScope() throws Exception {
         when(securityContext.isUserInRole("temp_user")).thenReturn(true);
 
-        final ContainerResponse response = makeRequest("GET", SERVICE_PATH + "/inrole?role=temp_user&scope=system", null);
+        final ContainerResponse response = makeRequest(HttpMethod.GET, SERVICE_PATH + "/inrole?role=temp_user&scope=system", null);
 
         assertEquals(response.getStatus(), OK.getStatusCode());
         final UserInRoleDescriptor userInRoleDescriptor = (UserInRoleDescriptor)response.getEntity();
@@ -429,7 +433,7 @@ public class UserServiceTest {
     public void checkUserIsAdminWithDefaultScope() throws Exception {
         when(securityContext.isUserInRole("system/admin")).thenReturn(true);
 
-        final ContainerResponse response = makeRequest("GET", SERVICE_PATH + "/inrole?role=admin", null);
+        final ContainerResponse response = makeRequest(HttpMethod.GET, SERVICE_PATH + "/inrole?role=admin", null);
 
         assertEquals(response.getStatus(), OK.getStatusCode());
         final UserInRoleDescriptor userInRoleDescriptor = (UserInRoleDescriptor)response.getEntity();
@@ -449,7 +453,7 @@ public class UserServiceTest {
     public void checkUserIsNotAdmin() throws Exception {
         when(securityContext.isUserInRole("system/admin")).thenReturn(false);
 
-        final ContainerResponse response = makeRequest("GET", SERVICE_PATH + "/inrole?role=admin", null);
+        final ContainerResponse response = makeRequest(HttpMethod.GET, SERVICE_PATH + "/inrole?role=admin", null);
 
         assertEquals(response.getStatus(), OK.getStatusCode());
         final UserInRoleDescriptor userInRoleDescriptor = (UserInRoleDescriptor)response.getEntity();
@@ -470,7 +474,7 @@ public class UserServiceTest {
     public void checkUserIsManagerWithProvidedScope() throws Exception {
         when(securityContext.isUserInRole("system/manager")).thenReturn(true);
 
-        final ContainerResponse response = makeRequest("GET", SERVICE_PATH + "/inrole?role=manager&scope=system", null);
+        final ContainerResponse response = makeRequest(HttpMethod.GET, SERVICE_PATH + "/inrole?role=manager&scope=system", null);
 
         assertEquals(response.getStatus(), OK.getStatusCode());
         final UserInRoleDescriptor userInRoleDescriptor = (UserInRoleDescriptor)response.getEntity();
@@ -494,7 +498,7 @@ public class UserServiceTest {
         byte[] data = null;
         if (entity != null) {
             headers = new HashMap<>();
-            headers.put("Content-Type", singletonList("application/json"));
+            headers.put(HttpHeaders.CONTENT_TYPE, singletonList(MediaType.APPLICATION_JSON));
             data = JsonHelper.toJson(entity).getBytes();
         }
         return launcher.service(method, path, BASE_URI, headers, data, null, environmentContext);

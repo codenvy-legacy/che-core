@@ -15,7 +15,6 @@ import org.eclipse.che.api.core.rest.CodenvyJsonProvider;
 import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
 import org.eclipse.che.api.vfs.server.ContentStream;
 import org.eclipse.che.api.vfs.server.ContentStreamWriter;
-
 import org.everrest.core.ResourceBinder;
 import org.everrest.core.impl.ApplicationContextImpl;
 import org.everrest.core.impl.ApplicationProviderBinder;
@@ -30,7 +29,9 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.Application;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -84,7 +85,7 @@ public class ProjectTemplateServiceTest {
     @Test
     public void getTemplates() throws Exception {
         ContainerResponse response =
-                launcher.service("GET", "http://localhost:8080/api/project-template/test", "http://localhost:8080/api", null, null, null);
+                launcher.service(HttpMethod.GET, "http://localhost:8080/api/project-template/test", "http://localhost:8080/api", null, null, null);
         Assert.assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
         List<ProjectTemplateDescriptor> result = (List<ProjectTemplateDescriptor>)response.getEntity();
 

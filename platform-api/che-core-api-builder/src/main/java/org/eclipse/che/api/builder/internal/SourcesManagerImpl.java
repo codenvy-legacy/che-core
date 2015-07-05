@@ -17,6 +17,7 @@ import org.eclipse.che.commons.json.JsonParseException;
 import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.commons.lang.Pair;
 import org.eclipse.che.commons.lang.ZipUtils;
+
 import com.google.common.hash.Hashing;
 import com.google.common.io.CharStreams;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -53,6 +54,10 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 
 /**
  * Implementation of SourcesManager that stores sources locally and gets only updated files over virtual file system RESt API.
@@ -215,9 +220,9 @@ public class SourcesManagerImpl implements SourcesManager {
             conn.setConnectTimeout(CONNECT_TIMEOUT);
             conn.setReadTimeout(READ_TIMEOUT);
             if (!md5sums.isEmpty()) {
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("Content-type", "text/plain");
-                conn.setRequestProperty("Accept", "multipart/form-data");
+                conn.setRequestMethod(HttpMethod.POST);
+                conn.setRequestProperty("Content-type", MediaType.TEXT_PLAIN);
+                conn.setRequestProperty(HttpHeaders.ACCEPT, MediaType.MULTIPART_FORM_DATA);
                 conn.setDoOutput(true);
                 try (OutputStream output = conn.getOutputStream();
                      Writer writer = new OutputStreamWriter(output)) {
@@ -232,7 +237,7 @@ public class SourcesManagerImpl implements SourcesManager {
             final int responseCode = conn.getResponseCode();
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 final String contentType = conn.getHeaderField("content-type");
-                if (contentType.startsWith("multipart/form-data")) {
+                if (contentType.startsWith(MediaType.MULTIPART_FORM_DATA)) {
                     final HeaderParameterParser headerParameterParser = new HeaderParameterParser();
                     final String boundary = headerParameterParser.parse(contentType).get("boundary");
                     try (InputStream in = conn.getInputStream()) {

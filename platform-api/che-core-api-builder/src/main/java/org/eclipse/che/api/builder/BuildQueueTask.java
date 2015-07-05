@@ -23,8 +23,10 @@ import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.core.util.Cancellable;
 import org.eclipse.che.dto.server.DtoFactory;
 
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -151,12 +153,12 @@ public class BuildQueueTask implements Cancellable {
                                 .withRel(Constants.LINK_REL_GET_STATUS)
                                 .withHref(getUriBuilder().path(BuilderService.class, "getStatus").build(request.getWorkspace(), id)
                                                          .toString())
-                                .withMethod("GET")
+                                .withMethod(HttpMethod.GET)
                                 .withProduces(MediaType.APPLICATION_JSON));
             links.add(dtoFactory.createDto(Link.class)
                                 .withRel(Constants.LINK_REL_CANCEL)
                                 .withHref(getUriBuilder().path(BuilderService.class, "cancel").build(request.getWorkspace(), id).toString())
-                                .withMethod("POST")
+                                .withMethod(HttpMethod.POST)
                                 .withProduces(MediaType.APPLICATION_JSON));
             final List<BuilderMetric> buildStats = new ArrayList<>(1);
             buildStats.add(dtoFactory.createDto(BuilderMetric.class)

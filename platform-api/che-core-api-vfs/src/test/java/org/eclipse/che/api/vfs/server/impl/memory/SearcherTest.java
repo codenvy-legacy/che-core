@@ -14,9 +14,7 @@ import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.server.search.LuceneSearcher;
 import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.api.vfs.shared.dto.ItemList;
-
 import org.eclipse.che.commons.lang.Pair;
-
 import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -35,6 +33,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 
 /**
  * @author andrew00x
@@ -64,15 +66,15 @@ public class SearcherTest extends MemoryFileSystemTest {
         file1 = searchTestFolder.createFile("SearcherTest_File01", "text/xml", new ByteArrayInputStream("to be or not to be".getBytes()))
                                 .getPath();
 
-        file2 = searchTestFolder.createFile("SearcherTest_File02", "text/plain", new ByteArrayInputStream("to be or not to be".getBytes()))
+        file2 = searchTestFolder.createFile("SearcherTest_File02", MediaType.TEXT_PLAIN, new ByteArrayInputStream("to be or not to be".getBytes()))
                                 .getPath();
 
         VirtualFile folder = searchTestFolder.createFolder("folder01");
         String folder1 = folder.getPath();
-        file3 = folder.createFile("SearcherTest_File03", "text/plain", new ByteArrayInputStream("to be or not to be".getBytes())).getPath();
+        file3 = folder.createFile("SearcherTest_File03", MediaType.TEXT_PLAIN, new ByteArrayInputStream("to be or not to be".getBytes())).getPath();
         
-        String file4 = searchTestFolder.createFile("SearcherTest_File04", "text/plain", new ByteArrayInputStream("(1+1):2=1 is right".getBytes())).getPath();
-        String file5 = searchTestFolder.createFile("SearcherTest_File05", "text/plain", new ByteArrayInputStream("Copyright (c) 2012-2015 * All rights reserved".getBytes())).getPath();
+        String file4 = searchTestFolder.createFile("SearcherTest_File04", MediaType.TEXT_PLAIN, new ByteArrayInputStream("(1+1):2=1 is right".getBytes())).getPath();
+        String file5 = searchTestFolder.createFile("SearcherTest_File05", MediaType.TEXT_PLAIN, new ByteArrayInputStream("Copyright (c) 2012-2015 * All rights reserved".getBytes())).getPath();
 
         queryToResult = new Pair[16];
         // text
@@ -106,9 +108,9 @@ public class SearcherTest extends MemoryFileSystemTest {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "search";
         Map<String, List<String>> h = new HashMap<>(1);
-        h.put("Content-Type", Arrays.asList("application/x-www-form-urlencoded"));
+        h.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_FORM_URLENCODED));
         for (Pair<String[], String> pair : queryToResult) {
-            ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, h, pair.second.getBytes(), writer, null);
+            ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, h, pair.second.getBytes(), writer, null);
             //log.info(new String(writer.getBody()));
             assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
             List<Item> result = ((ItemList)response.getEntity()).getItems();
@@ -163,7 +165,7 @@ public class SearcherTest extends MemoryFileSystemTest {
         TopDocs topDocs = luceneSearcher.search(new PrefixQuery(new Term("path", searchTestPath)), 10);
         assertEquals(5, topDocs.totalHits);
         searcherManager.release(luceneSearcher);
-        mountPoint.getVirtualFile(searchTestPath).createFile("new_file", "text/plain", new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
+        mountPoint.getVirtualFile(searchTestPath).createFile("new_file", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
 
         searcherManager.maybeRefresh();
         luceneSearcher = searcherManager.acquire();
@@ -179,7 +181,7 @@ public class SearcherTest extends MemoryFileSystemTest {
                 new QueryParser("text", new SimpleAnalyzer()).parse("updated"), 10);
         assertEquals(0, topDocs.totalHits);
         searcherManager.release(luceneSearcher);
-        mountPoint.getVirtualFile(file2).updateContent("text/plain", new ByteArrayInputStream("updated content".getBytes()), null);
+        mountPoint.getVirtualFile(file2).updateContent(MediaType.TEXT_PLAIN, new ByteArrayInputStream("updated content".getBytes()), null);
 
         searcherManager.maybeRefresh();
         luceneSearcher = searcherManager.acquire();

@@ -28,6 +28,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.ws.rs.HttpMethod;
+
 /**
  * Provides basic functionality to access remote {@link Service Service}. Basically provides next information about {@code Service}:
  * <ul>
@@ -118,7 +120,7 @@ public class RemoteServiceDescriptor {
             conn = (HttpURLConnection)baseUrlURL.openConnection();
             conn.setConnectTimeout(3 * 1000);
             conn.setReadTimeout(10 * 1000);
-            conn.setRequestMethod("OPTIONS");
+            conn.setRequestMethod(HttpMethod.OPTIONS);
             int responseCode = conn.getResponseCode();
             LOG.debug("OPTIONS {} response {}", baseUrlURL, responseCode);
             return 200 == responseCode;

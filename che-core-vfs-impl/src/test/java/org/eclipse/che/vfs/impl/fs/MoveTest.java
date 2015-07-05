@@ -12,6 +12,7 @@ package org.eclipse.che.vfs.impl.fs;
 
 import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.dto.server.DtoFactory;
+
 import com.google.common.collect.Sets;
 
 import org.everrest.core.impl.ContainerResponse;
@@ -24,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+
+import javax.ws.rs.HttpMethod;
 
 import static org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
 
@@ -129,7 +132,7 @@ public class MoveTest extends LocalFileSystemTest {
     public void testMoveFile() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "move/" + fileId + '?' + "parentId=" + destinationId;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         String expectedPath = destinationPath + '/' + fileName;
@@ -141,7 +144,7 @@ public class MoveTest extends LocalFileSystemTest {
         byte[] existedFileContent = "existed file".getBytes();
         String existedFile = createFile(destinationPath, fileName, existedFileContent);
         String requestPath = SERVICE_URI + "move/" + fileId + '?' + "parentId=" + destinationId;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, null);
         assertEquals(409, response.getStatus());
         // untouched ??
         assertTrue(exists(existedFile));
@@ -151,7 +154,7 @@ public class MoveTest extends LocalFileSystemTest {
     public void testMoveLockedFile() throws Exception {
         String requestPath = SERVICE_URI + "move/" + lockedFileId +
                              '?' + "parentId=" + destinationId + '&' + "lockToken=" + lockToken;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, null);
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         assertFalse("File must be moved. ", exists(lockedFilePath));
         String expectedPath = destinationPath + '/' + lockedFileName;
@@ -161,7 +164,7 @@ public class MoveTest extends LocalFileSystemTest {
     public void testMoveLockedFileNoLockToken() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "move/" + lockedFileId + '?' + "parentId=" + destinationId;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
         assertTrue("File must not be moved. ", exists(lockedFilePath));
@@ -172,7 +175,7 @@ public class MoveTest extends LocalFileSystemTest {
     public void testMoveFileNoPermissions() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "move/" + protectedFileId + '?' + "parentId=" + destinationId;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
         assertTrue("Source file not found. ", exists(protectedFilePath));
@@ -183,7 +186,7 @@ public class MoveTest extends LocalFileSystemTest {
     public void testMoveFileNoPermissions_Destination() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "move/" + fileId + '?' + "parentId=" + protectedDestinationId;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
         assertTrue("Source file not found. ", exists(protectedFilePath));
@@ -196,7 +199,7 @@ public class MoveTest extends LocalFileSystemTest {
         String requestPath = SERVICE_URI + "move/" + folderId + '?' + "parentId=" + destinationId;
         List<String> before = flattenDirectory(folderPath);
         final long start = System.currentTimeMillis();
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
         final long end = System.currentTimeMillis();
         log.info(">>>>> Move tree time: {}ms", (end - start));
         log.info(new String(writer.getBody()));
@@ -213,7 +216,7 @@ public class MoveTest extends LocalFileSystemTest {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "move/" + protectedFolderId + '?' + "parentId=" + destinationId;
         List<String> before = flattenDirectory(protectedFolderPath);
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
         String expectedPath = destinationPath + '/' + protectedFolderName;
@@ -228,7 +231,7 @@ public class MoveTest extends LocalFileSystemTest {
     public void testMoveFolderAlreadyExist() throws Exception {
         createDirectory(destinationPath, folderName);
         String requestPath = SERVICE_URI + "move/" + folderId + '?' + "parentId=" + destinationId;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, null);
         assertEquals(409, response.getStatus());
         // untouched ??
         assertTrue("Source folder not found. ", exists(folderPath));
@@ -238,7 +241,7 @@ public class MoveTest extends LocalFileSystemTest {
         List<String> sourceBefore = flattenDirectory(lockedChildFolderPath);
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "move/" + lockedChildFolderId + '?' + "parentId=" + destinationId;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
         // Items copied but we are fail when try delete source tree
@@ -257,7 +260,7 @@ public class MoveTest extends LocalFileSystemTest {
         List<String> sourceBefore = flattenDirectory(protectedChildFolderPath);
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "move/" + protectedChildFolderId + '?' + "parentId=" + destinationId;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
         // Items copied but we are fail when try delete source tree.

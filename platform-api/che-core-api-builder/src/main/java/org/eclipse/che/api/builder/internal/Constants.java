@@ -65,6 +65,11 @@ public class Constants {
      */
     public static final String MAX_EXECUTION_TIME         = "builder.max_execution_time";
 
+    /** Build results archive type: .zip */
+    public static final String RESULT_ARCHIVE_ZIP         = "zip";
+    /** Build results archive type: .tar */
+    public static final String RESULT_ARCHIVE_TAR         = "tar";
+
     /* ================================================= */
 
     /** @deprecated use {@link #BASE_DIRECTORY} */

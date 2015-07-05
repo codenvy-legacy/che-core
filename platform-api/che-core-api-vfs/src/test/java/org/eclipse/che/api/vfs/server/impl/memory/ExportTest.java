@@ -11,7 +11,7 @@
 package org.eclipse.che.api.vfs.server.impl.memory;
 
 import org.eclipse.che.api.vfs.server.VirtualFile;
-
+import org.eclipse.che.commons.lang.ws.rs.ExtMediaType;
 import org.everrest.core.impl.ContainerResponse;
 import org.everrest.core.tools.ByteArrayContainerResponseWriter;
 
@@ -20,6 +20,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 
 /** @author andrew00x */
 public class ExportTest extends MemoryFileSystemTest {
@@ -54,17 +58,17 @@ public class ExportTest extends MemoryFileSystemTest {
         VirtualFile folder2 = exportTestFolder.createFolder("folder2");
         VirtualFile folder3 = exportTestFolder.createFolder("folder3");
 
-        VirtualFile file1 = folder1.createFile("file1.txt", "text/plain", new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
-        VirtualFile file2 = folder2.createFile("file2.txt", "text/plain", new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
-        VirtualFile file3 = folder3.createFile("file3.txt", "text/plain", new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
+        VirtualFile file1 = folder1.createFile("file1.txt", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
+        VirtualFile file2 = folder2.createFile("file2.txt", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
+        VirtualFile file3 = folder3.createFile("file3.txt", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
 
         VirtualFile folder12 = folder1.createFolder("folder12");
         VirtualFile folder22 = folder2.createFolder("folder22");
         VirtualFile folder32 = folder3.createFolder("folder32");
 
-        VirtualFile file12 = folder12.createFile("file12.txt", "text/plain", new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
-        VirtualFile file22 = folder22.createFile("file22.txt", "text/plain", new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
-        VirtualFile file32 = folder32.createFile("file32.txt", "text/plain", new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
+        VirtualFile file12 = folder12.createFile("file12.txt", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
+        VirtualFile file22 = folder22.createFile("file22.txt", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
+        VirtualFile file32 = folder32.createFile("file32.txt", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
 
         expectedExportFolderZipItems.add("folder1/");
         expectedExportFolderZipItems.add("folder2/");
@@ -99,18 +103,18 @@ public class ExportTest extends MemoryFileSystemTest {
     public void testExportRootFolder() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "export/" + mountPoint.getRoot().getId();
-        ContainerResponse response = launcher.service("GET", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
         assertEquals(200, response.getStatus());
-        assertEquals("application/zip", writer.getHeaders().getFirst("Content-Type"));
+        assertEquals(ExtMediaType.APPLICATION_ZIP, writer.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
         checkZipItems(expectedExportTestRootZipItems, new ZipInputStream(new ByteArrayInputStream(writer.getBody())));
     }
 
     public void testExportFile() throws Exception {
         VirtualFile file = mountPoint.getVirtualFileById(exportFolderId)
-                                     .createFile("export_test_file.txt", "text/plain", new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
+                                     .createFile("export_test_file.txt", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "export/" + file.getId();
-        ContainerResponse response = launcher.service("GET", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
         assertEquals(403, response.getStatus());
     }
 

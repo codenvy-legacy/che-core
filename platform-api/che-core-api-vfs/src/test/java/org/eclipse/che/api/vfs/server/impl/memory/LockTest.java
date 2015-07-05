@@ -13,6 +13,7 @@ package org.eclipse.che.api.vfs.server.impl.memory;
 import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
+
 import com.google.common.collect.Sets;
 
 import org.everrest.core.impl.ContainerResponse;
@@ -22,6 +23,9 @@ import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.MediaType;
 
 /** @author andrew00x */
 public class LockTest extends MemoryFileSystemTest {
@@ -37,14 +41,14 @@ public class LockTest extends MemoryFileSystemTest {
         VirtualFile folder = lockTestFolder.createFolder("LockTest_FOLDER");
         folderId = folder.getId();
 
-        VirtualFile file = lockTestFolder.createFile("LockTest_FILE", "text/plain", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+        VirtualFile file = lockTestFolder.createFile("LockTest_FILE", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
         fileId = file.getId();
     }
 
     public void testLockFile() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "lock/" + fileId;
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, writer, null);
         assertEquals(200, response.getStatus());
         log.info(new String(writer.getBody()));
         VirtualFile file = mountPoint.getVirtualFileById(fileId);
@@ -57,7 +61,7 @@ public class LockTest extends MemoryFileSystemTest {
         file.lock(0);
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "lock/" + fileId;
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, writer, null);
         assertEquals(409, response.getStatus());
         log.info(new String(writer.getBody()));
     }
@@ -73,7 +77,7 @@ public class LockTest extends MemoryFileSystemTest {
 
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "lock/" + fileId;
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
         file = mountPoint.getVirtualFileById(fileId);
@@ -83,7 +87,7 @@ public class LockTest extends MemoryFileSystemTest {
     public void testLockFolder() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "lock/" + folderId;
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, writer, null);
         assertEquals(403, response.getStatus());
     }
 

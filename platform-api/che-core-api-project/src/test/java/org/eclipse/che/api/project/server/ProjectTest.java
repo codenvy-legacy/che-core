@@ -20,14 +20,12 @@ import org.eclipse.che.api.project.server.type.ProjectType;
 import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
 import org.eclipse.che.api.project.shared.dto.ProjectUpdate;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
-
 import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemUser;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemUserContext;
 import org.eclipse.che.api.vfs.server.impl.memory.MemoryFileSystemProvider;
 import org.eclipse.che.api.vfs.server.impl.memory.MemoryMountPoint;
-
 import org.eclipse.che.dto.server.DtoFactory;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
@@ -35,6 +33,8 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.util.*;
+
+import javax.ws.rs.core.MediaType;
 
 /**
  * @author andrew00x
@@ -202,7 +202,7 @@ public class ProjectTest {
         Project myProject = pm.getProject("my_ws", "my_project");
         long modificationDate1 = myProject.getModificationDate();
         Thread.sleep(1000);
-        myProject.getBaseFolder().createFile("test.txt", "test".getBytes(), "text/plain");
+        myProject.getBaseFolder().createFile("test.txt", "test".getBytes(), MediaType.TEXT_PLAIN);
         long modificationDate2 = myProject.getModificationDate();
         Assert.assertTrue(modificationDate2 > modificationDate1);
     }
