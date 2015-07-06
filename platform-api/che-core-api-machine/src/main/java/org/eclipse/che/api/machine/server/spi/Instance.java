@@ -11,10 +11,15 @@
 package org.eclipse.che.api.machine.server.spi;
 
 import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.core.util.LineConsumer;
 import org.eclipse.che.api.machine.server.exception.MachineException;
+import org.eclipse.che.api.machine.shared.Machine;
+import org.eclipse.che.api.machine.shared.MachineStatus;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
+import org.eclipse.che.api.machine.shared.Server;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Representation of machine instance in implementation specific way.
@@ -22,7 +27,11 @@ import java.util.List;
  * @author gazarenkov
  * @author Alexander Garagatyi
  */
-public interface Instance {
+public interface Instance extends Machine {
+
+    void setStatus(MachineStatus status);
+
+    LineConsumer getLogger();
 
     /**
      * Get metadata of the instance
@@ -30,7 +39,14 @@ public interface Instance {
      * @throws MachineException
      *         if error occurs on retrieving metadata
      */
+    @Override
     InstanceMetadata getMetadata() throws MachineException;
+
+    /**
+     * Returns mapping of exposed ports to {link Server}
+     */
+    @Override
+    Map<String, Server> getServers() throws MachineException;
 
     /**
      * Get {@link InstanceProcess} by its id
@@ -90,20 +106,16 @@ public interface Instance {
     /**
      * Binds project to machine instance
      *
-     * @param workspaceId
-     *         workspace where project is placed
      * @param project
      *         project that should be bound to machine instance
      */
-    void bindProject(String workspaceId, ProjectBinding project) throws MachineException;
+    void bindProject(ProjectBinding project) throws MachineException;
 
     /**
      * Unbinds project from machine instance
      *
-     * @param workspaceId
-     *         workspace where project is placed
      * @param project
      *         project that should be unbound from machine instance
      */
-    void unbindProject(String workspaceId, ProjectBinding project) throws MachineException;
+    void unbindProject(ProjectBinding project) throws MachineException, NotFoundException;
 }

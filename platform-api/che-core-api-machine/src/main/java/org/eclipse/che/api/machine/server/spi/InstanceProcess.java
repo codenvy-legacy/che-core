@@ -20,13 +20,14 @@ import org.eclipse.che.api.machine.server.exception.MachineException;
  * @author andrew00x
  * @author Alexander Garagatyi
  */
-public interface InstanceProcess {
+public interface InstanceProcess extends org.eclipse.che.api.machine.shared.Process {
     /**
      * Returns pid of the process.
      * To be able to control from the clients pid should be valid even if process isn't started yet.
      *
      * @return pid of the process
      */
+    @Override
     int getPid();
 
     /**
@@ -34,6 +35,7 @@ public interface InstanceProcess {
      *
      * @return command
      */
+    @Override
     String getCommandLine();
 
     /**
@@ -66,6 +68,7 @@ public interface InstanceProcess {
      *
      * @return {@code true} if process running and {@code false} otherwise
      */
+    @Override
     boolean isAlive();
 
     /**

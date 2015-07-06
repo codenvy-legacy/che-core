@@ -14,13 +14,13 @@ import org.eclipse.che.api.core.notification.EventOrigin;
 import org.eclipse.che.dto.shared.DTO;
 
 /**
- * Describes event about state of machine
+ * Describes event about status of machine
  *
  * @author Alexander Garagatyi
  */
 @EventOrigin("machine")
 @DTO
-public interface MachineStateEvent {
+public interface MachineStatusEvent {
     enum EventType {
         CREATING,
         RUNNING,
@@ -33,17 +33,17 @@ public interface MachineStateEvent {
 
     void setEventType(EventType eventType);
 
-    MachineStateEvent withEventType(EventType eventType);
+    MachineStatusEvent withEventType(EventType eventType);
 
     String getMachineId();
 
     void setMachineId(String machineId);
 
-    MachineStateEvent withMachineId(String machineId);
+    MachineStatusEvent withMachineId(String machineId);
 
     String getError();
 
     void setError(String error);
 
-    MachineStateEvent withError(String error);
+    MachineStatusEvent withError(String error);
 }

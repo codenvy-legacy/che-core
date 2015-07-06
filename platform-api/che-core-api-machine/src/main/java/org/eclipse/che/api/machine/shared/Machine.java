@@ -38,6 +38,8 @@ public interface Machine {
      */
     String getOwner();
 
+    MachineStatus getStatus();
+
     /**
      * List of projects bound to this machine
      */

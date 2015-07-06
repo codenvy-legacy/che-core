@@ -12,7 +12,7 @@ package org.eclipse.che.api.machine.server.event;
 
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.notification.EventSubscriber;
-import org.eclipse.che.api.machine.shared.dto.event.MachineStateEvent;
+import org.eclipse.che.api.machine.shared.dto.event.MachineStatusEvent;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.everrest.websockets.WSConnectionContext;
 import org.everrest.websockets.message.ChannelBroadcastMessage;
@@ -30,7 +30,7 @@ import javax.inject.Singleton;
  * @author Alexander Garagatyi
  */
 @Singleton // should be eager
-public class MachineStateMessenger implements EventSubscriber<MachineStateEvent> {
+public class MachineStateMessenger implements EventSubscriber<MachineStatusEvent> {
     private static final Logger LOG = LoggerFactory.getLogger(MachineStateMessenger.class);
 
     private final EventService eventService;
@@ -41,10 +41,10 @@ public class MachineStateMessenger implements EventSubscriber<MachineStateEvent>
     }
 
     @Override
-    public void onEvent(MachineStateEvent event) {
+    public void onEvent(MachineStatusEvent event) {
         try {
             final ChannelBroadcastMessage bm = new ChannelBroadcastMessage();
-            bm.setChannel("machine:state:" + event.getMachineId());
+            bm.setChannel("machine:status:" + event.getMachineId());
             bm.setBody(DtoFactory.getInstance().toJson(event));
             WSConnectionContext.sendMessage(bm);
         } catch (Exception e) {

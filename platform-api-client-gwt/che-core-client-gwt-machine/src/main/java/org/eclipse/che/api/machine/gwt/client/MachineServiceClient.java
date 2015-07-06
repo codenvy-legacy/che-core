@@ -11,6 +11,7 @@
 package org.eclipse.che.api.machine.gwt.client;
 
 import org.eclipse.che.api.machine.shared.dto.MachineDescriptor;
+import org.eclipse.che.api.machine.shared.dto.MachineStateDescriptor;
 import org.eclipse.che.api.machine.shared.dto.ProcessDescriptor;
 import org.eclipse.che.api.promises.client.Promise;
 
@@ -72,6 +73,14 @@ public interface MachineServiceClient {
     Promise<MachineDescriptor> getMachine(@Nonnull String machineId);
 
     /**
+     * Get machine state information by it's id.
+     *
+     * @param machineId
+     *         ID of the machine
+     */
+    Promise<MachineStateDescriptor> getMachineState(@Nonnull String machineId);
+
+    /**
      * Find machines bound to the workspace/project.
      *
      * @param projectPath
@@ -79,6 +88,15 @@ public interface MachineServiceClient {
      *         if {@code projectPath} is not {@code null} - returns machines which bound to the specified project
      */
     Promise<List<MachineDescriptor>> getMachines(@Nullable String projectPath);
+
+    /**
+     * Find machines states bound to the workspace/project.
+     *
+     * @param projectPath
+     *         project binding. If {@code projectPath} is {@code null} returns machines which bound to the current workspace,
+     *         if {@code projectPath} is not {@code null} - returns machines which bound to the specified project
+     */
+    Promise<List<MachineStateDescriptor>> getMachinesStates(@Nullable String projectPath);
 
     /**
      * Destroy machine with the specified ID.

@@ -11,10 +11,10 @@
 package org.eclipse.che.api.machine.shared;
 
 /**
- * Describes state of a machine
+ * Describes status of a machine
  *
 * @author andrew00x
 */
-public enum MachineState {
+public enum MachineStatus {
     CREATING, RUNNING, DESTROYING
 }

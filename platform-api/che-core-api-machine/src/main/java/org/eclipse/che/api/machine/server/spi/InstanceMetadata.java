@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.server.spi;
 
-import org.eclipse.che.api.machine.shared.Server;
-
 import java.util.Map;
 
 /**
@@ -31,9 +29,4 @@ public interface InstanceMetadata {
 
     /** Serializes this {@code InstanceMetadata} to JSON format. */
     String toJson();
-
-    /**
-     * Returns mapping of exposed ports to {link Server}
-     */
-    Map<String, Server> getServers();
 }

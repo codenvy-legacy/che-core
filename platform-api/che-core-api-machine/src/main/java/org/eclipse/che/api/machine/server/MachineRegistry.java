@@ -10,14 +10,16 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.server;
 
+import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
-import org.eclipse.che.api.machine.server.impl.MachineImpl;
+import org.eclipse.che.api.machine.server.exception.MachineException;
+import org.eclipse.che.api.machine.server.impl.MachineState;
+import org.eclipse.che.api.machine.server.spi.Instance;
 
 import javax.inject.Singleton;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Holds active machines
@@ -26,40 +28,42 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Singleton
 public class MachineRegistry {
-    private final Map<String, MachineImpl> machines;
+    private final HashMap<String, Instance> instances;
+    private final HashMap<String, MachineState> states;
 
     public MachineRegistry() {
-        machines = new ConcurrentHashMap<>();
+        instances = new HashMap<>();
+        states = new HashMap<>();
     }
 
-    /**
-     * Get all active machine
-     */
-    public List<MachineImpl> getAll() {
-        return new ArrayList<>(machines.values());
-    }
+    //TODO return unmodifiable lists
 
     /**
-     * Add new machine
+     * Get all active machines
      */
-    public void add(MachineImpl machine) {
-        machines.put(machine.getId(), machine);
-    }
-
-    /**
-     * Remove machine by id
-     *
-     * @param machineId
-     *         id of machine that should be removed
-     * @throws NotFoundException
-     *         if machine with specified id not found
-     */
-    public void remove(String machineId) throws NotFoundException {
-        if (machines.containsKey(machineId)) {
-            machines.remove(machineId);
-        } else {
-            throw new NotFoundException("Machine " + machineId + " is not found");
+    public synchronized List<MachineState> getStates() throws MachineException {
+        final List<MachineState> list = new ArrayList<>(states.size() + instances.size());
+        list.addAll(states.values());
+        for (Instance instance : instances.values()) {
+            list.add(getState(instance));
         }
+        return list;
+    }
+
+    public synchronized MachineState getState(String machineId) throws NotFoundException, MachineException {
+        final MachineState state = states.get(machineId);
+        if (state == null) {
+            throw new NotFoundException("Machine " + machineId + " is not found");
+        } else {
+            return state;
+        }
+    }
+
+    /**
+     * Get all machines that already were launched
+     */
+    public synchronized List<Instance> getMachines() throws MachineException {
+        return new ArrayList<>(instances.values());
     }
 
     /**
@@ -71,10 +75,64 @@ public class MachineRegistry {
      * @throws NotFoundException
      *         if machine with specified id not found
      */
-    public MachineImpl get(String machineId) throws NotFoundException {
-        if (machines.containsKey(machineId)) {
-            return machines.get(machineId);
+    public synchronized Instance get(String machineId) throws NotFoundException, MachineException {
+        final Instance instance = instances.get(machineId);
+        if (instance == null) {
+            throw new NotFoundException("Machine " + machineId + " is not found");
+        } else {
+            return instance;
         }
-        throw new NotFoundException("Machine " + machineId + " is not found");
+    }
+
+    public synchronized void add(Instance instance) throws MachineException, ConflictException {
+        final Instance nullOrArgument = instances.put(instance.getId(), instance);
+        if (nullOrArgument != null) {
+            throw new ConflictException("Machine with id " + instance.getId() + " is already exist");
+        }
+    }
+
+    public synchronized void add(MachineState machineState) throws MachineException, ConflictException {
+        if (states.containsKey(machineState.getId())) {
+            throw new ConflictException("Machine with id " + machineState.getId() + " is already exist");
+        }
+        states.put(machineState.getId(), machineState);
+    }
+
+    public synchronized void update(MachineState state) throws ConflictException, MachineException {
+        if (!states.containsKey(state.getId())) {
+            throw new ConflictException("Machine state " + state.getId() + " not found");
+        } else {
+            states.put(state.getId(), state);
+        }
+    }
+
+    public synchronized void update(Instance instance) throws ConflictException, MachineException {
+        if (!instances.containsKey(instance.getId()) && !states.containsKey(instance.getId())) {
+            throw new ConflictException("Machine " + instance.getId() + " not found");
+        } else {
+            instances.put(instance.getId(), instance);
+            states.remove(instance.getId());
+        }
+    }
+
+    /**
+     * Remove machine by id
+     *
+     * @param machineId
+     *         id of machine that should be removed
+     * @throws NotFoundException
+     *         if machine with specified id not found
+     */
+    public synchronized void remove(String machineId) throws NotFoundException {
+        final Instance instance = instances.remove(machineId);
+        final MachineState state = states.remove(machineId);
+        if (null == instance && null == state) {
+            throw new NotFoundException("Machine " + machineId + " is not found");
+        }
+    }
+
+    private MachineState getState(Instance instance) {
+        return new MachineState(instance.getId(), instance.getType(), instance.getWorkspaceId(), instance.getOwner(),
+                                instance.isWorkspaceBound(), instance.getDisplayName(), instance.getStatus());
     }
 }

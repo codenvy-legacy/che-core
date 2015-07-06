@@ -11,8 +11,8 @@
 package org.eclipse.che.api.machine.server.proxy;
 
 import org.eclipse.che.api.machine.server.MachineManager;
-import org.eclipse.che.api.machine.server.impl.MachineImpl;
 import org.eclipse.che.api.machine.server.impl.ServerImpl;
+import org.eclipse.che.api.machine.server.spi.Instance;
 import org.eclipse.che.api.machine.server.spi.InstanceMetadata;
 import org.eclipse.che.api.machine.shared.Server;
 import org.eclipse.che.commons.lang.IoUtil;
@@ -60,7 +60,7 @@ public class MachineExtensionProxyServletTest {
 
     private MachineManager machineManager;
 
-    private MachineImpl machine;
+    private Instance machine;
 
     private InstanceMetadata instanceMetadata;
 
@@ -109,7 +109,7 @@ public class MachineExtensionProxyServletTest {
     public void setUpMethod() throws Exception {
         machineManager = mock(MachineManager.class);
 
-        machine = mock(MachineImpl.class);
+        machine = mock(Instance.class);
 
         instanceMetadata = mock(InstanceMetadata.class);
 
