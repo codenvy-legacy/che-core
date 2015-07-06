@@ -20,8 +20,8 @@ import org.everrest.core.impl.provider.json.ObjectBuilder;
 import org.everrest.core.impl.provider.json.StringValue;
 import org.everrest.websockets.message.ChannelBroadcastMessage;
 import org.everrest.websockets.message.InputMessage;
-import org.everrest.websockets.message.RESTfulInputMessage;
-import org.everrest.websockets.message.RESTfulOutputMessage;
+import org.everrest.websockets.message.RestInputMessage;
+import org.everrest.websockets.message.RestOutputMessage;
 
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -31,8 +31,8 @@ import java.io.Writer;
  * @author andrew00x
  */
 class Messages {
-    static InputMessage clientMessage(Object event) throws Exception {
-        RESTfulInputMessage message = new RESTfulInputMessage();
+    static RestInputMessage clientMessage(Object event) throws Exception {
+        RestInputMessage message = new RestInputMessage();
         message.setBody(toJson(event));
         message.setMethod("POST");
         message.setHeaders(new org.everrest.websockets.message.Pair[]{
@@ -43,7 +43,7 @@ class Messages {
     }
 
     static InputMessage subscribeChannelMessage(String channel) throws Exception {
-        return RESTfulInputMessage.newSubscribeChannelMessage(NameGenerator.generate(null, 8), channel);
+        return RestInputMessage.newSubscribeChannelMessage(NameGenerator.generate(null, 8), channel);
     }
 
     static ChannelBroadcastMessage broadcastMessage(String channel, Object event) throws Exception {
@@ -53,7 +53,7 @@ class Messages {
         return message;
     }
 
-    static Object restoreEventFromBroadcastMessage(RESTfulOutputMessage message) throws Exception {
+    static Object restoreEventFromBroadcastMessage(RestOutputMessage message) throws Exception {
         return fromJson(message.getBody());
     }
 
