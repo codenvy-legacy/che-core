@@ -44,48 +44,76 @@ public interface InstanceProvider {
     Set<String> getRecipeTypes();
 
     /**
+
+
+     */
+
+
+    /**
      * Creates instance from scratch.
      *
+     * @param machineId
+     *          id of machine
      * @param recipe
      *         instance creation {@link Recipe}
-     * @param creationLogsOutput
-     *         output for instance creation logs
+     * @param userId
+     *         id of creator of machine
      * @param workspaceId
      *         workspace this instance belongs to
      * @param bindWorkspace
      *         is workspace should be bound on instance start
+     * @param displayName
+     *         user-friendly machine identifier. Doesn't have to be unique.
+     * @param creationLogsOutput
+     *         output for instance creation logs
      * @return newly created {@link Instance}
      * @throws UnsupportedRecipeException
      *         if specified {@code recipe} is not supported
      * @throws InvalidRecipeException
      *         if {@code recipe} is invalid
+     * @throws MachineException
+     *         if other error occurs
      */
     Instance createInstance(Recipe recipe,
-                            LineConsumer creationLogsOutput,
+                            String machineId,
+                            String userId,
                             String workspaceId,
-                            boolean bindWorkspace) throws UnsupportedRecipeException, InvalidRecipeException, MachineException;
+                            boolean bindWorkspace,
+                            String displayName,
+                            LineConsumer creationLogsOutput) throws UnsupportedRecipeException, InvalidRecipeException, MachineException;
 
     /**
      * Creates instance using implementation specific {@link InstanceKey}.
      *
+     * @param machineId
+     *          id of machine
      * @param instanceKey
      *         implementation specific {@link InstanceKey}
-     * @param creationLogsOutput
-     *         output for instance creation logs
+     * @param userId
+     *         id of creator of machine
      * @param workspaceId
      *         workspace this instance belongs to
      * @param bindWorkspace
      *         is workspace should be bound on instance start
-     * @return newly created instance
+     * @param displayName
+     *         user-friendly machine identifier. Doesn't have to be unique.
+     * @param creationLogsOutput
+     *         output for instance creation logs
+     * @return newly created {@link Instance}
      * @throws NotFoundException
      *         if instance described by {@code InstanceKey} doesn't exists
      * @throws InvalidInstanceSnapshotException
      *         if other errors occurs while restoring instance
+     * @throws MachineException
+     *         if other error occurs
      */
     Instance createInstance(InstanceKey instanceKey,
-                            LineConsumer creationLogsOutput,
+                            String machineId,
+                            String userId,
                             String workspaceId,
-                            boolean bindWorkspace) throws NotFoundException, InvalidInstanceSnapshotException, MachineException;
+                            boolean bindWorkspace,
+                            String displayName,
+                            LineConsumer creationLogsOutput) throws NotFoundException, InvalidInstanceSnapshotException, MachineException;
 
     /**
      * Removes snapshot of the instance in implementation specific way.

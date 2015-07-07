@@ -26,7 +26,9 @@ public class ServerImpl implements Server {
     }
 
     public ServerImpl(String ref, String address, String url) {
+        this.ref = ref;
         this.address = address;
+        this.url = url;
     }
 
     @Override

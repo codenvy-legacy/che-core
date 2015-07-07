@@ -15,7 +15,7 @@ import com.google.common.io.ByteStreams;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.machine.server.MachineManager;
-import org.eclipse.che.api.machine.server.impl.MachineImpl;
+import org.eclipse.che.api.machine.server.spi.Instance;
 import org.eclipse.che.api.machine.shared.Server;
 
 import javax.inject.Inject;
@@ -74,6 +74,8 @@ public class MachineExtensionProxyServlet extends HttpServlet {
                 conn.connect();
 
                 setResponse(resp, conn);
+            } catch (IOException e) {
+                resp.sendError(SC_INTERNAL_SERVER_ERROR, "Request can't be forwarded to machine. " + e.getLocalizedMessage());
             } finally {
                 conn.disconnect();
             }
@@ -119,7 +121,7 @@ public class MachineExtensionProxyServlet extends HttpServlet {
             throw new NotFoundException("No machine id is found in request.");
         }
 
-        final MachineImpl machine = machineManager.getMachine(machineId);
+        final Instance machine = machineManager.getMachine(machineId);
         final Server server = machine.getServers().get(Integer.toString(extServicesPort));
         if (server == null) {
             throw new ServerException("No extension server found in machine");
