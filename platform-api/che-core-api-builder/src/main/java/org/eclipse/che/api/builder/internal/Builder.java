@@ -29,6 +29,7 @@ import org.eclipse.che.api.core.util.StreamPump;
 import org.eclipse.che.api.core.util.Watchdog;
 import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.dto.server.DtoFactory;
+
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import org.slf4j.Logger;
@@ -36,8 +37,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -418,6 +421,15 @@ public abstract class Builder {
             throw new BuilderException(e);
         }
     }
+    
+    private void updateEnvironment(final BuilderConfiguration configuration , ProcessBuilder processBuilder){
+    	Map<String, String> env = configuration.getEnv();
+    	// Check if the build process Environment should be updated from BuilderConfiguration or use current process environment
+    	if(!configuration.getEnv().isEmpty()){
+    		processBuilder.environment().clear();
+    		processBuilder.environment().putAll(env);
+    	}
+    }
 
     protected Callable<Boolean> createTaskFor(final CommandLine commandLine,
                                               final BuildLogger logger,
@@ -439,6 +451,8 @@ public abstract class Builder {
                 try {
                     ProcessBuilder processBuilder = new ProcessBuilder().command(commandLine.toShellCommand()).directory(
                             configuration.getWorkDir()).redirectErrorStream(true);
+                    updateEnvironment(configuration,processBuilder);
+                    
                     Process process = processBuilder.start();
 
                     if (timeout > 0) {
