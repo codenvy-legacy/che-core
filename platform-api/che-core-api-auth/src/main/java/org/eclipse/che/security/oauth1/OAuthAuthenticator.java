@@ -25,6 +25,10 @@ import org.eclipse.che.commons.json.JsonParseException;
 import org.eclipse.che.security.oauth1.shared.User;
 
 import javax.annotation.Nonnull;
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -49,10 +53,10 @@ public abstract class OAuthAuthenticator {
     private static final String OAUTH_TOKEN_PARAM_KEY    = "oauth_token";
     private static final String OAUTH_VERIFIER_PARAM_KEY = "oauth_verifier";
 
-    private static final String GET              = "GET";
+    private static final String GET              = HttpMethod.GET;
     private static final String AUTHORIZATION    = "Authorization";
-    private static final String ACCEPT           = "Accept";
-    private static final String APPLICATION_JSON = "application/json";
+    private static final String ACCEPT           = HttpHeaders.ACCEPT;
+    private static final String APPLICATION_JSON = MediaType.APPLICATION_JSON;
 
     private final String                                clientId;
     private final String                                clientSecret;

@@ -51,7 +51,11 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -746,14 +750,14 @@ public class WorkspaceServiceTest {
 
     @SuppressWarnings("unchecked")
     private <T> T doDelete(String path, Status expectedResponseStatus) throws Exception {
-        final ContainerResponse response = launcher.service("DELETE", path, BASE_URI, null, null, null, environmentContext);
+        final ContainerResponse response = launcher.service(HttpMethod.DELETE, path, BASE_URI, null, null, null, environmentContext);
         assertEquals(response.getStatus(), expectedResponseStatus.getStatusCode());
         return (T)response.getEntity();
     }
 
     @SuppressWarnings("unchecked")
     private <T> T doGet(String path) throws Exception {
-        final ContainerResponse response = launcher.service("GET", path, BASE_URI, null, null, null, environmentContext);
+        final ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, null, environmentContext);
         assertEquals(response.getStatus(), OK.getStatusCode());
         return (T)response.getEntity();
     }
@@ -762,8 +766,8 @@ public class WorkspaceServiceTest {
     private <T> T doPost(String path, Object entity, Status expectedResponseStatus) throws Exception {
         final byte[] data = JsonHelper.toJson(entity).getBytes();
         final Map<String, List<String>> headers = new HashMap<>(4);
-        headers.put("Content-Type", singletonList("application/json"));
-        final ContainerResponse response = launcher.service("POST", path, BASE_URI, headers, data, null, environmentContext);
+        headers.put(HttpHeaders.CONTENT_TYPE, singletonList(MediaType.APPLICATION_JSON));
+        final ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, headers, data, null, environmentContext);
         assertEquals(response.getStatus(), expectedResponseStatus.getStatusCode());
         return (T)response.getEntity();
     }

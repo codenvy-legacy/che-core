@@ -533,7 +533,37 @@ public class BuildQueue {
      * Return tasks of this queue.
      */
     public List<BuildQueueTask> getTasks() {
-        return new ArrayList<>(tasks.values());
+        return getTasks(null, null, null);
+    }
+
+    /**
+     * Get a list of the build tasks that match the given criteria.
+     * 
+     * @param workspaceId
+     *            The ID of the workspace that the build was invoked inside of.
+     * @param projectPath
+     *            The path of the project that the tasks was invoked on. Ignored if the workspace ID is null.
+     * @param user
+     *            The User that invoked the build task.
+     * @return A list of build tasks.
+     */
+    public List<BuildQueueTask> getTasks(String workspaceId, String projectPath, User user) {
+        // Normalize the build path
+        if (projectPath != null && !projectPath.startsWith("/")) {
+            projectPath = '/' + projectPath;
+        }
+        final List<BuildQueueTask> builds = new LinkedList<>();
+        for (BuildQueueTask task : tasks.values()) {
+            final BaseBuilderRequest request = task.getRequest();
+            // If a workspace is specified, match it. If a project is specified, match it only if a workspace is
+            // specified too. Match the user name independently from the workspace and space.
+            if ((workspaceId == null || (request.getWorkspace().equals(workspaceId) && (projectPath == null || request
+                    .getProject().equals(projectPath))))
+                    && (user == null || request.getUserId().equals(user.getName()))) {
+                builds.add(task);
+            }
+        }
+        return builds;
     }
 
     public BuildQueueTask getTask(Long id) throws NotFoundException {

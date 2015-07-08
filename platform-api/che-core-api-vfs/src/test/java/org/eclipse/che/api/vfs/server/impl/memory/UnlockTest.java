@@ -11,11 +11,13 @@
 package org.eclipse.che.api.vfs.server.impl.memory;
 
 import org.eclipse.che.api.vfs.server.VirtualFile;
-
 import org.everrest.core.impl.ContainerResponse;
 import org.everrest.core.tools.ByteArrayContainerResponseWriter;
 
 import java.io.ByteArrayInputStream;
+
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.MediaType;
 
 /** @author andrew00x */
 public class UnlockTest extends MemoryFileSystemTest {
@@ -29,19 +31,19 @@ public class UnlockTest extends MemoryFileSystemTest {
         String name = getClass().getName();
         VirtualFile unlockTestFolder = mountPoint.getRoot().createFolder(name);
 
-        VirtualFile lockedFile = unlockTestFolder.createFile("UnlockTest_LOCKED", "text/plain",
+        VirtualFile lockedFile = unlockTestFolder.createFile("UnlockTest_LOCKED", MediaType.TEXT_PLAIN,
                                                              new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
         fileLockToken = lockedFile.lock(0);
         lockedFileId = lockedFile.getId();
 
-        VirtualFile notLockedFile = unlockTestFolder.createFile("UnlockTest_NOTLOCKED", "text/plain",
+        VirtualFile notLockedFile = unlockTestFolder.createFile("UnlockTest_NOTLOCKED", MediaType.TEXT_PLAIN,
                                                                 new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
         notLockedFileId = notLockedFile.getId();
     }
 
     public void testUnlockFile() throws Exception {
         String path = SERVICE_URI + "unlock/" + lockedFileId + '?' + "lockToken=" + fileLockToken;
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals(204, response.getStatus());
         VirtualFile file = mountPoint.getVirtualFileById(lockedFileId);
         assertFalse("Lock must be removed. ", file.isLocked());
@@ -50,7 +52,7 @@ public class UnlockTest extends MemoryFileSystemTest {
     public void testUnlockFileNoLockToken() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "unlock/" + lockedFileId;
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
     }
@@ -58,7 +60,7 @@ public class UnlockTest extends MemoryFileSystemTest {
     public void testUnlockFileWrongLockToken() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "unlock/" + lockedFileId + '?' + "lockToken=" + fileLockToken + "_WRONG";
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
     }
@@ -67,7 +69,7 @@ public class UnlockTest extends MemoryFileSystemTest {
     public void testUnlockFileNotLocked() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "unlock/" + notLockedFileId;
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, writer, null);
         assertEquals(409, response.getStatus());
         log.info(new String(writer.getBody()));
     }

@@ -18,7 +18,6 @@ import org.eclipse.che.api.runner.dto.RunnerServer;
 import org.eclipse.che.api.runner.dto.ServerState;
 import org.eclipse.che.api.runner.internal.Constants;
 import org.eclipse.che.dto.server.DtoFactory;
-
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.testng.MockitoTestNGListener;
@@ -29,6 +28,8 @@ import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.ws.rs.HttpMethod;
 
 import static junit.framework.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
@@ -89,11 +90,11 @@ public class RunnerAdminServiceTest {
         RemoteRunnerServer server1 = mock(RemoteRunnerServer.class);
         doReturn(serverUrl1).when(server1).getBaseUrl();
         ServiceDescriptor serviceDescriptor = dto(ServiceDescriptor.class);
-        Link availableLink = dto(Link.class).withRel(Constants.LINK_REL_AVAILABLE_RUNNERS).withMethod("GET").withHref(
+        Link availableLink = dto(Link.class).withRel(Constants.LINK_REL_AVAILABLE_RUNNERS).withMethod(HttpMethod.GET).withHref(
                 serverUrl1 + "/available");
-        Link serverStateLink = dto(Link.class).withRel(Constants.LINK_REL_SERVER_STATE).withMethod("GET").withHref(
+        Link serverStateLink = dto(Link.class).withRel(Constants.LINK_REL_SERVER_STATE).withMethod(HttpMethod.GET).withHref(
                 serverUrl1 + "/server-state");
-        Link runnerStateLink = dto(Link.class).withRel(Constants.LINK_REL_RUNNER_STATE).withMethod("GET").withHref(serverUrl1 + "/state");
+        Link runnerStateLink = dto(Link.class).withRel(Constants.LINK_REL_RUNNER_STATE).withMethod(HttpMethod.GET).withHref(serverUrl1 + "/state");
         serviceDescriptor.getLinks().add(availableLink);
         serviceDescriptor.getLinks().add(serverStateLink);
         serviceDescriptor.getLinks().add(runnerStateLink);

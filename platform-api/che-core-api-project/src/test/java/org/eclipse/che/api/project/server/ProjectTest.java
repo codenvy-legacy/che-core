@@ -20,7 +20,6 @@ import org.eclipse.che.api.project.server.type.ProjectType;
 import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
 import org.eclipse.che.api.project.shared.dto.ProjectUpdate;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
-
 import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemUser;
@@ -41,6 +40,8 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+
+import javax.ws.rs.core.MediaType;
 
 /**
  * @author andrew00x
@@ -209,7 +210,7 @@ public class ProjectTest {
         Project myProject = pm.getProject("my_ws", "my_project");
         long modificationDate1 = myProject.getModificationDate();
         Thread.sleep(1000);
-        myProject.getBaseFolder().createFile("test.txt", "test".getBytes(), "text/plain");
+        myProject.getBaseFolder().createFile("test.txt", "test".getBytes(), MediaType.TEXT_PLAIN);
         long modificationDate2 = myProject.getModificationDate();
         Assert.assertTrue(modificationDate2 > modificationDate1);
     }

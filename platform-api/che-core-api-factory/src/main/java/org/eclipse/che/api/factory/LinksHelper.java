@@ -13,11 +13,12 @@ package org.eclipse.che.api.factory;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.core.rest.shared.dto.LinkParameter;
 import org.eclipse.che.api.factory.dto.Factory;
-
 import org.eclipse.che.dto.server.DtoFactory;
 
 import javax.inject.Singleton;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.*;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.*;
@@ -44,30 +45,30 @@ public class LinksHelper {
         Link createProject;
 
         // uri to retrieve factory
-        links.add(createLink("GET", "self", null, MediaType.APPLICATION_JSON,
+        links.add(createLink(HttpMethod.GET, "self", null, MediaType.APPLICATION_JSON,
                              factoryUriBuilder.clone().path(FactoryService.class, "getFactory").build(factoryId).toString(), null));
 
         // uri's to retrieve images
         for (FactoryImage image : images) {
-            links.add(createLink("GET", "image", null, image.getMediaType(),
+            links.add(createLink(HttpMethod.GET, "image", null, image.getMediaType(),
                                  factoryUriBuilder.clone().path(FactoryService.class, "getImage").queryParam("imgId", image.getName())
                                                   .build(factoryId).toString(), null));
         }
 
         // uri's of snippets
         for (String snippetType : snippetTypes) {
-            links.add(createLink("GET", "snippet/" + snippetType, null, MediaType.TEXT_PLAIN,
+            links.add(createLink(HttpMethod.GET, "snippet/" + snippetType, null, MediaType.TEXT_PLAIN,
                                  factoryUriBuilder.clone().path(FactoryService.class, "getFactorySnippet").queryParam("type", snippetType)
                                                   .build(factoryId).toString(), null));
         }
 
         // uri to accept factory
-        createProject = createLink("GET", "create-project", null, MediaType.TEXT_HTML,
+        createProject = createLink(HttpMethod.GET, "create-project", null, MediaType.TEXT_HTML,
                                    baseUriBuilder.clone().replacePath("f").queryParam("id", factoryId).build().toString(), null);
         links.add(createProject);
 
         // links of analytics
-        links.add(createLink("GET", "accepted", null, MediaType.TEXT_PLAIN,
+        links.add(createLink(HttpMethod.GET, "accepted", null, MediaType.TEXT_PLAIN,
                              baseUriBuilder.clone().path("analytics").path("public-metric/factory_used")
                                            .queryParam("factory", URLEncoder.encode(createProject.getHref(), "UTF-8")).build().toString(),
                              null));

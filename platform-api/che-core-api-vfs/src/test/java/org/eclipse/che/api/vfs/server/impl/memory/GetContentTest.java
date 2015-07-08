@@ -13,12 +13,16 @@ package org.eclipse.che.api.vfs.server.impl.memory;
 import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
+
 import com.google.common.collect.Sets;
 
 import org.everrest.core.impl.ContainerResponse;
 import org.everrest.core.tools.ByteArrayContainerResponseWriter;
 
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+
 import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,7 +43,7 @@ public class GetContentTest extends MemoryFileSystemTest {
         VirtualFile getContentTestFolder = mountPoint.getRoot().createFolder(name);
 
         VirtualFile file =
-                getContentTestFolder.createFile("GetContentTest_FILE", "text/plain", new ByteArrayInputStream(content.getBytes()));
+                getContentTestFolder.createFile("GetContentTest_FILE", MediaType.TEXT_PLAIN, new ByteArrayInputStream(content.getBytes()));
         fileId = file.getId();
         fileName = file.getName();
         filePath = file.getPath();
@@ -51,29 +55,29 @@ public class GetContentTest extends MemoryFileSystemTest {
     public void testGetContent() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "content/" + fileId;
-        ContainerResponse response = launcher.service("GET", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
         assertEquals(200, response.getStatus());
         //log.info(new String(writer.getBody()));
         assertEquals(content, new String(writer.getBody()));
-        assertEquals("text/plain", writer.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
+        assertEquals(MediaType.TEXT_PLAIN, writer.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
     }
 
     public void testDownloadFile() throws Exception {
-        // Expect the same as 'get content' plus header "Content-Disposition".
+        // Expect the same as 'get content' plus header HttpHeaders.CONTENT_DISPOSITION.
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "downloadfile/" + fileId;
-        ContainerResponse response = launcher.service("GET", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
         assertEquals(200, response.getStatus());
         //log.info(new String(writer.getBody()));
         assertEquals(content, new String(writer.getBody()));
-        assertEquals("text/plain", writer.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
-        assertEquals("attachment; filename=\"" + fileName + "\"", writer.getHeaders().getFirst("Content-Disposition"));
+        assertEquals(MediaType.TEXT_PLAIN, writer.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
+        assertEquals("attachment; filename=\"" + fileName + "\"", writer.getHeaders().getFirst(HttpHeaders.CONTENT_DISPOSITION));
     }
 
     public void testGetContentFolder() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "content/" + folderId;
-        ContainerResponse response = launcher.service("GET", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
     }
@@ -86,7 +90,7 @@ public class GetContentTest extends MemoryFileSystemTest {
 
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "content/" + fileId;
-        ContainerResponse response = launcher.service("GET", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
     }
@@ -94,20 +98,20 @@ public class GetContentTest extends MemoryFileSystemTest {
     public void testGetContentByPath() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "contentbypath" + filePath;
-        ContainerResponse response = launcher.service("GET", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
         assertEquals(200, response.getStatus());
         //log.info(new String(writer.getBody()));
         assertEquals(content, new String(writer.getBody()));
-        assertEquals("text/plain", writer.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
+        assertEquals(MediaType.TEXT_PLAIN, writer.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
     }
 
     public void testGetContentByPathWithVersionID() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "contentbypath" + filePath + '?' + "versionId=" + "0";
-        ContainerResponse response = launcher.service("GET", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
         assertEquals(200, response.getStatus());
         //log.info(new String(writer.getBody()));
         assertEquals(content, new String(writer.getBody()));
-        assertEquals("text/plain", writer.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
+        assertEquals(MediaType.TEXT_PLAIN, writer.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
     }
 }

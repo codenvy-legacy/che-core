@@ -26,10 +26,13 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
+
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
@@ -85,7 +88,7 @@ public class ETagResponseFilterTest {
         @Produces(APPLICATION_JSON)
         public Response modifyHeader() {
             return Response.ok("helloContent")
-                           .header("Content-Disposition", "attachment; filename=my.json")
+                           .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=my.json")
                            .build();
         }
 
@@ -130,7 +133,7 @@ public class ETagResponseFilterTest {
     @Test
     public void filterListEntityTest() throws Exception {
 
-        final ContainerResponse response = resourceLauncher.service("GET", SERVICE_PATH + "/list", BASE_URI, null, null, null);
+        final ContainerResponse response = resourceLauncher.service(HttpMethod.GET, SERVICE_PATH + "/list", BASE_URI, null, null, null);
         assertEquals(response.getStatus(), OK.getStatusCode());
         // check entity
         Assert.assertEquals(response.getEntity(), Arrays.asList("a", "b", "c"));
@@ -147,7 +150,7 @@ public class ETagResponseFilterTest {
     @Test
     public void useExistingHeaders() throws Exception {
 
-        final ContainerResponse response = resourceLauncher.service("GET", SERVICE_PATH + "/modify", BASE_URI, null, null, null);
+        final ContainerResponse response = resourceLauncher.service(HttpMethod.GET, SERVICE_PATH + "/modify", BASE_URI, null, null, null);
         assertEquals(response.getStatus(), OK.getStatusCode());
         // check entity
         Assert.assertEquals(response.getEntity(), "helloContent");
@@ -156,7 +159,7 @@ public class ETagResponseFilterTest {
         Assert.assertEquals(response.getHttpHeaders().keySet().size(), 3);
 
         // Check custom header
-        List<Object> customTags = response.getHttpHeaders().get("Content-Disposition");
+        List<Object> customTags = response.getHttpHeaders().get(HttpHeaders.CONTENT_DISPOSITION);
         Assert.assertNotNull(customTags);
         Assert.assertEquals(customTags.size(), 1);
         Assert.assertEquals(customTags.get(0), "attachment; filename=my.json");
@@ -174,7 +177,7 @@ public class ETagResponseFilterTest {
     @Test
     public void filterSingleEntityTest() throws Exception {
 
-        final ContainerResponse response = resourceLauncher.service("GET", SERVICE_PATH + "/single", BASE_URI, null, null, null);
+        final ContainerResponse response = resourceLauncher.service(HttpMethod.GET, SERVICE_PATH + "/single", BASE_URI, null, null, null);
         assertEquals(response.getStatus(), OK.getStatusCode());
         // check entity
         Assert.assertEquals(response.getEntity(), "hello");
@@ -197,7 +200,7 @@ public class ETagResponseFilterTest {
         headers.put("If-None-Match", Collections.singletonList(new EntityTag("900150983cd24fb0d6963f7d28e17f72").toString()));
 
 
-        final ContainerResponse response = resourceLauncher.service("GET", SERVICE_PATH + "/list", BASE_URI, headers, null, null);
+        final ContainerResponse response = resourceLauncher.service(HttpMethod.GET, SERVICE_PATH + "/list", BASE_URI, headers, null, null);
         assertEquals(response.getStatus(), NOT_MODIFIED.getStatusCode());
         // check null body
         Assert.assertNull(response.getEntity());
@@ -213,7 +216,7 @@ public class ETagResponseFilterTest {
         headers.put("If-None-Match", Collections.singletonList(new EntityTag("5d41402abc4b2a76b9719d911017c592").toString()));
 
 
-        final ContainerResponse response = resourceLauncher.service("GET", SERVICE_PATH + "/single", BASE_URI, headers, null, null);
+        final ContainerResponse response = resourceLauncher.service(HttpMethod.GET, SERVICE_PATH + "/single", BASE_URI, headers, null, null);
         assertEquals(response.getStatus(), NOT_MODIFIED.getStatusCode());
         // check null body
         Assert.assertNull(response.getEntity());

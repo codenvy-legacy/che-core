@@ -21,6 +21,7 @@ import org.eclipse.che.api.core.rest.HttpJsonHelper;
 import org.eclipse.che.api.core.rest.HttpOutputMessage;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.dto.server.DtoFactory;
+
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Closer;
 
@@ -31,6 +32,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.HttpHeaders;
 
 /**
  * Representation of remote builder's task.
@@ -213,9 +217,9 @@ public class RemoteTask {
     public void downloadResultArchive(String archType, HttpOutputMessage output) throws IOException, BuilderException, NotFoundException {
         final BuildTaskDescriptor descriptor = getBuildTaskDescriptor();
         Link link = null;
-        if (archType.equals("zip")) {
+        if (archType.equals(Constants.RESULT_ARCHIVE_ZIP)) {
             link = descriptor.getLink(Constants.LINK_REL_DOWNLOAD_RESULTS_ZIPBALL);
-        } else if (archType.equals("tar")) {
+        } else if (archType.equals(Constants.RESULT_ARCHIVE_TAR)) {
             link = descriptor.getLink(Constants.LINK_REL_DOWNLOAD_RESULTS_TARBALL);
         }
         if (link == null) {
@@ -228,7 +232,7 @@ public class RemoteTask {
         final HttpURLConnection conn = (HttpURLConnection)new URL(url).openConnection();
         conn.setConnectTimeout(60 * 1000);
         conn.setReadTimeout(60 * 1000);
-        conn.setRequestMethod("GET");
+        conn.setRequestMethod(HttpMethod.GET);
         try {
             output.setStatus(conn.getResponseCode());
             final String contentType = conn.getContentType();
@@ -236,9 +240,9 @@ public class RemoteTask {
                 output.setContentType(contentType);
             }
             // for download files
-            final String contentDisposition = conn.getHeaderField("Content-Disposition");
+            final String contentDisposition = conn.getHeaderField(HttpHeaders.CONTENT_DISPOSITION);
             if (contentDisposition != null) {
-                output.addHttpHeader("Content-Disposition", contentDisposition);
+                output.addHttpHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition);
             }
 
 

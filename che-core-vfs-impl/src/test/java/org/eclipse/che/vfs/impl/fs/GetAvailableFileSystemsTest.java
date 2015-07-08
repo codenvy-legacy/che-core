@@ -14,7 +14,6 @@ import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo;
 import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.ACLCapability;
 import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
 import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.QueryCapability;
-
 import org.everrest.core.impl.ContainerResponse;
 import org.everrest.core.tools.ByteArrayContainerResponseWriter;
 
@@ -22,12 +21,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.ws.rs.HttpMethod;
+
 public class GetAvailableFileSystemsTest extends LocalFileSystemTest {
     @SuppressWarnings("unchecked")
     public void testAvailableFS() throws Exception {
         String requestPath = BASE_URI + "/vfs/my-ws";
         ByteArrayContainerResponseWriter wr = new ByteArrayContainerResponseWriter();
-        ContainerResponse response = launcher.service("GET", requestPath, BASE_URI, null, null, wr, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, requestPath, BASE_URI, null, null, wr, null);
         //log.info(new String(wr.getBody()));
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         Collection<VirtualFileSystemInfo> entity = (Collection<VirtualFileSystemInfo>)response.getEntity();

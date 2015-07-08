@@ -20,7 +20,6 @@ import org.eclipse.che.api.project.server.type.AttributeValue;
 import org.eclipse.che.api.project.server.type.ProjectType;
 import org.eclipse.che.api.project.server.type.Variable;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
-
 import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.shared.dto.AccessControlEntry;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
@@ -41,6 +40,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+
+import javax.ws.rs.core.MediaType;
 
 /**
  * Server side representation for codenvy project.
@@ -459,7 +460,7 @@ public class Project {
             file = baseFolder.getChild(MODULES_PATH);
 
             if (file == null && !modules.isEmpty())
-                file = ((FolderEntry)baseFolder.getChild(".codenvy")).createFile("modules", new byte[0], "text/plain");
+                file = ((FolderEntry)baseFolder.getChild(".codenvy")).createFile("modules", new byte[0], MediaType.TEXT_PLAIN);
 
 //                if(modules.isEmpty() && file != null)
 //                    file.remove();

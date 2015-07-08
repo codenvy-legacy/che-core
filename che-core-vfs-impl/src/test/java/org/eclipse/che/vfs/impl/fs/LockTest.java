@@ -15,6 +15,7 @@ import org.eclipse.che.api.vfs.shared.dto.File;
 import org.eclipse.che.api.vfs.shared.dto.Lock;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.dto.server.DtoFactory;
+
 import com.google.common.collect.Sets;
 
 import org.everrest.core.impl.ContainerResponse;
@@ -23,6 +24,8 @@ import org.everrest.core.tools.ByteArrayContainerResponseWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import javax.ws.rs.HttpMethod;
 
 import static org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
 
@@ -68,7 +71,7 @@ public class LockTest extends LocalFileSystemTest {
     public void testLockFile() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "lock/" + fileId;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         Lock result = (Lock)response.getEntity();
@@ -79,7 +82,7 @@ public class LockTest extends LocalFileSystemTest {
     public void testLockFileAlreadyLocked() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "lock/" + lockedFileId;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals(409, response.getStatus());
         // lock file must not be updated.
@@ -89,7 +92,7 @@ public class LockTest extends LocalFileSystemTest {
     public void testLockFileNoPermissions() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "lock/" + protectedFileId;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals(403, response.getStatus());
         assertNull("Lock file must not be created. ", readLock(protectedFilePath));
@@ -99,7 +102,7 @@ public class LockTest extends LocalFileSystemTest {
     public void testLockFolder() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "lock/" + folderId;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals(403, response.getStatus());
         // Lock file must not be created
@@ -108,7 +111,7 @@ public class LockTest extends LocalFileSystemTest {
 
     public void testUnlockFile() throws Exception {
         String requestPath = SERVICE_URI + "unlock/" + lockedFileId + '?' + "lockToken=" + lockToken;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, null);
         assertEquals(204, response.getStatus());
         assertNull("Lock must be removed. ", readLock(lockedFilePath));
         assertFalse("File must be unlocked. ", ((File)getItem(lockedFileId)).isLocked());
@@ -117,7 +120,7 @@ public class LockTest extends LocalFileSystemTest {
     public void testUnlockFileNoLockToken() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "unlock/" + lockedFileId;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals(403, response.getStatus());
         assertEquals("Lock must be kept. ", lockToken, readLock(lockedFilePath).getLockToken());
@@ -127,7 +130,7 @@ public class LockTest extends LocalFileSystemTest {
     public void testUnlockFileWrongLockToken() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "unlock/" + lockedFileId + '?' + "lockToken=" + lockToken + "_WRONG";
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals(403, response.getStatus());
         assertEquals("Lock must be kept. ", lockToken, readLock(lockedFilePath).getLockToken());
@@ -137,7 +140,7 @@ public class LockTest extends LocalFileSystemTest {
     public void testUnlockFileNotLocked() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "unlock/" + fileId + '?' + "lockToken=some_token";
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals(409, response.getStatus());
         assertFalse(((File)getItem(fileId)).isLocked());

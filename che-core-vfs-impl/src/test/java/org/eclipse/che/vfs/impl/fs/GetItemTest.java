@@ -16,6 +16,7 @@ import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.user.UserImpl;
 import org.eclipse.che.dto.server.DtoFactory;
+
 import com.google.common.collect.Sets;
 
 import org.everrest.core.impl.ContainerResponse;
@@ -26,6 +27,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+
+import javax.ws.rs.HttpMethod;
 
 import static org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
 
@@ -75,7 +78,7 @@ public class GetItemTest extends LocalFileSystemTest {
     public void testGetFile() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "item/" + fileId;
-        ContainerResponse response = launcher.service("GET", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, requestPath, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         Item item = (Item)response.getEntity();
@@ -88,7 +91,7 @@ public class GetItemTest extends LocalFileSystemTest {
     public void testGetFileByPath() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "itembypath" + filePath;
-        ContainerResponse response = launcher.service("GET", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, requestPath, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         Item item = (Item)response.getEntity();
@@ -105,7 +108,7 @@ public class GetItemTest extends LocalFileSystemTest {
     public void testGetFileByPathWithVersionId() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "itembypath" + filePath + '?' + "versionId=" + 0;
-        ContainerResponse response = launcher.service("GET", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, requestPath, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         Item item = (Item)response.getEntity();
@@ -118,7 +121,7 @@ public class GetItemTest extends LocalFileSystemTest {
     public void testGetFileByPathWithVersionId2() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "itembypath" + filePath + '?' + "versionId=" + 1; // must fail
-        ContainerResponse response = launcher.service("GET", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, requestPath, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals(404, response.getStatus());
     }
@@ -136,7 +139,7 @@ public class GetItemTest extends LocalFileSystemTest {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         // No filter - all properties
         String requestPath = SERVICE_URI + "item/" + fileId;
-        ContainerResponse response = launcher.service("GET", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, requestPath, BASE_URI, null, null, writer, null);
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         Item i = (Item)response.getEntity();
 
@@ -146,7 +149,7 @@ public class GetItemTest extends LocalFileSystemTest {
         // With filter
         requestPath = SERVICE_URI + "item/" + fileId + '?' + "propertyFilter=" + e1.getKey();
 
-        response = launcher.service("GET", requestPath, BASE_URI, null, null, null);
+        response = launcher.service(HttpMethod.GET, requestPath, BASE_URI, null, null, null);
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         i = (Item)response.getEntity();
 
@@ -157,7 +160,7 @@ public class GetItemTest extends LocalFileSystemTest {
     public void testGetFileNotFound() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "item/" + fileId + "_WRONG_ID_";
-        ContainerResponse response = launcher.service("GET", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, requestPath, BASE_URI, null, null, writer, null);
         assertEquals(404, response.getStatus());
         log.info(new String(writer.getBody()));
     }
@@ -168,7 +171,7 @@ public class GetItemTest extends LocalFileSystemTest {
         // Replace default principal by principal who has read permission.
         EnvironmentContext.getCurrent().setUser(new UserImpl("andrew", "andrew", null, Arrays.asList("workspace/developer"), false));
         // ---
-        ContainerResponse response = launcher.service("GET", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, requestPath, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         Item item = (Item)response.getEntity();
@@ -181,7 +184,7 @@ public class GetItemTest extends LocalFileSystemTest {
     public void testGetFileNoPermissions() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "item/" + protectedFileId;
-        ContainerResponse response = launcher.service("GET", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, requestPath, BASE_URI, null, null, writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
     }
@@ -189,7 +192,7 @@ public class GetItemTest extends LocalFileSystemTest {
     public void testGetFileParentNoPermissions() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "item/" + protectedParentId;
-        ContainerResponse response = launcher.service("GET", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, requestPath, BASE_URI, null, null, writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
     }
@@ -197,7 +200,7 @@ public class GetItemTest extends LocalFileSystemTest {
     public void testGetFileByPathNoPermissions() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "itembypath" + protectedFilePath;
-        ContainerResponse response = launcher.service("GET", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, requestPath, BASE_URI, null, null, writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
     }
@@ -205,7 +208,7 @@ public class GetItemTest extends LocalFileSystemTest {
     public void testGetFolder() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "item/" + folderId;
-        ContainerResponse response = launcher.service("GET", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, requestPath, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         Item item = (Item)response.getEntity();
@@ -218,7 +221,7 @@ public class GetItemTest extends LocalFileSystemTest {
     public void testGetFolderByPath() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "itembypath" + folderPath;
-        ContainerResponse response = launcher.service("GET", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, requestPath, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         Item item = (Item)response.getEntity();
@@ -232,7 +235,7 @@ public class GetItemTest extends LocalFileSystemTest {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         // Parameter 'versionId' is not acceptable for folders, must be absent.
         String requestPath = SERVICE_URI + "itembypath" + folderPath + '?' + "versionId=" + 1;
-        ContainerResponse response = launcher.service("GET", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, requestPath, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals(403, response.getStatus());
     }

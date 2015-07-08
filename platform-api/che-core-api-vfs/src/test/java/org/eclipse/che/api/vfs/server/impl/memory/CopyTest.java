@@ -15,6 +15,7 @@ import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
+
 import com.google.common.collect.Sets;
 
 import org.everrest.core.impl.ContainerResponse;
@@ -24,6 +25,9 @@ import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.MediaType;
 
 /** @author andrew00x */
 public class CopyTest extends MemoryFileSystemTest {
@@ -39,7 +43,7 @@ public class CopyTest extends MemoryFileSystemTest {
 
         folderForCopy = parentFolder.createFolder("CopyTest_FOLDER");
         // add child in folder
-        fileForCopy = folderForCopy.createFile("CopyTest_FILE", "text/plain", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+        fileForCopy = folderForCopy.createFile("CopyTest_FILE", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
 
         copyTestDestinationFolder = mountPoint.getRoot().createFolder("CopyTest_DESTINATION");
     }
@@ -47,7 +51,7 @@ public class CopyTest extends MemoryFileSystemTest {
     public void testCopyFile() throws Exception {
         final String originPath = fileForCopy.getPath();
         String path = SERVICE_URI + "copy/" + fileForCopy.getId() + '?' + "parentId=" + copyTestDestinationFolder.getId();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals(200, response.getStatus());
         String expectedPath = copyTestDestinationFolder.getPath() + '/' + fileForCopy.getName();
         try {
@@ -69,9 +73,9 @@ public class CopyTest extends MemoryFileSystemTest {
 
     public void testCopyFileAlreadyExist() throws Exception {
         final String originPath = fileForCopy.getPath();
-        copyTestDestinationFolder.createFile("CopyTest_FILE", "text/plain", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+        copyTestDestinationFolder.createFile("CopyTest_FILE", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
         String path = SERVICE_URI + "copy/" + fileForCopy.getId() + '?' + "parentId=" + copyTestDestinationFolder.getId();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals(409, response.getStatus());
         try {
             mountPoint.getVirtualFile(originPath);
@@ -83,9 +87,9 @@ public class CopyTest extends MemoryFileSystemTest {
     public void testCopyFileWrongParent() throws Exception {
         final String originPath = fileForCopy.getPath();
         VirtualFile destination =
-                mountPoint.getRoot().createFile("destination", "text/plain", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+                mountPoint.getRoot().createFile("destination", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
         String path = SERVICE_URI + "copy/" + fileForCopy.getId() + '?' + "parentId=" + destination.getId();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals(403, response.getStatus());
         try {
             mountPoint.getVirtualFile(originPath);
@@ -105,7 +109,7 @@ public class CopyTest extends MemoryFileSystemTest {
 
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "copy/" + fileForCopy.getId() + '?' + "parentId=" + copyTestDestinationFolder.getId();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals(403, response.getStatus());
         try {
@@ -122,7 +126,7 @@ public class CopyTest extends MemoryFileSystemTest {
 
     public void testCopyFolder() throws Exception {
         String path = SERVICE_URI + "copy/" + folderForCopy.getId() + '?' + "parentId=" + copyTestDestinationFolder.getId();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals(200, response.getStatus());
         String expectedPath = copyTestDestinationFolder.getPath() + "/" + folderForCopy.getName();
         final String originPath = folderForCopy.getPath();
@@ -155,14 +159,14 @@ public class CopyTest extends MemoryFileSystemTest {
     }
 
     public void testCopyFolderNoPermissionForChild() throws Exception {
-        VirtualFile myFile = folderForCopy.createFile("file", "text/plain", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+        VirtualFile myFile = folderForCopy.createFile("file", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
         Principal adminPrincipal = createPrincipal("admin", Principal.Type.USER);
         Map<Principal, Set<String>> permissions = new HashMap<>(1);
         permissions.put(adminPrincipal, Sets.newHashSet(BasicPermissions.ALL.value()));
         myFile.updateACL(createAcl(permissions), true, null);
 
         String path = SERVICE_URI + "copy/" + folderForCopy.getId() + '?' + "parentId=" + copyTestDestinationFolder.getId();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals(200, response.getStatus());
         String expectedPath = copyTestDestinationFolder.getPath() + "/" + folderForCopy.getName();
         // one file must not be copied since permission restriction
@@ -173,7 +177,7 @@ public class CopyTest extends MemoryFileSystemTest {
         final String originPath = folderForCopy.getPath();
         copyTestDestinationFolder.createFolder("CopyTest_FOLDER");
         String path = SERVICE_URI + "copy/" + folderForCopy.getId() + "?" + "parentId=" + copyTestDestinationFolder.getId();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals(409, response.getStatus());
         try {
             mountPoint.getVirtualFile(originPath);

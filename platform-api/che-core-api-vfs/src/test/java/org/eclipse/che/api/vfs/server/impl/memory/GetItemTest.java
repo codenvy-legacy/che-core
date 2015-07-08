@@ -16,6 +16,7 @@ import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.api.vfs.shared.dto.Property;
 import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
+
 import com.google.common.collect.Sets;
 
 import org.everrest.core.impl.ContainerResponse;
@@ -27,6 +28,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.MediaType;
 
 /** @author <a href="mailto:andrey.parfonov@exoplatform.com">Andrey Parfonov</a> */
 public class GetItemTest extends MemoryFileSystemTest {
@@ -45,7 +49,7 @@ public class GetItemTest extends MemoryFileSystemTest {
         folderPath = folder.getPath();
 
         VirtualFile file =
-                parentFolder.createFile("GetObjectTest_FILE", "text/plain", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+                parentFolder.createFile("GetObjectTest_FILE", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
         file.updateProperties(Arrays.asList(
                 createProperty("MyProperty01", "hello world"),
                 createProperty("MyProperty02", "to be or not to be"),
@@ -59,7 +63,7 @@ public class GetItemTest extends MemoryFileSystemTest {
     public void testGetFile() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "item/" + fileId;
-        ContainerResponse response = launcher.service("GET", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
         assertEquals(200, response.getStatus());
         //log.info(new String(writer.getBody()));
         Item item = (Item)response.getEntity();
@@ -72,7 +76,7 @@ public class GetItemTest extends MemoryFileSystemTest {
     public void testGetFileByPath() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "itembypath" + filePath;
-        ContainerResponse response = launcher.service("GET", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals(200, response.getStatus());
         Item item = (Item)response.getEntity();
@@ -88,7 +92,7 @@ public class GetItemTest extends MemoryFileSystemTest {
         // No filter - all properties
         String path = SERVICE_URI + "item/" + fileId;
 
-        ContainerResponse response = launcher.service("GET", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
         //log.info(new String(writer.getBody()));
         assertEquals(200, response.getStatus());
         List<Property> properties = ((Item)response.getEntity()).getProperties();
@@ -106,7 +110,7 @@ public class GetItemTest extends MemoryFileSystemTest {
         // With filter
         path = SERVICE_URI + "item/" + fileId + '?' + "propertyFilter=" + "MyProperty02";
 
-        response = launcher.service("GET", path, BASE_URI, null, null, null);
+        response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, null);
         assertEquals(200, response.getStatus());
         m.clear();
         properties = ((Item)response.getEntity()).getProperties();
@@ -120,7 +124,7 @@ public class GetItemTest extends MemoryFileSystemTest {
     public void testGetFileNotFound() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "item/" + fileId + "_WRONG_ID_";
-        ContainerResponse response = launcher.service("GET", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
         assertEquals(404, response.getStatus());
         log.info(new String(writer.getBody()));
     }
@@ -132,7 +136,7 @@ public class GetItemTest extends MemoryFileSystemTest {
         mountPoint.getVirtualFileById(fileId).updateACL(createAcl(permissions), true, null);
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "item/" + fileId;
-        ContainerResponse response = launcher.service("GET", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
     }
@@ -144,7 +148,7 @@ public class GetItemTest extends MemoryFileSystemTest {
         mountPoint.getVirtualFileById(fileId).updateACL(createAcl(permissions), true, null);
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "itembypath" + filePath;
-        ContainerResponse response = launcher.service("GET", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
     }
@@ -152,7 +156,7 @@ public class GetItemTest extends MemoryFileSystemTest {
     public void testGetFolder() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "item/" + folderId;
-        ContainerResponse response = launcher.service("GET", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
         //log.info(new String(writer.getBody()));
         assertEquals(200, response.getStatus());
         Item item = (Item)response.getEntity();
@@ -165,7 +169,7 @@ public class GetItemTest extends MemoryFileSystemTest {
     public void testGetFolderByPath() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "itembypath" + folderPath;
-        ContainerResponse response = launcher.service("GET", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
         //log.info(new String(writer.getBody()));
         assertEquals(200, response.getStatus());
         Item item = (Item)response.getEntity();
@@ -178,7 +182,7 @@ public class GetItemTest extends MemoryFileSystemTest {
     public void testGetFolderByPathWithVersionID() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "itembypath" + folderPath + '?' + "versionId=" + "0";
-        ContainerResponse response = launcher.service("GET", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals(403, response.getStatus());
     }

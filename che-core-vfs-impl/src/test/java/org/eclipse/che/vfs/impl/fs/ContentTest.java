@@ -12,12 +12,16 @@ package org.eclipse.che.vfs.impl.fs;
 
 import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.dto.server.DtoFactory;
+
 import com.google.common.collect.Sets;
 
 import org.everrest.core.impl.ContainerResponse;
 import org.everrest.core.tools.ByteArrayContainerResponseWriter;
 
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -67,29 +71,29 @@ public class ContentTest extends LocalFileSystemTest {
     public void testGetContent() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "content/" + fileId;
-        ContainerResponse response = launcher.service("GET", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, requestPath, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         assertTrue(Arrays.equals(content, writer.getBody()));
-        assertEquals("text/plain", writer.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
+        assertEquals(MediaType.TEXT_PLAIN, writer.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
     }
 
     public void testDownloadFile() throws Exception {
-        // Expect the same as 'get content' plus header "Content-Disposition".
+        // Expect the same as 'get content' plus header HttpHeaders.CONTENT_DISPOSITION.
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "downloadfile/" + fileId;
-        ContainerResponse response = launcher.service("GET", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, requestPath, BASE_URI, null, null, writer, null);
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         assertTrue(Arrays.equals(content, writer.getBody()));
-        assertEquals("text/plain", writer.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
+        assertEquals(MediaType.TEXT_PLAIN, writer.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
         assertEquals(String.format("attachment; filename=\"%s\"", "ContentTest_File.txt"),
-                     writer.getHeaders().getFirst("Content-Disposition"));
+                     writer.getHeaders().getFirst(HttpHeaders.CONTENT_DISPOSITION));
     }
 
     public void testGetContentFolder() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "content/" + folderId;
-        ContainerResponse response = launcher.service("GET", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, requestPath, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals(403, response.getStatus());
     }
@@ -97,7 +101,7 @@ public class ContentTest extends LocalFileSystemTest {
     public void testGetContentNoPermissions() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "content/" + protectedFileId;
-        ContainerResponse response = launcher.service("GET", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, requestPath, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals(403, response.getStatus());
     }
@@ -105,17 +109,17 @@ public class ContentTest extends LocalFileSystemTest {
     public void testGetContentByPath() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "contentbypath" + filePath;
-        ContainerResponse response = launcher.service("GET", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, requestPath, BASE_URI, null, null, writer, null);
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         log.info(new String(writer.getBody()));
         assertTrue(Arrays.equals(content, writer.getBody()));
-        assertEquals("text/plain", writer.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
+        assertEquals(MediaType.TEXT_PLAIN, writer.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
     }
 
     public void testGetContentByPathNoPermissions() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "contentbypath" + protectedFilePath;
-        ContainerResponse response = launcher.service("GET", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, requestPath, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals(403, response.getStatus());
     }
@@ -124,19 +128,19 @@ public class ContentTest extends LocalFileSystemTest {
     public void testUpdateContent() throws Exception {
         String requestPath = SERVICE_URI + "content/" + fileId;
         Map<String, List<String>> headers = new HashMap<>(1);
-        headers.put("Content-Type", Arrays.asList("text/plain"));
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, headers, updateContent, null);
+        headers.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.TEXT_PLAIN));
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, headers, updateContent, null);
         assertEquals(204, response.getStatus());
         assertTrue(Arrays.equals(updateContent, readFile(filePath)));
         Map<String, String[]> expectedProperties = new HashMap<>(1);
-        expectedProperties.put("vfs:mimeType", new String[]{"text/plain"});
+        expectedProperties.put("vfs:mimeType", new String[]{MediaType.TEXT_PLAIN});
         validateProperties(filePath, expectedProperties);
     }
 
     public void testUpdateContentFolder() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "content/" + folderId;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, updateContent, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, updateContent, writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
     }
@@ -151,8 +155,8 @@ public class ContentTest extends LocalFileSystemTest {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "content/" + protectedFileId;
         Map<String, List<String>> headers = new HashMap<>(1);
-        headers.put("Content-Type", Arrays.asList("text/plain"));
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, headers, updateContent, writer, null);
+        headers.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.TEXT_PLAIN));
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, headers, updateContent, writer, null);
         // Request must fail since 'admin' has not 'write' permission (only 'read').
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
@@ -162,24 +166,24 @@ public class ContentTest extends LocalFileSystemTest {
 
     public void testUpdateContentLocked() throws Exception {
         Map<String, List<String>> headers = new HashMap<>(1);
-        headers.put("Content-Type", Arrays.asList("text/plain"));
+        headers.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.TEXT_PLAIN));
         String requestPath = SERVICE_URI + "content/" + lockedFileId + '?' + "lockToken=" + lockToken;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, headers, updateContent, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, headers, updateContent, null);
         // File is locked.
         assertEquals(204, response.getStatus());
         assertTrue(Arrays.equals(updateContent, readFile(lockedFilePath))); // content updated
         // media type is set
         Map<String, String[]> expectedProperties = new HashMap<>(1);
-        expectedProperties.put("vfs:mimeType", new String[]{"text/plain"});
+        expectedProperties.put("vfs:mimeType", new String[]{MediaType.TEXT_PLAIN});
         validateProperties(lockedFilePath, expectedProperties);
     }
 
     public void testUpdateContentLockedNoLockToken() throws Exception {
         Map<String, List<String>> headers = new HashMap<>(1);
-        headers.put("Content-Type", Arrays.asList("text/plain"));
+        headers.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.TEXT_PLAIN));
         String requestPath = SERVICE_URI + "content/" + lockedFileId;
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, headers, updateContent, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, headers, updateContent, writer, null);
         // File is locked.
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
