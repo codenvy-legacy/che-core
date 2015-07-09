@@ -12,10 +12,12 @@ package org.eclipse.che.api.vfs.server.util;
 
 import org.eclipse.che.api.vfs.server.VirtualFileSystemFactory;
 import org.eclipse.che.api.vfs.shared.dto.Link;
+import org.eclipse.che.commons.lang.ws.rs.ExtMediaType;
 import org.eclipse.che.dto.server.DtoFactory;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
+
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -169,13 +171,13 @@ public class LinksHelper {
                   createLink(createURI(baseUriBuilder.clone(), wsName, "uploadfile", id), Link.REL_UPLOAD_FILE, MediaType.TEXT_HTML));
 
         links.put(Link.REL_EXPORT, //
-                  createLink(createURI(baseUriBuilder.clone(), wsName, "export", id), Link.REL_EXPORT, "application/zip"));
+                  createLink(createURI(baseUriBuilder.clone(), wsName, "export", id), Link.REL_EXPORT, ExtMediaType.APPLICATION_ZIP));
 
         links.put(Link.REL_IMPORT, //
-                  createLink(createURI(baseUriBuilder.clone(), wsName, "import", id), Link.REL_IMPORT, "application/zip"));
+                  createLink(createURI(baseUriBuilder.clone(), wsName, "import", id), Link.REL_IMPORT, ExtMediaType.APPLICATION_ZIP));
 
         links.put(Link.REL_DOWNLOAD_ZIP, //
-                  createLink(createURI(baseUriBuilder.clone(), wsName, "downloadzip", id), Link.REL_DOWNLOAD_ZIP, "application/zip"));
+                  createLink(createURI(baseUriBuilder.clone(), wsName, "downloadzip", id), Link.REL_DOWNLOAD_ZIP, ExtMediaType.APPLICATION_ZIP));
 
         links.put(Link.REL_UPLOAD_ZIP, //
                   createLink(createURI(baseUriBuilder.clone(), wsName, "uploadzip", id), Link.REL_UPLOAD_ZIP, MediaType.TEXT_HTML));

@@ -49,6 +49,7 @@ import org.eclipse.che.commons.lang.Strings;
 import org.eclipse.che.commons.lang.cache.Cache;
 import org.eclipse.che.commons.lang.cache.LoadingValueSLRUCache;
 import org.eclipse.che.commons.lang.cache.SynchronizedCache;
+import org.eclipse.che.commons.lang.ws.rs.ExtMediaType;
 import org.eclipse.che.dto.server.DtoFactory;
 
 import com.google.common.annotations.Beta;
@@ -1137,7 +1138,7 @@ public class FSMountPoint implements MountPoint {
             }
             closeQuietly(zipOut);
             final String name = virtualFile.getName() + ".zip";
-            return new ContentStream(name, new DeleteOnCloseFileInputStream(zipFile), "application/zip", zipFile.length(), new Date());
+            return new ContentStream(name, new DeleteOnCloseFileInputStream(zipFile), ExtMediaType.APPLICATION_ZIP, zipFile.length(), new Date());
         } catch (IOException | RuntimeException ioe) {
             if (zipFile != null) {
                 zipFile.delete();

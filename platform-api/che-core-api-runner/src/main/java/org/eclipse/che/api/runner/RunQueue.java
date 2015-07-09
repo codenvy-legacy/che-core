@@ -68,8 +68,10 @@ import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -1217,7 +1219,7 @@ public class RunQueue {
         @Override
         public void run() {
             boolean ok = false;
-            String requestMethod = "HEAD";
+            String requestMethod = HttpMethod.HEAD;
             for (int i = 0; !ok && i < healthCheckAttempts; i++) {
                 if (Thread.currentThread().isInterrupted()) {
                     return;
@@ -1240,7 +1242,7 @@ public class RunQueue {
                         // to weak and will trigger much more GET than with this fallback.
                         // Note: Response.Status in JAX-WS in JEE6 hasn't any status matching 405, so here we use int code comparison. Fixed
                         // in JEE7.
-                        requestMethod = "GET";
+                        requestMethod = HttpMethod.GET;
                     }
                     Response.Status status = Response.Status.fromStatusCode(conn.getResponseCode());
                     if (status == null) {

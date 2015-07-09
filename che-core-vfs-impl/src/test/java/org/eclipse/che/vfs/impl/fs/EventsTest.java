@@ -19,7 +19,6 @@ import org.eclipse.che.api.vfs.server.observation.UpdateACLEvent;
 import org.eclipse.che.api.vfs.server.observation.UpdateContentEvent;
 import org.eclipse.che.api.vfs.server.observation.UpdatePropertiesEvent;
 import org.eclipse.che.api.vfs.server.observation.VirtualFileEvent;
-
 import org.everrest.core.impl.ContainerResponse;
 
 import java.util.ArrayList;
@@ -27,6 +26,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 
 /**
  * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
@@ -52,7 +55,7 @@ public class EventsTest extends LocalFileSystemTest {
         folderPath = createDirectory(testRootPath, folderName);
         filePath = createFile(testRootPath, fileName, DEFAULT_CONTENT_BYTES);
         Map<String, String[]> fileProperties = new HashMap<>(1);
-        fileProperties.put("vfs:mimeType", new String[]{"text/plain"});
+        fileProperties.put("vfs:mimeType", new String[]{MediaType.TEXT_PLAIN});
         writeProperties(filePath, fileProperties);
         destinationFolderPath = createDirectory(testRootPath, "EventsTest_DestinationFolder");
         folderId = pathToId(folderPath);
@@ -108,8 +111,8 @@ public class EventsTest extends LocalFileSystemTest {
         String content = "test create file";
         String requestPath = SERVICE_URI + "file/" + folderId + '?' + "name=" + name;
         Map<String, List<String>> headers = new HashMap<>(1);
-        headers.put("Content-Type", Arrays.asList("text/plain;charset=utf8"));
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, headers, content.getBytes(), null);
+        headers.put(HttpHeaders.CONTENT_TYPE, Arrays.asList("text/plain;charset=utf8"));
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, headers, content.getBytes(), null);
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
 
         String expectedPath = folderPath + '/' + name;
@@ -124,7 +127,7 @@ public class EventsTest extends LocalFileSystemTest {
     public void testCreateFolder() throws Exception {
         String name = "testCreateFolder";
         String requestPath = SERVICE_URI + "folder/" + folderId + '?' + "name=" + name;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, null);
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
 
         String expectedPath = folderPath + '/' + name;
@@ -138,7 +141,7 @@ public class EventsTest extends LocalFileSystemTest {
 
     public void testCopy() throws Exception {
         String requestPath = SERVICE_URI + "copy/" + fileId + '?' + "parentId=" + destinationFolderId;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, null);
 
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
 
@@ -153,7 +156,7 @@ public class EventsTest extends LocalFileSystemTest {
 
     public void testMove() throws Exception {
         String requestPath = SERVICE_URI + "move/" + fileId + '?' + "parentId=" + destinationFolderId;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, null);
 
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
 
@@ -169,12 +172,12 @@ public class EventsTest extends LocalFileSystemTest {
     }
 
     public void testUpdateContent() throws Exception {
-        String contentType = "application/xml";
+        String contentType = MediaType.APPLICATION_XML;
         String requestPath = SERVICE_URI + "content/" + fileId;
         Map<String, List<String>> headers = new HashMap<>(1);
-        headers.put("Content-Type", Arrays.asList(contentType));
+        headers.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(contentType));
         String content = "<?xml version='1.0'><root/>";
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, headers, content.getBytes(), null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, headers, content.getBytes(), null);
         assertEquals(204, response.getStatus());
 
         assertEquals(1, events.size());
@@ -187,9 +190,9 @@ public class EventsTest extends LocalFileSystemTest {
     public void testUpdateProperties() throws Exception {
         String requestPath = SERVICE_URI + "item/" + fileId;
         Map<String, List<String>> headers = new HashMap<>(1);
-        headers.put("Content-Type", Arrays.asList("application/json"));
+        headers.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
         String properties = "[{\"name\":\"MyProperty\", \"value\":[\"MyValue\"]}]";
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, headers, properties.getBytes(), null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, headers, properties.getBytes(), null);
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
 
         assertEquals(1, events.size());
@@ -202,10 +205,10 @@ public class EventsTest extends LocalFileSystemTest {
     public void testUpdateAcl() throws Exception {
         String requestPath = SERVICE_URI + "acl/" + fileId;
         Map<String, List<String>> headers = new HashMap<>(1);
-        headers.put("Content-Type", Arrays.asList("application/json"));
+        headers.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
         String acl = "[{\"principal\":{\"name\":\"admin\",\"type\":\"USER\"},\"permissions\":[\"all\"]}," +
                      "{\"principal\":{\"name\":\"john\",\"type\":\"USER\"},\"permissions\":[\"read\", \"write\"]}]";
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, headers, acl.getBytes(), null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, headers, acl.getBytes(), null);
         assertEquals("Error: " + response.getEntity(), 204, response.getStatus());
 
         assertEquals(1, events.size());
@@ -217,7 +220,7 @@ public class EventsTest extends LocalFileSystemTest {
 
     public void testDelete() throws Exception {
         String requestPath = SERVICE_URI + "delete/" + fileId;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, null);
         assertEquals("Error: " + response.getEntity(), 204, response.getStatus());
 
         assertFalse(exists(filePath));
@@ -230,7 +233,7 @@ public class EventsTest extends LocalFileSystemTest {
 
     public void testRename() throws Exception {
         String requestPath = SERVICE_URI + "rename/" + fileId + '?' + "newname=" + "_FILE_NEW_NAME_";
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, null);
 
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
 

@@ -21,6 +21,7 @@ import org.eclipse.che.api.core.rest.OutputProvider;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.runner.dto.ApplicationProcessDescriptor;
 import org.eclipse.che.dto.server.DtoFactory;
+
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Closer;
 
@@ -31,6 +32,9 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.HttpHeaders;
 
 /**
  * Representation of remote application process.
@@ -126,7 +130,7 @@ public class RemoteRunnerProcess {
     }
 
     public void readRecipeFile(OutputProvider output) throws IOException, RunnerException {
-        doRequest(String.format("%s/recipe/%s/%d", baseUrl, runner, processId), "GET", output);
+        doRequest(String.format("%s/recipe/%s/%d", baseUrl, runner, processId), HttpMethod.GET, output);
     }
 
     private void doRequest(String url, String method, final OutputProvider output) throws IOException {
@@ -140,12 +144,12 @@ public class RemoteRunnerProcess {
                 httpOutput.setStatus(conn.getResponseCode());
                 final String contentType = conn.getContentType();
                 if (contentType != null) {
-                    httpOutput.addHttpHeader("Content-Type", contentType);
+                    httpOutput.addHttpHeader(HttpHeaders.CONTENT_TYPE, contentType);
                 }
                 // for download files
-                final String contentDisposition = conn.getHeaderField("Content-Disposition");
+                final String contentDisposition = conn.getHeaderField(HttpHeaders.CONTENT_DISPOSITION);
                 if (contentDisposition != null) {
-                    httpOutput.addHttpHeader("Content-Disposition", contentDisposition);
+                    httpOutput.addHttpHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition);
                 }
             }
             Closer closer = Closer.create();

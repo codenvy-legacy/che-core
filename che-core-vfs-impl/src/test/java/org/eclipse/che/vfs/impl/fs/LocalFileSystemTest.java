@@ -19,7 +19,6 @@ import org.eclipse.che.vfs.impl.fs.FileLockSerializer;
 import org.eclipse.che.vfs.impl.fs.FileMetadataSerializer;
 import org.eclipse.che.vfs.impl.fs.LocalFileSystemProvider;
 import org.eclipse.che.vfs.impl.fs.WorkspaceHashLocalFSMountStrategy;
-
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.vfs.server.URLHandlerFactorySetup;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemApplication;
@@ -34,8 +33,8 @@ import org.eclipse.che.api.vfs.shared.dto.Property;
 import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.Pair;
+import org.eclipse.che.commons.lang.ws.rs.ExtMediaType;
 import org.eclipse.che.commons.user.UserImpl;
-
 import org.apache.commons.codec.binary.Base64;
 import org.everrest.core.ResourceBinder;
 import org.everrest.core.impl.ApplicationContextImpl;
@@ -53,8 +52,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.event.EventListenerList;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
@@ -486,7 +487,7 @@ public abstract class LocalFileSystemTest extends TestCase {
 
     protected Item getItem(String id) throws Exception {
         String requestPath = SERVICE_URI + "item/" + id;
-        ContainerResponse response = launcher.service("GET", requestPath, BASE_URI, null, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, requestPath, BASE_URI, null, null, null, null);
         if (response.getStatus() == 200) {
             return (Item)response.getEntity();
         }
@@ -730,21 +731,21 @@ public abstract class LocalFileSystemTest extends TestCase {
 
             link = links.get(Link.REL_EXPORT);
             assertNotNull(String.format("'%s' link not found. ", Link.REL_EXPORT), link);
-            assertEquals("application/zip", link.getType());
+            assertEquals(ExtMediaType.APPLICATION_ZIP, link.getType());
             assertEquals(Link.REL_EXPORT, link.getRel());
             assertEquals(UriBuilder.fromPath(SERVICE_URI).path("export").path(item.getId()).build().toString(),
                          link.getHref());
 
             link = links.get(Link.REL_IMPORT);
             assertNotNull(String.format("'%s' link not found. ", Link.REL_IMPORT), link);
-            assertEquals("application/zip", link.getType());
+            assertEquals(ExtMediaType.APPLICATION_ZIP, link.getType());
             assertEquals(Link.REL_IMPORT, link.getRel());
             assertEquals(UriBuilder.fromPath(SERVICE_URI).path("import").path(item.getId()).build().toString(),
                          link.getHref());
 
             link = links.get(Link.REL_DOWNLOAD_ZIP);
             assertNotNull(String.format("'%s' link not found. ", Link.REL_DOWNLOAD_ZIP), link);
-            assertEquals("application/zip", link.getType());
+            assertEquals(ExtMediaType.APPLICATION_ZIP, link.getType());
             assertEquals(Link.REL_DOWNLOAD_ZIP, link.getRel());
             assertEquals(UriBuilder.fromPath(SERVICE_URI).path("downloadzip").path(item.getId()).build().toString(),
                          link.getHref());

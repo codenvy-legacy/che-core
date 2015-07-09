@@ -38,16 +38,19 @@ import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriBuilder;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -287,7 +290,7 @@ public final class SlaveBuilderService extends Service {
                                                        .replaceQueryParam("path", workDirPath.relativize(parentPath))
                                                        .build(task.getBuilder(), task.getId()).toString();
                 final ItemReference up = dtoFactory.createDto(ItemReference.class).withName("..").withPath("..").withType("folder");
-                up.getLinks().add(dtoFactory.createDto(Link.class).withRel("children").withHref(upHref).withMethod("GET")
+                up.getLinks().add(dtoFactory.createDto(Link.class).withRel("children").withHref(upHref).withMethod(HttpMethod.GET)
                                             .withProduces(MediaType.APPLICATION_JSON));
                 result.add(up);
             }
@@ -309,9 +312,9 @@ public final class SlaveBuilderService extends Service {
                                           .withType("file");
                         final List<Link> links = fileItem.getLinks();
                         final String contentType = ContentTypeGuesser.guessContentType(file);
-                        links.add(dtoFactory.createDto(Link.class).withRel("view").withHref(openHref).withMethod("GET")
+                        links.add(dtoFactory.createDto(Link.class).withRel("view").withHref(openHref).withMethod(HttpMethod.GET)
                                             .withProduces(contentType));
-                        links.add(dtoFactory.createDto(Link.class).withRel("download").withHref(downloadHref).withMethod("GET")
+                        links.add(dtoFactory.createDto(Link.class).withRel("download").withHref(downloadHref).withMethod(HttpMethod.GET)
                                             .withProduces(contentType));
                         fileItem.getAttributes().put("size", Size.toHumanSize(file.length()));
                         result.add(fileItem);
@@ -336,7 +339,7 @@ public final class SlaveBuilderService extends Service {
                                                                          .replaceQueryParam("path", filePath)
                                                                          .build(task.getBuilder(), task.getId()).toString();
                             final List<Link> links = folderItem.getLinks();
-                            links.add(dtoFactory.createDto(Link.class).withRel("children").withHref(childrenHref).withMethod("GET")
+                            links.add(dtoFactory.createDto(Link.class).withRel("children").withHref(childrenHref).withMethod(HttpMethod.GET)
                                                 .withProduces(MediaType.APPLICATION_JSON));
                         }
 
@@ -361,7 +364,7 @@ public final class SlaveBuilderService extends Service {
         }
         if (target.isFile()) {
             return Response.status(200)
-                           .header("Content-Disposition", String.format("attachment; filename=\"%s\"", target.getName()))
+                           .header(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=\"%s\"", target.getName()))
                            .type(ContentTypeGuesser.guessContentType(target))
                            .entity(target)
                            .build();
@@ -373,23 +376,23 @@ public final class SlaveBuilderService extends Service {
     @Path("download-all/{builder}/{id}")
     public Response downloadResultArchive(@PathParam("builder") String builder,
                                           @PathParam("id") Long id,
-                                          @DefaultValue("tar") @QueryParam("arch") String arch) throws Exception {
+                                          @DefaultValue(Constants.RESULT_ARCHIVE_TAR) @QueryParam("arch") String arch) throws Exception {
         final List<File> results = getBuilder(builder).getBuildTask(id).getResult().getResults();
         if (results.isEmpty()) {
             throw new NotFoundException("Archive with build result is not available.");
         }
         File archFile;
-        if ("tar".equals(arch)) {
+        if (Constants.RESULT_ARCHIVE_TAR.equals(arch)) {
             archFile = Files.createTempFile(String.format("%s-%d-", builder, id), ".tar").toFile();
             TarUtils.tarFiles(archFile, 0, results.toArray(new File[results.size()]));
-        } else if ("zip".equals(arch)) {
+        } else if (Constants.RESULT_ARCHIVE_ZIP.equals(arch)) {
             archFile = Files.createTempFile(String.format("%s-%d-", builder, id), ".zip").toFile();
             ZipUtils.zipFiles(archFile, results.toArray(new File[results.size()]));
         } else {
             throw new ConflictException(String.format("Unsupported archive type: %s", arch));
         }
         return Response.status(200)
-                       .header("Content-Disposition", String.format("attachment; filename=\"%s\"", archFile.getName()))
+                       .header(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=\"%s\"", archFile.getName()))
                        .type(ContentTypeGuesser.guessContentType(archFile))
                        .entity(new DeleteOnCloseFileInputStream(archFile))
                        .build();
@@ -433,14 +436,14 @@ public final class SlaveBuilderService extends Service {
         links.add(dtoFactory.createDto(Link.class)
                             .withRel(Constants.LINK_REL_GET_STATUS)
                             .withHref(uriBuilder.clone().path(SlaveBuilderService.class, "getStatus").build(builder, taskId).toString())
-                            .withMethod("GET")
+                            .withMethod(HttpMethod.GET)
                             .withProduces(MediaType.APPLICATION_JSON));
 
         if (status == BuildStatus.IN_QUEUE || status == BuildStatus.IN_PROGRESS) {
             links.add(dtoFactory.createDto(Link.class)
                                 .withRel(Constants.LINK_REL_CANCEL)
                                 .withHref(uriBuilder.clone().path(SlaveBuilderService.class, "cancel").build(builder, taskId).toString())
-                                .withMethod("POST")
+                                .withMethod(HttpMethod.POST)
                                 .withProduces(MediaType.APPLICATION_JSON));
         }
 
@@ -448,13 +451,13 @@ public final class SlaveBuilderService extends Service {
             links.add(dtoFactory.createDto(Link.class)
                                 .withRel(Constants.LINK_REL_VIEW_LOG)
                                 .withHref(uriBuilder.clone().path(SlaveBuilderService.class, "getLogs").build(builder, taskId).toString())
-                                .withMethod("GET")
+                                .withMethod(HttpMethod.GET)
                                 .withProduces(task.getBuildLogger().getContentType()));
             links.add(dtoFactory.createDto(Link.class)
                                 .withRel(Constants.LINK_REL_BROWSE)
                                 .withHref(uriBuilder.clone().path(SlaveBuilderService.class, "browseDirectory").queryParam("path", "/")
                                                     .build(builder, taskId).toString())
-                                .withMethod("GET")
+                                .withMethod(HttpMethod.GET)
                                 .withProduces(MediaType.TEXT_HTML));
         }
 
@@ -470,7 +473,7 @@ public final class SlaveBuilderService extends Service {
                                         .withRel(Constants.LINK_REL_DOWNLOAD_RESULT)
                                         .withHref(uriBuilder.clone().path(SlaveBuilderService.class, "downloadFile")
                                                             .queryParam("path", relativePath).build(builder, taskId).toString())
-                                        .withMethod("GET")
+                                        .withMethod(HttpMethod.GET)
                                         .withProduces(ContentTypeGuesser.guessContentType(ru)));
                 }
             }
@@ -478,15 +481,15 @@ public final class SlaveBuilderService extends Service {
                 links.add(dtoFactory.createDto(Link.class)
                                     .withRel(Constants.LINK_REL_DOWNLOAD_RESULTS_TARBALL)
                                     .withHref(uriBuilder.clone().path(SlaveBuilderService.class, "downloadResultArchive")
-                                                        .queryParam("arch", "tar")
+                                                        .queryParam("arch", Constants.RESULT_ARCHIVE_TAR)
                                                         .build(builder, taskId).toString())
-                                    .withMethod("GET"));
+                                    .withMethod(HttpMethod.GET));
                 links.add(dtoFactory.createDto(Link.class)
                                     .withRel(Constants.LINK_REL_DOWNLOAD_RESULTS_ZIPBALL)
                                     .withHref(uriBuilder.clone().path(SlaveBuilderService.class, "downloadResultArchive")
-                                                        .queryParam("arch", "zip")
+                                                        .queryParam("arch", Constants.RESULT_ARCHIVE_ZIP)
                                                         .build(builder, taskId).toString())
-                                    .withMethod("GET"));
+                                    .withMethod(HttpMethod.GET));
             }
         }
 
@@ -504,7 +507,7 @@ public final class SlaveBuilderService extends Service {
                                     .withHref(uriBuilder.clone().path(SlaveBuilderService.class, "browseDirectory")
                                                         .queryParam("path", relativePath)
                                                         .build(builder, taskId).toString())
-                                    .withMethod("GET")
+                                    .withMethod(HttpMethod.GET)
                                     .withProduces(MediaType.TEXT_HTML));
             } else {
                 links.add(dtoFactory.createDto(Link.class)
@@ -512,7 +515,7 @@ public final class SlaveBuilderService extends Service {
                                     .withHref(uriBuilder.clone().path(SlaveBuilderService.class, "viewFile")
                                                         .queryParam("path", relativePath)
                                                         .build(builder, taskId).toString())
-                                    .withMethod("GET")
+                                    .withMethod(HttpMethod.GET)
                                     .withProduces(ContentTypeGuesser.guessContentType(br)));
             }
         }

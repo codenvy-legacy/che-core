@@ -31,7 +31,7 @@ public class FactoryConstants {
             "You are missing a mandatory parameter.  For more information, please visit http://docs.codenvy" +
             ".com/user/project-lifecycle/#configuration-reference";
 
-      /* Used in factory servlet*/
+    /* Used in factory servlet*/
     public static final String ILLEGAL_HOSTNAME_MESSAGE =
             "This Factory has its access restricted by certain hostname. Your client does not match the specified " +
             "policy. Please contact the owner of this Factory for more information.";
@@ -86,5 +86,6 @@ public class FactoryConstants {
             "The parameter %s has a value submitted %s with a value that is unexpected. For more information, " +
             "please visit http://docs.codenvy.com/user/project-lifecycle/#configuration-reference";
 
-    private FactoryConstants() {}
+    private FactoryConstants() {
+    }
 }

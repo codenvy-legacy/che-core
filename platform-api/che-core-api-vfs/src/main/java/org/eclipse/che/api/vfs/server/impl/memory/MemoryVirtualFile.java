@@ -40,10 +40,11 @@ import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.api.vfs.shared.dto.Property;
 import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo;
 import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
-
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.eclipse.che.commons.lang.Pair;
+import org.eclipse.che.commons.lang.ws.rs.ExtMediaType;
 import org.eclipse.che.dto.server.DtoFactory;
+
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import com.google.common.io.ByteSource;
@@ -1037,7 +1038,7 @@ public class MemoryVirtualFile implements VirtualFile {
             throw new ServerException(e.getMessage(), e);
         }
         final byte[] zipContent = out.toByteArray();
-        return new ContentStream(getName() + ".zip", new ByteArrayInputStream(zipContent), "application/zip", zipContent.length,
+        return new ContentStream(getName() + ".zip", new ByteArrayInputStream(zipContent), ExtMediaType.APPLICATION_ZIP, zipContent.length,
                                  new Date());
     }
 

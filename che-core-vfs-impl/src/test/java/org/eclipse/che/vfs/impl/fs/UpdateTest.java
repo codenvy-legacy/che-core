@@ -15,6 +15,7 @@ import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.user.UserImpl;
 import org.eclipse.che.dto.server.DtoFactory;
+
 import com.google.common.collect.Sets;
 
 import org.everrest.core.impl.ContainerResponse;
@@ -25,6 +26,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 
 import static org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
 
@@ -72,8 +77,8 @@ public class UpdateTest extends LocalFileSystemTest {
 
         String requestPath = SERVICE_URI + "item/" + fileId;
         Map<String, List<String>> h = new HashMap<>(1);
-        h.put("Content-Type", Arrays.asList("application/json"));
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, h, update.getBytes(), null);
+        h.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, h, update.getBytes(), null);
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
 
         Map<String, String[]> expectedProperties = new HashMap<>(1);
@@ -97,8 +102,8 @@ public class UpdateTest extends LocalFileSystemTest {
 
         String requestPath = SERVICE_URI + "item/" + fileId;
         Map<String, List<String>> h = new HashMap<>(1);
-        h.put("Content-Type", Arrays.asList("application/json"));
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, h, update.getBytes(), null);
+        h.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, h, update.getBytes(), null);
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
 
         Map<String, String[]> expectedProperties = new HashMap<>(4);
@@ -120,8 +125,8 @@ public class UpdateTest extends LocalFileSystemTest {
 
         String requestPath = SERVICE_URI + "item/" + lockedFileId + '?' + "lockToken=" + lockToken;
         Map<String, List<String>> h = new HashMap<>(1);
-        h.put("Content-Type", Arrays.asList("application/json"));
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, h, properties.getBytes(), null);
+        h.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, h, properties.getBytes(), null);
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
 
         Map<String, String[]> expectedProperties = new HashMap<>(1);
@@ -137,9 +142,9 @@ public class UpdateTest extends LocalFileSystemTest {
 
         String requestPath = SERVICE_URI + "item/" + lockedFileId;
         Map<String, List<String>> h = new HashMap<>(1);
-        h.put("Content-Type", Arrays.asList("application/json"));
+        h.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, h, properties.getBytes(), writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, h, properties.getBytes(), writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
 
@@ -154,12 +159,12 @@ public class UpdateTest extends LocalFileSystemTest {
 
         String requestPath = SERVICE_URI + "item/" + protectedFileId;
         Map<String, List<String>> h = new HashMap<>(1);
-        h.put("Content-Type", Arrays.asList("application/json"));
+        h.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         // File is protected and default principal 'andrew' has not write permission.
         // Replace default principal by principal who has write permission.
         EnvironmentContext.getCurrent().setUser(new UserImpl("andrew", "andrew", null, Arrays.asList("workspace/developer"), false));
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, h, properties.getBytes(), writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, h, properties.getBytes(), writer, null);
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
 
         Map<String, String[]> expectedProperties = new HashMap<>(1);
@@ -175,9 +180,9 @@ public class UpdateTest extends LocalFileSystemTest {
 
         String requestPath = SERVICE_URI + "item/" + protectedFileId;
         Map<String, List<String>> h = new HashMap<>(1);
-        h.put("Content-Type", Arrays.asList("application/json"));
+        h.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, h, properties.getBytes(), writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, h, properties.getBytes(), writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
 

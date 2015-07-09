@@ -25,8 +25,10 @@ import org.eclipse.che.api.runner.internal.Constants;
 import org.eclipse.che.api.runner.internal.RunnerEvent;
 import org.eclipse.che.dto.server.DtoFactory;
 
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -120,13 +122,13 @@ public class RunQueueTask implements Cancellable {
                 links.add(dtoFactory.createDto(Link.class)
                                     .withRel(Constants.LINK_REL_GET_STATUS)
                                     .withHref(getUriBuilder().path(RunnerService.class, "getStatus")
-                                                             .build(request.getWorkspace(), id).toString()).withMethod("GET")
+                                                             .build(request.getWorkspace(), id).toString()).withMethod(HttpMethod.GET)
                                     .withProduces(MediaType.APPLICATION_JSON));
                 links.add(dtoFactory.createDto(Link.class)
                                     .withRel(Constants.LINK_REL_STOP)
                                     .withHref(getUriBuilder().path(RunnerService.class, "stop")
                                                              .build(request.getWorkspace(), id).toString())
-                                    .withMethod("POST")
+                                    .withMethod(HttpMethod.POST)
                                     .withProduces(MediaType.APPLICATION_JSON));
                 final List<RunnerMetric> runStats = new ArrayList<>(2);
                 runStats.add(dtoFactory.createDto(RunnerMetric.class).withName(RunnerMetric.WAITING_TIME_LIMIT)

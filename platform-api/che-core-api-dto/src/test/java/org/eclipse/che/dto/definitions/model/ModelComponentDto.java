@@ -8,29 +8,19 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.about;
+package org.eclipse.che.dto.definitions.model;
 
-import com.google.gwt.i18n.client.Messages;
-
+import org.eclipse.che.dto.shared.DTO;
 
 /**
- * Localization for About Codenvy dialog.
+ * Test dto extension for model component {@link ModelComponent}
  *
- * @author Ann Shumilova
+ * @author Eugene Voevodin
  */
-public interface AboutLocalizationConstant extends Messages {
-    @Key("about.view.title")
-    String aboutViewTitle();
+@DTO
+public interface ModelComponentDto extends ModelComponent {
 
-    @Key("about.version")
-    String aboutVersion();
+    void setName(String name);
 
-    @Key("about.revision")
-    String aboutRevision();
-
-    @Key("about.buildtime")
-    String aboutBuildTime();
-
-    @Key("about.control.title")
-    String aboutControlTitle();
+    ModelComponentDto withName(String name);
 }

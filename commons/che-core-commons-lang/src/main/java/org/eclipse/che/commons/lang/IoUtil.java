@@ -27,6 +27,8 @@ import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.ws.rs.HttpMethod;
+
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.FileVisitResult.TERMINATE;
 
@@ -243,7 +245,7 @@ public class IoUtil {
             if ("http".equals(protocol) || "https".equals(protocol)) {
                 HttpURLConnection http = (HttpURLConnection)conn;
                 http.setInstanceFollowRedirects(false);
-                http.setRequestMethod("GET");
+                http.setRequestMethod(HttpMethod.GET);
             }
             try (InputStream input = conn.getInputStream();
                  FileOutputStream fOutput = new FileOutputStream(file)) {

@@ -11,7 +11,6 @@
 package org.eclipse.che.api.core.util;
 
 import org.eclipse.che.commons.lang.NameGenerator;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +21,8 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.concurrent.TimeUnit;
+
+import javax.ws.rs.core.HttpHeaders;
 
 /**
  * DownloadPlugin that downloads single file.
@@ -45,7 +46,7 @@ public final class HttpDownloadPlugin implements DownloadPlugin {
             if (responseCode != 200) {
                 throw new IOException(String.format("Invalid response status %d from remote server. ", responseCode));
             }
-            final String contentDisposition = conn.getHeaderField("Content-Disposition");
+            final String contentDisposition = conn.getHeaderField(HttpHeaders.CONTENT_DISPOSITION);
             String fileName = null;
             if (contentDisposition != null) {
                 int fNameStart = contentDisposition.indexOf("filename=");

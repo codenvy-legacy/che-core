@@ -8,27 +8,21 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide;
+package org.eclipse.che.ide.api.event;
 
-import com.google.gwt.i18n.client.Constants;
+import com.google.gwt.event.shared.EventHandler;
 
+import javax.validation.constraints.NotNull;
 
 /**
- * Represents application's build information.
+ * A handler for handling {@link DeleteModuleEvent}
  *
- * @author Ann Shumilova
+ * @author Alexander Andrienko
  */
-public interface BuildInfo extends Constants {
-
-    @Key("revision")
-    @DefaultStringValue("xxx")
-    String revision();
-
-    @Key("buildTime")
-    @DefaultStringValue("just now")
-    String buildTime();
-
-    @Key("version")
-    @DefaultStringValue("zzz")
-    String version();
+public interface DeleteModuleEventHandler extends EventHandler {
+    /**
+     * Called when module was deleted
+     * @param event DeleteModuleEvent
+     */
+    void onModuleDeleted(@NotNull DeleteModuleEvent event);
 }

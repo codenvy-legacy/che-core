@@ -32,18 +32,20 @@ import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
 import org.eclipse.che.api.project.shared.dto.ProjectUpdate;
 import org.eclipse.che.api.project.shared.dto.RunnerConfiguration;
 import org.eclipse.che.api.project.shared.dto.RunnersDescriptor;
-
 import org.eclipse.che.api.project.server.type.Attribute;
 import org.eclipse.che.api.project.server.type.BaseProjectType;
 import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
 import org.eclipse.che.api.vfs.shared.dto.AccessControlEntry;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.commons.env.EnvironmentContext;
+import org.eclipse.che.commons.lang.ws.rs.ExtMediaType;
 import org.eclipse.che.commons.user.User;
 import org.eclipse.che.dto.server.DtoFactory;
 
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
+
 import java.util.*;
 
 /**
@@ -272,15 +274,16 @@ public class DtoConverter {
     }
 
 
-    public static ProjectDescriptor toDescriptorDto2(Project project, UriBuilder uriBuilder, ProjectTypeRegistry ptRegistry)
-    throws InvalidValueException {
+    public static ProjectDescriptor toDescriptorDto2(Project project,
+                                                     UriBuilder uriBuilder,
+                                                     ProjectTypeRegistry ptRegistry,
+                                                     String wsName) throws InvalidValueException {
         final EnvironmentContext environmentContext = EnvironmentContext.getCurrent();
         final DtoFactory dtoFactory = DtoFactory.getInstance();
         final ProjectDescriptor dto = dtoFactory.createDto(ProjectDescriptor.class);
         // Try to provide as much as possible information about project.
         // If get error then save information about error with 'problems' field in ProjectConfig.
         final String wsId = project.getWorkspace();
-        final String wsName = environmentContext.getWorkspaceName();
         final String name = project.getName();
         final String path = project.getPath();
         dto.withWorkspaceId(wsId).withWorkspaceName(wsName).withName(name).withPath(path);
@@ -427,11 +430,11 @@ public class DtoConverter {
         final String relPath = project.getPath().substring(1);
         final String workspace = project.getWorkspace();
         links.add(
-                LinksHelper.createLink("PUT",
+                LinksHelper.createLink(HttpMethod.PUT,
                                        uriBuilder.clone().path(ProjectService.class, "updateProject").build(workspace, relPath).toString(),
                                        MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON, Constants.LINK_REL_UPDATE_PROJECT));
         links.add(
-                LinksHelper.createLink("GET",
+                LinksHelper.createLink(HttpMethod.GET,
                                        uriBuilder.clone().path(ProjectService.class, "getRunnerEnvironments").build(workspace, relPath)
                                                  .toString(),
                                        MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON, Constants.LINK_REL_GET_RUNNER_ENVIRONMENTS));
@@ -443,19 +446,19 @@ public class DtoConverter {
         final String workspace = folder.getWorkspace();
         final String relPath = folder.getPath().substring(1);
         //String method, String href, String produces, String rel
-        links.add(LinksHelper.createLink("GET",
+        links.add(LinksHelper.createLink(HttpMethod.GET,
                                          uriBuilder.clone().path(ProjectService.class, "exportZip").build(workspace, relPath).toString(),
-                                         "application/zip", Constants.LINK_REL_EXPORT_ZIP));
-        links.add(LinksHelper.createLink("GET",
+                                         ExtMediaType.APPLICATION_ZIP, Constants.LINK_REL_EXPORT_ZIP));
+        links.add(LinksHelper.createLink(HttpMethod.GET,
                                          uriBuilder.clone().path(ProjectService.class, "getChildren").build(workspace, relPath).toString(),
                                          MediaType.APPLICATION_JSON, Constants.LINK_REL_CHILDREN));
         links.add(
-                LinksHelper.createLink("GET", uriBuilder.clone().path(ProjectService.class, "getTree").build(workspace, relPath).toString(),
+                LinksHelper.createLink(HttpMethod.GET, uriBuilder.clone().path(ProjectService.class, "getTree").build(workspace, relPath).toString(),
                                        null, MediaType.APPLICATION_JSON, Constants.LINK_REL_TREE));
-        links.add(LinksHelper.createLink("GET",
+        links.add(LinksHelper.createLink(HttpMethod.GET,
                                          uriBuilder.clone().path(ProjectService.class, "getModules").build(workspace, relPath).toString(),
                                          MediaType.APPLICATION_JSON, Constants.LINK_REL_MODULES));
-        links.add(LinksHelper.createLink("DELETE",
+        links.add(LinksHelper.createLink(HttpMethod.DELETE,
                                          uriBuilder.clone().path(ProjectService.class, "delete").build(workspace, relPath).toString(),
                                          Constants.LINK_REL_DELETE));
         return links;
@@ -466,12 +469,12 @@ public class DtoConverter {
         final String workspace = file.getWorkspace();
         final String relPath = file.getPath().substring(1);
         links.add(
-                LinksHelper.createLink("GET", uriBuilder.clone().path(ProjectService.class, "getFile").build(workspace, relPath).toString(),
+                LinksHelper.createLink(HttpMethod.GET, uriBuilder.clone().path(ProjectService.class, "getFile").build(workspace, relPath).toString(),
                                        null, file.getMediaType(), Constants.LINK_REL_GET_CONTENT));
-        links.add(LinksHelper.createLink("PUT",
+        links.add(LinksHelper.createLink(HttpMethod.PUT,
                                          uriBuilder.clone().path(ProjectService.class, "updateFile").build(workspace, relPath).toString(),
                                          MediaType.WILDCARD, null, Constants.LINK_REL_UPDATE_CONTENT));
-        links.add(LinksHelper.createLink("DELETE",
+        links.add(LinksHelper.createLink(HttpMethod.DELETE,
                                          uriBuilder.clone().path(ProjectService.class, "delete").build(workspace, relPath).toString(),
                                          Constants.LINK_REL_DELETE));
         return links;

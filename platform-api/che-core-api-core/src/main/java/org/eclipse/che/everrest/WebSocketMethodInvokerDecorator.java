@@ -10,12 +10,15 @@
  *******************************************************************************/
 package org.eclipse.che.everrest;
 
+import static org.eclipse.che.everrest.ServerContainerInitializeListener.ENVIRONMENT_CONTEXT;
+
 import org.eclipse.che.commons.env.EnvironmentContext;
 
 import org.everrest.core.ApplicationContext;
 import org.everrest.core.impl.method.MethodInvokerDecorator;
 import org.everrest.core.method.MethodInvoker;
 import org.everrest.core.resource.GenericMethodResource;
+import org.everrest.websockets.ServerContainerInitializeListener;
 import org.everrest.websockets.WSConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,19 +40,23 @@ class WebSocketMethodInvokerDecorator extends MethodInvokerDecorator {
         WSConnection wsConnection = (WSConnection)org.everrest.core.impl.EnvironmentContext.getCurrent().get(WSConnection.class);
         if (wsConnection != null) {
 
+            EnvironmentContext environmentContext = (EnvironmentContext)wsConnection.getAttribute(ENVIRONMENT_CONTEXT);
+            if (environmentContext != null) {
+                try {
 
-            try {
-                EnvironmentContext.setCurrent((EnvironmentContext)wsConnection.getAttribute(
-                        CodenvyEverrestWebSocketServlet.ENVIRONMENT_CONTEXT));
+                    EnvironmentContext.setCurrent(environmentContext);
 
-                LOG.debug("Websocket {} in http session {} context of ws {} is temporary {}",
-                         wsConnection.getId(),
-                         wsConnection.getHttpSession().getId(),
-                         EnvironmentContext.getCurrent().getWorkspaceName(),
-                         EnvironmentContext.getCurrent().isWorkspaceTemporary());
-                return super.invokeMethod(resource, genericMethodResource, context);
-            } finally {
-                EnvironmentContext.reset();
+                    LOG.debug("Websocket {} in http session {} context of ws {} is temporary {}",
+                             wsConnection.getId(),
+                             wsConnection.getHttpSession(),
+                             EnvironmentContext.getCurrent().getWorkspaceName(),
+                             EnvironmentContext.getCurrent().isWorkspaceTemporary());
+                    return super.invokeMethod(resource, genericMethodResource, context);
+                } finally {
+                    EnvironmentContext.reset();
+                }
+            } else {
+                LOG.warn("EnvironmentContext  is null");
             }
         }
         return super.invokeMethod(resource, genericMethodResource, context);

@@ -17,6 +17,7 @@ import org.eclipse.che.api.vfs.shared.dto.ItemList;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.api.vfs.shared.dto.Property;
 import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
+
 import com.google.common.collect.Sets;
 
 import org.everrest.core.impl.ContainerResponse;
@@ -31,6 +32,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.MediaType;
+
 /** @author andrew00x */
 public class ChildrenTest extends MemoryFileSystemTest {
     private String folderId;
@@ -43,7 +47,7 @@ public class ChildrenTest extends MemoryFileSystemTest {
 
         VirtualFile folder = parentFolder.createFolder("ChildrenTest_FOLDER");
 
-        VirtualFile file = folder.createFile("ChildrenTest_FILE01", "text/plain", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+        VirtualFile file = folder.createFile("ChildrenTest_FILE01", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
         file.updateProperties(Arrays.asList(createProperty("PropertyA", "A"), createProperty("PropertyB", "B")), null);
 
         VirtualFile folder1 = folder.createFolder("ChildrenTest_FOLDER01");
@@ -58,7 +62,7 @@ public class ChildrenTest extends MemoryFileSystemTest {
     public void testGetChildren() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "children/" + folderId;
-        ContainerResponse response = launcher.service("GET", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
         assertEquals(200, response.getStatus());
         //log.info(new String(writer.getBody()));
         @SuppressWarnings("unchecked")
@@ -82,7 +86,7 @@ public class ChildrenTest extends MemoryFileSystemTest {
 
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "children/" + folderId;
-        ContainerResponse response = launcher.service("GET", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
     }
@@ -97,7 +101,7 @@ public class ChildrenTest extends MemoryFileSystemTest {
 
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "children/" + mountPoint.getRoot().getId();
-        ContainerResponse response = launcher.service("GET", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
         assertEquals(200, response.getStatus());
         ItemList children = (ItemList)response.getEntity();
         assertEquals(0, children.getItems().size());
@@ -115,7 +119,7 @@ public class ChildrenTest extends MemoryFileSystemTest {
         // Have permission for read folder but have not permission to read one of its child.
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "children/" + folderId;
-        ContainerResponse response = launcher.service("GET", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
         assertEquals(200, response.getStatus());
         //log.info(new String(writer.getBody()));
         @SuppressWarnings("unchecked")
@@ -134,7 +138,7 @@ public class ChildrenTest extends MemoryFileSystemTest {
     public void testGetChildrenPagingSkipCount() throws Exception {
         // Get all children.
         String path = SERVICE_URI + "children/" + folderId;
-        ContainerResponse response = launcher.service("GET", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, null);
         assertEquals(200, response.getStatus());
         ItemList children = (ItemList)response.getEntity();
         List<Object> all = new ArrayList<>(3);
@@ -148,14 +152,14 @@ public class ChildrenTest extends MemoryFileSystemTest {
 
         // Skip first item in result.
         path = SERVICE_URI + "children/" + folderId + "?" + "skipCount=" + 1;
-        checkPage(path, "GET", Item.class.getMethod("getName"), all);
+        checkPage(path, HttpMethod.GET, Item.class.getMethod("getName"), all);
     }
 
     @SuppressWarnings("unchecked")
     public void testGetChildrenPagingMaxItems() throws Exception {
         // Get all children.
         String path = SERVICE_URI + "children/" + folderId;
-        ContainerResponse response = launcher.service("GET", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, null);
         assertEquals(200, response.getStatus());
         ItemList children = (ItemList)response.getEntity();
         List<Object> all = new ArrayList<>(3);
@@ -166,7 +170,7 @@ public class ChildrenTest extends MemoryFileSystemTest {
         // Exclude last item from result.
         path = SERVICE_URI + "children/" + folderId + "?" + "maxItems=" + 2;
         all.remove(2);
-        checkPage(path, "GET", Item.class.getMethod("getName"), all);
+        checkPage(path, HttpMethod.GET, Item.class.getMethod("getName"), all);
     }
 
     @SuppressWarnings("unchecked")
@@ -174,7 +178,7 @@ public class ChildrenTest extends MemoryFileSystemTest {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         // Get children without filter.
         String path = SERVICE_URI + "children/" + folderId;
-        ContainerResponse response = launcher.service("GET", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
         //log.info(new String(writer.getBody()));
         assertEquals(200, response.getStatus());
         ItemList children = (ItemList)response.getEntity();
@@ -192,7 +196,7 @@ public class ChildrenTest extends MemoryFileSystemTest {
         // Get children and apply filter for properties.
         String propertyFilter = "PropertyA";
         String path = SERVICE_URI + "children/" + folderId + "?" + "propertyFilter=" + propertyFilter;
-        ContainerResponse response = launcher.service("GET", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
         //log.info(new String(writer.getBody()));
         assertEquals(200, response.getStatus());
         ItemList children = (ItemList)response.getEntity();
@@ -208,7 +212,7 @@ public class ChildrenTest extends MemoryFileSystemTest {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         // Get children and apply filter for properties.
         String path = SERVICE_URI + "children/" + folderId + "?" + "itemType=folder";
-        ContainerResponse response = launcher.service("GET", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
         //log.info(new String(writer.getBody()));
         assertEquals(200, response.getStatus());
         ItemList children = (ItemList)response.getEntity();

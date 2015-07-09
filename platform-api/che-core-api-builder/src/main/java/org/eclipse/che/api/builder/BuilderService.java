@@ -132,29 +132,20 @@ public class BuilderService extends Service {
                                             @ApiParam(value = "Project name", required = false)
                                             @Required @Description("project name")
                                             @QueryParam("project") String project) {
-        // handle project name
-        if (project != null && !project.startsWith("/")) {
-            project = '/' + project;
-        }
         final List<BuildTaskDescriptor> builds = new LinkedList<>();
         final User user = EnvironmentContext.getCurrent().getUser();
         if (user != null) {
-            final String userName = user.getName();
-            for (BuildQueueTask task : buildQueue.getTasks()) {
-                final BaseBuilderRequest request = task.getRequest();
-                if (request.getWorkspace().equals(workspace)
-                    && request.getProject().equals(project)
-                    && request.getUserId().equals(userName)) {
-                    try {
-                        builds.add(task.getDescriptor());
-                    } catch (NotFoundException e) {
-                        // NotFoundException is possible and should not be treated as error in this case. Typically it occurs if slave
-                        // builder already cleaned up the task by its internal cleaner but BuildQueue doesn't re-check yet slave builder and
-                        // doesn't have actual info about state of slave builder.
-                    } catch (BuilderException e) {
-                        // Decide ignore such error to be able show maximum available info.
-                        LOG.error(e.getMessage(), e);
-                    }
+            List<BuildQueueTask> tasks = buildQueue.getTasks(workspace, project, user);
+            for (BuildQueueTask task : tasks) {
+                try {
+                    builds.add(task.getDescriptor());
+                } catch (NotFoundException e) {
+                    // NotFoundException is possible and should not be treated as error in this case. Typically it occurs if slave
+                    // builder already cleaned up the task by its internal cleaner but BuildQueue doesn't re-check yet slave builder and
+                    // doesn't have actual info about state of slave builder.
+                } catch (BuilderException e) {
+                    // Decide ignore such error to be able show maximum available info.
+                    LOG.error(e.getMessage(), e);
                 }
             }
         }
@@ -333,7 +324,7 @@ public class BuilderService extends Service {
                                       @PathParam("ws-id") String workspace,
                                       @ApiParam(value = "Build ID", required = true)
                                       @PathParam("id") Long id,
-                                      @ApiParam(value = "Archive type", defaultValue = "tar", allowableValues = "tar,zip")
+                                      @ApiParam(value = "Archive type", defaultValue = Constants.RESULT_ARCHIVE_TAR, allowableValues = "tar,zip")
                                       @Required @QueryParam("arch") String arch,
                                       @Context HttpServletResponse httpServletResponse) throws Exception {
         // Response write directly to the servlet request stream

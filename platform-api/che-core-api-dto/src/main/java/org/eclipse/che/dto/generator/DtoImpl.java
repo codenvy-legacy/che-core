@@ -11,6 +11,7 @@
 package org.eclipse.che.dto.generator;
 
 import org.eclipse.che.dto.shared.CompactJsonDto;
+import org.eclipse.che.dto.shared.DTO;
 import org.eclipse.che.dto.shared.DelegateTo;
 import org.eclipse.che.dto.shared.JsonFieldName;
 import org.eclipse.che.dto.shared.SerializationIndex;
@@ -154,31 +155,66 @@ abstract class DtoImpl {
      * Our super interface may implement some other interface (or not). We need to know because if it does then we need to directly extend
      * said super interfaces impl class.
      */
-    protected Class<?> getSuperInterface(Class<?> dto) {
+    protected Class<?> getSuperDtoInterface(Class<?> dto) {
         Class<?>[] superInterfaces = dto.getInterfaces();
-        return superInterfaces.length == 0 ? null : superInterfaces[0];
+        if (superInterfaces.length > 0) {
+            for (Class<?> superInterface : superInterfaces) {
+                if (superInterface.isAnnotationPresent(DTO.class)) {
+                    return superInterface;
+                }
+            }
+        }
+        return null;
     }
 
     protected List<Method> getDtoGetters(Class<?> dto) {
-        List<Method> getters = new ArrayList<>();
+        final Map<String, Method> getters = new HashMap<>();
         if (enclosingTemplate.isDtoInterface(dto)) {
             addDtoGetters(dto, getters);
+            addSuperGetters(dto, getters);
         }
-        return getters;
+        return new ArrayList<>(getters.values());
+    }
+
+    /**
+     * Adds all getters from parent <b>NOT DTO</b> interfaces for given {@code dto} interface.
+     * Does not add method when it is already present in getters map.
+     */
+    private void addSuperGetters(Class<?> dto, Map<String, Method> getters) {
+        for (Class<?> superInterface : dto.getInterfaces()) {
+            if (!superInterface.isAnnotationPresent(DTO.class)) {
+                for (Method method : superInterface.getDeclaredMethods()) {
+                    //when method is already present in map then child interface
+                    //overrides it, which means that it should not be put into getters
+                    if (isDtoGetter(method) && !getters.containsKey(method.getName())) {
+                        getters.put(method.getName(), method);
+                    }
+                }
+                addSuperGetters(superInterface, getters);
+            }
+        }
     }
 
     protected List<Method> getInheritedDtoGetters(Class<?> dto) {
         List<Method> getters = new ArrayList<>();
         if (enclosingTemplate.isDtoInterface(dto)) {
-            Class<?> superInterface = getSuperInterface(getDtoInterface());
+            Class<?> superInterface = getSuperDtoInterface(dto);
             while (superInterface != null) {
                 addDtoGetters(superInterface, getters);
-                superInterface = getSuperInterface(superInterface);
+                superInterface = getSuperDtoInterface(superInterface);
             }
 
             addDtoGetters(dto, getters);
         }
         return getters;
+    }
+
+    private void addDtoGetters(Class<?> dto, Map<String, Method> getters) {
+        for (Method method : dto.getDeclaredMethods()) {
+            if (isDtoGetter(method)) {
+                getters.put(method.getName(), method);
+            }
+        }
     }
 
     private void addDtoGetters(Class<?> dto, List<Method> getters) {

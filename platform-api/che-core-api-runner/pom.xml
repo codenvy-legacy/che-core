@@ -16,7 +16,7 @@
     <parent>
         <artifactId>che-core-api-parent</artifactId>
         <groupId>org.eclipse.che.core</groupId>
-        <version>3.10.2-SNAPSHOT</version>
+        <version>3.11.1-SNAPSHOT</version>
     </parent>
     <artifactId>che-core-api-runner</artifactId>
     <packaging>jar</packaging>
@@ -64,6 +64,12 @@
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
             <version>${javax.servlet.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.websocket</groupId>
+            <artifactId>javax.websocket-api</artifactId>
+            <version>${javax.websocket.api.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

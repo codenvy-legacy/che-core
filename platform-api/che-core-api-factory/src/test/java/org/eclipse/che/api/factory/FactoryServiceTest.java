@@ -16,6 +16,7 @@ import com.jayway.restassured.response.Response;
 import org.eclipse.che.api.account.server.dao.AccountDao;
 import org.eclipse.che.api.account.server.dao.Member;
 import org.eclipse.che.api.core.ForbiddenException;
+import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.rest.ApiExceptionMapper;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
@@ -49,7 +50,9 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -242,7 +245,7 @@ public class FactoryServiceTest {
 
 
         Link expectedCreateProject =
-                dto.createDto(Link.class).withMethod("GET").withProduces("text/html").withRel("create-project")
+                dto.createDto(Link.class).withMethod(HttpMethod.GET).withProduces("text/html").withRel("create-project")
                    .withHref(getServerUrl(context) + "/f?id=" + CORRECT_FACTORY_ID);
 
         FactorySaveAnswer factorySaveAnswer = new FactorySaveAnswer();
@@ -259,29 +262,29 @@ public class FactoryServiceTest {
         assertEquals(response.getStatusCode(), 200);
         Factory responseFactoryUrl = dto.createDtoFromJson(response.getBody().asString(), Factory.class);
         assertTrue(responseFactoryUrl.getLinks().contains(
-                dto.createDto(Link.class).withMethod("GET").withProduces("application/json")
+                dto.createDto(Link.class).withMethod(HttpMethod.GET).withProduces(MediaType.APPLICATION_JSON)
                    .withHref(getServerUrl(context) + "/rest/private/factory/" +
                              CORRECT_FACTORY_ID).withRel("self")
                                                          ));
         assertTrue(responseFactoryUrl.getLinks().contains(expectedCreateProject));
         assertTrue(responseFactoryUrl.getLinks()
-                                     .contains(dto.createDto(Link.class).withMethod("GET").withProduces("text/plain")
+                                     .contains(dto.createDto(Link.class).withMethod(HttpMethod.GET).withProduces(MediaType.TEXT_PLAIN)
                                                   .withHref(getServerUrl(context) +
                                                             "/rest/private/analytics/public-metric/factory_used?factory=" +
                                                             encode(expectedCreateProject.getHref(), "UTF-8"))
                                                   .withRel("accepted")));
         assertTrue(responseFactoryUrl.getLinks()
-                                     .contains(dto.createDto(Link.class).withMethod("GET").withProduces("text/plain")
+                                     .contains(dto.createDto(Link.class).withMethod(HttpMethod.GET).withProduces(MediaType.TEXT_PLAIN)
                                                   .withHref(getServerUrl(context) + "/rest/private/factory/" +
                                                             CORRECT_FACTORY_ID + "/snippet?type=url")
                                                   .withRel("snippet/url")));
         assertTrue(responseFactoryUrl.getLinks()
-                                     .contains(dto.createDto(Link.class).withMethod("GET").withProduces("text/plain")
+                                     .contains(dto.createDto(Link.class).withMethod(HttpMethod.GET).withProduces(MediaType.TEXT_PLAIN)
                                                   .withHref(getServerUrl(context) + "/rest/private/factory/" +
                                                             CORRECT_FACTORY_ID + "/snippet?type=html")
                                                   .withRel("snippet/html")));
         assertTrue(responseFactoryUrl.getLinks()
-                                     .contains(dto.createDto(Link.class).withMethod("GET").withProduces("text/plain")
+                                     .contains(dto.createDto(Link.class).withMethod(HttpMethod.GET).withProduces(MediaType.TEXT_PLAIN)
                                                   .withHref(getServerUrl(context) + "/rest/private/factory/" +
                                                             CORRECT_FACTORY_ID + "/snippet?type=markdown")
                                                   .withRel("snippet/markdown")));
@@ -291,49 +294,49 @@ public class FactoryServiceTest {
         expectedLinks.add(expectedCreateProject);
 
         Link self = dto.createDto(Link.class);
-        self.setMethod("GET");
-        self.setProduces("application/json");
+        self.setMethod(HttpMethod.GET);
+        self.setProduces(MediaType.APPLICATION_JSON);
         self.setHref(getServerUrl(context) + "/rest/private/factory/" + CORRECT_FACTORY_ID);
         self.setRel("self");
         expectedLinks.add(self);
 
         Link accepted = dto.createDto(Link.class);
-        accepted.setMethod("GET");
-        accepted.setProduces("text/plain");
+        accepted.setMethod(HttpMethod.GET);
+        accepted.setProduces(MediaType.TEXT_PLAIN);
         accepted.setHref(getServerUrl(context) + "/rest/private/analytics/public-metric/factory_used?factory=" +
                          encode(expectedCreateProject.getHref(), "UTF-8"));
         accepted.setRel("accepted");
         expectedLinks.add(accepted);
 
         Link snippetUrl = dto.createDto(Link.class);
-        snippetUrl.setProduces("text/plain");
+        snippetUrl.setProduces(MediaType.TEXT_PLAIN);
         snippetUrl.setHref(getServerUrl(context) + "/rest/private/factory/" + CORRECT_FACTORY_ID + "/snippet?type=url");
         snippetUrl.setRel("snippet/url");
-        snippetUrl.setMethod("GET");
+        snippetUrl.setMethod(HttpMethod.GET);
         expectedLinks.add(snippetUrl);
 
         Link snippetHtml = dto.createDto(Link.class);
-        snippetHtml.setProduces("text/plain");
+        snippetHtml.setProduces(MediaType.TEXT_PLAIN);
         snippetHtml.setHref(getServerUrl(context) + "/rest/private/factory/" + CORRECT_FACTORY_ID +
                             "/snippet?type=html");
-        snippetHtml.setMethod("GET");
+        snippetHtml.setMethod(HttpMethod.GET);
         snippetHtml.setRel("snippet/html");
         expectedLinks.add(snippetHtml);
 
         Link snippetMarkdown = dto.createDto(Link.class);
-        snippetMarkdown.setProduces("text/plain");
+        snippetMarkdown.setProduces(MediaType.TEXT_PLAIN);
         snippetMarkdown.setHref(getServerUrl(context) + "/rest/private/factory/" + CORRECT_FACTORY_ID +
                                 "/snippet?type=markdown");
         snippetMarkdown.setRel("snippet/markdown");
-        snippetMarkdown.setMethod("GET");
+        snippetMarkdown.setMethod(HttpMethod.GET);
         expectedLinks.add(snippetMarkdown);
 
         Link snippetiFrame = dto.createDto(Link.class);
-        snippetiFrame.setProduces("text/plain");
+        snippetiFrame.setProduces(MediaType.TEXT_PLAIN);
         snippetiFrame.setHref(getServerUrl(context) + "/rest/private/factory/" + CORRECT_FACTORY_ID +
                               "/snippet?type=iframe");
         snippetiFrame.setRel("snippet/iframe");
-        snippetiFrame.setMethod("GET");
+        snippetiFrame.setMethod(HttpMethod.GET);
         expectedLinks.add(snippetiFrame);
 
         for (Link link : responseFactoryUrl.getLinks()) {
@@ -342,7 +345,7 @@ public class FactoryServiceTest {
             testLink.setProduces(link.getProduces());
             testLink.setHref(link.getHref());
             testLink.setRel(link.getRel());
-            testLink.setMethod("GET");
+            testLink.setMethod(HttpMethod.GET);
             assertTrue(expectedLinks.contains(testLink));
         }
 
@@ -465,7 +468,7 @@ public class FactoryServiceTest {
         expectedLinks.add(expectedCreateProject);
 
         Link self = dto.createDto(Link.class);
-        self.setProduces("application/json");
+        self.setProduces(MediaType.APPLICATION_JSON);
         self.setHref(getServerUrl(context) + "/rest/factory/" + CORRECT_FACTORY_ID);
         self.setRel("self");
         expectedLinks.add(self);
@@ -484,33 +487,33 @@ public class FactoryServiceTest {
         expectedLinks.add(imagePng);
 
         Link accepted = dto.createDto(Link.class);
-        accepted.setProduces("text/plain");
+        accepted.setProduces(MediaType.TEXT_PLAIN);
         accepted.setHref(getServerUrl(context) + "/rest/analytics/public-metric/factory_used?factory=" +
                          encode(expectedCreateProject.getHref(), "UTF-8"));
         accepted.setRel("accepted");
         expectedLinks.add(accepted);
 
         Link snippetUrl = dto.createDto(Link.class);
-        snippetUrl.setProduces("text/plain");
+        snippetUrl.setProduces(MediaType.TEXT_PLAIN);
         snippetUrl.setHref(getServerUrl(context) + "/rest/factory/" + CORRECT_FACTORY_ID + "/snippet?type=url");
         snippetUrl.setRel("snippet/url");
         expectedLinks.add(snippetUrl);
 
         Link snippetHtml = dto.createDto(Link.class);
-        snippetHtml.setProduces("text/plain");
+        snippetHtml.setProduces(MediaType.TEXT_PLAIN);
         snippetHtml.setHref(getServerUrl(context) + "/rest/factory/" + CORRECT_FACTORY_ID + "/snippet?type=html");
         snippetHtml.setRel("snippet/html");
         expectedLinks.add(snippetHtml);
 
         Link snippetMarkdown = dto.createDto(Link.class);
-        snippetMarkdown.setProduces("text/plain");
+        snippetMarkdown.setProduces(MediaType.TEXT_PLAIN);
         snippetMarkdown.setHref(getServerUrl(context) + "/rest/factory/" + CORRECT_FACTORY_ID +
                                 "/snippet?type=markdown");
         snippetMarkdown.setRel("snippet/markdown");
         expectedLinks.add(snippetMarkdown);
 
         Link snippetiFrame = dto.createDto(Link.class);
-        snippetiFrame.setProduces("text/plain");
+        snippetiFrame.setProduces(MediaType.TEXT_PLAIN);
         snippetiFrame.setHref(getServerUrl(context) + "/rest/factory/" + CORRECT_FACTORY_ID +
                               "/snippet?type=iframe");
         snippetiFrame.setRel("snippet/iframe");
@@ -913,7 +916,7 @@ public class FactoryServiceTest {
         // when, then
         Response response =
                 given().auth().basic(JettyHttpServer.ADMIN_USER_NAME, JettyHttpServer.ADMIN_USER_PASSWORD).//
-                        contentType("application/json").
+                        contentType(MediaType.APPLICATION_JSON).
                                body(JsonHelper.toJson(afterFactory)).
                                when().//
                         put("/private" + SERVICE_PATH + "/" + CORRECT_FACTORY_ID);
@@ -951,7 +954,7 @@ public class FactoryServiceTest {
         // when, then
         Response response =
                 given().auth().basic(JettyHttpServer.ADMIN_USER_NAME, JettyHttpServer.ADMIN_USER_PASSWORD).//
-                        contentType("application/json").
+                        contentType(MediaType.APPLICATION_JSON).
                                body(JsonHelper.toJson(testFactory)).
                                when().//
                         put("/private" + SERVICE_PATH + "/" + ILLEGAL_FACTORY_ID);
@@ -975,7 +978,7 @@ public class FactoryServiceTest {
         // when, then
         Response response =
                 given().auth().basic(JettyHttpServer.ADMIN_USER_NAME, JettyHttpServer.ADMIN_USER_PASSWORD).//
-                        contentType("application/json").
+                        contentType(MediaType.APPLICATION_JSON).
                                when().//
                         put("/private" + SERVICE_PATH + "/" + ILLEGAL_FACTORY_ID);
         assertEquals(response.getStatusCode(), 500);
@@ -1013,7 +1016,7 @@ public class FactoryServiceTest {
     }
 
     @Test
-    public void shouldRespondNotFoundIfProjectIsNotExist() throws ServerException, ForbiddenException {
+    public void shouldRespondNotFoundIfProjectIsNotExist() throws ServerException, ForbiddenException, NotFoundException {
 
         given().//
                 expect().//

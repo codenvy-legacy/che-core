@@ -14,6 +14,7 @@ import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
+
 import com.google.common.collect.Sets;
 
 import org.everrest.core.impl.ContainerResponse;
@@ -23,6 +24,9 @@ import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.MediaType;
 
 /** @author andrew00x */
 public class MoveTest extends MemoryFileSystemTest {
@@ -39,15 +43,15 @@ public class MoveTest extends MemoryFileSystemTest {
         moveTestDestinationFolder = mountPoint.getRoot().createFolder(name + "_MoveTest_DESTINATION");
 
         folderForMove = moveTestFolder.createFolder("MoveTest_FOLDER");
-        folderForMove.createFile("file", "text/plain", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+        folderForMove.createFile("file", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
 
-        fileForMove = moveTestFolder.createFile("MoveTest_FILE", "text/plain", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+        fileForMove = moveTestFolder.createFile("MoveTest_FILE", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
     }
 
     public void testMoveFile() throws Exception {
         String path = SERVICE_URI + "move/" + fileForMove.getId() + '?' + "parentId=" + moveTestDestinationFolder.getId();
         String originPath = fileForMove.getPath();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals(200, response.getStatus());
         String expectedPath = moveTestDestinationFolder.getPath() + '/' + fileForMove.getName();
         try {
@@ -63,10 +67,10 @@ public class MoveTest extends MemoryFileSystemTest {
     }
 
     public void testMoveFileAlreadyExist() throws Exception {
-        moveTestDestinationFolder.createFile(fileForMove.getName(), "text/plain", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+        moveTestDestinationFolder.createFile(fileForMove.getName(), MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
         String originPath = fileForMove.getPath();
         String path = SERVICE_URI + "move/" + fileForMove.getId() + '?' + "parentId=" + moveTestDestinationFolder.getId();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals(409, response.getStatus());
         try {
             mountPoint.getVirtualFile(originPath);
@@ -78,9 +82,9 @@ public class MoveTest extends MemoryFileSystemTest {
     public void testCopyFileWrongParent() throws Exception {
         final String originPath = fileForMove.getPath();
         VirtualFile destination =
-                mountPoint.getRoot().createFile("destination", "text/plain", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+                mountPoint.getRoot().createFile("destination", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
         String path = SERVICE_URI + "move/" + fileForMove.getId() + '?' + "parentId=" + destination.getId();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals(403, response.getStatus());
         try {
             mountPoint.getVirtualFile(originPath);
@@ -94,7 +98,7 @@ public class MoveTest extends MemoryFileSystemTest {
         String path = SERVICE_URI + "move/" + fileForMove.getId() + '?' + "parentId=" + moveTestDestinationFolder.getId() +
                       '&' + "lockToken=" + lockToken;
         String originPath = fileForMove.getPath();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals(200, response.getStatus());
         String expectedPath = moveTestDestinationFolder.getPath() + '/' + fileForMove.getName();
         try {
@@ -114,7 +118,7 @@ public class MoveTest extends MemoryFileSystemTest {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "move/" + fileForMove.getId() + '?' + "parentId=" + moveTestDestinationFolder.getId();
         String originPath = fileForMove.getPath();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals(403, response.getStatus());
         String expectedPath = moveTestDestinationFolder.getPath() + '/' + fileForMove.getName();
@@ -141,7 +145,7 @@ public class MoveTest extends MemoryFileSystemTest {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "move/" + fileForMove.getId() + '?' + "parentId=" + moveTestDestinationFolder.getId();
         String originPath = fileForMove.getPath();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals(403, response.getStatus());
         String expectedPath = moveTestDestinationFolder.getPath() + '/' + fileForMove.getName();
@@ -168,7 +172,7 @@ public class MoveTest extends MemoryFileSystemTest {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "move/" + fileForMove.getId() + '?' + "parentId=" + moveTestDestinationFolder.getId();
         String originPath = fileForMove.getPath();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals(403, response.getStatus());
         String expectedPath = moveTestDestinationFolder.getPath() + '/' + fileForMove.getName();
@@ -187,7 +191,7 @@ public class MoveTest extends MemoryFileSystemTest {
     public void testMoveFolder() throws Exception {
         String path = SERVICE_URI + "move/" + folderForMove.getId() + '?' + "parentId=" + moveTestDestinationFolder.getId();
         String originPath = folderForMove.getPath();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals(200, response.getStatus());
         String expectedPath = moveTestDestinationFolder.getPath() + '/' + folderForMove.getName();
         try {
@@ -211,7 +215,7 @@ public class MoveTest extends MemoryFileSystemTest {
         folderForMove.getChild("file").lock(0);
         String path = SERVICE_URI + "move/" + folderForMove.getId() + '?' + "parentId=" + moveTestDestinationFolder.getId();
         String originPath = folderForMove.getPath();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals(403, response.getStatus());
         String expectedPath = moveTestDestinationFolder.getPath() + '/' + folderForMove.getName();
         try {
@@ -237,7 +241,7 @@ public class MoveTest extends MemoryFileSystemTest {
 
         String path = SERVICE_URI + "move/" + folderForMove.getId() + '?' + "parentId=" + moveTestDestinationFolder.getId();
         String originPath = folderForMove.getPath();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals(403, response.getStatus());
         String expectedPath = moveTestDestinationFolder.getPath() + '/' + folderForMove.getName();
         try {
@@ -255,7 +259,7 @@ public class MoveTest extends MemoryFileSystemTest {
     public void testMoveFolderAlreadyExist() throws Exception {
         moveTestDestinationFolder.createFolder(folderForMove.getName());
         String path = SERVICE_URI + "move/" + folderForMove.getId() + '?' + "parentId=" + moveTestDestinationFolder.getId();
-        ContainerResponse response = launcher.service("POST", path, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals(409, response.getStatus());
     }
 }

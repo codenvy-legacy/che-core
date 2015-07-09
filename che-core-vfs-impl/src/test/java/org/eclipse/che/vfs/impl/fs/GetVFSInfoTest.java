@@ -14,7 +14,6 @@ import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo;
 import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.ACLCapability;
 import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
 import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.QueryCapability;
-
 import org.everrest.core.impl.ContainerResponse;
 import org.everrest.core.tools.ByteArrayContainerResponseWriter;
 
@@ -22,10 +21,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.ws.rs.HttpMethod;
+
 public class GetVFSInfoTest extends LocalFileSystemTest {
     public void testVFSInfo() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        ContainerResponse response = launcher.service("GET", SERVICE_URI, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.GET, SERVICE_URI, BASE_URI, null, null, writer, null);
         assertNotNull(response.getEntity());
         assertEquals(response.getEntity().toString(), 200, response.getStatus());
         //log.info(new String(writer.getBody()));

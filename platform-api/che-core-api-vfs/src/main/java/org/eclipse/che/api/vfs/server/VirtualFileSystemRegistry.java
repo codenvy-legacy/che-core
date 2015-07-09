@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.vfs.server;
 
+import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 
 import javax.inject.Singleton;
@@ -41,7 +42,7 @@ public class VirtualFileSystemRegistry {
         }
     }
 
-    public VirtualFileSystemProvider getProvider(String vfsId) throws ServerException {
+    public VirtualFileSystemProvider getProvider(String vfsId) throws ServerException, NotFoundException {
         String myId = id(vfsId);
         VirtualFileSystemProvider provider = providers.get(myId);
         if (provider == null) {
@@ -59,7 +60,7 @@ public class VirtualFileSystemRegistry {
         return provider;
     }
 
-    protected VirtualFileSystemProvider loadProvider(String vfsId) throws ServerException {
+    protected VirtualFileSystemProvider loadProvider(String vfsId) throws ServerException, NotFoundException {
         return null;
     }
 

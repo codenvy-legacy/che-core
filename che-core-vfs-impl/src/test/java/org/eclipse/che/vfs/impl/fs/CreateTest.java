@@ -15,6 +15,7 @@ import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.user.UserImpl;
 import org.eclipse.che.dto.server.DtoFactory;
+
 import com.google.common.collect.Sets;
 
 import org.everrest.core.impl.ContainerResponse;
@@ -26,6 +27,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 
 import static org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
 
@@ -63,16 +68,16 @@ public class CreateTest extends LocalFileSystemTest {
         String requestPath = SERVICE_URI + "file/" + folderId + '?' + "name=" + name;
         Map<String, List<String>> headers = new HashMap<>();
         List<String> contentType = new ArrayList<>();
-        contentType.add("text/plain");
-        headers.put("Content-Type", contentType);
+        contentType.add(MediaType.TEXT_PLAIN);
+        headers.put(HttpHeaders.CONTENT_TYPE, contentType);
 
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, headers, content.getBytes(), null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, headers, content.getBytes(), null);
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         String expectedPath = folderPath + '/' + name;
         assertTrue("File was not created in expected location. ", exists(expectedPath));
         assertEquals(content, new String(readFile(expectedPath)));
         Map<String, String[]> expectedProperties = new HashMap<>(1);
-        expectedProperties.put("vfs:mimeType", new String[]{"text/plain"});
+        expectedProperties.put("vfs:mimeType", new String[]{MediaType.TEXT_PLAIN});
         validateProperties(expectedPath, expectedProperties);
     }
 
@@ -82,7 +87,7 @@ public class CreateTest extends LocalFileSystemTest {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "file/" + folderId + '?' + "name=" + name;
         ContainerResponse response =
-                launcher.service("POST", requestPath, BASE_URI, null, DEFAULT_CONTENT_BYTES, writer, null);
+                launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, DEFAULT_CONTENT_BYTES, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals(409, response.getStatus());
     }
@@ -93,26 +98,26 @@ public class CreateTest extends LocalFileSystemTest {
         String requestPath = SERVICE_URI + "file/" + ROOT_ID + '?' + "name=" + name;
         Map<String, List<String>> headers = new HashMap<>();
         List<String> contentType = new ArrayList<>();
-        contentType.add("text/plain");
-        headers.put("Content-Type", contentType);
+        contentType.add(MediaType.TEXT_PLAIN);
+        headers.put(HttpHeaders.CONTENT_TYPE, contentType);
 
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         ContainerResponse response =
-                launcher.service("POST", requestPath, BASE_URI, headers, content.getBytes(), writer, null);
+                launcher.service(HttpMethod.POST, requestPath, BASE_URI, headers, content.getBytes(), writer, null);
         log.info(new String(writer.getBody()));
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         String expectedPath = '/' + name;
         assertTrue("File was not created in expected location. ", exists(expectedPath));
         assertEquals(content, new String(readFile(expectedPath)));
         Map<String, String[]> expectedProperties = new HashMap<>(1);
-        expectedProperties.put("vfs:mimeType", new String[]{"text/plain"});
+        expectedProperties.put("vfs:mimeType", new String[]{MediaType.TEXT_PLAIN});
         validateProperties(expectedPath, expectedProperties);
     }
 
     public void testCreateFileNoContent() throws Exception {
         String name = "testCreateFileNoContent";
         String requestPath = SERVICE_URI + "file/" + folderId + '?' + "name=" + name;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, null);
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         String expectedPath = folderPath + '/' + name;
         assertTrue("File was not created in expected location. ", exists(expectedPath));
@@ -125,7 +130,7 @@ public class CreateTest extends LocalFileSystemTest {
         String content = "test create file without media type";
         String requestPath = SERVICE_URI + "file/" + folderId + '?' + "name=" + name;
         ContainerResponse response =
-                launcher.service("POST", requestPath, BASE_URI, null, content.getBytes(), writer, null);
+                launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, content.getBytes(), writer, null);
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         String expectedPath = folderPath + '/' + name;
         assertTrue("File was not created in expected location. ", exists(expectedPath));
@@ -136,7 +141,7 @@ public class CreateTest extends LocalFileSystemTest {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "file/" + folderId;
         ContainerResponse response =
-                launcher.service("POST", requestPath, BASE_URI, null, DEFAULT_CONTENT_BYTES, writer, null);
+                launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, DEFAULT_CONTENT_BYTES, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals(500, response.getStatus());
     }
@@ -150,7 +155,7 @@ public class CreateTest extends LocalFileSystemTest {
         EnvironmentContext.getCurrent().setUser(new UserImpl("andrew", "andrew", null, Arrays.asList("workspace/developer"), false));
         // --
         ContainerResponse response =
-                launcher.service("POST", requestPath, BASE_URI, null, content.getBytes(), writer, null);
+                launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, content.getBytes(), writer, null);
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         String expectedPath = protectedFolderPath + '/' + name;
         assertTrue("File was not created in expected location. ", exists(expectedPath));
@@ -162,7 +167,7 @@ public class CreateTest extends LocalFileSystemTest {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "file/" + protectedFolderId + '?' + "name=" + name;
         ContainerResponse response =
-                launcher.service("POST", requestPath, BASE_URI, null, DEFAULT_CONTENT_BYTES, writer, null);
+                launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, DEFAULT_CONTENT_BYTES, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals(403, response.getStatus());
         assertFalse(exists(protectedFolderPath + '/' + name));
@@ -174,7 +179,7 @@ public class CreateTest extends LocalFileSystemTest {
         // Try to create new file in other file.
         String requestPath = SERVICE_URI + "file/" + fileId + '?' + "name=" + name;
         ContainerResponse response =
-                launcher.service("POST", requestPath, BASE_URI, null, DEFAULT_CONTENT_BYTES, writer, null);
+                launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, DEFAULT_CONTENT_BYTES, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals(403, response.getStatus());
     }
@@ -184,7 +189,7 @@ public class CreateTest extends LocalFileSystemTest {
         String name = "testCreateFileWrongParentId";
         String requestPath = SERVICE_URI + "file/" + folderId + "_WRONG_ID" + '?' + "name=" + name;
         ContainerResponse response =
-                launcher.service("POST", requestPath, BASE_URI, null, DEFAULT_CONTENT_BYTES, writer, null);
+                launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, DEFAULT_CONTENT_BYTES, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals(404, response.getStatus());
     }
@@ -193,7 +198,7 @@ public class CreateTest extends LocalFileSystemTest {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String name = "testCreateFolder";
         String requestPath = SERVICE_URI + "folder/" + folderId + '?' + "name=" + name;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         String expectedPath = folderPath + '/' + name;
@@ -204,7 +209,7 @@ public class CreateTest extends LocalFileSystemTest {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String name = "FolderInRoot";
         String requestPath = SERVICE_URI + "folder/" + ROOT_ID + '?' + "name=" + name;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         String expectedPath = '/' + name;
@@ -214,7 +219,7 @@ public class CreateTest extends LocalFileSystemTest {
     public void testCreateFolderNoName() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "folder/" + folderId;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals(500, response.getStatus());
     }
@@ -223,7 +228,7 @@ public class CreateTest extends LocalFileSystemTest {
         String name = "testCreateFolderNoPermissions";
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "folder/" + protectedFolderId + '?' + "name=" + name;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals(403, response.getStatus());
         String expectedPath = protectedFolderPath + '/' + name;
@@ -234,7 +239,7 @@ public class CreateTest extends LocalFileSystemTest {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String name = "testCreateFolderWrongParentId";
         String requestPath = SERVICE_URI + "folder/" + folderId + "_WRONG_ID" + '?' + "name=" + name;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals(404, response.getStatus());
     }
@@ -243,7 +248,7 @@ public class CreateTest extends LocalFileSystemTest {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String name = "testCreateFolderHierarchy/1/2/3/4/5";
         String requestPath = SERVICE_URI + "folder/" + folderId + '?' + "name=" + name;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         String expectedPath = folderPath + '/' + name;
@@ -255,7 +260,7 @@ public class CreateTest extends LocalFileSystemTest {
         String name = "testCreateFolderHierarchyExists/1/2/3/4/5";
         createDirectory(folderPath, name);
         String requestPath = SERVICE_URI + "folder/" + folderId + '?' + "name=" + name;
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, DEFAULT_CONTENT_BYTES, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, DEFAULT_CONTENT_BYTES, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals(409, response.getStatus());
     }
@@ -268,7 +273,7 @@ public class CreateTest extends LocalFileSystemTest {
         name += "/4/5";
         String requestPath = SERVICE_URI + "folder/" + folderId + '?' + "name=" + name;
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        ContainerResponse response = launcher.service("POST", requestPath, BASE_URI, null, null, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         assertEquals(folderPath + "/testCreateFolderHierarchy2/1/2/3/4/5", ((Folder)response.getEntity()).getPath());

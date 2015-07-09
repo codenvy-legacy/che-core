@@ -18,6 +18,8 @@ import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.core.rest.shared.dto.ServiceDescriptor;
 import org.eclipse.che.dto.server.DtoFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -25,6 +27,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.ws.rs.HttpMethod;
 
 /**
  * Provides basic functionality to access remote {@link Service Service}. Basically provides next information about {@code Service}:
@@ -40,6 +44,7 @@ import java.util.List;
  * @see #getLinks()
  */
 public class RemoteServiceDescriptor {
+    private static final Logger LOG = LoggerFactory.getLogger(RemoteServiceDescriptor.class);
 
     protected final String baseUrl;
     private final   URL    baseUrlURL;
@@ -109,14 +114,18 @@ public class RemoteServiceDescriptor {
 
     /** Checks service availability. */
     public boolean isAvailable() {
+        LOG.debug("Testing availability {}", baseUrlURL);
         HttpURLConnection conn = null;
         try {
             conn = (HttpURLConnection)baseUrlURL.openConnection();
             conn.setConnectTimeout(3 * 1000);
-            conn.setReadTimeout(3 * 1000);
-            conn.setRequestMethod("OPTIONS");
-            return 200 == conn.getResponseCode();
+            conn.setReadTimeout(10 * 1000);
+            conn.setRequestMethod(HttpMethod.OPTIONS);
+            int responseCode = conn.getResponseCode();
+            LOG.debug("OPTIONS {} response {}", baseUrlURL, responseCode);
+            return 200 == responseCode;
         } catch (IOException e) {
+            LOG.warn(e.getLocalizedMessage());
             return false;
         } finally {
             if (conn != null) {

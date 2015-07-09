@@ -29,6 +29,7 @@ import org.eclipse.che.api.core.util.StreamPump;
 import org.eclipse.che.api.core.util.Watchdog;
 import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.dto.server.DtoFactory;
+
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import org.slf4j.Logger;
@@ -36,6 +37,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.ws.rs.core.MediaType;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
@@ -413,7 +416,7 @@ public abstract class Builder {
 
     protected BuildLogger createBuildLogger(BuilderConfiguration buildConfiguration, java.io.File logFile) throws BuilderException {
         try {
-            return new DefaultBuildLogger(logFile, "text/plain");
+            return new DefaultBuildLogger(logFile, MediaType.TEXT_PLAIN);
         } catch (IOException e) {
             throw new BuilderException(e);
         }

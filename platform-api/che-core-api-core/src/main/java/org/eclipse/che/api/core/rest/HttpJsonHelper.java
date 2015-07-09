@@ -21,10 +21,14 @@ import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.Pair;
 import org.eclipse.che.commons.user.User;
 import org.eclipse.che.dto.server.DtoFactory;
+
 import com.google.common.io.CharStreams;
 
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -206,12 +210,12 @@ public class HttpJsonHelper {
      */
     public static <DTO> DTO get(Class<DTO> dtoInterface, String url, Pair<String, ?>... parameters)
             throws IOException, ServerException, NotFoundException, ForbiddenException, UnauthorizedException, ConflictException {
-        return request(dtoInterface, url, "GET", null, parameters);
+        return request(dtoInterface, url, HttpMethod.GET, null, parameters);
     }
 
     public static <DTO> DTO get(Class<DTO> dtoInterface, int timeout, String url, Pair<String, ?>... parameters)
             throws IOException, ServerException, NotFoundException, ForbiddenException, UnauthorizedException, ConflictException {
-        return request(dtoInterface, timeout, url, "GET", null, parameters);
+        return request(dtoInterface, timeout, url, HttpMethod.GET, null, parameters);
     }
 
     /**
@@ -235,12 +239,12 @@ public class HttpJsonHelper {
      */
     public static <DTO> DTO post(Class<DTO> dtoInterface, String url, Object body, Pair<String, ?>... parameters)
             throws IOException, ServerException, NotFoundException, ForbiddenException, UnauthorizedException, ConflictException {
-        return request(dtoInterface, url, "POST", body, parameters);
+        return request(dtoInterface, url, HttpMethod.POST, body, parameters);
     }
 
     public static <DTO> DTO post(Class<DTO> dtoInterface, int timeout, String url, Object body, Pair<String, ?>... parameters)
             throws IOException, ServerException, NotFoundException, ForbiddenException, UnauthorizedException, ConflictException {
-        return request(dtoInterface, timeout, url, "POST", body, parameters);
+        return request(dtoInterface, timeout, url, HttpMethod.POST, body, parameters);
     }
 
     /**
@@ -264,12 +268,12 @@ public class HttpJsonHelper {
      */
     public static <DTO> DTO put(Class<DTO> dtoInterface, String url, Object body, Pair<String, ?>... parameters)
             throws IOException, ServerException, NotFoundException, ForbiddenException, UnauthorizedException, ConflictException {
-        return request(dtoInterface, url, "PUT", body, parameters);
+        return request(dtoInterface, url, HttpMethod.PUT, body, parameters);
     }
 
     public static <DTO> DTO put(Class<DTO> dtoInterface, int timeout, String url, Object body, Pair<String, ?>... parameters)
             throws IOException, ServerException, NotFoundException, ForbiddenException, UnauthorizedException, ConflictException {
-        return request(dtoInterface, timeout, url, "PUT", body, parameters);
+        return request(dtoInterface, timeout, url, HttpMethod.PUT, body, parameters);
     }
 
     /**
@@ -291,12 +295,12 @@ public class HttpJsonHelper {
      */
     public static <DTO> DTO options(Class<DTO> dtoInterface, String url, Pair<String, ?>... parameters)
             throws IOException, ServerException, NotFoundException, ForbiddenException, UnauthorizedException, ConflictException {
-        return request(dtoInterface, url, "OPTIONS", null, parameters);
+        return request(dtoInterface, url, HttpMethod.OPTIONS, null, parameters);
     }
 
     public static <DTO> DTO options(Class<DTO> dtoInterface, int timeout, String url, Pair<String, ?>... parameters)
             throws IOException, ServerException, NotFoundException, ForbiddenException, UnauthorizedException, ConflictException {
-        return request(dtoInterface, timeout, url, "OPTIONS", null, parameters);
+        return request(dtoInterface, timeout, url, HttpMethod.OPTIONS, null, parameters);
     }
 
     /**
@@ -318,12 +322,12 @@ public class HttpJsonHelper {
      */
     public static <DTO> DTO delete(Class<DTO> dtoInterface, String url, Pair<String, ?>... parameters)
             throws IOException, ServerException, NotFoundException, ForbiddenException, UnauthorizedException, ConflictException {
-        return request(dtoInterface, url, "DELETE", null, parameters);
+        return request(dtoInterface, url, HttpMethod.DELETE, null, parameters);
     }
 
     public static <DTO> DTO delete(Class<DTO> dtoInterface, int timeout, String url, Pair<String, ?>... parameters)
             throws IOException, ServerException, NotFoundException, ForbiddenException, UnauthorizedException, ConflictException {
-        return request(dtoInterface, timeout, url, "DELETE", null, parameters);
+        return request(dtoInterface, timeout, url, HttpMethod.DELETE, null, parameters);
     }
 
     private HttpJsonHelper() {
@@ -424,12 +428,12 @@ public class HttpJsonHelper {
             try {
                 conn.setRequestMethod(method);
                 if (body != null) {
-                    conn.addRequestProperty("content-type", "application/json");
+                    conn.addRequestProperty("content-type", MediaType.APPLICATION_JSON);
                     conn.setDoOutput(true);
 
-                    if ("DELETE".equals(method)) { //to avoid jdk bug described here http://bugs.java.com/view_bug.do?bug_id=7157360
-                        conn.setRequestMethod("POST");
-                        conn.setRequestProperty("X-HTTP-Method-Override", "DELETE");
+                    if (HttpMethod.DELETE.equals(method)) { //to avoid jdk bug described here http://bugs.java.com/view_bug.do?bug_id=7157360
+                        conn.setRequestMethod(HttpMethod.POST);
+                        conn.setRequestProperty("X-HTTP-Method-Override", HttpMethod.DELETE);
                     }
 
                     try (OutputStream output = conn.getOutputStream()) {
@@ -446,7 +450,7 @@ public class HttpJsonHelper {
                     final InputStream fIn = in;
                     final String str = CharStreams.toString(new InputStreamReader(fIn));
                     final String contentType = conn.getContentType();
-                    if (contentType != null && contentType.startsWith("application/json")) {
+                    if (contentType != null && contentType.startsWith(MediaType.APPLICATION_JSON)) {
                         final ServiceError serviceError = DtoFactory.getInstance().createDtoFromJson(str, ServiceError.class);
                         if (serviceError.getMessage() != null) {
                             if (responseCode == Response.Status.FORBIDDEN.getStatusCode()) {
@@ -468,7 +472,7 @@ public class HttpJsonHelper {
                                                         UriBuilder.fromUri(url).replaceQuery("token").build(), method, responseCode, str));
                 }
                 final String contentType = conn.getContentType();
-                if (!(contentType == null || contentType.startsWith("application/json"))) {
+                if (!(contentType == null || contentType.startsWith(MediaType.APPLICATION_JSON))) {
                     throw new IOException("We received an error response from the Codenvy server." +
                                           " Retry the request. If this issue continues, contact. support.");
                 }

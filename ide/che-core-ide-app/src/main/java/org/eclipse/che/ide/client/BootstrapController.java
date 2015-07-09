@@ -147,7 +147,8 @@ public class BootstrapController {
                     @Override
                     public void execute() {
                         displayIDE();
-                        boolean openLastProject = Config.getProjectName() == null && Config.getStartupParam("action") == null;
+                        boolean openLastProject = Config.getProjectName() == null && Config.getStartupParam("action") == null &&
+                                                  Config.getStartupParam("id") == null;
                         appStateManager.start(openLastProject);
                     }
                 });
