@@ -170,9 +170,8 @@ public class ProjectService extends Service {
     @GenerateLink(rel = Constants.LINK_REL_GET_PROJECTS)
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<ProjectReference> getProjects(@ApiParam(value = "ID of workspace to get projects", required = true)
-                                              @PathParam("ws-id") String workspace) throws IOException, ServerException,
-                                                                                           ConflictException, ForbiddenException {
+    public List<ProjectReference> getProjects(@ApiParam("ID of workspace to get projects") @PathParam("ws-id") String workspace)
+            throws IOException, ServerException, ConflictException, ForbiddenException, NotFoundException {
         final List<Project> projects = projectManager.getProjects(workspace);
 
         final List<ProjectReference> projectReferences = new ArrayList<>(projects.size());
@@ -232,13 +231,16 @@ public class ProjectService extends Service {
         }
 
         try {
-            ProjectDescriptor projectDescriptor = DtoConverter.toDescriptorDto2(project, getServiceContext().getServiceUriBuilder(),
-                                                                                projectManager.getProjectTypeRegistry());
-            return projectDescriptor;
+            return DtoConverter.toDescriptorDto2(project,
+                                                 getServiceContext().getServiceUriBuilder(),
+                                                 projectManager.getProjectTypeRegistry(),
+                                                 workspace);
         } catch (InvalidValueException e) {
             NotValidProject notValidProject = new NotValidProject(project.getBaseFolder(), projectManager);
-            return DtoConverter.toDescriptorDto2(notValidProject, getServiceContext().getServiceUriBuilder(),
-                                                 projectManager.getProjectTypeRegistry());
+            return DtoConverter.toDescriptorDto2(notValidProject,
+                                                 getServiceContext().getServiceUriBuilder(),
+                                                 projectManager.getProjectTypeRegistry(),
+                                                 workspace);
         }
     }
 
@@ -262,7 +264,7 @@ public class ProjectService extends Service {
                                            @Description("project name")
                                            @QueryParam("name") String name,
                                            @Description("descriptor of project") NewProject newProject)
-            throws ConflictException, ForbiddenException, ServerException {
+            throws ConflictException, ForbiddenException, ServerException, NotFoundException {
 
         final GeneratorDescription generatorDescription = newProject.getGeneratorDescription();
         Map<String, String> options;
@@ -277,8 +279,10 @@ public class ProjectService extends Service {
                                                              options,
                                                              newProject.getVisibility());
 
-        final ProjectDescriptor descriptor = DtoConverter.toDescriptorDto2(project, getServiceContext().getServiceUriBuilder(),
-                                                                           projectManager.getProjectTypeRegistry());
+        final ProjectDescriptor descriptor = DtoConverter.toDescriptorDto2(project,
+                                                                           getServiceContext().getServiceUriBuilder(),
+                                                                           projectManager.getProjectTypeRegistry(),
+                                                                           workspace);
 
         eventService.publish(new ProjectCreatedEvent(project.getWorkspace(), project.getPath()));
 
@@ -307,6 +311,9 @@ public class ProjectService extends Service {
             throws NotFoundException, ForbiddenException, ServerException, ConflictException, IOException {
 
         Project parent = projectManager.getProject(workspace, path);
+        if (parent == null) {
+            throw new NotFoundException("Project " + path + " was not found");
+        }
         final List<String> modulePaths = new LinkedList<>();
         final List<ProjectDescriptor> modules = new LinkedList<>();
         for (String p : parent.getModules().get()) {
@@ -325,7 +332,8 @@ public class ProjectService extends Service {
             if (module != null) {
                 modules.add(DtoConverter.toDescriptorDto2(module,
                                                           getServiceContext().getServiceUriBuilder(),
-                                                          projectManager.getProjectTypeRegistry()));
+                                                          projectManager.getProjectTypeRegistry(),
+                                                          workspace));
             }
         }
         return modules;
@@ -361,8 +369,10 @@ public class ProjectService extends Service {
                 (newProject == null) ? null : newProject.getVisibility());
 
 
-        final ProjectDescriptor descriptor = DtoConverter.toDescriptorDto2(module, getServiceContext().getServiceUriBuilder(),
-                                                                           projectManager.getProjectTypeRegistry());
+        final ProjectDescriptor descriptor = DtoConverter.toDescriptorDto2(module,
+                                                                           getServiceContext().getServiceUriBuilder(),
+                                                                           projectManager.getProjectTypeRegistry(),
+                                                                           workspace);
 
         eventService.publish(new ProjectCreatedEvent(module.getWorkspace(), module.getPath()));
 
@@ -438,8 +448,10 @@ public class ProjectService extends Service {
             }
         }
 
-        return DtoConverter.toDescriptorDto2(project, getServiceContext().getServiceUriBuilder(),
-                                             projectManager.getProjectTypeRegistry());
+        return DtoConverter.toDescriptorDto2(project,
+                                             getServiceContext().getServiceUriBuilder(),
+                                             projectManager.getProjectTypeRegistry(),
+                                             workspace);
     }
 
     @ApiOperation(value = "Estimates if the folder supposed to be project of certain type",
@@ -541,7 +553,7 @@ public class ProjectService extends Service {
                                  @PathParam("ws-id") String workspace,
                                  @ApiParam(value = "Path to a new folder destination", required = true)
                                  @PathParam("path") String path)
-            throws ConflictException, ForbiddenException, ServerException {
+            throws ConflictException, ForbiddenException, ServerException, NotFoundException {
         final FolderEntry newFolder = projectManager.getProjectsRoot(workspace).createFolder(path);
         final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
         final ItemReference folderReference = DtoConverter.toItemReferenceDto(newFolder, uriBuilder.clone());
@@ -711,31 +723,33 @@ public class ProjectService extends Service {
     @ApiOperation(value = "Copy resource",
                   notes = "Copy resource to a new location which is specified in a query parameter",
                   position = 14)
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = ""),
-            @ApiResponse(code = 403, message = "User not authorized to call this operation"),
-            @ApiResponse(code = 404, message = "Not found"),
-            @ApiResponse(code = 409, message = "Resource already exists"),
-            @ApiResponse(code = 500, message = "Internal Server Error")})
+    @ApiResponses({@ApiResponse(code = 201, message = ""),
+                   @ApiResponse(code = 403, message = "User not authorized to call this operation"),
+                   @ApiResponse(code = 404, message = "Not found"),
+                   @ApiResponse(code = 409, message = "Resource already exists"),
+                   @ApiResponse(code = 500, message = "Internal Server Error")})
     @POST
     @Path("/copy/{path:.*}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response copy(@ApiParam(value = "Workspace ID", required = true)
-                         @PathParam("ws-id") String workspace,
-                         @ApiParam(value = "Path to a resource", required = true)
-                         @PathParam("path") String path,
-                         @ApiParam(value = "Path to a new location", required = true)
-            @QueryParam("to") String newParent,
-            @DefaultValue("{}") @Description("options for copy operation") CopyOptions copyOptions)
-            throws NotFoundException, ForbiddenException, ConflictException, ServerException {
+    public Response copy(@ApiParam("Workspace ID") @PathParam("ws-id") String workspace,
+                         @ApiParam("Path to a resource") @PathParam("path") String path,
+                         @ApiParam(value = "Path to a new location", required = true) @QueryParam("to") String newParent,
+                         CopyOptions copyOptions) throws NotFoundException,
+                                                         ForbiddenException,
+                                                         ConflictException,
+                                                         ServerException {
         final VirtualFileEntry entry = getVirtualFileEntry(workspace, path);
         // used to indicate over write of destination
         boolean isOverWrite = false;
         // used to hold new name set in request body
         String newName = entry.getName();
         if (copyOptions != null) {
-            isOverWrite = copyOptions.getOverWrite();
-            newName = copyOptions.getName();
+            if (copyOptions.getOverWrite() != null) {
+                isOverWrite = copyOptions.getOverWrite();
+            }
+            if (copyOptions.getName() != null) {
+                newName = copyOptions.getName();
+            }
         }
         final VirtualFileEntry copy = entry.copyTo(newParent, newName, isOverWrite);
         final URI location = getServiceContext().getServiceUriBuilder()
@@ -745,7 +759,6 @@ public class ProjectService extends Service {
             Project project = new Project((FolderEntry)copy, projectManager);
             final String name = project.getName();
             final String projectType = project.getConfig().getTypeId();
-            entry.remove();
 
             logProjectCreatedEvent(name, projectType);
         }
@@ -755,33 +768,34 @@ public class ProjectService extends Service {
     @ApiOperation(value = "Move resource",
                   notes = "Move resource to a new location which is specified in a query parameter",
                   position = 15)
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = ""),
-            @ApiResponse(code = 403, message = "User not authorized to call this operation"),
-            @ApiResponse(code = 404, message = "Not found"),
-            @ApiResponse(code = 409, message = "Resource already exists"),
-            @ApiResponse(code = 500, message = "Internal Server Error")})
+    @ApiResponses({@ApiResponse(code = 201, message = ""),
+                   @ApiResponse(code = 403, message = "User not authorized to call this operation"),
+                   @ApiResponse(code = 404, message = "Not found"),
+                   @ApiResponse(code = 409, message = "Resource already exists"),
+                   @ApiResponse(code = 500, message = "Internal Server Error")})
     @POST
     @Path("/move/{path:.*}")
-    public Response move(@ApiParam(value = "Workspace ID", required = true)
-                         @PathParam("ws-id") String workspace,
-                         @ApiParam(value = "Path to a resource to be moved", required = true)
-                         @PathParam("path") String path,
-                         @ApiParam(value = "Path to a new location", required = true)
-            @QueryParam("to") String newParent,
-            @DefaultValue("{}") @Description("options for move operation") MoveOptions moveOptions)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response move(@ApiParam("Workspace ID") @PathParam("ws-id") String workspace,
+                         @ApiParam("Path to a resource to be moved") @PathParam("path") String path,
+                         @ApiParam("Path to a new location") @QueryParam("to") String newParent,
+                         MoveOptions moveOptions)
             throws NotFoundException, ForbiddenException, ConflictException, ServerException {
         final VirtualFileEntry entry = getVirtualFileEntry(workspace, path);
-        
+
 // used to indicate over write of destination
         boolean isOverWrite = false;
         // used to hold new name set in request body
         String newName = entry.getName();
         if (moveOptions != null) {
-            isOverWrite = moveOptions.getOverWrite();
-            newName = moveOptions.getName();
+            if (moveOptions.getOverWrite() != null) {
+                isOverWrite = moveOptions.getOverWrite();
+            }
+            if (moveOptions.getName() != null) {
+                newName = moveOptions.getName();
+            }
         }
-        
+
         entry.moveTo(newParent, newName, isOverWrite);
         final URI location = getServiceContext().getServiceUriBuilder()
                                                 .path(getClass(), entry.isFile() ? "getFile" : "getChildren")
@@ -790,7 +804,6 @@ public class ProjectService extends Service {
             Project project = new Project((FolderEntry)entry, projectManager);
             final String name = project.getName();
             final String projectType = project.getConfig().getTypeId();
-            entry.remove();
             LOG.info("EVENT#project-destroyed# PROJECT#{}# TYPE#{}# WS#{}# USER#{}#", name, projectType,
                     EnvironmentContext.getCurrent().getWorkspaceName(), EnvironmentContext.getCurrent().getUser().getName());
 
@@ -898,7 +911,8 @@ public class ProjectService extends Service {
         return configureProject(importProject, baseProjectFolder, workspace, creationDate);
     }
 
-    private VirtualFileEntry getVirtualFile(String workspace, String path, boolean force) throws ServerException, ForbiddenException, ConflictException {
+    private VirtualFileEntry getVirtualFile(String workspace, String path, boolean force)
+            throws ServerException, ForbiddenException, ConflictException, NotFoundException {
         VirtualFileEntry virtualFile = projectManager.getProjectsRoot(workspace).getChild(path);
         if (virtualFile != null && virtualFile.isFile()) {
             // File with same name exist already exists.
@@ -945,7 +959,8 @@ public class ProjectService extends Service {
                                                             visibility);
             projectDescriptor = DtoConverter.toDescriptorDto2(project,
                                                               getServiceContext().getServiceUriBuilder(),
-                                                              projectManager.getProjectTypeRegistry());
+                                                              projectManager.getProjectTypeRegistry(),
+                                                              workspace);
             PostImportProjectHandler postImportProjectHandler =
                     projectHandlerRegistry.getPostImportProjectHandler(projectDescriptor.getType());
             if (postImportProjectHandler != null) {
@@ -957,7 +972,8 @@ public class ProjectService extends Service {
 
             projectDescriptor = DtoConverter.toDescriptorDto2(project,
                                                               getServiceContext().getServiceUriBuilder(),
-                                                              projectManager.getProjectTypeRegistry());
+                                                              projectManager.getProjectTypeRegistry(),
+                                                              workspace);
             ProjectProblem problem = DtoFactory.getInstance().createDto(ProjectProblem.class).withCode(1).withMessage(e.getMessage());
             projectDescriptor.setProblems(Arrays.asList(problem));
         }
@@ -1312,13 +1328,13 @@ public class ProjectService extends Service {
             return null;
         }
         final List<? extends VirtualFileEntry> children;
-        
+
         if (includeFiles) {
-        	children = folder.getChildFoldersFiles();        	
-        }else { 
+        	children = folder.getChildFoldersFiles();
+        }else {
         	children = folder.getChildFolders();
         }
-        
+
         final List<TreeElement> nodes = new ArrayList<>(children.size());
         for (VirtualFileEntry child : children) {
         	if (child.isFolder()) {
@@ -1487,7 +1503,8 @@ public class ProjectService extends Service {
                                                    @ApiParam(value = "Path to a project", required = true)
                                                    @PathParam("path") String path,
                                                    @ApiParam(value = "Permissions", required = true)
-                                                   List<AccessControlEntry> acl) throws ForbiddenException, ServerException {
+                                                   List<AccessControlEntry> acl)
+            throws ForbiddenException, ServerException, NotFoundException {
         final Project project = projectManager.getProject(wsId, path);
         if (project == null) {
             throw new ServerException(String.format("Project '%s' doesn't exist in workspace '%s'. ", path, wsId));

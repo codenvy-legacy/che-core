@@ -25,21 +25,20 @@ public interface CopyOptions {
      * Get value of overWrite attribute
      * @return overWrite attribute
      */
-    public abstract boolean getOverWrite();
+    Boolean  getOverWrite();
     /**
      * Set value of overWrite attribute
      * @param overWrite is the value to set to overWrite attribute
      */
-    public abstract void setOverWrite(boolean overWrite);
+    void setOverWrite(Boolean overWrite);
     /**
      * Get value of name attribute
      * @return name attribute
      */
-    public abstract String getName();
+    String getName();
     /**
      * Set value of name attribute
      * @param name is the value to set to name attribute
      */
-    public abstract void setName(String name);
-    
+    void setName(String name);
 }

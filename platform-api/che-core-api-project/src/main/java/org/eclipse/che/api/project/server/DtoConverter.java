@@ -274,15 +274,16 @@ public class DtoConverter {
     }
 
 
-    public static ProjectDescriptor toDescriptorDto2(Project project, UriBuilder uriBuilder, ProjectTypeRegistry ptRegistry)
-    throws InvalidValueException {
+    public static ProjectDescriptor toDescriptorDto2(Project project,
+                                                     UriBuilder uriBuilder,
+                                                     ProjectTypeRegistry ptRegistry,
+                                                     String wsName) throws InvalidValueException {
         final EnvironmentContext environmentContext = EnvironmentContext.getCurrent();
         final DtoFactory dtoFactory = DtoFactory.getInstance();
         final ProjectDescriptor dto = dtoFactory.createDto(ProjectDescriptor.class);
         // Try to provide as much as possible information about project.
         // If get error then save information about error with 'problems' field in ProjectConfig.
         final String wsId = project.getWorkspace();
-        final String wsName = environmentContext.getWorkspaceName();
         final String name = project.getName();
         final String path = project.getPath();
         dto.withWorkspaceId(wsId).withWorkspaceName(wsName).withName(name).withPath(path);
