@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.vfs.server;
 
+import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo;
 
@@ -48,7 +49,7 @@ public class VirtualFileSystemFactory {
     private String                    vfsId;
 
     @Path("v2")
-    public VirtualFileSystem getFileSystem() throws ServerException {
+    public VirtualFileSystem getFileSystem() throws ServerException, NotFoundException {
         validateRequest();
         //final String vfsId = (String)EnvironmentContext.getCurrent().getVariable(EnvironmentContext.WORKSPACE_ID);
         VirtualFileSystemProvider provider = registry.getProvider(vfsId);
