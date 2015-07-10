@@ -12,6 +12,7 @@ package org.eclipse.che.ide.connection;
 
 import org.eclipse.che.ide.api.ConnectionClosedInformer;
 import org.eclipse.che.ide.api.event.HttpSessionDestroyedEvent;
+import org.eclipse.che.ide.util.loging.Log;
 import org.eclipse.che.ide.websocket.MessageBus;
 import org.eclipse.che.ide.websocket.events.ConnectionClosedHandler;
 import org.eclipse.che.ide.websocket.events.ConnectionOpenedHandler;
@@ -43,6 +44,7 @@ public class WsConnectionListener implements ConnectionClosedHandler, Connection
     @Override
     public void onClose(WebSocketClosedEvent event) {
         messageBus.removeOnCloseHandler(this);
+        Log.info(getClass(), "WebSocket is closed, the status code is " + event.getCode() + ", the reason is " + event.getReason());
 
         if (event.getCode() == WebSocketClosedEvent.CLOSE_NORMAL && "Http session destroyed".equals(event.getReason())) {
             eventBus.fireEvent(new HttpSessionDestroyedEvent());
