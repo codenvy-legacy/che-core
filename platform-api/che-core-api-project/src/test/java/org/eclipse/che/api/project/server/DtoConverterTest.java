@@ -72,7 +72,7 @@ public class DtoConverterTest {
         ProjectDescriptor projectDescriptor;
         try {
             EnvironmentContext.setCurrent(customEnvironment);
-             projectDescriptor = DtoConverter.toDescriptorDto2(project, null, null);
+             projectDescriptor = DtoConverter.toDescriptorDto2(project, null, null, null);
         } finally {
             // reset
             EnvironmentContext.setCurrent(old);
