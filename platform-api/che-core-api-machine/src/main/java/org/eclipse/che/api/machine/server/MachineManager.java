@@ -140,10 +140,15 @@ public class MachineManager {
                 // should not happen
                 throw new MachineException(e.getLocalizedMessage(), e);
             }
+
+            final EnvironmentContext environmentContext = EnvironmentContext.getCurrent();
+
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
                     try {
+                        EnvironmentContext.setCurrent(environmentContext);
+
                         eventService.publish(dtoFactory.createDto(MachineStatusEvent.class)
                                                        .withEventType(MachineStatusEvent.EventType.CREATING)
                                                        .withMachineId(machineId));
@@ -178,6 +183,8 @@ public class MachineManager {
                         } catch (IOException | NotFoundException e) {
                             LOG.error(e.getMessage());
                         }
+                    } finally {
+                        EnvironmentContext.reset();
                     }
                 }
             });
@@ -228,10 +235,15 @@ public class MachineManager {
         } catch (ConflictException e) {
             throw new MachineException(e.getLocalizedMessage(), e);
         }
+
+        final EnvironmentContext environmentContext = EnvironmentContext.getCurrent();
+
         executor.execute(new Runnable() {
             @Override
             public void run() {
                 try {
+                    EnvironmentContext.setCurrent(environmentContext);
+
                     eventService.publish(dtoFactory.createDto(MachineStatusEvent.class)
                                                    .withEventType(MachineStatusEvent.EventType.CREATING)
                                                    .withMachineId(machineId));
@@ -265,6 +277,8 @@ public class MachineManager {
                     } catch (IOException | NotFoundException e) {
                         LOG.error(e.getMessage());
                     }
+                } finally {
+                    EnvironmentContext.reset();
                 }
             }
         });
@@ -440,10 +454,14 @@ public class MachineManager {
                                                        label,
                                                        machine.isWorkspaceBound());
 
+        final EnvironmentContext environmentContext = EnvironmentContext.getCurrent();
+
         executor.submit(new Runnable() {
             @Override
             public void run() {
                 try {
+                    EnvironmentContext.setCurrent(environmentContext);
+
                     final InstanceKey instanceKey = machine.saveToSnapshot(machine.getOwner(), label);
                     snapshot.setInstanceKey(instanceKey);
 
@@ -453,6 +471,8 @@ public class MachineManager {
                         machine.getLogger().writeLine("Snapshot storing failed. " + e.getLocalizedMessage());
                     } catch (IOException ignore) {
                     }
+                } finally {
+                    EnvironmentContext.reset();
                 }
             }
         });
@@ -555,10 +575,15 @@ public class MachineManager {
         final InstanceProcess instanceProcess = machine.createProcess(command.getCommandLine());
         final int pid = instanceProcess.getPid();
         final LineConsumer processLogger = getProcessLogger(machineId, pid, clientOutputChannel);
+
+        final EnvironmentContext environmentContext = EnvironmentContext.getCurrent();
+
         final Runnable execTask = new Runnable() {
             @Override
             public void run() {
                 try {
+                    EnvironmentContext.setCurrent(environmentContext);
+
                     eventService.publish(dtoFactory.createDto(MachineProcessEvent.class)
                                                    .withEventType(MachineProcessEvent.EventType.STARTED)
                                                    .withMachineId(machineId)
@@ -582,6 +607,8 @@ public class MachineManager {
                         processLogger.writeLine(String.format("[ERROR] %s", error.getMessage()));
                     } catch (IOException ignored) {
                     }
+                } finally {
+                    EnvironmentContext.reset();
                 }
             }
         };
@@ -651,10 +678,14 @@ public class MachineManager {
                                        .withEventType(MachineStatusEvent.EventType.DESTROYING)
                                        .withMachineId(machineId));
 
+        final EnvironmentContext environmentContext = EnvironmentContext.getCurrent();
+
         executor.execute(new Runnable() {
             @Override
             public void run() {
                 try {
+                    EnvironmentContext.setCurrent(environmentContext);
+
                     machine.destroy();
 
                     machineRegistry.remove(machine.getId());
@@ -665,6 +696,7 @@ public class MachineManager {
                 } catch (MachineException | NotFoundException e) {
                     LOG.error(e.getMessage(), e);
                 } finally {
+                    EnvironmentContext.reset();
                     try {
                         machine.getLogger().close();
                     } catch (IOException ignore) {
