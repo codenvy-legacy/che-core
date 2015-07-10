@@ -117,6 +117,14 @@ public interface MessageBus extends MessageReceivedHandler {
     void addOnCloseHandler(ConnectionClosedHandler handler);
 
     /**
+     * Removes the given handler.
+     *
+     * @param handler
+     *         {@link ConnectionClosedHandler}
+     */
+    void removeOnCloseHandler(ConnectionClosedHandler handler);
+
+    /**
      * Sets the {@link ConnectionErrorHandler} to be notified when there is any error in communication over WebSocket.
      *
      * @param handler
