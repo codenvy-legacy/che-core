@@ -29,7 +29,7 @@ public class GitUrl {
 
 
     public static boolean isSSH(String url) {
-        return GIT_SSH_URL_PATTERN.matcher(url).matches();
+        return url!= null && GIT_SSH_URL_PATTERN.matcher(url).matches();
     }
 
 

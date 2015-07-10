@@ -112,7 +112,7 @@ public class RemoteUpdateTest {
         deleteRequest.setRemoveUrl(Arrays.asList("newurl"));
         connection.remoteUpdate(deleteRequest);
         //then
-        assertFalse(parseAllConfig(connection).get("remote.newRemote.url").contains("newurl"));
+        assertFalse(parseAllConfig(connection).containsKey("remote.newRemote.url"));
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
