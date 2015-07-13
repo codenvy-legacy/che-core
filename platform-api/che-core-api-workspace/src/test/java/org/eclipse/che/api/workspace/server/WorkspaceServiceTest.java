@@ -74,7 +74,6 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
-import static org.eclipse.che.api.project.server.Constants.LINK_REL_GET_PROJECTS;
 import static org.eclipse.che.api.user.server.Constants.LINK_REL_GET_USER_BY_ID;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -660,7 +659,7 @@ public class WorkspaceServiceTest {
 
         final Set<String> expectedRels = new HashSet<>(asList(Constants.LINK_REL_GET_CURRENT_USER_WORKSPACES,
                                                               Constants.LINK_REL_GET_CURRENT_USER_MEMBERSHIP,
-                                                              LINK_REL_GET_PROJECTS));
+                                                              "get projects"));
 
         assertEquals(asRels(service.toDescriptor(testWorkspace, securityContext).getLinks()), expectedRels);
     }
@@ -675,7 +674,7 @@ public class WorkspaceServiceTest {
                                                               Constants.LINK_REL_GET_WORKSPACE_MEMBERS,
                                                               Constants.LINK_REL_GET_CURRENT_USER_WORKSPACES,
                                                               Constants.LINK_REL_GET_CURRENT_USER_MEMBERSHIP,
-                                                              LINK_REL_GET_PROJECTS));
+                                                              "get projects"));
 
         assertEquals(asRels(service.toDescriptor(testWorkspace, securityContext).getLinks()), expectedRels);
     }
@@ -691,7 +690,7 @@ public class WorkspaceServiceTest {
                                                               Constants.LINK_REL_REMOVE_WORKSPACE,
                                                               Constants.LINK_REL_GET_CURRENT_USER_WORKSPACES,
                                                               Constants.LINK_REL_GET_CURRENT_USER_MEMBERSHIP,
-                                                              LINK_REL_GET_PROJECTS));
+                                                              "get projects"));
 
         assertEquals(asRels(service.toDescriptor(testWorkspace, securityContext).getLinks()), expectedRels);
     }

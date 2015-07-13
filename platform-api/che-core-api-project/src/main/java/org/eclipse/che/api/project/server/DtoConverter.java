@@ -12,6 +12,7 @@ package org.eclipse.che.api.project.server;
 
 import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.rest.HttpJsonHelper;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.core.util.LinksHelper;
 import org.eclipse.che.api.project.server.type.AttributeValue;
@@ -31,6 +32,8 @@ import org.eclipse.che.api.project.server.type.BaseProjectType;
 import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
 import org.eclipse.che.api.vfs.shared.dto.AccessControlEntry;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
+import org.eclipse.che.api.workspace.server.WorkspaceService;
+import org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.ws.rs.ExtMediaType;
 import org.eclipse.che.commons.user.User;
@@ -40,7 +43,17 @@ import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
-import java.util.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static javax.ws.rs.HttpMethod.GET;
 
 /**
  * Helper methods for convert server essentials to DTO and back.
@@ -269,17 +282,35 @@ public class DtoConverter {
 
 
     public static ProjectDescriptor toDescriptorDto2(Project project,
-                                                     UriBuilder uriBuilder,
+                                                     UriBuilder serviceUriBuilder,
+                                                     UriBuilder baseUriBuilder,
                                                      ProjectTypeRegistry ptRegistry,
-                                                     String wsName) throws InvalidValueException {
+                                                     String wsId) throws InvalidValueException {
         final EnvironmentContext environmentContext = EnvironmentContext.getCurrent();
         final DtoFactory dtoFactory = DtoFactory.getInstance();
         final ProjectDescriptor dto = dtoFactory.createDto(ProjectDescriptor.class);
         // Try to provide as much as possible information about project.
         // If get error then save information about error with 'problems' field in ProjectConfig.
-        final String wsId = project.getWorkspace();
         final String name = project.getName();
         final String path = project.getPath();
+        String wsName = null;
+
+        try {
+            @SuppressWarnings("unchecked") // Generic array is 0 size
+            final WorkspaceDescriptor descriptor = HttpJsonHelper.request(WorkspaceDescriptor.class,
+                                                                          baseUriBuilder.path(WorkspaceService.class)
+                                                                                        .path(WorkspaceService.class, "getById")
+                                                                                        .build(wsId)
+                                                                                        .toString(),
+                                                                          GET,
+                                                                          null);
+            wsName = descriptor.getName();
+        } catch (ApiException e) {
+            dto.getProblems().add(createProjectProblem(dtoFactory, e));
+        } catch (IOException ioEx) {
+            dto.getProblems().add(createProjectProblem(dtoFactory, new ServerException(ioEx.getMessage(), ioEx)));
+        }
+
         dto.withWorkspaceId(wsId).withWorkspaceName(wsName).withName(name).withPath(path);
 
         ProjectConfig config = null;
@@ -365,11 +396,11 @@ public class DtoConverter {
             dto.getProblems().add(createProjectProblem(dtoFactory, e));
         }
 
-        if (uriBuilder != null) {
-            dto.withBaseUrl(uriBuilder.clone().path(ProjectService.class, "getProject").build(wsId, path.substring(1)).toString())
-               .withLinks(generateProjectLinks(project, uriBuilder));
+        if (serviceUriBuilder != null) {
+            dto.withBaseUrl(serviceUriBuilder.clone().path(ProjectService.class, "getProject").build(wsId, path.substring(1)).toString())
+               .withLinks(generateProjectLinks(project, serviceUriBuilder));
             if (wsName != null) {
-                dto.withIdeUrl(uriBuilder.clone().replacePath("ws").path(wsName).path(path).build().toString());
+                dto.withIdeUrl(serviceUriBuilder.clone().replacePath("ws").path(wsName).path(path).build().toString());
             }
         }
 
@@ -441,16 +472,16 @@ public class DtoConverter {
         final String workspace = folder.getWorkspace();
         final String relPath = folder.getPath().substring(1);
         //String method, String href, String produces, String rel
-        links.add(LinksHelper.createLink(HttpMethod.GET,
+        links.add(LinksHelper.createLink(GET,
                                          uriBuilder.clone().path(ProjectService.class, "exportZip").build(workspace, relPath).toString(),
                                          ExtMediaType.APPLICATION_ZIP, Constants.LINK_REL_EXPORT_ZIP));
-        links.add(LinksHelper.createLink(HttpMethod.GET,
+        links.add(LinksHelper.createLink(GET,
                                          uriBuilder.clone().path(ProjectService.class, "getChildren").build(workspace, relPath).toString(),
                                          MediaType.APPLICATION_JSON, Constants.LINK_REL_CHILDREN));
         links.add(
-                LinksHelper.createLink(HttpMethod.GET, uriBuilder.clone().path(ProjectService.class, "getTree").build(workspace, relPath).toString(),
+                LinksHelper.createLink(GET, uriBuilder.clone().path(ProjectService.class, "getTree").build(workspace, relPath).toString(),
                                        null, MediaType.APPLICATION_JSON, Constants.LINK_REL_TREE));
-        links.add(LinksHelper.createLink(HttpMethod.GET,
+        links.add(LinksHelper.createLink(GET,
                                          uriBuilder.clone().path(ProjectService.class, "getModules").build(workspace, relPath).toString(),
                                          MediaType.APPLICATION_JSON, Constants.LINK_REL_MODULES));
         links.add(LinksHelper.createLink(HttpMethod.DELETE,
@@ -464,7 +495,7 @@ public class DtoConverter {
         final String workspace = file.getWorkspace();
         final String relPath = file.getPath().substring(1);
         links.add(
-                LinksHelper.createLink(HttpMethod.GET, uriBuilder.clone().path(ProjectService.class, "getFile").build(workspace, relPath).toString(),
+                LinksHelper.createLink(GET, uriBuilder.clone().path(ProjectService.class, "getFile").build(workspace, relPath).toString(),
                                        null, file.getMediaType(), Constants.LINK_REL_GET_CONTENT));
         links.add(LinksHelper.createLink(HttpMethod.PUT,
                                          uriBuilder.clone().path(ProjectService.class, "updateFile").build(workspace, relPath).toString(),
