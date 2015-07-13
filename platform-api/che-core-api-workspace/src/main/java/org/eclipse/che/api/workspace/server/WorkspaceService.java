@@ -30,7 +30,6 @@ import org.eclipse.che.api.core.rest.annotations.GenerateLink;
 import org.eclipse.che.api.core.rest.annotations.Required;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.core.util.LinksHelper;
-import org.eclipse.che.api.project.server.ProjectService;
 import org.eclipse.che.api.user.server.UserService;
 import org.eclipse.che.api.user.server.dao.PreferenceDao;
 import org.eclipse.che.api.user.server.dao.Profile;
@@ -80,7 +79,6 @@ import static java.util.Collections.singletonMap;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.status;
-import static org.eclipse.che.api.project.server.Constants.LINK_REL_GET_PROJECTS;
 import static org.eclipse.che.api.user.server.Constants.LINK_REL_GET_USER_BY_ID;
 import static org.eclipse.che.commons.lang.NameGenerator.generate;
 
@@ -899,15 +897,15 @@ public class WorkspaceService extends Service {
                                                    null,
                                                    APPLICATION_JSON,
                                                    Constants.LINK_REL_GET_WORKSPACE_BY_ID);
+        //TODO replace hardcoded path with UriBuilder + ProjectService
         final Link projectsLink = LinksHelper.createLink(HttpMethod.GET,
-                                                         baseUriBuilder.clone()
-                                                                       .path(ProjectService.class)
-                                                                       .path(ProjectService.class, "getProjects")
-                                                                       .build(workspace.getId())
-                                                                       .toString(),
+                                                         getServiceContext().getBaseUriBuilder().clone()
+                                                                            .path("/project/{ws-id}")
+                                                                            .build(member.getWorkspaceId())
+                                                                            .toString(),
                                                          null,
                                                          APPLICATION_JSON,
-                                                         LINK_REL_GET_PROJECTS);
+                                                         "get projects");
         final WorkspaceReference wsRef = DtoFactory.getInstance().createDto(WorkspaceReference.class)
                                                    .withId(workspace.getId())
                                                    .withName(workspace.getName())
@@ -933,15 +931,15 @@ public class WorkspaceService extends Service {
         final List<Link> links = new LinkedList<>();
         final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
         if (context.isUserInRole("user")) {
+            //TODO replace hardcoded path with UriBuilder + ProjectService
             links.add(LinksHelper.createLink(HttpMethod.GET,
                                              getServiceContext().getBaseUriBuilder().clone()
-                                                                .path(ProjectService.class)
-                                                                .path(ProjectService.class, "getProjects")
+                                                                .path("/project/{ws-id}")
                                                                 .build(workspaceDescriptor.getId())
                                                                 .toString(),
                                              null,
                                              APPLICATION_JSON,
-                                             org.eclipse.che.api.project.server.Constants.LINK_REL_GET_PROJECTS));
+                                             "get projects"));
             links.add(LinksHelper.createLink(HttpMethod.GET,
                                              uriBuilder.clone()
                                                        .path(getClass(), "getMembershipsOfCurrentUser")
