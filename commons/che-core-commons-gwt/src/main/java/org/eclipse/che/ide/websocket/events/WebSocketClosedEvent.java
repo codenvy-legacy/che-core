@@ -49,6 +49,40 @@ public class WebSocketClosedEvent {
     public static final int CLOSE_ABNORMAL       = 1006;
 
     /**
+     * The endpoint is terminating the connection because a message was received that contained inconsistent data
+     * (e.g., non-UTF-8 data within a text message).
+     */
+    public static final int CLOSE_INCONSISTENT_DATA = 1007;
+
+    /**
+     * The endpoint is terminating the connection because it received a message that violates its policy.
+     * This is a generic status code, used when codes 1003 and 1009 are not suitable.
+     */
+    public static final int CLOSE_VIOLATE_POLICY = 1008;
+
+    /**
+     * The endpoint is terminating the connection because a data frame was received that is too large.
+     */
+    public static final int CLOSE_TOO_LARGE = 1009;
+
+    /**
+     * The client is terminating the connection because it expected the server to negotiate one or more extension, but the server didn't.
+     */
+    public static final int CLOSE_NEGOTIATE_EXTENSION = 1010;
+
+    /**
+     * The server is terminating the connection because it encountered an unexpected condition that prevented it from fulfilling the
+     * request.
+     */
+    public static final int CLOSE_UNEXPECTED_CONDITION = 1011;
+
+    /**
+     * Reserved. Indicates that the connection was closed due to a failure to perform a TLS handshake
+     * (e.g., the server certificate can't be verified).
+     */
+    public static final int CLOSE_FAILURE_TLS_HANDSHAKE = 1015;
+
+    /**
      * The WebSocket connection close code provided by the server.
      */
     private int code;
