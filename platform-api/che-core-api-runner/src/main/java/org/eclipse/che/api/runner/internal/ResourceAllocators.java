@@ -38,6 +38,7 @@ import java.util.concurrent.Semaphore;
 @Singleton
 public class ResourceAllocators {
     /** @deprecated use {@link Constants#TOTAL_APPS_MEM_SIZE}. */
+    @Deprecated
     public static final String TOTAL_APPS_MEM_SIZE = Constants.TOTAL_APPS_MEM_SIZE;
 
     private static final Logger LOG = LoggerFactory.getLogger(ResourceAllocators.class);
