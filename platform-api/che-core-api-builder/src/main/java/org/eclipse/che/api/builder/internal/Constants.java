@@ -73,10 +73,13 @@ public class Constants {
     /* ================================================= */
 
     /** @deprecated use {@link #BASE_DIRECTORY} */
+    @Deprecated
     public static final String REPOSITORY          = BASE_DIRECTORY;
     /** @deprecated use {@link #KEEP_RESULT_TIME} */
+    @Deprecated
     public static final String CLEANUP_RESULT_TIME = KEEP_RESULT_TIME;
     /** @deprecated use {@link #QUEUE_SIZE} */
+    @Deprecated
     public static final String INTERNAL_QUEUE_SIZE = QUEUE_SIZE;
 
     // attributes of workspace which are interested for builder

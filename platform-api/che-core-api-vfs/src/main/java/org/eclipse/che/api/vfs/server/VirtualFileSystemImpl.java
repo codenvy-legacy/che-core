@@ -120,6 +120,7 @@ public abstract class VirtualFileSystemImpl implements VirtualFileSystem {
 
     @Path("clone")
     @Override
+    @Deprecated
     public Item clone(@QueryParam("srcPath") String srcPath,
                       @QueryParam("srcVfsId") String srcVfsId,
                       @QueryParam("parentPath") String parentPath,
