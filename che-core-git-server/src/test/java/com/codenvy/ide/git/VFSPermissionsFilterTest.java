@@ -58,6 +58,8 @@ public class VFSPermissionsFilterTest {
     final static String               PASSWORD  = "password";
     final static String               WORKSPACE = "workspace";
     final static String               ENDPOINT = "http://dev.box.com/api";
+    final static String 			  GIT_SERVER_URI_PREFIX = "git";
+    
     @InjectMocks
     final static VFSPermissionsFilter filter    = new VFSPermissionsFilter();
     //    final File projectDirectory;
@@ -88,8 +90,12 @@ public class VFSPermissionsFilterTest {
         path.setAccessible(true);
         path.set(filter, "/");
 
+        Field uriPrefix = VFSPermissionsFilter.class.getDeclaredField("gitServerUriPrefix");
+        uriPrefix.setAccessible(true);
+        uriPrefix.set(filter, GIT_SERVER_URI_PREFIX);
+        
         when((request).getRequestURL())
-                .thenReturn(new StringBuffer("http://host.com/git/").append(WORKSPACE).append("/testProject"));
+                .thenReturn(new StringBuffer("http://host.com/").append(GIT_SERVER_URI_PREFIX).append("/").append(WORKSPACE).append("/testProject"));
     }
 
     //

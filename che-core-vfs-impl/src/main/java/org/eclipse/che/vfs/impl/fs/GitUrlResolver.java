@@ -33,7 +33,7 @@ public class GitUrlResolver {
     private final String            mountPath;
 
     @Inject
-    public GitUrlResolver(@Named("vfs.local.fs_root_dir") java.io.File mountRoot, LocalPathResolver pathResolver) {
+    public GitUrlResolver(@Named("vfs.local.fs_root_dir") java.io.File mountRoot, @Named("git.server.uri.prefix") String gitServerUriPrefix, LocalPathResolver pathResolver) {
         this.mountPath = mountRoot.getAbsolutePath();
         this.pathResolver = pathResolver;
     }
@@ -67,7 +67,7 @@ public class GitUrlResolver {
             result.append(port);
         }
         result.append('/');
-        result.append("git");
+        result.append(gitServerUriPrefix);
         result.append(localPathNormalized.substring(mountPathNormalized.length() - 1));
 
         int lastSymbol = result.length() - 1;
