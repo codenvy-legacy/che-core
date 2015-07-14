@@ -337,13 +337,13 @@ public class RunQueue {
             eventService.subscribe(new AnalyticsMessenger());
 
             if (slaves.length > 0) {
-                executor.execute(new RegisterSlaveRunnerTask(slaves, null));
+                executor.execute(ThreadLocalPropagateContext.wrap(new RegisterSlaveRunnerTask(slaves, null)));
             }
             if (slavesPaid.length > 0) {
-                executor.execute(new RegisterSlaveRunnerTask(slavesPaid, "paid"));
+                executor.execute(ThreadLocalPropagateContext.wrap(new RegisterSlaveRunnerTask(slavesPaid, "paid")));
             }
             if (slavesAlwaysOn.length > 0) {
-                executor.execute(new RegisterSlaveRunnerTask(slavesAlwaysOn, "always_on"));
+                executor.execute(ThreadLocalPropagateContext.wrap(new RegisterSlaveRunnerTask(slavesAlwaysOn, "always_on")));
             }
         } else {
             throw new IllegalStateException("Already started");

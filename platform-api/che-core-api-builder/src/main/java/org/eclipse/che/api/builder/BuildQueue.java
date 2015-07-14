@@ -680,7 +680,7 @@ public class BuildQueue {
             eventService.subscribe(new AnalyticsMessenger());
 
             if (slaves.length > 0) {
-                executor.execute(new Runnable() {
+                executor.execute(ThreadLocalPropagateContext.wrap(new Runnable() {
                     @Override
                     public void run() {
                         final LinkedList<RemoteBuilderServer> servers = new LinkedList<>();
@@ -727,7 +727,7 @@ public class BuildQueue {
                             }
                         }
                     }
-                });
+                }));
             }
         } else {
             throw new IllegalStateException("Already started");
