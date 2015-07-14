@@ -130,18 +130,18 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
         final CurrentProject currentProject = appContext.getCurrentProject();
         final RecentProject recentProject = appState.getRecentProject();
 
-        final String workspaceId = appContext.getWorkspace().getId();
-        recentProject.setWorkspaceId(workspaceId);
-
-        if (currentProject == null) {
-            recentProject.setPath("");
-        } else {
+        if (currentProject != null) {
             ProjectDescriptor descriptor = currentProject.getRootProject();
+            final String workspaceId = appContext.getWorkspace().getId();
             final String projectPath = "/" + descriptor.getWorkspaceName() + descriptor.getPath();
 
+            recentProject.setWorkspaceId(workspaceId);
             recentProject.setPath(projectPath);
 
             persistCurrentProjectState(persistenceComponents);
+        } else { //when none opened projects
+            recentProject.setWorkspaceId("");
+            recentProject.setPath("");
         }
         writeStateToPreferences();
     }
@@ -190,6 +190,10 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
     }
 
     private void openRecentProject(final boolean openRecentProject) {
+        // don't re-open recent project if some project name was provided
+        if (!openRecentProject) {
+            return;
+        }
         final RecentProject recentProject = appState.getRecentProject();
         final String recentProjectPath = recentProject.getPath();
 
@@ -201,26 +205,23 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
             projectServiceClient.getProject(projectPath, new AsyncRequestCallback<ProjectDescriptor>() {
                 @Override
                 protected void onSuccess(ProjectDescriptor result) {
-                    // don't re-open recent project if some project name was provided
-                    if (openRecentProject) {
-                        openRecentProject();
-                    }
+                    openRecentProject();
                 }
 
                 @Override
                 protected void onFailure(Throwable exception) {
                     appState.getProjects().remove(recentProjectPath);
                     recentProject.setPath("");
+                    recentProject.setWorkspaceId("");
                     writeStateToPreferences();
                 }
             });
-
         }
     }
 
     private void readStateFromPreferences() {
         final String json = preferencesManager.getValue(PREFERENCE_PROPERTY_NAME);
-        if (json == null) {
+        if (json ==   null) {
             appState = dtoFactory.createDto(AppState.class);
             initClearRecentProject(appState);
         } else {
@@ -231,7 +232,6 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
                 }
             } catch (Exception e) {
                 // create 'clear' state if there's any error
-                Log.error(getClass(), "Restore application state failed.");
                 appState = dtoFactory.createDto(AppState.class);
                 initClearRecentProject(appState);
             }
@@ -240,11 +240,9 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
 
     private void initClearRecentProject(AppState appState) {
         final RecentProject recentProject = dtoFactory.createDto(RecentProject.class);
-        String workspaceId = appContext.getWorkspace().getId();
-
-        appState.setRecentProject(recentProject);
         recentProject.setPath("");
-        recentProject.setWorkspaceId(workspaceId);
+        recentProject.setWorkspaceId("");
+        appState.setRecentProject(recentProject);
     }
 
     private void writeStateToPreferences() {
