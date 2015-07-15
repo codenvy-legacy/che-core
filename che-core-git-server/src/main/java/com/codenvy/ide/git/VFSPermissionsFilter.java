@@ -65,9 +65,6 @@ public class VFSPermissionsFilter implements Filter {
     @Named("vfs.local.fs_root_dir")
     String vfsRoot;
 
-    @Inject
-    @Named("git.server.uri.prefix")
-    String gitServerUriPrefix;
 
     private static final Logger LOG = LoggerFactory.getLogger(VFSPermissionsFilter.class);
 
@@ -80,7 +77,7 @@ public class VFSPermissionsFilter implements Filter {
             throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest)request;
         int tokenPlace;
-        String lastTokenBeforePath = "/" + gitServerUriPrefix + "/";
+        String lastTokenBeforePath = "/git/";
         if ((tokenPlace = req.getRequestURL().indexOf(lastTokenBeforePath)) != -1) {
             //get path to project
             String url = req.getRequestURL().substring(tokenPlace + lastTokenBeforePath.length());

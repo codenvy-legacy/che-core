@@ -80,7 +80,7 @@ public class NativeGitConnectionFactory extends GitConnectionFactory {
         }
         final GitUser gitUser = DtoFactory.getInstance().createDto(GitUser.class);
         if (profileAttributes == null) {
-            return gitUser.withName(user.getName()).withEmail("anonymous@noemail.com");
+            return gitUser.withName(user.getName());
         }
         final String firstName = profileAttributes.get("firstName");
         final String lastName = profileAttributes.get("lastName");
