@@ -11,6 +11,8 @@
 package org.eclipse.che.commons.xml;
 
 
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -92,6 +94,11 @@ public class XMLTreeTest {
                                               "        </dependency>\n" +
                                               "    </dependencies>\n" +
                                               "</project>\n";
+
+    @BeforeMethod
+    private void resetLineSeparator() {
+        System.setProperty("line.separator", "\n");
+    }
 
     @Test
     public void shouldFindSingleText() {
@@ -1599,6 +1606,7 @@ public class XMLTreeTest {
 
     @Test
     public void shouldIncludeCarriageReturnCharacterOffsetWhileParsingXMLContent() {
+        System.setProperty("line.separator", "\n");
         final XMLTree tree = XMLTree.from("<parent>\n" +
                                           "    <child1>\r\r\r\r\rchild1 text\r</child1>\n" +
                                           "\r\r<child2>child 2 text</child2>\n" +
@@ -1609,12 +1617,13 @@ public class XMLTreeTest {
 
         assertEquals(tree.toString(), "<parent>\n" +
                                       "    <child1>new text</child1>\n" +
-                                      "\r\r<child2>new text</child2>\n" +
+                                      "\n\n<child2>new text</child2>\n" +
                                       "</parent>");
     }
 
     @Test
     public void shouldIncludeCarriageReturnCharacterOffsetWhileParsingXMLContent2() {
+        System.setProperty("line.separator", "\n");
         final XMLTree tree = XMLTree.from("<parent>\n" +
                                           "    <child1>\rchild1 text\r</child1>\n" +
                                           "\r\r<child2>child 2 text</child2>\n" +
@@ -1622,14 +1631,15 @@ public class XMLTreeTest {
 
         tree.insertAfter("/parent/child1", NewElement.createElement("newTag"));
         assertEquals(tree.toString(), "<parent>\n" +
-                                      "    <child1>\rchild1 text\r</child1>\n" +
+                                      "    <child1>\nchild1 text\n</child1>\n" +
                                       "    <newTag/>\n" +
-                                      "\r\r<child2>child 2 text</child2>\n" +
+                                      "\n\n<child2>child 2 text</child2>\n" +
                                       "</parent>");
     }
 
     @Test
     public void shouldRespectContentPositionsWhenUpdatingTextWithCarriageReturnCharacter() {
+        System.setProperty("line.separator", "\r\n");
         final String XML = "<parent><child>\r\nchild text\r\n</child></parent>";
 
         XMLTree tree = XMLTree.from(XML);
@@ -1641,6 +1651,7 @@ public class XMLTreeTest {
 
     @Test
     public void shouldParseWithCarriageReturnCharacterInDocumentPrologue() {
+        System.setProperty("line.separator", "\r");
         XMLTree tree = XMLTree.from("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                                     "<!-- <<<<< COMMENT >>>>> -->\n" +
                                     "\r\r\r\r\r\r\r\r\r\r\r\r\r\r" +
@@ -1651,14 +1662,26 @@ public class XMLTreeTest {
 
         tree.updateText("/project/packaging", "jar");
 
-        assertEquals(tree.getSingleText("/project/name"), "\r\n\r\nname\r\n\r\n");
-        assertEquals(tree.toString(), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                                      "<!-- <<<<< COMMENT >>>>> -->\n" +
+        assertEquals(tree.getSingleText("/project/name"), "\n\n\n\nname\n\n\n\n");
+        assertEquals(tree.toString(), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r" +
+                                      "<!-- <<<<< COMMENT >>>>> -->\r" +
                                       "\r\r\r\r\r\r\r\r\r\r\r\r\r\r" +
-                                      "<project>\r\r\r\r\n" +
-                                      "   <name>\r\n\r\nname\r\n\r\n</name>" +
+                                      "<project>\r\r\r\r\r" +
+                                      "   <name>\r\r\r\rname\r\r\r\r</name>" +
                                       "   <packaging>jar</packaging>" +
                                       "</project>");
+    }
+
+    @Test
+    public void shouldParseContentWithCarriageReturnCharacterBetweenTagAttributes() {
+        System.setProperty("line.separator", "\r\n");
+        final String XML = "<parent \r\n\r\n\r\n attr1=\"v\"><child>\r\nchild text\r\n</child></parent>";
+
+        XMLTree tree = XMLTree.from(XML);
+
+        tree.updateText("/parent/child", "new text");
+
+        assertEquals(tree.toString(), "<parent \r\n\r\n\r\n attr1=\"v\"><child>new text</child></parent>");
     }
 
     @Test(dataProvider = "custom-xml-files")
