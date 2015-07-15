@@ -118,4 +118,9 @@ public interface Instance extends Machine {
      *         project that should be unbound from machine instance
      */
     void unbindProject(ProjectBinding project) throws MachineException, NotFoundException;
+
+    /**
+     * Returns {@link InstanceNode} that represents server where machine is launched
+     */
+    InstanceNode getNode();
 }
