@@ -31,11 +31,13 @@ import java.nio.file.Paths;
 public class GitUrlResolver {
     private final LocalPathResolver pathResolver;
     private final String            mountPath;
+    private final String            gitServerUriPrefix;
 
     @Inject
     public GitUrlResolver(@Named("vfs.local.fs_root_dir") java.io.File mountRoot, LocalPathResolver pathResolver) {
         this.mountPath = mountRoot.getAbsolutePath();
         this.pathResolver = pathResolver;
+        this.gitServerUriPrefix = gitServerUriPrefix;
     }
 
     public String resolve(UriInfo uriInfo, VirtualFileSystem vfs, String path)
