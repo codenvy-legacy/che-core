@@ -16,7 +16,7 @@
     <parent>
         <artifactId>che-core-client-gwt-parent</artifactId>
         <groupId>org.eclipse.che.core</groupId>
-        <version>3.11.3-SNAPSHOT</version>
+        <version>3.11.3</version>
     </parent>
     <artifactId>che-core-client-gwt-account</artifactId>
     <packaging>jar</packaging>
