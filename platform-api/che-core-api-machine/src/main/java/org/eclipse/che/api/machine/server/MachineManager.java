@@ -706,7 +706,7 @@ public class MachineManager {
         });
     }
 
-    public List<MachineState> getMachines() throws MachineException {
+    public List<MachineState> getMachinesStates() throws MachineException {
         return machineRegistry.getStates();
     }
 
