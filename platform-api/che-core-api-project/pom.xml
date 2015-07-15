@@ -16,7 +16,7 @@
     <parent>
         <artifactId>che-core-api-parent</artifactId>
         <groupId>org.eclipse.che.core</groupId>
-        <version>3.11.2-SNAPSHOT</version>
+        <version>3.11.3-SNAPSHOT</version>
     </parent>
     <artifactId>che-core-api-project</artifactId>
     <packaging>jar</packaging>
@@ -43,6 +43,11 @@
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
             <artifactId>che-core-api-vfs</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.che.core</groupId>
+            <artifactId>che-core-api-workspace</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

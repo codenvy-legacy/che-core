@@ -30,7 +30,6 @@ import java.util.Map;
  *
  * @author andrew00x
  *
- * @deprecated rename DefaultProjectManager instead, no needs to have interface to implement
  */
 @ImplementedBy(DefaultProjectManager.class)
 public interface ProjectManager {

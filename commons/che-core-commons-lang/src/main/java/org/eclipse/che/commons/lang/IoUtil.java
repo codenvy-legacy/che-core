@@ -200,6 +200,7 @@ public class IoUtil {
      *         if creation of new directory failed
      * @deprecated - Use Files.createTempDirectory
      */
+    @Deprecated
     public static File createTempDirectory(File parent, String prefix) throws IOException {
         if (parent == null) {
             parent = new File(System.getProperty("java.io.tmpdir"));
@@ -217,6 +218,7 @@ public class IoUtil {
      *         if creation of new directory failed
      * @deprecated - Use Files.createTempDirectory
      */
+    @Deprecated
     public static File createTempDirectory(String prefix) throws IOException {
         return createTempDirectory(null, prefix);
     }

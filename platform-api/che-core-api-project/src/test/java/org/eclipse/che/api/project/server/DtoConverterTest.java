@@ -19,6 +19,7 @@ import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.eclipse.che.commons.user.User;
+import org.everrest.core.impl.uri.UriBuilderImpl;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -80,7 +81,7 @@ public class DtoConverterTest {
         ProjectDescriptor projectDescriptor;
         try {
             EnvironmentContext.setCurrent(customEnvironment);
-             projectDescriptor = DtoConverter.toDescriptorDto2(project, null, null, null);
+             projectDescriptor = DtoConverter.toDescriptorDto2(project, null, new UriBuilderImpl(), null, "workspace");
         } finally {
             // reset
             EnvironmentContext.setCurrent(old);

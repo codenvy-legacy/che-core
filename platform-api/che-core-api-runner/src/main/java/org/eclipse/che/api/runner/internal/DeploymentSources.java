@@ -38,6 +38,7 @@ public class DeploymentSources {
      * @return {@code true} is application bundle is zip archive and {@code false} otherwise
      * @deprecated use {@link #isZipArchive()} instead
      */
+    @Deprecated
     public boolean isArchive() {
         try {
             return file != null && ZipUtils.isZipFile(file);

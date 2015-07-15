@@ -319,8 +319,8 @@ public class FactoryBaseValidatorTest {
         Long currentTime = new Date().getTime();
 
         factory.withPolicies(dto.createDto(Policies.class)
-                                .withValidSince(currentTime + 10000l)
-                                .withValidUntil(currentTime + 20000l)
+                                .withValidSince(currentTime + 10000L)
+                                .withValidUntil(currentTime + 20000L)
                             );
         validator.validateCurrentTimeBeforeSinceUntil(factory);
     }
@@ -329,7 +329,7 @@ public class FactoryBaseValidatorTest {
             expectedExceptionsMessageRegExp = FactoryConstants.INVALID_VALIDSINCE_MESSAGE)
     public void shouldNotValidateIfValidSinceBeforeCurrent() throws ApiException {
         factory.withPolicies(dto.createDto(Policies.class)
-                                .withValidSince(1l)
+                                .withValidSince(1L)
                             );
         validator.validateCurrentTimeBeforeSinceUntil(factory);
     }
@@ -338,7 +338,7 @@ public class FactoryBaseValidatorTest {
             expectedExceptionsMessageRegExp = FactoryConstants.INVALID_VALIDUNTIL_MESSAGE)
     public void shouldNotValidateIfValidUntilBeforeCurrent() throws ApiException {
         factory.withPolicies(dto.createDto(Policies.class)
-                                .withValidUntil(1l)
+                                .withValidUntil(1L)
                             );
         validator.validateCurrentTimeBeforeSinceUntil(factory);
     }
@@ -347,8 +347,8 @@ public class FactoryBaseValidatorTest {
             expectedExceptionsMessageRegExp = FactoryConstants.INVALID_VALIDSINCEUNTIL_MESSAGE)
     public void shouldNotValidateIfValidUntilBeforeValidSince() throws ApiException {
         factory.withPolicies(dto.createDto(Policies.class)
-                                .withValidSince(2l)
-                                .withValidUntil(1l)
+                                .withValidSince(2L)
+                                .withValidUntil(1L)
                             );
 
         validator.validateCurrentTimeBeforeSinceUntil(factory);
@@ -359,7 +359,7 @@ public class FactoryBaseValidatorTest {
     public void shouldNotValidateIfValidUntilBeforeCurrentTime() throws ApiException {
         Long currentTime = new Date().getTime();
         factory.withPolicies(dto.createDto(Policies.class)
-                                .withValidUntil(currentTime - 10000l)
+                                .withValidUntil(currentTime - 10000L)
                             );
 
 
@@ -371,8 +371,8 @@ public class FactoryBaseValidatorTest {
         Long currentTime = new Date().getTime();
 
         factory.withPolicies(dto.createDto(Policies.class)
-                                .withValidSince(currentTime - 10000l)
-                                .withValidUntil(currentTime + 10000l)
+                                .withValidSince(currentTime - 10000L)
+                                .withValidUntil(currentTime + 10000L)
                             );
 
         validator.validateCurrentTimeBetweenSinceUntil(factory);
@@ -383,7 +383,7 @@ public class FactoryBaseValidatorTest {
     public void shouldNotValidateIfValidUntilSinceAfterCurrentTime() throws ApiException {
         Long currentTime = new Date().getTime();
         factory.withPolicies(dto.createDto(Policies.class)
-                                .withValidSince(currentTime + 10000l)
+                                .withValidSince(currentTime + 10000L)
                             );
 
         validator.validateCurrentTimeBetweenSinceUntil(factory);
@@ -527,8 +527,8 @@ public class FactoryBaseValidatorTest {
                                                                                                          .build()))
                                                                        )))},
 
-                {dto.createDto(Factory.class).withV("2.1").withPolicies(dto.createDto(Policies.class).withValidSince(10000l))},
-                {dto.createDto(Factory.class).withV("2.1").withPolicies(dto.createDto(Policies.class).withValidUntil(10000l))},
+                {dto.createDto(Factory.class).withV("2.1").withPolicies(dto.createDto(Policies.class).withValidSince(10000L))},
+                {dto.createDto(Factory.class).withV("2.1").withPolicies(dto.createDto(Policies.class).withValidUntil(10000L))},
                 {dto.createDto(Factory.class).withV("2.0")
                     .withActions(dto.createDto(Actions.class).withWelcome(dto.createDto(WelcomePage.class)))},
                 {dto.createDto(Factory.class).withV("2.1").withPolicies(dto.createDto(Policies.class).withRefererHostname("host"))}
