@@ -14,7 +14,6 @@ import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.rest.HttpJsonHelper;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
-import org.eclipse.che.api.core.util.LinksHelper;
 import org.eclipse.che.api.project.server.type.AttributeValue;
 import org.eclipse.che.api.project.server.type.ProjectType;
 import org.eclipse.che.api.project.shared.dto.AttributeDescriptor;
@@ -103,11 +102,11 @@ public class DtoConverter {
                                                                                                      InvalidValueException,
                                                                                                      ValueStorageException {
 
-        if(dto.getType() == null)
+        if (dto.getType() == null)
             throw new InvalidValueException("Invalid Project definition. Primary project type is not defined.");
 
-        if(typeRegistry.getProjectType(dto.getType()) == null)
-            throw new ProjectTypeConstraintException("Primary project type is not registered "+dto.getType());
+        if (typeRegistry.getProjectType(dto.getType()) == null)
+            throw new ProjectTypeConstraintException("Primary project type is not registered " + dto.getType());
 
         // primary
         final Set<ProjectType> validTypes = new HashSet<>();
@@ -115,7 +114,7 @@ public class DtoConverter {
 
         // mixins
         final List<String> validMixins = new ArrayList<>();
-        for(String typeId : dto.getMixinTypes()) {
+        for (String typeId : dto.getMixinTypes()) {
             ProjectType mixinType = typeRegistry.getProjectType(typeId);
             if (mixinType != null) {  // otherwise just ignore
                 validTypes.add(mixinType);
@@ -128,7 +127,7 @@ public class DtoConverter {
         final HashMap<String, AttributeValue> attributes = new HashMap<>(updateAttributes.size());
         for (Map.Entry<String, List<String>> entry : updateAttributes.entrySet()) {
 
-            for(ProjectType projectType : validTypes) {
+            for (ProjectType projectType : validTypes) {
                 Attribute attr = projectType.getAttribute(entry.getKey());
                 if (attr != null) {
                     attributes.put(attr.getName(), new AttributeValue(entry.getValue()));
@@ -162,7 +161,7 @@ public class DtoConverter {
     }
 
     public static Runners fromDto(RunnersDescriptor dto) {
-        if(dto == null)
+        if (dto == null)
             return null;
         if (dto.getConfigs() == null) {
             return null;
@@ -194,11 +193,11 @@ public class DtoConverter {
         final List<AttributeDescriptor> typeAttributes = new ArrayList<>();
         for (Attribute attr : projectType.getAttributes()) {
 
-            List <String> valueList = null;
+            List<String> valueList = null;
 
             try {
-                if(attr.getValue() != null)
-                  valueList = attr.getValue().getList();
+                if (attr.getValue() != null)
+                    valueList = attr.getValue().getList();
             } catch (ValueStorageException e) {
             }
 
@@ -212,7 +211,7 @@ public class DtoConverter {
         definition.setAttributeDescriptors(typeAttributes);
 
         final List<String> parents = new ArrayList<>();
-        for(ProjectType parent : projectType.getParents()) {
+        for (ProjectType parent : projectType.getParents()) {
             parents.add(parent.getId());
         }
         definition.setParents(parents);
@@ -224,7 +223,8 @@ public class DtoConverter {
         return toTemplateDescriptor(DtoFactory.getInstance(), projectTemplate, projectType);
     }
 
-    private static ProjectTemplateDescriptor toTemplateDescriptor(DtoFactory dtoFactory, ProjectTemplateDescription projectTemplate, String projectType) {
+    private static ProjectTemplateDescriptor toTemplateDescriptor(DtoFactory dtoFactory, ProjectTemplateDescription projectTemplate,
+                                                                  String projectType) {
         final ImportSourceDescriptor importSource = dtoFactory.createDto(ImportSourceDescriptor.class)
                                                               .withType(projectTemplate.getImporterType())
                                                               .withLocation(projectTemplate.getLocation())
@@ -335,8 +335,8 @@ public class DtoConverter {
             final Map<String, List<String>> attributesMap = new LinkedHashMap<>(attributes.size());
             if (!attributes.isEmpty()) {
 
-               for (String attrName : attributes.keySet()) {
-                 attributesMap.put(attrName, attributes.get(attrName).getList());
+                for (String attrName : attributes.keySet()) {
+                    attributesMap.put(attrName, attributes.get(attrName).getList());
                 }
             }
             dto.withAttributes(attributesMap);
@@ -368,8 +368,8 @@ public class DtoConverter {
                 for (AccessControlEntry accessControlEntry : acl) {
                     final Principal principal = accessControlEntry.getPrincipal();
                     if ((Principal.Type.USER == principal.getType() && currentUser.getId().equals(principal.getName()))
-                            || (Principal.Type.USER == principal.getType() && "any".equals(principal.getName()))
-                            || (Principal.Type.GROUP == principal.getType() && currentUser.isMemberOf(principal.getName()))) {
+                        || (Principal.Type.USER == principal.getType() && "any".equals(principal.getName()))
+                        || (Principal.Type.GROUP == principal.getType() && currentUser.isMemberOf(principal.getName()))) {
 
                         permissions.addAll(accessControlEntry.getPermissions());
                     }
@@ -505,7 +505,6 @@ public class DtoConverter {
                                          Constants.LINK_REL_DELETE));
         return links;
     }
-
 
 
     public static ProjectReference toReferenceDto2(Project project, UriBuilder uriBuilder) throws InvalidValueException {

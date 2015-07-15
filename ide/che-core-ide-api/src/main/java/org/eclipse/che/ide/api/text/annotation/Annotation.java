@@ -104,7 +104,7 @@ public class Annotation {
      *         image associated with this annotation
      */
     public Annotation(String type, boolean isPersistent, String text, int layer, ImageResource image) {
-        this(type, isPersistent, text, 0, image, null);
+        this(type, isPersistent, text, layer, image, null);
     }
 
     /**
