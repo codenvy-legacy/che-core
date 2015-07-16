@@ -11,7 +11,6 @@
 package org.eclipse.che.ide.part.widgets.partbutton;
 
 import org.eclipse.che.ide.api.mvp.View;
-import org.eclipse.che.ide.api.parts.PartStackView;
 import org.eclipse.che.ide.api.parts.PartStackView.TabItem;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
@@ -20,6 +19,7 @@ import javax.annotation.Nullable;
 
 /**
  * @author Dmitry Shnurenko
+ * @author Valeriy Svydenko
  */
 public interface PartButton extends View<PartButton.ActionDelegate>, TabItem {
 
@@ -28,8 +28,6 @@ public interface PartButton extends View<PartButton.ActionDelegate>, TabItem {
 
     @Nonnull
     PartButton addIcon(@Nullable SVGResource resource);
-
-    void setTabPosition(@Nonnull PartStackView.TabPosition tabPosition);
 
     interface ActionDelegate {
         void onTabClicked(@Nonnull TabItem selectedTab);

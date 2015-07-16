@@ -31,11 +31,13 @@ import org.eclipse.che.ide.api.parts.PartStackView.TabPosition;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
+import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import java.util.Objects;
 
 /**
  * @author Dmitry Shnurenko
+ * @author Valeriy Svydenko
  */
 public class EditorTabWidget extends Composite implements EditorTab {
     interface EditorTabWidgetUiBinder extends UiBinder<Widget, EditorTabWidget> {
@@ -109,7 +111,7 @@ public class EditorTabWidget extends Composite implements EditorTab {
 
     /** {@inheritDoc} */
     @Override
-    public void setTabPosition(@Nonnull TabPosition tabPosition) {
+    public void setTabPosition(@Nonnull TabPosition tabPosition, @Nonnegative int countWidgets) {
         throw new UnsupportedOperationException("This method doesn't allow in this class " + getClass());
     }
 
