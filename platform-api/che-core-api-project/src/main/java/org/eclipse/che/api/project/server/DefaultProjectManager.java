@@ -154,7 +154,7 @@ public final class DefaultProjectManager implements ProjectManager {
      * @throws ServerException
      *         if an error occurs
      */
-    public List<Project> getProjects(String workspace) throws ServerException {
+    public List<Project> getProjects(String workspace) throws ServerException, NotFoundException {
         final FolderEntry myRoot = getProjectsRoot(workspace);
         final List<Project> projects = new ArrayList<>();
         for (FolderEntry folder : myRoot.getChildFolders()) {
@@ -178,7 +178,7 @@ public final class DefaultProjectManager implements ProjectManager {
      * @throws ServerException
      *         if other error occurs
      */
-    public Project getProject(String workspace, String projectPath) throws ForbiddenException, ServerException {
+    public Project getProject(String workspace, String projectPath) throws ForbiddenException, ServerException, NotFoundException {
         final FolderEntry myRoot = getProjectsRoot(workspace);
         final VirtualFileEntry child = myRoot.getChild(projectPath.startsWith("/") ? projectPath.substring(1) : projectPath);
         if (child != null && child.isFolder() && ((FolderEntry)child).isProjectFolder()) {
@@ -209,7 +209,7 @@ public final class DefaultProjectManager implements ProjectManager {
                                  String name,
                                  ProjectConfig projectConfig,
                                  Map<String, String> options,
-                                 String visibility) throws ConflictException, ForbiddenException, ServerException {
+                                 String visibility) throws ConflictException, ForbiddenException, ServerException, NotFoundException {
         final FolderEntry myRoot = getProjectsRoot(workspace);
         final FolderEntry projectFolder = myRoot.createFolder(name);
         final Project project = new Project(projectFolder, this);
@@ -261,6 +261,10 @@ public final class DefaultProjectManager implements ProjectManager {
         Project parentProject = getProject(workspace, projectPath);
         if (parentProject == null)
             throw new NotFoundException("Parent Project not found " + projectPath);
+
+        if (parentProject.getModules().get().contains(modulePath)) {
+            throw new ConflictException("Module " + modulePath + " already exists");
+        }
 
         if (!projectPath.startsWith("/")) {
             projectPath = "/" + projectPath;
@@ -334,7 +338,7 @@ public final class DefaultProjectManager implements ProjectManager {
      * @throws ServerException
      *         if an error occurs
      */
-    public FolderEntry getProjectsRoot(String workspace) throws ServerException {
+    public FolderEntry getProjectsRoot(String workspace) throws ServerException, NotFoundException {
         return new FolderEntry(workspace, fileSystemRegistry.getProvider(workspace).getMountPoint(true).getRoot());
     }
 

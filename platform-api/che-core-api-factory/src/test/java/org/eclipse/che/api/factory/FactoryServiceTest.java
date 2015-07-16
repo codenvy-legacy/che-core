@@ -16,6 +16,7 @@ import com.jayway.restassured.response.Response;
 import org.eclipse.che.api.account.server.dao.AccountDao;
 import org.eclipse.che.api.account.server.dao.Member;
 import org.eclipse.che.api.core.ForbiddenException;
+import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.rest.ApiExceptionMapper;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
@@ -1015,7 +1016,7 @@ public class FactoryServiceTest {
     }
 
     @Test
-    public void shouldRespondNotFoundIfProjectIsNotExist() throws ServerException, ForbiddenException {
+    public void shouldRespondNotFoundIfProjectIsNotExist() throws ServerException, ForbiddenException, NotFoundException {
 
         given().//
                 expect().//

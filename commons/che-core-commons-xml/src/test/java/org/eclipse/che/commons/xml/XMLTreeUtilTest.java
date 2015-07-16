@@ -143,35 +143,39 @@ public class XMLTreeUtilTest {
     }
 
     @Test
-    public void shouldBeAbleToReplaceAllBytesWithGivenBytes() {
-        final byte[] src = "\r text \r".getBytes();
+    public void shouldBeAbleToReplaceMoreBytesWithLessBytes() {
+        final byte[] src = "\r\n\r\n text \r\n\r\n".getBytes();
 
-        final byte[] newSrc = XMLTreeUtil.replaceAll(src, (byte)'\r', "&#xD;".getBytes(), 0);
+        final byte[] newSrc = replaceAll(src, "\r\n".getBytes(), "\n".getBytes());
 
-        assertEquals(newSrc, "&#xD; text &#xD;".getBytes());
+        assertEquals(newSrc, "\n\n text \n\n".getBytes());
     }
 
     @Test
-    public void shouldBeAbleToReplaceAllBytesWithGivenBytesStartingFromSpecifiedIndex() {
-        final byte[] src = "\r \r text \r \r".getBytes();
+    public void shouldBeAbleToReplaceLessBytesWithMoreBytes() {
+        final byte[] src = "\n\n text \n\n text".getBytes();
 
-        final byte[] newSrc = XMLTreeUtil.replaceAll(src, (byte)'\r', "&#xD;".getBytes(), 5);
+        final byte[] newSrc = replaceAll(src, "\n".getBytes(), "\r\n".getBytes());
 
-        assertEquals(newSrc, "\r \r text &#xD; &#xD;".getBytes());
-    }
-
-    @Test(expectedExceptions = IndexOutOfBoundsException.class)
-    public void shouldThrowExceptionWhenReplacingBytesWithStartFromParamWhichIsOutOfSourceBounds() {
-        replaceAll("abc".getBytes(), (byte)'a', "ab".getBytes(), 3);
+        assertEquals(newSrc, "\r\n\r\n text \r\n\r\n text".getBytes());
     }
 
     @Test
-    public void shouldReturnSameArrayWhenSourceBytesDoNotContainTargetByte() {
-        final byte[] src = "text".getBytes();
+    public void shouldBeAbleToReplaceBytes() {
+        final byte[] src = "\r\r text \r\r text \r\r text \r\r".getBytes();
 
-        final byte[] newSrc = XMLTreeUtil.replaceAll(src, (byte)'\r', "&#xD;".getBytes(), 0);
+        final byte[] newSrc = replaceAll(src, "\r".getBytes(), "\n".getBytes());
 
-        assertEquals(newSrc, "text".getBytes());
+        assertEquals(newSrc, "\n\n text \n\n text \n\n text \n\n".getBytes());
+    }
+
+    @Test
+    public void shouldNotReplaceBytesIfTargetBytesWereNotFound() {
+        final byte[] src = "\n\n text \n\n text".getBytes();
+
+        final byte[] newSrc = replaceAll(src, "\r\n".getBytes(), "\n".getBytes());
+
+        assertEquals(newSrc, "\n\n text \n\n text".getBytes());
     }
 
     @Test

@@ -94,7 +94,7 @@ public class DocsModule extends AbstractModule {
             config.setBasePath(baseApiUrl);
             config.setApiVersion(Constants.API_VERSION);
             final com.wordnik.swagger.model.ApiInfo apiInfo = new com.wordnik.swagger.model.ApiInfo(
-                    "Codenvy REST API", // title
+                    "Eclipse Che REST API", // title
                     "", // description
                     "", // termsOfServiceUrl
                     "", // contacts

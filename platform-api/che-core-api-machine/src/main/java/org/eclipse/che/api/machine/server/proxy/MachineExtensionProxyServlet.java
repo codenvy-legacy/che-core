@@ -94,7 +94,7 @@ public class MachineExtensionProxyServlet extends HttpServlet {
 
             conn.setRequestMethod(req.getMethod());
 
-            copyHeaders(conn, req);
+            setHeaders(conn, req);
 
             if ("POST".equals(req.getMethod()) || "PUT".equals(req.getMethod()) || "DELETE".equals(req.getMethod())) {
                 if (req.getInputStream() != null) {
@@ -166,7 +166,8 @@ public class MachineExtensionProxyServlet extends HttpServlet {
         }
     }
 
-    private void copyHeaders(HttpURLConnection conn, HttpServletRequest request) {
+    private void setHeaders(HttpURLConnection conn, HttpServletRequest request) {
+        // copy headers from request
         final Enumeration<String> headerNames = request.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             final String headerName = headerNames.nextElement();
@@ -178,6 +179,9 @@ public class MachineExtensionProxyServlet extends HttpServlet {
                 }
             }
         }
+
+        // add forwarded host header. See http://tools.ietf.org/html/rfc7239#section-5.3
+        conn.setRequestProperty("X-Forwarded-Host", request.getHeader("Host"));
     }
 
     /**

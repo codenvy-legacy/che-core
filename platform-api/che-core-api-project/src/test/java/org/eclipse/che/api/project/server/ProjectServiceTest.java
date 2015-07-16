@@ -18,6 +18,7 @@ import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.rest.ApiExceptionMapper;
 import org.eclipse.che.api.core.rest.CodenvyJsonProvider;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
+import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 import org.eclipse.che.api.core.util.LineConsumerFactory;
 import org.eclipse.che.api.core.util.ValueHolder;
 import org.eclipse.che.api.project.server.handlers.CreateProjectHandler;
@@ -106,6 +107,7 @@ import java.util.zip.ZipOutputStream;
 import org.eclipse.che.api.project.shared.dto.CopyOptions;
 import org.eclipse.che.api.project.shared.dto.MoveOptions;
 
+import static java.util.Collections.singletonList;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.AssertJUnit.assertFalse;
@@ -311,6 +313,17 @@ public class ProjectServiceTest {
         validateProjectLinks(moduleDescriptor);
     }
 
+    @Test
+    public void shouldReturnNotFoundStatusWhenGettingModulesFromProjectWhichDoesNotExist() throws Exception {
+        ContainerResponse response = launcher.service("GET",
+                                                      "http://localhost:8080/api/project/" + workspace + "/modules/fake",
+                                                      "http://localhost:8080/api",
+                                                      null,
+                                                      null,
+                                                      null);
+
+        assertEquals(response.getStatus(), 404);
+    }
 
     @Test
     @SuppressWarnings("unchecked")
@@ -536,8 +549,7 @@ public class ProjectServiceTest {
         assertEquals(result.getTypeName(), "my project type");
         assertEquals(result.getVisibility(), "public");
         assertEquals(result.getWorkspaceId(), workspace);
-        assertEquals(result.getWorkspaceName(), workspace);
-        assertEquals(result.getIdeUrl(), String.format("http://localhost:8080/ws/%s/new_project", workspace));
+//        assertEquals(result.getIdeUrl(), String.format("http://localhost:8080/ws/%s/new_project", workspace));
         assertEquals(result.getBaseUrl(), String.format("http://localhost:8080/api/project/%s/new_project", workspace));
         Map<String, List<String>> attributes = result.getAttributes();
         assertNotNull(attributes);
@@ -619,8 +631,7 @@ public class ProjectServiceTest {
         assertEquals(result.getTypeName(), "my project type");
         assertEquals(result.getVisibility(), "public");
         assertEquals(result.getWorkspaceId(), workspace);
-        assertEquals(result.getWorkspaceName(), workspace);
-        assertEquals(result.getIdeUrl(), String.format("http://localhost:8080/ws/%s/my_project/new_module", workspace));
+//        assertEquals(result.getIdeUrl(), String.format("http://localhost:8080/ws/%s/my_project/new_module", workspace));
 
         assertEquals(result.getBaseUrl(), String.format("http://localhost:8080/api/project/%s/my_project/new_module", workspace));
 
@@ -651,6 +662,23 @@ public class ProjectServiceTest {
         assertNotNull(project.getBaseFolder().getChild("b"));
         assertNotNull(project.getBaseFolder().getChild("test.txt"));
 
+    }
+
+    @Test
+    public void shouldReturnConflictStatusWhenCreatingModuleWhichAlreadyExists() throws Exception {
+        pm.createProject(workspace, "new_module", new ProjectConfig("", "my_project_type"), null, null);
+        pm.addModule(workspace, "my_project", "/new_module", null, null, null);
+
+        ContainerResponse response = launcher.service("POST",
+                                                      "http://localhost:8080/api/project/" + workspace + "/my_project?path=/new_module",
+                                                      "http://localhost:8080/api",
+                                                      null,
+                                                      null,
+                                                      null);
+
+        assertEquals(response.getStatus(), 409);
+        final ServiceError error = DtoFactory.getInstance().createDtoFromJson(response.getEntity().toString(), ServiceError.class);
+        assertEquals(error.getMessage(), "Module /new_module already exists");
     }
 
     @Test
@@ -1599,7 +1627,6 @@ public class ProjectServiceTest {
                                                       "http://localhost:8080/api", headers, b, null);
         assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
         ImportResponse importResponse = (ImportResponse)response.getEntity();
-        Assert.assertTrue(importResponse.getProjectDescriptor().getProblems().isEmpty());
         assertEquals(importResponse.getProjectDescriptor().getDescription(), "import test");
         assertEquals(importResponse.getProjectDescriptor().getType(), "chuck_project_type");
         assertEquals(importResponse.getProjectDescriptor().getAttributes().get("x"), Arrays.asList("a", "b"));
@@ -1694,7 +1721,6 @@ public class ProjectServiceTest {
         assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
         ImportResponse importResponse = (ImportResponse)response.getEntity();
         ProjectDescriptor descriptor = importResponse.getProjectDescriptor();
-        Assert.assertTrue(descriptor.getProblems().isEmpty());
         assertEquals(descriptor.getDescription(), "import test");
         assertEquals(descriptor.getType(), "chuck_project_type");
         Project newProject = pm.getProject(workspace, "new_project");
@@ -2871,7 +2897,7 @@ public class ProjectServiceTest {
 
                         if(file == null)
                             throw new ValueStorageException("Check not found");
-                        return Collections.singletonList("checked");
+                        return singletonList("checked");
 
                     }
 

@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ui.dialogs.choice;
 
-import org.eclipse.che.ide.ui.dialogs.choice.ChoiceDialogView.ActionDelegate;
-import org.eclipse.che.ide.ui.window.Window.Resources;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.uibinder.client.UiBinder;
@@ -59,7 +57,7 @@ public class ChoiceDialogFooter extends Composite {
         secondChoiceButton.getElement().setId("ask-dialog-second");
 
         thirdChoiceButton.addStyleName(resources.centerPanelCss().button());
-        thirdChoiceButton.getElement().setId("ask-dialog-second");
+        thirdChoiceButton.getElement().setId("ask-dialog-third");
     }
 
     /**

@@ -19,6 +19,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 
 import org.eclipse.che.api.account.server.dao.Account;
 import org.eclipse.che.api.account.server.dao.AccountDao;
+import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
@@ -29,7 +30,6 @@ import org.eclipse.che.api.core.rest.annotations.GenerateLink;
 import org.eclipse.che.api.core.rest.annotations.Required;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.core.util.LinksHelper;
-import org.eclipse.che.api.project.server.ProjectService;
 import org.eclipse.che.api.user.server.UserService;
 import org.eclipse.che.api.user.server.dao.PreferenceDao;
 import org.eclipse.che.api.user.server.dao.Profile;
@@ -79,7 +79,6 @@ import static java.util.Collections.singletonMap;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.status;
-import static org.eclipse.che.api.project.server.Constants.LINK_REL_GET_PROJECTS;
 import static org.eclipse.che.api.user.server.Constants.LINK_REL_GET_USER_BY_ID;
 import static org.eclipse.che.commons.lang.NameGenerator.generate;
 
@@ -99,8 +98,8 @@ public class WorkspaceService extends Service {
     private final UserDao        userDao;
     private final MemberDao      memberDao;
     private final UserProfileDao profileDao;
-    private final PreferenceDao preferenceDao;
-    private final AccountDao accountDao;
+    private final PreferenceDao  preferenceDao;
+    private final AccountDao     accountDao;
 
     @Inject
     public WorkspaceService(WorkspaceDao workspaceDao,
@@ -122,30 +121,28 @@ public class WorkspaceService extends Service {
     /**
      * Creates new workspace and adds current user as member to created workspace
      * with roles <i>"workspace/admin"</i> and <i>"workspace/developer"</i>. Returns status code <strong>201 CREATED</strong>
-     * and {@link org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor} if workspace has been created successfully.
+     * and {@link WorkspaceDescriptor} if workspace has been created successfully.
      * Each new workspace should contain at least name and account identifier.
      *
      * @param newWorkspace
      *         new workspace
      * @return descriptor of created workspace
-     * @throws org.eclipse.che.api.core.ConflictException
+     * @throws ConflictException
      *         when current user account identifier and given account identifier are different
-     * @throws org.eclipse.che.api.core.NotFoundException
+     * @throws NotFoundException
      *         when account with given identifier does not exist
-     * @throws org.eclipse.che.api.core.ServerException
+     * @throws ServerException
      *         when some error occurred while retrieving/persisting account, workspace or member
-     * @throws org.eclipse.che.api.core.ForbiddenException
-     *         when user has not access to create workspaces,
-     *         or when new workspace is {@code null},
-     *         or any of workspace name or account id is {@code null}
-     * @see org.eclipse.che.api.workspace.shared.dto.NewWorkspace
-     * @see org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor
-     * @see #getById(String, javax.ws.rs.core.SecurityContext)
-     * @see #getByName(String, javax.ws.rs.core.SecurityContext)
+     * @throws BadRequestException
+     *         when either new workspace or workspace name or account id is {@code null}
+     * @see NewWorkspace
+     * @see WorkspaceDescriptor
+     * @see #getById(String, SecurityContext)
+     * @see #getByName(String, SecurityContext)
      */
     @ApiOperation(value = "Create a new workspace",
-            response = WorkspaceDescriptor.class,
-            position = 2)
+                  response = WorkspaceDescriptor.class,
+                  position = 2)
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "CREATED"),
             @ApiResponse(code = 403, message = "You have no access to create more workspaces"),
@@ -164,7 +161,7 @@ public class WorkspaceService extends Service {
                            @Context SecurityContext context) throws ConflictException,
                                                                     NotFoundException,
                                                                     ServerException,
-                                                                    ForbiddenException {
+                                                                    BadRequestException {
         requiredNotNull(newWorkspace, "New workspace");
         requiredNotNull(newWorkspace.getAccountId(), "Account ID");
         if (newWorkspace.getAttributes() != null) {
@@ -207,9 +204,8 @@ public class WorkspaceService extends Service {
      * @return descriptor of created workspace
      * @throws ConflictException
      *         when current user account identifier and given account identifier are different
-     * @throws ForbiddenException
-     *         when new workspace is {@code null},
-     *         or any of workspace name or account identifier is {@code null}
+     * @throws BadRequestException
+     *         when either new workspace or workspace name or account identifier is {@code null}
      * @throws NotFoundException
      *         when account with given identifier does not exist
      * @throws ServerException
@@ -234,14 +230,13 @@ public class WorkspaceService extends Service {
     @GenerateLink(rel = Constants.LINK_REL_CREATE_TEMP_WORKSPACE)
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
-    @SuppressWarnings("static-access")
     public Response createTemporary(@ApiParam(value = "New Temporary workspace", required = true)
                                     @Required
                                     @Description("New temporary workspace")
                                     NewWorkspace newWorkspace,
                                     @Context SecurityContext context) throws ConflictException,
                                                                              NotFoundException,
-                                                                             ForbiddenException,
+                                                                             BadRequestException,
                                                                              ServerException {
         requiredNotNull(newWorkspace, "New workspace");
         if (newWorkspace.getAttributes() != null) {
@@ -363,7 +358,7 @@ public class WorkspaceService extends Service {
                                          String name,
                                          @Context SecurityContext context) throws NotFoundException,
                                                                                   ServerException,
-                                                                                  ForbiddenException {
+                                                                                  BadRequestException {
         requiredNotNull(name, "Workspace name");
         final Workspace workspace = workspaceDao.getByName(name);
         if (!context.isUserInRole("account/owner") &&
@@ -398,8 +393,8 @@ public class WorkspaceService extends Service {
      *         when workspace with given name doesn't exist
      * @throws ConflictException
      *         when attribute with not valid name
-     * @throws ForbiddenException
-     *         when update is {@code null} or updated attributes contains
+     * @throws BadRequestException
+     *         when update is {@code null} or updated attributes contains not valid attribute
      * @throws ServerException
      *         when some error occurred while retrieving/updating workspace
      * @see WorkspaceUpdate
@@ -420,15 +415,11 @@ public class WorkspaceService extends Service {
     @RolesAllowed({"account/owner", "workspace/admin", "system/admin"})
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
-    public WorkspaceDescriptor update(@ApiParam(value = "Workspace ID")
-                                      @PathParam("id")
-                                      String id,
-                                      @ApiParam(value = "Workspace update", required = true)
-                                      @Required
-                                      WorkspaceUpdate update,
+    public WorkspaceDescriptor update(@ApiParam("Workspace ID") @PathParam("id") String id,
+                                      @ApiParam("Workspace update") WorkspaceUpdate update,
                                       @Context SecurityContext context) throws NotFoundException,
                                                                                ConflictException,
-                                                                               ForbiddenException,
+                                                                               BadRequestException,
                                                                                ServerException {
         requiredNotNull(update, "Workspace update");
         final Workspace workspace = workspaceDao.getById(id);
@@ -453,7 +444,7 @@ public class WorkspaceService extends Service {
      * @param accountId
      *         account identifier
      * @return workspaces descriptors
-     * @throws ForbiddenException
+     * @throws BadRequestException
      *         when account identifier is {@code null}
      * @throws ServerException
      *         when some error occurred while retrieving workspace
@@ -477,7 +468,7 @@ public class WorkspaceService extends Service {
                                                             @QueryParam("id")
                                                             String accountId,
                                                             @Context SecurityContext context) throws ServerException,
-                                                                                                     ForbiddenException {
+                                                                                                     BadRequestException {
         requiredNotNull(accountId, "Account ID");
         final List<Workspace> workspaces = workspaceDao.getByAccount(accountId);
         final List<WorkspaceDescriptor> descriptors = new ArrayList<>(workspaces.size());
@@ -532,7 +523,7 @@ public class WorkspaceService extends Service {
      * @return certain user memberships
      * @throws NotFoundException
      *         when user with given identifier doesn't exist
-     * @throws ForbiddenException
+     * @throws BadRequestException
      *         when user identifier is {@code null}
      * @throws ServerException
      *         when some error occurred while retrieving user or members
@@ -558,7 +549,7 @@ public class WorkspaceService extends Service {
                                                                @QueryParam("userid")
                                                                String userId,
                                                                @Context SecurityContext context) throws NotFoundException,
-                                                                                                        ForbiddenException,
+                                                                                                        BadRequestException,
                                                                                                         ServerException {
         requiredNotNull(userId, "User ID");
         final List<Member> members = memberDao.getUserRelationships(userId);
@@ -731,16 +722,13 @@ public class WorkspaceService extends Service {
     @RolesAllowed({"user", "temp_user"})
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
-    public Response addMember(@ApiParam(value = "Workspace ID")
-                              @PathParam("id")
-                              String wsId,
-                              @ApiParam(value = "New membership", required = true)
-                              @Required
-                              NewMembership newMembership,
+    public Response addMember(@ApiParam("Workspace ID") @PathParam("id") String wsId,
+                              @ApiParam(value = "New membership", required = true) NewMembership newMembership,
                               @Context SecurityContext context) throws NotFoundException,
                                                                        ServerException,
                                                                        ConflictException,
-                                                                       ForbiddenException {
+                                                                       ForbiddenException,
+                                                                       BadRequestException {
         requiredNotNull(newMembership, "New membership");
         requiredNotNull(newMembership.getUserId(), "User ID");
         final Workspace workspace = workspaceDao.getById(wsId);
@@ -909,15 +897,15 @@ public class WorkspaceService extends Service {
                                                    null,
                                                    APPLICATION_JSON,
                                                    Constants.LINK_REL_GET_WORKSPACE_BY_ID);
+        //TODO replace hardcoded path with UriBuilder + ProjectService
         final Link projectsLink = LinksHelper.createLink(HttpMethod.GET,
-                                                         baseUriBuilder.clone()
-                                                                       .path(ProjectService.class)
-                                                                       .path(ProjectService.class, "getProjects")
-                                                                       .build(workspace.getId())
-                                                                       .toString(),
+                                                         getServiceContext().getBaseUriBuilder().clone()
+                                                                            .path("/project/{ws-id}")
+                                                                            .build(member.getWorkspaceId())
+                                                                            .toString(),
                                                          null,
                                                          APPLICATION_JSON,
-                                                         LINK_REL_GET_PROJECTS);
+                                                         "get projects");
         final WorkspaceReference wsRef = DtoFactory.getInstance().createDto(WorkspaceReference.class)
                                                    .withId(workspace.getId())
                                                    .withName(workspace.getName())
@@ -943,15 +931,15 @@ public class WorkspaceService extends Service {
         final List<Link> links = new LinkedList<>();
         final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
         if (context.isUserInRole("user")) {
+            //TODO replace hardcoded path with UriBuilder + ProjectService
             links.add(LinksHelper.createLink(HttpMethod.GET,
                                              getServiceContext().getBaseUriBuilder().clone()
-                                                                .path(ProjectService.class)
-                                                                .path(ProjectService.class, "getProjects")
+                                                                .path("/project/{ws-id}")
                                                                 .build(workspaceDescriptor.getId())
                                                                 .toString(),
                                              null,
                                              APPLICATION_JSON,
-                                             org.eclipse.che.api.project.server.Constants.LINK_REL_GET_PROJECTS));
+                                             "get projects"));
             links.add(LinksHelper.createLink(HttpMethod.GET,
                                              uriBuilder.clone()
                                                        .path(getClass(), "getMembershipsOfCurrentUser")
@@ -1017,12 +1005,12 @@ public class WorkspaceService extends Service {
      *         object reference to check
      * @param subject
      *         used as subject of exception message "{subject} required"
-     * @throws ForbiddenException
+     * @throws BadRequestException
      *         when object reference is {@code null}
      */
-    private void requiredNotNull(Object object, String subject) throws ForbiddenException {
+    private void requiredNotNull(Object object, String subject) throws BadRequestException {
         if (object == null) {
-            throw new ForbiddenException(subject + " required");
+            throw new BadRequestException(subject + " required");
         }
     }
 

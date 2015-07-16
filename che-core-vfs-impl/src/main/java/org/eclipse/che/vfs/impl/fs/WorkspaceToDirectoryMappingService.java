@@ -13,6 +13,7 @@ package org.eclipse.che.vfs.impl.fs;
 import com.google.common.base.Function;
 import com.google.common.collect.Maps;
 
+import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemProvider;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
@@ -55,7 +56,7 @@ public class WorkspaceToDirectoryMappingService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Map<String, String> setMountPath(@PathParam("ws-id") String workspaceId, @QueryParam("mountPath") String mountPath)
-            throws ServerException, IOException {
+            throws ServerException, IOException, NotFoundException {
         if (Files.notExists(Paths.get(mountPath))) {
             Files.createDirectories(Paths.get(mountPath));
         }
@@ -70,7 +71,7 @@ public class WorkspaceToDirectoryMappingService {
     @Path("{ws-id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Map<String, String> removeMountPath(@PathParam("ws-id") String workspaceId) throws ServerException{
+    public Map<String, String> removeMountPath(@PathParam("ws-id") String workspaceId) throws ServerException, NotFoundException {
         VirtualFileSystemProvider provider = virtualFileSystemRegistry.getProvider(workspaceId);
         provider.close();
         mappedDirectoryLocalFSMountStrategy.removeMountPath(workspaceId);

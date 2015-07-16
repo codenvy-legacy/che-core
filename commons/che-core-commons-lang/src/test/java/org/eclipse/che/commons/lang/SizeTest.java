@@ -27,7 +27,7 @@ public class SizeTest {
         Assert.assertEquals(Size.toHumanSize(1000), "1000 B");
         Assert.assertEquals(Size.toHumanSize(1024 * 1024), "1 MB");
         Assert.assertEquals(Size.toHumanSize(5 * 1024 * 1024), "5 MB");
-        Assert.assertEquals(Size.toHumanSize(5l * 1024 * 1024 * 1024), "5 GB");
+        Assert.assertEquals(Size.toHumanSize(5L * 1024 * 1024 * 1024), "5 GB");
         Assert.assertEquals(Size.toHumanSize(7539480), "7" + sep + "2 MB");
         Assert.assertEquals(Size.toHumanSize(10226124), "9" + sep + "8 MB");
     }
