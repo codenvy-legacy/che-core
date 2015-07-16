@@ -56,7 +56,6 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
     private final PartsComparator                 partsComparator;
     private final Map<PartPresenter, Constraints> constraints;
     private final PartStackEventHandler           partStackHandler;
-    private final EventBus                        eventBus;
 
     protected final Map<TabItem, PartPresenter> parts;
     protected final TabItemFactory              tabItemFactory;
@@ -82,7 +81,6 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
         this.workBenchPartController = workBenchPartController;
         this.tabItemFactory = tabItemFactory;
         this.partsComparator = partsComparator;
-        this.eventBus = eventBus;
 
         this.parts = new HashMap<>();
         this.constraints = new HashMap<>();

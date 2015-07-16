@@ -4,9 +4,9 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * <p/>
  * Contributors:
- *   Codenvy, S.A. - initial API and implementation
+ * Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 package org.eclipse.che.ide.api.parts;
 
@@ -41,6 +41,14 @@ public interface PartStackView extends View<PartStackView.ActionDelegate> {
 
         void unSelect();
 
+        /**
+         * Determines position of the tab.
+         *
+         * @param tabPosition
+         *         orientation of the Tab (e.g. LEFT or RIGHT)
+         * @param countWidgets
+         *         number of widgets(tabs) which are including in the current part. It is necessary for ranking the tab.
+         */
         void setTabPosition(@Nonnull TabPosition tabPosition, @Nonnegative int countWidgets);
     }
 
