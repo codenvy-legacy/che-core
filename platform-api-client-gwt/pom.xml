@@ -33,6 +33,7 @@
         <module>che-core-client-gwt-runner</module>
         <module>che-core-client-gwt-vfs</module>
         <module>che-core-client-gwt-factory</module>
+        <module>che-core-client-gwt-git</module>
         <module>che-core-client-gwt-workspace</module>
     </modules>
 </project>
