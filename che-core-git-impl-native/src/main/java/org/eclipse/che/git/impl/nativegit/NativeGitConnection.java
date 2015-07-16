@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.git.impl.nativegit;
 
+import com.google.common.base.MoreObjects;
+
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.core.util.LineConsumerFactory;
 import org.eclipse.che.api.git.Config;
@@ -437,8 +439,9 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public MergeResult merge(MergeRequest request) throws GitException {
-        if (getBranchRef(request.getCommit()) == null) {
-            throw new GitException("Invalid reference to commit for merge " + request.getCommit());
+        final String gitObjectType = getRevisionType(request.getCommit());
+        if (!("commit".equalsIgnoreCase(gitObjectType) || "tag".equalsIgnoreCase(gitObjectType))) {
+            throw new GitException("Invalid object for merge " + request.getCommit());
         }
         return nativeGit.createMergeCommand().setCommit(request.getCommit()).setCommitter(getLocalCommitter()).execute();
     }
@@ -455,20 +458,23 @@ public class NativeGitConnection implements GitConnection {
     public PullResponse pull(PullRequest request) throws GitException, UnauthorizedException {
         PullCommand pullCommand;
         String remoteUri;
-        try {
-            remoteUri = nativeGit.createRemoteListCommand()
-                                 .setRemoteName(request.getRemote())
-                                 .execute()
-                                 .get(0)
-                                 .getUrl();
-        } catch (GitException ignored) {
+        if (request.getRemote() != null) {
             remoteUri = request.getRemote();
-        }
+        } else
+            try {
+                remoteUri = nativeGit.createRemoteListCommand()
+                                     .setRemoteName(request.getRemote())
+                                     .execute()
+                                     .get(0)
+                                     .getUrl();
+            } catch (GitException ignored) {
+                remoteUri = request.getRemote();
+            }
         pullCommand = nativeGit.createPullCommand();
         pullCommand
                 .setRefSpec(request.getRefSpec())
                 .setAuthor(getLocalCommitter())
-                .setRemoteUrl(remoteUri)
+                .setRemoteUrl(MoreObjects.firstNonNull(remoteUri, "origin"))
                 .setTimeout(request.getTimeout());
 
         executeRemoteCommand(pullCommand, remoteUri);
@@ -603,7 +609,9 @@ public class NativeGitConnection implements GitConnection {
         //do not need to do anything
     }
 
-    /** @return NativeGit for this connection */
+    /**
+     * @return NativeGit for this connection
+     */
     public NativeGit getNativeGit() {
         return nativeGit;
     }
@@ -672,7 +680,9 @@ public class NativeGitConnection implements GitConnection {
         }
     }
 
-    /** Prepares credentials for git command */
+    /**
+     * Prepares credentials for git command
+     */
     private GitCommand withCredentials(GitCommand<?> command, String url) throws GitException {
         UserCredential credentials = credentialsLoader.getUserCredential(url);
         if (credentials == null) {
@@ -682,7 +692,9 @@ public class NativeGitConnection implements GitConnection {
         return command;
     }
 
-    /** Restores associated with {@link #nativeGit} repository directory */
+    /**
+     * Restores associated with {@link #nativeGit} repository directory
+     */
     private void restoreGitRepoDir() throws GitException {
         final File repo = nativeGit.getRepository();
         if (!repo.exists() && !repo.mkdirs()) {
@@ -690,7 +702,9 @@ public class NativeGitConnection implements GitConnection {
         }
     }
 
-    /** Check if error message from git output corresponding authenticate issue. */
+    /**
+     * Check if error message from git output corresponding authenticate issue.
+     */
     private boolean isOperationNeedAuth(String errorMessage) {
         return authErrorPattern.matcher(errorMessage).find();
     }
@@ -713,6 +727,23 @@ public class NativeGitConnection implements GitConnection {
         } else {
             return null;
         }
+    }
+
+
+    /**
+     * Gets type of git object.
+     *
+     * @param gitObject
+     *         revision object e.g. commit, tree, blob, tag.
+     * @return type of git object
+     */
+    private String getRevisionType(String gitObject) throws GitException {
+        EmptyGitCommand command = nativeGit.createEmptyGitCommand()
+                                           .setNextParameter("cat-file")
+                                           .setNextParameter("-t")
+                                           .setNextParameter(gitObject);
+        command.execute();
+        return command.getText();
     }
 
     private String parseBranchName(String name) {

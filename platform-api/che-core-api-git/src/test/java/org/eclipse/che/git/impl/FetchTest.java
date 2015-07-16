@@ -36,6 +36,7 @@ import static org.eclipse.che.dto.server.DtoFactory.newDto;
 import static org.eclipse.che.git.impl.GitTestUtil.addFile;
 import static org.eclipse.che.git.impl.GitTestUtil.cleanupTestRepo;
 import static org.eclipse.che.git.impl.GitTestUtil.connectToInitializedGitRepository;
+import static org.eclipse.che.git.impl.GitTestUtil.getTestGitUser;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
@@ -59,16 +60,20 @@ public class FetchTest {
         cleanupTestRepo(fetchTestRepo);
     }
 
-    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
+    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = GitConnectionFactoryProvider.class)
     public void testSimpleFetch(GitConnectionFactory connectionFactory)
             throws ServerException, IOException, UnauthorizedException, URISyntaxException {
 
         //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
-        GitConnection fetchConnection = connectToInitializedGitRepository(connectionFactory, fetchTestRepo);
+        GitConnection fetchConnection = connectionFactory.getConnection(fetchTestRepo.getAbsolutePath(), getTestGitUser());
 
+        addFile(connection, "README", "readme content");
+        connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
+        connection.commit(newDto(CommitRequest.class).withMessage("fetch test"));
         //clone default repo into fetchRepo
-        fetchConnection.clone(newDto(CloneRequest.class).withRemoteUri(repository.getAbsolutePath()));
+        fetchConnection.clone(newDto(CloneRequest.class).withRemoteUri(connection.getWorkingDir().getAbsolutePath())
+                                                        .withWorkingDir(fetchConnection.getWorkingDir().getAbsolutePath()));
 
         //add new File into defaultRepository
         addFile(connection, "newfile1", "newfile1 content");
@@ -85,14 +90,17 @@ public class FetchTest {
         assertTrue(new File(fetchTestRepo, "newfile1").exists());
     }
 
-    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
+    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = GitConnectionFactoryProvider.class)
     public void testFetchBranch(GitConnectionFactory connectionFactory)
             throws ServerException, IOException, UnauthorizedException, URISyntaxException {
 
         //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
-        GitConnection fetchConnection = connectToInitializedGitRepository(connectionFactory, fetchTestRepo);
+        GitConnection fetchConnection = connectionFactory.getConnection(fetchTestRepo.getAbsolutePath(), getTestGitUser());
 
+        addFile(connection, "README", "readme content");
+        connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
+        connection.commit(newDto(CommitRequest.class).withMessage("fetch test"));
         //clone default repo into fetchRepo
         fetchConnection.clone(newDto(CloneRequest.class).withRemoteUri(repository.getAbsolutePath()));
 

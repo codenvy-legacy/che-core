@@ -37,8 +37,6 @@ public class CommandProcess {
     private static final Logger LOG = LoggerFactory.getLogger(CommandProcess.class);
 
 
-
-
     /**
      * @param command
      *         GitCommand that will be executed

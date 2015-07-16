@@ -12,6 +12,7 @@ package org.eclipse.che.git.impl;
 
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
+
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.git.GitConnection;
 import org.eclipse.che.api.git.GitConnectionFactory;
@@ -19,6 +20,7 @@ import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.api.git.shared.Branch;
 import org.eclipse.che.api.git.shared.BranchCreateRequest;
 import org.eclipse.che.api.git.shared.BranchListRequest;
+import org.eclipse.che.api.git.shared.InitRequest;
 import org.eclipse.che.api.git.shared.PullRequest;
 import org.eclipse.che.api.git.shared.RemoteAddRequest;
 import org.eclipse.che.api.git.shared.RemoteListRequest;
@@ -32,7 +34,10 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
-import static org.eclipse.che.git.impl.GitTestUtil.*;
+import static org.eclipse.che.git.impl.GitTestUtil.cleanupTestRepo;
+import static org.eclipse.che.git.impl.GitTestUtil.connectToGitRepositoryWithContent;
+import static org.eclipse.che.git.impl.GitTestUtil.connectToInitializedGitRepository;
+import static org.eclipse.che.git.impl.GitTestUtil.getTestGitUser;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
@@ -56,7 +61,7 @@ public class RemoteAddTest {
         cleanupTestRepo(remoteRepo);
     }
 
-    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
+    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = GitConnectionFactoryProvider.class)
     public void testSimpleRemoteAdd(GitConnectionFactory connectionFactory) throws GitException, IOException {
         //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
@@ -68,35 +73,38 @@ public class RemoteAddTest {
         assertEquals(afterCount, beforeCount + 1);
     }
 
-    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
-    public void testAddNotAllBranchesTracked(GitConnectionFactory connectionFactory) throws GitException, URISyntaxException, IOException, UnauthorizedException {
+    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = GitConnectionFactoryProvider.class)
+    public void testAddNotAllBranchesTracked(GitConnectionFactory connectionFactory)
+            throws GitException, URISyntaxException, IOException, UnauthorizedException {
         //given
         GitConnection connection = connectToGitRepositoryWithContent(connectionFactory, repository);
         connection.branchCreate(newDto(BranchCreateRequest.class).withName("b1"));
         connection.branchCreate(newDto(BranchCreateRequest.class).withName("b2"));
         connection.branchCreate(newDto(BranchCreateRequest.class).withName("b3"));
 
-        GitConnection connection2 = connectToInitializedGitRepository(connectionFactory, remoteRepo);
+        GitConnection connection2 = connectionFactory.getConnection(remoteRepo.getAbsolutePath(), getTestGitUser());
+        connection2.init(newDto(InitRequest.class).withBare(false));
         //when
-        //add remote tracked only to b1 and b3 branches
+        //add remote tracked only to b1 and b3 branches.
         RemoteAddRequest remoteAddRequest = newDto(RemoteAddRequest.class)
                 .withName("origin")
                 .withUrl(connection.getWorkingDir().getAbsolutePath());
         remoteAddRequest.setBranches(Arrays.asList("b1", "b3"));
-        connection.remoteAdd(remoteAddRequest);
+        connection2.remoteAdd(remoteAddRequest);
         //then
         //make pull
         connection2.pull(newDto(PullRequest.class).withRemote("origin"));
+
         assertTrue(Sets.symmetricDifference(
-                Sets.newHashSet(connection.branchList(newDto(BranchListRequest.class)
-                        .withListMode(BranchListRequest.LIST_REMOTE))),
-                Sets.newHashSet(
-                        newDto(Branch.class).withName("refs/remotes/origin/b1")
-                                .withDisplayName("origin/b1").withActive(false).withRemote(true),
-                        newDto(Branch.class).withName("refs/remotes/origin/b3")
-                                .withDisplayName("origin/b3").withActive(false).withRemote(true)
-                )
-        ).isEmpty());
+                Sets.newHashSet(connection2.branchList(newDto(BranchListRequest.class)
+                                                               .withListMode(BranchListRequest.LIST_REMOTE))),
+                Sets.newHashSet(newDto(Branch.class).withName("refs/remotes/origin/b1")
+                                                    .withDisplayName("origin/b1")
+                                                    .withActive(false)
+                                                    .withRemote(true),
+                                newDto(Branch.class).withName("refs/remotes/origin/b3")
+                                                    .withDisplayName("origin/b3")
+                                                    .withActive(false)
+                                                    .withRemote(true))).isEmpty());
     }
 }
-
