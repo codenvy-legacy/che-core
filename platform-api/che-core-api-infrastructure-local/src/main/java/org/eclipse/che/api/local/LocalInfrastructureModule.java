@@ -137,12 +137,14 @@ public class LocalInfrastructureModule extends AbstractModule {
     Set<ManagedRecipe> recipes() {
         final Group group = new GroupImpl("public", null, asList("read", "search"));
         final ManagedRecipe recipe1 = new RecipeImpl().withId("recipe1234567890")
+                                                      .withName("UBUNTU")
                                                       .withCreator("codenvy")
                                                       .withType("docker")
                                                       .withScript("FROM ubuntu\ntail -f \\dev\\null")
                                                       .withTags(asList("ubuntu"))
                                                       .withPermissions(new PermissionsImpl(null, asList(group)));
         final ManagedRecipe recipe2 = new RecipeImpl().withId("recipe2345678901")
+                                                      .withName("BOSYBOX")
                                                       .withCreator("codenvy")
                                                       .withType("docker")
                                                       .withScript("FROM bosybox\ntail -f \\dev\\null")

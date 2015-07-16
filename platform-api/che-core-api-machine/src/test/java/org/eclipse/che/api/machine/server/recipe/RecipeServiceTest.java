@@ -99,19 +99,19 @@ public class RecipeServiceTest {
     }
 
     @Test
-    public void shouldThrowForbiddenExceptionOnCreateRecipeWithNullBody() {
+    public void shouldThrowBadRequestExceptionOnCreateRecipeWithNullBody() {
         final Response response = given().auth()
                                          .basic(ADMIN_USER_NAME, ADMIN_USER_PASSWORD)
                                          .contentType("application/json")
                                          .when()
                                          .post(SECURE_PATH + "/recipe");
 
-        assertEquals(response.getStatusCode(), 403);
+        assertEquals(response.getStatusCode(), 400);
         assertEquals(unwrapDto(response, ServiceError.class).getMessage(), "Recipe required");
     }
 
     @Test
-    public void shouldThrowForbiddenExceptionOnCreateRecipeWithNewRecipeWhichDoesNotHaveType() {
+    public void shouldThrowBadRequestExceptionOnCreateRecipeWithNewRecipeWhichDoesNotHaveType() {
         final NewRecipe newRecipe = newDto(NewRecipe.class).withScript("FROM ubuntu\n");
 
         final Response response = given().auth()
@@ -121,12 +121,12 @@ public class RecipeServiceTest {
                                          .when()
                                          .post(SECURE_PATH + "/recipe");
 
-        assertEquals(response.getStatusCode(), 403);
+        assertEquals(response.getStatusCode(), 400);
         assertEquals(unwrapDto(response, ServiceError.class).getMessage(), "Recipe type required");
     }
 
     @Test
-    public void shouldThrowForbiddenExceptionOnCreateRecipeWithNewRecipeWhichDoesNotHaveScript() {
+    public void shouldThrowBadRequestExceptionOnCreateRecipeWithNewRecipeWhichDoesNotHaveScript() {
         final NewRecipe newRecipe = newDto(NewRecipe.class).withType("docker");
 
         final Response response = given().auth()
@@ -136,14 +136,30 @@ public class RecipeServiceTest {
                                          .when()
                                          .post(SECURE_PATH + "/recipe");
 
-        assertEquals(response.getStatusCode(), 403);
+        assertEquals(response.getStatusCode(), 400);
         assertEquals(unwrapDto(response, ServiceError.class).getMessage(), "Recipe script required");
+    }
+
+    @Test
+    public void shouldThrowBadRequestExceptionWhenCreatingRecipeWithoutName() {
+        final NewRecipe newRecipe = newDto(NewRecipe.class).withType("docker").withScript("script");
+
+        final Response response = given().auth()
+                                         .basic(ADMIN_USER_NAME, ADMIN_USER_PASSWORD)
+                                         .contentType("application/json")
+                                         .body(newRecipe)
+                                         .when()
+                                         .post(SECURE_PATH + "/recipe");
+
+        assertEquals(response.getStatusCode(), 400);
+        assertEquals(unwrapDto(response, ServiceError.class).getMessage(), "Recipe name required");
     }
 
     @Test
     public void shouldCreateNewRecipe() throws Exception {
         final GroupDescriptor group = newDto(GroupDescriptor.class).withName("public").withAcl(asList("read"));
         final NewRecipe newRecipe = newDto(NewRecipe.class).withType("docker")
+                                                           .withName("name")
                                                            .withScript("FROM ubuntu\n")
                                                            .withTags(asList("java", "mongo"))
                                                            .withPermissions(newDto(PermissionsDescriptor.class).withGroups(asList(group)));
@@ -169,6 +185,7 @@ public class RecipeServiceTest {
     public void shouldNotBeAbleToCreateNewRecipeWithPublicSearchPermissionForUser() {
         final GroupDescriptor group = newDto(GroupDescriptor.class).withName("public").withAcl(asList("read", "search"));
         final NewRecipe newRecipe = newDto(NewRecipe.class).withType("docker")
+                                                           .withName("name")
                                                            .withScript("FROM ubuntu\n")
                                                            .withPermissions(newDto(PermissionsDescriptor.class).withGroups(asList(group)));
 
@@ -190,6 +207,7 @@ public class RecipeServiceTest {
 
         final GroupDescriptor group = newDto(GroupDescriptor.class).withName("public").withAcl(asList("read", "search"));
         final NewRecipe newRecipe = newDto(NewRecipe.class).withType("docker")
+                                                           .withName("name")
                                                            .withScript("FROM ubuntu\n")
                                                            .withPermissions(newDto(PermissionsDescriptor.class).withGroups(asList(group)));
 
@@ -360,10 +378,10 @@ public class RecipeServiceTest {
     @Test
     public void shouldNotBeAbleToRemoveRecipeIfUserDoesNotHaveWritePermission() throws Exception {
         final ManagedRecipe recipe = new RecipeImpl().withId("id")
-                                              .withCreator(USER_ID)
-                                              .withType("docker")
-                                              .withScript("script1 content")
-                                              .withTags(asList("java"));
+                                                     .withCreator(USER_ID)
+                                                     .withType("docker")
+                                                     .withScript("script1 content")
+                                                     .withTags(asList("java"));
         when(recipeDao.getById(recipe.getId())).thenReturn(recipe);
         when(permissionsChecker.hasAccess(recipe, USER_ID, "write")).thenReturn(false);
 
@@ -380,10 +398,10 @@ public class RecipeServiceTest {
     @Test
     public void shouldBeAbleToUpdateRecipe() throws Exception {
         final ManagedRecipe recipe = new RecipeImpl().withId("id")
-                                              .withCreator(USER_ID)
-                                              .withType("docker")
-                                              .withScript("script1 content")
-                                              .withTags(asList("java"));
+                                                     .withCreator(USER_ID)
+                                                     .withType("docker")
+                                                     .withScript("script1 content")
+                                                     .withTags(asList("java"));
         when(recipeDao.getById(recipe.getId())).thenReturn(recipe);
         when(permissionsChecker.hasAccess(recipe, USER_ID, "write")).thenReturn(true);
         when(permissionsChecker.hasAccess(recipe, USER_ID, "update_acl")).thenReturn(true);
@@ -403,26 +421,34 @@ public class RecipeServiceTest {
                                          .put(SECURE_PATH + "/recipe/" + recipe.getId());
 
         assertEquals(response.getStatusCode(), 200);
-        final RecipeDescriptor descriptor = unwrapDto(response, RecipeDescriptor.class);
-        assertEquals(descriptor.getType(), update.getType());
-        assertEquals(descriptor.getScript(), update.getScript());
-        assertEquals(descriptor.getTags(), update.getTags());
-        assertEquals(descriptor.getPermissions(), update.getPermissions());
+        verify(recipeDao).update(any(RecipeUpdate.class));
+    }
+
+    @Test
+    public void shouldThrowBadRequestExceptionWhenRecipeUpdateIsNull() throws Exception {
+        final Response response = given().auth()
+                                         .basic(ADMIN_USER_NAME, ADMIN_USER_PASSWORD)
+                                         .contentType("application/json")
+                                         .when()
+                                         .put(SECURE_PATH + "/recipe/id");
+
+        assertEquals(response.getStatusCode(), 400);
     }
 
     @Test
     public void shouldThrowForbiddenExceptionWhenUserDoesNotHaveAccessToUpdateRecipe() throws Exception {
         final ManagedRecipe recipe = new RecipeImpl().withId("id")
-                                              .withCreator(USER_ID)
-                                              .withType("docker")
-                                              .withScript("script1 content")
-                                              .withTags(asList("java"));
+                                                     .withCreator(USER_ID)
+                                                     .withType("docker")
+                                                     .withScript("script1 content")
+                                                     .withTags(asList("java"));
         when(recipeDao.getById(recipe.getId())).thenReturn(recipe);
         when(permissionsChecker.hasAccess(recipe, USER_ID, "write")).thenReturn(false);
 
         final Response response = given().auth()
                                          .basic(ADMIN_USER_NAME, ADMIN_USER_PASSWORD)
                                          .contentType("application/json")
+                                         .body(newDto(RecipeUpdate.class))
                                          .when()
                                          .put(SECURE_PATH + "/recipe/" + recipe.getId());
 
@@ -434,10 +460,10 @@ public class RecipeServiceTest {
     @Test
     public void shouldThrowForbiddenExceptionWhenUserDoesNotHaveAccessToUpdateRecipePermissions() throws Exception {
         final ManagedRecipe recipe = new RecipeImpl().withId("id")
-                                              .withCreator(USER_ID)
-                                              .withType("docker")
-                                              .withScript("script1 content")
-                                              .withTags(asList("java"));
+                                                     .withCreator(USER_ID)
+                                                     .withType("docker")
+                                                     .withScript("script1 content")
+                                                     .withTags(asList("java"));
         when(recipeDao.getById(recipe.getId())).thenReturn(recipe);
         when(permissionsChecker.hasAccess(recipe, USER_ID, "write")).thenReturn(true);
         when(permissionsChecker.hasAccess(recipe, USER_ID, "update_acl")).thenReturn(false);
