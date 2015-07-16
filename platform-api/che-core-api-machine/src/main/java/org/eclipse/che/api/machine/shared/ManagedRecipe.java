@@ -14,29 +14,34 @@ package org.eclipse.che.api.machine.shared;
 import java.util.List;
 
 /**
- * Serves as base model for Recipe API
+ * Serves as base model for Recipe API.
  *
  * @author Eugene Voevodin
  */
 public interface ManagedRecipe extends Recipe {
 
     /**
-     * Returns recipe identifier
+     * Returns recipe identifier.
      */
     String getId();
 
     /**
-     * Returns identifier of user who is the recipe creator
+     * Returns recipe name.
+     */
+    String getName();
+
+    /**
+     * Returns identifier of user who is the recipe creator.
      */
     String getCreator();
 
     /**
-     * Returns recipe tags (i.e. 'java'). Tags used for recipes search
+     * Returns recipe tags (i.e. 'java'). Tags used for recipes search.
      */
     List<String> getTags();
 
     /**
-     * Returns recipe permissions
+     * Returns recipe permissions.
      */
     Permissions getPermissions();
 }

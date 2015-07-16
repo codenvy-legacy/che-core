@@ -27,6 +27,7 @@ public class RecipeImpl implements ManagedRecipe {
 
     public static RecipeImpl fromDescriptor(RecipeDescriptor descriptor) {
         final RecipeImpl recipe = new RecipeImpl().withId(descriptor.getId())
+                                                  .withName(descriptor.getName())
                                                   .withType(descriptor.getType())
                                                   .withScript(descriptor.getScript())
                                                   .withTags(descriptor.getTags())
@@ -38,6 +39,7 @@ public class RecipeImpl implements ManagedRecipe {
     }
 
     private String       id;
+    private String       name;
     private String       creator;
     private String       type;
     private String       script;
@@ -55,6 +57,20 @@ public class RecipeImpl implements ManagedRecipe {
 
     public RecipeImpl withId(String id) {
         this.id = id;
+        return this;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public RecipeImpl withName(String name) {
+        this.name = name;
         return this;
     }
 
@@ -141,6 +157,7 @@ public class RecipeImpl implements ManagedRecipe {
         }
         final RecipeImpl other = (RecipeImpl)obj;
         return Objects.equals(id, other.id) &&
+               Objects.equals(name, other.name) &&
                Objects.equals(creator, other.creator) &&
                Objects.equals(type, other.type) &&
                Objects.equals(script, other.script) &&
@@ -152,6 +169,7 @@ public class RecipeImpl implements ManagedRecipe {
     public int hashCode() {
         int hash = 7;
         hash = 31 * hash + Objects.hashCode(id);
+        hash = 31 * hash + Objects.hashCode(name);
         hash = 31 * hash + Objects.hashCode(creator);
         hash = 31 * hash + Objects.hashCode(type);
         hash = 31 * hash + Objects.hashCode(script);

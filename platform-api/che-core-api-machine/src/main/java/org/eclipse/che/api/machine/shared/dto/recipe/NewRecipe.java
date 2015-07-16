@@ -23,19 +23,17 @@ import java.util.List;
 @DTO
 public interface NewRecipe extends ManagedRecipe {
 
-    String getType();
-
     void setType(String type);
 
     NewRecipe withType(String type);
 
-    String getScript();
+    void setName(String name);
+
+    NewRecipe withName(String name);
 
     void setScript(String script);
 
     NewRecipe withScript(String script);
-
-    List<String> getTags();
 
     void setTags(List<String> tags);
 
