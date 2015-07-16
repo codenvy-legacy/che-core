@@ -22,12 +22,12 @@ import org.eclipse.che.ide.settings.SettingsPresenter;
  *
  * @author Dmitry Shnurenko
  */
-public class SetupProjectAction extends Action {
+public class SettingsAction extends Action {
 
     private final SettingsPresenter presenter;
 
     @Inject
-    public SetupProjectAction(CoreLocalizationConstant locale, SettingsPresenter presenter) {
+    public SettingsAction(CoreLocalizationConstant locale, SettingsPresenter presenter) {
         super(locale.projectSettingsTitle());
 
         this.presenter = presenter;
