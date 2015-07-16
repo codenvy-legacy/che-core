@@ -32,8 +32,6 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
@@ -45,10 +43,9 @@ import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
  */
 @Singleton
 public class MachineExtensionProxyServlet extends HttpServlet {
-    private static final Pattern EXTENSION_API_URI = Pattern.compile("/[^/]+/ext/(?<machineId>[^/]+)(?<destpath>/.*)");
+    private static final String MACHINE_ID_QUERY = "machineId";
 
-    private final int extServicesPort;
-
+    private final int            extServicesPort;
     private final MachineManager machineManager;
 
     @Inject
@@ -113,24 +110,21 @@ public class MachineExtensionProxyServlet extends HttpServlet {
     }
 
     private String getExtensionApiUrl(HttpServletRequest req) throws NotFoundException, ServerException {
-        String machineId;
-        final Matcher matcher = EXTENSION_API_URI.matcher(req.getRequestURI());
-        if (matcher.matches()) {
-            machineId = matcher.group("machineId");
-        } else {
+        final String machineId = getQueryParameterValue(MACHINE_ID_QUERY, req.getQueryString());
+
+        if (null == machineId) {
             throw new NotFoundException("No machine id is found in request.");
         }
 
         final Instance machine = machineManager.getMachine(machineId);
         final Server server = machine.getServers().get(Integer.toString(extServicesPort));
         if (server == null) {
-            throw new ServerException("No extension server found in machine");
+            throw new ServerException("No extension server found in machine.");
         }
 
-        final StringBuilder url = new StringBuilder("http://").append(server.getAddress());
-
-        final String extPath = matcher.group("destpath");
-        url.append(extPath);
+        final StringBuilder url = new StringBuilder("http://")
+                .append(server.getAddress())
+                .append(req.getRequestURI());
 
         if (req.getQueryString() != null) {
             url.append("?").append(req.getQueryString());
@@ -200,5 +194,29 @@ public class MachineExtensionProxyServlet extends HttpServlet {
                headerName.equalsIgnoreCase("Trailers") ||
                headerName.equalsIgnoreCase("Transfer-Encoding") ||
                headerName.equalsIgnoreCase("Upgrade");
+    }
+
+    private String getQueryParameterValue(String name, String queryString) {
+        if (queryString != null) {
+            int start;
+            int length;
+            if (queryString.startsWith(name + "=")) {
+                start = name.length() + 1;
+            } else {
+                start = queryString.indexOf("&" + name + "=");
+                if (start > 0) {
+                    start += (name.length() + 2);
+                }
+            }
+            if (start >= 0) {
+                length = queryString.indexOf('&', start);
+                if (length == -1) {
+                    length = queryString.length();
+                }
+                return queryString.substring(start, length);
+            }
+        }
+
+        return null;
     }
 }

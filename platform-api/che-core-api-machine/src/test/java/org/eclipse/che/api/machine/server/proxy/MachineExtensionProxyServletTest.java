@@ -53,8 +53,11 @@ public class MachineExtensionProxyServletTest {
     private static final String MACHINE_ID              = "machine123";
     private static final int    EXTENSIONS_API_PORT     = 4301;
     private static final String PROXY_ENDPOINT          = "http://localhost:8080";
-    private static final String DESTINATION_BASEPATH    = "/java/";
+    private static final String DESTINATION_BASEPATH    = "/api/ext/java/";
     private static final String DEFAULT_RESPONSE_ENTITY = "{\"key1\":\"value1\",\"key2\":\"value2\"}";
+    private static final String PROXY_URL               = PROXY_ENDPOINT + DESTINATION_BASEPATH;
+    private static final String MACHINE_QUERY           = "machineId=" + MACHINE_ID;
+    private static final String DEFAULT_URL             = PROXY_URL + "?" + MACHINE_QUERY;
 
     private Map<String, Server> machineServers;
 
@@ -132,7 +135,7 @@ public class MachineExtensionProxyServletTest {
         when(machine.getServers()).thenReturn(machineServers);
 
         MockHttpServletRequest mockRequest =
-                new MockHttpServletRequest(PROXY_ENDPOINT + "/api/ext/" + MACHINE_ID + DESTINATION_BASEPATH,
+                new MockHttpServletRequest(DEFAULT_URL,
                                            new ByteArrayInputStream(new byte[0]),
                                            0,
                                            method,
@@ -157,7 +160,7 @@ public class MachineExtensionProxyServletTest {
         when(machine.getServers()).thenReturn(machineServers);
 
         MockHttpServletRequest mockRequest =
-                new MockHttpServletRequest(PROXY_ENDPOINT + "/api/ext/" + MACHINE_ID + DESTINATION_BASEPATH,
+                new MockHttpServletRequest(DEFAULT_URL,
                                            new ByteArrayInputStream(new byte[0]),
                                            0,
                                            "GET",
@@ -180,7 +183,7 @@ public class MachineExtensionProxyServletTest {
         final String destPath = DESTINATION_BASEPATH + "codeassistant/index";
 
         MockHttpServletRequest mockRequest =
-                new MockHttpServletRequest(PROXY_ENDPOINT + "/che/ext/" + MACHINE_ID + destPath,
+                new MockHttpServletRequest(PROXY_ENDPOINT + destPath + "?" + MACHINE_QUERY,
                                            new ByteArrayInputStream(new byte[0]),
                                            0,
                                            "GET",
@@ -200,10 +203,10 @@ public class MachineExtensionProxyServletTest {
         when(machine.getMetadata()).thenReturn(instanceMetadata);
         when(machine.getServers()).thenReturn(machineServers);
 
-        final String query = "key1=value1&key2=value2&key2=value3";
+        final String query = MACHINE_QUERY + "&key1=value1&key2=value2&key2=value3";
 
         MockHttpServletRequest mockRequest =
-                new MockHttpServletRequest(PROXY_ENDPOINT + "/api/ext/" + MACHINE_ID + DESTINATION_BASEPATH + "?" + query,
+                new MockHttpServletRequest(PROXY_URL + "?" + query,
                                            new ByteArrayInputStream(new byte[0]),
                                            0,
                                            "GET",
@@ -224,7 +227,7 @@ public class MachineExtensionProxyServletTest {
         when(machine.getServers()).thenReturn(machineServers);
 
         MockHttpServletRequest mockRequest =
-                new MockHttpServletRequest(PROXY_ENDPOINT + "/api/ext/" + MACHINE_ID + "/not/existing/path",
+                new MockHttpServletRequest(PROXY_ENDPOINT + "/api/ext/not/existing/path" + "?" + MACHINE_QUERY,
                                            new ByteArrayInputStream(new byte[0]),
                                            0,
                                            "GET",
@@ -245,7 +248,7 @@ public class MachineExtensionProxyServletTest {
         when(machine.getServers()).thenReturn(Collections.<String, Server>emptyMap());
 
         MockHttpServletRequest mockRequest =
-                new MockHttpServletRequest(PROXY_ENDPOINT + "/api/ext/" + MACHINE_ID + DESTINATION_BASEPATH,
+                new MockHttpServletRequest(DEFAULT_URL,
                                            new ByteArrayInputStream(new byte[0]),
                                            0,
                                            "GET",
@@ -278,7 +281,7 @@ public class MachineExtensionProxyServletTest {
         when(extensionApiResponse.getHeaders()).thenReturn(headers);
 
         MockHttpServletRequest mockRequest =
-                new MockHttpServletRequest(PROXY_ENDPOINT + "/api/ext/" + MACHINE_ID + DESTINATION_BASEPATH,
+                new MockHttpServletRequest(DEFAULT_URL,
                                            new ByteArrayInputStream(new byte[0]),
                                            0,
                                            "POST",
@@ -329,7 +332,7 @@ public class MachineExtensionProxyServletTest {
         when(machine.getServers()).thenReturn(machineServers);
 
         MockHttpServletRequest mockRequest =
-                new MockHttpServletRequest(PROXY_ENDPOINT + "/api/ext/" + MACHINE_ID + DESTINATION_BASEPATH,
+                new MockHttpServletRequest(DEFAULT_URL,
                                            new ByteArrayInputStream(new byte[0]),
                                            0,
                                            "POST",
