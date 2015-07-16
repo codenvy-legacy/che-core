@@ -67,7 +67,7 @@ public class RemoteUpdateTest {
         connection.remoteUpdate(request);
         //then
         assertEquals(parseAllConfig(connection).get("remote.newRemote.fetch").get(0),
-                     "+refs/heads/branch2:refs/remotes/newRemote/branch2");
+                "+refs/heads/branch2:refs/remotes/newRemote/branch2");
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = GitConnectionFactoryProvider.class)

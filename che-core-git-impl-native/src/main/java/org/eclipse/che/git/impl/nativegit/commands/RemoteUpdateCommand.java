@@ -44,7 +44,7 @@ public class RemoteUpdateCommand extends GitCommand<Void> {
         }
         reset();
         commandLine.add("remote");
-        if (branchesToAdd != null) {
+        if (branchesToAdd != null && !branchesToAdd.isEmpty()) {
             commandLine.add("set-branches");
             if (addBranches) {
                 commandLine.add("--add");
@@ -53,16 +53,16 @@ public class RemoteUpdateCommand extends GitCommand<Void> {
             commandLine.add(branchesToAdd);
         } else {
             commandLine.add("set-url");
-            if (addUrl != null) {
+            if (addUrl != null && !addUrl.isEmpty()) {
                 commandLine.add("--add", remoteName);
                 commandLine.add(addUrl);
-            } else if (addPushUrl != null) {
+            } else if (addPushUrl != null && !addPushUrl.isEmpty()) {
                 commandLine.add("--push", remoteName);
                 commandLine.add(addPushUrl);
-            } else if (removeUrl != null) {
+            } else if (removeUrl != null && !removeUrl.isEmpty()) {
                 commandLine.add("--delete", remoteName);
                 commandLine.add(removeUrl);
-            } else if (removePushUrl != null) {
+            } else if (removePushUrl != null && !removePushUrl.isEmpty()) {
                 commandLine.add("--delete", "--push", remoteName);
                 commandLine.add(removePushUrl);
             } else if (newUrl != null) {
