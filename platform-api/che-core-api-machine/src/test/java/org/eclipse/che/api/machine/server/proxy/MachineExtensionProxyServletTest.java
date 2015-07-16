@@ -345,10 +345,13 @@ public class MachineExtensionProxyServletTest {
         headers.remove("Connection");
         // proxy will set it separately
         extensionApiRequest.headers.remove("Connection");
+
         // fixme jetty return 127.0.0.1:jettyPort
-        // I suppose we need add X-Forwarded-* headers to fix it
+        // I suppose we need add X-Forwarded-* header support to jetty conf to fix it
         headers.remove("Host");
         extensionApiRequest.headers.remove("Host");
+
+        extensionApiRequest.headers.remove("X-Forwarded-Host");
 
         assertEqualsHeaders(extensionApiRequest.headers, headers);
     }
