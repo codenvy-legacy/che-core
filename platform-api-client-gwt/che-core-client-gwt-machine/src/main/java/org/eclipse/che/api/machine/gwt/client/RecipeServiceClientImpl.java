@@ -223,19 +223,17 @@ public class RecipeServiceClientImpl implements RecipeServiceClient {
 
     /** {@inheritDoc} */
     @Override
-    public Promise<RecipeDescriptor> updateRecipe(@Nonnull final String id, @Nonnull final RecipeUpdate recipeUpdate) {
+    public Promise<RecipeDescriptor> updateRecipe(@Nonnull final RecipeUpdate recipeUpdate) {
         return newPromise(new RequestCall<RecipeDescriptor>() {
             @Override
             public void makeCall(AsyncCallback<RecipeDescriptor> callback) {
-                updateCommand(id, recipeUpdate, callback);
+                updateCommand(recipeUpdate, callback);
             }
         });
     }
 
-    private void updateCommand(@Nonnull final String id,
-                               @Nonnull RecipeUpdate recipeUpdate,
-                               @Nonnull AsyncCallback<RecipeDescriptor> callback) {
-        final String url = baseHttpUrl + '/' + id;
+    private void updateCommand(@Nonnull RecipeUpdate recipeUpdate, @Nonnull AsyncCallback<RecipeDescriptor> callback) {
+        final String url = baseHttpUrl;
         asyncRequestFactory.createRequest(PUT, url, recipeUpdate, false)
                            .header(ACCEPT, APPLICATION_JSON)
                            .header(CONTENT_TYPE, APPLICATION_JSON)

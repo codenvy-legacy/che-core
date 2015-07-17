@@ -72,12 +72,10 @@ public interface RecipeServiceClient {
     /**
      * Update recipe.
      *
-     * @param id
-     *         ID of the recipe that should be updated
      * @param recipeUpdate
      *         describer of the recipe updater
      */
-    Promise<RecipeDescriptor> updateRecipe(@Nonnull String id, @Nonnull RecipeUpdate recipeUpdate);
+    Promise<RecipeDescriptor> updateRecipe(@Nonnull RecipeUpdate recipeUpdate);
 
     /** Remove recipe with the given ID. */
     Promise<Void> removeRecipe(@Nonnull String id);
