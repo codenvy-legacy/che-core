@@ -24,9 +24,9 @@ import org.eclipse.che.api.machine.server.spi.InstanceProcess;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
 import org.eclipse.che.api.machine.shared.Server;
 import org.eclipse.che.api.machine.shared.dto.CommandDescriptor;
+import org.eclipse.che.api.machine.shared.dto.RecipeMachineCreationMetadata;
 import org.eclipse.che.api.machine.shared.dto.MachineDescriptor;
-import org.eclipse.che.api.machine.shared.dto.MachineFromRecipeMetadata;
-import org.eclipse.che.api.machine.shared.dto.MachineFromSnapshotMetadata;
+import org.eclipse.che.api.machine.shared.dto.SnapshotMachineCreationMetadata;
 import org.eclipse.che.api.machine.shared.dto.MachineStateDescriptor;
 import org.eclipse.che.api.machine.shared.dto.NewSnapshotDescriptor;
 import org.eclipse.che.api.machine.shared.dto.ProcessDescriptor;
@@ -82,7 +82,7 @@ public class MachineService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
-    public MachineStateDescriptor createMachineFromRecipe(final MachineFromRecipeMetadata machineFromRecipeMetadata)
+    public MachineStateDescriptor createMachineFromRecipe(final RecipeMachineCreationMetadata machineFromRecipeMetadata)
             throws ServerException, ForbiddenException, NotFoundException {
         requiredNotNull(machineFromRecipeMetadata, "Machine description");
         requiredNotNull(machineFromRecipeMetadata.getRecipeDescriptor(), "Machine type");
@@ -103,7 +103,7 @@ public class MachineService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
-    public MachineStateDescriptor createMachineFromSnapshot(MachineFromSnapshotMetadata machineFromSnapshotMetadata)
+    public MachineStateDescriptor createMachineFromSnapshot(SnapshotMachineCreationMetadata machineFromSnapshotMetadata)
             throws ForbiddenException, NotFoundException, ServerException {
         requiredNotNull(machineFromSnapshotMetadata, "Snapshot description");
         requiredNotNull(machineFromSnapshotMetadata.getSnapshotId(), "Snapshot id");
@@ -430,7 +430,7 @@ public class MachineService {
                                             .withRef(serverEntry.getValue().getRef())
                                             .withUrl(serverEntry.getValue().getUrl()));
         }
-        machineDescriptor.withProperties(machine.getMetadata().getProperties())
+        machineDescriptor.withMetadata(machine.getMetadata().getProperties())
                          .withServers(serverDescriptors);
         machineDescriptor.setLinks(null); // TODO
 
@@ -461,6 +461,7 @@ public class MachineService {
                          .withCreationDate(snapshot.getCreationDate())
                          .withWorkspaceId(snapshot.getWorkspaceId())
                          .withProjects(projectDescriptors)
+                         .withWorkspaceBound(snapshot.isWorkspaceBound())
                          .withLinks(null);// TODO
     }
 }

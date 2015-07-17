@@ -18,16 +18,7 @@ import org.eclipse.che.dto.shared.DTO;
  * @author Alexander Garagatyi
  */
 @DTO
-public interface MachineFromSnapshotMetadata {
-    /**
-     * Channel of websocket where machine logs should be put
-     */
-    String getOutputChannel();
-
-    void setOutputChannel(String outputChannel);
-
-    MachineFromSnapshotMetadata withOutputChannel(String outputChannel);
-
+public interface SnapshotMachineCreationMetadata extends MachineCreationMetadata {
     /**
      * Id of snapshot machine should be created from
      */
@@ -35,11 +26,14 @@ public interface MachineFromSnapshotMetadata {
 
     void setSnapshotId(String snapshotId);
 
-    MachineFromSnapshotMetadata withSnapshotId(String snapshotId);
+    SnapshotMachineCreationMetadata withSnapshotId(String snapshotId);
 
-    String getDisplayName();
+    @Override
+    SnapshotMachineCreationMetadata withOutputChannel(String outputChannel);
 
-    void setDisplayName(String displayName);
+    @Override
+    SnapshotMachineCreationMetadata withDisplayName(String displayName);
 
-    MachineFromSnapshotMetadata withDisplayName(String displayName);
+    @Override
+    SnapshotMachineCreationMetadata withMemorySize(int mem);
 }

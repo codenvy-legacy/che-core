@@ -20,8 +20,4 @@ public interface ProjectBinding {
      * Project's path in workspace. Subproject can be used too
      */
     String getPath();
-
-    void setPath(String path);
-
-    ProjectBinding withPath(String path);
 }

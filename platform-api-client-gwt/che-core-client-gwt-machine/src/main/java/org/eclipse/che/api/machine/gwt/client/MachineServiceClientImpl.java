@@ -15,9 +15,9 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import org.eclipse.che.api.machine.shared.dto.CommandDescriptor;
+import org.eclipse.che.api.machine.shared.dto.RecipeMachineCreationMetadata;
 import org.eclipse.che.api.machine.shared.dto.MachineDescriptor;
-import org.eclipse.che.api.machine.shared.dto.MachineFromRecipeMetadata;
-import org.eclipse.che.api.machine.shared.dto.MachineFromSnapshotMetadata;
+import org.eclipse.che.api.machine.shared.dto.SnapshotMachineCreationMetadata;
 import org.eclipse.che.api.machine.shared.dto.MachineStateDescriptor;
 import org.eclipse.che.api.machine.shared.dto.ProcessDescriptor;
 import org.eclipse.che.api.machine.shared.dto.recipe.RecipeDescriptor;
@@ -101,7 +101,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
                                                             .withType(recipeType)
                                                             .withScript(recipeScript);
 
-        final MachineFromRecipeMetadata request = dtoFactory.createDto(MachineFromRecipeMetadata.class)
+        final RecipeMachineCreationMetadata request = dtoFactory.createDto(RecipeMachineCreationMetadata.class)
                                                             .withWorkspaceId(workspaceId)
                                                             .withType(machineType)
                                                             .withRecipeDescriptor(recipeDescriptor)
@@ -132,7 +132,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
                                            @Nullable final String displayName,
                                            @Nullable String outputChannel,
                                            @Nonnull AsyncCallback<MachineDescriptor> callback) {
-        final MachineFromSnapshotMetadata request = dtoFactory.createDto(MachineFromSnapshotMetadata.class)
+        final SnapshotMachineCreationMetadata request = dtoFactory.createDto(SnapshotMachineCreationMetadata.class)
                                                               .withSnapshotId(snapshotId)
                                                               .withDisplayName(displayName)
                                                               .withOutputChannel(outputChannel);

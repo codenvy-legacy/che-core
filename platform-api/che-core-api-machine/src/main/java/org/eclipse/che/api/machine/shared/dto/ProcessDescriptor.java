@@ -12,7 +12,7 @@ package org.eclipse.che.api.machine.shared.dto;
 
 import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
-import org.eclipse.che.api.machine.shared.Command;
+import org.eclipse.che.api.machine.shared.*;
 import org.eclipse.che.dto.shared.DTO;
 
 import java.util.List;
@@ -23,29 +23,14 @@ import java.util.List;
  * @author andrew00x
  */
 @DTO
-public interface ProcessDescriptor extends Hyperlinks {
-    /**
-     * Id of the process
-     */
-    int getPid();
-
+public interface ProcessDescriptor extends org.eclipse.che.api.machine.shared.Process, Hyperlinks {
     void setPid(int pid);
 
     ProcessDescriptor withPid(int pid);
 
-    /**
-     * Command line used to create this process
-     */
-    String getCommandLine();
-
     void setCommandLine(String commandLine);
 
     ProcessDescriptor withCommandLine(String commandLine);
-
-    /**
-     * Flag that represents state of process in machine
-     */
-    boolean getIsAlive();
 
     void setIsAlive(boolean isAlive);
 

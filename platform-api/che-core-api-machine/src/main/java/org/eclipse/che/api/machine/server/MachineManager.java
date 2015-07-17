@@ -4,9 +4,9 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * <p/>
  * Contributors:
- *   Codenvy, S.A. - initial API and implementation
+ * Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 package org.eclipse.che.api.machine.server;
 
@@ -36,8 +36,8 @@ import org.eclipse.che.api.machine.server.spi.InstanceProvider;
 import org.eclipse.che.api.machine.shared.Command;
 import org.eclipse.che.api.machine.shared.MachineStatus;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
-import org.eclipse.che.api.machine.shared.dto.MachineFromRecipeMetadata;
-import org.eclipse.che.api.machine.shared.dto.MachineFromSnapshotMetadata;
+import org.eclipse.che.api.machine.shared.dto.RecipeMachineCreationMetadata;
+import org.eclipse.che.api.machine.shared.dto.SnapshotMachineCreationMetadata;
 import org.eclipse.che.api.machine.shared.dto.event.MachineProcessEvent;
 import org.eclipse.che.api.machine.shared.dto.event.MachineStatusEvent;
 import org.eclipse.che.commons.env.EnvironmentContext;
@@ -47,6 +47,7 @@ import org.eclipse.che.dto.server.DtoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
@@ -72,7 +73,8 @@ import java.util.concurrent.TimeUnit;
  */
 @Singleton
 public class MachineManager {
-    private static final Logger LOG = LoggerFactory.getLogger(MachineManager.class);
+    private static final Logger LOG                 = LoggerFactory.getLogger(MachineManager.class);
+    private static final int    DEFAULT_MEMORY_SIZE = 1024;
 
     private final SnapshotDao              snapshotDao;
     private final File                     machineLogsDir;
@@ -80,20 +82,21 @@ public class MachineManager {
     private final ExecutorService          executor;
     private final MachineRegistry          machineRegistry;
     private final EventService             eventService;
-
-    private final DtoFactory dtoFactory = DtoFactory.getInstance();
+    private final int                      defaultMachineMemorySizeMB;
 
     @Inject
     public MachineManager(SnapshotDao snapshotDao,
                           MachineRegistry machineRegistry,
                           MachineInstanceProviders machineInstanceProviders,
                           @Named("machine.logs.location") String machineLogsDir,
-                          EventService eventService) {
+                          EventService eventService,
+                          @Nullable @Named("machine.default-mem-size-mb") Integer defaultMachineMemorySizeMB) {
         this.snapshotDao = snapshotDao;
         this.machineInstanceProviders = machineInstanceProviders;
         this.eventService = eventService;
         this.machineLogsDir = new File(machineLogsDir);
         this.machineRegistry = machineRegistry;
+        this.defaultMachineMemorySizeMB = defaultMachineMemorySizeMB != null ? defaultMachineMemorySizeMB : DEFAULT_MEMORY_SIZE;
 
         executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("MachineManager-%d").setDaemon(true).build());
     }
@@ -101,7 +104,7 @@ public class MachineManager {
     /**
      * Creates and starts machine from scratch using recipe.
      *
-     * @param machineFromRecipeMetadata
+     * @param machineCreationMetadata
      *         metadata that contains all information needed for creation machine from scratch
      * @return new Machine
      * @throws UnsupportedRecipeException
@@ -113,82 +116,52 @@ public class MachineManager {
      * @throws MachineException
      *         if any other exception occurs during starting
      */
-    public MachineState create(final MachineFromRecipeMetadata machineFromRecipeMetadata)
-            throws UnsupportedRecipeException, InvalidRecipeException, MachineException, NotFoundException {
+    public MachineState create(final RecipeMachineCreationMetadata machineCreationMetadata)
+            throws MachineException, NotFoundException {
+        final InstanceProvider instanceProvider = machineInstanceProviders.getProvider(machineCreationMetadata.getType());
+        final String recipeType = machineCreationMetadata.getRecipeDescriptor().getType();
 
-        final InstanceProvider instanceProvider = machineInstanceProviders.getProvider(machineFromRecipeMetadata.getType());
-        final String recipeType = machineFromRecipeMetadata.getRecipeDescriptor().getType();
 
         if (instanceProvider.getRecipeTypes().contains(recipeType)) {
             final String machineId = generateMachineId();
 
             createMachineLogsDir(machineId);
-            final LineConsumer machineLogger = getMachineLogger(machineId, machineFromRecipeMetadata.getOutputChannel());
+            final LineConsumer machineLogger = getMachineLogger(machineId, machineCreationMetadata.getOutputChannel());
 
             final String creator = EnvironmentContext.getCurrent().getUser().getId();
 
             final MachineState machineState = new MachineState(machineId,
                                                                instanceProvider.getType(),
-                                                               machineFromRecipeMetadata.getWorkspaceId(),
+                                                               machineCreationMetadata.getWorkspaceId(),
                                                                creator,
-                                                               machineFromRecipeMetadata.isBindWorkspace(),
-                                                               machineFromRecipeMetadata.getDisplayName(),
+                                                               machineCreationMetadata.isBindWorkspace(),
+                                                               machineCreationMetadata.getDisplayName(),
                                                                MachineStatus.CREATING);
+
             try {
                 machineRegistry.add(machineState);
+
+                executor.execute(new MachineCreationTask(EnvironmentContext.getCurrent(),
+                                                         machineId,
+                                                         machineLogger,
+                                                         machineCreationMetadata.getMemorySize()) {
+                    @Override
+                    public Instance createInstance() throws MachineException, NotFoundException {
+                        return instanceProvider.createInstance(RecipeImpl.fromDescriptor(
+                                                                       machineCreationMetadata.getRecipeDescriptor()),
+                                                               machineId,
+                                                               creator,
+                                                               machineCreationMetadata.getWorkspaceId(),
+                                                               machineCreationMetadata.isBindWorkspace(),
+                                                               machineCreationMetadata.getDisplayName(),
+                                                               machineLogger);
+                    }
+                });
+                return machineState;
             } catch (ConflictException e) {
                 // should not happen
                 throw new MachineException(e.getLocalizedMessage(), e);
             }
-
-            final EnvironmentContext environmentContext = EnvironmentContext.getCurrent();
-
-            executor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        EnvironmentContext.setCurrent(environmentContext);
-
-                        eventService.publish(dtoFactory.createDto(MachineStatusEvent.class)
-                                                       .withEventType(MachineStatusEvent.EventType.CREATING)
-                                                       .withMachineId(machineId));
-
-                        final Instance instance = instanceProvider.createInstance(RecipeImpl.fromDescriptor(
-                                                                                          machineFromRecipeMetadata.getRecipeDescriptor()),
-                                                                                  machineId,
-                                                                                  creator,
-                                                                                  machineFromRecipeMetadata.getWorkspaceId(),
-                                                                                  machineFromRecipeMetadata.isBindWorkspace(),
-                                                                                  machineFromRecipeMetadata.getDisplayName(),
-                                                                                  machineLogger);
-
-                        instance.setStatus(MachineStatus.RUNNING);
-
-                        machineRegistry.update(instance);
-
-                        eventService.publish(dtoFactory.createDto(MachineStatusEvent.class)
-                                                       .withEventType(MachineStatusEvent.EventType.RUNNING)
-                                                       .withMachineId(machineId));
-                    } catch (Exception error) {
-                        eventService.publish(dtoFactory.createDto(MachineStatusEvent.class)
-                                                       .withEventType(MachineStatusEvent.EventType.ERROR)
-                                                       .withMachineId(machineId)
-                                                       .withError(error.getLocalizedMessage()));
-
-                        try {
-                            LOG.error(error.getLocalizedMessage(), error);
-                            machineRegistry.remove(machineId);
-                            machineLogger.writeLine(String.format("[ERROR] %s", error.getLocalizedMessage()));
-                            machineLogger.close();
-                        } catch (IOException | NotFoundException e) {
-                            LOG.error(e.getMessage());
-                        }
-                    } finally {
-                        EnvironmentContext.reset();
-                    }
-                }
-            });
-            return machineState;
         } else {
             throw new UnsupportedRecipeException(String.format("Recipe of type '%s' is not supported", recipeType));
         }
@@ -197,7 +170,7 @@ public class MachineManager {
     /**
      * Restores and starts machine from snapshot.
      *
-     * @param machineFromSnapshotMetadata
+     * @param machineCreationMetadata
      *         metadata that contains all information needed for creation machine from snapshot
      * @return new machine
      * @throws NotFoundException
@@ -209,9 +182,9 @@ public class MachineManager {
      * @throws MachineException
      *         if any other exception occurs during starting
      */
-    public MachineState create(final MachineFromSnapshotMetadata machineFromSnapshotMetadata)
-            throws NotFoundException, MachineException, InvalidInstanceSnapshotException, SnapshotException {
-        final SnapshotImpl snapshot = getSnapshot(machineFromSnapshotMetadata.getSnapshotId());
+    public MachineState create(final SnapshotMachineCreationMetadata machineCreationMetadata)
+            throws NotFoundException, MachineException, SnapshotException {
+        final SnapshotImpl snapshot = getSnapshot(machineCreationMetadata.getSnapshotId());
         final String instanceType = snapshot.getType();
 
         final InstanceProvider instanceProvider = machineInstanceProviders.getProvider(instanceType);
@@ -221,68 +194,105 @@ public class MachineManager {
 
         final String creator = EnvironmentContext.getCurrent().getUser().getId();
 
-        final LineConsumer machineLogger = getMachineLogger(machineId, machineFromSnapshotMetadata.getOutputChannel());
+        final LineConsumer machineLogger = getMachineLogger(machineId, machineCreationMetadata.getOutputChannel());
 
         final MachineState machineState = new MachineState(machineId,
                                                            instanceProvider.getType(),
                                                            snapshot.getWorkspaceId(),
                                                            creator,
                                                            snapshot.isWorkspaceBound(),
-                                                           machineFromSnapshotMetadata.getDisplayName(),
+                                                           machineCreationMetadata.getDisplayName(),
                                                            MachineStatus.CREATING);
+
         try {
             machineRegistry.add(machineState);
+
+            executor.execute(new MachineCreationTask(EnvironmentContext.getCurrent(),
+                                                     machineId,
+                                                     machineLogger,
+                                                     machineCreationMetadata.getMemorySize()) {
+                @Override
+                public Instance createInstance() throws MachineException, NotFoundException {
+                    return instanceProvider.createInstance(snapshot.getInstanceKey(),
+                                                           machineId,
+                                                           creator,
+                                                           snapshot.getWorkspaceId(),
+                                                           snapshot.isWorkspaceBound(),
+                                                           machineCreationMetadata.getDisplayName(),
+                                                           machineLogger);
+                }
+            });
+            return machineState;
         } catch (ConflictException e) {
             throw new MachineException(e.getLocalizedMessage(), e);
         }
+    }
 
-        final EnvironmentContext environmentContext = EnvironmentContext.getCurrent();
+    private abstract class MachineCreationTask implements Runnable {
+        private final EnvironmentContext environmentContext;
+        private final String             machineId;
+        private final LineConsumer       machineLogger;
 
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
+        private int memorySizeMB;
+
+        public MachineCreationTask(EnvironmentContext environmentContext,
+                                   String machineId,
+                                   LineConsumer machineLogger,
+                                   int memorySizeMB) {
+            this.environmentContext = environmentContext;
+            this.machineId = machineId;
+            this.machineLogger = machineLogger;
+            this.memorySizeMB = memorySizeMB;
+        }
+
+        @Override
+        public void run() {
+            try {
+                EnvironmentContext.setCurrent(environmentContext);
+
+                eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
+                                               .withEventType(MachineStatusEvent.EventType.CREATING)
+                                               .withMachineId(machineId));
+
+                checkMemorySize();
+
+                final Instance instance = createInstance();
+
+                instance.setStatus(MachineStatus.RUNNING);
+
+                machineRegistry.update(instance);
+
+                eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
+                                               .withEventType(MachineStatusEvent.EventType.RUNNING)
+                                               .withMachineId(machineId));
+            } catch (Exception error) {
+                eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
+                                               .withEventType(MachineStatusEvent.EventType.ERROR)
+                                               .withMachineId(machineId)
+                                               .withError(error.getLocalizedMessage()));
+
                 try {
-                    EnvironmentContext.setCurrent(environmentContext);
-
-                    eventService.publish(dtoFactory.createDto(MachineStatusEvent.class)
-                                                   .withEventType(MachineStatusEvent.EventType.CREATING)
-                                                   .withMachineId(machineId));
-
-                    final Instance instance = instanceProvider.createInstance(snapshot.getInstanceKey(),
-                                                                              machineId,
-                                                                              creator,
-                                                                              snapshot.getWorkspaceId(),
-                                                                              snapshot.isWorkspaceBound(),
-                                                                              machineFromSnapshotMetadata.getDisplayName(),
-                                                                              machineLogger);
-
-                    instance.setStatus(MachineStatus.RUNNING);
-
-                    machineRegistry.update(instance);
-
-                    eventService.publish(dtoFactory.createDto(MachineStatusEvent.class)
-                                                   .withEventType(MachineStatusEvent.EventType.RUNNING)
-                                                   .withMachineId(machineId));
-                } catch (Exception error) {
-                    eventService.publish(dtoFactory.createDto(MachineStatusEvent.class)
-                                                   .withEventType(MachineStatusEvent.EventType.ERROR)
-                                                   .withMachineId(machineId)
-                                                   .withError(error.getLocalizedMessage()));
-
-                    try {
-                        LOG.error(error.getLocalizedMessage(), error);
-                        machineRegistry.remove(machineId);
-                        machineLogger.writeLine(String.format("[ERROR] %s", error.getLocalizedMessage()));
-                        machineLogger.close();
-                    } catch (IOException | NotFoundException e) {
-                        LOG.error(e.getMessage());
-                    }
-                } finally {
-                    EnvironmentContext.reset();
+                    LOG.error(error.getLocalizedMessage(), error);
+                    machineRegistry.remove(machineId);
+                    machineLogger.writeLine(String.format("[ERROR] %s", error.getLocalizedMessage()));
+                    machineLogger.close();
+                } catch (IOException | NotFoundException e) {
+                    LOG.error(e.getMessage());
                 }
+            } finally {
+                EnvironmentContext.reset();
             }
-        });
-        return machineState;
+        }
+
+        private void checkMemorySize() {
+            if (memorySizeMB <= 0) {
+                memorySizeMB = defaultMachineMemorySizeMB;
+            }
+
+            
+        }
+
+        public abstract Instance createInstance() throws MachineException, NotFoundException;
     }
 
     /**
@@ -584,19 +594,19 @@ public class MachineManager {
                 try {
                     EnvironmentContext.setCurrent(environmentContext);
 
-                    eventService.publish(dtoFactory.createDto(MachineProcessEvent.class)
+                    eventService.publish(DtoFactory.newDto(MachineProcessEvent.class)
                                                    .withEventType(MachineProcessEvent.EventType.STARTED)
                                                    .withMachineId(machineId)
                                                    .withProcessId(pid));
 
                     instanceProcess.start(processLogger);
 
-                    eventService.publish(dtoFactory.createDto(MachineProcessEvent.class)
+                    eventService.publish(DtoFactory.newDto(MachineProcessEvent.class)
                                                    .withEventType(MachineProcessEvent.EventType.STOPPED)
                                                    .withMachineId(machineId)
                                                    .withProcessId(pid));
                 } catch (ConflictException | MachineException error) {
-                    eventService.publish(dtoFactory.createDto(MachineProcessEvent.class)
+                    eventService.publish(DtoFactory.newDto(MachineProcessEvent.class)
                                                    .withEventType(MachineProcessEvent.EventType.ERROR)
                                                    .withMachineId(machineId)
                                                    .withProcessId(pid)
@@ -653,7 +663,7 @@ public class MachineManager {
 
         process.kill();
 
-        eventService.publish(dtoFactory.createDto(MachineProcessEvent.class)
+        eventService.publish(DtoFactory.newDto(MachineProcessEvent.class)
                                        .withEventType(MachineProcessEvent.EventType.STOPPED)
                                        .withMachineId(machineId)
                                        .withProcessId(pid));
@@ -674,7 +684,7 @@ public class MachineManager {
 
         machine.setStatus(MachineStatus.DESTROYING);
 
-        eventService.publish(dtoFactory.createDto(MachineStatusEvent.class)
+        eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
                                        .withEventType(MachineStatusEvent.EventType.DESTROYING)
                                        .withMachineId(machineId));
 
@@ -690,7 +700,7 @@ public class MachineManager {
 
                     machineRegistry.remove(machine.getId());
 
-                    eventService.publish(dtoFactory.createDto(MachineStatusEvent.class)
+                    eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
                                                    .withEventType(MachineStatusEvent.EventType.DESTROYED)
                                                    .withMachineId(machineId));
                 } catch (MachineException | NotFoundException e) {

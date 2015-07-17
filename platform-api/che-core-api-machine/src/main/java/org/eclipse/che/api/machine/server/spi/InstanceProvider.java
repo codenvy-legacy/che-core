@@ -44,12 +44,6 @@ public interface InstanceProvider {
     Set<String> getRecipeTypes();
 
     /**
-
-
-     */
-
-
-    /**
      * Creates instance from scratch.
      *
      * @param machineId

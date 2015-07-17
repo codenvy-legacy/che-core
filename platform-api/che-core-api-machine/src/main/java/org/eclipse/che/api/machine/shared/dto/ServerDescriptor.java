@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.shared.dto;
 
+import org.eclipse.che.api.machine.shared.Server;
 import org.eclipse.che.dto.shared.DTO;
 
 /**
@@ -18,20 +19,14 @@ import org.eclipse.che.dto.shared.DTO;
  * @author Alexander Garagatyi
  */
 @DTO
-public interface ServerDescriptor {
-    String getAddress();
-
+public interface ServerDescriptor extends Server {
     void setAddress(String address);
 
     ServerDescriptor withAddress(String address);
 
-    String getUrl();
-
     void setUrl(String url);
 
     ServerDescriptor withUrl(String url);
-
-    String getRef();
 
     void setRef(String ref);
 
