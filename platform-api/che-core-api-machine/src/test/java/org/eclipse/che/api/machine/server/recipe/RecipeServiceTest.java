@@ -90,14 +90,6 @@ public class RecipeServiceTest {
         uriField.set(service, uriInfo);
     }
 
-    @Filter
-    public static class EnvironmentFilter implements RequestFilter {
-
-        public void doFilter(GenericContainerRequest request) {
-            EnvironmentContext.getCurrent().setUser(new UserImpl("user", USER_ID, "token", ROLES, false));
-        }
-    }
-
     @Test
     public void shouldThrowBadRequestExceptionOnCreateRecipeWithNullBody() {
         final Response response = given().auth()
@@ -175,6 +167,7 @@ public class RecipeServiceTest {
         verify(recipeDao).create(any(ManagedRecipe.class));
         final RecipeDescriptor descriptor = unwrapDto(response, RecipeDescriptor.class);
         assertNotNull(descriptor.getId());
+        assertEquals(descriptor.getName(), newRecipe.getName());
         assertEquals(descriptor.getCreator(), USER_ID);
         assertEquals(descriptor.getScript(), newRecipe.getScript());
         assertEquals(descriptor.getTags(), newRecipe.getTags());
@@ -247,8 +240,8 @@ public class RecipeServiceTest {
     @Test
     public void shouldThrowForbiddenExceptionWhenUserDoesNotHaveReadAccessToRecipeScript() throws Exception {
         final ManagedRecipe recipe = new RecipeImpl().withCreator("someone2")
-                                              .withId("recipe123")
-                                              .withScript("FROM ubuntu\n");
+                                                     .withId("recipe123")
+                                                     .withScript("FROM ubuntu\n");
         when(recipeDao.getById(recipe.getId())).thenReturn(recipe);
         when(permissionsChecker.hasAccess(recipe, USER_ID, "read")).thenReturn(false);
 
@@ -266,11 +259,12 @@ public class RecipeServiceTest {
     public void shouldBeAbleToGetRecipe() throws Exception {
         final Map<String, List<String>> users = Collections.singletonMap(USER_ID, asList("read", "write"));
         final ManagedRecipe recipe = new RecipeImpl().withCreator("someone2")
-                                              .withId("recipe123")
-                                              .withType("docker")
-                                              .withScript("FROM ubuntu\n")
-                                              .withTags(asList("java", "mognodb"))
-                                              .withPermissions(new PermissionsImpl(users, null));
+                                                     .withId("recipe123")
+                                                     .withName("name")
+                                                     .withType("docker")
+                                                     .withScript("FROM ubuntu\n")
+                                                     .withTags(asList("java", "mognodb"))
+                                                     .withPermissions(new PermissionsImpl(users, null));
         when(recipeDao.getById(recipe.getId())).thenReturn(recipe);
         when(permissionsChecker.hasAccess(recipe, USER_ID, "read")).thenReturn(true);
 
@@ -282,6 +276,7 @@ public class RecipeServiceTest {
         assertEquals(response.getStatusCode(), 200);
         final RecipeDescriptor descriptor = unwrapDto(response, RecipeDescriptor.class);
         assertEquals(descriptor.getId(), recipe.getId());
+        assertEquals(descriptor.getName(), recipe.getName());
         assertEquals(descriptor.getType(), recipe.getType());
         assertEquals(descriptor.getScript(), recipe.getScript());
         assertEquals(descriptor.getTags(), recipe.getTags());
@@ -292,8 +287,8 @@ public class RecipeServiceTest {
     @Test
     public void shouldThrowForbiddenExceptionWhenUserDoesNotHaveReadAccessToRecipe() throws Exception {
         final ManagedRecipe recipe = new RecipeImpl().withCreator("someone2")
-                                              .withId("recipe123")
-                                              .withScript("FROM ubuntu\n");
+                                                     .withId("recipe123")
+                                                     .withScript("FROM ubuntu\n");
         when(recipeDao.getById(recipe.getId())).thenReturn(recipe);
         when(permissionsChecker.hasAccess(recipe, USER_ID, "read")).thenReturn(false);
 
@@ -310,13 +305,13 @@ public class RecipeServiceTest {
     @Test
     public void shouldBeAbleToGetCreatedRecipes() throws Exception {
         final ManagedRecipe recipe1 = new RecipeImpl().withId("id1")
-                                               .withCreator(USER_ID)
-                                               .withType("docker")
-                                               .withScript("script1 content");
+                                                      .withCreator(USER_ID)
+                                                      .withType("docker")
+                                                      .withScript("script1 content");
         final ManagedRecipe recipe2 = new RecipeImpl().withId("id2")
-                                               .withCreator(USER_ID)
-                                               .withType("docker")
-                                               .withScript("script2 content");
+                                                      .withCreator(USER_ID)
+                                                      .withType("docker")
+                                                      .withScript("script2 content");
         when(recipeDao.getByCreator(eq(USER_ID), any(int.class), any(int.class))).thenReturn(asList(recipe1, recipe2));
 
         final Response response = given().auth()
@@ -331,15 +326,15 @@ public class RecipeServiceTest {
     @Test
     public void shouldBeAbleToSearchRecipes() throws Exception {
         final ManagedRecipe recipe1 = new RecipeImpl().withId("id1")
-                                               .withCreator(USER_ID)
-                                               .withType("docker")
-                                               .withScript("script1 content")
-                                               .withTags(asList("java"));
+                                                      .withCreator(USER_ID)
+                                                      .withType("docker")
+                                                      .withScript("script1 content")
+                                                      .withTags(asList("java"));
         final ManagedRecipe recipe2 = new RecipeImpl().withId("id2")
-                                               .withCreator(USER_ID)
-                                               .withType("docker")
-                                               .withScript("script2 content")
-                                               .withTags(asList("java", "mongodb"));
+                                                      .withCreator(USER_ID)
+                                                      .withType("docker")
+                                                      .withScript("script2 content")
+                                                      .withTags(asList("java", "mongodb"));
         when(recipeDao.search(eq(asList("java", "mongodb")),
                               eq("docker"),
                               any(int.class),
@@ -359,10 +354,10 @@ public class RecipeServiceTest {
     @Test
     public void shouldBeAbleToRemoveRecipe() throws Exception {
         final ManagedRecipe recipe = new RecipeImpl().withId("id")
-                                              .withCreator(USER_ID)
-                                              .withType("docker")
-                                              .withScript("script1 content")
-                                              .withTags(asList("java"));
+                                                     .withCreator(USER_ID)
+                                                     .withType("docker")
+                                                     .withScript("script1 content")
+                                                     .withTags(asList("java"));
         when(recipeDao.getById(recipe.getId())).thenReturn(recipe);
         when(permissionsChecker.hasAccess(recipe, USER_ID, "write")).thenReturn(true);
 
@@ -487,6 +482,14 @@ public class RecipeServiceTest {
         assertEquals(unwrapDto(response, ServiceError.class).getMessage(), expMessage);
     }
 
+    @Filter
+    public static class EnvironmentFilter implements RequestFilter {
+
+        public void doFilter(GenericContainerRequest request) {
+            EnvironmentContext.getCurrent().setUser(new UserImpl("user", USER_ID, "token", ROLES, false));
+        }
+    }
+
     private static <T> T newDto(Class<T> clazz) {
         return DtoFactory.getInstance().createDto(clazz);
     }
@@ -498,4 +501,5 @@ public class RecipeServiceTest {
     private static <T> List<T> unwrapDtoList(Response response, Class<T> dtoClass) {
         return FluentIterable.from(DtoFactory.getInstance().createListDtoFromJson(response.body().print(), dtoClass)).toList();
     }
+
 }

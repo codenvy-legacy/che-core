@@ -107,6 +107,7 @@ public class RecipeService extends Service {
         }
 
         final ManagedRecipe recipe = new RecipeImpl().withId(NameGenerator.generate("recipe", 16))
+                                                     .withName(newRecipe.getName())
                                                      .withCreator(EnvironmentContext.getCurrent().getUser().getId())
                                                      .withType(newRecipe.getType())
                                                      .withScript(newRecipe.getScript())
@@ -257,6 +258,7 @@ public class RecipeService extends Service {
         final RecipeDescriptor descriptor = DtoFactory.getInstance()
                                                       .createDto(RecipeDescriptor.class)
                                                       .withId(recipe.getId())
+                                                      .withName(recipe.getName())
                                                       .withType(recipe.getType())
                                                       .withScript(recipe.getScript())
                                                       .withCreator(recipe.getCreator())

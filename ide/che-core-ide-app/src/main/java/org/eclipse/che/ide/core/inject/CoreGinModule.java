@@ -152,6 +152,7 @@ import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.rest.RestContext;
 import org.eclipse.che.ide.rest.RestContextProvider;
 import org.eclipse.che.ide.selection.SelectionAgentImpl;
+import org.eclipse.che.ide.settings.common.SettingsPagePresenter;
 import org.eclipse.che.ide.statepersistance.ActiveFilePersistenceComponent;
 import org.eclipse.che.ide.statepersistance.ActiveNodePersistentComponent;
 import org.eclipse.che.ide.statepersistance.OpenedFilesPersistenceComponent;
@@ -404,6 +405,8 @@ public class CoreGinModule extends AbstractGinModule {
         bind(FindActionView.class).to(FindActionViewImpl.class).in(Singleton.class);
 
         bind(PrivacyPresenter.class).asEagerSingleton();
+
+        GinMultibinder.newSetBinder(binder(), SettingsPagePresenter.class);
     }
 
     /** Configures binding for Editor API */
