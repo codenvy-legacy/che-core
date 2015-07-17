@@ -46,6 +46,7 @@ import java.util.Map;
  * @author Nikolay Zamosenchuk
  * @author Stéphane Daviet
  * @author Dmitry Shnurenko
+ * @author Valeriy Svydenko
  */
 public class PartStackPresenter implements Presenter, PartStackView.ActionDelegate, PartButton.ActionDelegate, PartStack {
 
