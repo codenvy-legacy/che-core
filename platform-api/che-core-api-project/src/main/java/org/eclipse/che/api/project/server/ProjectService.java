@@ -177,7 +177,7 @@ public class ProjectService extends Service {
             } catch (RuntimeException e) {
                 // Ignore known error for single project.
                 // In result we won't have them in explorer tree but at least 'bad' projects won't prevent to show 'good' projects.
-                LOG.error(e.getMessage(), e);
+                LOG.warn(e.getMessage(), e);
                 NotValidProject notValidProject = new NotValidProject(project.getBaseFolder(), projectManager);
                 projectReferences.add(DtoConverter.toReferenceDto2(notValidProject, getServiceContext().getServiceUriBuilder()));
             }

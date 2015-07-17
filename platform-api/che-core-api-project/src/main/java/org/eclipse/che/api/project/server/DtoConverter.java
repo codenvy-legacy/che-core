@@ -294,25 +294,25 @@ public class DtoConverter {
         // If get error then save information about error with 'problems' field in ProjectConfig.
         final String name = project.getName();
         final String path = project.getPath();
-        String wsName = null;
+//        String wsName = null;
 
-        try {
-            @SuppressWarnings("unchecked") // Generic array is 0 size
-            final WorkspaceDescriptor descriptor = HttpJsonHelper.request(WorkspaceDescriptor.class,
-                                                                          baseUriBuilder.path(WorkspaceService.class)
-                                                                                        .path(WorkspaceService.class, "getById")
-                                                                                        .build(wsId)
-                                                                                        .toString(),
-                                                                          GET,
-                                                                          null);
-            wsName = descriptor.getName();
-        } catch (ApiException e) {
-            dto.getProblems().add(createProjectProblem(dtoFactory, e));
-        } catch (IOException ioEx) {
-            dto.getProblems().add(createProjectProblem(dtoFactory, new ServerException(ioEx.getMessage(), ioEx)));
-        }
+//        try {
+//            @SuppressWarnings("unchecked") // Generic array is 0 size
+//            final WorkspaceDescriptor descriptor = HttpJsonHelper.request(WorkspaceDescriptor.class,
+//                                                                          baseUriBuilder.path(WorkspaceService.class)
+//                                                                                        .path(WorkspaceService.class, "getById")
+//                                                                                        .build(wsId)
+//                                                                                        .toString(),
+//                                                                          GET,
+//                                                                          null);
+//            wsName = descriptor.getName();
+//        } catch (ApiException e) {
+//            dto.getProblems().add(createProjectProblem(dtoFactory, e));
+//        } catch (IOException ioEx) {
+//            dto.getProblems().add(createProjectProblem(dtoFactory, new ServerException(ioEx.getMessage(), ioEx)));
+//        }
 
-        dto.withWorkspaceId(wsId).withWorkspaceName(wsName).withName(name).withPath(path);
+        dto.withWorkspaceId(wsId).withName(name).withPath(path);
 
         ProjectConfig config = null;
         try {
@@ -400,9 +400,9 @@ public class DtoConverter {
         if (serviceUriBuilder != null) {
             dto.withBaseUrl(serviceUriBuilder.clone().path(ProjectService.class, "getProject").build(wsId, path.substring(1)).toString())
                .withLinks(generateProjectLinks(project, serviceUriBuilder));
-            if (wsName != null) {
-                dto.withIdeUrl(serviceUriBuilder.clone().replacePath("ws").path(wsName).path(path).build().toString());
-            }
+//            if (wsName != null) {
+//                dto.withIdeUrl(serviceUriBuilder.clone().replacePath("ws").path(wsName).path(path).build().toString());
+//            }
         }
 
         return dto;

@@ -11,8 +11,10 @@
 package org.eclipse.che.api.project.gwt.client;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.name.Named;
 
+import org.eclipse.che.api.machine.gwt.client.DevMachine;
 import org.eclipse.che.api.project.shared.dto.CopyOptions;
 import org.eclipse.che.api.project.shared.dto.ImportProject;
 import org.eclipse.che.api.project.shared.dto.ImportResponse;
@@ -30,6 +32,7 @@ import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.rest.RestContext;
+import org.eclipse.che.ide.util.loging.Log;
 
 import java.util.List;
 import java.util.Map;
@@ -46,60 +49,68 @@ import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
  * @author Artem Zatsarynnyy
  */
 public class ProjectServiceClientImpl implements ProjectServiceClient {
-    private final String              PROJECT;
-    private final String              PROJECTS_IN_SPECIFIC_WORKSPACE;
-    private final String              MODULES;
-    private final String              ITEM;
-    private final String              FILE;
-    private final String              FOLDER;
-    private final String              COPY;
-    private final String              CLONE;
-    private final String              MOVE;
-    private final String              RENAME;
-    private final String              IMPORT_PROJECT;
-    private final String              GET_CHILDREN;
-    private final String              GET_TREE;
-    private final String              SEARCH;
-    private final String              SWITCH_VISIBILITY;
-    private final String              ENVIRONMENTS;
-    private final String              ESTIMATE;
+    private       String              PROJECT;
+    private       String              PROJECTS_IN_SPECIFIC_WORKSPACE;
+    private       String              MODULES;
+    private       String              ITEM;
+    private       String              FILE;
+    private       String              FOLDER;
+    private       String              COPY;
+    private       String              CLONE;
+    private       String              MOVE;
+    private       String              RENAME;
+    private       String              IMPORT_PROJECT;
+    private       String              GET_CHILDREN;
+    private       String              GET_TREE;
+    private       String              SEARCH;
+    private       String              SWITCH_VISIBILITY;
+    private       String              ENVIRONMENTS;
+    private       String              ESTIMATE;
+    private       String              extPath;
+    private       String              workspaceId;
     private final AsyncRequestLoader  loader;
     private final AsyncRequestFactory asyncRequestFactory;
     private final DtoFactory          dtoFactory;
 
     @Inject
-    protected ProjectServiceClientImpl(@RestContext String restContext,
+    protected ProjectServiceClientImpl(@Named("cheExtensionPath") String extPath,
                                        @Named("workspaceId") String workspaceId,
                                        AsyncRequestLoader loader,
                                        AsyncRequestFactory asyncRequestFactory,
                                        DtoFactory dtoFactory) {
+        this.extPath = extPath;
+        this.workspaceId = workspaceId;
         this.loader = loader;
         this.asyncRequestFactory = asyncRequestFactory;
         this.dtoFactory = dtoFactory;
+    }
 
-        PROJECT = restContext + "/project/" + workspaceId;
-        PROJECTS_IN_SPECIFIC_WORKSPACE = restContext + "/project";
-        MODULES = restContext + "/project/" + workspaceId + "/modules";
-        ITEM = restContext + "/project/" + workspaceId + "/item";
-        FILE = restContext + "/project/" + workspaceId + "/file";
-        FOLDER = restContext + "/project/" + workspaceId + "/folder";
-        COPY = restContext + "/project/" + workspaceId + "/copy";
-        CLONE = restContext + "/vfs/" + workspaceId + "/v2/clone";
-        MOVE = restContext + "/project/" + workspaceId + "/move";
-        RENAME = restContext + "/project/" + workspaceId + "/rename";
-        IMPORT_PROJECT = restContext + "/project/" + workspaceId + "/import";
-        GET_CHILDREN = restContext + "/project/" + workspaceId + "/children";
-        GET_TREE = restContext + "/project/" + workspaceId + "/tree";
-        SEARCH = restContext + "/project/" + workspaceId + "/search";
-        SWITCH_VISIBILITY = restContext + "/project/" + workspaceId + "/switch_visibility";
-        ENVIRONMENTS = restContext + "/project/" + workspaceId + "/runner_environments";
-        ESTIMATE = restContext + "/project/" + workspaceId + "/estimate";
+//        PROJECT = restContext + "/project/" + workspaceId;
+//        PROJECTS_IN_SPECIFIC_WORKSPACE = restContext + "/project";
+//        MODULES = restContext + "/project/" + workspaceId + "/modules";
+//        ITEM = restContext + "/project/" + workspaceId + "/item";
+//        FILE = restContext + "/project/" + workspaceId + "/file";
+//        FOLDER = restContext + "/project/" + workspaceId + "/folder";
+//        COPY = restContext + "/project/" + workspaceId + "/copy";
+//        CLONE = restContext + "/vfs/" + workspaceId + "/v2/clone";
+//        MOVE = restContext + "/project/" + workspaceId + "/move";
+//        RENAME = restContext + "/project/" + workspaceId + "/rename";
+//        IMPORT_PROJECT = restContext + "/project/" + workspaceId + "/import";
+//        GET_CHILDREN = restContext + "/project/" + workspaceId + "/children";
+//        GET_TREE = restContext + "/project/" + workspaceId + "/tree";
+//        SEARCH = restContext + "/project/" + workspaceId + "/search";
+//        SWITCH_VISIBILITY = restContext + "/project/" + workspaceId + "/switch_visibility";
+//        ENVIRONMENTS = restContext + "/project/" + workspaceId + "/runner_environments";
+//        ESTIMATE = restContext + "/project/" + workspaceId + "/estimate";
+
+    private String getBasePath() {
+        Log.info(getClass(), extPath + "/" + DevMachine.devMachineId + "/project/" + workspaceId);
+        return extPath + "/" + DevMachine.devMachineId + "/project/" + workspaceId;
     }
 
     @Override
     public void getProjects(AsyncRequestCallback<Array<ProjectReference>> callback) {
-        final String requestUrl = PROJECT;
-        asyncRequestFactory.createGetRequest(requestUrl)
+        asyncRequestFactory.createGetRequest(getBasePath())
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loader, "Getting projects...")
                            .send(callback);
@@ -130,7 +141,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void getProject(String path, AsyncRequestCallback<ProjectDescriptor> callback) {
-        final String requestUrl = PROJECT + normalizePath(path);
+        final String requestUrl = getBasePath() + '/' + normalizePath(path);
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loader, "Getting project...")
@@ -139,7 +150,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void getItem(String path, AsyncRequestCallback<ItemReference> callback) {
-        final String requestUrl = ITEM + normalizePath(path);
+        final String requestUrl = getBasePath() + "/item" + normalizePath(path);
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loader, "Getting item...")
@@ -148,7 +159,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void createProject(String name, NewProject newProject, AsyncRequestCallback<ProjectDescriptor> callback) {
-        final String requestUrl = PROJECT + "?name=" + name;
+        final String requestUrl = getBasePath() + "?name=" + name;
         asyncRequestFactory.createPostRequest(requestUrl, newProject)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loader, "Creating project...")
@@ -157,7 +168,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void estimateProject(String path, String projectType, AsyncRequestCallback<Map<String, List<String>>> callback) {
-        final String requestUrl = ESTIMATE + normalizePath(path) + "?type=" + projectType;
+        final String requestUrl = getBasePath() + "/estimate" + normalizePath(path) + "?type=" + projectType;
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loader, "Estimating project...")
@@ -166,7 +177,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void getModules(String path, AsyncRequestCallback<Array<ProjectDescriptor>> callback) {
-        final String requestUrl = MODULES + normalizePath(path);
+        final String requestUrl = getBasePath() + "/modules" + normalizePath(path);
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .send(callback);
@@ -175,7 +186,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     @Override
     public void createModule(String parentProjectPath, String name, NewProject newProject,
                              AsyncRequestCallback<ProjectDescriptor> callback) {
-        final String requestUrl = PROJECT + normalizePath(parentProjectPath) + "?path=" + name;
+        final String requestUrl = getBasePath() + normalizePath(parentProjectPath) + "?path=" + name;
         asyncRequestFactory.createPostRequest(requestUrl, newProject)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loader, "Creating module...")
@@ -184,7 +195,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void updateProject(String path, ProjectDescriptor descriptor, AsyncRequestCallback<ProjectDescriptor> callback) {
-        final String requestUrl = PROJECT + normalizePath(path);
+        final String requestUrl = getBasePath() + normalizePath(path);
         asyncRequestFactory.createRequest(PUT, requestUrl, descriptor, false)
                            .header(CONTENT_TYPE, MimeType.APPLICATION_JSON)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
@@ -194,7 +205,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void updateProject(String path, ProjectUpdate descriptor, AsyncRequestCallback<ProjectDescriptor> callback) {
-        final String requestUrl = PROJECT + normalizePath(path);
+        final String requestUrl = getBasePath() + normalizePath(path);
         asyncRequestFactory.createRequest(PUT, requestUrl, descriptor, false)
                            .header(CONTENT_TYPE, MimeType.APPLICATION_JSON)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
@@ -205,7 +216,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     @Override
     public void createFile(String parentPath, String name, String content, String contentType,
                            AsyncRequestCallback<ItemReference> callback) {
-        final String requestUrl = FILE + normalizePath(parentPath) + "?name=" + name;
+        final String requestUrl = getBasePath() + "/file" + normalizePath(parentPath) + "?name=" + name;
         // com.google.gwt.http.client.RequestBuilder doesn't allow to send requests without "Content-type" header. If header isn't set then
         // RequestBuilder adds "text/plain; charset=utf-8", seen javadocs for method send(). Let server resolve media type.
         // Agreement with server side: send "application/unknown" means we not set mime-type on client side in this case mime-type will be
@@ -222,7 +233,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void getFileContent(String path, AsyncRequestCallback<String> callback) {
-        final String requestUrl = FILE + normalizePath(path);
+        final String requestUrl = getBasePath() + "/file" + normalizePath(path);
         asyncRequestFactory.createGetRequest(requestUrl)
                            .loader(loader, "Loading file content...")
                            .send(callback);
@@ -230,7 +241,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void updateFile(String path, String content, String contentType, AsyncRequestCallback<Void> callback) {
-        final String requestUrl = FILE + normalizePath(path);
+        final String requestUrl = getBasePath() + "/file" + normalizePath(path);
         // com.google.gwt.http.client.RequestBuilder doesn't allow to send requests without "Content-type" header. If header isn't set then
         // RequestBuilder adds "text/plain; charset=utf-8", seen javadocs for method send(). Let server resolve media type.
         // Agreement with server side: send "application/unknown" means we not set mime-type on client side in this case mime-type will be
@@ -247,7 +258,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void createFolder(String path, AsyncRequestCallback<ItemReference> callback) {
-        final String requestUrl = FOLDER + normalizePath(path);
+        final String requestUrl = getBasePath() + "/folder" + normalizePath(path);
         asyncRequestFactory.createPostRequest(requestUrl, null)
                            .loader(loader, "Creating folder...")
                            .send(callback);
@@ -255,7 +266,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void delete(String path, AsyncRequestCallback<Void> callback) {
-        final String requestUrl = PROJECT + normalizePath(path);
+        final String requestUrl = getBasePath() + normalizePath(path);
         asyncRequestFactory.createRequest(DELETE, requestUrl, null, false)
                            .loader(loader, "Deleting project...")
                            .send(callback);
@@ -263,7 +274,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void deleteModule(String path, String modulePath, AsyncRequestCallback<Void> callback) {
-        final String requestUrl = PROJECT + normalizePath(path) + "?module=" + modulePath;
+        final String requestUrl = getBasePath() + normalizePath(path) + "?module=" + modulePath;
         asyncRequestFactory.createRequest(DELETE, requestUrl, null, false)
                            .loader(loader, "Deleting module...")
                            .send(callback);
@@ -271,7 +282,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void copy(String path, String newParentPath, String newName, AsyncRequestCallback<Void> callback) {
-        final String requestUrl = COPY + normalizePath(path) + "?to=" + newParentPath;
+        final String requestUrl = getBasePath() + "/copy" + normalizePath(path) + "?to=" + newParentPath;
 
         final CopyOptions copyOptions = dtoFactory.createDto(CopyOptions.class);
         copyOptions.setName(newName);
@@ -284,7 +295,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void move(String path, String newParentPath, String newName, AsyncRequestCallback<Void> callback) {
-        final String requestUrl = MOVE + normalizePath(path) + "?to=" + newParentPath;
+        final String requestUrl = getBasePath() + "/move" + normalizePath(path) + "?to=" + newParentPath;
 
         final MoveOptions moveOptions = dtoFactory.createDto(MoveOptions.class);
         moveOptions.setName(newName);
@@ -297,7 +308,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void rename(String path, String newName, String newMediaType, AsyncRequestCallback<Void> callback) {
-        String requestUrl = RENAME + normalizePath(path) + "?name=" + newName;
+        String requestUrl = getBasePath() + "/rename" + normalizePath(path) + "?name=" + newName;
         if (newMediaType != null) {
             requestUrl += "&mediaType=" + newMediaType;
         }
@@ -308,8 +319,8 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void importProject(String path, boolean force, ImportProject importProject, AsyncRequestCallback<ImportResponse> callback) {
-        final StringBuilder requestUrl = new StringBuilder(IMPORT_PROJECT);
-        requestUrl.append(normalizePath(path));
+        final StringBuilder requestUrl = new StringBuilder(getBasePath());
+        requestUrl.append("/import").append(normalizePath(path));
         if (force) {
             requestUrl.append("?force=true");
         }
@@ -321,7 +332,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void getChildren(String path, AsyncRequestCallback<Array<ItemReference>> callback) {
-        final String requestUrl = GET_CHILDREN + normalizePath(path);
+        final String requestUrl = getBasePath() + "/children" + normalizePath(path);
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .send(callback);
@@ -329,7 +340,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void getTree(String path, int depth, AsyncRequestCallback<TreeElement> callback) {
-        final String requestUrl = GET_TREE + normalizePath(path) + "?depth=" + depth;
+        final String requestUrl = getBasePath() + "/tree" + normalizePath(path) + "?depth=" + depth;
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .send(callback);
