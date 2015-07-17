@@ -14,6 +14,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 
 import org.eclipse.che.api.core.ApiException;
+import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.rest.Service;
 import org.eclipse.che.api.core.rest.annotations.GenerateLink;
@@ -88,13 +89,16 @@ public class RecipeService extends Service {
     @RolesAllowed({"user", "system/admin", "system/manager"})
     public Response createRecipe(NewRecipe newRecipe) throws ApiException {
         if (newRecipe == null) {
-            throw new ForbiddenException("Recipe required");
+            throw new BadRequestException("Recipe required");
         }
         if (isNullOrEmpty(newRecipe.getType())) {
-            throw new ForbiddenException("Recipe type required");
+            throw new BadRequestException("Recipe type required");
         }
         if (isNullOrEmpty(newRecipe.getScript())) {
-            throw new ForbiddenException("Recipe script required");
+            throw new BadRequestException("Recipe script required");
+        }
+        if (isNullOrEmpty(newRecipe.getName())) {
+            throw new BadRequestException("Recipe name required");
         }
         Permissions permissions = null;
         if (newRecipe.getPermissions() != null) {
@@ -103,11 +107,12 @@ public class RecipeService extends Service {
         }
 
         final ManagedRecipe recipe = new RecipeImpl().withId(NameGenerator.generate("recipe", 16))
-                                              .withCreator(EnvironmentContext.getCurrent().getUser().getId())
-                                              .withType(newRecipe.getType())
-                                              .withScript(newRecipe.getScript())
-                                              .withTags(newRecipe.getTags())
-                                              .withPermissions(permissions);
+                                                     .withName(newRecipe.getName())
+                                                     .withCreator(EnvironmentContext.getCurrent().getUser().getId())
+                                                     .withType(newRecipe.getType())
+                                                     .withScript(newRecipe.getScript())
+                                                     .withTags(newRecipe.getTags())
+                                                     .withPermissions(permissions);
         recipeDao.create(recipe);
 
         return Response.status(CREATED)
@@ -189,44 +194,36 @@ public class RecipeService extends Service {
     }
 
     @PUT
-    @Path("/{id}")
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @RolesAllowed({"user", "system/admin", "system/manager"})
-    public RecipeDescriptor updateRecipe(@PathParam("id") String id, RecipeUpdate update) throws ApiException {
-        //TODO move update logic to implementation
-        final RecipeImpl recipe = (RecipeImpl)recipeDao.getById(id);
+    public RecipeDescriptor updateRecipe(RecipeUpdate update) throws ApiException {
+        if (update == null) {
+            throw new BadRequestException("Update required");
+        }
+        if (update.getId() == null) {
+            throw new BadRequestException("Recipe id required");
+        }
+
+        final ManagedRecipe recipe = recipeDao.getById(update.getId());
 
         final User user = EnvironmentContext.getCurrent().getUser();
         if (!user.isMemberOf("system/admin") && !permissionsChecker.hasAccess(recipe, user.getId(), "write")) {
-            throw new ForbiddenException(format("User %s doesn't have access to update recipe %s", user.getId(), id));
-        }
-        boolean updateRequired = false;
-        if (update.getType() != null) {
-            recipe.setType(update.getType());
-            updateRequired = true;
-        }
-        if (update.getScript() != null) {
-            recipe.setScript(update.getScript());
-            updateRequired = true;
-        }
-        if (!update.getTags().isEmpty()) {
-            recipe.setTags(update.getTags());
-            updateRequired = true;
+            throw new ForbiddenException(format("User %s doesn't have access to update recipe %s", user.getId(), update.getId()));
         }
         if (update.getPermissions() != null) {
             //ensure that user has access to update recipe permissions
             if (!user.isMemberOf("system/admin") && !permissionsChecker.hasAccess(recipe, user.getId(), "update_acl")) {
-                throw new ForbiddenException(format("User %s doesn't have access to update recipe %s permissions", user.getId(), id));
+                throw new ForbiddenException(format("User %s doesn't have access to update recipe %s permissions",
+                                                    user.getId(),
+                                                    update.getId()));
             }
             checkPublicPermission(update.getPermissions());
-            recipe.setPermissions(PermissionsImpl.fromDescriptor(update.getPermissions()));
-            updateRequired = true;
         }
-        if (updateRequired) {
-            recipeDao.update(recipe);
-        }
-        return asRecipeDescriptor(recipe);
+
+        recipeDao.update(update);
+
+        return asRecipeDescriptor(recipeDao.getById(update.getId()));
     }
 
     @DELETE
@@ -266,6 +263,7 @@ public class RecipeService extends Service {
         final RecipeDescriptor descriptor = DtoFactory.getInstance()
                                                       .createDto(RecipeDescriptor.class)
                                                       .withId(recipe.getId())
+                                                      .withName(recipe.getName())
                                                       .withType(recipe.getType())
                                                       .withScript(recipe.getScript())
                                                       .withCreator(recipe.getCreator())

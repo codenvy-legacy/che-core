@@ -68,17 +68,28 @@ public class LocalRecipeDaoImpl implements RecipeDao {
     }
 
     @Override
-    public void update(ManagedRecipe recipe) throws NotFoundException {
+    public void update(ManagedRecipe update) throws NotFoundException {
         lock.writeLock().lock();
         try {
-            final RecipeImpl target = (RecipeImpl)recipes.get(recipe.getId());
+            final RecipeImpl target = (RecipeImpl)recipes.get(update.getId());
             if (target == null) {
-                throw new NotFoundException(format("Recipe with id %s was not found", recipe.getId()));
+                throw new NotFoundException(format("Recipe with id '%s' was not found", update.getId()));
             }
-            target.setType(recipe.getType());
-            target.setScript(recipe.getScript());
-            target.setTags(recipe.getTags());
-            target.setPermissions(recipe.getPermissions());
+            if (update.getType() != null) {
+                target.setType(update.getType());
+            }
+            if (update.getScript() != null) {
+                target.setScript(update.getScript());
+            }
+            if (update.getName() != null) {
+                target.setName(update.getName());
+            }
+            if (update.getPermissions() != null) {
+                target.setPermissions(update.getPermissions());
+            }
+            if (!update.getTags().isEmpty()) {
+                target.setTags(update.getTags());
+            }
         } finally {
             lock.writeLock().unlock();
         }

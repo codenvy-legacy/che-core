@@ -17,9 +17,6 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("createProjectFromTemplate.nameField")
     String createProjectFromTemplateName();
 
-    @Key("createProject.warningTitle")
-    String createProjectWarningTitle();
-
     @Key("noIncorrectProjectNameMessage")
     String noIncorrectProjectNameMessage();
 
@@ -93,22 +90,23 @@ public interface CoreLocalizationConstant extends Messages {
     /* Cut */
     @Key("action.cut.text")
     String cutItemsActionText();
+
     @Key("action.cut.description")
     String cutItemsActionDescription();
 
     /* Copy */
     @Key("action.copy.text")
     String copyItemsActionText();
+
     @Key("action.copy.description")
     String copyItemsActionDescription();
 
     /* Paste */
     @Key("action.paste.text")
     String pasteItemsActionText();
+
     @Key("action.paste.description")
     String pasteItemsActionDescription();
-
-    /* */
 
     @Key("deleteNodeDialogTitle")
     String deleteNodeDialogTitle();
@@ -392,34 +390,6 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("action.showHiddenFiles.description")
     String actionShowHiddenFilesDescription();
 
-    /* Redirect Actions */
-    @Key("action.redirectToHelp.title")
-    String actionRedirectToHelpTitle();
-
-    @Key("action.redirectToHelp.description")
-    String actionRedirectToHelpDescription();
-
-    @Key("action.redirectToHelp.url")
-    String actionRedirectToHelpUrl();
-
-    @Key("action.redirectToForums.title")
-    String actionRedirectToForumsTitle();
-
-    @Key("action.redirectToForums.description")
-    String actionRedirectToForumsDescription();
-
-    @Key("action.redirectToForums.url")
-    String actionRedirectToForumsUrl();
-
-    @Key("action.redirectToFeedback.title")
-    String actionRedirectToFeedbackTitle();
-
-    @Key("action.redirectToFeedback.description")
-    String actionRedirectToFeedbackDescription();
-
-    @Key("action.redirectToFeedback.url")
-    String actionRedirectToFeedbackUrl();
-
     /* NewResource */
     @Key("newResource.title")
     String newResourceTitle(String title);
@@ -442,18 +412,6 @@ public interface CoreLocalizationConstant extends Messages {
 
     @Key("messages.appWillBeStopped")
     String appWillBeStopped(String appName);
-
-    @Key("messages.workspaceRamLessRequiredRam")
-    String getMoreRam(int requiredMemorySize, int workspaceMemorySize);
-
-    @Key("messages.updateProjectWorkspaceRamLessRequired")
-    String messagesUpdateProjectWorkspaceRamLessRequired(int requiredMemorySize, int workspaceMemorySize);
-
-    @Key("messages.getResourcesFailed")
-    String messagesGetResourcesFailed();
-
-    @Key("messages.getProjectTypesFailed")
-    String messagesGetProjectTypesFailed();
 
     @Key("messages.saveChanges")
     String messagesSaveChanges(String name);
@@ -532,9 +490,6 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("action.expandEditor.title")
     String actionExpandEditorTitle();
 
-    @Key("closeProject.title")
-    String closeProjectTitle();
-
     @Key("askWindow.close.title")
     String askWindowCloseTitle();
 
@@ -564,9 +519,9 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("privacy.tooltip.privateMessage")
     String privacyTooltipPrivateMessage();
 
-    @Key("uploadFolderFromZip.title")
-    String uploadFolderFromZipTitle();
-
     @Key("action.completions.title")
-    String actionCompetionsTitle();
+    String actionCompetitionsTitle();
+
+    @Key("project.settings.title")
+    String projectSettingsTitle();
 }

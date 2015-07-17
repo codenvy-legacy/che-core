@@ -11,30 +11,33 @@
 package org.eclipse.che.api.machine.shared.dto.recipe;
 
 import org.eclipse.che.api.machine.shared.ManagedRecipe;
-import org.eclipse.che.api.machine.shared.Recipe;
 import org.eclipse.che.dto.shared.DTO;
 
 import java.util.List;
 
 /**
+ * Describes recipe update.
+ *
  * @author Eugene Voevodin
  */
 @DTO
 public interface RecipeUpdate extends ManagedRecipe {
 
-    String getType();
+    void setId(String id);
+
+    RecipeUpdate withId(String id);
+
+    void setName(String name);
+
+    RecipeUpdate withName(String name);
 
     void setType(String type);
 
     RecipeUpdate withType(String type);
 
-    String getScript();
-
     void setScript(String script);
 
     RecipeUpdate withScript(String script);
-
-    List<String> getTags();
 
     void setTags(List<String> tags);
 

@@ -17,35 +17,32 @@ import org.eclipse.che.dto.shared.DTO;
 import java.util.List;
 
 /**
+ * Describes recipe
+ *
  * @author Eugene Voevodin
  */
 @DTO
 public interface RecipeDescriptor extends Hyperlinks, ManagedRecipe {
-    String getId();
 
     void setId(String id);
 
     RecipeDescriptor withId(String id);
 
-    String getType();
+    void setName(String name);
+
+    RecipeDescriptor withName(String name);
 
     void setType(String type);
 
     RecipeDescriptor withType(String type);
 
-    String getScript();
-
     void setScript(String script);
 
     RecipeDescriptor withScript(String script);
 
-    String getCreator();
-
     void setCreator(String creator);
 
     RecipeDescriptor withCreator(String creator);
-
-    List<String> getTags();
 
     void setTags(List<String> tags);
 

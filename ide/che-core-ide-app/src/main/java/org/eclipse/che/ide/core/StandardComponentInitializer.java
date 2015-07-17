@@ -43,6 +43,7 @@ import org.eclipse.che.ide.actions.RenameItemAction;
 import org.eclipse.che.ide.actions.SaveAction;
 import org.eclipse.che.ide.actions.SaveAllAction;
 import org.eclipse.che.ide.actions.SelectNodeAction;
+import org.eclipse.che.ide.actions.SettingsAction;
 import org.eclipse.che.ide.actions.ShowHiddenFilesAction;
 import org.eclipse.che.ide.actions.ShowPreferencesAction;
 import org.eclipse.che.ide.actions.UndoAction;
@@ -107,6 +108,9 @@ public class StandardComponentInitializer {
 
     @Inject
     private ShowPreferencesAction showPreferencesAction;
+
+    @Inject
+    private SettingsAction settingsAction;
 
     @Inject
     private FindActionAction findActionAction;
@@ -380,7 +384,9 @@ public class StandardComponentInitializer {
         // Compose Window menu
         DefaultActionGroup windowGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_WINDOW);
         actionManager.registerAction("showPreferences", showPreferencesAction);
+        actionManager.registerAction("setupProjectAction", settingsAction);
         windowGroup.add(showPreferencesAction);
+        windowGroup.add(settingsAction);
 
         // Compose Help menu
         DefaultActionGroup helpGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_HELP);

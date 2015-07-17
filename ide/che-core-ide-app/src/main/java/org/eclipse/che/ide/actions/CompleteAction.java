@@ -33,7 +33,7 @@ public class CompleteAction extends Action {
 
     @Inject
     public CompleteAction(CoreLocalizationConstant coreLocalizationConstant, EditorAgent editorAgent) {
-        super(coreLocalizationConstant.actionCompetionsTitle());
+        super(coreLocalizationConstant.actionCompetitionsTitle());
         this.editorAgent = editorAgent;
     }
 
