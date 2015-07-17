@@ -16,12 +16,16 @@ import org.eclipse.che.dto.shared.DTO;
 import java.util.List;
 
 /**
- * Describes recipe update
+ * Describes recipe update.
  *
  * @author Eugene Voevodin
  */
 @DTO
 public interface RecipeUpdate extends ManagedRecipe {
+
+    void setId(String id);
+
+    RecipeUpdate withId(String id);
 
     void setName(String name);
 
