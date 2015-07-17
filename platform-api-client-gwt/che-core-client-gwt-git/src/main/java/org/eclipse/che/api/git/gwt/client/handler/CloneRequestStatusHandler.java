@@ -39,9 +39,7 @@ public class CloneRequestStatusHandler extends RequestStatusHandlerBase {
         this.constant = constant;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public void requestInProgress(String id) {
         Job job = new Job(id, Job.JobStatus.STARTED);
@@ -49,9 +47,7 @@ public class CloneRequestStatusHandler extends RequestStatusHandlerBase {
         eventBus.fireEvent(new JobChangeEvent(job));
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public void requestFinished(String id) {
         Job job = new Job(id, Job.JobStatus.FINISHED);

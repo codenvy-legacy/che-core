@@ -10,20 +10,22 @@
  *******************************************************************************/
 package org.eclipse.che.api.git.gwt.client;
 
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.api.git.shared.Branch;
 import org.eclipse.che.api.git.shared.Commiters;
 import org.eclipse.che.api.git.shared.DiffRequest;
 import org.eclipse.che.api.git.shared.GitUrlVendorInfo;
 import org.eclipse.che.api.git.shared.LogResponse;
 import org.eclipse.che.api.git.shared.MergeResult;
+import org.eclipse.che.api.git.shared.PullResponse;
+import org.eclipse.che.api.git.shared.PushResponse;
 import org.eclipse.che.api.git.shared.Remote;
 import org.eclipse.che.api.git.shared.RepoInfo;
 import org.eclipse.che.api.git.shared.ResetRequest;
 import org.eclipse.che.api.git.shared.Revision;
 import org.eclipse.che.api.git.shared.Status;
 import org.eclipse.che.api.git.shared.StatusFormat;
+import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.websocket.WebSocketException;
 import org.eclipse.che.ide.websocket.rest.RequestCallback;
@@ -145,12 +147,16 @@ public interface GitServiceClient {
      * @param name
      *         branch's name
      * @param startPoint
-     *         if {@code createNew} is <code>true</code> then the name of a commit at which to start the new branch
+     *         if {@code createNew} is <code>true</code> then create a new branch {@code name} referencing {@code startPoint}, and check it
+     *         out.
+     *         Note: {@code startPoint} may be specified any way you like, including using a remote branch name or a name of a commit at
+     *         which to start the new branch.
+     *         For example, if {@code startPoint} is 'origin/branch' then will create branch 'name' and track 'origin/branch'.
      * @param createNew
      *         if <code>true</code> then create a new branch
      * @param callback
      */
-    void branchCheckout(@Nonnull ProjectDescriptor project, @Nonnull String name, @Nonnull String startPoint,
+    void branchCheckout(@Nonnull ProjectDescriptor project, @Nonnull String name, @Nullable String startPoint,
                         boolean createNew, @Nonnull AsyncRequestCallback<String> callback);
 
     /**
@@ -259,7 +265,7 @@ public interface GitServiceClient {
      * @throws WebSocketException
      */
     void pull(@Nonnull ProjectDescriptor project, @Nonnull String refSpec, @Nonnull String remote,
-              @Nonnull AsyncRequestCallback<Void> callback);
+              @Nonnull AsyncRequestCallback<PullResponse> callback);
 
     /**
      * Push changes from local repository to remote one (sends request over WebSocket).
@@ -278,7 +284,7 @@ public interface GitServiceClient {
      * @throws WebSocketException
      */
     void push(@Nonnull ProjectDescriptor project, @Nonnull List<String> refSpec, @Nonnull String remote, boolean force,
-              @Nonnull AsyncRequestCallback<Void> callback);
+              @Nonnull AsyncRequestCallback<PushResponse> callback);
 
     /**
      * Clones one remote repository to local one (over WebSocket).
@@ -317,7 +323,7 @@ public interface GitServiceClient {
 
     /**
      * Performs commit for the given files (ignoring git index).
-     *
+
      * @param project
      *         project (root of GIT repository)
      * @param message

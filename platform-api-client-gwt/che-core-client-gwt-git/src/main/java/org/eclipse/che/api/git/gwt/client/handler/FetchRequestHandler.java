@@ -40,7 +40,7 @@ public class FetchRequestHandler extends RequestStatusHandlerBase {
     public FetchRequestHandler(@Nonnull String projectName, @Nonnull List<String> refSpec, @Nonnull EventBus eventBus,
                                @Nonnull GitLocalizationConstant constant) {
         super(projectName, eventBus);
-        if (refSpec.size() > 0){
+        if (refSpec.size() > 0) {
             String[] split = refSpec.get(0).split(":");
             this.localBranch = split[0];
             if (split.length < 2) {
