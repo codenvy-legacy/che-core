@@ -47,6 +47,7 @@ import java.util.Map;
 import static com.jayway.restassured.RestAssured.given;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static org.eclipse.che.dto.server.DtoFactory.newDto;
 import static org.everrest.assured.JettyHttpServer.ADMIN_USER_NAME;
 import static org.everrest.assured.JettyHttpServer.ADMIN_USER_PASSWORD;
 import static org.everrest.assured.JettyHttpServer.SECURE_PATH;
@@ -403,7 +404,8 @@ public class RecipeServiceTest {
 
         //prepare update
         GroupDescriptor group = newDto(GroupDescriptor.class).withName("public").withAcl(asList("read"));
-        RecipeUpdate update = newDto(RecipeUpdate.class).withType("new-type")
+        RecipeUpdate update = newDto(RecipeUpdate.class).withId(recipe.getId())
+                                                        .withType("new-type")
                                                         .withScript("new script content")
                                                         .withTags(asList("java", "mongodb"))
                                                         .withPermissions(newDto(PermissionsDescriptor.class).withGroups(asList(group)));
@@ -413,7 +415,7 @@ public class RecipeServiceTest {
                                          .contentType("application/json")
                                          .body(update)
                                          .when()
-                                         .put(SECURE_PATH + "/recipe/" + recipe.getId());
+                                         .put(SECURE_PATH + "/recipe");
 
         assertEquals(response.getStatusCode(), 200);
         verify(recipeDao).update(any(RecipeUpdate.class));
@@ -425,7 +427,19 @@ public class RecipeServiceTest {
                                          .basic(ADMIN_USER_NAME, ADMIN_USER_PASSWORD)
                                          .contentType("application/json")
                                          .when()
-                                         .put(SECURE_PATH + "/recipe/id");
+                                         .put(SECURE_PATH + "/recipe");
+
+        assertEquals(response.getStatusCode(), 400);
+    }
+
+    @Test
+    public void shouldThrowBadRequestExceptionWhenUpdatingRecipeWithNullId() throws Exception {
+        final Response response = given().auth()
+                                         .basic(ADMIN_USER_NAME, ADMIN_USER_PASSWORD)
+                                         .contentType("application/json")
+                                         .body(newDto(RecipeUpdate.class))
+                                         .when()
+                                         .put(SECURE_PATH + "/recipe");
 
         assertEquals(response.getStatusCode(), 400);
     }
@@ -443,9 +457,9 @@ public class RecipeServiceTest {
         final Response response = given().auth()
                                          .basic(ADMIN_USER_NAME, ADMIN_USER_PASSWORD)
                                          .contentType("application/json")
-                                         .body(newDto(RecipeUpdate.class))
+                                         .body(newDto(RecipeUpdate.class).withId("id"))
                                          .when()
-                                         .put(SECURE_PATH + "/recipe/" + recipe.getId());
+                                         .put(SECURE_PATH + "/recipe");
 
         assertEquals(response.getStatusCode(), 403);
         final String expMessage = format("User %s doesn't have access to update recipe %s", USER_ID, recipe.getId());
@@ -465,7 +479,8 @@ public class RecipeServiceTest {
 
         //prepare update
         GroupDescriptor group = newDto(GroupDescriptor.class).withName("public").withAcl(asList("read"));
-        RecipeUpdate update = newDto(RecipeUpdate.class).withType("new-type")
+        RecipeUpdate update = newDto(RecipeUpdate.class).withId("id")
+                                                        .withType("new-type")
                                                         .withScript("new script content")
                                                         .withTags(asList("java", "mongodb"))
                                                         .withPermissions(newDto(PermissionsDescriptor.class).withGroups(asList(group)));
@@ -475,7 +490,7 @@ public class RecipeServiceTest {
                                          .contentType("application/json")
                                          .body(update)
                                          .when()
-                                         .put(SECURE_PATH + "/recipe/" + recipe.getId());
+                                         .put(SECURE_PATH + "/recipe");
 
         assertEquals(response.getStatusCode(), 403);
         final String expMessage = format("User %s doesn't have access to update recipe %s permissions", USER_ID, recipe.getId());
@@ -490,10 +505,6 @@ public class RecipeServiceTest {
         }
     }
 
-    private static <T> T newDto(Class<T> clazz) {
-        return DtoFactory.getInstance().createDto(clazz);
-    }
-
     private static <T> T unwrapDto(Response response, Class<T> dtoClass) {
         return DtoFactory.getInstance().createDtoFromJson(response.body().print(), dtoClass);
     }
@@ -501,5 +512,4 @@ public class RecipeServiceTest {
     private static <T> List<T> unwrapDtoList(Response response, Class<T> dtoClass) {
         return FluentIterable.from(DtoFactory.getInstance().createListDtoFromJson(response.body().print(), dtoClass)).toList();
     }
-
 }

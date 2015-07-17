@@ -194,32 +194,36 @@ public class RecipeService extends Service {
     }
 
     @PUT
-    @Path("/{id}")
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @RolesAllowed({"user", "system/admin", "system/manager"})
-    public RecipeDescriptor updateRecipe(@PathParam("id") String id, RecipeUpdate update) throws ApiException {
+    public RecipeDescriptor updateRecipe(RecipeUpdate update) throws ApiException {
         if (update == null) {
             throw new BadRequestException("Update required");
         }
+        if (update.getId() == null) {
+            throw new BadRequestException("Recipe id required");
+        }
 
-        final ManagedRecipe recipe = recipeDao.getById(id);
+        final ManagedRecipe recipe = recipeDao.getById(update.getId());
 
         final User user = EnvironmentContext.getCurrent().getUser();
         if (!user.isMemberOf("system/admin") && !permissionsChecker.hasAccess(recipe, user.getId(), "write")) {
-            throw new ForbiddenException(format("User %s doesn't have access to update recipe %s", user.getId(), id));
+            throw new ForbiddenException(format("User %s doesn't have access to update recipe %s", user.getId(), update.getId()));
         }
         if (update.getPermissions() != null) {
             //ensure that user has access to update recipe permissions
             if (!user.isMemberOf("system/admin") && !permissionsChecker.hasAccess(recipe, user.getId(), "update_acl")) {
-                throw new ForbiddenException(format("User %s doesn't have access to update recipe %s permissions", user.getId(), id));
+                throw new ForbiddenException(format("User %s doesn't have access to update recipe %s permissions",
+                                                    user.getId(),
+                                                    update.getId()));
             }
             checkPublicPermission(update.getPermissions());
         }
 
         recipeDao.update(update);
 
-        return asRecipeDescriptor(recipeDao.getById(id));
+        return asRecipeDescriptor(recipeDao.getById(update.getId()));
     }
 
     @DELETE
