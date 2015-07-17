@@ -218,7 +218,8 @@ public class RecipeService extends Service {
         }
 
         recipeDao.update(update);
-        return asRecipeDescriptor(recipe);
+
+        return asRecipeDescriptor(recipeDao.getById(id));
     }
 
     @DELETE
