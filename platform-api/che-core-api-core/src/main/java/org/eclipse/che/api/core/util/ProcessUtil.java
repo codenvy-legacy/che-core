@@ -12,7 +12,6 @@ package org.eclipse.che.api.core.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 
 /**
@@ -82,12 +81,7 @@ public final class ProcessUtil {
         pb.redirectErrorStream(true);
         Process process = pb.start();
 
-        final InputStream inputStream = process.getInputStream();
-        BufferedReader inputReader = new BufferedReader(new InputStreamReader(inputStream));
-        String line;
-        while ((line = inputReader.readLine()) != null) {
-            consumer.writeLine(line);
-        }
+        process(process, consumer);
 
         return process;
     }
