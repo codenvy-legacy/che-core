@@ -14,9 +14,11 @@ package org.eclipse.che.api.machine.gwt.client;
  * //
  * Temporary solution for keeping devMachine id
  *
+ * dev Machine id should be in AppContext
+ *
  * @author Vitalii Parfonov
  */
-
+@Deprecated
 public class DevMachine {
 
     public static String devMachineId;

@@ -104,13 +104,12 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 //        ESTIMATE = restContext + "/project/" + workspaceId + "/estimate";
 
     private String getBasePath() {
-        Log.info(getClass(), extPath + "/" + DevMachine.devMachineId + "/project/" + workspaceId);
-        return extPath + "/" + DevMachine.devMachineId + "/project/" + workspaceId;
+        return extPath + "/project/" + workspaceId;
     }
 
     @Override
     public void getProjects(AsyncRequestCallback<Array<ProjectReference>> callback) {
-        asyncRequestFactory.createGetRequest(getBasePath())
+        asyncRequestFactory.createGetRequest(getBasePath() + "?machineId=" + DevMachine.devMachineId)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loader, "Getting projects...")
                            .send(callback);
@@ -118,7 +117,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void getProjectsInSpecificWorkspace(String wsId, AsyncRequestCallback<Array<ProjectReference>> callback) {
-        final String requestUrl = PROJECTS_IN_SPECIFIC_WORKSPACE + "/" + wsId;
+        final String requestUrl = PROJECTS_IN_SPECIFIC_WORKSPACE + "/" + wsId + "?machineId=" + DevMachine.devMachineId;
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loader, "Getting projects...")
@@ -131,7 +130,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         final String requestUrl = CLONE + "?srcVfsId=" + srcWorkspaceId +
                                   "&srcPath=" + srcProjectPath +
                                   "&parentPath=/" +
-                                  "&name=" + newNameForProject;
+                                  "&name=" + newNameForProject + "&machineId=" + DevMachine.devMachineId;
 
         asyncRequestFactory.createPostRequest(requestUrl, null)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
@@ -141,7 +140,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void getProject(String path, AsyncRequestCallback<ProjectDescriptor> callback) {
-        final String requestUrl = getBasePath() + '/' + normalizePath(path);
+        final String requestUrl = getBasePath() + '/' + normalizePath(path) + "?machineId=" + DevMachine.devMachineId;
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loader, "Getting project...")
@@ -150,7 +149,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void getItem(String path, AsyncRequestCallback<ItemReference> callback) {
-        final String requestUrl = getBasePath() + "/item" + normalizePath(path);
+        final String requestUrl = getBasePath() + "/item" + normalizePath(path) + "?machineId=" + DevMachine.devMachineId;
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loader, "Getting item...")
@@ -159,7 +158,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void createProject(String name, NewProject newProject, AsyncRequestCallback<ProjectDescriptor> callback) {
-        final String requestUrl = getBasePath() + "?name=" + name;
+        final String requestUrl = getBasePath() + "?name=" + name + "&machineId=" + DevMachine.devMachineId;
         asyncRequestFactory.createPostRequest(requestUrl, newProject)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loader, "Creating project...")
@@ -168,7 +167,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void estimateProject(String path, String projectType, AsyncRequestCallback<Map<String, List<String>>> callback) {
-        final String requestUrl = getBasePath() + "/estimate" + normalizePath(path) + "?type=" + projectType;
+        final String requestUrl = getBasePath() + "/estimate" + normalizePath(path) + "?type=" + projectType + "&machineId=" + DevMachine.devMachineId;
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loader, "Estimating project...")
@@ -177,7 +176,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void getModules(String path, AsyncRequestCallback<Array<ProjectDescriptor>> callback) {
-        final String requestUrl = getBasePath() + "/modules" + normalizePath(path);
+        final String requestUrl = getBasePath() + "/modules" + normalizePath(path)+ "?machineId=" + DevMachine.devMachineId;
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .send(callback);
@@ -186,7 +185,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     @Override
     public void createModule(String parentProjectPath, String name, NewProject newProject,
                              AsyncRequestCallback<ProjectDescriptor> callback) {
-        final String requestUrl = getBasePath() + normalizePath(parentProjectPath) + "?path=" + name;
+        final String requestUrl = getBasePath() + normalizePath(parentProjectPath) + "?path=" + name + "&machineId=" + DevMachine.devMachineId;
         asyncRequestFactory.createPostRequest(requestUrl, newProject)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loader, "Creating module...")
@@ -195,7 +194,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void updateProject(String path, ProjectDescriptor descriptor, AsyncRequestCallback<ProjectDescriptor> callback) {
-        final String requestUrl = getBasePath() + normalizePath(path);
+        final String requestUrl = getBasePath() + normalizePath(path) + "?machineId=" + DevMachine.devMachineId;
         asyncRequestFactory.createRequest(PUT, requestUrl, descriptor, false)
                            .header(CONTENT_TYPE, MimeType.APPLICATION_JSON)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
@@ -205,7 +204,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void updateProject(String path, ProjectUpdate descriptor, AsyncRequestCallback<ProjectDescriptor> callback) {
-        final String requestUrl = getBasePath() + normalizePath(path);
+        final String requestUrl = getBasePath() + normalizePath(path) + "?machineId=" + DevMachine.devMachineId;
         asyncRequestFactory.createRequest(PUT, requestUrl, descriptor, false)
                            .header(CONTENT_TYPE, MimeType.APPLICATION_JSON)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
@@ -216,7 +215,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     @Override
     public void createFile(String parentPath, String name, String content, String contentType,
                            AsyncRequestCallback<ItemReference> callback) {
-        final String requestUrl = getBasePath() + "/file" + normalizePath(parentPath) + "?name=" + name;
+        final String requestUrl = getBasePath() + "/file" + normalizePath(parentPath) + "?name=" + name + "&machineId=" + DevMachine.devMachineId;
         // com.google.gwt.http.client.RequestBuilder doesn't allow to send requests without "Content-type" header. If header isn't set then
         // RequestBuilder adds "text/plain; charset=utf-8", seen javadocs for method send(). Let server resolve media type.
         // Agreement with server side: send "application/unknown" means we not set mime-type on client side in this case mime-type will be
@@ -233,7 +232,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void getFileContent(String path, AsyncRequestCallback<String> callback) {
-        final String requestUrl = getBasePath() + "/file" + normalizePath(path);
+        final String requestUrl = getBasePath() + "/file" + normalizePath(path) + "?machineId=" + DevMachine.devMachineId;
         asyncRequestFactory.createGetRequest(requestUrl)
                            .loader(loader, "Loading file content...")
                            .send(callback);
@@ -241,7 +240,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void updateFile(String path, String content, String contentType, AsyncRequestCallback<Void> callback) {
-        final String requestUrl = getBasePath() + "/file" + normalizePath(path);
+        final String requestUrl = getBasePath() + "/file" + normalizePath(path) + "?machineId=" + DevMachine.devMachineId;
         // com.google.gwt.http.client.RequestBuilder doesn't allow to send requests without "Content-type" header. If header isn't set then
         // RequestBuilder adds "text/plain; charset=utf-8", seen javadocs for method send(). Let server resolve media type.
         // Agreement with server side: send "application/unknown" means we not set mime-type on client side in this case mime-type will be
@@ -258,7 +257,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void createFolder(String path, AsyncRequestCallback<ItemReference> callback) {
-        final String requestUrl = getBasePath() + "/folder" + normalizePath(path);
+        final String requestUrl = getBasePath() + "/folder" + normalizePath(path) + "?machineId=" + DevMachine.devMachineId;
         asyncRequestFactory.createPostRequest(requestUrl, null)
                            .loader(loader, "Creating folder...")
                            .send(callback);
@@ -266,7 +265,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void delete(String path, AsyncRequestCallback<Void> callback) {
-        final String requestUrl = getBasePath() + normalizePath(path);
+        final String requestUrl = getBasePath() + normalizePath(path) + "?machineId=" + DevMachine.devMachineId;
         asyncRequestFactory.createRequest(DELETE, requestUrl, null, false)
                            .loader(loader, "Deleting project...")
                            .send(callback);
@@ -274,7 +273,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void deleteModule(String path, String modulePath, AsyncRequestCallback<Void> callback) {
-        final String requestUrl = getBasePath() + normalizePath(path) + "?module=" + modulePath;
+        final String requestUrl = getBasePath() + normalizePath(path) + "?module=" + modulePath + "&machineId=" + DevMachine.devMachineId;
         asyncRequestFactory.createRequest(DELETE, requestUrl, null, false)
                            .loader(loader, "Deleting module...")
                            .send(callback);
@@ -282,7 +281,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void copy(String path, String newParentPath, String newName, AsyncRequestCallback<Void> callback) {
-        final String requestUrl = getBasePath() + "/copy" + normalizePath(path) + "?to=" + newParentPath;
+        final String requestUrl = getBasePath() + "/copy" + normalizePath(path) + "?to=" + newParentPath + "&machineId=" + DevMachine.devMachineId;
 
         final CopyOptions copyOptions = dtoFactory.createDto(CopyOptions.class);
         copyOptions.setName(newName);
@@ -295,7 +294,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void move(String path, String newParentPath, String newName, AsyncRequestCallback<Void> callback) {
-        final String requestUrl = getBasePath() + "/move" + normalizePath(path) + "?to=" + newParentPath;
+        final String requestUrl = getBasePath() + "/move" + normalizePath(path) + "?to=" + newParentPath + "&machineId=" + DevMachine.devMachineId;
 
         final MoveOptions moveOptions = dtoFactory.createDto(MoveOptions.class);
         moveOptions.setName(newName);
@@ -308,7 +307,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void rename(String path, String newName, String newMediaType, AsyncRequestCallback<Void> callback) {
-        String requestUrl = getBasePath() + "/rename" + normalizePath(path) + "?name=" + newName;
+        String requestUrl = getBasePath() + "/rename" + normalizePath(path) + "?name=" + newName + "&machineId=" + DevMachine.devMachineId;
         if (newMediaType != null) {
             requestUrl += "&mediaType=" + newMediaType;
         }
@@ -322,7 +321,10 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         final StringBuilder requestUrl = new StringBuilder(getBasePath());
         requestUrl.append("/import").append(normalizePath(path));
         if (force) {
-            requestUrl.append("?force=true");
+            requestUrl.append("?force=true").append("&machineId=").append(DevMachine.devMachineId);
+        }
+        else {
+            requestUrl.append("?machineId=").append(DevMachine.devMachineId);
         }
         asyncRequestFactory.createPostRequest(requestUrl.toString(), importProject, true)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
@@ -332,7 +334,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void getChildren(String path, AsyncRequestCallback<Array<ItemReference>> callback) {
-        final String requestUrl = getBasePath() + "/children" + normalizePath(path);
+        final String requestUrl = getBasePath() + "/children" + normalizePath(path) + "?machineId=" + DevMachine.devMachineId;
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .send(callback);
@@ -340,7 +342,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void getTree(String path, int depth, AsyncRequestCallback<TreeElement> callback) {
-        final String requestUrl = getBasePath() + "/tree" + normalizePath(path) + "?depth=" + depth;
+        final String requestUrl = getBasePath() + "/tree" + normalizePath(path) + "?depth=" + depth + "&machineId=" + DevMachine.devMachineId;
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .send(callback);
@@ -367,7 +369,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
             queryParameters.append("&skipCount=").append(expression.getSkipCount());
         }
 
-        asyncRequestFactory.createGetRequest(requestUrl + queryParameters.toString().replaceFirst("&", "?"))
+        asyncRequestFactory.createGetRequest(requestUrl + queryParameters.toString().replaceFirst("&", "?") + "&machineId=" + DevMachine.devMachineId)
                 .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .send(callback);
     }
@@ -375,7 +377,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     /** {@inheritDoc} */
     @Override
     public void switchVisibility(String path, String visibility, AsyncRequestCallback<Void> callback) {
-        final String requestUrl = SWITCH_VISIBILITY + normalizePath(path) + "?visibility=" + visibility;
+        final String requestUrl = SWITCH_VISIBILITY + normalizePath(path) + "?visibility=" + visibility + "&machineId=" + DevMachine.devMachineId;
         asyncRequestFactory.createPostRequest(requestUrl, null)
                            .loader(loader, "Switching visibility...")
                            .send(callback);
