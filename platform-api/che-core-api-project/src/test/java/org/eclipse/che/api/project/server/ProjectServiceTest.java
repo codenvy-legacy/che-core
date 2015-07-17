@@ -118,6 +118,7 @@ import static org.testng.AssertJUnit.assertTrue;
  * @author andrew00x
  * @author Eugene Voevodin
  * @author Artem Zatsarynnyy
+ * @author Dmitry Shnurenko
  */
 @Listeners(value = {MockitoTestNGListener.class})
 public class ProjectServiceTest {
@@ -135,7 +136,6 @@ public class ProjectServiceTest {
 
     @Mock
     private UserDao                     userDao;
-    private ProjectTypeResolverRegistry resolverRegistry;
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -184,28 +184,12 @@ public class ProjectServiceTest {
         DependencySupplierImpl dependencies = new DependencySupplierImpl();
         importerRegistry = new ProjectImporterRegistry(Collections.<ProjectImporter>emptySet());
 
-        HashSet<ProjectTypeResolver> resolvers = new HashSet<>();
-        resolvers.add(new ProjectTypeResolver() {
-
-            @Override
-            public boolean resolve(FolderEntry projectFolder) throws ServerException, ValueStorageException,
-                                                                     InvalidValueException, ProjectTypeConstraintException {
-                ProjectConfig conf = new ProjectConfig("my proj", "my_project_type");
-
-                Project project = new Project(projectFolder, pm);
-                project.updateConfig(conf);
-                return true;
-            }
-        });
-        resolverRegistry = new ProjectTypeResolverRegistry(resolvers);
-
         dependencies.addComponent(ProjectTypeRegistry.class, ptRegistry);
         dependencies.addComponent(UserDao.class, userDao);
         dependencies.addComponent(ProjectManager.class, pm);
         dependencies.addComponent(ProjectImporterRegistry.class, importerRegistry);
         dependencies.addComponent(ProjectHandlerRegistry.class, phRegistry);
         dependencies.addComponent(SearcherProvider.class, mmp.getSearcherProvider());
-        dependencies.addComponent(ProjectTypeResolverRegistry.class, resolverRegistry);
         dependencies.addComponent(EventService.class, eventService);
 
 
@@ -1098,7 +1082,8 @@ public class ProjectServiceTest {
     public void testCopyFile() throws Exception {
         Project myProject = pm.getProject(workspace, "my_project");
         myProject.getBaseFolder().createFolder("a/b/c");
-        ((FolderEntry)myProject.getBaseFolder().getChild("a/b")).createFile("test.txt", "to be or not no be".getBytes(), MediaType.TEXT_PLAIN);
+        ((FolderEntry)myProject.getBaseFolder().getChild("a/b")).createFile("test.txt", "to be or not no be".getBytes(),
+                                                                            MediaType.TEXT_PLAIN);
         ContainerResponse response = launcher.service(HttpMethod.POST,
                                                       String.format(
                                                               "http://localhost:8080/api/project/%s/copy/my_project/a/b/test.txt?to=/my_project/a/b/c",
@@ -1115,7 +1100,8 @@ public class ProjectServiceTest {
     public void testCopyFileWithRename() throws Exception {
         Project myProject = pm.getProject(workspace, "my_project");
         myProject.getBaseFolder().createFolder("a/b/c");
-        ((FolderEntry) myProject.getBaseFolder().getChild("a/b")).createFile("test.txt", "to be or not no be".getBytes(), MediaType.TEXT_PLAIN);
+        ((FolderEntry) myProject.getBaseFolder().getChild("a/b")).createFile("test.txt", "to be or not no be".getBytes(),
+                                                                             MediaType.TEXT_PLAIN);
 
         Map<String, List<String>> headers = new HashMap<>();
         headers.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
@@ -1150,7 +1136,8 @@ public class ProjectServiceTest {
         String overwritenContent = "that is the question";
 
         ((FolderEntry) myProject.getBaseFolder().getChild("a/b")).createFile(originFileName, originContent.getBytes(), MediaType.TEXT_PLAIN);
-        ((FolderEntry) myProject.getBaseFolder().getChild("a/b/c")).createFile(destinationFileName, overwritenContent.getBytes(), MediaType.TEXT_PLAIN);
+        ((FolderEntry) myProject.getBaseFolder().getChild("a/b/c")).createFile(destinationFileName, overwritenContent.getBytes(),
+                                                                               MediaType.TEXT_PLAIN);
 
         Map<String, List<String>> headers = new HashMap<>();
         headers.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
@@ -1171,7 +1158,7 @@ public class ProjectServiceTest {
         assertNotNull(myProject.getBaseFolder().getChild("a/b/" + originFileName)); // old
 
         Scanner inputStreamScanner = null;
-        String theFirstLineFromDestinationFile = null;
+        String theFirstLineFromDestinationFile;
 
         try {
             inputStreamScanner = new Scanner(myProject.getBaseFolder().getChild("a/b/c/" + destinationFileName).getVirtualFile().getContent().getStream());
@@ -1191,7 +1178,8 @@ public class ProjectServiceTest {
     public void testCopyFolder() throws Exception {
         Project myProject = pm.getProject(workspace, "my_project");
         myProject.getBaseFolder().createFolder("a/b/c");
-        ((FolderEntry)myProject.getBaseFolder().getChild("a/b")).createFile("test.txt", "to be or not no be".getBytes(), MediaType.TEXT_PLAIN);
+        ((FolderEntry)myProject.getBaseFolder().getChild("a/b")).createFile("test.txt", "to be or not no be".getBytes(),
+                                                                            MediaType.TEXT_PLAIN);
         ContainerResponse response = launcher.service(HttpMethod.POST,
                                                       String.format(
                                                               "http://localhost:8080/api/project/%s/copy/my_project/a/b?to=/my_project/a/b/c",
@@ -1208,7 +1196,8 @@ public class ProjectServiceTest {
     public void testCopyFolderWithRename() throws Exception {
         Project myProject = pm.getProject(workspace, "my_project");
         myProject.getBaseFolder().createFolder("a/b/c");
-        ((FolderEntry) myProject.getBaseFolder().getChild("a/b")).createFile("test.txt", "to be or not no be".getBytes(), MediaType.TEXT_PLAIN);
+        ((FolderEntry) myProject.getBaseFolder().getChild("a/b")).createFile("test.txt", "to be or not no be".getBytes(),
+                                                                             MediaType.TEXT_PLAIN);
 
         // new name for folder
         final String renamedFolder = "renamedFolder";
@@ -1231,7 +1220,7 @@ public class ProjectServiceTest {
         assertNotNull(myProject.getBaseFolder().getChild("a/b/test.txt"));
         assertNotNull(myProject.getBaseFolder().getChild(String.format("a/b/c/%s/test.txt", renamedFolder)));
     }
-    
+
     @Test
     public void testCopyFolderWithRenameAndOverwrite() throws Exception {
         Project myProject = pm.getProject(workspace, "my_project");
@@ -1244,12 +1233,13 @@ public class ProjectServiceTest {
         // File contents
         String originContent = "to be or not no be";
         String overwritenContent = "that is the question";
-        
+
         // new name for folder
         final String renamedFolder = "renamedFolder";
 
         ((FolderEntry) myProject.getBaseFolder().getChild("a/b")).createFile(originFileName, originContent.getBytes(), MediaType.TEXT_PLAIN);
-        ((FolderEntry) myProject.getBaseFolder().getChild("a/b/c")).createFile(destinationFileName, overwritenContent.getBytes(), MediaType.TEXT_PLAIN);
+        ((FolderEntry) myProject.getBaseFolder().getChild("a/b/c")).createFile(destinationFileName, overwritenContent.getBytes(),
+                                                                               MediaType.TEXT_PLAIN);
 
         Map<String, List<String>> headers = new HashMap<>();
         headers.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
@@ -1275,7 +1265,8 @@ public class ProjectServiceTest {
     public void testMoveFile() throws Exception {
         Project myProject = pm.getProject(workspace, "my_project");
         myProject.getBaseFolder().createFolder("a/b/c");
-        ((FolderEntry)myProject.getBaseFolder().getChild("a/b")).createFile("test.txt", "to be or not no be".getBytes(), MediaType.TEXT_PLAIN);
+        ((FolderEntry)myProject.getBaseFolder().getChild("a/b")).createFile("test.txt", "to be or not no be".getBytes(),
+                                                                            MediaType.TEXT_PLAIN);
         ContainerResponse response = launcher.service(HttpMethod.POST,
                                                       String.format(
                                                               "http://localhost:8080/api/project/%s/move/my_project/a/b/test.txt?to=/my_project/a/b/c",
@@ -1292,8 +1283,9 @@ public class ProjectServiceTest {
     public void testMoveFileWithRename() throws Exception {
         Project myProject = pm.getProject(workspace, "my_project");
         myProject.getBaseFolder().createFolder("a/b/c");
-        ((FolderEntry) myProject.getBaseFolder().getChild("a/b")).createFile("test.txt", "to be or not no be".getBytes(), MediaType.TEXT_PLAIN);
-        
+        ((FolderEntry) myProject.getBaseFolder().getChild("a/b")).createFile("test.txt", "to be or not no be".getBytes(),
+                                                                             MediaType.TEXT_PLAIN);
+
         // name for file after move
         final String destinationName = "copyOfTestForMove.txt";
 
@@ -1315,7 +1307,7 @@ public class ProjectServiceTest {
         VirtualFileEntry theTargetFile = myProject.getBaseFolder().getChild(String.format("a/b/c/%s", destinationName));
         assertNotNull(theTargetFile); // new
     }
-    
+
     @Test
     public void testMoveFileWithRenameAndOverwrite() throws Exception {
         Project myProject = pm.getProject(workspace, "my_project");
@@ -1330,7 +1322,8 @@ public class ProjectServiceTest {
         String overwritenContent = "that is the question";
 
         ((FolderEntry) myProject.getBaseFolder().getChild("a/b")).createFile(originFileName, originContent.getBytes(), MediaType.TEXT_PLAIN);
-        ((FolderEntry) myProject.getBaseFolder().getChild("a/b/c")).createFile(destinationFileName, overwritenContent.getBytes(), MediaType.TEXT_PLAIN);
+        ((FolderEntry) myProject.getBaseFolder().getChild("a/b/c")).createFile(destinationFileName, overwritenContent.getBytes(),
+                                                                               MediaType.TEXT_PLAIN);
 
         Map<String, List<String>> headers = new HashMap<>();
         headers.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
@@ -1350,7 +1343,7 @@ public class ProjectServiceTest {
         assertNotNull(myProject.getBaseFolder().getChild("a/b/c/" + destinationFileName)); // new
 
         Scanner inputStreamScanner = null;
-        String theFirstLineFromDestinationFile = null;
+        String theFirstLineFromDestinationFile;
 
         try {
             inputStreamScanner = new Scanner(myProject.getBaseFolder().getChild("a/b/c/" + destinationFileName).getVirtualFile().getContent().getStream());
@@ -1370,7 +1363,8 @@ public class ProjectServiceTest {
     public void testMoveFolder() throws Exception {
         Project myProject = pm.getProject(workspace, "my_project");
         myProject.getBaseFolder().createFolder("a/b/c");
-        ((FolderEntry)myProject.getBaseFolder().getChild("a/b/c")).createFile("test.txt", "to be or not no be".getBytes(), MediaType.TEXT_PLAIN);
+        ((FolderEntry)myProject.getBaseFolder().getChild("a/b/c")).createFile("test.txt", "to be or not no be".getBytes(),
+                                                                              MediaType.TEXT_PLAIN);
         ContainerResponse response = launcher.service(HttpMethod.POST,
                                                       String.format(
                                                               "http://localhost:8080/api/project/%s/move/my_project/a/b/c?to=/my_project/a",
@@ -1388,7 +1382,8 @@ public class ProjectServiceTest {
     public void testMoveFolderWithRename() throws Exception {
         Project myProject = pm.getProject(workspace, "my_project");
         myProject.getBaseFolder().createFolder("a/b/c");
-        ((FolderEntry) myProject.getBaseFolder().getChild("a/b")).createFile("test.txt", "to be or not no be".getBytes(), MediaType.TEXT_PLAIN);
+        ((FolderEntry) myProject.getBaseFolder().getChild("a/b")).createFile("test.txt", "to be or not no be".getBytes(),
+                                                                             MediaType.TEXT_PLAIN);
 
         // new name for folder
         final String renamedFolder = "renamedFolder";
@@ -1410,7 +1405,7 @@ public class ProjectServiceTest {
                 URI.create(String.format("http://localhost:8080/api/project/%s/children/my_project/a/b/c/%s", workspace, renamedFolder)));
         assertNotNull(myProject.getBaseFolder().getChild(String.format("a/b/c/%s/test.txt", renamedFolder)));
     }
-    
+
     @Test
     public void testMoveFolderWithRenameAndOverwrite() throws Exception {
         Project myProject = pm.getProject(workspace, "my_project");
@@ -1423,12 +1418,13 @@ public class ProjectServiceTest {
         // File contents
         String originContent = "to be or not no be";
         String overwritenContent = "that is the question";
-        
+
         // new name for folder
         final String renamedFolder = "renamedFolder";
 
         ((FolderEntry) myProject.getBaseFolder().getChild("a/b")).createFile(originFileName, originContent.getBytes(), MediaType.TEXT_PLAIN);
-        ((FolderEntry) myProject.getBaseFolder().getChild("a/b/c")).createFile(destinationFileName, overwritenContent.getBytes(), MediaType.TEXT_PLAIN);
+        ((FolderEntry) myProject.getBaseFolder().getChild("a/b/c")).createFile(destinationFileName, overwritenContent.getBytes(),
+                                                                               MediaType.TEXT_PLAIN);
 
         Map<String, List<String>> headers = new HashMap<>();
         headers.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
@@ -1858,7 +1854,9 @@ public class ProjectServiceTest {
         });
 
 
-        ImportProject dto = DtoFactory.getInstance().createDto(ImportProject.class).withProject(DtoFactory.getInstance().createDto(NewProject.class)).withSource(DtoFactory.getInstance().createDto(Source.class).withProject(DtoFactory.getInstance().createDto(ImportSourceDescriptor.class)));
+        ImportProject dto = DtoFactory.getInstance().createDto(ImportProject.class).withProject(DtoFactory.getInstance().createDto(NewProject.class)).withSource(
+                DtoFactory.getInstance().createDto(Source.class)
+                          .withProject(DtoFactory.getInstance().createDto(ImportSourceDescriptor.class)));
         System.out.println(dto.toString());
 
         String myType = "chuck_project_type";
@@ -1905,10 +1903,7 @@ public class ProjectServiceTest {
         final InputStream zip = new ByteArrayInputStream(bout.toByteArray());
         final String importType = "_123_";
         final ValueHolder<FolderEntry> folderHolder = new ValueHolder<>();
-        Set<ProjectTypeResolver> resolvers = resolverRegistry.getResolvers();
-        for (ProjectTypeResolver resolver : resolvers) {//unregistered all resolvers
-            resolverRegistry.unregister(resolver);
-        }
+
         importerRegistry.register(new ProjectImporter() {
             @Override
             public String getId() {
@@ -1990,10 +1985,6 @@ public class ProjectServiceTest {
         final InputStream zip = new ByteArrayInputStream(bout.toByteArray());
         final String importType = "_123_";
         final ValueHolder<FolderEntry> folderHolder = new ValueHolder<>();
-        Set<ProjectTypeResolver> resolvers = resolverRegistry.getResolvers();
-        for (ProjectTypeResolver resolver : resolvers) {//unregistered all resolvers
-            resolverRegistry.unregister(resolver);
-        }
         importerRegistry.register(new ProjectImporter() {
             @Override
             public String getId() {
@@ -2072,10 +2063,7 @@ public class ProjectServiceTest {
         final InputStream zip = new ByteArrayInputStream(bout.toByteArray());
         final String importType = "_123_";
         final ValueHolder<FolderEntry> folderHolder = new ValueHolder<>();
-        Set<ProjectTypeResolver> resolvers = resolverRegistry.getResolvers();
-        for (ProjectTypeResolver resolver : resolvers) {//unregistered all resolvers
-            resolverRegistry.unregister(resolver);
-        }
+
         importerRegistry.register(new ProjectImporter() {
             @Override
             public String getId() {
@@ -2417,7 +2405,7 @@ public class ProjectServiceTest {
         Assert.assertTrue(names.contains("b/c"));
         Assert.assertTrue(names.contains("x/test.txt"));
     }
-    
+
     @Test
     public void testGetTreeWithDepthAndIncludeFilesNoFiles() throws Exception {
         Project myProject = pm.getProject(workspace, "my_project");
@@ -2890,9 +2878,7 @@ public class ProjectServiceTest {
                         VirtualFileEntry file;
                         try {
                             file = projectFolder.getChild("check");
-                        } catch (ForbiddenException e) {
-                            throw new ValueStorageException(e.getMessage());
-                        } catch (ServerException e) {
+                        } catch (ForbiddenException | ServerException e) {
                             throw new ValueStorageException(e.getMessage());
                         }
 
@@ -2932,6 +2918,7 @@ public class ProjectServiceTest {
                                 workspace, "testEstimateProjectGood","testEstimateProjectPT"),
                         "http://localhost:8080/api", null, null, null);
         assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
+        //noinspection unchecked
         Map<String, List<String>> result = (Map<String, List<String>>)response.getEntity();
 
         assertEquals(result.size(), 1);
