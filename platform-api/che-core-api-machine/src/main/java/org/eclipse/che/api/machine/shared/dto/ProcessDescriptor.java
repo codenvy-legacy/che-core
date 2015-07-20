@@ -32,9 +32,9 @@ public interface ProcessDescriptor extends org.eclipse.che.api.machine.shared.Pr
 
     ProcessDescriptor withCommandLine(String commandLine);
 
-    void setIsAlive(boolean isAlive);
+    void setAlive(boolean isAlive);
 
-    ProcessDescriptor withIsAlive(boolean isAlive);
+    ProcessDescriptor withAlive(boolean isAlive);
 
     @Override
     ProcessDescriptor withLinks(List<Link> links);

@@ -63,6 +63,8 @@ public interface MachineDescriptor extends Machine, Hyperlinks {
 
     MachineDescriptor withMetadata(Map<String, String> metadata);
 
+    Map<String, ServerDescriptor> getServers();
+
     void setServers(Map<String, ServerDescriptor> exposedPorts);
 
     MachineDescriptor withServers(Map<String, ServerDescriptor> exposedPorts);

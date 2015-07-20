@@ -4,9 +4,9 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * <p/>
+ *
  * Contributors:
- * Codenvy, S.A. - initial API and implementation
+ *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 package org.eclipse.che.api.machine.server;
 
@@ -124,11 +124,10 @@ public class MachineManager {
 
         if (instanceProvider.getRecipeTypes().contains(recipeType)) {
             final String machineId = generateMachineId();
+            final String creator = EnvironmentContext.getCurrent().getUser().getId();
 
             createMachineLogsDir(machineId);
             final LineConsumer machineLogger = getMachineLogger(machineId, machineCreationMetadata.getOutputChannel());
-
-            final String creator = EnvironmentContext.getCurrent().getUser().getId();
 
             final MachineState machineState = new MachineState(machineId,
                                                                instanceProvider.getType(),
@@ -146,7 +145,7 @@ public class MachineManager {
                                                          machineLogger,
                                                          machineCreationMetadata.getMemorySize()) {
                     @Override
-                    public Instance createInstance() throws MachineException, NotFoundException {
+                    public Instance createInstance(int memorySizeMB) throws MachineException, NotFoundException {
                         return instanceProvider.createInstance(RecipeImpl.fromDescriptor(
                                                                        machineCreationMetadata.getRecipeDescriptor()),
                                                                machineId,
@@ -154,6 +153,7 @@ public class MachineManager {
                                                                machineCreationMetadata.getWorkspaceId(),
                                                                machineCreationMetadata.isBindWorkspace(),
                                                                machineCreationMetadata.getDisplayName(),
+                                                               memorySizeMB,
                                                                machineLogger);
                     }
                 });
@@ -186,14 +186,12 @@ public class MachineManager {
             throws NotFoundException, MachineException, SnapshotException {
         final SnapshotImpl snapshot = getSnapshot(machineCreationMetadata.getSnapshotId());
         final String instanceType = snapshot.getType();
-
         final InstanceProvider instanceProvider = machineInstanceProviders.getProvider(instanceType);
 
         final String machineId = generateMachineId();
-        createMachineLogsDir(machineId);
-
         final String creator = EnvironmentContext.getCurrent().getUser().getId();
 
+        createMachineLogsDir(machineId);
         final LineConsumer machineLogger = getMachineLogger(machineId, machineCreationMetadata.getOutputChannel());
 
         final MachineState machineState = new MachineState(machineId,
@@ -212,13 +210,14 @@ public class MachineManager {
                                                      machineLogger,
                                                      machineCreationMetadata.getMemorySize()) {
                 @Override
-                public Instance createInstance() throws MachineException, NotFoundException {
+                public Instance createInstance(int memorySizeMB) throws MachineException, NotFoundException {
                     return instanceProvider.createInstance(snapshot.getInstanceKey(),
                                                            machineId,
                                                            creator,
                                                            snapshot.getWorkspaceId(),
                                                            snapshot.isWorkspaceBound(),
                                                            machineCreationMetadata.getDisplayName(),
+                                                           memorySizeMB,
                                                            machineLogger);
                 }
             });
@@ -256,7 +255,7 @@ public class MachineManager {
 
                 checkMemorySize();
 
-                final Instance instance = createInstance();
+                final Instance instance = createInstance(memorySizeMB);
 
                 instance.setStatus(MachineStatus.RUNNING);
 
@@ -292,7 +291,7 @@ public class MachineManager {
             
         }
 
-        public abstract Instance createInstance() throws MachineException, NotFoundException;
+        public abstract Instance createInstance(int memorySizeMB) throws MachineException, NotFoundException;
     }
 
     /**

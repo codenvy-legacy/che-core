@@ -441,7 +441,7 @@ public class MachineService {
         return dtoFactory.createDto(ProcessDescriptor.class)
                          .withPid(process.getPid())
                          .withCommandLine(process.getCommandLine())
-                         .withIsAlive(process.isAlive())
+                         .withAlive(process.isAlive())
                          .withLinks(null); // TODO
     }
 

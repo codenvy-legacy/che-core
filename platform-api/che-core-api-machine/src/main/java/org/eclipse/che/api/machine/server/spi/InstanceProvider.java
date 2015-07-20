@@ -47,7 +47,7 @@ public interface InstanceProvider {
      * Creates instance from scratch.
      *
      * @param machineId
-     *          id of machine
+     *         id of machine
      * @param recipe
      *         instance creation {@link Recipe}
      * @param userId
@@ -60,6 +60,8 @@ public interface InstanceProvider {
      *         user-friendly machine identifier. Doesn't have to be unique.
      * @param creationLogsOutput
      *         output for instance creation logs
+     * @param memorySizeMB
+     *         amount of RAM allocated for machine
      * @return newly created {@link Instance}
      * @throws UnsupportedRecipeException
      *         if specified {@code recipe} is not supported
@@ -74,13 +76,14 @@ public interface InstanceProvider {
                             String workspaceId,
                             boolean bindWorkspace,
                             String displayName,
+                            int memorySizeMB,
                             LineConsumer creationLogsOutput) throws UnsupportedRecipeException, InvalidRecipeException, MachineException;
 
     /**
      * Creates instance using implementation specific {@link InstanceKey}.
      *
      * @param machineId
-     *          id of machine
+     *         id of machine
      * @param instanceKey
      *         implementation specific {@link InstanceKey}
      * @param userId
@@ -93,6 +96,8 @@ public interface InstanceProvider {
      *         user-friendly machine identifier. Doesn't have to be unique.
      * @param creationLogsOutput
      *         output for instance creation logs
+     * @param memorySizeMB
+     *         amount of RAM allocated for machine
      * @return newly created {@link Instance}
      * @throws NotFoundException
      *         if instance described by {@code InstanceKey} doesn't exists
@@ -107,6 +112,7 @@ public interface InstanceProvider {
                             String workspaceId,
                             boolean bindWorkspace,
                             String displayName,
+                            int memorySizeMB,
                             LineConsumer creationLogsOutput) throws NotFoundException, InvalidInstanceSnapshotException, MachineException;
 
     /**
