@@ -94,14 +94,14 @@ public class MachineExtensionProxyServletTest {
 
     @BeforeClass
     public void setUpClass() throws Exception {
-        jettyServer = new org.eclipse.jetty.server.Server(AvailablePortFinder.getNextAvailable(10000 + new Random().nextInt(10000)));
+        jettyServer = new org.eclipse.jetty.server.Server();
         jettyServer.setHandler(new ExtensionApiHandler());
         jettyServer.start();
 
         final Connector connector = jettyServer.getConnectors()[0];
         machineServers = Collections.<String, Server>singletonMap(String.valueOf(EXTENSIONS_API_PORT),
                                                                   new ServerImpl(null,
-                                                                                 "localhost:" + connector.getPort(),
+                                                                                 "localhost:" + jettyServer.getURI().getPort(),
                                                                                  null));
     }
 
