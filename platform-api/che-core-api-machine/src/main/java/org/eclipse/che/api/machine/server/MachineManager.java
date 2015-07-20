@@ -4,9 +4,9 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * <p/>
  * Contributors:
- *   Codenvy, S.A. - initial API and implementation
+ * Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 package org.eclipse.che.api.machine.server;
 
@@ -123,45 +123,32 @@ public class MachineManager {
 
 
         if (instanceProvider.getRecipeTypes().contains(recipeType)) {
-            final String machineId = generateMachineId();
-            final String creator = EnvironmentContext.getCurrent().getUser().getId();
-
-            createMachineLogsDir(machineId);
-            final LineConsumer machineLogger = getMachineLogger(machineId, machineCreationMetadata.getOutputChannel());
-
-            final MachineState machineState = new MachineState(machineId,
-                                                               instanceProvider.getType(),
-                                                               machineCreationMetadata.getWorkspaceId(),
-                                                               creator,
-                                                               machineCreationMetadata.isBindWorkspace(),
-                                                               machineCreationMetadata.getDisplayName(),
-                                                               MachineStatus.CREATING);
-
-            try {
-                machineRegistry.add(machineState);
-
-                executor.execute(new MachineCreationTask(EnvironmentContext.getCurrent(),
-                                                         machineId,
-                                                         machineLogger,
-                                                         machineCreationMetadata.getMemorySize()) {
-                    @Override
-                    public Instance createInstance(int memorySizeMB) throws MachineException, NotFoundException {
-                        return instanceProvider.createInstance(RecipeImpl.fromDescriptor(
-                                                                       machineCreationMetadata.getRecipeDescriptor()),
-                                                               machineId,
-                                                               creator,
-                                                               machineCreationMetadata.getWorkspaceId(),
-                                                               machineCreationMetadata.isBindWorkspace(),
-                                                               machineCreationMetadata.getDisplayName(),
-                                                               memorySizeMB,
-                                                               machineLogger);
-                    }
-                });
-                return machineState;
-            } catch (ConflictException e) {
-                // should not happen
-                throw new MachineException(e.getLocalizedMessage(), e);
-            }
+            return createMachine(machineCreationMetadata.getType(),
+                                 machineCreationMetadata.getWorkspaceId(),
+                                 machineCreationMetadata.isBindWorkspace(),
+                                 machineCreationMetadata.getDisplayName(),
+                                 machineCreationMetadata.getOutputChannel(),
+                                 machineCreationMetadata.getMemorySize(),
+                                 new InstanceCreator() {
+                                     @Override
+                                     public Instance createInstance(String machineId,
+                                                                    int machineMemSizeMB,
+                                                                    String creator,
+                                                                    String workspaceId,
+                                                                    boolean isBindWorkspace,
+                                                                    String displayName,
+                                                                    LineConsumer machineLogger) throws MachineException {
+                                         return instanceProvider.createInstance(RecipeImpl.fromDescriptor(
+                                                                                        machineCreationMetadata.getRecipeDescriptor()),
+                                                                                machineId,
+                                                                                creator,
+                                                                                workspaceId,
+                                                                                isBindWorkspace,
+                                                                                displayName,
+                                                                                machineMemSizeMB,
+                                                                                machineLogger);
+                                     }
+                                 });
         } else {
             throw new UnsupportedRecipeException(String.format("Recipe of type '%s' is not supported", recipeType));
         }
@@ -185,40 +172,107 @@ public class MachineManager {
     public MachineState create(final SnapshotMachineCreationMetadata machineCreationMetadata)
             throws NotFoundException, MachineException, SnapshotException {
         final SnapshotImpl snapshot = getSnapshot(machineCreationMetadata.getSnapshotId());
-        final String instanceType = snapshot.getType();
-        final InstanceProvider instanceProvider = machineInstanceProviders.getProvider(instanceType);
+        final InstanceProvider instanceProvider = machineInstanceProviders.getProvider(snapshot.getType());
+
+        return createMachine(snapshot.getType(),
+                             snapshot.getWorkspaceId(),
+                             snapshot.isWorkspaceBound(),
+                             machineCreationMetadata.getDisplayName(),
+                             machineCreationMetadata.getOutputChannel(),
+                             machineCreationMetadata.getMemorySize(),
+                             new InstanceCreator() {
+                                 @Override
+                                 public Instance createInstance(String machineId,
+                                                                int machineMemSizeMB,
+                                                                String creator,
+                                                                String workspaceId,
+                                                                boolean isBindWorkspace,
+                                                                String displayName,
+                                                                LineConsumer machineLogger) throws MachineException, NotFoundException {
+
+                                     return instanceProvider.createInstance(snapshot.getInstanceKey(),
+                                                                            machineId,
+                                                                            creator,
+                                                                            workspaceId,
+                                                                            isBindWorkspace,
+                                                                            displayName,
+                                                                            machineMemSizeMB,
+                                                                            machineLogger);
+                                 }
+                             });
+    }
+
+    private MachineState createMachine(String machineType,
+                                       final String workspaceId,
+                                       final boolean isWorkspaceBound,
+                                       final String displayName,
+                                       String outputChannel,
+                                       final int memorySizeMB,
+                                       final InstanceCreator instanceCreator) throws MachineException {
+        final EnvironmentContext environmentContext = EnvironmentContext.getCurrent();
 
         final String machineId = generateMachineId();
-        final String creator = EnvironmentContext.getCurrent().getUser().getId();
+        final String creator = environmentContext.getUser().getId();
 
         createMachineLogsDir(machineId);
-        final LineConsumer machineLogger = getMachineLogger(machineId, machineCreationMetadata.getOutputChannel());
+        final LineConsumer machineLogger = getMachineLogger(machineId, outputChannel);
 
+        final int machineRamSize = memorySizeMB != 0 ? memorySizeMB : defaultMachineMemorySizeMB;
+
+        // TODO add memory to machine state
         final MachineState machineState = new MachineState(machineId,
-                                                           instanceProvider.getType(),
-                                                           snapshot.getWorkspaceId(),
+                                                           machineType,
+                                                           workspaceId,
                                                            creator,
-                                                           snapshot.isWorkspaceBound(),
-                                                           machineCreationMetadata.getDisplayName(),
+                                                           isWorkspaceBound,
+                                                           displayName,
                                                            MachineStatus.CREATING);
 
         try {
             machineRegistry.add(machineState);
 
-            executor.execute(new MachineCreationTask(EnvironmentContext.getCurrent(),
-                                                     machineId,
-                                                     machineLogger,
-                                                     machineCreationMetadata.getMemorySize()) {
+            executor.execute(new Runnable() {
                 @Override
-                public Instance createInstance(int memorySizeMB) throws MachineException, NotFoundException {
-                    return instanceProvider.createInstance(snapshot.getInstanceKey(),
-                                                           machineId,
-                                                           creator,
-                                                           snapshot.getWorkspaceId(),
-                                                           snapshot.isWorkspaceBound(),
-                                                           machineCreationMetadata.getDisplayName(),
-                                                           memorySizeMB,
-                                                           machineLogger);
+                public void run() {
+                    try {
+                        EnvironmentContext.setCurrent(environmentContext);
+
+                        eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
+                                                       .withEventType(MachineStatusEvent.EventType.CREATING)
+                                                       .withMachineId(machineId));
+
+                        final Instance instance = instanceCreator.createInstance(machineId,
+                                                                                 machineRamSize,
+                                                                                 creator,
+                                                                                 workspaceId,
+                                                                                 isWorkspaceBound,
+                                                                                 displayName,
+                                                                                 machineLogger);
+
+                        instance.setStatus(MachineStatus.RUNNING);
+
+                        machineRegistry.update(instance);
+
+                        eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
+                                                       .withEventType(MachineStatusEvent.EventType.RUNNING)
+                                                       .withMachineId(machineId));
+                    } catch (Exception error) {
+                        eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
+                                                       .withEventType(MachineStatusEvent.EventType.ERROR)
+                                                       .withMachineId(machineId)
+                                                       .withError(error.getLocalizedMessage()));
+
+                        try {
+                            LOG.error(error.getLocalizedMessage(), error);
+                            machineRegistry.remove(machineId);
+                            machineLogger.writeLine(String.format("[ERROR] %s", error.getLocalizedMessage()));
+                            machineLogger.close();
+                        } catch (IOException | NotFoundException e) {
+                            LOG.error(e.getMessage());
+                        }
+                    } finally {
+                        EnvironmentContext.reset();
+                    }
                 }
             });
             return machineState;
@@ -227,71 +281,14 @@ public class MachineManager {
         }
     }
 
-    private abstract class MachineCreationTask implements Runnable {
-        private final EnvironmentContext environmentContext;
-        private final String             machineId;
-        private final LineConsumer       machineLogger;
-
-        private int memorySizeMB;
-
-        public MachineCreationTask(EnvironmentContext environmentContext,
-                                   String machineId,
-                                   LineConsumer machineLogger,
-                                   int memorySizeMB) {
-            this.environmentContext = environmentContext;
-            this.machineId = machineId;
-            this.machineLogger = machineLogger;
-            this.memorySizeMB = memorySizeMB;
-        }
-
-        @Override
-        public void run() {
-            try {
-                EnvironmentContext.setCurrent(environmentContext);
-
-                eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
-                                               .withEventType(MachineStatusEvent.EventType.CREATING)
-                                               .withMachineId(machineId));
-
-                checkMemorySize();
-
-                final Instance instance = createInstance(memorySizeMB);
-
-                instance.setStatus(MachineStatus.RUNNING);
-
-                machineRegistry.update(instance);
-
-                eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
-                                               .withEventType(MachineStatusEvent.EventType.RUNNING)
-                                               .withMachineId(machineId));
-            } catch (Exception error) {
-                eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
-                                               .withEventType(MachineStatusEvent.EventType.ERROR)
-                                               .withMachineId(machineId)
-                                               .withError(error.getLocalizedMessage()));
-
-                try {
-                    LOG.error(error.getLocalizedMessage(), error);
-                    machineRegistry.remove(machineId);
-                    machineLogger.writeLine(String.format("[ERROR] %s", error.getLocalizedMessage()));
-                    machineLogger.close();
-                } catch (IOException | NotFoundException e) {
-                    LOG.error(e.getMessage());
-                }
-            } finally {
-                EnvironmentContext.reset();
-            }
-        }
-
-        private void checkMemorySize() {
-            if (memorySizeMB <= 0) {
-                memorySizeMB = defaultMachineMemorySizeMB;
-            }
-
-            
-        }
-
-        public abstract Instance createInstance(int memorySizeMB) throws MachineException, NotFoundException;
+    private interface InstanceCreator {
+        Instance createInstance(String machineId,
+                                int machineMemSizeMB,
+                                String creator,
+                                String workspaceId,
+                                boolean isBindWorkspace,
+                                String displayName,
+                                LineConsumer machineLogger) throws MachineException, NotFoundException;
     }
 
     /**
