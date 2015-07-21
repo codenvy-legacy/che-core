@@ -39,6 +39,7 @@ import java.util.regex.Pattern;
 
 /**
  * @author Eugene Voevodin
+ * @author Dmitry Shnurenko
  */
 @Singleton
 public class LocalPreferenceDaoImpl implements PreferenceDao {
@@ -50,11 +51,11 @@ public class LocalPreferenceDaoImpl implements PreferenceDao {
     private final ReadWriteLock                    lock;
 
     @Inject
-    public LocalPreferenceDaoImpl(@Nullable @Named("preferences.store_location") String dirPath) {
+    public LocalPreferenceDaoImpl(@Nullable @Named("user.local.db") String dirPath) {
         if (dirPath == null || dirPath.isEmpty()) {
-            storageFile = new File(System.getProperty("java.io.tmpdir"), "PreferencesStore.json");
+            storageFile = new File(System.getProperty("java.io.tmpdir"), "preference.json");
         } else {
-            storageFile = new File(dirPath, "PreferencesStore.json");
+            storageFile = new File(dirPath, "preference.json");
         }
         storage = new HashMap<>();
         lock = new ReentrantReadWriteLock();

@@ -16,7 +16,7 @@
     <parent>
         <artifactId>che-core-api-parent</artifactId>
         <groupId>org.eclipse.che.core</groupId>
-        <version>3.11.3-SNAPSHOT</version>
+        <version>3.11.4-SNAPSHOT</version>
     </parent>
     <artifactId>che-core-api-factory</artifactId>
     <packaging>jar</packaging>
@@ -119,6 +119,12 @@
                     <groupId>org.mockito</groupId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <version>${org.slf4j.version}</version>
+            <scope>test</scope>
         </dependency>
         <!-- Test dependencies -->
         <dependency>
