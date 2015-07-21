@@ -26,6 +26,7 @@ public class MachineImpl {
     private final String  id;
     private final String  type;
     private final String  owner;
+    private final String  script;
     private final String  workspaceId;
     private final boolean isWorkspaceBound;
     private final String  displayName;
@@ -35,6 +36,7 @@ public class MachineImpl {
 
     public MachineImpl(String id,
                        String type,
+                       String script,
                        String workspaceId,
                        String owner,
                        boolean isWorkspaceBound,
@@ -44,6 +46,7 @@ public class MachineImpl {
         this.id = id;
         this.type = type;
         this.owner = owner;
+        this.script = script;
         this.workspaceId = workspaceId;
         this.isWorkspaceBound = isWorkspaceBound;
         this.displayName = displayName;
@@ -61,6 +64,10 @@ public class MachineImpl {
 
     public String getOwner() {
         return owner;
+    }
+
+    public String getScript() {
+        return script;
     }
 
     public MachineStatus getStatus() {
@@ -96,6 +103,7 @@ public class MachineImpl {
                Objects.equals(memorySizeMB, state.memorySizeMB) &&
                Objects.equals(id, state.id) &&
                Objects.equals(type, state.type) &&
+               Objects.equals(script, state.script) &&
                Objects.equals(owner, state.owner) &&
                Objects.equals(workspaceId, state.workspaceId) &&
                Objects.equals(displayName, state.displayName) &&
@@ -104,6 +112,6 @@ public class MachineImpl {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, type, owner, workspaceId, isWorkspaceBound, displayName, memorySizeMB, status);
+        return Objects.hash(id, type, script, owner, workspaceId, isWorkspaceBound, displayName, memorySizeMB, status);
     }
 }

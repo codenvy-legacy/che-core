@@ -132,7 +132,7 @@ public class MachineRegistry {
     }
 
     private MachineImpl getState(Instance instance) {
-        return new MachineImpl(instance.getId(), instance.getType(), instance.getWorkspaceId(), instance.getOwner(),
+        return new MachineImpl(instance.getId(), instance.getType(), instance.getScript(), instance.getWorkspaceId(), instance.getOwner(),
                                 instance.isWorkspaceBound(), instance.getDisplayName(), instance.getMemorySize(), instance.getStatus());
     }
 }

@@ -26,6 +26,7 @@ import java.util.Objects;
 public class SnapshotImpl implements Snapshot {
     private String               id;
     private String               type;
+    private String               script;
     private InstanceKey          instanceKey;
     private String               owner;
     private long                 creationDate;
@@ -39,6 +40,7 @@ public class SnapshotImpl implements Snapshot {
 
     public SnapshotImpl(String id,
                         String type,
+                        String script,
                         InstanceKey instanceKey,
                         String owner,
                         long creationDate,
@@ -49,6 +51,7 @@ public class SnapshotImpl implements Snapshot {
                         boolean isWorkspaceBound) {
         this.id = id;
         this.type = type;
+        this.script = script;
         this.instanceKey = instanceKey;
         this.owner = owner;
         this.creationDate = creationDate;
@@ -75,6 +78,11 @@ public class SnapshotImpl implements Snapshot {
     @Override
     public String getType() {
         return type;
+    }
+
+    @Override
+    public String getScript() {
+        return script;
     }
 
     public void setType(String type) {
@@ -192,6 +200,7 @@ public class SnapshotImpl implements Snapshot {
                Objects.equals(isWorkspaceBound, snapshot.isWorkspaceBound) &&
                Objects.equals(id, snapshot.id) &&
                Objects.equals(type, snapshot.type) &&
+               Objects.equals(script, snapshot.script) &&
                Objects.equals(instanceKey, snapshot.instanceKey) &&
                Objects.equals(owner, snapshot.owner) &&
                Objects.equals(workspaceId, snapshot.workspaceId) &&
@@ -201,6 +210,6 @@ public class SnapshotImpl implements Snapshot {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, type, instanceKey, owner, creationDate, workspaceId, isWorkspaceBound, projects, description);
+        return Objects.hash(id, type, script, instanceKey, owner, creationDate, workspaceId, isWorkspaceBound, projects, description);
     }
 }

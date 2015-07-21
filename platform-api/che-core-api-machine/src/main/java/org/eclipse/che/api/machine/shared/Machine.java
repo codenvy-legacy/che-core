@@ -30,6 +30,11 @@ public interface Machine {
     String getType();
 
     /**
+     * Recipe script
+     */
+    String getScript();
+
+    /**
      * Identifier of user who launched this machine.
      */
     String getOwner();

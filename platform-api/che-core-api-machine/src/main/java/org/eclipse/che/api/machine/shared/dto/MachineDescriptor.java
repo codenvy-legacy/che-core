@@ -81,6 +81,10 @@ public interface MachineDescriptor extends Machine, Hyperlinks {
 
     MachineDescriptor withMemorySize(int mem);
 
+    void setScript(String script);
+
+    MachineDescriptor withScript(String script);
+
     @Override
     MachineDescriptor withLinks(List<Link> links);
 }

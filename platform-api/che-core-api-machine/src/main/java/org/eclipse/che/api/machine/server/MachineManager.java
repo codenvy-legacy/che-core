@@ -120,10 +120,10 @@ public class MachineManager {
         final InstanceProvider instanceProvider = machineInstanceProviders.getProvider(machineCreationMetadata.getType());
         final String recipeType = machineCreationMetadata.getRecipeDescriptor().getType();
 
-
         if (instanceProvider.getRecipeTypes().contains(recipeType)) {
 
             return createMachine(machineCreationMetadata.getType(),
+                                 machineCreationMetadata.getRecipeDescriptor().getScript(),
                                  machineCreationMetadata.getWorkspaceId(),
                                  machineCreationMetadata.isBindWorkspace(),
                                  machineCreationMetadata.getDisplayName(),
@@ -175,6 +175,7 @@ public class MachineManager {
         final InstanceProvider instanceProvider = machineInstanceProviders.getProvider(snapshot.getType());
 
         return createMachine(snapshot.getType(),
+                             snapshot.getScript(),
                              snapshot.getWorkspaceId(),
                              snapshot.isWorkspaceBound(),
                              machineCreationMetadata.getDisplayName(),
@@ -196,6 +197,7 @@ public class MachineManager {
                                                                             workspaceId,
                                                                             isBindWorkspace,
                                                                             displayName,
+                                                                            snapshot.getScript(),
                                                                             machineMemSizeMB,
                                                                             machineLogger);
                                  }
@@ -203,6 +205,7 @@ public class MachineManager {
     }
 
     private MachineImpl createMachine(String machineType,
+                                       String script,
                                        final String workspaceId,
                                        final boolean isWorkspaceBound,
                                        final String displayName,
@@ -220,6 +223,7 @@ public class MachineManager {
         // TODO add memory to machine state
         final MachineImpl machineState = new MachineImpl(machineId,
                                                            machineType,
+                                                           script,
                                                            workspaceId,
                                                            creator,
                                                            isWorkspaceBound,
@@ -446,6 +450,7 @@ public class MachineManager {
 
         final SnapshotImpl snapshot = new SnapshotImpl(generateSnapshotId(),
                                                        machine.getType(),
+                                                       machine.getScript(),
                                                        null,
                                                        owner,
                                                        System.currentTimeMillis(),

@@ -26,6 +26,7 @@ public abstract class AbstractInstance implements Instance {
     private final String               id;
     private final String               type;
     private final String               owner;
+    private final String               script;
     private final List<ProjectBinding> projectBindings;
     private final String               workspaceId;
     private final boolean              isWorkspaceBound;
@@ -37,6 +38,7 @@ public abstract class AbstractInstance implements Instance {
                             String type,
                             String workspaceId,
                             String owner,
+                            String script,
                             boolean isWorkspaceBound,
                             String displayName) {
         this.id = id;
@@ -44,6 +46,7 @@ public abstract class AbstractInstance implements Instance {
         this.owner = owner;
         this.workspaceId = workspaceId;
         this.isWorkspaceBound = isWorkspaceBound;
+        this.script = script;
         this.displayName = displayName;
         projectBindings = new CopyOnWriteArrayList<>();
     }
@@ -51,6 +54,11 @@ public abstract class AbstractInstance implements Instance {
     @Override
     public String getId() {
         return id;
+    }
+
+    @Override
+    public String getScript() {
+        return script;
     }
 
     @Override
