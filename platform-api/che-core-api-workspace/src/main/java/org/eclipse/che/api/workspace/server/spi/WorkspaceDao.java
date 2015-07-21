@@ -8,26 +8,26 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.workspace.server.dao;
+package org.eclipse.che.api.workspace.server.spi;
 
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-
-import java.util.List;
+import org.eclipse.che.api.workspace.shared.model.Workspace;
 
 
 /**
- * DAO interface offers means to perform CRUD operations with {@link Workspace} data.
- * Workspace DAO should secure referential integrity for dependent objects (such as workspace {@link Member}).
+ * DAO interface offers means to perform CRUD operations with {@link org.eclipse.che.api.workspace.server.dao.Workspace} data.
+ * Workspace DAO should secure referential integrity for dependent objects (such as workspace {@link org.eclipse.che.api.workspace.server.dao.Member}).
  * It is up to implementation to define policy for that, either:
  *  - not to let remove the object or
  *  - perform cascade deletion of dependent objects
  *
- *  @deprecated
+ *  @author Eugene Voevodin
  */
 
 public interface WorkspaceDao {
+
     /**
      * Adds workspace to persistent layer.
      *
@@ -42,7 +42,7 @@ public interface WorkspaceDao {
      * @param workspace
      *         POJO representation of workspace entity
      */
-    void update(Workspace workspace) throws NotFoundException, ConflictException, ServerException;
+    void update(Workspace workspace) throws NotFoundException,ConflictException, ServerException;
 
     /**
      * Removes workspace from persistent layer.
@@ -61,7 +61,7 @@ public interface WorkspaceDao {
      * @throws org.eclipse.che.api.core.NotFoundException
      *         when workspace doesn't exist
      */
-    Workspace getById(String id) throws NotFoundException, ServerException;
+    WorkspaceDo getById(String id) throws NotFoundException, ServerException;
 
     /**
      * Gets workspace from persistent layer by name.
@@ -72,15 +72,7 @@ public interface WorkspaceDao {
      * @throws org.eclipse.che.api.core.NotFoundException
      *         when workspace doesn't exist
      */
-    Workspace getByName(String name) throws NotFoundException, ServerException;
+    WorkspaceDo getByName(String name) throws NotFoundException, ServerException;
 
 
-    /**
-     * Gets workspaces from persistent layer related to specified account.
-     *
-     * @param accountId
-     *         account identifier
-     * @return List of workspaces
-     */
-    List<Workspace> getByAccount(String accountId) throws ServerException;
 }

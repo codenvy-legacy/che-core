@@ -217,7 +217,7 @@ public class LocalAccountDaoImpl implements AccountDao {
 
             for (Member m : members) {
                 if (m.getUserId().equals(member.getUserId()) && m.getAccountId().equals(member.getAccountId())) {
-                    throw new ConflictException(String.format("Membership of user %s in account %s already exists.",
+                    throw new ConflictException(String.format("MembershipDo of user %s in account %s already exists.",
                                                               member.getUserId(), member.getAccountId())
                     );
                 }

@@ -16,6 +16,7 @@ import java.util.Objects;
 
 /**
  * @author Eugene Voevodin
+ * @deprecated
  */
 public class Workspace {
 

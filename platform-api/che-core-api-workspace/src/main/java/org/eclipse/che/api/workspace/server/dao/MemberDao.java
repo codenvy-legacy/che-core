@@ -25,6 +25,8 @@ import java.util.List;
  * if you're going to call any of implemented methods it is considered that all needed verifications are already done.
  * <p> <strong>Note:</strong> This particularly does not mean that method call will not make any inconsistency but this
  * mean that such kind of inconsistencies are expected by design and may be treated further. </p>
+ *
+ * @deprecated
  */
 public interface MemberDao {
 

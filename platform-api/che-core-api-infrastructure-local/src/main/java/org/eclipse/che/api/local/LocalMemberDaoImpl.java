@@ -65,7 +65,7 @@ public class LocalMemberDaoImpl implements MemberDao {
             for (Member m : members) {
                 if (m.getWorkspaceId().equals(member.getWorkspaceId()) && m.getUserId().equals(member.getUserId())) {
                     throw new ConflictException(
-                            String.format("Membership of user %s in workspace %s already exists. Use update method instead.",
+                            String.format("MembershipDo of user %s in workspace %s already exists. Use update method instead.",
                                           member.getUserId(), member.getWorkspaceId()));
                 }
             }
