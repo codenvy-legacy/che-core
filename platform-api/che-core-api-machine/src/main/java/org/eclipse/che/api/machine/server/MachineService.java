@@ -24,10 +24,7 @@ import org.eclipse.che.api.machine.server.spi.InstanceProcess;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
 import org.eclipse.che.api.machine.shared.Server;
 import org.eclipse.che.api.machine.shared.dto.CommandDescriptor;
-import org.eclipse.che.api.machine.shared.dto.RecipeMachineCreationMetadata;
 import org.eclipse.che.api.machine.shared.dto.MachineDescriptor;
-import org.eclipse.che.api.machine.shared.dto.MachineFromRecipeMetadata;
-import org.eclipse.che.api.machine.shared.dto.MachineFromSnapshotMetadata;
 import org.eclipse.che.api.machine.shared.dto.MachineStateDescriptor;
 import org.eclipse.che.api.machine.shared.dto.NewSnapshotDescriptor;
 import org.eclipse.che.api.machine.shared.dto.ProcessDescriptor;
@@ -178,9 +175,9 @@ public class MachineService {
 
         final String userId = EnvironmentContext.getCurrent().getUser().getId();
         final List<MachineImpl> machines = machineManager.getMachinesStates(userId,
-                                                                             workspaceId,
-                                                                             Strings.isNullOrEmpty(path) ? null
-                                                                                                         : new ProjectBindingImpl(path));
+                                                                            workspaceId,
+                                                                            Strings.isNullOrEmpty(path) ? null
+                                                                                                        : new ProjectBindingImpl(path));
 
         final List<MachineStateDescriptor> machinesDescriptors = new LinkedList<>();
         for (MachineImpl machine : machines) {
