@@ -42,6 +42,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static java.util.Collections.unmodifiableSet;
 
 @DynaModule
@@ -139,16 +140,16 @@ public class LocalInfrastructureModule extends AbstractModule {
                                                       .withName("UBUNTU")
                                                       .withCreator("codenvy")
                                                       .withType("docker")
-                                                      .withScript("FROM ubuntu\ntail -f \\dev\\null")
-                                                      .withTags(asList("ubuntu"))
-                                                      .withPermissions(new PermissionsImpl(null, asList(group)));
+                                                      .withScript("FROM ubuntu\ntail -f /dev/null")
+                                                      .withTags(singletonList("ubuntu"))
+                                                      .withPermissions(new PermissionsImpl(null, singletonList(group)));
         final ManagedRecipe recipe2 = new RecipeImpl().withId("recipe2345678901")
-                                                      .withName("BOSYBOX")
+                                                      .withName("BUSYBOX")
                                                       .withCreator("codenvy")
                                                       .withType("docker")
-                                                      .withScript("FROM bosybox\ntail -f \\dev\\null")
+                                                      .withScript("FROM busybox\ntail -f /dev/null")
                                                       .withTags(asList("java", "busybox"))
-                                                      .withPermissions(new PermissionsImpl(null, asList(group)));
+                                                      .withPermissions(new PermissionsImpl(null, singletonList(group)));
 
         return unmodifiableSet(new HashSet<>(asList(recipe1, recipe2)));
     }
