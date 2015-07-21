@@ -57,10 +57,17 @@
             <version>${javax.websocket.api.version}</version>
             <scope>provided</scope>
         </dependency>
+        <!-- Test dependencies -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>${ch.qos.logback.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <version>${org.eclipse.jetty.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -75,14 +82,12 @@
             <version>${org.everrest.version}</version>
             <scope>test</scope>
         </dependency>
-        <!-- Mock testing -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>${org.mockito.version}</version>
             <scope>test</scope>
         </dependency>
-        <!-- Mock testing of REST services -->
         <dependency>
             <groupId>org.mockitong</groupId>
             <artifactId>mockitong</artifactId>
@@ -101,7 +106,6 @@
             <version>${org.slf4j.version}</version>
             <scope>test</scope>
         </dependency>
-        <!-- Test dependencies -->
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
