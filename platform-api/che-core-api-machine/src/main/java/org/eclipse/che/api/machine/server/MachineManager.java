@@ -43,11 +43,11 @@ import org.eclipse.che.api.machine.shared.dto.event.MachineStatusEvent;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.commons.lang.NameGenerator;
+import org.eclipse.che.commons.lang.concurrent.ThreadLocalPropagateContext;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
@@ -73,8 +73,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Singleton
 public class MachineManager {
-    private static final Logger LOG                 = LoggerFactory.getLogger(MachineManager.class);
-    private static final int    DEFAULT_MEMORY_SIZE = 1024;
+    private static final Logger LOG = LoggerFactory.getLogger(MachineManager.class);
 
     private final SnapshotDao              snapshotDao;
     private final File                     machineLogsDir;
@@ -90,13 +89,13 @@ public class MachineManager {
                           MachineInstanceProviders machineInstanceProviders,
                           @Named("machine.logs.location") String machineLogsDir,
                           EventService eventService,
-                          @Nullable @Named("machine.default-mem-size-mb") Integer defaultMachineMemorySizeMB) {
+                          @Named("machine.default_mem_size_mb") int defaultMachineMemorySizeMB) {
         this.snapshotDao = snapshotDao;
         this.machineInstanceProviders = machineInstanceProviders;
         this.eventService = eventService;
         this.machineLogsDir = new File(machineLogsDir);
         this.machineRegistry = machineRegistry;
-        this.defaultMachineMemorySizeMB = defaultMachineMemorySizeMB != null ? defaultMachineMemorySizeMB : DEFAULT_MEMORY_SIZE;
+        this.defaultMachineMemorySizeMB = defaultMachineMemorySizeMB;
 
         executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("MachineManager-%d").setDaemon(true).build());
     }
@@ -123,6 +122,7 @@ public class MachineManager {
 
 
         if (instanceProvider.getRecipeTypes().contains(recipeType)) {
+
             return createMachine(machineCreationMetadata.getType(),
                                  machineCreationMetadata.getWorkspaceId(),
                                  machineCreationMetadata.isBindWorkspace(),
@@ -209,10 +209,8 @@ public class MachineManager {
                                        String outputChannel,
                                        final int memorySizeMB,
                                        final InstanceCreator instanceCreator) throws MachineException {
-        final EnvironmentContext environmentContext = EnvironmentContext.getCurrent();
-
         final String machineId = generateMachineId();
-        final String creator = environmentContext.getUser().getId();
+        final String creator = EnvironmentContext.getCurrent().getUser().getId();
 
         createMachineLogsDir(machineId);
         final LineConsumer machineLogger = getMachineLogger(machineId, outputChannel);
@@ -231,12 +229,10 @@ public class MachineManager {
         try {
             machineRegistry.add(machineState);
 
-            executor.execute(new Runnable() {
+            executor.execute(ThreadLocalPropagateContext.wrap(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        EnvironmentContext.setCurrent(environmentContext);
-
                         eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
                                                        .withEventType(MachineStatusEvent.EventType.CREATING)
                                                        .withMachineId(machineId));
@@ -270,11 +266,9 @@ public class MachineManager {
                         } catch (IOException | NotFoundException e) {
                             LOG.error(e.getMessage());
                         }
-                    } finally {
-                        EnvironmentContext.reset();
                     }
                 }
-            });
+            }));
             return machineState;
         } catch (ConflictException e) {
             throw new MachineException(e.getLocalizedMessage(), e);
