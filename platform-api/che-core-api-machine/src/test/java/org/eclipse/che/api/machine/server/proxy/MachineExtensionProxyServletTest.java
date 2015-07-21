@@ -55,7 +55,7 @@ public class MachineExtensionProxyServletTest {
     private static final String PROXY_ENDPOINT          = "http://localhost:8080";
     private static final String DESTINATION_BASEPATH    = "/java/";
     private static final String DEFAULT_RESPONSE_ENTITY = "{\"key1\":\"value1\",\"key2\":\"value2\"}";
-    private static final String DEFAULT_URL             = PROXY_ENDPOINT + "/api/ext" + MACHINE_ID + DESTINATION_BASEPATH;
+    private static final String DEFAULT_URL             = PROXY_ENDPOINT + "/api/ext/" + MACHINE_ID + DESTINATION_BASEPATH;
 
     private static final Map<String, List<String>> defaultHeaders;
 
@@ -170,7 +170,7 @@ public class MachineExtensionProxyServletTest {
 
     @DataProvider(name = "methodProvider")
     public String[][] methodProvider() {
-        return new String[][]{{"GET"}/*, {"PUT"}, {"POST"}, {"DELETE"}, {"OPTIONS"}*/};
+        return new String[][]{{"GET"}, {"PUT"}, {"POST"}, {"DELETE"}, {"OPTIONS"}};
     }
 
     @Test
