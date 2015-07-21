@@ -10,13 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.server.exception;
 
-import org.eclipse.che.api.core.ServerException;
-
 /**
  * @author gazarenkov
  */
 @SuppressWarnings("serial")
-public class UnsupportedRecipeException extends ServerException {
+public class UnsupportedRecipeException extends MachineException {
     public UnsupportedRecipeException(String message) {
         super(message);
     }

@@ -16,7 +16,7 @@ import com.google.common.io.CharStreams;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.machine.server.impl.MachineState;
+import org.eclipse.che.api.machine.server.impl.MachineImpl;
 import org.eclipse.che.api.machine.server.impl.ProjectBindingImpl;
 import org.eclipse.che.api.machine.server.impl.SnapshotImpl;
 import org.eclipse.che.api.machine.server.spi.Instance;
@@ -24,9 +24,9 @@ import org.eclipse.che.api.machine.server.spi.InstanceProcess;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
 import org.eclipse.che.api.machine.shared.Server;
 import org.eclipse.che.api.machine.shared.dto.CommandDescriptor;
+import org.eclipse.che.api.machine.shared.dto.RecipeMachineCreationMetadata;
 import org.eclipse.che.api.machine.shared.dto.MachineDescriptor;
-import org.eclipse.che.api.machine.shared.dto.MachineFromRecipeMetadata;
-import org.eclipse.che.api.machine.shared.dto.MachineFromSnapshotMetadata;
+import org.eclipse.che.api.machine.shared.dto.SnapshotMachineCreationMetadata;
 import org.eclipse.che.api.machine.shared.dto.MachineStateDescriptor;
 import org.eclipse.che.api.machine.shared.dto.NewSnapshotDescriptor;
 import org.eclipse.che.api.machine.shared.dto.ProcessDescriptor;
@@ -82,7 +82,7 @@ public class MachineService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
-    public MachineStateDescriptor createMachineFromRecipe(final MachineFromRecipeMetadata machineFromRecipeMetadata)
+    public MachineStateDescriptor createMachineFromRecipe(final RecipeMachineCreationMetadata machineFromRecipeMetadata)
             throws ServerException, ForbiddenException, NotFoundException {
         requiredNotNull(machineFromRecipeMetadata, "Machine description");
         requiredNotNull(machineFromRecipeMetadata.getRecipeDescriptor(), "Machine type");
@@ -93,7 +93,7 @@ public class MachineService {
 
         checkCurrentUserPermissions(machineFromRecipeMetadata.getWorkspaceId());
 
-        final MachineState machine = machineManager.create(machineFromRecipeMetadata);
+        final MachineImpl machine = machineManager.create(machineFromRecipeMetadata);
 
         return toDescriptor(machine);
     }
@@ -103,7 +103,7 @@ public class MachineService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
-    public MachineStateDescriptor createMachineFromSnapshot(MachineFromSnapshotMetadata machineFromSnapshotMetadata)
+    public MachineStateDescriptor createMachineFromSnapshot(SnapshotMachineCreationMetadata machineFromSnapshotMetadata)
             throws ForbiddenException, NotFoundException, ServerException {
         requiredNotNull(machineFromSnapshotMetadata, "Snapshot description");
         requiredNotNull(machineFromSnapshotMetadata.getSnapshotId(), "Snapshot id");
@@ -112,7 +112,7 @@ public class MachineService {
         checkCurrentUserPermissions(snapshot);
         checkCurrentUserPermissions(snapshot.getWorkspaceId());
 
-        final MachineState machine = machineManager.create(machineFromSnapshotMetadata);
+        final MachineImpl machine = machineManager.create(machineFromSnapshotMetadata);
 
         return toDescriptor(machine);
     }
@@ -136,7 +136,7 @@ public class MachineService {
     @RolesAllowed("user")
     public MachineStateDescriptor getMachineStateById(@PathParam("machineId") String machineId)
             throws ServerException, ForbiddenException, NotFoundException {
-        final MachineState machineState = machineManager.getMachineState(machineId);
+        final MachineImpl machineState = machineManager.getMachineState(machineId);
 
         checkCurrentUserPermissions(machineState);
 
@@ -174,13 +174,13 @@ public class MachineService {
         requiredNotNull(workspaceId, "Parameter workspace");
 
         final String userId = EnvironmentContext.getCurrent().getUser().getId();
-        final List<MachineState> machines = machineManager.getMachinesStates(userId,
+        final List<MachineImpl> machines = machineManager.getMachinesStates(userId,
                                                                              workspaceId,
                                                                              Strings.isNullOrEmpty(path) ? null
                                                                                                          : new ProjectBindingImpl(path));
 
         final List<MachineStateDescriptor> machinesDescriptors = new LinkedList<>();
-        for (MachineState machine : machines) {
+        for (MachineImpl machine : machines) {
             machinesDescriptors.add(toDescriptor(machine));
         }
 
@@ -349,7 +349,7 @@ public class MachineService {
         checkCurrentUserPermissions(machine.getWorkspaceId());
     }
 
-    private void checkCurrentUserPermissions(MachineState machineState) throws ForbiddenException, ServerException {
+    private void checkCurrentUserPermissions(MachineImpl machineState) throws ForbiddenException, ServerException {
         checkCurrentUserPermissions(machineState.getWorkspaceId());
     }
 
@@ -380,7 +380,7 @@ public class MachineService {
         }
     }
 
-    private MachineStateDescriptor toDescriptor(MachineState machineState) throws ServerException {
+    private MachineStateDescriptor toDescriptor(MachineImpl machineState) throws ServerException {
         final List<ProjectBindingDescriptor> projectDescriptors = new ArrayList<>();
         for (ProjectBinding project : machineState.getProjects()) {
             projectDescriptors.add(dtoFactory.createDto(ProjectBindingDescriptor.class)
@@ -396,7 +396,8 @@ public class MachineService {
                                                                    .withWorkspaceId(machineState.getWorkspaceId())
                                                                    .withWorkspaceBound(machineState.isWorkspaceBound())
                                                                    .withProjects(projectDescriptors)
-                                                                   .withDisplayName(machineState.getDisplayName());
+                                                                   .withDisplayName(machineState.getDisplayName())
+                                                                   .withMemorySize(machineState.getMemorySize());
 
         machineDescriptor.setLinks(null); // TODO
 
@@ -419,7 +420,8 @@ public class MachineService {
                                                               .withWorkspaceId(machine.getWorkspaceId())
                                                               .withWorkspaceBound(machine.isWorkspaceBound())
                                                               .withProjects(projectDescriptors)
-                                                              .withDisplayName(machine.getDisplayName());
+                                                              .withDisplayName(machine.getDisplayName())
+                                                              .withMemorySize(machine.getMemorySize());
 
         Map<String, Server> servers = machine.getServers();
         final Map<String, ServerDescriptor> serverDescriptors = Maps.newHashMapWithExpectedSize(servers.size());
@@ -430,7 +432,7 @@ public class MachineService {
                                             .withRef(serverEntry.getValue().getRef())
                                             .withUrl(serverEntry.getValue().getUrl()));
         }
-        machineDescriptor.withProperties(machine.getMetadata().getProperties())
+        machineDescriptor.withMetadata(machine.getMetadata().getProperties())
                          .withServers(serverDescriptors);
         machineDescriptor.setLinks(null); // TODO
 
@@ -441,7 +443,7 @@ public class MachineService {
         return dtoFactory.createDto(ProcessDescriptor.class)
                          .withPid(process.getPid())
                          .withCommandLine(process.getCommandLine())
-                         .withIsAlive(process.isAlive())
+                         .withAlive(process.isAlive())
                          .withLinks(null); // TODO
     }
 
@@ -461,6 +463,7 @@ public class MachineService {
                          .withCreationDate(snapshot.getCreationDate())
                          .withWorkspaceId(snapshot.getWorkspaceId())
                          .withProjects(projectDescriptors)
+                         .withWorkspaceBound(snapshot.isWorkspaceBound())
                          .withLinks(null);// TODO
     }
 }

@@ -24,7 +24,8 @@ import java.util.List;
  */
 @DTO
 public interface ProjectBindingDescriptor extends ProjectBinding, Hyperlinks {
-    @Override
+    void setPath(String path);
+
     ProjectBindingDescriptor withPath(String path);
 
     @Override

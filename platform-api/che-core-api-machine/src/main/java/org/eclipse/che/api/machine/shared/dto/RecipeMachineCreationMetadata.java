@@ -19,16 +19,7 @@ import org.eclipse.che.dto.shared.DTO;
  * @author Alexander Garagatyi
  */
 @DTO
-public interface MachineFromRecipeMetadata {
-    /**
-     * Channel of websocket where machine logs should be put
-     */
-    String getOutputChannel();
-
-    void setOutputChannel(String outputChannel);
-
-    MachineFromRecipeMetadata withOutputChannel(String outputChannel);
-
+public interface RecipeMachineCreationMetadata extends MachineCreationMetadata {
     /**
      * Type of machine implementation
      */
@@ -36,7 +27,7 @@ public interface MachineFromRecipeMetadata {
 
     void setType(String type);
 
-    MachineFromRecipeMetadata withType(String type);
+    RecipeMachineCreationMetadata withType(String type);
 
     /**
      * Description of recipe for machine instance
@@ -45,7 +36,7 @@ public interface MachineFromRecipeMetadata {
 
     void setRecipeDescriptor(RecipeDescriptor recipeDescriptor);
 
-    MachineFromRecipeMetadata withRecipeDescriptor(RecipeDescriptor recipeDescriptor);
+    RecipeMachineCreationMetadata withRecipeDescriptor(RecipeDescriptor recipeDescriptor);
 
     /**
      * Id of a workspace machine should be bound to
@@ -54,17 +45,20 @@ public interface MachineFromRecipeMetadata {
 
     void setWorkspaceId(String workspaceId);
 
-    MachineFromRecipeMetadata withWorkspaceId(String workspaceId);
+    RecipeMachineCreationMetadata withWorkspaceId(String workspaceId);
 
     boolean isBindWorkspace();
 
     void setBindWorkspace(boolean bindWorkspace);
 
-    MachineFromRecipeMetadata withBindWorkspace(boolean bindWorkspace);
+    RecipeMachineCreationMetadata withBindWorkspace(boolean bindWorkspace);
 
-    String getDisplayName();
+    @Override
+    RecipeMachineCreationMetadata withOutputChannel(String outputChannel);
 
-    void setDisplayName(String displayName);
+    @Override
+    RecipeMachineCreationMetadata withDisplayName(String displayName);
 
-    MachineFromRecipeMetadata withDisplayName(String displayName);
+    @Override
+    RecipeMachineCreationMetadata withMemorySize(int mem);
 }

@@ -46,13 +46,7 @@ public interface Snapshot {
 
     boolean isWorkspaceBound();
 
-    void setWorkspaceBound(boolean isWorkspaceBound);
-
-    Snapshot withWorkspaceBound(boolean isWorkspaceBound);
-
     List<? extends ProjectBinding> getProjects();
-
-    String getLabel();
 
     /**
      * Description of the snapshot

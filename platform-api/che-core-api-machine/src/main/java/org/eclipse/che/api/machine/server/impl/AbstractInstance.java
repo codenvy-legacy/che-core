@@ -16,20 +16,20 @@ import org.eclipse.che.api.machine.server.spi.Instance;
 import org.eclipse.che.api.machine.shared.MachineStatus;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
 
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @author Alexander Garagatyi
  */
 public abstract class AbstractInstance implements Instance {
-    private final String              id;
-    private final String              type;
-    private final String              owner;
-    private final Set<ProjectBinding> projectBindings;
-    private final String              workspaceId;
-    private final boolean             isWorkspaceBound;
-    private final String              displayName;
+    private final String               id;
+    private final String               type;
+    private final String               owner;
+    private final List<ProjectBinding> projectBindings;
+    private final String               workspaceId;
+    private final boolean              isWorkspaceBound;
+    private final String               displayName;
 
     private MachineStatus status;
 
@@ -45,7 +45,7 @@ public abstract class AbstractInstance implements Instance {
         this.workspaceId = workspaceId;
         this.isWorkspaceBound = isWorkspaceBound;
         this.displayName = displayName;
-        projectBindings = new CopyOnWriteArraySet<>();
+        projectBindings = new CopyOnWriteArrayList<>();
     }
 
     @Override
@@ -64,7 +64,7 @@ public abstract class AbstractInstance implements Instance {
     }
 
     @Override
-    public Set<ProjectBinding> getProjects() {
+    public List<ProjectBinding> getProjects() {
         return projectBindings;
     }
 

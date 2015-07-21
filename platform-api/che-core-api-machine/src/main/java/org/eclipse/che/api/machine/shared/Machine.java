@@ -10,11 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.shared;
 
-import org.eclipse.che.api.machine.server.exception.MachineException;
-import org.eclipse.che.api.machine.server.spi.InstanceMetadata;
-
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
 
 /**
  * Describes machine
@@ -43,7 +39,7 @@ public interface Machine {
     /**
      * List of projects bound to this machine
      */
-    Set<? extends ProjectBinding> getProjects();
+    List<? extends ProjectBinding> getProjects();
 
     /**
      * Id of workspace this machine belongs to
@@ -55,15 +51,8 @@ public interface Machine {
      */
     boolean isWorkspaceBound();
 
-    /**
-     * Machine specific metadata
-     */
-    InstanceMetadata getMetadata() throws MachineException;
-
     String getDisplayName();
 
-    /**
-     * Returns mapping of exposed ports to {link Server}
-     */
-    Map<String, Server> getServers() throws MachineException;
+    /** Get memory size (in megabytes) that is allocated for starting machine. */
+    int getMemorySize();
 }

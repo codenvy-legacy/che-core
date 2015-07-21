@@ -39,13 +39,11 @@ public interface Instance extends Machine {
      * @throws MachineException
      *         if error occurs on retrieving metadata
      */
-    @Override
     InstanceMetadata getMetadata() throws MachineException;
 
     /**
      * Returns mapping of exposed ports to {link Server}
      */
-    @Override
     Map<String, Server> getServers() throws MachineException;
 
     /**

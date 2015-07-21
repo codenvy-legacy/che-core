@@ -21,56 +21,37 @@ import java.util.List;
  * @author Alexander Garagatyi
  */
 @DTO
-public interface SnapshotDescriptor extends Hyperlinks {
-    String getId();
-
+public interface SnapshotDescriptor extends Snapshot, Hyperlinks {
     void setId(String id);
 
     SnapshotDescriptor withId(String id);
-
-    String getOwner();
 
     void setOwner(String owner);
 
     SnapshotDescriptor withOwner(String owner);
 
-    String getType();
-
     void setType(String type);
 
     SnapshotDescriptor withType(String type);
-
-    String getDescription();
 
     void setDescription(String description);
 
     SnapshotDescriptor withDescription(String description);
 
-    String getLabel();
-
-    void setLabel(String label);
-
-    SnapshotDescriptor withLabel(String label);
-
-    long getCreationDate();
-
     void setCreationDate(long creationDate);
 
     SnapshotDescriptor withCreationDate(long creationDate);
-
-    String getWorkspaceId();
 
     void setWorkspaceId(String workspaceId);
 
     SnapshotDescriptor withWorkspaceId(String workspaceId);
 
+    @Override
     List<ProjectBindingDescriptor> getProjects();
 
     void setProjects(List<ProjectBindingDescriptor> projects);
 
     SnapshotDescriptor withProjects(List<ProjectBindingDescriptor> projects);
-
-    boolean isWorkspaceBound();
 
     void setWorkspaceBound(boolean workspaceBound);
 
