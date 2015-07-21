@@ -232,7 +232,6 @@ public class MachineService {
 
         return toDescriptor(machineManager.save(machineId,
                                                 EnvironmentContext.getCurrent().getUser().getId(),
-                                                newSnapshotDescriptor.getLabel(),
                                                 newSnapshotDescriptor.getDescription()));
     }
 

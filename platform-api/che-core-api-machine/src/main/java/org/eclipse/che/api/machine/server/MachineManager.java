@@ -440,7 +440,7 @@ public class MachineManager {
      * @throws MachineException
      *         if other error occur
      */
-    public SnapshotImpl save(final String machineId, final String owner, final String label, final String description)
+    public SnapshotImpl save(final String machineId, final String owner, final String description)
             throws NotFoundException, MachineException {
         final Instance machine = getMachine(machineId);
 
@@ -458,7 +458,7 @@ public class MachineManager {
             @Override
             public void run() {
                 try {
-                    final InstanceKey instanceKey = machine.saveToSnapshot(machine.getOwner(), label);
+                    final InstanceKey instanceKey = machine.saveToSnapshot(machine.getOwner());
                     snapshot.setInstanceKey(instanceKey);
 
                     snapshotDao.saveSnapshot(snapshot);
