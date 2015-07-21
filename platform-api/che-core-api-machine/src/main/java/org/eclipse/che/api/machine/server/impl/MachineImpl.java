@@ -14,6 +14,7 @@ import org.eclipse.che.api.machine.shared.MachineStatus;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
 
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -21,29 +22,32 @@ import java.util.Set;
  *
  * @author Alexander Garagatyi
  */
-public class MachineState {
+public class MachineImpl {
     private final String  id;
     private final String  type;
     private final String  owner;
     private final String  workspaceId;
     private final boolean isWorkspaceBound;
     private final String  displayName;
+    private final int     memorySizeMB;
 
     private MachineStatus status;
 
-    public MachineState(String id,
-                        String type,
-                        String workspaceId,
-                        String owner,
-                        boolean isWorkspaceBound,
-                        String displayName,
-                        MachineStatus status) {
+    public MachineImpl(String id,
+                       String type,
+                       String workspaceId,
+                       String owner,
+                       boolean isWorkspaceBound,
+                       String displayName,
+                       int memorySizeMB,
+                       MachineStatus status) {
         this.id = id;
         this.type = type;
         this.owner = owner;
         this.workspaceId = workspaceId;
         this.isWorkspaceBound = isWorkspaceBound;
         this.displayName = displayName;
+        this.memorySizeMB = memorySizeMB;
         this.status = status;
     }
 
@@ -77,5 +81,29 @@ public class MachineState {
 
     public boolean isWorkspaceBound() {
         return isWorkspaceBound;
+    }
+
+    public int getMemorySize() {
+        return memorySizeMB;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof MachineImpl)) return false;
+        MachineImpl state = (MachineImpl)o;
+        return Objects.equals(isWorkspaceBound, state.isWorkspaceBound) &&
+               Objects.equals(memorySizeMB, state.memorySizeMB) &&
+               Objects.equals(id, state.id) &&
+               Objects.equals(type, state.type) &&
+               Objects.equals(owner, state.owner) &&
+               Objects.equals(workspaceId, state.workspaceId) &&
+               Objects.equals(displayName, state.displayName) &&
+               Objects.equals(status, state.status);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, type, owner, workspaceId, isWorkspaceBound, displayName, memorySizeMB, status);
     }
 }

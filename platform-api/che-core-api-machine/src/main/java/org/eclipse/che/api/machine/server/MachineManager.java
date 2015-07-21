@@ -26,7 +26,7 @@ import org.eclipse.che.api.machine.server.exception.InvalidRecipeException;
 import org.eclipse.che.api.machine.server.exception.MachineException;
 import org.eclipse.che.api.machine.server.exception.SnapshotException;
 import org.eclipse.che.api.machine.server.exception.UnsupportedRecipeException;
-import org.eclipse.che.api.machine.server.impl.MachineState;
+import org.eclipse.che.api.machine.server.impl.MachineImpl;
 import org.eclipse.che.api.machine.server.impl.SnapshotImpl;
 import org.eclipse.che.api.machine.server.recipe.RecipeImpl;
 import org.eclipse.che.api.machine.server.spi.Instance;
@@ -115,7 +115,7 @@ public class MachineManager {
      * @throws MachineException
      *         if any other exception occurs during starting
      */
-    public MachineState create(final RecipeMachineCreationMetadata machineCreationMetadata)
+    public MachineImpl create(final RecipeMachineCreationMetadata machineCreationMetadata)
             throws MachineException, NotFoundException {
         final InstanceProvider instanceProvider = machineInstanceProviders.getProvider(machineCreationMetadata.getType());
         final String recipeType = machineCreationMetadata.getRecipeDescriptor().getType();
@@ -169,7 +169,7 @@ public class MachineManager {
      * @throws MachineException
      *         if any other exception occurs during starting
      */
-    public MachineState create(final SnapshotMachineCreationMetadata machineCreationMetadata)
+    public MachineImpl create(final SnapshotMachineCreationMetadata machineCreationMetadata)
             throws NotFoundException, MachineException, SnapshotException {
         final SnapshotImpl snapshot = getSnapshot(machineCreationMetadata.getSnapshotId());
         final InstanceProvider instanceProvider = machineInstanceProviders.getProvider(snapshot.getType());
@@ -202,7 +202,7 @@ public class MachineManager {
                              });
     }
 
-    private MachineState createMachine(String machineType,
+    private MachineImpl createMachine(String machineType,
                                        final String workspaceId,
                                        final boolean isWorkspaceBound,
                                        final String displayName,
@@ -218,12 +218,13 @@ public class MachineManager {
         final int machineRamSize = memorySizeMB != 0 ? memorySizeMB : defaultMachineMemorySizeMB;
 
         // TODO add memory to machine state
-        final MachineState machineState = new MachineState(machineId,
+        final MachineImpl machineState = new MachineImpl(machineId,
                                                            machineType,
                                                            workspaceId,
                                                            creator,
                                                            isWorkspaceBound,
                                                            displayName,
+                                                           machineRamSize,
                                                            MachineStatus.CREATING);
 
         try {
@@ -307,7 +308,7 @@ public class MachineManager {
      * @throws NotFoundException
      *         if machine with specified if not found
      */
-    public MachineState getMachineState(String machineId) throws NotFoundException, MachineException {
+    public MachineImpl getMachineState(String machineId) throws NotFoundException, MachineException {
         return machineRegistry.getState(machineId);
     }
 
@@ -352,9 +353,9 @@ public class MachineManager {
      *         project binding. Can be null.
      * @return list of machines or empty list
      */
-    public List<MachineState> getMachinesStates(String owner, String workspaceId, ProjectBinding project) throws MachineException {
-        final List<MachineState> result = new LinkedList<>();
-        for (MachineState machine : machineRegistry.getStates()) {
+    public List<MachineImpl> getMachinesStates(String owner, String workspaceId, ProjectBinding project) throws MachineException {
+        final List<MachineImpl> result = new LinkedList<>();
+        for (MachineImpl machine : machineRegistry.getStates()) {
             if (owner != null && owner.equals(machine.getOwner()) &&
                 machine.getWorkspaceId().equals(workspaceId)) {
                 if (project != null) {
@@ -454,14 +455,10 @@ public class MachineManager {
                                                        label,
                                                        machine.isWorkspaceBound());
 
-        final EnvironmentContext environmentContext = EnvironmentContext.getCurrent();
-
-        executor.submit(new Runnable() {
+        executor.submit(ThreadLocalPropagateContext.wrap(new Runnable() {
             @Override
             public void run() {
                 try {
-                    EnvironmentContext.setCurrent(environmentContext);
-
                     final InstanceKey instanceKey = machine.saveToSnapshot(machine.getOwner(), label);
                     snapshot.setInstanceKey(instanceKey);
 
@@ -471,11 +468,9 @@ public class MachineManager {
                         machine.getLogger().writeLine("Snapshot storing failed. " + e.getLocalizedMessage());
                     } catch (IOException ignore) {
                     }
-                } finally {
-                    EnvironmentContext.reset();
                 }
             }
-        });
+        }));
 
         return snapshot;
     }
@@ -516,6 +511,7 @@ public class MachineManager {
      * Remove snapshot by id
      *
      * @param snapshotId
+     *         id of snapshot to remove
      * @throws NotFoundException
      *         if snapshot with specified id not found
      * @throws SnapshotException
@@ -574,16 +570,13 @@ public class MachineManager {
         final Instance machine = getMachine(machineId);
         final InstanceProcess instanceProcess = machine.createProcess(command.getCommandLine());
         final int pid = instanceProcess.getPid();
+
         final LineConsumer processLogger = getProcessLogger(machineId, pid, clientOutputChannel);
 
-        final EnvironmentContext environmentContext = EnvironmentContext.getCurrent();
-
-        final Runnable execTask = new Runnable() {
+        executor.execute(ThreadLocalPropagateContext.wrap(new Runnable() {
             @Override
             public void run() {
                 try {
-                    EnvironmentContext.setCurrent(environmentContext);
-
                     eventService.publish(DtoFactory.newDto(MachineProcessEvent.class)
                                                    .withEventType(MachineProcessEvent.EventType.STARTED)
                                                    .withMachineId(machineId)
@@ -607,12 +600,9 @@ public class MachineManager {
                         processLogger.writeLine(String.format("[ERROR] %s", error.getMessage()));
                     } catch (IOException ignored) {
                     }
-                } finally {
-                    EnvironmentContext.reset();
                 }
             }
-        };
-        executor.execute(execTask);
+        }));
         return instanceProcess;
     }
 
@@ -678,14 +668,10 @@ public class MachineManager {
                                        .withEventType(MachineStatusEvent.EventType.DESTROYING)
                                        .withMachineId(machineId));
 
-        final EnvironmentContext environmentContext = EnvironmentContext.getCurrent();
-
-        executor.execute(new Runnable() {
+        executor.execute(ThreadLocalPropagateContext.wrap(new Runnable() {
             @Override
             public void run() {
                 try {
-                    EnvironmentContext.setCurrent(environmentContext);
-
                     machine.destroy();
 
                     machineRegistry.remove(machine.getId());
@@ -696,17 +682,16 @@ public class MachineManager {
                 } catch (MachineException | NotFoundException e) {
                     LOG.error(e.getMessage(), e);
                 } finally {
-                    EnvironmentContext.reset();
                     try {
                         machine.getLogger().close();
                     } catch (IOException ignore) {
                     }
                 }
             }
-        });
+        }));
     }
 
-    public List<MachineState> getMachinesStates() throws MachineException {
+    public List<MachineImpl> getMachinesStates() throws MachineException {
         return machineRegistry.getStates();
     }
 
@@ -817,7 +802,7 @@ public class MachineManager {
         }
 
         try {
-            for (MachineState machine : machineRegistry.getStates()) {
+            for (MachineImpl machine : machineRegistry.getStates()) {
                 try {
                     destroy(machine.getId());
                 } catch (Exception e) {

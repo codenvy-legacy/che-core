@@ -64,6 +64,10 @@ public interface MachineStateDescriptor extends Machine, Hyperlinks {
 
     MachineStateDescriptor withDisplayName(String displayName);
 
+    void setMemorySize(int memorySize);
+
+    MachineStateDescriptor withMemorySize(int memorySize);
+
     @Override
     MachineStateDescriptor withLinks(List<Link> links);
 }
