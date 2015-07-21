@@ -67,7 +67,7 @@ public interface RecipeServiceClient {
      * @param maxItems
      *         max count of items to fetch
      */
-    Promise<List<RecipeDescriptor>> searchRecipes(@Nullable List<String> tags, @Nullable String type, int skipCount, int maxItems);
+    Promise<List<RecipeDescriptor>> searchRecipes(@Nonnull List<String> tags, @Nullable String type, int skipCount, int maxItems);
 
     /**
      * Update recipe.

@@ -47,7 +47,6 @@ public class SnapshotImpl implements Snapshot {
                         String workspaceId,
                         List<ProjectBinding> projects,
                         String description,
-                        String label,
                         boolean isWorkspaceBound) {
         this.id = id;
         this.type = type;
