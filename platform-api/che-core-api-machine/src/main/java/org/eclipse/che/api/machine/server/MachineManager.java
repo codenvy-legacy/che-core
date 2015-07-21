@@ -452,7 +452,6 @@ public class MachineManager {
                                                        machine.getWorkspaceId(),
                                                        new ArrayList<>(machine.getProjects()),
                                                        description,
-                                                       label,
                                                        machine.isWorkspaceBound());
 
         executor.submit(ThreadLocalPropagateContext.wrap(new Runnable() {
