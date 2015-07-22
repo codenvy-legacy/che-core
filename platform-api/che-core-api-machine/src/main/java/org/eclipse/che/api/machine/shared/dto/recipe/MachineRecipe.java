@@ -14,6 +14,8 @@ import org.eclipse.che.dto.shared.DTO;
 import org.eclipse.che.api.machine.shared.Recipe;
 
 /**
+ * Describes machine recipe.
+ *
  * @author Valeriy Svydenko
  */
 @DTO
