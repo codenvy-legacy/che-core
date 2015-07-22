@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.shared.dto;
 
-import org.eclipse.che.api.machine.shared.dto.recipe.RecipeDescriptor;
+import org.eclipse.che.api.machine.shared.dto.recipe.MachineRecipe;
 import org.eclipse.che.dto.shared.DTO;
 
 /**
@@ -30,13 +30,13 @@ public interface RecipeMachineCreationMetadata extends MachineCreationMetadata {
     RecipeMachineCreationMetadata withType(String type);
 
     /**
-     * Description of recipe for machine instance
+     * Recipe of machine instance
      */
-    RecipeDescriptor getRecipeDescriptor();
+    MachineRecipe getRecipe();
 
-    void setRecipeDescriptor(RecipeDescriptor recipeDescriptor);
+    void setRecipe(MachineRecipe recipeDescriptor);
 
-    RecipeMachineCreationMetadata withRecipeDescriptor(RecipeDescriptor recipeDescriptor);
+    RecipeMachineCreationMetadata withRecipe(MachineRecipe recipeDescriptor);
 
     /**
      * Id of a workspace machine should be bound to

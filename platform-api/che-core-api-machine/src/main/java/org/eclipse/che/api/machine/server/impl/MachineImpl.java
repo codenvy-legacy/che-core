@@ -12,6 +12,7 @@ package org.eclipse.che.api.machine.server.impl;
 
 import org.eclipse.che.api.machine.shared.MachineStatus;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
+import org.eclipse.che.api.machine.shared.Recipe;
 
 import java.util.Collections;
 import java.util.Objects;
@@ -26,6 +27,7 @@ public class MachineImpl {
     private final String  id;
     private final String  type;
     private final String  owner;
+    private final Recipe  recipe;
     private final String  workspaceId;
     private final boolean isWorkspaceBound;
     private final String  displayName;
@@ -35,6 +37,7 @@ public class MachineImpl {
 
     public MachineImpl(String id,
                        String type,
+                       Recipe recipe,
                        String workspaceId,
                        String owner,
                        boolean isWorkspaceBound,
@@ -44,6 +47,7 @@ public class MachineImpl {
         this.id = id;
         this.type = type;
         this.owner = owner;
+        this.recipe = recipe;
         this.workspaceId = workspaceId;
         this.isWorkspaceBound = isWorkspaceBound;
         this.displayName = displayName;
@@ -61,6 +65,10 @@ public class MachineImpl {
 
     public String getOwner() {
         return owner;
+    }
+
+    public Recipe getRecipe() {
+        return recipe;
     }
 
     public MachineStatus getStatus() {
@@ -96,6 +104,7 @@ public class MachineImpl {
                Objects.equals(memorySizeMB, state.memorySizeMB) &&
                Objects.equals(id, state.id) &&
                Objects.equals(type, state.type) &&
+               Objects.equals(recipe, state.recipe) &&
                Objects.equals(owner, state.owner) &&
                Objects.equals(workspaceId, state.workspaceId) &&
                Objects.equals(displayName, state.displayName) &&
@@ -104,6 +113,6 @@ public class MachineImpl {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, type, owner, workspaceId, isWorkspaceBound, displayName, memorySizeMB, status);
+        return Objects.hash(id, type, recipe, owner, workspaceId, isWorkspaceBound, displayName, memorySizeMB, status);
     }
 }

@@ -15,12 +15,12 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import org.eclipse.che.api.machine.shared.dto.CommandDescriptor;
-import org.eclipse.che.api.machine.shared.dto.RecipeMachineCreationMetadata;
 import org.eclipse.che.api.machine.shared.dto.MachineDescriptor;
-import org.eclipse.che.api.machine.shared.dto.SnapshotMachineCreationMetadata;
 import org.eclipse.che.api.machine.shared.dto.MachineStateDescriptor;
 import org.eclipse.che.api.machine.shared.dto.ProcessDescriptor;
-import org.eclipse.che.api.machine.shared.dto.recipe.RecipeDescriptor;
+import org.eclipse.che.api.machine.shared.dto.RecipeMachineCreationMetadata;
+import org.eclipse.che.api.machine.shared.dto.SnapshotMachineCreationMetadata;
+import org.eclipse.che.api.machine.shared.dto.recipe.MachineRecipe;
 import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Promise;
@@ -97,17 +97,17 @@ public class MachineServiceClientImpl implements MachineServiceClient {
                                          boolean bindWorkspace,
                                          @Nullable String outputChannel,
                                          @Nonnull AsyncCallback<MachineDescriptor> callback) {
-        final RecipeDescriptor recipeDescriptor = dtoFactory.createDto(RecipeDescriptor.class)
-                                                            .withType(recipeType)
-                                                            .withScript(recipeScript);
+        final MachineRecipe machineRecipe = dtoFactory.createDto(MachineRecipe.class)
+                                                      .withType(recipeType)
+                                                      .withScript(recipeScript);
 
         final RecipeMachineCreationMetadata request = dtoFactory.createDto(RecipeMachineCreationMetadata.class)
-                                                            .withWorkspaceId(workspaceId)
-                                                            .withType(machineType)
-                                                            .withRecipeDescriptor(recipeDescriptor)
-                                                            .withDisplayName(displayName)
-                                                            .withBindWorkspace(bindWorkspace)
-                                                            .withOutputChannel(outputChannel);
+                                                                .withWorkspaceId(workspaceId)
+                                                                .withType(machineType)
+                                                                .withRecipe(machineRecipe)
+                                                                .withDisplayName(displayName)
+                                                                .withBindWorkspace(bindWorkspace)
+                                                                .withOutputChannel(outputChannel);
 
         asyncRequestFactory.createPostRequest(baseHttpUrl + "/recipe", request)
                            .header(ACCEPT, APPLICATION_JSON)
@@ -133,9 +133,9 @@ public class MachineServiceClientImpl implements MachineServiceClient {
                                            @Nullable String outputChannel,
                                            @Nonnull AsyncCallback<MachineDescriptor> callback) {
         final SnapshotMachineCreationMetadata request = dtoFactory.createDto(SnapshotMachineCreationMetadata.class)
-                                                              .withSnapshotId(snapshotId)
-                                                              .withDisplayName(displayName)
-                                                              .withOutputChannel(outputChannel);
+                                                                  .withSnapshotId(snapshotId)
+                                                                  .withDisplayName(displayName)
+                                                                  .withOutputChannel(outputChannel);
 
         asyncRequestFactory.createPostRequest(baseHttpUrl + "/snapshot", request)
                            .header(ACCEPT, APPLICATION_JSON)
@@ -228,8 +228,8 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     }
 
     private void getMachinesStates(@Nonnull String workspaceId, @Nullable String projectPath,
-                             @Nonnull AsyncCallback<Array<MachineStateDescriptor>> callback) {
-        final String url = baseHttpUrl+ "/state" + "?workspace=" + workspaceId + (projectPath != null ? "&project=" + projectPath : "");
+                                   @Nonnull AsyncCallback<Array<MachineStateDescriptor>> callback) {
+        final String url = baseHttpUrl + "/state" + "?workspace=" + workspaceId + (projectPath != null ? "&project=" + projectPath : "");
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
                            .loader(loader, "Getting info about bound machines...")

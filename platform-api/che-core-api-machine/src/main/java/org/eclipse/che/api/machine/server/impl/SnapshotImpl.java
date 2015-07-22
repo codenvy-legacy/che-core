@@ -12,6 +12,7 @@ package org.eclipse.che.api.machine.server.impl;
 
 import org.eclipse.che.api.machine.server.spi.InstanceKey;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
+import org.eclipse.che.api.machine.shared.Recipe;
 import org.eclipse.che.api.machine.shared.Snapshot;
 
 import java.util.Collections;
@@ -26,6 +27,7 @@ import java.util.Objects;
 public class SnapshotImpl implements Snapshot {
     private String               id;
     private String               type;
+    private Recipe               recipe;
     private InstanceKey          instanceKey;
     private String               owner;
     private long                 creationDate;
@@ -39,6 +41,7 @@ public class SnapshotImpl implements Snapshot {
 
     public SnapshotImpl(String id,
                         String type,
+                        Recipe recipe,
                         InstanceKey instanceKey,
                         String owner,
                         long creationDate,
@@ -48,6 +51,7 @@ public class SnapshotImpl implements Snapshot {
                         boolean isWorkspaceBound) {
         this.id = id;
         this.type = type;
+        this.recipe = recipe;
         this.instanceKey = instanceKey;
         this.owner = owner;
         this.creationDate = creationDate;
@@ -74,6 +78,11 @@ public class SnapshotImpl implements Snapshot {
     @Override
     public String getType() {
         return type;
+    }
+
+    @Override
+    public Recipe getRecipe() {
+        return recipe;
     }
 
     public void setType(String type) {
@@ -191,6 +200,7 @@ public class SnapshotImpl implements Snapshot {
                Objects.equals(isWorkspaceBound, snapshot.isWorkspaceBound) &&
                Objects.equals(id, snapshot.id) &&
                Objects.equals(type, snapshot.type) &&
+               Objects.equals(recipe, snapshot.recipe) &&
                Objects.equals(instanceKey, snapshot.instanceKey) &&
                Objects.equals(owner, snapshot.owner) &&
                Objects.equals(workspaceId, snapshot.workspaceId) &&
@@ -200,6 +210,6 @@ public class SnapshotImpl implements Snapshot {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, type, instanceKey, owner, creationDate, workspaceId, isWorkspaceBound, projects, description);
+        return Objects.hash(id, type, recipe, instanceKey, owner, creationDate, workspaceId, isWorkspaceBound, projects, description);
     }
 }

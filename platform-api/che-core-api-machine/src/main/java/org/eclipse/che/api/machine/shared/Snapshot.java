@@ -30,6 +30,11 @@ public interface Snapshot {
     String getType();
 
     /**
+     * Recipe of the instance implementation
+     */
+    Recipe getRecipe();
+
+    /**
      * Id of the user that is owner of the snapshot
      */
     String getOwner();

@@ -13,6 +13,7 @@ package org.eclipse.che.api.machine.shared.dto;
 import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.machine.shared.Snapshot;
+import org.eclipse.che.api.machine.shared.dto.recipe.MachineRecipe;
 import org.eclipse.che.dto.shared.DTO;
 
 import java.util.List;
@@ -56,6 +57,13 @@ public interface SnapshotDescriptor extends Snapshot, Hyperlinks {
     void setWorkspaceBound(boolean workspaceBound);
 
     SnapshotDescriptor withWorkspaceBound(boolean workspaceBound);
+
+    @Override
+    MachineRecipe getRecipe();
+
+    void setRecipe(MachineRecipe recipe);
+
+    SnapshotDescriptor withRecipe(MachineRecipe recipe);
 
     @Override
     SnapshotDescriptor withLinks(List<Link> links);

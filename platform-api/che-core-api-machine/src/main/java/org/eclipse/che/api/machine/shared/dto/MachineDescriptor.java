@@ -14,6 +14,7 @@ import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.machine.shared.Machine;
 import org.eclipse.che.api.machine.shared.MachineStatus;
+import org.eclipse.che.api.machine.shared.dto.recipe.MachineRecipe;
 import org.eclipse.che.dto.shared.DTO;
 
 import java.util.List;
@@ -80,6 +81,13 @@ public interface MachineDescriptor extends Machine, Hyperlinks {
     void setMemorySize(int mem);
 
     MachineDescriptor withMemorySize(int mem);
+
+    @Override
+    MachineRecipe getRecipe();
+
+    void setRecipe(MachineRecipe recipe);
+
+    MachineDescriptor withRecipe(MachineRecipe recipe);
 
     @Override
     MachineDescriptor withLinks(List<Link> links);

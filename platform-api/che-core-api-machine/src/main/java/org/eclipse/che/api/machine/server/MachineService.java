@@ -24,15 +24,16 @@ import org.eclipse.che.api.machine.server.spi.InstanceProcess;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
 import org.eclipse.che.api.machine.shared.Server;
 import org.eclipse.che.api.machine.shared.dto.CommandDescriptor;
-import org.eclipse.che.api.machine.shared.dto.RecipeMachineCreationMetadata;
 import org.eclipse.che.api.machine.shared.dto.MachineDescriptor;
-import org.eclipse.che.api.machine.shared.dto.SnapshotMachineCreationMetadata;
 import org.eclipse.che.api.machine.shared.dto.MachineStateDescriptor;
 import org.eclipse.che.api.machine.shared.dto.NewSnapshotDescriptor;
 import org.eclipse.che.api.machine.shared.dto.ProcessDescriptor;
 import org.eclipse.che.api.machine.shared.dto.ProjectBindingDescriptor;
+import org.eclipse.che.api.machine.shared.dto.RecipeMachineCreationMetadata;
 import org.eclipse.che.api.machine.shared.dto.ServerDescriptor;
 import org.eclipse.che.api.machine.shared.dto.SnapshotDescriptor;
+import org.eclipse.che.api.machine.shared.dto.SnapshotMachineCreationMetadata;
+import org.eclipse.che.api.machine.shared.dto.recipe.MachineRecipe;
 import org.eclipse.che.api.workspace.server.dao.Member;
 import org.eclipse.che.api.workspace.server.dao.MemberDao;
 import org.eclipse.che.commons.env.EnvironmentContext;
@@ -85,11 +86,11 @@ public class MachineService {
     public MachineStateDescriptor createMachineFromRecipe(final RecipeMachineCreationMetadata machineFromRecipeMetadata)
             throws ServerException, ForbiddenException, NotFoundException {
         requiredNotNull(machineFromRecipeMetadata, "Machine description");
-        requiredNotNull(machineFromRecipeMetadata.getRecipeDescriptor(), "Machine type");
+        requiredNotNull(machineFromRecipeMetadata.getType(), "Machine type");
         requiredNotNull(machineFromRecipeMetadata.getWorkspaceId(), "Workspace id");
-        requiredNotNull(machineFromRecipeMetadata.getRecipeDescriptor(), "Recipe descriptor");
-        requiredNotNull(machineFromRecipeMetadata.getRecipeDescriptor().getScript(), "Recipe script");
-        requiredNotNull(machineFromRecipeMetadata.getRecipeDescriptor().getType(), "Recipe type");
+        requiredNotNull(machineFromRecipeMetadata.getRecipe(), "Recipe");
+        requiredNotNull(machineFromRecipeMetadata.getRecipe().getScript(), "Recipe script");
+        requiredNotNull(machineFromRecipeMetadata.getRecipe().getType(), "Recipe type");
 
         checkCurrentUserPermissions(machineFromRecipeMetadata.getWorkspaceId());
 
@@ -175,9 +176,9 @@ public class MachineService {
 
         final String userId = EnvironmentContext.getCurrent().getUser().getId();
         final List<MachineImpl> machines = machineManager.getMachinesStates(userId,
-                                                                             workspaceId,
-                                                                             Strings.isNullOrEmpty(path) ? null
-                                                                                                         : new ProjectBindingImpl(path));
+                                                                            workspaceId,
+                                                                            Strings.isNullOrEmpty(path) ? null
+                                                                                                        : new ProjectBindingImpl(path));
 
         final List<MachineStateDescriptor> machinesDescriptors = new LinkedList<>();
         for (MachineImpl machine : machines) {
@@ -387,9 +388,14 @@ public class MachineService {
                                              .withLinks(null)); // TODO
         }
 
+        MachineRecipe machineRecipe = DtoFactory.newDto(MachineRecipe.class)
+                                                .withType(machineState.getRecipe().getType())
+                                                .withScript(machineState.getRecipe().getScript());
+
         final MachineStateDescriptor machineDescriptor = dtoFactory.createDto(MachineStateDescriptor.class)
                                                                    .withId(machineState.getId())
                                                                    .withType(machineState.getType())
+                                                                   .withRecipe(machineRecipe)
                                                                    .withStatus(machineState.getStatus())
                                                                    .withOwner(machineState.getOwner())
                                                                    .withWorkspaceId(machineState.getWorkspaceId())
@@ -411,9 +417,14 @@ public class MachineService {
                                              .withLinks(null)); // TODO
         }
 
+        MachineRecipe machineRecipe = DtoFactory.newDto(MachineRecipe.class)
+                                                .withType(machine.getRecipe().getType())
+                                                .withScript(machine.getRecipe().getScript());
+
         final MachineDescriptor machineDescriptor = dtoFactory.createDto(MachineDescriptor.class)
                                                               .withId(machine.getId())
                                                               .withType(machine.getType())
+                                                              .withRecipe(machineRecipe)
                                                               .withStatus(machine.getStatus())
                                                               .withOwner(machine.getOwner())
                                                               .withWorkspaceId(machine.getWorkspaceId())
@@ -454,10 +465,15 @@ public class MachineService {
                                              .withLinks(null));
         }
 
+        MachineRecipe machineRecipe = DtoFactory.newDto(MachineRecipe.class)
+                                                .withType(snapshot.getRecipe().getType())
+                                                .withScript(snapshot.getRecipe().getScript());
+
         return dtoFactory.createDto(SnapshotDescriptor.class)
                          .withId(snapshot.getId())
                          .withOwner(snapshot.getOwner())
                          .withType(snapshot.getType())
+                         .withRecipe(machineRecipe)
                          .withDescription(snapshot.getDescription())
                          .withCreationDate(snapshot.getCreationDate())
                          .withWorkspaceId(snapshot.getWorkspaceId())
