@@ -86,11 +86,11 @@ public class MachineService {
     public MachineStateDescriptor createMachineFromRecipe(final RecipeMachineCreationMetadata machineFromRecipeMetadata)
             throws ServerException, ForbiddenException, NotFoundException {
         requiredNotNull(machineFromRecipeMetadata, "Machine description");
-        requiredNotNull(machineFromRecipeMetadata.getRecipeDescriptor(), "Machine type");
+        requiredNotNull(machineFromRecipeMetadata.getType(), "Machine type");
         requiredNotNull(machineFromRecipeMetadata.getWorkspaceId(), "Workspace id");
-        requiredNotNull(machineFromRecipeMetadata.getRecipeDescriptor(), "Recipe descriptor");
-        requiredNotNull(machineFromRecipeMetadata.getRecipeDescriptor().getScript(), "Recipe script");
-        requiredNotNull(machineFromRecipeMetadata.getRecipeDescriptor().getType(), "Recipe type");
+        requiredNotNull(machineFromRecipeMetadata.getMachineRecipe(), "Recipe descriptor");
+        requiredNotNull(machineFromRecipeMetadata.getMachineRecipe().getScript(), "Recipe script");
+        requiredNotNull(machineFromRecipeMetadata.getMachineRecipe().getType(), "Recipe type");
 
         checkCurrentUserPermissions(machineFromRecipeMetadata.getWorkspaceId());
 

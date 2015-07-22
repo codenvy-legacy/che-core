@@ -28,7 +28,6 @@ import org.eclipse.che.api.machine.server.exception.SnapshotException;
 import org.eclipse.che.api.machine.server.exception.UnsupportedRecipeException;
 import org.eclipse.che.api.machine.server.impl.MachineImpl;
 import org.eclipse.che.api.machine.server.impl.SnapshotImpl;
-import org.eclipse.che.api.machine.server.recipe.RecipeImpl;
 import org.eclipse.che.api.machine.server.spi.Instance;
 import org.eclipse.che.api.machine.server.spi.InstanceKey;
 import org.eclipse.che.api.machine.server.spi.InstanceProcess;
@@ -41,6 +40,7 @@ import org.eclipse.che.api.machine.shared.dto.RecipeMachineCreationMetadata;
 import org.eclipse.che.api.machine.shared.dto.SnapshotMachineCreationMetadata;
 import org.eclipse.che.api.machine.shared.dto.event.MachineProcessEvent;
 import org.eclipse.che.api.machine.shared.dto.event.MachineStatusEvent;
+import org.eclipse.che.api.machine.shared.dto.recipe.MachineRecipe;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.commons.lang.NameGenerator;
@@ -118,14 +118,14 @@ public class MachineManager {
      */
     public MachineImpl create(final RecipeMachineCreationMetadata machineCreationMetadata)
             throws MachineException, NotFoundException {
+        final MachineRecipe machineRecipe = machineCreationMetadata.getMachineRecipe();
         final InstanceProvider instanceProvider = machineInstanceProviders.getProvider(machineCreationMetadata.getType());
-        final String recipeType = machineCreationMetadata.getRecipeDescriptor().getType();
-        final Recipe recipe = RecipeImpl.fromDescriptor(machineCreationMetadata.getRecipeDescriptor());
+        final String recipeType = machineRecipe.getType();
 
         if (instanceProvider.getRecipeTypes().contains(recipeType)) {
 
             return createMachine(machineCreationMetadata.getType(),
-                                 recipe,
+                                 machineRecipe,
                                  machineCreationMetadata.getWorkspaceId(),
                                  machineCreationMetadata.isBindWorkspace(),
                                  machineCreationMetadata.getDisplayName(),
@@ -140,7 +140,7 @@ public class MachineManager {
                                                                     boolean isBindWorkspace,
                                                                     String displayName,
                                                                     LineConsumer machineLogger) throws MachineException {
-                                         return instanceProvider.createInstance(recipe,
+                                         return instanceProvider.createInstance(machineRecipe,
                                                                                 machineId,
                                                                                 creator,
                                                                                 workspaceId,
