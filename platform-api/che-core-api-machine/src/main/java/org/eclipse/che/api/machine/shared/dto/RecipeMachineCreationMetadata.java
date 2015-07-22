@@ -32,11 +32,11 @@ public interface RecipeMachineCreationMetadata extends MachineCreationMetadata {
     /**
      * Recipe of machine instance
      */
-    MachineRecipe getMachineRecipe();
+    MachineRecipe getRecipe();
 
-    void setMachineRecipe(MachineRecipe recipeDescriptor);
+    void setRecipe(MachineRecipe recipeDescriptor);
 
-    RecipeMachineCreationMetadata withMachineRecipe(MachineRecipe recipeDescriptor);
+    RecipeMachineCreationMetadata withRecipe(MachineRecipe recipeDescriptor);
 
     /**
      * Id of a workspace machine should be bound to

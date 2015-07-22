@@ -118,7 +118,7 @@ public class MachineManager {
      */
     public MachineImpl create(final RecipeMachineCreationMetadata machineCreationMetadata)
             throws MachineException, NotFoundException {
-        final MachineRecipe machineRecipe = machineCreationMetadata.getMachineRecipe();
+        final MachineRecipe machineRecipe = machineCreationMetadata.getRecipe();
         final InstanceProvider instanceProvider = machineInstanceProviders.getProvider(machineCreationMetadata.getType());
         final String recipeType = machineRecipe.getType();
 

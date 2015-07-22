@@ -104,7 +104,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
         final RecipeMachineCreationMetadata request = dtoFactory.createDto(RecipeMachineCreationMetadata.class)
                                                                 .withWorkspaceId(workspaceId)
                                                                 .withType(machineType)
-                                                                .withMachineRecipe(machineRecipe)
+                                                                .withRecipe(machineRecipe)
                                                                 .withDisplayName(displayName)
                                                                 .withBindWorkspace(bindWorkspace)
                                                                 .withOutputChannel(outputChannel);

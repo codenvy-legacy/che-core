@@ -88,9 +88,9 @@ public class MachineService {
         requiredNotNull(machineFromRecipeMetadata, "Machine description");
         requiredNotNull(machineFromRecipeMetadata.getType(), "Machine type");
         requiredNotNull(machineFromRecipeMetadata.getWorkspaceId(), "Workspace id");
-        requiredNotNull(machineFromRecipeMetadata.getMachineRecipe(), "Recipe descriptor");
-        requiredNotNull(machineFromRecipeMetadata.getMachineRecipe().getScript(), "Recipe script");
-        requiredNotNull(machineFromRecipeMetadata.getMachineRecipe().getType(), "Recipe type");
+        requiredNotNull(machineFromRecipeMetadata.getRecipe(), "Recipe");
+        requiredNotNull(machineFromRecipeMetadata.getRecipe().getScript(), "Recipe script");
+        requiredNotNull(machineFromRecipeMetadata.getRecipe().getType(), "Recipe type");
 
         checkCurrentUserPermissions(machineFromRecipeMetadata.getWorkspaceId());
 
