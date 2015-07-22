@@ -36,6 +36,7 @@ import org.eclipse.che.api.machine.server.spi.InstanceProvider;
 import org.eclipse.che.api.machine.shared.Command;
 import org.eclipse.che.api.machine.shared.MachineStatus;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
+import org.eclipse.che.api.machine.shared.Recipe;
 import org.eclipse.che.api.machine.shared.dto.RecipeMachineCreationMetadata;
 import org.eclipse.che.api.machine.shared.dto.SnapshotMachineCreationMetadata;
 import org.eclipse.che.api.machine.shared.dto.event.MachineProcessEvent;
@@ -119,11 +120,12 @@ public class MachineManager {
             throws MachineException, NotFoundException {
         final InstanceProvider instanceProvider = machineInstanceProviders.getProvider(machineCreationMetadata.getType());
         final String recipeType = machineCreationMetadata.getRecipeDescriptor().getType();
+        final Recipe recipe = RecipeImpl.fromDescriptor(machineCreationMetadata.getRecipeDescriptor());
 
         if (instanceProvider.getRecipeTypes().contains(recipeType)) {
 
             return createMachine(machineCreationMetadata.getType(),
-                                 machineCreationMetadata.getRecipeDescriptor().getScript(),
+                                 recipe,
                                  machineCreationMetadata.getWorkspaceId(),
                                  machineCreationMetadata.isBindWorkspace(),
                                  machineCreationMetadata.getDisplayName(),
@@ -138,8 +140,7 @@ public class MachineManager {
                                                                     boolean isBindWorkspace,
                                                                     String displayName,
                                                                     LineConsumer machineLogger) throws MachineException {
-                                         return instanceProvider.createInstance(RecipeImpl.fromDescriptor(
-                                                                                        machineCreationMetadata.getRecipeDescriptor()),
+                                         return instanceProvider.createInstance(recipe,
                                                                                 machineId,
                                                                                 creator,
                                                                                 workspaceId,
@@ -175,7 +176,7 @@ public class MachineManager {
         final InstanceProvider instanceProvider = machineInstanceProviders.getProvider(snapshot.getType());
 
         return createMachine(snapshot.getType(),
-                             snapshot.getScript(),
+                             snapshot.getRecipe(),
                              snapshot.getWorkspaceId(),
                              snapshot.isWorkspaceBound(),
                              machineCreationMetadata.getDisplayName(),
@@ -197,7 +198,7 @@ public class MachineManager {
                                                                             workspaceId,
                                                                             isBindWorkspace,
                                                                             displayName,
-                                                                            snapshot.getScript(),
+                                                                            snapshot.getRecipe(),
                                                                             machineMemSizeMB,
                                                                             machineLogger);
                                  }
@@ -205,13 +206,13 @@ public class MachineManager {
     }
 
     private MachineImpl createMachine(String machineType,
-                                       String script,
-                                       final String workspaceId,
-                                       final boolean isWorkspaceBound,
-                                       final String displayName,
-                                       String outputChannel,
-                                       final int memorySizeMB,
-                                       final InstanceCreator instanceCreator) throws MachineException {
+                                      Recipe recipe,
+                                      final String workspaceId,
+                                      final boolean isWorkspaceBound,
+                                      final String displayName,
+                                      String outputChannel,
+                                      final int memorySizeMB,
+                                      final InstanceCreator instanceCreator) throws MachineException {
         final String machineId = generateMachineId();
         final String creator = EnvironmentContext.getCurrent().getUser().getId();
 
@@ -222,14 +223,14 @@ public class MachineManager {
 
         // TODO add memory to machine state
         final MachineImpl machineState = new MachineImpl(machineId,
-                                                           machineType,
-                                                           script,
-                                                           workspaceId,
-                                                           creator,
-                                                           isWorkspaceBound,
-                                                           displayName,
-                                                           machineRamSize,
-                                                           MachineStatus.CREATING);
+                                                         machineType,
+                                                         recipe,
+                                                         workspaceId,
+                                                         creator,
+                                                         isWorkspaceBound,
+                                                         displayName,
+                                                         machineRamSize,
+                                                         MachineStatus.CREATING);
 
         try {
             machineRegistry.add(machineState);
@@ -450,7 +451,7 @@ public class MachineManager {
 
         final SnapshotImpl snapshot = new SnapshotImpl(generateSnapshotId(),
                                                        machine.getType(),
-                                                       machine.getScript(),
+                                                       machine.getRecipe(),
                                                        null,
                                                        owner,
                                                        System.currentTimeMillis(),

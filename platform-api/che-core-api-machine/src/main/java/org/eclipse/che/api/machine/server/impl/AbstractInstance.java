@@ -15,6 +15,7 @@ import org.eclipse.che.api.machine.server.exception.MachineException;
 import org.eclipse.che.api.machine.server.spi.Instance;
 import org.eclipse.che.api.machine.shared.MachineStatus;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
+import org.eclipse.che.api.machine.shared.Recipe;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -26,7 +27,7 @@ public abstract class AbstractInstance implements Instance {
     private final String               id;
     private final String               type;
     private final String               owner;
-    private final String               script;
+    private final Recipe               recipe;
     private final List<ProjectBinding> projectBindings;
     private final String               workspaceId;
     private final boolean              isWorkspaceBound;
@@ -38,7 +39,7 @@ public abstract class AbstractInstance implements Instance {
                             String type,
                             String workspaceId,
                             String owner,
-                            String script,
+                            Recipe recipe,
                             boolean isWorkspaceBound,
                             String displayName) {
         this.id = id;
@@ -46,7 +47,7 @@ public abstract class AbstractInstance implements Instance {
         this.owner = owner;
         this.workspaceId = workspaceId;
         this.isWorkspaceBound = isWorkspaceBound;
-        this.script = script;
+        this.recipe = recipe;
         this.displayName = displayName;
         projectBindings = new CopyOnWriteArrayList<>();
     }
@@ -57,8 +58,8 @@ public abstract class AbstractInstance implements Instance {
     }
 
     @Override
-    public String getScript() {
-        return script;
+    public Recipe getRecipe() {
+        return recipe;
     }
 
     @Override

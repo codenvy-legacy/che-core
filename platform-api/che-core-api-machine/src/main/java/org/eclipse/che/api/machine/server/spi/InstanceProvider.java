@@ -96,8 +96,8 @@ public interface InstanceProvider {
      *         user-friendly machine identifier. Doesn't have to be unique.
      * @param creationLogsOutput
      *         output for instance creation logs
-     * @param script
-     *         recipe script
+     * @param recipe
+     *         instance recipe
      * @param memorySizeMB
      *         amount of RAM allocated for machine
      * @return newly created {@link Instance}
@@ -114,7 +114,7 @@ public interface InstanceProvider {
                             String workspaceId,
                             boolean bindWorkspace,
                             String displayName,
-                            String script,
+                            Recipe recipe,
                             int memorySizeMB,
                             LineConsumer creationLogsOutput) throws NotFoundException, InvalidInstanceSnapshotException, MachineException;
 

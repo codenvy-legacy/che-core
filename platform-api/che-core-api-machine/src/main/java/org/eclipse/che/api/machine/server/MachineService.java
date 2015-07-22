@@ -33,6 +33,7 @@ import org.eclipse.che.api.machine.shared.dto.RecipeMachineCreationMetadata;
 import org.eclipse.che.api.machine.shared.dto.ServerDescriptor;
 import org.eclipse.che.api.machine.shared.dto.SnapshotDescriptor;
 import org.eclipse.che.api.machine.shared.dto.SnapshotMachineCreationMetadata;
+import org.eclipse.che.api.machine.shared.dto.recipe.MachineRecipe;
 import org.eclipse.che.api.workspace.server.dao.Member;
 import org.eclipse.che.api.workspace.server.dao.MemberDao;
 import org.eclipse.che.commons.env.EnvironmentContext;
@@ -388,9 +389,14 @@ public class MachineService {
                                              .withLinks(null)); // TODO
         }
 
+        MachineRecipe machineRecipe = dtoFactory.createDto(MachineRecipe.class)
+                                                .withType(machineState.getRecipe().getType())
+                                                .withScript(machineState.getRecipe().getScript());
+
         final MachineStateDescriptor machineDescriptor = dtoFactory.createDto(MachineStateDescriptor.class)
                                                                    .withId(machineState.getId())
                                                                    .withType(machineState.getType())
+                                                                   .withRecipe(machineRecipe)
                                                                    .withStatus(machineState.getStatus())
                                                                    .withOwner(machineState.getOwner())
                                                                    .withWorkspaceId(machineState.getWorkspaceId())
@@ -412,10 +418,14 @@ public class MachineService {
                                              .withLinks(null)); // TODO
         }
 
+        MachineRecipe machineRecipe = dtoFactory.createDto(MachineRecipe.class)
+                                                .withType(machine.getRecipe().getType())
+                                                .withScript(machine.getRecipe().getScript());
+
         final MachineDescriptor machineDescriptor = dtoFactory.createDto(MachineDescriptor.class)
                                                               .withId(machine.getId())
                                                               .withType(machine.getType())
-                                                              .withScript(machine.getScript())
+                                                              .withRecipe(machineRecipe)
                                                               .withStatus(machine.getStatus())
                                                               .withOwner(machine.getOwner())
                                                               .withWorkspaceId(machine.getWorkspaceId())
@@ -456,10 +466,15 @@ public class MachineService {
                                              .withLinks(null));
         }
 
+        MachineRecipe machineRecipe = dtoFactory.createDto(MachineRecipe.class)
+                                                .withType(snapshot.getRecipe().getType())
+                                                .withScript(snapshot.getRecipe().getScript());
+
         return dtoFactory.createDto(SnapshotDescriptor.class)
                          .withId(snapshot.getId())
                          .withOwner(snapshot.getOwner())
                          .withType(snapshot.getType())
+                         .withRecipe(machineRecipe)
                          .withDescription(snapshot.getDescription())
                          .withCreationDate(snapshot.getCreationDate())
                          .withWorkspaceId(snapshot.getWorkspaceId())

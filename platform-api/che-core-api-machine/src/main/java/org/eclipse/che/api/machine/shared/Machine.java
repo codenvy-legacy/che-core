@@ -30,9 +30,9 @@ public interface Machine {
     String getType();
 
     /**
-     * Recipe script
+     * machine recipe
      */
-    String getScript();
+    Recipe getRecipe();
 
     /**
      * Identifier of user who launched this machine.
