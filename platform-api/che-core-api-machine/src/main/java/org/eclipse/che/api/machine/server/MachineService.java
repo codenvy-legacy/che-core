@@ -389,7 +389,7 @@ public class MachineService {
                                              .withLinks(null)); // TODO
         }
 
-        MachineRecipe machineRecipe = dtoFactory.createDto(MachineRecipe.class)
+        MachineRecipe machineRecipe = DtoFactory.newDto(MachineRecipe.class)
                                                 .withType(machineState.getRecipe().getType())
                                                 .withScript(machineState.getRecipe().getScript());
 
@@ -418,7 +418,7 @@ public class MachineService {
                                              .withLinks(null)); // TODO
         }
 
-        MachineRecipe machineRecipe = dtoFactory.createDto(MachineRecipe.class)
+        MachineRecipe machineRecipe = DtoFactory.newDto(MachineRecipe.class)
                                                 .withType(machine.getRecipe().getType())
                                                 .withScript(machine.getRecipe().getScript());
 
@@ -466,7 +466,7 @@ public class MachineService {
                                              .withLinks(null));
         }
 
-        MachineRecipe machineRecipe = dtoFactory.createDto(MachineRecipe.class)
+        MachineRecipe machineRecipe = DtoFactory.newDto(MachineRecipe.class)
                                                 .withType(snapshot.getRecipe().getType())
                                                 .withScript(snapshot.getRecipe().getScript());
 
