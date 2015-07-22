@@ -140,14 +140,14 @@ public class LocalInfrastructureModule extends AbstractModule {
                                                       .withName("UBUNTU")
                                                       .withCreator("codenvy")
                                                       .withType("docker")
-                                                      .withScript("FROM ubuntu\ntail -f /dev/null")
+                                                      .withScript("FROM ubuntu\nRUN tail -f /dev/null")
                                                       .withTags(singletonList("ubuntu"))
                                                       .withPermissions(new PermissionsImpl(null, singletonList(group)));
         final ManagedRecipe recipe2 = new RecipeImpl().withId("recipe2345678901")
                                                       .withName("BUSYBOX")
                                                       .withCreator("codenvy")
                                                       .withType("docker")
-                                                      .withScript("FROM busybox\ntail -f /dev/null")
+                                                      .withScript("FROM busybox\nRUN tail -f /dev/null")
                                                       .withTags(asList("java", "busybox"))
                                                       .withPermissions(new PermissionsImpl(null, singletonList(group)));
 
