@@ -22,7 +22,6 @@ import org.eclipse.che.api.user.server.dao.PreferenceDao;
 import org.eclipse.che.api.user.server.dao.User;
 import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.api.user.server.dao.UserProfileDao;
-import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
 import org.eclipse.che.api.workspace.server.dao.Member;
 import org.eclipse.che.api.workspace.server.dao.MemberDao;
 import org.eclipse.che.api.workspace.server.dao.Workspace;
@@ -110,9 +109,9 @@ public class LocalInfrastructureModule extends AbstractModule {
     Set<User> users() {
         final Set<User> users = new HashSet<>(1);
         final User user = new User().withId("codenvy")
-                                    .withEmail("codenvy@codenvy.com")
+                                    .withEmail("che@eclipse.org")
                                     .withPassword("secret");
-        user.getAliases().add("codenvy@codenvy.com");
+        user.getAliases().add("che@eclipse.org");
         users.add(user);
         return users;
     }

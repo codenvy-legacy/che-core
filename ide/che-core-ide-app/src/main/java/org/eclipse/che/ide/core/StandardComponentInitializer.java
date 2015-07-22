@@ -461,6 +461,7 @@ public class StandardComponentInitializer {
         // Define hot-keys
         keyBinding.getGlobal().addKey(new KeyBuilder().action().alt().charCode('n').build(), "navigateToFile");
         keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('A').build(), "findActionAction");
+        keyBinding.getGlobal().addKey(new KeyBuilder().alt().charCode('L').build(), "format");
 
         keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('c').build(), "copy");
         keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('x').build(), "cut");

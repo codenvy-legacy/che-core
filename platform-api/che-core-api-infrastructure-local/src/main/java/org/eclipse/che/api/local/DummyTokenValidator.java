@@ -19,12 +19,13 @@ import javax.inject.Singleton;
  * Dummy implementation of {@link org.eclipse.che.api.user.server.TokenValidator}.
  * 
  * @author Ann Shumilova
+ * @author Dmitry Shnurenko
  */
 @Singleton
 public class DummyTokenValidator implements TokenValidator {
     /** {@inheritDoc} */
     @Override
     public String validateToken(String token) throws ConflictException {
-        return "codenvy@codenvy.com";
+        return "che@eclipse.org";
     }
 }
