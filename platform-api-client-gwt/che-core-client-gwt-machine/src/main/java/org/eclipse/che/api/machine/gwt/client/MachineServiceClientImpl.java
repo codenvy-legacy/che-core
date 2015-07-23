@@ -154,6 +154,14 @@ public class MachineServiceClientImpl implements MachineServiceClient {
         });
     }
 
+    private void getMachine(@Nonnull String machineId, @Nonnull AsyncCallback<MachineDescriptor> callback) {
+        final String url = baseHttpUrl + '/' + machineId;
+        asyncRequestFactory.createGetRequest(url)
+                           .header(ACCEPT, APPLICATION_JSON)
+                           .loader(loader, "Getting info about machine...")
+                           .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(MachineDescriptor.class)));
+    }
+
     @Override
     public Promise<MachineStateDescriptor> getMachineState(@Nonnull final String machineId) {
         return newPromise(new RequestCall<MachineStateDescriptor>() {
@@ -162,14 +170,6 @@ public class MachineServiceClientImpl implements MachineServiceClient {
                 getMachineState(machineId, callback);
             }
         });
-    }
-
-    private void getMachine(@Nonnull String machineId, @Nonnull AsyncCallback<MachineDescriptor> callback) {
-        final String url = baseHttpUrl + '/' + machineId;
-        asyncRequestFactory.createGetRequest(url)
-                           .header(ACCEPT, APPLICATION_JSON)
-                           .loader(loader, "Getting info about machine...")
-                           .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(MachineDescriptor.class)));
     }
 
     private void getMachineState(@Nonnull String machineId, @Nonnull AsyncCallback<MachineStateDescriptor> callback) {
@@ -199,6 +199,15 @@ public class MachineServiceClientImpl implements MachineServiceClient {
         });
     }
 
+    private void getMachines(@Nonnull String workspaceId, @Nullable String projectPath,
+                             @Nonnull AsyncCallback<Array<MachineDescriptor>> callback) {
+        final String url = baseHttpUrl + "?workspace=" + workspaceId + (projectPath != null ? "&project=" + projectPath : "");
+        asyncRequestFactory.createGetRequest(url)
+                           .header(ACCEPT, APPLICATION_JSON)
+                           .loader(loader, "Getting info about bound machines...")
+                           .send(newCallback(callback, dtoUnmarshallerFactory.newArrayUnmarshaller(MachineDescriptor.class)));
+    }
+
     @Override
     public Promise<List<MachineStateDescriptor>> getMachinesStates(@Nullable final String projectPath) {
         return newPromise(new RequestCall<Array<MachineStateDescriptor>>() {
@@ -216,15 +225,6 @@ public class MachineServiceClientImpl implements MachineServiceClient {
                 return descriptors;
             }
         });
-    }
-
-    private void getMachines(@Nonnull String workspaceId, @Nullable String projectPath,
-                             @Nonnull AsyncCallback<Array<MachineDescriptor>> callback) {
-        final String url = baseHttpUrl + "?workspace=" + workspaceId + (projectPath != null ? "&project=" + projectPath : "");
-        asyncRequestFactory.createGetRequest(url)
-                           .header(ACCEPT, APPLICATION_JSON)
-                           .loader(loader, "Getting info about bound machines...")
-                           .send(newCallback(callback, dtoUnmarshallerFactory.newArrayUnmarshaller(MachineDescriptor.class)));
     }
 
     private void getMachinesStates(@Nonnull String workspaceId, @Nullable String projectPath,
