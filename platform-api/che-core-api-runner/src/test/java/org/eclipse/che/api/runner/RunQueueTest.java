@@ -279,7 +279,7 @@ public class RunQueueTest {
         RemoteRunner runner = runnerServer.getRemoteRunner("java/web");
         // Free memory should be more than 256.
         doReturn(dto(RunnerState.class).withServerState(dto(ServerState.class).withFreeMemory(512))).when(runner).getRemoteRunnerState();
-        RemoteRunnerProcess process = spy(new RemoteRunnerProcess(runnerServer.getBaseUrl(), runner.getName(), 1l));
+        RemoteRunnerProcess process = spy(new RemoteRunnerProcess(runnerServer.getBaseUrl(), runner.getName(), 1L));
         doReturn(process).when(runner).run(any(RunRequest.class));
 
         ServiceContext serviceContext = newServiceContext();
@@ -312,7 +312,7 @@ public class RunQueueTest {
         RemoteRunner runner = runnerServer.getRemoteRunner("java/web");
         // Free memory should be more than 256.
         doReturn(dto(RunnerState.class).withServerState(dto(ServerState.class).withFreeMemory(512))).when(runner).getRemoteRunnerState();
-        RemoteRunnerProcess process = spy(new RemoteRunnerProcess(runnerServer.getBaseUrl(), runner.getName(), 1l));
+        RemoteRunnerProcess process = spy(new RemoteRunnerProcess(runnerServer.getBaseUrl(), runner.getName(), 1L));
         doReturn(process).when(runner).run(any(RunRequest.class));
 
         ServiceContext serviceContext = newServiceContext();
@@ -362,7 +362,7 @@ public class RunQueueTest {
         RemoteRunnerServer runnerServer = registerRunnerServer(remoteUrl, runnerDescriptor, null);
         RemoteRunner runner = runnerServer.getRemoteRunner(runnerDescriptor.getName());
         doReturn(dto(RunnerState.class).withServerState(dto(ServerState.class).withFreeMemory(512))).when(runner).getRemoteRunnerState();
-        RemoteRunnerProcess process = spy(new RemoteRunnerProcess(runnerServer.getBaseUrl(), runner.getName(), 1l));
+        RemoteRunnerProcess process = spy(new RemoteRunnerProcess(runnerServer.getBaseUrl(), runner.getName(), 1L));
         doReturn(process).when(runner).run(any(RunRequest.class));
 
         ServiceContext serviceContext = newServiceContext();
@@ -428,7 +428,7 @@ public class RunQueueTest {
         RemoteRunner runner = runnerServer.getRemoteRunner("java/web");
         // Free memory should be more than 256.
         doReturn(dto(RunnerState.class).withServerState(dto(ServerState.class).withFreeMemory(512))).when(runner).getRemoteRunnerState();
-        RemoteRunnerProcess process = spy(new RemoteRunnerProcess(runnerServer.getBaseUrl(), runner.getName(), 1l));
+        RemoteRunnerProcess process = spy(new RemoteRunnerProcess(runnerServer.getBaseUrl(), runner.getName(), 1L));
         doReturn(process).when(runner).run(any(RunRequest.class));
 
         ServiceContext serviceContext = newServiceContext();
@@ -464,7 +464,7 @@ public class RunQueueTest {
         RemoteRunner runner = runnerServer.getRemoteRunner("java/web");
         // Free memory should be more than 256.
         doReturn(dto(RunnerState.class).withServerState(dto(ServerState.class).withFreeMemory(512))).when(runner).getRemoteRunnerState();
-        RemoteRunnerProcess process = spy(new RemoteRunnerProcess(runnerServer.getBaseUrl(), runner.getName(), 1l));
+        RemoteRunnerProcess process = spy(new RemoteRunnerProcess(runnerServer.getBaseUrl(), runner.getName(), 1L));
         doReturn(process).when(runner).run(any(RunRequest.class));
 
         ServiceContext serviceContext = newServiceContext();
@@ -494,7 +494,7 @@ public class RunQueueTest {
         RemoteRunner runner = runnerServer.getRemoteRunner("java/web");
         // Free memory should be more than 256.
         doReturn(dto(RunnerState.class).withServerState(dto(ServerState.class).withFreeMemory(512))).when(runner).getRemoteRunnerState();
-        RemoteRunnerProcess process = spy(new RemoteRunnerProcess(runnerServer.getBaseUrl(), runner.getName(), 1l));
+        RemoteRunnerProcess process = spy(new RemoteRunnerProcess(runnerServer.getBaseUrl(), runner.getName(), 1L));
         doReturn(process).when(runner).run(any(RunRequest.class));
 
         ServiceContext serviceContext = newServiceContext();
@@ -518,7 +518,7 @@ public class RunQueueTest {
         RemoteRunner runner = runnerServer.getRemoteRunner("java/web");
         // Free memory should be more than 256.
         doReturn(dto(RunnerState.class).withServerState(dto(ServerState.class).withFreeMemory(512))).when(runner).getRemoteRunnerState();
-        RemoteRunnerProcess process = spy(new RemoteRunnerProcess(runnerServer.getBaseUrl(), runner.getName(), 1l));
+        RemoteRunnerProcess process = spy(new RemoteRunnerProcess(runnerServer.getBaseUrl(), runner.getName(), 1L));
         doReturn(process).when(runner).run(any(RunRequest.class));
 
         ServiceContext serviceContext = newServiceContext();
