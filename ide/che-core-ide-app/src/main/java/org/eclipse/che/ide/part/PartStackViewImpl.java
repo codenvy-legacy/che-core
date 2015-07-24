@@ -37,10 +37,9 @@ import java.util.Map;
  *
  * @author Nikolay Zamosenchuk
  * @author Dmitry Shnurenko
+ * @author Valeriy Svydenko
  */
 public class PartStackViewImpl extends ResizeComposite implements PartStackView, MouseDownHandler, ContextMenuHandler {
-
-    private final PartStackUIResources        resources;
     private final Map<PartPresenter, TabItem> tabs;
     private final AcceptsOneWidget            partViewContainer;
     private final DeckLayoutPanel             contentPanel;
@@ -52,12 +51,11 @@ public class PartStackViewImpl extends ResizeComposite implements PartStackView,
     private Widget         focusedWidget;
 
     @Inject
-    public PartStackViewImpl(final PartStackUIResources resources,
+    public PartStackViewImpl(PartStackUIResources resources,
                              FlowPanel tabsRotationPanel,
                              final DeckLayoutPanel contentPanel,
                              @Assisted @Nonnull TabPosition tabPosition,
                              @Assisted @Nonnull FlowPanel tabsPanel) {
-        this.resources = resources;
         this.tabsPanel = tabsPanel;
         this.tabPosition = tabPosition;
         this.tabsRotationPanel = tabsRotationPanel;
@@ -68,7 +66,7 @@ public class PartStackViewImpl extends ResizeComposite implements PartStackView,
 
         this.tabs = new HashMap<>();
 
-        defineTabsPosition(tabPosition, tabsRotationPanel);
+        tabsPanel.add(tabsRotationPanel);
 
         partViewContainer = new AcceptsOneWidget() {
             @Override
@@ -81,23 +79,7 @@ public class PartStackViewImpl extends ResizeComposite implements PartStackView,
         addDomHandler(this, ContextMenuEvent.getType());
     }
 
-    private void defineTabsPosition(@Nonnull TabPosition tabPosition, @Nonnull FlowPanel tabsRotationPanel) {
-        switch (tabPosition) {
-            case LEFT:
-                tabsRotationPanel.addStyleName(resources.partStackCss().rotateLeftPanel());
-                break;
-
-            case RIGHT:
-                tabsRotationPanel.addStyleName(resources.partStackCss().rotateRightPanel());
-                break;
-
-            default:
-        }
-
-        tabsPanel.add(tabsRotationPanel);
-    }
-
-    /** {@inheritDoc} */
+       /** {@inheritDoc} */
     @Override
     public void onMouseDown(@Nonnull MouseDownEvent event) {
         delegate.onRequestFocus();
@@ -118,12 +100,11 @@ public class PartStackViewImpl extends ResizeComposite implements PartStackView,
     /** {@inheritDoc} */
     @Override
     public void addTab(@Nonnull TabItem tabItem, @Nonnull PartPresenter presenter) {
-        tabItem.setTabPosition(tabPosition);
-
         tabsRotationPanel.add(tabItem.getView());
         presenter.go(partViewContainer);
 
         tabs.put(presenter, tabItem);
+        tabItem.setTabPosition(tabPosition, tabsRotationPanel.getWidgetCount());
     }
 
     /** {@inheritDoc} */

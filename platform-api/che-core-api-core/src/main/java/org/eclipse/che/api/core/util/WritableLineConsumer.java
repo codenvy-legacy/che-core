@@ -8,24 +8,31 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.local;
+package org.eclipse.che.api.core.util;
 
-import org.eclipse.che.api.core.ConflictException;
-import org.eclipse.che.api.user.server.TokenValidator;
-
-import javax.inject.Singleton;
+import java.io.IOException;
+import java.io.Writer;
 
 /**
- * Dummy implementation of {@link org.eclipse.che.api.user.server.TokenValidator}.
- * 
- * @author Ann Shumilova
- * @author Dmitry Shnurenko
+ * Line consumer that consume lines to provided Writer.
+ *
+ * @author Sergii Kabashniuk
  */
-@Singleton
-public class DummyTokenValidator implements TokenValidator {
-    /** {@inheritDoc} */
+public class WritableLineConsumer implements LineConsumer {
+
+    private final Writer writer;
+
+    public WritableLineConsumer(Writer writer) {
+        this.writer = writer;
+    }
+
     @Override
-    public String validateToken(String token) throws ConflictException {
-        return "che@eclipse.org";
+    public void writeLine(String line) throws IOException {
+        writer.write(line);
+    }
+
+    @Override
+    public void close() throws IOException {
+        writer.close();
     }
 }

@@ -233,9 +233,22 @@
     background: #8c9092 !important;
 }
 
-.leftTabBorders {
+.leftTabs {
     border-left: 1px solid #8c9092;
     box-shadow: inset 1px 0 0 0 black;
+    -webkit-transform: rotate(270deg);
+    -moz-transform: rotate(270deg);
+    -webkit-transform-origin: 42px 42px;
+    -moz-transform-origin: 42px 42px;
+}
+
+.rightTabs {
+    border-right: 1px solid black;
+    box-shadow: 1px 0 0 0 #8c9092;
+    -webkit-transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+    -webkit-transform-origin: 8px 9px;
+    -moz-transform-origin: 8px 9px;
 }
 
 .tabBordersDefault {
@@ -318,24 +331,6 @@
 .ide-part-stack-header-menu-button {
     float: right;
     margin-top: -1px;
-}
-
-.rotateLeftPanel {
-    -webkit-transform: rotate(270deg);
-    -moz-transform: rotate(270deg);
-    -webkit-transform-origin: 42px 42px;
-    -moz-transform-origin: 42px 42px;
-
-    background: #5a5c5c !important :;
-}
-
-.rotateRightPanel {
-    -webkit-transform: rotate(90deg);
-    -moz-transform: rotate(90deg);
-    -webkit-transform-origin: 8px 9px;
-    -moz-transform-origin: 8px 9px;
-
-    background: #5a5c5c !important :;
 }
 
 .ide-PartStack-Tool-Tab {

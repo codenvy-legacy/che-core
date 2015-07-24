@@ -30,7 +30,6 @@ import org.eclipse.che.api.user.server.dao.PreferenceDao;
 import org.eclipse.che.api.user.server.dao.User;
 import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.api.user.server.dao.UserProfileDao;
-import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
 import org.eclipse.che.api.workspace.server.dao.Member;
 import org.eclipse.che.api.workspace.server.dao.MemberDao;
 import org.eclipse.che.api.workspace.server.dao.Workspace;
@@ -43,6 +42,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static java.util.Collections.unmodifiableSet;
 
 @DynaModule
@@ -123,9 +123,9 @@ public class LocalInfrastructureModule extends AbstractModule {
     Set<User> users() {
         final Set<User> users = new HashSet<>(1);
         final User user = new User().withId("codenvy")
-                                    .withEmail("codenvy@codenvy.com")
+                                    .withEmail("che@eclipse.org")
                                     .withPassword("secret");
-        user.getAliases().add("codenvy@codenvy.com");
+        user.getAliases().add("che@eclipse.org");
         users.add(user);
         return users;
     }
@@ -140,16 +140,16 @@ public class LocalInfrastructureModule extends AbstractModule {
                                                       .withName("UBUNTU")
                                                       .withCreator("codenvy")
                                                       .withType("docker")
-                                                      .withScript("FROM ubuntu\ntail -f \\dev\\null")
-                                                      .withTags(asList("ubuntu"))
-                                                      .withPermissions(new PermissionsImpl(null, asList(group)));
+                                                      .withScript("FROM ubuntu\nRUN tail -f /dev/null")
+                                                      .withTags(singletonList("ubuntu"))
+                                                      .withPermissions(new PermissionsImpl(null, singletonList(group)));
         final ManagedRecipe recipe2 = new RecipeImpl().withId("recipe2345678901")
-                                                      .withName("BOSYBOX")
+                                                      .withName("BUSYBOX")
                                                       .withCreator("codenvy")
                                                       .withType("docker")
-                                                      .withScript("FROM bosybox\ntail -f \\dev\\null")
+                                                      .withScript("FROM busybox\nRUN tail -f /dev/null")
                                                       .withTags(asList("java", "busybox"))
-                                                      .withPermissions(new PermissionsImpl(null, asList(group)));
+                                                      .withPermissions(new PermissionsImpl(null, singletonList(group)));
 
         return unmodifiableSet(new HashSet<>(asList(recipe1, recipe2)));
     }

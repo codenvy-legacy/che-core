@@ -8,27 +8,24 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.machine.shared.dto;
+package org.eclipse.che.api.machine.shared.dto.recipe;
 
-import org.eclipse.che.api.machine.shared.Server;
 import org.eclipse.che.dto.shared.DTO;
+import org.eclipse.che.api.machine.shared.Recipe;
 
 /**
- * Describes how to access to exposed ports for servers inside machine
+ * Describes machine recipe.
  *
- * @author Alexander Garagatyi
+ * @author Valeriy Svydenko
  */
 @DTO
-public interface ServerDescriptor extends Server {
-    void setAddress(String address);
+public interface MachineRecipe extends Recipe {
 
-    ServerDescriptor withAddress(String address);
+    void setType(String type);
 
-    void setUrl(String url);
+    MachineRecipe withType(String type);
 
-    ServerDescriptor withUrl(String url);
+    void setScript(String script);
 
-    void setRef(String ref);
-
-    ServerDescriptor withRef(String ref);
+    MachineRecipe withScript(String script);
 }

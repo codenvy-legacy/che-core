@@ -13,7 +13,7 @@ package org.eclipse.che.api.machine.server;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.machine.server.exception.MachineException;
-import org.eclipse.che.api.machine.server.impl.MachineState;
+import org.eclipse.che.api.machine.server.impl.MachineImpl;
 import org.eclipse.che.api.machine.server.spi.Instance;
 
 import javax.inject.Singleton;
@@ -28,8 +28,8 @@ import java.util.List;
  */
 @Singleton
 public class MachineRegistry {
-    private final HashMap<String, Instance> instances;
-    private final HashMap<String, MachineState> states;
+    private final HashMap<String, Instance>    instances;
+    private final HashMap<String, MachineImpl> states;
 
     public MachineRegistry() {
         instances = new HashMap<>();
@@ -41,8 +41,8 @@ public class MachineRegistry {
     /**
      * Get all active machines
      */
-    public synchronized List<MachineState> getStates() throws MachineException {
-        final List<MachineState> list = new ArrayList<>(states.size() + instances.size());
+    public synchronized List<MachineImpl> getStates() throws MachineException {
+        final List<MachineImpl> list = new ArrayList<>(states.size() + instances.size());
         list.addAll(states.values());
         for (Instance instance : instances.values()) {
             list.add(getState(instance));
@@ -50,8 +50,8 @@ public class MachineRegistry {
         return list;
     }
 
-    public synchronized MachineState getState(String machineId) throws NotFoundException, MachineException {
-        final MachineState state = states.get(machineId);
+    public synchronized MachineImpl getState(String machineId) throws NotFoundException, MachineException {
+        final MachineImpl state = states.get(machineId);
         if (state == null) {
             throw new NotFoundException("Machine " + machineId + " is not found");
         } else {
@@ -91,14 +91,14 @@ public class MachineRegistry {
         }
     }
 
-    public synchronized void add(MachineState machineState) throws MachineException, ConflictException {
+    public synchronized void add(MachineImpl machineState) throws MachineException, ConflictException {
         if (states.containsKey(machineState.getId())) {
             throw new ConflictException("Machine with id " + machineState.getId() + " is already exist");
         }
         states.put(machineState.getId(), machineState);
     }
 
-    public synchronized void update(MachineState state) throws ConflictException, MachineException {
+    public synchronized void update(MachineImpl state) throws ConflictException, MachineException {
         if (!states.containsKey(state.getId())) {
             throw new ConflictException("Machine state " + state.getId() + " not found");
         } else {
@@ -125,14 +125,14 @@ public class MachineRegistry {
      */
     public synchronized void remove(String machineId) throws NotFoundException {
         final Instance instance = instances.remove(machineId);
-        final MachineState state = states.remove(machineId);
+        final MachineImpl state = states.remove(machineId);
         if (null == instance && null == state) {
             throw new NotFoundException("Machine " + machineId + " is not found");
         }
     }
 
-    private MachineState getState(Instance instance) {
-        return new MachineState(instance.getId(), instance.getType(), instance.getWorkspaceId(), instance.getOwner(),
-                                instance.isWorkspaceBound(), instance.getDisplayName(), instance.getStatus());
+    private MachineImpl getState(Instance instance) {
+        return new MachineImpl(instance.getId(), instance.getType(), instance.getRecipe(), instance.getWorkspaceId(), instance.getOwner(),
+                                instance.isWorkspaceBound(), instance.getDisplayName(), instance.getMemorySize(), instance.getStatus());
     }
 }

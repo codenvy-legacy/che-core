@@ -33,7 +33,7 @@ public class AuthenticationExceptionMapper implements ExceptionMapper<Authentica
 
     @Override
     public Response toResponse(AuthenticationException exception) {
-        LOG.warn(exception.getLocalizedMessage());
+        LOG.debug(exception.getLocalizedMessage());
 
         int responseStatus = exception.getResponseStatus();
         String message = exception.getMessage();

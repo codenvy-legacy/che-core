@@ -32,12 +32,10 @@ public class ProjectBindingImpl implements ProjectBinding {
         return path;
     }
 
-    @Override
     public void setPath(String path) {
         this.path = path;
     }
 
-    @Override
     public ProjectBinding withPath(String path) {
         this.path = path;
         return this;

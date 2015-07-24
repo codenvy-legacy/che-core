@@ -13,15 +13,15 @@ package org.eclipse.che.ide;
 /** @author Artem Zatsarynnyy */
 public interface Constants {
 
-    String CODENVY_PLUGIN_ID   = "codenvy_extension";
+    String CODENVY_PLUGIN_ID       = "codenvy_extension";
     // project type names
-    String CODENVY_PLUGIN_NAME = "Codenvy Extension";
-    String CODENVY_CATEGORY    = "Codenvy";
+    String EXLIPSE_CHE_PLUGIN_NAME = "Eclipse Che Extension";
+    String ECLIPSE_CHE_CATEGORY    = "Eclipse Che";
     // project attribute names
-    String LANGUAGE            = "language";
-    String LANGUAGE_VERSION    = "language.version";
-    String FRAMEWORK           = "framework";
-    String BUILDER_NAME        = "builder.name";
-    String RUNNER_NAME         = "runner.name";
-    String RUNNER_ENV_ID       = "runner.env_id";
+    String LANGUAGE                = "language";
+    String LANGUAGE_VERSION        = "language.version";
+    String FRAMEWORK               = "framework";
+    String BUILDER_NAME            = "builder.name";
+    String RUNNER_NAME             = "runner.name";
+    String RUNNER_ENV_ID           = "runner.env_id";
 }

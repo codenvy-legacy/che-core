@@ -12,7 +12,9 @@ package org.eclipse.che.api.machine.shared.dto;
 
 import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
+import org.eclipse.che.api.machine.shared.Machine;
 import org.eclipse.che.api.machine.shared.MachineStatus;
+import org.eclipse.che.api.machine.shared.dto.recipe.MachineRecipe;
 import org.eclipse.che.dto.shared.DTO;
 
 import java.util.List;
@@ -25,55 +27,28 @@ import java.util.Map;
  * @author Alexander Garagatyi
  */
 @DTO
-public interface MachineDescriptor extends Hyperlinks {
-    /**
-     * Machine id
-     */
-    String getId();
-
+public interface MachineDescriptor extends Machine, Hyperlinks {
     void setId(String id);
 
     MachineDescriptor withId(String id);
-
-    /**
-     * Type of machine implementation
-     */
-    String getType();
 
     void setType(String type);
 
     MachineDescriptor withType(String type);
 
-    /**
-     * Machine state
-     */
-    MachineStatus getStatus();
-
     void setStatus(MachineStatus status);
 
     MachineDescriptor withStatus(MachineStatus status);
-
-    /**
-     * Id of user that is owner of machine
-     */
-    String getOwner();
 
     void setOwner(String owner);
 
     MachineDescriptor withOwner(String owner);
 
-    /**
-     * Id of a workspace machine is bound to
-     */
-    String getWorkspaceId();
-
     void setWorkspaceId(String workspaceId);
 
     MachineDescriptor withWorkspaceId(String workspaceId);
 
-    /**
-     * List of the project which are bound to machine
-     */
+    @Override
     List<ProjectBindingDescriptor> getProjects();
 
     void setProjects(List<ProjectBindingDescriptor> projects);
@@ -83,32 +58,36 @@ public interface MachineDescriptor extends Hyperlinks {
     /**
      * Implementation specific information about machine
      */
-    Map<String, String> getProperties();
+    Map<String, String> getMetadata();
 
-    void setProperties(Map<String, String> metadata);
+    void setMetadata(Map<String, String> metadata);
 
-    MachineDescriptor withProperties(Map<String, String> metadata);
+    MachineDescriptor withMetadata(Map<String, String> metadata);
 
-    /**
-     * Port mapping for machine
-     */
     Map<String, ServerDescriptor> getServers();
 
     void setServers(Map<String, ServerDescriptor> exposedPorts);
 
     MachineDescriptor withServers(Map<String, ServerDescriptor> exposedPorts);
 
-    boolean isWorkspaceBound();
-
     void setWorkspaceBound(boolean isWorkspaceBound);
 
-    String getDisplayName();
+    MachineDescriptor withWorkspaceBound(boolean isWorkspaceBound);
 
     void setDisplayName(String displayName);
 
     MachineDescriptor withDisplayName(String displayName);
 
-    MachineDescriptor withWorkspaceBound(boolean isWorkspaceBound);
+    void setMemorySize(int mem);
+
+    MachineDescriptor withMemorySize(int mem);
+
+    @Override
+    MachineRecipe getRecipe();
+
+    void setRecipe(MachineRecipe recipe);
+
+    MachineDescriptor withRecipe(MachineRecipe recipe);
 
     @Override
     MachineDescriptor withLinks(List<Link> links);
