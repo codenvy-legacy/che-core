@@ -67,6 +67,19 @@ public class MachineRegistry {
     }
 
     /**
+     * Get all launched machines of specific workspace
+     */
+    public synchronized Instance getDevMachine(String workspaceId) throws NotFoundException, MachineException {
+        for (Instance instance : instances.values()) {
+            if (instance.getWorkspaceId().equals(workspaceId) && instance.isWorkspaceBound()) {
+                return instance;
+            }
+        }
+
+        throw new NotFoundException("Dev machine of workspace " + workspaceId + " is not running.");
+    }
+
+    /**
      * Get machine by id
      *
      * @param machineId
