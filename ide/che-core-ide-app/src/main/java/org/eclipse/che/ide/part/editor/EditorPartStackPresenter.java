@@ -222,7 +222,7 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
         closedPart.onClose(new AsyncCallback<Void>() {
             @Override
             public void onFailure(Throwable caught) {
-                Log.error(this.getClass(), "An exception occurs when closing the editor. " + caught.getMessage());
+                Log.error(this.getClass(), "Unexpected error occured when closing the editor. " + caught.getMessage());
             }
 
             @Override
