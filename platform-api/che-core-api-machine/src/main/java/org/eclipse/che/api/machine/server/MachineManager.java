@@ -12,6 +12,7 @@ package org.eclipse.che.api.machine.server;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
@@ -21,7 +22,6 @@ import org.eclipse.che.api.core.util.FileLineConsumer;
 import org.eclipse.che.api.core.util.LineConsumer;
 import org.eclipse.che.api.core.util.WebsocketLineConsumer;
 import org.eclipse.che.api.machine.server.dao.SnapshotDao;
-import org.eclipse.che.api.machine.server.exception.InvalidInstanceSnapshotException;
 import org.eclipse.che.api.machine.server.exception.InvalidRecipeException;
 import org.eclipse.che.api.machine.server.exception.MachineException;
 import org.eclipse.che.api.machine.server.exception.SnapshotException;
@@ -33,9 +33,11 @@ import org.eclipse.che.api.machine.server.spi.InstanceKey;
 import org.eclipse.che.api.machine.server.spi.InstanceProcess;
 import org.eclipse.che.api.machine.server.spi.InstanceProvider;
 import org.eclipse.che.api.machine.shared.Command;
+import org.eclipse.che.api.machine.shared.Machine;
 import org.eclipse.che.api.machine.shared.MachineStatus;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
 import org.eclipse.che.api.machine.shared.Recipe;
+import org.eclipse.che.api.machine.shared.dto.MachineCreationMetadata;
 import org.eclipse.che.api.machine.shared.dto.RecipeMachineCreationMetadata;
 import org.eclipse.che.api.machine.shared.dto.SnapshotMachineCreationMetadata;
 import org.eclipse.che.api.machine.shared.dto.event.MachineProcessEvent;
@@ -113,46 +115,40 @@ public class MachineManager {
      *         if recipe is not valid
      * @throws NotFoundException
      *         if machine type from recipe is unsupported
+     * @throws NotFoundException
+     *         if no instance provider implementation found for provided machine type
      * @throws MachineException
      *         if any other exception occurs during starting
      */
     public MachineImpl create(final RecipeMachineCreationMetadata machineCreationMetadata)
-            throws MachineException, NotFoundException {
+            throws MachineException, NotFoundException, UnsupportedRecipeException {
         final MachineRecipe machineRecipe = machineCreationMetadata.getRecipe();
         final InstanceProvider instanceProvider = machineInstanceProviders.getProvider(machineCreationMetadata.getType());
         final String recipeType = machineRecipe.getType();
 
-        if (instanceProvider.getRecipeTypes().contains(recipeType)) {
-
-            return createMachine(machineCreationMetadata.getType(),
-                                 machineRecipe,
-                                 machineCreationMetadata.getWorkspaceId(),
-                                 machineCreationMetadata.isBindWorkspace(),
-                                 machineCreationMetadata.getDisplayName(),
-                                 machineCreationMetadata.getOutputChannel(),
-                                 machineCreationMetadata.getMemorySize(),
-                                 new InstanceCreator() {
-                                     @Override
-                                     public Instance createInstance(String machineId,
-                                                                    int machineMemSizeMB,
-                                                                    String creator,
-                                                                    String workspaceId,
-                                                                    boolean isBindWorkspace,
-                                                                    String displayName,
-                                                                    LineConsumer machineLogger) throws MachineException {
-                                         return instanceProvider.createInstance(machineRecipe,
-                                                                                machineId,
-                                                                                creator,
-                                                                                workspaceId,
-                                                                                isBindWorkspace,
-                                                                                displayName,
-                                                                                machineMemSizeMB,
-                                                                                machineLogger);
-                                     }
-                                 });
-        } else {
+        if (!instanceProvider.getRecipeTypes().contains(recipeType)) {
             throw new UnsupportedRecipeException(String.format("Recipe of type '%s' is not supported", recipeType));
         }
+
+        return createMachine(machineCreationMetadata.getType(),
+                             machineCreationMetadata.getRecipe(),
+                             machineCreationMetadata.getWorkspaceId(),
+                             machineCreationMetadata.isBindWorkspace(),
+                             machineCreationMetadata,
+                             new MachineInstanceCreator() {
+                                 @Override
+                                 public Instance createInstance(Machine machine, LineConsumer machineLogger) throws ApiException {
+
+                                     return instanceProvider.createInstance(machine.getRecipe(),
+                                                                            machine.getId(),
+                                                                            machine.getOwner(),
+                                                                            machine.getWorkspaceId(),
+                                                                            machine.isWorkspaceBound(),
+                                                                            machine.getDisplayName(),
+                                                                            machine.getMemorySize(),
+                                                                            machineLogger);
+                                 }
+                             });
     }
 
     /**
@@ -163,15 +159,14 @@ public class MachineManager {
      * @return new machine
      * @throws NotFoundException
      *         if snapshot not found
-     * @throws InvalidInstanceSnapshotException
-     *         if instance pointed by snapshot is not valid
+     * @throws NotFoundException
+     *         if no instance provider implementation found for provided machine type
      * @throws SnapshotException
      *         if error occurs on retrieving snapshot information
      * @throws MachineException
      *         if any other exception occurs during starting
      */
-    public MachineImpl create(final SnapshotMachineCreationMetadata machineCreationMetadata)
-            throws NotFoundException, MachineException, SnapshotException {
+    public MachineImpl create(final SnapshotMachineCreationMetadata machineCreationMetadata) throws NotFoundException, SnapshotException, MachineException {
         final SnapshotImpl snapshot = getSnapshot(machineCreationMetadata.getSnapshotId());
         final InstanceProvider instanceProvider = machineInstanceProviders.getProvider(snapshot.getType());
 
@@ -179,27 +174,19 @@ public class MachineManager {
                              snapshot.getRecipe(),
                              snapshot.getWorkspaceId(),
                              snapshot.isWorkspaceBound(),
-                             machineCreationMetadata.getDisplayName(),
-                             machineCreationMetadata.getOutputChannel(),
-                             machineCreationMetadata.getMemorySize(),
-                             new InstanceCreator() {
+                             machineCreationMetadata,
+                             new MachineInstanceCreator() {
                                  @Override
-                                 public Instance createInstance(String machineId,
-                                                                int machineMemSizeMB,
-                                                                String creator,
-                                                                String workspaceId,
-                                                                boolean isBindWorkspace,
-                                                                String displayName,
-                                                                LineConsumer machineLogger) throws MachineException, NotFoundException {
+                                 public Instance createInstance(Machine machine, LineConsumer machineLogger) throws ApiException {
 
                                      return instanceProvider.createInstance(snapshot.getInstanceKey(),
-                                                                            machineId,
-                                                                            creator,
-                                                                            workspaceId,
-                                                                            isBindWorkspace,
-                                                                            displayName,
-                                                                            snapshot.getRecipe(),
-                                                                            machineMemSizeMB,
+                                                                            machine.getId(),
+                                                                            machine.getOwner(),
+                                                                            machine.getWorkspaceId(),
+                                                                            machine.isWorkspaceBound(),
+                                                                            machine.getDisplayName(),
+                                                                            machine.getRecipe(),
+                                                                            machine.getMemorySize(),
                                                                             machineLogger);
                                  }
                              });
@@ -209,26 +196,23 @@ public class MachineManager {
                                       Recipe recipe,
                                       final String workspaceId,
                                       final boolean isWorkspaceBound,
-                                      final String displayName,
-                                      String outputChannel,
-                                      final int memorySizeMB,
-                                      final InstanceCreator instanceCreator) throws MachineException {
+                                      final MachineCreationMetadata creationMetadata,
+                                      final MachineInstanceCreator instanceCreator) throws MachineException, NotFoundException {
         final String machineId = generateMachineId();
         final String creator = EnvironmentContext.getCurrent().getUser().getId();
 
         createMachineLogsDir(machineId);
-        final LineConsumer machineLogger = getMachineLogger(machineId, outputChannel);
+        final LineConsumer machineLogger = getMachineLogger(machineId, creationMetadata.getOutputChannel());
 
-        final int machineRamSize = memorySizeMB != 0 ? memorySizeMB : defaultMachineMemorySizeMB;
+        final int machineRamSize = creationMetadata.getMemorySize() != 0 ? creationMetadata.getMemorySize() : defaultMachineMemorySizeMB;
 
-        // TODO add memory to machine state
         final MachineImpl machineState = new MachineImpl(machineId,
                                                          machineType,
                                                          recipe,
                                                          workspaceId,
                                                          creator,
                                                          isWorkspaceBound,
-                                                         displayName,
+                                                         creationMetadata.getDisplayName(),
                                                          machineRamSize,
                                                          MachineStatus.CREATING);
 
@@ -243,17 +227,11 @@ public class MachineManager {
                                                        .withEventType(MachineStatusEvent.EventType.CREATING)
                                                        .withMachineId(machineId));
 
-                        final Instance instance = instanceCreator.createInstance(machineId,
-                                                                                 machineRamSize,
-                                                                                 creator,
-                                                                                 workspaceId,
-                                                                                 isWorkspaceBound,
-                                                                                 displayName,
-                                                                                 machineLogger);
-
-                        instance.setStatus(MachineStatus.RUNNING);
+                        final Instance instance = instanceCreator.createInstance(machineState, machineLogger);
 
                         machineRegistry.update(instance);
+
+                        instance.setStatus(MachineStatus.RUNNING);
 
                         eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
                                                        .withEventType(MachineStatusEvent.EventType.RUNNING)
@@ -281,14 +259,8 @@ public class MachineManager {
         }
     }
 
-    private interface InstanceCreator {
-        Instance createInstance(String machineId,
-                                int machineMemSizeMB,
-                                String creator,
-                                String workspaceId,
-                                boolean isBindWorkspace,
-                                String displayName,
-                                LineConsumer machineLogger) throws MachineException, NotFoundException;
+    private interface MachineInstanceCreator {
+        Instance createInstance(Machine machine, LineConsumer machineLogger) throws ApiException;
     }
 
     /**

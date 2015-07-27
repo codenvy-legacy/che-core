@@ -51,12 +51,15 @@ public class MachineRegistry {
     }
 
     public synchronized MachineImpl getState(String machineId) throws NotFoundException, MachineException {
-        final MachineImpl state = states.get(machineId);
+        MachineImpl state = states.get(machineId);
         if (state == null) {
-            throw new NotFoundException("Machine " + machineId + " is not found");
-        } else {
-            return state;
+            if (instances.get(machineId) == null) {
+                throw new NotFoundException("Machine " + machineId + " is not found");
+            }
+            state = getState(instances.get(machineId));
         }
+
+        return state;
     }
 
     /**

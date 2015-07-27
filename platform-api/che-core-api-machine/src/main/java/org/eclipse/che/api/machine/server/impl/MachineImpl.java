@@ -10,20 +10,21 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.server.impl;
 
+import org.eclipse.che.api.machine.shared.Machine;
 import org.eclipse.che.api.machine.shared.MachineStatus;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
 import org.eclipse.che.api.machine.shared.Recipe;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * Describe state of machine
  *
  * @author Alexander Garagatyi
  */
-public class MachineImpl {
+public class MachineImpl implements Machine {
     private final String  id;
     private final String  type;
     private final String  owner;
@@ -75,8 +76,8 @@ public class MachineImpl {
         return this.status;
     }
 
-    public Set<ProjectBinding> getProjects() {
-        return Collections.emptySet();
+    public List<ProjectBinding> getProjects() {
+        return Collections.emptyList();
     }
 
     public String getWorkspaceId() {
