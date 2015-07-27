@@ -17,10 +17,39 @@ import org.eclipse.che.api.core.model.machine.Recipe;
  */
 public interface MachineConfig {
 
+    /**
+     * Display name
+     * @return
+     */
     String getName();
 
-    Recipe getRecipe();
+    /**
+     * From where to create this MAchine
+     * (Recipe/Snapshot)
+     * @return
+     */
+    Source getSource();
 
+    //String getRecipeUrl();
+
+    /**
+     * Is workspace bound to machine or not
+     */
     boolean isDev();
+
+    /**
+     * Id of workspace this machine belongs to
+     */
+    String getWorkspaceId();
+
+    /**
+     * Channel of websocket where machine logs should be put
+     */
+    String getOutputChannel();
+
+    /**
+     * Machine type (i.e. "docker")
+     */
+    String getType();
 
 }

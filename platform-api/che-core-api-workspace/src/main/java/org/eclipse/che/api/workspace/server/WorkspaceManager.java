@@ -14,18 +14,17 @@ import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.model.UsersWorkspace;
 import org.eclipse.che.api.core.notification.EventService;
-import org.eclipse.che.api.core.notification.EventSubscriber;
 import org.eclipse.che.api.user.server.dao.MembershipDao;
 import org.eclipse.che.api.user.server.dao.PreferenceDao;
 import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.api.user.server.dao.UserProfileDao;
-import org.eclipse.che.api.user.shared.model.Membership;
 import org.eclipse.che.api.workspace.server.event.AfterCreateWorkspaceEvent;
 import org.eclipse.che.api.workspace.server.event.BeforeCreateWorkspaceEvent;
 import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
 import org.eclipse.che.api.workspace.server.spi.WorkspaceDo;
-import org.eclipse.che.api.workspace.shared.model.Workspace;
+import org.eclipse.che.api.core.model.Workspace;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,19 +58,24 @@ public class WorkspaceManager {
     private final EventService eventService;
     private final MembershipDao membershipDao;
 
+    private final WorkspaceRuntimes workspaceRuntimes;
+
     @Inject
-    public WorkspaceManager(WorkspaceDao workspaceDao, UserDao userDao, UserProfileDao profileDao, PreferenceDao preferenceDao,
-                            final MembershipDao membershipDao, EventService eventService) {
+    public WorkspaceManager(WorkspaceDao workspaceDao, WorkspaceRuntimes workspaceRuntimes, EventService eventService) {
+
+//    public WorkspaceManager(WorkspaceDao workspaceDao, UserDao userDao, UserProfileDao profileDao, PreferenceDao preferenceDao,
+//                            final MembershipDao membershipDao, EventService eventService) {
         this.workspaceDao = workspaceDao;
-        this.userDao = userDao;
-        this.profileDao = profileDao;
-        this.preferenceDao = preferenceDao;
+//        this.userDao = userDao;
+//        this.profileDao = profileDao;
+//        this.preferenceDao = preferenceDao;
         this.eventService = eventService;
-        this.membershipDao = membershipDao;
+//        this.membershipDao = membershipDao;
+        this.workspaceRuntimes = workspaceRuntimes;
 
     }
 
-    public void createWorkspace(final Workspace workspace, final Map<String, String> options) throws ConflictException, ServerException, BadRequestException {
+    public UsersWorkspace createWorkspace(final UsersWorkspace workspace, final String accountId) throws ConflictException, ServerException, BadRequestException {
 
         validateName(workspace.getName());
 
@@ -86,13 +90,13 @@ public class WorkspaceManager {
 
         eventService.publish(new BeforeCreateWorkspaceEvent() {
             @Override
-            public Workspace getWorkspace() {
+            public UsersWorkspace getWorkspace() {
                 return workspace;
             }
 
             @Override
-            public Map<String, String> getOptions() {
-                return options;
+            public String getAccountId() {
+                return accountId;
             }
         });
 
@@ -101,39 +105,45 @@ public class WorkspaceManager {
 
         eventService.publish(new AfterCreateWorkspaceEvent() {
             @Override
-            public Workspace getWorkspace() {
+            public UsersWorkspace getWorkspace() {
                 return workspace;
             }
 
             @Override
-            public Map<String, String> getOptions() {
-                return options;
+            public String getAccountId() {
+                return accountId;
             }
-
         });
 
         LOG.info("EVENT#workspace-created# WS#{}# WS-ID#{}# USER#{}#", workspace.getName(), workspace.getId(),
                 EnvironmentContext.getCurrent().getUser().getId());
 
+        return workspace;
+
     }
 
-    public WorkspaceDo getWorkspaceById(String id) throws NotFoundException, ServerException {
+    public UsersWorkspace getWorkspace(String workspaceId) throws NotFoundException, ServerException {
 
-        final WorkspaceDo workspace = workspaceDao.getById(id);
+        UsersWorkspace workspace = this.workspaceRuntimes.get(workspaceId);
+        if(workspace != null)
+            return workspace;
+        else
+            return workspaceDao.get(workspaceId);
 
-        // tmp_workspace_cloned_from_private_repo - gives information
-        // whether workspace was clone from private repository or not. It can be use
-        // by temporary workspace sharing filter for user that are not workspace/admin
-        // so we need that property here.
-        // PLZ DO NOT REMOVE!!!!
-        final Map<String, String> attributes = workspace.getAttributes();
-        if (attributes.containsKey("allowAnyoneAddMember")) {
-            workspace.setAttributes(singletonMap("allowAnyoneAddMember", attributes.get("allowAnyoneAddMember")));
-        } else {
-            attributes.clear();
-        }
 
-        return workspace;
+
+//        // tmp_workspace_cloned_from_private_repo - gives information
+//        // whether workspace was clone from private repository or not. It can be use
+//        // by temporary workspace sharing filter for user that are not workspace/admin
+//        // so we need that property here.
+//        // PLZ DO NOT REMOVE!!!!
+//        final Map<String, String> attributes = workspace.getAttributes();
+//        if (attributes.containsKey("allowAnyoneAddMember")) {
+//            workspace.setAttributes(singletonMap("allowAnyoneAddMember", attributes.get("allowAnyoneAddMember")));
+//        } else {
+//            attributes.clear();
+//        }
+
 
     }
 
@@ -212,7 +222,7 @@ public class WorkspaceManager {
 
     private boolean workspaceExists(String name) throws ServerException {
         try {
-            workspaceDao.getByName(name);
+            workspaceDao.get(name);
         } catch (NotFoundException nfEx) {
             return false;
         }

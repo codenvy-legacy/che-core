@@ -12,24 +12,23 @@ package org.eclipse.che.api.workspace.shared.dto2;
 
 import com.wordnik.swagger.annotations.ApiModel;
 import com.wordnik.swagger.annotations.ApiModelProperty;
+import org.eclipse.che.api.core.model.UsersWorkspace;
+import org.eclipse.che.api.core.model.workspace.Command;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
-import org.eclipse.che.api.user.shared.model.Membership;
-import org.eclipse.che.api.workspace.shared.model.Command;
-import org.eclipse.che.api.workspace.shared.model.Environment;
-import org.eclipse.che.api.workspace.shared.model.ProjectConfig;
-import org.eclipse.che.api.workspace.shared.model.Workspace;
+import org.eclipse.che.api.core.model.Environment;
+import org.eclipse.che.api.core.model.ProjectConfig;
+import org.eclipse.che.api.core.model.Workspace;
 import org.eclipse.che.dto.shared.DTO;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author andrew00x
  */
 @DTO
 @ApiModel(value = "Information about workspace")
-public interface WorkspaceDto extends Workspace {
+public interface WorkspaceDto extends UsersWorkspace {
     @ApiModelProperty(value = "Identifier of a workspace in a system", required = true, position = 1)
     @Override
     String getId();
@@ -45,14 +44,14 @@ public interface WorkspaceDto extends Workspace {
     void setName(String name);
 
     WorkspaceDto withName(String name);
-
-    void setTemporary(boolean temporary);
-
-    @ApiModelProperty(value = "Information on whether or not the workspace is temporary", required = true, position = 3, allowableValues = "true,false")
-    @Override
-    boolean isTemporary();
-
-    WorkspaceDto withTemporary(boolean temporary);
+//
+//    void setTemporary(boolean temporary);
+//
+//    @ApiModelProperty(value = "Information on whether or not the workspace is temporary", required = true, position = 3, allowableValues = "true,false")
+//    @Override
+//    boolean isTemporary();
+//
+//    WorkspaceDto withTemporary(boolean temporary);
 
 //    @Deprecated
 //    @ApiModelProperty(value ="ID of an account", required = true, position = 4)
@@ -72,8 +71,8 @@ public interface WorkspaceDto extends Workspace {
 
     WorkspaceDto withAttributes(Map<String, String> attributes);
 
-    @Override
-    Set<Membership> getMembers();
+//    @Override
+//    Set<Membership> getMembers();
 
     @Override
     List<Command> getCommands();

@@ -75,7 +75,7 @@ public class ExtensionManagerViewImpl implements ExtensionManagerView {
 //            }
 //
 //            @Override
-//            public void render(Cell.Context context, ExtensionDescription object, SafeHtmlBuilder sb) {
+//            public void render(Cell.MachineContext context, ExtensionDescription object, SafeHtmlBuilder sb) {
 //                sb.appendHtmlConstant(
 //                        "<div id=\"" + UIObject.DEBUG_ID_PREFIX + "window-preferences-extensions-row-" + context.getIndex() + "\">");
 //                super.render(context, object, sb);

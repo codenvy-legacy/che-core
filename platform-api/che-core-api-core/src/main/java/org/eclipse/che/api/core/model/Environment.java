@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.core.model;
 
-import org.eclipse.che.api.core.model.MachineConfig;
+import org.eclipse.che.api.core.model.machine.MachineConfig;
 
 import java.util.List;
 

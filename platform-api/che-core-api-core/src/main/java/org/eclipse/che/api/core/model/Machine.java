@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.core.model;
 
-
-import model.machine.Config;
+import org.eclipse.che.api.core.model.machine.MachineConfig;
+import org.eclipse.che.api.core.model.machine.Server;
 
 import java.util.Map;
 
@@ -20,7 +20,7 @@ import java.util.Map;
  *
  * @author gazarenkov
  */
-public interface Machine {
+public interface Machine extends MachineConfig {
 
     /**
      * Unique ID of this machine
@@ -30,7 +30,7 @@ public interface Machine {
     /**
      * Machine type (i.e. "docker")
      */
-    String getType();
+    //String getType();
 
     /**
      * Identifier of user who launched this machine.
@@ -52,7 +52,12 @@ public interface Machine {
     /**
      * Is workspace bound to machine or not
      */
-    boolean isDev();
+    //boolean isDev();
+
+    /**
+     * Channel of websocket where machine logs should be put
+     */
+    String getOutputChannel();
 
     /**
      * Machine specific metadata
@@ -60,12 +65,9 @@ public interface Machine {
     //InstanceMetadata getMetadata() throws MachineException;
     Map<String, String> getProperties();
 
-    String getDisplayName();
-
-    Config getConfig();
-
     /**
      * Returns mapping of exposed ports to {link Server}
      */
-    //Map<String, Server> getServers() throws MachineException;
+    Map<String, Server> getServers();// throws MachineException;
+
 }

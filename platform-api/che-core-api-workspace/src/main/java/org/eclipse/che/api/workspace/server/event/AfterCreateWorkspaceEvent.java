@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server.event;
 
+import org.eclipse.che.api.core.model.UsersWorkspace;
 import org.eclipse.che.api.core.notification.EventOrigin;
-import org.eclipse.che.api.workspace.shared.model.Workspace;
 
 import java.util.Map;
 
@@ -22,9 +22,9 @@ import java.util.Map;
 @EventOrigin("workspace")
 public interface AfterCreateWorkspaceEvent  {
 
-    Workspace getWorkspace();
+    UsersWorkspace getWorkspace();
 
-    Map<String, String> getOptions();
+    String getAccountId();
 
 //    public AfterCreateWorkspaceEvent(Workspace workspace, Map<String, String> options) {
 //        super(ChangeType.CREATED, workspace);

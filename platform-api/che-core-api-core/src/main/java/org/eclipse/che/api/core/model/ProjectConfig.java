@@ -10,6 +10,10 @@
  *******************************************************************************/
 package org.eclipse.che.api.core.model;
 
+import org.eclipse.che.api.core.model.project.Depot;
+import org.eclipse.che.api.core.model.project.type.Attribute;
+import org.eclipse.che.api.core.model.project.type.ProjectType;
+
 import java.util.List;
 import java.util.Map;
 
@@ -32,5 +36,4 @@ public interface ProjectConfig {
 
     Depot getDepot();
 
-    //...
 }

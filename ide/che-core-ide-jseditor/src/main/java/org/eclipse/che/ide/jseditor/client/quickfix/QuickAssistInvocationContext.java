@@ -16,7 +16,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * Context information for quick fix and quick assist processors.
+ * MachineContext information for quick fix and quick assist processors.
  * <p>
  * This interface can be implemented by clients.</p>
  */

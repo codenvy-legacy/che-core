@@ -1,7 +1,14 @@
 package org.eclipse.che.api.workspace.server;
 
+import org.eclipse.che.api.core.ForbiddenException;
+import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.model.UsersWorkspace;
 import org.eclipse.che.api.core.model.Workspace;
+import org.eclipse.che.api.core.model.WorkspaceConfig;
+import org.eclipse.che.api.workspace.server.spi.WorkspaceDo;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -12,28 +19,44 @@ import java.util.List;
 public class WorkspaceRuntimes {
 
 
-    public void start(Workspace ws, String userId) {
+    public Workspace start(WorkspaceDo ws) throws ForbiddenException, NotFoundException, ServerException {
+
+        return null;
 
     }
 
-    public void join(String workspaceId, String userId) {
+
+    public boolean share(String id, String userId) throws ForbiddenException, NotFoundException, ServerException {
+
+        return true;
 
     }
 
-    public void stop(String idOrName, String userId) {
+    public boolean unshare(String id, String userId) throws ForbiddenException, NotFoundException, ServerException {
+
+        return true;
 
     }
 
-    public void stop(String idOrName) {
+    public void stop(String id) throws ForbiddenException, NotFoundException, ServerException {
+
 
     }
 
-    public Workspace get(String idOrName, String userId) {
+    /**
+     *
+     * @param workspaceId
+     * @return Workspace or null if not found
+     * @throws ServerException
+     */
+    public Workspace get(String workspaceId) throws ServerException {
 
+        return null;
     }
 
-    public List<Workspace> getList(String userId) {
+    public List<Workspace> getList(String userId) throws ForbiddenException, NotFoundException, ServerException {
 
+        return new ArrayList<>();
     }
 
 

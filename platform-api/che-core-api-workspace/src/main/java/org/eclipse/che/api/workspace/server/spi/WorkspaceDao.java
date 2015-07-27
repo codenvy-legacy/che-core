@@ -13,7 +13,9 @@ package org.eclipse.che.api.workspace.server.spi;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.workspace.shared.model.Workspace;
+import org.eclipse.che.api.core.model.UsersWorkspace;
+import org.eclipse.che.api.core.model.Workspace;
+import org.eclipse.che.api.core.model.WorkspaceConfig;
 
 
 /**
@@ -34,7 +36,7 @@ public interface WorkspaceDao {
      * @param workspace
      *         POJO representation of workspace entity
      */
-    void create(Workspace workspace) throws ConflictException, ServerException;
+    void create(UsersWorkspace workspace) throws ConflictException, ServerException;
 
     /**
      * Updates already present in persistent layer workspace.
@@ -42,7 +44,7 @@ public interface WorkspaceDao {
      * @param workspace
      *         POJO representation of workspace entity
      */
-    void update(Workspace workspace) throws NotFoundException,ConflictException, ServerException;
+    void update(WorkspaceConfig workspace) throws NotFoundException,ConflictException, ServerException;
 
     /**
      * Removes workspace from persistent layer.
@@ -61,7 +63,7 @@ public interface WorkspaceDao {
      * @throws org.eclipse.che.api.core.NotFoundException
      *         when workspace doesn't exist
      */
-    WorkspaceDo getById(String id) throws NotFoundException, ServerException;
+    WorkspaceDo get(String id) throws NotFoundException, ServerException;
 
     /**
      * Gets workspace from persistent layer by name.
@@ -72,7 +74,7 @@ public interface WorkspaceDao {
      * @throws org.eclipse.che.api.core.NotFoundException
      *         when workspace doesn't exist
      */
-    WorkspaceDo getByName(String name) throws NotFoundException, ServerException;
+    WorkspaceDo get(String name, String owner) throws NotFoundException, ServerException;
 
 
 }
