@@ -17,6 +17,7 @@ import org.eclipse.che.ide.CoreLocalizationConstant;
 
 import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.notification.NotificationManager;
+import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.api.project.tree.generic.FileNode;
 import org.eclipse.che.ide.api.project.tree.generic.FolderNode;
 import org.eclipse.che.ide.api.project.tree.generic.ProjectNode;
@@ -92,7 +93,9 @@ public class DeleteNodeHandler {
                 if (hasRunningProcesses) {
                     dialogFactory.createMessageDialog("", localization.stopProcessesBeforeDeletingProject(), null).show();
                 } else {
+       */
                     askForDeletingNode(projectNodeToDelete);
+       /*
                 }
             }
 
@@ -213,14 +216,16 @@ public class DeleteNodeHandler {
      * @return {@link String} content
      */
     private String getDialogQuestion(StorableNode node) {
+        final String name = node.getName();
         if (node instanceof FileNode) {
-            return localization.deleteFileDialogQuestion(node.getName());
+            return localization.deleteFileDialogQuestion(name);
         } else if (node instanceof FolderNode) {
-            return localization.deleteFolderDialogQuestion(node.getName());
+            return localization.deleteFolderDialogQuestion(name);
         } else if (node instanceof ProjectNode || node instanceof ProjectListStructure.ProjectNode) {
-            return localization.deleteProjectDialogQuestion(node.getName());
+            TreeNode parent = node.getParent().getParent();
+            return  (parent == null) ? localization.deleteProjectDialogQuestion(name) : localization.deleteModuleDialogQuestion(name);
         }
-        return localization.deleteNodeDialogQuestion(node.getName());
+        return localization.deleteNodeDialogQuestion(name);
     }
 
     public void deleteNodes(final List<StorableNode> nodes) {
