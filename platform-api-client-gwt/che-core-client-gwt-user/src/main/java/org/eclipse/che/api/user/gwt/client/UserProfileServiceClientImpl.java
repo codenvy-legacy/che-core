@@ -10,15 +10,14 @@
  *******************************************************************************/
 package org.eclipse.che.api.user.gwt.client;
 
+import com.google.inject.Inject;
+
 import org.eclipse.che.api.user.shared.dto.ProfileDescriptor;
 import org.eclipse.che.ide.json.JsonHelper;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.rest.RestContext;
-
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
 import javax.annotation.Nonnull;
 import java.util.Map;
@@ -103,7 +102,7 @@ public class UserProfileServiceClientImpl implements UserProfileServiceClient {
 
     /** {@inheritDoc} */
     @Override
-    public void updatePreferences(@Nonnull Map<String, String> update, AsyncRequestCallback<ProfileDescriptor> callback) {
+    public void updatePreferences(@Nonnull Map<String, String> update, AsyncRequestCallback<Map<String, String>> callback) {
         final String data = JsonHelper.toJson(update);
         asyncRequestFactory.createPostRequest(PREFS, null)
                            .header(ACCEPT, APPLICATION_JSON)

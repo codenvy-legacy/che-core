@@ -10,14 +10,14 @@
  *******************************************************************************/
 package org.eclipse.che.ide.preferences;
 
-import org.eclipse.che.api.user.gwt.client.UserProfileServiceClient;
-import org.eclipse.che.api.user.shared.dto.ProfileDescriptor;
-import org.eclipse.che.ide.api.preferences.PreferencesManager;
-import org.eclipse.che.ide.rest.AsyncRequestCallback;
-import org.eclipse.che.ide.util.loging.Log;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
+import org.eclipse.che.api.user.gwt.client.UserProfileServiceClient;
+import org.eclipse.che.ide.api.preferences.PreferencesManager;
+import org.eclipse.che.ide.rest.AsyncRequestCallback;
+import org.eclipse.che.ide.util.loging.Log;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -62,13 +62,13 @@ public class PreferencesManagerImpl implements PreferencesManager {
 
     /** {@inheritDoc} */
     @Override
-    public void flushPreferences(final AsyncCallback<ProfileDescriptor> callback) {
+    public void flushPreferences(final AsyncCallback<Map<String, String>> callback) {
         Map<String, String> attributes = new HashMap<String, String>();
         attributes.putAll(changedPreferences);
 
-        userProfileService.updatePreferences(attributes, new AsyncRequestCallback<ProfileDescriptor>() {
+        userProfileService.updatePreferences(attributes, new AsyncRequestCallback<Map<String, String>>() {
             @Override
-            protected void onSuccess(ProfileDescriptor result) {
+            protected void onSuccess(Map<String, String> result) {
                 persistedPreferences.putAll(changedPreferences);
                 changedPreferences.clear();
                 callback.onSuccess(result);

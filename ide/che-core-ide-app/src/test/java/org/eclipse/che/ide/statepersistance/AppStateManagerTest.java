@@ -261,7 +261,7 @@ public class AppStateManagerTest {
 
         verify(dtoFactory).toJson(appState);
         preferencesManager.setValue(PREFERENCE_PROPERTY_NAME, SERIALIZED_STATE);
-        verify(preferencesManager).flushPreferences(Matchers.<AsyncCallback<ProfileDescriptor>>anyObject());
+        verify(preferencesManager).flushPreferences(Matchers.<AsyncCallback<Map<String, String>>>anyObject());
     }
 
     @Test
@@ -277,7 +277,7 @@ public class AppStateManagerTest {
 
         verify(dtoFactory).toJson(appState);
         verify(preferencesManager).setValue(anyString(), eq(SERIALIZED_STATE));
-        verify(preferencesManager).flushPreferences(Matchers.<AsyncCallback<ProfileDescriptor>>anyObject());
+        verify(preferencesManager).flushPreferences(Matchers.<AsyncCallback<Map<String, String>>>anyObject());
     }
 
     @Test
@@ -308,7 +308,7 @@ public class AppStateManagerTest {
         verify(currentProject, times(2)).getRootProject();
         verify(dtoFactory).toJson(appState);
         verify(preferencesManager).setValue(PREFERENCE_PROPERTY_NAME, SERIALIZED_STATE);
-        verify(preferencesManager).flushPreferences(Matchers.<AsyncCallback<ProfileDescriptor>>anyObject());
+        verify(preferencesManager).flushPreferences(Matchers.<AsyncCallback<Map<String, String>>>anyObject());
 
         verify(c1).getActions(eq(PROJECT_PATH));
         verify(c2).getActions(eq(PROJECT_PATH));
@@ -440,6 +440,6 @@ public class AppStateManagerTest {
 
         verify(dtoFactory).toJson(appState);
         verify(preferencesManager).setValue(eq(PREFERENCE_PROPERTY_NAME), anyString());
-        verify( preferencesManager).flushPreferences(Matchers.<AsyncCallback<ProfileDescriptor>>anyObject());
+        verify( preferencesManager).flushPreferences(Matchers.<AsyncCallback<Map<String, String>>>anyObject());
     }
 }
