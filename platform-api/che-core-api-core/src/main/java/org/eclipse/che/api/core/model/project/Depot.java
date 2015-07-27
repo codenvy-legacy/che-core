@@ -8,14 +8,18 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.workspace.shared.model;
+package org.eclipse.che.api.core.model.project;
+
+import java.util.Map;
 
 /**
  * @author gazarenkov
  */
-public interface Command {
+public interface Depot {
 
-    String getDisplayName();
+    String getType();
 
-    String getCommandLine();
+    String getLocation();
+
+    Map<String, String> getParameters();
 }

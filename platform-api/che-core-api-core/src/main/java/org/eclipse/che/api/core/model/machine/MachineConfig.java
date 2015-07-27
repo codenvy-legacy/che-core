@@ -8,7 +8,9 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.workspace.shared.model;
+package org.eclipse.che.api.core.model.machine;
+
+import org.eclipse.che.api.core.model.machine.Recipe;
 
 /**
  * @author gazarenkov
@@ -17,7 +19,7 @@ public interface MachineConfig {
 
     String getName();
 
-    String getRecipeUrl();
+    Recipe getRecipe();
 
     boolean isDev();
 

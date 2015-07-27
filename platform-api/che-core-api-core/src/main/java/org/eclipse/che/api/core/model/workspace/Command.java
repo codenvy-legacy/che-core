@@ -8,18 +8,14 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.workspace.shared.model;
+package org.eclipse.che.api.core.model.workspace;
 
 /**
  * @author gazarenkov
  */
-public interface ProjectConfig {
+public interface Command {
 
-    String getName();
+    String getDisplayName();
 
-    String getPath();
-
-    String getDescription();
-
-    //...
+    String getCommandLine();
 }

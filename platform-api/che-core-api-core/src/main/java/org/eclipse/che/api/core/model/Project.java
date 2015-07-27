@@ -8,17 +8,34 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.workspace.shared.model;
+package org.eclipse.che.api.core.model;
+
+import model.project.Depot;
+import model.project.fs.Folder;
+import model.project.type.Attribute;
+import model.project.type.ProjectType;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author gazarenkov
  */
-public interface Environment {
+public interface Project {
 
     String getName();
 
-    List<? extends MachineConfig> getMachineConfigs();
+    String getPath();
 
+    String getDescription();
+
+    ProjectType getType();
+
+    List<? extends ProjectType> getMixinTypes();
+
+    Map<String, List<? extends Attribute>> getAttributes();
+
+    Depot getDepot();
+
+    Folder getRootFolder();
 }

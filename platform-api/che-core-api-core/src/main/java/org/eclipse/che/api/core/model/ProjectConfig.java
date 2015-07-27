@@ -8,37 +8,29 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.workspace.shared.model;
-
-import org.eclipse.che.api.user.shared.model.Membership;
+package org.eclipse.che.api.core.model;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
 
 /**
  * @author gazarenkov
  */
-public interface Workspace {
-    String getId();
+public interface ProjectConfig {
 
     String getName();
 
-    void setName(String name);
+    String getPath();
 
-    boolean isTemporary();
+    String getDescription();
 
-    Set<? extends Membership> getMembers();
+    ProjectType getType();
 
-    Map<String, String> getAttributes();
+    List<? extends ProjectType> getMixinTypes();
 
-    List<? extends Command> getCommands();
+    Map<String, List<? extends Attribute>> getAttributes();
 
-    List<? extends ProjectConfig> getProjects();
+    Depot getDepot();
 
-    Environment getDefaultEnvironment();
-
-    Map <String, ? extends Environment> getEnvironments();
-
+    //...
 }

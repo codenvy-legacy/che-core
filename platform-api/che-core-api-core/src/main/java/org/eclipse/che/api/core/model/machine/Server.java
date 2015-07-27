@@ -8,24 +8,27 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.workspace.shared.model;
+package org.eclipse.che.api.core.model.machine;
 
 /**
- * Recipe to create new {@link org.eclipse.che.api.machine.server.spi.Instance}.
+ * Provides description of the Che server in machine
  *
- * @author Eugene Voevodin
+ * @author gazarenkov
+ * @author Alexander Garagatyi
  */
-public interface Recipe {
+public interface Server {
+    /**
+     * Reference to this Che server
+     */
+    String getRef();
 
     /**
-     * Returns recipe type (i.e. 'Dockerfile')
+     * Address of the server in form <b>host:port</b>
      */
-    String getType();
+    String getAddress();
 
     /**
-     * Returns recipe script, which is used to instantiate new {@link org.eclipse.che.api.machine.server.spi.Instance}
+     * Url of the server, e.g. http://localhost:8080
      */
-    String getScript();
-
-
+    String getUrl();
 }
