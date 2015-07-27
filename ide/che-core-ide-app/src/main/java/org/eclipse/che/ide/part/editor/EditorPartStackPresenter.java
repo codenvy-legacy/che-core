@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.part.editor;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
@@ -40,6 +41,7 @@ import java.util.Map;
 
 import static org.eclipse.che.ide.api.editor.EditorWithErrors.EditorState.ERROR;
 import static org.eclipse.che.ide.api.editor.EditorWithErrors.EditorState.WARNING;
+import org.eclipse.che.ide.util.loging.Log;
 
 /**
  * EditorPartStackPresenter is a special PartStackPresenter that is shared among all
@@ -207,8 +209,7 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
     /** {@inheritDoc} */
     @Override
     public void onTabClose(@Nonnull TabItem tab) {
-        PartPresenter closedPart = parts.get(tab);
-
+        final PartPresenter closedPart = parts.get(tab);
         view.removeTab(closedPart);
 
         parts.remove(tab);
@@ -217,6 +218,17 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
         removeItemFromList(tab);
 
         activePart = partsOrder.isEmpty() ? null : partsOrder.getLast();
+
+        closedPart.onClose(new AsyncCallback<Void>() {
+            @Override
+            public void onFailure(Throwable caught) {
+                Log.error(this.getClass(), "An exception occurs when closing the editor. " + caught.getMessage());
+            }
+
+            @Override
+            public void onSuccess(Void result) {
+            }
+        });
     }
 
     /** {@inheritDoc} */
