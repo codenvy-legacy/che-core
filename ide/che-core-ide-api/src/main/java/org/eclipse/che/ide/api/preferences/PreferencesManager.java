@@ -10,8 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.preferences;
 
-import org.eclipse.che.api.user.shared.dto.ProfileDescriptor;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+
+import java.util.Map;
 
 
 /**
@@ -46,5 +47,5 @@ public interface PreferencesManager {
      *
      * @param callback
      */
-    void flushPreferences(AsyncCallback<ProfileDescriptor> callback);
+    void flushPreferences(AsyncCallback<Map<String, String>> callback);
 }
