@@ -11,7 +11,6 @@
 package org.eclipse.che.api.core.model.workspace;
 
 import org.eclipse.che.api.core.model.machine.MachineConfig;
-import org.eclipse.che.api.core.model.machine.Recipe;
 
 import java.util.List;
 
@@ -21,8 +20,6 @@ import java.util.List;
 public interface Environment {
 
     String getName();
-
-    Recipe getRecipe();
 
     List<? extends MachineConfig> getMachineConfigs();
 }

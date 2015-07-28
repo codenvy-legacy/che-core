@@ -35,7 +35,7 @@ public interface WorkspaceDao {
      * @param workspace
      *         POJO representation of workspace entity
      */
-    WorkspaceDo create(UsersWorkspace workspace) throws ConflictException, ServerException;
+    UsersWorkspace create(UsersWorkspace workspace) throws ConflictException, ServerException;
 
     /**
      * Updates already present in persistent layer workspace.
@@ -43,7 +43,7 @@ public interface WorkspaceDao {
      * @param workspace
      *         POJO representation of workspace entity
      */
-    WorkspaceDo update(WorkspaceConfig workspace) throws NotFoundException,ConflictException, ServerException;
+    UsersWorkspace update(UsersWorkspace workspace) throws NotFoundException,ConflictException, ServerException;
 
     /**
      * Removes workspace from persistent layer.
@@ -62,7 +62,7 @@ public interface WorkspaceDao {
      * @throws org.eclipse.che.api.core.NotFoundException
      *         when workspace doesn't exist
      */
-    WorkspaceDo get(String id) throws NotFoundException, ServerException;
+    UsersWorkspace get(String id) throws NotFoundException, ServerException;
 
     /**
      * Gets workspace from persistent layer by name.
@@ -73,7 +73,5 @@ public interface WorkspaceDao {
      * @throws org.eclipse.che.api.core.NotFoundException
      *         when workspace doesn't exist
      */
-    WorkspaceDo get(String name, String owner) throws NotFoundException, ServerException;
-
-
+    UsersWorkspace get(String name, String owner) throws NotFoundException, ServerException;
 }

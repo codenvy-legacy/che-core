@@ -20,7 +20,7 @@ import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.workspace.server.event.AfterCreateWorkspaceEvent;
 import org.eclipse.che.api.workspace.server.event.BeforeCreateWorkspaceEvent;
 import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
-import org.eclipse.che.api.workspace.server.spi.WorkspaceDo;
+import org.eclipse.che.api.workspace.server.spi.UserWorkspaceImpl;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,30 +46,20 @@ public class WorkspaceManager {
 
 
     private final WorkspaceDao workspaceDao;
-    //    private final UserDao userDao;
-//    private final UserProfileDao profileDao;
-//    private final PreferenceDao preferenceDao;
     private final EventService eventService;
-//    private final MembershipDao membershipDao;
 
     private final WorkspaceRuntimes workspaceRuntimes;
 
     @Inject
     public WorkspaceManager(WorkspaceDao workspaceDao, WorkspaceRuntimes workspaceRuntimes, EventService eventService) {
 
-//    public WorkspaceManager(WorkspaceDao workspaceDao, UserDao userDao, UserProfileDao profileDao, PreferenceDao preferenceDao,
-//                            final MembershipDao membershipDao, EventService eventService) {
         this.workspaceDao = workspaceDao;
-//        this.userDao = userDao;
-//        this.profileDao = profileDao;
-//        this.preferenceDao = preferenceDao;
         this.eventService = eventService;
-//        this.membershipDao = membershipDao;
         this.workspaceRuntimes = workspaceRuntimes;
 
     }
 
-    public WorkspaceDo createWorkspace(final UsersWorkspace workspace, final String accountId)
+    public UsersWorkspace createWorkspace(final WorkspaceConfig workspace, final String accountId)
             throws ConflictException, ServerException, BadRequestException {
 
         validateName(workspace.getName());
@@ -96,7 +86,7 @@ public class WorkspaceManager {
         });
 
 
-        WorkspaceDo newWorkspace = workspaceDao.create(workspace);
+        UserWorkspaceImpl newWorkspace = workspaceDao.create(workspace);
 
         eventService.publish(new AfterCreateWorkspaceEvent() {
             @Override
@@ -118,7 +108,7 @@ public class WorkspaceManager {
     }
 
 
-    public WorkspaceDo updateWorkspace(String id, final WorkspaceConfig workspace) throws ConflictException, ServerException,
+    public UserWorkspaceImpl updateWorkspace(String id, final WorkspaceConfig workspace) throws ConflictException, ServerException,
             BadRequestException, NotFoundException {
 
         validateName(workspace.getName());
@@ -137,7 +127,7 @@ public class WorkspaceManager {
 
         // TODO before?
 
-        WorkspaceDo updated = workspaceDao.update(workspace);
+        UserWorkspaceImpl updated = workspaceDao.update(workspace);
 
         // TODO after?
 
@@ -161,7 +151,7 @@ public class WorkspaceManager {
 
     }
 
-    public WorkspaceDo getWorkspace(String workspaceId) throws NotFoundException, ServerException {
+    public UserWorkspaceImpl getWorkspace(String workspaceId) throws NotFoundException, ServerException {
 
 //        UsersWorkspace workspace = this.workspaceRuntimes.get(workspaceId);
 //        if(workspace != null)
@@ -191,7 +181,7 @@ public class WorkspaceManager {
     }
 
 
-    public WorkspaceDo getWorkspace(String workspaceName, String owner) throws NotFoundException, ServerException,
+    public UserWorkspaceImpl getWorkspace(String workspaceName, String owner) throws NotFoundException, ServerException,
             BadRequestException {
 
         requiredNotNull(workspaceName, "Workspace name");

@@ -4,7 +4,7 @@ import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.workspace.RuntimeWorkspace;
-import org.eclipse.che.api.workspace.server.spi.WorkspaceDo;
+import org.eclipse.che.api.workspace.server.spi.UserWorkspaceImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +17,7 @@ import java.util.List;
 public class WorkspaceRuntimes {
 
 
-    public RuntimeWorkspace start(WorkspaceDo ws) throws ForbiddenException, NotFoundException, ServerException {
+    public RuntimeWorkspace start(UserWorkspaceImpl ws) throws ForbiddenException, NotFoundException, ServerException {
 
         return null;
 

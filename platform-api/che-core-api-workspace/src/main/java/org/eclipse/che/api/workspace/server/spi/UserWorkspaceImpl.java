@@ -13,7 +13,7 @@ import java.util.Map;
 /**
  * @author gazarenkov
  */
-public class WorkspaceDo implements UsersWorkspace {
+public class UserWorkspaceImpl implements UsersWorkspace {
 
     private final String                   id;
     private       String                   name;
@@ -25,9 +25,9 @@ public class WorkspaceDo implements UsersWorkspace {
     private final Map<String, Environment> environments;
     private       String                   defaultEnvironment;
 
-    public WorkspaceDo(String id, String name, String owner, Map<String, String> attributes,
-                       List<Command> commands, List<ProjectConfig> projects,
-                       Map<String, Environment> environments, String defaultEnvironment) {
+    public UserWorkspaceImpl(String id, String name, String owner, Map<String, String> attributes,
+                             List<Command> commands, List<ProjectConfig> projects,
+                             Map<String, Environment> environments, String defaultEnvironment) {
         this.id = id;
         this.name = name;
         this.owner = owner;

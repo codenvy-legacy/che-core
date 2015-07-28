@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.api.core.model.machine;
 
-import org.eclipse.che.api.core.model.machine.Recipe;
-
 /**
  * @author gazarenkov
  */
@@ -28,9 +26,7 @@ public interface MachineConfig {
      * (Recipe/Snapshot)
      * @return
      */
-    Source getSource();
-
-    //String getRecipeUrl();
+    MachineSource getSource();
 
     /**
      * Is workspace bound to machine or not
