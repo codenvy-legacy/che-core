@@ -28,9 +28,8 @@ import org.eclipse.che.api.user.server.dao.*;
 
 import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
 import org.eclipse.che.api.workspace.server.spi.WorkspaceDo;
-import org.eclipse.che.api.workspace.shared.dto.*;
-import org.eclipse.che.api.workspace.shared.dto2.UsersWorkspaceDto;
-import org.eclipse.che.api.workspace.shared.dto2.WorkspaceConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
+import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.slf4j.Logger;
