@@ -8,32 +8,18 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.core.model;
+package org.eclipse.che.api.core.model.project;
 
-import org.eclipse.che.api.core.model.project.Depot;
-import org.eclipse.che.api.core.model.project.type.Attribute;
-import org.eclipse.che.api.core.model.project.type.ProjectType;
-
-import java.util.List;
 import java.util.Map;
 
 /**
  * @author gazarenkov
  */
-public interface ProjectConfig {
+public interface SourceStorage {
 
-    String getName();
+    String getType();
 
-    String getPath();
+    String getLocation();
 
-    String getDescription();
-
-    ProjectType getType();
-
-    List<? extends ProjectType> getMixinTypes();
-
-    Map<String, List<? extends Attribute>> getAttributes();
-
-    Depot getDepot();
-
+    Map<String, String> getParameters();
 }

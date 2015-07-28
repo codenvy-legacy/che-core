@@ -24,7 +24,7 @@ public interface MachineConfig {
     String getName();
 
     /**
-     * From where to create this MAchine
+     * From where to create this Machine
      * (Recipe/Snapshot)
      * @return
      */
@@ -43,13 +43,7 @@ public interface MachineConfig {
     String getWorkspaceId();
 
     /**
-     * Channel of websocket where machine logs should be put
-     */
-    String getOutputChannel();
-
-    /**
      * Machine type (i.e. "docker")
      */
     String getType();
-
 }

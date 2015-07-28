@@ -8,18 +8,14 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.core.model.project;
+package org.eclipse.che.api.core.model.workspace;
 
-import java.util.Map;
+import org.eclipse.che.api.core.model.project.fs.Folder;
 
 /**
  * @author gazarenkov
  */
-public interface Depot {
+public interface Project extends ProjectConfig {
 
-    String getType();
-
-    String getLocation();
-
-    Map<String, String> getParameters();
+    Folder getRootFolder();
 }

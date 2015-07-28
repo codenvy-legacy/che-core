@@ -33,7 +33,7 @@ import org.eclipse.che.api.machine.server.spi.Instance;
 import org.eclipse.che.api.machine.server.spi.InstanceKey;
 import org.eclipse.che.api.machine.server.spi.InstanceProcess;
 import org.eclipse.che.api.machine.server.spi.InstanceProvider;
-import org.eclipse.che.api.machine.shared.Command;
+import org.eclipse.che.api.core.model.machine.Command;
 import org.eclipse.che.api.machine.shared.MachineStatus;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
 import org.eclipse.che.api.machine.shared.dto.MachineFromRecipeMetadata;

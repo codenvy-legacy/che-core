@@ -8,19 +8,25 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.core.model;
+package org.eclipse.che.api.core.model.workspace;
 
-import org.eclipse.che.api.core.model.machine.MachineConfig;
+
+import org.eclipse.che.api.core.model.project.fs.Folder;
 
 import java.util.List;
 
 /**
  * @author gazarenkov
  */
-public interface Environment {
+public interface RuntimeWorkspace extends UsersWorkspace {
 
-    String getName();
+    Machine getDevMachine();
 
-    List<? extends MachineConfig> getMachineConfigs();
+    List<Machine> getMachines();
 
+    boolean isTemporary();
+
+    boolean isRunning();
+
+    Folder getRootFolder();
 }

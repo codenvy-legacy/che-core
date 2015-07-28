@@ -3,9 +3,7 @@ package org.eclipse.che.api.workspace.server;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.core.model.UsersWorkspace;
-import org.eclipse.che.api.core.model.Workspace;
-import org.eclipse.che.api.core.model.WorkspaceConfig;
+import org.eclipse.che.api.core.model.workspace.RuntimeWorkspace;
 import org.eclipse.che.api.workspace.server.spi.WorkspaceDo;
 
 import java.util.ArrayList;
@@ -19,7 +17,7 @@ import java.util.List;
 public class WorkspaceRuntimes {
 
 
-    public Workspace start(WorkspaceDo ws) throws ForbiddenException, NotFoundException, ServerException {
+    public RuntimeWorkspace start(WorkspaceDo ws) throws ForbiddenException, NotFoundException, ServerException {
 
         return null;
 
@@ -49,12 +47,12 @@ public class WorkspaceRuntimes {
      * @return Workspace or null if not found
      * @throws ServerException
      */
-    public Workspace get(String workspaceId) throws ServerException {
+    public RuntimeWorkspace get(String workspaceId) throws ServerException {
 
         return null;
     }
 
-    public List<Workspace> getList(String userId) throws ForbiddenException, NotFoundException, ServerException {
+    public List<RuntimeWorkspace> getList(String userId) throws ForbiddenException, NotFoundException, ServerException {
 
         return new ArrayList<>();
     }

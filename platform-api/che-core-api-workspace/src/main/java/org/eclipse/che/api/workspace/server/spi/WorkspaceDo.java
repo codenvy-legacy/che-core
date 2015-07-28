@@ -1,27 +1,29 @@
 package org.eclipse.che.api.workspace.server.spi;
 
-import org.eclipse.che.api.core.model.Environment;
-import org.eclipse.che.api.core.model.ProjectConfig;
-import org.eclipse.che.api.core.model.UsersWorkspace;
-import org.eclipse.che.api.core.model.workspace.Command;
-import org.eclipse.che.api.user.shared.model.Membership;
 
-import java.util.*;
+import org.eclipse.che.api.core.model.machine.Command;
+import org.eclipse.che.api.core.model.workspace.Environment;
+import org.eclipse.che.api.core.model.workspace.ProjectConfig;
+import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author gazarenkov
  */
 public class WorkspaceDo implements UsersWorkspace {
 
-    private final String id;
-    private String name;
-    private final String owner;
-    private Map<String, String> attributes;
+    private final String                   id;
+    private       String                   name;
+    private final String                   owner;
+    private       Map<String, String>      attributes;
     //private final Set<Membership> members;
-    private final List<Command> commands;
-    private final List<ProjectConfig> projects;
+    private final List<Command>            commands;
+    private final List<ProjectConfig>      projects;
     private final Map<String, Environment> environments;
-    private String defaultEnvironment;
+    private       String                   defaultEnvironment;
 
     public WorkspaceDo(String id, String name, String owner, Map<String, String> attributes,
                        List<Command> commands, List<ProjectConfig> projects,
@@ -33,8 +35,8 @@ public class WorkspaceDo implements UsersWorkspace {
         //this.members = members;
         this.commands = commands;
         this.projects = projects;
-        if(environments == null)
-            this.environments = new HashMap<String, Environment>();
+        if (environments == null)
+            this.environments = new HashMap<>();
         else
             this.environments = environments;
         this.defaultEnvironment = defaultEnvironment;
@@ -73,18 +75,18 @@ public class WorkspaceDo implements UsersWorkspace {
     }
 
     @Override
-    public Environment getDefaultEnvironment() {
-        return environments.get(defaultEnvironment);
+    public String getDefaultEnvironment() {
+        return defaultEnvironment;
     }
 
     /**
      * Sets particular environment configured for this workspace  as default
      * Throws NullPointerException if no Env with incoming name configured
-     * @param name - name
+
      */
     public void setDefaultEnvironmentName(String name) {
-        if(this.environments.get(name) == null)
-            throw new NullPointerException("No Environment named '"+name+"' found");
+        if (this.environments.get(name) == null)
+            throw new NullPointerException("No Environment named '" + name + "' found");
         this.defaultEnvironment = name;
     }
 
@@ -94,7 +96,6 @@ public class WorkspaceDo implements UsersWorkspace {
     }
 
 
-    @Override
     public void setName(String name) {
         this.name = name;
     }

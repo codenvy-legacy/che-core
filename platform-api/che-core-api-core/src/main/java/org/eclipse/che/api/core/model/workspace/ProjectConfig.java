@@ -10,30 +10,29 @@
  *******************************************************************************/
 package org.eclipse.che.api.core.model.workspace;
 
+import org.eclipse.che.api.core.model.project.SourceStorage;
+import org.eclipse.che.api.core.model.project.type.Attribute;
+import org.eclipse.che.api.core.model.project.type.ProjectType;
+
+import java.util.List;
+import java.util.Map;
+
 /**
  * @author gazarenkov
  */
-public interface Command {
+public interface ProjectConfig {
 
-    /**
-     * Returns command name (i.e. 'start tomcat')
-     * <p>
-     * The name should be unique per user in one workspace,
-     * which means that user may create only one command with the same name in the same workspace
-     */
     String getName();
 
-    /**
-     * Returns command line (i.e. 'mvn clean install') which is going to be executed
-     * <p>
-     * Serves as a base for {@link Process} creation.
-     *
-     * @see Process#getCommandLine()
-     */
-    String getCommandLine();
+    String getPath();
 
-    /**
-     * Channel of websocket where machine logs should be put
-     */
-    String getOutputChannel();
+    String getDescription();
+
+    ProjectType getType();
+
+    List<? extends ProjectType> getMixinTypes();
+
+    Map<String, List<? extends Attribute>> getAttributes();
+
+    SourceStorage getSourceStorage();
 }

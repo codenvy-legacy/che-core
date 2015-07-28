@@ -10,11 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server.event;
 
-import org.eclipse.che.api.core.model.UsersWorkspace;
+import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.notification.EventOrigin;
-import org.eclipse.che.api.workspace.server.spi.WorkspaceDo;
-
-import java.util.Map;
 
 
 /**

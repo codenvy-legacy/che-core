@@ -14,18 +14,13 @@ import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.core.model.UsersWorkspace;
-import org.eclipse.che.api.core.model.WorkspaceConfig;
+import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
+import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.core.notification.EventService;
-import org.eclipse.che.api.user.server.dao.MembershipDao;
-import org.eclipse.che.api.user.server.dao.PreferenceDao;
-import org.eclipse.che.api.user.server.dao.UserDao;
-import org.eclipse.che.api.user.server.dao.UserProfileDao;
 import org.eclipse.che.api.workspace.server.event.AfterCreateWorkspaceEvent;
 import org.eclipse.che.api.workspace.server.event.BeforeCreateWorkspaceEvent;
 import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
 import org.eclipse.che.api.workspace.server.spi.WorkspaceDo;
-import org.eclipse.che.api.core.model.Workspace;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,8 +30,6 @@ import javax.inject.Singleton;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import static java.util.Collections.singletonMap;
-
 /**
  * Facade for Workspace related operations
  *
@@ -45,15 +38,15 @@ import static java.util.Collections.singletonMap;
 @Singleton
 public class WorkspaceManager {
 
-    public static final String WORKSPACE_SCOPE = "workspace";
-    private static final Logger LOG = LoggerFactory.getLogger(NewWorkspaceService.class);
+    public static final  String WORKSPACE_SCOPE = "workspace";
+    private static final Logger LOG             = LoggerFactory.getLogger(WorkspaceService.class);
 
     /* should contain [3, 20] characters, first and last character is letter or digit, available characters {A-Za-z0-9.-_}*/
-    private static final Pattern WS_NAME       = Pattern.compile("[\\w][\\w\\.\\-]{1,18}[\\w]");
+    private static final Pattern WS_NAME = Pattern.compile("[\\w][\\w\\.\\-]{1,18}[\\w]");
 
 
     private final WorkspaceDao workspaceDao;
-//    private final UserDao userDao;
+    //    private final UserDao userDao;
 //    private final UserProfileDao profileDao;
 //    private final PreferenceDao preferenceDao;
     private final EventService eventService;
@@ -76,7 +69,8 @@ public class WorkspaceManager {
 
     }
 
-    public WorkspaceDo createWorkspace(final UsersWorkspace workspace, final String accountId) throws ConflictException, ServerException, BadRequestException {
+    public WorkspaceDo createWorkspace(final UsersWorkspace workspace, final String accountId)
+            throws ConflictException, ServerException, BadRequestException {
 
         validateName(workspace.getName());
 
@@ -86,7 +80,7 @@ public class WorkspaceManager {
             validateAttributes(workspace.getAttributes());
         }
         if (workspace.getName() == null || workspace.getName().isEmpty()) {
-            workspace.setName(generateWorkspaceName());
+//            workspace.setName(generateWorkspaceName());
         }
 
         eventService.publish(new BeforeCreateWorkspaceEvent() {
@@ -138,7 +132,7 @@ public class WorkspaceManager {
 
         final String newName = workspace.getName();
         if (newName != null) {
-            workspace.setName(newName);
+//            workspace.setName(newName);
         }
 
         // TODO before?

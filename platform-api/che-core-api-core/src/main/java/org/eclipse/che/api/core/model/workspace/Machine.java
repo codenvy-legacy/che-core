@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.core.model;
+package org.eclipse.che.api.core.model.workspace;
 
 import org.eclipse.che.api.core.model.machine.MachineConfig;
 import org.eclipse.che.api.core.model.machine.Server;
@@ -26,18 +26,6 @@ public interface Machine extends MachineConfig {
      * Unique ID of this machine
      */
     String getId();
-
-    /**
-     * Machine type (i.e. "docker")
-     */
-    //String getType();
-
-    /**
-     * Identifier of user who launched this machine.
-     */
-    User getOwner();
-
-    //MachineStatus getStatus();
 
     /**
      * List of projects bound to this machine

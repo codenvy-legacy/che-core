@@ -13,9 +13,8 @@ package org.eclipse.che.api.workspace.server.spi;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.core.model.UsersWorkspace;
-import org.eclipse.che.api.core.model.Workspace;
-import org.eclipse.che.api.core.model.WorkspaceConfig;
+import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
+import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 
 
 /**

@@ -1,4 +1,4 @@
-package org.eclipse.che.api.core.model;
+package org.eclipse.che.api.core.model.workspace;
 
 /**
  * @author gazarenkov

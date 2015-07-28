@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.machine.shared;
+package org.eclipse.che.api.core.model.machine;
 
 /**
  * Command that can be used to create {@link Process} in a machine

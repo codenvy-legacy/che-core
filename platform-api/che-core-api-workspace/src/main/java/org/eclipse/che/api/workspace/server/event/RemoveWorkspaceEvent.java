@@ -11,15 +11,14 @@
 package org.eclipse.che.api.workspace.server.event;
 
 import org.eclipse.che.api.core.notification.EventOrigin;
-import org.eclipse.che.api.core.model.Workspace;
 
 
 /**
  * @author Sergii Leschenko 
  */
 @EventOrigin("workspace")
-public class RemoveWorkspaceEvent extends WorkspaceEvent {
-    public RemoveWorkspaceEvent(Workspace workspace) {
-        super(ChangeType.DELETED, workspace);
-    }
+public class RemoveWorkspaceEvent /*extends WorkspaceEvent*/ {
+//    public RemoveWorkspaceEvent(Workspace workspace) {
+//        super(ChangeType.DELETED, workspace);
+//    }
 }
