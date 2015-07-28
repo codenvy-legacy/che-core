@@ -20,6 +20,7 @@
             flex-flow: column;
             -webkit-flex-grow: 1;
             flex-grow: 1;
+            height: 100px;
         }
 
         .items {
@@ -34,7 +35,10 @@
             -webkit-flex-grow: 1;
 
             resize: none;
-            overflow: scroll;
+            /*overflow: scroll;*/
+
+            outline: none;
+            padding: 3px;
         }
 
         .label {
@@ -42,6 +46,7 @@
             -webkit-flex-shrink: 0;
             flex-grow: 0;
             -webkit-flex-grow: 0;
+            height: 20px;
         }
     </ui:style>
 

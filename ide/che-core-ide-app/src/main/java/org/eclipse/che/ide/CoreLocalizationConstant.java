@@ -478,7 +478,6 @@ public interface CoreLocalizationConstant extends Messages {
     String refresh();
 
     @Key("delete")
-    @DefaultMessage("Delete")
     String delete();
 
     @Key("projectProblem.title")

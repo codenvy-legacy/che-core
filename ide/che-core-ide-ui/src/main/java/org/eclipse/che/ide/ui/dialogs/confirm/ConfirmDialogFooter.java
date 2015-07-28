@@ -61,6 +61,24 @@ public class ConfirmDialogFooter extends Composite {
     }
 
     /**
+     * Overwrites label of Ok button
+     *
+     * @param label new label
+     */
+    public void setOkButtonLabel(String label) {
+        okButton.setText(label);
+    }
+
+    /**
+     * Overwrites label of Cancel button
+     *
+     * @param label new label
+     */
+    public void setCancelButtonLabel(String label) {
+        cancelButton.setText(label);
+    }
+
+    /**
      * Sets the action delegate.
      *
      * @param delegate

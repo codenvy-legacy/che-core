@@ -35,8 +35,14 @@ public interface ConfirmDialogView {
     /** Sets the window title. */
     void setTitle(String title);
 
+    /** Overwrites label of Ok button */
+    void setOkButtonLabel(String label);
+
+    /** Overwrites label of Cancel button */
+    void setCancelButtonLabel(String label);
+
     /** The interface for the action delegate. */
-    public interface ActionDelegate {
+    interface ActionDelegate {
 
         /** Defines what's done when the user clicks cancel. */
         void cancelled();

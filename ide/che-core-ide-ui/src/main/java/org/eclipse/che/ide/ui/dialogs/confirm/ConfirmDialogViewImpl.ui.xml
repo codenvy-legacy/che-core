@@ -18,21 +18,23 @@
     <ui:style>
         .content-block {
             min-width: 30em;
-            min-height: 6em;
+            min-height: 4em;
             max-width: 60em;
             max-height: 20em;
             padding: 1em;
         }
 
         .content {
-            width: -webkit-fill-available;
-            width: -moz-fill-available;
-            width: fill-available;
-
-            height: 100%; /* in case the other values are not understood */
-            height: -webkit-fill-available;
-            height: -moz-fill-available;
-            height: fill-available;
+            /*
+                Not sure we need styles below, commenting them makes dialogs looking better.
+            */
+            /*width: -webkit-fill-available;*/
+            /*width: -moz-fill-available;*/
+            /*width: fill-available;*/
+            /*height: 100%; /!* in case the other values are not understood *!/*/
+            /*height: -webkit-fill-available;*/
+            /*height: -moz-fill-available;*/
+            /*height: fill-available;*/
 
             display: -webkit-flex;
             display: flex;

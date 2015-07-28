@@ -48,6 +48,20 @@ public class ConfirmDialogPresenter implements ConfirmDialog, ConfirmDialogView.
 
     @AssistedInject
     public ConfirmDialogPresenter(final @Nonnull ConfirmDialogView view,
+                                  final @Nonnull @Assisted("title") String title,
+                                  final @Nonnull @Assisted("message") String message,
+                                  final @Nullable @Assisted("okButtonLabel") String  okButtonLabel,
+                                  final @Nullable @Assisted("cancelButtonLabel") String cancelButtonLabel,
+                                  final @Nullable @Assisted ConfirmCallback confirmCallback,
+                                  final @Nullable @Assisted CancelCallback cancelCallback) {
+        this(view, title, new InlineHTML(message), confirmCallback, cancelCallback);
+
+        view.setOkButtonLabel(okButtonLabel);
+        view.setCancelButtonLabel(cancelButtonLabel);
+    }
+
+    @AssistedInject
+    public ConfirmDialogPresenter(final @Nonnull ConfirmDialogView view,
                                   final @Nonnull @Assisted String title,
                                   final @Nonnull @Assisted IsWidget content,
                                   final @Nullable @Assisted ConfirmCallback confirmCallback,
@@ -58,6 +72,25 @@ public class ConfirmDialogPresenter implements ConfirmDialog, ConfirmDialogView.
         this.confirmCallback = confirmCallback;
         this.cancelCallback = cancelCallback;
         this.view.setDelegate(this);
+    }
+
+    @AssistedInject
+    public ConfirmDialogPresenter(final @Nonnull ConfirmDialogView view,
+                                  final @Nonnull @Assisted String title,
+                                  final @Nonnull @Assisted IsWidget content,
+                                  final @Nullable @Assisted("okButtonLabel") String okButtonLabel,
+                                  final @Nullable @Assisted("cancelButtonLabel") String cancelButtonLabel,
+                                  final @Nullable @Assisted ConfirmCallback confirmCallback,
+                                  final @Nullable @Assisted CancelCallback cancelCallback) {
+        this.view = view;
+        this.view.setContent(content);
+        this.view.setTitle(title);
+        this.confirmCallback = confirmCallback;
+        this.cancelCallback = cancelCallback;
+        this.view.setDelegate(this);
+
+        view.setOkButtonLabel(okButtonLabel);
+        view.setCancelButtonLabel(cancelButtonLabel);
     }
 
     @Override
