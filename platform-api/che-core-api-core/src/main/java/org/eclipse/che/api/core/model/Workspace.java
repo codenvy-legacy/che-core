@@ -11,6 +11,8 @@
 package org.eclipse.che.api.core.model;
 
 
+import org.eclipse.che.api.core.model.project.fs.Folder;
+
 import java.util.List;
 
 /**
@@ -26,13 +28,8 @@ public interface Workspace extends UsersWorkspace {
 
     boolean isTemporary();
 
-    String getId();
+    boolean isRunning();
 
-    String getName();
-
-    void setName(String name);
-
-    String getOwner();
-
+    Folder getRootFolder();
 
 }

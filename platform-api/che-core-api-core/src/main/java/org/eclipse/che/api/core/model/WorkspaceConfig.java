@@ -10,9 +10,9 @@ import java.util.Map;
  */
 public interface WorkspaceConfig {
 
+    String getName();
 
-
-//    Set<? extends Membership> getMembers();
+    void setName(String name);
 
     Map<String, String> getAttributes();
 

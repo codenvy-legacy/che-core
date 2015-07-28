@@ -108,8 +108,5 @@ public class WorkspaceDo implements UsersWorkspace {
         return this.owner;
     }
 
-    @Override
-    public boolean isRunning() {
-        return false;
-    }
+
 }

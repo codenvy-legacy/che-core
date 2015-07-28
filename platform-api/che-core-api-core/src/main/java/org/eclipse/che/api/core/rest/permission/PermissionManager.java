@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ *
  * @author gazarenkov
  */
 @Singleton
@@ -41,6 +42,15 @@ public class PermissionManager {
         }
     }
 
+    /**
+     * TODO do we need to change the parameters like in EventService or so to make it nicer?
+     * @param method
+     * @param params
+     * @param context
+     * @throws BadRequestException
+     * @throws ForbiddenException
+     * @throws ServerException
+     */
     public void checkPermission(String method, Map<String, String> params, SecurityContext context)
             throws BadRequestException, ForbiddenException, ServerException {
 

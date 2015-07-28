@@ -15,6 +15,7 @@ import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.UsersWorkspace;
+import org.eclipse.che.api.core.model.WorkspaceConfig;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.user.server.dao.MembershipDao;
 import org.eclipse.che.api.user.server.dao.PreferenceDao;
@@ -52,11 +53,11 @@ public class WorkspaceManager {
 
 
     private final WorkspaceDao workspaceDao;
-    private final UserDao userDao;
-    private final UserProfileDao profileDao;
-    private final PreferenceDao preferenceDao;
+//    private final UserDao userDao;
+//    private final UserProfileDao profileDao;
+//    private final PreferenceDao preferenceDao;
     private final EventService eventService;
-    private final MembershipDao membershipDao;
+//    private final MembershipDao membershipDao;
 
     private final WorkspaceRuntimes workspaceRuntimes;
 
@@ -75,7 +76,7 @@ public class WorkspaceManager {
 
     }
 
-    public UsersWorkspace createWorkspace(final UsersWorkspace workspace, final String accountId) throws ConflictException, ServerException, BadRequestException {
+    public WorkspaceDo createWorkspace(final UsersWorkspace workspace, final String accountId) throws ConflictException, ServerException, BadRequestException {
 
         validateName(workspace.getName());
 
@@ -101,7 +102,7 @@ public class WorkspaceManager {
         });
 
 
-        workspaceDao.create(workspace);
+        WorkspaceDo newWorkspace = workspaceDao.create(workspace);
 
         eventService.publish(new AfterCreateWorkspaceEvent() {
             @Override
@@ -118,18 +119,95 @@ public class WorkspaceManager {
         LOG.info("EVENT#workspace-created# WS#{}# WS-ID#{}# USER#{}#", workspace.getName(), workspace.getId(),
                 EnvironmentContext.getCurrent().getUser().getId());
 
-        return workspace;
+        return newWorkspace;
 
     }
 
-    public UsersWorkspace getWorkspace(String workspaceId) throws NotFoundException, ServerException {
 
-        UsersWorkspace workspace = this.workspaceRuntimes.get(workspaceId);
-        if(workspace != null)
-            return workspace;
-        else
-            return workspaceDao.get(workspaceId);
+    public WorkspaceDo updateWorkspace(String id, final WorkspaceConfig workspace) throws ConflictException, ServerException,
+            BadRequestException, NotFoundException {
 
+        validateName(workspace.getName());
+
+        requiredNotNull(workspace, "New workspace");
+
+        if (workspace.getAttributes() != null) {
+            validateAttributes(workspace.getAttributes());
+        }
+
+
+        final String newName = workspace.getName();
+        if (newName != null) {
+            workspace.setName(newName);
+        }
+
+        // TODO before?
+
+        WorkspaceDo updated = workspaceDao.update(workspace);
+
+        // TODO after?
+
+        LOG.info("EVENT#workspace-updated# WS#{}# WS-ID#{}#", updated.getName(), updated.getId());
+
+        return updated;
+
+    }
+
+    public void removeWorkspace(String id) throws ConflictException, ServerException,
+             NotFoundException {
+
+        // TODO before?
+
+        workspaceDao.remove(id);
+
+        // TODO after?
+
+        LOG.info("EVENT#workspace-remove# WS-ID#{}#",  id);
+
+
+    }
+
+    public WorkspaceDo getWorkspace(String workspaceId) throws NotFoundException, ServerException {
+
+//        UsersWorkspace workspace = this.workspaceRuntimes.get(workspaceId);
+//        if(workspace != null)
+//            return workspace;
+//        else
+
+        // TODO before?
+        return workspaceDao.get(workspaceId);
+
+        // TODO after?
+
+
+
+//        // tmp_workspace_cloned_from_private_repo - gives information
+//        // whether workspace was clone from private repository or not. It can be use
+//        // by temporary workspace sharing filter for user that are not workspace/admin
+//        // so we need that property here.
+//        // PLZ DO NOT REMOVE!!!!
+//        final Map<String, String> attributes = workspace.getAttributes();
+//        if (attributes.containsKey("allowAnyoneAddMember")) {
+//            workspace.setAttributes(singletonMap("allowAnyoneAddMember", attributes.get("allowAnyoneAddMember")));
+//        } else {
+//            attributes.clear();
+//        }
+
+
+    }
+
+
+    public WorkspaceDo getWorkspace(String workspaceName, String owner) throws NotFoundException, ServerException,
+            BadRequestException {
+
+        requiredNotNull(workspaceName, "Workspace name");
+
+        // TODO before?
+
+        return workspaceDao.get(workspaceName, owner);
+
+
+        // TODO after?
 
 
 //        // tmp_workspace_cloned_from_private_repo - gives information
