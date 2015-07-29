@@ -68,5 +68,5 @@ public interface UserProfileServiceClient {
      *         preferences to update
      * @param callback
      */
-    void updatePreferences(@Nonnull Map<String, String> prefsToUpdate, AsyncRequestCallback<ProfileDescriptor> callback);
+    void updatePreferences(@Nonnull Map<String, String> prefsToUpdate, AsyncRequestCallback<Map<String, String>> callback);
 }
