@@ -354,6 +354,7 @@ public class StandardComponentInitializer {
         fileGroup.add(openProjectAction);
         fileGroup.add(closeProjectAction);
         fileGroup.add(projectConfigurationAction);
+        fileGroup.addAction(createModuleAction);
         fileGroup.add(uploadFileAction);
         fileGroup.add(uploadFolderFromZipAction);
         fileGroup.add(downloadProjectAsZipAction);
@@ -367,7 +368,6 @@ public class StandardComponentInitializer {
         fileGroup.add(renameItemAction);
         fileGroup.add(deleteItemAction);
         fileGroup.addSeparator();
-        fileGroup.addAction(createModuleAction);
         fileGroup.add(saveGroup);
 
         // Compose Code menu
