@@ -22,7 +22,6 @@ import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.PromiseError;
-import org.eclipse.che.api.user.shared.dto.ProfileDescriptor;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionManager;
@@ -221,7 +220,7 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
 
     private void readStateFromPreferences() {
         final String json = preferencesManager.getValue(PREFERENCE_PROPERTY_NAME);
-        if (json ==   null) {
+        if (json == null) {
             appState = dtoFactory.createDto(AppState.class);
             initClearRecentProject(appState);
         } else {
@@ -248,9 +247,9 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
     private void writeStateToPreferences() {
         final String json = dtoFactory.toJson(appState);
         preferencesManager.setValue(PREFERENCE_PROPERTY_NAME, json);
-        preferencesManager.flushPreferences(new AsyncCallback<ProfileDescriptor>() {
+        preferencesManager.flushPreferences(new AsyncCallback<Map<String, String>>() {
             @Override
-            public void onSuccess(ProfileDescriptor result) {
+            public void onSuccess(Map<String, String> result) {
             }
 
             @Override

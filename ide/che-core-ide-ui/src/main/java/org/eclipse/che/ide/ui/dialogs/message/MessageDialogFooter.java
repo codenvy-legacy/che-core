@@ -49,7 +49,7 @@ public class MessageDialogFooter extends Composite {
     public MessageDialogFooter(final @Nonnull UILocalizationConstant messages) {
         this.messages = messages;
         initWidget(uiBinder.createAndBindUi(this));
-        okButton.addStyleName(resources.centerPanelCss().button());
+        okButton.addStyleName(resources.centerPanelCss().blueButton());
         okButton.getElement().setId("info-window");
     }
 

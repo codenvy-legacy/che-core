@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.part.editor;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
@@ -35,10 +36,12 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
 
 import static org.eclipse.che.ide.api.editor.EditorWithErrors.EditorState.ERROR;
 import static org.eclipse.che.ide.api.editor.EditorWithErrors.EditorState.WARNING;
+import org.eclipse.che.ide.util.loging.Log;
 
 /**
  * EditorPartStackPresenter is a special PartStackPresenter that is shared among all
@@ -53,8 +56,10 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
                                                                             EditorTab.ActionDelegate,
                                                                             ListButton.ActionDelegate,
                                                                             ListItem.ActionDelegate {
-    private final ListButton             listButton;
-    private final Map<ListItem, TabItem> items;
+    private final ListButton                listButton;
+    private final Map<ListItem, TabItem>    items;
+    //this list need to save order of added parts
+    private final LinkedList<PartPresenter> partsOrder;
 
     private PartPresenter activePart;
 
@@ -65,6 +70,7 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
                                     TabItemFactory tabItemFactory,
                                     PartStackEventHandler partStackEventHandler,
                                     ListButton listButton) {
+        //noinspection ConstantConditions
         super(eventBus, partStackEventHandler, tabItemFactory, partsComparator, view, null);
 
         this.listButton = listButton;
@@ -74,6 +80,7 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
         view.setListButton(listButton);
 
         this.items = new HashMap<>();
+        this.partsOrder = new LinkedList<>();
 
         eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
             @Override
@@ -143,6 +150,7 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
             editorTab.setDelegate(this);
 
             parts.put(editorTab, part);
+            partsOrder.add(part);
 
             view.addTab(editorTab, part);
 
@@ -193,17 +201,34 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
     /** {@inheritDoc} */
     @Override
     public void onTabClicked(@Nonnull TabItem tab) {
+        activePart = parts.get(tab);
+
         view.selectTab(parts.get(tab));
     }
 
     /** {@inheritDoc} */
     @Override
     public void onTabClose(@Nonnull TabItem tab) {
-        view.removeTab(parts.get(tab));
+        final PartPresenter closedPart = parts.get(tab);
+        view.removeTab(closedPart);
 
         parts.remove(tab);
+        partsOrder.remove(closedPart);
 
         removeItemFromList(tab);
+
+        activePart = partsOrder.isEmpty() ? null : partsOrder.getLast();
+
+        closedPart.onClose(new AsyncCallback<Void>() {
+            @Override
+            public void onFailure(Throwable caught) {
+                Log.error(this.getClass(), "Unexpected error occured when closing the editor. " + caught.getMessage());
+            }
+
+            @Override
+            public void onSuccess(Void result) {
+            }
+        });
     }
 
     /** {@inheritDoc} */

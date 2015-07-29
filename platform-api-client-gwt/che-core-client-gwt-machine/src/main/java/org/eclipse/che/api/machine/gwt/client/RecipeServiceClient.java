@@ -10,7 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.gwt.client;
 
+import org.eclipse.che.api.machine.shared.dto.recipe.NewRecipe;
 import org.eclipse.che.api.machine.shared.dto.recipe.RecipeDescriptor;
+import org.eclipse.che.api.machine.shared.dto.recipe.RecipeUpdate;
 import org.eclipse.che.api.promises.client.Promise;
 
 import javax.annotation.Nonnull;
@@ -21,18 +23,17 @@ import java.util.List;
  * Client for Recipe API.
  *
  * @author Artem Zatsarynnyy
+ * @author Valeriy Svydenko
  */
 public interface RecipeServiceClient {
 
     /**
      * Create recipe.
      *
-     * @param type
-     *         type of recipe (e.g., Dockerfile)
-     * @param script
-     *         recipe script
+     * @param newRecipe
+     *         describer of the recipe
      */
-    Promise<RecipeDescriptor> createRecipe(@Nonnull String type, @Nonnull String script);
+    Promise<RecipeDescriptor> createRecipe(@Nonnull final NewRecipe newRecipe);
 
     /** Get recipe script by recipe's ID. */
     Promise<String> getRecipeScript(@Nonnull String id);
@@ -66,19 +67,15 @@ public interface RecipeServiceClient {
      * @param maxItems
      *         max count of items to fetch
      */
-    Promise<List<RecipeDescriptor>> searchRecipes(@Nullable List<String> tags, @Nullable String type, int skipCount, int maxItems);
+    Promise<List<RecipeDescriptor>> searchRecipes(@Nonnull List<String> tags, @Nullable String type, int skipCount, int maxItems);
 
     /**
      * Update recipe.
      *
-     * @param id
-     *         ID of the recipe that should be updated
-     * @param type
-     *         new type for recipe
-     * @param script
-     *         new script for recipe
+     * @param recipeUpdate
+     *         describer of the recipe updater
      */
-    Promise<RecipeDescriptor> updateRecipe(@Nonnull String id, @Nullable String type, @Nullable String script);
+    Promise<RecipeDescriptor> updateRecipe(@Nonnull RecipeUpdate recipeUpdate);
 
     /** Remove recipe with the given ID. */
     Promise<Void> removeRecipe(@Nonnull String id);

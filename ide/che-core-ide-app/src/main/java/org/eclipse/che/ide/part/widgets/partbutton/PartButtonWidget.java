@@ -28,16 +28,22 @@ import org.eclipse.che.ide.api.parts.PartStackView.TabPosition;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
+import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import static com.google.gwt.dom.client.Style.Unit.PX;
 import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.BELOW;
 import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.LEFT;
+import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.RIGHT;
 
 /**
  * @author Dmitry Shnurenko
+ * @author Valeriy Svydenko
  */
 public class PartButtonWidget extends Composite implements PartButton {
+    private final static int TOP_SHIFT = 63;
+
     interface PartButtonWidgetUiBinder extends UiBinder<Widget, PartButtonWidget> {
     }
 
@@ -56,6 +62,7 @@ public class PartButtonWidget extends Composite implements PartButton {
     @Inject
     public PartButtonWidget(Resources resources, @Assisted String title) {
         this.resources = resources;
+
         initWidget(UI_BINDER.createAndBindUi(this));
 
         addDomHandler(this, ClickEvent.getType());
@@ -132,11 +139,20 @@ public class PartButtonWidget extends Composite implements PartButton {
 
     /** {@inheritDoc} */
     @Override
-    public void setTabPosition(@Nonnull TabPosition tabPosition) {
+    public void setTabPosition(@Nonnull TabPosition tabPosition, @Nonnegative int countWidgets) {
         this.tabPosition = tabPosition;
 
         if (LEFT.equals(tabPosition)) {
-            addStyleName(resources.partStackCss().leftTabBorders());
+            addStyleName(resources.partStackCss().leftTabs());
+
+            getElement().getStyle().setTop((countWidgets - 1) * TOP_SHIFT, PX);
+
+            return;
+        }
+
+        if (RIGHT.equals(tabPosition)) {
+            addStyleName(resources.partStackCss().rightTabs());
+            getElement().getStyle().setTop((countWidgets - 1) * TOP_SHIFT, PX);
 
             return;
         }

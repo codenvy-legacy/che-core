@@ -15,6 +15,7 @@ import com.google.gwt.user.client.ui.IsWidget;
 
 import org.eclipse.che.ide.api.mvp.View;
 
+import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import java.util.List;
 
@@ -40,7 +41,15 @@ public interface PartStackView extends View<PartStackView.ActionDelegate> {
 
         void unSelect();
 
-        void setTabPosition(@Nonnull TabPosition tabPosition);
+        /**
+         * Determines position of the tab.
+         *
+         * @param tabPosition
+         *         orientation of the Tab (e.g. LEFT or RIGHT)
+         * @param countWidgets
+         *         number of widgets(tabs) which are including in the current part. It is necessary for ranking the tab.
+         */
+        void setTabPosition(@Nonnull TabPosition tabPosition, @Nonnegative int countWidgets);
     }
 
     /** Add Tab */

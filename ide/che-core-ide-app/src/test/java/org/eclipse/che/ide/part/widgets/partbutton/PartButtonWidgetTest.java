@@ -103,7 +103,7 @@ public class PartButtonWidgetTest {
 
     @Test
     public void partShouldBeSelectedInBelowPosition() {
-        partButton.setTabPosition(BELOW);
+        partButton.setTabPosition(BELOW,1);
 
         partButton.select();
 
@@ -112,7 +112,7 @@ public class PartButtonWidgetTest {
 
     @Test
     public void partShouldNotBeSelectedInNotBelowPosition() {
-        partButton.setTabPosition(LEFT);
+        partButton.setTabPosition(LEFT, 1);
 
         partButton.unSelect();
 
@@ -121,7 +121,7 @@ public class PartButtonWidgetTest {
 
     @Test
     public void partShouldNotBeSelectedInBelowPosition() {
-        partButton.setTabPosition(BELOW);
+        partButton.setTabPosition(BELOW, 1);
 
         partButton.unSelect();
 
@@ -130,14 +130,14 @@ public class PartButtonWidgetTest {
 
     @Test
     public void tabPositionShouldBeSetWhenPositionIsLeft() {
-        partButton.setTabPosition(LEFT);
+        partButton.setTabPosition(LEFT, 1);
 
-        verify(resources.partStackCss()).leftTabBorders();
+        verify(resources.partStackCss()).leftTabs();
     }
 
     @Test
     public void tabPositionShouldBeSetWhenPositionIsNotLeft() {
-        partButton.setTabPosition(BELOW);
+        partButton.setTabPosition(BELOW, 1);
 
         verify(resources.partStackCss()).tabBordersDefault();
     }

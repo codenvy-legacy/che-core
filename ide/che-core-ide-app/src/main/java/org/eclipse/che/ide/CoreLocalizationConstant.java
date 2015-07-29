@@ -135,6 +135,9 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("deleteProjectDialogQuestion")
     String deleteProjectDialogQuestion(String name);
 
+    @Key("deleteModuleDialogQuestion")
+    String deleteModuleDialogQuestion(String name);
+
     @Key("deleteMultipleDialogMessage")
     String deleteMultipleDialogMessage();
 
@@ -478,7 +481,6 @@ public interface CoreLocalizationConstant extends Messages {
     String refresh();
 
     @Key("delete")
-    @DefaultMessage("Delete")
     String delete();
 
     @Key("projectProblem.title")

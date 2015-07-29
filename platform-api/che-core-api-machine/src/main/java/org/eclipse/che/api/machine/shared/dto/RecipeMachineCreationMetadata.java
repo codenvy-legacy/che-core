@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.shared.dto;
 
-import org.eclipse.che.api.machine.shared.dto.recipe.RecipeDescriptor;
+import org.eclipse.che.api.machine.shared.dto.recipe.MachineRecipe;
 import org.eclipse.che.dto.shared.DTO;
 
 /**
@@ -19,16 +19,7 @@ import org.eclipse.che.dto.shared.DTO;
  * @author Alexander Garagatyi
  */
 @DTO
-public interface MachineFromRecipeMetadata {
-    /**
-     * Channel of websocket where machine logs should be put
-     */
-    String getOutputChannel();
-
-    void setOutputChannel(String outputChannel);
-
-    MachineFromRecipeMetadata withOutputChannel(String outputChannel);
-
+public interface RecipeMachineCreationMetadata extends MachineCreationMetadata {
     /**
      * Type of machine implementation
      */
@@ -36,16 +27,16 @@ public interface MachineFromRecipeMetadata {
 
     void setType(String type);
 
-    MachineFromRecipeMetadata withType(String type);
+    RecipeMachineCreationMetadata withType(String type);
 
     /**
-     * Description of recipe for machine instance
+     * Recipe of machine instance
      */
-    RecipeDescriptor getRecipeDescriptor();
+    MachineRecipe getRecipe();
 
-    void setRecipeDescriptor(RecipeDescriptor recipeDescriptor);
+    void setRecipe(MachineRecipe recipeDescriptor);
 
-    MachineFromRecipeMetadata withRecipeDescriptor(RecipeDescriptor recipeDescriptor);
+    RecipeMachineCreationMetadata withRecipe(MachineRecipe recipeDescriptor);
 
     /**
      * Id of a workspace machine should be bound to
@@ -54,17 +45,20 @@ public interface MachineFromRecipeMetadata {
 
     void setWorkspaceId(String workspaceId);
 
-    MachineFromRecipeMetadata withWorkspaceId(String workspaceId);
+    RecipeMachineCreationMetadata withWorkspaceId(String workspaceId);
 
     boolean isBindWorkspace();
 
     void setBindWorkspace(boolean bindWorkspace);
 
-    MachineFromRecipeMetadata withBindWorkspace(boolean bindWorkspace);
+    RecipeMachineCreationMetadata withBindWorkspace(boolean bindWorkspace);
 
-    String getDisplayName();
+    @Override
+    RecipeMachineCreationMetadata withOutputChannel(String outputChannel);
 
-    void setDisplayName(String displayName);
+    @Override
+    RecipeMachineCreationMetadata withDisplayName(String displayName);
 
-    MachineFromRecipeMetadata withDisplayName(String displayName);
+    @Override
+    RecipeMachineCreationMetadata withMemorySize(int mem);
 }

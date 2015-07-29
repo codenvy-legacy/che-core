@@ -22,6 +22,7 @@ import com.google.gwtmockito.GwtMockitoTestRunner;
 
 import org.eclipse.che.ide.api.parts.PartPresenter;
 import org.eclipse.che.ide.api.parts.PartStackUIResources;
+import org.eclipse.che.ide.api.parts.PartStackView;
 import org.eclipse.che.ide.api.parts.PartStackView.ActionDelegate;
 import org.eclipse.che.ide.api.parts.PartStackView.TabItem;
 import org.junit.Before;
@@ -37,6 +38,8 @@ import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.BELOW;
 import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.LEFT;
 import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.RIGHT;
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
@@ -45,6 +48,7 @@ import static org.mockito.Mockito.when;
 
 /**
  * @author Dmitry Shnurenko
+ * @author Valeriy Svydenko
  */
 @RunWith(GwtMockitoTestRunner.class)
 public class PartStackViewImplTest {
@@ -112,28 +116,24 @@ public class PartStackViewImplTest {
     @Test
     public void constructorShouldBeVerifiedInPositionLeft() {
         when(resources.partStackCss().idePartStackContent()).thenReturn(SOME_TEXT);
-        when(resources.partStackCss().rotateLeftPanel()).thenReturn(SOME_TEXT);
 
         reset(contentPanel);
         reset(tabsPanel);
         view = new PartStackViewImpl(resources, tabsRotationPanel, contentPanel, LEFT, tabsPanel);
 
         verify(contentPanel).setStyleName(SOME_TEXT);
-        verify(tabsRotationPanel).addStyleName(SOME_TEXT);
         verify(tabsPanel).add(tabsRotationPanel);
     }
 
     @Test
     public void constructorShouldBeVerifiedInPositionRight() {
         when(resources.partStackCss().idePartStackContent()).thenReturn(SOME_TEXT);
-        when(resources.partStackCss().rotateRightPanel()).thenReturn(SOME_TEXT);
 
         reset(contentPanel);
         reset(tabsPanel);
         view = new PartStackViewImpl(resources, tabsRotationPanel, contentPanel, RIGHT, tabsPanel);
 
         verify(contentPanel).setStyleName(SOME_TEXT);
-        verify(tabsRotationPanel).addStyleName(SOME_TEXT);
         verify(tabsPanel).add(tabsRotationPanel);
     }
 
@@ -155,7 +155,7 @@ public class PartStackViewImplTest {
     public void tabShouldBeAdded() {
         view.addTab(tabItem, partPresenter);
 
-        verify(tabItem).setTabPosition(BELOW);
+        verify(tabItem).setTabPosition(BELOW,0);
         verify(tabsRotationPanel).add(widget);
         verify(partPresenter).go(contentCaptor.capture());
 
@@ -196,6 +196,7 @@ public class PartStackViewImplTest {
         verify(contentPanel).showWidget(0);
         verify(tabItem).select();
         verify(delegate).onRequestFocus();
+        verify(tabItem).setTabPosition((PartStackView.TabPosition)any(), anyInt());
     }
 
     @Test

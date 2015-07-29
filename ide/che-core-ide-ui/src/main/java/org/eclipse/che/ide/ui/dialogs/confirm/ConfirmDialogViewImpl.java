@@ -78,6 +78,14 @@ public class ConfirmDialogViewImpl extends Window implements ConfirmDialogView {
         this.content.setWidget(content);
     }
 
+    public void setOkButtonLabel(String label) {
+        footer.setOkButtonLabel(label);
+    }
+
+    public void setCancelButtonLabel(String label) {
+        footer.setCancelButtonLabel(label);
+    }
+
     /** The UI binder interface for this components. */
     interface ConfirmWindowUiBinder extends UiBinder<Widget, ConfirmDialogViewImpl> {
     }
