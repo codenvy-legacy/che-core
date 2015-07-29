@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Implementation of {@link UsersWorkspace} which
+ * Data object for {@link UsersWorkspace}.
  *
  * @author Eugene Voevodin
  * @author gazarenkov
@@ -99,11 +99,7 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
     }
 
     public void setAttributes(Map<String, String> attributes) {
-        if (attributes == null) {
-            this.attributes = new HashMap<>();
-        } else {
-            this.attributes = new HashMap<>(attributes);
-        }
+        this.attributes = attributes == null ? new HashMap<String, String>() : new HashMap<>(attributes);
     }
 
     @Override
