@@ -260,7 +260,7 @@ public class ProjectService extends Service {
                                            @Description("project name")
                                            @QueryParam("name") String name,
                                            @Description("descriptor of project") NewProject newProject)
-            throws ConflictException, ForbiddenException, ServerException, NotFoundException {
+            throws ConflictException, ForbiddenException, ServerException, NotFoundException, IOException {
 
         final GeneratorDescription generatorDescription = newProject.getGeneratorDescription();
         Map<String, String> options;
@@ -280,7 +280,10 @@ public class ProjectService extends Service {
                                                                            getServiceContext().getBaseUriBuilder(),
                                                                            projectManager.getProjectTypeRegistry(),
                                                                            workspace);
-
+        ProjectTypeChangedHandler projectTypeChangedHandler = projectHandlerRegistry.getProjectTypeChangedHandler(newProject.getType());
+        if (projectTypeChangedHandler != null) {
+            projectTypeChangedHandler.onProjectTypeChanged(project.getBaseFolder());
+        }
         eventService.publish(new ProjectCreatedEvent(project.getWorkspace(), project.getPath()));
 
         logProjectCreatedEvent(descriptor.getName(), descriptor.getType());
