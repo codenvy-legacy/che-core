@@ -18,9 +18,8 @@ import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.workspace.server.event.AfterCreateWorkspaceEvent;
-import org.eclipse.che.api.workspace.server.event.BeforeCreateWorkspaceEvent;
 import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
-import org.eclipse.che.api.workspace.server.spi.UserWorkspaceImpl;
+import org.eclipse.che.api.workspace.server.model.impl.UserWorkspaceImpl;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,31 +61,31 @@ public class WorkspaceManager {
     public UsersWorkspace createWorkspace(final WorkspaceConfig workspace, final String accountId)
             throws ConflictException, ServerException, BadRequestException {
 
-        validateName(workspace.getName());
-
         requiredNotNull(workspace, "New workspace");
 
+        validateName(workspace.getName());
         if (workspace.getAttributes() != null) {
             validateAttributes(workspace.getAttributes());
         }
+
         if (workspace.getName() == null || workspace.getName().isEmpty()) {
 //            workspace.setName(generateWorkspaceName());
         }
 
-        eventService.publish(new BeforeCreateWorkspaceEvent() {
-            @Override
-            public UsersWorkspace getWorkspace() {
-                return workspace;
-            }
+//        eventService.publish(new BeforeCreateWorkspaceEvent() {
+//            @Override
+//            public UsersWorkspace getWorkspace() {
+//                return workspace;
+//            }
+//
+//            @Override
+//            public String getAccountId() {
+//                return accountId;
+//            }
+//        });
 
-            @Override
-            public String getAccountId() {
-                return accountId;
-            }
-        });
 
-
-        UserWorkspaceImpl newWorkspace = workspaceDao.create(workspace);
+        UserWorkspace newWorkspace = workspaceDao.create(workspace);
 
         eventService.publish(new AfterCreateWorkspaceEvent() {
             @Override
@@ -246,9 +245,10 @@ public class WorkspaceManager {
      * @throws org.eclipse.che.api.core.ConflictException
      *         when attribute name is {@code null}, empty or it starts with "codenvy"
      */
+    // TODO rename restricted attribute suffix to 'che:'
     private void validateAttributeName(String attributeName) throws ConflictException {
         if (attributeName == null || attributeName.isEmpty() || attributeName.toLowerCase().startsWith("codenvy")) {
-            throw new ConflictException(String.format("Attribute2 name '%s' is not valid", attributeName));
+            throw new ConflictException(String.format("Attribute name '%s' is not valid", attributeName));
         }
     }
 

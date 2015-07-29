@@ -4,7 +4,7 @@ import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.workspace.RuntimeWorkspace;
-import org.eclipse.che.api.workspace.server.spi.UserWorkspaceImpl;
+import org.eclipse.che.api.workspace.server.model.impl.UserWorkspaceImpl;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -27,7 +27,7 @@ import org.eclipse.che.api.user.server.dao.*;
 
 
 import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
-import org.eclipse.che.api.workspace.server.spi.UserWorkspaceImpl;
+import org.eclipse.che.api.workspace.server.model.impl.UserWorkspaceImpl;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
 import org.eclipse.che.commons.env.EnvironmentContext;

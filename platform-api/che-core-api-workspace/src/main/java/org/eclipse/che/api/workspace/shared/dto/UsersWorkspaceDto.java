@@ -17,6 +17,7 @@ import org.eclipse.che.api.core.model.machine.Command;
 import org.eclipse.che.api.core.model.workspace.Environment;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
+import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.dto.shared.DTO;
 
@@ -28,7 +29,7 @@ import java.util.Map;
  */
 @DTO
 @ApiModel(value = "Information about workspace")
-public interface UsersWorkspaceDto extends UsersWorkspace {
+public interface UsersWorkspaceDto extends UsersWorkspace, Hyperlinks {
     @ApiModelProperty(value = "Identifier of a workspace in a system", required = true, position = 1)
     @Override
     String getId();
@@ -65,18 +66,31 @@ public interface UsersWorkspaceDto extends UsersWorkspace {
     @Override
     List<Command> getCommands();
 
+    void setCommands(List<Command> commands);
+
+    UsersWorkspaceDto withCommands(List<Command> commands);
+
     @Override
     List<ProjectConfig> getProjects();
+
+    void setProjects(List<ProjectConfig> projects);
+
+    UsersWorkspaceDto withProjects(List<ProjectConfig> projects);
 
     @Override
     String getDefaultEnvironment();
 
+    void setDefaultEnvironment(String defaultEnvironment);
+
+    UsersWorkspaceDto withDefaultEnvironment(String defaultEnvironment);
+
     @Override
     Map<String, ? extends Environment> getEnvironments();
 
-    List<Link> getLinks();
+    void setEnvironments(Map<String, Environment> environments);
 
-    void setLinks(List<Link> links);
+    UsersWorkspaceDto withEnvironments(Map<String, Environment> environments);
 
+    @Override
     UsersWorkspaceDto withLinks(List<Link> links);
 }
