@@ -17,9 +17,8 @@ import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.core.notification.EventService;
-import org.eclipse.che.api.workspace.server.event.AfterCreateWorkspaceEvent;
 import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
-import org.eclipse.che.api.workspace.server.model.impl.UserWorkspaceImpl;
+import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,56 +57,31 @@ public class WorkspaceManager {
 
     }
 
-    public UsersWorkspace createWorkspace(final WorkspaceConfig workspace, final String accountId)
+    public UsersWorkspace createWorkspace(final WorkspaceConfig workspaceConfig, final String accountId)
             throws ConflictException, ServerException, BadRequestException {
 
-        requiredNotNull(workspace, "New workspace");
+        requiredNotNull(workspaceConfig, "New workspace");
 
-        validateName(workspace.getName());
-        if (workspace.getAttributes() != null) {
-            validateAttributes(workspace.getAttributes());
+        validateName(workspaceConfig.getName());
+        if (workspaceConfig.getAttributes() != null) {
+            validateAttributes(workspaceConfig.getAttributes());
         }
+
+        final UsersWorkspaceImpl workspace = UsersWorkspaceImpl.from(workspaceConfig);
 
         if (workspace.getName() == null || workspace.getName().isEmpty()) {
-//            workspace.setName(generateWorkspaceName());
+            workspace.setName(generateWorkspaceName());
         }
 
-//        eventService.publish(new BeforeCreateWorkspaceEvent() {
-//            @Override
-//            public UsersWorkspace getWorkspace() {
-//                return workspace;
-//            }
-//
-//            @Override
-//            public String getAccountId() {
-//                return accountId;
-//            }
-//        });
-
-
-        UserWorkspace newWorkspace = workspaceDao.create(workspace);
-
-        eventService.publish(new AfterCreateWorkspaceEvent() {
-            @Override
-            public UsersWorkspace getWorkspace() {
-                return workspace;
-            }
-
-            @Override
-            public String getAccountId() {
-                return accountId;
-            }
-        });
+        UsersWorkspace newWorkspace = workspaceDao.create(workspace);
 
         LOG.info("EVENT#workspace-created# WS#{}# WS-ID#{}# USER#{}#", workspace.getName(), workspace.getId(),
                 EnvironmentContext.getCurrent().getUser().getId());
 
         return newWorkspace;
-
     }
 
-
-    public UserWorkspaceImpl updateWorkspace(String id, final WorkspaceConfig workspace) throws ConflictException, ServerException,
+    public UsersWorkspaceImpl updateWorkspace(String id, final WorkspaceConfig workspace) throws ConflictException, ServerException,
             BadRequestException, NotFoundException {
 
         validateName(workspace.getName());
@@ -118,17 +92,9 @@ public class WorkspaceManager {
             validateAttributes(workspace.getAttributes());
         }
 
+        requiredNotNull(workspace.getName(), "Workspace name");
 
-        final String newName = workspace.getName();
-        if (newName != null) {
-//            workspace.setName(newName);
-        }
-
-        // TODO before?
-
-        UserWorkspaceImpl updated = workspaceDao.update(workspace);
-
-        // TODO after?
+        UsersWorkspaceImpl updated = workspaceDao.update(workspace);
 
         LOG.info("EVENT#workspace-updated# WS#{}# WS-ID#{}#", updated.getName(), updated.getId());
 
@@ -150,7 +116,7 @@ public class WorkspaceManager {
 
     }
 
-    public UserWorkspaceImpl getWorkspace(String workspaceId) throws NotFoundException, ServerException {
+    public UsersWorkspaceImpl getWorkspace(String workspaceId) throws NotFoundException, ServerException {
 
 //        UsersWorkspace workspace = this.workspaceRuntimes.get(workspaceId);
 //        if(workspace != null)
@@ -180,7 +146,7 @@ public class WorkspaceManager {
     }
 
 
-    public UserWorkspaceImpl getWorkspace(String workspaceName, String owner) throws NotFoundException, ServerException,
+    public UsersWorkspaceImpl getWorkspace(String workspaceName, String owner) throws NotFoundException, ServerException,
             BadRequestException {
 
         requiredNotNull(workspaceName, "Workspace name");

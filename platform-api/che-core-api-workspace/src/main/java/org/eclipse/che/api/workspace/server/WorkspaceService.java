@@ -27,7 +27,7 @@ import org.eclipse.che.api.user.server.dao.*;
 
 
 import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
-import org.eclipse.che.api.workspace.server.model.impl.UserWorkspaceImpl;
+import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
 import org.eclipse.che.commons.env.EnvironmentContext;
@@ -195,7 +195,7 @@ public class WorkspaceService extends Service {
 
 
 
-        final UserWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
+        final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
 
         Map<String, String> options = new HashMap<>(1);
         options.put("owner", workspace.getOwner());
@@ -243,7 +243,7 @@ public class WorkspaceService extends Service {
                                                                                   ServerException,
                                                                                   BadRequestException {
 
-        final UserWorkspaceImpl workspace = workspaceManager.getWorkspace(name, owner);
+        final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(name, owner);
 
         Map<String, String> options = new HashMap<>(1);
         options.put("owner", owner);
@@ -298,7 +298,7 @@ public class WorkspaceService extends Service {
                                                                                BadRequestException,
                                                                                ServerException {
 
-        final UserWorkspaceImpl old = workspaceManager.getWorkspace(id);
+        final UsersWorkspaceImpl old = workspaceManager.getWorkspace(id);
 
         Map<String, String> options = new HashMap<>(1);
         options.put("owner", old.getOwner());
@@ -306,7 +306,7 @@ public class WorkspaceService extends Service {
         permissionManager.checkPermission("get workspace", options, context);
 
 
-        UserWorkspaceImpl workspace = workspaceManager.updateWorkspace(id, update);
+        UsersWorkspaceImpl workspace = workspaceManager.updateWorkspace(id, update);
 
         LOG.info("EVENT#workspace-updated# WS#{}# WS-ID#{}#", workspace.getName(), workspace.getId());
         return toWorkspaceDto(workspace, context);
@@ -343,7 +343,7 @@ public class WorkspaceService extends Service {
                        String id,
                        @Context SecurityContext context) throws NotFoundException, ServerException, ConflictException {
 
-        final UserWorkspaceImpl ws = workspaceManager.getWorkspace(id);
+        final UsersWorkspaceImpl ws = workspaceManager.getWorkspace(id);
 
         Map<String, String> options = new HashMap<>(1);
         options.put("owner", ws.getOwner());

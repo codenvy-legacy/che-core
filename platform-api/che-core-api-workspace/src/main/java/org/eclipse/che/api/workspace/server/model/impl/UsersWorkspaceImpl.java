@@ -5,6 +5,7 @@ import org.eclipse.che.api.core.model.machine.Command;
 import org.eclipse.che.api.core.model.workspace.Environment;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
+import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +14,7 @@ import java.util.Map;
 /**
  * @author gazarenkov
  */
-public class UserWorkspaceImpl implements UsersWorkspace {
+public class UsersWorkspaceImpl implements UsersWorkspace {
 
     private final String                   id;
     private       String                   name;
@@ -24,14 +25,14 @@ public class UserWorkspaceImpl implements UsersWorkspace {
     private final Map<String, Environment> environments;
     private       String                   defaultEnvironment;
 
-    public UserWorkspaceImpl(String id,
-                             String name,
-                             String owner,
-                             Map<String, String> attributes,
-                             List<Command> commands,
-                             List<ProjectConfig> projects,
-                             Map<String, Environment> environments,
-                             String defaultEnvironment) {
+    public UsersWorkspaceImpl(String id,
+                              String name,
+                              String owner,
+                              Map<String, String> attributes,
+                              List<Command> commands,
+                              List<ProjectConfig> projects,
+                              Map<String, Environment> environments,
+                              String defaultEnvironment) {
         this.id = id;
         this.name = name;
         this.owner = owner;
@@ -41,6 +42,18 @@ public class UserWorkspaceImpl implements UsersWorkspace {
         this.environments = environments != null ? environments : new HashMap<String, Environment>();
         this.defaultEnvironment = defaultEnvironment;
     }
+
+    public static UsersWorkspaceImpl from(WorkspaceConfig workspaceConfig) {
+        return new UsersWorkspaceImpl(null,
+                                     workspaceConfig.getName(),
+                                     null,
+                                     workspaceConfig.getAttributes(),
+                                     (List<Command>)workspaceConfig.getCommands(),
+                                     (List<ProjectConfig>)workspaceConfig.getProjects(),
+                                     (Map<String, Environment>)workspaceConfig.getEnvironments(),
+                                     workspaceConfig.getDefaultEnvironment());
+    }
+
 
     @Override
     public String getId() {
