@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.core.notification;
 
+import org.eclipse.che.api.core.RuntimeApiException;
 import org.eclipse.che.commons.lang.cache.Cache;
 import org.eclipse.che.commons.lang.cache.LoadingValueSLRUCache;
 import org.eclipse.che.commons.lang.cache.SynchronizedCache;
@@ -89,8 +90,12 @@ public class EventService {
      * @param event
      *         event
      */
-    @SuppressWarnings("unchecked")
     public void publish(Object event) {
+        publish(event, false);
+    }
+
+    @SuppressWarnings("unchecked")
+    void publish(Object event, boolean unsafe) {
         if (event == null) {
             throw new IllegalArgumentException("Null event.");
         }
@@ -102,8 +107,14 @@ public class EventService {
                     try {
                         LOG.debug("Publish event {} for {}", event, eventSubscriber);
                         eventSubscriber.onEvent(event);
+                    } catch (RuntimeApiException e) {
+                        if (unsafe) {
+                            throw e;
+                        } else {
+                            LOG.error(e.getLocalizedMessage(), e);
+                        }
                     } catch (RuntimeException e) {
-                        LOG.error(e.getMessage(), e);
+                        LOG.error(e.getLocalizedMessage(), e);
                     }
                 }
             }
