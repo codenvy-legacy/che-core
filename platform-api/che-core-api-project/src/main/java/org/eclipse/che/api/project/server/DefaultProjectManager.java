@@ -16,7 +16,7 @@ import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.notification.EventSubscriber;
-import org.eclipse.che.api.project.server.handlers.ClassPathHandler;
+import org.eclipse.che.api.project.server.handlers.ProjectCreatedHandler;
 import org.eclipse.che.api.project.server.handlers.CreateModuleHandler;
 import org.eclipse.che.api.project.server.handlers.CreateProjectHandler;
 import org.eclipse.che.api.project.server.handlers.ProjectHandlerRegistry;
@@ -224,12 +224,6 @@ public final class DefaultProjectManager implements ProjectManager {
 
         project.updateConfig(projectConfig);
 
-        // Important do it after update config!
-        final ClassPathHandler classPathCreator = handlers.getClassPathHandler(projectConfig.getTypeId());
-        if (classPathCreator != null) {
-            classPathCreator.onCreateClassPath(project.getBaseFolder());
-        }
-
         final ProjectMisc misc = project.getMisc();
         misc.setCreationDate(System.currentTimeMillis());
         misc.save(); // Important to save misc!!
@@ -238,6 +232,10 @@ public final class DefaultProjectManager implements ProjectManager {
             project.setVisibility(visibility);
         }
 
+        final ProjectCreatedHandler projectCreatedHandler = handlers.getProjectCreatedHandler(projectConfig.getTypeId());
+        if (projectCreatedHandler != null) {
+            projectCreatedHandler.onProjectCreated(project.getBaseFolder());
+        }
         return project;
     }
 

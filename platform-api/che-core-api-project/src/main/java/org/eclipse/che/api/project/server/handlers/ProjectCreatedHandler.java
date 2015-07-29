@@ -18,7 +18,7 @@ import org.eclipse.che.api.project.server.FolderEntry;
 /**
  * @author Roman Nikitenko
  */
-public interface ClassPathHandler extends ProjectHandler {
+public interface ProjectCreatedHandler extends ProjectHandler {
 
-    void onCreateClassPath(FolderEntry projectFolder) throws ServerException, ForbiddenException, ConflictException;
+    void onProjectCreated(FolderEntry projectFolder) throws ServerException, ForbiddenException, ConflictException;
 }
