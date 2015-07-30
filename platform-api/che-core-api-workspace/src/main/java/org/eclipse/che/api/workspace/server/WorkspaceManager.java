@@ -46,14 +46,19 @@ public class WorkspaceManager {
     private final WorkspaceDao      workspaceDao;
     private final WorkspaceRegistry workspaceRegistry;
 
+    // TODO must be optional
+    private WorkspaceHooks hooks = null;
+
     @Inject
-    public WorkspaceManager(WorkspaceDao workspaceDao, WorkspaceRegistry workspaceRegistry) {
+    public WorkspaceManager(WorkspaceDao workspaceDao, WorkspaceRegistry workspaceRegistry,
+                            WorkspaceHooks hooks) {
         this.workspaceDao = workspaceDao;
         this.workspaceRegistry = workspaceRegistry;
+        this.hooks = hooks;
     }
 
     public UsersWorkspace createWorkspace(final WorkspaceConfig workspaceConfig, final String accountId)
-            throws ConflictException, ServerException, BadRequestException {
+            throws NotFoundException, ConflictException, ServerException, BadRequestException {
 
         requiredNotNull(workspaceConfig, "Workspace config");
 
@@ -68,8 +73,13 @@ public class WorkspaceManager {
             workspace.setName(generateWorkspaceName());
         }
 
+        if(hooks != null)
+            hooks.beforeCreate(workspaceConfig, accountId);
+
         UsersWorkspace newWorkspace = workspaceDao.create(workspace);
 
+        if(hooks != null)
+            hooks.afterCreate(workspaceConfig, accountId);
 
         LOG.info("EVENT#workspace-created# WS#{}# WS-ID#{}# USER#{}#", workspace.getName(), workspace.getId(),
                  EnvironmentContext.getCurrent().getUser().getId());
@@ -109,6 +119,8 @@ public class WorkspaceManager {
             throw new ConflictException("Can't remove running workspace " + workspaceId);
         } catch (NotFoundException e) {
             workspaceDao.remove(workspaceId);
+            if(hooks != null)
+                hooks.afterRemove(workspaceId);
             LOG.info("EVENT#workspace-remove# WS-ID#{}#", workspaceId);
         }
     }
