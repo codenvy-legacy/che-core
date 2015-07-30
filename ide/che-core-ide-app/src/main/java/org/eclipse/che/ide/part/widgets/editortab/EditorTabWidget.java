@@ -33,7 +33,6 @@ import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
-import java.util.Objects;
 
 /**
  * @author Dmitry Shnurenko
@@ -166,20 +165,4 @@ public class EditorTabWidget extends Composite implements EditorTab {
         delegate.onTabClose(this);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public boolean equals(Object other) {
-        if (this == other) return true;
-        if (other == null || getClass() != other.getClass()) return false;
-
-        EditorTabWidget that = (EditorTabWidget)other;
-
-        return Objects.equals(title.getText(), that.title.getText());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(title.getText());
-    }
 }
