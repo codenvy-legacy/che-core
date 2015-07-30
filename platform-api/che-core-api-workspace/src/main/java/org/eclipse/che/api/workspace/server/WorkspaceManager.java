@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server;
 
+import com.google.inject.Inject;
 import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
@@ -24,7 +25,6 @@ import org.eclipse.che.commons.env.EnvironmentContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -45,15 +45,16 @@ public class WorkspaceManager {
 
     private final WorkspaceDao      workspaceDao;
     private final WorkspaceRegistry workspaceRegistry;
-
-    // TODO must be optional
     private WorkspaceHooks hooks = null;
 
     @Inject
-    public WorkspaceManager(WorkspaceDao workspaceDao, WorkspaceRegistry workspaceRegistry,
-                            WorkspaceHooks hooks) {
+    public WorkspaceManager(WorkspaceDao workspaceDao, WorkspaceRegistry workspaceRegistry) {
         this.workspaceDao = workspaceDao;
         this.workspaceRegistry = workspaceRegistry;
+    }
+
+    @Inject(optional=true)
+    public void setHooks(WorkspaceHooks hooks) {
         this.hooks = hooks;
     }
 
