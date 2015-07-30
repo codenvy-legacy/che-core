@@ -20,7 +20,8 @@ import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
  *
  * @author gazarenkov
  */
-public interface WorkspaceHooks {
+public abstract class WorkspaceHooks {
+    public static final WorkspaceHooks NOOP_WORKSPACE_HOOKS = new WorkspaceHooks() {};
 
     /**
      * Called before creating Workspace
@@ -29,7 +30,8 @@ public interface WorkspaceHooks {
      * @throws NotFoundException
      * @throws ServerException
      */
-    void beforeCreate(WorkspaceConfig workspace, String accountId) throws NotFoundException, ServerException;
+    public void beforeCreate(WorkspaceConfig workspace, String accountId) throws NotFoundException, ServerException {
+    }
 
     /**
      * Called after creating Workspace
@@ -38,7 +40,8 @@ public interface WorkspaceHooks {
      * @throws NotFoundException
      * @throws ServerException
      */
-    void afterCreate(WorkspaceConfig workspace, String accountId) throws ServerException;
+    public void afterCreate(WorkspaceConfig workspace, String accountId) throws ServerException {
+    }
 
     /**
      * Called after removing Workspace
@@ -47,6 +50,6 @@ public interface WorkspaceHooks {
      * @throws NotFoundException
      * @throws ServerException
      */
-    void afterRemove(String workspaceId);
-
+    public void afterRemove(String workspaceId) {
+    }
 }

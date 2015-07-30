@@ -11,6 +11,7 @@
 package org.eclipse.che.api.workspace.server;
 
 import com.google.inject.Inject;
+
 import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
@@ -45,7 +46,8 @@ public class WorkspaceManager {
 
     private final WorkspaceDao      workspaceDao;
     private final WorkspaceRegistry workspaceRegistry;
-    private WorkspaceHooks hooks = null;
+
+    private WorkspaceHooks hooks = WorkspaceHooks.NOOP_WORKSPACE_HOOKS;
 
     @Inject
     public WorkspaceManager(WorkspaceDao workspaceDao, WorkspaceRegistry workspaceRegistry) {
@@ -53,7 +55,7 @@ public class WorkspaceManager {
         this.workspaceRegistry = workspaceRegistry;
     }
 
-    @Inject(optional=true)
+    @Inject(optional = true)
     public void setHooks(WorkspaceHooks hooks) {
         this.hooks = hooks;
     }
@@ -74,13 +76,11 @@ public class WorkspaceManager {
             workspace.setName(generateWorkspaceName());
         }
 
-        if(hooks != null)
-            hooks.beforeCreate(workspaceConfig, accountId);
+        hooks.beforeCreate(workspaceConfig, accountId);
 
         UsersWorkspace newWorkspace = workspaceDao.create(workspace);
 
-        if(hooks != null)
-            hooks.afterCreate(workspaceConfig, accountId);
+        hooks.afterCreate(workspaceConfig, accountId);
 
         LOG.info("EVENT#workspace-created# WS#{}# WS-ID#{}# USER#{}#", workspace.getName(), workspace.getId(),
                  EnvironmentContext.getCurrent().getUser().getId());
@@ -120,8 +120,9 @@ public class WorkspaceManager {
             throw new ConflictException("Can't remove running workspace " + workspaceId);
         } catch (NotFoundException e) {
             workspaceDao.remove(workspaceId);
-            if(hooks != null)
-                hooks.afterRemove(workspaceId);
+
+            hooks.afterRemove(workspaceId);
+
             LOG.info("EVENT#workspace-remove# WS-ID#{}#", workspaceId);
         }
     }
