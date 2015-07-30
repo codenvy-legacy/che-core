@@ -319,6 +319,10 @@ public class MachineManager {
         return result;
     }
 
+    public Instance getDevMachine(String workspaceId) throws NotFoundException, MachineException {
+        return machineRegistry.getDevMachine(workspaceId);
+    }
+
     /**
      * Find machines connected with specific workspace/project
      *
