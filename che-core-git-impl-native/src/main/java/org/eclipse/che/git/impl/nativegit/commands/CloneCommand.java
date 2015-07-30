@@ -36,7 +36,7 @@ public class CloneCommand extends RemoteOperationCommand<Void> {
         if (remoteName != null) {
             commandLine.add("--origin", remoteName);
         } //else default origin name
-        commandLine.add(getRemoteUrl(), getRepository().getAbsolutePath());
+        commandLine.add(getRemoteUri(), getRepository().getAbsolutePath());
         // Progress not shown if not a terminal. Activating progress output. See git clone man page.
         commandLine.add("--progress");
         start();

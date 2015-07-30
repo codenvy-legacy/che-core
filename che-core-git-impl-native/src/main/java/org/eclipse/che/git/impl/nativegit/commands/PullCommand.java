@@ -11,7 +11,6 @@
 package org.eclipse.che.git.impl.nativegit.commands;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.MoreObjects;
 
 import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.api.git.shared.GitUser;
@@ -31,6 +30,7 @@ import static org.eclipse.che.dto.server.DtoFactory.newDto;
  */
 public class PullCommand extends RemoteOperationCommand<Void> {
 
+    private String       remote;
     private String       refSpec;
     private GitUser      author;
     private PullResponse pullResponse;
@@ -42,7 +42,7 @@ public class PullCommand extends RemoteOperationCommand<Void> {
     /** @see GitCommand#execute() */
     @Override
     public Void execute() throws GitException {
-        String remote = MoreObjects.firstNonNull(getRemoteUrl(), "origin");
+        remote = remote == null ? "origin" : remote;
         reset();
         commandLine.add("pull");
         if (remote != null) {
@@ -63,7 +63,6 @@ public class PullCommand extends RemoteOperationCommand<Void> {
         pullResponse = newDto(PullResponse.class).withCommandOutput(Joiner.on("\n").join(lines));
         return null;
     }
-
 
 
     /**
@@ -92,5 +91,15 @@ public class PullCommand extends RemoteOperationCommand<Void> {
      */
     public PullResponse getPullResponse() {
         return pullResponse;
+    }
+
+    /**
+     * @param remoteName
+     *         remote name
+     * @return PullCommand with established remote name
+     */
+    public PullCommand setRemote(String remoteName) {
+        this.remote = remoteName;
+        return this;
     }
 }

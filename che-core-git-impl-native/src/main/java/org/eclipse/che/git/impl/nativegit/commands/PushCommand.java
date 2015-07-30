@@ -11,7 +11,6 @@
 package org.eclipse.che.git.impl.nativegit.commands;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.MoreObjects;
 
 import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.api.git.shared.PushResponse;
@@ -30,6 +29,7 @@ import static org.eclipse.che.dto.server.DtoFactory.newDto;
 public class PushCommand extends RemoteOperationCommand<Void> {
 
     private List<String> refSpec;
+    private String       remote;
     private boolean      force;
     private PushResponse pushResponse;
 
@@ -40,9 +40,10 @@ public class PushCommand extends RemoteOperationCommand<Void> {
     /** @see GitCommand#execute() */
     @Override
     public Void execute() throws GitException {
+        remote = remote == null ? "origin" : remote;
         reset();
         commandLine.add("push");
-        commandLine.add(MoreObjects.firstNonNull(getRemoteUrl(), "origin"));
+        commandLine.add(remote);
         if (refSpec != null) {
             commandLine.add(refSpec);
         }
@@ -81,5 +82,17 @@ public class PushCommand extends RemoteOperationCommand<Void> {
      */
     public PushResponse getPushResponse() {
         return pushResponse;
+    }
+
+    /**
+     * If remote name is null "origin" will be used
+     *
+     * @param remoteName
+     *         remote name
+     * @return PushCommand with established remote name
+     */
+    public PushCommand setRemote(String remoteName) {
+        this.remote = remoteName;
+        return this;
     }
 }

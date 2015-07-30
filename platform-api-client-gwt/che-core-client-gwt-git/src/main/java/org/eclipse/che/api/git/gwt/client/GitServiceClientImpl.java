@@ -15,10 +15,6 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.google.web.bindery.event.shared.EventBus;
 
-import org.eclipse.che.api.git.gwt.client.handler.AddRequestHandler;
-import org.eclipse.che.api.git.gwt.client.handler.CloneRequestStatusHandler;
-import org.eclipse.che.api.git.gwt.client.handler.FetchRequestHandler;
-import org.eclipse.che.api.git.gwt.client.handler.InitRequestStatusHandler;
 import org.eclipse.che.api.git.shared.AddRequest;
 import org.eclipse.che.api.git.shared.Branch;
 import org.eclipse.che.api.git.shared.BranchCheckoutRequest;
@@ -116,7 +112,7 @@ public class GitServiceClientImpl implements GitServiceClient {
     private final AsyncRequestLoader      loader;
     private final MessageBus              wsMessageBus;
     private final EventBus                eventBus;
-    private final GitLocalizationConstant constant;
+//    private final GitLocalizationConstant constant;
     private final DtoFactory              dtoFactory;
     private final AsyncRequestFactory     asyncRequestFactory;
 
@@ -126,7 +122,7 @@ public class GitServiceClientImpl implements GitServiceClient {
                                    AsyncRequestLoader loader,
                                    MessageBus wsMessageBus,
                                    EventBus eventBus,
-                                   GitLocalizationConstant constant,
+//                                   GitLocalizationConstant constant,
                                    DtoFactory dtoFactory,
                                    AsyncRequestFactory asyncRequestFactory) {
         this.loader = loader;
@@ -134,7 +130,7 @@ public class GitServiceClientImpl implements GitServiceClient {
         this.baseHttpUrl = restContext + gitServicePath;
         this.wsMessageBus = wsMessageBus;
         this.eventBus = eventBus;
-        this.constant = constant;
+//        this.constant = constant;
         this.dtoFactory = dtoFactory;
         this.asyncRequestFactory = asyncRequestFactory;
     }
@@ -147,7 +143,6 @@ public class GitServiceClientImpl implements GitServiceClient {
         initRequest.setWorkingDir(project.getName());
         initRequest.setInitCommit(true);
 
-        callback.setStatusHandler(new InitRequestStatusHandler(project.getName(), eventBus, constant));
         String url = gitServicePath + INIT + "?projectPath=" + project.getPath();
 
         MessageBuilder builder = new MessageBuilder(POST, url);
@@ -167,7 +162,6 @@ public class GitServiceClientImpl implements GitServiceClient {
                                               .withWorkingDir(project.getPath());
 
         String params = "?projectPath=" + project.getPath();
-        callback.setStatusHandler(new CloneRequestStatusHandler(project.getPath(), remoteUri, eventBus, constant));
 
         String url = gitServicePath + CLONE + params;
 
@@ -203,7 +197,6 @@ public class GitServiceClientImpl implements GitServiceClient {
         } else {
             addRequest.setFilepattern(filePattern);
         }
-        callback.setStatusHandler(new AddRequestHandler(project.getName(), eventBus, constant));
         String url = gitServicePath + ADD + "?projectPath=" + project.getPath();
 
         MessageBuilder builder = new MessageBuilder(POST, url);
@@ -400,7 +393,6 @@ public class GitServiceClientImpl implements GitServiceClient {
         FetchRequest fetchRequest = dtoFactory.createDto(FetchRequest.class).withRefSpec(refspec).withRemote(remote)
                                               .withRemoveDeletedRefs(removeDeletedRefs);
 
-        callback.setStatusHandler(new FetchRequestHandler(project.getName(), refspec, eventBus, constant));
         String url = gitServicePath + FETCH + "?projectPath=" + project.getPath();
         MessageBuilder builder = new MessageBuilder(POST, url);
         builder.data(dtoFactory.toJson(fetchRequest))

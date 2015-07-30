@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.git.impl.nativegit;
 
-import com.google.common.base.MoreObjects;
 
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.core.util.LineConsumerFactory;
@@ -220,7 +219,7 @@ public class NativeGitConnection implements GitConnection {
             }
             if (GitUrl.isSSH(remoteUri)) {
                 branchDeleteCommand = nativeGit.createBranchDeleteCommand();
-                branchDeleteCommand.setRemoteUrl(remoteUri);
+                branchDeleteCommand.setRemoteUri(remoteUri);
             }
         }
         branchName = parseBranchName(branchName);
@@ -307,10 +306,9 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public void clone(CloneRequest request) throws URISyntaxException, UnauthorizedException, GitException {
-        CloneCommand clone;
         final String remoteUri = request.getRemoteUri();
-        clone = nativeGit.createCloneCommand();
-        clone.setRemoteUrl(remoteUri);
+        CloneCommand clone = nativeGit.createCloneCommand();
+        clone.setRemoteUri(remoteUri);
         clone.setRemoteName(request.getRemoteName());
         if (clone.getTimeout() > 0) {
             clone.setTimeout(request.getTimeout());
@@ -371,7 +369,6 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public void fetch(FetchRequest request) throws GitException, UnauthorizedException {
-        FetchCommand fetchCommand;
         String remoteUri;
         try {
             remoteUri = nativeGit.createRemoteListCommand()
@@ -382,13 +379,12 @@ public class NativeGitConnection implements GitConnection {
         } catch (GitException ignored) {
             remoteUri = request.getRemote();
         }
-        fetchCommand = nativeGit.createFetchCommand();
-        fetchCommand
-                .setPrune(request.isRemoveDeletedRefs())
-                .setRefSpec(request.getRefSpec())
-                .setRemoteUrl(request.getRemote())
-                .setTimeout(request.getTimeout())
-        ;
+        FetchCommand fetchCommand = nativeGit.createFetchCommand();
+        fetchCommand.setRemote(request.getRemote())
+                    .setPrune(request.isRemoveDeletedRefs())
+                    .setRefSpec(request.getRefSpec())
+                    .setRemoteUri(remoteUri)
+                    .setTimeout(request.getTimeout());
         executeRemoteCommand(fetchCommand, remoteUri);
     }
 
@@ -456,35 +452,6 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public PullResponse pull(PullRequest request) throws GitException, UnauthorizedException {
-        PullCommand pullCommand;
-        String remoteUri;
-        if (request.getRemote() != null) {
-            remoteUri = request.getRemote();
-        } else
-            try {
-                remoteUri = nativeGit.createRemoteListCommand()
-                                     .setRemoteName(request.getRemote())
-                                     .execute()
-                                     .get(0)
-                                     .getUrl();
-            } catch (GitException ignored) {
-                remoteUri = request.getRemote();
-            }
-        pullCommand = nativeGit.createPullCommand();
-        pullCommand
-                .setRefSpec(request.getRefSpec())
-                .setAuthor(getLocalCommitter())
-                .setRemoteUrl(MoreObjects.firstNonNull(remoteUri, "origin"))
-                .setTimeout(request.getTimeout());
-
-        executeRemoteCommand(pullCommand, remoteUri);
-
-        return pullCommand.getPullResponse();
-    }
-
-    @Override
-    public PushResponse push(PushRequest request) throws GitException, UnauthorizedException {
-        PushCommand pushCommand;
         String remoteUri;
         try {
             remoteUri = nativeGit.createRemoteListCommand()
@@ -495,13 +462,38 @@ public class NativeGitConnection implements GitConnection {
         } catch (GitException ignored) {
             remoteUri = request.getRemote();
         }
-        pushCommand = nativeGit.createPushCommand();
+        PullCommand pullCommand = nativeGit.createPullCommand();
+        pullCommand.setRemote(request.getRemote())
+                   .setRefSpec(request.getRefSpec())
+                   .setAuthor(getLocalCommitter())
+                   .setRemoteUri(remoteUri)
+                   .setTimeout(request.getTimeout());
 
-        pushCommand
-                .setForce(request.isForce())
-                .setRefSpec(request.getRefSpec())
-                .setRemoteUrl(request.getRemote())
-                .setTimeout(request.getTimeout());
+        executeRemoteCommand(pullCommand, remoteUri);
+
+        return pullCommand.getPullResponse();
+    }
+
+    @Override
+    public PushResponse push(PushRequest request) throws GitException, UnauthorizedException {
+        String remoteUri;
+        try {
+            remoteUri = nativeGit.createRemoteListCommand()
+                                 .setRemoteName(request.getRemote())
+                                 .execute()
+                                 .get(0)
+                                 .getUrl();
+        } catch (GitException ignored) {
+            remoteUri = request.getRemote();
+        }
+
+        PushCommand pushCommand = nativeGit.createPushCommand();
+
+        pushCommand.setRemote(request.getRemote())
+                   .setForce(request.isForce())
+                   .setRefSpec(request.getRefSpec())
+                   .setRemoteUri(remoteUri)
+                   .setTimeout(request.getTimeout());
 
         executeRemoteCommand(pushCommand, remoteUri);
 

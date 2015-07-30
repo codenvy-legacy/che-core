@@ -10,13 +10,21 @@
  *******************************************************************************/
 package org.eclipse.che.git.impl.nativegit.ssh;
 
-import java.io.InputStream;
+import org.eclipse.che.api.git.GitException;
 
 /**
  * @author Sergii Kabashniuk
  */
 public interface SshKeyProvider {
-    InputStream getPublicKey(String host);
 
-    InputStream getPrivateKey(String host);
+    /**
+     * Get private ssh key.
+     *
+     * @param url
+     *         url to git repository
+     * @return byte array that contains private ssh key
+     * @throws GitException
+     *         if an error occurs while generating keys
+     */
+    byte[] getPrivateKey(String url) throws GitException;
 }

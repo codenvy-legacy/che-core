@@ -34,8 +34,9 @@ public class FetchCommand extends RemoteOperationCommand<Void> {
     /** @see GitCommand#execute() */
     @Override
     public Void execute() throws GitException {
+        remote = remote == null ? "origin" : remote;
         reset();
-        commandLine.add("fetch", getRemoteUrl());
+        commandLine.add("fetch", remote);
         commandLine.add(refSpec);
         if (prune) {
             commandLine.add("--prune");
@@ -63,6 +64,16 @@ public class FetchCommand extends RemoteOperationCommand<Void> {
      */
     public FetchCommand setPrune(boolean prune) {
         this.prune = prune;
+        return this;
+    }
+
+    /**
+     * @param remote
+     *         remote name
+     * @return FetchCommand with established remote fetch
+     */
+    public FetchCommand setRemote(String remote) {
+        this.remote = remote;
         return this;
     }
 }

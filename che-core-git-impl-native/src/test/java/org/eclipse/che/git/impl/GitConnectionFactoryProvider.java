@@ -17,7 +17,6 @@ import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
 import org.eclipse.che.git.impl.nativegit.ssh.SshKeyProvider;
 import org.testng.annotations.DataProvider;
 
-import java.io.InputStream;
 import java.util.Collections;
 
 /**
@@ -29,19 +28,17 @@ public class GitConnectionFactoryProvider {
     @DataProvider(name = "GitConnectionFactory")
     public static Object[][] createConnection() {
         return new Object[][]{
-                new Object[]{new NativeGitConnectionFactory(new CredentialsLoader(Collections.<CredentialsProvider>emptySet()), new GitSshScriptProvider(
-
-                        new SshKeyProvider() {
-                            @Override
-                            public InputStream getPublicKey(String host) {
-                                return null;
-                            }
-
-                            @Override
-                            public InputStream getPrivateKey(String host) {
-                                return null;
-                            }
-                        }), null)}
+                new Object[]{new NativeGitConnectionFactory(
+                        new CredentialsLoader(Collections.<CredentialsProvider>emptySet()),
+                        new GitSshScriptProvider(
+                                new SshKeyProvider() {
+                                    @Override
+                                    public byte[] getPrivateKey(String host) {
+                                        return new byte[0];
+                                    }
+                                }),
+                        null)
+                }
         };
     }
 }
