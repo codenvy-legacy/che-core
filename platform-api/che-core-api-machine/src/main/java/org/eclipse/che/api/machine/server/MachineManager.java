@@ -117,11 +117,13 @@ public class MachineManager {
      *         if machine type from recipe is unsupported
      * @throws NotFoundException
      *         if no instance provider implementation found for provided machine type
+     * @throws ConflictException
+     *         if machine with given name already exists
      * @throws MachineException
      *         if any other exception occurs during starting
      */
     public MachineImpl create(final RecipeMachineCreationMetadata machineCreationMetadata)
-            throws MachineException, NotFoundException, UnsupportedRecipeException {
+            throws MachineException, NotFoundException, UnsupportedRecipeException, ConflictException {
         final MachineRecipe machineRecipe = machineCreationMetadata.getRecipe();
         final InstanceProvider instanceProvider = machineInstanceProviders.getProvider(machineCreationMetadata.getType());
         final String recipeType = machineRecipe.getType();
@@ -161,12 +163,15 @@ public class MachineManager {
      *         if snapshot not found
      * @throws NotFoundException
      *         if no instance provider implementation found for provided machine type
+     * @throws ConflictException
+     *         if machine with given name already exists
      * @throws SnapshotException
      *         if error occurs on retrieving snapshot information
      * @throws MachineException
      *         if any other exception occurs during starting
      */
-    public MachineImpl create(final SnapshotMachineCreationMetadata machineCreationMetadata) throws NotFoundException, SnapshotException, MachineException {
+    public MachineImpl create(final SnapshotMachineCreationMetadata machineCreationMetadata)
+            throws NotFoundException, SnapshotException, MachineException, ConflictException {
         final SnapshotImpl snapshot = getSnapshot(machineCreationMetadata.getSnapshotId());
         final InstanceProvider instanceProvider = machineInstanceProviders.getProvider(snapshot.getType());
 
@@ -197,7 +202,14 @@ public class MachineManager {
                                       final String workspaceId,
                                       final boolean isWorkspaceBound,
                                       final MachineCreationMetadata creationMetadata,
-                                      final MachineInstanceCreator instanceCreator) throws MachineException, NotFoundException {
+                                      final MachineInstanceCreator instanceCreator)
+            throws MachineException, NotFoundException, ConflictException {
+        for (MachineImpl machine : machineRegistry.getStates()) {
+            if (machine.getWorkspaceId().equals(workspaceId) && machine.getDisplayName().equals(creationMetadata.getDisplayName())) {
+                throw new ConflictException("Machine with name " + creationMetadata.getDisplayName() + " already exists");
+            }
+        }
+
         final String machineId = generateMachineId();
         final String creator = EnvironmentContext.getCurrent().getUser().getId();
 
