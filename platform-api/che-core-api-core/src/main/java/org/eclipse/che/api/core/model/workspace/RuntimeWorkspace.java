@@ -10,9 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.api.core.model.workspace;
 
-
-import org.eclipse.che.api.core.model.project.fs.Folder;
-
 import java.util.List;
 
 /**
@@ -22,7 +19,7 @@ public interface RuntimeWorkspace extends UsersWorkspace {
 
     Machine getDevMachine();
 
-    List<Machine> getMachines();
+    List<? extends Machine> getMachines();
 
     boolean isTemporary();
 

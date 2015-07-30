@@ -28,11 +28,11 @@ public interface ProjectConfig {
 
     String getDescription();
 
-    ProjectType getType();
+    String getType();
 
-    List<? extends ProjectType> getMixinTypes();
+    List<String> getMixinTypes();
 
-    Map<String, List<? extends Attribute>> getAttributes();
+    Map<String, List<String>> getAttributes();
 
     SourceStorage getSourceStorage();
 }

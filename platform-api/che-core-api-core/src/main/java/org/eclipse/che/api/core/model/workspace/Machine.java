@@ -28,21 +28,6 @@ public interface Machine extends MachineConfig {
     String getId();
 
     /**
-     * List of projects bound to this machine
-     */
-    //Set<? extends ProjectBinding> getProjects();
-
-    /**
-     * Id of workspace this machine belongs to
-     */
-    //String getWorkspaceId();
-
-    /**
-     * Is workspace bound to machine or not
-     */
-    //boolean isDev();
-
-    /**
      * Channel of websocket where machine logs should be put
      */
     String getOutputChannel();
@@ -56,6 +41,6 @@ public interface Machine extends MachineConfig {
     /**
      * Returns mapping of exposed ports to {link Server}
      */
-    Map<String, Server> getServers();// throws MachineException;
+    Map<String, ? extends Server> getServers();// throws MachineException;
 
 }

@@ -10,27 +10,34 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.shared.dto;
 
-import org.eclipse.che.api.core.model.project.type.Value;
+import org.eclipse.che.api.core.model.machine.Server;
 import org.eclipse.che.dto.shared.DTO;
 
-import java.util.List;
-
 /**
+ * Describes how to access to exposed ports for servers inside machine
+ *
  * @author Alexander Garagatyi
  */
 @DTO
-public interface ValueDto extends Value {
+public interface ServerDto extends Server {
     @Override
-    String getString();
+    String getAddress();
 
-    void setString(String string);
+    void setAddress(String address);
 
-    ValueDto withString(String string);
+    ServerDto withAddress(String address);
 
     @Override
-    List<String> getList();
+    String getUrl();
 
-    void setList(List<String> list);
+    void setUrl(String url);
 
-    ValueDto withList(List<String> list);
+    ServerDto withUrl(String url);
+
+    @Override
+    String getRef();
+
+    void setRef(String ref);
+
+    ServerDto withRef(String ref);
 }

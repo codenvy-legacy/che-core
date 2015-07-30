@@ -16,6 +16,7 @@ import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.dto.shared.DTO;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author andrew00x
@@ -29,6 +30,33 @@ public interface UsersWorkspaceDto extends UsersWorkspace, WorkspaceConfigDto, H
     void setOwner(String owner);
 
     UsersWorkspaceDto withOwner(String owner);
+
+    @Override
+    UsersWorkspaceDto withName(String name);
+
+    @Override
+    UsersWorkspaceDto  withDefaultEnvironment(String defaultEnvironment);
+
+    @Override
+    List<CommandDto> getCommands();
+
+    @Override
+    UsersWorkspaceDto  withCommands(List<CommandDto> commands);
+
+    @Override
+    List<ProjectConfigDto> getProjects();
+
+    @Override
+    UsersWorkspaceDto  withProjects(List<ProjectConfigDto> projects);
+
+    @Override
+    Map<String, EnvironmentDto> getEnvironments();
+
+    @Override
+    UsersWorkspaceDto withEnvironments(Map<String, EnvironmentDto> environments);
+
+    @Override
+    UsersWorkspaceDto withAttributes(Map<String, String> attributes);
 
     @Override
     UsersWorkspaceDto withLinks(List<Link> links);

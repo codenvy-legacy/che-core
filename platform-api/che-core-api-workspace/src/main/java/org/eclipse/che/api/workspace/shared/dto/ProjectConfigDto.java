@@ -21,29 +21,50 @@ import java.util.Map;
  */
 @DTO
 public interface ProjectConfigDto extends ProjectConfig {
+    @Override
+    String getName();
+
     void setName(String name);
 
     ProjectConfigDto withName(String name);
+
+    @Override
+    String getPath();
 
     void setPath(String path);
 
     ProjectConfigDto withPath(String path);
 
+    @Override
+    String getDescription();
+
     void setDescription(String description);
 
     ProjectConfigDto withDescription(String description);
 
-    void setType(ProjectTypeDto type);
+    @Override
+    String getType();
 
-    ProjectConfigDto withType(ProjectTypeDto type);
+    void setType(String type);
 
-    void setMixinTypes(List<ProjectTypeDto> mixinTypes);
+    ProjectConfigDto withType(String type);
 
-    ProjectConfigDto withMixinTypes(List<ProjectTypeDto> mixinTypes);
+    @Override
+    List<String> getMixinTypes();
 
-    void setAttributes(Map<String, List<AttributeDto>> attributes);
+    void setMixinTypes(List<String> mixinTypes);
 
-    ProjectConfigDto withAttributes(Map<String, List<AttributeDto>> attributes);
+    ProjectConfigDto withMixinTypes(List<String> mixinTypes);
+
+    @Override
+    Map<String, List<String>> getAttributes();
+
+    void setAttributes(Map<String, List<String>> attributes);
+
+    ProjectConfigDto withAttributes(Map<String, List<String>> attributes);
+
+    @Override
+    SourceStorageDto getSourceStorage();
 
     void setSourceStorage(SourceStorageDto sourceStorage);
 

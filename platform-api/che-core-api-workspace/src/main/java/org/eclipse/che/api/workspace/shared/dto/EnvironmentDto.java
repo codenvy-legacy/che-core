@@ -32,5 +32,5 @@ public interface EnvironmentDto extends Environment {
 
     void setMachineConfigs(List<MachineConfigDto> machineConfigs);
 
-    List<MachineConfigDto> withMachineConfigs(List<MachineConfigDto> machineConfigs);
+    EnvironmentDto withMachineConfigs(List<MachineConfigDto> machineConfigs);
 }
