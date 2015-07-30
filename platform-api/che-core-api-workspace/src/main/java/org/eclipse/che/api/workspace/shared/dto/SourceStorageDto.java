@@ -10,26 +10,34 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.shared.dto;
 
-import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
-import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
-import org.eclipse.che.api.core.rest.shared.dto.Link;
+import org.eclipse.che.api.core.model.project.SourceStorage;
 import org.eclipse.che.dto.shared.DTO;
 
-import java.util.List;
+import java.util.Map;
 
 /**
- * @author andrew00x
+ * @author Alexander Garagatyi
  */
 @DTO
-public interface UsersWorkspaceDto extends UsersWorkspace, WorkspaceConfigDto, Hyperlinks {
-    void setId(String id);
+public interface SourceStorageDto extends SourceStorage {
+    @Override
+    String getType();
 
-    UsersWorkspaceDto withId(String id);
+    void setType(String type);
 
-    void setOwner(String owner);
-
-    UsersWorkspaceDto withOwner(String owner);
+    SourceStorageDto withType(String type);
 
     @Override
-    UsersWorkspaceDto withLinks(List<Link> links);
+    String getLocation();
+
+    void setLocation(String location);
+
+    SourceStorageDto withLocation(String location);
+
+    @Override
+    Map<String, String> getParameters();
+
+    void setParameters(Map<String, String> parameters);
+
+    SourceStorageDto withParameters(Map<String, String> parameters);
 }

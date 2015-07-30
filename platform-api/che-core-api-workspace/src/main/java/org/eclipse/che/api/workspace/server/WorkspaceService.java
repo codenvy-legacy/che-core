@@ -56,7 +56,7 @@ import static org.eclipse.che.commons.lang.NameGenerator.generate;
      description = "Workspace service")
 @Path("/workspace")
 public class WorkspaceService extends Service {
-    private static final Logger LOG = LoggerFactory.getLogger(WorkspaceService.class);
+/*    private static final Logger LOG = LoggerFactory.getLogger(WorkspaceService.class);
 
     private final WorkspaceManager workspaceManager;
 
@@ -90,7 +90,7 @@ public class WorkspaceService extends Service {
         this.permissionManager = permissionManager;
     }
 
-    /**
+    *//**
      * Creates new workspace and adds current user as member to created workspace
      * with roles <i>"workspace/admin"</i> and <i>"workspace/developer"</i>. Returns status code <strong>201 CREATED</strong>
      * and {@link org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor} if workspace has been created successfully.
@@ -111,7 +111,7 @@ public class WorkspaceService extends Service {
      * @see org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor
      * //@see #getById(String, javax.ws.rs.core.SecurityContext)
      * //@see #getByName(String, javax.ws.rs.core.SecurityContext)
-     */
+     *//*
     @ApiOperation(value = "Create a new workspace",
                   response = WorkspaceDescriptor.class,
                   position = 2)
@@ -159,7 +159,7 @@ public class WorkspaceService extends Service {
     }
 
 
-    /**
+    *//**
      * Searches for workspace with given identifier and returns {@link org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor} if found.
      * If user that has called this method is not <i>"workspace/admin"</i> or <i>"workspace/developer"</i>
      * workspace attributes will not be added to response.
@@ -173,7 +173,7 @@ public class WorkspaceService extends Service {
      *         when some error occurred while retrieving workspace
      * @see org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor
      * @see #getByName(String, javax.ws.rs.core.SecurityContext)
-     */
+     *//*
     @ApiOperation(value = "Get workspace by ID",
                   response = WorkspaceDescriptor.class,
                   position = 5)
@@ -205,7 +205,7 @@ public class WorkspaceService extends Service {
         return toWorkspaceDto(workspace, context);
     }
 
-    /**
+    *//**
      * Searches for workspace with given name and return {@link org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor} for it.
      * If user that has called this method is not <i>"workspace/admin"</i> or <i>"workspace/developer"</i>
      * workspace attributes will not be added to response.
@@ -219,7 +219,7 @@ public class WorkspaceService extends Service {
      *         when some error occurred while retrieving workspace
      * @see org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor
      * @see #getById(String, javax.ws.rs.core.SecurityContext)
-     */
+     *//*
     @ApiOperation(value = "Gets workspace by name",
                   response = WorkspaceDescriptor.class,
                   position = 4)
@@ -255,7 +255,7 @@ public class WorkspaceService extends Service {
         return toWorkspaceDto(workspace, context);
     }
 
-    /**
+    *//**
      * <p>Updates workspace.</p>
      * <strong>Note:</strong> existed workspace attributes with same name as
      * update attributes will be replaced with update attributes.
@@ -276,7 +276,7 @@ public class WorkspaceService extends Service {
      * @see org.eclipse.che.api.workspace.shared.dto.WorkspaceUpdate
      * @see org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor
      * //@see #removeAttribute(String, String, javax.ws.rs.core.SecurityContext)
-     */
+     *//*
     @ApiOperation(value = "Update workspace",
                   response = WorkspaceDescriptor.class,
                   notes = "Update an existing workspace. A JSON with updated properties is sent.",
@@ -315,7 +315,7 @@ public class WorkspaceService extends Service {
 
 
 
-    /**
+    *//**
      * Removes certain workspace.
      *
      * @param wsId
@@ -326,7 +326,7 @@ public class WorkspaceService extends Service {
      *         when some error occurred while retrieving/removing workspace or member
      * @throws org.eclipse.che.api.core.ConflictException
      *         if some error occurred while removing member
-     */
+     *//*
     @ApiOperation(value = "Delete a workspace",
                   notes = "Delete a workspace by its ID",
                   position = 14)
@@ -415,10 +415,10 @@ public class WorkspaceService extends Service {
 //        return user;
 //    }
 
-//    /**
+//    *//**
 //     * Converts {@link org.eclipse.che.api.workspace.server.dao.Member} to {@link org.eclipse.che.api.workspace.shared.dto.MemberDescriptor}
-//     */
-//    /* used in tests */MemberDescriptor toWorkspaceDto(Member member, Workspace workspace, SecurityContext context) {
+//     *//*
+//    *//* used in tests *//*MemberDescriptor toWorkspaceDto(Member member, Workspace workspace, SecurityContext context) {
 //        final UriBuilder serviceUriBuilder = getServiceContext().getServiceUriBuilder();
 //        final UriBuilder baseUriBuilder = getServiceContext().getBaseUriBuilder();
 //        final List<Link> links = new LinkedList<>();
@@ -483,10 +483,10 @@ public class WorkspaceService extends Service {
 //                         .withLinks(links);
 //    }
 
-    /**
+    *//**
      * Converts {@link org.eclipse.che.api.workspace.server.dao.Workspace} to {@link org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor}
-     */
-    /* used in tests */
+     *//*
+    *//* used in tests *//*
     UsersWorkspaceDto toWorkspaceDto(UsersWorkspace workspace, SecurityContext context) {
         final UsersWorkspaceDto workspaceDescriptor = DtoFactory.getInstance().createDto(UsersWorkspaceDto.class)
                                                                   .withId(workspace.getId())
@@ -564,7 +564,7 @@ public class WorkspaceService extends Service {
         return workspaceDescriptor.withLinks(links);
     }
 
-//    /**
+//    *//**
 //     * Checks object reference is not {@code null}
 //     *
 //     * @param object
@@ -573,21 +573,21 @@ public class WorkspaceService extends Service {
 //     *         used as subject of exception message "{subject} required"
 //     * @throws org.eclipse.che.api.core.BadRequestException
 //     *         when object reference is {@code null}
-//     */
+//     *//*
 //    private void requiredNotNull(Object object, String subject) throws BadRequestException {
 //        if (object == null) {
 //            throw new BadRequestException(subject + " required");
 //        }
 //    }
 
-    /**
+    *//**
      * Validates attribute name.
      *
      * @param attributeName
      *         attribute name to check
      * @throws org.eclipse.che.api.core.ConflictException
      *         when attribute name is {@code null}, empty or it starts with "codenvy"
-     */
+     *//*
     private void validateAttributeName(String attributeName) throws ConflictException {
         if (attributeName == null || attributeName.isEmpty() || attributeName.toLowerCase().startsWith("codenvy")) {
             throw new ConflictException(String.format("Attribute2 name '%s' is not valid", attributeName));
@@ -625,13 +625,13 @@ public class WorkspaceService extends Service {
 //        return false;
 //    }
 
-    /**
+    *//**
      * Generates workspace name based on current user email.
      * Generating process is simple, assuming we have user with email user@codenvy.com,
      * then first time we will check for workspace with name equal to "user" and if it is free
      * it will be returned, but if it is reserved then  number suffix will be added to the end of "user" name
      * and it will be checked again until free workspace name is not found.
-     */
+     *//*
     private String generateWorkspaceName() throws ServerException {
         //should be email
         String userName = currentUser().getName();
@@ -660,5 +660,5 @@ public class WorkspaceService extends Service {
 
     private org.eclipse.che.commons.user.User currentUser() {
         return EnvironmentContext.getCurrent().getUser();
-    }
+    }*/
 }

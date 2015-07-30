@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2012-2015 Codenvy, S.A.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Codenvy, S.A. - initial API and implementation
+ *******************************************************************************/
 package org.eclipse.che.api.workspace.server.model.impl;
 
 
@@ -64,8 +74,9 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
         return id;
     }
 
-    public void setId(String id) {
+    public UsersWorkspaceImpl setId(String id) {
         this.id = id;
+        return this;
     }
 
     @Override
@@ -73,8 +84,9 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
         return name;
     }
 
-    public void setName(String name) {
+    public UsersWorkspaceImpl setName(String name) {
         this.name = name;
+        return this;
     }
 
     @Override
@@ -86,11 +98,12 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
      * Sets particular environment configured for this workspace  as default
      * Throws NullPointerException if no Env with incoming name configured
      */
-    public void setDefaultEnvironment(String name) {
+    public UsersWorkspaceImpl setDefaultEnvironment(String name) {
         if (environments.get(name) == null) {
             throw new NullPointerException("No Environment named '" + name + "' found");
         }
         defaultEnvironment = name;
+        return this;
     }
 
     @Override
@@ -98,8 +111,9 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
         return attributes;
     }
 
-    public void setAttributes(Map<String, String> attributes) {
+    public UsersWorkspaceImpl setAttributes(Map<String, String> attributes) {
         this.attributes = attributes == null ? new HashMap<String, String>() : new HashMap<>(attributes);
+        return this;
     }
 
     @Override
@@ -107,8 +121,9 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
         return commands;
     }
 
-    public void setCommands(List<? extends Command> commands) {
+    public UsersWorkspaceImpl setCommands(List<? extends Command> commands) {
         this.commands = commands == null ? new ArrayList<Command>() : new ArrayList<>(commands);
+        return this;
     }
 
     @Override
@@ -116,8 +131,9 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
         return projects;
     }
 
-    public void setProjects(List<? extends ProjectConfig> projects) {
+    public UsersWorkspaceImpl setProjects(List<? extends ProjectConfig> projects) {
         this.projects = projects == null ? new ArrayList<ProjectConfig>() : new ArrayList<>(projects);
+        return this;
     }
 
     @Override
@@ -125,8 +141,9 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
         return environments;
     }
 
-    public void setEnvironments(Map<String, ? extends Environment> environments) {
+    public UsersWorkspaceImpl setEnvironments(Map<String, ? extends Environment> environments) {
         this.environments = environments == null ? new HashMap<String, Environment>() : new HashMap<>(environments);
+        return this;
     }
 
     @Override
@@ -134,8 +151,9 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
         return this.owner;
     }
 
-    public void setOwner(String owner) {
+    public UsersWorkspaceImpl setOwner(String owner) {
         this.owner = owner;
+        return this;
     }
 
     @Override

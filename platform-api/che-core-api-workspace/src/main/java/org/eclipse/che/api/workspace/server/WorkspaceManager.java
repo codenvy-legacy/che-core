@@ -12,13 +12,14 @@ package org.eclipse.che.api.workspace.server;
 
 import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
+import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.model.workspace.RuntimeWorkspace;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
-import org.eclipse.che.api.core.notification.EventService;
-import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
 import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
+import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +29,8 @@ import javax.inject.Singleton;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import static org.eclipse.che.commons.lang.NameGenerator.generate;
+
 /**
  * Facade for Workspace related operations
  *
@@ -35,32 +38,24 @@ import java.util.regex.Pattern;
  */
 @Singleton
 public class WorkspaceManager {
-
-    public static final  String WORKSPACE_SCOPE = "workspace";
-    private static final Logger LOG             = LoggerFactory.getLogger(WorkspaceService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(WorkspaceService.class);
 
     /* should contain [3, 20] characters, first and last character is letter or digit, available characters {A-Za-z0-9.-_}*/
     private static final Pattern WS_NAME = Pattern.compile("[\\w][\\w\\.\\-]{1,18}[\\w]");
 
-
-    private final WorkspaceDao workspaceDao;
-    private final EventService eventService;
-
-    private final WorkspaceRuntimes workspaceRuntimes;
+    private final WorkspaceDao      workspaceDao;
+    private final WorkspaceRegistry workspaceRegistry;
 
     @Inject
-    public WorkspaceManager(WorkspaceDao workspaceDao, WorkspaceRuntimes workspaceRuntimes, EventService eventService) {
-
+    public WorkspaceManager(WorkspaceDao workspaceDao, WorkspaceRegistry workspaceRegistry) {
         this.workspaceDao = workspaceDao;
-        this.eventService = eventService;
-        this.workspaceRuntimes = workspaceRuntimes;
-
+        this.workspaceRegistry = workspaceRegistry;
     }
 
     public UsersWorkspace createWorkspace(final WorkspaceConfig workspaceConfig, final String accountId)
             throws ConflictException, ServerException, BadRequestException {
 
-        requiredNotNull(workspaceConfig, "New workspace");
+        requiredNotNull(workspaceConfig, "Workspace config");
 
         validateName(workspaceConfig.getName());
         if (workspaceConfig.getAttributes() != null) {
@@ -75,26 +70,29 @@ public class WorkspaceManager {
 
         UsersWorkspace newWorkspace = workspaceDao.create(workspace);
 
+
         LOG.info("EVENT#workspace-created# WS#{}# WS-ID#{}# USER#{}#", workspace.getName(), workspace.getId(),
-                EnvironmentContext.getCurrent().getUser().getId());
+                 EnvironmentContext.getCurrent().getUser().getId());
 
         return newWorkspace;
     }
 
-    public UsersWorkspaceImpl updateWorkspace(String id, final WorkspaceConfig workspace) throws ConflictException, ServerException,
-            BadRequestException, NotFoundException {
+    public UsersWorkspace updateWorkspace(String workspaceId, final WorkspaceConfig workspace)
+            throws ConflictException, ServerException, BadRequestException, NotFoundException {
+
+        requiredNotNull(workspace, "Workspace config");
 
         validateName(workspace.getName());
-
-        requiredNotNull(workspace, "New workspace");
-
         if (workspace.getAttributes() != null) {
             validateAttributes(workspace.getAttributes());
         }
 
-        requiredNotNull(workspace.getName(), "Workspace name");
+        final UsersWorkspace currentWorkspace = workspaceDao.get(workspaceId);
+        UsersWorkspace newWorkspace = UsersWorkspaceImpl.from(workspace)
+                                                       .setId(currentWorkspace.getId())
+                                                       .setOwner(currentWorkspace.getOwner());
 
-        UsersWorkspaceImpl updated = workspaceDao.update(workspace);
+        UsersWorkspace updated = workspaceDao.update(newWorkspace);
 
         LOG.info("EVENT#workspace-updated# WS#{}# WS-ID#{}#", updated.getName(), updated.getId());
 
@@ -102,78 +100,67 @@ public class WorkspaceManager {
 
     }
 
-    public void removeWorkspace(String id) throws ConflictException, ServerException,
-             NotFoundException {
+    public void removeWorkspace(String workspaceId) throws ConflictException, ServerException, NotFoundException, BadRequestException {
+        requiredNotNull(workspaceId, "Workspace id");
 
-        // TODO before?
+        try {
+            workspaceRegistry.get(workspaceId);
 
-        workspaceDao.remove(id);
-
-        // TODO after?
-
-        LOG.info("EVENT#workspace-remove# WS-ID#{}#",  id);
-
-
+            throw new ConflictException("Can't remove running workspace " + workspaceId);
+        } catch (NotFoundException e) {
+            workspaceDao.remove(workspaceId);
+            LOG.info("EVENT#workspace-remove# WS-ID#{}#", workspaceId);
+        }
     }
 
-    public UsersWorkspaceImpl getWorkspace(String workspaceId) throws NotFoundException, ServerException {
+    public UsersWorkspace getWorkspace(String workspaceId) throws NotFoundException, ServerException, BadRequestException {
+        requiredNotNull(workspaceId, "Workspace id");
 
-//        UsersWorkspace workspace = this.workspaceRuntimes.get(workspaceId);
-//        if(workspace != null)
-//            return workspace;
-//        else
-
-        // TODO before?
         return workspaceDao.get(workspaceId);
-
-        // TODO after?
-
-
-
-//        // tmp_workspace_cloned_from_private_repo - gives information
-//        // whether workspace was clone from private repository or not. It can be use
-//        // by temporary workspace sharing filter for user that are not workspace/admin
-//        // so we need that property here.
-//        // PLZ DO NOT REMOVE!!!!
-//        final Map<String, String> attributes = workspace.getAttributes();
-//        if (attributes.containsKey("allowAnyoneAddMember")) {
-//            workspace.setAttributes(singletonMap("allowAnyoneAddMember", attributes.get("allowAnyoneAddMember")));
-//        } else {
-//            attributes.clear();
-//        }
-
-
     }
 
-
-    public UsersWorkspaceImpl getWorkspace(String workspaceName, String owner) throws NotFoundException, ServerException,
-            BadRequestException {
+    public UsersWorkspace getWorkspace(String workspaceName, String owner)
+            throws NotFoundException, ServerException, BadRequestException {
 
         requiredNotNull(workspaceName, "Workspace name");
 
-        // TODO before?
+        requiredNotNull(owner, "Workspace owner");
 
         return workspaceDao.get(workspaceName, owner);
-
-
-        // TODO after?
-
-
-//        // tmp_workspace_cloned_from_private_repo - gives information
-//        // whether workspace was clone from private repository or not. It can be use
-//        // by temporary workspace sharing filter for user that are not workspace/admin
-//        // so we need that property here.
-//        // PLZ DO NOT REMOVE!!!!
-//        final Map<String, String> attributes = workspace.getAttributes();
-//        if (attributes.containsKey("allowAnyoneAddMember")) {
-//            workspace.setAttributes(singletonMap("allowAnyoneAddMember", attributes.get("allowAnyoneAddMember")));
-//        } else {
-//            attributes.clear();
-//        }
-
-
     }
 
+    public RuntimeWorkspace startWorkspace(String workspaceId)
+            throws NotFoundException, ServerException, ForbiddenException, BadRequestException {
+        requiredNotNull(workspaceId, "Workspace id");
+
+        final UsersWorkspace usersWorkspace = workspaceDao.get(workspaceId);
+
+        return workspaceRegistry.start(usersWorkspace);
+    }
+
+    public void stopWorkspace(String workspaceId) throws ServerException, NotFoundException, ForbiddenException, BadRequestException {
+        requiredNotNull(workspaceId, "Workspace id");
+
+        workspaceRegistry.stop(workspaceId);
+    }
+
+    public RuntimeWorkspace getRuntimeWorkspace(String workspaceId) throws ServerException, BadRequestException, NotFoundException {
+        requiredNotNull(workspaceId, "Workspace id");
+
+        return workspaceRegistry.get(workspaceId);
+    }
+
+    public RuntimeWorkspace startTempWorkspace(WorkspaceConfig workspaceConfig, String owner)
+            throws ServerException, NotFoundException, ForbiddenException, BadRequestException {
+        requiredNotNull(workspaceConfig, "Workspace config");
+        requiredNotNull(owner, "Workspace owner");
+
+        return workspaceRegistry.start(UsersWorkspaceImpl.from(workspaceConfig)
+                                                         .setOwner(owner)
+                                                         .setId(generateWorkspaceId()));
+    }
+
+    /*******************************/
 
     private void validateName(String workspaceName) throws ConflictException {
         if (workspaceName == null) {
@@ -181,10 +168,9 @@ public class WorkspaceManager {
         }
         if (!WS_NAME.matcher(workspaceName).matches()) {
             throw new ConflictException("Incorrect workspace name, it should be between 3 to 20 characters and may contain digits, " +
-                    "latin letters, underscores, dots, dashes and should start and end only with digits, " +
-                    "latin letters or underscores");
+                                        "latin letters, underscores, dots, dashes and should start and end only with digits, " +
+                                        "latin letters or underscores");
         }
-
     }
 
     /**
@@ -246,6 +232,10 @@ public class WorkspaceManager {
             workspaceName = userName + suffix++;
         }
         return workspaceName;
+    }
+
+    private String generateWorkspaceId() {
+        return generate("workspace", Constants.ID_LENGTH);
     }
 
     private boolean workspaceExists(String name) throws ServerException {

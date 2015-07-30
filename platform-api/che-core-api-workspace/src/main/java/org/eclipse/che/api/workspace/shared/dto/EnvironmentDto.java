@@ -10,26 +10,27 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.shared.dto;
 
-import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
-import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
-import org.eclipse.che.api.core.rest.shared.dto.Link;
+import org.eclipse.che.api.core.model.workspace.Environment;
 import org.eclipse.che.dto.shared.DTO;
 
 import java.util.List;
 
 /**
- * @author andrew00x
+ * @author Alexander Garagatyi
  */
 @DTO
-public interface UsersWorkspaceDto extends UsersWorkspace, WorkspaceConfigDto, Hyperlinks {
-    void setId(String id);
+public interface EnvironmentDto extends Environment {
+    @Override
+    String getName();
 
-    UsersWorkspaceDto withId(String id);
+    void setName(String name);
 
-    void setOwner(String owner);
-
-    UsersWorkspaceDto withOwner(String owner);
+    EnvironmentDto withName(String name);
 
     @Override
-    UsersWorkspaceDto withLinks(List<Link> links);
+    List<MachineConfigDto> getMachineConfigs();
+
+    void setMachineConfigs(List<MachineConfigDto> machineConfigs);
+
+    List<MachineConfigDto> withMachineConfigs(List<MachineConfigDto> machineConfigs);
 }

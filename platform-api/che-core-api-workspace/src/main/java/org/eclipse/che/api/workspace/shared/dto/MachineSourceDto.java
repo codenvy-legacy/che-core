@@ -8,17 +8,27 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.workspace.server.event;
+package org.eclipse.che.api.workspace.shared.dto;
 
-import org.eclipse.che.api.core.notification.EventOrigin;
-
+import org.eclipse.che.api.core.model.machine.MachineSource;
+import org.eclipse.che.dto.shared.DTO;
 
 /**
- * @author Sergii Leschenko 
+ * @author Alexander Garagatyi
  */
-@EventOrigin("workspace")
-public class RemoveWorkspaceEvent /*extends WorkspaceEvent*/ {
-//    public RemoveWorkspaceEvent(Workspace workspace) {
-//        super(ChangeType.DELETED, workspace);
-//    }
+@DTO
+public interface MachineSourceDto extends MachineSource {
+    @Override
+    String getType();
+
+    void setType(String type);
+
+    MachineSourceDto withType(String type);
+
+    @Override
+    String getLocation();
+
+    void setLocation(String location);
+
+    MachineSourceDto withLocation(String location);
 }

@@ -28,5 +28,5 @@ public interface RuntimeWorkspace extends UsersWorkspace {
 
     boolean isRunning();
 
-    Folder getRootFolder();
+    String getRootFolder();
 }

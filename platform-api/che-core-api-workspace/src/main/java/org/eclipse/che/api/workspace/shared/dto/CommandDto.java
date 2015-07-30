@@ -8,24 +8,27 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.workspace.server.event;
+package org.eclipse.che.api.workspace.shared.dto;
 
-import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
-import org.eclipse.che.api.core.notification.EventOrigin;
-
-
+import org.eclipse.che.api.core.model.machine.Command;
+import org.eclipse.che.dto.shared.DTO;
 
 /**
- * @author Sergii Leschenko
+ * @author Alexander Garagatyi
  */
-@EventOrigin("workspace")
-public interface AfterCreateWorkspaceEvent  {
+@DTO
+public interface CommandDto extends Command {
+    @Override
+    String getName();
 
-    UsersWorkspace getWorkspace();
+    void setName(String name);
 
-    String getAccountId();
+    CommandDto withName(String name);
 
-//    public AfterCreateWorkspaceEvent(Workspace workspace, Map<String, String> options) {
-//        super(ChangeType.CREATED, workspace);
-//    }
+    @Override
+    String getCommandLine();
+
+    void setCommandLine(String commandLine);
+
+    CommandDto withCommandLine(String commandLine);
 }
