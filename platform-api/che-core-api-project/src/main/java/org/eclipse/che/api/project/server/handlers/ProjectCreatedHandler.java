@@ -12,6 +12,7 @@ package org.eclipse.che.api.project.server.handlers;
 
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
+import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.project.server.FolderEntry;
 
@@ -20,5 +21,6 @@ import org.eclipse.che.api.project.server.FolderEntry;
  */
 public interface ProjectCreatedHandler extends ProjectHandler {
 
-    void onProjectCreated(FolderEntry projectFolder) throws ServerException, ForbiddenException, ConflictException;
+    void onProjectCreated(FolderEntry projectFolder)
+            throws ServerException, ForbiddenException, ConflictException, NotFoundException;
 }
