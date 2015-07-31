@@ -13,6 +13,7 @@ package org.eclipse.che.commons.xml;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.io.ByteArrayOutputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -270,30 +271,19 @@ public final class XMLTreeUtil {
         return indexOfAttributeName(src, target, idx + 1);
     }
 
-    public static byte[] replaceAll(byte[] src, byte target, byte[] replacement, int startFrom) {
-        if (startFrom >= src.length) {
-            throw new IndexOutOfBoundsException("Start from index is out of range");
+    public static byte[] replaceAll(byte[] src, byte[] target, byte[] replacement) {
+        final ByteArrayOutputStream result = new ByteArrayOutputStream(src.length);
+        int i = 0;
+        int wrote = 0;
+        while ((i = indexOf(src, target, i)) != -1) {
+            int len = i - wrote;
+            result.write(src, wrote, len);
+            result.write(replacement, 0, replacement.length);
+            wrote += len + target.length;
+            i += target.length;
         }
-        int matches = 0;
-        for (int i = startFrom; i < src.length; i++) {
-            if (src[i] == target) {
-                matches++;
-            }
-        }
-        if (matches == 0) {
-            return src;
-        }
-        final byte[] newSrc = new byte[src.length - matches + matches * replacement.length];
-        arraycopy(src, 0, newSrc, 0, startFrom);
-        for (int i = startFrom, j = startFrom; i < src.length; i++) {
-            if (target != src[i]) {
-                newSrc[j++] = src[i];
-            } else {
-                System.arraycopy(replacement, 0, newSrc, j, replacement.length);
-                j += replacement.length;
-            }
-        }
-        return newSrc;
+        result.write(src, wrote, src.length - wrote);
+        return result.toByteArray();
     }
 
     public static int rootStart(byte[] xml) {

@@ -16,7 +16,7 @@
     <parent>
         <artifactId>che-core-parent</artifactId>
         <groupId>org.eclipse.che.core</groupId>
-        <version>3.11.1-SNAPSHOT</version>
+        <version>3.11.7-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>che-core-client-gwt-parent</artifactId>
@@ -33,6 +33,7 @@
         <module>che-core-client-gwt-runner</module>
         <module>che-core-client-gwt-vfs</module>
         <module>che-core-client-gwt-factory</module>
+        <module>che-core-client-gwt-git</module>
         <module>che-core-client-gwt-workspace</module>
     </modules>
 </project>

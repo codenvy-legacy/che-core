@@ -948,7 +948,8 @@ public class DtoImplServerTemplate extends DtoImpl {
             return sb.toString();
 
         } else {
-            throw new IllegalArgumentException("We do not handle this type " + type.toString());
+            throw new IllegalArgumentException("Can't build implementation of " + getDtoInterface().getSimpleName() +
+                                               ". DtoGenerator does not handle this type " + type.toString());
         }
     }
 

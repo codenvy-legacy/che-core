@@ -10,14 +10,14 @@
  *******************************************************************************/
 package org.eclipse.che.git.impl.nativegit.commands;
 
-import org.eclipse.che.api.core.util.ListLineConsumer;
 import org.eclipse.che.api.core.util.CommandLine;
 import org.eclipse.che.api.core.util.LineConsumerFactory;
+import org.eclipse.che.api.core.util.ListLineConsumer;
 import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.git.impl.nativegit.CommandProcess;
 
 import java.io.File;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -43,7 +43,7 @@ public abstract class GitCommand<T> extends ListLineConsumer {
      */
     public GitCommand(File repository) {
         this.repository = repository;
-        this.commandEnvironment = Collections.emptyMap();
+        this.commandEnvironment = new HashMap<>();
         commandLine = new CommandLine("git");
         timeout = -1;
     }
@@ -114,13 +114,12 @@ public abstract class GitCommand<T> extends ListLineConsumer {
      * @return command additional environment variables;
      */
     public Map<String, String> getCommandEnvironment() {
-        return commandEnvironment != null ? commandEnvironment : Collections.<String, String>emptyMap();
+        return commandEnvironment;
     }
 
     /** command additional environment variables */
-
-    public void setCommandEnvironment(Map<String, String> commandEnvironment) {
-        this.commandEnvironment = commandEnvironment;
+    public void setCommandEnvironment(String key, String value) {
+        commandEnvironment.put(key, value);
     }
 
     /**

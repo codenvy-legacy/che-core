@@ -11,6 +11,7 @@
 package org.eclipse.che.git.impl;
 
 import com.google.common.io.Files;
+
 import org.eclipse.che.api.git.GitConnection;
 import org.eclipse.che.api.git.GitConnectionFactory;
 import org.eclipse.che.api.git.GitException;
@@ -53,7 +54,7 @@ public class RemoteUpdateTest {
         cleanupTestRepo(repository);
     }
 
-    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
+    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = GitConnectionFactoryProvider.class)
     public void testUpdateBranches(GitConnectionFactory connectionFactory) throws GitException, IOException {
         //given
         GitConnection connection = connectToGitRepositoryWithContent(connectionFactory, repository);
@@ -66,10 +67,10 @@ public class RemoteUpdateTest {
         connection.remoteUpdate(request);
         //then
         assertEquals(parseAllConfig(connection).get("remote.newRemote.fetch").get(0),
-                "+refs/heads/branch2:refs/remotes/newRemote/branch2");
+                     "+refs/heads/branch2:refs/remotes/newRemote/branch2");
     }
 
-    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
+    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = GitConnectionFactoryProvider.class)
     public void testAddUrl(GitConnectionFactory connectionFactory) throws GitException, IOException {
         //given
         GitConnection connection = connectToGitRepositoryWithContent(connectionFactory, repository);
@@ -83,7 +84,7 @@ public class RemoteUpdateTest {
         assertTrue(parseAllConfig(connection).get("remote.newRemote.url").contains("new.com"));
     }
 
-    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
+    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = GitConnectionFactoryProvider.class)
     public void testAddPushUrl(GitConnectionFactory connectionFactory) throws GitException, IOException {
         //given
         GitConnection connection = connectToGitRepositoryWithContent(connectionFactory, repository);
@@ -97,7 +98,7 @@ public class RemoteUpdateTest {
         assertTrue(parseAllConfig(connection).get("remote.newRemote.pushurl").contains("pushurl1"));
     }
 
-    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
+    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = GitConnectionFactoryProvider.class)
     public void testDeleteUrl(GitConnectionFactory connectionFactory) throws GitException, IOException {
         //given
         //add url
@@ -112,10 +113,10 @@ public class RemoteUpdateTest {
         deleteRequest.setRemoveUrl(Arrays.asList("newurl"));
         connection.remoteUpdate(deleteRequest);
         //then
-        assertFalse(parseAllConfig(connection).containsKey("remote.newRemote.url"));
+        assertFalse(!parseAllConfig(connection).containsKey("remote.newRemote.url"));
     }
 
-    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
+    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = GitConnectionFactoryProvider.class)
     public void testDeletePushUrl(GitConnectionFactory connectionFactory) throws GitException, IOException {
         //given
         GitConnection connection = connectToGitRepositoryWithContent(connectionFactory, repository);

@@ -346,6 +346,7 @@ public class StandardComponentInitializer {
         fileGroup.add(openProjectAction);
         fileGroup.add(closeProjectAction);
         fileGroup.add(projectConfigurationAction);
+        fileGroup.addAction(createModuleAction);
         fileGroup.add(uploadFileAction);
         fileGroup.add(uploadFolderFromZipAction);
         fileGroup.add(downloadProjectAsZipAction);
@@ -359,7 +360,6 @@ public class StandardComponentInitializer {
         fileGroup.add(renameItemAction);
         fileGroup.add(deleteItemAction);
         fileGroup.addSeparator();
-        fileGroup.addAction(createModuleAction);
         fileGroup.add(saveGroup);
 
         // Compose Code menu
@@ -461,6 +461,7 @@ public class StandardComponentInitializer {
         // Define hot-keys
         keyBinding.getGlobal().addKey(new KeyBuilder().action().alt().charCode('n').build(), "navigateToFile");
         keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('A').build(), "findActionAction");
+        keyBinding.getGlobal().addKey(new KeyBuilder().alt().charCode('L').build(), "format");
 
         keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('c').build(), "copy");
         keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('x').build(), "cut");

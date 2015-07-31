@@ -14,10 +14,12 @@ import com.google.common.collect.ImmutableMap;
 
 import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.git.impl.nativegit.GitUrl;
+import org.eclipse.che.git.impl.nativegit.ssh.GitSshScript;
 import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
 
 import java.io.File;
-
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Sergii Kabashniuk
@@ -25,7 +27,7 @@ import java.io.File;
 public abstract class RemoteOperationCommand<T> extends GitCommand<T> {
 
     private final GitSshScriptProvider gitSshScriptProvider;
-    private       String               remoteUrl;
+    private       String               remoteUri;
 
     /**
      * @param repository
@@ -37,35 +39,31 @@ public abstract class RemoteOperationCommand<T> extends GitCommand<T> {
 
     }
 
-
-    public String getRemoteUrl() {
-        return remoteUrl;
+    public String getRemoteUri() {
+        return remoteUri;
     }
 
-    public RemoteOperationCommand setRemoteUrl(String remoteUrl) {
-        this.remoteUrl = remoteUrl;
+    /**
+     * @param remoteUri
+     *         remote repository uri
+     */
+    public RemoteOperationCommand setRemoteUri(String remoteUri) {
+        this.remoteUri = remoteUri;
         return this;
     }
 
     @Override
     protected void start() throws GitException {
-        if (!GitUrl.isSSH(remoteUrl)) {
+        if (!GitUrl.isSSH(remoteUri)) {
             super.start();
         } else {
-            File sshScript = gitSshScriptProvider.gitSshScript();
-            sshScript.deleteOnExit();
-            setCommandEnvironment(ImmutableMap.<String, String>builder()
-                                              .putAll(getCommandEnvironment())
-                                              .put("GIT_SSH", sshScript.getAbsolutePath())
-                                              .build());
+            GitSshScript sshScript = gitSshScriptProvider.gitSshScript(remoteUri);
+            setCommandEnvironment("GIT_SSH", sshScript.getSshScriptFile().getAbsolutePath());
             try {
                 super.start();
             } finally {
                 sshScript.delete();
             }
-
         }
     }
-
-
 }

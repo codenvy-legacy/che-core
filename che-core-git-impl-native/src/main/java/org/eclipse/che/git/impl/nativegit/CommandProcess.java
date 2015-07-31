@@ -36,9 +36,6 @@ import java.util.concurrent.TimeUnit;
 public class CommandProcess {
     private static final Logger LOG = LoggerFactory.getLogger(CommandProcess.class);
 
-
-
-
     /**
      * @param command
      *         GitCommand that will be executed
@@ -54,10 +51,6 @@ public class CommandProcess {
         Map<String, String> environment = pb.environment();
 
         environment.put("HOME", System.getProperty("user.home"));
-        // if command should be executed with ssh key
-        if (command.getSSHScriptPath() != null) {
-            environment.put("GIT_SSH", command.getSSHScriptPath());
-        }
         // if command should be executed with credentials
         if (command.getAskPassScriptPath() != null) {
             environment.put("GIT_ASKPASS", command.getAskPassScriptPath());
@@ -72,7 +65,6 @@ public class CommandProcess {
         }
 
         pb.directory(command.getRepository());
-
 
         LineConsumer lineConsumer = LineConsumer.DEV_NULL;
         if (lineConsumerFactory != null) {
@@ -129,7 +121,9 @@ public class CommandProcess {
     private static String searchErrorMessage(List<String> output) {
         //check if troubles with ssh keys
         int i = 0;
-        for (int length = output.size(); i < length && !output.get(i).contains("fatal:"); i++) {
+        int length = output.size();
+        while (i < length && !output.get(i).contains("fatal:")) {
+            i++;
         }
         StringBuilder builder = new StringBuilder();
         if (i == output.size()) {

@@ -143,8 +143,8 @@ public class FactoryBuilderTest {
                               .withName("name"))
               .withPolicies(dto.createDto(Policies.class)
                                .withRefererHostname("referrer")
-                               .withValidSince(123l)
-                               .withValidUntil(123l))
+                               .withValidSince(123L)
+                               .withValidUntil(123L))
               .withActions(dto.createDto(Actions.class)
                               .withFindReplace(singletonList(dto.createDto(ReplacementSet.class)
                                                                 .withFiles(singletonList("file"))
@@ -208,8 +208,8 @@ public class FactoryBuilderTest {
                               .withName("name"))
               .withPolicies(dto.createDto(Policies.class)
                                .withRefererHostname("referrer")
-                               .withValidSince(123l)
-                               .withValidUntil(123l))
+                               .withValidSince(123L)
+                               .withValidUntil(123L))
               .withButton(dto.createDto(Button.class)
                              .withType(Button.ButtonType.logo)
                              .withAttributes(dto.createDto(ButtonAttributes.class)
@@ -288,7 +288,7 @@ public class FactoryBuilderTest {
         return new Object[][]{
                 {dto.clone(v2).withId("id")},
                 {dto.clone(v2).withCreator(dto.createDto(Author.class).withUserId("id"))},
-                {dto.clone(v2).withCreator(dto.createDto(Author.class).withCreated(123l))}
+                {dto.clone(v2).withCreator(dto.createDto(Author.class).withCreated(123L))}
         };
     }
 
@@ -323,8 +323,8 @@ public class FactoryBuilderTest {
                                            .withName("name"))
                            .withPolicies(dto.createDto(Policies.class)
                                             .withRefererHostname("referrer")
-                                            .withValidSince(123l)
-                                            .withValidUntil(123l))
+                                            .withValidSince(123L)
+                                            .withValidUntil(123L))
                            .withActions(dto.createDto(Actions.class)
                                            .withFindReplace(singletonList(dto.createDto(ReplacementSet.class)
                                                                              .withFiles(singletonList("file"))
@@ -375,8 +375,8 @@ public class FactoryBuilderTest {
                                 .withName("name"))
                 .withPolicies(dto.createDto(Policies.class)
                                  .withRefererHostname("referrer")
-                                 .withValidSince(123l)
-                                 .withValidUntil(123l))
+                                 .withValidSince(123L)
+                                 .withValidUntil(123L))
                 .withIde(dto.createDto(Ide.class)
                             .withOnAppLoaded(dto.createDto(OnAppLoaded.class)
                                                 .withActions(singletonList(dto.createDto(Action.class)
@@ -447,8 +447,8 @@ public class FactoryBuilderTest {
                                               .withLocation("location")))
                .withPolicies(dto.createDto(Policies.class)
                                 .withRefererHostname("referrer")
-                                .withValidSince(123l)
-                                .withValidUntil(123l))
+                                .withValidSince(123L)
+                                .withValidUntil(123L))
                .withActions(dto.createDto(Actions.class).withWelcome(dto.createDto(WelcomePage.class)));
 
         factoryBuilder.checkValid(factory);

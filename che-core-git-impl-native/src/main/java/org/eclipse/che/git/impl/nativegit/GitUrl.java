@@ -10,8 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.git.impl.nativegit;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.regex.Pattern;
-
 
 /**
  * Commons class for Git and nested modules.
@@ -27,17 +28,19 @@ public class GitUrl {
 
     }
 
-
-    public static boolean isSSH(String url) {
-        return url!= null && GIT_SSH_URL_PATTERN.matcher(url).matches();
+    public static String getCodenvyTimeStampKeyLabel() {
+        return "Codenvy SSH Key (" + new SimpleDateFormat().format(new Date()) + ")";
     }
 
+    public static boolean isSSH(String url) {
+        return url != null && GIT_SSH_URL_PATTERN.matcher(url).matches();
+    }
 
     /**
      * Parses URL and get host from it, if it is possible
      *
      * @param url
-     *         URL
+     *         url to git repository
      * @return host if it exists in URL or <code>null</code> if it doesn't.
      */
     public static String getHost(String url) {
@@ -66,5 +69,4 @@ public class GitUrl {
         }
         return null;
     }
-
 }

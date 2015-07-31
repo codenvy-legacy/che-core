@@ -18,6 +18,8 @@ import com.wordnik.swagger.annotations.ApiModelProperty;
 import java.util.List;
 import java.util.Map;
 
+//TODO remove workspace name from descriptor
+
 /**
  * Data transfer object (DTO) for org.eclipse.che.api.project.shared.ProjectDescription.
  *

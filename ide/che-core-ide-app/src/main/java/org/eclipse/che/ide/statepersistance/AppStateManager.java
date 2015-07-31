@@ -21,7 +21,6 @@ import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.PromiseError;
-import org.eclipse.che.api.user.shared.dto.ProfileDescriptor;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionManager;
@@ -29,12 +28,12 @@ import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.event.OpenProjectEvent;
-import org.eclipse.che.ide.api.event.PersistProjectTreeStateHandler;
 import org.eclipse.che.ide.api.event.PersistProjectTreeStateEvent;
+import org.eclipse.che.ide.api.event.PersistProjectTreeStateHandler;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.ProjectActionHandler;
-import org.eclipse.che.ide.api.event.RestoreProjectTreeStateHandler;
 import org.eclipse.che.ide.api.event.RestoreProjectTreeStateEvent;
+import org.eclipse.che.ide.api.event.RestoreProjectTreeStateHandler;
 import org.eclipse.che.ide.api.event.WindowActionEvent;
 import org.eclipse.che.ide.api.event.WindowActionHandler;
 import org.eclipse.che.ide.api.preferences.PreferencesManager;
@@ -42,8 +41,8 @@ import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 import org.eclipse.che.ide.statepersistance.dto.AppState;
-import org.eclipse.che.ide.statepersistance.dto.RecentProject;
 import org.eclipse.che.ide.statepersistance.dto.ProjectState;
+import org.eclipse.che.ide.statepersistance.dto.RecentProject;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.Pair;
 import org.eclipse.che.ide.util.loging.Log;
@@ -125,18 +124,18 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
         final CurrentProject currentProject = appContext.getCurrentProject();
         final RecentProject recentProject = appState.getRecentProject();
 
-        final String workspaceId = appContext.getWorkspace().getId();
-        recentProject.setWorkspaceId(workspaceId);
-
-        if (currentProject == null) {
-            recentProject.setPath("");
-        } else {
+        if (currentProject != null) {
             ProjectDescriptor descriptor = currentProject.getRootProject();
+            final String workspaceId = appContext.getWorkspace().getId();
             final String projectPath = "/" + descriptor.getWorkspaceName() + descriptor.getPath();
 
+            recentProject.setWorkspaceId(workspaceId);
             recentProject.setPath(projectPath);
 
             persistCurrentProjectState(persistenceComponents);
+        } else { //when none opened projects
+            recentProject.setWorkspaceId("");
+            recentProject.setPath("");
         }
         writeStateToPreferences();
     }
@@ -185,6 +184,10 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
     }
 
     private void openRecentProject(final boolean openRecentProject) {
+        // don't re-open recent project if some project name was provided
+        if (!openRecentProject) {
+            return;
+        }
         final RecentProject recentProject = appState.getRecentProject();
         final String recentProjectPath = recentProject.getPath();
 
@@ -196,20 +199,17 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
             projectServiceClient.getProject(projectPath, new AsyncRequestCallback<ProjectDescriptor>() {
                 @Override
                 protected void onSuccess(ProjectDescriptor result) {
-                    // don't re-open recent project if some project name was provided
-                    if (openRecentProject) {
-                        openRecentProject();
-                    }
+                    openRecentProject();
                 }
 
                 @Override
                 protected void onFailure(Throwable exception) {
                     appState.getProjects().remove(recentProjectPath);
                     recentProject.setPath("");
+                    recentProject.setWorkspaceId("");
                     writeStateToPreferences();
                 }
             });
-
         }
     }
 
@@ -226,7 +226,6 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
                 }
             } catch (Exception e) {
                 // create 'clear' state if there's any error
-                Log.error(getClass(), "Restore application state failed.");
                 appState = dtoFactory.createDto(AppState.class);
                 initClearRecentProject(appState);
             }
@@ -235,19 +234,17 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
 
     private void initClearRecentProject(AppState appState) {
         final RecentProject recentProject = dtoFactory.createDto(RecentProject.class);
-        String workspaceId = appContext.getWorkspace().getId();
-
-        appState.setRecentProject(recentProject);
         recentProject.setPath("");
-        recentProject.setWorkspaceId(workspaceId);
+        recentProject.setWorkspaceId("");
+        appState.setRecentProject(recentProject);
     }
 
     private void writeStateToPreferences() {
         final String json = dtoFactory.toJson(appState);
         preferencesManager.setValue(PREFERENCE_PROPERTY_NAME, json);
-        preferencesManager.flushPreferences(new AsyncCallback<ProfileDescriptor>() {
+        preferencesManager.flushPreferences(new AsyncCallback<Map<String, String>>() {
             @Override
-            public void onSuccess(ProfileDescriptor result) {
+            public void onSuccess(Map<String, String> result) {
             }
 
             @Override

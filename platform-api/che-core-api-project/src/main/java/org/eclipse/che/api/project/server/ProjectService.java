@@ -179,13 +179,17 @@ public class ProjectService extends Service {
         for (Project project : projects) {
 
             try {
-                projectReferences.add(DtoConverter.toReferenceDto2(project, getServiceContext().getServiceUriBuilder()));
+                projectReferences.add(DtoConverter.toReferenceDto2(project,
+                                                                   getServiceContext().getServiceUriBuilder(),
+                                                                   getServiceContext().getBaseUriBuilder()));
             } catch (RuntimeException e) {
                 // Ignore known error for single project.
                 // In result we won't have them in explorer tree but at least 'bad' projects won't prevent to show 'good' projects.
                 LOG.error(e.getMessage(), e);
                 NotValidProject notValidProject = new NotValidProject(project.getBaseFolder(), projectManager);
-                projectReferences.add(DtoConverter.toReferenceDto2(notValidProject, getServiceContext().getServiceUriBuilder()));
+                projectReferences.add(DtoConverter.toReferenceDto2(notValidProject,
+                                                                   getServiceContext().getServiceUriBuilder(),
+                                                                   getServiceContext().getBaseUriBuilder()));
             }
         }
         FolderEntry projectsRoot = projectManager.getProjectsRoot(workspace);
@@ -196,7 +200,9 @@ public class ProjectService extends Service {
                 if (!folderEntry.isProjectFolder()) {
                     NotValidProject notValidProject = new NotValidProject(folderEntry, projectManager);
 
-                    projectReferences.add(DtoConverter.toReferenceDto2(notValidProject, getServiceContext().getServiceUriBuilder()));
+                    projectReferences.add(DtoConverter.toReferenceDto2(notValidProject,
+                                                                       getServiceContext().getServiceUriBuilder(),
+                                                                       getServiceContext().getBaseUriBuilder()));
                 }
             }
         }
@@ -233,12 +239,14 @@ public class ProjectService extends Service {
         try {
             return DtoConverter.toDescriptorDto2(project,
                                                  getServiceContext().getServiceUriBuilder(),
+                                                 getServiceContext().getBaseUriBuilder(),
                                                  projectManager.getProjectTypeRegistry(),
                                                  workspace);
         } catch (InvalidValueException e) {
             NotValidProject notValidProject = new NotValidProject(project.getBaseFolder(), projectManager);
             return DtoConverter.toDescriptorDto2(notValidProject,
                                                  getServiceContext().getServiceUriBuilder(),
+                                                 getServiceContext().getBaseUriBuilder(),
                                                  projectManager.getProjectTypeRegistry(),
                                                  workspace);
         }
@@ -281,6 +289,7 @@ public class ProjectService extends Service {
 
         final ProjectDescriptor descriptor = DtoConverter.toDescriptorDto2(project,
                                                                            getServiceContext().getServiceUriBuilder(),
+                                                                           getServiceContext().getBaseUriBuilder(),
                                                                            projectManager.getProjectTypeRegistry(),
                                                                            workspace);
 
@@ -332,6 +341,7 @@ public class ProjectService extends Service {
             if (module != null) {
                 modules.add(DtoConverter.toDescriptorDto2(module,
                                                           getServiceContext().getServiceUriBuilder(),
+                                                          getServiceContext().getBaseUriBuilder(),
                                                           projectManager.getProjectTypeRegistry(),
                                                           workspace));
             }
@@ -371,6 +381,7 @@ public class ProjectService extends Service {
 
         final ProjectDescriptor descriptor = DtoConverter.toDescriptorDto2(module,
                                                                            getServiceContext().getServiceUriBuilder(),
+                                                                           getServiceContext().getBaseUriBuilder(),
                                                                            projectManager.getProjectTypeRegistry(),
                                                                            workspace);
 
@@ -450,6 +461,7 @@ public class ProjectService extends Service {
 
         return DtoConverter.toDescriptorDto2(project,
                                              getServiceContext().getServiceUriBuilder(),
+                                             getServiceContext().getBaseUriBuilder(),
                                              projectManager.getProjectTypeRegistry(),
                                              workspace);
     }
@@ -959,6 +971,7 @@ public class ProjectService extends Service {
                                                             visibility);
             projectDescriptor = DtoConverter.toDescriptorDto2(project,
                                                               getServiceContext().getServiceUriBuilder(),
+                                                              getServiceContext().getBaseUriBuilder(),
                                                               projectManager.getProjectTypeRegistry(),
                                                               workspace);
             PostImportProjectHandler postImportProjectHandler =
@@ -972,6 +985,7 @@ public class ProjectService extends Service {
 
             projectDescriptor = DtoConverter.toDescriptorDto2(project,
                                                               getServiceContext().getServiceUriBuilder(),
+                                                              getServiceContext().getBaseUriBuilder(),
                                                               projectManager.getProjectTypeRegistry(),
                                                               workspace);
             ProjectProblem problem = DtoFactory.getInstance().createDto(ProjectProblem.class).withCode(1).withMessage(e.getMessage());

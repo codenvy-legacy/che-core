@@ -12,25 +12,32 @@ package org.eclipse.che.api.core.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 
 /**
  * Helpers to manage system processes.
  *
  * @author andrew00x
+ * @author Alexander Garagatyi
  */
 public final class ProcessUtil {
     private static final ProcessManager PROCESS_MANAGER = ProcessManager.newInstance();
 
+    /**
+     * Writes stdout and stderr of the process to consumers.<br>
+     * Supposes that stderr of the process is redirected to stdout.
+     *
+     * @param p
+     *         process to read output from
+     * @param stdout
+     *         a consumer where stdout will be redirected
+     * @param stderr
+     *         a consumer where stderr will be redirected
+     * @throws IOException
+     */
     public static void process(Process p, LineConsumer stdout, LineConsumer stderr) throws IOException {
-        BufferedReader inputReader = null;
-        BufferedReader errorReader = null;
-        try {
-            final InputStream inputStream = p.getInputStream();
-            final InputStream errorStream = p.getErrorStream();
-            inputReader = new BufferedReader(new InputStreamReader(inputStream));
-            errorReader = new BufferedReader(new InputStreamReader(errorStream));
+        try (BufferedReader inputReader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+             BufferedReader errorReader = new BufferedReader(new InputStreamReader(p.getErrorStream()))) {
             String line;
             while ((line = inputReader.readLine()) != null) {
                 stdout.writeLine(line);
@@ -38,18 +45,24 @@ public final class ProcessUtil {
             while ((line = errorReader.readLine()) != null) {
                 stderr.writeLine(line);
             }
-        } finally {
-            if (inputReader != null) {
-                try {
-                    inputReader.close();
-                } catch (IOException ignored) {
-                }
-            }
-            if (errorReader != null) {
-                try {
-                    errorReader.close();
-                } catch (IOException ignored) {
-                }
+        }
+    }
+
+    /**
+     * Writes stdout of the process to consumer.<br>
+     * Supposes that stderr of the process is redirected to stdout.
+     *
+     * @param p
+     *         process to read output from
+     * @param stdout
+     *         a consumer where stdout will be redirected
+     * @throws IOException
+     */
+    public static void process(Process p, LineConsumer stdout) throws IOException {
+        try (BufferedReader inputReader = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
+            String line;
+            while ((line = inputReader.readLine()) != null) {
+                stdout.writeLine(line);
             }
         }
     }
@@ -68,12 +81,7 @@ public final class ProcessUtil {
         pb.redirectErrorStream(true);
         Process process = pb.start();
 
-        final InputStream inputStream = process.getInputStream();
-        BufferedReader inputReader = new BufferedReader(new InputStreamReader(inputStream));
-        String line;
-        while ((line = inputReader.readLine()) != null) {
-            consumer.writeLine(line);
-        }
+        process(process, consumer);
 
         return process;
     }

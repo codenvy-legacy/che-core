@@ -76,10 +76,8 @@ public class CommitCommand extends GitCommand<Void> {
         }
 
         if (committer != null) {
-            Map<String, String> environment = new HashMap<>();
-            environment.put("GIT_COMMITTER_NAME", committer.getName());
-            environment.put("GIT_COMMITTER_EMAIL", committer.getEmail());
-            setCommandEnvironment(environment);
+            setCommandEnvironment("GIT_COMMITTER_NAME", committer.getName());
+            setCommandEnvironment("GIT_COMMITTER_EMAIL", committer.getEmail());
         } else {
             throw new GitException("Committer can't be null");
         }

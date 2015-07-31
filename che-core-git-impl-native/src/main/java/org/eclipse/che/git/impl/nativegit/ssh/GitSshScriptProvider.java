@@ -11,79 +11,38 @@
 package org.eclipse.che.git.impl.nativegit.ssh;
 
 import org.eclipse.che.api.git.GitException;
+import org.eclipse.che.git.impl.nativegit.GitUrl;
 
-
-import java.io.File;
+import javax.inject.Inject;
 
 /**
+ * Provides GitSshScript
+ *
  * @author Sergii Kabashniuk
+ * @author Anton Korneta
  */
 public class GitSshScriptProvider {
 
     private final SshKeyProvider sshKeyProvider;
 
+    @Inject
     public GitSshScriptProvider(SshKeyProvider sshKeyProvider) {
         this.sshKeyProvider = sshKeyProvider;
     }
 
-    public File gitSshScript() throws GitException{
-        return null;
+    /**
+     * Get GitSshScript object
+     *
+     * @param url
+     *         url to git repository
+     * @throws GitException
+     *         if an error occurs when creating a script file
+     */
+    public GitSshScript gitSshScript(String url) throws GitException {
+        String host = GitUrl.getHost(url);
+        if (host == null) {
+            throw new GitException("URL does not have a host");
+        }
+        return new GitSshScript(host, sshKeyProvider.getPrivateKey(url));
     }
-//
-//    /**
-//     * @param command
-//     *         GitCommand that will be executed
-//     * @param lineConsumerFactory
-//     *         factory that provides LineConsumer for propagate output of this command
-//     * @throws org.eclipse.che.api.git.GitException
-//     *         when command execution error occurs
-//     */
-//    public static void executeGitCommand(RemoteOperationCommand command, LineConsumerFactory lineConsumerFactory) throws GitException {
-//        try {
-//            // save private key in local file
-//            final File keyFile = new File(getKeyDirectoryPath() + '/' + host + '/' + DEFAULT_KEY_NAME);
-//            try (FileOutputStream fos = new FileOutputStream(keyFile)) {
-//                fos.write(privateKey.getBytes());
-//            } catch (IOException e) {
-//                LOG.error("Cant store key", e);
-//                throw new GitException("Cant store ssh key. ");
-//            }
-//
-//            //set perm to -r--r--r--
-//            keyFile.setReadOnly();
-//            //set perm to ----------
-//            keyFile.setReadable(false, false);
-//            //set perm to -r--------
-//            keyFile.setReadable(true, true);
-//            //set perm to -rw-------
-//            keyFile.setWritable(true, true);
-//            executeGitCommand(command, lineConsumerFactory);
-//        } finally {
-//
-//        }
-//
-//    }
-
-//    /**
-//     * Stores ssh script that will be executed with all commands that need ssh.
-//     *
-//     * @param pathToSSHKey
-//     *         path to ssh key
-//     * @throws GitException
-//     *         when any error with ssh script storing occurs
-//     */
-//    private void storeSshScript(String pathToSSHKey) throws GitException {
-//        File sshScript = new File(SshKeysManager.getKeyDirectoryPath(), SSH_SCRIPT);
-//        //creating script
-//        try (FileOutputStream fos = new FileOutputStream(sshScript)) {
-//            fos.write(sshScriptTemplate.replace("$ssh_key", pathToSSHKey).getBytes());
-//        } catch (IOException e) {
-//            LOG.error("It is not possible to store " + pathToSSHKey + " ssh key");
-//            throw new GitException("Can't store SSH key");
-//        }
-//        if (!sshScript.setExecutable(true)) {
-//            LOG.error("Can't make " + sshScript + " executable");
-//            throw new GitException("Can't set permissions to SSH key");
-//        }
-//    }
 }

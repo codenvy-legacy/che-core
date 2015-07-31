@@ -11,6 +11,7 @@
 package org.eclipse.che.git.impl;
 
 import com.google.common.io.Files;
+
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.git.GitConnection;
@@ -26,13 +27,12 @@ import org.testng.annotations.Test;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.List;
 
-import static org.eclipse.che.commons.lang.IoUtil.deleteRecursive;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 import static org.eclipse.che.git.impl.GitTestUtil.cleanupTestRepo;
 import static org.eclipse.che.git.impl.GitTestUtil.connectToGitRepositoryWithContent;
+import static org.eclipse.che.git.impl.GitTestUtil.getTestGitUser;
 import static org.testng.Assert.assertEquals;
 
 /**
@@ -55,21 +55,24 @@ public class RemoteListTest {
         cleanupTestRepo(remoteRepo);
     }
 
-    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
+    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = GitConnectionFactoryProvider.class)
     public void testRemoteList(GitConnectionFactory connectionFactory)
             throws ServerException, URISyntaxException, UnauthorizedException, IOException {
         //given
         GitConnection connection = connectToGitRepositoryWithContent(connectionFactory, repository);
-        GitConnection connection2 = connectToGitRepositoryWithContent(connectionFactory, remoteRepo);
-        connection2.clone(newDto(CloneRequest.class).withRemoteUri(connection.getWorkingDir().getAbsolutePath()));
-        assertEquals(connection.remoteList(newDto(RemoteListRequest.class)).size(), 1);
+        GitConnection connection2 = connectionFactory.getConnection(remoteRepo.getAbsolutePath(), getTestGitUser());
+        connection2.clone(newDto(CloneRequest.class).withRemoteUri(connection.getWorkingDir().getAbsolutePath())
+                                                    .withWorkingDir(connection2.getWorkingDir().getAbsolutePath()));
+        assertEquals(connection2.remoteList(newDto(RemoteListRequest.class)).size(), 1);
         //create new remote
-        connection2.remoteAdd(newDto(RemoteAddRequest.class).withName("newremote").withUrl("newremote.url"));
-        assertEquals(connection.remoteList(newDto(RemoteListRequest.class)).size(), 2);
+        connection2.remoteAdd(newDto(RemoteAddRequest.class)
+                                      .withName("newremote")
+                                      .withUrl("newremote.url"));
+        assertEquals(connection2.remoteList(newDto(RemoteListRequest.class)).size(), 2);
         //when
         RemoteListRequest request = newDto(RemoteListRequest.class);
         request.setRemote("newremote");
-        List<Remote> one = connection.remoteList(request);
+        List<Remote> one = connection2.remoteList(request);
         //then
         assertEquals(one.get(0).getUrl(), "newremote.url");
         assertEquals(one.size(), 1);

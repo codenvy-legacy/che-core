@@ -103,6 +103,7 @@ public interface VirtualFileSystem {
      */
     @POST
     @Path("clone")
+    @Deprecated
     Item clone(String srcPath, String srcVfsId, String parentPath, String name)
             throws NotFoundException, ForbiddenException, ConflictException, ServerException;
 
