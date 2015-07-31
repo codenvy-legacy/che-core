@@ -4,9 +4,9 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * <p/>
  * Contributors:
- *   Codenvy, S.A. - initial API and implementation
+ * Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server;
 
@@ -20,8 +20,20 @@ import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
  *
  * @author gazarenkov
  */
-public abstract class WorkspaceHooks {
-    public static final WorkspaceHooks NOOP_WORKSPACE_HOOKS = new WorkspaceHooks() {};
+public interface WorkspaceHooks {
+    WorkspaceHooks NOOP_WORKSPACE_HOOKS = new WorkspaceHooks() {
+        @Override
+        public void beforeCreate(WorkspaceConfig workspace, String accountId) throws NotFoundException, ServerException {
+        }
+
+        @Override
+        public void afterCreate(WorkspaceConfig workspace, String accountId) throws ServerException {
+        }
+
+        @Override
+        public void afterRemove(String workspaceId) {
+        }
+    };
 
     /**
      * Called before creating Workspace
@@ -30,8 +42,7 @@ public abstract class WorkspaceHooks {
      * @throws NotFoundException
      * @throws ServerException
      */
-    public void beforeCreate(WorkspaceConfig workspace, String accountId) throws NotFoundException, ServerException {
-    }
+    void beforeCreate(WorkspaceConfig workspace, String accountId) throws NotFoundException, ServerException;
 
     /**
      * Called after creating Workspace
@@ -40,8 +51,7 @@ public abstract class WorkspaceHooks {
      * @throws NotFoundException
      * @throws ServerException
      */
-    public void afterCreate(WorkspaceConfig workspace, String accountId) throws ServerException {
-    }
+    void afterCreate(WorkspaceConfig workspace, String accountId) throws ServerException;
 
     /**
      * Called after removing Workspace
@@ -50,6 +60,5 @@ public abstract class WorkspaceHooks {
      * @throws NotFoundException
      * @throws ServerException
      */
-    public void afterRemove(String workspaceId) {
-    }
+    void afterRemove(String workspaceId);
 }
