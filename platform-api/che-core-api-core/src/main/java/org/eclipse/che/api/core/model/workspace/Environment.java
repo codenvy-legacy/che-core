@@ -11,15 +11,35 @@
 package org.eclipse.che.api.core.model.workspace;
 
 import org.eclipse.che.api.core.model.machine.MachineConfig;
+import org.eclipse.che.api.core.model.machine.Recipe;
 
 import java.util.List;
 
 /**
+ * Defines environment for machines network
  * @author gazarenkov
  */
 public interface Environment {
 
+    /**
+     * Environment display name
+     * @return the Name
+     */
     String getName();
 
+    /**
+     * Recipe (the main script) to define this environment (compose, kubernetes pod).
+     * Type of this recipe defines engine for composing machines network runtime
+     * @return the Recipe
+     */
+    Recipe getRecipe();
+
+    /**
+     * List of Machine configs defined by this environment
+     * Note: it may happen that we are not able to provide this info for particular environment type
+     * or for particular time (for example this information may be reasonable accessible only when we start network or so)
+     * to investigate
+     * @return
+     */
     List<? extends MachineConfig> getMachineConfigs();
 }
