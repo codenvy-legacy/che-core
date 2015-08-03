@@ -42,7 +42,7 @@ public class EnvironmentImpl implements Environment {
 
     @Override
     public Recipe getRecipe() {
-        return null;
+        return recipe;
     }
 
     public EnvironmentImpl setRecipe(Recipe recipe) {
