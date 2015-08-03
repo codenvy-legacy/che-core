@@ -325,8 +325,7 @@ public class VirtualFileImpl implements VirtualFile {
         return getName().compareTo(other.getName());
     }
 
-   /* =================== */
-
+    @Override
     public final java.io.File getIoFile() {
         return ioFile;
     }
