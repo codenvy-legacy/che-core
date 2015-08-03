@@ -13,6 +13,7 @@ package org.eclipse.che.api.core.model.machine;
 /**
  * Command that can be used to create {@link Process} in a machine
  *
+ * @author Eugene Voevodin
  * @author gazarenkov
  */
 public interface Command {
@@ -29,8 +30,21 @@ public interface Command {
      * Returns command line (i.e. 'mvn clean install') which is going to be executed
      * <p>
      * Serves as a base for {@link Process} creation.
-     *
-     * @see Process#getCommandLine()
      */
     String getCommandLine();
+
+    /**
+     * Returns command visibility (i.e. 'private')
+     */
+    String getVisibility();
+
+    /**
+     * Returns command type (i.e. 'maven')
+     */
+    String getType();
+
+    /**
+     * Returns absolute path to directory where the command should be executed
+     */
+    String getWorkingDir();
 }

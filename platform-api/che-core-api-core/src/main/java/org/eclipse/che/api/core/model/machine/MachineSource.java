@@ -16,14 +16,12 @@ package org.eclipse.che.api.core.model.machine;
 public interface MachineSource {
 
     /**
-     * Recipe or Snapshot
-     * @return
+     * Returns Recipe or Snapshot
      */
     String getType();
 
     /**
-     * URL or ID
-     * @return
+     * Returns URL or ID
      */
     String getLocation();
 }

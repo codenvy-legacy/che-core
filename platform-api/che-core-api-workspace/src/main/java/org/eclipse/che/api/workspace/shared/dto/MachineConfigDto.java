@@ -40,13 +40,6 @@ public interface MachineConfigDto extends MachineConfig {
     MachineConfigDto withDev(boolean dev);
 
     @Override
-    String getWorkspaceId();
-
-    void setWorkspaceId(String workspaceId);
-
-    MachineConfigDto withWorkspaceId(String workspaceId);
-
-    @Override
     String getType();
 
     void setType(String type);

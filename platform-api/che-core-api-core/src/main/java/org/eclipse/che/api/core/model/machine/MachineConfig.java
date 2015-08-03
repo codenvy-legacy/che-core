@@ -16,30 +16,22 @@ package org.eclipse.che.api.core.model.machine;
 public interface MachineConfig {
 
     /**
-     * Display name
-     * @return
+     * Display name.
      */
     String getName();
 
     /**
-     * From where to create this Machine
-     * (Recipe/Snapshot)
-     * @return
+     * From where to create this Machine (Recipe/Snapshot).
      */
     MachineSource getSource();
 
     /**
-     * Is workspace bound to machine or not
+     * Is workspace bound to machine or not.
      */
     boolean isDev();
 
     /**
-     * Id of workspace this machine belongs to
-     */
-    String getWorkspaceId();
-
-    /**
-     * Machine type (i.e. "docker")
+     * Machine type (i.e. "docker").
      */
     String getType();
 }

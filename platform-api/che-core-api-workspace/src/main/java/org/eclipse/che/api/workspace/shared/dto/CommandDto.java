@@ -18,17 +18,24 @@ import org.eclipse.che.dto.shared.DTO;
  */
 @DTO
 public interface CommandDto extends Command {
-    @Override
-    String getName();
 
     void setName(String name);
 
     CommandDto withName(String name);
 
-    @Override
-    String getCommandLine();
-
     void setCommandLine(String commandLine);
 
     CommandDto withCommandLine(String commandLine);
+
+    void setVisibility(String visibility);
+
+    CommandDto withVisibility(String visibility);
+
+    void setType(String type);
+
+    CommandDto withType(String type);
+
+    void setWorkingDir(String workingDir);
+
+    CommandDto withWorkingDir(String workingDir);
 }

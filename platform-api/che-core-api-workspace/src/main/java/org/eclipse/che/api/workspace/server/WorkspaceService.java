@@ -6,7 +6,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Codenvy, S.A. - initial API and implementation
+ * Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server;
 
@@ -22,6 +22,10 @@ import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.model.machine.Command;
+import org.eclipse.che.api.core.model.machine.MachineConfig;
+import org.eclipse.che.api.core.model.workspace.Environment;
+import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.rest.Service;
 import org.eclipse.che.api.core.rest.annotations.GenerateLink;
@@ -31,9 +35,21 @@ import org.eclipse.che.api.core.rest.permission.PermissionManager;
 import org.eclipse.che.api.user.server.dao.PreferenceDao;
 import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.api.user.server.dao.UserProfileDao;
+import org.eclipse.che.api.workspace.server.model.impl.CommandImpl;
+import org.eclipse.che.api.workspace.server.model.impl.EnvironmentImpl;
+import org.eclipse.che.api.workspace.server.model.impl.MachineConfigImpl;
+import org.eclipse.che.api.workspace.server.model.impl.MachineSourceImpl;
+import org.eclipse.che.api.workspace.server.model.impl.ProjectConfigImpl;
+import org.eclipse.che.api.workspace.server.model.impl.SourceStorageImpl;
+import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
 import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
+import org.eclipse.che.api.workspace.shared.dto.CommandDto;
+import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
+import org.eclipse.che.api.workspace.shared.dto.MachineConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.MachineSourceDto;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
-import org.eclipse.che.dto.server.DtoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,10 +65,13 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.SecurityContext;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.eclipse.che.api.workspace.server.Constants.LINK_REL_CREATE_WORKSPACE;
+import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 //TODO add permissions check
 
@@ -586,15 +605,125 @@ public class WorkspaceService extends Service {
 //    }
 
     //TODO add links
-    //TODO consider wildcard types in the case of UsersWorkspace + DTO
     private UsersWorkspaceDto asDto(UsersWorkspace workspace) {
-        return DtoFactory.newDto(UsersWorkspaceDto.class)
-                         .withId(workspace.getId())
-                         .withName(workspace.getName())
-                         .withOwner(workspace.getOwner())
-//                         .withCommands(new ArrayList<>(workspace.getCommands()))
-//                         .withProjects(new ArrayList<>(workspace.getProjects()))
-//                         .withEnvironments(new HashMap<>(workspace.getEnvironments()))
-                         .withAttributes(workspace.getAttributes());
+        final List<CommandDto> commands = new ArrayList<>(workspace.getCommands().size());
+        for (Command command : workspace.getCommands()) {
+            commands.add(asDto(command));
+        }
+        final List<ProjectConfigDto> projects = new ArrayList<>(workspace.getProjects().size());
+        for (ProjectConfig project : workspace.getProjects()) {
+            projects.add(asDto(project));
+        }
+        final Map<String, EnvironmentDto> environments = newHashMapWithExpectedSize(workspace.getEnvironments().size());
+        for (Map.Entry<String, ? extends Environment> entry : workspace.getEnvironments().entrySet()) {
+            environments.put(entry.getKey(), asDto(entry.getValue()));
+        }
+        return newDto(UsersWorkspaceDto.class)
+                .withId(workspace.getId())
+                .withName(workspace.getName())
+                .withOwner(workspace.getOwner())
+                .withDefaultEnvironment(workspace.getDefaultEnvironment())
+                .withCommands(commands)
+                .withProjects(projects)
+                .withEnvironments(environments);
+    }
+
+    private UsersWorkspaceImpl asImpl(UsersWorkspaceDto workspaceDto) {
+        final List<CommandImpl> commands = new ArrayList<>(workspaceDto.getCommands().size());
+        for (CommandDto commandDto : workspaceDto.getCommands()) {
+            commands.add(asImpl(commandDto));
+        }
+        final List<ProjectConfigImpl> projects = new ArrayList<>(workspaceDto.getProjects().size());
+        for (ProjectConfigDto projectCfgDto : workspaceDto.getProjects()) {
+            projects.add(asImpl(projectCfgDto));
+        }
+        final Map<String, EnvironmentImpl> environments = newHashMapWithExpectedSize(workspaceDto.getEnvironments().size());
+        for (Map.Entry<String, EnvironmentDto> entry : workspaceDto.getEnvironments().entrySet()) {
+            environments.put(entry.getKey(), asImpl(entry.getValue()));
+        }
+        return new UsersWorkspaceImpl(workspaceDto.getId(),
+                                      workspaceDto.getName(),
+                                      workspaceDto.getOwner(),
+                                      workspaceDto.getAttributes(),
+                                      commands,
+                                      projects,
+                                      environments,
+                                      workspaceDto.getDefaultEnvironment());
+    }
+
+    private CommandDto asDto(Command command) {
+        return newDto(CommandDto.class).withName(command.getName())
+                                       .withCommandLine(command.getCommandLine())
+                                       .withType(command.getType())
+                                       .withVisibility(command.getVisibility())
+                                       .withWorkingDir(command.getWorkingDir());
+    }
+
+    private CommandImpl asImpl(CommandDto commandDto) {
+        return new CommandImpl().setName(commandDto.getName())
+                                .setCommandLine(commandDto.getCommandLine())
+                                .setType(commandDto.getType())
+                                .setVisibility(commandDto.getType())
+                                .setWorkingDir(commandDto.getWorkingDir());
+    }
+
+    private ProjectConfigDto asDto(ProjectConfig projectCfg) {
+        return newDto(ProjectConfigDto.class)
+                .withName(projectCfg.getName())
+                .withDescription(projectCfg.getDescription())
+                .withPath(projectCfg.getPath())
+                .withType(projectCfg.getType())
+                .withAttributes(projectCfg.getAttributes())
+                .withMixinTypes(projectCfg.getMixinTypes())
+                .withSourceStorage(newDto(SourceStorageDto.class)
+                                           .withLocation(projectCfg.getSourceStorage().getLocation())
+                                           .withType(projectCfg.getSourceStorage().getType())
+                                           .withParameters(projectCfg.getSourceStorage().getParameters()));
+    }
+
+    private ProjectConfigImpl asImpl(ProjectConfigDto projectCfgDto) {
+        return new ProjectConfigImpl().setName(projectCfgDto.getName())
+                                      .setDescription(projectCfgDto.getDescription())
+                                      .setPath(projectCfgDto.getPath())
+                                      .setType(projectCfgDto.getType())
+                                      .setAttributes(projectCfgDto.getAttributes())
+                                      .setMixinTypes(projectCfgDto.getMixinTypes())
+                                      .setSourceStorage(new SourceStorageImpl(projectCfgDto.getSourceStorage().getType(),
+                                                                              projectCfgDto.getSourceStorage().getLocation(),
+                                                                              projectCfgDto.getSourceStorage().getParameters()));
+    }
+
+    //TODO add recipe
+    private EnvironmentDto asDto(Environment environment) {
+        final List<MachineConfigDto> machineConfigs = new ArrayList<>(environment.getMachineConfigs().size());
+        for (MachineConfig machineCfg : environment.getMachineConfigs()) {
+            machineConfigs.add(asDto(machineCfg));
+        }
+        return newDto(EnvironmentDto.class).withName(environment.getName()).withMachineConfigs(machineConfigs);
+    }
+
+    //TODO add recipe
+    private EnvironmentImpl asImpl(EnvironmentDto envDto) {
+        final List<MachineConfigImpl> machineConfigs = new ArrayList<>(envDto.getMachineConfigs().size());
+        for (MachineConfigDto machineCfgDto : envDto.getMachineConfigs()) {
+            machineConfigs.add(asImpl(machineCfgDto));
+        }
+        return new EnvironmentImpl().setName(envDto.getName()).setMachineConfigs(machineConfigs);
+    }
+
+    private MachineConfigDto asDto(MachineConfig config) {
+        return newDto(MachineConfigDto.class).withName(config.getName())
+                                             .withType(config.getType())
+                                             .withDev(config.isDev())
+                                             .withSource(newDto(MachineSourceDto.class).withType(config.getSource().getType())
+                                                                                       .withLocation(config.getSource().getLocation()));
+    }
+
+    private MachineConfigImpl asImpl(MachineConfigDto machineCfgDto) {
+        return new MachineConfigImpl().setName(machineCfgDto.getName())
+                                      .setType(machineCfgDto.getType())
+                                      .setIsDev(machineCfgDto.isDev())
+                                      .setSource(new MachineSourceImpl(machineCfgDto.getSource().getType(),
+                                                                       machineCfgDto.getSource().getLocation()));
     }
 }

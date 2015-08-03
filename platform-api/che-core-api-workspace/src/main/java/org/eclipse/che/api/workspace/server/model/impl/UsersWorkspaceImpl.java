@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+//TODO use impls
+
 /**
  * Data object for {@link UsersWorkspace}.
  *
@@ -112,7 +114,7 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
     }
 
     public UsersWorkspaceImpl setAttributes(Map<String, String> attributes) {
-        this.attributes = attributes == null ? new HashMap<String, String>() : new HashMap<>(attributes);
+        this.attributes = attributes == null ? new HashMap<>() : new HashMap<>(attributes);
         return this;
     }
 
@@ -122,7 +124,7 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
     }
 
     public UsersWorkspaceImpl setCommands(List<? extends Command> commands) {
-        this.commands = commands == null ? new ArrayList<Command>() : new ArrayList<>(commands);
+        this.commands = commands == null ? new ArrayList<>() : new ArrayList<>(commands);
         return this;
     }
 
@@ -132,7 +134,7 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
     }
 
     public UsersWorkspaceImpl setProjects(List<? extends ProjectConfig> projects) {
-        this.projects = projects == null ? new ArrayList<ProjectConfig>() : new ArrayList<>(projects);
+        this.projects = projects == null ? new ArrayList<>() : new ArrayList<>(projects);
         return this;
     }
 
@@ -142,8 +144,13 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
     }
 
     public UsersWorkspaceImpl setEnvironments(Map<String, ? extends Environment> environments) {
-        this.environments = environments == null ? new HashMap<String, Environment>() : new HashMap<>(environments);
+        this.environments = environments == null ? new HashMap<>() : new HashMap<>(environments);
         return this;
+    }
+
+    @Override
+    public Environment getEnvironment(String envId) {
+        return getEnvironments().get(envId);
     }
 
     @Override
