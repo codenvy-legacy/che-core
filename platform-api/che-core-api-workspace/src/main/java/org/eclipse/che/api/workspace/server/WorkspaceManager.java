@@ -23,10 +23,12 @@ import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
 import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
 import org.eclipse.che.commons.env.EnvironmentContext;
+import org.eclipse.che.commons.lang.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -36,6 +38,7 @@ import static org.eclipse.che.commons.lang.NameGenerator.generate;
  * Facade for Workspace related operations
  *
  * @author gazarenkov
+ * @author Alexander Garagatyi
  */
 @Singleton
 public class WorkspaceManager {
@@ -44,13 +47,13 @@ public class WorkspaceManager {
     /* should contain [3, 20] characters, first and last character is letter or digit, available characters {A-Za-z0-9.-_}*/
     private static final Pattern WS_NAME = Pattern.compile("[\\w][\\w\\.\\-]{1,18}[\\w]");
 
-    private final WorkspaceDao      workspaceDao;
-    private final WorkspaceRegistry workspaceRegistry;
+    private final WorkspaceDao             workspaceDao;
+    private final RuntimeWorkspaceRegistry workspaceRegistry;
 
     private WorkspaceHooks hooks = WorkspaceHooks.NOOP_WORKSPACE_HOOKS;
 
     @Inject
-    public WorkspaceManager(WorkspaceDao workspaceDao, WorkspaceRegistry workspaceRegistry) {
+    public WorkspaceManager(WorkspaceDao workspaceDao, RuntimeWorkspaceRegistry workspaceRegistry) {
         this.workspaceDao = workspaceDao;
         this.workspaceRegistry = workspaceRegistry;
     }
@@ -60,20 +63,49 @@ public class WorkspaceManager {
         this.hooks = hooks;
     }
 
+    public List<RuntimeWorkspace> getWorkspaces(String ownerId) throws ServerException, NotFoundException, ForbiddenException {
+        return workspaceRegistry.getList(ownerId);
+    }
+
+    public RuntimeWorkspace startWorkspace(String ownerId, String name) throws NotFoundException, ServerException, ForbiddenException {
+        final UsersWorkspace usersWorkspace = workspaceDao.get(name, ownerId);
+        return workspaceRegistry.start(usersWorkspace);
+    }
+
+    public RuntimeWorkspace startWorkspace(WorkspaceConfig workspaceConfig, String accountId)
+            throws BadRequestException, ServerException, NotFoundException, ConflictException, ForbiddenException {
+
+        final UsersWorkspace workspace = createWorkspace(workspaceConfig, accountId);
+
+        return workspaceRegistry.start(workspace);
+    }
+
+    public RuntimeWorkspace startTempWorkspace(WorkspaceConfig workspaceConfig, String accountId)
+            throws BadRequestException, ServerException, NotFoundException, ConflictException, ForbiddenException {
+        final UsersWorkspace workspace = createWorkspace(workspaceConfig, accountId);
+
+        return workspaceRegistry.start(workspace);
+    }
+
     public UsersWorkspace createWorkspace(final WorkspaceConfig workspaceConfig, final String accountId)
             throws NotFoundException, ConflictException, ServerException, BadRequestException {
 
         requiredNotNull(workspaceConfig, "Workspace config");
+        requiredNotNull(workspaceConfig.getDefaultEnvironment(), "Workspace default environment");
+        requiredNotNull(workspaceConfig.getEnvironments(), "Workspace default environment configuration");
+        requiredNotNull(workspaceConfig.getEnvironment(workspaceConfig.getDefaultEnvironment()),
+                        "Workspace default environment configuration");
 
-        validateName(workspaceConfig.getName());
-        if (workspaceConfig.getAttributes() != null) {
-            validateAttributes(workspaceConfig.getAttributes());
-        }
+        validateAttributes(workspaceConfig.getAttributes());
 
-        final UsersWorkspaceImpl workspace = UsersWorkspaceImpl.from(workspaceConfig);
+        final UsersWorkspaceImpl workspace = UsersWorkspaceImpl.from(workspaceConfig)
+                                                               .setId(generateWorkspaceId())
+                                                               .setOwner(getCurrentUserId());
 
-        if (workspace.getName() == null || workspace.getName().isEmpty()) {
+        if (Strings.isNullOrEmpty(workspace.getName())) {
             workspace.setName(generateWorkspaceName());
+        } else {
+            validateName(workspaceConfig.getName());
         }
 
         hooks.beforeCreate(workspaceConfig, accountId);
@@ -94,9 +126,7 @@ public class WorkspaceManager {
         requiredNotNull(workspace, "Workspace config");
 
         validateName(workspace.getName());
-        if (workspace.getAttributes() != null) {
-            validateAttributes(workspace.getAttributes());
-        }
+        validateAttributes(workspace.getAttributes());
 
         final UsersWorkspace currentWorkspace = workspaceDao.get(workspaceId);
         UsersWorkspace newWorkspace = UsersWorkspaceImpl.from(workspace)
@@ -164,16 +194,6 @@ public class WorkspaceManager {
         return workspaceRegistry.get(workspaceId);
     }
 
-    public RuntimeWorkspace startTempWorkspace(WorkspaceConfig workspaceConfig, String owner)
-            throws ServerException, NotFoundException, ForbiddenException, BadRequestException {
-        requiredNotNull(workspaceConfig, "Workspace config");
-        requiredNotNull(owner, "Workspace owner");
-
-        return workspaceRegistry.start(UsersWorkspaceImpl.from(workspaceConfig)
-                                                         .setOwner(owner)
-                                                         .setId(generateWorkspaceId()));
-    }
-
     /*******************************/
 
     private void validateName(String workspaceName) throws ConflictException {
@@ -185,6 +205,10 @@ public class WorkspaceManager {
                                         "latin letters, underscores, dots, dashes and should start and end only with digits, " +
                                         "latin letters or underscores");
         }
+    }
+
+    private String getCurrentUserId() {
+        return EnvironmentContext.getCurrent().getUser().getId();
     }
 
     /**
@@ -219,8 +243,10 @@ public class WorkspaceManager {
     }
 
     private void validateAttributes(Map<String, String> attributes) throws ConflictException {
-        for (String attributeName : attributes.keySet()) {
-            validateAttributeName(attributeName);
+        if (attributes != null) {
+            for (String attributeName : attributes.keySet()) {
+                validateAttributeName(attributeName);
+            }
         }
     }
 

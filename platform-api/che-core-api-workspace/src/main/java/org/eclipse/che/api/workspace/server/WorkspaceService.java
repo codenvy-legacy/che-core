@@ -592,9 +592,9 @@ public class WorkspaceService extends Service {
                          .withId(workspace.getId())
                          .withName(workspace.getName())
                          .withOwner(workspace.getOwner())
-                         .withCommands(new ArrayList<>(workspace.getCommands()))
-                         .withProjects(new ArrayList<>(workspace.getProjects()))
-                         .withEnvironments(new HashMap<>(workspace.getEnvironments()))
+//                         .withCommands(new ArrayList<>(workspace.getCommands()))
+//                         .withProjects(new ArrayList<>(workspace.getProjects()))
+//                         .withEnvironments(new HashMap<>(workspace.getEnvironments()))
                          .withAttributes(workspace.getAttributes());
     }
 }

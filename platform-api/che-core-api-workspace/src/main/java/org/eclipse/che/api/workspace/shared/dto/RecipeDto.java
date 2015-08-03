@@ -10,34 +10,26 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.shared.dto;
 
-import org.eclipse.che.api.core.model.workspace.Environment;
+import org.eclipse.che.api.core.model.machine.Recipe;
 import org.eclipse.che.dto.shared.DTO;
-
-import java.util.List;
 
 /**
  * @author Alexander Garagatyi
  */
 @DTO
-public interface EnvironmentDto extends Environment {
-    @Override
-    String getName();
-
-    void setName(String name);
-
-    EnvironmentDto withName(String name);
+public interface RecipeDto extends Recipe {
 
     @Override
-    RecipeDto getRecipe();
+    String getType();
 
-    void setRecipe(RecipeDto recipe);
+    void setType(String type);
 
-    EnvironmentDto withRecipe(RecipeDto recipe);
+    RecipeDto withType(String type);
 
     @Override
-    List<MachineConfigDto> getMachineConfigs();
+    String getScript();
 
-    void setMachineConfigs(List<MachineConfigDto> machineConfigs);
+    void setScript(String script);
 
-    EnvironmentDto withMachineConfigs(List<MachineConfigDto> machineConfigs);
+    RecipeDto withScript(String script);
 }

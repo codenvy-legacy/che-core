@@ -30,5 +30,7 @@ public interface WorkspaceConfig {
 
     Map<String, ? extends Environment> getEnvironments();
 
+    Environment getEnvironment(String envId);
+
     Map<String, String> getAttributes();
 }
