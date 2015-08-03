@@ -53,8 +53,16 @@ public class ProjectProblemDialog extends Window {
                 onClose();
             }
         });
+        Button keepBlankButton = createButton("Keep Blank", "problem-dialog-keepBlank", new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                handler.onKeepBlank();
+                onClose();
+            }
+        });
         configureButton.addStyleName(resources.centerPanelCss().blueButton());
         getFooter().add(configureButton);
+        getFooter().add(keepBlankButton);
     }
 
     /** {@inheritDoc} */
@@ -75,5 +83,8 @@ public class ProjectProblemDialog extends Window {
     public abstract static class AskHandler {
         /** Call if user click 'Configure' button. */
         public abstract void onConfigure();
+
+        /** Call if user click 'Keep Blank' button. */
+        public abstract void onKeepBlank();
     }
 }
