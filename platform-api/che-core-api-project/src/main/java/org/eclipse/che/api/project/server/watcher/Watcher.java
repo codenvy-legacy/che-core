@@ -180,12 +180,20 @@ class Watcher {
             boolean bufferContainsPath = filesBuffer.isContainsPath(relativePath);
 
             try {
-                if (!bufferContainsPath && absentServiceDirectory(relativePath)) {
+                if (!bufferContainsPath && absentServiceDirectory(relativePath) && !correctNodeName(relativePath)) {
                     WSConnectionContext.sendMessage(broadcastMessage);
                 }
             } catch (EncodeException | IOException exception) {
                 Thread.currentThread().interrupt();
             }
         }
+    }
+
+    //need for cloud
+    private boolean correctNodeName(@Nonnull String relativePath) {
+        int startName = relativePath.lastIndexOf("/") + 1;
+        String name = relativePath.substring(startName);
+
+        return name.startsWith(".");
     }
 }
