@@ -44,7 +44,7 @@ public interface WorkspaceConfig {
 
     /**
      * Returns project configurations which are related to workspace,
-     * when workspace doesn't contain commands returns empty list.
+     * when workspace doesn't contain projects returns empty list.
      * It is optional, workspace may contain 0 or N project configurations
      */
     List<? extends ProjectConfig> getProjects();
