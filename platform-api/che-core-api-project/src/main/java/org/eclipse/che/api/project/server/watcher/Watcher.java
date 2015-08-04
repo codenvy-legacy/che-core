@@ -105,8 +105,9 @@ class Watcher {
         boolean isCodenvyFolder = path.contains(".codenvy");
         boolean isVfsFolder = path.contains(".vfs");
         boolean isGitFolder = path.contains(".git");
+        boolean isMvnFolder = path.contains(".mvn");
 
-        return !isCheFolder && !isCodenvyFolder && !isTargetFolder && !isVfsFolder && !isGitFolder;
+        return !isCheFolder && !isCodenvyFolder && !isTargetFolder && !isVfsFolder && !isGitFolder && !isMvnFolder;
     }
 
     /**
