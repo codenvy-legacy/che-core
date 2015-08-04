@@ -16,23 +16,57 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Defines workspace configuration.
+ *
  * @author gazarenkov
  */
 public interface WorkspaceConfig {
 
+    /**
+     * Returns workspace name.
+     * The name is unique and mandatory
+     */
     String getName();
 
+    /**
+     * Returns description of workspace. It is optional.
+     */
     String getDescription();
 
+    /**
+     * Returns default environment name.
+     * It is mandatory, implementation should guarantee that environment
+     * with returned name exists for current workspace config
+     */
     String getDefaultEnvironment();
 
+    /**
+     * Returns commands which are related to workspace,
+     * when workspace doesn't contain commands returns empty list.
+     * It is optional, workspace may contain 0 or N commands.
+     */
     List<? extends Command> getCommands();
 
+    /**
+     * Returns project configurations which are related to workspace,
+     * when workspace doesn't contain projects returns empty list.
+     * It is optional, workspace may contain 0 or N project configurations
+     */
     List<? extends ProjectConfig> getProjects();
 
+    /**
+     * Returns workspace environments.
+     * Workspace must contain at least 1 default environment and may contain N environments
+     */
     Map<String, ? extends Environment> getEnvironments();
 
-    Environment getEnvironment(String envId);
+    //TODO should it be present in model interface?
+    Environment getEnvironment(String envName);
 
+    /**
+     * Returns workspace attributes, if workspace doesn't have any attributes empty map will be returned.
+     * Workspace attribute is an additional information about workspace which may be stored as key-value.
+     * It is optional, workspace may contain 0 or N attributes
+     */
     Map<String, String> getAttributes();
 }

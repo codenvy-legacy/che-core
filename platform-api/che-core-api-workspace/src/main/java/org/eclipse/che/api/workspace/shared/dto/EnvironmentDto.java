@@ -20,24 +20,14 @@ import java.util.List;
  */
 @DTO
 public interface EnvironmentDto extends Environment {
-    @Override
-    String getName();
-
-    void setName(String name);
 
     EnvironmentDto withName(String name);
 
     @Override
     RecipeDto getRecipe();
-
-    void setRecipe(RecipeDto recipe);
-
     EnvironmentDto withRecipe(RecipeDto recipe);
 
     @Override
     List<MachineConfigDto> getMachineConfigs();
-
-    void setMachineConfigs(List<MachineConfigDto> machineConfigs);
-
     EnvironmentDto withMachineConfigs(List<MachineConfigDto> machineConfigs);
 }

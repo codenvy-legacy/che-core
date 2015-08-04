@@ -56,7 +56,7 @@ public interface WorkspaceConfigDto extends WorkspaceConfig, Hyperlinks {
     Map<String, EnvironmentDto> getEnvironments();
 
     @Override
-    EnvironmentDto getEnvironment(String envId);
+    EnvironmentDto getEnvironment(String envName);
 
     void setEnvironments(Map<String, EnvironmentDto> environments);
 

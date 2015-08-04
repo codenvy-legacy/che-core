@@ -170,8 +170,8 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
     }
 
     @Override
-    public Environment getEnvironment(String envId) {
-        return getEnvironments().get(envId);
+    public Environment getEnvironment(String envName) {
+        return getEnvironments().get(envName);
     }
 
     @Override
