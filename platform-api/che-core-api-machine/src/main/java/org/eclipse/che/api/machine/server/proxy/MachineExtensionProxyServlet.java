@@ -48,7 +48,7 @@ import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 @Singleton
 public class MachineExtensionProxyServlet extends HttpServlet {
     private static final Logger  LOG               = LoggerFactory.getLogger(MachineExtensionProxyServlet.class);
-    private static final Pattern EXTENSION_API_URI = Pattern.compile(".*/ext/(?<workspaceId>[^/]+)/.*");
+    private static final Pattern EXTENSION_API_URI = Pattern.compile(".*/ext/[^/]+/(?<workspaceId>[^/]+)/?.*");
 
     private final int            extServicesPort;
     private final MachineManager machineManager;

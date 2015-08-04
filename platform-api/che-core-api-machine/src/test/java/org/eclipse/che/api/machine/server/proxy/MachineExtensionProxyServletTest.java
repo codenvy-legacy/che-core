@@ -55,7 +55,7 @@ public class MachineExtensionProxyServletTest {
     private static final String WORKSPACE_ID            = "workspace123";
     private static final int    EXTENSIONS_API_PORT     = 4301;
     private static final String PROXY_ENDPOINT          = "http://localhost:8080";
-    private static final String BASE_PATH               = "/che/api/ext/";
+    private static final String BASE_PATH               = "/che/api/ext/api/";
     private static final String DEFAULT_PATH            = BASE_PATH + WORKSPACE_ID + "/java/";
     private static final String DEFAULT_URL             = PROXY_ENDPOINT + DEFAULT_PATH;
     private static final String DEFAULT_RESPONSE_ENTITY = "{\"key1\":\"value1\",\"key2\":\"value2\"}";
@@ -197,11 +197,11 @@ public class MachineExtensionProxyServletTest {
 
     @Test
     public void shouldBeAbleToProxyWithDifferentContext() throws Exception {
-        final String path = "/api/ext/" + WORKSPACE_ID + "/java/codeassistant/index";
+        final String path = "/api/ext/service/" + WORKSPACE_ID + "/java/codeassistant/index";
 
         final String defaultContextPath = contextHandler.getContextPath();
         try {
-            contextHandler.setContextPath("/api/ext/" + WORKSPACE_ID + "/java/");
+            contextHandler.setContextPath("/api/ext/service/" + WORKSPACE_ID + "/java/");
 
             MockHttpServletRequest mockRequest =
                     new MockHttpServletRequest(PROXY_ENDPOINT + path,
