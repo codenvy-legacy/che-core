@@ -22,13 +22,13 @@ import java.util.List;
  * @author Alexander Garagatyi
  */
 public interface RuntimeWorkspaceRegistry {
-    RuntimeWorkspace start(UsersWorkspace ws) throws ForbiddenException, NotFoundException, ServerException;
+    RuntimeWorkspace start(UsersWorkspace ws, boolean temp) throws ForbiddenException, NotFoundException, ServerException;
 
     void stop(String workspaceId) throws ForbiddenException, NotFoundException, ServerException;
 
     RuntimeWorkspace get(String workspaceId) throws NotFoundException, ServerException;
 
-    List<RuntimeWorkspace> getList(String ownerId) throws ForbiddenException, NotFoundException, ServerException;
+    List<RuntimeWorkspace> getList(String ownerId) throws ServerException;
 
 //    boolean share(String id, String userId) throws ForbiddenException, NotFoundException, ServerException;
 //    boolean unshare(String id, String userId) throws ForbiddenException, NotFoundException, ServerException;

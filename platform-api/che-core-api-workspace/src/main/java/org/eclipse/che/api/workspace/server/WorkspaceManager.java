@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
 
 import org.eclipse.che.api.core.BadRequestException;
@@ -20,7 +21,9 @@ import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.workspace.RuntimeWorkspace;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
+import org.eclipse.che.api.core.model.workspace.WorkspaceState;
 import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
+import org.eclipse.che.api.workspace.server.model.impl.WorkspaceStateImpl;
 import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.Strings;
@@ -28,10 +31,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 
+import static org.eclipse.che.api.core.model.workspace.WorkspaceState.WorkspaceStatus.STOPPED;
 import static org.eclipse.che.commons.lang.NameGenerator.generate;
 
 /**
@@ -49,6 +57,7 @@ public class WorkspaceManager {
 
     private final WorkspaceDao             workspaceDao;
     private final RuntimeWorkspaceRegistry workspaceRegistry;
+    private final ExecutorService          executor;
 
     private WorkspaceHooks hooks = WorkspaceHooks.NOOP_WORKSPACE_HOOKS;
 
@@ -56,6 +65,8 @@ public class WorkspaceManager {
     public WorkspaceManager(WorkspaceDao workspaceDao, RuntimeWorkspaceRegistry workspaceRegistry) {
         this.workspaceDao = workspaceDao;
         this.workspaceRegistry = workspaceRegistry;
+
+        executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("WorkspaceManager-%d").setDaemon(true).build());
     }
 
     @Inject(optional = true)
@@ -63,28 +74,54 @@ public class WorkspaceManager {
         this.hooks = hooks;
     }
 
-    public List<RuntimeWorkspace> getWorkspaces(String ownerId) throws ServerException, NotFoundException, ForbiddenException {
-        return workspaceRegistry.getList(ownerId);
+    /**
+     * Get states of all user's workspaces
+     *
+     * @param owner
+     *         id of the owner of workspace
+     * @return list of {@link WorkspaceState}
+     * @throws ServerException
+     *         if any error occurs
+     */
+    public List<WorkspaceState> getWorkspacesStates(String owner) throws ServerException {
+        final List<RuntimeWorkspace> runtimeWorkspaces = workspaceRegistry.getList(owner);
+        final List<UsersWorkspace> usersWorkspaces = workspaceDao.getList(owner);
+        Map<String, WorkspaceState> workspacesStates = new HashMap<>();
+        for (RuntimeWorkspace runtimeWorkspace : runtimeWorkspaces) {
+            workspacesStates.put(runtimeWorkspace.getId(),
+                                 new WorkspaceStateImpl(runtimeWorkspace, runtimeWorkspace.isTemporary(), runtimeWorkspace.getStatus()));
+        }
+        for (UsersWorkspace usersWorkspace : usersWorkspaces) {
+            if (!workspacesStates.containsKey(usersWorkspace.getId())) {
+                workspacesStates.put(usersWorkspace.getId(), new WorkspaceStateImpl(usersWorkspace, false, STOPPED));
+            }
+        }
+
+        return new LinkedList<>(workspacesStates.values());
     }
 
-    public RuntimeWorkspace startWorkspace(String ownerId, String name) throws NotFoundException, ServerException, ForbiddenException {
-        final UsersWorkspace usersWorkspace = workspaceDao.get(name, ownerId);
-        return workspaceRegistry.start(usersWorkspace);
+    RuntimeWorkspace startWorkspace(UsersWorkspace usersWorkspace, boolean temp)
+            throws ServerException, NotFoundException, ForbiddenException {
+
+
+        return workspaceRegistry.start(usersWorkspace, temp);
     }
 
-    public RuntimeWorkspace startWorkspace(WorkspaceConfig workspaceConfig, String accountId)
-            throws BadRequestException, ServerException, NotFoundException, ConflictException, ForbiddenException {
-
-        final UsersWorkspace workspace = createWorkspace(workspaceConfig, accountId);
-
-        return workspaceRegistry.start(workspace);
+    public RuntimeWorkspace startWorkspace(String workspaceId) throws NotFoundException, ServerException, ForbiddenException {
+        final UsersWorkspace usersWorkspace = workspaceDao.get(workspaceId);
+        return startWorkspace(usersWorkspace, false);
     }
 
-    public RuntimeWorkspace startTempWorkspace(WorkspaceConfig workspaceConfig, String accountId)
-            throws BadRequestException, ServerException, NotFoundException, ConflictException, ForbiddenException {
-        final UsersWorkspace workspace = createWorkspace(workspaceConfig, accountId);
+    public RuntimeWorkspace startWorkspace(String workspaceName, String owner) throws NotFoundException, ServerException,
+                                                                                      ForbiddenException {
+        final UsersWorkspace usersWorkspace = workspaceDao.get(workspaceName, owner);
+        return startWorkspace(usersWorkspace, false);
+    }
 
-        return workspaceRegistry.start(workspace);
+    public RuntimeWorkspace startTemporaryWorkspace(WorkspaceConfig workspaceConfig)
+            throws ServerException, NotFoundException, ForbiddenException {
+
+        return startWorkspace(new UsersWorkspaceImpl(workspaceConfig, generateWorkspaceId(), getCurrentUserId()), true);
     }
 
     public UsersWorkspace createWorkspace(final WorkspaceConfig workspaceConfig, final String accountId)
@@ -171,15 +208,6 @@ public class WorkspaceManager {
         requiredNotNull(owner, "Workspace owner");
 
         return workspaceDao.get(workspaceName, owner);
-    }
-
-    public RuntimeWorkspace startWorkspace(String workspaceId)
-            throws NotFoundException, ServerException, ForbiddenException, BadRequestException {
-        requiredNotNull(workspaceId, "Workspace id");
-
-        final UsersWorkspace usersWorkspace = workspaceDao.get(workspaceId);
-
-        return workspaceRegistry.start(usersWorkspace);
     }
 
     public void stopWorkspace(String workspaceId) throws ServerException, NotFoundException, ForbiddenException, BadRequestException {

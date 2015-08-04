@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.core.model.workspace;
 
+import org.eclipse.che.api.core.model.workspace.WorkspaceState.WorkspaceStatus;
+
 import java.util.List;
 
 /**
@@ -23,7 +25,7 @@ public interface RuntimeWorkspace extends UsersWorkspace {
 
     boolean isTemporary();
 
-    boolean isRunning();
+    WorkspaceStatus getStatus();
 
     String getRootFolder();
 }

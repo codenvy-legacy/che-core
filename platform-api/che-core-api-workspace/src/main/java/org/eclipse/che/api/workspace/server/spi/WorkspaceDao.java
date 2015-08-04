@@ -16,6 +16,8 @@ import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 
+import java.util.List;
+
 
 /**
  * DAO interface offers means to perform CRUD operations with {@link org.eclipse.che.api.workspace.server.dao.Workspace} data.
@@ -34,6 +36,7 @@ public interface WorkspaceDao {
      *
      * @param workspace
      *         POJO representation of workspace entity
+     * @throws ServerException if other error occurs
      */
     UsersWorkspace create(UsersWorkspace workspace) throws ConflictException, ServerException;
 
@@ -42,6 +45,7 @@ public interface WorkspaceDao {
      *
      * @param workspace
      *         POJO representation of workspace entity
+     * @throws ServerException if other error occurs
      */
     UsersWorkspace update(UsersWorkspace workspace) throws NotFoundException,ConflictException, ServerException;
 
@@ -50,6 +54,7 @@ public interface WorkspaceDao {
      *
      * @param id
      *         workspace identifier
+     * @throws ServerException if other error occurs
      */
     void remove(String id) throws ConflictException, NotFoundException, ServerException;
 
@@ -61,17 +66,29 @@ public interface WorkspaceDao {
      * @return workspace POJO
      * @throws org.eclipse.che.api.core.NotFoundException
      *         when workspace doesn't exist
+     * @throws ServerException if other error occurs
      */
     UsersWorkspace get(String id) throws NotFoundException, ServerException;
 
     /**
      * Gets workspace from persistent layer by name.
      *
+     * @param owner owner of workspace
      * @param name
      *         workspace identifier
      * @return workspace POJO
      * @throws org.eclipse.che.api.core.NotFoundException
      *         when workspace doesn't exist
+     * @throws ServerException if other error occurs
      */
     UsersWorkspace get(String name, String owner) throws NotFoundException, ServerException;
+
+    /**
+     * Gets list of workspaces of specified user from persistent layer
+     *
+     * @param owner owner of workspaces
+     * @return list of workspaces of the user
+     * @throws ServerException if any error occurs
+     */
+    List<UsersWorkspace> getList(String owner) throws ServerException;
 }

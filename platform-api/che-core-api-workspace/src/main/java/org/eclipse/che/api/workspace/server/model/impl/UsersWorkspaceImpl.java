@@ -41,7 +41,8 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
                                       workspaceConfig.getCommands(),
                                       workspaceConfig.getProjects(),
                                       workspaceConfig.getEnvironments(),
-                                      workspaceConfig.getDefaultEnvironment());
+                                      workspaceConfig.getDefaultEnvironment(),
+                                      workspaceConfig.getDescription());
     }
 
     private String                   id;
@@ -52,6 +53,7 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
     private List<ProjectConfig>      projects;
     private Map<String, String>      attributes;
     private Map<String, Environment> environments;
+    private String                   description;
 
     public UsersWorkspaceImpl(String id,
                               String name,
@@ -60,15 +62,29 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
                               List<? extends Command> commands,
                               List<? extends ProjectConfig> projects,
                               Map<String, ? extends Environment> environments,
-                              String defaultEnvironment) {
+                              String defaultEnvironment,
+                              String description) {
         this.id = id;
         this.name = name;
         this.owner = owner;
+        this.description = description;
         setEnvironments(environments);
         setCommands(commands);
         setProjects(projects);
         setAttributes(attributes);
         setDefaultEnvironment(defaultEnvironment);
+    }
+
+    public UsersWorkspaceImpl(WorkspaceConfig workspaceConfig, String id, String owner) {
+        this(id,
+             workspaceConfig.getName(),
+             owner,
+             workspaceConfig.getAttributes(),
+             workspaceConfig.getCommands(),
+             workspaceConfig.getProjects(),
+             workspaceConfig.getEnvironments(),
+             workspaceConfig.getDefaultEnvironment(),
+             workspaceConfig.getDescription());
     }
 
     @Override
@@ -89,6 +105,11 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
     public UsersWorkspaceImpl setName(String name) {
         this.name = name;
         return this;
+    }
+
+    @Override
+    public String getDescription() {
+        return description;
     }
 
     @Override
@@ -114,7 +135,7 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
     }
 
     public UsersWorkspaceImpl setAttributes(Map<String, String> attributes) {
-        this.attributes = attributes == null ? new HashMap<>() : new HashMap<>(attributes);
+        this.attributes = attributes == null ? new HashMap<String, String>() : new HashMap<>(attributes);
         return this;
     }
 
@@ -124,7 +145,7 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
     }
 
     public UsersWorkspaceImpl setCommands(List<? extends Command> commands) {
-        this.commands = commands == null ? new ArrayList<>() : new ArrayList<>(commands);
+        this.commands = commands == null ? new ArrayList<Command>() : new ArrayList<>(commands);
         return this;
     }
 
@@ -134,7 +155,7 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
     }
 
     public UsersWorkspaceImpl setProjects(List<? extends ProjectConfig> projects) {
-        this.projects = projects == null ? new ArrayList<>() : new ArrayList<>(projects);
+        this.projects = projects == null ? new ArrayList<ProjectConfig>() : new ArrayList<>(projects);
         return this;
     }
 
@@ -144,7 +165,7 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
     }
 
     public UsersWorkspaceImpl setEnvironments(Map<String, ? extends Environment> environments) {
-        this.environments = environments == null ? new HashMap<>() : new HashMap<>(environments);
+        this.environments = environments == null ? new HashMap<String, Environment>() : new HashMap<>(environments);
         return this;
     }
 

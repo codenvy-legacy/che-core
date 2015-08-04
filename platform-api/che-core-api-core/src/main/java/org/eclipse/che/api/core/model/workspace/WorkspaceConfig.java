@@ -22,6 +22,8 @@ public interface WorkspaceConfig {
 
     String getName();
 
+    String getDescription();
+
     String getDefaultEnvironment();
 
     List<? extends Command> getCommands();
