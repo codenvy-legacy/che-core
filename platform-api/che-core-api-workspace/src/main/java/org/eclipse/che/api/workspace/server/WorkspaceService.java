@@ -708,7 +708,7 @@ public class WorkspaceService extends Service {
         for (MachineConfigDto machineCfgDto : envDto.getMachineConfigs()) {
             machineConfigs.add(asImpl(machineCfgDto));
         }
-        return new EnvironmentImpl().setName(envDto.getName()).setMachineConfigs(machineConfigs);
+        return new EnvironmentImpl(envDto.getName(), envDto.getRecipe(), machineConfigs);
     }
 
     private MachineConfigDto asDto(MachineConfig config) {

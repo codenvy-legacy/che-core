@@ -30,24 +30,20 @@ public class EnvironmentImpl implements Environment {
     private Recipe                  recipe;
     private List<MachineConfigImpl> machineConfigs;
 
+    public EnvironmentImpl(String name, Recipe recipe, List<MachineConfigImpl> machineConfigs) {
+        this.name = name;
+        this.recipe = recipe;
+        this.machineConfigs = machineConfigs;
+    }
+
     @Override
     public String getName() {
         return name;
     }
 
-    public EnvironmentImpl setName(String name) {
-        this.name = name;
-        return this;
-    }
-
     @Override
     public Recipe getRecipe() {
         return recipe;
-    }
-
-    public EnvironmentImpl setRecipe(Recipe recipe) {
-        this.recipe = recipe;
-        return this;
     }
 
     @Override
@@ -58,9 +54,8 @@ public class EnvironmentImpl implements Environment {
         return machineConfigs;
     }
 
-    public EnvironmentImpl setMachineConfigs(List<MachineConfigImpl> machineConfigs) {
+    public void setMachineConfigs(List<MachineConfigImpl> machineConfigs) {
         this.machineConfigs = machineConfigs;
-        return this;
     }
 
     @Override
