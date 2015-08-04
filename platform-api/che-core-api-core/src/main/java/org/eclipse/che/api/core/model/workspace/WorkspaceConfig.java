@@ -24,13 +24,13 @@ public interface WorkspaceConfig {
 
     /**
      * Returns workspace name.
-     * The name is unique, mandatory and updatable
+     * The name is unique and mandatory
      */
     String getName();
 
     /**
      * Returns default environment name.
-     * It is mandatory and updatable, implementation should guarantee that environment
+     * It is mandatory, implementation should guarantee that environment
      * with returned name exists for current workspace config
      */
     String getDefaultEnvironment();
@@ -38,20 +38,20 @@ public interface WorkspaceConfig {
     /**
      * Returns commands which are related to workspace,
      * when workspace doesn't contain commands returns empty list.
-     * It is optional and updatable, workspace may contain 0 or N commands.
+     * It is optional, workspace may contain 0 or N commands.
      */
     List<? extends Command> getCommands();
 
     /**
      * Returns project configurations which are related to workspace,
      * when workspace doesn't contain commands returns empty list.
-     * It is optional and updatable, workspace may contain 0 or N project configurations
+     * It is optional, workspace may contain 0 or N project configurations
      */
     List<? extends ProjectConfig> getProjects();
 
     /**
      * Returns workspace environments.
-     * Workspace must contain at least 1 default environment and may contain N environments, it is updatable
+     * Workspace must contain at least 1 default environment and may contain N environments
      */
     Map<String, ? extends Environment> getEnvironments();
 
@@ -61,7 +61,7 @@ public interface WorkspaceConfig {
     /**
      * Returns workspace attributes, if workspace doesn't have any attributes empty map will be returned.
      * Workspace attribute is an additional information about workspace which may be stored as key-value.
-     * It is optional and updatable, workspace may contain 0 or N attributes
+     * It is optional, workspace may contain 0 or N attributes
      */
     Map<String, String> getAttributes();
 }
