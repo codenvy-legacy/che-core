@@ -111,7 +111,7 @@ class Watcher {
 
     /**
      * Starts process events to catch all actions related to file system and sends special event on client through web socket
-     * when something changed on file system.
+     * when something changed on file system. This method is started in separated thread.
      */
     void processEvents() {
         while (true) {

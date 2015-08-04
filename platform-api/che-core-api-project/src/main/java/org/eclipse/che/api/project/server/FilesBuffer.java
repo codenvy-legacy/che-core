@@ -15,9 +15,8 @@ import org.eclipse.che.api.vfs.server.LazyIterator;
 import org.eclipse.che.api.vfs.server.VirtualFile;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static org.eclipse.che.api.vfs.server.VirtualFileFilter.ALL;
 
@@ -35,9 +34,7 @@ public class FilesBuffer {
     private List<String> filesBuffer;
 
     private FilesBuffer() {
-        List<String> listToSynchronize = new ArrayList<>();
-
-        this.filesBuffer = Collections.synchronizedList(listToSynchronize);
+        this.filesBuffer = new CopyOnWriteArrayList<>();
     }
 
     public static FilesBuffer get() {
@@ -54,7 +51,7 @@ public class FilesBuffer {
      * @param paths
      *         paths to changed files
      */
-    public void addToBuffer(@Nonnull String... paths) {
+    public synchronized void addToBuffer(@Nonnull String... paths) {
         filesBuffer.clear();
 
         for (String path : paths) {
@@ -75,7 +72,7 @@ public class FilesBuffer {
      *         root file which contains inner files which will be added to temporary buffer
      * @throws ServerException
      */
-    public void addToBufferRecursive(@Nonnull VirtualFile root) throws ServerException {
+    public synchronized void addToBufferRecursive(@Nonnull VirtualFile root) throws ServerException {
         filesBuffer.add(getValidPath(root.getPath()));
 
         LazyIterator<VirtualFile> children = root.getChildren(ALL);

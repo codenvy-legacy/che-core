@@ -609,5 +609,6 @@ public interface VirtualFile extends Comparable<VirtualFile> {
     LazyIterator<Pair<String, String>> countMd5Sums() throws ServerException;
 
     /** Returns instance of {@link java.io.File} */
+    @Beta
     File getIoFile();
 }

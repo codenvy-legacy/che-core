@@ -56,6 +56,10 @@ public class WatcherService {
                 watcher.processEvents();
             }
         };
-        new Thread(runnable).start();
+        Thread watcherThread = new Thread(runnable, "Thread of file system listener");
+
+        watcherThread.setDaemon(true);
+
+        watcherThread.start();
     }
 }
