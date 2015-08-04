@@ -21,9 +21,10 @@ import com.google.inject.spi.TypeListener;
 /**
  * Launch  method marked with @ScheduleCron @ScheduleDelay and @ScheduleRate annotations using  Launcher
  *
+ * Note do not inject this module. Use {@link org.eclipse.che.commons.schedule.executor.ScheduleModule}
  * @author Sergii Kabashniuk
  */
-public class ScheduleModule extends LifecycleModule {
+public class InternalScheduleModule extends LifecycleModule {
 
     @Override
     protected void configure() {
