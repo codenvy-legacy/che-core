@@ -12,7 +12,7 @@ package org.eclipse.che.api.workspace.server;
 
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
+import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 
 /**
  * Generic interface for methods called on particular workspace events if we some additional actions needed
@@ -23,11 +23,11 @@ import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 public interface WorkspaceHooks {
     WorkspaceHooks NOOP_WORKSPACE_HOOKS = new WorkspaceHooks() {
         @Override
-        public void beforeCreate(WorkspaceConfig workspace, String accountId) throws NotFoundException, ServerException {
+        public void beforeCreate(UsersWorkspace workspace, String accountId) throws NotFoundException, ServerException {
         }
 
         @Override
-        public void afterCreate(WorkspaceConfig workspace, String accountId) throws ServerException {
+        public void afterCreate(UsersWorkspace workspace, String accountId) throws ServerException {
         }
 
         @Override
@@ -42,7 +42,7 @@ public interface WorkspaceHooks {
      * @throws NotFoundException
      * @throws ServerException
      */
-    void beforeCreate(WorkspaceConfig workspace, String accountId) throws NotFoundException, ServerException;
+    void beforeCreate(UsersWorkspace workspace, String accountId) throws NotFoundException, ServerException;
 
     /**
      * Called after creating Workspace
@@ -51,7 +51,7 @@ public interface WorkspaceHooks {
      * @throws NotFoundException
      * @throws ServerException
      */
-    void afterCreate(WorkspaceConfig workspace, String accountId) throws ServerException;
+    void afterCreate(UsersWorkspace workspace, String accountId) throws ServerException;
 
     /**
      * Called after removing Workspace

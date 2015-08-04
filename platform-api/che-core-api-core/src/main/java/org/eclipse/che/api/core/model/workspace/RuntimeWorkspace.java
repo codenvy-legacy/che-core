@@ -19,6 +19,8 @@ import java.util.List;
  */
 public interface RuntimeWorkspace extends UsersWorkspace {
 
+    String getCurrentEnvironment();
+
     Machine getDevMachine();
 
     List<? extends Machine> getMachines();

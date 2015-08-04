@@ -32,6 +32,7 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
     private final boolean                 isTemporary;
     private final String                  rootFolder;
     private final WorkspaceStatus         workspaceStatus;
+    private final String                  currentEnvironment;
 
     public RuntimeWorkspaceImpl(String id,
                                 String name,
@@ -46,9 +47,11 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
                                 List<? extends Machine> machines,
                                 boolean isTemporary,
                                 String rootFolder,
-                                WorkspaceStatus workspaceStatus) {
+                                WorkspaceStatus workspaceStatus,
+                                String currentEnvironment) {
         super(id, name, owner, attributes, commands, projects, environments, defaultEnvironment, description);
         this.devMachine = devMachine;
+        this.currentEnvironment = currentEnvironment;
         this.machines = machines != null ? machines : new ArrayList<Machine>();
         this.isTemporary = isTemporary;
         this.rootFolder = rootFolder;
@@ -60,7 +63,8 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
                                 List<? extends Machine> machines,
                                 boolean isTemporary,
                                 String rootFolder,
-                                WorkspaceStatus workspaceStatus) {
+                                WorkspaceStatus workspaceStatus,
+                                String currentEnvironment) {
         this(usersWorkspace.getId(),
              usersWorkspace.getName(),
              usersWorkspace.getOwner(),
@@ -74,7 +78,8 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
              machines,
              isTemporary,
              rootFolder,
-             workspaceStatus);
+             workspaceStatus,
+             currentEnvironment);
     }
 
     @Override
@@ -105,6 +110,11 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
     @Override
     public WorkspaceStatus getStatus() {
         return workspaceStatus;
+    }
+
+    @Override
+    public String getCurrentEnvironment() {
+        return currentEnvironment;
     }
 
     @Override

@@ -22,7 +22,7 @@ package org.eclipse.che.api.core.model.workspace;
  */
 public interface WorkspaceState {
     enum WorkspaceStatus {
-        RUNNING, STOPPED
+        STARTING, RUNNING, STOPPED
     }
 
     boolean isTemporary();
