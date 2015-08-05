@@ -23,6 +23,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.file.Files;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -52,7 +53,7 @@ public class MappedDirectoryLocalFSMountStrategy implements LocalFSMountStrategy
 
     @PostConstruct
     private void start() {
-        if (mappingFile.isFile()) {
+        if (mappingFile.exists() && mappingFile.isFile()) {
             try {
                 loadFromPropertiesFile(mappingFile);
             } catch (IOException e) {
@@ -64,8 +65,9 @@ public class MappedDirectoryLocalFSMountStrategy implements LocalFSMountStrategy
 
     @PreDestroy
     private void stop() {
-        if (mappingFile.isFile()) {
+        if (mappingFile.exists() && mappingFile.isFile()) {
             try {
+                Files.createFile(mappingFile.toPath());
                 saveInPropertiesFile(mappingFile);
             } catch (IOException e) {
                 throw new IllegalStateException(
