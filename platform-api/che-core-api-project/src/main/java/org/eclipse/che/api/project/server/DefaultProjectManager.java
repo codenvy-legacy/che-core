@@ -16,6 +16,7 @@ import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.notification.EventSubscriber;
+import org.eclipse.che.api.project.server.handlers.ProjectCreatedHandler;
 import org.eclipse.che.api.project.server.handlers.CreateModuleHandler;
 import org.eclipse.che.api.project.server.handlers.CreateProjectHandler;
 import org.eclipse.che.api.project.server.handlers.ProjectHandlerRegistry;
@@ -231,6 +232,10 @@ public final class DefaultProjectManager implements ProjectManager {
             project.setVisibility(visibility);
         }
 
+        final ProjectCreatedHandler projectCreatedHandler = handlers.getProjectCreatedHandler(projectConfig.getTypeId());
+        if (projectCreatedHandler != null) {
+            projectCreatedHandler.onProjectCreated(project.getBaseFolder());
+        }
         return project;
     }
 
