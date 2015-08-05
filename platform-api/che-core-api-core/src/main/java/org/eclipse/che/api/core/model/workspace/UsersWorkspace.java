@@ -11,11 +11,19 @@
 package org.eclipse.che.api.core.model.workspace;
 
 /**
+ * Defines workspace owned by user.
+ *
  * @author gazarenkov
  */
 public interface UsersWorkspace extends WorkspaceConfig {
 
+    /**
+     * Returns workspace identifier. It is unique and mandatory.
+     */
     String getId();
 
+    /**
+     * Returns workspace owner (users identifier). It is mandatory.
+     */
     String getOwner();
 }
