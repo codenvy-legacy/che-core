@@ -32,7 +32,7 @@ public interface WorkspaceConfigDto extends WorkspaceConfig, Hyperlinks {
     WorkspaceConfigDto withName(String name);
 
     @Override
-    String getDefaultEnvironment();
+    String getDefaultEnvName();
 
     void setDefaultEnvironment(String defaultEnvironment);
 

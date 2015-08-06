@@ -18,6 +18,8 @@
 package org.eclipse.che.api.core.model.workspace;
 
 /**
+ * Defines workspace state.
+ *
  * @author Alexander Garagatyi
  */
 public interface WorkspaceState {
@@ -25,13 +27,28 @@ public interface WorkspaceState {
         STARTING, RUNNING, STOPPED
     }
 
+    /**
+     * Returns true if this workspace is temporary otherwise returns false.
+     */
     boolean isTemporary();
 
+    /**
+     * Returns workspace identifier.
+     */
     String getId();
 
+    /**
+     * Returns workspace owner(users identifier).
+     */
     String getOwner();
 
+    /**
+     * Returns workspace name.
+     */
     String getName();
 
+    /**
+     * Returns status of current workspace.
+     */
     WorkspaceStatus getStatus();
 }

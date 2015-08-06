@@ -61,7 +61,7 @@ public interface RuntimeWorkspaceDto extends UsersWorkspaceDto, RuntimeWorkspace
     RuntimeWorkspaceDto withStatus(WorkspaceStatus status);
 
     @Override
-    String getCurrentEnvironment();
+    String getActiveEnvName();
 
     void setCurrentEnvironment(String currentEnvironment);
 

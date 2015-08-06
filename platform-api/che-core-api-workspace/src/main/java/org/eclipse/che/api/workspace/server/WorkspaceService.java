@@ -622,7 +622,7 @@ public class WorkspaceService extends Service {
                 .withId(workspace.getId())
                 .withName(workspace.getName())
                 .withOwner(workspace.getOwner())
-                .withDefaultEnvironment(workspace.getDefaultEnvironment())
+                .withDefaultEnvironment(workspace.getDefaultEnvName())
                 .withCommands(commands)
                 .withProjects(projects)
                 .withEnvironments(environments);
@@ -648,7 +648,7 @@ public class WorkspaceService extends Service {
                                       commands,
                                       projects,
                                       environments,
-                                      workspaceDto.getDefaultEnvironment());
+                                      workspaceDto.getDefaultEnvName());
     }
 
     private CommandDto asDto(Command command) {

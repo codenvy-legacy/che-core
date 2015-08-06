@@ -6,7 +6,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Codenvy, S.A. - initial API and implementation
+ * Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 package org.eclipse.che.api.core.model.workspace;
 
@@ -15,19 +15,42 @@ import org.eclipse.che.api.core.model.workspace.WorkspaceState.WorkspaceStatus;
 import java.util.List;
 
 /**
+ * Defines runtime workspace.
+ *
+ * @author Eugene Voevodin
  * @author gazarenkov
  */
 public interface RuntimeWorkspace extends UsersWorkspace {
 
-    String getCurrentEnvironment();
+    /**
+     * Returns active environment name, implementation should guarantee that environment
+     * with returned name exists for current runtime workspace
+     */
+    String getActiveEnvName();
 
+    /**
+     * Returns development machine.
+     * This machine used for extensions management.
+     */
     Machine getDevMachine();
 
+    /**
+     * Returns non empty list which contains at least one dev machine and other machines related to workspace.
+     */
     List<? extends Machine> getMachines();
 
+    /**
+     * Returns true if this workspace is temporary otherwise returns false.
+     */
     boolean isTemporary();
 
+    /**
+     * Returns workspace status.
+     */
     WorkspaceStatus getStatus();
 
+    /**
+     * Returns to workspace root folder.
+     */
     String getRootFolder();
 }

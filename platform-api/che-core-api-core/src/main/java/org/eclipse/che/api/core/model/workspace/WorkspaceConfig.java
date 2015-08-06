@@ -6,7 +6,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Codenvy, S.A. - initial API and implementation
+ * Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 package org.eclipse.che.api.core.model.workspace;
 
@@ -38,12 +38,12 @@ public interface WorkspaceConfig {
      * It is mandatory, implementation should guarantee that environment
      * with returned name exists for current workspace config
      */
-    String getDefaultEnvironment();
+    String getDefaultEnvName();
 
     /**
      * Returns commands which are related to workspace,
      * when workspace doesn't contain commands returns empty list.
-     * It is optional, workspace may contain 0 or N commands.
+     * It is optional, workspace may contain 0 or N commands
      */
     List<? extends Command> getCommands();
 
@@ -59,9 +59,6 @@ public interface WorkspaceConfig {
      * Workspace must contain at least 1 default environment and may contain N environments
      */
     Map<String, ? extends Environment> getEnvironments();
-
-    //TODO should it be present in model interface?
-    Environment getEnvironment(String envName);
 
     /**
      * Returns workspace attributes, if workspace doesn't have any attributes empty map will be returned.

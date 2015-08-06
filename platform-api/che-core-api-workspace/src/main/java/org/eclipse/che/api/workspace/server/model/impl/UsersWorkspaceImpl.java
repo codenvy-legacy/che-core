@@ -41,7 +41,7 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
                                       workspaceConfig.getCommands(),
                                       workspaceConfig.getProjects(),
                                       workspaceConfig.getEnvironments(),
-                                      workspaceConfig.getDefaultEnvironment(),
+                                      workspaceConfig.getDefaultEnvName(),
                                       workspaceConfig.getDescription());
     }
 
@@ -83,7 +83,7 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
              workspaceConfig.getCommands(),
              workspaceConfig.getProjects(),
              workspaceConfig.getEnvironments(),
-             workspaceConfig.getDefaultEnvironment(),
+             workspaceConfig.getDefaultEnvName(),
              workspaceConfig.getDescription());
     }
 
@@ -113,7 +113,7 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
     }
 
     @Override
-    public String getDefaultEnvironment() {
+    public String getDefaultEnvName() {
         return defaultEnvironment;
     }
 

@@ -210,9 +210,9 @@ public class WorkspaceManager {
     private UsersWorkspace validateWorkspace(final WorkspaceConfig workspaceConfig)
             throws BadRequestException, ForbiddenException, ServerException {
         requiredNotNull(workspaceConfig, "Workspace config");
-        requiredNotNull(workspaceConfig.getDefaultEnvironment(), "Workspace default environment");
+        requiredNotNull(workspaceConfig.getDefaultEnvName(), "Workspace default environment");
         requiredNotNull(workspaceConfig.getEnvironments(), "Workspace default environment configuration");
-        requiredNotNull(workspaceConfig.getEnvironment(workspaceConfig.getDefaultEnvironment()),
+        requiredNotNull(workspaceConfig.getEnvironment(workspaceConfig.getDefaultEnvName()),
                         "Workspace default environment configuration");
 
         validateAttributes(workspaceConfig.getAttributes());
@@ -234,9 +234,9 @@ public class WorkspaceManager {
             throws ConflictException, ServerException, BadRequestException, NotFoundException, ForbiddenException {
 
         requiredNotNull(workspace, "Workspace config");
-        requiredNotNull(workspace.getDefaultEnvironment(), "Workspace default environment");
+        requiredNotNull(workspace.getDefaultEnvName(), "Workspace default environment");
         requiredNotNull(workspace.getEnvironments(), "Workspace default environment configuration");
-        requiredNotNull(workspace.getEnvironment(workspace.getDefaultEnvironment()),
+        requiredNotNull(workspace.getEnvironment(workspace.getDefaultEnvName()),
                         "Workspace default environment configuration");
 
         validateName(workspace.getName());

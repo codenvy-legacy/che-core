@@ -72,7 +72,7 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
              usersWorkspace.getCommands(),
              usersWorkspace.getProjects(),
              usersWorkspace.getEnvironments(),
-             usersWorkspace.getDefaultEnvironment(),
+             usersWorkspace.getDefaultEnvName(),
              usersWorkspace.getDescription(),
              devMachine,
              machines,
@@ -113,7 +113,7 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
     }
 
     @Override
-    public String getCurrentEnvironment() {
+    public String getActiveEnvName() {
         return currentEnvironment;
     }
 

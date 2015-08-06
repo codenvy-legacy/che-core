@@ -16,31 +16,29 @@ import org.eclipse.che.api.core.model.machine.Server;
 import java.util.Map;
 
 /**
- * Describes machine
+ * Defines runtime machine.
  *
  * @author gazarenkov
  */
 public interface Machine extends MachineConfig {
 
     /**
-     * Unique ID of this machine
+     * Returns unique identifier of this machine
      */
     String getId();
 
     /**
-     * Channel of websocket where machine logs should be put
+     * Returns channel of websocket where machine logs should be put.
      */
     String getOutputChannel();
 
     /**
-     * Machine specific metadata
+     * Returns machine specific metadata
      */
-    //InstanceMetadata getMetadata() throws MachineException;
     Map<String, String> getProperties();
 
     /**
-     * Returns mapping of exposed ports to {link Server}
+     * Returns mapping of exposed ports to {@link Server}
      */
-    Map<String, ? extends Server> getServers();// throws MachineException;
-
+    Map<String, ? extends Server> getServers();
 }
