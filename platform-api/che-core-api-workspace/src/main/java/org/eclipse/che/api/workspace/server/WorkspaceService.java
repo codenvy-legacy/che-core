@@ -648,7 +648,8 @@ public class WorkspaceService extends Service {
                                       commands,
                                       projects,
                                       environments,
-                                      workspaceDto.getDefaultEnvName());
+                                      workspaceDto.getDefaultEnvName(),
+                                      workspaceDto.getDescription());
     }
 
     private CommandDto asDto(Command command) {

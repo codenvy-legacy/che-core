@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-//TODO use impls
-
 /**
  * Data object for {@link UsersWorkspace}.
  *
@@ -32,18 +30,6 @@ import java.util.Objects;
  * @author gazarenkov
  */
 public class UsersWorkspaceImpl implements UsersWorkspace {
-
-    public static UsersWorkspaceImpl from(WorkspaceConfig workspaceConfig) {
-        return new UsersWorkspaceImpl(null,
-                                      workspaceConfig.getName(),
-                                      null,
-                                      workspaceConfig.getAttributes(),
-                                      workspaceConfig.getCommands(),
-                                      workspaceConfig.getProjects(),
-                                      workspaceConfig.getEnvironments(),
-                                      workspaceConfig.getDefaultEnvName(),
-                                      workspaceConfig.getDescription());
-    }
 
     private String                   id;
     private String                   name;
@@ -102,14 +88,17 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
         return name;
     }
 
-    public UsersWorkspaceImpl setName(String name) {
+    public void setName(String name) {
         this.name = name;
-        return this;
     }
 
     @Override
     public String getDescription() {
         return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override
@@ -121,12 +110,11 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
      * Sets particular environment configured for this workspace  as default
      * Throws NullPointerException if no Env with incoming name configured
      */
-    public UsersWorkspaceImpl setDefaultEnvironment(String name) {
+    public void setDefaultEnvironment(String name) {
         if (environments.get(name) == null) {
             throw new NullPointerException("No Environment named '" + name + "' found");
         }
         defaultEnvironment = name;
-        return this;
     }
 
     @Override
@@ -134,9 +122,8 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
         return attributes;
     }
 
-    public UsersWorkspaceImpl setAttributes(Map<String, String> attributes) {
+    public void setAttributes(Map<String, String> attributes) {
         this.attributes = attributes == null ? new HashMap<String, String>() : new HashMap<>(attributes);
-        return this;
     }
 
     @Override
@@ -144,9 +131,8 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
         return commands;
     }
 
-    public UsersWorkspaceImpl setCommands(List<? extends Command> commands) {
+    public void setCommands(List<? extends Command> commands) {
         this.commands = commands == null ? new ArrayList<Command>() : new ArrayList<>(commands);
-        return this;
     }
 
     @Override
@@ -154,9 +140,8 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
         return projects;
     }
 
-    public UsersWorkspaceImpl setProjects(List<? extends ProjectConfig> projects) {
+    public void setProjects(List<? extends ProjectConfig> projects) {
         this.projects = projects == null ? new ArrayList<ProjectConfig>() : new ArrayList<>(projects);
-        return this;
     }
 
     @Override
@@ -164,24 +149,13 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
         return environments;
     }
 
-    public UsersWorkspaceImpl setEnvironments(Map<String, ? extends Environment> environments) {
+    public void setEnvironments(Map<String, ? extends Environment> environments) {
         this.environments = environments == null ? new HashMap<String, Environment>() : new HashMap<>(environments);
-        return this;
-    }
-
-    @Override
-    public Environment getEnvironment(String envName) {
-        return getEnvironments().get(envName);
     }
 
     @Override
     public String getOwner() {
         return this.owner;
-    }
-
-    public UsersWorkspaceImpl setOwner(String owner) {
-        this.owner = owner;
-        return this;
     }
 
     @Override

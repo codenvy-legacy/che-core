@@ -30,7 +30,7 @@ public interface RuntimeWorkspace extends UsersWorkspace {
 
     /**
      * Returns development machine.
-     * This machine used for extensions management.
+     * This machine used for extensions management
      */
     Machine getDevMachine();
 
@@ -50,7 +50,7 @@ public interface RuntimeWorkspace extends UsersWorkspace {
     WorkspaceStatus getStatus();
 
     /**
-     * Returns to workspace root folder.
+     * Returns workspace root folder.
      */
     String getRootFolder();
 }
