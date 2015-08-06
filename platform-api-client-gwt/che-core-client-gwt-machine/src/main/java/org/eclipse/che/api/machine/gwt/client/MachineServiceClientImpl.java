@@ -302,6 +302,22 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     }
 
     @Override
+    public Promise<Void> stopProcess(@Nonnull final String machineId, final int processId) {
+        return newPromise(new RequestCall<Void>() {
+            @Override
+            public void makeCall(AsyncCallback<Void> callback) {
+                stopProcess(machineId, processId, callback);
+            }
+        });
+    }
+
+    private void stopProcess(@Nonnull String machineId, int processId, @Nonnull AsyncCallback<Void> callback) {
+        asyncRequestFactory.createDeleteRequest(baseHttpUrl + '/' + machineId + "/process/" + processId)
+                           .loader(loader, "Stopping process...")
+                           .send(newCallback(callback));
+    }
+
+    @Override
     public Promise<Void> bindProject(@Nonnull final String machineId, @Nonnull final String projectPath) {
         return newPromise(new RequestCall<Void>() {
             @Override
@@ -312,7 +328,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     }
 
     private void bindProject(@Nonnull String machineId, @Nonnull String projectPath, @Nonnull AsyncCallback<Void> callback) {
-        asyncRequestFactory.createPostRequest(baseHttpUrl + '/' + machineId + "/binding/" + (projectPath), null)
+        asyncRequestFactory.createPostRequest(baseHttpUrl + '/' + machineId + "/binding/" + projectPath, null)
                            .loader(loader, "Binding project to machine...")
                            .send(newCallback(callback));
     }
@@ -328,7 +344,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     }
 
     private void unbindProject(@Nonnull String machineId, @Nonnull String projectPath, @Nonnull AsyncCallback<Void> callback) {
-        asyncRequestFactory.createDeleteRequest(baseHttpUrl + '/' + machineId + "/binding/" + (projectPath))
+        asyncRequestFactory.createDeleteRequest(baseHttpUrl + '/' + machineId + "/binding/" + projectPath)
                            .loader(loader, "Unbinding project from machine...")
                            .send(newCallback(callback));
     }
