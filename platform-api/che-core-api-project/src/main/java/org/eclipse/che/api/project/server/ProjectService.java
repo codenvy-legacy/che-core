@@ -175,7 +175,7 @@ public class ProjectService extends Service {
             try {
                 projectReferences.add(DtoConverter.toReferenceDto2(project,
 //                                                                   getServiceContext().getServiceUriBuilder(),
-                                                                   getServiceContext().getBaseUriBuilder()));
+                                                                   getServiceContext().getServiceUriBuilder()));
             } catch (RuntimeException e) {
                 // Ignore known error for single project.
                 // In result we won't have them in explorer tree but at least 'bad' projects won't prevent to show 'good' projects.
@@ -183,7 +183,7 @@ public class ProjectService extends Service {
                 NotValidProject notValidProject = new NotValidProject(project.getBaseFolder(), projectManager);
                 projectReferences.add(DtoConverter.toReferenceDto2(notValidProject,
 //                                                                   getServiceContext().getServiceUriBuilder(),
-                                                                   getServiceContext().getBaseUriBuilder()));
+                                                                   getServiceContext().getServiceUriBuilder()));
             }
         }
         FolderEntry projectsRoot = projectManager.getProjectsRoot(workspace);
@@ -196,7 +196,7 @@ public class ProjectService extends Service {
 
                     projectReferences.add(DtoConverter.toReferenceDto2(notValidProject,
 //                                                                       getServiceContext().getServiceUriBuilder(),
-                                                                       getServiceContext().getBaseUriBuilder()));
+                                                                       getServiceContext().getServiceUriBuilder()));
                 }
             }
         }
