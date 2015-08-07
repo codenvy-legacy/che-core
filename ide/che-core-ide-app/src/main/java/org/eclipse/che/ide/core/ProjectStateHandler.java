@@ -19,7 +19,9 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
+import org.eclipse.che.api.project.shared.Constants;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.DocumentTitleDecorator;
@@ -34,7 +36,9 @@ import org.eclipse.che.ide.api.event.OpenProjectHandler;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.ProjectDescriptorChangedEvent;
 import org.eclipse.che.ide.api.event.ProjectDescriptorChangedHandler;
+import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.core.problemDialog.ProjectProblemDialog;
+import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.projecttype.wizard.presenter.ProjectWizardPresenter;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
@@ -64,27 +68,33 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
                                             ConfigureProjectHandler {
     private final EventBus                 eventBus;
     private final AppContext               appContext;
+    private final DtoFactory               dtoFactory;
     private final ProjectServiceClient     projectServiceClient;
     private final ProjectWizardPresenter   projectWizardPresenter;
     private final DtoUnmarshallerFactory   dtoUnmarshallerFactory;
     private final CoreLocalizationConstant constant;
     private final DocumentTitleDecorator   documentTitleDecorator;
+    private final NotificationManager      notificationManager;
 
     @Inject
     public ProjectStateHandler(AppContext appContext,
+                               DtoFactory dtoFactory,
                                EventBus eventBus,
                                ProjectServiceClient projectServiceClient,
                                ProjectWizardPresenter projectWizardPresenter,
                                CoreLocalizationConstant constant,
                                DtoUnmarshallerFactory dtoUnmarshallerFactory,
-                               DocumentTitleDecorator documentTitleDecorator) {
+                               DocumentTitleDecorator documentTitleDecorator,
+                               NotificationManager notificationManager) {
         this.eventBus = eventBus;
         this.appContext = appContext;
+        this.dtoFactory = dtoFactory;
         this.projectServiceClient = projectServiceClient;
         this.projectWizardPresenter = projectWizardPresenter;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.constant = constant;
         this.documentTitleDecorator = documentTitleDecorator;
+        this.notificationManager = notificationManager;
     }
 
     @Override
@@ -216,7 +226,30 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
             public void onConfigure() {
                 eventBus.fireEvent(new ConfigureProjectEvent(project));
             }
+
+            @Override
+            public void onKeepBlank() {
+                project.setType(Constants.BLANK_ID);
+                updateProject(project);
+
+            }
         };
+    }
+
+    private void updateProject(final ProjectDescriptor project) {
+        final Unmarshallable<ProjectDescriptor> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class);
+        projectServiceClient.updateProject(project.getName(), project, new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
+            @Override
+            protected void onSuccess(ProjectDescriptor result) {
+                eventBus.fireEvent(new OpenProjectEvent(result.getName()));
+            }
+
+            @Override
+            protected void onFailure(Throwable exception) {
+                final String message = dtoFactory.createDtoFromJson(exception.getMessage(), ServiceError.class).getMessage();
+                notificationManager.showError(message);
+            }
+        });
     }
 
     private void rewriteBrowserHistory(@Nullable String projectName) {
