@@ -12,16 +12,14 @@ package com.codenvy.ide.git.deploy;
 
 import com.codenvy.ide.git.CheGitServlet;
 import com.codenvy.ide.git.VFSPermissionsFilter;
-import org.eclipse.che.inject.DynaModule;
 import com.google.inject.servlet.ServletModule;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Servlet module composer for git war.
+ * Servlet module composer for git jar.
  */
-@DynaModule
 public class GitServletModule extends ServletModule {
     @Override
     protected void configureServlets() {

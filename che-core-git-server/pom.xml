@@ -16,11 +16,11 @@
     <parent>
         <artifactId>che-core-parent</artifactId>
         <groupId>org.eclipse.che.core</groupId>
-        <version>3.11.7-SNAPSHOT</version>
+        <version>3.11.9-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>che-plugin-git-server</artifactId>
-    <packaging>war</packaging>
+    <artifactId>che-core-git-server</artifactId>
+    <packaging>jar</packaging>
     <name>Che Core :: Git Server</name>
     <dependencies>
         <dependency>
