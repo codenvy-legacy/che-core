@@ -16,7 +16,7 @@ import org.eclipse.che.api.account.server.dao.Member;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.workspace.server.dao.WorkspaceDao;
+//import org.eclipse.che.api.workspace.server.dao.WorkspaceDao;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -40,13 +40,13 @@ public class LocalAccountDaoImpl implements AccountDao {
     private final List<Member>  members;
     private final ReadWriteLock lock;
 
-    private final WorkspaceDao workspaceDao;
+//    private final WorkspaceDao workspaceDao;
 
     @Inject
     public LocalAccountDaoImpl(@Named("codenvy.local.infrastructure.accounts") Set<Account> accounts,
-                               @Named("codenvy.local.infrastructure.account.members") Set<Member> members,
-                               WorkspaceDao workspaceDao) {
-        this.workspaceDao = workspaceDao;
+                               @Named("codenvy.local.infrastructure.account.members") Set<Member> members
+                               /*WorkspaceDao workspaceDao*/) {
+//        this.workspaceDao = workspaceDao;
         this.accounts = new LinkedList<>();
         this.members = new LinkedList<>();
         lock = new ReentrantReadWriteLock();
@@ -186,9 +186,9 @@ public class LocalAccountDaoImpl implements AccountDao {
             if (myAccount == null) {
                 throw new NotFoundException(String.format("Not found account %s", id));
             }
-            if (!workspaceDao.getByAccount(id).isEmpty()) {
-                throw new ConflictException("It is not possible to remove account that has associated workspaces");
-            }
+//            if (!workspaceDao.getByAccount(id).isEmpty()) {
+//                throw new ConflictException("It is not possible to remove account that has associated workspaces");
+//            }
             for (Iterator<Member> itr = members.iterator(); itr.hasNext(); ) {
                 final Member member = itr.next();
                 if (member.getAccountId().equals(id)) {

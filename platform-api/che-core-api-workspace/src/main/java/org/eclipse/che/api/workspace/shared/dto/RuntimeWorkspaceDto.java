@@ -28,8 +28,6 @@ public interface RuntimeWorkspaceDto extends UsersWorkspaceDto, RuntimeWorkspace
     @Override
     MachineDto getDevMachine();
 
-    void setDevMachine(MachineDto devMachine);
-
     RuntimeWorkspaceDto withDevMachine(MachineDto devMachine);
 
     @Override
@@ -42,30 +40,22 @@ public interface RuntimeWorkspaceDto extends UsersWorkspaceDto, RuntimeWorkspace
     @Override
     String getRootFolder();
 
-    void setRootFolder(String rootFolder);
-
     RuntimeWorkspaceDto withRootFolder(String rootFolder);
 
     @Override
     boolean isTemporary();
-
-    void setTemporary(boolean temporary);
 
     RuntimeWorkspaceDto withTemporary(boolean temporary);
 
     @Override
     WorkspaceStatus getStatus();
 
-    void setStatus(WorkspaceStatus status);
-
     RuntimeWorkspaceDto withStatus(WorkspaceStatus status);
 
     @Override
     String getActiveEnvName();
 
-    void setCurrentEnvironment(String currentEnvironment);
-
-    RuntimeWorkspaceDto withCurrentEnvironment(String currentEnvironment);
+    RuntimeWorkspaceDto withActiveEnvName(String currentEnvironment);
 
     @Override
     RuntimeWorkspaceDto withId(String id);
@@ -77,7 +67,7 @@ public interface RuntimeWorkspaceDto extends UsersWorkspaceDto, RuntimeWorkspace
     RuntimeWorkspaceDto withName(String name);
 
     @Override
-    RuntimeWorkspaceDto withDefaultEnvironment(String defaultEnvironment);
+    RuntimeWorkspaceDto withDefaultEnvName(String defaultEnvironment);
 
     @Override
     List<CommandDto> getCommands();
@@ -102,4 +92,9 @@ public interface RuntimeWorkspaceDto extends UsersWorkspaceDto, RuntimeWorkspace
 
     @Override
     RuntimeWorkspaceDto withLinks(List<Link> links);
+
+    @Override
+    WorkspaceStateDto getState();
+
+    RuntimeWorkspaceDto withState(WorkspaceStateDto state);
 }

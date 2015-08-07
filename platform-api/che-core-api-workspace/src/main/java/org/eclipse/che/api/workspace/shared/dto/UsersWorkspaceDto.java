@@ -11,6 +11,7 @@
 package org.eclipse.che.api.workspace.shared.dto;
 
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
+import org.eclipse.che.api.core.model.workspace.WorkspaceState;
 import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.dto.shared.DTO;
@@ -35,7 +36,7 @@ public interface UsersWorkspaceDto extends UsersWorkspace, WorkspaceConfigDto, H
     UsersWorkspaceDto withName(String name);
 
     @Override
-    UsersWorkspaceDto  withDefaultEnvironment(String defaultEnvironment);
+    UsersWorkspaceDto withDefaultEnvName(String defaultEnvironment);
 
     @Override
     List<CommandDto> getCommands();
@@ -60,4 +61,7 @@ public interface UsersWorkspaceDto extends UsersWorkspace, WorkspaceConfigDto, H
 
     @Override
     UsersWorkspaceDto withLinks(List<Link> links);
+
+    @Override
+    WorkspaceStateDto getState();
 }

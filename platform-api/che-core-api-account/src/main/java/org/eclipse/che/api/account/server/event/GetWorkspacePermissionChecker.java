@@ -43,18 +43,18 @@ public class GetWorkspacePermissionChecker implements PermissionChecker {
 
     @Override
     public void checkPermissions(String method, Map<String, String> params, SecurityContext context) throws ForbiddenException, ServerException {
-
-        String id = params.get("id");
-        Membership m = membershipDao.getMembership(context.getUserPrincipal().getName(), "workspace", id);
-        if(m.getRoles().contains("workspace/developer") || m.getRoles().contains("workspace/admin"))
-            return;
-        else {
-            String accountId = this.accountWorkspacesDao.getWorkspaces(id);
-            if(m.getRoles().contains("account/admin"))
-                return;
-        }
-
-        throw new ForbiddenException("Permission denied for "+context.getUserPrincipal().getName());
+//
+//        String id = params.get("id");
+//        Membership m = membershipDao.getMembership(context.getUserPrincipal().getName(), "workspace", id);
+//        if(m.getRoles().contains("workspace/developer") || m.getRoles().contains("workspace/admin"))
+//            return;
+//        else {
+//            String accountId = this.accountWorkspacesDao.getWorkspaces(id);
+//            if(m.getRoles().contains("account/admin"))
+//                return;
+//        }
+//
+//        throw new ForbiddenException("Permission denied for "+context.getUserPrincipal().getName());
 
     }
 }

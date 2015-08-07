@@ -6,7 +6,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- * Codenvy, S.A. - initial API and implementation
+ *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server.model.impl;
 
@@ -29,8 +29,6 @@ public class SourceStorageImpl implements SourceStorage {
     private String              location;
     private Map<String, String> parameters;
 
-    public SourceStorageImpl() {}
-
     public SourceStorageImpl(String type, String location, Map<String, String> parameters) {
         this.type = type;
         this.location = location;
@@ -42,19 +40,9 @@ public class SourceStorageImpl implements SourceStorage {
         return type;
     }
 
-    public SourceStorageImpl setType(String type) {
-        this.type = type;
-        return this;
-    }
-
     @Override
     public String getLocation() {
         return location;
-    }
-
-    public SourceStorageImpl setLocation(String location) {
-        this.location = location;
-        return this;
     }
 
     @Override
@@ -63,11 +51,6 @@ public class SourceStorageImpl implements SourceStorage {
             parameters = new HashMap<>();
         }
         return parameters;
-    }
-
-    public SourceStorageImpl setParameters(Map<String, String> parameters) {
-        this.parameters = parameters;
-        return this;
     }
 
     @Override

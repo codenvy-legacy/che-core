@@ -6,7 +6,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- * Codenvy, S.A. - initial API and implementation
+ *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server.model.impl;
 
@@ -29,14 +29,26 @@ public class CommandImpl implements Command {
     private String type;
     private String workingDir;
 
+    public CommandImpl(String name, String commandLine) {
+        this.name = name;
+        this.commandLine = commandLine;
+    }
+
+    public CommandImpl(String name, String commandLine, String visibility, String type, String workingDir) {
+        this.name = name;
+        this.commandLine = commandLine;
+        this.visibility = visibility;
+        this.type = type;
+        this.workingDir = workingDir;
+    }
+
     @Override
     public String getName() {
         return name;
     }
 
-    public CommandImpl setName(String name) {
+    public void setName(String name) {
         this.name = name;
-        return this;
     }
 
     @Override
@@ -44,9 +56,8 @@ public class CommandImpl implements Command {
         return commandLine;
     }
 
-    public CommandImpl setCommandLine(String commandLine) {
+    public void setCommandLine(String commandLine) {
         this.commandLine = commandLine;
-        return this;
     }
 
     @Override
@@ -54,9 +65,8 @@ public class CommandImpl implements Command {
         return visibility;
     }
 
-    public CommandImpl setVisibility(String visibility) {
+    public void setVisibility(String visibility) {
         this.visibility = visibility;
-        return this;
     }
 
     @Override
@@ -64,9 +74,8 @@ public class CommandImpl implements Command {
         return type;
     }
 
-    public CommandImpl setType(String type) {
+    public void setType(String type) {
         this.type = type;
-        return this;
     }
 
     @Override
@@ -74,9 +83,8 @@ public class CommandImpl implements Command {
         return workingDir;
     }
 
-    public CommandImpl setWorkingDir(String workingDir) {
+    public void setWorkingDir(String workingDir) {
         this.workingDir = workingDir;
-        return this;
     }
 
     @Override

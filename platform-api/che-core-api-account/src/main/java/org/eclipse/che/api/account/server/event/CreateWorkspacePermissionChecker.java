@@ -43,21 +43,21 @@ public class CreateWorkspacePermissionChecker implements PermissionChecker {
 
     @Override
     public void checkPermissions(String method, Map<String, String> params, SecurityContext context) throws ForbiddenException, ServerException {
-
-        if(context.isUserInRole("system/admin"))
-            return;
-        else if(!context.isUserInRole("user"))
-            throw new ForbiddenException("Permission denied for not authorized user");
-
-        String accountId = params.get("accountId");
-
-        Account account = accountDao.getById(accountId);
-
-
-        //check user has access to add new workspace
-//        if (!context.isUserInRole("system/admin")) {
-         ensureCurrentUserOwnerOf(account);
-//        }
+//
+//        if(context.isUserInRole("system/admin"))
+//            return;
+//        else if(!context.isUserInRole("user"))
+//            throw new ForbiddenException("Permission denied for not authorized user");
+//
+//        String accountId = params.get("accountId");
+//
+//        Account account = accountDao.getById(accountId);
+//
+//
+//        //check user has access to add new workspace
+////        if (!context.isUserInRole("system/admin")) {
+//         ensureCurrentUserOwnerOf(account);
+////        }
     }
 
     private void ensureCurrentUserOwnerOf(Account target) throws ServerException, NotFoundException, ConflictException {

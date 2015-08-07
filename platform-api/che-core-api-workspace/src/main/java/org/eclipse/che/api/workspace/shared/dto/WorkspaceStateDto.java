@@ -8,27 +8,21 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.core.model.workspace;
+package org.eclipse.che.api.workspace.shared.dto;
 
-/**
- * Defines workspace owned by user.
- *
- * @author gazarenkov
- */
-public interface UsersWorkspace extends WorkspaceConfig {
+import org.eclipse.che.api.core.model.workspace.WorkspaceState;
+import org.eclipse.che.dto.shared.DTO;
 
-    /**
-     * Returns workspace identifier. It is unique and mandatory.
-     */
-    String getId();
+@DTO
+public interface WorkspaceStateDto extends WorkspaceState {
 
-    /**
-     * Returns workspace owner (users identifier). It is mandatory.
-     */
-    String getOwner();
+    WorkspaceStateDto withTemporary(boolean isTemporary);
 
-    /**
-     * Returns workspace state.
-     */
-    WorkspaceState getState();
+    WorkspaceStateDto withId(String id);
+
+    WorkspaceStateDto withOwner(String owner);
+
+    WorkspaceStateDto withName(String name);
+
+    WorkspaceStateDto withStatus(WorkspaceStatus status);
 }

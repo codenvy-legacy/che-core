@@ -34,38 +34,25 @@ public interface WorkspaceConfigDto extends WorkspaceConfig, Hyperlinks {
     @Override
     String getDefaultEnvName();
 
-    void setDefaultEnvironment(String defaultEnvironment);
-
-    WorkspaceConfigDto withDefaultEnvironment(String defaultEnvironment);
+    WorkspaceConfigDto withDefaultEnvName(String defaultEnvironment);
 
     @Override
     List<CommandDto> getCommands();
-
-    void setCommands(List<CommandDto> commands);
 
     WorkspaceConfigDto withCommands(List<CommandDto> commands);
 
     @Override
     List<ProjectConfigDto> getProjects();
 
-    void setProjects(List<ProjectConfigDto> projects);
-
     WorkspaceConfigDto withProjects(List<ProjectConfigDto> projects);
 
     @Override
     Map<String, EnvironmentDto> getEnvironments();
 
-    @Override
-    EnvironmentDto getEnvironment(String envName);
-
-    void setEnvironments(Map<String, EnvironmentDto> environments);
-
     WorkspaceConfigDto withEnvironments(Map<String, EnvironmentDto> environments);
 
     @Override
     Map<String, String> getAttributes();
-
-    void setAttributes(Map<String, String> attributes);
 
     WorkspaceConfigDto withAttributes(Map<String, String> attributes);
 

@@ -30,11 +30,11 @@ import org.eclipse.che.api.user.server.dao.PreferenceDao;
 import org.eclipse.che.api.user.server.dao.User;
 import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.api.user.server.dao.UserProfileDao;
-import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
-import org.eclipse.che.api.workspace.server.dao.Member;
-import org.eclipse.che.api.workspace.server.dao.MemberDao;
-import org.eclipse.che.api.workspace.server.dao.Workspace;
-import org.eclipse.che.api.workspace.server.dao.WorkspaceDao;
+//import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
+//import org.eclipse.che.api.workspace.server.dao.Member;
+//import org.eclipse.che.api.workspace.server.dao.MemberDao;
+//import org.eclipse.che.api.workspace.server.dao.Workspace;
+//import org.eclipse.che.api.workspace.server.dao.WorkspaceDao;
 import org.eclipse.che.inject.DynaModule;
 
 import javax.inject.Named;
@@ -50,10 +50,10 @@ public class LocalInfrastructureModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(UserDao.class).to(LocalUserDaoImpl.class);
-        bind(WorkspaceDao.class).to(LocalWorkspaceDaoImpl.class);
+//        bind(WorkspaceDao.class).to(LocalWorkspaceDaoImpl.class);
         bind(UserProfileDao.class).to(LocalProfileDaoImpl.class);
         bind(PreferenceDao.class).to(LocalPreferenceDaoImpl.class);
-        bind(MemberDao.class).to(LocalMemberDaoImpl.class);
+//        bind(MemberDao.class).to(LocalMemberDaoImpl.class);
         bind(AccountDao.class).to(LocalAccountDaoImpl.class);
         bind(AuthenticationDao.class).to(LocalAuthenticationDaoImpl.class);
 //        bind(FactoryStore.class).to(InMemoryFactoryStore.class);
@@ -88,32 +88,32 @@ public class LocalInfrastructureModule extends AbstractModule {
 
 
     // ~~~ WorkspaceDao
-
-    @Provides
-    @Named("codenvy.local.infrastructure.workspaces")
-    Set<Workspace> workspaces() {
-        final Set<Workspace> workspaces = new HashSet<>(1);
-        workspaces.add(new Workspace().withId("1q2w3e").withName("default").withTemporary(false));
-        return workspaces;
-    }
-
-    // WorkspaceDao ~~~
-
-
-    // ~~~ MemberDao
-
-    @Provides
-    @Named("codenvy.local.infrastructure.workspace.members")
-    Set<Member> workspaceMembers() {
-        final Set<Member> members = new HashSet<>(1);
-        final Member member =
-                new Member().withUserId("codenvy").withWorkspaceId("1q2w3e");
-        Collections.addAll(member.getRoles(), "workspace/admin", "workspace/developer");
-        members.add(member);
-        return members;
-    }
-
-    // MemberDao ~~~
+//
+//    @Provides
+//    @Named("codenvy.local.infrastructure.workspaces")
+//    Set<Workspace> workspaces() {
+//        final Set<Workspace> workspaces = new HashSet<>(1);
+//        workspaces.add(new Workspace().withId("1q2w3e").withName("default").withTemporary(false));
+//        return workspaces;
+//    }
+//
+//    // WorkspaceDao ~~~
+//
+//
+//    // ~~~ MemberDao
+//
+//    @Provides
+//    @Named("codenvy.local.infrastructure.workspace.members")
+//    Set<Member> workspaceMembers() {
+//        final Set<Member> members = new HashSet<>(1);
+//        final Member member =
+//                new Member().withUserId("codenvy").withWorkspaceId("1q2w3e");
+//        Collections.addAll(member.getRoles(), "workspace/admin", "workspace/developer");
+//        members.add(member);
+//        return members;
+//    }
+//
+//    // MemberDao ~~~
 
 
     // ~~~ UserDao

@@ -16,6 +16,7 @@ import org.eclipse.che.api.core.model.workspace.Environment;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
+import org.eclipse.che.api.core.model.workspace.WorkspaceState;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,12 +35,13 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
     private String                   id;
     private String                   name;
     private String                   owner;
-    private String                   defaultEnvironment;
+    private String                   defaultEnvName;
     private List<Command>            commands;
     private List<ProjectConfig>      projects;
     private Map<String, String>      attributes;
     private Map<String, Environment> environments;
     private String                   description;
+    private WorkspaceState           state;
 
     public UsersWorkspaceImpl(String id,
                               String name,
@@ -58,7 +60,7 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
         setCommands(commands);
         setProjects(projects);
         setAttributes(attributes);
-        setDefaultEnvironment(defaultEnvironment);
+        setDefaultEnvName(defaultEnvironment);
     }
 
     public UsersWorkspaceImpl(WorkspaceConfig workspaceConfig, String id, String owner) {
@@ -76,11 +78,6 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
     @Override
     public String getId() {
         return id;
-    }
-
-    public UsersWorkspaceImpl setId(String id) {
-        this.id = id;
-        return this;
     }
 
     @Override
@@ -103,18 +100,18 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
 
     @Override
     public String getDefaultEnvName() {
-        return defaultEnvironment;
+        return defaultEnvName;
     }
 
     /**
      * Sets particular environment configured for this workspace  as default
      * Throws NullPointerException if no Env with incoming name configured
      */
-    public void setDefaultEnvironment(String name) {
+    public void setDefaultEnvName(String name) {
         if (environments.get(name) == null) {
             throw new NullPointerException("No Environment named '" + name + "' found");
         }
-        defaultEnvironment = name;
+        defaultEnvName = name;
     }
 
     @Override
@@ -159,6 +156,15 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
     }
 
     @Override
+    public WorkspaceState getState() {
+        return state;
+    }
+
+    public void setState(WorkspaceState state) {
+        this.state = state;
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (!(obj instanceof UsersWorkspaceImpl)) return false;
@@ -166,7 +172,7 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
         return Objects.equals(owner, other.owner) &&
                Objects.equals(id, other.id) &&
                Objects.equals(name, other.name) &&
-               Objects.equals(defaultEnvironment, other.defaultEnvironment) &&
+               Objects.equals(defaultEnvName, other.defaultEnvName) &&
                commands.equals(other.commands) &&
                environments.equals(other.environments) &&
                projects.equals(other.projects) &&
@@ -179,7 +185,7 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
         hash = 31 * hash + Objects.hashCode(owner);
         hash = 31 * hash + Objects.hashCode(id);
         hash = 31 * hash + Objects.hashCode(name);
-        hash = 31 * hash + Objects.hashCode(defaultEnvironment);
+        hash = 31 * hash + Objects.hashCode(defaultEnvName);
         hash = 31 * hash + commands.hashCode();
         hash = 31 * hash + environments.hashCode();
         hash = 31 * hash + projects.hashCode();

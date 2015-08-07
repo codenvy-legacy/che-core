@@ -6,7 +6,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- * Codenvy, S.A. - initial API and implementation
+ *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server;
 
@@ -131,8 +131,7 @@ public class WorkspaceService extends Service {
         if (securityContext.isUserInRole("user")) {
             newWorkspace.setOwner(securityContext.getUserPrincipal().getName());
         }
-        //TODO check only newWorkspace.getOwner() == null, let permission checker to its job
-        if (securityContext.isUserInRole("system/admin") && newWorkspace.getOwner() == null) {
+        if (newWorkspace.getOwner() == null) {
             throw new BadRequestException("New workspace owner required");
         }
 
@@ -153,7 +152,16 @@ public class WorkspaceService extends Service {
                                                                                                   BadRequestException {
         return asDto(workspaceManager.getWorkspace(id));
     }
-//
+
+    @POST
+    @Path("/start/{id}")
+    @Produces(APPLICATION_JSON)
+    public UsersWorkspaceDto start(@PathParam("id") String workspaceId, @QueryParam("environment") String envName) throws ServerException,
+                                                                                                                          BadRequestException,
+                                                                                                                          NotFoundException {
+        return asDto(workspaceManager.startWorkspaceById(workspaceId, envName));
+    }
+
 //    /**
 //     * Searches for workspace with given name and return {@link org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor} for it.
 //     * If user that has called this method is not <i>"workspace/admin"</i> or <i>"workspace/developer"</i>
@@ -622,7 +630,7 @@ public class WorkspaceService extends Service {
                 .withId(workspace.getId())
                 .withName(workspace.getName())
                 .withOwner(workspace.getOwner())
-                .withDefaultEnvironment(workspace.getDefaultEnvName())
+                .withDefaultEnvName(workspace.getDefaultEnvName())
                 .withCommands(commands)
                 .withProjects(projects)
                 .withEnvironments(environments);
@@ -661,11 +669,11 @@ public class WorkspaceService extends Service {
     }
 
     private CommandImpl asImpl(CommandDto commandDto) {
-        return new CommandImpl().setName(commandDto.getName())
-                                .setCommandLine(commandDto.getCommandLine())
-                                .setType(commandDto.getType())
-                                .setVisibility(commandDto.getType())
-                                .setWorkingDir(commandDto.getWorkingDir());
+        return new CommandImpl(commandDto.getName(),
+                               commandDto.getCommandLine(),
+                               commandDto.getVisibility(),
+                               commandDto.getType(),
+                               commandDto.getWorkingDir());
     }
 
     private ProjectConfigDto asDto(ProjectConfig projectCfg) {

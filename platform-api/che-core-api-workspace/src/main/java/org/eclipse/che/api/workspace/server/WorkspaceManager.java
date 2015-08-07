@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -96,7 +97,7 @@ public class WorkspaceManager {
         requiredNotNull(owner, "Workspace owner");
 
         final List<RuntimeWorkspace> runtimeWorkspaces = workspaceRegistry.getList(owner);
-        final List<UsersWorkspace> usersWorkspaces = workspaceDao.getList(owner);
+        final List<UsersWorkspaceImpl> usersWorkspaces = workspaceDao.getList(owner);
         Map<String, WorkspaceState> workspacesStates = new HashMap<>();
         for (RuntimeWorkspace runtimeWorkspace : runtimeWorkspaces) {
             workspacesStates.put(runtimeWorkspace.getId(),
@@ -108,14 +109,16 @@ public class WorkspaceManager {
             }
         }
 
-        return new LinkedList<>(workspacesStates.values());
+        return new ArrayList<>(workspacesStates.values());
     }
 
-    public WorkspaceState startWorkspaceById(String workspaceId, String envName) throws NotFoundException, ServerException, BadRequestException {
+    public UsersWorkspace startWorkspaceById(String workspaceId, String envName)
+            throws NotFoundException, ServerException, BadRequestException {
         requiredNotNull(workspaceId, "Workspace id");
 
-        final UsersWorkspace usersWorkspace = workspaceDao.get(workspaceId);
-        return startWorkspace(usersWorkspace, envName, false);
+        final UsersWorkspaceImpl workspace = workspaceDao.get(workspaceId);
+        workspace.setState(startWorkspace(workspace, envName, false));
+        return workspace;
     }
 
     public WorkspaceState startWorkspaceByName(String workspaceName, String owner)
@@ -212,14 +215,12 @@ public class WorkspaceManager {
         requiredNotNull(workspaceConfig, "Workspace config");
         requiredNotNull(workspaceConfig.getDefaultEnvName(), "Workspace default environment");
         requiredNotNull(workspaceConfig.getEnvironments(), "Workspace default environment configuration");
-        requiredNotNull(workspaceConfig.getEnvironment(workspaceConfig.getDefaultEnvName()),
+        requiredNotNull(workspaceConfig.getEnvironments().get(workspaceConfig.getDefaultEnvName()),
                         "Workspace default environment configuration");
 
         validateAttributes(workspaceConfig.getAttributes());
 
-        final UsersWorkspaceImpl workspace = UsersWorkspaceImpl.from(workspaceConfig)
-                                                               .setId(generateWorkspaceId())
-                                                               .setOwner(getCurrentUserId());
+        final UsersWorkspaceImpl workspace = new UsersWorkspaceImpl(workspaceConfig, generateWorkspaceId(), getCurrentUserId());
 
         if (Strings.isNullOrEmpty(workspace.getName())) {
             workspace.setName(generateWorkspaceName());
@@ -236,16 +237,13 @@ public class WorkspaceManager {
         requiredNotNull(workspace, "Workspace config");
         requiredNotNull(workspace.getDefaultEnvName(), "Workspace default environment");
         requiredNotNull(workspace.getEnvironments(), "Workspace default environment configuration");
-        requiredNotNull(workspace.getEnvironment(workspace.getDefaultEnvName()),
-                        "Workspace default environment configuration");
+        requiredNotNull(workspace.getEnvironments().get(workspace.getDefaultEnvName()), "Workspace default environment configuration");
 
         validateName(workspace.getName());
         validateAttributes(workspace.getAttributes());
 
-        final UsersWorkspace currentWorkspace = workspaceDao.get(workspaceId);
-        UsersWorkspace newWorkspace = UsersWorkspaceImpl.from(workspace)
-                                                       .setId(currentWorkspace.getId())
-                                                       .setOwner(currentWorkspace.getOwner());
+        UsersWorkspace currentWorkspace = workspaceDao.get(workspaceId);
+        UsersWorkspaceImpl newWorkspace = new UsersWorkspaceImpl(workspace, currentWorkspace.getId(), currentWorkspace.getOwner());
 
         UsersWorkspace updated = workspaceDao.update(newWorkspace);
 

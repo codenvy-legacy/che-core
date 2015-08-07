@@ -33,7 +33,6 @@ import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
 import org.eclipse.che.api.vfs.shared.dto.AccessControlEntry;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.api.workspace.server.WorkspaceService;
-import org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.ws.rs.ExtMediaType;
 import org.eclipse.che.commons.user.User;
@@ -296,21 +295,21 @@ public class DtoConverter {
         final String path = project.getPath();
         String wsName = null;
 
-        try {
-            @SuppressWarnings("unchecked") // Generic array is 0 size
-            final WorkspaceDescriptor descriptor = HttpJsonHelper.request(WorkspaceDescriptor.class,
-                                                                          baseUriBuilder.path(WorkspaceService.class)
-                                                                                        .path(WorkspaceService.class, "getById")
-                                                                                        .build(wsId)
-                                                                                        .toString(),
-                                                                          GET,
-                                                                          null);
-            wsName = descriptor.getName();
-        } catch (ApiException e) {
-            dto.getProblems().add(createProjectProblem(dtoFactory, e));
-        } catch (IOException ioEx) {
-            dto.getProblems().add(createProjectProblem(dtoFactory, new ServerException(ioEx.getMessage(), ioEx)));
-        }
+//        try {
+//            @SuppressWarnings("unchecked") // Generic array is 0 size
+//            final WorkspaceDescriptor descriptor = HttpJsonHelper.request(WorkspaceDescriptor.class,
+//                                                                          baseUriBuilder.path(WorkspaceService.class)
+//                                                                                        .path(WorkspaceService.class, "getById")
+//                                                                                        .build(wsId)
+//                                                                                        .toString(),
+//                                                                          GET,
+//                                                                          null);
+//            wsName = descriptor.getName();
+//        } catch (ApiException e) {
+//            dto.getProblems().add(createProjectProblem(dtoFactory, e));
+//        } catch (IOException ioEx) {
+//            dto.getProblems().add(createProjectProblem(dtoFactory, new ServerException(ioEx.getMessage(), ioEx)));
+//        }
 
         dto.withWorkspaceId(wsId).withWorkspaceName(wsName).withName(name).withPath(path);
 

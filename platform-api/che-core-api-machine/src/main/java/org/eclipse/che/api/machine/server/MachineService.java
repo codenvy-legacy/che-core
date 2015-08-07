@@ -33,8 +33,8 @@ import org.eclipse.che.api.machine.shared.dto.ProcessDescriptor;
 import org.eclipse.che.api.machine.shared.dto.ProjectBindingDescriptor;
 import org.eclipse.che.api.machine.shared.dto.ServerDescriptor;
 import org.eclipse.che.api.machine.shared.dto.SnapshotDescriptor;
-import org.eclipse.che.api.workspace.server.dao.Member;
-import org.eclipse.che.api.workspace.server.dao.MemberDao;
+//import org.eclipse.che.api.workspace.server.dao.Member;
+//import org.eclipse.che.api.workspace.server.dao.MemberDao;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.Strings;
 import org.eclipse.che.dto.server.DtoFactory;
@@ -68,12 +68,12 @@ import java.util.Map;
 public class MachineService {
     private MachineManager machineManager;
     private DtoFactory     dtoFactory;
-    private MemberDao      memberDao;
+//    private MemberDao      memberDao;
 
     @Inject
-    public MachineService(MachineManager machineManager, MemberDao memberDao) {
+    public MachineService(MachineManager machineManager /*, MemberDao memberDao*/) {
         this.machineManager = machineManager;
-        this.memberDao = memberDao;
+//        this.memberDao = memberDao;
         this.dtoFactory = DtoFactory.getInstance();
     }
 
@@ -354,13 +354,13 @@ public class MachineService {
     }
 
     private void checkCurrentUserPermissions(String workspaceId) throws ForbiddenException, ServerException {
-        try {
-            final Member member = memberDao.getWorkspaceMember(workspaceId, EnvironmentContext.getCurrent().getUser().getId());
-            if (member.getRoles().contains("workspace/admin") || member.getRoles().contains("workspace/developer")) {
-                return;
-            }
-        } catch (NotFoundException ignored) {
-        }
+//        try {
+//            final Member member = memberDao.getWorkspaceMember(workspaceId, EnvironmentContext.getCurrent().getUser().getId());
+//            if (member.getRoles().contains("workspace/admin") || member.getRoles().contains("workspace/developer")) {
+//                return;
+//            }
+//        } catch (NotFoundException ignored) {
+//        }
         throw new ForbiddenException("You are not a member of workspace " + workspaceId);
     }
 
