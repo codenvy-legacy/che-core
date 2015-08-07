@@ -12,6 +12,8 @@ package org.eclipse.che.vfs.impl.fs;
 
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.commons.env.EnvironmentContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -33,7 +35,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Singleton
 public class MappedDirectoryLocalFSMountStrategy implements LocalFSMountStrategy {
-    private final Map<String, java.io.File> mapping = new ConcurrentHashMap<>();
+    private static final Logger                    LOG     = LoggerFactory.getLogger(MappedDirectoryLocalFSMountStrategy.class);
+
+    private final        Map<String, java.io.File> mapping = new ConcurrentHashMap<>();
 
     private final java.io.File mappingFile;
 
@@ -52,7 +56,7 @@ public class MappedDirectoryLocalFSMountStrategy implements LocalFSMountStrategy
     }
 
     @PostConstruct
-    private void start() {
+    public void start() {
         if (mappingFile.exists() && mappingFile.isFile()) {
             try {
                 loadFromPropertiesFile(mappingFile);
@@ -64,15 +68,20 @@ public class MappedDirectoryLocalFSMountStrategy implements LocalFSMountStrategy
     }
 
     @PreDestroy
-    private void stop() {
-        if (mappingFile.exists() && mappingFile.isFile()) {
+    public void stop() {
+        if (!mappingFile.exists()) {
             try {
                 Files.createFile(mappingFile.toPath());
-                saveInPropertiesFile(mappingFile);
             } catch (IOException e) {
                 throw new IllegalStateException(
-                        String.format("Unable save directory mapping in file %s. %s", mappingFile, e.getMessage()), e);
+                        String.format("Unable create file %s. %s", mappingFile, e.getMessage()), e);
             }
+        }
+        try {
+            saveInPropertiesFile(mappingFile);
+        } catch (IOException e) {
+            throw new IllegalStateException(
+                    String.format("Unable save directory mapping in file %s. %s", mappingFile, e.getMessage()), e);
         }
     }
 
