@@ -295,8 +295,6 @@ public class WorkspaceService extends Service {
 
     @DELETE
     @Path("/{id}/environment/{name}")
-    @Consumes(APPLICATION_JSON)
-    @Produces(APPLICATION_JSON)
     public void deleteEnvironment(@PathParam("id") String id, @PathParam("name") String envName)
             throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
@@ -339,9 +337,7 @@ public class WorkspaceService extends Service {
     }
 
     @DELETE
-    @Path("/{id}/environment/{name}")
-    @Consumes(APPLICATION_JSON)
-    @Produces(APPLICATION_JSON)
+    @Path("/{id}/project/{name}")
     public void deleteProject(@PathParam("id") String id, @PathParam("name") String projectName)
             throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
