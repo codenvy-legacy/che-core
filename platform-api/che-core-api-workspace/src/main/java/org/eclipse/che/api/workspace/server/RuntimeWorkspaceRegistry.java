@@ -23,7 +23,7 @@ import java.util.List;
  * @author Alexander Garagatyi
  */
 public interface RuntimeWorkspaceRegistry {
-    RuntimeWorkspace start(UsersWorkspace ws, String envName, boolean temp)
+    RuntimeWorkspace start(UsersWorkspace ws, String envName)
             throws ForbiddenException, NotFoundException, ServerException, ConflictException;
 
     void stop(String workspaceId) throws ForbiddenException, NotFoundException, ServerException;

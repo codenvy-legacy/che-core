@@ -16,7 +16,6 @@ import org.eclipse.che.api.core.model.workspace.Machine;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.model.workspace.RuntimeWorkspace;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
-import org.eclipse.che.api.core.model.workspace.WorkspaceState.WorkspaceStatus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,10 +26,11 @@ import java.util.Objects;
  * @author Alexander Garagatyi
  */
 public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeWorkspace {
-    private final Machine                 devMachine;
-    private final List<? extends Machine> machines;
     private final String                  rootFolder;
     private final String                  currentEnvironment;
+
+    private Machine                 devMachine;
+    private List<? extends Machine> machines;
 
     public RuntimeWorkspaceImpl(String id,
                                 String name,
@@ -43,9 +43,7 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
                                 String description,
                                 Machine devMachine,
                                 List<? extends Machine> machines,
-                                boolean isTemporary,
                                 String rootFolder,
-                                WorkspaceStatus workspaceStatus,
                                 String currentEnvironment) {
         super(id, name, owner, attributes, commands, projects, environments, defaultEnvironment, description);
         this.devMachine = devMachine;
@@ -55,11 +53,7 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
     }
 
     public RuntimeWorkspaceImpl(UsersWorkspace usersWorkspace,
-                                Machine devMachine,
-                                List<? extends Machine> machines,
-                                boolean isTemporary,
                                 String rootFolder,
-                                WorkspaceStatus workspaceStatus,
                                 String currentEnvironment) {
         this(usersWorkspace.getId(),
              usersWorkspace.getName(),
@@ -70,11 +64,9 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
              usersWorkspace.getEnvironments(),
              usersWorkspace.getDefaultEnvName(),
              usersWorkspace.getDescription(),
-             devMachine,
-             machines,
-             isTemporary,
+             null,
+             null,
              rootFolder,
-             workspaceStatus,
              currentEnvironment);
     }
 
@@ -101,6 +93,14 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
     @Override
     public String getActiveEnvName() {
         return currentEnvironment;
+    }
+
+    public void setDevMachine(Machine devMachine) {
+        this.devMachine = devMachine;
+    }
+
+    public void setMachines(List<? extends Machine> machines) {
+        this.machines = machines;
     }
 
     @Override
