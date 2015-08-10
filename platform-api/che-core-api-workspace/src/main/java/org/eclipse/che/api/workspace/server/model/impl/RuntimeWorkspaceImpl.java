@@ -27,10 +27,10 @@ import java.util.Objects;
  */
 public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeWorkspace {
     private final String                  rootFolder;
-    private final String                  currentEnvironment;
 
     private Machine                 devMachine;
     private List<? extends Machine> machines;
+    private String                  currentEnvironment;
 
     public RuntimeWorkspaceImpl(String id,
                                 String name,
@@ -111,6 +111,7 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
         RuntimeWorkspaceImpl that = (RuntimeWorkspaceImpl)o;
         return Objects.equals(devMachine, that.devMachine) &&
                Objects.equals(machines, that.machines) &&
+               Objects.equals(currentEnvironment, that.currentEnvironment) &&
                Objects.equals(rootFolder, that.rootFolder);
     }
 
