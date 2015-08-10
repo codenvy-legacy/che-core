@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.api.core.model.workspace;
 
-import org.eclipse.che.api.core.model.workspace.WorkspaceState.WorkspaceStatus;
-
 /**
  * Defines workspace owned by user.
  *

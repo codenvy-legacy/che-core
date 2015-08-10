@@ -16,7 +16,7 @@ import org.eclipse.che.api.core.model.workspace.Environment;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
-import org.eclipse.che.api.core.model.workspace.WorkspaceState.WorkspaceStatus;
+import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 
 import java.util.ArrayList;
 import java.util.HashMap;

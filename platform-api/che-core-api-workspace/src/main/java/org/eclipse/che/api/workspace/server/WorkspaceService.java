@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server;
 
-
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -29,12 +28,6 @@ import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.rest.Service;
 import org.eclipse.che.api.core.rest.annotations.GenerateLink;
-import org.eclipse.che.api.core.rest.permission.PermissionManager;
-
-
-import org.eclipse.che.api.user.server.dao.PreferenceDao;
-import org.eclipse.che.api.user.server.dao.UserDao;
-import org.eclipse.che.api.user.server.dao.UserProfileDao;
 import org.eclipse.che.api.workspace.server.model.impl.CommandImpl;
 import org.eclipse.che.api.workspace.server.model.impl.EnvironmentImpl;
 import org.eclipse.che.api.workspace.server.model.impl.MachineConfigImpl;
@@ -42,7 +35,6 @@ import org.eclipse.che.api.workspace.server.model.impl.MachineSourceImpl;
 import org.eclipse.che.api.workspace.server.model.impl.ProjectConfigImpl;
 import org.eclipse.che.api.workspace.server.model.impl.SourceStorageImpl;
 import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
-import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
 import org.eclipse.che.api.workspace.shared.dto.CommandDto;
 import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
 import org.eclipse.che.api.workspace.shared.dto.MachineConfigDto;
@@ -51,8 +43,6 @@ import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -85,31 +75,14 @@ import static org.eclipse.che.dto.server.DtoFactory.newDto;
 @Path("/workspace")
 public class WorkspaceService extends Service {
 
-    private static final Logger LOG = LoggerFactory.getLogger(WorkspaceService.class);
-
     private final WorkspaceManager  workspaceManager;
-    private final WorkspaceDao      workspaceDao;
-    private final UserDao           userDao;
-    private final UserProfileDao    profileDao;
-    private final PreferenceDao     preferenceDao;
-    private final PermissionManager permissionManager;
 
     @Context
     private SecurityContext securityContext;
 
     @Inject
-    public WorkspaceService(WorkspaceManager workspaceManager,
-                            WorkspaceDao workspaceDao,
-                            UserDao userDao,
-                            UserProfileDao profileDao,
-                            PreferenceDao preferenceDao,
-                            PermissionManager permissionManager) {
+    public WorkspaceService(WorkspaceManager workspaceManager) {
         this.workspaceManager = workspaceManager;
-        this.workspaceDao = workspaceDao;
-        this.userDao = userDao;
-        this.profileDao = profileDao;
-        this.preferenceDao = preferenceDao;
-        this.permissionManager = permissionManager;
     }
 
     @ApiOperation(value = "Create a new workspace",
