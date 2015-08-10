@@ -129,7 +129,7 @@ public class WorkspaceService extends Service {
                                                                                                             ForbiddenException,
                                                                                                             NotFoundException {
         if (securityContext.isUserInRole("user")) {
-            newWorkspace.setOwner(securityContext.getUserPrincipal().getName());
+            newWorkspace.withOwner(securityContext.getUserPrincipal().getName());
         }
         if (newWorkspace.getOwner() == null) {
             throw new BadRequestException("New workspace owner required");

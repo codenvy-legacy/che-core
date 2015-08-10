@@ -11,7 +11,7 @@
 package org.eclipse.che.api.workspace.shared.dto;
 
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
-import org.eclipse.che.api.core.model.workspace.WorkspaceState;
+import org.eclipse.che.api.core.model.workspace.WorkspaceState.WorkspaceStatus;
 import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.dto.shared.DTO;
@@ -24,13 +24,14 @@ import java.util.Map;
  */
 @DTO
 public interface UsersWorkspaceDto extends UsersWorkspace, WorkspaceConfigDto, Hyperlinks {
-    void setId(String id);
 
     UsersWorkspaceDto withId(String id);
 
-    void setOwner(String owner);
-
     UsersWorkspaceDto withOwner(String owner);
+
+    UsersWorkspaceDto withStatus(WorkspaceStatus status);
+
+    UsersWorkspaceDto withTemporary(boolean isTemporary);
 
     @Override
     UsersWorkspaceDto withName(String name);
@@ -61,7 +62,4 @@ public interface UsersWorkspaceDto extends UsersWorkspace, WorkspaceConfigDto, H
 
     @Override
     UsersWorkspaceDto withLinks(List<Link> links);
-
-    @Override
-    WorkspaceStateDto getState();
 }

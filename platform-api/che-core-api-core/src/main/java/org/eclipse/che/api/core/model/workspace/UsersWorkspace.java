@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.core.model.workspace;
 
+import org.eclipse.che.api.core.model.workspace.WorkspaceState.WorkspaceStatus;
+
 /**
  * Defines workspace owned by user.
  *
@@ -28,7 +30,12 @@ public interface UsersWorkspace extends WorkspaceConfig {
     String getOwner();
 
     /**
-     * Returns workspace state.
+     * Returns true if workspace is temporary otherwise returns false.
      */
-    WorkspaceState getState();
+    boolean isTemporary();
+
+    /**
+     * Returns workspace status.
+     */
+    WorkspaceStatus getStatus();
 }

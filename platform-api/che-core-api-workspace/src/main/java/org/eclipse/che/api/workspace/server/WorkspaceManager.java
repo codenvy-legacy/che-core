@@ -117,7 +117,9 @@ public class WorkspaceManager {
         requiredNotNull(workspaceId, "Workspace id");
 
         final UsersWorkspaceImpl workspace = workspaceDao.get(workspaceId);
-        workspace.setState(startWorkspace(workspace, envName, false));
+        final WorkspaceState state = startWorkspace(workspace, envName, false);
+        workspace.setStatus(state.getStatus());
+        workspace.setTemporary(state.isTemporary());
         return workspace;
     }
 

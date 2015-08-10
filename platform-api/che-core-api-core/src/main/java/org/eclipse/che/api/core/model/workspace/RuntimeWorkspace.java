@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.api.core.model.workspace;
 
-import org.eclipse.che.api.core.model.workspace.WorkspaceState.WorkspaceStatus;
 
 import java.util.List;
 
@@ -38,16 +37,6 @@ public interface RuntimeWorkspace extends UsersWorkspace {
      * Returns non empty list which contains at least one dev machine and other machines related to workspace.
      */
     List<? extends Machine> getMachines();
-
-    /**
-     * Returns true if this workspace is temporary otherwise returns false.
-     */
-    boolean isTemporary();
-
-    /**
-     * Returns workspace status.
-     */
-    WorkspaceStatus getStatus();
 
     /**
      * Returns workspace root folder.

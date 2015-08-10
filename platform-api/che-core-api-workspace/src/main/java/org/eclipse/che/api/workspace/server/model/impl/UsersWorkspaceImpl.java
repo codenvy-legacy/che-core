@@ -16,7 +16,7 @@ import org.eclipse.che.api.core.model.workspace.Environment;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
-import org.eclipse.che.api.core.model.workspace.WorkspaceState;
+import org.eclipse.che.api.core.model.workspace.WorkspaceState.WorkspaceStatus;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,7 +41,8 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
     private Map<String, String>      attributes;
     private Map<String, Environment> environments;
     private String                   description;
-    private WorkspaceState           state;
+    private boolean                  isTemporary;
+    private WorkspaceStatus          status;
 
     public UsersWorkspaceImpl(String id,
                               String name,
@@ -96,6 +97,23 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    @Override
+    public boolean isTemporary() {
+        return isTemporary;
+    }
+
+    public void setTemporary(boolean isTemporary) {
+        this.isTemporary = isTemporary;
+    }
+
+    public WorkspaceStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(WorkspaceStatus status) {
+        this.status = status;
     }
 
     @Override
@@ -156,15 +174,6 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
     }
 
     @Override
-    public WorkspaceState getState() {
-        return state;
-    }
-
-    public void setState(WorkspaceState state) {
-        this.state = state;
-    }
-
-    @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (!(obj instanceof UsersWorkspaceImpl)) return false;
@@ -173,6 +182,8 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
                Objects.equals(id, other.id) &&
                Objects.equals(name, other.name) &&
                Objects.equals(defaultEnvName, other.defaultEnvName) &&
+               Objects.equals(status, other.status) &&
+               isTemporary == other.isTemporary &&
                commands.equals(other.commands) &&
                environments.equals(other.environments) &&
                projects.equals(other.projects) &&
@@ -186,6 +197,8 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
         hash = 31 * hash + Objects.hashCode(id);
         hash = 31 * hash + Objects.hashCode(name);
         hash = 31 * hash + Objects.hashCode(defaultEnvName);
+        hash = 31 * hash + Objects.hashCode(status);
+        hash = 31 * hash + (isTemporary ? 123 : 321);
         hash = 31 * hash + commands.hashCode();
         hash = 31 * hash + environments.hashCode();
         hash = 31 * hash + projects.hashCode();

@@ -93,8 +93,5 @@ public interface RuntimeWorkspaceDto extends UsersWorkspaceDto, RuntimeWorkspace
     @Override
     RuntimeWorkspaceDto withLinks(List<Link> links);
 
-    @Override
-    WorkspaceStateDto getState();
 
-    RuntimeWorkspaceDto withState(WorkspaceStateDto state);
 }
