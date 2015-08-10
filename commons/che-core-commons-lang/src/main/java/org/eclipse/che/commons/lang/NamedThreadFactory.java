@@ -13,7 +13,11 @@ package org.eclipse.che.commons.lang;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
 
-
+/**
+ * @deprecated
+ * Use guava ThreadFactoryBuilder instead
+ */
+@Deprecated
 public class NamedThreadFactory implements ThreadFactory {
     private static final AtomicLong threadPoolNumGen = new AtomicLong();
 

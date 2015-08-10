@@ -13,6 +13,10 @@ package org.eclipse.che.commons.lang;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * @depricated Use Guava cache or other cache implementations
+ */
+@Deprecated
 public class ExpirableCache<K, V> {
     private final int                cacheSize;
     private final long               expiredAfter;
