@@ -286,6 +286,13 @@ public class WorkspaceManager {
         return workspaceRegistry.get(workspaceId);
     }
 
+    public UsersWorkspace getWorkspace(String name, String owner) throws BadRequestException, NotFoundException, ServerException {
+        requiredNotNull(name, "Workspace name");
+        requiredNotNull(owner, "Workspace owner");
+
+        return workspaceDao.get(name, owner);
+    }
+
     /*******************************/
 
     private void validateName(String workspaceName) throws BadRequestException {

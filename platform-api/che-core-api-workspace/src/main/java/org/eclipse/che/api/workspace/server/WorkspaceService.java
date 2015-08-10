@@ -84,6 +84,7 @@ import static org.eclipse.che.dto.server.DtoFactory.newDto;
 @Api(value = "/workspace", description = "Workspace service")
 @Path("/workspace")
 public class WorkspaceService extends Service {
+
     private static final Logger LOG = LoggerFactory.getLogger(WorkspaceService.class);
 
     private final WorkspaceManager  workspaceManager;
@@ -124,18 +125,14 @@ public class WorkspaceService extends Service {
     @Produces(APPLICATION_JSON)
     @GenerateLink(rel = LINK_REL_CREATE_WORKSPACE)
     public UsersWorkspaceDto create(@ApiParam(value = "new workspace", required = true) UsersWorkspaceDto newWorkspace,
-                                    @ApiParam("account id") @QueryParam("account") String accountId) throws ConflictException,
-                                                                                                            ServerException,
-                                                                                                            BadRequestException,
-                                                                                                            ForbiddenException,
-                                                                                                            NotFoundException {
+                                    @ApiParam("account id") @QueryParam("account") String accountId)
+            throws ConflictException, ServerException, BadRequestException, ForbiddenException, NotFoundException {
         if (securityContext.isUserInRole("user")) {
             newWorkspace.withOwner(securityContext.getUserPrincipal().getName());
         }
         if (newWorkspace.getOwner() == null) {
             throw new BadRequestException("New workspace owner required");
         }
-
         return asDto(workspaceManager.createWorkspace(newWorkspace, accountId));
     }
 
@@ -150,6 +147,12 @@ public class WorkspaceService extends Service {
     public UsersWorkspaceDto getById(@ApiParam("Workspace ID") @PathParam("id") String id)
             throws NotFoundException, ServerException, ForbiddenException, BadRequestException {
         return asDto(workspaceManager.getWorkspace(id));
+    }
+
+    @GET
+    @Produces(APPLICATION_JSON)
+    public UsersWorkspaceDto getByName(@QueryParam("name") String name) throws ServerException, BadRequestException, NotFoundException {
+        return asDto(workspaceManager.getWorkspace(name, securityContext.getUserPrincipal().getName()));
     }
 
     @POST
@@ -177,7 +180,12 @@ public class WorkspaceService extends Service {
         return asDto(workspaceManager.startTemporaryWorkspace(cfg, accountId));
     }
 
-
+    @POST
+    @Path("/stop/{id}")
+    public void stop(@PathParam("id") String id)
+            throws BadRequestException, ForbiddenException, NotFoundException, ServerException {
+        workspaceManager.stopWorkspace(id);
+    }
 
 //    /**
 //     * Searches for workspace with given name and return {@link org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor} for it.
