@@ -28,6 +28,7 @@ import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
  *
  * @author Vladyslav Zhukovskyi
  */
+@Deprecated
 public class ModuleNode extends ProjectNode {
 
     private final AppContext appContext;

@@ -264,7 +264,7 @@ public class FileNodeTest extends BaseNodeTest {
         }).when(projectServiceClient).getFileContent(anyString(), (AsyncRequestCallback<String>)anyObject());
         AsyncCallback<String> callback = mock(AsyncCallback.class);
 
-        fileNode.getContent(callback);
+        fileNode.getContent();
 
         verify(projectServiceClient).getFileContent(eq(ITEM_PATH), Matchers.<AsyncRequestCallback<String>>anyObject());
         verify(callback).onSuccess(eq(content));
@@ -283,7 +283,7 @@ public class FileNodeTest extends BaseNodeTest {
         }).when(projectServiceClient).getFileContent(anyString(), (AsyncRequestCallback<String>)anyObject());
         AsyncCallback<String> callback = mock(AsyncCallback.class);
 
-        fileNode.getContent(callback);
+        fileNode.getContent();
 
         verify(projectServiceClient).getFileContent(eq(ITEM_PATH), Matchers.<AsyncRequestCallback<String>>anyObject());
         verify(callback).onFailure(Matchers.<Throwable>anyObject());
@@ -304,7 +304,7 @@ public class FileNodeTest extends BaseNodeTest {
         }).when(projectServiceClient).updateFile(anyString(), anyString(), anyString(), (AsyncRequestCallback<Void>)anyObject());
         AsyncCallback<Void> callback = mock(AsyncCallback.class);
 
-        fileNode.updateContent(newContent, callback);
+        fileNode.updateContent(newContent);
 
         verify(projectServiceClient).updateFile(eq(ITEM_PATH), eq(newContent), anyString(),
                                                 Matchers.<AsyncRequestCallback<Void>>anyObject());
@@ -326,7 +326,7 @@ public class FileNodeTest extends BaseNodeTest {
         }).when(projectServiceClient).updateFile(anyString(), anyString(), anyString(), (AsyncRequestCallback<Void>)anyObject());
         AsyncCallback<Void> callback = mock(AsyncCallback.class);
 
-        fileNode.updateContent(newContent, callback);
+        fileNode.updateContent(newContent);
 
         verify(projectServiceClient).updateFile(eq(ITEM_PATH), eq(newContent), anyString(),
                                                 Matchers.<AsyncRequestCallback<Void>>anyObject());

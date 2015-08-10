@@ -76,18 +76,18 @@ public class ActiveNodePersistentComponent implements PersistenceComponent {
             return actions;
         }
 
-        Array<TreeNode<?>> openedNodes = projectExplorerView.getOpenedTreeNodes();
-
-        if (openedNodes != null && openedNodes.contains(parentNode)) {
-            String path = virtualFile.getPath();
-            path = path.replaceFirst(projectPath, "");
-
-            String openNodeActionId = actionManager.getId(selectNodeAction);
-
-            actions.add(dtoFactory.createDto(ActionDescriptor.class)
-                                  .withId(openNodeActionId)
-                                  .withParameters(Collections.singletonMap(SELECT_NODE_PARAM_ID, path)));
-        }
+//        Array<TreeNode<?>> openedNodes = projectExplorerView.getOpenedTreeNodes();
+//
+//        if (openedNodes != null && openedNodes.contains(parentNode)) {
+//            String path = virtualFile.getPath();
+//            path = path.replaceFirst(projectPath, "");
+//
+//            String openNodeActionId = actionManager.getId(selectNodeAction);
+//
+//            actions.add(dtoFactory.createDto(ActionDescriptor.class)
+//                                  .withId(openNodeActionId)
+//                                  .withParameters(Collections.singletonMap(SELECT_NODE_PARAM_ID, path)));
+//        }
 
         return actions;
     }

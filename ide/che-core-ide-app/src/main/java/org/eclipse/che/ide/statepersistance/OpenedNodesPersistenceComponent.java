@@ -52,31 +52,31 @@ public class OpenedNodesPersistenceComponent implements PersistenceComponent {
 
     @Override
     public List<ActionDescriptor> getActions(String projectPath) {
-        Array<TreeNode<?>> openedNodes = projectExplorerView.getOpenedTreeNodes();
+//        Array<TreeNode<?>> openedNodes = projectExplorerView.getOpenedTreeNodes();
         final List<ActionDescriptor> actions = new ArrayList<>();
 
-        if (openedNodes == null || openedNodes.isEmpty()) {
-            return actions;
-        }
-
-        String actionId = actionManager.getId(openNodeAction);
-
-        for (TreeNode<?> openedNode: openedNodes.asIterable()) {
-            if (openedNode instanceof StorableNode && !(openedNode instanceof FileNode)) {
-                String relNodePath = ((StorableNode)openedNode).getPath();
-
-                relNodePath = relNodePath.replaceFirst(projectPath, "");
-
-                if (relNodePath.equals("")) {
-                    continue;
-                }
-
-                ActionDescriptor actionDescriptor = dtoFactory.createDto(ActionDescriptor.class)
-                                                              .withId(actionId)
-                                                              .withParameters(Collections.singletonMap(NODE_PARAM_ID, relNodePath));
-                actions.add(actionDescriptor);
-            }
-        }
+//        if (openedNodes == null || openedNodes.isEmpty()) {
+//            return actions;
+//        }
+//
+//        String actionId = actionManager.getId(openNodeAction);
+//
+//        for (TreeNode<?> openedNode: openedNodes.asIterable()) {
+//            if (openedNode instanceof StorableNode && !(openedNode instanceof FileNode)) {
+//                String relNodePath = ((StorableNode)openedNode).getPath();
+//
+//                relNodePath = relNodePath.replaceFirst(projectPath, "");
+//
+//                if (relNodePath.equals("")) {
+//                    continue;
+//                }
+//
+//                ActionDescriptor actionDescriptor = dtoFactory.createDto(ActionDescriptor.class)
+//                                                              .withId(actionId)
+//                                                              .withParameters(Collections.singletonMap(NODE_PARAM_ID, relNodePath));
+//                actions.add(actionDescriptor);
+//            }
+//        }
         return actions;
     }
 

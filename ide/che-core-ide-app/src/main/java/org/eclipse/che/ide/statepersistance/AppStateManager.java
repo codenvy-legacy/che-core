@@ -310,8 +310,10 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
 
         appState.getProjects().put(fullProjectPath, projectState);
 
+        Log.info(this.getClass(), "persistCurrentProjectState():313: " + " before");
         final List<ActionDescriptor> actions = projectState.getActions();
 
+        Log.info(this.getClass(), "persistCurrentProjectState():316: " + " after");
         for (PersistenceComponent persistenceComponent : persistenceComponents) {
             actions.addAll(persistenceComponent.getActions(projectPath));
         }

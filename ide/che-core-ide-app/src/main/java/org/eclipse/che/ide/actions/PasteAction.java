@@ -10,9 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.ide.actions;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.ide.CoreLocalizationConstant;
@@ -21,15 +21,13 @@ import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.notification.Notification;
-import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
 import org.eclipse.che.ide.api.notification.NotificationManager;
-import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.commons.exception.ServerException;
 import org.eclipse.che.ide.json.JsonHelper;
-import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerPartPresenter;
+import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.ui.dialogs.CancelCallback;
 import org.eclipse.che.ide.ui.dialogs.ConfirmCallback;
@@ -39,6 +37,8 @@ import org.eclipse.che.ide.ui.dialogs.choice.ChoiceDialog;
 
 import java.util.List;
 
+import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
+
 /**
  * Action to copy or move resources.
  *
@@ -47,26 +47,26 @@ import java.util.List;
 @Singleton
 public class PasteAction extends Action {
 
-    private final AnalyticsEventLogger         eventLogger;
-    private       SelectionAgent               selectionAgent;
-    private       AppContext                   appContext;
-    private       DialogFactory                dialogFactory;
-    private       ProjectServiceClient         projectServiceClient;
-    private       NotificationManager          notificationManager;
-    private       ProjectExplorerPartPresenter projectExplorerPartPresenter;
-    private       RenameItemAction             renameItemAction;
+    private final AnalyticsEventLogger        eventLogger;
+    private       SelectionAgent              selectionAgent;
+    private       AppContext                  appContext;
+    private       DialogFactory               dialogFactory;
+    private       ProjectServiceClient        projectServiceClient;
+    private       NotificationManager         notificationManager;
+    private       NewProjectExplorerPresenter projectExplorerPartPresenter;
+    private       RenameItemAction            renameItemAction;
 
     /** List of items to do. */
-    private       List<StorableNode>   items;
+    private List<StorableNode> items;
 
     /** Move items, don't copy. */
-    private       boolean              moveItems = false;
+    private boolean moveItems = false;
 
     /** The path checked last time */
-    private       String               checkedPath;
+    private String checkedPath;
 
     /** Last checking result */
-    private       boolean              checkResult;
+    private boolean checkResult;
 
     /** Index of current processing resource */
     private int itemIndex;
@@ -79,7 +79,7 @@ public class PasteAction extends Action {
     public PasteAction(Resources resources, AnalyticsEventLogger eventLogger, SelectionAgent selectionAgent,
                        CoreLocalizationConstant localization, AppContext appContext, DialogFactory dialogFactory,
                        ProjectServiceClient projectServiceClient, NotificationManager notificationManager,
-                       ProjectExplorerPartPresenter projectExplorerPartPresenter, RenameItemAction renameItemAction) {
+                       NewProjectExplorerPresenter projectExplorerPartPresenter, RenameItemAction renameItemAction) {
         super(localization.pasteItemsActionText(), localization.pasteItemsActionDescription(), null, resources.paste());
         this.selectionAgent = selectionAgent;
         this.eventLogger = eventLogger;
@@ -385,20 +385,20 @@ public class PasteAction extends Action {
         @Override
         protected void onSuccess(Void result) {
             /** Item copied, refresh project explorer */
-            projectExplorerPartPresenter.refreshNode(destination, new AsyncCallback<TreeNode<?>>() {
-                @Override
-                public void onFailure(Throwable caught) {
-                    /** Ignore errors and continue copying */
-                    notificationManager.showNotification(new Notification(caught.getMessage(), ERROR));
-                    copy();
-                }
-
-                @Override
-                public void onSuccess(TreeNode<?> result) {
-                    /** Refreshing complete, copy next item */
-                    copy();
-                }
-            });
+//            projectExplorerPartPresenter.refreshNode(destination, new AsyncCallback<TreeNode<?>>() {
+//                @Override
+//                public void onFailure(Throwable caught) {
+//                    /** Ignore errors and continue copying */
+//                    notificationManager.showNotification(new Notification(caught.getMessage(), ERROR));
+//                    copy();
+//                }
+//
+//                @Override
+//                public void onSuccess(TreeNode<?> result) {
+//                    /** Refreshing complete, copy next item */
+//                    copy();
+//                }
+//            });
         }
 
         @Override
@@ -577,39 +577,39 @@ public class PasteAction extends Action {
      * Refreshes item parent directory.
      */
     private void refreshSourcePath() {
-        projectExplorerPartPresenter.refreshNode(items.get(itemIndex).getParent(), new AsyncCallback<TreeNode<?>>() {
-            @Override
-            public void onSuccess(TreeNode<?> result) {
-                refreshDestinationPath();
-            }
-
-            @Override
-            public void onFailure(Throwable caught) {
-                /** Ignore error and refresh destination */
-                notificationManager.showNotification(new Notification(caught.getMessage(), ERROR));
-                refreshDestinationPath();
-            }
-        });
+//        projectExplorerPartPresenter.refreshNode(items.get(itemIndex).getParent(), new AsyncCallback<TreeNode<?>>() {
+//            @Override
+//            public void onSuccess(TreeNode<?> result) {
+//                refreshDestinationPath();
+//            }
+//
+//            @Override
+//            public void onFailure(Throwable caught) {
+//                /** Ignore error and refresh destination */
+//                notificationManager.showNotification(new Notification(caught.getMessage(), ERROR));
+//                refreshDestinationPath();
+//            }
+//        });
     }
 
     /**
      * Refreshes destination directory.
      */
     private void refreshDestinationPath() {
-        projectExplorerPartPresenter.refreshNode(destination, new AsyncCallback<TreeNode<?>>() {
-            @Override
-            public void onSuccess(TreeNode<?> result) {
-                /** Refreshing complete, move next item */
-                move();
-            }
-
-            @Override
-            public void onFailure(Throwable caught) {
-                /** Ignore error and continue moving */
-                notificationManager.showNotification(new Notification(caught.getMessage(), ERROR));
-                move();
-            }
-        });
+//        projectExplorerPartPresenter.refreshNode(destination, new AsyncCallback<TreeNode<?>>() {
+//            @Override
+//            public void onSuccess(TreeNode<?> result) {
+//                /** Refreshing complete, move next item */
+//                move();
+//            }
+//
+//            @Override
+//            public void onFailure(Throwable caught) {
+//                /** Ignore error and continue moving */
+//                notificationManager.showNotification(new Notification(caught.getMessage(), ERROR));
+//                move();
+//            }
+//        });
     }
 
     /**

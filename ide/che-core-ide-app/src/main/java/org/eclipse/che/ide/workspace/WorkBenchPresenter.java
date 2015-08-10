@@ -19,9 +19,10 @@ import org.eclipse.che.ide.api.parts.PartPresenter;
 import org.eclipse.che.ide.api.parts.PartStack;
 import org.eclipse.che.ide.api.parts.PartStackType;
 import org.eclipse.che.ide.api.parts.PartStackView;
-import org.eclipse.che.ide.api.parts.ProjectExplorerPart;
 import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.collections.StringMap;
+import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPart;
+
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -63,7 +64,8 @@ public class WorkBenchPresenter implements Presenter {
                               PartStackPresenterFactory stackPresenterFactory,
                               PartStackViewFactory partViewFactory,
                               OutlinePart outlinePart,
-                              ProjectExplorerPart projectExplorerPart,
+//                              ProjectExplorerPart projectExplorerPart,
+                              NewProjectExplorerPart newProjectExplorerPart,
                               NotificationManager notificationManager,
                               HideWidgetCallback hideWidgetCallback) {
         this.view = view;
@@ -91,10 +93,11 @@ public class WorkBenchPresenter implements Presenter {
         partStacks.put(PartStackType.TOOLING.toString(), toolingPartStack);
 
         openPart(outlinePart, PartStackType.TOOLING);
-        openPart(projectExplorerPart, PartStackType.NAVIGATION);
+//        openPart(projectExplorerPart, PartStackType.NAVIGATION);
+        openPart(newProjectExplorerPart, PartStackType.NAVIGATION);
         openPart(notificationManager, PartStackType.INFORMATION, Constraints.FIRST);
 
-        setActivePart(projectExplorerPart);
+        setActivePart(newProjectExplorerPart);
     }
 
     public void removePart(PartPresenter part) {

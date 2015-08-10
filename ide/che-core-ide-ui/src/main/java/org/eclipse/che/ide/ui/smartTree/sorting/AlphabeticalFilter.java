@@ -8,15 +8,18 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.api.event;
+package org.eclipse.che.ide.ui.smartTree.sorting;
 
-import com.google.gwt.event.shared.EventHandler;
+import org.eclipse.che.ide.api.project.node.Node;
+
+import java.util.Comparator;
 
 /**
- * Handles ItemEvent
- *
- * @author Evgen Vidolob
+ * @author Vlad Zhukovskiy
  */
-public interface ItemHandler extends EventHandler {
-    void onItem(ItemEvent event);
+public class AlphabeticalFilter implements Comparator<Node> {
+    @Override
+    public int compare(Node o1, Node o2) {
+        return o1.getName().compareTo(o2.getName());
+    }
 }

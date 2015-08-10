@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.core.editor;
 
+import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorInitException;
@@ -20,13 +21,9 @@ import org.eclipse.che.ide.api.editor.EditorProvider;
 import org.eclipse.che.ide.api.editor.EditorRegistry;
 import org.eclipse.che.ide.api.event.ActivePartChangedEvent;
 import org.eclipse.che.ide.api.event.ActivePartChangedHandler;
-import org.eclipse.che.ide.api.event.DeleteModuleEvent;
-import org.eclipse.che.ide.api.event.DeleteModuleEventHandler;
 import org.eclipse.che.ide.api.event.FileEvent;
 import org.eclipse.che.ide.api.event.FileEvent.FileOperation;
 import org.eclipse.che.ide.api.event.FileEventHandler;
-import org.eclipse.che.ide.api.event.ItemEvent;
-import org.eclipse.che.ide.api.event.ItemHandler;
 import org.eclipse.che.ide.api.event.WindowActionEvent;
 import org.eclipse.che.ide.api.event.WindowActionHandler;
 import org.eclipse.che.ide.api.filetypes.FileType;
@@ -37,14 +34,16 @@ import org.eclipse.che.ide.api.parts.PartPresenter;
 import org.eclipse.che.ide.api.parts.PartStackType;
 import org.eclipse.che.ide.api.parts.PropertyListener;
 import org.eclipse.che.ide.api.parts.WorkspaceAgent;
+import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
-import org.eclipse.che.ide.api.project.tree.generic.FolderNode;
-import org.eclipse.che.ide.api.project.tree.generic.ItemNode;
-import org.eclipse.che.ide.api.project.tree.generic.ProjectNode;
 import org.eclipse.che.ide.api.texteditor.HasReadOnlyProperty;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.collections.StringMap;
+import org.eclipse.che.ide.project.event.DescriptorRemovedEvent;
+import org.eclipse.che.ide.project.event.ResourceNodeEvent;
+import org.eclipse.che.ide.project.event.ResourceNodeEvent.Event;
+import org.eclipse.che.ide.project.node.FolderReferenceNode;
 import org.eclipse.che.ide.util.loging.Log;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
@@ -54,7 +53,6 @@ import com.google.web.bindery.event.shared.EventBus;
 import javax.annotation.Nonnull;
 
 import static org.eclipse.che.ide.api.event.FileEvent.FileOperation.CLOSE;
-import static org.eclipse.che.ide.api.event.ItemEvent.ItemOperation.DELETED;
 import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
 import static org.eclipse.che.ide.api.notification.Notification.Type.INFO;
 
@@ -138,41 +136,45 @@ public class EditorAgentImpl implements EditorAgent {
         eventBus.addHandler(ActivePartChangedEvent.TYPE, activePartChangedHandler);
         eventBus.addHandler(FileEvent.TYPE, fileEventHandler);
         eventBus.addHandler(WindowActionEvent.TYPE, windowActionHandler);
-        eventBus.addHandler(ItemEvent.TYPE, new ItemHandler() {
+//        eventBus.addHandler(ItemEvent.TYPE, new ItemHandler() {
+//            @Override
+//            public void onItem(ItemEvent event) {
+//                final ItemNode item = event.getItem();
+//                if (event.getOperation() == DELETED && item instanceof FolderNode) {
+//                    closeAllFilesByPath(item.getPath());
+//                }
+//            }
+//        });
+
+        eventBus.addHandler(ResourceNodeEvent.getType(), new ResourceNodeEvent.ResourceNodeHandler() {
             @Override
-            public void onItem(ItemEvent event) {
-                final ItemNode item = event.getItem();
-                if (event.getOperation() == DELETED && item instanceof FolderNode) {
-                    closeAllFilesByPath(item.getPath());
+            public void onResourceEvent(ResourceNodeEvent event) {
+                if (event.getEvent() == Event.DELETED && event.getNode() instanceof FolderReferenceNode) {
+                    FolderReferenceNode folderNode = (FolderReferenceNode)event.getNode();
+                    for (EditorPartPresenter editor : getOpenedEditors().getValues().asIterable()) {
+                        if (editor.getEditorInput().getFile().getPath().startsWith(folderNode.getStorablePath())) {
+                            eventBus.fireEvent(new FileEvent(editor.getEditorInput().getFile(), CLOSE));
+                        }
+                    }
                 }
             }
         });
-        eventBus.addHandler(DeleteModuleEvent.TYPE, new DeleteModuleEventHandler() {
+
+        //Handling module descriptor remove event
+        eventBus.addHandler(DescriptorRemovedEvent.getType(), new DescriptorRemovedEvent.DescriptorRemoveHandler() {
+            /** {@inheritDoc} */
             @Override
-            public void onModuleDeleted(DeleteModuleEvent event) {
-                ProjectNode projectNode = event.getModule();
-                closeAllFilesByModule(projectNode);
+            public void onProjectModuleDelete(DescriptorRemovedEvent event) {
+                for (EditorPartPresenter editor : getOpenedEditors().getValues().asIterable()) {
+                    VirtualFile vFile = editor.getEditorInput().getFile();
+                    HasProjectDescriptor vFileProject = vFile.getProject();
+
+                    if (vFileProject != null && vFileProject.getProjectDescriptor().equals(event.getDescriptor())) {
+                        eventBus.fireEvent(new FileEvent(vFile, CLOSE));
+                    }
+                }
             }
         });
-    }
-
-    private void closeAllFilesByModule(ProjectNode projectNode) {
-        for (EditorPartPresenter editor : getOpenedEditors().getValues().asIterable()) {
-            VirtualFile virtualFile = editor.getEditorInput().getFile();
-            ProjectNode projectParent = virtualFile.getProject();
-
-            if (projectParent.equals(projectNode)) {
-                eventBus.fireEvent(new FileEvent(virtualFile, CLOSE));
-            }
-        }
-    }
-
-    private void closeAllFilesByPath(String path) {
-        for (EditorPartPresenter editor : getOpenedEditors().getValues().asIterable()) {
-            if (editor.getEditorInput().getFile().getPath().startsWith(path)) {
-                eventBus.fireEvent(new FileEvent(editor.getEditorInput().getFile(), CLOSE));
-            }
-        }
     }
 
     /** {@inheritDoc} */

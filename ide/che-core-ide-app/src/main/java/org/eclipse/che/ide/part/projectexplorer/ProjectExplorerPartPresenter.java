@@ -16,8 +16,6 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
-import org.eclipse.che.ide.api.event.ItemEvent;
-import org.eclipse.che.ide.api.event.ItemHandler;
 import org.eclipse.che.ide.api.event.NodeChangedEvent;
 import org.eclipse.che.ide.api.event.NodeChangedHandler;
 import org.eclipse.che.ide.api.event.NodeExpandedEvent;
@@ -72,8 +70,6 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
-import static org.eclipse.che.ide.api.event.ItemEvent.ItemOperation.CREATED;
-import static org.eclipse.che.ide.api.event.ItemEvent.ItemOperation.DELETED;
 
 /**
  * Project Explorer displays project's tree in a dedicated part (view).
@@ -276,19 +272,19 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
             }
         });
 
-        eventBus.addHandler(ItemEvent.TYPE, new ItemHandler() {
-            @Override
-            public void onItem(final ItemEvent event) {
-                if (DELETED == event.getOperation()) {
-                    refreshAndSelectNode(event.getItem().getParent());
-                } else if (CREATED == event.getOperation()) {
-                    final TreeNode<?> selectedNode = view.getSelectedNode();
-                    updateNode(selectedNode.getParent());
-                    updateNode(selectedNode);
-                    view.expandAndSelectNode(event.getItem());
-                }
-            }
-        });
+//        eventBus.addHandler(ItemEvent.TYPE, new ItemHandler() {
+//            @Override
+//            public void onItem(final ItemEvent event) {
+//                if (DELETED == event.getOperation()) {
+//                    refreshAndSelectNode(event.getItem().getParent());
+//                } else if (CREATED == event.getOperation()) {
+//                    final TreeNode<?> selectedNode = view.getSelectedNode();
+//                    updateNode(selectedNode.getParent());
+//                    updateNode(selectedNode);
+//                    view.expandAndSelectNode(event.getItem());
+//                }
+//            }
+//        });
 
         eventBus.addHandler(RenameNodeEvent.TYPE, new RenameNodeEventHandler() {
             @Override
@@ -472,7 +468,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
         }
 
         if (node != null && node instanceof StorableNode && appContext.getCurrentProject() != null) {
-            appContext.getCurrentProject().setProjectDescription(node.getProject().getData());
+            appContext.getCurrentProject().setProjectDescription(node.getProject().getProjectDescriptor());
         }
     }
 

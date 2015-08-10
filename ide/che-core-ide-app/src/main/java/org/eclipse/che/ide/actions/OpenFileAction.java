@@ -109,7 +109,7 @@ public class OpenFileAction extends Action implements PromisableAction {
             @Override
             public void onSuccess(TreeNode<?> result) {
                 if (result instanceof FileNode) {
-                    eventBus.fireEvent(new FileEvent((FileNode)result, OPEN));
+//                    eventBus.fireEvent(new FileEvent((FileNode)result, OPEN));
                 }
             }
 

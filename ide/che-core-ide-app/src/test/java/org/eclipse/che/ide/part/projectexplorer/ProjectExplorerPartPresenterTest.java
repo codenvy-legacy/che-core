@@ -144,7 +144,7 @@ public class ProjectExplorerPartPresenterTest {
         ProjectNode project = mock(ProjectNode.class);
         when(project.getData()).thenReturn(projectDescriptor);
         StorableNode node = mock(StorableNode.class);
-        when(node.getProject()).thenReturn(project);
+//        when(node.getProject()).thenReturn(project);
 
         final SelectionModel selectionModel = mock(SelectionModel.class);
         final Array selection = new JsonArrayListAdapter(Collections.singletonList(node));

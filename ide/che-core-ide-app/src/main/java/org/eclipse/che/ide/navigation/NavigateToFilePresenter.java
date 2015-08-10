@@ -122,7 +122,7 @@ public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegat
             @Override
             public void onSuccess(TreeNode<?> result) {
                 if (result instanceof FileNode) {
-                    eventBus.fireEvent(new FileEvent((FileNode)result, FileEvent.FileOperation.OPEN));
+//                    eventBus.fireEvent(new FileEvent((FileNode)result, FileEvent.FileOperation.OPEN));
                 }
             }
 

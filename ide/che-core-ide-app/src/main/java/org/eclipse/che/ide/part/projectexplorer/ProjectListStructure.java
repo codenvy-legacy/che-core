@@ -11,8 +11,10 @@
 package org.eclipse.che.ide.part.projectexplorer;
 
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
+import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.ide.api.event.OpenProjectEvent;
+import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
 import org.eclipse.che.ide.api.project.tree.AbstractTreeNode;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.api.project.tree.TreeSettings;
@@ -28,6 +30,7 @@ import com.google.inject.Inject;
 import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Structure for displaying list of all projects from the workspace.
@@ -146,8 +149,19 @@ public class ProjectListStructure implements TreeStructure {
         /** {@inheritDoc} */
         @Nonnull
         @Override
-        public org.eclipse.che.ide.api.project.tree.generic.ProjectNode getProject() {
-            return null;
+        public HasProjectDescriptor getProject() {
+            return new HasProjectDescriptor() {
+                @Nonnull
+                @Override
+                public ProjectDescriptor getProjectDescriptor() {
+                    return null;
+                }
+
+                @Override
+                public void setProjectDescriptor(@Nonnull ProjectDescriptor projectDescriptor) {
+                    //stub
+                }
+            };
         }
 
         /** {@inheritDoc} */

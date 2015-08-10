@@ -18,8 +18,6 @@ import org.eclipse.che.ide.api.editor.EditorInput;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.editor.EditorProvider;
 import org.eclipse.che.ide.api.editor.EditorRegistry;
-import org.eclipse.che.ide.api.event.DeleteModuleEvent;
-import org.eclipse.che.ide.api.event.DeleteModuleEventHandler;
 import org.eclipse.che.ide.api.event.FileEvent;
 import org.eclipse.che.ide.api.filetypes.FileType;
 import org.eclipse.che.ide.api.filetypes.FileTypeRegistry;
@@ -87,8 +85,8 @@ public class EditorAgentImplTest {
     @Mock
     private EditorInput                    editorInput;
 
-    @Captor
-    private ArgumentCaptor<DeleteModuleEventHandler> deleteModuleHandlerCaptor;
+//    @Captor
+//    private ArgumentCaptor<DeleteModuleEventHandler> deleteModuleHandlerCaptor;
 
     @InjectMocks
     private EditorAgentImpl editorAgent;
@@ -133,16 +131,16 @@ public class EditorAgentImplTest {
         final String filePath = modulePath + "/someFile";
         final String jarFilePath = "com.oracle.someFile";
 
-        DeleteModuleEvent event = mock(DeleteModuleEvent.class);
+//        DeleteModuleEvent event = mock(DeleteModuleEvent.class);
 
         ModuleNode moduleNode = mock(ModuleNode.class);
 
-        when(event.getModule()).thenReturn(moduleNode);
+//        when(event.getModule()).thenReturn(moduleNode);
         when(moduleNode.getPath()).thenReturn(modulePath);
         when(newFileNode.getPath()).thenReturn(filePath);
-        when(newFileNode.getProject()).thenReturn(moduleNode);
+//        when(newFileNode.getProject()).thenReturn(moduleNode);
         when(fileNode2.getPath()).thenReturn(jarFilePath);
-        when(fileNode2.getProject()).thenReturn(moduleNode);
+//        when(fileNode2.getProject()).thenReturn(moduleNode);
         when(editorInput.getFile()).thenReturn(newFileNode).thenReturn(fileNode2);
 
         editorAgent.openEditor(newFileNode);
@@ -151,10 +149,10 @@ public class EditorAgentImplTest {
         assertThat(editorAgent.getOpenedEditors().size(), is(2));
 
         //close opened files for deleted module
-        verify(eventBus).addHandler(eq(DeleteModuleEvent.TYPE), deleteModuleHandlerCaptor.capture());
-        deleteModuleHandlerCaptor.getValue().onModuleDeleted(event);
+//        verify(eventBus).addHandler(eq(DeleteModuleEvent.TYPE), deleteModuleHandlerCaptor.capture());
+//        deleteModuleHandlerCaptor.getValue().onModuleDeleted(event);
 
-        verify(event).getModule();
+//        verify(event).getModule();
         verify(editor, times(2)).getEditorInput();
         verify(editorInput, times(2)).getFile();
         verify(newFileNode).getProject();

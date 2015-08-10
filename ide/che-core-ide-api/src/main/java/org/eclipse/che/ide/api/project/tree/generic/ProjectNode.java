@@ -14,10 +14,8 @@ import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.api.event.CloseCurrentProjectEvent;
-import org.eclipse.che.ide.api.event.DeleteModuleEvent;
-import org.eclipse.che.ide.api.event.ProjectDescriptorChangedEvent;
-import org.eclipse.che.ide.api.event.ProjectDescriptorChangedHandler;
 import org.eclipse.che.ide.api.event.RenameNodeEvent;
+import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
 import org.eclipse.che.ide.api.project.tree.AbstractTreeNode;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.collections.Array;
@@ -39,8 +37,9 @@ import java.util.List;
  *
  * @author Artem Zatsarynnyy
  */
+@Deprecated
 public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements StorableNode<ProjectDescriptor>, Openable,
-                                                                                ProjectDescriptorChangedHandler,
+                                                                                /*ProjectDescriptorChangedHandler,*/
                                                                                 UpdateTreeNodeDataIterable {
     protected final ProjectServiceClient   projectServiceClient;
     protected final DtoUnmarshallerFactory dtoUnmarshallerFactory;
@@ -56,7 +55,7 @@ public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements 
                        ProjectServiceClient projectServiceClient,
                        DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         super(parent, data, treeStructure, eventBus);
-        eventBus.addHandler(ProjectDescriptorChangedEvent.TYPE, this);
+//        eventBus.addHandler(ProjectDescriptorChangedEvent.TYPE, this);
 
         this.treeStructure = treeStructure;
         this.eventBus = eventBus;
@@ -92,8 +91,19 @@ public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements 
     /** {@inheritDoc} */
     @Nonnull
     @Override
-    public ProjectNode getProject() {
-        return this;
+    public HasProjectDescriptor getProject() {
+        return new HasProjectDescriptor() {
+            @Nonnull
+            @Override
+            public ProjectDescriptor getProjectDescriptor() {
+                return getData();
+            }
+
+            @Override
+            public void setProjectDescriptor(@Nonnull ProjectDescriptor projectDescriptor) {
+                //stub
+            }
+        };
     }
 
     /** {@inheritDoc} */
@@ -244,7 +254,7 @@ public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements 
                 if (isRootProject()) {
                     eventBus.fireEvent(new CloseCurrentProjectEvent());
                 } else {
-                    eventBus.fireEvent(new DeleteModuleEvent(ProjectNode.this));
+                    //fire module delete event
                 }
                 ProjectNode.super.delete(callback);
             }
@@ -380,13 +390,13 @@ public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements 
         opened = true;
     }
 
-    @Override
-    public void onProjectDescriptorChanged(ProjectDescriptorChangedEvent event) {
-        String path = event.getProjectDescriptor().getPath();
-        if (getPath().equals(path)) {
-            setData(event.getProjectDescriptor());
-        }
-    }
+//    @Override
+//    public void onProjectDescriptorChanged(ProjectDescriptorChangedEvent event) {
+//        String path = event.getProjectDescriptor().getPath();
+//        if (getPath().equals(path)) {
+//            setData(event.getProjectDescriptor());
+//        }
+//    }
 
     private boolean isRootProject() {
         return getParent().getParent() == null;

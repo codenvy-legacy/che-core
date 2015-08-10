@@ -10,8 +10,10 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.project.tree;
 
+import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.api.event.NodeChangedEvent;
 import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
+import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
 import org.eclipse.che.ide.api.project.tree.generic.ProjectNode;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.Collections;
@@ -93,17 +95,28 @@ public abstract class AbstractTreeNode<T> implements TreeNode<T> {
     }
 
     /** {@inheritDoc} */
-    @Nonnull
+    @Nullable
     @Override
-    public ProjectNode getProject() {
-        TreeNode<?> candidate = getParent();
-        while (candidate != null) {
-            if (candidate instanceof ProjectNode) {
-                return (ProjectNode)candidate;
+    public HasProjectDescriptor getProject() {
+        return new HasProjectDescriptor() {
+            @Nonnull
+            @Override
+            public ProjectDescriptor getProjectDescriptor() {
+                TreeNode<?> candidate = getParent();
+                while (candidate != null) {
+                    if (candidate instanceof ProjectNode) {
+                        return ((ProjectNode)candidate).getData();
+                    }
+                    candidate = candidate.getParent();
+                }
+                throw new IllegalStateException("Node is not owned by some project node.");
             }
-            candidate = candidate.getParent();
-        }
-        throw new IllegalStateException("Node is not owned by some project node.");
+
+            @Override
+            public void setProjectDescriptor(@Nonnull ProjectDescriptor projectDescriptor) {
+                //stub
+            }
+        };
     }
 
     /** {@inheritDoc} */

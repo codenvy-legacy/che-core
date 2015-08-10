@@ -18,6 +18,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  *
  * @author Alexander Andrienko
  */
+@Deprecated
 public interface UpdateTreeNodeDataIterable {
     /**
      * Takes away new node data from server, update node and launch action in callBack

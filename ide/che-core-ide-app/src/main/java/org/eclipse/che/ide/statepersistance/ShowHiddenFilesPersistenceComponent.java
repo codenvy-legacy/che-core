@@ -57,10 +57,10 @@ public class ShowHiddenFilesPersistenceComponent implements PersistenceComponent
             return actions;
         }
 
-        TreeSettings treeSettings = currentProject.getCurrentTree().getSettings();
+//        TreeSettings treeSettings = currentProject.getCurrentTree().getSettings();
         String actionId = actionManager.getId(showHiddenFilesAction);
 
-        boolean isShowHiddenFiles = treeSettings.isShowHiddenItems();
+        boolean isShowHiddenFiles = false;
 
         actions.add(dtoFactory.createDto(ActionDescriptor.class)
                 .withId(actionId)

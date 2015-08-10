@@ -24,7 +24,6 @@ import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.api.project.tree.TreeStructure;
-import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerPartPresenter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -60,8 +59,8 @@ public class OpenNodeActionTest {
     private NotificationManager          notificationManager;
     @Mock
     private CoreLocalizationConstant     localization;
-    @Mock
-    private ProjectExplorerPartPresenter projectExplorerPartPresenter;
+//    @Mock
+//    private ProjectExplorerPartPresenter projectExplorerPartPresenter;
 
     @Mock
     private CurrentProject    currentProject;
@@ -113,7 +112,7 @@ public class OpenNodeActionTest {
 
         argumentCaptor.getValue().onSuccess(treeNode);
 
-        verify(projectExplorerPartPresenter).expandNode(treeNode);
+//        verify(projectExplorerPartPresenter).expandNode(treeNode);
     }
 
     @Test
@@ -135,7 +134,7 @@ public class OpenNodeActionTest {
 
         argumentCaptor.getValue().onSuccess(treeNode);
 
-        verify(projectExplorerPartPresenter).expandNode(treeNode);
+//        verify(projectExplorerPartPresenter).expandNode(treeNode);
     }
 
     @Test

@@ -26,7 +26,9 @@ import org.eclipse.che.ide.actions.DownloadItemAction;
 import org.eclipse.che.ide.actions.DownloadProjectAsZipAction;
 import org.eclipse.che.ide.actions.ExpandEditorAction;
 import org.eclipse.che.ide.actions.FindReplaceAction;
+import org.eclipse.che.ide.actions.FoldersAlwaysOnTopAction;
 import org.eclipse.che.ide.actions.FormatterAction;
+import org.eclipse.che.ide.actions.GoIntoAction;
 import org.eclipse.che.ide.actions.ImportLocalProjectAction;
 import org.eclipse.che.ide.actions.ImportProjectFromLocationAction;
 import org.eclipse.che.ide.actions.NavigateToFileAction;
@@ -207,6 +209,12 @@ public class StandardComponentInitializer {
     private ExpandEditorAction expandEditorAction;
 
     @Inject
+    private FoldersAlwaysOnTopAction foldersAlwaysOnTopAction;
+
+    @Inject
+    private GoIntoAction goIntoAction;
+
+    @Inject
     @Named("XMLFileType")
     private FileType xmlFile;
 
@@ -383,6 +391,7 @@ public class StandardComponentInitializer {
         DefaultActionGroup resourceOperation = new DefaultActionGroup(actionManager);
         actionManager.registerAction("resourceOperation", resourceOperation);
         resourceOperation.addSeparator();
+        resourceOperation.add(goIntoAction);
         resourceOperation.add(openSelectedFileAction);
 
         resourceOperation.add(cutAction);
@@ -449,6 +458,10 @@ public class StandardComponentInitializer {
 
         DefaultActionGroup rightToolbarGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_RIGHT_TOOLBAR);
         toolbarPresenter.bindRightGroup(rightToolbarGroup);
+
+        DefaultActionGroup projectExplorerContextMenu = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_PROJECT_EXPLORER_CONTEXT_MENU);
+        projectExplorerContextMenu.add(foldersAlwaysOnTopAction);
+        actionManager.registerAction("foldersAlwaysOnTop", foldersAlwaysOnTopAction);
 
         // Define hot-keys
         keyBinding.getGlobal().addKey(new KeyBuilder().action().alt().charCode('n').build(), "navigateToFile");

@@ -8,21 +8,29 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.api.event;
+package org.eclipse.che.ide.api.project.node;
 
-import com.google.gwt.event.shared.EventHandler;
-
-import javax.validation.constraints.NotNull;
+import java.util.List;
+import java.util.Map;
 
 /**
- * A handler for handling {@link DeleteModuleEvent}
+ * Store attributes in specified node.
  *
- * @author Alexander Andrienko
+ * @author Vlad Zhukovskiy
  */
-public interface DeleteModuleEventHandler extends EventHandler {
+public interface HasAttributes {
     /**
-     * Called when module was deleted
-     * @param event DeleteModuleEvent
+     * Get attributes.
+     *
+     * @return attributes map
      */
-    void onModuleDeleted(@NotNull DeleteModuleEvent event);
+    Map<String, List<String>> getAttributes();
+
+    /**
+     * Store attributes.
+     *
+     * @param attributes
+     *         attributes map
+     */
+    void setAttributes(Map<String, List<String>> attributes);
 }

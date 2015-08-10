@@ -8,16 +8,21 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.api.event;
+package org.eclipse.che.ide.ui.smartTree;
 
-import com.google.gwt.event.shared.EventHandler;
+import com.google.gwt.view.client.ProvidesKey;
 
 /**
- * @author Vitaly Parfonov
+ * ModelKeyProviders are responsible for returning a unique key for a given
+ * model.
+ * 
+ * @param <T> the model type
  */
-@Deprecated
-public interface ProjectDescriptorChangedHandler extends EventHandler {
+public interface UniqueKeyProvider<T> extends ProvidesKey<T> {
 
-
-    public void onProjectDescriptorChanged(ProjectDescriptorChangedEvent event);
+  /**
+   * Gets a non-null key value that maps to this object. Keys must be consistent and
+   * unique for a given model, as a database primary key would be used.
+   */
+  String getKey(T item);
 }
