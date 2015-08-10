@@ -23,6 +23,7 @@ import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 import org.eclipse.che.api.core.notification.EventService;
+import org.eclipse.che.api.workspace.server.model.impl.RuntimeWorkspaceImpl;
 import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
 import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
 import org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent;
@@ -96,7 +97,7 @@ public class WorkspaceManager {
     public List<UsersWorkspace> getWorkspaces(String owner) throws ServerException, BadRequestException {
         requiredNotNull(owner, "Workspace owner");
 
-        final List<RuntimeWorkspace> runtimeWorkspaces = workspaceRegistry.getList(owner);
+        final List<RuntimeWorkspaceImpl> runtimeWorkspaces = workspaceRegistry.getList(owner);
         final List<UsersWorkspaceImpl> usersWorkspaces = workspaceDao.getList(owner);
         Map<String, UsersWorkspace> workspaces = new HashMap<>();
         for (RuntimeWorkspace runtimeWorkspace : runtimeWorkspaces) {
@@ -119,7 +120,9 @@ public class WorkspaceManager {
 
         final UsersWorkspaceImpl workspace = workspaceDao.get(workspaceId);
         workspace.setTemporary(false);
-        return startWorkspaceAsync(workspace, envName);
+        startWorkspaceAsync(workspace, envName);
+        workspace.setStatus(WorkspaceStatus.STARTING);
+        return workspace;
     }
 
     public UsersWorkspace startWorkspaceByName(String workspaceName, String envName, String owner)
@@ -129,7 +132,9 @@ public class WorkspaceManager {
 
         final UsersWorkspaceImpl workspace = workspaceDao.get(workspaceName, owner);
         workspace.setTemporary(false);
-        return startWorkspaceAsync(workspace, envName);
+        startWorkspaceAsync(workspace, envName);
+        workspace.setStatus(WorkspaceStatus.STARTING);
+        return workspace;
     }
 
     // TODO should we store temp workspaces and where?
@@ -140,7 +145,7 @@ public class WorkspaceManager {
 
         hooks.beforeCreate(workspace, accountId);
 
-        final UsersWorkspaceImpl startingWorkspace = startWorkspaceSync(workspace, null);
+        startWorkspaceSync(workspace, null);
 
         // TODO when this code should be called for temp workspaces
         hooks.afterCreate(workspace, accountId);
@@ -150,22 +155,20 @@ public class WorkspaceManager {
                  workspace.getId(),
                  EnvironmentContext.getCurrent().getUser().getId());
 
-        return startingWorkspace;
+        workspace.setStatus(WorkspaceStatus.STARTING);
+        return workspace;
     }
 
-    private UsersWorkspaceImpl startWorkspaceAsync(final UsersWorkspaceImpl usersWorkspace, final String envName) {
+    private void startWorkspaceAsync(final UsersWorkspaceImpl usersWorkspace, final String envName) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
                 startWorkspaceSync(usersWorkspace, envName);
             }
         });
-
-        usersWorkspace.setStatus(WorkspaceStatus.STARTING);
-        return usersWorkspace;
     }
 
-    private UsersWorkspaceImpl startWorkspaceSync(final UsersWorkspaceImpl usersWorkspace, final String envName) {
+    private void startWorkspaceSync(final UsersWorkspaceImpl usersWorkspace, final String envName) {
         eventService.publish(newDto(WorkspaceStatusEvent.class)
                                      .withEventType(STARTING)
                                      .withWorkspaceId(usersWorkspace.getId()));
@@ -177,7 +180,7 @@ public class WorkspaceManager {
                                          .withEventType(RUNNING)
                                          .withWorkspaceId(usersWorkspace.getId()));
 
-        } catch (ForbiddenException | NotFoundException | ServerException | ConflictException e) {
+        } catch (ForbiddenException | NotFoundException | ServerException | ConflictException | BadRequestException e) {
             eventService.publish(newDto(WorkspaceStatusEvent.class)
                                          .withEventType(ERROR)
                                          .withWorkspaceId(usersWorkspace.getId())
@@ -185,9 +188,6 @@ public class WorkspaceManager {
 
             LOG.error(e.getLocalizedMessage(), e);
         }
-
-        usersWorkspace.setStatus(WorkspaceStatus.STARTING);
-        return usersWorkspace;
     }
 
     public void stopWorkspace(String workspaceId) throws ServerException, NotFoundException, ForbiddenException, BadRequestException {

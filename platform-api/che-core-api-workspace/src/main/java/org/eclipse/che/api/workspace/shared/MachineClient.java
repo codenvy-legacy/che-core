@@ -8,11 +8,18 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.core.model.workspace;
+package org.eclipse.che.api.workspace.shared;
+
+import org.eclipse.che.api.core.model.machine.MachineConfig;
+import org.eclipse.che.api.core.model.workspace.Machine;
 
 /**
  * @author Alexander Garagatyi
  */
-public enum WorkspaceStatus {
-    STARTING, RUNNING, STOPPING, STOPPED
+public interface MachineClient {
+    Machine start(MachineConfig machineConfig, String workspaceId);
+
+    void destroy(String machineId);
+
+
 }
