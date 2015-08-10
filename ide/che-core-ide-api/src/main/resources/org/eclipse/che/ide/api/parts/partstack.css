@@ -306,8 +306,8 @@
     margin-top: 3px;
     background: inactiveTabBackground;
     border: 1px solid inactiveTabBorderColor;
-    cursor: pointer;
-    cursor: hand;
+    /*cursor: pointer;*/
+    /*cursor: hand;*/
     position: relative;
     display: inline-block;
     height: 15px;
@@ -404,62 +404,67 @@
     width: 100%;
 }
 
-.ide-Base-Part-Toolbar-Bottom-Icon {
+.ide-Base-Part-Toolbar-Bottom-Icon,
+.ide-Base-Part-Toolbar-Bottom-Icon-Right {
     fill: toolbarIconColor;
     height: 16px;
     width: 16px;
+    margin-top: 4px;
+}
+
+.ide-Base-Part-Toolbar-Bottom-Icon {
     margin-right: 8px;
     margin-left: 10px;
-    margin-top: 4px;
     float: left;
 }
 
-/***********************************************************************************************************************
- *
- * Below styles are needed for IDEUI-40 [UI] Create rounded tabs for file in order to be conform to initial designs.
- * The main idea is restyling the tabs using CSS attribute selectors.
- *
- **********************************************************************************************************************/
+.ide-Base-Part-Toolbar-Bottom-Icon-Right {
+    margin-right: 10px;
+    margin-left: 8px;
+    float: right;
+}
 
-/*
-.ide-PartStack .ide-PartStack-Tab[visible][left] {
-    border-left: greenyellow 2px solid;
-}
-.ide-PartStack .ide-PartStack-Tab[visible][right] {
-    border-right: greenyellow 2px solid;
-}
-.ide-PartStack .ide-PartStack-Tab[visible] {
-    background-color: #082f8e;
-    color: #f4ffdb;
-}
-.ide-PartStack .ide-PartStack-Tab[visible]:HOVER {
-    text-decoration: underline;
-    color: red;
-}
-.ide-PartStack .ide-PartStack-Tab[visible][active] {
-    background-color: #08c7f8;
-    color: #593e59;
-}
-.ide-PartStack .ide-PartStack-Tab[visible][active]:HOVER {
-    color: #ffd600;
-}
-*/
 
-/*
-div[id="gwt-debug-editorPartStack-tabsPanel"] > div[visible] {
-    background-color: #6d9caa;
-    color: #F9FBA7;
+.ide-Base-Part-Toolbar-Bottom-Button {
+    -moz-box-sizing: border-box !important;
+    box-sizing: border-box !important;
+
+    -webkit-user-select: none;
+    user-select: none;
+
+    float: left;
+
+    width: 22px;
+    height: 18px;
+    margin-top: 4px;
+    overflow: hidden;
+    position: relative;
+
+    border-radius: 2px;
 }
-div[id="gwt-debug-editorPartStack-tabsPanel"] > div[visible]:HOVER {
-    text-decoration: underline;
-    color: #593E59;
-    cursor: pointer;
+
+.ide-Base-Part-Toolbar-Bottom-Button-Right {
+    float: right;
+    margin-right: 5px;
 }
-div[id="gwt-debug-editorPartStack-tabsPanel"] > div[visible][active] {
-    background-color: #b6f1ff;
-    color: #D82D2D;
+
+.ide-Base-Part-Toolbar-Bottom-Button > svg {
+    margin-left: 4px;
+    margin-top: 2px;
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    fill: toolbarIconColor;
 }
-div[id="gwt-debug-editorPartStack-tabsPanel"] > div[visible][active]:HOVER {
-    color: #973E62;
+
+.ide-Base-Part-Toolbar-Bottom-Button:HOVER {
+    -webkit-box-shadow: 0px 0px 2px rgba(50, 50, 50, 1);
+    -moz-box-shadow: 0px 0px 2px rgba(50, 50, 50, 1);
+    box-shadow: 0px 0px 2px rgba(50, 50, 50, 1);
 }
-*/
+
+.ide-Base-Part-Toolbar-Bottom-Button:ACTIVE {
+    -webkit-transform: scale(0.9);
+    -moz-transform: scale(0.9);
+    transform: scale(0.9);
+}

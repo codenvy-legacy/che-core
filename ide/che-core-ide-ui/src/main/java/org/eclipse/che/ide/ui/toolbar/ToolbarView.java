@@ -23,7 +23,7 @@ import javax.annotation.Nonnull;
  */
 public interface ToolbarView extends View<ToolbarView.ActionDelegate> {
     /** Needs for delegate some function into Toolbar view. */
-    public interface ActionDelegate {
+    interface ActionDelegate {
     }
 
     void setPlace(@Nonnull String place);

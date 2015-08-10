@@ -112,22 +112,6 @@ public abstract class Action {
         presentation.setSVGIcon(svgIcon);
     }
 
-    /**
-     * Copies template presentation and shortcuts set from <code>sourceAction</code>.
-     *
-     * @param sourceAction
-     *         cannot be <code>null</code>
-     */
-    public final void copyFrom(Action sourceAction) {
-        Presentation sourcePresentation = sourceAction.getTemplatePresentation();
-        Presentation presentation = getTemplatePresentation();
-        presentation.setIcon(sourcePresentation.getIcon());
-        presentation.setSVGIcon(sourcePresentation.getSVGIcon());
-        presentation.setText(sourcePresentation.getTextWithMnemonic());
-        presentation.setDescription(sourcePresentation.getDescription());
-    }
-
-
     public final boolean isEnabledInModalContext() {
         return myEnabledInModalContext;
     }
