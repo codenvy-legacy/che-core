@@ -250,7 +250,7 @@ public class WorkspaceService extends Service {
         if (!found) {
             throw new NotFoundException("Workspace " + id + " doesn't contain command " + update.getName());
         }
-        workspace.getCommands().add(asImpl(update));
+        workspace.getCommands().add(update);
         return asDto(workspaceManager.updateWorkspace(workspace.getId(), workspace));
     }
 
