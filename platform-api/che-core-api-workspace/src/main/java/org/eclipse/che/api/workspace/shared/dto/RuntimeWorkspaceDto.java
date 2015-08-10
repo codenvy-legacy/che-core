@@ -48,11 +48,6 @@ public interface RuntimeWorkspaceDto extends UsersWorkspaceDto, RuntimeWorkspace
     RuntimeWorkspaceDto withTemporary(boolean temporary);
 
     @Override
-    WorkspaceStatus getStatus();
-
-    RuntimeWorkspaceDto withStatus(WorkspaceStatus status);
-
-    @Override
     String getActiveEnvName();
 
     RuntimeWorkspaceDto withActiveEnvName(String currentEnvironment);

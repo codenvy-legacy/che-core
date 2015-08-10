@@ -29,9 +29,7 @@ import java.util.Objects;
 public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeWorkspace {
     private final Machine                 devMachine;
     private final List<? extends Machine> machines;
-    private final boolean                 isTemporary;
     private final String                  rootFolder;
-    private final WorkspaceStatus         workspaceStatus;
     private final String                  currentEnvironment;
 
     public RuntimeWorkspaceImpl(String id,
@@ -53,9 +51,7 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
         this.devMachine = devMachine;
         this.currentEnvironment = currentEnvironment;
         this.machines = machines != null ? machines : new ArrayList<Machine>();
-        this.isTemporary = isTemporary;
         this.rootFolder = rootFolder;
-        this.workspaceStatus = workspaceStatus;
     }
 
     public RuntimeWorkspaceImpl(UsersWorkspace usersWorkspace,
@@ -98,18 +94,8 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
     }
 
     @Override
-    public boolean isTemporary() {
-        return isTemporary;
-    }
-
-    @Override
     public String getRootFolder() {
         return rootFolder;
-    }
-
-    @Override
-    public WorkspaceStatus getStatus() {
-        return workspaceStatus;
     }
 
     @Override
@@ -123,15 +109,13 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
         if (!(o instanceof RuntimeWorkspaceImpl)) return false;
         if (!super.equals(o)) return false;
         RuntimeWorkspaceImpl that = (RuntimeWorkspaceImpl)o;
-        return Objects.equals(isTemporary, that.isTemporary) &&
-               Objects.equals(devMachine, that.devMachine) &&
+        return Objects.equals(devMachine, that.devMachine) &&
                Objects.equals(machines, that.machines) &&
-               Objects.equals(rootFolder, that.rootFolder) &&
-               Objects.equals(workspaceStatus, that.workspaceStatus);
+               Objects.equals(rootFolder, that.rootFolder);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), devMachine, machines, isTemporary, rootFolder, workspaceStatus);
+        return Objects.hash(super.hashCode(), devMachine, machines, rootFolder);
     }
 }
