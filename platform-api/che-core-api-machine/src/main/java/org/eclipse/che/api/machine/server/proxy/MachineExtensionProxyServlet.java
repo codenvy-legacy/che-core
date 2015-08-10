@@ -17,6 +17,8 @@ import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.machine.server.MachineManager;
 import org.eclipse.che.api.machine.server.spi.Instance;
 import org.eclipse.che.api.machine.shared.Server;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -45,6 +47,7 @@ import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
  */
 @Singleton
 public class MachineExtensionProxyServlet extends HttpServlet {
+    private static final Logger  LOG               = LoggerFactory.getLogger(MachineExtensionProxyServlet.class);
     private static final Pattern EXTENSION_API_URI = Pattern.compile("/[^/]+/ext/(?<machineId>[^/]+)(?<destpath>/.*)");
 
     private final int extServicesPort;
@@ -108,6 +111,7 @@ public class MachineExtensionProxyServlet extends HttpServlet {
 
             return conn;
         } catch (IOException e) {
+            LOG.error(e.getLocalizedMessage(), e);
             throw new ServerException(e.getLocalizedMessage());
         }
     }
@@ -162,6 +166,7 @@ public class MachineExtensionProxyServlet extends HttpServlet {
                 os.flush();
             }
         } catch (IOException e) {
+            LOG.error(e.getLocalizedMessage(), e);
             throw new ServerException(e.getLocalizedMessage());
         }
     }

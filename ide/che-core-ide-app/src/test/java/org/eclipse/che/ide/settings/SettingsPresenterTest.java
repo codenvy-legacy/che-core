@@ -216,7 +216,7 @@ public class SettingsPresenterTest {
 
         verify(view).show();
         verify(view).enableSaveButton(false);
-        verify(view).selectSettingGroup(settingsPresenter2);
+        verify(view).selectSettingGroup(Matchers.<SettingsPagePresenter>anyObject());
     }
 
     @Test

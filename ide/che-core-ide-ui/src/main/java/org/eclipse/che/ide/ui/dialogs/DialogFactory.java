@@ -96,6 +96,30 @@ public interface DialogFactory {
                                       @Nullable CancelCallback cancelCallback);
 
     /**
+     * Create a confirm dialog with only text as content.
+     *
+     * @param title
+     *         the window title
+     * @param content
+     *         the window content/text
+     * @param okButtonLabel
+     *         overwrite label for OK button
+     * @param cancelButtonLabel
+     *         overwrite label for Cancel button
+     * @param confirmCallback
+     *         the callback used on OK
+     * @param cancelCallback
+     *         the callback used on cancel
+     * @return a {@link ConfirmDialog} instance
+     */
+    ConfirmDialog createConfirmDialog(@Nonnull @Assisted("title") String title,
+                                      @Nonnull @Assisted("message") String content,
+                                      @Nonnull @Assisted("okButtonLabel") String okButtonLabel,
+                                      @Nonnull @Assisted("cancelButtonLabel") String cancelButtonLabel,
+                                      @Nullable ConfirmCallback confirmCallback,
+                                      @Nullable CancelCallback cancelCallback);
+
+    /**
      * Create a confirm dialog with a widget as content.
      *
      * @param title
@@ -110,6 +134,30 @@ public interface DialogFactory {
      */
     ConfirmDialog createConfirmDialog(@Nonnull String title,
                                       @Nonnull IsWidget content,
+                                      @Nullable ConfirmCallback confirmCallback,
+                                      @Nullable CancelCallback cancelCallback);
+
+    /**
+     * Create a confirm dialog with a widget as content and overwrites labels of Ok and Cancel buttons.
+     *
+     * @param title
+     *         the window title
+     * @param content
+     *         the window content
+     * @param okButtonLabel
+     *         new label for OK button
+     * @param cancelButtonLabel
+     *         new label for Cancel button
+     * @param confirmCallback
+     *         the callback used on OK
+     * @param cancelCallback
+     *         the callback used on cancel
+     * @return a {@link ConfirmDialog} instance
+     */
+    ConfirmDialog createConfirmDialog(@Nonnull String title,
+                                      @Nonnull IsWidget content,
+                                      @Nonnull @Assisted("okButtonLabel") String okButtonLabel,
+                                      @Nonnull @Assisted("cancelButtonLabel") String cancelButtonLabel,
                                       @Nullable ConfirmCallback confirmCallback,
                                       @Nullable CancelCallback cancelCallback);
 

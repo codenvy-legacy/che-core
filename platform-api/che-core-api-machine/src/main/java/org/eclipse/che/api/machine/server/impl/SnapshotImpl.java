@@ -12,10 +12,12 @@ package org.eclipse.che.api.machine.server.impl;
 
 import org.eclipse.che.api.machine.server.spi.InstanceKey;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
+import org.eclipse.che.api.machine.shared.Recipe;
 import org.eclipse.che.api.machine.shared.Snapshot;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Saved state of {@link org.eclipse.che.api.machine.server.spi.Instance}.
@@ -25,6 +27,7 @@ import java.util.List;
 public class SnapshotImpl implements Snapshot {
     private String               id;
     private String               type;
+    private Recipe               recipe;
     private InstanceKey          instanceKey;
     private String               owner;
     private long                 creationDate;
@@ -32,23 +35,23 @@ public class SnapshotImpl implements Snapshot {
     private boolean              isWorkspaceBound;
     private List<ProjectBinding> projects;
     private String               description;
-    private String               label;
 
     public SnapshotImpl() {
     }
 
     public SnapshotImpl(String id,
                         String type,
+                        Recipe recipe,
                         InstanceKey instanceKey,
                         String owner,
                         long creationDate,
                         String workspaceId,
                         List<ProjectBinding> projects,
                         String description,
-                        String label,
                         boolean isWorkspaceBound) {
         this.id = id;
         this.type = type;
+        this.recipe = recipe;
         this.instanceKey = instanceKey;
         this.owner = owner;
         this.creationDate = creationDate;
@@ -56,7 +59,6 @@ public class SnapshotImpl implements Snapshot {
         this.isWorkspaceBound = isWorkspaceBound;
         this.projects = Collections.unmodifiableList(projects);
         this.description = description;
-        this.label = label;
     }
 
     @Override
@@ -76,6 +78,11 @@ public class SnapshotImpl implements Snapshot {
     @Override
     public String getType() {
         return type;
+    }
+
+    @Override
+    public Recipe getRecipe() {
+        return recipe;
     }
 
     public void setType(String type) {
@@ -171,20 +178,6 @@ public class SnapshotImpl implements Snapshot {
     }
 
     @Override
-    public String getLabel() {
-        return label;
-    }
-
-    public void setLabel(String label) {
-        this.label = label;
-    }
-
-    public SnapshotImpl withLabel(String label) {
-        this.label = label;
-        return this;
-    }
-
-    @Override
     public boolean isWorkspaceBound() {
         return this.isWorkspaceBound;
     }
@@ -196,5 +189,27 @@ public class SnapshotImpl implements Snapshot {
     public SnapshotImpl withWorkspaceBound(boolean isWorkspaceBound) {
         this.isWorkspaceBound = isWorkspaceBound;
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof SnapshotImpl)) return false;
+        SnapshotImpl snapshot = (SnapshotImpl)o;
+        return Objects.equals(creationDate, snapshot.creationDate) &&
+               Objects.equals(isWorkspaceBound, snapshot.isWorkspaceBound) &&
+               Objects.equals(id, snapshot.id) &&
+               Objects.equals(type, snapshot.type) &&
+               Objects.equals(recipe, snapshot.recipe) &&
+               Objects.equals(instanceKey, snapshot.instanceKey) &&
+               Objects.equals(owner, snapshot.owner) &&
+               Objects.equals(workspaceId, snapshot.workspaceId) &&
+               Objects.equals(projects, snapshot.projects) &&
+               Objects.equals(description, snapshot.description);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, type, recipe, instanceKey, owner, creationDate, workspaceId, isWorkspaceBound, projects, description);
     }
 }

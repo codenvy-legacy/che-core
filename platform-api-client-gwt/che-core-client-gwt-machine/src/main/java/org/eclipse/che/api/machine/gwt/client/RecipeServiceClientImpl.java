@@ -178,7 +178,7 @@ public class RecipeServiceClientImpl implements RecipeServiceClient {
 
     /** {@inheritDoc} */
     @Override
-    public Promise<List<RecipeDescriptor>> searchRecipes(@Nullable final List<String> tags,
+    public Promise<List<RecipeDescriptor>> searchRecipes(@Nonnull final List<String> tags,
                                                          @Nullable final String type,
                                                          final int skipCount,
                                                          final int maxItems) {
@@ -199,21 +199,22 @@ public class RecipeServiceClientImpl implements RecipeServiceClient {
         });
     }
 
-    private void searchRecipes(@Nullable List<String> tags,
+    private void searchRecipes(@Nonnull List<String> tags,
                                @Nullable String type,
                                int skipCount,
                                int maxItems,
                                @Nonnull AsyncCallback<Array<RecipeDescriptor>> callback) {
         final StringBuilder tagsParam = new StringBuilder();
-        if (tags != null && !tags.isEmpty()) {
-            for (String tag : tags) {
-                tagsParam.append("tags=").append(tag).append("&");
-            }
-            tagsParam.deleteCharAt(tagsParam.length() - 1);
+        for (String tag : tags) {
+            tagsParam.append("tags=").append(tag).append("&");
+        }
+        if (tagsParam.length() > 0) {
+            tagsParam.deleteCharAt(tagsParam.length() - 1); // delete last ampersand
         }
 
         final String url = baseHttpUrl + "/list?" + tagsParam.toString() +
-                           "&type=" + type +
+                           (tagsParam.length() > 0 ? '&' : "") +
+                           "type=" + type +
                            "&skipCount=" + skipCount +
                            "&maxItems=" + maxItems;
         asyncRequestFactory.createGetRequest(url)

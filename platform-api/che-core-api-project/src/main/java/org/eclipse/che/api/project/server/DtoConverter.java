@@ -280,7 +280,6 @@ public class DtoConverter {
                          .withLinks(generateFolderLinks(folder, uriBuilder));
     }
 
-
     public static ProjectDescriptor toDescriptorDto2(Project project,
                                                      UriBuilder serviceUriBuilder,
                                                      UriBuilder baseUriBuilder,
@@ -293,25 +292,13 @@ public class DtoConverter {
         // If get error then save information about error with 'problems' field in ProjectConfig.
         final String name = project.getName();
         final String path = project.getPath();
-        String wsName = null;
 
-//        try {
-//            @SuppressWarnings("unchecked") // Generic array is 0 size
-//            final WorkspaceDescriptor descriptor = HttpJsonHelper.request(WorkspaceDescriptor.class,
-//                                                                          baseUriBuilder.path(WorkspaceService.class)
-//                                                                                        .path(WorkspaceService.class, "getById")
-//                                                                                        .build(wsId)
-//                                                                                        .toString(),
-//                                                                          GET,
-//                                                                          null);
-//            wsName = descriptor.getName();
-//        } catch (ApiException e) {
-//            dto.getProblems().add(createProjectProblem(dtoFactory, e));
-//        } catch (IOException ioEx) {
-//            dto.getProblems().add(createProjectProblem(dtoFactory, new ServerException(ioEx.getMessage(), ioEx)));
-//        }
+        String wsName = fetchWorkspaceName(wsId, baseUriBuilder, dto.getProblems());
 
-        dto.withWorkspaceId(wsId).withWorkspaceName(wsName).withName(name).withPath(path);
+        dto.withWorkspaceId(wsId)
+           .withWorkspaceName(wsName)
+           .withName(name)
+           .withPath(path);
 
         ProjectConfig config = null;
         try {
@@ -508,12 +495,13 @@ public class DtoConverter {
 
 
 
-    public static ProjectReference toReferenceDto2(Project project, UriBuilder uriBuilder) throws InvalidValueException {
-        final EnvironmentContext environmentContext = EnvironmentContext.getCurrent();
+    public static ProjectReference toReferenceDto2(Project project,
+                                                   UriBuilder uriBuilder,
+                                                   UriBuilder baseUriBuilder) throws InvalidValueException {
         final DtoFactory dtoFactory = DtoFactory.getInstance();
         final ProjectReference dto = dtoFactory.createDto(ProjectReference.class);
         final String wsId = project.getWorkspace();
-        final String wsName = environmentContext.getWorkspaceName();
+        final String wsName = fetchWorkspaceName(wsId, baseUriBuilder, dto.getProblems());
         final String name = project.getName();
         final String path = project.getPath();
         dto.withName(name).withPath(path).withWorkspaceId(wsId).withWorkspaceName(wsName);
@@ -553,6 +541,25 @@ public class DtoConverter {
             dto.withIdeUrl(uriBuilder.clone().replacePath("ws").path(wsName).path(path).build().toString());
         }
         return dto;
+    }
+
+    private static String fetchWorkspaceName(String wsId, UriBuilder baseUriBuilder, List<ProjectProblem> problems) {
+/*        try {
+            @SuppressWarnings("unchecked") // Generic array is 0 size
+            final WorkspaceDescriptor descriptor = HttpJsonHelper.request(WorkspaceDescriptor.class,
+                                                                          baseUriBuilder.path(WorkspaceService.class)
+                                                                                        .path(WorkspaceService.class, "getById")
+                                                                                        .build(wsId)
+                                                                                        .toString(),
+                                                                          GET,
+                                                                          null);
+            return descriptor.getName();
+        } catch (ApiException e) {
+            problems.add(createProjectProblem(DtoFactory.getInstance(), e));
+        } catch (IOException ioEx) {
+            problems.add(createProjectProblem(DtoFactory.getInstance(), new ServerException(ioEx.getMessage(), ioEx)));
+        }*/
+        return null;
     }
 
     private static ProjectProblem createProjectProblem(DtoFactory dtoFactory, ApiException error) {

@@ -23,33 +23,18 @@ import java.util.List;
  * @author andrew00x
  */
 @DTO
-public interface ProcessDescriptor extends Hyperlinks {
-    /**
-     * Id of the process
-     */
-    int getPid();
-
+public interface ProcessDescriptor extends org.eclipse.che.api.machine.shared.Process, Hyperlinks {
     void setPid(int pid);
 
     ProcessDescriptor withPid(int pid);
-
-    /**
-     * Command line used to create this process
-     */
-    String getCommandLine();
 
     void setCommandLine(String commandLine);
 
     ProcessDescriptor withCommandLine(String commandLine);
 
-    /**
-     * Flag that represents state of process in machine
-     */
-    boolean getIsAlive();
+    void setAlive(boolean isAlive);
 
-    void setIsAlive(boolean isAlive);
-
-    ProcessDescriptor withIsAlive(boolean isAlive);
+    ProcessDescriptor withAlive(boolean isAlive);
 
     @Override
     ProcessDescriptor withLinks(List<Link> links);

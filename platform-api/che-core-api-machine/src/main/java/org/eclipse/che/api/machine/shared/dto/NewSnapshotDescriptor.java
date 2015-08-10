@@ -19,12 +19,6 @@ import org.eclipse.che.dto.shared.DTO;
  */
 @DTO
 public interface NewSnapshotDescriptor {
-    String getLabel();
-
-    void setLabel(String label);
-
-    NewSnapshotDescriptor withLabel(String label);
-
     /**
      * Description of machine saved in snapshot
      */

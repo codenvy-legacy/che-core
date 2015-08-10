@@ -11,6 +11,8 @@
 package org.eclipse.che.commons.schedule.executor;
 
 import org.eclipse.che.commons.schedule.Launcher;
+import org.eclipse.che.inject.lifecycle.InternalScheduleModule;
+
 import com.google.inject.Binder;
 import com.google.inject.Module;
 
@@ -24,6 +26,7 @@ public class ScheduleModule implements Module {
     @Override
     public void configure(Binder binder) {
         binder.bind(Launcher.class).to(ThreadPullLauncher.class).asEagerSingleton();
-        binder.install(new org.eclipse.che.inject.lifecycle.ScheduleModule());
+        binder.install(new InternalScheduleModule());
+
     }
 }

@@ -10,25 +10,30 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.shared.dto;
 
-import org.eclipse.che.api.machine.shared.Server;
 import org.eclipse.che.dto.shared.DTO;
 
 /**
- * Describes how to access to exposed ports for servers inside machine
+ * Describes information needed for machine creation from snapshot
  *
  * @author Alexander Garagatyi
  */
 @DTO
-public interface ServerDescriptor extends Server {
-    void setAddress(String address);
+public interface SnapshotMachineCreationMetadata extends MachineCreationMetadata {
+    /**
+     * Id of snapshot machine should be created from
+     */
+    String getSnapshotId();
 
-    ServerDescriptor withAddress(String address);
+    void setSnapshotId(String snapshotId);
 
-    void setUrl(String url);
+    SnapshotMachineCreationMetadata withSnapshotId(String snapshotId);
 
-    ServerDescriptor withUrl(String url);
+    @Override
+    SnapshotMachineCreationMetadata withOutputChannel(String outputChannel);
 
-    void setRef(String ref);
+    @Override
+    SnapshotMachineCreationMetadata withDisplayName(String displayName);
 
-    ServerDescriptor withRef(String ref);
+    @Override
+    SnapshotMachineCreationMetadata withMemorySize(int mem);
 }

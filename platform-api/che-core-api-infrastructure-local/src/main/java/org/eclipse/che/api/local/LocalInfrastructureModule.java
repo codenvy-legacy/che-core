@@ -43,6 +43,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static java.util.Collections.unmodifiableSet;
 
 @DynaModule
@@ -88,32 +89,32 @@ public class LocalInfrastructureModule extends AbstractModule {
 
 
     // ~~~ WorkspaceDao
-//
-//    @Provides
-//    @Named("codenvy.local.infrastructure.workspaces")
-//    Set<Workspace> workspaces() {
-//        final Set<Workspace> workspaces = new HashSet<>(1);
-//        workspaces.add(new Workspace().withId("1q2w3e").withName("default").withTemporary(false));
-//        return workspaces;
-//    }
-//
-//    // WorkspaceDao ~~~
-//
-//
-//    // ~~~ MemberDao
-//
-//    @Provides
-//    @Named("codenvy.local.infrastructure.workspace.members")
-//    Set<Member> workspaceMembers() {
-//        final Set<Member> members = new HashSet<>(1);
-//        final Member member =
-//                new Member().withUserId("codenvy").withWorkspaceId("1q2w3e");
-//        Collections.addAll(member.getRoles(), "workspace/admin", "workspace/developer");
-//        members.add(member);
-//        return members;
-//    }
-//
-//    // MemberDao ~~~
+/*
+    @Provides
+    @Named("codenvy.local.infrastructure.workspaces")
+    Set<Workspace> workspaces() {
+        final Set<Workspace> workspaces = new HashSet<>(1);
+        workspaces.add(new Workspace().withId("1q2w3e").withName("default").withTemporary(false));
+        return workspaces;
+    }
+
+    // WorkspaceDao ~~~
+
+
+    // ~~~ MemberDao
+
+    @Provides
+    @Named("codenvy.local.infrastructure.workspace.members")
+    Set<Member> workspaceMembers() {
+        final Set<Member> members = new HashSet<>(1);
+        final Member member =
+                new Member().withUserId("codenvy").withWorkspaceId("1q2w3e");
+        Collections.addAll(member.getRoles(), "workspace/admin", "workspace/developer");
+        members.add(member);
+        return members;
+    }
+*/
+    // MemberDao ~~~
 
 
     // ~~~ UserDao
@@ -123,9 +124,9 @@ public class LocalInfrastructureModule extends AbstractModule {
     Set<User> users() {
         final Set<User> users = new HashSet<>(1);
         final User user = new User().withId("codenvy")
-                                    .withEmail("codenvy@codenvy.com")
+                                    .withEmail("che@eclipse.org")
                                     .withPassword("secret");
-        user.getAliases().add("codenvy@codenvy.com");
+        user.getAliases().add("che@eclipse.org");
         users.add(user);
         return users;
     }
@@ -140,16 +141,16 @@ public class LocalInfrastructureModule extends AbstractModule {
                                                       .withName("UBUNTU")
                                                       .withCreator("codenvy")
                                                       .withType("docker")
-                                                      .withScript("FROM ubuntu\ntail -f \\dev\\null")
-                                                      .withTags(asList("ubuntu"))
-                                                      .withPermissions(new PermissionsImpl(null, asList(group)));
+                                                      .withScript("FROM ubuntu\nRUN tail -f /dev/null")
+                                                      .withTags(singletonList("ubuntu"))
+                                                      .withPermissions(new PermissionsImpl(null, singletonList(group)));
         final ManagedRecipe recipe2 = new RecipeImpl().withId("recipe2345678901")
-                                                      .withName("BOSYBOX")
+                                                      .withName("BUSYBOX")
                                                       .withCreator("codenvy")
                                                       .withType("docker")
-                                                      .withScript("FROM bosybox\ntail -f \\dev\\null")
+                                                      .withScript("FROM busybox\nRUN tail -f /dev/null")
                                                       .withTags(asList("java", "busybox"))
-                                                      .withPermissions(new PermissionsImpl(null, asList(group)));
+                                                      .withPermissions(new PermissionsImpl(null, singletonList(group)));
 
         return unmodifiableSet(new HashSet<>(asList(recipe1, recipe2)));
     }

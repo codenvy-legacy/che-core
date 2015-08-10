@@ -30,6 +30,7 @@ public class ProjectHandlerRegistry {
     private final Map<String, CreateModuleHandler>       createModuleHandlers       = new HashMap<>();
     private final Map<String, ProjectTypeChangedHandler> projectTypeChangedHandlers = new HashMap<>();
     private final Map<String, GetModulesHandler>         getModulesHandlers         = new HashMap<>();
+    private final Map<String, ProjectCreatedHandler>     projectCreatedHandlers     = new HashMap<>();
 
     @Inject
     public ProjectHandlerRegistry(Set<ProjectHandler> projectHandlers) {
@@ -51,6 +52,8 @@ public class ProjectHandlerRegistry {
             projectTypeChangedHandlers.put(handler.getProjectType(), (ProjectTypeChangedHandler)handler);
         } else if (handler instanceof GetModulesHandler) {
             getModulesHandlers.put(handler.getProjectType(), (GetModulesHandler)handler);
+        } else if (handler instanceof ProjectCreatedHandler) {
+            projectCreatedHandlers.put(handler.getProjectType(), (ProjectCreatedHandler)handler);
         }
     }
 
@@ -82,6 +85,11 @@ public class ProjectHandlerRegistry {
     @Nullable
     public GetModulesHandler getModulesHandler(@Nonnull String projectType) {
         return getModulesHandlers.get(projectType);
+    }
+
+    @Nullable
+    public ProjectCreatedHandler getProjectCreatedHandler(@Nonnull String projectType) {
+        return projectCreatedHandlers.get(projectType);
     }
 
 }

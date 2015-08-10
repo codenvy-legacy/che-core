@@ -30,6 +30,11 @@ public interface Snapshot {
     String getType();
 
     /**
+     * Recipe of the instance implementation
+     */
+    Recipe getRecipe();
+
+    /**
      * Id of the user that is owner of the snapshot
      */
     String getOwner();
@@ -46,13 +51,7 @@ public interface Snapshot {
 
     boolean isWorkspaceBound();
 
-    void setWorkspaceBound(boolean isWorkspaceBound);
-
-    Snapshot withWorkspaceBound(boolean isWorkspaceBound);
-
     List<? extends ProjectBinding> getProjects();
-
-    String getLabel();
 
     /**
      * Description of the snapshot

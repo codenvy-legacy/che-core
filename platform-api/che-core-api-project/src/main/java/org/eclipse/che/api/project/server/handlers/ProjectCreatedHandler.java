@@ -8,24 +8,19 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.local;
+package org.eclipse.che.api.project.server.handlers;
 
 import org.eclipse.che.api.core.ConflictException;
-import org.eclipse.che.api.user.server.TokenValidator;
-
-import javax.inject.Singleton;
+import org.eclipse.che.api.core.ForbiddenException;
+import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.project.server.FolderEntry;
 
 /**
- * Dummy implementation of {@link org.eclipse.che.api.user.server.TokenValidator}.
- * 
- * @author Ann Shumilova
- * @author Dmitry Shnurenko
+ * @author Roman Nikitenko
  */
-@Singleton
-public class DummyTokenValidator implements TokenValidator {
-    /** {@inheritDoc} */
-    @Override
-    public String validateToken(String token) throws ConflictException {
-        return "che@eclipse.org";
-    }
+public interface ProjectCreatedHandler extends ProjectHandler {
+
+    void onProjectCreated(FolderEntry projectFolder)
+            throws ServerException, ForbiddenException, ConflictException, NotFoundException;
 }

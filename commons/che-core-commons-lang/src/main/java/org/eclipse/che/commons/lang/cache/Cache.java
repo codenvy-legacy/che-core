@@ -13,7 +13,13 @@ package org.eclipse.che.commons.lang.cache;
 import java.util.Map.Entry;
 
 
-/** Cache abstraction. */
+/**
+ * Cache abstraction.
+ *
+ * @depricated Use Guava cache or other cache implementations
+ *
+ * */
+@Deprecated
 public interface Cache<K, V> extends Iterable<Entry<K, V>> {
     V get(K key);
 

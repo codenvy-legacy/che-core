@@ -13,12 +13,12 @@ package org.eclipse.che.api.machine.shared.dto;
 import org.eclipse.che.dto.shared.DTO;
 
 /**
- * Describes information needed for machine creation from snapshot
+ * Describes information needed for machine creation
  *
  * @author Alexander Garagatyi
  */
 @DTO
-public interface MachineFromSnapshotMetadata {
+public interface MachineCreationMetadata {
     /**
      * Channel of websocket where machine logs should be put
      */
@@ -26,20 +26,18 @@ public interface MachineFromSnapshotMetadata {
 
     void setOutputChannel(String outputChannel);
 
-    MachineFromSnapshotMetadata withOutputChannel(String outputChannel);
-
-    /**
-     * Id of snapshot machine should be created from
-     */
-    String getSnapshotId();
-
-    void setSnapshotId(String snapshotId);
-
-    MachineFromSnapshotMetadata withSnapshotId(String snapshotId);
+    MachineCreationMetadata withOutputChannel(String outputChannel);
 
     String getDisplayName();
 
     void setDisplayName(String displayName);
 
-    MachineFromSnapshotMetadata withDisplayName(String displayName);
+    MachineCreationMetadata withDisplayName(String displayName);
+
+    /** Get memory size (in megabytes) that is allocated for starting machine. */
+    int getMemorySize();
+
+    void setMemorySize(int mem);
+
+    MachineCreationMetadata withMemorySize(int mem);
 }

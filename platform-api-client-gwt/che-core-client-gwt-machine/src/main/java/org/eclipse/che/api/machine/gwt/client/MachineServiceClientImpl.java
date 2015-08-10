@@ -16,11 +16,11 @@ import com.google.inject.name.Named;
 
 import org.eclipse.che.api.machine.shared.dto.CommandDescriptor;
 import org.eclipse.che.api.machine.shared.dto.MachineDescriptor;
-import org.eclipse.che.api.machine.shared.dto.MachineFromRecipeMetadata;
-import org.eclipse.che.api.machine.shared.dto.MachineFromSnapshotMetadata;
 import org.eclipse.che.api.machine.shared.dto.MachineStateDescriptor;
 import org.eclipse.che.api.machine.shared.dto.ProcessDescriptor;
-import org.eclipse.che.api.machine.shared.dto.recipe.RecipeDescriptor;
+import org.eclipse.che.api.machine.shared.dto.RecipeMachineCreationMetadata;
+import org.eclipse.che.api.machine.shared.dto.SnapshotMachineCreationMetadata;
+import org.eclipse.che.api.machine.shared.dto.recipe.MachineRecipe;
 import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Promise;
@@ -97,17 +97,17 @@ public class MachineServiceClientImpl implements MachineServiceClient {
                                          boolean bindWorkspace,
                                          @Nullable String outputChannel,
                                          @Nonnull AsyncCallback<MachineDescriptor> callback) {
-        final RecipeDescriptor recipeDescriptor = dtoFactory.createDto(RecipeDescriptor.class)
-                                                            .withType(recipeType)
-                                                            .withScript(recipeScript);
+        final MachineRecipe machineRecipe = dtoFactory.createDto(MachineRecipe.class)
+                                                      .withType(recipeType)
+                                                      .withScript(recipeScript);
 
-        final MachineFromRecipeMetadata request = dtoFactory.createDto(MachineFromRecipeMetadata.class)
-                                                            .withWorkspaceId(workspaceId)
-                                                            .withType(machineType)
-                                                            .withRecipeDescriptor(recipeDescriptor)
-                                                            .withDisplayName(displayName)
-                                                            .withBindWorkspace(bindWorkspace)
-                                                            .withOutputChannel(outputChannel);
+        final RecipeMachineCreationMetadata request = dtoFactory.createDto(RecipeMachineCreationMetadata.class)
+                                                                .withWorkspaceId(workspaceId)
+                                                                .withType(machineType)
+                                                                .withRecipe(machineRecipe)
+                                                                .withDisplayName(displayName)
+                                                                .withBindWorkspace(bindWorkspace)
+                                                                .withOutputChannel(outputChannel);
 
         asyncRequestFactory.createPostRequest(baseHttpUrl + "/recipe", request)
                            .header(ACCEPT, APPLICATION_JSON)
@@ -132,10 +132,10 @@ public class MachineServiceClientImpl implements MachineServiceClient {
                                            @Nullable final String displayName,
                                            @Nullable String outputChannel,
                                            @Nonnull AsyncCallback<MachineDescriptor> callback) {
-        final MachineFromSnapshotMetadata request = dtoFactory.createDto(MachineFromSnapshotMetadata.class)
-                                                              .withSnapshotId(snapshotId)
-                                                              .withDisplayName(displayName)
-                                                              .withOutputChannel(outputChannel);
+        final SnapshotMachineCreationMetadata request = dtoFactory.createDto(SnapshotMachineCreationMetadata.class)
+                                                                  .withSnapshotId(snapshotId)
+                                                                  .withDisplayName(displayName)
+                                                                  .withOutputChannel(outputChannel);
 
         asyncRequestFactory.createPostRequest(baseHttpUrl + "/snapshot", request)
                            .header(ACCEPT, APPLICATION_JSON)
@@ -154,6 +154,14 @@ public class MachineServiceClientImpl implements MachineServiceClient {
         });
     }
 
+    private void getMachine(@Nonnull String machineId, @Nonnull AsyncCallback<MachineDescriptor> callback) {
+        final String url = baseHttpUrl + '/' + machineId;
+        asyncRequestFactory.createGetRequest(url)
+                           .header(ACCEPT, APPLICATION_JSON)
+                           .loader(loader, "Getting info about machine...")
+                           .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(MachineDescriptor.class)));
+    }
+
     @Override
     public Promise<MachineStateDescriptor> getMachineState(@Nonnull final String machineId) {
         return newPromise(new RequestCall<MachineStateDescriptor>() {
@@ -162,14 +170,6 @@ public class MachineServiceClientImpl implements MachineServiceClient {
                 getMachineState(machineId, callback);
             }
         });
-    }
-
-    private void getMachine(@Nonnull String machineId, @Nonnull AsyncCallback<MachineDescriptor> callback) {
-        final String url = baseHttpUrl + '/' + machineId;
-        asyncRequestFactory.createGetRequest(url)
-                           .header(ACCEPT, APPLICATION_JSON)
-                           .loader(loader, "Getting info about machine...")
-                           .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(MachineDescriptor.class)));
     }
 
     private void getMachineState(@Nonnull String machineId, @Nonnull AsyncCallback<MachineStateDescriptor> callback) {
@@ -199,6 +199,15 @@ public class MachineServiceClientImpl implements MachineServiceClient {
         });
     }
 
+    private void getMachines(@Nonnull String workspaceId, @Nullable String projectPath,
+                             @Nonnull AsyncCallback<Array<MachineDescriptor>> callback) {
+        final String url = baseHttpUrl + "?workspace=" + workspaceId + (projectPath != null ? "&project=" + projectPath : "");
+        asyncRequestFactory.createGetRequest(url)
+                           .header(ACCEPT, APPLICATION_JSON)
+                           .loader(loader, "Getting info about bound machines...")
+                           .send(newCallback(callback, dtoUnmarshallerFactory.newArrayUnmarshaller(MachineDescriptor.class)));
+    }
+
     @Override
     public Promise<List<MachineStateDescriptor>> getMachinesStates(@Nullable final String projectPath) {
         return newPromise(new RequestCall<Array<MachineStateDescriptor>>() {
@@ -218,18 +227,9 @@ public class MachineServiceClientImpl implements MachineServiceClient {
         });
     }
 
-    private void getMachines(@Nonnull String workspaceId, @Nullable String projectPath,
-                             @Nonnull AsyncCallback<Array<MachineDescriptor>> callback) {
-        final String url = baseHttpUrl + "?workspace=" + workspaceId + (projectPath != null ? "&project=" + projectPath : "");
-        asyncRequestFactory.createGetRequest(url)
-                           .header(ACCEPT, APPLICATION_JSON)
-                           .loader(loader, "Getting info about bound machines...")
-                           .send(newCallback(callback, dtoUnmarshallerFactory.newArrayUnmarshaller(MachineDescriptor.class)));
-    }
-
     private void getMachinesStates(@Nonnull String workspaceId, @Nullable String projectPath,
-                             @Nonnull AsyncCallback<Array<MachineStateDescriptor>> callback) {
-        final String url = baseHttpUrl+ "/state" + "?workspace=" + workspaceId + (projectPath != null ? "&project=" + projectPath : "");
+                                   @Nonnull AsyncCallback<Array<MachineStateDescriptor>> callback) {
+        final String url = baseHttpUrl + "/state" + "?workspace=" + workspaceId + (projectPath != null ? "&project=" + projectPath : "");
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
                            .loader(loader, "Getting info about bound machines...")
@@ -302,6 +302,22 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     }
 
     @Override
+    public Promise<Void> stopProcess(@Nonnull final String machineId, final int processId) {
+        return newPromise(new RequestCall<Void>() {
+            @Override
+            public void makeCall(AsyncCallback<Void> callback) {
+                stopProcess(machineId, processId, callback);
+            }
+        });
+    }
+
+    private void stopProcess(@Nonnull String machineId, int processId, @Nonnull AsyncCallback<Void> callback) {
+        asyncRequestFactory.createDeleteRequest(baseHttpUrl + '/' + machineId + "/process/" + processId)
+                           .loader(loader, "Stopping process...")
+                           .send(newCallback(callback));
+    }
+
+    @Override
     public Promise<Void> bindProject(@Nonnull final String machineId, @Nonnull final String projectPath) {
         return newPromise(new RequestCall<Void>() {
             @Override
@@ -312,7 +328,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     }
 
     private void bindProject(@Nonnull String machineId, @Nonnull String projectPath, @Nonnull AsyncCallback<Void> callback) {
-        asyncRequestFactory.createPostRequest(baseHttpUrl + '/' + machineId + "/binding/" + (projectPath), null)
+        asyncRequestFactory.createPostRequest(baseHttpUrl + '/' + machineId + "/binding/" + projectPath, null)
                            .loader(loader, "Binding project to machine...")
                            .send(newCallback(callback));
     }
@@ -328,7 +344,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     }
 
     private void unbindProject(@Nonnull String machineId, @Nonnull String projectPath, @Nonnull AsyncCallback<Void> callback) {
-        asyncRequestFactory.createDeleteRequest(baseHttpUrl + '/' + machineId + "/binding/" + (projectPath))
+        asyncRequestFactory.createDeleteRequest(baseHttpUrl + '/' + machineId + "/binding/" + projectPath)
                            .loader(loader, "Unbinding project from machine...")
                            .send(newCallback(callback));
     }

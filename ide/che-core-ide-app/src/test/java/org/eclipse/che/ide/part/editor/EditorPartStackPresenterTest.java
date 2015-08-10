@@ -33,6 +33,9 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.eq;
@@ -66,13 +69,19 @@ public class EditorPartStackPresenterTest {
 
     //additional mocks
     @Mock
-    private EditorTab          editorTab;
+    private EditorTab          editorTab1;
+    @Mock
+    private EditorTab          editorTab2;
     @Mock
     private EditorWithErrors   withErrorsPart;
     @Mock
-    private PartPresenter      partPresenter;
+    private PartPresenter      partPresenter1;
     @Mock
-    private SVGResource        resource;
+    private SVGResource        resource1;
+    @Mock
+    private PartPresenter      partPresenter2;
+    @Mock
+    private SVGResource        resource2;
     @Mock
     private ProjectActionEvent actionEvent;
 
@@ -85,10 +94,14 @@ public class EditorPartStackPresenterTest {
 
     @Before
     public void setUp() {
-        when(partPresenter.getTitle()).thenReturn(SOME_TEXT);
-        when(partPresenter.getTitleSVGImage()).thenReturn(resource);
+        when(partPresenter1.getTitle()).thenReturn(SOME_TEXT);
+        when(partPresenter1.getTitleSVGImage()).thenReturn(resource1);
 
-        when(tabItemFactory.createEditorPartButton(resource, SOME_TEXT)).thenReturn(editorTab);
+        when(partPresenter2.getTitle()).thenReturn(SOME_TEXT);
+        when(partPresenter2.getTitleSVGImage()).thenReturn(resource2);
+
+        when(tabItemFactory.createEditorPartButton(resource1, SOME_TEXT)).thenReturn(editorTab1);
+        when(tabItemFactory.createEditorPartButton(resource2, SOME_TEXT)).thenReturn(editorTab2);
 
         presenter = new EditorPartStackPresenter(view, partsComparator, eventBus, tabItemFactory, partStackEventHandler, listButton);
     }
@@ -104,7 +117,7 @@ public class EditorPartStackPresenterTest {
 
     @Test
     public void allTabsShouldBeClosed() {
-        presenter.addPart(partPresenter);
+        presenter.addPart(partPresenter1);
 
         verify(eventBus).addHandler(eq(ProjectActionEvent.TYPE), projectActionHandlerCaptor.capture());
         projectActionHandlerCaptor.getValue().onProjectClosed(actionEvent);
@@ -112,7 +125,7 @@ public class EditorPartStackPresenterTest {
         verify(listButton).addListItem(itemCaptor.capture());
         ListItem item = itemCaptor.getValue();
 
-        verify(view).removeTab(partPresenter);
+        verify(view).removeTab(partPresenter1);
         verify(listButton).removeListItem(item);
     }
 
@@ -125,60 +138,60 @@ public class EditorPartStackPresenterTest {
 
     @Test
     public void partShouldBeAdded() {
-        presenter.addPart(partPresenter);
+        presenter.addPart(partPresenter1);
 
-        verify(partPresenter).addPropertyListener(Matchers.<PropertyListener>anyObject());
+        verify(partPresenter1).addPropertyListener(Matchers.<PropertyListener>anyObject());
 
-        verify(tabItemFactory).createEditorPartButton(resource, SOME_TEXT);
+        verify(tabItemFactory).createEditorPartButton(resource1, SOME_TEXT);
 
-        verify(partPresenter).getTitleSVGImage();
-        verify(partPresenter).getTitle();
+        verify(partPresenter1).getTitleSVGImage();
+        verify(partPresenter1).getTitle();
 
-        verify(editorTab).setDelegate(presenter);
+        verify(editorTab1).setDelegate(presenter);
 
-        verify(view).addTab(editorTab, partPresenter);
+        verify(view).addTab(editorTab1, partPresenter1);
 
         verify(listButton).addListItem(Matchers.<ListItem>anyObject());
 
-        verify(view).selectTab(partPresenter);
+        verify(view).selectTab(partPresenter1);
     }
 
     @Test
     public void partShouldNotBeAddedWhenItExist() {
-        presenter.addPart(partPresenter);
+        presenter.addPart(partPresenter1);
         reset(view);
 
-        presenter.addPart(partPresenter);
+        presenter.addPart(partPresenter1);
 
-        verify(view, never()).addTab(editorTab, partPresenter);
+        verify(view, never()).addTab(editorTab1, partPresenter1);
 
-        verify(view).selectTab(partPresenter);
+        verify(view).selectTab(partPresenter1);
     }
 
     @Test
     public void activePartShouldBeReturned() {
-        presenter.setActivePart(partPresenter);
+        presenter.setActivePart(partPresenter1);
 
-        assertThat(presenter.getActivePart(), sameInstance(partPresenter));
+        assertThat(presenter.getActivePart(), sameInstance(partPresenter1));
     }
 
     @Test
     public void onTabShouldBeClicked() {
-        presenter.addPart(partPresenter);
+        presenter.addPart(partPresenter1);
         reset(view);
 
-        presenter.onTabClicked(editorTab);
+        presenter.onTabClicked(editorTab1);
 
-        verify(view).selectTab(partPresenter);
+        verify(view).selectTab(partPresenter1);
     }
 
     @Test
     public void tabShouldBeClosed() {
-        presenter.addPart(partPresenter);
+        presenter.addPart(partPresenter1);
 
-        presenter.onTabClose(editorTab);
+        presenter.onTabClose(editorTab1);
 
-        verify(view).removeTab(partPresenter);
+        verify(view).removeTab(partPresenter1);
     }
 
     @Test
@@ -190,7 +203,7 @@ public class EditorPartStackPresenterTest {
 
     @Test
     public void onCloseItemShouldBeClicked() {
-        presenter.addPart(partPresenter);
+        presenter.addPart(partPresenter1);
 
         verify(listButton).addListItem(itemCaptor.capture());
         ListItem item = itemCaptor.getValue();
@@ -199,5 +212,39 @@ public class EditorPartStackPresenterTest {
 
         verify(listButton).removeListItem(item);
         verify(listButton).hide();
+    }
+
+    @Test
+    public void activePartShouldBeChangedWhenWeClickOnTab() {
+        presenter.addPart(partPresenter1);
+        presenter.addPart(partPresenter2);
+
+        presenter.onTabClicked(editorTab1);
+
+        assertThat(presenter.getActivePart(), equalTo(partPresenter1));
+
+        presenter.onTabClicked(editorTab2);
+
+        assertThat(presenter.getActivePart(), equalTo(partPresenter2));
+    }
+
+    @Test
+    public void previousTabSelectedWhenWeRemovePart() {
+        presenter.addPart(partPresenter1);
+        presenter.addPart(partPresenter2);
+
+        presenter.onTabClicked(editorTab2);
+        presenter.onTabClose(editorTab2);
+
+        assertThat(presenter.getActivePart(), equalTo(partPresenter1));
+    }
+
+    @Test
+    public void activePartShouldBeNullWhenWeCloseAllParts() {
+        presenter.addPart(partPresenter1);
+
+        presenter.onTabClose(editorTab1);
+
+        assertThat(presenter.getActivePart(), is(nullValue()));
     }
 }

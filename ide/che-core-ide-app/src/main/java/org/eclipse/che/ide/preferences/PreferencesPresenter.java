@@ -10,9 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.ide.preferences;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import org.eclipse.che.api.user.gwt.client.UserProfileServiceClient;
-import org.eclipse.che.api.user.shared.dto.ProfileDescriptor;
-import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.preferences.PreferencePagePresenter;
 import org.eclipse.che.ide.api.preferences.PreferencesManager;
@@ -21,9 +23,6 @@ import org.eclipse.che.ide.rest.StringMapUnmarshaller;
 import org.eclipse.che.ide.ui.dialogs.CancelCallback;
 import org.eclipse.che.ide.ui.dialogs.ConfirmCallback;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -138,9 +137,9 @@ public class PreferencesPresenter implements PreferencesView.ActionDelegate, Pre
                 }
             }
 
-            preferencesManager.flushPreferences(new AsyncCallback<ProfileDescriptor>() {
+            preferencesManager.flushPreferences(new AsyncCallback<Map<String, String>>() {
                 @Override
-                public void onSuccess(ProfileDescriptor result) {
+                public void onSuccess(Map<String, String> result) {
                     view.enableSaveButton(false);
                 }
 

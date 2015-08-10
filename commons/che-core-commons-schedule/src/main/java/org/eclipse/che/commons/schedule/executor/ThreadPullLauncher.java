@@ -12,6 +12,7 @@ package org.eclipse.che.commons.schedule.executor;
 
 import org.eclipse.che.commons.schedule.Launcher;
 import org.eclipse.che.inject.ConfigurationException;
+
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import org.slf4j.Logger;
@@ -34,10 +35,14 @@ public class ThreadPullLauncher implements Launcher {
     private static final Logger LOG = LoggerFactory.getLogger(CronThreadPoolExecutor.class);
     private final CronThreadPoolExecutor service;
 
-
+    /**
+     * @param corePoolSize
+     *         the number of threads to keep in the pool, even
+     *         if they are idle, unless {@code allowCoreThreadTimeOut} is set
+     */
     @Inject
-    public ThreadPullLauncher(@Named("schedule.initial_pool_size") Integer initialPoolSize) {
-        this.service = new CronThreadPoolExecutor(initialPoolSize,
+    public ThreadPullLauncher(@Named("schedule.core_pool_size") Integer corePoolSize) {
+        this.service = new CronThreadPoolExecutor(corePoolSize,
                                                   new ThreadFactoryBuilder().setNameFormat("Annotated-scheduler-%d").setDaemon(false)
                                                                             .build());
     }
