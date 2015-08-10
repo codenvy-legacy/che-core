@@ -57,12 +57,12 @@ public class WorkspaceToDirectoryMappingService {
     @Produces(MediaType.APPLICATION_JSON)
     public Map<String, String> setMountPath(@PathParam("ws-id") String workspaceId, @QueryParam("mountPath") String mountPath)
             throws ServerException, IOException, NotFoundException {
-        if (Files.notExists(Paths.get(mountPath))) {
-            Files.createDirectories(Paths.get(mountPath));
-        }
-
-        VirtualFileSystemProvider provider = virtualFileSystemRegistry.getProvider(workspaceId);
-        provider.close();
+//        if (Files.notExists(Paths.get(mountPath))) {
+//            Files.createDirectories(Paths.get(mountPath));
+//        }
+//
+//        VirtualFileSystemProvider provider = virtualFileSystemRegistry.getProvider(workspaceId);
+//        provider.close();
         mappedDirectoryLocalFSMountStrategy.setMountPath(workspaceId, new File(mountPath));
         return getDirectoryMapping();
     }
@@ -72,8 +72,8 @@ public class WorkspaceToDirectoryMappingService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Map<String, String> removeMountPath(@PathParam("ws-id") String workspaceId) throws ServerException, NotFoundException {
-        VirtualFileSystemProvider provider = virtualFileSystemRegistry.getProvider(workspaceId);
-        provider.close();
+//        VirtualFileSystemProvider provider = virtualFileSystemRegistry.getProvider(workspaceId);
+//        provider.close();
         mappedDirectoryLocalFSMountStrategy.removeMountPath(workspaceId);
         return getDirectoryMapping();
     }
