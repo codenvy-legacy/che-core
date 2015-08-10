@@ -287,6 +287,11 @@ public class WorkspaceManager {
         return workspaceRegistry.get(workspaceId);
     }
 
+    //TODO
+    public RuntimeWorkspace getRuntimeWorkspace(String name, String owner) {
+        return null;
+    }
+
     public UsersWorkspace getWorkspace(String name, String owner) throws BadRequestException, NotFoundException, ServerException {
         requiredNotNull(name, "Workspace name");
         requiredNotNull(owner, "Workspace owner");

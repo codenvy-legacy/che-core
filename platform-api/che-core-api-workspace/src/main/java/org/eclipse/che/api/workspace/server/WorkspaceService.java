@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server;
 
+import com.google.common.collect.Maps;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -23,8 +24,12 @@ import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.machine.Command;
 import org.eclipse.che.api.core.model.machine.MachineConfig;
+import org.eclipse.che.api.core.model.machine.MachineSource;
+import org.eclipse.che.api.core.model.machine.Server;
 import org.eclipse.che.api.core.model.workspace.Environment;
+import org.eclipse.che.api.core.model.workspace.Machine;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
+import org.eclipse.che.api.core.model.workspace.RuntimeWorkspace;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.rest.Service;
 import org.eclipse.che.api.core.rest.annotations.GenerateLink;
@@ -38,8 +43,11 @@ import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
 import org.eclipse.che.api.workspace.shared.dto.CommandDto;
 import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
 import org.eclipse.che.api.workspace.shared.dto.MachineConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.MachineDto;
 import org.eclipse.che.api.workspace.shared.dto.MachineSourceDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.RuntimeWorkspaceDto;
+import org.eclipse.che.api.workspace.shared.dto.ServerDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
@@ -75,7 +83,7 @@ import static org.eclipse.che.dto.server.DtoFactory.newDto;
 @Path("/workspace")
 public class WorkspaceService extends Service {
 
-    private final WorkspaceManager  workspaceManager;
+    private final WorkspaceManager workspaceManager;
 
     @Context
     private SecurityContext securityContext;
@@ -128,6 +136,21 @@ public class WorkspaceService extends Service {
         return asDto(workspaceManager.getWorkspace(name, securityContext.getUserPrincipal().getName()));
     }
 
+    @GET
+    @Path("/runtime/{id}")
+    @Produces(APPLICATION_JSON)
+    public RuntimeWorkspaceDto getRuntimeWorkspaceById(@PathParam("id") String id)
+            throws ServerException, BadRequestException, NotFoundException {
+        return asDto(workspaceManager.getRuntimeWorkspace(id));
+    }
+
+    @GET
+    @Path("/runtime")
+    @Produces(APPLICATION_JSON)
+    public RuntimeWorkspace getRuntimeWorkspaceByName(@QueryParam("name") String name) {
+        return asDto(workspaceManager.getRuntimeWorkspace(name, securityContext.getUserPrincipal().getName()));
+    }
+
     @POST
     @Path("/start/{id}")
     @Produces(APPLICATION_JSON)
@@ -159,6 +182,7 @@ public class WorkspaceService extends Service {
             throws BadRequestException, ForbiddenException, NotFoundException, ServerException {
         workspaceManager.stopWorkspace(id);
     }
+
 
 //    /**
 //     * Searches for workspace with given name and return {@link org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor} for it.
@@ -624,14 +648,59 @@ public class WorkspaceService extends Service {
         for (Map.Entry<String, ? extends Environment> entry : workspace.getEnvironments().entrySet()) {
             environments.put(entry.getKey(), asDto(entry.getValue()));
         }
-        return newDto(UsersWorkspaceDto.class)
-                .withId(workspace.getId())
-                .withName(workspace.getName())
-                .withOwner(workspace.getOwner())
-                .withDefaultEnvName(workspace.getDefaultEnvName())
-                .withCommands(commands)
-                .withProjects(projects)
-                .withEnvironments(environments);
+        return newDto(UsersWorkspaceDto.class).withId(workspace.getId())
+                                              .withName(workspace.getName())
+                                              .withOwner(workspace.getOwner())
+                                              .withDefaultEnvName(workspace.getDefaultEnvName())
+                                              .withCommands(commands)
+                                              .withProjects(projects)
+                                              .withEnvironments(environments)
+                                              .withAttributes(workspace.getAttributes());
+    }
+
+    private RuntimeWorkspaceDto asDto(RuntimeWorkspace workspace) {
+        final List<MachineDto> machines = new ArrayList<>(workspace.getMachines().size());
+        for (Machine machine : workspace.getMachines()) {
+            machines.add(asDto(machine));
+        }
+        final UsersWorkspaceDto usersWorkspace = asDto(workspace);
+        return newDto(RuntimeWorkspaceDto.class).withId(workspace.getId())
+                                                .withName(workspace.getName())
+                                                .withOwner(workspace.getOwner())
+                                                .withDefaultEnvName(workspace.getDefaultEnvName())
+                                                .withCommands(usersWorkspace.getCommands())
+                                                .withProjects(usersWorkspace.getProjects())
+                                                .withEnvironments(usersWorkspace.getEnvironments())
+                                                .withAttributes(workspace.getAttributes())
+                                                .withActiveEnvName(workspace.getActiveEnvName())
+                                                .withDevMachine(asDto(workspace.getDevMachine()))
+                                                .withRootFolder(workspace.getRootFolder())
+                                                .withMachines(machines);
+    }
+
+    private MachineDto asDto(Machine machine) {
+        final Map<String, ServerDto> servers = Maps.newHashMapWithExpectedSize(machine.getServers().size());
+        for (Map.Entry<String, ? extends Server> entry : machine.getServers().entrySet()) {
+            servers.put(entry.getKey(), asDto(entry.getValue()));
+        }
+        return newDto(MachineDto.class).withId(machine.getId())
+                                       .withName(machine.getName())
+                                       .withDev(machine.isDev())
+                                       .withType(machine.getType())
+                                       .withOutputChannel(machine.getOutputChannel())
+                                       .withProperties(machine.getProperties())
+                                       .withSource(asDto(machine.getSource()))
+                                       .withServers(servers);
+    }
+
+    private MachineSourceDto asDto(MachineSource source) {
+        return newDto(MachineSourceDto.class).withType(source.getType()).withLocation(source.getLocation());
+    }
+
+    private ServerDto asDto(Server machine) {
+        return newDto(ServerDto.class).withUrl(machine.getUrl())
+                                      .withRef(machine.getRef())
+                                      .withAddress(machine.getAddress());
     }
 
     private UsersWorkspaceImpl asImpl(UsersWorkspaceDto workspaceDto) {
@@ -722,8 +791,7 @@ public class WorkspaceService extends Service {
         return newDto(MachineConfigDto.class).withName(config.getName())
                                              .withType(config.getType())
                                              .withDev(config.isDev())
-                                             .withSource(newDto(MachineSourceDto.class).withType(config.getSource().getType())
-                                                                                       .withLocation(config.getSource().getLocation()));
+                                             .withSource(asDto(config.getSource()));
     }
 
     private MachineConfigImpl asImpl(MachineConfigDto machineCfgDto) {

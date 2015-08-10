@@ -21,9 +21,15 @@ public interface MachineDto extends MachineConfigDto, Machine {
     @Override
     String getId();
 
-    void setId(String id);
-
     MachineDto withId(String id);
+
+    MachineDto withName(String name);
+
+    MachineDto withDev(boolean dev);
+
+    MachineDto withSource(MachineSourceDto source);
+
+    MachineDto withType(String type);
 
     @Override
     MachineSourceDto getSource();
@@ -31,21 +37,15 @@ public interface MachineDto extends MachineConfigDto, Machine {
     @Override
     String getOutputChannel();
 
-    void setOutputChannel(String outputChannel);
-
     MachineDto withOutputChannel(String outputChannel);
 
     @Override
     Map<String, String> getProperties();
 
-    void setProperties(Map<String, String> properties);
-
     MachineDto withProperties(Map<String, String> properties);
 
     @Override
     Map<String, ServerDto> getServers();
-
-    void setServers(Map<String, ServerDto> servers);
 
     MachineDto withServers(Map<String, ServerDto> servers);
 }
