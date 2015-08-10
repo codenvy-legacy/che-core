@@ -17,7 +17,9 @@ import java.util.Map.Entry;
  * Synchronized cache.
  *
  * @see Cache
+ * @depricated Use Guava cache or other cache implementations
  */
+@Deprecated
 public final class SynchronizedCache<K, V> implements Cache<K, V> {
     private final Cache<K, V> delegate;
 
