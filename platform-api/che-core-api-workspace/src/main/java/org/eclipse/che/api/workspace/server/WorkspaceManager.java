@@ -35,7 +35,6 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -123,31 +122,38 @@ public class WorkspaceManager {
         return workspace;
     }
 
-    public WorkspaceState startWorkspaceByName(String workspaceName, String owner)
+    public UsersWorkspace startWorkspaceByName(String workspaceName, String envName, String owner)
             throws NotFoundException, ServerException, BadRequestException {
         requiredNotNull(workspaceName, "Workspace name");
         requiredNotNull(owner, "Workspace owner");
 
-        final UsersWorkspace usersWorkspace = workspaceDao.get(workspaceName, owner);
-        return startWorkspace(usersWorkspace, null, false);
+        final UsersWorkspaceImpl workspace = workspaceDao.get(workspaceName, owner);
+        final WorkspaceState state = startWorkspace(workspace, envName, false);
+        workspace.setStatus(state.getStatus());
+        workspace.setTemporary(state.isTemporary());
+        return workspace;
     }
 
     // TODO should we store temp workspaces and where?
-    public WorkspaceState startTemporaryWorkspace(WorkspaceConfig workspaceConfig, final String accountId)
+    public UsersWorkspace startTemporaryWorkspace(WorkspaceConfig workspaceConfig, final String accountId)
             throws ServerException, BadRequestException, ForbiddenException, NotFoundException {
-        final UsersWorkspace workspace = validateWorkspace(workspaceConfig);
+        final UsersWorkspaceImpl workspace = fromConfig(workspaceConfig);
 
         hooks.beforeCreate(workspace, accountId);
 
         final WorkspaceState workspaceState = startWorkspace(workspace, null, true);
+        workspace.setTemporary(true);
+        workspace.setStatus(workspaceState.getStatus());
 
         // TODO when this code should be called for temp workspaces
         hooks.afterCreate(workspace, accountId);
 
-        LOG.info("EVENT#workspace-created# WS#{}# WS-ID#{}# USER#{}# TEMP#true#", workspace.getName(), workspace.getId(),
+        LOG.info("EVENT#workspace-created# WS#{}# WS-ID#{}# USER#{}# TEMP#true#",
+                 workspace.getName(),
+                 workspace.getId(),
                  EnvironmentContext.getCurrent().getUser().getId());
 
-        return workspaceState;
+        return workspace;
     }
 
     WorkspaceState startWorkspace(final UsersWorkspace usersWorkspace, final String envName, final boolean temp) {
@@ -198,7 +204,7 @@ public class WorkspaceManager {
     public UsersWorkspace createWorkspace(final WorkspaceConfig workspaceConfig, final String accountId)
             throws NotFoundException, ForbiddenException, ServerException, BadRequestException, ConflictException {
 
-        final UsersWorkspace workspace = validateWorkspace(workspaceConfig);
+        final UsersWorkspace workspace = fromConfig(workspaceConfig);
 
         hooks.beforeCreate(workspace, accountId);
 
@@ -212,22 +218,19 @@ public class WorkspaceManager {
         return newWorkspace;
     }
 
-    private UsersWorkspace validateWorkspace(final WorkspaceConfig workspaceConfig)
-            throws BadRequestException, ForbiddenException, ServerException {
-        requiredNotNull(workspaceConfig, "Workspace config");
-        requiredNotNull(workspaceConfig.getDefaultEnvName(), "Workspace default environment");
-        requiredNotNull(workspaceConfig.getEnvironments(), "Workspace default environment configuration");
-        requiredNotNull(workspaceConfig.getEnvironments().get(workspaceConfig.getDefaultEnvName()),
-                        "Workspace default environment configuration");
+    private UsersWorkspaceImpl fromConfig(final WorkspaceConfig cfg) throws BadRequestException, ForbiddenException, ServerException {
+        requiredNotNull(cfg, "Workspace config");
+        requiredNotNull(cfg.getDefaultEnvName(), "Workspace default environment");
+        requiredNotNull(cfg.getEnvironments(), "Workspace default environment configuration");
+        requiredNotNull(cfg.getEnvironments().get(cfg.getDefaultEnvName()), "Workspace default environment configuration");
+        validateAttributes(cfg.getAttributes());
 
-        validateAttributes(workspaceConfig.getAttributes());
-
-        final UsersWorkspaceImpl workspace = new UsersWorkspaceImpl(workspaceConfig, generateWorkspaceId(), getCurrentUserId());
+        final UsersWorkspaceImpl workspace = new UsersWorkspaceImpl(cfg, generateWorkspaceId(), getCurrentUserId());
 
         if (Strings.isNullOrEmpty(workspace.getName())) {
             workspace.setName(generateWorkspaceName());
         } else {
-            validateName(workspaceConfig.getName());
+            validateName(cfg.getName());
         }
 
         return workspace;

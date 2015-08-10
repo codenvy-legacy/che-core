@@ -50,6 +50,7 @@ import org.eclipse.che.api.workspace.shared.dto.MachineSourceDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
+import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -146,21 +147,37 @@ public class WorkspaceService extends Service {
     @GET
     @Path("/{id}")
     @Produces(APPLICATION_JSON)
-    public UsersWorkspaceDto getById(@ApiParam("Workspace ID") @PathParam("id") String id) throws NotFoundException,
-                                                                                                  ServerException,
-                                                                                                  ForbiddenException,
-                                                                                                  BadRequestException {
+    public UsersWorkspaceDto getById(@ApiParam("Workspace ID") @PathParam("id") String id)
+            throws NotFoundException, ServerException, ForbiddenException, BadRequestException {
         return asDto(workspaceManager.getWorkspace(id));
     }
 
     @POST
     @Path("/start/{id}")
     @Produces(APPLICATION_JSON)
-    public UsersWorkspaceDto start(@PathParam("id") String workspaceId, @QueryParam("environment") String envName) throws ServerException,
-                                                                                                                          BadRequestException,
-                                                                                                                          NotFoundException {
+    public UsersWorkspaceDto startById(@PathParam("id") String workspaceId, @QueryParam("environment") String envName)
+            throws ServerException, BadRequestException, NotFoundException {
         return asDto(workspaceManager.startWorkspaceById(workspaceId, envName));
     }
+
+    @POST
+    @Path("/start")
+    @Produces(APPLICATION_JSON)
+    public UsersWorkspaceDto startByName(@QueryParam("name") String name, @QueryParam("environment") String envName)
+            throws ServerException, BadRequestException, NotFoundException {
+        return asDto(workspaceManager.startWorkspaceByName(name, envName, securityContext.getUserPrincipal().getName()));
+    }
+
+    @POST
+    @Path("/start-temp")
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    public UsersWorkspaceDto startTemporary(WorkspaceConfigDto cfg, @QueryParam("account") String accountId)
+            throws BadRequestException, ForbiddenException, NotFoundException, ServerException {
+        return asDto(workspaceManager.startTemporaryWorkspace(cfg, accountId));
+    }
+
+
 
 //    /**
 //     * Searches for workspace with given name and return {@link org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor} for it.
