@@ -116,6 +116,11 @@ public class DeleteItemAction extends Action {
 
         Selection<?> selection = projectExplorer.getSelection();
 
+        if (selection == null) {
+            e.getPresentation().setEnabled(false);
+            return;
+        }
+
         for (Object o : selection.getAllElements()) {
             if (!(o instanceof ResourceBasedNode<?>)) {
                 e.getPresentation().setEnabled(false);
