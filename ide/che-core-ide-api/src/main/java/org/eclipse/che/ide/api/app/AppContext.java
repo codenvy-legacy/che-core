@@ -29,6 +29,7 @@ public class AppContext {
     private CurrentProject      currentProject;
     private CurrentUser         currentUser;
 //    private Factory             factory;
+    private String              devMachineId;
 
     public WorkspaceDescriptor getWorkspace() {
         return workspace;
@@ -93,4 +94,14 @@ public class AppContext {
 //    public void setFactory(Factory factory) {
 //        this.factory = factory;
 //    }
+
+    /** Returns ID of the developer machine (where workspace is bound). */
+    @Nullable
+    public String getDevMachineId() {
+        return devMachineId;
+    }
+
+    public void setDevMachineId(String id) {
+        this.devMachineId = id;
+    }
 }
