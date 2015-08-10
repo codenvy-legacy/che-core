@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server;
 
+import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
@@ -22,7 +23,8 @@ import java.util.List;
  * @author Alexander Garagatyi
  */
 public interface RuntimeWorkspaceRegistry {
-    RuntimeWorkspace start(UsersWorkspace ws, String envName, boolean temp) throws ForbiddenException, NotFoundException, ServerException;
+    RuntimeWorkspace start(UsersWorkspace ws, String envName, boolean temp)
+            throws ForbiddenException, NotFoundException, ServerException, ConflictException;
 
     void stop(String workspaceId) throws ForbiddenException, NotFoundException, ServerException;
 
