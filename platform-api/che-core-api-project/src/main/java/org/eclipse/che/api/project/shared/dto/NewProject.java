@@ -37,12 +37,14 @@ public interface NewProject extends ProjectUpdate {
     void setName(String name);
 
     /** Gets generator description. */
+    @ApiModelProperty("Project generator descriptior provides details on the project being created")
     GeneratorDescription getGeneratorDescription();
 
     /** Sets generator description. */
     void setGeneratorDescription(GeneratorDescription generatorDescription);
 
     // For method call chain
+
 
     NewProject withName(String name);
 

@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.shared.dto;
 
+import com.wordnik.swagger.annotations.ApiModelProperty;
 import org.eclipse.che.dto.shared.DTO;
 
 import java.util.List;
@@ -21,12 +22,14 @@ import java.util.List;
  */
 @DTO
 public interface NewMembership {
+    @ApiModelProperty(value = "User ID", required = true)
     String getUserId();
 
     void setUserId(String id);
 
     NewMembership withUserId(String id);
 
+    @ApiModelProperty(value = "Roles in a specified workspace", required = true, allowableValues = "workspace/admin, workspace/developer")
     List<String> getRoles();
 
     void setRoles(List<String> roles);
