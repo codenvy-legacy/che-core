@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server;
 
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Maps;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -31,6 +33,7 @@ import org.eclipse.che.api.core.model.workspace.Machine;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.model.workspace.RuntimeWorkspace;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
+import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.core.rest.Service;
 import org.eclipse.che.api.core.rest.annotations.GenerateLink;
 import org.eclipse.che.api.workspace.server.model.impl.CommandImpl;
@@ -54,8 +57,11 @@ import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -64,6 +70,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.SecurityContext;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -151,6 +158,38 @@ public class WorkspaceService extends Service {
         return asDto(workspaceManager.getRuntimeWorkspace(name, securityContext.getUserPrincipal().getName()));
     }
 
+    @GET
+    @Path("/list")
+    @Produces(APPLICATION_JSON)
+    public List<UsersWorkspaceDto> getList(@DefaultValue("0") @QueryParam("skipCount") Integer skipCount,
+                                           @DefaultValue("30") @QueryParam("maxItems") Integer maxItems)
+            throws ServerException, BadRequestException {
+        //TODO add maxItems & skipCount to manager
+        return FluentIterable.from(workspaceManager.getWorkspaces(securityContext.getUserPrincipal().getName()))
+                             .transform(new Function<UsersWorkspace, UsersWorkspaceDto>() {
+                                 @Override
+                                 public UsersWorkspaceDto apply(UsersWorkspace src) {
+                                     return asDto(src);
+                                 }
+                             })
+                             .toList();
+    }
+
+    @PUT
+    @Path("/{id}")
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    public UsersWorkspaceDto update(@PathParam("id") String id, WorkspaceConfig workspaceCfg)
+            throws BadRequestException, ServerException, ForbiddenException, NotFoundException, ConflictException {
+        return asDto(workspaceManager.updateWorkspace(id, workspaceCfg));
+    }
+
+    @DELETE
+    @Path("/{id}")
+    public void delete(@PathParam("id") String id) throws BadRequestException, ServerException, NotFoundException, ConflictException {
+        workspaceManager.removeWorkspace(id);
+    }
+
     @POST
     @Path("/start/{id}")
     @Produces(APPLICATION_JSON)
@@ -183,456 +222,137 @@ public class WorkspaceService extends Service {
         workspaceManager.stopWorkspace(id);
     }
 
+    @POST
+    @Path("/{id}/command")
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    public UsersWorkspaceDto addCommand(@PathParam("id") String id, CommandDto newCommand)
+            throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
+        final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
+        workspace.getCommands().add(newCommand);
+        return asDto(workspaceManager.updateWorkspace(workspace.getId(), workspace));
+    }
 
-//    /**
-//     * Searches for workspace with given name and return {@link org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor} for it.
-//     * If user that has called this method is not <i>"workspace/admin"</i> or <i>"workspace/developer"</i>
-//     * workspace attributes will not be added to response.
-//     *
-//     * @param name
-//     *         workspace name
-//     * @return descriptor of found workspace
-//     * @throws org.eclipse.che.api.core.NotFoundException
-//     *         when workspace with given identifier doesn't exist
-//     * @throws org.eclipse.che.api.core.ServerException
-//     *         when some error occurred while retrieving workspace
-//     * @see org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor
-//     * @see #getById(String, javax.ws.rs.core.SecurityContext)
-//     */
-//    @ApiOperation(value = "Gets workspace by name",
-//                  response = WorkspaceDescriptor.class,
-//                  position = 4)
-//    @ApiResponses(value = {
-//            @ApiResponse(code = 200, message = "OK"),
-//            @ApiResponse(code = 404, message = "Workspace with specified name doesn't exist"),
-//            @ApiResponse(code = 403, message = "Access to requested workspace is forbidden"),
-//            @ApiResponse(code = 500, message = "Server error")})
-//    @GET
-//    @GenerateLink(rel = Constants.LINK_REL_GET_WORKSPACE_BY_NAME)
-//    @Produces(APPLICATION_JSON)
-//    public UsersWorkspaceDto getByName(@ApiParam(value = "Name of workspace", required = true)
-//                                       @Required
-//                                       @Description("Name of workspace")
-//                                       @QueryParam("name")
-//                                       String name,
-//                                       @Description("Owner of workspace")
-//                                       @QueryParam("owner")
-//                                       String owner,
-//                                       @Context SecurityContext context) throws NotFoundException,
-//                                                                                ServerException,
-//                                                                                BadRequestException {
-//
-//        final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(name, owner);
-//
-//        Map<String, String> options = new HashMap<>(1);
-//        options.put("owner", owner);
-//
-//        permissionManager.checkPermission("get workspace", options, context);
-//
-////        requiredNotNull(name, "Workspace name");
-//
-//        return toWorkspaceDto(workspace, context);
-//    }
-//
-//    /**
-//     * <p>Updates workspace.</p>
-//     * <strong>Note:</strong> existed workspace attributes with same name as
-//     * update attributes will be replaced with update attributes.
-//     *
-//     * @param id
-//     *         workspace identifier
-//     * @param update
-//     *         workspace update
-//     * @return descriptor of updated workspace
-//     * @throws org.eclipse.che.api.core.NotFoundException
-//     *         when workspace with given name doesn't exist
-//     * @throws org.eclipse.che.api.core.ConflictException
-//     *         when attribute with not valid name
-//     * @throws org.eclipse.che.api.core.BadRequestException
-//     *         when update is {@code null} or updated attributes contains not valid attribute
-//     * @throws org.eclipse.che.api.core.ServerException
-//     *         when some error occurred while retrieving/updating workspace
-//     * @see org.eclipse.che.api.workspace.shared.dto.WorkspaceUpdate
-//     * @see org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor
-//     * //@see #removeAttribute(String, String, javax.ws.rs.core.SecurityContext)
-//     */
-//    @ApiOperation(value = "Update workspace",
-//                  response = WorkspaceDescriptor.class,
-//                  notes = "Update an existing workspace. A JSON with updated properties is sent.",
-//                  position = 3)
-//    @ApiResponses(value = {
-//            @ApiResponse(code = 200, message = "Workspace updated"),
-//            @ApiResponse(code = 404, message = "Not found"),
-//            @ApiResponse(code = 403, message = "Access to required workspace is forbidden"),
-//            @ApiResponse(code = 500, message = "Internal server error")})
-//    @POST
-//    @Path("/{id}")
-//    //@RolesAllowed({"account/owner", "workspace/admin", "system/admin"})
-//    @Consumes(APPLICATION_JSON)
-//    @Produces(APPLICATION_JSON)
-//    public UsersWorkspaceDto update(@ApiParam("Workspace ID") @PathParam("id") String id,
-//                                    @ApiParam("Workspace update") WorkspaceConfigDto update,
-//                                    @Context SecurityContext context) throws NotFoundException,
-//                                                                             ConflictException,
-//                                                                             BadRequestException,
-//                                                                             ServerException {
-//
-//        final UsersWorkspaceImpl old = workspaceManager.getWorkspace(id);
-//
-//        Map<String, String> options = new HashMap<>(1);
-//        options.put("owner", old.getOwner());
-//
-//        permissionManager.checkPermission("get workspace", options, context);
-//
-//
-//        UsersWorkspaceImpl workspace = workspaceManager.updateWorkspace(id, update);
-//
-//        LOG.info("EVENT#workspace-updated# WS#{}# WS-ID#{}#", workspace.getName(), workspace.getId());
-//        return toWorkspaceDto(workspace, context);
-//    }
-//
-//
-//    /**
-//     * Removes certain workspace.
-//     *
-//     * @param wsId
-//     *         workspace identifier to remove workspace
-//     * @throws org.eclipse.che.api.core.NotFoundException
-//     *         when workspace with given identifier doesn't exist
-//     * @throws org.eclipse.che.api.core.ServerException
-//     *         when some error occurred while retrieving/removing workspace or member
-//     * @throws org.eclipse.che.api.core.ConflictException
-//     *         if some error occurred while removing member
-//     */
-//    @ApiOperation(value = "Delete a workspace",
-//                  notes = "Delete a workspace by its ID",
-//                  position = 14)
-//    @ApiResponses(value = {
-//            @ApiResponse(code = 204, message = "No Content"),
-//            @ApiResponse(code = 404, message = "Not Found"),
-//            @ApiResponse(code = 409, message = "Failed to remove workspace member"),
-//            @ApiResponse(code = 500, message = "Internal Server Error")})
-//    @DELETE
-//    @Path("/{id}")
-//    //@RolesAllowed({"account/owner", "workspace/admin", "system/admin"})
-//    public void remove(@ApiParam(value = "Workspace ID")
-//                       @PathParam("id")
-//                       String id,
-//                       @Context SecurityContext context) throws NotFoundException, ServerException, ConflictException {
-//
-//        final UsersWorkspaceImpl ws = workspaceManager.getWorkspace(id);
-//
-//        Map<String, String> options = new HashMap<>(1);
-//        options.put("owner", ws.getOwner());
-//
-//        permissionManager.checkPermission("get workspace", options, context);
-//
-//
-//        workspaceManager.removeWorkspace(id);
-//    }
-//
-//
-//    public Workspace startWorkspace(String id) {
-//
-//    }
-//
-//    public void stopWorkspace(String id) {
-//
-//    }
-//
-//
-//    public void shareWorkspace(String wsId, List<String> users) {
-//
-//    }
-//
-//
-//    public Workspace getWorkspace(String id) {
-//
-//    }
-//
-//
-//    // owned|shared|both
-//    public Workspace getWorkspaces(String user, String ownership) {
-//
-//    }
-//
-//
-////
-////    private void createTemporaryWorkspace(Workspace workspace) throws ConflictException, ServerException {
-////        try {
-////            //let vfs create temporary workspace in correct place
-////            EnvironmentContext.getCurrent().setWorkspaceTemporary(true);
-////            workspaceDao.create(workspace);
-////        } finally {
-////            EnvironmentContext.getCurrent().setWorkspaceTemporary(false);
-////        }
-////    }
-////
-////    private User createTemporaryUser() throws ConflictException, ServerException, NotFoundException {
-////        final String id = generate("tmp_user", org.eclipse.che.api.user.server.Constants.ID_LENGTH);
-////
-////        //creating user
-////        final User user = new User().withId(id);
-////        userDao.create(user);
-////
-////        //creating profile for it
-////        profileDao.create(new Profile().withId(id).withUserId(id));
-////
-////        //storing preferences
-////        final Map<String, String> preferences = new HashMap<>(4);
-////        preferences.put("temporary", String.valueOf(true));
-////        preferences.put("codenvy:created", Long.toString(System.currentTimeMillis()));
-////        preferenceDao.setPreferences(id, preferences);
-////
-////        return user;
-////    }
-//
-////    /**
-////     * Converts {@link org.eclipse.che.api.workspace.server.dao.Member} to {@link org.eclipse.che.api.workspace.shared.dto.MemberDescriptor}
-////     */
-////    /* used in tests */MemberDescriptor toWorkspaceDto(Member member, Workspace workspace, SecurityContext context) {
-////        final UriBuilder serviceUriBuilder = getServiceContext().getServiceUriBuilder();
-////        final UriBuilder baseUriBuilder = getServiceContext().getBaseUriBuilder();
-////        final List<Link> links = new LinkedList<>();
-////
-////        if (context.isUserInRole("account/owner") ||
-////            context.isUserInRole("workspace/admin") ||
-////            context.isUserInRole("workspace/developer")) {
-////            links.add(LinksHelper.createLink(HttpMethod.GET,
-////                                             serviceUriBuilder.clone()
-////                                                              .path(getClass(), "getMembers")
-////                                                              .build(workspace.getId())
-////                                                              .toString(),
-////                                             null,
-////                                             APPLICATION_JSON,
-////                                             Constants.LINK_REL_GET_WORKSPACE_MEMBERS));
-////        }
-////        if (context.isUserInRole("account/owner") || context.isUserInRole("workspace/admin")) {
-////            links.add(LinksHelper.createLink(HttpMethod.DELETE,
-////                                             serviceUriBuilder.clone()
-////                                                              .path(getClass(), "removeMember")
-////                                                              .build(workspace.getId(), member.getUserId())
-////                                                              .toString(),
-////                                             null,
-////                                             null,
-////                                             Constants.LINK_REL_REMOVE_WORKSPACE_MEMBER));
-////        }
-////        links.add(LinksHelper.createLink(HttpMethod.GET,
-////                                         baseUriBuilder.clone()
-////                                                       .path(UserService.class)
-////                                                       .path(UserService.class, "getById")
-////                                                       .build(member.getUserId())
-////                                                       .toString(),
-////                                         null,
-////                                         APPLICATION_JSON,
-////                                         LINK_REL_GET_USER_BY_ID));
-////        final Link wsLink = LinksHelper.createLink(HttpMethod.GET,
-////                                                   serviceUriBuilder.clone()
-////                                                                    .path(getClass(), "getById")
-////                                                                    .build(workspace.getId())
-////                                                                    .toString(),
-////                                                   null,
-////                                                   APPLICATION_JSON,
-////                                                   Constants.LINK_REL_GET_WORKSPACE_BY_ID);
-////        //TODO replace hardcoded path with UriBuilder + ProjectService
-////        final Link projectsLink = LinksHelper.createLink(HttpMethod.GET,
-////                                                         getServiceContext().getBaseUriBuilder().clone()
-////                                                                            .path("/project/{ws-id}")
-////                                                                            .build(member.getWorkspaceId())
-////                                                                            .toString(),
-////                                                         null,
-////                                                         APPLICATION_JSON,
-////                                                         "get projects");
-////        final WorkspaceReference wsRef = DtoFactory.getInstance().createDto(WorkspaceReference.class)
-////                                                   .withId(workspace.getId())
-////                                                   .withName(workspace.getName())
-////                                                   .withTemporary(workspace.isTemporary())
-////                                                   .withLinks(asList(wsLink, projectsLink));
-////        return DtoFactory.getInstance().createDto(MemberDescriptor.class)
-////                         .withUserId(member.getUserId())
-////                         .withWorkspaceReference(wsRef)
-////                         .withRoles(member.getRoles())
-////                         .withLinks(links);
-////    }
-//
-//    /**
-//     * Converts {@link org.eclipse.che.api.workspace.server.dao.Workspace} to {@link org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor}
-//     */
-//    /* used in tests */
-//    UsersWorkspaceDto toWorkspaceDto(UsersWorkspace workspace, SecurityContext context) {
-//        final UsersWorkspaceDto workspaceDescriptor = DtoFactory.getInstance().createDto(UsersWorkspaceDto.class)
-//                                                                .withId(workspace.getId())
-//                                                                .withName(workspace.getName())
-//                .withTemporary(workspace.isTemporary())
-////                                                                  .withAccountId(workspace.getAccountId())
-//                .withAttributes(workspace.getAttributes());
-//        final List<Link> links = new LinkedList<>();
-//        final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
-//        if (context.isUserInRole("user")) {
-//            //TODO replace hardcoded path with UriBuilder + ProjectService
-//            links.add(LinksHelper.createLink(HttpMethod.GET,
-//                                             getServiceContext().getBaseUriBuilder().clone()
-//                                                                .path("/project/{ws-id}")
-//                                                                .build(workspaceDescriptor.getId())
-//                                                                .toString(),
-//                                             null,
-//                                             APPLICATION_JSON,
-//                                             "get projects"));
-//            links.add(LinksHelper.createLink(HttpMethod.GET,
-//                                             uriBuilder.clone()
-//                                                       .path(getClass(), "getMembershipsOfCurrentUser")
-//                                                       .build()
-//                                                       .toString(),
-//                                             null,
-//                                             APPLICATION_JSON,
-//                                             Constants.LINK_REL_GET_CURRENT_USER_WORKSPACES));
-//            links.add(LinksHelper.createLink(HttpMethod.GET,
-//                                             uriBuilder.clone()
-//                                                       .path(getClass(), "getMembershipOfCurrentUser")
-//                                                       .build(workspaceDescriptor.getId())
-//                                                       .toString(),
-//                                             null,
-//                                             APPLICATION_JSON,
-//                                             Constants.LINK_REL_GET_CURRENT_USER_MEMBERSHIP));
-//        }
-//        if (context.isUserInRole("workspace/admin") || context.isUserInRole("workspace/developer") ||
-//            context.isUserInRole("system/admin") || context.isUserInRole("system/manager") || context.isUserInRole("account/owner")) {
-//            links.add(LinksHelper.createLink(HttpMethod.GET,
-//                                             uriBuilder.clone().
-//                                                     path(getClass(), "getByName")
-//                                                       .queryParam("name", workspaceDescriptor.getName())
-//                                                       .build()
-//                                                       .toString(),
-//                                             null,
-//                                             APPLICATION_JSON,
-//                                             Constants.LINK_REL_GET_WORKSPACE_BY_NAME));
-//            links.add(LinksHelper.createLink(HttpMethod.GET,
-//                                             uriBuilder.clone()
-//                                                       .path(getClass(), "getById")
-//                                                       .build(workspaceDescriptor.getId())
-//                                                       .toString(),
-//                                             null,
-//                                             APPLICATION_JSON,
-//                                             Constants.LINK_REL_GET_WORKSPACE_BY_ID));
-//            links.add(LinksHelper.createLink(HttpMethod.GET,
-//                                             uriBuilder.clone()
-//                                                       .path(getClass(), "getMembers")
-//                                                       .build(workspaceDescriptor.getId())
-//                                                       .toString(),
-//                                             null,
-//                                             APPLICATION_JSON,
-//                                             Constants.LINK_REL_GET_WORKSPACE_MEMBERS));
-//        }
-//        if (context.isUserInRole("account/owner") || context.isUserInRole("workspace/admin") || context.isUserInRole("system/admin")) {
-//            links.add(LinksHelper.createLink(HttpMethod.DELETE,
-//                                             uriBuilder.clone()
-//                                                       .path(getClass(), "remove")
-//                                                       .build(workspaceDescriptor.getId())
-//                                                       .toString(),
-//                                             null,
-//                                             null,
-//                                             Constants.LINK_REL_REMOVE_WORKSPACE));
-//        }
-//        return workspaceDescriptor.withLinks(links);
-//    }
-//
-////    /**
-////     * Checks object reference is not {@code null}
-////     *
-////     * @param object
-////     *         object reference to check
-////     * @param subject
-////     *         used as subject of exception message "{subject} required"
-////     * @throws org.eclipse.che.api.core.BadRequestException
-////     *         when object reference is {@code null}
-////     */
-////    private void requiredNotNull(Object object, String subject) throws BadRequestException {
-////        if (object == null) {
-////            throw new BadRequestException(subject + " required");
-////        }
-////    }
-//
-//    /**
-//     * Validates attribute name.
-//     *
-//     * @param attributeName
-//     *         attribute name to check
-//     * @throws org.eclipse.che.api.core.ConflictException
-//     *         when attribute name is {@code null}, empty or it starts with "codenvy"
-//     */
-//    private void validateAttributeName(String attributeName) throws ConflictException {
-//        if (attributeName == null || attributeName.isEmpty() || attributeName.toLowerCase().startsWith("codenvy")) {
-//            throw new ConflictException(String.format("Attribute2 name '%s' is not valid", attributeName));
-//        }
-//    }
-//
-//    private void validateAttributes(Map<String, String> attributes) throws ConflictException {
-//        for (String attributeName : attributes.keySet()) {
-//            validateAttributeName(attributeName);
-//        }
-//    }
-//
-////    private void ensureCurrentUserOwnerOf(Account target) throws ServerException, NotFoundException, ConflictException {
-////        final List<Account> accounts = accountDao.getByOwner(currentUser().getId());
-////        for (Account account : accounts) {
-////            if (account.getId().equals(target.getId())) {
-////                return;
-////            }
-////        }
-////        throw new ConflictException("You can create workspace associated only with your own account");
-////    }
-//
-////    private boolean isCurrentUserAccountOwnerOf(String wsId) throws ServerException, NotFoundException {
-////        final List<Account> accounts = accountDao.getByOwner(currentUser().getId());
-////        final List<Workspace> workspaces = new LinkedList<>();
-////        //fetch all workspaces related to accounts
-////        for (Account account : accounts) {
-////            workspaces.addAll(workspaceDao.getByAccount(account.getId()));
-////        }
-////        for (Workspace workspace : workspaces) {
-////            if (workspace.getId().equals(wsId)) {
-////                return true;
-////            }
-////        }
-////        return false;
-////    }
-//
-//    /**
-//     * Generates workspace name based on current user email.
-//     * Generating process is simple, assuming we have user with email user@codenvy.com,
-//     * then first time we will check for workspace with name equal to "user" and if it is free
-//     * it will be returned, but if it is reserved then  number suffix will be added to the end of "user" name
-//     * and it will be checked again until free workspace name is not found.
-//     */
-//    private String generateWorkspaceName() throws ServerException {
-//        //should be email
-//        String userName = currentUser().getName();
-//        int atIdx = userName.indexOf('@');
-//        //if username contains email then fetch part before '@'
-//        if (atIdx != -1) {
-//            userName = userName.substring(0, atIdx);
-//        }
-//        //search first workspace name which is free
-//        int suffix = 2;
-//        String workspaceName = userName;
-//        while (workspaceExists(workspaceName)) {
-//            workspaceName = userName + suffix++;
-//        }
-//        return workspaceName;
-//    }
-//
-//    private boolean workspaceExists(String name) throws ServerException {
-//        try {
-//            workspaceDao.getByName(name);
-//        } catch (NotFoundException nfEx) {
-//            return false;
-//        }
-//        return true;
-//    }
-//
-//    private org.eclipse.che.commons.user.User currentUser() {
-//        return EnvironmentContext.getCurrent().getUser();
-//    }
+    @PUT
+    @Path("/{id}/command")
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    public UsersWorkspaceDto updateCommand(@PathParam("id") String id, CommandDto update)
+            throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
+        final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
+        boolean found = false;
+        for (Iterator<Command> cmdIt = workspace.getCommands().iterator(); cmdIt.hasNext() && !found; ) {
+            if (cmdIt.next().getName().equals(update.getName())) {
+                cmdIt.remove();
+                found = true;
+            }
+        }
+        if (!found) {
+            throw new NotFoundException("Workspace " + id + " doesn't contain command " + update.getName());
+        }
+        workspace.getCommands().add(asImpl(update));
+        return asDto(workspaceManager.updateWorkspace(workspace.getId(), workspace));
+    }
+
+    @DELETE
+    @Path("/{id}/command/{name}")
+    public void deleteCommand(@PathParam("id") String id, @PathParam("name") String commandName)
+            throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
+        final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
+        for (Iterator<Command> cmdIt = workspace.getCommands().iterator(); cmdIt.hasNext(); ) {
+            if (cmdIt.next().getName().equals(commandName)) {
+                cmdIt.remove();
+                workspaceManager.updateWorkspace(id, workspace);
+                break;
+            }
+        }
+    }
+
+    @POST
+    @Path("/{id}/environment")
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    public UsersWorkspaceDto addEnvironment(@PathParam("id") String id, EnvironmentDto newEnvironment)
+            throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
+        final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
+        workspace.getEnvironments().put(newEnvironment.getName(), newEnvironment);
+        return asDto(workspaceManager.updateWorkspace(id, workspace));
+    }
+
+    @PUT
+    @Path("/{id}/environment")
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    public UsersWorkspaceDto updateEnvironment(@PathParam("id") String id, EnvironmentDto update)
+            throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
+        final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
+        if (!workspace.getEnvironments().containsKey(update.getName())) {
+            throw new NotFoundException("Workspace " + id + " doesn't contain environment " + update.getName());
+        }
+        workspace.getEnvironments().put(update.getName(), update);
+        return asDto(workspaceManager.updateWorkspace(id, workspace));
+    }
+
+    @DELETE
+    @Path("/{id}/environment/{name}")
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    public void deleteEnvironment(@PathParam("id") String id, @PathParam("name") String envName)
+            throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
+        final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
+        if (workspace.getEnvironments().containsKey(envName)) {
+            workspace.getEnvironments().remove(envName);
+            workspaceManager.updateWorkspace(id, workspace);
+        }
+    }
+
+    @POST
+    @Path("/{id}/project")
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    public UsersWorkspaceDto addProject(@PathParam("id") String id, ProjectConfigDto newProject)
+            throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
+        final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
+        workspace.getProjects().add(newProject);
+        return asDto(workspaceManager.updateWorkspace(id, workspace));
+    }
+
+    @PUT
+    @Path("/{id}/project")
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    public UsersWorkspaceDto updateEnvironment(@PathParam("id") String id, ProjectConfigDto update)
+            throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
+        final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
+        boolean found = false;
+        for (Iterator<ProjectConfig> projIt = workspace.getProjects().iterator(); projIt.hasNext() && !found; ) {
+            if (projIt.next().getName().equals(update.getName())) {
+                projIt.remove();
+                found = true;
+            }
+        }
+        if (!found) {
+            throw new NotFoundException("Workspace " + id + " doesn't contain project " + update.getName());
+        }
+        workspace.getProjects().add(update);
+        return asDto(workspaceManager.updateWorkspace(id, workspace));
+    }
+
+    @DELETE
+    @Path("/{id}/environment/{name}")
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    public void deleteProject(@PathParam("id") String id, @PathParam("name") String projectName)
+            throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
+        final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
+        for (Iterator<ProjectConfig> projIt = workspace.getProjects().iterator(); projIt.hasNext(); ) {
+            if (projIt.next().getName().equals(projectName)) {
+                projIt.remove();
+                workspaceManager.updateWorkspace(id, workspace);
+                break;
+            }
+        }
+    }
 
     //TODO add links
     private UsersWorkspaceDto asDto(UsersWorkspace workspace) {

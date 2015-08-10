@@ -48,6 +48,8 @@ import static org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEven
 import static org.eclipse.che.commons.lang.NameGenerator.generate;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
+// TODO Use Impls
+
 /**
  * Facade for Workspace related operations
  *
@@ -275,7 +277,7 @@ public class WorkspaceManager {
         }
     }
 
-    public UsersWorkspace getWorkspace(String workspaceId) throws NotFoundException, ServerException, BadRequestException {
+    public UsersWorkspaceImpl getWorkspace(String workspaceId) throws NotFoundException, ServerException, BadRequestException {
         requiredNotNull(workspaceId, "Workspace id");
 
         return workspaceDao.get(workspaceId);
