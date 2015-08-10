@@ -127,6 +127,16 @@ public interface MachineServiceClient {
     Promise<List<ProcessDescriptor>> getProcesses(@Nonnull String machineId);
 
     /**
+     * Stop process in machine.
+     *
+     * @param machineId
+     *         ID of the machine where process should be stopped
+     * @param processId
+     *         ID of the process to stop
+     */
+    Promise<Void> stopProcess(@Nonnull String machineId, int processId);
+
+    /**
      * Bind project to machine.
      *
      * @param machineId

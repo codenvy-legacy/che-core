@@ -25,18 +25,19 @@ public interface ProfileDescriptor {
 
     void setId(String id);
 
-    @ApiModelProperty(value = "Profile ID")
+    @ApiModelProperty("Profile ID")
     String getId();
 
     ProfileDescriptor withId(String id);
 
-    @ApiModelProperty(value = "User ID")
+    @ApiModelProperty("User ID")
     String getUserId();
 
     void setUserId(String id);
 
     ProfileDescriptor withUserId(String id);
 
+    @ApiModelProperty("Profile attributes")
     Map<String, String> getAttributes();
 
     void setAttributes(Map<String, String> attributes);

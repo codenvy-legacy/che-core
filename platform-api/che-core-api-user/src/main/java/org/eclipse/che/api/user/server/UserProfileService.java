@@ -104,9 +104,8 @@ public class UserProfileService extends Service {
      * @see #updateCurrent(Map, SecurityContext)
      */
     @ApiOperation(value = "Get user profile",
-                  notes = "Get user profile details",
-                  response = ProfileDescriptor.class,
-                  position = 1)
+                  notes = "Get user profile details. Roles allowed: user, temp_user",
+                  response = ProfileDescriptor.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 404, message = "Not Found"),
@@ -125,11 +124,20 @@ public class UserProfileService extends Service {
     /**
      * Returns preferences for current user
      */
+    @ApiOperation(value = "Get user preferences",
+            notes = "Get user preferences, like SSH keys, recently opened project and files. It is possible " +
+                    "to use a filter, e.g. CodenvyAppState or ssh.key.public.github.com to get the last opened project " +
+                    "or a public part of GitHub SSH key (if any)",
+            response = ProfileDescriptor.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 500, message = "Internal Server Error")})
     @GET
     @Path("/prefs")
     @Produces(APPLICATION_JSON)
     @RolesAllowed({"user", "temp_user"})
-    public Map<String, String> getPreferences(@QueryParam("filter") String filter) throws ServerException {
+    public Map<String, String> getPreferences(@ApiParam(value = "Filer")
+                                                  @QueryParam("filter") String filter) throws ServerException {
         if (filter != null) {
             return preferenceDao.getPreferences(currentUser().getId(), filter);
         }
@@ -146,6 +154,7 @@ public class UserProfileService extends Service {
      *         when some error occurred while retrieving/persisting profile
      * @see ProfileDescriptor
      */
+
     @POST
     @RolesAllowed("user")
     @GenerateLink(rel = LINK_REL_UPDATE_CURRENT_USER_PROFILE)
@@ -215,8 +224,7 @@ public class UserProfileService extends Service {
      */
     @ApiOperation(value = "Get profile of a specific user",
                   notes = "Get profile of a specific user. Roles allowed: system/admin, system/manager",
-                  response = ProfileDescriptor.class,
-                  position = 4)
+                  response = ProfileDescriptor.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 404, message = "Not Found"),

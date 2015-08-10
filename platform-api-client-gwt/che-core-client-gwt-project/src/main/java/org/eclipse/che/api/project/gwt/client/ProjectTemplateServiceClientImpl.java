@@ -36,12 +36,13 @@ public class ProjectTemplateServiceClientImpl implements ProjectTemplateServiceC
     private final AsyncRequestLoader  loader;
 
     @Inject
-    protected ProjectTemplateServiceClientImpl(@RestContext String restContext,
+    protected ProjectTemplateServiceClientImpl(@Named("cheExtensionPath") String extPath,
+                                               @Named("workspaceId") String workspaceId,
                                                AsyncRequestFactory asyncRequestFactory,
                                                AsyncRequestLoader loader) {
         this.asyncRequestFactory = asyncRequestFactory;
         this.loader = loader;
-        baseUrl = restContext + "/project-template";
+        baseUrl = extPath + "/project-template/" + workspaceId +"/";
     }
 
     @Override

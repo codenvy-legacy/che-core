@@ -22,20 +22,21 @@ import java.util.List;
 @DTO
 public interface MemberDescriptor {
 
-    @ApiModelProperty(value = "ID of a user in the system", required = true, position = 1)
+    @ApiModelProperty(value = "ID of a user in the system", required = true)
     String getUserId();
 
     void setUserId(String userId);
 
     MemberDescriptor withUserId(String userId);
 
+    @ApiModelProperty(value = "Workspace information", required = true)
     WorkspaceReference getWorkspaceReference();
 
     void setWorkspaceReference(WorkspaceReference wsRef);
 
     MemberDescriptor withWorkspaceReference(WorkspaceReference wsRef);
 
-    @ApiModelProperty(value = "Roles in a specified workspace", required = true, position = 2, allowableValues = "workspace/admin, workspace/developer")
+    @ApiModelProperty(value = "Roles in a specified workspace", required = true, allowableValues = "workspace/admin, workspace/developer")
     List<String> getRoles();
 
     void setRoles(List<String> roles);
