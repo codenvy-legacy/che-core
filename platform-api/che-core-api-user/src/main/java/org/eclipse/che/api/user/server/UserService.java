@@ -133,13 +133,14 @@ public class UserService extends Service {
      * @see #remove(String)
      */
     @ApiOperation(value = "Create a new user",
-                  notes = "Create a new user in the system",
-                  response = UserDescriptor.class,
-                  position = 1)
+                  notes = "Create a new user in the system. There are two ways to create a user: through a regular registration workflow " +
+                          "and by system/admin. In the former case, auth token is sent to user's mailbox, while system/admin can create a user directly " +
+                          "with predefined name and password",
+                  response = UserDescriptor.class)
     @ApiResponses({@ApiResponse(code = 201, message = "Created"),
                    @ApiResponse(code = 401, message = "Missed token parameter"),
                    @ApiResponse(code = 409, message = "Invalid token"),
-                   @ApiResponse(code = 403, message = "Invalid or absent request parameters"),
+                   @ApiResponse(code = 403, message = "Invalid or missing request parameters"),
                    @ApiResponse(code = 500, message = "Internal Server Error")})
     @POST
     @Path("/create")
@@ -200,8 +201,7 @@ public class UserService extends Service {
      * @see UserDescriptor
      */
     @ApiOperation(value = "Update password",
-                  notes = "Update current password",
-                  position = 3)
+                  notes = "Update current password")
     @ApiResponses({@ApiResponse(code = 204, message = "OK"),
                    @ApiResponse(code = 404, message = "Not Found"),
                    @ApiResponse(code = 403, message = "Invalid password"),
@@ -238,8 +238,7 @@ public class UserService extends Service {
      */
     @ApiOperation(value = "Get user by ID",
                   notes = "Get user by its ID in the system. Roles allowed: system/admin, system/manager.",
-                  response = UserDescriptor.class,
-                  position = 4)
+                  response = UserDescriptor.class)
     @ApiResponses({@ApiResponse(code = 200, message = "OK"),
                    @ApiResponse(code = 404, message = "Not Found"),
                    @ApiResponse(code = 500, message = "Internal Server Error")})
@@ -271,8 +270,7 @@ public class UserService extends Service {
      */
     @ApiOperation(value = "Get user by email",
                   notes = "Get user by registration email. Roles allowed: system/admin, system/manager.",
-                  response = UserDescriptor.class,
-                  position = 5)
+                  response = UserDescriptor.class)
     @ApiResponses({@ApiResponse(code = 200, message = "OK"),
                    @ApiResponse(code = 403, message = "Missed parameter email"),
                    @ApiResponse(code = 404, message = "Not Found"),
@@ -304,8 +302,7 @@ public class UserService extends Service {
      *         when some error occurred while removing user
      */
     @ApiOperation(value = "Delete user",
-                  notes = "Delete a user from the system. Roles allowed: system/admin.",
-                  position = 6)
+                  notes = "Delete a user from the system. Roles allowed: system/admin")
     @ApiResponses({@ApiResponse(code = 204, message = "Deleted"),
                    @ApiResponse(code = 404, message = "Not Found"),
                    @ApiResponse(code = 409, message = "Impossible to remove user"),
@@ -337,8 +334,7 @@ public class UserService extends Service {
      */
     @ApiOperation(value = "Check role for the authenticated user",
                   notes = "Check if user has a role in given scope (default is system) and with an optional scope id. Roles allowed: user, system/admin, system/manager.",
-                  response = UserInRoleDescriptor.class,
-                  position = 7)
+                  response = UserInRoleDescriptor.class)
     @ApiResponses({@ApiResponse(code = 200, message = "OK"),
                    @ApiResponse(code = 403, message = "Unable to check for the given scope"),
                    @ApiResponse(code = 500, message = "Internal Server Error")})

@@ -12,6 +12,7 @@ package org.eclipse.che.api.project.shared.dto;
 
 import com.google.common.annotations.Beta;
 
+import com.wordnik.swagger.annotations.ApiModelProperty;
 import org.eclipse.che.dto.shared.DTO;
 
 /**
@@ -25,6 +26,7 @@ public interface MoveOptions {
      * Get value of overWrite attribute
      * @return overWrite attribute
      */
+    @ApiModelProperty(value = "Overwrite if there's a conflict with file names", allowableValues = "true, false")
     Boolean getOverWrite();
     /**
      * Set value of overWrite attribute
@@ -35,6 +37,7 @@ public interface MoveOptions {
      * Get value of name attribute
      * @return name attribute
      */
+    @ApiModelProperty("New file name")
     String getName();
     /**
      * Set value of name attribute
