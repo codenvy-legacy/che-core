@@ -16,7 +16,7 @@ import java.util.Map.Entry;
 /**
  * Cache abstraction.
  *
- * @depricated Use Guava cache or other cache implementations
+ * @deprecated Use Guava cache or other cache implementations
  *
  * */
 @Deprecated
