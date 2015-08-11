@@ -15,7 +15,6 @@ import elemental.dom.Node;
 import elemental.html.TableCellElement;
 import elemental.html.TableElement;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -47,7 +46,7 @@ import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
 import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.eclipse.che.ide.ui.list.SimpleList;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
-import org.eclipse.che.ide.ui.toolbar.Toolbar;
+import org.eclipse.che.ide.ui.toolbar.ToolbarResources;
 import org.eclipse.che.ide.util.dom.Elements;
 import org.eclipse.che.ide.util.input.KeyMapUtil;
 import org.vectomatic.dom.svg.ui.SVGImage;
@@ -60,9 +59,11 @@ import java.util.Map;
  * @author Dmitry Shnurenko
  */
 public class FindActionViewImpl extends PopupPanel implements FindActionView {
-    private static FindActionViewImplUiBinder ourUiBinder = GWT.create(FindActionViewImplUiBinder.class);
+
     private final AutoCompleteResources.Css css;
+
     private final PresentationFactory       presentationFactory;
+
     private final SimpleList.ListEventDelegate<Action> eventDelegate    = new SimpleList.ListEventDelegate<Action>() {
         @Override
         public void onListItemClicked(Element listItemBase, Action itemData) {
@@ -89,7 +90,7 @@ public class FindActionViewImpl extends PopupPanel implements FindActionView {
                         icon.appendChild((Node)image.getElement());
                     } else if (presentation.getSVGIcon() != null) {
                         SVGImage image = new SVGImage(presentation.getSVGIcon());
-                        image.getElement().setAttribute("class", Toolbar.RESOURCES.toolbar().iconButtonIcon());
+                        image.getElement().setAttribute("class", toolbarResources.toolbar().iconButtonIcon());
                         image.getElement().getStyle().setMargin(0, Style.Unit.PX);
                         icon.appendChild((Node)image.getElement());
                     }
@@ -130,24 +131,31 @@ public class FindActionViewImpl extends PopupPanel implements FindActionView {
     private SimpleList<Action>           list;
     private Map<Action, String>          actions;
     private Provider<PerspectiveManager> perspectiveManager;
+    private ToolbarResources             toolbarResources;
 
     @Inject
     public FindActionViewImpl(Resources resources,
                               KeyBindingAgent keyBindingAgent,
                               ActionManager actionManager,
                               AutoCompleteResources autoCompleteResources,
-                              Provider<PerspectiveManager> perspectiveManager) {
+                              Provider<PerspectiveManager> perspectiveManager,
+                              ToolbarResources toolbarResources,
+                              FindActionViewImplUiBinder uiBinder) {
         this.resources = resources;
         this.keyBindingAgent = keyBindingAgent;
         this.actionManager = actionManager;
         this.perspectiveManager = perspectiveManager;
+        this.toolbarResources = toolbarResources;
         this.presentationFactory = new PresentationFactory();
+
         css = autoCompleteResources.autocompleteComponentCss();
         css.ensureInjected();
-        DockLayoutPanel rootElement = ourUiBinder.createAndBindUi(this);
+
+        DockLayoutPanel rootElement = uiBinder.createAndBindUi(this);
         setWidget(rootElement);
         setAutoHideEnabled(true);
         setAnimationEnabled(true);
+
         popupPanel = new PopupPanel();
         addCloseHandler(new CloseHandler<PopupPanel>() {
             @Override

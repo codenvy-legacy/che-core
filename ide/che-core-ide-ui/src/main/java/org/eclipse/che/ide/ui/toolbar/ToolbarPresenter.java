@@ -25,8 +25,14 @@ import org.eclipse.che.ide.api.mvp.Presenter;
  * @author Dmitry Shnurenko
  */
 public class ToolbarPresenter implements Presenter, ToolbarView.ActionDelegate {
+
     private ToolbarView view;
 
+    /**
+     * Creates an instance of this presenter.
+     *
+     * @param view
+     */
     @Inject
     public ToolbarPresenter(ToolbarView view) {
         this.view = view;

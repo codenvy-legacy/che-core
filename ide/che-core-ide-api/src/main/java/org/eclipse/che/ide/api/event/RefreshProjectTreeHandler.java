@@ -24,5 +24,5 @@ public interface RefreshProjectTreeHandler extends EventHandler {
      * @param event
      *         the fired {@link RefreshProjectTreeEvent}
      */
-    void onRefresh(RefreshProjectTreeEvent event);
+    void onRefreshProjectTree(RefreshProjectTreeEvent event);
 }

@@ -11,6 +11,7 @@
 package org.eclipse.che.ide.api.action;
 
 
+import org.eclipse.che.ide.util.StringUtils;
 import com.google.gwt.resources.client.ImageResource;
 
 import org.vectomatic.dom.svg.ui.SVGResource;
@@ -30,6 +31,7 @@ import org.vectomatic.dom.svg.ui.SVGResource;
  */
 public abstract class Action {
     private Presentation myTemplatePresentation;
+    private boolean      myEnabledInModalContext;
 
     /** Creates a new action with its text, description and icon set to <code>null</code>. */
     public Action() {
@@ -103,11 +105,25 @@ public abstract class Action {
      *         Action's SVG icon
      */
     public Action(String text, String description, ImageResource icon, SVGResource svgIcon) {
+        myEnabledInModalContext = false;
         Presentation presentation = getTemplatePresentation();
         presentation.setText(text);
         presentation.setDescription(description);
         presentation.setIcon(icon);
         presentation.setSVGIcon(svgIcon);
+    }
+
+    public final boolean isEnabledInModalContext() {
+        return myEnabledInModalContext;
+    }
+
+    protected final void setEnabledInModalContext(boolean enabledInModalContext) {
+        myEnabledInModalContext = enabledInModalContext;
+    }
+
+    /** Override with true returned if your action has to display its text along with the icon when placed in the toolbar */
+    public boolean displayTextInToolbar() {
+        return false;
     }
 
     /**
@@ -151,10 +167,22 @@ public abstract class Action {
      */
     public abstract void actionPerformed(ActionEvent e);
 
+    public static String createTooltipText(String s, Action action) {
+        String toolTipText = s == null ? "" : s;
+        while (StringUtils.endsWithChar(toolTipText, '.')) {
+            toolTipText = toolTipText.substring(0, toolTipText.length() - 1);
+        }
+        //TODO add shortcuts to tooltip text
+        String shortcutsText = ""; //KeyMapUtil.getShortcutText(action.getShortcut());
+        if (!shortcutsText.isEmpty()) {
+            toolTipText += " (" + shortcutsText + ")";
+        }
+        return toolTipText;
+    }
+
     public boolean isTransparentUpdate() {
         return this instanceof TransparentUpdate;
     }
-
 
     public interface TransparentUpdate {
     }
@@ -163,4 +191,5 @@ public abstract class Action {
     public String toString() {
         return getTemplatePresentation().toString();
     }
+
 }

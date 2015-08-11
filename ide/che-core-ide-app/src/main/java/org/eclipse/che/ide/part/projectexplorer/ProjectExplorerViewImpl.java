@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.ide.part.projectexplorer;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import elemental.events.KeyboardEvent;
 import elemental.events.MouseEvent;
 
@@ -239,19 +241,35 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
             toolBar.addSouth(projectHeader, 28);
             setToolbarHeight(50);
         }
+
         projectHeader.clear();
 
         FlowPanel delimiter = new FlowPanel();
         delimiter.setStyleName(resources.partStackCss().idePartStackToolbarSeparator());
         projectHeader.add(delimiter);
 
-        SVGImage projectVisibilityImage = new SVGImage("private".equals(project.getVisibility()) ? resources.privateProject()
-                : resources.publicProject());
-        projectVisibilityImage.getElement().setAttribute("class", resources.partStackCss().idePartStackToolbarBottomIcon());
-        projectHeader.add(projectVisibilityImage);
+        SVGImage icon = new SVGImage("private".equals(project.getVisibility()) ?
+                resources.privateProject() : resources.publicProject());
+        icon.getElement().setAttribute("class", resources.partStackCss().idePartStackToolbarBottomIcon());
+        projectHeader.add(icon);
 
         InlineLabel projectTitle = new InlineLabel(project.getName());
         projectHeader.add(projectTitle);
+
+        FlowPanel refreshButton = new FlowPanel();
+        refreshButton.add(new SVGImage(resources.refresh()));
+        refreshButton.setStyleName(resources.partStackCss().idePartStackToolbarBottomButton());
+        refreshButton.addStyleName(resources.partStackCss().idePartStackToolbarBottomButtonRight());
+        projectHeader.add(refreshButton);
+
+        refreshButton.addDomHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                if (delegate != null) {
+                    delegate.onRefreshTree();
+                }
+            }
+        }, ClickEvent.getType());
     }
 
     /** {@inheritDoc} */

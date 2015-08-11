@@ -43,15 +43,13 @@ import org.vectomatic.dom.svg.ui.SVGImage;
  * Toolbar image button.
  *
  * @author Evgen Vidolob
- * @author Dmitry Shnurenko
  */
-public class ActionButton extends Composite implements MouseOverHandler,
-                                                       MouseOutHandler,
-                                                       MouseDownHandler,
-                                                       MouseUpHandler,
+public class ActionButton extends Composite implements MouseOverHandler, 
+													   MouseOutHandler, 
+													   MouseDownHandler, 
+													   MouseUpHandler,
                                                        ClickHandler {
 
-    protected static final ToolbarResources.Css css = Toolbar.RESOURCES.toolbar();
     private final Presentation       presentation;
     private final PerspectiveManager perspectiveManager;
     private final String             place;
@@ -68,20 +66,23 @@ public class ActionButton extends Composite implements MouseOverHandler,
     private boolean selected = false;
     private ActionManager            actionManager;
     private ActionButtonSynchronizer actionButtonSynchronizer;
+    private ToolbarResources toolbarResources;
 
-    public ActionButton(final Action action,
-                        ActionManager actionManager,
-                        final Presentation presentation,
-                        String place,
-                        PerspectiveManager perspectiveManager) {
+    public ActionButton(Action action, 
+						ActionManager actionManager, 
+						Presentation presentation, 
+						String place,
+						PerspectiveManager perspectiveManager,
+						ToolbarResources toolbarResources) {
         this.actionManager = actionManager;
         this.perspectiveManager = perspectiveManager;
+        this.toolbarResources = toolbarResources;
         panel = new FlowPanel();
         tooltip = DOM.createDiv();
         tooltipBody = DOM.createDiv();
         tooltipArrow = DOM.createDiv();
         initWidget(panel);
-        panel.setStyleName(css.iconButtonPanel());
+        panel.setStyleName(toolbarResources.toolbar().iconButtonPanel());
         this.action = action;
         this.presentation = presentation;
         this.place = place;
@@ -90,10 +91,10 @@ public class ActionButton extends Composite implements MouseOverHandler,
         setEnabled(presentation.isEnabled());
         setVisible(presentation.isVisible());
         if (presentation.getDescription() != null) {
-            tooltipArrow.addClassName(css.tooltipArrow());
+            tooltipArrow.addClassName(toolbarResources.toolbar().tooltipArrow());
             tooltipBody.setInnerText(presentation.getDescription());
-            tooltipBody.addClassName(css.tooltipBody());
-            tooltip.addClassName(css.tooltip());
+            tooltipBody.addClassName(toolbarResources.toolbar().tooltipBody());
+            tooltip.addClassName(toolbarResources.toolbar().tooltip());
             tooltip.appendChild(tooltipArrow);
             tooltip.appendChild(tooltipBody);
             panel.getElement().appendChild(tooltip);
@@ -133,12 +134,12 @@ public class ActionButton extends Composite implements MouseOverHandler,
         panel.clear();
         if (presentation.getSVGIcon() != null) {
             SVGImage image = new SVGImage(presentation.getSVGIcon());
-            image.getElement().setAttribute("class", css.iconButtonIcon());
+            image.getElement().setAttribute("class", toolbarResources.toolbar().iconButtonIcon());
             panel.add(image);
             this.image = image.getElement();
         } else if (presentation.getIcon() != null) {
             Image img = new Image(presentation.getIcon());
-            img.setStyleName(css.iconButtonIcon());
+            img.setStyleName(toolbarResources.toolbar().iconButtonIcon());
             panel.add(img);
             this.image = img.getElement();
         }
@@ -148,15 +149,15 @@ public class ActionButton extends Composite implements MouseOverHandler,
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
         if (enabled) {
-            removeStyleName(css.disabled());
+            removeStyleName(toolbarResources.toolbar().disabled());
         } else {
             if (selected) {
-                panel.setStyleName(css.iconButtonPanelSelected());
+                panel.setStyleName(toolbarResources.toolbar().iconButtonPanelSelected());
             } else {
-                panel.setStyleName(css.iconButtonPanel());
+                panel.setStyleName(toolbarResources.toolbar().iconButtonPanel());
             }
 
-            addStyleName(css.disabled());
+            addStyleName(toolbarResources.toolbar().disabled());
         }
         this.ensureDebugId(place + "/" + actionManager.getId(action) + "-" + enabled);
     }
@@ -165,9 +166,9 @@ public class ActionButton extends Composite implements MouseOverHandler,
     public void setSelected(boolean selected) {
         this.selected = selected;
         if (selected) {
-            panel.setStyleName(css.iconButtonPanelSelected());
+            panel.setStyleName(toolbarResources.toolbar().iconButtonPanelSelected());
         } else {
-            panel.setStyleName(css.iconButtonPanelOver());
+            panel.setStyleName(toolbarResources.toolbar().iconButtonPanelOver());
         }
     }
 
@@ -185,9 +186,9 @@ public class ActionButton extends Composite implements MouseOverHandler,
             return;
         }
         if (selected) {
-            panel.setStyleName(css.iconButtonPanelSelectedOver());
+            panel.setStyleName(toolbarResources.toolbar().iconButtonPanelSelectedOver());
         } else {
-            panel.setStyleName(css.iconButtonPanelOver());
+            panel.setStyleName(toolbarResources.toolbar().iconButtonPanelOver());
         }
     }
 
@@ -198,9 +199,9 @@ public class ActionButton extends Composite implements MouseOverHandler,
             return;
         }
         if (selected) {
-            panel.setStyleName(css.iconButtonPanelSelected());
+            panel.setStyleName(toolbarResources.toolbar().iconButtonPanelSelected());
         } else {
-            panel.setStyleName(css.iconButtonPanel());
+            panel.setStyleName(toolbarResources.toolbar().iconButtonPanel());
         }
     }
 
@@ -211,9 +212,9 @@ public class ActionButton extends Composite implements MouseOverHandler,
             return;
         }
         if (selected) {
-            panel.setStyleName(css.iconButtonPanelSelectedDown());
+            panel.setStyleName(toolbarResources.toolbar().iconButtonPanelSelectedDown());
         } else {
-            panel.setStyleName(css.iconButtonPanelDown());
+            panel.setStyleName(toolbarResources.toolbar().iconButtonPanelDown());
         }
     }
 
@@ -224,9 +225,9 @@ public class ActionButton extends Composite implements MouseOverHandler,
             return;
         }
         if (selected) {
-            panel.setStyleName(css.iconButtonPanelSelectedOver());
+            panel.setStyleName(toolbarResources.toolbar().iconButtonPanelSelectedOver());
         } else {
-            panel.setStyleName(css.iconButtonPanelOver());
+            panel.setStyleName(toolbarResources.toolbar().iconButtonPanelOver());
         }
     }
 
