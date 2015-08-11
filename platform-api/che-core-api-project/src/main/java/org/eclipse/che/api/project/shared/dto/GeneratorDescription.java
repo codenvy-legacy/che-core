@@ -34,7 +34,7 @@ public interface GeneratorDescription {
 //    GeneratorDescription withName(String generatorName);
 
     /** Get options needed for generator. */
-    @ApiModelProperty(value = "Options needed for generator", position = 2)
+    @ApiModelProperty("Options needed for generator")
     Map<String, String> getOptions();
 
     /** Set options needed for generator. */

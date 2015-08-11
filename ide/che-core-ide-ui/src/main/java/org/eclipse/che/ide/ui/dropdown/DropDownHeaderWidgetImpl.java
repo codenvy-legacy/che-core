@@ -62,13 +62,14 @@ public class DropDownHeaderWidgetImpl extends Composite implements ClickHandler,
     private static final HeaderWidgetImplUiBinder UI_BINDER = GWT.create(HeaderWidgetImplUiBinder.class);
 
     @UiField
-    SimpleLayoutPanel marker;
+    FlowPanel marker;
     @UiField
-    SimpleLayoutPanel selectedElementImage;
+    FlowPanel selectedElementImage;
     @UiField
     Label             selectedElementName;
     @UiField
     FlowPanel         selectedElement;
+
     @UiField
     FlowPanel         listHeader;
 

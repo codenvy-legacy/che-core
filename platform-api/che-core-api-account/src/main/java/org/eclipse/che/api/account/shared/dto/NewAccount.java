@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.account.shared.dto;
 
+import com.wordnik.swagger.annotations.ApiModelProperty;
 import org.eclipse.che.dto.shared.DTO;
 
 import java.util.Map;
@@ -20,12 +21,15 @@ import java.util.Map;
 @DTO
 public interface NewAccount {
 
+    @ApiModelProperty("Account attributes are optional. They are used to store random information " +
+            "about an account. Pass an empty object or any key:value pair")
     Map<String, String> getAttributes();
 
     void setAttributes(Map<String, String> attributes);
 
     NewAccount withAttributes(Map<String, String> attributes);
 
+    @ApiModelProperty(value = "Account name", required = true)
     String getName();
 
     void setName(String name);

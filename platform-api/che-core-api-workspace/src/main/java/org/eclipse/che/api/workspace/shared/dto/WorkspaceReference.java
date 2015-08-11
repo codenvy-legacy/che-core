@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.shared.dto;
 
+import com.wordnik.swagger.annotations.ApiModelProperty;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.dto.shared.DTO;
 
@@ -21,12 +22,14 @@ import java.util.List;
 @DTO
 public interface WorkspaceReference {
 
+    @ApiModelProperty(value = "Workspace ID", required = true)
     String getId();
 
     void setId(String id);
 
     WorkspaceReference withId(String id);
 
+    @ApiModelProperty(value = "Workspace Name", required = true)
     String getName();
 
     void setName(String name);

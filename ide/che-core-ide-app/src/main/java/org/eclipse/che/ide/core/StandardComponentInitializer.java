@@ -38,7 +38,6 @@ import org.eclipse.che.ide.actions.OpenSelectedFileAction;
 import org.eclipse.che.ide.actions.PasteAction;
 import org.eclipse.che.ide.actions.ProjectConfigurationAction;
 import org.eclipse.che.ide.actions.RedoAction;
-import org.eclipse.che.ide.actions.RefreshProjectTreeAction;
 import org.eclipse.che.ide.actions.RenameItemAction;
 import org.eclipse.che.ide.actions.SaveAction;
 import org.eclipse.che.ide.actions.SaveAllAction;
@@ -203,9 +202,6 @@ public class StandardComponentInitializer {
 
     @Inject
     private ProjectConfigurationAction projectConfigurationAction;
-
-    @Inject
-    private RefreshProjectTreeAction refreshProjectTreeAction;
 
     @Inject
     private ExpandEditorAction expandEditorAction;
@@ -398,8 +394,6 @@ public class StandardComponentInitializer {
         resourceOperation.addSeparator();
         resourceOperation.add(downloadItemAction);
         resourceOperation.addSeparator();
-        resourceOperation.add(refreshProjectTreeAction);
-        resourceOperation.addSeparator();
         resourceOperation.add(createModuleAction);
 
         DefaultActionGroup closeProjectGroup = new DefaultActionGroup(actionManager);
@@ -430,14 +424,12 @@ public class StandardComponentInitializer {
 
         actionManager.registerAction("renameResource", renameItemAction);
         actionManager.registerAction("deleteItem", deleteItemAction);
-        actionManager.registerAction("refreshProjectTreeAction", refreshProjectTreeAction);
 
         actionManager.registerAction("findReplace", findReplaceAction);
         actionManager.registerAction("openFile", openFileAction);
         actionManager.registerAction("openNode", openNodeAction);
         actionManager.registerAction("selectNode", selectNodeAction);
 
-        changeResourceGroup.add(refreshProjectTreeAction);
         changeResourceGroup.add(closeProjectAction);
         changeResourceGroup.add(cutAction);
         changeResourceGroup.add(copyAction);

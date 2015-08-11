@@ -272,7 +272,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void copy(String path, String newParentPath, String newName, AsyncRequestCallback<Void> callback) {
-        final String requestUrl = COPY + normalizePath(path) + "?to=" + newParentPath;
+        final String requestUrl = COPY + normalizePath(path) + "?to=" + normalizePath(newParentPath);
 
         final CopyOptions copyOptions = dtoFactory.createDto(CopyOptions.class);
         copyOptions.setName(newName);
@@ -285,7 +285,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Override
     public void move(String path, String newParentPath, String newName, AsyncRequestCallback<Void> callback) {
-        final String requestUrl = MOVE + normalizePath(path) + "?to=" + newParentPath;
+        final String requestUrl = MOVE + normalizePath(path) + "?to=" + normalizePath(newParentPath);
 
         final MoveOptions moveOptions = dtoFactory.createDto(MoveOptions.class);
         moveOptions.setName(newName);

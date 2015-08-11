@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.shared.dto;
 
+import com.wordnik.swagger.annotations.ApiModelProperty;
 import org.eclipse.che.dto.shared.DTO;
 
 import java.util.Map;
@@ -19,18 +20,22 @@ import java.util.Map;
  */
 @DTO
 public interface NewWorkspace {
+
+    @ApiModelProperty(value = "Workspace name", required = true)
     String getName();
 
     void setName(String name);
 
     NewWorkspace withName(String name);
 
+    @ApiModelProperty(value = "Account ID", required = true)
     String getAccountId();
 
     void setAccountId(String accountId);
 
     NewWorkspace withAccountId(String accountId);
 
+    @ApiModelProperty(value = "Workspace attributes are used to store random information about a workspace. This is an optional parameter")
     Map<String, String> getAttributes();
 
     void setAttributes(Map<String, String> attributes);

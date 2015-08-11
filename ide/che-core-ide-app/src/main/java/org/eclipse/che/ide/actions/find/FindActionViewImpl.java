@@ -45,7 +45,8 @@ import org.eclipse.che.ide.api.autocomplete.AutoCompleteResources;
 import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
 import org.eclipse.che.ide.ui.list.SimpleList;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
-import org.eclipse.che.ide.ui.toolbar.Toolbar;
+import org.eclipse.che.ide.ui.toolbar.ToolbarResources;
+import org.eclipse.che.ide.ui.toolbar.ToolbarViewImpl;
 import org.eclipse.che.ide.util.dom.Elements;
 import org.eclipse.che.ide.util.input.KeyMapUtil;
 import org.vectomatic.dom.svg.ui.SVGImage;
@@ -57,9 +58,10 @@ import java.util.Map;
  * @author Evgen Vidolob
  */
 public class FindActionViewImpl extends PopupPanel implements FindActionView {
-    private static FindActionViewImplUiBinder ourUiBinder = GWT.create(FindActionViewImplUiBinder.class);
+
     private final AutoCompleteResources.Css css;
     private final PresentationFactory       presentationFactory;
+
     private final SimpleList.ListEventDelegate<Action> eventDelegate    = new SimpleList.ListEventDelegate<Action>() {
         @Override
         public void onListItemClicked(Element listItemBase, Action itemData) {
@@ -71,50 +73,7 @@ public class FindActionViewImpl extends PopupPanel implements FindActionView {
             delegate.onActionSelected(itemData);
         }
     };
-    private final SimpleList.ListItemRenderer<Action>  listItemRenderer =
-            new SimpleList.ListItemRenderer<Action>() {
-                @Override
-                public void render(Element itemElement, Action itemData) {
-                    TableCellElement icon = Elements.createTDElement(css.proposalIcon());
-                    TableCellElement label = Elements.createTDElement(css.proposalLabel());
-                    TableCellElement group = Elements.createTDElement(css.proposalGroup());
 
-                    Presentation presentation = presentationFactory.getPresentation(itemData);
-                    itemData.update(new ActionEvent("find_action", presentation, actionManager, 0));
-                    if (presentation.getIcon() != null) {
-                        Image image = new Image(presentation.getIcon());
-                        icon.appendChild((Node)image.getElement());
-                    } else if (presentation.getSVGIcon() != null) {
-                        SVGImage image = new SVGImage(presentation.getSVGIcon());
-                        image.getElement().setAttribute("class", Toolbar.RESOURCES.toolbar().iconButtonIcon());
-                        image.getElement().getStyle().setMargin(0, Style.Unit.PX);
-                        icon.appendChild((Node)image.getElement());
-                    }
-                    String hotKey = KeyMapUtil.getShortcutText(keyBindingAgent.getKeyBinding(actionManager.getId(itemData)));
-                    if (hotKey == null) {
-                        hotKey = "&nbsp;";
-                    } else {
-                        hotKey =
-                                "<nobr>&nbsp;[" + hotKey + "]&nbsp;</nobr>";
-                    }
-                    label.setInnerHTML(presentation.getText() + hotKey);
-                    if (!presentation.isEnabled() || !presentation.isVisible()) {
-                        itemElement.getStyle().setProperty("opacity", "0.6");
-                    }
-                    String groupName = actions.get(itemData);
-                    if (groupName != null) {
-                        group.setInnerHTML(groupName);
-                    }
-                    itemElement.appendChild(icon);
-                    itemElement.appendChild(label);
-                    itemElement.appendChild(group);
-                }
-
-                @Override
-                public Element createElement() {
-                    return Elements.createTRElement();
-                }
-            };
     @UiField
     TextBox  nameField;
     @UiField
@@ -126,17 +85,25 @@ public class FindActionViewImpl extends PopupPanel implements FindActionView {
     private PopupPanel          popupPanel;
     private SimpleList<Action>  list;
     private Map<Action, String> actions;
+    private ToolbarResources    toolbarResources;
+    private SimpleList.ListItemRenderer<Action> listItemRenderer;
 
     @Inject
-    public FindActionViewImpl(Resources resources, KeyBindingAgent keyBindingAgent,
-                              ActionManager actionManager, AutoCompleteResources autoCompleteResources) {
+    public FindActionViewImpl(Resources resources,
+                              KeyBindingAgent keyBindingAgent,
+                              ActionManager actionManager,
+                              AutoCompleteResources autoCompleteResources,
+                              ToolbarResources toolbarResources,
+                              FindActionViewImplUiBinder uiBinder) {
         this.resources = resources;
         this.keyBindingAgent = keyBindingAgent;
         this.actionManager = actionManager;
+        this.toolbarResources = toolbarResources;
         this.presentationFactory = new PresentationFactory();
+
         css = autoCompleteResources.autocompleteComponentCss();
         css.ensureInjected();
-        DockLayoutPanel rootElement = ourUiBinder.createAndBindUi(this);
+        DockLayoutPanel rootElement = uiBinder.createAndBindUi(this);
         setWidget(rootElement);
         setAutoHideEnabled(true);
         setAnimationEnabled(true);
@@ -267,4 +234,56 @@ public class FindActionViewImpl extends PopupPanel implements FindActionView {
     interface FindActionViewImplUiBinder
             extends UiBinder<DockLayoutPanel, FindActionViewImpl> {
     }
+
+    private SimpleList.ListItemRenderer<Action> itemRenderer() {
+        if (listItemRenderer == null) {
+            listItemRenderer =
+                    new SimpleList.ListItemRenderer<Action>() {
+                        @Override
+                        public void render(Element itemElement, Action itemData) {
+                            TableCellElement icon = Elements.createTDElement(css.proposalIcon());
+                            TableCellElement label = Elements.createTDElement(css.proposalLabel());
+                            TableCellElement group = Elements.createTDElement(css.proposalGroup());
+
+                            Presentation presentation = presentationFactory.getPresentation(itemData);
+                            itemData.update(new ActionEvent("find_action", presentation, actionManager, 0));
+                            if (presentation.getIcon() != null) {
+                                Image image = new Image(presentation.getIcon());
+                                icon.appendChild((Node)image.getElement());
+                            } else if (presentation.getSVGIcon() != null) {
+                                SVGImage image = new SVGImage(presentation.getSVGIcon());
+                                image.getElement().setAttribute("class", toolbarResources.toolbar().iconButtonIcon());
+                                image.getElement().getStyle().setMargin(0, Style.Unit.PX);
+                                icon.appendChild((Node)image.getElement());
+                            }
+                            String hotKey = KeyMapUtil.getShortcutText(keyBindingAgent.getKeyBinding(actionManager.getId(itemData)));
+                            if (hotKey == null) {
+                                hotKey = "&nbsp;";
+                            } else {
+                                hotKey =
+                                        "<nobr>&nbsp;[" + hotKey + "]&nbsp;</nobr>";
+                            }
+                            label.setInnerHTML(presentation.getText() + hotKey);
+                            if (!presentation.isEnabled() || !presentation.isVisible()) {
+                                itemElement.getStyle().setProperty("opacity", "0.6");
+                            }
+                            String groupName = actions.get(itemData);
+                            if (groupName != null) {
+                                group.setInnerHTML(groupName);
+                            }
+                            itemElement.appendChild(icon);
+                            itemElement.appendChild(label);
+                            itemElement.appendChild(group);
+                        }
+
+                        @Override
+                        public Element createElement() {
+                            return Elements.createTRElement();
+                        }
+                    };
+        }
+
+        return listItemRenderer;
+    }
+
 }

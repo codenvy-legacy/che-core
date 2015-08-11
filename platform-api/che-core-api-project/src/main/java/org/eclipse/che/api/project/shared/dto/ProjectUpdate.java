@@ -29,7 +29,7 @@ import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.OPTIO
 @ApiModel(description = "Update project")
 public interface ProjectUpdate {
     /** Get unique ID of type of project. */
-    @ApiModelProperty(value = "Unique ID of project's type", position = 1, required = true)
+    @ApiModelProperty(value = "Unique ID of project's type", required = true)
     @FactoryParameter(obligation = OPTIONAL)
     String getType();
 
@@ -41,7 +41,7 @@ public interface ProjectUpdate {
     //
 
     /** Gets builder configurations. */
-    @ApiModelProperty(value = "Builders configuration for the project", position = 5)
+    @ApiModelProperty(value = "Builders configuration for the project")
     @FactoryParameter(obligation = OPTIONAL)
     BuildersDescriptor getBuilders();
 
@@ -53,7 +53,7 @@ public interface ProjectUpdate {
     //
 
     /** Gets runner configurations. */
-    @ApiModelProperty(value = "Runners configuration for the project", position = 6)
+    @ApiModelProperty(value = "Runners configuration for the project")
     @FactoryParameter(obligation = OPTIONAL)
     RunnersDescriptor getRunners();
 
@@ -65,7 +65,7 @@ public interface ProjectUpdate {
     //
 
     /** Get optional description of project. */
-    @ApiModelProperty(value = "Optional description for new project", position = 2)
+    @ApiModelProperty(value = "Optional description for new project")
     @FactoryParameter(obligation = OPTIONAL)
     String getDescription();
 
@@ -76,7 +76,7 @@ public interface ProjectUpdate {
 
     //
 
-    @ApiModelProperty(value = "Attributes for project", position = 4)
+    @ApiModelProperty(value = "Attributes for project")
     @FactoryParameter(obligation = OPTIONAL)
     /** Get attributes of project. */
     Map<String, List<String>> getAttributes();
@@ -88,7 +88,7 @@ public interface ProjectUpdate {
 
     //
 
-    @ApiModelProperty(value = "Visibility for project", allowableValues = "public,private", position = 3)
+    @ApiModelProperty(value = "Visibility for project", allowableValues = "public,private")
     @FactoryParameter(obligation = OPTIONAL)
     /** Gets project visibility, e.g. private or public. */
     String getVisibility();
@@ -100,6 +100,7 @@ public interface ProjectUpdate {
 
 
     /** Gets project mixin types */
+    @ApiModelProperty("Mixing types")
     List<String> getMixinTypes();
 
     /** Sets permissions of current user on this project. */
