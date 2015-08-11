@@ -26,7 +26,7 @@ public class Strings {
      * @param string
      *         the string to test and possibly return
      * @return {@code string} itself if it is non-null; {@code ""} if it is null
-     * @depricated use guava com.google.common.base.Strings.nullToEmpty
+     * @deprecated use guava com.google.common.base.Strings.nullToEmpty
      */
     @Deprecated
     public static String nullToEmpty(String string) {
@@ -41,7 +41,7 @@ public class Strings {
      * @return {@code string} itself if it is nonempty; {@code null} if it is
      *         empty or null
      *
-     * @depricated use guava com.google.common.base.Strings.emptyToNull
+     * @deprecated use guava com.google.common.base.Strings.emptyToNull
      */
     @Deprecated
     public static String emptyToNull(String string) {
@@ -61,7 +61,7 @@ public class Strings {
      * @param string
      *         a string reference to check
      * @return {@code true} if the string is null or is the empty string
-     * @depricated use guava com.google.common.base.Strings.isNullOrEmpty
+     * @deprecated use guava com.google.common.base.Strings.isNullOrEmpty
      */
     @Deprecated
     public static boolean isNullOrEmpty(String string) {
@@ -77,7 +77,7 @@ public class Strings {
      * @param parts
      *         strings to concatenate
      * @return string containing the string representation of each of parts separated by delimiter
-     * @Depricated use guava com.google.common.base.Joiner
+     * @deprecated use guava com.google.common.base.Joiner
      */
     @Deprecated
     public static String join(String delimiter, String... parts) {
@@ -118,7 +118,7 @@ public class Strings {
      * @param input
      *         - input array.
      * @return - longest common prefix of the input array of the string
-     * @depricated use guava com.google.common.base.Strings.commonPrefix
+     * @deprecated use guava com.google.common.base.Strings.commonPrefix
      */
     @Deprecated
     public static String longestCommonPrefix(String... input) {
