@@ -17,7 +17,7 @@ import java.util.NoSuchElementException;
 /**
  * A compound iterator, which iterates over two or more other iterators and represents few iterators as one.
  *
- * @depricated use {@link com.google.common.collect.Iterators#concat} method.
+ * @deprecated use {@link com.google.common.collect.Iterators#concat} method.
  */
 @Deprecated
 public class CompoundIterator<T> implements Iterator<T> {

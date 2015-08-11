@@ -129,6 +129,10 @@ public class IdeLoader implements AsyncRequestLoader {
          * @return any message from heap or <code>null</code> if heap does have message
          */
         public String drop(String message) {
+            if (messages.isEmpty() || !messages.containsKey(message)) {
+                return null;
+            }
+
             int count = messages.get(message) - 1;
             if (count == 0) {
                 messages.remove(message);

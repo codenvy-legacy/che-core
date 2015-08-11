@@ -285,7 +285,7 @@ public class FactoryService extends Service {
      * @throws NotFoundException
      *         when factory with given id doesn't exist
      */
-    @ApiOperation(value = "Removes Factory information by its ID",
+    @ApiOperation(value = "Removes Factory by its ID",
                   notes = "Removes factory based on the Factory ID which is passed in a path parameter")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
@@ -561,10 +561,20 @@ public class FactoryService extends Service {
      * @throws org.eclipse.che.api.core.ApiException
      *         - {@link org.eclipse.che.api.core.ConflictException} when project is not under source control.
      */
+    @ApiOperation(value = "Get project Factory parameters",
+                  notes = "This call returns a Factory.json that is used to create a Factory. " +
+                          "To be able to get project's configuration json file, it should be under Git")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 404, message = "Workspace or project not found"),
+            @ApiResponse(code = 500, message = "Internal Server Error")})
     @GET
     @Path("/{ws-id}/{path:.*}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getFactoryJson(@PathParam("ws-id") String workspace, @PathParam("path") String path) throws ApiException {
+    public Response getFactoryJson(@ApiParam(value = "Workspace ID", required = true)
+                                   @PathParam("ws-id") String workspace,
+                                   @ApiParam(value = "Project name", required = true)
+                                   @PathParam("path") String path) throws ApiException {
         final Project project = projectManager.getProject(workspace, path);
 
         if (project == null) {

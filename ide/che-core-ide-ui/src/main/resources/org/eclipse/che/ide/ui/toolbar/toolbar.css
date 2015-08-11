@@ -8,37 +8,28 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-.toolbarMenuPanel {
+
+.toolbarPanel {
     width: 100%;
     height: 26px;
+    overflow: hidden;
     cursor: default;
     background-color: toolbarBackgroundColor;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
     border-top: 1px solid tabBorder;
     border-bottom: 1px solid tabBorder;
 }
 
-.toolbarMenuPanel div {
-    margin-top: 1px;
-    margin-left: 2px;
+.toolbarPanel > div {
+    text-shadow: 0px 1px 0px buttonTextShadow;
     float: left;
-}
-
-.toolbarPanel {
-    width: 100%;
-    height: 17px;
-    cursor: default;
-    background-color: tabsPanelBackground;
-    border-top: 1px solid tabBorderShadow;
-    border-bottom: 1px solid tabBorder;
-    box-shadow: 3 2px 5px 0 rgba(50, 50, 50, 0.75);
+    margin-top: 1px;
+    height: 24px;
     display: flex;
     display: -webkit-flex;
     display: -moz-box;
-}
-
-.toolbarPanel div {
-    text-shadow: 0px 1px 0px buttonTextShadow;
-    float: left;
 }
 
 .toolbarPanel a {
@@ -48,17 +39,22 @@
 .toolbarPanel .toolbarDelimiter {
     width: 0px;
     height: 18px;
-    margin-top: -1px;
     border-left: 1px solid tabBorder;
     border-right: 1px solid tabBorderShadow;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    margin-top: 2px;
+    margin-left: 2px;
+    margin-right: 2px;
 }
 
 .toolbarPanel svg.iconButtonIcon {
-    width: 12px;
-    height: 12px;
-    margin-top: 1px;
+    width: 14px;
+    height: 14px;
+    margin-top: 3px;
+    margin-left: 4px;
 }
-
 
 .rightPanel {
     float: right !important;
@@ -70,19 +66,10 @@
 .toolbarPanel .iconButtonPanelSelected,
 .toolbarPanel .iconButtonPanelSelectedOver,
 .toolbarPanel .iconButtonPanelSelectedDown {
-    width: 17px;
-    height: 14px;
+    width: 22px;
+    height: 20px;
     overflow: hidden;
     margin-right: 1px;
-}
-
-.toolbarMenuPanel .toolbarDelimiter {
-    width: 1px;
-    height: 24px;
-    border-left: 1px solid tabBorder;
-}
-
-.toolbarDelimiter {
 }
 
 .iconButtonPanel,
@@ -93,11 +80,9 @@
 .iconButtonPanelSelectedDown {
     width: 22px;
     height: 22px;
-    /*background: url(IDE/button-background.png);*/
 }
 
 .iconButtonPanel {
-    /*background-position: 0px 0px;*/
     border: 1px solid transparent;
 }
 
@@ -153,11 +138,9 @@
 .iconButtonPanelOver {
     border-radius: 2px;
     border: 1px solid tabBorder;
-    /*background-position: 0px -24px;*/
 }
 
 .iconButtonPanelDown {
-    /*background-position: 0px -48px;*/
     border-radius: 4px;
     border: 1px solid tabBorder;
     background-color: hoverBackgroundColor;
@@ -200,7 +183,7 @@ svg.iconButtonIcon {
 .popupButtonPanel,
 .popupButtonPanelOver,
 .popupButtonPanelDown {
-    height: 22px;
+    height: 20px;
     width: 30px;
     border: 1px solid transparent;
 }

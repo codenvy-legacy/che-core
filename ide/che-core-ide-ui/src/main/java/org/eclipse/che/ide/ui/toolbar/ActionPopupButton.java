@@ -25,20 +25,14 @@ import org.eclipse.che.ide.api.action.ActionGroup;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.ActionSelectedHandler;
 import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
-import org.eclipse.che.ide.util.loging.Log;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import java.util.Deque;
-import java.util.Stack;
-
 /**
- * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
- * @version $Id:
+ * @author Evgen Vidolob
  */
 public class ActionPopupButton extends Composite implements CloseMenuHandler, ActionSelectedHandler {
 
-    private static final ToolbarResources.Css css = Toolbar.RESOURCES.toolbar();
     private final ActionGroup         action;
     private final ActionManager       actionManager;
     private final Element             tooltip;
@@ -47,6 +41,7 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
     private       KeyBindingAgent     keyBindingAgent;
     private       PresentationFactory presentationFactory;
     private final String              place;
+    private ToolbarResources          toolbarResources;
 
     /** Enabled state. True as default. */
     private boolean enabled = true;
@@ -58,41 +53,45 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
     private PopupMenu     popupMenu;
 
     /** Create Popup Menu Button with specified icons for enabled and disabled states. */
-    public ActionPopupButton(final ActionGroup action, ActionManager actionManager, KeyBindingAgent keyBindingAgent,
+    public ActionPopupButton(final ActionGroup action,
+                             ActionManager actionManager,
+                             KeyBindingAgent keyBindingAgent,
                              final PresentationFactory presentationFactory,
-                             String place) {
+                             String place,
+                             ToolbarResources toolbarResources) {
         this.action = action;
         this.actionManager = actionManager;
         this.keyBindingAgent = keyBindingAgent;
         this.presentationFactory = presentationFactory;
         this.place = place;
+        this.toolbarResources = toolbarResources;
 
         panel = new ButtonPanel();
         tooltip = DOM.createDiv();
         tooltipBody = DOM.createDiv();
         tooltipArrow = DOM.createDiv();
         initWidget(panel);
-        panel.setStyleName(css.popupButtonPanel());
+        panel.setStyleName(toolbarResources.toolbar().popupButtonPanel());
         SVGResource icon = presentationFactory.getPresentation(action).getSVGIcon();
         if (icon != null) {
             SVGImage image = new SVGImage(icon);
-            image.getElement().setAttribute("class", css.popupButtonIcon());
+            image.getElement().setAttribute("class", toolbarResources.toolbar().popupButtonIcon());
             panel.add(image);
         } else if (presentationFactory.getPresentation(action).getIcon() != null) {
             Image image = new Image(presentationFactory.getPresentation(action).getIcon());
-            image.setStyleName(css.popupButtonIcon());
+            image.setStyleName(toolbarResources.toolbar().popupButtonIcon());
             panel.add(image);
         }
         renderIcon();
         InlineLabel caret = new InlineLabel("");
-        caret.setStyleName(css.caret());
+        caret.setStyleName(toolbarResources.toolbar().caret());
         panel.add(caret);
         final String description = presentationFactory.getPresentation(action).getDescription();
         if (description != null) {
-            tooltipArrow.addClassName(css.tooltipArrow());
+            tooltipArrow.addClassName(toolbarResources.toolbar().tooltipArrow());
             tooltipBody.setInnerText(description);
-            tooltipBody.addClassName(css.tooltipBody());
-            tooltip.addClassName(css.tooltip());
+            tooltipBody.addClassName(toolbarResources.toolbar().tooltipBody());
+            tooltip.addClassName(toolbarResources.toolbar().tooltip());
             tooltip.appendChild(tooltipArrow);
             tooltip.appendChild(tooltipBody);
             panel.getElement().appendChild(tooltip);
@@ -112,7 +111,7 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
             lockLayer = null;
         }
 
-        panel.setStyleName(css.popupButtonPanel());
+        panel.setStyleName(toolbarResources.toolbar().popupButtonPanel());
     }
 
     /**
@@ -142,7 +141,7 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
 
     /** Mouse Down handler. */
     private void onMouseDown() {
-        panel.setStyleName(css.popupButtonPanelDown());
+        panel.setStyleName(toolbarResources.toolbar().popupButtonPanelDown());
     }
 
     /** Mouse Out Handler. */
@@ -151,7 +150,7 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
             return;
         }
 
-        panel.setStyleName(css.popupButtonPanel());
+        panel.setStyleName(toolbarResources.toolbar().popupButtonPanel());
     }
 
     private void onMouseClick() {
@@ -168,12 +167,12 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
             tooltipBody.getStyle().setRight(panel.getAbsoluteLeft() + tooltip.getOffsetWidth() - screenSize, Style.Unit.PX);
         }
 
-        panel.setStyleName(css.popupButtonPanelOver());
+        panel.setStyleName(toolbarResources.toolbar().popupButtonPanelOver());
     }
 
     /** Mouse Up handler. */
     private void onMouseUp() {
-        panel.setStyleName(css.popupButtonPanelOver());
+        panel.setStyleName(toolbarResources.toolbar().popupButtonPanelOver());
     }
 
     /** Opens Popup Menu. */
@@ -192,9 +191,9 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
     /** Redraw icon. */
     private void renderIcon() {
         if (enabled) {
-            panel.getElement().removeClassName(css.disabled());
+            panel.getElement().removeClassName(toolbarResources.toolbar().disabled());
         } else {
-            panel.getElement().addClassName(css.disabled());
+            panel.getElement().addClassName(toolbarResources.toolbar().disabled());
         }
     }
 

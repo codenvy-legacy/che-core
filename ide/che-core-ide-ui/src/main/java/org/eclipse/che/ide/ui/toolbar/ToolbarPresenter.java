@@ -21,9 +21,11 @@ import org.eclipse.che.ide.api.mvp.Presenter;
 /**
  * Manages Toolbar items, changes item state and other.
  *
- * @author <a href="mailto:aplotnikov@exoplatform.com">Andrey Plotnikov</a>
+ * @author Andrey Plotnikov
+ * @author Vitaliy Guliy
  */
 public class ToolbarPresenter implements Presenter, ToolbarView.ActionDelegate {
+
     private ToolbarView view;
 
     /**

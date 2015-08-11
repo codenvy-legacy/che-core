@@ -14,61 +14,54 @@
              xmlns:g='urn:import:com.google.gwt.user.client.ui'>
 
     <ui:style>
-        .selectedElementName {
-            float: left;
-            padding-left: 10px;
-            padding-bottom: 5px;
-            padding-right: 5px;
-            margin-top: 3px !important;
 
+        .widget {
+            display: flex;
+        }
+
+        .selectedElementName {
+            margin-top: 3px;
         }
 
         .selectedElementImage svg {
+            margin-top: 1px;
             width: 19px;
             height: 19px;
             fill: #dbdbdb;
         }
 
         .svgMarker {
-            position: absolute;
-            margin-left: 0;
-            z-index: 0;
         }
 
         .imagePanel {
-            float: right;
-            position: absolute;
-            z-index: 1;
             width: 16px;
             height: 16px;
         }
 
-        .container div {
-            margin-left: 0;
-        }
-
-        .imageContainer div {
-            margin-top: 0;
+        .container {
+            display:flex;
+            margin-left: 1px;
         }
 
         .imageContainer {
-            position: absolute;
-            z-index: 1;
             width: 19px;
             height: 19px;
+            margin-right: 1px;
+            margin-left: 1px;
         }
     </ui:style>
 
-    <g:FlowPanel ui:field="listHeader" debugId="dropDownHeader">
+    <g:FlowPanel ui:field="listHeader" debugId="dropDownHeader" styleName="{style.widget}">
+
         <g:FlowPanel ui:field="selectedElement" addStyleNames="{style.container}">
-            <g:SimpleLayoutPanel addStyleNames="{style.imageContainer}">
-                <g:SimpleLayoutPanel ui:field="selectedElementImage" addStyleNames="{style.selectedElementImage}"/>
-            </g:SimpleLayoutPanel>
+            <g:FlowPanel addStyleNames="{style.imageContainer}">
+                <g:FlowPanel ui:field="selectedElementImage" addStyleNames="{style.selectedElementImage}"/>
+            </g:FlowPanel>
             <g:Label ui:field="selectedElementName" addStyleNames="{style.selectedElementName}"/>
         </g:FlowPanel>
 
-        <g:SimpleLayoutPanel addStyleNames="{style.imagePanel}">
-            <g:SimpleLayoutPanel ui:field="marker" addStyleNames="{style.svgMarker}"/>
-        </g:SimpleLayoutPanel>
+        <g:FlowPanel addStyleNames="{style.imagePanel}">
+            <g:FlowPanel ui:field="marker" addStyleNames="{style.svgMarker}"/>
+        </g:FlowPanel>
     </g:FlowPanel>
 </ui:UiBinder>

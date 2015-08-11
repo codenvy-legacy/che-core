@@ -83,7 +83,8 @@ import static org.eclipse.che.ide.api.event.ItemEvent.ItemOperation.DELETED;
  */
 @Singleton
 public class ProjectExplorerPartPresenter extends BasePresenter implements ProjectExplorerView.ActionDelegate,
-        ProjectExplorerPart, HasView {
+        ProjectExplorerPart, HasView, RefreshProjectTreeHandler {
+
     private ProjectExplorerView            view;
     private EventBus                       eventBus;
     private ContextMenu                    contextMenu;
@@ -217,48 +218,50 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
             }
         });
 
-        eventBus.addHandler(RefreshProjectTreeEvent.TYPE, new RefreshProjectTreeHandler() {
-            @Override
-            public void onRefresh(RefreshProjectTreeEvent event) {
-                eventBus.fireEvent(new PersistProjectTreeStateEvent());
-                if (appContext.getCurrentProject() == null) {
-                    setTree(projectListStructureProvider.get());
-                    return;
-                }
+        eventBus.addHandler(RefreshProjectTreeEvent.TYPE, this);
 
-                if (event.refreshSubtree()) {
-                    nodesToRefresh = view.getOpenedTreeNodes();
-                    refreshTreeNodes();
-                    return;
-                }
-
-                if (event.getNode() != null) {
-                    refreshAndSelectNode(event.getNode());
-                    return;
-                }
-
-                currentTreeStructure.getRootNodes(new AsyncCallback<Array<TreeNode<?>>>() {
-                    @Override
-                    public void onSuccess(Array<TreeNode<?>> result) {
-                        for (TreeNode<?> childNode : result.asIterable()) {
-                            // clear children in order to force to refresh
-                            childNode.setChildren(Collections.<TreeNode<?>>createArray());
-                            refreshAndSelectNode(childNode);
-
-                            ProjectDescriptor projectDescriptor = appContext.getCurrentProject().getRootProject();
-                            String workspaceName = projectDescriptor.getWorkspaceName();
-                            String fullProjectPath = "/" + workspaceName + projectDescriptor.getPath();
-                            eventBus.fireEvent(new RestoreProjectTreeStateEvent(fullProjectPath));
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Throwable caught) {
-                        Log.error(ProjectExplorerPartPresenter.class, caught);
-                    }
-                });
-            }
-        });
+//        eventBus.addHandler(RefreshProjectTreeEvent.TYPE, new RefreshProjectTreeHandler() {
+//            @Override
+//            public void onRefreshProjectTree(RefreshProjectTreeEvent event) {
+//                eventBus.fireEvent(new PersistProjectTreeStateEvent());
+//                if (appContext.getCurrentProject() == null) {
+//                    setTree(projectListStructureProvider.get());
+//                    return;
+//                }
+//
+//                if (event.refreshSubtree()) {
+//                    nodesToRefresh = view.getOpenedTreeNodes();
+//                    refreshTreeNodes();
+//                    return;
+//                }
+//
+//                if (event.getNode() != null) {
+//                    refreshAndSelectNode(event.getNode());
+//                    return;
+//                }
+//
+//                currentTreeStructure.getRootNodes(new AsyncCallback<Array<TreeNode<?>>>() {
+//                    @Override
+//                    public void onSuccess(Array<TreeNode<?>> result) {
+//                        for (TreeNode<?> childNode : result.asIterable()) {
+//                            // clear children in order to force to refresh
+//                            childNode.setChildren(Collections.<TreeNode<?>>createArray());
+//                            refreshAndSelectNode(childNode);
+//
+//                            ProjectDescriptor projectDescriptor = appContext.getCurrentProject().getRootProject();
+//                            String workspaceName = projectDescriptor.getWorkspaceName();
+//                            String fullProjectPath = "/" + workspaceName + projectDescriptor.getPath();
+//                            eventBus.fireEvent(new RestoreProjectTreeStateEvent(fullProjectPath));
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onFailure(Throwable caught) {
+//                        Log.error(ProjectExplorerPartPresenter.class, caught);
+//                    }
+//                });
+//            }
+//        });
 
         eventBus.addHandler(NodeChangedEvent.TYPE, new NodeChangedHandler() {
             @Override
@@ -376,6 +379,57 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
                 children.add(fileNode);
             }
         }
+    }
+
+    @Override
+    public void onRefreshTree() {
+        onRefreshProjectTree(new RefreshProjectTreeEvent(null, true));
+    }
+
+    /**
+     * Refreshes project tree.
+     *
+     * @param event
+     */
+    public void onRefreshProjectTree(RefreshProjectTreeEvent event) {
+        eventBus.fireEvent(new PersistProjectTreeStateEvent());
+
+        if (appContext.getCurrentProject() == null) {
+            setTree(projectListStructureProvider.get());
+            return;
+        }
+
+        if (event.refreshSubtree()) {
+            nodesToRefresh = view.getOpenedTreeNodes();
+            refreshTreeNodes();
+            return;
+        }
+
+        if (event.getNode() != null) {
+            refreshAndSelectNode(event.getNode());
+            return;
+        }
+
+        currentTreeStructure.getRootNodes(new AsyncCallback<Array<TreeNode<?>>>() {
+            @Override
+            public void onSuccess(Array<TreeNode<?>> result) {
+                for (TreeNode<?> childNode : result.asIterable()) {
+                    // clear children in order to force to refresh
+                    childNode.setChildren(Collections.<TreeNode<?>>createArray());
+                    refreshAndSelectNode(childNode);
+
+                    ProjectDescriptor projectDescriptor = appContext.getCurrentProject().getRootProject();
+                    String workspaceName = projectDescriptor.getWorkspaceName();
+                    String fullProjectPath = "/" + workspaceName + projectDescriptor.getPath();
+                    eventBus.fireEvent(new RestoreProjectTreeStateEvent(fullProjectPath));
+                }
+            }
+
+            @Override
+            public void onFailure(Throwable caught) {
+                Log.error(ProjectExplorerPartPresenter.class, caught);
+            }
+        });
     }
 
     /**

@@ -14,12 +14,11 @@ import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 
 /**
- * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
- * @version $Id:
+ * @author Evgen Vidolob
  */
 public interface ToolbarResources extends ClientBundle {
 
-    public interface Css extends CssResource {
+    interface Css extends CssResource {
 
         String iconButtonPanel();
 
@@ -27,7 +26,7 @@ public interface ToolbarResources extends ClientBundle {
 
         String toolbarPanel();
 
-        String toolbarMenuPanel();
+//        String toolbarMenuPanel();
 
         String iconButtonPanelDown();
 
