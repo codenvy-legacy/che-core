@@ -166,7 +166,7 @@ public class GoIntoMode implements HasGoIntoStateHandlers {
 
         activated = false;
 
-        tree.redraw(null);
+        tree.redraw(null, false);
 
         tree.getSelectionModel().select(selection, false);
 

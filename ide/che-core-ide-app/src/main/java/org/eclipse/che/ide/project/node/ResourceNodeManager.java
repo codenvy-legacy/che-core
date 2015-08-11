@@ -92,24 +92,26 @@ public class ResourceNodeManager {
                                            @Nonnull ProjectDescriptor relProjectDescriptor,
                                            @Nonnull NodeSettings nodeSettings) {
         //Very dirty hack, need to find better solution to collect nodes from promises
-        final List<Node> collector = new ArrayList<>();
-
-        Promise<List<Node>> moduleNodes = AsyncPromiseHelper.createFromAsyncRequest(getModulesRequestCall(path))
-                                                            .then(_createModuleNodes(nodeSettings))
-                                                            .then(_collectNodesFromPromises(collector))
-                                                            .catchError(handleError());
+//        final List<Node> collector = new ArrayList<>();
+//
+//        Promise<List<Node>> moduleNodes = AsyncPromiseHelper.createFromAsyncRequest(getModulesRequestCall(path))
+//                                                            .then(_createModuleNodes(nodeSettings))
+//                                                            .then(_collectNodesFromPromises(collector))
+//                                                            .catchError(handleError());
 
         Promise<List<Node>> itemRefNodes = AsyncPromiseHelper.createFromAsyncRequest(getItemReferenceRequestCall(path))
-                                                             .then(_createItemReferenceNodes(relProjectDescriptor, nodeSettings))
-                                                             .then(_collectNodesFromPromises(collector))
+                                                             .thenPromise(_createItemReferenceNodes(relProjectDescriptor, nodeSettings))
+//                                                             .then(_collectNodesFromPromises(collector))
                                                              .catchError(handleError());
 
-        return Promises.all(moduleNodes, itemRefNodes).then(new Function<JsArrayMixed, List<Node>>() {
-            @Override
-            public List<Node> apply(JsArrayMixed arg) throws FunctionException {
-                return collector;
-            }
-        });
+        return itemRefNodes;
+
+//        return Promises.all(moduleNodes, itemRefNodes).then(new Function<JsArrayMixed, List<Node>>() {
+//            @Override
+//            public List<Node> apply(JsArrayMixed arg) throws FunctionException {
+//                return collector;
+//            }
+//        });
     }
 
     @Nonnull
@@ -226,17 +228,53 @@ public class ResourceNodeManager {
         };
     }
 
+//    @Nonnull
+//    private Function<Array<ItemReference>, List<Node>> _createItemReferenceNodes(@Nonnull final ProjectDescriptor relProjectDescriptor,
+//                                                                                 @Nonnull final NodeSettings nodeSettings) {
+//        return new Function<Array<ItemReference>, List<Node>>() {
+//            @Override
+//            public List<Node> apply(Array<ItemReference> itemRefList) throws FunctionException {
+//                if (itemRefList == null || itemRefList.isEmpty()) {
+//                    return Collections.emptyList();
+//                }
+//
+//                List<Node> nodes = new ArrayList<>(itemRefList.size());
+//
+//                for (ItemReference itemReference : itemRefList.asIterable()) {
+//                    //Skip files which starts with "." if enabled
+//                    if (!nodeSettings.isShowHiddenFiles() && itemReference.getName().startsWith(".")) {
+//                        continue;
+//                    }
+//
+//                    if ("file".equals(itemReference.getType())) {
+//                        nodes.add(nodeFactory.newFileReferenceNode(itemReference, relProjectDescriptor, nodeSettings));
+//                    } else if ("folder".equals(itemReference.getType())) {
+//                        nodes.add(nodeFactory.newFolderReferenceNode(itemReference, relProjectDescriptor, nodeSettings));
+//                    } else if ("project".equals(itemReference.getType())) {
+//
+//                    }
+//
+//                    //NOTE if we want support more type nodes than we should refactor mechanism of hardcoded types for item references
+//                }
+//
+//                return nodes;
+//            }
+//        };
+//    }
+
     @Nonnull
-    private Function<Array<ItemReference>, List<Node>> _createItemReferenceNodes(@Nonnull final ProjectDescriptor relProjectDescriptor,
+    private Function<Array<ItemReference>, Promise<List<Node>>> _createItemReferenceNodes(@Nonnull final ProjectDescriptor relProjectDescriptor,
                                                                                  @Nonnull final NodeSettings nodeSettings) {
-        return new Function<Array<ItemReference>, List<Node>>() {
+        return new Function<Array<ItemReference>, Promise<List<Node>>>() {
             @Override
-            public List<Node> apply(Array<ItemReference> itemRefList) throws FunctionException {
+            public Promise<List<Node>> apply(Array<ItemReference> itemRefList) throws FunctionException {
                 if (itemRefList == null || itemRefList.isEmpty()) {
-                    return Collections.emptyList();
+                    return Promises.resolve(Collections.<Node>emptyList());
                 }
 
-                List<Node> nodes = new ArrayList<>(itemRefList.size());
+                final List<Node> nodes = new ArrayList<>(itemRefList.size());
+
+                List<ItemReference> modules = null;
 
                 for (ItemReference itemReference : itemRefList.asIterable()) {
                     //Skip files which starts with "." if enabled
@@ -248,22 +286,76 @@ public class ResourceNodeManager {
                         nodes.add(nodeFactory.newFileReferenceNode(itemReference, relProjectDescriptor, nodeSettings));
                     } else if ("folder".equals(itemReference.getType())) {
                         nodes.add(nodeFactory.newFolderReferenceNode(itemReference, relProjectDescriptor, nodeSettings));
+                    } else if ("project".equals(itemReference.getType())) {
+                        if (modules == null) {
+                            modules = new ArrayList<>();
+                        }
+                        modules.add(itemReference);
                     }
-
                     //NOTE if we want support more type nodes than we should refactor mechanism of hardcoded types for item references
                 }
 
-                return nodes;
+                if (modules == null) {
+                    return Promises.resolve(nodes);
+                }
+
+                //else we have modules, so we have get them
+
+                final List<Node> collector = new ArrayList<>(modules.size());
+
+                Promise<?>[] promises = new Promise[modules.size()];
+
+                for (int i = 0; i < promises.length; i++) {
+                    promises[i] = getModule(modules.get(i), collector, nodeSettings);
+                }
+
+                return Promises.all(promises).then(new Function<JsArrayMixed, List<Node>>() {
+                    @Override
+                    public List<Node> apply(JsArrayMixed arg) throws FunctionException {
+                        Log.info(this.getClass(), "apply():315: " + "");
+                        nodes.addAll(collector);
+                        return nodes;
+                    }
+                });
+            }
+        };
+    }
+
+    private Promise<Node> getModule(ItemReference module, List<Node> collector, NodeSettings nodeSettings) {
+        return AsyncPromiseHelper.createFromAsyncRequest(createGetModuleRequest(module))
+                                 .then(createModuleNode(nodeSettings))
+                                 .then(_collectNodesFromPromises(collector));
+    }
+
+    private RequestCall<ProjectDescriptor> createGetModuleRequest(final ItemReference module) {
+        return new RequestCall<ProjectDescriptor>() {
+            @Override
+            public void makeCall(AsyncCallback<ProjectDescriptor> callback) {
+                projectService.getProject(module.getPath(), _createCallback(callback, dtoUnmarshaller.newUnmarshaller(ProjectDescriptor.class)));
+            }
+        };
+    }
+
+    private Function<ProjectDescriptor, Node> createModuleNode(final NodeSettings nodeSettings) {
+        return new Function<ProjectDescriptor, Node>() {
+            @Override
+            public Node apply(ProjectDescriptor module) throws FunctionException {
+                //Skip files which starts with "." if enabled
+//                if (!nodeSettings.isShowHiddenFiles() && module.getName().startsWith(".")) {
+//                    continue;
+//                }
+
+                return nodeFactory.newModuleNode(module, nodeSettings);
             }
         };
     }
 
     @Nonnull
-    private Operation<List<Node>> _collectNodesFromPromises(@Nonnull final List<Node> collector) {
-        return new Operation<List<Node>>() {
+    private Operation<Node> _collectNodesFromPromises(@Nonnull final List<Node> collector) {
+        return new Operation<Node>() {
             @Override
-            public void apply(List<Node> nodes) throws OperationException {
-                collector.addAll(nodes);
+            public void apply(Node nodes) throws OperationException {
+                collector.add(nodes);
             }
         };
     }

@@ -14,11 +14,9 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ClientBundle;
-import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -35,7 +33,6 @@ import org.eclipse.che.ide.project.ProjectContextMenu;
 import org.eclipse.che.ide.project.node.AbstractProjectBasedNode;
 import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
 import org.eclipse.che.ide.ui.Tooltip;
-import org.eclipse.che.ide.ui.menu.PositionController;
 import org.eclipse.che.ide.ui.smartTree.NodeDescriptor;
 import org.eclipse.che.ide.ui.smartTree.NodeNameConverter;
 import org.eclipse.che.ide.ui.smartTree.NodeUniqueKeyProvider;
@@ -51,9 +48,6 @@ import org.eclipse.che.ide.ui.smartTree.event.SelectionChangedEvent;
 import org.eclipse.che.ide.ui.smartTree.event.SelectionChangedEvent.SelectionChangedHandler;
 import org.eclipse.che.ide.ui.smartTree.sorting.AlphabeticalFilter;
 import org.eclipse.che.ide.ui.smartTree.sorting.FoldersOnTopFilter;
-import org.eclipse.che.ide.ui.smartTree.state.HtmlStorageProvider;
-import org.eclipse.che.ide.ui.smartTree.state.ExpandStateHandler;
-import org.eclipse.che.ide.util.loging.Log;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
@@ -284,6 +278,19 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
                                MIDDLE,
                                "Collapse All");
                 addMenuButton(collapseAll);
+
+                FlowPanel refreshButton = new FlowPanel();
+                refreshButton.add(new SVGImage(resources.refresh()));
+                refreshButton.setStyleName(resources.partStackCss().idePartStackToolbarBottomButton());
+                refreshButton.addStyleName(resources.partStackCss().idePartStackToolbarBottomButtonRight());
+                projectHeader.add(refreshButton);
+
+                refreshButton.addDomHandler(new ClickHandler() {
+                    @Override
+                    public void onClick(ClickEvent event) {
+                        tree.synchronize();
+                    }
+                }, ClickEvent.getType());
 
                 return;
             }

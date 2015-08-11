@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ui.smartTree;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.DivElement;
@@ -93,7 +95,7 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
     protected final FocusImpl focusImpl = FocusImpl.getFocusImplForPanel();
     protected Element focusEl;
     private GroupingHandlerRegistration storeHandlers = new GroupingHandlerRegistration();
-    private   boolean            autoSelect = true;
+    private boolean                     autoSelect    = true;
     protected TreeSelectionModel selectionModel;
 
     protected boolean focusConstrainScheduled  = false;
@@ -262,7 +264,6 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
     }
 
 
-
     @Nullable
     public NodeDescriptor findNode(@Nonnull Element target) {
         Element nodeElement = getNearestParentElement(target, treeStyles.styles().rootContainer());
@@ -399,6 +400,10 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
     }
 
     protected void renderChildren(Node parent) {
+        renderChildren(parent, false);
+    }
+
+    protected void renderChildren(Node parent, boolean resetCache) {
         int depth = nodeStorage.getDepth(parent);
         List<Node> children = parent == null ? nodeStorage.getRootItems() : nodeStorage.getChildren(parent);
         if (children.size() == 0) {
@@ -416,7 +421,11 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
 
         for (Node child : children) {
             NodeDescriptor nodeDescriptor = findNode(child);
-            if (autoExpand) {
+            if (resetCache) {
+                if (nodeLoader.mayHaveChildren(child)) {
+                    nodeLoader.loadChildren(child);
+                }
+            } else if (autoExpand) {
                 setExpanded(child, true);
             } else if (nodeDescriptor.isExpand() && !isLeaf(nodeDescriptor.getNode())) {
                 nodeDescriptor.setExpand(false);
@@ -519,6 +528,7 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
             if (nodeDescriptor != null) {
                 nodesByDom.remove(nodeDescriptor.getDomId());
                 nodeDescriptor.clearElements();
+                nodeStorage.getNodeMap().remove(nodeStorage.getKeyProvider().getKey(node));
             }
         }
 
@@ -1021,11 +1031,8 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
 
     protected void onRemove(StoreRemoveEvent se) {
         NodeDescriptor nodeDescriptor = findNode(se.getNode());
-        Log.info(this.getClass(), "onRemove():1023: " + "nodeDescriptor: " + nodeDescriptor);
         if (nodeDescriptor != null) {
-            Log.info(this.getClass(), "onRemove():1026: " + "");
             if (view.getRootContainer(nodeDescriptor) != null) {
-                // directly call serviceNode.getRootContainer() since it won't be null
                 nodeDescriptor.getRootContainer().removeFromParent();
             }
             unregister(se.getNode());
@@ -1037,10 +1044,8 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
             Node parent = se.getParent();
             NodeDescriptor pNodeDescriptor = findNode(parent);
             if (pNodeDescriptor != null && pNodeDescriptor.isExpanded() && nodeStorage.getChildCount(pNodeDescriptor.getNode()) == 0) {
-                Log.info(this.getClass(), "onRemove():1039: " + "");
                 setExpanded(pNodeDescriptor.getNode(), false);
             } else if (pNodeDescriptor != null && nodeStorage.getChildCount(pNodeDescriptor.getNode()) == 0) {
-                Log.info(this.getClass(), "onRemove():1042: " + "");
                 refresh(parent);
             }
             moveFocus(nodeDescriptor.getRootContainer());
@@ -1082,6 +1087,34 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
         return null;
     }
 
+    public void synchronize() {
+//        List<Node> selectionStorage = selectionModel.selectionStorage;
+//        if (selectionStorage.isEmpty()) {
+//            redraw(null, true);
+//            return;
+//        }
+//
+//        if (Iterables.any(selectionStorage, isRootNode())) {
+//            redraw(null, true);
+//            return;
+//        }
+//
+//        for (Node node : selectionStorage) {
+//            if (!node.isLeaf()) {
+//                nodeLoader.loadChildren(node);
+//            }
+//        }
+
+        //TODO need to improve this block of code to support refreshing dedicated folder
+
+        redraw(null, true);
+    }
+
+    protected void redraw(Node node) {
+        redraw(node, false);
+    }
+
+
     /**
      * Completely redraws the children of the given parent (or all items if parent is null), throwing away details like
      * currently expanded nodes, etc.
@@ -1089,14 +1122,14 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
      * @param parent
      *         the parent of the items to redraw
      */
-    protected void redraw(Node parent) {
+    protected void redraw(Node parent, boolean resetCache) {
         if (!isOrWasAttached()) {
             return;
         }
 
         if (parent == null) {
             clear();
-            renderChildren(null);
+            renderChildren(null, resetCache);
 
             if (autoSelect) {
                 Node child = nodeStorage.getChild(0);
@@ -1110,10 +1143,6 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
             NodeDescriptor nodeDescriptor = findNode(parent);
             nodeDescriptor.setLoaded(true);
             nodeDescriptor.setLoading(false);
-//            if (nodeDescriptor.isChildrenRendered()) {
-//                getContainer(parent).setInnerHTML("");
-//            }
-
             if (nodeDescriptor.isExpand() && !isLeaf(nodeDescriptor.getNode())) {
                 nodeDescriptor.setExpand(false);
                 boolean deep = nodeDescriptor.isExpandDeep();

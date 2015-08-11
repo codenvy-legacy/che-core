@@ -23,6 +23,9 @@ import org.eclipse.che.ide.ui.smartTree.event.ExpandNodeEvent;
 import org.eclipse.che.ide.ui.smartTree.event.ExpandNodeEvent.ExpandNodeHandler;
 import org.eclipse.che.ide.ui.smartTree.event.StoreDataChangeEvent;
 import org.eclipse.che.ide.ui.smartTree.event.StoreDataChangeEvent.StoreDataChangeHandler;
+import org.eclipse.che.ide.ui.smartTree.event.StoreUpdateEvent;
+import org.eclipse.che.ide.ui.smartTree.event.StoreUpdateEvent.StoreUpdateHandler;
+import org.eclipse.che.ide.util.loging.Log;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -46,7 +49,7 @@ public class ExpandStateHandler extends AbstractStateHandler<Set<String>> {
         state = new HashSet<>();
     }
 
-    private class Handler implements CollapseNodeHandler, ExpandNodeHandler, StoreDataChangeHandler {
+    private class Handler implements CollapseNodeHandler, ExpandNodeHandler, StoreDataChangeHandler, StoreUpdateHandler {
         @Override
         public void onCollapse(CollapseNodeEvent event) {
             String key = tree.getNodeStorage().getKeyProvider().getKey(event.getNode());
@@ -66,6 +69,18 @@ public class ExpandStateHandler extends AbstractStateHandler<Set<String>> {
         @Override
         public void onDataChange(StoreDataChangeEvent event) {
             applyState();
+        }
+
+
+        @Override
+        public void onUpdate(StoreUpdateEvent event) {
+            Log.info(this.getClass(), "onUpdate():76: " + "state handler on update fired");
+//            getState().clear();
+//            tree.getNodeStorage().
+//            String key = tree.getNodeStorage().getKeyProvider().getKey(event.getNode());
+//            getState().add(key);
+//
+//            saveState();
         }
     }
 

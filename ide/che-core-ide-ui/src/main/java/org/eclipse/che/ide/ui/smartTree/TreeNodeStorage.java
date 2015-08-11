@@ -449,37 +449,26 @@ public class TreeNodeStorage implements StoreHandlers.HasStoreHandlers {
     }
 
     public boolean remove(Node node) {
-        // deliberately using the modelMap directly to allow this to be null, which allows
-        // items not present to be removed, keeping with Store#remove(M)'s intent.
         NodeDescriptor nodeDescriptor = idToNodeMap.get(getKeyProvider().getKey(node));
         if (nodeDescriptor != null) {
-            Log.info(this.getClass(), "remove():454: " + "node: " + nodeDescriptor);
             Node parent = getParent(node);
-            Log.info(this.getClass(), "remove():458: " + "");
             List<Node> children = getAllChildren(node);
-            Log.info(this.getClass(), "remove():460: " + "");
             int visibleIndex = nodeDescriptor.getParent().getChildren().indexOf(nodeDescriptor);
-            Log.info(this.getClass(), "remove():462: " + "");
             nodeDescriptor.getParent().remove(nodeDescriptor);
-            Log.info(this.getClass(), "remove():464: " + "");
-            List<NodeDescriptor> descriptors = new LinkedList<>();
-            Log.info(this.getClass(), "remove():466: " + "");
-            descriptors.add(nodeDescriptor);
-            for (int i = 0; i < descriptors.size(); i++) {
-                Log.info(this.getClass(), "remove():469: " + "");
-                nodeDescriptor = descriptors.get(i);
-                descriptors.addAll(nodeDescriptor.getChildren());
-
-//                idToNodeMap.remove(getKeyProvider().getKey(nodeDescriptor.getNode()));
-            }
-
             if (visibleIndex != -1) {
-                Log.info(this.getClass(), "remove():477: " + "");
                 fireEvent(new StoreRemoveEvent(visibleIndex, node, parent, children));
+            } else {
+                List<NodeDescriptor> descriptors = new LinkedList<>();
+                descriptors.add(nodeDescriptor);
+                for (int i = 0; i < descriptors.size(); i++) {
+                    nodeDescriptor = descriptors.get(i);
+                    descriptors.addAll(nodeDescriptor.getChildren());
+
+                    idToNodeMap.remove(getKeyProvider().getKey(nodeDescriptor.getNode()));
+                }
             }
             return true;
         }
-        Log.info(this.getClass(), "remove():475: " + "");
         return false;
     }
 
@@ -512,7 +501,6 @@ public class TreeNodeStorage implements StoreHandlers.HasStoreHandlers {
         }
 
         if (parent == null) {
-//            clear();
             roots.clear();
             idToNodeMap.clear();
 
