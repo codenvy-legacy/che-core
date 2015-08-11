@@ -28,7 +28,7 @@ public class AnalyticsModule extends AbstractModule {
 
     private static final Logger LOG = LoggerFactory.getLogger(AnalyticsModule.class);
 
-    private static final String CHE_LOCAL_CONF_DIR  = "che.local.conf.dir";
+    private static final String CHE_LOCAL_CONF_DIR      = "che.local.conf.dir";
     private static final String ANALYTICS_CONF_FILENAME = "analytics.properties";
     
     private static final String METRIC_HANDLER_CLASS_NAME = "analytics.api.metric_handler";
