@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.security.oauth.shared.dto;
 
+import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.dto.shared.DTO;
 
@@ -19,9 +20,8 @@ import java.util.List;
  * @author Max Shaposhnik (mshaposhnik@codenvy.com)
  *
  */
-
 @DTO
-public interface OAuthAuthenticatorDescriptor {
+public interface OAuthAuthenticatorDescriptor extends Hyperlinks {
 
     String getName();
 
@@ -29,10 +29,6 @@ public interface OAuthAuthenticatorDescriptor {
 
     OAuthAuthenticatorDescriptor withName(String name);
 
-
-    List<Link> getLinks();
-
-    void setLinks(List<Link> links);
-
     OAuthAuthenticatorDescriptor withLinks(List<Link> links);
+
 }
