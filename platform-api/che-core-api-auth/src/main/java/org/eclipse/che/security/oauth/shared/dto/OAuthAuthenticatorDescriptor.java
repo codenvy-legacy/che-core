@@ -29,6 +29,7 @@ public interface OAuthAuthenticatorDescriptor extends Hyperlinks {
 
     OAuthAuthenticatorDescriptor withName(String name);
 
+    @Override
     OAuthAuthenticatorDescriptor withLinks(List<Link> links);
 
 }

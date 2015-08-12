@@ -58,7 +58,9 @@ public class OAuthAuthenticationService {
     @Inject
     protected OAuthAuthenticatorProvider providers;
     @Context
-    private UriInfo uriInfo;
+    protected UriInfo                    uriInfo;
+    @Context
+    protected SecurityContext            security;
 
     /**
      * Redirect request to OAuth provider site for authentication|authorization. Client request must contains set of
@@ -224,7 +226,7 @@ public class OAuthAuthenticationService {
 
     @GET
     @Path("invalidate")
-    public Response invalidate(@Context SecurityContext security) throws IOException {
+    public Response invalidate() throws IOException {
         final Principal principal = security.getUserPrincipal();
         OAuthAuthenticator oauth = getAuthenticator(uriInfo.getQueryParameters().getFirst("oauth_provider"));
         if (principal != null && oauth.invalidateToken(principal.getName())) {
