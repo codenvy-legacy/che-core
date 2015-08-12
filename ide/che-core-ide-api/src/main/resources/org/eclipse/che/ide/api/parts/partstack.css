@@ -525,8 +525,10 @@
 }
 
 .ide-Base-Part-Toolbar-Bottom-Button-Right {
-    float: right;
     margin-right: 5px;
+    position: absolute;
+    top: 1px;
+    right: 0px;
 }
 
 .ide-Base-Part-Toolbar-Bottom-Button > svg {
