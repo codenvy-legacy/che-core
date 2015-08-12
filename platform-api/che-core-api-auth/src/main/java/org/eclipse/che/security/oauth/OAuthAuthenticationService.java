@@ -57,6 +57,8 @@ public class OAuthAuthenticationService {
     protected String                     errorPage;
     @Inject
     protected OAuthAuthenticatorProvider providers;
+    @Context
+    private UriInfo uriInfo;
 
     /**
      * Redirect request to OAuth provider site for authentication|authorization. Client request must contains set of
@@ -79,13 +81,11 @@ public class OAuthAuthenticationService {
      * authentication</td><td>yes</td><td>none</td></tr>
      * </table>
      *
-     * @param uriInfo
-     *         UriInfo
      * @return typically Response that redirect user for OAuth provider site
      */
     @GET
     @Path("authenticate")
-    public Response authenticate(@Context UriInfo uriInfo) throws OAuthAuthenticationException {
+    public Response authenticate() throws OAuthAuthenticationException {
         OAuthAuthenticator oauth = getAuthenticator(uriInfo.getQueryParameters().getFirst("oauth_provider"));
         final URL requestUrl = getRequestUrl(uriInfo);
         final List<String> scopes = uriInfo.getQueryParameters().get("scope");
@@ -98,7 +98,7 @@ public class OAuthAuthenticationService {
 
     @GET
     @Path("callback")
-    public Response callback(@Context UriInfo uriInfo) throws OAuthAuthenticationException {
+    public Response callback() throws OAuthAuthenticationException {
         URL requestUrl = getRequestUrl(uriInfo);
         Map<String, List<String>> params = getRequestParameters(getState(requestUrl));
         List<String> errorValues = uriInfo.getQueryParameters().get("error");
@@ -117,12 +117,11 @@ public class OAuthAuthenticationService {
     /**
      * Gets list of installed OAuth authenticators.
      *
-     * @param uriInfo UriInfo
      * @return  list of installed OAuth authenticators
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Set<OAuthAuthenticatorDescriptor> getRegisteredAuthenticators(@Context UriInfo uriInfo) {
+    public Set<OAuthAuthenticatorDescriptor> getRegisteredAuthenticators() {
         Set<OAuthAuthenticatorDescriptor> result = new HashSet<>();
         final UriBuilder uriBuilder = uriInfo.getBaseUriBuilder().clone().path(getClass());
         for (String name : providers.getRegisteredProviderNames()) {
@@ -157,12 +156,11 @@ public class OAuthAuthenticationService {
     /**
      * OAuth 2.0 support pass query parameters 'state' to OAuth authorization server. Authorization server sends it
      * back
-     * to callback URL. Here restore all parameters specified in initial request to {@link
-     * #authenticate(javax.ws.rs.core.UriInfo)} .
+     * to callback URL. Here restore all parameters specified in initial request to {@link * #authenticate} .
      *
      * @param state
      *         query parameter state
-     * @return map contains request parameters to method {@link #authenticate(javax.ws.rs.core.UriInfo)}
+     * @return map contains request parameters to method {@link #authenticate}
      */
     protected Map<String, List<String>> getRequestParameters(String state) {
         Map<String, List<String>> params = new HashMap<>();
@@ -188,12 +186,12 @@ public class OAuthAuthenticationService {
                         value = pair.substring(eq + 1);
                     }
 
-                    List<String> l = params.get(name);
-                    if (l == null) {
-                        l = new ArrayList<>();
-                        params.put(name, l);
+                    List<String> paramValues = params.get(name);
+                    if (paramValues == null) {
+                        paramValues = new ArrayList<>();
+                        params.put(name, paramValues);
                     }
-                    l.add(value);
+                    paramValues.add(value);
                 }
             }
         }
@@ -226,7 +224,7 @@ public class OAuthAuthenticationService {
 
     @GET
     @Path("invalidate")
-    public Response invalidate(@Context UriInfo uriInfo, @Context SecurityContext security) throws IOException {
+    public Response invalidate(@Context SecurityContext security) throws IOException {
         final Principal principal = security.getUserPrincipal();
         OAuthAuthenticator oauth = getAuthenticator(uriInfo.getQueryParameters().getFirst("oauth_provider"));
         if (principal != null && oauth.invalidateToken(principal.getName())) {
