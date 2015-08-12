@@ -84,7 +84,7 @@ import static org.eclipse.che.ide.api.event.ItemEvent.ItemOperation.DELETED;
  */
 @Singleton
 public class ProjectExplorerPartPresenter extends BasePresenter implements ProjectExplorerView.ActionDelegate,
-        ProjectExplorerPart, HasView, RefreshProjectTreeHandler {
+                                                                           ProjectExplorerPart, HasView, RefreshProjectTreeHandler {
     private ProjectExplorerView            view;
     private EventBus                       eventBus;
     private ContextMenu                    contextMenu;
@@ -310,7 +310,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
                     updateDataTreeNode(parent, newParenNodePath, treeNodeIterator);
                 }
             }
-         });
+        });
     }
 
     private void updateDataTreeNode(final StorableNode parent, final String renamedNodeNewPath, final Iterator<TreeNode<?>> children) {

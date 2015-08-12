@@ -44,10 +44,10 @@ import org.vectomatic.dom.svg.ui.SVGImage;
  *
  * @author Evgen Vidolob
  */
-public class ActionButton extends Composite implements MouseOverHandler, 
-													   MouseOutHandler, 
-													   MouseDownHandler, 
-													   MouseUpHandler,
+public class ActionButton extends Composite implements MouseOverHandler,
+                                                       MouseOutHandler,
+                                                       MouseDownHandler,
+                                                       MouseUpHandler,
                                                        ClickHandler {
 
     private final Presentation       presentation;
@@ -68,12 +68,12 @@ public class ActionButton extends Composite implements MouseOverHandler,
     private ActionButtonSynchronizer actionButtonSynchronizer;
     private ToolbarResources toolbarResources;
 
-    public ActionButton(Action action, 
-						ActionManager actionManager, 
-						Presentation presentation, 
-						String place,
-						PerspectiveManager perspectiveManager,
-						ToolbarResources toolbarResources) {
+    public ActionButton(Action action,
+                        ActionManager actionManager,
+                        Presentation presentation,
+                        String place,
+                        PerspectiveManager perspectiveManager,
+                        ToolbarResources toolbarResources) {
         this.actionManager = actionManager;
         this.perspectiveManager = perspectiveManager;
         this.toolbarResources = toolbarResources;

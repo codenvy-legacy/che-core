@@ -11,6 +11,7 @@
 package org.eclipse.che.inject.lifecycle;
 
 import org.eclipse.che.commons.schedule.Launcher;
+
 import com.google.inject.Injector;
 import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
@@ -20,22 +21,31 @@ import com.google.inject.spi.TypeListener;
 
 /**
  * Launch  method marked with @ScheduleCron @ScheduleDelay and @ScheduleRate annotations using  Launcher
- *
+ * <p/>
  * Note do not inject this module. Use {@link org.eclipse.che.commons.schedule.executor.ScheduleModule}
+ *
  * @author Sergii Kabashniuk
  */
 public class InternalScheduleModule extends LifecycleModule {
 
     @Override
     protected void configure() {
-        final Provider<Launcher> launcher = getProvider(Launcher.class);
-        final Provider<Injector> injector = getProvider(Injector.class);
-        bindListener(Matchers.any(), new TypeListener() {
-            @Override
-            public <T> void hear(final TypeLiteral<T> type, final TypeEncounter<T> encounter) {
-                encounter.register(new ScheduleInjectionListener<T>(launcher, injector));
-            }
-        });
+        bindListener(Matchers.any(), new ScheduleTypeListener(getProvider(Launcher.class), getProvider(Injector.class)));
+    }
+
+    private static class ScheduleTypeListener implements TypeListener {
+        private final Provider<Launcher> launcher;
+        private final Provider<Injector> injector;
+
+        private ScheduleTypeListener(Provider<Launcher> launcher, Provider<Injector> injector) {
+            this.launcher = launcher;
+            this.injector = injector;
+        }
+
+        @Override
+        public <I> void hear(TypeLiteral<I> type, TypeEncounter<I> encounter) {
+            encounter.register(new ScheduleInjectionListener<I>(launcher, injector));
+        }
     }
 
 

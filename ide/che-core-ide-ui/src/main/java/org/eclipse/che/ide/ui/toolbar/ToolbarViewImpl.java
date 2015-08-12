@@ -75,10 +75,10 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
 
     /** Create view with given instance of resources. */
     @Inject
-    public ToolbarViewImpl(ActionManager actionManager, 
-						   KeyBindingAgent keyBindingAgent,
-						   ToolbarResources toolbarResources,
-						   Provider<PerspectiveManager> managerProvider) {
+    public ToolbarViewImpl(ActionManager actionManager,
+                           KeyBindingAgent keyBindingAgent,
+                           ToolbarResources toolbarResources,
+                           Provider<PerspectiveManager> managerProvider) {
         this.actionManager = actionManager;
         this.keyBindingAgent = keyBindingAgent;
         this.managerProvider = managerProvider;
@@ -188,12 +188,12 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
                 leftToolbar.add(customComponent);
             } else if (action instanceof ActionGroup && ((ActionGroup)action).isPopup()) {
                 ActionPopupButton button = new ActionPopupButton((ActionGroup)action,
-                                                                actionManager,
-                                                                keyBindingAgent,
-                                                                presentationFactory,
-                                                                place,
-                                                                managerProvider,
-                                                                toolbarResources);
+                                                                 actionManager,
+                                                                 keyBindingAgent,
+                                                                 presentationFactory,
+                                                                 place,
+                                                                 managerProvider,
+                                                                 toolbarResources);
                 leftToolbar.add(button);
             } else {
                 final ActionButton button = createToolbarButton(action);
@@ -220,7 +220,7 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
                                                                  keyBindingAgent,
                                                                  presentationFactory,
                                                                  place,
-																 managerProvider,
+                                                                 managerProvider,
                                                                  toolbarResources);
                 rightToolbar.add(button);
             } else {
