@@ -45,4 +45,11 @@ public interface MachineConfigDto extends MachineConfig {
     void setType(String type);
 
     MachineConfigDto withType(String type);
+
+    @Override
+    int getMemorySize();
+
+    void setMemorySize(int memorySize);
+
+    MachineConfigDto withMemorySize(int memorySize);
 }

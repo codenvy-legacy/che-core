@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server;
 
+import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
@@ -60,7 +61,7 @@ public class RuntimeWorkspaceRegistry {
     }
 
     public RuntimeWorkspace start(UsersWorkspace userWorkspace, String envName)
-            throws ForbiddenException, NotFoundException, ServerException, ConflictException, BadRequestException {
+            throws ConflictException, ServerException, BadRequestException, NotFoundException {
 
         final RuntimeWorkspaceImpl runtimeWorkspace = new RuntimeWorkspaceImpl(userWorkspace, null, envName);
         runtimeWorkspace.setStatus(STARTING);
@@ -73,7 +74,6 @@ public class RuntimeWorkspaceRegistry {
         final Environment environment = runtimeWorkspace.getEnvironments().get(envName);
         final List<Machine> machines = startEnvironment(environment, userWorkspace.getId());
 
-        runtimeWorkspace.setStatus(RUNNING);
         for (Machine machine : machines) {
             if (machine.isDev()) {
                 runtimeWorkspace.setDevMachine(machine);
@@ -81,31 +81,9 @@ public class RuntimeWorkspaceRegistry {
             }
         }
         runtimeWorkspace.setMachines(machines);
+        runtimeWorkspace.setStatus(RUNNING);
 
         return runtimeWorkspace;
-    }
-
-    private List<Machine> startEnvironment(Environment environment, String workspaceId) throws BadRequestException {
-        /* todo replace with environments management
-           for now we consider environment is:
-           - recipe with type "docker"
-           - recipe script will be ignored
-           - list of docker machines configs
-           - one of machines in this list is dev machine
-        */
-        String envRecipeType = environment.getRecipe() == null ? null : environment.getRecipe().getType();
-        if (!"docker".equals(envRecipeType)) {
-            throw new BadRequestException("Invalid environment recipe type " + envRecipeType);
-        }
-
-        final List<Machine> machines = new ArrayList<>();
-
-        for (MachineConfig machineConfig : environment.getMachineConfigs()) {
-            final Machine machine = machineClient.start(machineConfig, workspaceId);
-            machines.add(machine);
-        }
-
-        return machines;
     }
 
     public void stop(String workspaceId) throws ForbiddenException, NotFoundException, ServerException {
@@ -146,6 +124,48 @@ public class RuntimeWorkspaceRegistry {
             runtimeWorkspaces = Collections.emptyList();
         }
         return runtimeWorkspaces;
+    }
+
+    private List<Machine> startEnvironment(Environment environment, String workspaceId)
+            throws BadRequestException, ServerException, NotFoundException, ConflictException {
+        /* todo replace with environments management
+           for now we consider environment is:
+           - recipe with type "docker"
+           - recipe script will be ignored
+           - list of docker machines configs
+           - one of machines in this list is dev machine
+        */
+        String envRecipeType = environment.getRecipe() == null ? null : environment.getRecipe().getType();
+        if (!"docker".equals(envRecipeType)) {
+            throw new BadRequestException("Invalid environment recipe type " + envRecipeType);
+        }
+
+        final List<Machine> machines = new ArrayList<>();
+
+        final MachineConfig devMachine = findDevMachine(environment);
+        machines.add(machineClient.start(devMachine, workspaceId));
+
+        for (MachineConfig machineConfig : environment.getMachineConfigs()) {
+            if (!machineConfig.isDev()) {
+                try {
+                    machines.add(machineClient.start(machineConfig, workspaceId));
+                } catch (ApiException e) {
+                    // TODO log to workspace logger
+                }
+            }
+        }
+
+        return machines;
+    }
+
+    private MachineConfig findDevMachine(Environment environment) throws ServerException {
+        for (MachineConfig machineConfig : environment.getMachineConfigs()) {
+            if (machineConfig.isDev()) {
+                return machineConfig;
+            }
+        }
+
+        throw new ServerException("Dev machine not found in workspace environment " + environment.getName());
     }
 
     private void add(RuntimeWorkspaceImpl runtimeWorkspace) throws ConflictException, ServerException {

@@ -34,4 +34,7 @@ public interface MachineConfig {
      * Machine type (i.e. "docker").
      */
     String getType();
+
+    /** Get memory size (in megabytes) that is allocated for starting machine. */
+    int getMemorySize();
 }

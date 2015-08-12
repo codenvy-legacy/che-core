@@ -23,12 +23,16 @@ public interface MachineDto extends MachineConfigDto, Machine {
 
     MachineDto withId(String id);
 
+    @Override
     MachineDto withName(String name);
 
+    @Override
     MachineDto withDev(boolean dev);
 
+    @Override
     MachineDto withSource(MachineSourceDto source);
 
+    @Override
     MachineDto withType(String type);
 
     @Override
@@ -48,4 +52,7 @@ public interface MachineDto extends MachineConfigDto, Machine {
     Map<String, ServerDto> getServers();
 
     MachineDto withServers(Map<String, ServerDto> servers);
+
+    @Override
+    MachineDto withMemorySize(int memorySize);
 }

@@ -12,10 +12,10 @@ package org.eclipse.che.api.machine.server;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
-import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.machine.Command;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.util.CompositeLineConsumer;
@@ -122,7 +122,7 @@ public class MachineManager {
      * @throws MachineException
      *         if any other exception occurs during starting
      */
-    public MachineImpl create(final RecipeMachineCreationMetadata machineCreationMetadata)
+    public MachineImpl create(final RecipeMachineCreationMetadata machineCreationMetadata, boolean async)
             throws MachineException, NotFoundException, UnsupportedRecipeException, ConflictException {
         final MachineRecipe machineRecipe = machineCreationMetadata.getRecipe();
         final InstanceProvider instanceProvider = machineInstanceProviders.getProvider(machineCreationMetadata.getType());
@@ -135,17 +135,18 @@ public class MachineManager {
         return createMachine(machineCreationMetadata.getType(),
                              machineCreationMetadata.getRecipe(),
                              machineCreationMetadata.getWorkspaceId(),
-                             machineCreationMetadata.isBindWorkspace(),
+                             machineCreationMetadata.isDev(),
                              machineCreationMetadata,
+                             async,
                              new MachineInstanceCreator() {
                                  @Override
-                                 public Instance createInstance(Machine machine, LineConsumer machineLogger) throws ApiException {
+                                 public Instance createInstance(Machine machine, LineConsumer machineLogger) throws MachineException {
 
                                      return instanceProvider.createInstance(machine.getRecipe(),
                                                                             machine.getId(),
                                                                             machine.getOwner(),
                                                                             machine.getWorkspaceId(),
-                                                                            machine.isWorkspaceBound(),
+                                                                            machine.isDev(),
                                                                             machine.getDisplayName(),
                                                                             machine.getMemorySize(),
                                                                             machineLogger);
@@ -170,7 +171,7 @@ public class MachineManager {
      * @throws MachineException
      *         if any other exception occurs during starting
      */
-    public MachineImpl create(final SnapshotMachineCreationMetadata machineCreationMetadata)
+    public MachineImpl create(final SnapshotMachineCreationMetadata machineCreationMetadata, boolean async)
             throws NotFoundException, SnapshotException, MachineException, ConflictException {
         final SnapshotImpl snapshot = getSnapshot(machineCreationMetadata.getSnapshotId());
         final InstanceProvider instanceProvider = machineInstanceProviders.getProvider(snapshot.getType());
@@ -180,19 +181,24 @@ public class MachineManager {
                              snapshot.getWorkspaceId(),
                              snapshot.isWorkspaceBound(),
                              machineCreationMetadata,
+                             async,
                              new MachineInstanceCreator() {
                                  @Override
-                                 public Instance createInstance(Machine machine, LineConsumer machineLogger) throws ApiException {
+                                 public Instance createInstance(Machine machine, LineConsumer machineLogger) throws MachineException {
 
-                                     return instanceProvider.createInstance(snapshot.getInstanceKey(),
-                                                                            machine.getId(),
-                                                                            machine.getOwner(),
-                                                                            machine.getWorkspaceId(),
-                                                                            machine.isWorkspaceBound(),
-                                                                            machine.getDisplayName(),
-                                                                            machine.getRecipe(),
-                                                                            machine.getMemorySize(),
-                                                                            machineLogger);
+                                     try {
+                                         return instanceProvider.createInstance(snapshot.getInstanceKey(),
+                                                                                machine.getId(),
+                                                                                machine.getOwner(),
+                                                                                machine.getWorkspaceId(),
+                                                                                machine.isDev(),
+                                                                                machine.getDisplayName(),
+                                                                                machine.getRecipe(),
+                                                                                machine.getMemorySize(),
+                                                                                machineLogger);
+                                     } catch (NotFoundException e) {
+                                         throw new MachineException(e.getLocalizedMessage(), e);
+                                     }
                                  }
                              });
     }
@@ -200,8 +206,9 @@ public class MachineManager {
     private MachineImpl createMachine(String machineType,
                                       Recipe recipe,
                                       final String workspaceId,
-                                      final boolean isWorkspaceBound,
+                                      final boolean isDev,
                                       final MachineCreationMetadata creationMetadata,
+                                      boolean async,
                                       final MachineInstanceCreator instanceCreator)
             throws MachineException, NotFoundException, ConflictException {
         for (MachineImpl machine : machineRegistry.getStates()) {
@@ -223,7 +230,7 @@ public class MachineManager {
                                                          recipe,
                                                          workspaceId,
                                                          creator,
-                                                         isWorkspaceBound,
+                                                         isDev,
                                                          creationMetadata.getDisplayName(),
                                                          machineRamSize,
                                                          MachineStatus.CREATING);
@@ -231,48 +238,63 @@ public class MachineManager {
         try {
             machineRegistry.add(machineState);
 
-            executor.execute(ThreadLocalPropagateContext.wrap(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
-                                                       .withEventType(MachineStatusEvent.EventType.CREATING)
-                                                       .withMachineId(machineId));
-
-                        final Instance instance = instanceCreator.createInstance(machineState, machineLogger);
-
-                        machineRegistry.update(instance);
-
-                        instance.setStatus(MachineStatus.RUNNING);
-
-                        eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
-                                                       .withEventType(MachineStatusEvent.EventType.RUNNING)
-                                                       .withMachineId(machineId));
-                    } catch (Exception error) {
-                        eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
-                                                       .withEventType(MachineStatusEvent.EventType.ERROR)
-                                                       .withMachineId(machineId)
-                                                       .withError(error.getLocalizedMessage()));
-
+            if (async) {
+                executor.execute(ThreadLocalPropagateContext.wrap(new Runnable() {
+                    @Override
+                    public void run() {
                         try {
-                            LOG.error(error.getLocalizedMessage(), error);
-                            machineRegistry.remove(machineId);
-                            machineLogger.writeLine(String.format("[ERROR] %s", error.getLocalizedMessage()));
-                            machineLogger.close();
-                        } catch (IOException | NotFoundException e) {
-                            LOG.error(e.getMessage());
+                            instanceCreator.creteMachine(machineState, machineLogger);
+                        } catch (MachineException e) {
+                            LOG.error(e.getLocalizedMessage(), e);
                         }
                     }
-                }
-            }));
+                }));
+            } else {
+                instanceCreator.creteMachine(machineState, machineLogger);
+            }
+
             return machineState;
         } catch (ConflictException e) {
             throw new MachineException(e.getLocalizedMessage(), e);
         }
     }
 
-    private interface MachineInstanceCreator {
-        Instance createInstance(Machine machine, LineConsumer machineLogger) throws ApiException;
+    private abstract class MachineInstanceCreator {
+        public Instance creteMachine(MachineImpl machine, LineConsumer machineLogger) throws MachineException {
+            try {
+                eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
+                                               .withEventType(MachineStatusEvent.EventType.CREATING)
+                                               .withMachineId(machine.getId()));
+
+                final Instance instance = this.createInstance(machine, machineLogger);
+
+                machineRegistry.update(instance);
+
+                instance.setStatus(MachineStatus.RUNNING);
+
+                eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
+                                               .withEventType(MachineStatusEvent.EventType.RUNNING)
+                                               .withMachineId(machine.getId()));
+
+                return instance;
+            } catch (ServerException | ConflictException e) {
+                eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
+                                               .withEventType(MachineStatusEvent.EventType.ERROR)
+                                               .withMachineId(machine.getId())
+                                               .withError(e.getLocalizedMessage()));
+
+                try {
+                    machineLogger.writeLine(String.format("[ERROR] %s", e.getLocalizedMessage()));
+                    machineLogger.close();
+                    machineRegistry.remove(machine.getId());
+                } catch (IOException | NotFoundException e1) {
+                    LOG.error(e1.getLocalizedMessage());
+                }
+                throw new MachineException(e.getLocalizedMessage(), e);
+            }
+        }
+
+        protected abstract Instance createInstance(Machine machine, LineConsumer machineLogger) throws MachineException;
     }
 
     /**
@@ -442,7 +464,7 @@ public class MachineManager {
                                                        machine.getWorkspaceId(),
                                                        new ArrayList<>(machine.getProjects()),
                                                        description,
-                                                       machine.isWorkspaceBound());
+                                                       machine.isDev());
 
         executor.submit(ThreadLocalPropagateContext.wrap(new Runnable() {
             @Override
@@ -643,12 +665,14 @@ public class MachineManager {
      *
      * @param machineId
      *         id of machine that should be destroyed
+     * @param async
+     *         should destroying be asynchronous or not
      * @throws NotFoundException
      *         if machine with specified id not found
      * @throws MachineException
      *         if other error occur
      */
-    public void destroy(final String machineId) throws NotFoundException, MachineException {
+    public void destroy(final String machineId, boolean async) throws NotFoundException, MachineException {
         final Instance machine = getMachine(machineId);
 
         machine.setStatus(MachineStatus.DESTROYING);
@@ -657,27 +681,35 @@ public class MachineManager {
                                        .withEventType(MachineStatusEvent.EventType.DESTROYING)
                                        .withMachineId(machineId));
 
-        executor.execute(ThreadLocalPropagateContext.wrap(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    machine.destroy();
-
-                    machineRegistry.remove(machine.getId());
-
-                    eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
-                                                   .withEventType(MachineStatusEvent.EventType.DESTROYED)
-                                                   .withMachineId(machineId));
-                } catch (MachineException | NotFoundException e) {
-                    LOG.error(e.getMessage(), e);
-                } finally {
+        if (async) {
+            executor.execute(ThreadLocalPropagateContext.wrap(new Runnable() {
+                @Override
+                public void run() {
                     try {
-                        machine.getLogger().close();
-                    } catch (IOException ignore) {
+                        doDestroy(machine);
+                    } catch (NotFoundException | MachineException e) {
+                        LOG.error(e.getLocalizedMessage(), e);
                     }
                 }
-            }
-        }));
+            }));
+        } else {
+            doDestroy(machine);
+        }
+    }
+
+    private void doDestroy(Instance machine) throws MachineException, NotFoundException {
+        machine.destroy();
+
+        try {
+            machine.getLogger().close();
+        } catch (IOException ignore) {
+        }
+
+        machineRegistry.remove(machine.getId());
+
+        eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
+                                       .withEventType(MachineStatusEvent.EventType.DESTROYED)
+                                       .withMachineId(machine.getId()));
     }
 
     public List<MachineImpl> getMachinesStates() throws MachineException {
@@ -793,7 +825,7 @@ public class MachineManager {
         try {
             for (MachineImpl machine : machineRegistry.getStates()) {
                 try {
-                    destroy(machine.getId());
+                    destroy(machine.getId(), true);
                 } catch (Exception e) {
                     LOG.warn(e.getMessage());
                 }

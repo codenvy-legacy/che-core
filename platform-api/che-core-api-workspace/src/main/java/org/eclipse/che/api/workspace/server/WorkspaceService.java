@@ -513,7 +513,7 @@ public class WorkspaceService extends Service {
     private MachineConfigImpl asImpl(MachineConfigDto machineCfgDto) {
         return new MachineConfigImpl().setName(machineCfgDto.getName())
                                       .setType(machineCfgDto.getType())
-                                      .setIsDev(machineCfgDto.isDev())
+                                      .setDev(machineCfgDto.isDev())
                                       .setSource(new MachineSourceImpl(machineCfgDto.getSource().getType(),
                                                                        machineCfgDto.getSource().getLocation()));
     }

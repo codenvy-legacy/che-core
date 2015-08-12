@@ -28,6 +28,7 @@ public class MachineConfigImpl implements MachineConfig {
     private String            name;
     private String            type;
     private MachineSourceImpl source;
+    private int               memorySize;
 
     @Override
     public String getName() {
@@ -54,7 +55,7 @@ public class MachineConfigImpl implements MachineConfig {
         return isDev;
     }
 
-    public MachineConfigImpl setIsDev(boolean isDev) {
+    public MachineConfigImpl setDev(boolean isDev) {
         this.isDev = isDev;
         return this;
     }
@@ -62,6 +63,15 @@ public class MachineConfigImpl implements MachineConfig {
     @Override
     public String getType() {
         return type;
+    }
+
+    @Override
+    public int getMemorySize() {
+        return memorySize;
+    }
+
+    public void setMemorySize(int memorySize) {
+        this.memorySize = memorySize;
     }
 
     public MachineConfigImpl setType(String type) {
@@ -77,6 +87,7 @@ public class MachineConfigImpl implements MachineConfig {
         return isDev == other.isDev &&
                Objects.equals(name, other.name) &&
                Objects.equals(source, other.source) &&
+               Objects.equals(memorySize, other.memorySize) &&
                Objects.equals(type, other.type);
     }
 
@@ -87,6 +98,7 @@ public class MachineConfigImpl implements MachineConfig {
         hash = hash * 31 + Objects.hashCode(name);
         hash = hash * 31 + Objects.hashCode(type);
         hash = hash * 31 + Objects.hashCode(source);
+        hash = hash * 31 + Objects.hashCode(memorySize);
         return hash;
     }
 
@@ -96,7 +108,8 @@ public class MachineConfigImpl implements MachineConfig {
                "isDev=" + isDev +
                ", name='" + name + '\'' +
                ", type='" + type + '\'' +
-               ", source=" + source +
+               ", source=" + source + '\'' +
+               ", memorySize=" + memorySize +
                '}';
     }
 }

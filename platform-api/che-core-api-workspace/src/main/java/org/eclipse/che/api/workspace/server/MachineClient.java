@@ -10,6 +10,10 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server;
 
+import org.eclipse.che.api.core.BadRequestException;
+import org.eclipse.che.api.core.ConflictException;
+import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.machine.MachineConfig;
 import org.eclipse.che.api.core.model.workspace.Machine;
 
@@ -17,7 +21,8 @@ import org.eclipse.che.api.core.model.workspace.Machine;
  * @author Alexander Garagatyi
  */
 public interface MachineClient {
-    Machine start(MachineConfig machineConfig, String workspaceId);
+    Machine start(MachineConfig machineConfig, String workspaceId)
+            throws ServerException, BadRequestException, NotFoundException, ConflictException;
 
-    void destroy(String machineId);
+    void destroy(String machineId) throws NotFoundException, ServerException;
 }

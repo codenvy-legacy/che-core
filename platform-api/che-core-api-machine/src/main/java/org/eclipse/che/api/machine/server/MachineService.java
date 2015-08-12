@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.server;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.common.io.CharStreams;
 
@@ -36,7 +37,6 @@ import org.eclipse.che.api.machine.shared.dto.SnapshotDescriptor;
 import org.eclipse.che.api.machine.shared.dto.SnapshotMachineCreationMetadata;
 import org.eclipse.che.api.machine.shared.dto.recipe.MachineRecipe;
 import org.eclipse.che.commons.env.EnvironmentContext;
-import org.eclipse.che.commons.lang.Strings;
 import org.eclipse.che.dto.server.DtoFactory;
 
 import javax.annotation.security.RolesAllowed;
@@ -91,7 +91,7 @@ public class MachineService {
 
         checkCurrentUserPermissions(machineFromRecipeMetadata.getWorkspaceId());
 
-        final MachineImpl machine = machineManager.create(machineFromRecipeMetadata);
+        final MachineImpl machine = machineManager.create(machineFromRecipeMetadata, true);
 
         return toDescriptor(machine);
     }
@@ -110,7 +110,7 @@ public class MachineService {
         checkCurrentUserPermissions(snapshot);
         checkCurrentUserPermissions(snapshot.getWorkspaceId());
 
-        final MachineImpl machine = machineManager.create(machineFromSnapshotMetadata);
+        final MachineImpl machine = machineManager.create(machineFromSnapshotMetadata, true);
 
         return toDescriptor(machine);
     }
@@ -193,7 +193,7 @@ public class MachineService {
             throws NotFoundException, ServerException, ForbiddenException {
         checkCurrentUserPermissions(machineManager.getMachine(machineId));
 
-        machineManager.destroy(machineId);
+        machineManager.destroy(machineId, true);
     }
 
     @Path("/snapshot")
@@ -396,7 +396,7 @@ public class MachineService {
                                                                    .withStatus(machineState.getStatus())
                                                                    .withOwner(machineState.getOwner())
                                                                    .withWorkspaceId(machineState.getWorkspaceId())
-                                                                   .withWorkspaceBound(machineState.isWorkspaceBound())
+                                                                   .withWorkspaceBound(machineState.isDev())
                                                                    .withProjects(projectDescriptors)
                                                                    .withDisplayName(machineState.getDisplayName())
                                                                    .withMemorySize(machineState.getMemorySize());
@@ -425,7 +425,7 @@ public class MachineService {
                                                               .withStatus(machine.getStatus())
                                                               .withOwner(machine.getOwner())
                                                               .withWorkspaceId(machine.getWorkspaceId())
-                                                              .withWorkspaceBound(machine.isWorkspaceBound())
+                                                              .withWorkspaceBound(machine.isDev())
                                                               .withProjects(projectDescriptors)
                                                               .withDisplayName(machine.getDisplayName())
                                                               .withMemorySize(machine.getMemorySize());

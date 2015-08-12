@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server;
 
+import com.google.common.base.Strings;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
 
@@ -28,7 +29,6 @@ import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
 import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
 import org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent;
 import org.eclipse.che.commons.env.EnvironmentContext;
-import org.eclipse.che.commons.lang.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -159,37 +159,6 @@ public class WorkspaceManager {
         return workspace;
     }
 
-    private void startWorkspaceAsync(final UsersWorkspaceImpl usersWorkspace, final String envName) {
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                startWorkspaceSync(usersWorkspace, envName);
-            }
-        });
-    }
-
-    private void startWorkspaceSync(final UsersWorkspaceImpl usersWorkspace, final String envName) {
-        eventService.publish(newDto(WorkspaceStatusEvent.class)
-                                     .withEventType(STARTING)
-                                     .withWorkspaceId(usersWorkspace.getId()));
-
-        try {
-            workspaceRegistry.start(usersWorkspace, envName);
-
-            eventService.publish(newDto(WorkspaceStatusEvent.class)
-                                         .withEventType(RUNNING)
-                                         .withWorkspaceId(usersWorkspace.getId()));
-
-        } catch (ForbiddenException | NotFoundException | ServerException | ConflictException | BadRequestException e) {
-            eventService.publish(newDto(WorkspaceStatusEvent.class)
-                                         .withEventType(ERROR)
-                                         .withWorkspaceId(usersWorkspace.getId())
-                                         .withError(e.getLocalizedMessage()));
-
-            LOG.error(e.getLocalizedMessage(), e);
-        }
-    }
-
     public void stopWorkspace(String workspaceId) throws ServerException, NotFoundException, ForbiddenException, BadRequestException {
         requiredNotNull(workspaceId, "Workspace id");
 
@@ -219,24 +188,6 @@ public class WorkspaceManager {
                  EnvironmentContext.getCurrent().getUser().getId());
 
         return newWorkspace;
-    }
-
-    private UsersWorkspaceImpl fromConfig(final WorkspaceConfig cfg) throws BadRequestException, ForbiddenException, ServerException {
-        requiredNotNull(cfg, "Workspace config");
-        requiredNotNull(cfg.getDefaultEnvName(), "Workspace default environment");
-        requiredNotNull(cfg.getEnvironments(), "Workspace default environment configuration");
-        requiredNotNull(cfg.getEnvironments().get(cfg.getDefaultEnvName()), "Workspace default environment configuration");
-        validateAttributes(cfg.getAttributes());
-
-        final UsersWorkspaceImpl workspace = new UsersWorkspaceImpl(cfg, generateWorkspaceId(), getCurrentUserId());
-
-        if (Strings.isNullOrEmpty(workspace.getName())) {
-            workspace.setName(generateWorkspaceName());
-        } else {
-            validateName(cfg.getName());
-        }
-
-        return workspace;
     }
 
     public UsersWorkspace updateWorkspace(String workspaceId, final WorkspaceConfig workspace)
@@ -303,6 +254,55 @@ public class WorkspaceManager {
 
     /*******************************/
 
+    private void startWorkspaceAsync(final UsersWorkspaceImpl usersWorkspace, final String envName) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                startWorkspaceSync(usersWorkspace, envName);
+            }
+        });
+    }
+
+    private void startWorkspaceSync(final UsersWorkspaceImpl usersWorkspace, final String envName) {
+        eventService.publish(newDto(WorkspaceStatusEvent.class)
+                                     .withEventType(STARTING)
+                                     .withWorkspaceId(usersWorkspace.getId()));
+
+        try {
+            workspaceRegistry.start(usersWorkspace, envName);
+
+            eventService.publish(newDto(WorkspaceStatusEvent.class)
+                                         .withEventType(RUNNING)
+                                         .withWorkspaceId(usersWorkspace.getId()));
+
+        } catch (ServerException | ConflictException | BadRequestException | NotFoundException e) {
+            eventService.publish(newDto(WorkspaceStatusEvent.class)
+                                         .withEventType(ERROR)
+                                         .withWorkspaceId(usersWorkspace.getId())
+                                         .withError(e.getLocalizedMessage()));
+
+            LOG.error(e.getLocalizedMessage(), e);
+        }
+    }
+
+    private UsersWorkspaceImpl fromConfig(final WorkspaceConfig cfg) throws BadRequestException, ForbiddenException, ServerException {
+        requiredNotNull(cfg, "Workspace config");
+        requiredNotNull(cfg.getDefaultEnvName(), "Workspace default environment");
+        requiredNotNull(cfg.getEnvironments(), "Workspace default environment configuration");
+        requiredNotNull(cfg.getEnvironments().get(cfg.getDefaultEnvName()), "Workspace default environment configuration");
+        validateAttributes(cfg.getAttributes());
+
+        final UsersWorkspaceImpl workspace = new UsersWorkspaceImpl(cfg, generateWorkspaceId(), getCurrentUserId());
+
+        if (Strings.isNullOrEmpty(workspace.getName())) {
+            workspace.setName(generateWorkspaceName());
+        } else {
+            validateName(cfg.getName());
+        }
+
+        return workspace;
+    }
+
     private void validateName(String workspaceName) throws BadRequestException {
         if (Strings.isNullOrEmpty(workspaceName)) {
             throw new BadRequestException("Workspace name required");
@@ -339,7 +339,7 @@ public class WorkspaceManager {
      *
      * @param attributeName
      *         attribute name to check
-     * @throws org.eclipse.che.api.core.ConflictException
+     * @throws org.eclipse.che.api.core.ForbiddenException
      *         when attribute name is {@code null}, empty or it starts with "codenvy"
      */
     // TODO rename restricted attribute suffix to 'che:'
