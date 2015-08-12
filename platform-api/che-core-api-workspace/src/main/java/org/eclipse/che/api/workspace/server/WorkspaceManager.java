@@ -165,12 +165,20 @@ public class WorkspaceManager {
         eventService.publish(newDto(WorkspaceStatusEvent.class)
                                      .withEventType(STOPPING)
                                      .withWorkspaceId(workspaceId));
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    workspaceRegistry.stop(workspaceId);
+                } catch (ForbiddenException | NotFoundException | ServerException e) {
+                    LOG.error(e.getLocalizedMessage(), e);
+                }
 
-        workspaceRegistry.stop(workspaceId);
-
-        eventService.publish(newDto(WorkspaceStatusEvent.class)
-                                     .withEventType(WorkspaceStatusEvent.EventType.STOPPED)
-                                     .withWorkspaceId(workspaceId));
+                eventService.publish(newDto(WorkspaceStatusEvent.class)
+                                             .withEventType(WorkspaceStatusEvent.EventType.STOPPED)
+                                             .withWorkspaceId(workspaceId));
+            }
+        });
     }
 
     public UsersWorkspace createWorkspace(final WorkspaceConfig workspaceConfig, final String accountId)
