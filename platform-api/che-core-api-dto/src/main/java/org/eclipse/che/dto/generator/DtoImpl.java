@@ -211,7 +211,7 @@ abstract class DtoImpl {
 
     private void addDtoGetters(Class<?> dto, Map<String, Method> getters) {
         for (Method method : dto.getDeclaredMethods()) {
-            if (isDtoGetter(method)) {
+            if (!method.isDefault() && isDtoGetter(method)) {
                 getters.put(method.getName(), method);
             }
         }
@@ -219,7 +219,7 @@ abstract class DtoImpl {
 
     private void addDtoGetters(Class<?> dto, List<Method> getters) {
         for (Method method : dto.getDeclaredMethods()) {
-            if (isDtoGetter(method)) {
+            if (!method.isDefault() && isDtoGetter(method)) {
                 getters.add(method);
             }
         }
