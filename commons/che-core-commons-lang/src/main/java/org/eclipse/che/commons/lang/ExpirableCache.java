@@ -14,7 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * @depricated Use Guava cache or other cache implementations
+ * @deprecated Use Guava cache or other cache implementations
  */
 @Deprecated
 public class ExpirableCache<K, V> {

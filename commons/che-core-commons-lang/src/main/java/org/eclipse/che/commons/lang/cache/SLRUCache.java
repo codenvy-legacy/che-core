@@ -20,7 +20,7 @@ import java.util.Set;
  * Segmented LRU cache. See for details <a href="http://en.wikipedia.org/wiki/Cache_algorithms#Segmented_LRU">Segmented LRU cache</a>
  * <p/>
  * Implementation is not threadsafe. In need concurrent access use {@link SynchronizedCache}
- * @depricated Use Guava cache or other cache implementations
+ * @deprecated Use Guava cache or other cache implementations
  */
 @Deprecated
 public class SLRUCache<K, V> implements Cache<K, V>, Iterable<Entry<K, V>> {
