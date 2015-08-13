@@ -22,7 +22,7 @@
     <packaging>jar</packaging>
     <name>Che Core :: Commons :: Scheduler service</name>
     <properties>
-        <findbugs.excludeFilterFiler>${project.build.testOutputDirectory}/findbugs-exclude.xml</findbugs.excludeFilterFiler>
+        <findbugs.excludeFilterFiler>${project.build.testSourceDirectory}/../resources/findbugs-exclude.xml</findbugs.excludeFilterFiler>
         <findbugs.failonerror>true</findbugs.failonerror>
     </properties>
     <dependencies>
