@@ -10,17 +10,25 @@
  *******************************************************************************/
 package org.eclipse.che.api.local;
 
+
+import com.google.common.reflect.TypeToken;
+
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.local.storage.LocalStorage;
+import org.eclipse.che.api.local.storage.LocalStorageFactory;
 import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.api.workspace.server.dao.Member;
 import org.eclipse.che.api.workspace.server.dao.MemberDao;
 import org.eclipse.che.api.workspace.server.dao.WorkspaceDao;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,30 +36,37 @@ import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * @author Anton Korneta
+ */
 @Singleton
 public class LocalMemberDaoImpl implements MemberDao {
+
     private final List<Member>  members;
     private final ReadWriteLock lock;
-
-    private final WorkspaceDao workspaceDao;
-    private final UserDao      userDao;
+    private final WorkspaceDao  workspaceDao;
+    private final UserDao       userDao;
+    private final LocalStorage  memberStorage;
 
     @Inject
-    public LocalMemberDaoImpl(@Named("codenvy.local.infrastructure.workspace.members") Set<Member> members,
-                              WorkspaceDao workspaceDao,
-                              UserDao userDao) {
+    public LocalMemberDaoImpl(WorkspaceDao workspaceDao, UserDao userDao, LocalStorageFactory storageFactory) throws IOException {
         this.workspaceDao = workspaceDao;
         this.userDao = userDao;
         this.members = new LinkedList<>();
         lock = new ReentrantReadWriteLock();
-        try {
-            for (Member member : members) {
-                create(member);
-            }
-        } catch (Exception e) {
-            // fail if can't validate this instance properly
-            throw new RuntimeException(e);
-        }
+        memberStorage = storageFactory.create("members.json");
+    }
+
+    @Inject
+    @PostConstruct
+    public void start(@Named("codenvy.local.infrastructure.workspace.members") Set<Member> defaultMembers) {
+        List<Member> storedMembers = memberStorage.loadList(new TypeToken<List<Member>>() {});
+        members.addAll(members.isEmpty() ? defaultMembers : storedMembers);
+    }
+
+    @PreDestroy
+    public void stop() throws IOException {
+        memberStorage.store(members);
     }
 
     @Override
