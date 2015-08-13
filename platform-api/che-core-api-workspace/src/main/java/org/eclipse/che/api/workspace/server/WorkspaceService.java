@@ -10,9 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server;
 
-import com.google.common.base.Function;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.Maps;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -36,12 +33,6 @@ import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.core.rest.Service;
 import org.eclipse.che.api.core.rest.annotations.GenerateLink;
-import org.eclipse.che.api.workspace.server.model.impl.CommandImpl;
-import org.eclipse.che.api.workspace.server.model.impl.EnvironmentImpl;
-import org.eclipse.che.api.workspace.server.model.impl.MachineConfigImpl;
-import org.eclipse.che.api.workspace.server.model.impl.MachineSourceImpl;
-import org.eclipse.che.api.workspace.server.model.impl.ProjectConfigImpl;
-import org.eclipse.che.api.workspace.server.model.impl.SourceStorageImpl;
 import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
 import org.eclipse.che.api.workspace.shared.dto.CommandDto;
 import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
@@ -69,12 +60,11 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.SecurityContext;
 
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
+import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.eclipse.che.api.workspace.server.Constants.LINK_REL_CREATE_WORKSPACE;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
@@ -109,6 +99,7 @@ public class WorkspaceService extends Service {
                    @ApiResponse(code = 409, message = "Conflict error was occurred during workspace creation"),
                    @ApiResponse(code = 500, message = "Internal server error was occurred during workspace creation")})
     @POST
+    @Path("/config")
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @GenerateLink(rel = LINK_REL_CREATE_WORKSPACE)
@@ -122,6 +113,21 @@ public class WorkspaceService extends Service {
             throw new BadRequestException("New workspace owner required");
         }
         return asDto(workspaceManager.createWorkspace(newWorkspace, accountId));
+    }
+
+    @DELETE
+    @Path("/{id}/config")
+    public void delete(@PathParam("id") String id) throws BadRequestException, ServerException, NotFoundException, ConflictException {
+        workspaceManager.removeWorkspace(id);
+    }
+
+    @PUT
+    @Path("/{id}/config")
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    public UsersWorkspaceDto update(@PathParam("id") String id, WorkspaceConfig workspaceCfg)
+            throws BadRequestException, ServerException, ForbiddenException, NotFoundException, ConflictException {
+        return asDto(workspaceManager.updateWorkspace(id, workspaceCfg));
     }
 
     @ApiOperation("Get workspace by id")
@@ -138,13 +144,26 @@ public class WorkspaceService extends Service {
     }
 
     @GET
+    @Path("/name/{name}")
     @Produces(APPLICATION_JSON)
-    public UsersWorkspaceDto getByName(@QueryParam("name") String name) throws ServerException, BadRequestException, NotFoundException {
+    public UsersWorkspaceDto getByName(@PathParam("name") String name) throws ServerException, BadRequestException, NotFoundException {
         return asDto(workspaceManager.getWorkspace(name, securityContext.getUserPrincipal().getName()));
     }
 
     @GET
-    @Path("/runtime/{id}")
+    @Produces(APPLICATION_JSON)
+    public List<UsersWorkspaceDto> getList(@DefaultValue("0") @QueryParam("skipCount") Integer skipCount,
+                                           @DefaultValue("30") @QueryParam("maxItems") Integer maxItems)
+            throws ServerException, BadRequestException {
+        //TODO add maxItems & skipCount to manager
+        return workspaceManager.getWorkspaces(securityContext.getUserPrincipal().getName())
+                               .stream()
+                               .map(this::asDto)
+                               .collect(toList());
+    }
+
+    @GET
+    @Path("/{id}/runtime")
     @Produces(APPLICATION_JSON)
     public RuntimeWorkspaceDto getRuntimeWorkspaceById(@PathParam("id") String id)
             throws ServerException, BadRequestException, NotFoundException {
@@ -152,62 +171,14 @@ public class WorkspaceService extends Service {
     }
 
     @GET
-    @Path("/runtime")
+    @Path("/name/{name}/runtime")
     @Produces(APPLICATION_JSON)
-    public RuntimeWorkspace getRuntimeWorkspaceByName(@QueryParam("name") String name) {
+    public RuntimeWorkspace getRuntimeWorkspaceByName(@PathParam("name") String name) {
         return asDto(workspaceManager.getRuntimeWorkspace(name, securityContext.getUserPrincipal().getName()));
     }
 
-    @GET
-    @Path("/list")
-    @Produces(APPLICATION_JSON)
-    public List<UsersWorkspaceDto> getList(@DefaultValue("0") @QueryParam("skipCount") Integer skipCount,
-                                           @DefaultValue("30") @QueryParam("maxItems") Integer maxItems)
-            throws ServerException, BadRequestException {
-        //TODO add maxItems & skipCount to manager
-        return FluentIterable.from(workspaceManager.getWorkspaces(securityContext.getUserPrincipal().getName()))
-                             .transform(new Function<UsersWorkspace, UsersWorkspaceDto>() {
-                                 @Override
-                                 public UsersWorkspaceDto apply(UsersWorkspace src) {
-                                     return asDto(src);
-                                 }
-                             })
-                             .toList();
-    }
-
-    @PUT
-    @Path("/{id}")
-    @Consumes(APPLICATION_JSON)
-    @Produces(APPLICATION_JSON)
-    public UsersWorkspaceDto update(@PathParam("id") String id, WorkspaceConfig workspaceCfg)
-            throws BadRequestException, ServerException, ForbiddenException, NotFoundException, ConflictException {
-        return asDto(workspaceManager.updateWorkspace(id, workspaceCfg));
-    }
-
-    @DELETE
-    @Path("/{id}")
-    public void delete(@PathParam("id") String id) throws BadRequestException, ServerException, NotFoundException, ConflictException {
-        workspaceManager.removeWorkspace(id);
-    }
-
     @POST
-    @Path("/start/{id}")
-    @Produces(APPLICATION_JSON)
-    public UsersWorkspaceDto startById(@PathParam("id") String workspaceId, @QueryParam("environment") String envName)
-            throws ServerException, BadRequestException, NotFoundException {
-        return asDto(workspaceManager.startWorkspaceById(workspaceId, envName));
-    }
-
-    @POST
-    @Path("/start")
-    @Produces(APPLICATION_JSON)
-    public UsersWorkspaceDto startByName(@QueryParam("name") String name, @QueryParam("environment") String envName)
-            throws ServerException, BadRequestException, NotFoundException {
-        return asDto(workspaceManager.startWorkspaceByName(name, envName, securityContext.getUserPrincipal().getName()));
-    }
-
-    @POST
-    @Path("/start-temp")
+    @Path("/runtime")
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     public UsersWorkspaceDto startTemporary(WorkspaceConfigDto cfg, @QueryParam("account") String accountId)
@@ -216,7 +187,23 @@ public class WorkspaceService extends Service {
     }
 
     @POST
-    @Path("/stop/{id}")
+    @Path("/{id}/runtime")
+    @Produces(APPLICATION_JSON)
+    public UsersWorkspaceDto startById(@PathParam("id") String workspaceId, @QueryParam("environment") String envName)
+            throws ServerException, BadRequestException, NotFoundException {
+        return asDto(workspaceManager.startWorkspaceById(workspaceId, envName));
+    }
+
+    @POST
+    @Path("/name/{name}/runtime")
+    @Produces(APPLICATION_JSON)
+    public UsersWorkspaceDto startByName(@QueryParam("name") String name, @QueryParam("environment") String envName)
+            throws ServerException, BadRequestException, NotFoundException {
+        return asDto(workspaceManager.startWorkspaceByName(name, envName, securityContext.getUserPrincipal().getName()));
+    }
+
+    @DELETE
+    @Path("/{id}/runtime")
     public void stop(@PathParam("id") String id)
             throws BadRequestException, ForbiddenException, NotFoundException, ServerException {
         workspaceManager.stopWorkspace(id);
@@ -240,14 +227,7 @@ public class WorkspaceService extends Service {
     public UsersWorkspaceDto updateCommand(@PathParam("id") String id, CommandDto update)
             throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
-        boolean found = false;
-        for (Iterator<Command> cmdIt = workspace.getCommands().iterator(); cmdIt.hasNext() && !found; ) {
-            if (cmdIt.next().getName().equals(update.getName())) {
-                cmdIt.remove();
-                found = true;
-            }
-        }
-        if (!found) {
+        if (!workspace.getCommands().removeIf(cmd -> cmd.getName().equals(update.getName()))) {
             throw new NotFoundException("Workspace " + id + " doesn't contain command " + update.getName());
         }
         workspace.getCommands().add(update);
@@ -259,12 +239,8 @@ public class WorkspaceService extends Service {
     public void deleteCommand(@PathParam("id") String id, @PathParam("name") String commandName)
             throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
-        for (Iterator<Command> cmdIt = workspace.getCommands().iterator(); cmdIt.hasNext(); ) {
-            if (cmdIt.next().getName().equals(commandName)) {
-                cmdIt.remove();
-                workspaceManager.updateWorkspace(id, workspace);
-                break;
-            }
+        if (workspace.getCommands().removeIf(command -> command.getName().equals(commandName))) {
+            workspaceManager.updateWorkspace(id, workspace);
         }
     }
 
@@ -322,14 +298,7 @@ public class WorkspaceService extends Service {
     public UsersWorkspaceDto updateEnvironment(@PathParam("id") String id, ProjectConfigDto update)
             throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
-        boolean found = false;
-        for (Iterator<ProjectConfig> projIt = workspace.getProjects().iterator(); projIt.hasNext() && !found; ) {
-            if (projIt.next().getName().equals(update.getName())) {
-                projIt.remove();
-                found = true;
-            }
-        }
-        if (!found) {
+        if (!workspace.getProjects().removeIf(project -> project.getName().equals(update.getName()))) {
             throw new NotFoundException("Workspace " + id + " doesn't contain project " + update.getName());
         }
         workspace.getProjects().add(update);
@@ -341,29 +310,28 @@ public class WorkspaceService extends Service {
     public void deleteProject(@PathParam("id") String id, @PathParam("name") String projectName)
             throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
-        for (Iterator<ProjectConfig> projIt = workspace.getProjects().iterator(); projIt.hasNext(); ) {
-            if (projIt.next().getName().equals(projectName)) {
-                projIt.remove();
-                workspaceManager.updateWorkspace(id, workspace);
-                break;
-            }
+        if (workspace.getProjects().removeIf(project -> project.getName().equals(projectName))) {
+            workspaceManager.updateWorkspace(id, workspace);
         }
     }
 
     //TODO add links
     private UsersWorkspaceDto asDto(UsersWorkspace workspace) {
-        final List<CommandDto> commands = new ArrayList<>(workspace.getCommands().size());
-        for (Command command : workspace.getCommands()) {
-            commands.add(asDto(command));
-        }
-        final List<ProjectConfigDto> projects = new ArrayList<>(workspace.getProjects().size());
-        for (ProjectConfig project : workspace.getProjects()) {
-            projects.add(asDto(project));
-        }
-        final Map<String, EnvironmentDto> environments = newHashMapWithExpectedSize(workspace.getEnvironments().size());
-        for (Map.Entry<String, ? extends Environment> entry : workspace.getEnvironments().entrySet()) {
-            environments.put(entry.getKey(), asDto(entry.getValue()));
-        }
+        final List<CommandDto> commands = workspace.getCommands()
+                                                   .stream()
+                                                   .map(this::asDto)
+                                                   .collect(toList());
+        final List<ProjectConfigDto> projects = workspace.getProjects()
+                                                         .stream()
+                                                         .map(this::asDto)
+                                                         .collect(toList());
+        final Map<String, EnvironmentDto> environments = workspace.getEnvironments()
+                                                                  .entrySet()
+                                                                  .stream()
+                                                                  .collect(HashMap::new,
+                                                                           (map, entry) -> map.put(entry.getKey(), asDto(entry.getValue())),
+                                                                           HashMap::putAll);
+
         return newDto(UsersWorkspaceDto.class).withId(workspace.getId())
                                               .withName(workspace.getName())
                                               .withOwner(workspace.getOwner())
@@ -375,10 +343,10 @@ public class WorkspaceService extends Service {
     }
 
     private RuntimeWorkspaceDto asDto(RuntimeWorkspace workspace) {
-        final List<MachineDto> machines = new ArrayList<>(workspace.getMachines().size());
-        for (Machine machine : workspace.getMachines()) {
-            machines.add(asDto(machine));
-        }
+        final List<MachineDto> machines = workspace.getMachines()
+                                                   .stream()
+                                                   .map(this::asDto)
+                                                   .collect(toList());
         final UsersWorkspaceDto usersWorkspace = asDto(workspace);
         return newDto(RuntimeWorkspaceDto.class).withId(workspace.getId())
                                                 .withName(workspace.getName())
@@ -395,10 +363,12 @@ public class WorkspaceService extends Service {
     }
 
     private MachineDto asDto(Machine machine) {
-        final Map<String, ServerDto> servers = Maps.newHashMapWithExpectedSize(machine.getServers().size());
-        for (Map.Entry<String, ? extends Server> entry : machine.getServers().entrySet()) {
-            servers.put(entry.getKey(), asDto(entry.getValue()));
-        }
+        final Map<String, ServerDto> servers = machine.getServers()
+                                                      .entrySet()
+                                                      .stream()
+                                                      .collect(HashMap::new,
+                                                               (map, entry) -> map.put(entry.getKey(), asDto(entry.getValue())),
+                                                               HashMap::putAll);
         return newDto(MachineDto.class).withId(machine.getId())
                                        .withName(machine.getName())
                                        .withDev(machine.isDev())
@@ -419,44 +389,12 @@ public class WorkspaceService extends Service {
                                       .withAddress(machine.getAddress());
     }
 
-    private UsersWorkspaceImpl asImpl(UsersWorkspaceDto workspaceDto) {
-        final List<CommandImpl> commands = new ArrayList<>(workspaceDto.getCommands().size());
-        for (CommandDto commandDto : workspaceDto.getCommands()) {
-            commands.add(asImpl(commandDto));
-        }
-        final List<ProjectConfigImpl> projects = new ArrayList<>(workspaceDto.getProjects().size());
-        for (ProjectConfigDto projectCfgDto : workspaceDto.getProjects()) {
-            projects.add(asImpl(projectCfgDto));
-        }
-        final Map<String, EnvironmentImpl> environments = newHashMapWithExpectedSize(workspaceDto.getEnvironments().size());
-        for (Map.Entry<String, EnvironmentDto> entry : workspaceDto.getEnvironments().entrySet()) {
-            environments.put(entry.getKey(), asImpl(entry.getValue()));
-        }
-        return new UsersWorkspaceImpl(workspaceDto.getId(),
-                                      workspaceDto.getName(),
-                                      workspaceDto.getOwner(),
-                                      workspaceDto.getAttributes(),
-                                      commands,
-                                      projects,
-                                      environments,
-                                      workspaceDto.getDefaultEnvName(),
-                                      workspaceDto.getDescription());
-    }
-
     private CommandDto asDto(Command command) {
         return newDto(CommandDto.class).withName(command.getName())
                                        .withCommandLine(command.getCommandLine())
                                        .withType(command.getType())
                                        .withVisibility(command.getVisibility())
                                        .withWorkingDir(command.getWorkingDir());
-    }
-
-    private CommandImpl asImpl(CommandDto commandDto) {
-        return new CommandImpl(commandDto.getName(),
-                               commandDto.getCommandLine(),
-                               commandDto.getVisibility(),
-                               commandDto.getType(),
-                               commandDto.getWorkingDir());
     }
 
     private ProjectConfigDto asDto(ProjectConfig projectCfg) {
@@ -473,34 +411,13 @@ public class WorkspaceService extends Service {
                                            .withParameters(projectCfg.getSourceStorage().getParameters()));
     }
 
-    private ProjectConfigImpl asImpl(ProjectConfigDto projectCfgDto) {
-        return new ProjectConfigImpl().setName(projectCfgDto.getName())
-                                      .setDescription(projectCfgDto.getDescription())
-                                      .setPath(projectCfgDto.getPath())
-                                      .setType(projectCfgDto.getType())
-                                      .setAttributes(projectCfgDto.getAttributes())
-                                      .setMixinTypes(projectCfgDto.getMixinTypes())
-                                      .setSourceStorage(new SourceStorageImpl(projectCfgDto.getSourceStorage().getType(),
-                                                                              projectCfgDto.getSourceStorage().getLocation(),
-                                                                              projectCfgDto.getSourceStorage().getParameters()));
-    }
-
     //TODO add recipe
     private EnvironmentDto asDto(Environment environment) {
-        final List<MachineConfigDto> machineConfigs = new ArrayList<>(environment.getMachineConfigs().size());
-        for (MachineConfig machineCfg : environment.getMachineConfigs()) {
-            machineConfigs.add(asDto(machineCfg));
-        }
+        final List<MachineConfigDto> machineConfigs = environment.getMachineConfigs()
+                                                                 .stream()
+                                                                 .map(this::asDto)
+                                                                 .collect(toList());
         return newDto(EnvironmentDto.class).withName(environment.getName()).withMachineConfigs(machineConfigs);
-    }
-
-    //TODO add recipe
-    private EnvironmentImpl asImpl(EnvironmentDto envDto) {
-        final List<MachineConfigImpl> machineConfigs = new ArrayList<>(envDto.getMachineConfigs().size());
-        for (MachineConfigDto machineCfgDto : envDto.getMachineConfigs()) {
-            machineConfigs.add(asImpl(machineCfgDto));
-        }
-        return new EnvironmentImpl(envDto.getName(), envDto.getRecipe(), machineConfigs);
     }
 
     private MachineConfigDto asDto(MachineConfig config) {
@@ -508,13 +425,5 @@ public class WorkspaceService extends Service {
                                              .withType(config.getType())
                                              .withDev(config.isDev())
                                              .withSource(asDto(config.getSource()));
-    }
-
-    private MachineConfigImpl asImpl(MachineConfigDto machineCfgDto) {
-        return new MachineConfigImpl().setName(machineCfgDto.getName())
-                                      .setType(machineCfgDto.getType())
-                                      .setDev(machineCfgDto.isDev())
-                                      .setSource(new MachineSourceImpl(machineCfgDto.getSource().getType(),
-                                                                       machineCfgDto.getSource().getLocation()));
     }
 }
