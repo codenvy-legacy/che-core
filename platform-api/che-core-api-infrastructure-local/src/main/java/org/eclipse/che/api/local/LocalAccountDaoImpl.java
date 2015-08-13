@@ -10,17 +10,25 @@
  *******************************************************************************/
 package org.eclipse.che.api.local;
 
+
+import com.google.common.reflect.TypeToken;
+
 import org.eclipse.che.api.account.server.dao.Account;
 import org.eclipse.che.api.account.server.dao.AccountDao;
 import org.eclipse.che.api.account.server.dao.Member;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.local.storage.LocalStorage;
+import org.eclipse.che.api.local.storage.LocalStorageFactory;
 import org.eclipse.che.api.workspace.server.dao.WorkspaceDao;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -32,6 +40,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * @author Eugene Voevodin
+ * @author Anton Korneta
  */
 @Singleton
 public class LocalAccountDaoImpl implements AccountDao {
@@ -39,28 +48,34 @@ public class LocalAccountDaoImpl implements AccountDao {
     private final List<Account> accounts;
     private final List<Member>  members;
     private final ReadWriteLock lock;
-
-    private final WorkspaceDao workspaceDao;
+    private final WorkspaceDao  workspaceDao;
+    private final LocalStorage  accountStorage;
+    private final LocalStorage  memberStorage;
 
     @Inject
-    public LocalAccountDaoImpl(@Named("codenvy.local.infrastructure.accounts") Set<Account> accounts,
-                               @Named("codenvy.local.infrastructure.account.members") Set<Member> members,
-                               WorkspaceDao workspaceDao) {
+    public LocalAccountDaoImpl(WorkspaceDao workspaceDao, LocalStorageFactory storageFactory) throws IOException {
         this.workspaceDao = workspaceDao;
         this.accounts = new LinkedList<>();
         this.members = new LinkedList<>();
         lock = new ReentrantReadWriteLock();
-        try {
-            for (Account account : accounts) {
-                create(account);
-            }
-            for (Member member : members) {
-                addMember(member);
-            }
-        } catch (Exception e) {
-            // fail if can't validate this instance properly
-            throw new RuntimeException(e);
-        }
+        accountStorage = storageFactory.create("accounts.json");
+        memberStorage = storageFactory.create("account-members.json");
+    }
+
+    @Inject
+    @PostConstruct
+    public void start(@Named("codenvy.local.infrastructure.accounts") Set<Account> defaultAccounts,
+                      @Named("codenvy.local.infrastructure.account.members") Set<Member> defaultMembers) {
+        List<Account> storedAccounts = accountStorage.loadList(new TypeToken<List<Account>>() {});
+        accounts.addAll(storedAccounts.isEmpty() ? defaultAccounts : storedAccounts);
+        List<Member> storedMembers = memberStorage.loadList(new TypeToken<List<Member>>() {});
+        members.addAll(storedMembers.isEmpty() ? defaultMembers : storedMembers);
+    }
+
+    @PreDestroy
+    public void stop() throws IOException {
+        accountStorage.store(accounts);
+        memberStorage.store(members);
     }
 
     @Override
@@ -120,9 +135,9 @@ public class LocalAccountDaoImpl implements AccountDao {
         lock.readLock().lock();
         try {
             for (Member member : members) {
-                if (member.getUserId().equals(owner)) {
+                if (member.getUserId().equals(owner) && member.getRoles().contains("account/owner")) {
                     for (Account account : accounts) {
-                        if (account.getId().equals(member.getAccountId()) && member.getRoles().contains("account/owner")) {
+                        if (account.getId().equals(member.getAccountId())) {
                             result.add(new Account().withId(account.getId()).withName(account.getName())
                                                     .withAttributes(new LinkedHashMap<>(account.getAttributes())));
                         }
