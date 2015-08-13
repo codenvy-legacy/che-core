@@ -30,14 +30,14 @@ import java.util.Map;
  * @author Dmitry Shnurenko
  */
 @Singleton
-public class CurrentProjectManager {
+public class FileMatcher {
 
     private final Map<String, ProjectDescriptor> matchedFiles;
     private final AppContext                     appContext;
     private final List<ProjectChangedListener>   listeners;
 
     @Inject
-    public CurrentProjectManager(AppContext appContext) {
+    public FileMatcher(AppContext appContext) {
         this.matchedFiles = new HashMap<>();
         this.listeners = new ArrayList<>();
 

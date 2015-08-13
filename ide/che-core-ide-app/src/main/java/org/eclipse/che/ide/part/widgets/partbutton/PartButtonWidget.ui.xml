@@ -15,7 +15,7 @@
 
     <ui:style>
         .main {
-            width: 80px;
+            width: 82px;
             height: 17px;
             font-size: 11px;
             cursor: pointer;

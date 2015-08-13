@@ -10,12 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.ide.part.projectexplorer;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import elemental.events.KeyboardEvent;
 import elemental.events.MouseEvent;
 
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.InlineLabel;
@@ -36,7 +36,6 @@ import org.eclipse.che.ide.util.input.SignalEvent;
 import org.vectomatic.dom.svg.ui.SVGImage;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -181,15 +180,38 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
 
     /** {@inheritDoc} */
     @Override
-    public void setRootNodes(@Nonnull final Array<TreeNode<?>> rootNodes, @Nullable ProjectAction projectAction) {
-        if (projectAction != null) {
-            setRootNodeChildren(rootNodes, projectAction);
-        } else {
-            rootNode.setChildren(rootNodes);
+    public void setRootNodes(@Nonnull final Array<TreeNode<?>> rootNodes, @Nonnull ProjectAction projectAction) {
+        switch (projectAction) {
+            case OPENED:
+                TreeNode<?> openedNode = rootNodes.get(0);
+                String nodeName = openedNode.getDisplayName();
 
-            setRootNode(rootNodes);
+                if (!openedNodeNames.contains(nodeName)) {
+                    openedNodeNames.add(nodeName);
+
+                    openedNodes.add(openedNode);
+                }
+
+                rootNode.setChildren(openedNodes);
+
+                defineParent(openedNodes);
+
+                break;
+            case CLOSED:
+                rootNode.setChildren(rootNodes);
+
+                defineParent(rootNodes);
+
+                openedNodeNames.clear();
+                openedNodes.clear();
+                break;
+            default:
         }
 
+        selectFirstNode(rootNodes);
+    }
+
+    private void selectFirstNode(@Nonnull Array<TreeNode<?>> rootNodes) {
         tree.getSelectionModel().clearSelections();
         tree.getModel().setRoot(rootNode);
         tree.renderTree(0);
@@ -209,36 +231,17 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
         }
     }
 
-    private void setRootNodeChildren(@Nonnull final Array<TreeNode<?>> rootNodes, @Nonnull ProjectAction projectAction) {
-        switch (projectAction) {
-            case OPENED:
-                TreeNode<?> openedNode = rootNodes.get(0);
-                String nodeName = openedNode.getDisplayName();
+    /** {@inheritDoc} */
+    @Override
+    public void setRootNodes(@Nonnull Array<TreeNode<?>> rootNodes) {
+        rootNode.setChildren(rootNodes);
 
-                if (!openedNodeNames.contains(nodeName)) {
-                    openedNodeNames.add(nodeName);
+        defineParent(rootNodes);
 
-                    openedNodes.add(openedNode);
-                }
-
-                rootNode.setChildren(openedNodes);
-
-                setRootNode(openedNodes);
-
-                break;
-            case CLOSED:
-                rootNode.setChildren(rootNodes);
-
-                setRootNode(rootNodes);
-
-                openedNodeNames.clear();
-                openedNodes.clear();
-                break;
-            default:
-        }
+        selectFirstNode(rootNodes);
     }
 
-    private void setRootNode(@Nonnull Array<TreeNode<?>> nodes) {
+    private void defineParent(@Nonnull Array<TreeNode<?>> nodes) {
         for (TreeNode<?> treeNode : nodes.asIterable()) {
             treeNode.setParent(rootNode);
         }
@@ -292,7 +295,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
         projectHeader.add(delimiter);
 
         SVGImage icon = new SVGImage("private".equals(project.getVisibility()) ?
-                resources.privateProject() : resources.publicProject());
+                                     resources.privateProject() : resources.publicProject());
         icon.getElement().setAttribute("class", resources.partStackCss().idePartStackToolbarBottomIcon());
         projectHeader.add(icon);
 

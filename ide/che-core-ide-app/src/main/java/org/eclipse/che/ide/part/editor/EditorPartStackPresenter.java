@@ -15,6 +15,7 @@ import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.ide.api.constraints.Constraints;
+import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.editor.EditorWithErrors;
 import org.eclipse.che.ide.api.editor.EditorWithErrors.EditorState;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
@@ -56,7 +57,7 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
                                                                             ListItem.ActionDelegate {
     private final ListButton                listButton;
     private final Map<ListItem, TabItem>    items;
-    private final CurrentProjectManager     projectManager;
+    private final FileMatcher               fileMatcher;
     //this list need to save order of added parts
     private final LinkedList<PartPresenter> partsOrder;
 
@@ -66,7 +67,7 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
     public EditorPartStackPresenter(final EditorPartStackView view,
                                     PartsComparator partsComparator,
                                     EventBus eventBus,
-                                    final CurrentProjectManager projectManager,
+                                    FileMatcher fileMatcher,
                                     TabItemFactory tabItemFactory,
                                     PartStackEventHandler partStackEventHandler,
                                     ListButton listButton) {
@@ -82,7 +83,7 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
         this.items = new HashMap<>();
         this.partsOrder = new LinkedList<>();
 
-        this.projectManager = projectManager;
+        this.fileMatcher = fileMatcher;
 
         eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
             @Override
@@ -206,15 +207,15 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
     public void onTabClicked(@Nonnull TabItem tab) {
         activePart = parts.get(tab);
 
-        String pathToSelectedFile = getPathToFile(activePart);
+        String pathToSelectedFile = getPathToFile((EditorPartPresenter)activePart);
 
-        projectManager.setActualProjectForFile(pathToSelectedFile);
+        fileMatcher.setActualProjectForFile(pathToSelectedFile);
 
         view.selectTab(activePart);
     }
 
     @Nonnull
-    private String getPathToFile(@Nonnull PartPresenter editorPartPresenter) {
+    private String getPathToFile(@Nonnull EditorPartPresenter editorPartPresenter) {
         return editorPartPresenter.getEditorInput().getFile().getPath();
     }
 
@@ -223,9 +224,9 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
     public void onTabClose(@Nonnull TabItem tab) {
         final PartPresenter closedPart = parts.get(tab);
 
-        String pathToClosedFile = getPathToFile(closedPart);
+        String pathToClosedFile = getPathToFile((EditorPartPresenter)closedPart);
 
-        projectManager.removeMatch(pathToClosedFile);
+        fileMatcher.removeMatch(pathToClosedFile);
 
         view.removeTab(closedPart);
 

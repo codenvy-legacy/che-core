@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
  * @author Dmitry Shnurenko
  */
 @RunWith(MockitoJUnitRunner.class)
-public class CurrentProjectManagerTest {
+public class FileMatcherTest {
 
     private static final String SOME_TEXT = "someText";
 
@@ -43,7 +43,7 @@ public class CurrentProjectManagerTest {
     private CurrentProject    currentProject;
 
     @InjectMocks
-    private CurrentProjectManager projectManager;
+    private FileMatcher projectManager;
 
     @Before
     public void setUp() {

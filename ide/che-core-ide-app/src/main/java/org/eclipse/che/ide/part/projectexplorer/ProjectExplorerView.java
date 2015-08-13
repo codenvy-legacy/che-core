@@ -19,7 +19,6 @@ import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.ui.tree.SelectionModel;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * Interface of project tree view.
@@ -36,9 +35,18 @@ public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDele
      *         root nodes to set
      * @param actionType
      *         root nodes which will be set depend on this type. Type is CLOSED shows all existing project nodes. Type is OPENED
-     *         shows only opened project nodes. Type can be null(e.g. when we refresh project)
+     *         shows only opened project nodes.
      */
-    void setRootNodes(@Nonnull Array<TreeNode<?>> rootNodes, @Nullable ProjectAction actionType);
+    void setRootNodes(@Nonnull Array<TreeNode<?>> rootNodes, @Nonnull ProjectAction actionType);
+
+    /**
+     * Sets root nodes into tree. This method is used when we refreshes project or deletes project and in other situation
+     * when we can't define project action.
+     *
+     * @param rootNodes
+     *         root nodes to set
+     */
+    void setRootNodes(@Nonnull Array<TreeNode<?>> rootNodes);
 
     /**
      * Updates the specified node.
@@ -98,7 +106,7 @@ public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDele
 
     /**
      * Delegates view actions to its presenter.
-     * */
+     */
     interface ActionDelegate extends BaseActionDelegate {
         /**
          * Performs any actions in response to node selection.

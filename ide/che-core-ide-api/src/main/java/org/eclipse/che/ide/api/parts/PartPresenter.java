@@ -49,13 +49,6 @@ public interface PartPresenter extends Presenter {
     IsWidget getView();
 
     /**
-     * Returns instance of {@link EditorInput}. This method is actual only
-     * for {@link org.eclipse.che.ide.api.editor.EditorPartPresenter}
-     */
-    @Nonnull
-    EditorInput getEditorInput();
-
-    /**
      * Returns the title image of this part.  If this value changes the part must fire a property listener event with
      * <code>PROP_TITLE</code>.
      * <p/>

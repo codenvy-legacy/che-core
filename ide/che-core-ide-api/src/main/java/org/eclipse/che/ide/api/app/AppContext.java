@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.app;
 
-import com.google.inject.Inject;
-
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor;
 
@@ -37,7 +35,6 @@ public class AppContext {
 
     private final List<ProjectDescriptor> openedProjects;
 
-    @Inject
     public AppContext() {
         openedProjects = new ArrayList<>();
     }

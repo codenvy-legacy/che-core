@@ -13,7 +13,6 @@ package org.eclipse.che.ide.api.parts;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.IsWidget;
 
-import org.eclipse.che.ide.api.editor.EditorInput;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.util.ListenerManager;
 import org.eclipse.che.ide.util.ListenerManager.Dispatcher;
@@ -100,12 +99,6 @@ public abstract class AbstractPartPresenter implements PartPresenter {
     @Override
     public Selection<?> getSelection() {
         return this.selection;
-    }
-
-    @Nonnull
-    @Override
-    public EditorInput getEditorInput() {
-        throw new UnsupportedOperationException("This method is not supported in this class " + getClass());
     }
 
     /**

@@ -57,7 +57,7 @@ import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.collections.js.JsoArray;
 import org.eclipse.che.ide.logger.AnalyticsEventLoggerExt;
 import org.eclipse.che.ide.menu.ContextMenu;
-import org.eclipse.che.ide.part.editor.CurrentProjectManager;
+import org.eclipse.che.ide.part.editor.FileMatcher;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.ui.tree.SelectionModel;
 import org.eclipse.che.ide.util.Config;
@@ -87,7 +87,7 @@ import static org.eclipse.che.ide.api.event.ProjectActionEvent.ProjectAction.OPE
 public class ProjectExplorerPartPresenter extends BasePresenter implements ProjectExplorerView.ActionDelegate,
                                                                            RefreshProjectTreeHandler,
                                                                            ProjectExplorerPart,
-                                                                           CurrentProjectManager.ProjectChangedListener,
+                                                                           FileMatcher.ProjectChangedListener,
                                                                            HasView {
     private final ProjectExplorerView            view;
     private final EventBus                       eventBus;
@@ -100,7 +100,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
     private final Provider<ProjectListStructure> projectListStructureProvider;
     private final AnalyticsEventLoggerExt        eventLogger;
     private final Provider<EditorAgent>          editorAgentProvider;
-    private final CurrentProjectManager          projectManager;
+    private final FileMatcher                    projectManager;
 
 
     private TreeStructure      currentTreeStructure;
@@ -119,7 +119,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
                                         AnalyticsEventLoggerExt eventLogger,
                                         Provider<ProjectListStructure> projectListStructureProvider,
                                         Provider<EditorAgent> editorAgentProvider,
-                                        CurrentProjectManager projectManager) {
+                                        FileMatcher projectManager) {
         this.view = view;
         this.eventBus = eventBus;
         this.contextMenu = contextMenu;
@@ -240,7 +240,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
             public void onNodeRenamed(NodeChangedEvent event) {
                 if (appContext.getCurrentProject() == null) {
                     // any opened project - all projects list is shown
-                    setTree(currentTreeStructure, null);
+                    setTree(currentTreeStructure);
                 } else {
                     updateNode(event.getNode().getParent());
                     view.selectNode(event.getNode());
@@ -367,7 +367,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
         eventBus.fireEvent(new PersistProjectTreeStateEvent());
 
         if (appContext.getCurrentProject() == null) {
-            setTree(projectListStructureProvider.get(), null);
+            setTree(projectListStructureProvider.get());
             return;
         }
 
@@ -523,14 +523,29 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
         view.getSelectedNode().processNodeAction();
     }
 
-    private void setTree(@Nonnull final TreeStructure treeStructure, @Nullable final ProjectAction actionType) {
+    private void setTree(@Nonnull final TreeStructure treeStructure, @Nonnull final ProjectAction actionType) {
+        setCurrentTreeStructure(treeStructure);
+
+        getRootNodes(treeStructure, actionType);
+    }
+
+    private void setCurrentTreeStructure(@Nonnull TreeStructure treeStructure) {
         currentTreeStructure = treeStructure;
         if (appContext.getCurrentProject() != null) {
             appContext.getCurrentProject().setCurrentTree(currentTreeStructure);
         }
+    }
+
+    private void getRootNodes(@Nonnull final TreeStructure treeStructure, @Nullable final ProjectAction actionType) {
         treeStructure.getRootNodes(new AsyncCallback<Array<TreeNode<?>>>() {
             @Override
             public void onSuccess(Array<TreeNode<?>> result) {
+                if (actionType == null) {
+                    view.setRootNodes(result);
+
+                    return;
+                }
+
                 view.setRootNodes(result, actionType);
             }
 
@@ -539,6 +554,12 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
                 Log.error(ProjectExplorerPartPresenter.class, caught.getMessage());
             }
         });
+    }
+
+    private void setTree(@Nonnull final TreeStructure treeStructure) {
+        setCurrentTreeStructure(treeStructure);
+
+        getRootNodes(treeStructure, null);
     }
 
     public void refreshNode(TreeNode<?> node, final AsyncCallback<TreeNode<?>> callback) {

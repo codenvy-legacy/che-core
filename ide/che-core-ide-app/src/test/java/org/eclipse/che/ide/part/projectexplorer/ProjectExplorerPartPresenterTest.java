@@ -27,7 +27,7 @@ import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.java.JsonArrayListAdapter;
 import org.eclipse.che.ide.menu.ContextMenu;
-import org.eclipse.che.ide.part.editor.CurrentProjectManager;
+import org.eclipse.che.ide.part.editor.FileMatcher;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.ui.tree.SelectionModel;
 import org.junit.Before;
@@ -85,7 +85,7 @@ public class ProjectExplorerPartPresenterTest {
     @Mock
     private CurrentProject                currentProject;
     @Mock
-    private CurrentProjectManager         projectManager;
+    private FileMatcher                   projectManager;
 
     @InjectMocks
     private ProjectExplorerPartPresenter presenter;
