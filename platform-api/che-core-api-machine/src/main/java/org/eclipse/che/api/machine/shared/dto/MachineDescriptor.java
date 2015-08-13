@@ -70,9 +70,9 @@ public interface MachineDescriptor extends Machine, Hyperlinks {
 
     MachineDescriptor withServers(Map<String, ServerDescriptor> exposedPorts);
 
-    void setWorkspaceBound(boolean isWorkspaceBound);
+    void setDev(boolean isDev);
 
-    MachineDescriptor withWorkspaceBound(boolean isWorkspaceBound);
+    MachineDescriptor withDev(boolean isDev);
 
     void setDisplayName(String displayName);
 

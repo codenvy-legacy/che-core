@@ -57,9 +57,9 @@ public interface MachineStateDescriptor extends Machine, Hyperlinks {
 
     MachineStateDescriptor withProjects(List<ProjectBindingDescriptor> projects);
 
-    void setWorkspaceBound(boolean isWorkspaceBound);
+    void setDev(boolean isDev);
 
-    MachineStateDescriptor withWorkspaceBound(boolean isWorkspaceBound);
+    MachineStateDescriptor withDev(boolean isDev);
 
     void setDisplayName(String displayName);
 

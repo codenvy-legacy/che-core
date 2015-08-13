@@ -14,7 +14,7 @@ package org.eclipse.che.commons.lang.cache;
  * SLRUCache that loads value for key if it is not cached yet.
  *
  * @see SLRUCache
- * @depricated Use Guava cache or other cache implementations
+ * @deprecated Use Guava cache or other cache implementations
  */
 @Deprecated
 public abstract class LoadingValueSLRUCache<K, V> extends SLRUCache<K, V> {

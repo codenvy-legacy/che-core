@@ -113,6 +113,7 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
 
         if (listItem != null) {
             listButton.removeListItem(listItem);
+            items.remove(listItem);
         }
     }
 

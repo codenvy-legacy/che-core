@@ -30,8 +30,12 @@
             <artifactId>swagger-annotations</artifactId>
             <version>${com.wordnik.swagger.version}</version>
         </dependency>
-
-<!--
+        <dependency>
+            <groupId>javax.websocket</groupId>
+            <artifactId>javax.websocket-api</artifactId>
+            <version>${javax.websocket.api.version}</version>
+        </dependency>
+        <!--
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
             <artifactId>che-core-api-account</artifactId>

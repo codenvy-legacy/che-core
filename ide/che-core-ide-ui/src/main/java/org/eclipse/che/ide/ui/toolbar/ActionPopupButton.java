@@ -39,7 +39,6 @@ import org.vectomatic.dom.svg.ui.SVGResource;
  */
 public class ActionPopupButton extends Composite implements CloseMenuHandler, ActionSelectedHandler {
 
-    private static final ToolbarResources.Css css = Toolbar.RESOURCES.toolbar();
     private final ActionGroup                  action;
     private final ActionManager                actionManager;
     private final Provider<PerspectiveManager> managerProvider;
@@ -49,9 +48,10 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
     private final Presentation                 presentation;
     private final String                       place;
 
-    private ActionButtonSynchronizer actionButtonSynchronizer;
-    private KeyBindingAgent          keyBindingAgent;
-    private PresentationFactory      presentationFactory;
+    private ActionButtonSynchronizer           actionButtonSynchronizer;
+    private KeyBindingAgent                    keyBindingAgent;
+    private PresentationFactory                presentationFactory;
+    private ToolbarResources                   toolbarResources;
 
     /** Enabled state. True as default. */
     private boolean enabled = true;
@@ -68,13 +68,15 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
                              KeyBindingAgent keyBindingAgent,
                              final PresentationFactory presentationFactory,
                              String place,
-                             Provider<PerspectiveManager> managerProvider) {
+                             Provider<PerspectiveManager> managerProvider,
+                             ToolbarResources toolbarResources) {
         this.action = action;
         this.actionManager = actionManager;
         this.keyBindingAgent = keyBindingAgent;
         this.presentationFactory = presentationFactory;
         this.place = place;
         this.managerProvider = managerProvider;
+        this.toolbarResources = toolbarResources;
 
         this.presentation = presentationFactory.getPresentation(action);
 
@@ -83,27 +85,27 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
         tooltipBody = DOM.createDiv();
         tooltipArrow = DOM.createDiv();
         initWidget(panel);
-        panel.setStyleName(css.popupButtonPanel());
+        panel.setStyleName(toolbarResources.toolbar().popupButtonPanel());
         SVGResource icon = presentationFactory.getPresentation(action).getSVGIcon();
         if (icon != null) {
             SVGImage image = new SVGImage(icon);
-            image.getElement().setAttribute("class", css.popupButtonIcon());
+            image.getElement().setAttribute("class", toolbarResources.toolbar().popupButtonIcon());
             panel.add(image);
         } else if (presentationFactory.getPresentation(action).getIcon() != null) {
             Image image = new Image(presentationFactory.getPresentation(action).getIcon());
-            image.setStyleName(css.popupButtonIcon());
+            image.setStyleName(toolbarResources.toolbar().popupButtonIcon());
             panel.add(image);
         }
         renderIcon();
         InlineLabel caret = new InlineLabel("");
-        caret.setStyleName(css.caret());
+        caret.setStyleName(toolbarResources.toolbar().caret());
         panel.add(caret);
         final String description = presentationFactory.getPresentation(action).getDescription();
         if (description != null) {
-            tooltipArrow.addClassName(css.tooltipArrow());
+            tooltipArrow.addClassName(toolbarResources.toolbar().tooltipArrow());
             tooltipBody.setInnerText(description);
-            tooltipBody.addClassName(css.tooltipBody());
-            tooltip.addClassName(css.tooltip());
+            tooltipBody.addClassName(toolbarResources.toolbar().tooltipBody());
+            tooltip.addClassName(toolbarResources.toolbar().tooltip());
             tooltip.appendChild(tooltipArrow);
             tooltip.appendChild(tooltipBody);
             panel.getElement().appendChild(tooltip);
@@ -143,7 +145,7 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
             lockLayer = null;
         }
 
-        panel.setStyleName(css.popupButtonPanel());
+        panel.setStyleName(toolbarResources.toolbar().popupButtonPanel());
     }
 
     /**
@@ -173,7 +175,7 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
 
     /** Mouse Down handler. */
     private void onMouseDown() {
-        panel.setStyleName(css.popupButtonPanelDown());
+        panel.setStyleName(toolbarResources.toolbar().popupButtonPanelDown());
     }
 
     /** Mouse Out Handler. */
@@ -182,7 +184,7 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
             return;
         }
 
-        panel.setStyleName(css.popupButtonPanel());
+        panel.setStyleName(toolbarResources.toolbar().popupButtonPanel());
     }
 
     private void onMouseClick() {
@@ -199,12 +201,12 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
             tooltipBody.getStyle().setRight(panel.getAbsoluteLeft() + tooltip.getOffsetWidth() - screenSize, Style.Unit.PX);
         }
 
-        panel.setStyleName(css.popupButtonPanelOver());
+        panel.setStyleName(toolbarResources.toolbar().popupButtonPanelOver());
     }
 
     /** Mouse Up handler. */
     private void onMouseUp() {
-        panel.setStyleName(css.popupButtonPanelOver());
+        panel.setStyleName(toolbarResources.toolbar().popupButtonPanelOver());
     }
 
     /** Opens Popup Menu. */
@@ -231,9 +233,9 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
     /** Redraw icon. */
     private void renderIcon() {
         if (enabled) {
-            panel.getElement().removeClassName(css.disabled());
+            panel.getElement().removeClassName(toolbarResources.toolbar().disabled());
         } else {
-            panel.getElement().addClassName(css.disabled());
+            panel.getElement().addClassName(toolbarResources.toolbar().disabled());
         }
     }
 
@@ -307,20 +309,20 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
             panel.clear();
             if (presentation.getSVGIcon() != null) {
                 SVGImage image = new SVGImage(presentation.getSVGIcon());
-                image.getElement().setAttribute("class", css.iconButtonIcon());
+                image.getElement().setAttribute("class", toolbarResources.toolbar().iconButtonIcon());
                 panel.add(image);
             } else if (presentation.getIcon() != null) {
                 Image img = new Image(presentation.getIcon());
-                img.setStyleName(css.iconButtonIcon());
+                img.setStyleName(toolbarResources.toolbar().iconButtonIcon());
                 panel.add(img);
             }
         }
 
         private void setSelected(boolean selected) {
             if (selected) {
-                panel.setStyleName(css.iconButtonPanelSelected());
+                panel.setStyleName(toolbarResources.toolbar().iconButtonPanelSelected());
             } else {
-                panel.setStyleName(css.iconButtonPanelOver());
+                panel.setStyleName(toolbarResources.toolbar().iconButtonPanelOver());
             }
         }
     }

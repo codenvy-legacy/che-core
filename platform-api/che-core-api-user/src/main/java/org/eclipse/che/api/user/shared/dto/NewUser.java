@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.user.shared.dto;
 
+import com.wordnik.swagger.annotations.ApiModelProperty;
 import org.eclipse.che.dto.shared.DTO;
 
 /**
@@ -20,12 +21,14 @@ import org.eclipse.che.dto.shared.DTO;
 @DTO
 public interface NewUser {
 
+    @ApiModelProperty(value = "User name. This can be both name or email", required = true)
     String getName();
 
     void setName(String name);
 
     NewUser withName(String name);
 
+    @ApiModelProperty("User password. Only system admin can create a new user with email/password, otherwise an auth token is required")
     String getPassword();
 
     void setPassword(String password);

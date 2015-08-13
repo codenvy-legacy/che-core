@@ -21,6 +21,10 @@
     <artifactId>che-core-commons-schedule</artifactId>
     <packaging>jar</packaging>
     <name>Che Core :: Commons :: Scheduler service</name>
+    <properties>
+        <findbugs.excludeFilterFiler>${project.build.testSourceDirectory}/../resources/findbugs-exclude.xml</findbugs.excludeFilterFiler>
+        <findbugs.failonerror>true</findbugs.failonerror>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>com.google.guava</groupId>

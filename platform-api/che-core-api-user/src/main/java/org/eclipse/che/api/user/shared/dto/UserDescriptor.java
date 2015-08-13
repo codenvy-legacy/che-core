@@ -28,6 +28,8 @@ public interface UserDescriptor {
 
     UserDescriptor withId(String id);
 
+
+    @ApiModelProperty("User alias which is used for oAuth")
     List<String> getAliases();
 
     void setAliases(List<String> aliases);

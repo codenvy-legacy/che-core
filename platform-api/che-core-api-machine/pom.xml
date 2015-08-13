@@ -23,6 +23,8 @@
     <name>Che Core :: API :: Machine</name>
     <properties>
         <dto-generator-out-directory>${project.build.directory}/generated-sources/dto/</dto-generator-out-directory>
+        <!--<maven.source.version>1.7</maven.source.version>-->
+        <!--<maven.target.version>1.7</maven.target.version>-->
     </properties>
     <dependencies>
         <dependency>

@@ -92,7 +92,7 @@ public class DtoImplClientTemplate extends DtoImpl {
             getterNames.add(getter.getName());
         }
         for (Method method : dtoInterface.getDeclaredMethods()) {
-            if (method.getName().startsWith("with")) {
+            if (!method.isDefault() && method.getName().startsWith("with")) {
                 String noPrefixName = method.getName().substring(4);
                 // Check do we already generate withXXX method or not.
                 // If there is getter in DTO interface we already have withXXX method

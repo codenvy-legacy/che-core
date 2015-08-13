@@ -396,7 +396,7 @@ public class MachineService {
                                                                    .withStatus(machineState.getStatus())
                                                                    .withOwner(machineState.getOwner())
                                                                    .withWorkspaceId(machineState.getWorkspaceId())
-                                                                   .withWorkspaceBound(machineState.isDev())
+                                                                   .withDev(machineState.isDev())
                                                                    .withProjects(projectDescriptors)
                                                                    .withDisplayName(machineState.getDisplayName())
                                                                    .withMemorySize(machineState.getMemorySize());
@@ -425,7 +425,7 @@ public class MachineService {
                                                               .withStatus(machine.getStatus())
                                                               .withOwner(machine.getOwner())
                                                               .withWorkspaceId(machine.getWorkspaceId())
-                                                              .withWorkspaceBound(machine.isDev())
+                                                              .withDev(machine.isDev())
                                                               .withProjects(projectDescriptors)
                                                               .withDisplayName(machine.getDisplayName())
                                                               .withMemorySize(machine.getMemorySize());

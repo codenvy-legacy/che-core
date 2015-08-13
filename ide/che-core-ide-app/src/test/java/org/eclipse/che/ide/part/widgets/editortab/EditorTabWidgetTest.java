@@ -24,7 +24,6 @@ import org.mockito.Mock;
 import org.vectomatic.dom.svg.OMSVGSVGElement;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import static junit.framework.Assert.assertEquals;
 import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.BELOW;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -165,11 +164,4 @@ public class EditorTabWidgetTest {
         verify(delegate).onTabClose(tab);
     }
 
-    @Test
-    public void equalsAndHashCodeShouldBeTested() {
-        EditorTab tab1 = new EditorTabWidget(resources, icon, SOME_TEXT);
-
-        assertEquals(tab1, tab);
-        assertEquals(tab1.hashCode(), tab.hashCode());
-    }
 }
