@@ -11,6 +11,7 @@
 package org.eclipse.che.ide.part.projectexplorer;
 
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.ide.api.event.ProjectActionEvent.ProjectAction;
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.parts.base.BaseActionDelegate;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
@@ -18,12 +19,14 @@ import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.ui.tree.SelectionModel;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Interface of project tree view.
  *
  * @author Andrey Plotnikov
  * @author Artem Zatsarynnyy
+ * @author Dmitry Shnurenko
  */
 public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDelegate> {
     /**
@@ -31,8 +34,11 @@ public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDele
      *
      * @param rootNodes
      *         root nodes to set
+     * @param actionType
+     *         root nodes which will be set depend on this type. Type is CLOSED shows all existing project nodes. Type is OPENED
+     *         shows only opened project nodes. Type can be null(e.g. when we refresh project)
      */
-    void setRootNodes(@Nonnull Array<TreeNode<?>> rootNodes);
+    void setRootNodes(@Nonnull Array<TreeNode<?>> rootNodes, @Nullable ProjectAction actionType);
 
     /**
      * Updates the specified node.

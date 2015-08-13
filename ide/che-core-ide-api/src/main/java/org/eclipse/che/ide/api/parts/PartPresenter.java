@@ -14,6 +14,7 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.IsWidget;
 
+import org.eclipse.che.ide.api.editor.EditorInput;
 import org.eclipse.che.ide.api.mvp.Presenter;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.vectomatic.dom.svg.ui.SVGImage;
@@ -46,6 +47,13 @@ public interface PartPresenter extends Presenter {
     void setVisible(boolean visible);
 
     IsWidget getView();
+
+    /**
+     * Returns instance of {@link EditorInput}. This method is actual only
+     * for {@link org.eclipse.che.ide.api.editor.EditorPartPresenter}
+     */
+    @Nonnull
+    EditorInput getEditorInput();
 
     /**
      * Returns the title image of this part.  If this value changes the part must fire a property listener event with

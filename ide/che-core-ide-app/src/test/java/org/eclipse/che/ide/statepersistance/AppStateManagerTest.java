@@ -20,7 +20,6 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.PromiseError;
-import org.eclipse.che.api.user.shared.dto.ProfileDescriptor;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
@@ -55,15 +54,16 @@ import org.mockito.Mock;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.eclipse.che.ide.statepersistance.AppStateManager.PREFERENCE_PROPERTY_NAME;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.eclipse.che.ide.statepersistance.AppStateManager.PREFERENCE_PROPERTY_NAME;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
@@ -71,7 +71,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -90,7 +89,7 @@ public class AppStateManagerTest {
     private static final String FULL_PROJECT_PATH = "/" + WORKSPACE_NAME + PROJECT_PATH;
 
     @Mock
-    private Set<PersistenceComponent>         persistenceComponents;
+    private Set<PersistenceComponent> persistenceComponents;
 
     private Map<String, PersistenceComponent> projectTreePersistenceComponents;
     @Mock
@@ -144,9 +143,9 @@ public class AppStateManagerTest {
     @Captor
     private ArgumentCaptor<AsyncRequestCallback<ProjectDescriptor>> projectDescriptorCaptor;
     @Captor
-    private ArgumentCaptor<PersistProjectTreeStateHandler> projectTreeStateHandlerArgCaptor;
+    private ArgumentCaptor<PersistProjectTreeStateHandler>          projectTreeStateHandlerArgCaptor;
     @Captor
-    private ArgumentCaptor<RestoreProjectTreeStateHandler> treeStateHandlerArgumentCaptor;
+    private ArgumentCaptor<RestoreProjectTreeStateHandler>          treeStateHandlerArgumentCaptor;
 
     private AppStateManager appStateManager;
 
@@ -177,6 +176,7 @@ public class AppStateManagerTest {
         when(dtoFactory.createDto(RecentProject.class)).thenReturn(recentProject);
         when(appContext.getCurrentProject()).thenReturn(currentProject);
         when(appContext.getWorkspace()).thenReturn(workspaceDescriptor);
+        when(appContext.getOpenedProjects()).thenReturn(Arrays.asList(rootProject));
         when(workspaceDescriptor.getId()).thenReturn(WORKSPACE_ID);
         when(currentProject.getRootProject()).thenReturn(rootProject);
         when(rootProject.getPath()).thenReturn(PROJECT_PATH);
@@ -213,8 +213,8 @@ public class AppStateManagerTest {
 
         verify(eventBus).addHandler(eq(WindowActionEvent.TYPE), eq(appStateManager));
         verify(eventBus).addHandler(eq(ProjectActionEvent.TYPE), eq(appStateManager));
-        verify(eventBus).addHandler(eq(PersistProjectTreeStateEvent.TYPE), (PersistProjectTreeStateHandler) anyObject());
-        verify(eventBus).addHandler(eq(RestoreProjectTreeStateEvent.TYPE), (RestoreProjectTreeStateHandler) anyObject());
+        verify(eventBus).addHandler(eq(PersistProjectTreeStateEvent.TYPE), (PersistProjectTreeStateHandler)anyObject());
+        verify(eventBus).addHandler(eq(RestoreProjectTreeStateEvent.TYPE), (RestoreProjectTreeStateHandler)anyObject());
     }
 
     @Test
@@ -292,12 +292,12 @@ public class AppStateManagerTest {
 
         appStateManager.onWindowClosing(mock(WindowActionEvent.class));
 
-        verify(appContext, times(2)).getCurrentProject();
+        verify(appContext).getOpenedProjects();
         verify(appState, times(3)).getRecentProject();
         verify(appContext).getWorkspace();
         verify(workspaceDescriptor).getId();
         verify(recentProject).setWorkspaceId(WORKSPACE_ID);
-        verify(currentProject, times(2)).getRootProject();
+        verify(currentProject).getRootProject();
         verify(rootProject, times(2)).getPath();
         verify(rootProject, times(2)).getWorkspaceName();
         verify(appState, times(3)).getRecentProject();
@@ -305,7 +305,6 @@ public class AppStateManagerTest {
         verify(dtoFactory).createDto(ProjectState.class);
         verify(appState).getProjects();
         verify(projectState).getActions();
-        verify(currentProject, times(2)).getRootProject();
         verify(dtoFactory).toJson(appState);
         verify(preferencesManager).setValue(PREFERENCE_PROPERTY_NAME, SERIALIZED_STATE);
         verify(preferencesManager).flushPreferences(Matchers.<AsyncCallback<Map<String, String>>>anyObject());
@@ -319,14 +318,17 @@ public class AppStateManagerTest {
 
     @Test
     public void projectShouldNotBeOpenedBecauseCurrentProjectIsNull() {
+        when(event.getProject()).thenReturn(rootProject);
+
         appStateManager.start(false);
 
         when(appContext.getCurrentProject()).thenReturn(null);
 
         appStateManager.onProjectOpened(event);
 
-        verify(appContext).getCurrentProject();
-        verifyNoMoreInteractions(rootProject, event);
+        verify(event).getProject();
+        verify(rootProject).getPath();
+        verify(rootProject).getWorkspaceName();
     }
 
     @Test
@@ -335,8 +337,7 @@ public class AppStateManagerTest {
 
         appStateManager.onProjectOpened(event);
 
-        verify(appContext).getCurrentProject();
-        verify(currentProject).getRootProject();
+        verify(event).getProject();
         verify(rootProject).getWorkspaceName();
         verify(event).getProject();
         verify(rootProject).getPath();
@@ -356,8 +357,7 @@ public class AppStateManagerTest {
         verify(eventBus).addHandler(eq(PersistProjectTreeStateEvent.TYPE), projectTreeStateHandlerArgCaptor.capture());
         projectTreeStateHandlerArgCaptor.getValue().onPersist(projectTreeStateEvent);
 
-        verify(appContext).getCurrentProject();
-        verify(currentProject).getRootProject();
+        verify(appContext).getOpenedProjects();
         verify(rootProject).getPath();
         verify(rootProject).getWorkspaceName();
         verify(dtoFactory).createDto(ProjectState.class);
@@ -428,8 +428,7 @@ public class AppStateManagerTest {
 
         appStateManager.onProjectClosing(projectActionEvent);
 
-        verify(appContext).getCurrentProject();
-        verify(currentProject).getRootProject();
+        verify(appContext).getOpenedProjects();
         verify(rootProject).getPath();
         verify(rootProject).getWorkspaceName();
         verify(dtoFactory).createDto(ProjectState.class);
@@ -440,6 +439,6 @@ public class AppStateManagerTest {
 
         verify(dtoFactory).toJson(appState);
         verify(preferencesManager).setValue(eq(PREFERENCE_PROPERTY_NAME), anyString());
-        verify( preferencesManager).flushPreferences(Matchers.<AsyncCallback<Map<String, String>>>anyObject());
+        verify(preferencesManager).flushPreferences(Matchers.<AsyncCallback<Map<String, String>>>anyObject());
     }
 }

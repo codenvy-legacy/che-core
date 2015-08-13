@@ -154,28 +154,10 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
             @Override
             protected void onSuccess(final ProjectDescriptor project) {
                 if (hasProblems(project)) {
-                    if (appContext.getCurrentProject() != null) {
-                        closeCurrentProject(new CloseCallback() {
-                            @Override
-                            public void onClosed() {
-                                openProblemProject(project);
-                            }
-                        }, false);
-                    } else {
-                        eventBus.fireEvent(new RefreshProjectTreeEvent());
-                        openProblemProject(project);
-                    }
+                    eventBus.fireEvent(new RefreshProjectTreeEvent());
+                    openProblemProject(project);
                 } else {
-                    if (appContext.getCurrentProject() != null) {
-                        closeCurrentProject(new CloseCallback() {
-                            @Override
-                            public void onClosed() {
-                                openProject(project);
-                            }
-                        }, true);
-                    } else {
-                        openProject(project);
-                    }
+                    openProject(project);
                 }
             }
 
@@ -205,6 +187,8 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
     }
 
     private void openProject(ProjectDescriptor project) {
+        appContext.addOpenedProject(project);
+
         appContext.setCurrentProject(new CurrentProject(project));
 
         Document.get().setTitle(documentTitleDecorator.getDocumentTitle(project.getName()));

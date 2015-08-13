@@ -15,8 +15,16 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import elemental.events.KeyboardEvent;
 import elemental.events.MouseEvent;
 
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.InlineLabel;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.Resources;
+import org.eclipse.che.ide.api.event.ProjectActionEvent.ProjectAction;
 import org.eclipse.che.ide.api.parts.base.BaseView;
 import org.eclipse.che.ide.api.project.tree.AbstractTreeNode;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
@@ -25,44 +33,43 @@ import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.ui.tree.Tree;
 import org.eclipse.che.ide.ui.tree.TreeNodeElement;
 import org.eclipse.che.ide.util.input.SignalEvent;
-import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.InlineLabel;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-
 import org.vectomatic.dom.svg.ui.SVGImage;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Project Explorer view.
  *
  * @author Andrey Plotnikov
  * @author Artem Zatsarynnyy
+ * @author Dmitry Shnurenko
  */
 @Singleton
 public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.ActionDelegate> implements ProjectExplorerView {
 
-    protected Tree<TreeNode<?>>   tree;
-    private   Resources           resources;
-    private   FlowPanel           projectHeader;
-    private   AbstractTreeNode<?> rootNode;
+    private final Resources           resources;
+    private final FlowPanel           projectHeader;
+    private final AbstractTreeNode<?> rootNode;
+    private final Array<TreeNode<?>>  openedNodes;
+    private final List<String>        openedNodeNames;
 
-    private ProjectTreeNodeDataAdapter projectTreeNodeDataAdapter;
+    protected final Tree<TreeNode<?>> tree;
 
-    /** Create view. */
     @Inject
-    public ProjectExplorerViewImpl(Resources resources,
-                                   ProjectTreeNodeRenderer projectTreeNodeRenderer) {
+    public ProjectExplorerViewImpl(Resources resources, ProjectTreeNodeRenderer projectTreeNodeRenderer) {
         super(resources);
 
         this.resources = resources;
 
-        projectTreeNodeDataAdapter = new ProjectTreeNodeDataAdapter();
+        ProjectTreeNodeDataAdapter projectTreeNodeDataAdapter = new ProjectTreeNodeDataAdapter();
         tree = Tree.create(resources, projectTreeNodeDataAdapter, projectTreeNodeRenderer, true);
         setContentWidget(tree.asWidget());
+
+        this.openedNodes = Collections.createArray();
+        this.openedNodeNames = new ArrayList<>();
 
         projectHeader = new FlowPanel();
         projectHeader.setStyleName(resources.partStackCss().idePartStackToolbarBottom());
@@ -152,8 +159,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
                 if (event.getKeyCode() == KeyboardEvent.KeyCode.ENTER) {
                     delegate.onEnterKey();
 
-                } else
-                if (event.getKeyCode() == KeyboardEvent.KeyCode.DELETE) {
+                } else if (event.getKeyCode() == KeyboardEvent.KeyCode.DELETE) {
                     delegate.onDeleteKey();
                 }
             }
@@ -175,11 +181,13 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
 
     /** {@inheritDoc} */
     @Override
-    public void setRootNodes(@Nonnull final Array<TreeNode<?>> rootNodes) {
-        // provided rootNodes should be set as child nodes for rootNode
-        rootNode.setChildren(rootNodes);
-        for (TreeNode<?> treeNode : rootNodes.asIterable()) {
-            treeNode.setParent(rootNode);
+    public void setRootNodes(@Nonnull final Array<TreeNode<?>> rootNodes, @Nullable ProjectAction projectAction) {
+        if (projectAction != null) {
+            setRootNodeChildren(rootNodes, projectAction);
+        } else {
+            rootNode.setChildren(rootNodes);
+
+            setRootNode(rootNodes);
         }
 
         tree.getSelectionModel().clearSelections();
@@ -198,6 +206,41 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
             // auto-select first node
             tree.getSelectionModel().selectSingleNode(firstNode);
             delegate.onNodeSelected(firstNode, tree.getSelectionModel());
+        }
+    }
+
+    private void setRootNodeChildren(@Nonnull final Array<TreeNode<?>> rootNodes, @Nonnull ProjectAction projectAction) {
+        switch (projectAction) {
+            case OPENED:
+                TreeNode<?> openedNode = rootNodes.get(0);
+                String nodeName = openedNode.getDisplayName();
+
+                if (!openedNodeNames.contains(nodeName)) {
+                    openedNodeNames.add(nodeName);
+
+                    openedNodes.add(openedNode);
+                }
+
+                rootNode.setChildren(openedNodes);
+
+                setRootNode(openedNodes);
+
+                break;
+            case CLOSED:
+                rootNode.setChildren(rootNodes);
+
+                setRootNode(rootNodes);
+
+                openedNodeNames.clear();
+                openedNodes.clear();
+                break;
+            default:
+        }
+    }
+
+    private void setRootNode(@Nonnull Array<TreeNode<?>> nodes) {
+        for (TreeNode<?> treeNode : nodes.asIterable()) {
+            treeNode.setParent(rootNode);
         }
     }
 

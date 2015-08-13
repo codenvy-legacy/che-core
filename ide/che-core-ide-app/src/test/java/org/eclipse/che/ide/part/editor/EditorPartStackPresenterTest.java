@@ -13,11 +13,13 @@ package org.eclipse.che.ide.part.editor;
 import com.google.gwtmockito.GwtMockitoTestRunner;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.ide.api.editor.EditorInput;
 import org.eclipse.che.ide.api.editor.EditorWithErrors;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.ProjectActionHandler;
 import org.eclipse.che.ide.api.parts.PartPresenter;
 import org.eclipse.che.ide.api.parts.PropertyListener;
+import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.client.inject.factories.TabItemFactory;
 import org.eclipse.che.ide.part.PartStackPresenter.PartStackEventHandler;
 import org.eclipse.che.ide.part.PartsComparator;
@@ -32,6 +34,8 @@ import org.mockito.Captor;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.vectomatic.dom.svg.ui.SVGResource;
+
+import javax.annotation.Nonnull;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -66,6 +70,8 @@ public class EditorPartStackPresenterTest {
     private PartStackEventHandler partStackEventHandler;
     @Mock
     private ListButton            listButton;
+    @Mock
+    private CurrentProjectManager projectManager;
 
     //additional mocks
     @Mock
@@ -84,6 +90,10 @@ public class EditorPartStackPresenterTest {
     private SVGResource        resource2;
     @Mock
     private ProjectActionEvent actionEvent;
+    @Mock
+    private EditorInput        editorInput;
+    @Mock
+    private VirtualFile        virtualFile;
 
     @Captor
     private ArgumentCaptor<ListItem>             itemCaptor;
@@ -94,16 +104,27 @@ public class EditorPartStackPresenterTest {
 
     @Before
     public void setUp() {
-        when(partPresenter1.getTitle()).thenReturn(SOME_TEXT);
-        when(partPresenter1.getTitleSVGImage()).thenReturn(resource1);
-
-        when(partPresenter2.getTitle()).thenReturn(SOME_TEXT);
-        when(partPresenter2.getTitleSVGImage()).thenReturn(resource2);
+        prepareEditorPart(partPresenter1, resource1);
+        prepareEditorPart(partPresenter2, resource2);
 
         when(tabItemFactory.createEditorPartButton(resource1, SOME_TEXT)).thenReturn(editorTab1);
         when(tabItemFactory.createEditorPartButton(resource2, SOME_TEXT)).thenReturn(editorTab2);
 
-        presenter = new EditorPartStackPresenter(view, partsComparator, eventBus, tabItemFactory, partStackEventHandler, listButton);
+        presenter = new EditorPartStackPresenter(view,
+                                                 partsComparator,
+                                                 eventBus,
+                                                 projectManager,
+                                                 tabItemFactory,
+                                                 partStackEventHandler,
+                                                 listButton);
+    }
+
+    private void prepareEditorPart(@Nonnull PartPresenter partPresenter, @Nonnull SVGResource resource) {
+        when(partPresenter.getTitle()).thenReturn(SOME_TEXT);
+        when(partPresenter.getTitleSVGImage()).thenReturn(resource);
+        when(partPresenter.getEditorInput()).thenReturn(editorInput);
+        when(editorInput.getFile()).thenReturn(virtualFile);
+        when(virtualFile.getPath()).thenReturn(SOME_TEXT);
     }
 
     @Test
@@ -183,6 +204,7 @@ public class EditorPartStackPresenterTest {
         presenter.onTabClicked(editorTab1);
 
         verify(view).selectTab(partPresenter1);
+        verify(projectManager).setActualProjectForFile(SOME_TEXT);
     }
 
     @Test
@@ -192,6 +214,7 @@ public class EditorPartStackPresenterTest {
         presenter.onTabClose(editorTab1);
 
         verify(view).removeTab(partPresenter1);
+        verify(projectManager).removeMatch(SOME_TEXT);
     }
 
     @Test

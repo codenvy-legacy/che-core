@@ -15,11 +15,11 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 import org.eclipse.che.ide.actions.SelectNodeAction;
-import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
+import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.api.project.tree.generic.FileNode;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.dto.DtoFactory;
@@ -80,13 +80,16 @@ public class ActiveNodePersistentComponent implements PersistenceComponent {
 
         if (openedNodes != null && openedNodes.contains(parentNode)) {
             String path = virtualFile.getPath();
-            path = path.replaceFirst(projectPath, "");
 
-            String openNodeActionId = actionManager.getId(selectNodeAction);
+            if (path.startsWith(projectPath)) {
+                path = path.replaceFirst(projectPath, "");
 
-            actions.add(dtoFactory.createDto(ActionDescriptor.class)
-                                  .withId(openNodeActionId)
-                                  .withParameters(Collections.singletonMap(SELECT_NODE_PARAM_ID, path)));
+                String openNodeActionId = actionManager.getId(selectNodeAction);
+
+                actions.add(dtoFactory.createDto(ActionDescriptor.class)
+                                      .withId(openNodeActionId)
+                                      .withParameters(Collections.singletonMap(SELECT_NODE_PARAM_ID, path)));
+            }
         }
 
         return actions;

@@ -20,11 +20,10 @@ import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-
 import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
-import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.ItemEvent;
 import org.eclipse.che.ide.api.event.ItemHandler;
 import org.eclipse.che.ide.api.event.NodeChangedEvent;
@@ -32,19 +31,13 @@ import org.eclipse.che.ide.api.event.NodeChangedHandler;
 import org.eclipse.che.ide.api.event.NodeExpandedEvent;
 import org.eclipse.che.ide.api.event.PersistProjectTreeStateEvent;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
+import org.eclipse.che.ide.api.event.ProjectActionEvent.ProjectAction;
 import org.eclipse.che.ide.api.event.ProjectActionHandler;
 import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
 import org.eclipse.che.ide.api.event.RefreshProjectTreeHandler;
-import org.eclipse.che.ide.api.event.RestoreProjectTreeStateEvent;
 import org.eclipse.che.ide.api.event.RenameNodeEvent;
 import org.eclipse.che.ide.api.event.RenameNodeEventHandler;
-import org.eclipse.che.ide.api.project.tree.VirtualFile;
-import org.eclipse.che.ide.api.project.tree.generic.FileNode;
-import org.eclipse.che.ide.api.project.tree.generic.UpdateTreeNodeDataIterable;
-import org.eclipse.che.ide.collections.StringMap;
-import org.eclipse.che.ide.collections.js.JsoArray;
-import org.eclipse.che.ide.menu.ContextMenu;
-
+import org.eclipse.che.ide.api.event.RestoreProjectTreeStateEvent;
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.parts.HasView;
 import org.eclipse.che.ide.api.parts.ProjectExplorerPart;
@@ -52,28 +45,36 @@ import org.eclipse.che.ide.api.parts.base.BasePresenter;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.api.project.tree.TreeStructure;
 import org.eclipse.che.ide.api.project.tree.TreeStructureProviderRegistry;
+import org.eclipse.che.ide.api.project.tree.VirtualFile;
+import org.eclipse.che.ide.api.project.tree.generic.FileNode;
 import org.eclipse.che.ide.api.project.tree.generic.Openable;
 import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
+import org.eclipse.che.ide.api.project.tree.generic.UpdateTreeNodeDataIterable;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.Collections;
+import org.eclipse.che.ide.collections.StringMap;
+import org.eclipse.che.ide.collections.js.JsoArray;
 import org.eclipse.che.ide.logger.AnalyticsEventLoggerExt;
+import org.eclipse.che.ide.menu.ContextMenu;
+import org.eclipse.che.ide.part.editor.CurrentProjectManager;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.ui.tree.SelectionModel;
 import org.eclipse.che.ide.util.Config;
 import org.eclipse.che.ide.util.loging.Log;
-
 import org.vectomatic.dom.svg.ui.SVGResource;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.annotation.Nonnull;
-
 import static org.eclipse.che.ide.api.event.ItemEvent.ItemOperation.CREATED;
 import static org.eclipse.che.ide.api.event.ItemEvent.ItemOperation.DELETED;
+import static org.eclipse.che.ide.api.event.ProjectActionEvent.ProjectAction.CLOSED;
+import static org.eclipse.che.ide.api.event.ProjectActionEvent.ProjectAction.OPENED;
 
 /**
  * Project Explorer displays project's tree in a dedicated part (view).
@@ -84,21 +85,25 @@ import static org.eclipse.che.ide.api.event.ItemEvent.ItemOperation.DELETED;
  */
 @Singleton
 public class ProjectExplorerPartPresenter extends BasePresenter implements ProjectExplorerView.ActionDelegate,
-                                                                           ProjectExplorerPart, HasView, RefreshProjectTreeHandler {
-    private ProjectExplorerView            view;
-    private EventBus                       eventBus;
-    private ContextMenu                    contextMenu;
-    private ProjectServiceClient           projectServiceClient;
-    private CoreLocalizationConstant       coreLocalizationConstant;
-    private AppContext                     appContext;
-    private TreeStructureProviderRegistry  treeStructureProviderRegistry;
-    private TreeStructure                  currentTreeStructure;
-    private DeleteNodeHandler              deleteNodeHandler;
-    private Provider<ProjectListStructure> projectListStructureProvider;
-    private AnalyticsEventLoggerExt        eventLogger;
-    private Provider<EditorAgent>          editorAgentProvider;
+                                                                           RefreshProjectTreeHandler,
+                                                                           ProjectExplorerPart,
+                                                                           CurrentProjectManager.ProjectChangedListener,
+                                                                           HasView {
+    private final ProjectExplorerView            view;
+    private final EventBus                       eventBus;
+    private final ContextMenu                    contextMenu;
+    private final ProjectServiceClient           projectServiceClient;
+    private final CoreLocalizationConstant       coreLocalizationConstant;
+    private final AppContext                     appContext;
+    private final TreeStructureProviderRegistry  treeStructureProviderRegistry;
+    private final DeleteNodeHandler              deleteNodeHandler;
+    private final Provider<ProjectListStructure> projectListStructureProvider;
+    private final AnalyticsEventLoggerExt        eventLogger;
+    private final Provider<EditorAgent>          editorAgentProvider;
+    private final CurrentProjectManager          projectManager;
 
-    /** A list of nodes is used for asynchronously refreshing the tree. */
+
+    private TreeStructure      currentTreeStructure;
     private Array<TreeNode<?>> nodesToRefresh;
 
     /** Instantiates the Project Explorer presenter. */
@@ -113,7 +118,8 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
                                         DeleteNodeHandler deleteNodeHandler,
                                         AnalyticsEventLoggerExt eventLogger,
                                         Provider<ProjectListStructure> projectListStructureProvider,
-                                        Provider<EditorAgent> editorAgentProvider) {
+                                        Provider<EditorAgent> editorAgentProvider,
+                                        CurrentProjectManager projectManager) {
         this.view = view;
         this.eventBus = eventBus;
         this.contextMenu = contextMenu;
@@ -126,6 +132,9 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
         this.projectListStructureProvider = projectListStructureProvider;
         this.view.setTitle(coreLocalizationConstant.projectExplorerTitleBarText());
         this.editorAgentProvider = editorAgentProvider;
+
+        this.projectManager = projectManager;
+        this.projectManager.addListener(this);
 
         bind();
     }
@@ -145,7 +154,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
     @Override
     public void onOpen() {
         if (Config.getProjectName() == null) {
-            setTree(projectListStructureProvider.get());
+            setTree(projectListStructureProvider.get(), OPENED);
         } else {
             projectServiceClient.getProject(Config.getProjectName(), new AsyncRequestCallback<ProjectDescriptor>() {
                 @Override
@@ -154,7 +163,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
 
                 @Override
                 protected void onFailure(Throwable exception) {
-                    setTree(projectListStructureProvider.get());
+                    setTree(projectListStructureProvider.get(), OPENED);
                 }
             });
         }
@@ -205,7 +214,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
             @Override
             public void onProjectOpened(ProjectActionEvent event) {
                 final ProjectDescriptor project = event.getProject();
-                setTree(treeStructureProviderRegistry.getTreeStructureProvider(project.getType()).get());
+                setTree(treeStructureProviderRegistry.getTreeStructureProvider(project.getType()).get(), OPENED);
                 view.setProjectHeader(event.getProject());
                 eventLogger.logEvent("project-opened", new HashMap<String, String>());
             }
@@ -218,7 +227,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
             public void onProjectClosed(ProjectActionEvent event) {
                 // this isn't case when some project going to open while previously opened project is closing
                 if (!event.isCloseBeforeOpening()) {
-                    setTree(projectListStructureProvider.get());
+                    setTree(projectListStructureProvider.get(), CLOSED);
                     view.hideProjectHeader();
                 }
             }
@@ -226,55 +235,12 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
 
         eventBus.addHandler(RefreshProjectTreeEvent.TYPE, this);
 
-//        eventBus.addHandler(RefreshProjectTreeEvent.TYPE, new RefreshProjectTreeHandler() {
-//            @Override
-//            public void onRefreshProjectTree(RefreshProjectTreeEvent event) {
-//                eventBus.fireEvent(new PersistProjectTreeStateEvent());
-//                if (appContext.getCurrentProject() == null) {
-//                    setTree(projectListStructureProvider.get());
-//                    return;
-//                }
-//
-//                if (event.refreshSubtree()) {
-//                    nodesToRefresh = view.getOpenedTreeNodes();
-//                    refreshTreeNodes();
-//                    return;
-//                }
-//
-//                if (event.getNode() != null) {
-//                    refreshAndSelectNode(event.getNode());
-//                    return;
-//                }
-//
-//                currentTreeStructure.getRootNodes(new AsyncCallback<Array<TreeNode<?>>>() {
-//                    @Override
-//                    public void onSuccess(Array<TreeNode<?>> result) {
-//                        for (TreeNode<?> childNode : result.asIterable()) {
-//                            // clear children in order to force to refresh
-//                            childNode.setChildren(Collections.<TreeNode<?>>createArray());
-//                            refreshAndSelectNode(childNode);
-//
-//                            ProjectDescriptor projectDescriptor = appContext.getCurrentProject().getRootProject();
-//                            String workspaceName = projectDescriptor.getWorkspaceName();
-//                            String fullProjectPath = "/" + workspaceName + projectDescriptor.getPath();
-//                            eventBus.fireEvent(new RestoreProjectTreeStateEvent(fullProjectPath));
-//                        }
-//                    }
-//
-//                    @Override
-//                    public void onFailure(Throwable caught) {
-//                        Log.error(ProjectExplorerPartPresenter.class, caught);
-//                    }
-//                });
-//            }
-//        });
-
         eventBus.addHandler(NodeChangedEvent.TYPE, new NodeChangedHandler() {
             @Override
             public void onNodeRenamed(NodeChangedEvent event) {
                 if (appContext.getCurrentProject() == null) {
                     // any opened project - all projects list is shown
-                    setTree(currentTreeStructure);
+                    setTree(currentTreeStructure, null);
                 } else {
                     updateNode(event.getNode().getParent());
                     view.selectNode(event.getNode());
@@ -300,7 +266,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
             @Override
             public void onNodeRenamed(TreeNode<?> parentNode, String newParenNodePath) {
                 if (parentNode instanceof UpdateTreeNodeDataIterable) {
-                    final StorableNode parent = (StorableNode) parentNode;
+                    final StorableNode parent = (StorableNode)parentNode;
                     Array<TreeNode<?>> children = JsoArray.create();
                     children.add(parent);
                     getAllChildren(parentNode, children);
@@ -364,14 +330,14 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
 
         children.addAll(childrenForCurrentDeep);
 
-        for (TreeNode<?> node: childrenForCurrentDeep.asIterable()) {
+        for (TreeNode<?> node : childrenForCurrentDeep.asIterable()) {
             getAllChildren(node, children);
         }
     }
 
     private void getOpenedUnCashedFiles(StorableNode parentNode, Array<TreeNode<?>> children) {
         StringMap<EditorPartPresenter> editorParts = editorAgentProvider.get().getOpenedEditors();
-        for (EditorPartPresenter editorPart: editorParts.getValues().asIterable()) {
+        for (EditorPartPresenter editorPart : editorParts.getValues().asIterable()) {
             VirtualFile file = editorPart.getEditorInput().getFile();
 
             if (!(file instanceof FileNode)) {
@@ -401,7 +367,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
         eventBus.fireEvent(new PersistProjectTreeStateEvent());
 
         if (appContext.getCurrentProject() == null) {
-            setTree(projectListStructureProvider.get());
+            setTree(projectListStructureProvider.get(), null);
             return;
         }
 
@@ -478,8 +444,21 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
         }
 
         if (node != null && node instanceof StorableNode && appContext.getCurrentProject() != null) {
-            appContext.getCurrentProject().setProjectDescription(node.getProject().getData());
+            String pathToFile = ((StorableNode)node).getPath();
+            ProjectDescriptor descriptor = node.getProject().getData();
+
+            projectManager.matchFileToProject(pathToFile, descriptor);
+
+            appContext.getCurrentProject().setProjectDescription(descriptor);
+
+            view.setProjectHeader(descriptor);
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void onProjectChanged(@Nonnull ProjectDescriptor descriptor) {
+        view.setProjectHeader(descriptor);
     }
 
     @Override
@@ -544,7 +523,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
         view.getSelectedNode().processNodeAction();
     }
 
-    private void setTree(@Nonnull final TreeStructure treeStructure) {
+    private void setTree(@Nonnull final TreeStructure treeStructure, @Nullable final ProjectAction actionType) {
         currentTreeStructure = treeStructure;
         if (appContext.getCurrentProject() != null) {
             appContext.getCurrentProject().setCurrentTree(currentTreeStructure);
@@ -552,7 +531,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
         treeStructure.getRootNodes(new AsyncCallback<Array<TreeNode<?>>>() {
             @Override
             public void onSuccess(Array<TreeNode<?>> result) {
-                view.setRootNodes(result);
+                view.setRootNodes(result, actionType);
             }
 
             @Override
@@ -596,5 +575,4 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
     private void updateNode(TreeNode<?> node) {
         view.updateNode(node, node);
     }
-
 }

@@ -32,9 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.mockito.Mockito.times;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -65,11 +64,11 @@ public class OpenedNodesPersistenceComponentTest {
     private FolderNode node3;
 
     @Mock
-    private ActionDescriptor actionDescriptor1;
+    private ActionDescriptor   actionDescriptor1;
     @Mock
-    private ActionDescriptor actionDescriptor2;
+    private ActionDescriptor   actionDescriptor2;
     @Mock
-    private Array<TreeNode<?>>  emptyArray;
+    private Array<TreeNode<?>> emptyArray;
 
     @InjectMocks
     private OpenedNodesPersistenceComponent openedNodesComponent;
@@ -109,16 +108,13 @@ public class OpenedNodesPersistenceComponentTest {
         verify(node2).getPath();
         verify(node3).getPath();
 
-        verify(dtoFactory, times(2)).createDto(ActionDescriptor.class);
+        verify(dtoFactory).createDto(ActionDescriptor.class);
         verify(actionDescriptor1).withId(TEXT1);
-        verify(actionDescriptor2).withId(TEXT1);
 
         verify(actionDescriptor1).withParameters(Matchers.<Map<String, String>>anyObject());
-        verify(actionDescriptor2).withParameters(Matchers.<Map<String, String>>anyObject());
 
         assertThat(result.contains(actionDescriptor1), is(true));
-        assertThat(result.contains(actionDescriptor2), is(true));
-        assertThat(result.size(), is(2));
+        assertThat(result.size(), is(1));
     }
 
     @Test

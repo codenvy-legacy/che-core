@@ -10,11 +10,16 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.app;
 
-//import org.eclipse.che.api.factory.dto.Factory;
+import com.google.inject.Inject;
+
+import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Singleton;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Describes current state of application.
@@ -28,8 +33,34 @@ public class AppContext {
     private WorkspaceDescriptor workspace;
     private CurrentProject      currentProject;
     private CurrentUser         currentUser;
-//    private Factory             factory;
     private String              devMachineId;
+
+    private final List<ProjectDescriptor> openedProjects;
+
+    @Inject
+    public AppContext() {
+        openedProjects = new ArrayList<>();
+    }
+
+    /** Returns all opened projects. */
+    public List<ProjectDescriptor> getOpenedProjects() {
+        return openedProjects;
+    }
+
+    /**
+     * Add opened project to list of projects which are opened.
+     *
+     * @param openedProject
+     *         project which will be opened
+     */
+    public void addOpenedProject(@Nonnull ProjectDescriptor openedProject) {
+        openedProjects.add(openedProject);
+    }
+
+    /** Removes all opened projects. */
+    public void clearOpenedProject() {
+        openedProjects.clear();
+    }
 
     public WorkspaceDescriptor getWorkspace() {
         return workspace;
@@ -74,26 +105,6 @@ public class AppContext {
     public void setCurrentUser(CurrentUser currentUser) {
         this.currentUser = currentUser;
     }
-
-    /**
-     * Returns {@link Factory} instance that loaded for query parameters
-     * or {@code null} if parameters don't contains information about factory
-     *
-     * @return loaded factory or {@code null}
-     */
-//    @Nullable
-//    public Factory getFactory() {
-//        return factory;
-//    }
-
-    /**
-     * Set the factory instance.
-     * <p/>
-     * Should not be called directly as the factory is managed by the core.
-     */
-//    public void setFactory(Factory factory) {
-//        this.factory = factory;
-//    }
 
     /** Returns ID of the developer machine (where workspace is bound). */
     @Nullable

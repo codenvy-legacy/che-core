@@ -403,7 +403,8 @@ public class CoreGinModule extends AbstractGinModule {
         bind(AppearanceView.class).to(AppearanceViewImpl.class).in(Singleton.class);
         bind(FindActionView.class).to(FindActionViewImpl.class).in(Singleton.class);
 
-        bind(PrivacyPresenter.class).asEagerSingleton();
+        //TODO unknown how use it for several projects.
+//        bind(PrivacyPresenter.class).asEagerSingleton();
 
         GinMultibinder.newSetBinder(binder(), SettingsPagePresenter.class);
     }

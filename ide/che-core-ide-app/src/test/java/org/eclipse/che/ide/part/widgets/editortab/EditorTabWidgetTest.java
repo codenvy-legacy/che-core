@@ -163,5 +163,4 @@ public class EditorTabWidgetTest {
 
         verify(delegate).onTabClose(tab);
     }
-
 }

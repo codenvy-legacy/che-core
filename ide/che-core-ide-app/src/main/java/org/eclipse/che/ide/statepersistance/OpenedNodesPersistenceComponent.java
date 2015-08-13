@@ -13,19 +13,20 @@ package org.eclipse.che.ide.statepersistance;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import org.eclipse.che.ide.api.project.tree.generic.FileNode;
-import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.actions.OpenNodeAction;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
+import org.eclipse.che.ide.api.project.tree.generic.FileNode;
 import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
 import org.eclipse.che.ide.collections.Array;
+import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerView;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import static org.eclipse.che.ide.actions.OpenNodeAction.NODE_PARAM_ID;
 
 /**
@@ -35,9 +36,9 @@ import static org.eclipse.che.ide.actions.OpenNodeAction.NODE_PARAM_ID;
 public class OpenedNodesPersistenceComponent implements PersistenceComponent {
 
     private final ProjectExplorerView projectExplorerView;
-    private final OpenNodeAction openNodeAction;
-    private final ActionManager actionManager;
-    private final DtoFactory dtoFactory;
+    private final OpenNodeAction      openNodeAction;
+    private final ActionManager       actionManager;
+    private final DtoFactory          dtoFactory;
 
     @Inject
     public OpenedNodesPersistenceComponent(ProjectExplorerView projectExplorerView,
@@ -61,20 +62,22 @@ public class OpenedNodesPersistenceComponent implements PersistenceComponent {
 
         String actionId = actionManager.getId(openNodeAction);
 
-        for (TreeNode<?> openedNode: openedNodes.asIterable()) {
+        for (TreeNode<?> openedNode : openedNodes.asIterable()) {
             if (openedNode instanceof StorableNode && !(openedNode instanceof FileNode)) {
                 String relNodePath = ((StorableNode)openedNode).getPath();
 
-                relNodePath = relNodePath.replaceFirst(projectPath, "");
+                if (relNodePath.startsWith(projectPath)) {
+                    relNodePath = relNodePath.replaceFirst(projectPath, "");
 
-                if (relNodePath.equals("")) {
-                    continue;
+                    if (relNodePath.equals("")) {
+                        continue;
+                    }
+
+                    ActionDescriptor actionDescriptor = dtoFactory.createDto(ActionDescriptor.class)
+                                                                  .withId(actionId)
+                                                                  .withParameters(Collections.singletonMap(NODE_PARAM_ID, relNodePath));
+                    actions.add(actionDescriptor);
                 }
-
-                ActionDescriptor actionDescriptor = dtoFactory.createDto(ActionDescriptor.class)
-                                                              .withId(actionId)
-                                                              .withParameters(Collections.singletonMap(NODE_PARAM_ID, relNodePath));
-                actions.add(actionDescriptor);
             }
         }
         return actions;

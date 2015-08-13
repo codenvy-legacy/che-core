@@ -164,5 +164,4 @@ public class EditorTabWidget extends Composite implements EditorTab {
     public void onCloseButtonClicked(@SuppressWarnings("UnusedParameters") ClickEvent event) {
         delegate.onTabClose(this);
     }
-
 }

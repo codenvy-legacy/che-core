@@ -10,41 +10,44 @@
  *******************************************************************************/
 package org.eclipse.che.ide.part.projectexplorer;
 
+import com.google.gwt.user.client.ui.AcceptsOneWidget;
+import com.google.web.bindery.event.shared.EventBus;
+
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.event.NodeExpandedEvent;
-import org.eclipse.che.ide.api.project.tree.TreeStructure;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
+import org.eclipse.che.ide.api.project.tree.TreeStructure;
 import org.eclipse.che.ide.api.project.tree.TreeStructureProviderRegistry;
 import org.eclipse.che.ide.api.project.tree.generic.ProjectNode;
 import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.java.JsonArrayListAdapter;
 import org.eclipse.che.ide.menu.ContextMenu;
+import org.eclipse.che.ide.part.editor.CurrentProjectManager;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.ui.tree.SelectionModel;
-import com.google.gwt.user.client.ui.AcceptsOneWidget;
-import com.google.web.bindery.event.shared.EventBus;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Matchers;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -81,8 +84,11 @@ public class ProjectExplorerPartPresenterTest {
     private DeleteNodeHandler             deleteNodeHandler;
     @Mock
     private CurrentProject                currentProject;
+    @Mock
+    private CurrentProjectManager         projectManager;
+
     @InjectMocks
-    private ProjectExplorerPartPresenter  presenter;
+    private ProjectExplorerPartPresenter presenter;
 
     @Before
     public void setUp() throws Exception {
@@ -153,6 +159,7 @@ public class ProjectExplorerPartPresenterTest {
         presenter.onNodeSelected(node, selectionModel);
 
         verify(currentProject).setProjectDescription(projectDescriptor);
+        verify(projectManager).matchFileToProject(anyString(), Matchers.<ProjectDescriptor>anyObject());
     }
 
     @Test
@@ -180,7 +187,7 @@ public class ProjectExplorerPartPresenterTest {
         doReturn(array).when(view).getSelectedNodes();
         presenter.onDeleteKey();
 
-        Class<List<StorableNode>> listClass = (Class) List.class;
+        Class<List<StorableNode>> listClass = (Class)List.class;
         ArgumentCaptor<List<StorableNode>> captor = ArgumentCaptor.forClass(listClass);
         verify(deleteNodeHandler).deleteNodes(captor.capture());
         assertTrue(captor.getValue().contains(firstNode));

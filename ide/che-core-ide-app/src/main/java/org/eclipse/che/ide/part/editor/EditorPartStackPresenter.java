@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.part.editor;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
@@ -41,7 +40,6 @@ import java.util.Map;
 
 import static org.eclipse.che.ide.api.editor.EditorWithErrors.EditorState.ERROR;
 import static org.eclipse.che.ide.api.editor.EditorWithErrors.EditorState.WARNING;
-import org.eclipse.che.ide.util.loging.Log;
 
 /**
  * EditorPartStackPresenter is a special PartStackPresenter that is shared among all
@@ -58,6 +56,7 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
                                                                             ListItem.ActionDelegate {
     private final ListButton                listButton;
     private final Map<ListItem, TabItem>    items;
+    private final CurrentProjectManager     projectManager;
     //this list need to save order of added parts
     private final LinkedList<PartPresenter> partsOrder;
 
@@ -67,6 +66,7 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
     public EditorPartStackPresenter(final EditorPartStackView view,
                                     PartsComparator partsComparator,
                                     EventBus eventBus,
+                                    final CurrentProjectManager projectManager,
                                     TabItemFactory tabItemFactory,
                                     PartStackEventHandler partStackEventHandler,
                                     ListButton listButton) {
@@ -81,6 +81,8 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
 
         this.items = new HashMap<>();
         this.partsOrder = new LinkedList<>();
+
+        this.projectManager = projectManager;
 
         eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
             @Override
@@ -204,13 +206,27 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
     public void onTabClicked(@Nonnull TabItem tab) {
         activePart = parts.get(tab);
 
-        view.selectTab(parts.get(tab));
+        String pathToSelectedFile = getPathToFile(activePart);
+
+        projectManager.setActualProjectForFile(pathToSelectedFile);
+
+        view.selectTab(activePart);
+    }
+
+    @Nonnull
+    private String getPathToFile(@Nonnull PartPresenter editorPartPresenter) {
+        return editorPartPresenter.getEditorInput().getFile().getPath();
     }
 
     /** {@inheritDoc} */
     @Override
     public void onTabClose(@Nonnull TabItem tab) {
         final PartPresenter closedPart = parts.get(tab);
+
+        String pathToClosedFile = getPathToFile(closedPart);
+
+        projectManager.removeMatch(pathToClosedFile);
+
         view.removeTab(closedPart);
 
         parts.remove(tab);
@@ -219,17 +235,6 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
         removeItemFromList(tab);
 
         activePart = partsOrder.isEmpty() ? null : partsOrder.getLast();
-
-        closedPart.onClose(new AsyncCallback<Void>() {
-            @Override
-            public void onFailure(Throwable caught) {
-                Log.error(this.getClass(), "Unexpected error occured when closing the editor. " + caught.getMessage());
-            }
-
-            @Override
-            public void onSuccess(Void result) {
-            }
-        });
     }
 
     /** {@inheritDoc} */

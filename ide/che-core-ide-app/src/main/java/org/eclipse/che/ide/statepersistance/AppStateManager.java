@@ -110,7 +110,7 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
         eventBus.addHandler(PersistProjectTreeStateEvent.TYPE, new PersistProjectTreeStateHandler() {
             @Override
             public void onPersist(PersistProjectTreeStateEvent event) {
-                persistCurrentProjectState(projectTreePersistenceComponents.values());
+                persistOpenedProjectsState(projectTreePersistenceComponents.values());
             }
         });
 
@@ -137,12 +137,47 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
             recentProject.setWorkspaceId(workspaceId);
             recentProject.setPath(projectPath);
 
-            persistCurrentProjectState(persistenceComponents);
+            persistOpenedProjectsState(persistenceComponents);
         } else { //when none opened projects
             recentProject.setWorkspaceId("");
             recentProject.setPath("");
         }
         writeStateToPreferences();
+    }
+
+    /** Persist state of the currently opened project. */
+    private void persistOpenedProjectsState(Collection<PersistenceComponent> persistenceComponents) {
+        List<ProjectDescriptor> openedProjects = appContext.getOpenedProjects();
+
+        for (ProjectDescriptor descriptor : openedProjects) {
+            final String projectPath = descriptor.getPath();
+            final String fullProjectPath = "/" + descriptor.getWorkspaceName() + projectPath;
+
+            final ProjectState projectState = dtoFactory.createDto(ProjectState.class);
+
+            appState.getProjects().put(fullProjectPath, projectState);
+
+            final List<ActionDescriptor> actions = projectState.getActions();
+
+            for (PersistenceComponent persistenceComponent : persistenceComponents) {
+                actions.addAll(persistenceComponent.getActions(projectPath));
+            }
+        }
+    }
+
+    private void writeStateToPreferences() {
+        final String json = dtoFactory.toJson(appState);
+        preferencesManager.setValue(PREFERENCE_PROPERTY_NAME, json);
+        preferencesManager.flushPreferences(new AsyncCallback<Map<String, String>>() {
+            @Override
+            public void onSuccess(Map<String, String> result) {
+            }
+
+            @Override
+            public void onFailure(Throwable caught) {
+                Log.error(AppStateManager.class, "Failed to store app's state to user's preferences");
+            }
+        });
     }
 
     @Override
@@ -151,27 +186,54 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
 
     @Override
     public void onProjectOpened(ProjectActionEvent event) {
-        CurrentProject rootProject = appContext.getCurrentProject();
-        if (rootProject == null) {
-            return;
-        }
-        String workspaceName = rootProject.getRootProject().getWorkspaceName();
-        final String fullProjectPath = "/" + workspaceName + event.getProject().getPath();
+        ProjectDescriptor descriptor = event.getProject();
+
+        String projectPath = descriptor.getPath();
+        String fullProjectPath = "/" + descriptor.getWorkspaceName() + projectPath;
 
         final ProjectState projectState = appState.getProjects().get(fullProjectPath);
+
         if (projectState != null) {
             restoreCurrentProjectState(projectState);
         }
     }
 
+    /** Restores state of the currently opened project. */
+    private void restoreCurrentProjectState(@Nonnull ProjectState projectState) {
+        final List<ActionDescriptor> actions = projectState.getActions();
+        final List<Pair<Action, ActionEvent>> actionsToPerform = new ArrayList<>(actions.size());
+
+        for (ActionDescriptor a : actions) {
+            final Action action = actionManager.getAction(a.getId());
+            if (action == null) {
+                continue;
+            }
+
+            final Presentation presentation = presentationFactory.getPresentation(action);
+
+            PerspectiveManager manager = managerProvider.get();
+            final ActionEvent event = new ActionEvent("", presentation, actionManager, manager, a.getParameters());
+            actionsToPerform.add(new Pair<>(action, event));
+        }
+
+        final Promise<Void> promise = actionManager.performActions(actionsToPerform, false);
+        promise.catchError(new Operation<PromiseError>() {
+            @Override
+            public void apply(PromiseError arg) throws OperationException {
+                Log.info(AppStateManager.class, "Failed to restore project's state");
+            }
+        });
+    }
+
     @Override
     public void onProjectClosing(ProjectActionEvent event) {
-        persistCurrentProjectState(persistenceComponents);
+        persistOpenedProjectsState(persistenceComponents);
         writeStateToPreferences();
     }
 
     @Override
     public void onProjectClosed(ProjectActionEvent event) {
+        appContext.clearOpenedProject();
     }
 
     /**
@@ -244,21 +306,6 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
         appState.setRecentProject(recentProject);
     }
 
-    private void writeStateToPreferences() {
-        final String json = dtoFactory.toJson(appState);
-        preferencesManager.setValue(PREFERENCE_PROPERTY_NAME, json);
-        preferencesManager.flushPreferences(new AsyncCallback<Map<String, String>>() {
-            @Override
-            public void onSuccess(Map<String, String> result) {
-            }
-
-            @Override
-            public void onFailure(Throwable caught) {
-                Log.error(AppStateManager.class, "Failed to store app's state to user's preferences");
-            }
-        });
-    }
-
     private void openRecentProject() {
         RecentProject recentProject = appState.getRecentProject();
         if (recentProject != null) {
@@ -274,53 +321,4 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
         }
     }
 
-    /** Restores state of the currently opened project. */
-    private void restoreCurrentProjectState(@Nonnull ProjectState projectState) {
-        final List<ActionDescriptor> actions = projectState.getActions();
-        final List<Pair<Action, ActionEvent>> actionsToPerform = new ArrayList<>(actions.size());
-
-        for (ActionDescriptor a : actions) {
-            final Action action = actionManager.getAction(a.getId());
-            if (action == null) {
-                continue;
-            }
-
-            final Presentation presentation = presentationFactory.getPresentation(action);
-
-            PerspectiveManager manager = managerProvider.get();
-            final ActionEvent event = new ActionEvent("", presentation, actionManager, manager, a.getParameters());
-            actionsToPerform.add(new Pair<>(action, event));
-        }
-
-        final Promise<Void> promise = actionManager.performActions(actionsToPerform, false);
-        promise.catchError(new Operation<PromiseError>() {
-            @Override
-            public void apply(PromiseError arg) throws OperationException {
-                Log.info(AppStateManager.class, "Failed to restore project's state");
-            }
-        });
-    }
-
-    /** Persist state of the currently opened project. */
-    private void persistCurrentProjectState(Collection<PersistenceComponent> persistenceComponents) {
-        final CurrentProject currentProject = appContext.getCurrentProject();
-        if (currentProject == null) {
-            return;
-        }
-
-        ProjectDescriptor descriptor = currentProject.getRootProject();
-
-        final String projectPath = descriptor.getPath();
-        final String fullProjectPath = "/" + descriptor.getWorkspaceName() + projectPath;
-
-        final ProjectState projectState = dtoFactory.createDto(ProjectState.class);
-
-        appState.getProjects().put(fullProjectPath, projectState);
-
-        final List<ActionDescriptor> actions = projectState.getActions();
-
-        for (PersistenceComponent persistenceComponent : persistenceComponents) {
-            actions.addAll(persistenceComponent.getActions(projectPath));
-        }
-    }
 }
