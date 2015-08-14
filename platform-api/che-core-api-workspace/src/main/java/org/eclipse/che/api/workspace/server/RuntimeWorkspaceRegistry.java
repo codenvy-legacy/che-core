@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
+
 import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
@@ -27,63 +30,61 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.RUNNING;
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.STARTING;
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.STOPPING;
 
 /**
+ * Defines {@link RuntimeWorkspace} internal API.
+ *
+ * @author Eugene Voevodin
  * @author Alexander Garagatyi
  */
+@Singleton
 public class RuntimeWorkspaceRegistry {
+
+    //TODO add LOCK cache
+
     private static final Logger LOG = LoggerFactory.getLogger(RuntimeWorkspaceRegistry.class);
 
-    private final HashMap<String, RuntimeWorkspaceImpl>       runtimeWorkspacesById;
-    private final HashMap<String, List<RuntimeWorkspaceImpl>> runtimeWorkspacesByOwner;
-    private final ReadWriteLock                               lock;
-    private final MachineClient                               machineClient;
+    private final Map<String, RuntimeWorkspaceImpl>          idToWorkspaces;
+    private final ListMultimap<String, RuntimeWorkspaceImpl> ownerToWorkspaces;
+    private final ReadWriteLock                              lock;
+    private final MachineClient                              machineClient;
 
-    private boolean isStopped = false;
+    private volatile boolean isStopped;
 
     @Inject
     public RuntimeWorkspaceRegistry(MachineClient machineClient) {
         this.machineClient = machineClient;
-        this.runtimeWorkspacesById = new HashMap<>();
-        this.runtimeWorkspacesByOwner = new HashMap<>();
+        this.idToWorkspaces = new HashMap<>();
+        this.ownerToWorkspaces = ArrayListMultimap.create();
         this.lock = new ReentrantReadWriteLock();
     }
 
-    public RuntimeWorkspace start(UsersWorkspace userWorkspace, String envName)
+    public RuntimeWorkspace start(UsersWorkspace usersWs, String envName)
             throws ConflictException, ServerException, BadRequestException, NotFoundException {
+        final RuntimeWorkspaceImpl runtimeWs = new RuntimeWorkspaceImpl(usersWs, null, envName);
+        runtimeWs.setStatus(STARTING);
 
-        final RuntimeWorkspaceImpl runtimeWorkspace = new RuntimeWorkspaceImpl(userWorkspace, null, envName);
-        runtimeWorkspace.setStatus(STARTING);
+        add(runtimeWs);
 
-        add(runtimeWorkspace);
+        final Environment environment = runtimeWs.getEnvironments().get(firstNonNull(envName, runtimeWs.getDefaultEnvName()));
 
-        if (null != envName) {
-            envName = runtimeWorkspace.getDefaultEnvName();
-        }
-        final Environment environment = runtimeWorkspace.getEnvironments().get(envName);
-        final List<Machine> machines = startEnvironment(environment, userWorkspace.getId());
-
-        for (Machine machine : machines) {
-            if (machine.isDev()) {
-                runtimeWorkspace.setDevMachine(machine);
-                break;
-            }
-        }
-        runtimeWorkspace.setMachines(machines);
-        runtimeWorkspace.setStatus(RUNNING);
-
-        return runtimeWorkspace;
+        final List<Machine> machines = startEnvironment(environment, runtimeWs.getId());
+        runtimeWs.setDevMachine(findDev(machines));
+        runtimeWs.setMachines(machines);
+        runtimeWs.setStatus(RUNNING);
+        return runtimeWs;
     }
 
     public void stop(String workspaceId) throws ForbiddenException, NotFoundException, ServerException {
@@ -102,7 +103,7 @@ public class RuntimeWorkspaceRegistry {
         lock.readLock().lock();
         final RuntimeWorkspaceImpl runtimeWorkspace;
         try {
-            runtimeWorkspace = runtimeWorkspacesById.get(workspaceId);
+            runtimeWorkspace = idToWorkspaces.get(workspaceId);
         } finally {
             lock.readLock().unlock();
         }
@@ -114,16 +115,11 @@ public class RuntimeWorkspaceRegistry {
 
     public List<RuntimeWorkspaceImpl> getList(String ownerId) {
         lock.readLock().lock();
-        List<RuntimeWorkspaceImpl> runtimeWorkspaces;
         try {
-            runtimeWorkspaces = runtimeWorkspacesByOwner.get(ownerId);
+            return ownerToWorkspaces.get(ownerId);
         } finally {
             lock.readLock().unlock();
         }
-        if (null == runtimeWorkspaces) {
-            runtimeWorkspaces = Collections.emptyList();
-        }
-        return runtimeWorkspaces;
     }
 
     private List<Machine> startEnvironment(Environment environment, String workspaceId)
@@ -135,22 +131,27 @@ public class RuntimeWorkspaceRegistry {
            - list of docker machines configs
            - one of machines in this list is dev machine
         */
-        String envRecipeType = environment.getRecipe() == null ? null : environment.getRecipe().getType();
+        //FIXME "docker"
+        String envRecipeType = environment.getRecipe() == null ? "docker" : environment.getRecipe().getType();
         if (!"docker".equals(envRecipeType)) {
             throw new BadRequestException("Invalid environment recipe type " + envRecipeType);
         }
 
         final List<Machine> machines = new ArrayList<>();
 
-        final MachineConfig devMachine = findDevMachine(environment);
+        MachineConfig devMachine = findDev(environment.getMachineConfigs());
+        if (devMachine == null) {
+            throw new BadRequestException("Dev machine was not found in workspace environment " + environment.getName());
+        }
         machines.add(machineClient.start(devMachine, workspaceId));
 
         for (MachineConfig machineConfig : environment.getMachineConfigs()) {
             if (!machineConfig.isDev()) {
                 try {
                     machines.add(machineClient.start(machineConfig, workspaceId));
-                } catch (ApiException e) {
-                    // TODO log to workspace logger
+                } catch (ApiException apiEx) {
+                    //TODO should it be error?
+                    LOG.error(apiEx.getMessage(), apiEx);
                 }
             }
         }
@@ -158,54 +159,50 @@ public class RuntimeWorkspaceRegistry {
         return machines;
     }
 
-    private MachineConfig findDevMachine(Environment environment) throws ServerException {
-        for (MachineConfig machineConfig : environment.getMachineConfigs()) {
-            if (machineConfig.isDev()) {
-                return machineConfig;
-            }
-        }
-
-        throw new ServerException("Dev machine not found in workspace environment " + environment.getName());
-    }
-
     private void add(RuntimeWorkspaceImpl runtimeWorkspace) throws ConflictException, ServerException {
         final String wsId = runtimeWorkspace.getId();
         final String owner = runtimeWorkspace.getOwner();
         lock.writeLock().lock();
-        if (isStopped) {
-            throw new ServerException("Server is stopping. Can't start workspace.");
-        }
         try {
-            final RuntimeWorkspace currentEntry = runtimeWorkspacesById.get(wsId);
-            if (currentEntry == null) {
-                runtimeWorkspacesById.put(wsId, runtimeWorkspace);
-                runtimeWorkspacesByOwner.putIfAbsent(owner, new LinkedList<RuntimeWorkspaceImpl>());
-                runtimeWorkspacesByOwner.get(owner).add(runtimeWorkspace);
-                return;
+            if (isStopped) {
+                throw new ServerException("Server is stopping. Can't start workspace.");
             }
+            if (idToWorkspaces.containsKey(wsId)) {
+                throw new ConflictException("Workspace is not stopped to perform start operation.");
+            }
+            idToWorkspaces.put(wsId, runtimeWorkspace);
+            ownerToWorkspaces.get(owner).add(runtimeWorkspace);
         } finally {
             lock.writeLock().unlock();
         }
-        throw new ConflictException("Workspace is not stopped to perform start operation.");
+    }
+
+    private <T extends MachineConfig> T findDev(List<T> machines) {
+        for (T machine : machines) {
+            if (machine.isDev()) {
+                return machine;
+            }
+        }
+        return null;
     }
 
     private void remove(RuntimeWorkspaceImpl runtimeWorkspace) {
         lock.writeLock().lock();
         try {
-            runtimeWorkspacesById.remove(runtimeWorkspace.getId());
-            runtimeWorkspacesByOwner.remove(runtimeWorkspace.getOwner());
+            idToWorkspaces.remove(runtimeWorkspace.getId());
+            ownerToWorkspaces.get(runtimeWorkspace.getOwner()).removeIf(ws -> ws.getId().equals(runtimeWorkspace.getId()));
         } finally {
             lock.writeLock().unlock();
         }
     }
 
     @PreDestroy
-    private void cleanup() {
+    private void stopWorkspaces() {
         isStopped = true;
 
         lock.writeLock().lock();
         try {
-            for (RuntimeWorkspaceImpl runtimeWorkspace : runtimeWorkspacesById.values()) {
+            for (RuntimeWorkspaceImpl runtimeWorkspace : idToWorkspaces.values()) {
                 try {
                     stop(runtimeWorkspace.getId());
                 } catch (ForbiddenException | NotFoundException | ServerException e) {

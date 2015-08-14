@@ -51,7 +51,7 @@ public class MachineClientImpl implements MachineClient {
             String recipeContent;
             File file = null;
             try {
-                file = IoUtil.downloadFile(null, "", null, new URL(machineConfig.getSource().getLocation()));
+                file = IoUtil.downloadFile(null, "recipe", null, new URL(machineConfig.getSource().getLocation()));
                 recipeContent = IoUtil.readAndCloseQuietly(new FileInputStream(file));
             } catch (IOException e) {
                 throw new ServerException("Can't start machine " + machineConfig.getName() + ". " + e.getLocalizedMessage());
