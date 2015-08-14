@@ -58,7 +58,7 @@ public class LocalRecipeDaoImpl implements RecipeDao {
     @Inject
     @PostConstruct
     public void start(@Named("codenvy.local.infrastructure.recipes") Set<ManagedRecipe> defaultRecipes) {
-        recipes.putAll(recipeStorage.loadMap(new TypeToken<Map<String, ManagedRecipe>>() {}));
+        recipes.putAll(recipeStorage.loadMap(new TypeToken<Map<String, RecipeImpl>>() {}));
         if (recipes.isEmpty()) {
             try {
                 for (ManagedRecipe recipe : defaultRecipes) {
