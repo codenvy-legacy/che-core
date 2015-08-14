@@ -260,6 +260,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
         refreshButton.add(new SVGImage(resources.refresh()));
         refreshButton.setStyleName(resources.partStackCss().idePartStackToolbarBottomButton());
         refreshButton.addStyleName(resources.partStackCss().idePartStackToolbarBottomButtonRight());
+        refreshButton.ensureDebugId("projectExplorer-button-refreshTree");
         projectHeader.add(refreshButton);
 
         refreshButton.addDomHandler(new ClickHandler() {
