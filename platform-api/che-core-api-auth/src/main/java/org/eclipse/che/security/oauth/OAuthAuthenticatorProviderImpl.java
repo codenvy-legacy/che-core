@@ -12,6 +12,7 @@ package org.eclipse.che.security.oauth;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -31,5 +32,10 @@ public class OAuthAuthenticatorProviderImpl implements OAuthAuthenticatorProvide
     @Override
     public OAuthAuthenticator getAuthenticator(String oauthProviderName) {
         return authenticatorMap.get(oauthProviderName);
+    }
+
+    @Override
+    public Set<String> getRegisteredProviderNames() {
+        return Collections.unmodifiableSet(authenticatorMap.keySet());
     }
 }

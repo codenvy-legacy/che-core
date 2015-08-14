@@ -10,18 +10,25 @@
  *******************************************************************************/
 package org.eclipse.che.security.oauth;
 
+import org.eclipse.che.api.core.rest.shared.dto.Link;
+import org.eclipse.che.api.core.rest.shared.dto.LinkParameter;
+import org.eclipse.che.api.core.util.LinksHelper;
+import org.eclipse.che.security.oauth.shared.dto.OAuthAuthenticatorDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.GET;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -33,8 +40,13 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 /** RESTful wrapper for OAuthAuthenticator. */
 @Path("oauth")
@@ -45,6 +57,10 @@ public class OAuthAuthenticationService {
     protected String                     errorPage;
     @Inject
     protected OAuthAuthenticatorProvider providers;
+    @Context
+    protected UriInfo                    uriInfo;
+    @Context
+    protected SecurityContext            security;
 
     /**
      * Redirect request to OAuth provider site for authentication|authorization. Client request must contains set of
@@ -67,13 +83,11 @@ public class OAuthAuthenticationService {
      * authentication</td><td>yes</td><td>none</td></tr>
      * </table>
      *
-     * @param uriInfo
-     *         UriInfo
      * @return typically Response that redirect user for OAuth provider site
      */
     @GET
     @Path("authenticate")
-    public Response authenticate(@Context UriInfo uriInfo) throws OAuthAuthenticationException {
+    public Response authenticate() throws OAuthAuthenticationException {
         OAuthAuthenticator oauth = getAuthenticator(uriInfo.getQueryParameters().getFirst("oauth_provider"));
         final URL requestUrl = getRequestUrl(uriInfo);
         final List<String> scopes = uriInfo.getQueryParameters().get("scope");
@@ -86,7 +100,7 @@ public class OAuthAuthenticationService {
 
     @GET
     @Path("callback")
-    public Response callback(@Context UriInfo uriInfo) throws OAuthAuthenticationException {
+    public Response callback() throws OAuthAuthenticationException {
         URL requestUrl = getRequestUrl(uriInfo);
         Map<String, List<String>> params = getRequestParameters(getState(requestUrl));
         List<String> errorValues = uriInfo.getQueryParameters().get("error");
@@ -97,9 +111,39 @@ public class OAuthAuthenticationService {
         final String providerName = getParameter(params, "oauth_provider");
         OAuthAuthenticator oauth = getAuthenticator(providerName);
         final List<String> scopes = params.get("scope");
-        final String userId = oauth.callback(requestUrl, scopes == null ? Collections.<String>emptyList() : scopes);
+        oauth.callback(requestUrl, scopes == null ? Collections.<String>emptyList() : scopes);
         final String redirectAfterLogin = getParameter(params, "redirect_after_login");
         return Response.temporaryRedirect(URI.create(redirectAfterLogin)).build();
+    }
+
+    /**
+     * Gets list of installed OAuth authenticators.
+     *
+     * @return  list of installed OAuth authenticators
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Set<OAuthAuthenticatorDescriptor> getRegisteredAuthenticators() {
+        Set<OAuthAuthenticatorDescriptor> result = new HashSet<>();
+        final UriBuilder uriBuilder = uriInfo.getBaseUriBuilder().clone().path(getClass());
+        for (String name : providers.getRegisteredProviderNames()) {
+            final List<Link> links = new LinkedList<>();
+            links.add(LinksHelper.createLink(HttpMethod.GET,
+                                             uriBuilder.clone()
+                                                       .path(getClass(), "authenticate")
+                                                       .build()
+                                                       .toString(),
+                                             null,
+                                             null,
+                                             "Authenticate URL",
+                                             newDto(LinkParameter.class).withName("oauth_provider").withRequired(true)
+                                                                        .withDefaultValue(name),
+                                             newDto(LinkParameter.class).withName("mode").withRequired(true)
+                                                                        .withDefaultValue("federated_login")
+                                             ));
+            result.add(newDto(OAuthAuthenticatorDescriptor.class).withName(name).withLinks(links));
+        }
+        return result;
     }
 
     protected URL getRequestUrl(UriInfo uriInfo) {
@@ -114,15 +158,14 @@ public class OAuthAuthenticationService {
     /**
      * OAuth 2.0 support pass query parameters 'state' to OAuth authorization server. Authorization server sends it
      * back
-     * to callback URL. Here restore all parameters specified in initial request to {@link
-     * #authenticate(javax.ws.rs.core.UriInfo)} .
+     * to callback URL. Here restore all parameters specified in initial request to {@link * #authenticate} .
      *
      * @param state
      *         query parameter state
-     * @return map contains request parameters to method {@link #authenticate(javax.ws.rs.core.UriInfo)}
+     * @return map contains request parameters to method {@link #authenticate}
      */
     protected Map<String, List<String>> getRequestParameters(String state) {
-        Map<String, List<String>> params = new HashMap<String, List<String>>();
+        Map<String, List<String>> params = new HashMap<>();
         if (!(state == null || state.isEmpty())) {
             String decodedState;
             try {
@@ -145,12 +188,12 @@ public class OAuthAuthenticationService {
                         value = pair.substring(eq + 1);
                     }
 
-                    List<String> l = params.get(name);
-                    if (l == null) {
-                        l = new ArrayList<String>();
-                        params.put(name, l);
+                    List<String> paramValues = params.get(name);
+                    if (paramValues == null) {
+                        paramValues = new ArrayList<>();
+                        params.put(name, paramValues);
                     }
-                    l.add(value);
+                    paramValues.add(value);
                 }
             }
         }
@@ -183,7 +226,7 @@ public class OAuthAuthenticationService {
 
     @GET
     @Path("invalidate")
-    public Response invalidate(@Context UriInfo uriInfo, @Context SecurityContext security) throws IOException {
+    public Response invalidate() throws IOException {
         final Principal principal = security.getUserPrincipal();
         OAuthAuthenticator oauth = getAuthenticator(uriInfo.getQueryParameters().getFirst("oauth_provider"));
         if (principal != null && oauth.invalidateToken(principal.getName())) {

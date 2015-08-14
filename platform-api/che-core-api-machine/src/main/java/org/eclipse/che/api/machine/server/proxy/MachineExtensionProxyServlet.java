@@ -143,12 +143,15 @@ public class MachineExtensionProxyServlet extends HttpServlet {
 
     private void setResponse(HttpServletResponse resp, HttpURLConnection conn) throws ServerException {
         try {
-            resp.setStatus(conn.getResponseCode());
+            final int responseCode = conn.getResponseCode();
 
-            InputStream responseStream = conn.getErrorStream();
+            resp.setStatus(responseCode);
 
-            if (responseStream == null) {
+            InputStream responseStream;
+            if (responseCode / 100 == 2 && responseCode != 204) {
                 responseStream = conn.getInputStream();
+            } else {
+                responseStream = conn.getErrorStream();
             }
 
             // copy headers from proxy response to origin response
@@ -158,10 +161,12 @@ public class MachineExtensionProxyServlet extends HttpServlet {
                 }
             }
 
-            // copy content of input or error stream from destination response to output stream of origin response
-            try (OutputStream os = resp.getOutputStream()) {
-                ByteStreams.copy(responseStream, os);
-                os.flush();
+            if (responseStream != null) {
+                // copy content of input or error stream from destination response to output stream of origin response
+                try (OutputStream os = resp.getOutputStream()) {
+                    ByteStreams.copy(responseStream, os);
+                    os.flush();
+                }
             }
         } catch (IOException e) {
             LOG.error(e.getLocalizedMessage(), e);
