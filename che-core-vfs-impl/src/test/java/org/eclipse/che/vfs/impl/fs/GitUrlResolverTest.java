@@ -11,11 +11,11 @@
 package org.eclipse.che.vfs.impl.fs;
 
 import java.net.URI;
-import java.nio.file.Paths;
 
 /** @author andrew00x */
 public class GitUrlResolverTest extends LocalFileSystemTest {
     private String file;
+    private final String GIT_SERVER_URI_PREFIX = "git";
 
     @Override
     public void setUp() throws Exception {
@@ -27,9 +27,9 @@ public class GitUrlResolverTest extends LocalFileSystemTest {
     public void testResolveGitUrlWithPort() throws Exception {
         String path = root.toPath().relativize(getIoFile(file).toPath()).toString();
         path = path.replaceAll("[\\\\]", "/");
-        String expectedUrl = String.format("http://localhost:9000/git/%s", path);
+        String expectedUrl = String.format("http://localhost:9000/%s/%s", GIT_SERVER_URI_PREFIX, path);
 
-        GitUrlResolver resolver = new GitUrlResolver(root, new LocalPathResolver());
+        GitUrlResolver resolver = new GitUrlResolver(root, GIT_SERVER_URI_PREFIX, new LocalPathResolver());
         final String url = resolver.resolve(URI.create("http://localhost:9000/some/path"), mountPoint.getVirtualFile(file));
         assertEquals(expectedUrl, url);
     }
@@ -39,9 +39,9 @@ public class GitUrlResolverTest extends LocalFileSystemTest {
         System.out.println(folder);
         String path = root.toPath().relativize(getIoFile(folder).toPath()).toString();
         path = path.replaceAll("[\\\\]", "/");
-        String expectedUrl = String.format("http://localhost:9000/git/%s", path);
+        String expectedUrl = String.format("http://localhost:9000/%s/%s", GIT_SERVER_URI_PREFIX, path);
 
-        GitUrlResolver resolver = new GitUrlResolver(root, new LocalPathResolver());
+        GitUrlResolver resolver = new GitUrlResolver(root, GIT_SERVER_URI_PREFIX, new LocalPathResolver());
         final String url = resolver.resolve(URI.create("http://localhost:9000/some/path"), mountPoint.getVirtualFile(folder));
         assertEquals(expectedUrl, url);
     }
@@ -49,9 +49,9 @@ public class GitUrlResolverTest extends LocalFileSystemTest {
     public void testResolveGitUrlWithoutPort() throws Exception {
         String path = root.toPath().relativize(getIoFile(file).toPath()).toString();
         path = path.replaceAll("[\\\\]", "/");
-        String expectedUrl = String.format("http://localhost/git/%s", path);
+        String expectedUrl = String.format("http://localhost/%s/%s", GIT_SERVER_URI_PREFIX, path);
 
-        GitUrlResolver resolver = new GitUrlResolver(root, new LocalPathResolver());
+        GitUrlResolver resolver = new GitUrlResolver(root, GIT_SERVER_URI_PREFIX, new LocalPathResolver());
         final String url = resolver.resolve(URI.create("http://localhost/some/path"), mountPoint.getVirtualFile(file));
         assertEquals(expectedUrl, url);
     }
@@ -60,9 +60,9 @@ public class GitUrlResolverTest extends LocalFileSystemTest {
         String folder = file.substring(0, file.lastIndexOf("/"));
         String path = root.toPath().relativize(getIoFile(folder).toPath()).toString();
         path = path.replaceAll("[\\\\]", "/");
-        String expectedUrl = String.format("http://localhost/git/%s", path);
+        String expectedUrl = String.format("http://localhost/%s/%s", GIT_SERVER_URI_PREFIX, path);
 
-        GitUrlResolver resolver = new GitUrlResolver(root, new LocalPathResolver());
+        GitUrlResolver resolver = new GitUrlResolver(root, GIT_SERVER_URI_PREFIX, new LocalPathResolver());
         final String url = resolver.resolve(URI.create("http://localhost/some/path"), mountPoint.getVirtualFile(folder));
         assertEquals(expectedUrl, url);
     }
