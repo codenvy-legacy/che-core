@@ -13,6 +13,7 @@ package org.eclipse.che.ide.part.editor;
 import com.google.gwtmockito.GwtMockitoTestRunner;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.editor.EditorInput;
 import org.eclipse.che.ide.api.editor.EditorWithErrors;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
@@ -72,7 +73,7 @@ public class EditorPartStackPresenterTest {
     @Mock
     private ListButton            listButton;
     @Mock
-    private FileMatcher           projectManager;
+    private AppContext            appContext;
 
     //additional mocks
     @Mock
@@ -114,7 +115,7 @@ public class EditorPartStackPresenterTest {
         presenter = new EditorPartStackPresenter(view,
                                                  partsComparator,
                                                  eventBus,
-                                                 projectManager,
+                                                 appContext,
                                                  tabItemFactory,
                                                  partStackEventHandler,
                                                  listButton);
@@ -205,18 +206,15 @@ public class EditorPartStackPresenterTest {
         presenter.onTabClicked(editorTab1);
 
         verify(view).selectTab(partPresenter1);
-        verify(projectManager).setActualProjectForFile(SOME_TEXT);
     }
 
     @Test
-    @Ignore("can't start this test because inside method we cast PartPresenter to EditorPartPresenter and can't find needed method")
     public void tabShouldBeClosed() {
         presenter.addPart(partPresenter1);
 
         presenter.onTabClose(editorTab1);
 
         verify(view).removeTab(partPresenter1);
-        verify(projectManager).removeMatch(SOME_TEXT);
     }
 
     @Test
@@ -267,7 +265,6 @@ public class EditorPartStackPresenterTest {
     }
 
     @Test
-    @Ignore("can't start this test because inside method we cast PartPresenter to EditorPartPresenter and can't find needed method")
     public void activePartShouldBeNullWhenWeCloseAllParts() {
         presenter.addPart(partPresenter1);
 

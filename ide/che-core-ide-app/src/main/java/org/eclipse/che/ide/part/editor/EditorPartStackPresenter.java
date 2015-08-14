@@ -14,6 +14,9 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.ide.api.app.AppContext;
+import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.constraints.Constraints;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.editor.EditorWithErrors;
@@ -57,7 +60,7 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
                                                                             ListItem.ActionDelegate {
     private final ListButton                listButton;
     private final Map<ListItem, TabItem>    items;
-    private final FileMatcher               fileMatcher;
+    private final AppContext                appContext;
     //this list need to save order of added parts
     private final LinkedList<PartPresenter> partsOrder;
 
@@ -67,7 +70,7 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
     public EditorPartStackPresenter(final EditorPartStackView view,
                                     PartsComparator partsComparator,
                                     EventBus eventBus,
-                                    FileMatcher fileMatcher,
+                                    AppContext appContext,
                                     TabItemFactory tabItemFactory,
                                     PartStackEventHandler partStackEventHandler,
                                     ListButton listButton) {
@@ -83,7 +86,7 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
         this.items = new HashMap<>();
         this.partsOrder = new LinkedList<>();
 
-        this.fileMatcher = fileMatcher;
+        this.appContext = appContext;
 
         eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
             @Override
@@ -207,26 +210,26 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
     public void onTabClicked(@Nonnull TabItem tab) {
         activePart = parts.get(tab);
 
-        String pathToSelectedFile = getPathToFile((EditorPartPresenter)activePart);
-
-        fileMatcher.setActualProjectForFile(pathToSelectedFile);
+        setCurrentProject((EditorPartPresenter)activePart);
 
         view.selectTab(activePart);
     }
 
-    @Nonnull
-    private String getPathToFile(@Nonnull EditorPartPresenter editorPartPresenter) {
-        return editorPartPresenter.getEditorInput().getFile().getPath();
+    private void setCurrentProject(@Nonnull EditorPartPresenter editorPartPresenter) {
+        CurrentProject currentProject = appContext.getCurrentProject();
+        if (currentProject == null) {
+            return;
+        }
+
+        ProjectDescriptor currentDescriptor = editorPartPresenter.getEditorInput().getFile().getProject().getData();
+
+        currentProject.setProjectDescription(currentDescriptor);
     }
 
     /** {@inheritDoc} */
     @Override
     public void onTabClose(@Nonnull TabItem tab) {
         final PartPresenter closedPart = parts.get(tab);
-
-        String pathToClosedFile = getPathToFile((EditorPartPresenter)closedPart);
-
-        fileMatcher.removeMatch(pathToClosedFile);
 
         view.removeTab(closedPart);
 

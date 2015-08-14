@@ -62,13 +62,16 @@ public class ActiveFilePersistenceComponent implements PersistenceComponent {
 
         if (activeEditor != null) {
             final String activeFilePath = activeEditor.getEditorInput().getFile().getPath();
-            // save active file only if it's not the last opened file
-            if (openedEditors.getKeys().indexOf(activeFilePath) < openedEditors.getKeys().size() - 1) {
-                final String activeFileRelPath = activeFilePath.replaceFirst(projectPath, "");
 
-                actions.add(dtoFactory.createDto(ActionDescriptor.class)
-                                      .withId(openFileActionId)
-                                      .withParameters(Collections.singletonMap(FILE_PARAM_ID, activeFileRelPath)));
+            if (activeFilePath.startsWith(projectPath)) {
+                // save active file only if it's not the last opened file
+                if (openedEditors.getKeys().indexOf(activeFilePath) < openedEditors.getKeys().size() - 1) {
+                    final String activeFileRelPath = activeFilePath.replaceFirst(projectPath, "");
+
+                    actions.add(dtoFactory.createDto(ActionDescriptor.class)
+                                          .withId(openFileActionId)
+                                          .withParameters(Collections.singletonMap(FILE_PARAM_ID, activeFileRelPath)));
+                }
             }
         }
         return actions;

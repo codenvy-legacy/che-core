@@ -27,7 +27,6 @@ import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.java.JsonArrayListAdapter;
 import org.eclipse.che.ide.menu.ContextMenu;
-import org.eclipse.che.ide.part.editor.FileMatcher;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.ui.tree.SelectionModel;
 import org.junit.Before;
@@ -35,7 +34,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -47,7 +45,6 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -84,8 +81,6 @@ public class ProjectExplorerPartPresenterTest {
     private DeleteNodeHandler             deleteNodeHandler;
     @Mock
     private CurrentProject                currentProject;
-    @Mock
-    private FileMatcher                   projectManager;
 
     @InjectMocks
     private ProjectExplorerPartPresenter presenter;
@@ -159,7 +154,6 @@ public class ProjectExplorerPartPresenterTest {
         presenter.onNodeSelected(node, selectionModel);
 
         verify(currentProject).setProjectDescription(projectDescriptor);
-        verify(projectManager).matchFileToProject(anyString(), Matchers.<ProjectDescriptor>anyObject());
     }
 
     @Test

@@ -57,7 +57,6 @@ import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.collections.js.JsoArray;
 import org.eclipse.che.ide.logger.AnalyticsEventLoggerExt;
 import org.eclipse.che.ide.menu.ContextMenu;
-import org.eclipse.che.ide.part.editor.FileMatcher;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.ui.tree.SelectionModel;
 import org.eclipse.che.ide.util.Config;
@@ -87,7 +86,6 @@ import static org.eclipse.che.ide.api.event.ProjectActionEvent.ProjectAction.OPE
 public class ProjectExplorerPartPresenter extends BasePresenter implements ProjectExplorerView.ActionDelegate,
                                                                            RefreshProjectTreeHandler,
                                                                            ProjectExplorerPart,
-                                                                           FileMatcher.ProjectChangedListener,
                                                                            HasView {
     private final ProjectExplorerView            view;
     private final EventBus                       eventBus;
@@ -100,8 +98,6 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
     private final Provider<ProjectListStructure> projectListStructureProvider;
     private final AnalyticsEventLoggerExt        eventLogger;
     private final Provider<EditorAgent>          editorAgentProvider;
-    private final FileMatcher                    projectManager;
-
 
     private TreeStructure      currentTreeStructure;
     private Array<TreeNode<?>> nodesToRefresh;
@@ -118,8 +114,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
                                         DeleteNodeHandler deleteNodeHandler,
                                         AnalyticsEventLoggerExt eventLogger,
                                         Provider<ProjectListStructure> projectListStructureProvider,
-                                        Provider<EditorAgent> editorAgentProvider,
-                                        FileMatcher projectManager) {
+                                        Provider<EditorAgent> editorAgentProvider) {
         this.view = view;
         this.eventBus = eventBus;
         this.contextMenu = contextMenu;
@@ -132,9 +127,6 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
         this.projectListStructureProvider = projectListStructureProvider;
         this.view.setTitle(coreLocalizationConstant.projectExplorerTitleBarText());
         this.editorAgentProvider = editorAgentProvider;
-
-        this.projectManager = projectManager;
-        this.projectManager.addListener(this);
 
         bind();
     }
@@ -444,21 +436,12 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
         }
 
         if (node != null && node instanceof StorableNode && appContext.getCurrentProject() != null) {
-            String pathToFile = ((StorableNode)node).getPath();
             ProjectDescriptor descriptor = node.getProject().getData();
-
-            projectManager.matchFileToProject(pathToFile, descriptor);
 
             appContext.getCurrentProject().setProjectDescription(descriptor);
 
             view.setProjectHeader(descriptor);
         }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void onProjectChanged(@Nonnull ProjectDescriptor descriptor) {
-        view.setProjectHeader(descriptor);
     }
 
     @Override
