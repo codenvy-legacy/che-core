@@ -42,7 +42,7 @@ import java.util.Set;
 public class ActionManagerImpl implements ActionManager {
 
     public static final String[]                 EMPTY_ARRAY = new String[0];
-    private final       Map<String, Object>      myId2Action = new HashMap<>();
+    private final       Map<String, Action>      myId2Action = new HashMap<>();
     private final       Map<String, Set<String>> myPlugin2Id = new HashMap<>();
     private final       Map<String, Integer>     myId2Index  = new HashMap<>();
     private final       Map<Object, String>      myAction2Id = new HashMap<>();
@@ -136,7 +136,7 @@ public class ActionManagerImpl implements ActionManager {
     }
 
     private Action getActionImpl(String id, boolean canReturnStub) {
-        return (Action)myId2Action.get(id);
+        return myId2Action.get(id);
     }
 
     @Override
@@ -269,7 +269,7 @@ public class ActionManagerImpl implements ActionManager {
             Log.debug(getClass(), "action with ID " + actionId + " wasn't registered");
             return;
         }
-        Action oldValue = (Action)myId2Action.remove(actionId);
+        Action oldValue = myId2Action.remove(actionId);
         myAction2Id.remove(oldValue);
         myId2Index.remove(actionId);
         for (String pluginName : myPlugin2Id.keySet()) {
