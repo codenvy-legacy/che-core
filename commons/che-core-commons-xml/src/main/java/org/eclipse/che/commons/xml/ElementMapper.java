@@ -13,7 +13,7 @@ package org.eclipse.che.commons.xml;
 /**
  * @author Eugene Voevodin
  */
-public interface ElementMapper<T> {
+public interface ElementMapper<> {
 
     T map(Element element);
 }
