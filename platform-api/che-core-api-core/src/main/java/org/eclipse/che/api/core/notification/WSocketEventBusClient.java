@@ -27,7 +27,6 @@ import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
-import javax.websocket.CloseReason;
 import javax.websocket.DeploymentException;
 import java.io.IOException;
 import java.net.URI;
@@ -38,7 +37,6 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
@@ -120,18 +118,16 @@ public final class WSocketEventBusClient {
     }
 
     protected void propagate(Object event) {
-        for (Future<WSClient> future : connections.values()) {
-            if (future.isDone()) {
-                try {
-                    final WSClient client = future.get();
-                    if (policy.shouldPropagated(client.getServerUri(), event)) {
-                        client.send(messageConverter.toString(Messages.clientMessage(event)));
-                    }
-                } catch (Exception e) {
-                    LOG.error(e.getMessage(), e);
+        connections.values().stream().filter(future -> future.isDone()).forEach(future -> {
+            try {
+                final WSClient client = future.get();
+                if (policy != null && policy.shouldPropagated(client.getServerUri(), event)) {
+                    client.send(messageConverter.toString(Messages.clientMessage(event)));
                 }
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
             }
-        }
+        });
     }
 
     @PreDestroy
@@ -141,16 +137,13 @@ public final class WSocketEventBusClient {
         }
     }
 
-    private void connect(final URI wsUri, final Collection<String> channels) throws IOException {
+    private void connect(final URI wsUri, final Collection<String> channels) throws IOException, DeploymentException {
         Future<WSClient> clientFuture = connections.get(wsUri);
         if (clientFuture == null) {
-            FutureTask<WSClient> newFuture = new FutureTask<>(new Callable<WSClient>() {
-                @Override
-                public WSClient call() throws IOException, DeploymentException {
-                    WSClient wsClient = new WSClient(wsUri, new WSocketListener(wsUri, channels));
-                    wsClient.connect((int)WS_CONNECTION_TIMEOUT);
-                    return wsClient;
-                }
+            FutureTask<WSClient> newFuture = new FutureTask<>(() -> {
+                WSClient wsClient = new WSClient(wsUri, new WSocketListener(wsUri, channels));
+                wsClient.connect((int)WS_CONNECTION_TIMEOUT);
+                return wsClient;
             });
             clientFuture = connections.putIfAbsent(wsUri, newFuture);
             if (clientFuture == null) {
@@ -170,7 +163,8 @@ public final class WSocketEventBusClient {
                 throw (RuntimeException)cause;
             } else if (cause instanceof IOException) {
                 throw (IOException)cause;
-            }
+            } else if (cause instanceof DeploymentException)
+                throw (DeploymentException)cause;
             throw new RuntimeException(e);
         } catch (InterruptedException e) {
             LOG.info("Client interrupted " + e.getLocalizedMessage());
@@ -258,24 +252,20 @@ public final class WSocketEventBusClient {
                     connect(wsUri, channels);
                     LOG.debug("Connection complete");
                     return;
-                } catch (IOException e) {
+                } catch (IOException | DeploymentException e) {
                     LOG.warn("Not able to connect to {} because {}. Retrying ", wsUri, e.getLocalizedMessage());
                     LOG.debug(e.getLocalizedMessage(), e);
                     synchronized (this) {
                         try {
-                            wait(WS_CONNECTION_TIMEOUT * 2);
+                            wait(WS_CONNECTION_TIMEOUT * 2 * 1000);
                         } catch (InterruptedException ie) {
                             Thread.currentThread().interrupt();
                             return;
                         }
                     }
-                } catch (Exception e) {
-                    LOG.error("Unexpected here");
-                    LOG.error(e.getLocalizedMessage(), e);
                 } catch (Throwable e) {
                     LOG.error("Unexpected here");
                     LOG.error(e.getLocalizedMessage(), e);
-
                 }
                 LOG.debug("Iteration complete");
             }
