@@ -14,6 +14,7 @@ package org.eclipse.che.api.local.storage;
 import com.google.common.io.Files;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 
 import org.slf4j.Logger;
@@ -35,24 +36,36 @@ import java.util.Map;
  */
 public class LocalStorage {
 
-    private static final Logger LOG  = LoggerFactory.getLogger(LocalStorage.class);
-    private static final Gson   GSON = new Gson();
+    private static final Logger LOG = LoggerFactory.getLogger(LocalStorage.class);
 
-    /** json file to store and load */
-    private final File storedFile;
+    /**
+     * json file to store and load
+     */
+    private File storedFile;
+    private Gson gson;
 
     public LocalStorage(String rootDirPath, String fileName)
+            throws IOException {
+        this(rootDirPath, fileName, Collections.emptyMap());
+    }
+
+    public LocalStorage(String rootDirPath, String fileName, Map<Class<?>, Object> typeAdapters)
             throws IOException {
         File rootDir = new File(rootDirPath);
         if (!rootDir.exists() && !rootDir.mkdirs()) {
             throw new IOException("Impossible to create root folder for local storage");
         }
         storedFile = new File(rootDir, fileName);
+        GsonBuilder builder = new GsonBuilder();
+        for (Map.Entry<Class<?>, Object> adapter : typeAdapters.entrySet()) {
+            builder.registerTypeAdapter(adapter.getKey(), adapter.getValue());
+        }
+        gson = builder.create();
     }
 
     public void store(Object storedObj) throws IOException {
         try (Writer writer = Files.newWriter(storedFile, Charset.forName("UTF-8"))) {
-            GSON.toJson(storedObj, writer);
+            gson.toJson(storedObj, writer);
         }
     }
 
@@ -66,7 +79,7 @@ public class LocalStorage {
     public <T> T load(TypeToken<T> token) {
         T result = null;
         try (Reader reader = Files.newReader(storedFile, Charset.forName("UTF-8"))) {
-            result = GSON.fromJson(reader, token.getType());
+            result = gson.fromJson(reader, token.getType());
         } catch (JsonSyntaxException e) {
             LOG.warn(storedFile.getName() + " contains invalid JSON content");
         } catch (IOException ioEx) {
