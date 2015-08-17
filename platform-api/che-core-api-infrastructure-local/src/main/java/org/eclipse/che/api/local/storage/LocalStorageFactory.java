@@ -15,6 +15,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * Factory for injection to LocalStorage stored file.
@@ -29,11 +30,26 @@ public class LocalStorageFactory {
     private String pathToStorage;
 
     /**
-     * @param fileName name of file in local storage.
+     * @param fileName
+     *         name of file in local storage.
      * @return instance of LocalStorage.
-     * @throws IOException occurs when cannot create root storage directory.
+     * @throws IOException
+     *         occurs when cannot create root storage directory.
      */
     public LocalStorage create(String fileName) throws IOException {
         return new LocalStorage(pathToStorage, fileName);
+    }
+
+    /**
+     * @param fileName
+     *         name of file in local storage.
+     * @param typeAdapters
+     *         types and object adapters when need a special deserialization.
+     * @return instance of LocalStorage.
+     * @throws IOException
+     *         occurs when cannot create root storage directory.
+     */
+    public LocalStorage create(String fileName, Map<Class<?>, Object> typeAdapters) throws IOException {
+        return new LocalStorage(pathToStorage, fileName, typeAdapters);
     }
 }
