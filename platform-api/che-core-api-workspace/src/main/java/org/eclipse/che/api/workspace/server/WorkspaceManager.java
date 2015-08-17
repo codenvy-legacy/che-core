@@ -184,7 +184,7 @@ public class WorkspaceManager {
     public UsersWorkspace createWorkspace(final WorkspaceConfig workspaceConfig, final String accountId)
             throws NotFoundException, ForbiddenException, ServerException, BadRequestException, ConflictException {
 
-        final UsersWorkspace workspace = fromConfig(workspaceConfig);
+        final UsersWorkspaceImpl workspace = fromConfig(workspaceConfig);
 
         hooks.beforeCreate(workspace, accountId);
 

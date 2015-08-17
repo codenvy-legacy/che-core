@@ -38,7 +38,7 @@ public interface WorkspaceDao {
      *         POJO representation of workspace entity
      * @throws ServerException if other error occurs
      */
-    UsersWorkspaceImpl create(UsersWorkspace workspace) throws ConflictException, ServerException;
+    UsersWorkspaceImpl create(UsersWorkspaceImpl workspace) throws ConflictException, ServerException;
 
     /**
      * Updates already present in persistent layer workspace.
@@ -47,7 +47,7 @@ public interface WorkspaceDao {
      *         POJO representation of workspace entity
      * @throws ServerException if other error occurs
      */
-    UsersWorkspaceImpl update(UsersWorkspace workspace) throws NotFoundException, ConflictException, ServerException;
+    UsersWorkspaceImpl update(UsersWorkspaceImpl workspace) throws NotFoundException, ConflictException, ServerException;
 
     /**
      * Removes workspace from persistent layer.

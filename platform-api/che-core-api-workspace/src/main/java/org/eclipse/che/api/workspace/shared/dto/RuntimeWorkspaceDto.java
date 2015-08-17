@@ -11,6 +11,7 @@
 package org.eclipse.che.api.workspace.shared.dto;
 
 import org.eclipse.che.api.core.model.workspace.RuntimeWorkspace;
+import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.dto.shared.DTO;
@@ -27,6 +28,8 @@ public interface RuntimeWorkspaceDto extends UsersWorkspaceDto, RuntimeWorkspace
     MachineDto getDevMachine();
 
     RuntimeWorkspaceDto withDevMachine(MachineDto devMachine);
+
+    RuntimeWorkspaceDto withStatus(WorkspaceStatus status);
 
     @Override
     List<MachineDto> getMachines();

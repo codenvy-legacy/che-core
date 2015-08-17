@@ -28,6 +28,7 @@ import org.eclipse.che.api.workspace.shared.dto.MachineSourceDto;
 import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.dto.server.DtoFactory;
 
+import javax.inject.Inject;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -39,6 +40,7 @@ import java.net.URL;
 public class MachineClientImpl implements MachineClient {
     private final MachineManager machineManager;
 
+    @Inject
     public MachineClientImpl(MachineManager machineManager) {
         this.machineManager = machineManager;
     }
