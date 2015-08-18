@@ -45,6 +45,6 @@ public class GitModule extends AbstractModule {
         bind(StatusPageWriter.class);
         bind(TagListWriter.class);
 
-        //bind(GitConnectionFactory.class).to(NativeGitConnectionFactory.class);
+
     }
 }
