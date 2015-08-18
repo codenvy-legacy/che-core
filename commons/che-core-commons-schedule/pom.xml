@@ -16,11 +16,15 @@
     <parent>
         <artifactId>che-core-commons-parent</artifactId>
         <groupId>org.eclipse.che.core</groupId>
-        <version>3.12.0-SNAPSHOT</version>
+        <version>3.12.1-SNAPSHOT</version>
     </parent>
     <artifactId>che-core-commons-schedule</artifactId>
     <packaging>jar</packaging>
     <name>Che Core :: Commons :: Scheduler service</name>
+    <properties>
+        <findbugs.excludeFilterFiler>${project.build.testSourceDirectory}/../resources/findbugs-exclude.xml</findbugs.excludeFilterFiler>
+        <findbugs.failonerror>true</findbugs.failonerror>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>com.google.guava</groupId>

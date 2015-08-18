@@ -10,15 +10,23 @@
  *******************************************************************************/
 package org.eclipse.che.api.local;
 
+
+import com.google.common.reflect.TypeToken;
+
 import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.factory.FactoryImage;
 import org.eclipse.che.api.factory.FactoryStore;
 import org.eclipse.che.api.factory.dto.Factory;
+import org.eclipse.che.api.local.storage.LocalStorage;
+import org.eclipse.che.api.local.storage.LocalStorageFactory;
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.eclipse.che.commons.lang.Pair;
 import org.eclipse.che.dto.server.DtoFactory;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.IOException;
 import java.util.Arrays;
@@ -33,12 +41,37 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * @author Vladyslav Zhukovskii
+ * @author Anton Korneta
  */
 @Singleton
-public class InMemoryFactoryStore implements FactoryStore {
-    private final Map<String, Set<FactoryImage>> images    = new HashMap<>();
-    private final Map<String, Factory>           factories = new HashMap<>();
-    private final ReentrantReadWriteLock         lock      = new ReentrantReadWriteLock();
+public class LocalFactoryDaoImpl implements FactoryStore {
+
+    private final Map<String, Set<FactoryImage>> images;
+    private final Map<String, Factory>           factories;
+    private final ReentrantReadWriteLock         lock;
+    private final LocalStorage                   imageStorage;
+    private final LocalStorage                   factoryStorage;
+
+    @Inject
+    public LocalFactoryDaoImpl(LocalStorageFactory localStorageFactory) throws IOException {
+        images = new HashMap<>();
+        factories = new HashMap<>();
+        lock = new ReentrantReadWriteLock();
+        imageStorage = localStorageFactory.create("images.json");
+        factoryStorage = localStorageFactory.create("factories.json");
+    }
+
+    @PostConstruct
+    public void start() {
+        images.putAll(imageStorage.loadMap(new TypeToken<Map<String, Set<FactoryImage>>>() {}));
+        factories.putAll(factoryStorage.loadMap(new TypeToken<Map<String, Factory>>() {}));
+    }
+
+    @PreDestroy
+    public void stop() throws IOException {
+        imageStorage.store(images);
+        factoryStorage.store(factories);
+    }
 
     @Override
     public String saveFactory(Factory factoryUrl, Set<FactoryImage> images) throws ApiException {
