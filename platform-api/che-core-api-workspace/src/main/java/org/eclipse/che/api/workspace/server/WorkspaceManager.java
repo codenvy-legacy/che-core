@@ -29,6 +29,7 @@ import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
 import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
 import org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent;
 import org.eclipse.che.commons.env.EnvironmentContext;
+import org.eclipse.che.commons.lang.concurrent.ThreadLocalPropagateContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -263,12 +264,12 @@ public class WorkspaceManager {
     /*******************************/
 
     private void startWorkspaceAsync(final UsersWorkspaceImpl usersWorkspace, final String envName) {
-        executor.execute(new Runnable() {
+        executor.execute(ThreadLocalPropagateContext.wrap(new Runnable() {
             @Override
             public void run() {
                 startWorkspaceSync(usersWorkspace, envName);
             }
-        });
+        }));
     }
 
     private void startWorkspaceSync(final UsersWorkspaceImpl usersWorkspace, final String envName) {

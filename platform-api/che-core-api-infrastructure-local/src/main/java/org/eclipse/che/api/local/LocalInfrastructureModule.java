@@ -124,6 +124,7 @@ public class LocalInfrastructureModule extends AbstractModule {
     Set<User> users() {
         final Set<User> users = new HashSet<>(1);
         final User user = new User().withId("codenvy")
+                                    .withName("codenvy")
                                     .withEmail("che@eclipse.org")
                                     .withPassword("secret");
         user.getAliases().add("che@eclipse.org");

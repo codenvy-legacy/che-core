@@ -38,7 +38,7 @@ public final class Constants {
     public static final String GET_RUNTIME_WORKSPACE                 = "get runtime workspace";
     public static final String STOP_WORKSPACE                        = "stop workspace";
     public static final String GET_USERS_WORKSPACE                   = "get users workspace";
-    public static final String GET_ALL_USERS_WORKSPACES              = "get all users workspaces";
+    public static final String GET_ALL_USER_WORKSPACES               = "get all user workspaces";
 
     private Constants() {
     }

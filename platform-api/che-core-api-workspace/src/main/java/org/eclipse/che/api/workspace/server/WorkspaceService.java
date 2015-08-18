@@ -71,7 +71,7 @@ import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.RUNNING;
 import static org.eclipse.che.api.core.util.LinksHelper.createLink;
-import static org.eclipse.che.api.workspace.server.Constants.GET_ALL_USERS_WORKSPACES;
+import static org.eclipse.che.api.workspace.server.Constants.GET_ALL_USER_WORKSPACES;
 import static org.eclipse.che.api.workspace.server.Constants.GET_RUNTIME_WORKSPACE;
 import static org.eclipse.che.api.workspace.server.Constants.GET_USERS_WORKSPACE;
 import static org.eclipse.che.api.workspace.server.Constants.LINK_REL_CREATE_WORKSPACE;
@@ -350,7 +350,7 @@ public class WorkspaceService extends Service {
                                        .build()
                                        .toString(),
                              "application/json",
-                             GET_ALL_USERS_WORKSPACES));
+                             GET_ALL_USER_WORKSPACES));
         if (workspace.getStatus() == RUNNING) {
             links.add(createLink("GET",
                                  uriBuilder.clone()
@@ -414,7 +414,7 @@ public class WorkspaceService extends Service {
                                        .build()
                                        .toString(),
                              "application/json",
-                             GET_ALL_USERS_WORKSPACES));
+                             GET_ALL_USER_WORKSPACES));
         final List<MachineDto> machines = workspace.getMachines()
                                                    .stream()
                                                    .map(this::asDto)

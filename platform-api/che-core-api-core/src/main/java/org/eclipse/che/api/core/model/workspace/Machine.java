@@ -41,4 +41,6 @@ public interface Machine extends MachineConfig {
      * Returns mapping of exposed ports to {@link Server}
      */
     Map<String, ? extends Server> getServers();
+
+    //TODO add links to machines
 }
