@@ -10,8 +10,10 @@
  *******************************************************************************/
 package org.eclipse.che.api.local;
 
+
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
 
@@ -19,9 +21,13 @@ import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.local.storage.LocalStorage;
 import org.eclipse.che.api.local.storage.LocalStorageFactory;
+import org.eclipse.che.api.local.storage.deserialize.GroupSerializer;
+import org.eclipse.che.api.local.storage.deserialize.PermissionsSerializer;
 import org.eclipse.che.api.machine.server.dao.RecipeDao;
 import org.eclipse.che.api.machine.server.recipe.RecipeImpl;
+import org.eclipse.che.api.machine.shared.Group;
 import org.eclipse.che.api.machine.shared.ManagedRecipe;
+import org.eclipse.che.api.machine.shared.Permissions;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -50,7 +56,9 @@ public class LocalRecipeDaoImpl implements RecipeDao {
 
     @Inject
     public LocalRecipeDaoImpl(LocalStorageFactory storageFactory) throws IOException {
-        this.recipeStorage = storageFactory.create("recipes.json");
+        Map<Class<?>, Object> adapters = ImmutableMap.of(Permissions.class, new PermissionsSerializer(),
+                                                         Group.class, new GroupSerializer());
+        this.recipeStorage = storageFactory.create("recipes.json", adapters);
         this.recipes = new HashMap<>();
         lock = new ReentrantReadWriteLock();
     }
@@ -58,7 +66,8 @@ public class LocalRecipeDaoImpl implements RecipeDao {
     @Inject
     @PostConstruct
     public void start(@Named("codenvy.local.infrastructure.recipes") Set<ManagedRecipe> defaultRecipes) {
-        recipes.putAll(recipeStorage.loadMap(new TypeToken<Map<String, ManagedRecipe>>() {}));
+        recipes.putAll(recipeStorage.loadMap(new TypeToken<Map<String, RecipeImpl>>() {}));
+
         if (recipes.isEmpty()) {
             try {
                 for (ManagedRecipe recipe : defaultRecipes) {

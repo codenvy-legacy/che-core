@@ -62,7 +62,7 @@ public class LocalCommandDaoImpl implements CommandDao {
     @Inject
     @PostConstruct
     public void start(@Named("codenvy.local.infrastructure.commands") Set<ManagedCommand> defaultCommands) {
-        commands.putAll(commandStorage.loadMap(new TypeToken<Map<String, ManagedCommand>>() {}));
+        commands.putAll(commandStorage.loadMap(new TypeToken<Map<String, CommandImpl>>() {}));
         if (commands.isEmpty()) {
             try {
                 for (ManagedCommand command : defaultCommands) {
