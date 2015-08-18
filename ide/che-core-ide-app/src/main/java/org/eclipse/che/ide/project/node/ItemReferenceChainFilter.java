@@ -8,28 +8,16 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.project.shared;
+package org.eclipse.che.ide.project.node;
 
-import com.google.gwt.resources.client.ClientBundle;
+import org.eclipse.che.api.project.shared.dto.ItemReference;
+import org.eclipse.che.api.promises.client.Promise;
 
-import org.vectomatic.dom.svg.ui.SVGResource;
+import java.util.List;
 
 /**
  * @author Vlad Zhukovskiy
  */
-public interface NodesResources extends ClientBundle {
-    @Source("file.svg")
-    SVGResource file();
-
-    @Source("invalidProjectRoot-old.svg")
-    SVGResource invalidProjectRoot();
-
-    @Source("moduleRoot-old.svg")
-    SVGResource moduleRoot();
-
-    @Source("projectRoot-old.svg")
-    SVGResource projectRoot();
-
-    @Source("simpleRoot-old.svg")
-    SVGResource simpleRoot();
+public interface ItemReferenceChainFilter {
+    Promise<List<ItemReference>> process(List<ItemReference> referenceList);
 }

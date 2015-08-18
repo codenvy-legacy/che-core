@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ui.smartTree.state;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONString;
@@ -86,12 +87,17 @@ public class ExpandStateHandler extends AbstractStateHandler<Set<String>> {
 
 
     public void applyState() {
-        for (String key : getState()) {
-            Node item = tree.getNodeStorage().findNodeWithKey(key);
-            if (item != null) {
-                tree.setExpanded(item, true);
+        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+            @Override
+            public void execute() {
+                for (String key : getState()) {
+                    Node item = tree.getNodeStorage().findNodeWithKey(key);
+                    if (item != null && !tree.isExpanded(item)) {
+                        tree.setExpanded(item, true);
+                    }
+                }
             }
-        }
+        });
     }
 
     public void loadState() {

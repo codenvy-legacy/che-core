@@ -39,22 +39,22 @@ public class ProjectDescriptorNode extends ResourceBasedNode<ProjectDescriptor> 
     public ProjectDescriptorNode(@Assisted ProjectDescriptor projectDescriptor,
                                  @Assisted NodeSettings nodeSettings,
                                  @Nonnull EventBus eventBus,
-                                 @Nonnull ResourceNodeManager resourceNodeManager,
+                                 @Nonnull NodeManager nodeManager,
                                  @Nonnull ProjectDescriptorProcessor resourceProcessor) {
-        super(projectDescriptor, projectDescriptor, nodeSettings, eventBus, resourceNodeManager);
+        super(projectDescriptor, projectDescriptor, nodeSettings, eventBus, nodeManager);
         this.resourceProcessor = resourceProcessor;
     }
 
     @Nonnull
     @Override
     protected Promise<List<Node>> getChildrenImpl() {
-        return resourceNodeManager.getChildren(getData(), getSettings());
+        return nodeManager.getChildren(getData(), getSettings());
     }
 
     @Override
     public void updatePresentation(@Nonnull NodePresentation presentation) {
         presentation.setPresentableText(getData().getName());
-        presentation.setPresentableIcon(resourceNodeManager.getNodesResources().projectRoot());
+        presentation.setPresentableIcon(nodeManager.getNodesResources().projectRoot());
     }
 
     @Nonnull

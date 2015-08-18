@@ -14,6 +14,8 @@ import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.parts.base.BaseActionDelegate;
 import org.eclipse.che.ide.ui.smartTree.TreeNodeStorage;
 import org.eclipse.che.ide.ui.smartTree.TreeNodeStorage.StoreSortInfo;
+import org.eclipse.che.ide.ui.smartTree.event.BeforeExpandNodeEvent;
+import org.eclipse.che.ide.ui.smartTree.event.BeforeExpandNodeEvent.BeforeExpandNodeHandler;
 import org.eclipse.che.ide.ui.smartTree.event.SelectionChangedEvent.SelectionChangedHandler;
 import org.eclipse.che.ide.api.project.node.Node;
 
@@ -41,6 +43,12 @@ public interface NewProjectExplorerView extends View<NewProjectExplorerView.Acti
     boolean goInto(Node node);
 
     void resetGoIntoMode();
+
+    boolean isFoldersAlwaysOnTop();
+
+    void setFoldersAlwaysOnTop(boolean foldersAlwaysOnTop);
+
+    void synchronizeTree();
 
     public interface ActionDelegate extends BaseActionDelegate {
         void onSelectionChanged(List<Node> selection);

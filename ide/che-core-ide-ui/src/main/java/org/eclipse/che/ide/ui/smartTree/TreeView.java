@@ -143,13 +143,13 @@ public class TreeView {
         return node.getInfoTextContainer();
     }
 
-    public Element getLoadIconContainer(NodeDescriptor node) {
-        if (node.getIconContainerElement() == null) {
-            Element element = getNodeContainer(node).getChildNodes().getItem(5).cast();
-            node.setIconContainerElement(element);
-        }
-        return node.getIconContainerElement();
-    }
+//    public Element getLoadIconContainer(NodeDescriptor node) {
+//        if (node.getIconContainerElement() == null) {
+//            Element element = getNodeContainer(node).getChildNodes().getItem(5).cast();
+//            node.setIconContainerElement(element);
+//        }
+//        return node.getIconContainerElement();
+//    }
 
     public int getScrollDelay() {
         return scrollDelay;
@@ -214,8 +214,14 @@ public class TreeView {
     }
 
     public void onLoadChange(NodeDescriptor node, boolean loading) {
-        Element loadIconElement = getLoadIconContainer(node);
-        loadIconElement.getStyle().setVisibility(loading ? Style.Visibility.VISIBLE : Style.Visibility.HIDDEN);
+        Element rootContainer = getNodeContainer(node);
+        if (loading) {
+            rootContainer.addClassName(tree.getTreeStyles().styles().loading());
+        } else {
+            rootContainer.removeClassName(tree.getTreeStyles().styles().loading());
+        }
+//        Element loadIconElement = getLoadIconContainer(node);
+//        loadIconElement.getStyle().setVisibility(loading ? Style.Visibility.VISIBLE : Style.Visibility.HIDDEN);
     }
 
     public void onOverChange(NodeDescriptor node, boolean over) {

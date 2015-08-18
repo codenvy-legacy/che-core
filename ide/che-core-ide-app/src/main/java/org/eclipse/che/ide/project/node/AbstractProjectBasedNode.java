@@ -41,7 +41,6 @@ public abstract class AbstractProjectBasedNode<DataObject> extends AbstractTreeN
         this.dataObject = dataObject;
         this.projectDescriptor = projectDescriptor;
         this.nodeSettings = nodeSettings;
-        this.nodePresentation = new NodePresentation();
     }
 
     @Nonnull
@@ -72,7 +71,15 @@ public abstract class AbstractProjectBasedNode<DataObject> extends AbstractTreeN
     }
 
     @Override
-    public final NodePresentation getPresentation() {
+    public final NodePresentation getPresentation(boolean update) {
+        if (nodePresentation == null) {
+            nodePresentation = new NodePresentation();
+            updatePresentation(nodePresentation);
+        }
+
+        if (update) {
+            updatePresentation(nodePresentation);
+        }
         return nodePresentation;
     }
 

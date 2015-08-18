@@ -61,4 +61,10 @@ public interface NewProject extends ProjectUpdate {
     NewProject withAttributes(Map<String, List<String>> attributes);
 
     NewProject withVisibility(String visibility);
+
+    String getContentRoot();
+
+    void setContentRoot(String contentRoot);
+
+    NewProject withContentRoot(String contentRoot);
 }

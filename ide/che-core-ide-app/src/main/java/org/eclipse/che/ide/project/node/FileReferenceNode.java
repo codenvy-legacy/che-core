@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.project.node;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import com.google.web.bindery.event.shared.EventBus;
@@ -18,12 +19,15 @@ import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
 import org.eclipse.che.ide.api.event.FileEvent;
 import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
 import org.eclipse.che.ide.api.project.node.settings.NodeSettings;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.api.project.node.HasAction;
 import org.eclipse.che.ide.project.node.resource.ItemReferenceProcessor;
+import org.eclipse.che.ide.rest.AsyncRequestCallback;
+import org.eclipse.che.ide.rest.StringUnmarshaller;
 import org.eclipse.che.ide.ui.smartTree.presentation.NodePresentation;
 
 import javax.annotation.Nonnull;
@@ -41,15 +45,15 @@ public class FileReferenceNode extends ItemReferenceBasedNode implements Virtual
                              @Assisted ProjectDescriptor projectDescriptor,
                              @Assisted NodeSettings nodeSettings,
                              @Nonnull EventBus eventBus,
-                             @Nonnull ResourceNodeManager resourceNodeManager,
+                             @Nonnull NodeManager nodeManager,
                              @Nonnull ItemReferenceProcessor resourceProcessor) {
-        super(itemReference, projectDescriptor, nodeSettings, eventBus, resourceNodeManager, resourceProcessor);
+        super(itemReference, projectDescriptor, nodeSettings, eventBus, nodeManager, resourceProcessor);
     }
 
     @Override
     public void updatePresentation(@Nonnull NodePresentation presentation) {
         presentation.setPresentableText(getData().getName());
-        presentation.setPresentableIcon(resourceNodeManager.getNodesResources().file());
+        presentation.setPresentableIcon(nodeManager.getNodesResources().file());
     }
 
     @Nonnull
@@ -88,8 +92,24 @@ public class FileReferenceNode extends ItemReferenceBasedNode implements Virtual
     }
 
     @Override
-    public Promise<Void> updateContent(String content) {
-        return resourceNodeManager.updateContent(this, content);
+    public Promise<Void> updateContent(final String content) {
+//        return nodeManager.updateContent(this, content);
+        return AsyncPromiseHelper.createFromAsyncRequest(new AsyncPromiseHelper.RequestCall<Void>() {
+            @Override
+            public void makeCall(final AsyncCallback<Void> callback) {
+                nodeManager.projectService.updateFile(getStorablePath(), content, getMediaType(), new AsyncRequestCallback<Void>() {
+                    @Override
+                    protected void onSuccess(Void result) {
+                        callback.onSuccess(result);
+                    }
+
+                    @Override
+                    protected void onFailure(Throwable exception) {
+                        callback.onFailure(exception);
+                    }
+                });
+            }
+        });
     }
 
     @Override
@@ -99,6 +119,23 @@ public class FileReferenceNode extends ItemReferenceBasedNode implements Virtual
 
     @Override
     public Promise<String> getContent() {
-        return resourceNodeManager.getContent(this);
+//        return nodeManager.getContent(this);
+        return AsyncPromiseHelper.createFromAsyncRequest(new AsyncPromiseHelper.RequestCall<String>() {
+            @Override
+            public void makeCall(final AsyncCallback<String> callback) {
+                nodeManager.projectService.getFileContent(getPath(),
+                                                        new AsyncRequestCallback<String>(new StringUnmarshaller()) {
+                                                            @Override
+                                                            protected void onSuccess(String result) {
+                                                                callback.onSuccess(result);
+                                                            }
+
+                                                            @Override
+                                                            protected void onFailure(Throwable exception) {
+                                                                callback.onFailure(exception);
+                                                            }
+                                                        });
+            }
+        });
     }
 }

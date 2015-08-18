@@ -131,7 +131,7 @@ import org.eclipse.che.ide.preferences.PreferencesView;
 import org.eclipse.che.ide.preferences.PreferencesViewImpl;
 import org.eclipse.che.ide.privacy.PrivacyPresenter;
 import org.eclipse.che.ide.project.node.factory.NodeFactory;
-import org.eclipse.che.ide.project.node.ResourceNodeManager;
+import org.eclipse.che.ide.project.node.NodeManager;
 import org.eclipse.che.ide.projectimport.wizard.ImportProjectNotificationSubscriberImpl;
 import org.eclipse.che.ide.projectimport.wizard.ImportWizardFactory;
 import org.eclipse.che.ide.projectimport.wizard.ImportWizardRegistryImpl;
@@ -334,6 +334,12 @@ public class CoreGinModule extends AbstractGinModule {
         bind(OutlinePart.class).to(OutlinePartPresenter.class).in(Singleton.class);
 //        bind(ProjectExplorerPart.class).to(ProjectExplorerPartPresenter.class).in(Singleton.class);
         bind(NewProjectExplorerPart.class).to(NewProjectExplorerPresenter.class).in(Singleton.class);
+//        GinMultibinder.newSetBinder(binder(), NodeInterceptor.class).addBinding().to(NewProjectExplorerViewImpl.ContentRootInterceptor.class);
+
+        GinMapBinder<String, SettingsProvider> mapBinder =
+                GinMapBinder.newMapBinder(binder(), String.class, SettingsProvider.class);
+        mapBinder.addBinding("default").to(DummySettingsProvider.class);
+
         bind(ActionManager.class).to(ActionManagerImpl.class).in(Singleton.class);
     }
 
@@ -396,7 +402,7 @@ public class CoreGinModule extends AbstractGinModule {
 
         bind(PrivacyPresenter.class).asEagerSingleton();
         install(new GinFactoryModuleBuilder().build(NodeFactory.class));
-        bind(ResourceNodeManager.class);
+        bind(NodeManager.class);
     }
 
     /** Configures binding for Editor API */

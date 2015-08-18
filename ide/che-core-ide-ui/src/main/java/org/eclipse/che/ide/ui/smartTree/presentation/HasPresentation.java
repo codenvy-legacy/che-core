@@ -27,5 +27,5 @@ public interface HasPresentation {
      */
     void updatePresentation(@Nonnull NodePresentation presentation);
 
-    NodePresentation getPresentation();
+    NodePresentation getPresentation(boolean update);
 }

@@ -27,6 +27,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.impl.FocusImpl;
 
+import org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor;
 import org.eclipse.che.ide.ui.smartTree.event.BeforeCollapseNodeEvent;
 import org.eclipse.che.ide.ui.smartTree.event.BeforeCollapseNodeEvent.HasBeforeCollapseItemHandlers;
 import org.eclipse.che.ide.ui.smartTree.event.BeforeExpandNodeEvent.HasBeforeExpandNodeHandlers;
@@ -71,6 +72,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * TODO do we need to allow use selection?
@@ -717,7 +719,18 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
         if (node == null) {
             return Joint.NONE;
         }
-        return isLeaf(node) ? Joint.NONE : findNode(node).isExpanded() ? Joint.EXPANDED : Joint.COLLAPSED;
+
+        if (isLeaf(node)) {
+            return Joint.NONE;
+        }
+
+        if (findNode(node) != null && findNode(node).isLoaded() && nodeStorage.getChildCount(node) == 0) {
+            return Joint.NONE;
+        }
+
+        return findNode(node).isExpanded() ? Joint.EXPANDED : Joint.COLLAPSED;
+
+//        return isLeaf(node) ? Joint.NONE : findNode(node).isExpanded() ? Joint.EXPANDED : Joint.COLLAPSED;
     }
 
     public void scrollIntoView(Node model) {
@@ -1081,7 +1094,7 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
     @Nullable
     private String getUpdatedInfoText(Node node) {
         if (node instanceof HasPresentation) {
-            return ((HasPresentation)node).getPresentation().getInfoText();
+            return ((HasPresentation)node).getPresentation(false).getInfoText();
         }
 
         return null;
@@ -1106,7 +1119,6 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
 //        }
 
         //TODO need to improve this block of code to support refreshing dedicated folder
-
         redraw(null, true);
     }
 
@@ -1143,6 +1155,7 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
             NodeDescriptor nodeDescriptor = findNode(parent);
             nodeDescriptor.setLoaded(true);
             nodeDescriptor.setLoading(false);
+
             if (nodeDescriptor.isExpand() && !isLeaf(nodeDescriptor.getNode())) {
                 nodeDescriptor.setExpand(false);
                 boolean deep = nodeDescriptor.isExpandDeep();

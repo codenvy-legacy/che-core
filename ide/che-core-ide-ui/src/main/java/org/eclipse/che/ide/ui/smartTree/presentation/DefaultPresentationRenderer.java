@@ -32,11 +32,11 @@ public class DefaultPresentationRenderer<N extends Node> extends AbstractPresent
 
     @Override
     public Element render(N node, String domID, Tree.Joint joint, int depth) {
-        NodePresentation presentation = new NodePresentation();
-
+        NodePresentation presentation;
         if (node instanceof HasPresentation) {
-            ((HasPresentation)node).updatePresentation(presentation);
+            presentation = ((HasPresentation)node).getPresentation(false);
         } else {
+            presentation = new NodePresentation();
             presentation.setPresentableText(node.getName());
         }
 
@@ -58,14 +58,14 @@ public class DefaultPresentationRenderer<N extends Node> extends AbstractPresent
 
         Element descendantsContainer = getDescendantsContainer();
 
-        Element loadIconContainer = createLoadingIconContainer();
+//        Element loadIconContainer = createLoadingIconContainer();
 
         nodeContainer.appendChild(jointContainer);
         nodeContainer.appendChild(iconContainer);
         nodeContainer.appendChild(userElement == null ? Document.get().createSpanElement() : userElement);
         nodeContainer.appendChild(presentableTextContainer);
         nodeContainer.appendChild(infoTextContainer);
-        nodeContainer.appendChild(loadIconContainer);
+//        nodeContainer.appendChild(loadIconContainer);
 
 
         rootContainer.appendChild(nodeContainer);
@@ -94,7 +94,7 @@ public class DefaultPresentationRenderer<N extends Node> extends AbstractPresent
         }
 
         if (!Strings.isNullOrEmpty(presentation.getInfoText())) {
-              sb.append(presentation.getInfoText());
+            sb.append(presentation.getInfoText());
         }
 
         if (presentation.getInfoTextWrapper() != null) {
@@ -108,21 +108,21 @@ public class DefaultPresentationRenderer<N extends Node> extends AbstractPresent
         return textElement;
     }
 
-    private Element createLoadingIconContainer() {
-        SpanElement loadingIconElement = Document.get().createSpanElement();
-
-        OMSVGSVGElement loadingSvg = treeStyles.iconLoading().getSvg();
-        loadingIconElement.getStyle().setVisibility(Style.Visibility.HIDDEN);
-        loadingSvg.setWidth(Style.Unit.PX, 16f);
-        loadingSvg.setHeight(Style.Unit.PX, 16f);
-
-        loadingIconElement.addClassName(treeStyles.styles().loadIconContainer());
-
-
-        loadingIconElement.appendChild(loadingSvg.getElement());
-
-        return loadingIconElement;
-    }
+//    private Element createLoadingIconContainer() {
+//        SpanElement loadingIconElement = Document.get().createSpanElement();
+//
+//        OMSVGSVGElement loadingSvg = treeStyles.iconLoading().getSvg();
+//        loadingIconElement.getStyle().setVisibility(Style.Visibility.HIDDEN);
+//        loadingSvg.setWidth(Style.Unit.PX, 16f);
+//        loadingSvg.setHeight(Style.Unit.PX, 16f);
+//
+//        loadingIconElement.addClassName(treeStyles.styles().loadIconContainer());
+//
+//
+//        loadingIconElement.appendChild(loadingSvg.getElement());
+//
+//        return loadingIconElement;
+//    }
 
     private void setIndentLevel(Element element, int depth) {
         element.getStyle().setPaddingLeft((double)depth * 16, Style.Unit.PX);

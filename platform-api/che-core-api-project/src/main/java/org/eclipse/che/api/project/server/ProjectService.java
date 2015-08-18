@@ -978,6 +978,8 @@ public class ProjectService extends Service {
             ProjectProblem problem = DtoFactory.getInstance().createDto(ProjectProblem.class).withCode(1).withMessage(e.getMessage());
             projectDescriptor.setProblems(Arrays.asList(problem));
         }
+        project.getMisc().setContentRoot(newProject.getContentRoot());
+        project.getMisc().save();
         importResponse.setProjectDescriptor(projectDescriptor);
         //we will add project type estimations any way
         List<SourceEstimation> sourceEstimations = projectManager.resolveSources(workspace, baseProjectFolder.getPath(), false);

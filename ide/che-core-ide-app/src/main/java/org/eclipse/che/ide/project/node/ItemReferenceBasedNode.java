@@ -36,9 +36,9 @@ public abstract class ItemReferenceBasedNode extends ResourceBasedNode<ItemRefer
                                   @Nonnull ProjectDescriptor projectDescriptor,
                                   @Nonnull NodeSettings nodeSettings,
                                   @Nonnull EventBus eventBus,
-                                  @Nonnull ResourceNodeManager resourceNodeManager,
+                                  @Nonnull NodeManager nodeManager,
                                   @Nonnull ItemReferenceProcessor resourceProcessor) {
-        super(itemReference, projectDescriptor, nodeSettings, eventBus, resourceNodeManager);
+        super(itemReference, projectDescriptor, nodeSettings, eventBus, nodeManager);
         this.resourceProcessor = resourceProcessor;
     }
 
@@ -68,7 +68,7 @@ public abstract class ItemReferenceBasedNode extends ResourceBasedNode<ItemRefer
     @Nonnull
     @Override
     protected Promise<List<Node>> getChildrenImpl() {
-        return resourceNodeManager.getChildren(getData(), getProjectDescriptor(), getSettings());
+        return nodeManager.getChildren(getData(), getProjectDescriptor(), getSettings());
     }
 
     @Nonnull

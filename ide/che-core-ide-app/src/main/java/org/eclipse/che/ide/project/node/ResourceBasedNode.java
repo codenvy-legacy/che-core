@@ -32,17 +32,17 @@ import javax.annotation.Nonnull;
 public abstract class ResourceBasedNode<DataObject> extends AbstractProjectBasedNode<DataObject> implements SupportRename<DataObject>,
                                                                                                             SupportDelete<DataObject> {
 
-    protected EventBus            eventBus;
-    protected ResourceNodeManager resourceNodeManager;
+    protected EventBus    eventBus;
+    protected NodeManager nodeManager;
 
     public ResourceBasedNode(@Nonnull DataObject dataObject,
                              @Nonnull ProjectDescriptor projectDescriptor,
                              @Nonnull NodeSettings nodeSettings,
                              @Nonnull EventBus eventBus,
-                             @Nonnull ResourceNodeManager resourceNodeManager) {
+                             @Nonnull NodeManager nodeManager) {
         super(dataObject, projectDescriptor, nodeSettings);
         this.eventBus = eventBus;
-        this.resourceNodeManager = resourceNodeManager;
+        this.nodeManager = nodeManager;
     }
 
     @Override

@@ -25,7 +25,7 @@
     height: 16px;
     padding-top: 2px;
     fill: #dbdbdb;
-    -webkit-filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 1));
+    -webkit-filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.4));
 }
 
 .iconContainer {
@@ -38,7 +38,7 @@
     margin-top: -10px;
     font-size: 1em;
     padding-left: 2px;
-    text-shadow: 0 1px 0 rgba(0, 0, 0, 1);
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.4);
 }
 
 .infoTextContainer {
@@ -49,7 +49,7 @@
     margin-left: 5px;
     padding-right: 10px;
     font-size: 0.8em;
-    text-shadow: 0 1px 0 rgba(0, 0, 0, 1);
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.4);
 }
 
 .nodeContainer {
@@ -78,19 +78,38 @@
     background-color: #defadc !important;
 }
 
-.loadIconContainer {
-    display: inline-block;
-}
+/*.loadIconContainer {*/
+    /*display: inline-block;*/
+/*}*/
 
-.loadIconContainer > svg {
-    float: right;
-    -webkit-filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 1));
-    padding-top: 2px;
-    padding-right: 2px;
-    fill: #dbdbdb;
-}
+/*.loadIconContainer > svg {*/
+    /*float: right;*/
+    /*-webkit-filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.4));*/
+    /*padding-top: 2px;*/
+    /*padding-right: 2px;*/
+    /*fill: #dbdbdb;*/
+/*}*/
 
 .tree {
     display: inline-block;
     min-width: 100%;
+    font-size: 0.85em;
+    font-weight: bold;
+}
+
+.loading {
+    background-size: 30px 30px;
+    background-image: linear-gradient(135deg,
+    rgba(255, 255, 255, .05) 25%, transparent 25%, transparent 50%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, .05) 75%, transparent 75%, transparent);
+    -webkit-animation: animate-stripes 1s linear infinite;
+}
+
+@-webkit-keyframes animate-stripes {
+    0% {background-position: 0 0;} 100% {background-position: 60px 0;}
+}
+
+@-moz-keyframes animate-stripes {
+    0% {background-position: 0 0;} 100% {background-position: 60px 0;}
 }

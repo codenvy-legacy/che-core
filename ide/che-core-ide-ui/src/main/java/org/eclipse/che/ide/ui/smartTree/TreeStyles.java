@@ -44,9 +44,11 @@ public interface TreeStyles extends ClientBundle {
 
         String dragOver();
 
-        String loadIconContainer();
+//        String loadIconContainer();
 
         String tree();
+
+        String loading();
     }
 
     @Source("TreeStyles.css")

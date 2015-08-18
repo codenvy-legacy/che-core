@@ -45,9 +45,9 @@ public class ProjectReferenceNode extends ResourceBasedNode<ProjectReference> im
                                 @Assisted ProjectDescriptor projectDescriptor,
                                 @Assisted NodeSettings nodeSettings,
                                 @Nonnull EventBus eventBus,
-                                @Nonnull ResourceNodeManager resourceNodeManager,
+                                @Nonnull NodeManager nodeManager,
                                 @Nonnull ProjectReferenceProcessor resourceProcessor) {
-        super(projectReference, projectDescriptor, nodeSettings, eventBus, resourceNodeManager);
+        super(projectReference, projectDescriptor, nodeSettings, eventBus, nodeManager);
         this.resourceProcessor = resourceProcessor;
     }
 
@@ -60,8 +60,8 @@ public class ProjectReferenceNode extends ResourceBasedNode<ProjectReference> im
     @Override
     public void updatePresentation(@Nonnull NodePresentation presentation) {
         presentation.setPresentableText(getData().getName());
-        presentation.setPresentableIcon(getData().getProblems().isEmpty() ? resourceNodeManager.getNodesResources().projectRoot()
-                                                                          : resourceNodeManager.getNodesResources().invalidProjectRoot());
+        presentation.setPresentableIcon(isValid(getData()) ? nodeManager.getNodesResources().projectRoot()
+                                                           : nodeManager.getNodesResources().invalidProjectRoot());
     }
 
     @Nonnull
@@ -98,4 +98,7 @@ public class ProjectReferenceNode extends ResourceBasedNode<ProjectReference> im
         return getData().getPath();
     }
 
+    private boolean isValid(ProjectReference reference) {
+        return reference.getProblems().isEmpty();
+    }
 }

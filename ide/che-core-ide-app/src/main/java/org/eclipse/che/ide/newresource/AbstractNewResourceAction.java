@@ -35,7 +35,7 @@ import org.eclipse.che.ide.project.event.ResourceNodeEvent.Event;
 import org.eclipse.che.ide.project.node.FileReferenceNode;
 import org.eclipse.che.ide.project.node.ItemReferenceBasedNode;
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
-import org.eclipse.che.ide.project.node.ResourceNodeManager;
+import org.eclipse.che.ide.project.node.NodeManager;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
@@ -70,7 +70,7 @@ public abstract class AbstractNewResourceAction extends ProjectAction {
     protected       DtoUnmarshallerFactory      dtoUnmarshallerFactory;
     protected       DialogFactory               dialogFactory;
     protected       CoreLocalizationConstant    coreLocalizationConstant;
-    protected       ResourceNodeManager         resourceNodeManager;
+    protected       NodeManager                 nodeManager;
 
     /**
      * Creates new action.
@@ -137,11 +137,11 @@ public abstract class AbstractNewResourceAction extends ProjectAction {
     }
 
     protected void getCreatedItem(ResourceBasedNode<?> parent, ItemReference item) {
-        resourceNodeManager.getChildren(((HasStorablePath)parent).getStorablePath(),
-                                        parent.getProjectDescriptor(),
-                                        parent.getSettings())
-                           .then(iterateAndFindCreatedNode(item))
-                           .then(fireNodeCreated(parent));
+        nodeManager.getChildren(((HasStorablePath)parent).getStorablePath(),
+                                parent.getProjectDescriptor(),
+                                parent.getSettings())
+                   .then(iterateAndFindCreatedNode(item))
+                   .then(fireNodeCreated(parent));
     }
 
     @Nonnull
@@ -165,7 +165,7 @@ public abstract class AbstractNewResourceAction extends ProjectAction {
     }
 
     @Nonnull
-    private Operation<ItemReferenceBasedNode> fireNodeCreated(@Nonnull final ResourceBasedNode<?> parent) {
+    protected Operation<ItemReferenceBasedNode> fireNodeCreated(@Nonnull final ResourceBasedNode<?> parent) {
         return new Operation<ItemReferenceBasedNode>() {
             @Override
             public void apply(final ItemReferenceBasedNode newItemReferenceNode) throws OperationException {
@@ -255,7 +255,7 @@ public abstract class AbstractNewResourceAction extends ProjectAction {
                       DtoUnmarshallerFactory dtoUnmarshallerFactory,
                       DialogFactory dialogFactory,
                       CoreLocalizationConstant coreLocalizationConstant,
-                      ResourceNodeManager resourceNodeManager) {
+                      NodeManager nodeManager) {
         this.projectExplorer = projectExplorer;
         this.editorAgent = editorAgent;
         this.projectServiceClient = projectServiceClient;
@@ -265,7 +265,7 @@ public abstract class AbstractNewResourceAction extends ProjectAction {
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.dialogFactory = dialogFactory;
         this.coreLocalizationConstant = coreLocalizationConstant;
-        this.resourceNodeManager = resourceNodeManager;
+        this.nodeManager = nodeManager;
     }
 
     private class FileNameValidator implements InputValidator {

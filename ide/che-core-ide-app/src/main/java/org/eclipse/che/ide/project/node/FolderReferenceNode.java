@@ -31,15 +31,15 @@ public class FolderReferenceNode extends ItemReferenceBasedNode {
                                @Assisted ProjectDescriptor projectDescriptor,
                                @Assisted NodeSettings nodeSettings,
                                @Nonnull EventBus eventBus,
-                               @Nonnull ResourceNodeManager resourceNodeManager,
+                               @Nonnull NodeManager nodeManager,
                                @Nonnull ItemReferenceProcessor resourceProcessor) {
-        super(itemReference, projectDescriptor, nodeSettings, eventBus, resourceNodeManager, resourceProcessor);
+        super(itemReference, projectDescriptor, nodeSettings, eventBus, nodeManager, resourceProcessor);
     }
 
     @Override
     public void updatePresentation(@Nonnull NodePresentation presentation) {
         presentation.setPresentableText(getData().getName());
-        presentation.setPresentableIcon(resourceNodeManager.getNodesResources().simpleRoot());
+        presentation.setPresentableIcon(nodeManager.getNodesResources().simpleRoot());
     }
 
     @Override

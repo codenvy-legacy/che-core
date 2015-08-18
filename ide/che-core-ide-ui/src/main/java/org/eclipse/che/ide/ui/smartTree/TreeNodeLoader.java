@@ -10,30 +10,28 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ui.smartTree;
 
+import com.google.common.collect.Sets;
 import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.event.shared.SimpleEventBus;
 
-import org.eclipse.che.api.promises.client.Function;
-import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
-import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.PromiseError;
-import org.eclipse.che.api.promises.client.js.Promises;
+import org.eclipse.che.ide.api.project.node.Node;
+import org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor;
 import org.eclipse.che.ide.ui.smartTree.event.BeforeLoadEvent;
 import org.eclipse.che.ide.ui.smartTree.event.CancellableEvent;
 import org.eclipse.che.ide.ui.smartTree.event.LoadEvent;
 import org.eclipse.che.ide.ui.smartTree.event.LoadExceptionEvent;
-import org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor;
-import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.ui.smartTree.event.LoaderHandler;
-import org.eclipse.che.ide.util.loging.Log;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -82,6 +80,12 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
         public void onLoad(LoadEvent event) {
             Node parent = event.getRequestedNode();
             tree.getView().onLoadChange(tree.findNode(parent), false);
+
+            //remove joint element if non-leaf node doesn't have any children
+            if (!parent.isLeaf() && event.getReceivedNodes().isEmpty()) {
+                tree.getView().onJointChange(tree.findNode(parent), Tree.Joint.NONE);
+            }
+
             tree.getNodeStorage().replaceChildren(parent, event.getReceivedNodes());
         }
 
@@ -105,7 +109,13 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
      *         set of {@link org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor}
      */
     public TreeNodeLoader(@Nullable Set<NodeInterceptor> nodeInterceptors) {
-        this.nodeInterceptors = nodeInterceptors;
+        this.nodeInterceptors = Sets.newTreeSet(new Comparator<NodeInterceptor>() {
+            @Override
+            public int compare(NodeInterceptor o1, NodeInterceptor o2) {
+                return o1.weightOrder().compareTo(o2.weightOrder());
+            }
+        });
+        this.nodeInterceptors.addAll(nodeInterceptors);
     }
 
     /**
@@ -164,14 +174,9 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
      * @return instance of {@link org.eclipse.che.api.promises.client.Operation} which contains promise with loaded children
      */
     @Nonnull
-    private Operation<List<Node>> onLoadSuccess(@Nonnull final Node parent) {
-        return new Operation<List<Node>>() {
-            @Override
-            public void apply(List<Node> children) throws OperationException {
-                childRequested.remove(parent);
-                fireEvent(new LoadEvent(parent, children));
-            }
-        };
+    private void onLoadSuccess(@Nonnull final Node parent, List<Node> children) {
+        childRequested.remove(parent);
+        fireEvent(new LoadEvent(parent, children));
     }
 
     /**
@@ -182,13 +187,12 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
      *         parent node
      * @return true if load was requested, otherwise false
      */
-    private boolean _load(@Nonnull Node parent) {
+    private boolean _load(@Nonnull final Node parent) {
         if (fireEvent(new BeforeLoadEvent(parent))) {
             lastRequest = parent;
 
             parent.getChildren(!useCaching)
-                  .thenPromise(interceptChildren(parent))
-                  .then(onLoadSuccess(parent))
+                  .then(interceptChildren(parent))
                   .catchError(onLoadFailure(parent));
             return true;
         }
@@ -232,32 +236,34 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
      * @return instance of {@link org.eclipse.che.api.promises.client.Function} with promise that contains list of intercepted children
      */
     @Nonnull
-    private Function<List<Node>, Promise<List<Node>>> interceptChildren(@Nonnull final Node parent) {
-        return new Function<List<Node>, Promise<List<Node>>>() {
+    private Operation<List<Node>> interceptChildren(@Nonnull final Node parent) {
+        return new Operation<List<Node>>() {
             @Override
-            public Promise<List<Node>> apply(List<Node> children) throws FunctionException {
+            public void apply(List<Node> children) throws OperationException {
                 if (nodeInterceptors.isEmpty()) {
-                    return Promises.resolve(children);
+                    onLoadSuccess(parent, children);
                 }
 
-                Promise<List<Node>> internalPromise = null;
-
-                for (final NodeInterceptor interceptor : nodeInterceptors) {
-                    if (internalPromise == null) {
-                        internalPromise = interceptor.intercept(parent, children);
-                    } else {
-                        internalPromise.thenPromise(new Function<List<Node>, Promise<List<Node>>>() {
-                            @Override
-                            public Promise<List<Node>> apply(List<Node> arg) throws FunctionException {
-                                return interceptor.intercept(parent, arg);
-                            }
-                        });
-                    }
-                }
-
-                return internalPromise;
+                iterate(new LinkedList<>(nodeInterceptors), parent, children);
             }
         };
+    }
+
+    private void iterate(final LinkedList<NodeInterceptor> deque, final Node parent, final List<Node> children) {
+        if (deque.isEmpty()) {
+            onLoadSuccess(parent, children);
+            return;
+        }
+
+
+        NodeInterceptor interceptor = deque.poll();
+
+        interceptor.intercept(parent, children).then(new Operation<List<Node>>() {
+            @Override
+            public void apply(List<Node> arg) throws OperationException {
+                iterate(deque, parent, arg);
+            }
+        });
     }
 
     /** {@inheritDoc} */

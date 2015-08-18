@@ -11,6 +11,7 @@
 package org.eclipse.che.ide.api.project.node.interceptor;
 
 import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.ide.api.project.node.HasAction;
 import org.eclipse.che.ide.api.project.node.Node;
 
 import java.util.List;
@@ -36,4 +37,6 @@ public interface NodeInterceptor {
      * @return intercepted and/or transformed children
      */
     Promise<List<Node>> intercept(Node parent, List<Node> children);
+
+    Integer weightOrder(); //TODO temporary solution, we need to order interceptors
 }

@@ -37,7 +37,6 @@ public class DocumentStorageImpl implements DocumentStorage {
 
     @Override
     public void getDocument(@Nonnull final VirtualFile file, @Nonnull final EmbeddedDocumentCallback callback) {
-        Log.error(this.getClass(), "VirtualFile requested: " + file);
         file.getContent().then(new Operation<String>() {
             @Override
             public void apply(String result) throws OperationException {

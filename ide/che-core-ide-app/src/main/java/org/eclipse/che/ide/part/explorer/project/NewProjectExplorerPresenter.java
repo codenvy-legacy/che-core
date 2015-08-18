@@ -22,6 +22,8 @@ import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.ProjectActionHandler;
+import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
+import org.eclipse.che.ide.api.event.RefreshProjectTreeHandler;
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.parts.HasView;
 import org.eclipse.che.ide.api.parts.base.BasePresenter;
@@ -35,9 +37,8 @@ import org.eclipse.che.ide.project.event.ResourceNodeEvent;
 import org.eclipse.che.ide.project.event.ResourceNodeEvent.Event;
 import org.eclipse.che.ide.project.event.ResourceNodeEvent.ResourceNodeHandler;
 import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
-import org.eclipse.che.ide.project.node.ResourceNodeManager;
+import org.eclipse.che.ide.project.node.NodeManager;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
-import org.eclipse.che.ide.util.loging.Log;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -59,17 +60,17 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
 
     private final NewProjectExplorerView view;
     private final EventBus               eventBus;
-    private final ResourceNodeManager resourceNodeManager;
-    private final AppContext appContext;
+    private final NodeManager            nodeManager;
+    private final AppContext             appContext;
 
     @Inject
     public NewProjectExplorerPresenter(final NewProjectExplorerView view,
                                        final EventBus eventBus,
-                                       final ResourceNodeManager resourceNodeManager,
+                                       final NodeManager nodeManager,
                                        final AppContext appContext) {
         this.view = view;
         this.eventBus = eventBus;
-        this.resourceNodeManager = resourceNodeManager;
+        this.nodeManager = nodeManager;
         this.appContext = appContext;
 
         view.setDelegate(this);
@@ -81,11 +82,11 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
     public void onOpen() {
         super.onOpen();
         if (appContext.getCurrentProject() == null) {
-            resourceNodeManager.getProjects()
-                               .then(showProjectsList());
+            nodeManager.getProjects()
+                       .then(showProjectsList());
         } else {
             ProjectDescriptor rootProject = appContext.getCurrentProject().getRootProject();
-            ProjectDescriptorNode projectDescriptorNode = resourceNodeManager.wrap(rootProject);
+            ProjectDescriptorNode projectDescriptorNode = nodeManager.wrap(rootProject);
             view.setRootNode(projectDescriptorNode);
         }
     }
@@ -96,11 +97,11 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
             @Override
             public void onProjectPartLoad(ProjectPartLoadEvent event) {
                 if (appContext.getCurrentProject() == null) {
-                    resourceNodeManager.getProjects()
-                                       .then(showProjectsList());
+                    nodeManager.getProjects()
+                               .then(showProjectsList());
                 } else {
                     ProjectDescriptor rootProject = appContext.getCurrentProject().getRootProject();
-                    ProjectDescriptorNode projectDescriptorNode = resourceNodeManager.wrap(rootProject);
+                    ProjectDescriptorNode projectDescriptorNode = nodeManager.wrap(rootProject);
                     view.setRootNode(projectDescriptorNode);
                 }
             }
@@ -112,7 +113,7 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
             @Override
             public void onProjectOpened(ProjectActionEvent event) {
                 ProjectDescriptor projectDescriptor = event.getProject();
-                ProjectDescriptorNode projectDescriptorNode = resourceNodeManager.wrap(projectDescriptor);
+                ProjectDescriptorNode projectDescriptorNode = nodeManager.wrap(projectDescriptor);
                 view.setRootNode(projectDescriptorNode);
             }
 
@@ -125,8 +126,9 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
             /** {@inheritDoc} */
             @Override
             public void onProjectClosed(ProjectActionEvent event) {
-                resourceNodeManager.getProjects()
-                                   .then(showProjectsList());
+                view.resetGoIntoMode();
+                nodeManager.getProjects()
+                           .then(showProjectsList());
             }
         });
 
@@ -146,6 +148,13 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
                 } else if (event == RENAMED) {
                     //process renamed
                 }
+            }
+        });
+
+        eventBus.addHandler(RefreshProjectTreeEvent.TYPE, new RefreshProjectTreeHandler() {
+            @Override
+            public void onRefreshProjectTree(RefreshProjectTreeEvent event) {
+//                view.synchronizeTree();
             }
         });
     }
@@ -180,7 +189,7 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
     /** {@inheritDoc} */
     @Override
     public int getSize() {
-        return 230;
+        return 250;
     }
 
     /** {@inheritDoc} */
@@ -226,5 +235,9 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
 
     public void scrollFromSource(Object object) {
 
+    }
+
+    public void synchronizeTree() {
+        view.synchronizeTree();
     }
 }
