@@ -14,8 +14,6 @@ import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.parts.ConsolePart;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.commons.exception.ServerException;
 import org.eclipse.che.ide.debug.Breakpoint;
 import org.eclipse.che.ide.debug.BreakpointManager;
@@ -204,8 +202,8 @@ public class BreakpointManagerImpl implements BreakpointManager, LineChangeActio
 
     @Override
     @Deprecated
-    public Array<Breakpoint> getBreakpoints() {
-        return org.eclipse.che.ide.collections.Collections.createArray(getBreakpointList());
+    public List<Breakpoint> getBreakpoints() {
+        return getBreakpointList();
     }
 
     @Override
@@ -259,8 +257,8 @@ public class BreakpointManagerImpl implements BreakpointManager, LineChangeActio
     }
 
     private EditorPartPresenter getEditorForFile(VirtualFile fileNode) {
-        final StringMap<EditorPartPresenter> openedEditors = editorAgent.getOpenedEditors();
-        for (final String key : openedEditors.getKeys().asIterable()) {
+        final Map<String, EditorPartPresenter> openedEditors = editorAgent.getOpenedEditors();
+        for (final String key : openedEditors.keySet()) {
             final EditorPartPresenter editor = openedEditors.get(key);
             if (fileNode.getPath().equals(editor.getEditorInput().getFile().getPath())) {
                 return editor;

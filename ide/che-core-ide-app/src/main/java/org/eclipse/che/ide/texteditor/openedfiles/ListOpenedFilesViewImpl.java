@@ -13,7 +13,6 @@ package org.eclipse.che.ide.texteditor.openedfiles;
 import org.eclipse.che.ide.api.parts.PartStackUIResources;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
 
-import org.eclipse.che.ide.collections.Array;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
@@ -30,6 +29,8 @@ import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
+import java.util.List;
 
 /**
  * The implementation of {@link ListOpenedFilesView} view.
@@ -132,9 +133,9 @@ public class ListOpenedFilesViewImpl extends PopupPanel implements ListOpenedFil
 
     /** {@inheritDoc} */
     @Override
-    public void setOpenedFiles(Array<VirtualFile> files) {
+    public void setOpenedFiles(List<VirtualFile> files) {
         container.clear();
-        for (VirtualFile file : files.asIterable()) {
+        for (VirtualFile file : files) {
             FileItem fileItem = new FileItem(file);
             bindEvents(fileItem);
             container.add(fileItem);

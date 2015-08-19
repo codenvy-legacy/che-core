@@ -22,8 +22,6 @@ import org.eclipse.che.ide.api.text.BadPositionCategoryException;
 import org.eclipse.che.ide.api.text.Position;
 import org.eclipse.che.ide.api.text.TypedPosition;
 import org.eclipse.che.ide.api.text.annotation.Annotation;
-import org.eclipse.che.ide.collections.Collections;
-import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.jseditor.client.document.DocumentHandle;
 import org.eclipse.che.ide.jseditor.client.events.DocumentChangeEvent;
 import org.eclipse.che.ide.jseditor.client.partition.DocumentPositionMap;
@@ -54,8 +52,8 @@ public class AnnotationModelImpl implements AnnotationModel {
     private final DocumentPositionMap documentPositionMap;
 
     public AnnotationModelImpl(final DocumentPositionMap docPositionMap) {
-        this.annotations = new HashMap<Annotation, Position>(10);
-        this.positions = new IdentityHashMap<Position, Annotation>(10);
+        this.annotations = new HashMap<>(10);
+        this.positions = new IdentityHashMap<>(10);
         this.documentPositionMap = docPositionMap;
     }
 
@@ -233,13 +231,13 @@ public class AnnotationModelImpl implements AnnotationModel {
     }
 
     @Override
-    public StringMap<String> getAnnotationDecorations() {
-        return Collections.createStringMap();
+    public Map<String, String> getAnnotationDecorations() {
+        return new HashMap<>();
     }
 
     @Override
-    public StringMap<String> getAnnotationStyle() {
-        return Collections.createStringMap();
+    public Map<String, String> getAnnotationStyle() {
+        return new HashMap<>();
     }
 
     @Override

@@ -11,9 +11,9 @@
 package org.eclipse.che.ide.api.project.type;
 
 import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
-import org.eclipse.che.ide.collections.Array;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 
 /**
  * Registry for {@link org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor}s.
@@ -31,5 +31,5 @@ public interface ProjectTemplateRegistry {
 
     /** Get all {@link org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor}s for the specified {@code projectTypeId}. */
     @Nonnull
-    Array<ProjectTemplateDescriptor> getTemplateDescriptors(@Nonnull String projectTypeId);
+    List<ProjectTemplateDescriptor> getTemplateDescriptors(@Nonnull String projectTypeId);
 }

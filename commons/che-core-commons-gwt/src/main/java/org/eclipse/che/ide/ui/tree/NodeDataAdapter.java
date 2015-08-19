@@ -14,8 +14,10 @@
 
 package org.eclipse.che.ide.ui.tree;
 
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
+import java.util.ArrayList;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Simple adapter that allows the Tree to traverse (get the children of) some
@@ -35,12 +37,14 @@ import org.eclipse.che.ide.collections.Collections;
 public interface NodeDataAdapter<D> {
 
     static class PathUtils {
-        public static <D> Array<String> getNodePath(NodeDataAdapter<D> adapter, D data) {
-            Array<String> pathArray = Collections.createArray();
+        public static <D> List<String> getNodePath(NodeDataAdapter<D> adapter, D data) {
+            List<String> pathArray = new ArrayList<>();
             for (D node = data; adapter.getParent(node) != null; node = adapter.getParent(node)) {
                 pathArray.add(adapter.getNodeId(node));
             }
-            pathArray.reverse();
+
+            Collections.reverse(pathArray);
+
             return pathArray;
         }
     }
@@ -59,7 +63,7 @@ public interface NodeDataAdapter<D> {
     boolean hasChildren(D data);
 
     /** @return collection of child nodes */
-    Array<D> getChildren(D data);
+    List<D> getChildren(D data);
 
     /**
      * @return node ID that is unique within its peers in a given level in the
@@ -100,12 +104,12 @@ public interface NodeDataAdapter<D> {
      * Returns an array of Strings representing the node IDs walking from the root
      * of the tree to the specified node data.
      */
-    Array<String> getNodePath(D data);
+    List<String> getNodePath(D data);
 
     /**
      * Looks up a node underneath the specified root using the specified relative
      * path.
      */
-    D getNodeByPath(D root, Array<String> relativeNodePath);
+    D getNodeByPath(D root, List<String> relativeNodePath);
 
 }

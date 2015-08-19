@@ -25,7 +25,6 @@ import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper.RequestCall;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
@@ -182,16 +181,16 @@ public class MachineServiceClientImpl implements MachineServiceClient {
 
     @Override
     public Promise<List<MachineDescriptor>> getMachines(@Nullable final String projectPath) {
-        return newPromise(new RequestCall<Array<MachineDescriptor>>() {
+        return newPromise(new RequestCall<List<MachineDescriptor>>() {
             @Override
-            public void makeCall(AsyncCallback<Array<MachineDescriptor>> callback) {
+            public void makeCall(AsyncCallback<List<MachineDescriptor>> callback) {
                 getMachines(workspaceId, projectPath, callback);
             }
-        }).then(new Function<Array<MachineDescriptor>, List<MachineDescriptor>>() {
+        }).then(new Function<List<MachineDescriptor>, List<MachineDescriptor>>() {
             @Override
-            public List<MachineDescriptor> apply(Array<MachineDescriptor> arg) throws FunctionException {
+            public List<MachineDescriptor> apply(List<MachineDescriptor> arg) throws FunctionException {
                 final List<MachineDescriptor> descriptors = new ArrayList<>();
-                for (MachineDescriptor descriptor : arg.asIterable()) {
+                for (MachineDescriptor descriptor : arg) {
                     descriptors.add(descriptor);
                 }
                 return descriptors;
@@ -200,26 +199,26 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     }
 
     private void getMachines(@Nonnull String workspaceId, @Nullable String projectPath,
-                             @Nonnull AsyncCallback<Array<MachineDescriptor>> callback) {
+                             @Nonnull AsyncCallback<List<MachineDescriptor>> callback) {
         final String url = baseHttpUrl + "?workspace=" + workspaceId + (projectPath != null ? "&project=" + projectPath : "");
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
                            .loader(loader, "Getting info about bound machines...")
-                           .send(newCallback(callback, dtoUnmarshallerFactory.newArrayUnmarshaller(MachineDescriptor.class)));
+                           .send(newCallback(callback, dtoUnmarshallerFactory.newListUnmarshaller(MachineDescriptor.class)));
     }
 
     @Override
     public Promise<List<MachineStateDescriptor>> getMachinesStates(@Nullable final String projectPath) {
-        return newPromise(new RequestCall<Array<MachineStateDescriptor>>() {
+        return newPromise(new RequestCall<List<MachineStateDescriptor>>() {
             @Override
-            public void makeCall(AsyncCallback<Array<MachineStateDescriptor>> callback) {
+            public void makeCall(AsyncCallback<List<MachineStateDescriptor>> callback) {
                 getMachinesStates(workspaceId, projectPath, callback);
             }
-        }).then(new Function<Array<MachineStateDescriptor>, List<MachineStateDescriptor>>() {
+        }).then(new Function<List<MachineStateDescriptor>, List<MachineStateDescriptor>>() {
             @Override
-            public List<MachineStateDescriptor> apply(Array<MachineStateDescriptor> arg) throws FunctionException {
+            public List<MachineStateDescriptor> apply(List<MachineStateDescriptor> arg) throws FunctionException {
                 final List<MachineStateDescriptor> descriptors = new ArrayList<>();
-                for (MachineStateDescriptor descriptor : arg.asIterable()) {
+                for (MachineStateDescriptor descriptor : arg) {
                     descriptors.add(descriptor);
                 }
                 return descriptors;
@@ -228,12 +227,12 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     }
 
     private void getMachinesStates(@Nonnull String workspaceId, @Nullable String projectPath,
-                                   @Nonnull AsyncCallback<Array<MachineStateDescriptor>> callback) {
+                                   @Nonnull AsyncCallback<List<MachineStateDescriptor>> callback) {
         final String url = baseHttpUrl + "/state" + "?workspace=" + workspaceId + (projectPath != null ? "&project=" + projectPath : "");
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
                            .loader(loader, "Getting info about bound machines...")
-                           .send(newCallback(callback, dtoUnmarshallerFactory.newArrayUnmarshaller(MachineStateDescriptor.class)));
+                           .send(newCallback(callback, dtoUnmarshallerFactory.newListUnmarshaller(MachineStateDescriptor.class)));
     }
 
     @Override
@@ -280,20 +279,20 @@ public class MachineServiceClientImpl implements MachineServiceClient {
 
     @Override
     public Promise<List<ProcessDescriptor>> getProcesses(@Nonnull final String machineId) {
-        return newPromise(new RequestCall<Array<ProcessDescriptor>>() {
+        return newPromise(new RequestCall<List<ProcessDescriptor>>() {
             @Override
-            public void makeCall(AsyncCallback<Array<ProcessDescriptor>> callback) {
+            public void makeCall(AsyncCallback<List<ProcessDescriptor>> callback) {
                 final String url = baseHttpUrl + "/" + machineId + "/process";
                 asyncRequestFactory.createGetRequest(url)
                                    .header(ACCEPT, APPLICATION_JSON)
                                    .loader(loader, "Getting machine processes...")
-                                   .send(newCallback(callback, dtoUnmarshallerFactory.newArrayUnmarshaller(ProcessDescriptor.class)));
+                                   .send(newCallback(callback, dtoUnmarshallerFactory.newListUnmarshaller(ProcessDescriptor.class)));
             }
-        }).then(new Function<Array<ProcessDescriptor>, List<ProcessDescriptor>>() {
+        }).then(new Function<List<ProcessDescriptor>, List<ProcessDescriptor>>() {
             @Override
-            public List<ProcessDescriptor> apply(Array<ProcessDescriptor> arg) throws FunctionException {
+            public List<ProcessDescriptor> apply(List<ProcessDescriptor> arg) throws FunctionException {
                 final List<ProcessDescriptor> descriptors = new ArrayList<>();
-                for (ProcessDescriptor descriptor : arg.asIterable()) {
+                for (ProcessDescriptor descriptor : arg) {
                     descriptors.add(descriptor);
                 }
                 return descriptors;

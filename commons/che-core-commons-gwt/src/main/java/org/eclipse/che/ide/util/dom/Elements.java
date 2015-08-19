@@ -18,14 +18,35 @@ import elemental.client.Browser;
 import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.dom.Text;
-import elemental.html.*;
+import elemental.html.AnchorElement;
+import elemental.html.BRElement;
+import elemental.html.BodyElement;
+import elemental.html.ButtonElement;
+import elemental.html.CanvasElement;
+import elemental.html.DivElement;
+import elemental.html.FormElement;
+import elemental.html.HeadElement;
+import elemental.html.IFrameElement;
+import elemental.html.ImageElement;
+import elemental.html.InputElement;
+import elemental.html.LIElement;
+import elemental.html.ParagraphElement;
+import elemental.html.PreElement;
+import elemental.html.SpanElement;
+import elemental.html.TableCellElement;
+import elemental.html.TableElement;
+import elemental.html.TableRowElement;
+import elemental.html.TextAreaElement;
+import elemental.html.UListElement;
+import elemental.html.Window;
 import elemental.js.dom.JsElement;
 import elemental.ranges.Range;
 
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.util.StringUtils;
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
+
+import java.util.List;
 
 
 /** Simple utility class for shortening frequent calls to Elemental libraries. */
@@ -249,9 +270,9 @@ public class Elements {
     // TODO: Long term we need a markdown engine :)
     public static void markup(Element e, String text, String linkCssClass) {
         e.setInnerHTML("");
-        Array<String> paragraphs = StringUtils.split(text, "\n\n");
-        for (int i = 0; i < paragraphs.size(); i++) {
-            markupParagraph(e, paragraphs.get(i), linkCssClass);
+        List<String> paragraphs = StringUtils.split(text, "\n\n");
+        for (String paragraph : paragraphs) {
+            markupParagraph(e, paragraph, linkCssClass);
         }
     }
 

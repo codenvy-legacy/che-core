@@ -17,10 +17,10 @@ import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.action.Separator;
 import org.eclipse.che.ide.api.parts.PerspectiveManager;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.util.loging.Log;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 
 /**
  * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
@@ -35,7 +35,7 @@ public class Utils {
      *         manager
      */
     public static void expandActionGroup(@Nonnull ActionGroup group,
-                                         Array<Action> list,
+                                         List<Action> list,
                                          PresentationFactory presentationFactory,
                                          @Nonnull String place,
                                          ActionManager actionManager,
@@ -105,7 +105,7 @@ public class Utils {
      *         manager
      */
     public static void expandActionGroup(@Nonnull ActionGroup group,
-                                         Array<Action> list,
+                                         List<Action> list,
                                          PresentationFactory presentationFactory,
                                          String place,
                                          ActionManager actionManager,

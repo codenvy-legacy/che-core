@@ -14,8 +14,13 @@
 
 package org.eclipse.che.ide.util;
 
-import org.eclipse.che.ide.collections.js.JsoArray;
 import com.google.gwt.regexp.shared.RegExp;
+
+import org.eclipse.che.ide.collections.ListHelper;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * This is an import of the unicode character categories table. It can be used
@@ -408,7 +413,7 @@ public class UnicodeUtils {
         }
 
         public static CharacterClass concat(CharacterClass... characterClasses) {
-            String concatenatedClasses = from(characterClasses).join();
+            String concatenatedClasses = ListHelper.join(from(characterClasses), "");
             return new CharacterClass(concatenatedClasses);
         }
 
@@ -493,8 +498,8 @@ public class UnicodeUtils {
      */
     private static RegExp compile(CharacterClass... regexPattern) {
         //    String pattern = Joiner.on('|').join(regexPattern);
-        JsoArray<String> ss = from(regexPattern);
-        String pattern = ss.join("|");
+        List<String> ss = from(regexPattern);
+        String pattern = ListHelper.join(ss, "|");
         return RegExp.compile(pattern, "g");
     }
 
@@ -502,8 +507,8 @@ public class UnicodeUtils {
      * @param regexPattern
      * @return
      */
-    private static JsoArray<String> from(CharacterClass[] regexPattern) {
-        JsoArray<String> arr = JsoArray.create();
+    private static List<String> from(CharacterClass[] regexPattern) {
+        List<String> arr = new ArrayList<>();
         for (CharacterClass clazz : regexPattern) {
             arr.add(clazz.toString());
         }
@@ -512,8 +517,7 @@ public class UnicodeUtils {
 
     /** Joins multiple strings together. */
     private static String join(String... regex) {
-        JsoArray<String> ss = JsoArray.from(regex);
-        return ss.join();
-        //    return Joiner.on("").join(regex);
+        List<String> ss = Arrays.asList(regex);
+        return ListHelper.join(ss, "");
     }
 }

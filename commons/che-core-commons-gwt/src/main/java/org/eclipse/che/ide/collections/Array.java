@@ -15,6 +15,7 @@
 package org.eclipse.che.ide.collections;
 
 import java.util.Comparator;
+import java.util.List;
 
 /**
  * Defines a simple interface for a list/array.
@@ -80,4 +81,6 @@ public interface Array<T> {
     Array<T> splice(int index, int deleteCount, T value);
 
     Array<T> splice(int index, int deleteCount);
+
+    List<T> toList();
 }

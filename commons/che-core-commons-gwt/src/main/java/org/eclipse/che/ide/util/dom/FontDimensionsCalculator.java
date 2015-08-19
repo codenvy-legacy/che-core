@@ -17,13 +17,14 @@ package org.eclipse.che.ide.util.dom;
 import elemental.css.CSSStyleDeclaration;
 import elemental.dom.Element;
 
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.util.CssUtils;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /** A class that computes the height and width of a character. */
@@ -149,7 +150,7 @@ public class FontDimensionsCalculator {
 
     private int pollingDelay = 500;
 
-    private Array<Callback> callbacks = Collections.createArray();
+    private List<Callback> callbacks = new ArrayList<>();
 
     private final FontDimensionsImpl fontDimensions;
 

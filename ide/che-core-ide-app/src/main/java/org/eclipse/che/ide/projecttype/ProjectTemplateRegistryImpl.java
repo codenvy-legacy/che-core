@@ -12,11 +12,12 @@ package org.eclipse.che.ide.projecttype;
 
 import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
 import org.eclipse.che.ide.api.project.type.ProjectTemplateRegistry;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
-import org.eclipse.che.ide.collections.StringMap;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Implementation for {@link ProjectTemplateRegistry}.
@@ -24,29 +25,31 @@ import javax.annotation.Nonnull;
  * @author Artem Zatsarynnyy
  */
 public class ProjectTemplateRegistryImpl implements ProjectTemplateRegistry {
-    private final StringMap<Array<ProjectTemplateDescriptor>> templateDescriptors;
+    private final Map<String, List<ProjectTemplateDescriptor>> templateDescriptors;
 
     public ProjectTemplateRegistryImpl() {
-        templateDescriptors = Collections.createStringMap();
+        templateDescriptors = new HashMap<>();
     }
 
     @Override
     public void register(@Nonnull ProjectTemplateDescriptor descriptor) {
         final String projectTypeId = descriptor.getProjectType();
-        Array<ProjectTemplateDescriptor> templates = templateDescriptors.get(projectTypeId);
+        List<ProjectTemplateDescriptor> templates = templateDescriptors.get(projectTypeId);
         if (templates == null) {
-            templateDescriptors.put(projectTypeId, templates = Collections.createArray(descriptor));
+            templates = new ArrayList<>();
+            templates.add(descriptor);
+            templateDescriptors.put(projectTypeId, templates);
         }
         templates.add(descriptor);
     }
 
     @Nonnull
     @Override
-    public Array<ProjectTemplateDescriptor> getTemplateDescriptors(@Nonnull String projectTypeId) {
-        Array<ProjectTemplateDescriptor> templateDescriptors = this.templateDescriptors.get(projectTypeId);
+    public List<ProjectTemplateDescriptor> getTemplateDescriptors(@Nonnull String projectTypeId) {
+        List<ProjectTemplateDescriptor> templateDescriptors = this.templateDescriptors.get(projectTypeId);
         if (templateDescriptors != null) {
             return templateDescriptors;
         }
-        return Collections.createArray();
+        return new ArrayList<>();
     }
 }

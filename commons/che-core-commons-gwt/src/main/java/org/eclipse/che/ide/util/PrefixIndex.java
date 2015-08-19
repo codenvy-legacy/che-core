@@ -14,7 +14,7 @@
 
 package org.eclipse.che.ide.util;
 
-import org.eclipse.che.ide.collections.Array;
+import java.util.List;
 
 /**
  * Interface of the index structure which supports search by the key prefix.
@@ -30,5 +30,5 @@ public interface PrefixIndex<T> {
      *         search key prefix
      * @return values having keys prefixed with {@code prefix}
      */
-    Array<? extends T> search(String prefix);
+    List<? extends T> search(String prefix);
 }

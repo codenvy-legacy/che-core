@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.reconciler;
 
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Queue used by {@link ReconcilerWithAutoSave} to manage dirty regions. When a dirty region is inserted into the queue, the queue tries to fold it
@@ -20,7 +20,7 @@ import org.eclipse.che.ide.collections.Collections;
 class DirtyRegionQueue {
 
     /** The list of dirty regions. */
-    private final Array<DirtyRegion> fDirtyRegions = Collections.createArray();
+    private final List<DirtyRegion> fDirtyRegions = new ArrayList<>();
 
     /** Creates a new empty dirty region. */
     public DirtyRegionQueue() {
@@ -29,7 +29,7 @@ class DirtyRegionQueue {
 
     /**
      * Adds a dirty region to the end of the dirty-region queue.
-     * 
+     *
      * @param dr the dirty region to add
      */
     public void addDirtyRegion(DirtyRegion dr) {

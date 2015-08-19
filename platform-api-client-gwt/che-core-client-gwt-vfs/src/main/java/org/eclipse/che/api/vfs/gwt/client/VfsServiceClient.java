@@ -12,10 +12,10 @@ package org.eclipse.che.api.vfs.gwt.client;
 
 import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.api.vfs.shared.dto.ReplacementSet;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 
 /**
  * GWT Client for VFS Service.
@@ -25,9 +25,8 @@ import javax.annotation.Nonnull;
  */
 public interface VfsServiceClient {
     public void replaceInCurrentWorkspace(@Nonnull String projectPath,
-                                          Array<ReplacementSet> replacementSets,
+                                          List<ReplacementSet> replacementSets,
                                           AsyncRequestCallback<Void> callback);
 
-    public void getItemByPath(@Nonnull String path,
-                              AsyncRequestCallback<Item> callback);
+    public void getItemByPath(@Nonnull String path, AsyncRequestCallback<Item> callback);
 }

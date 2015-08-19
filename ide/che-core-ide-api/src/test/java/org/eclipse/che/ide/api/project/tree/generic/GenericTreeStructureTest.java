@@ -16,8 +16,6 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.java.JsonArrayListAdapter;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -97,7 +95,7 @@ public class GenericTreeStructureTest {
     @Mock
     private ProjectDescriptor                 projectDescriptor;
     @Mock
-    private AsyncCallback<Array<TreeNode<?>>> callback;
+    private AsyncCallback<List<TreeNode<?>>> callback;
 
     //mocks for tree
     @Mock
@@ -235,10 +233,10 @@ public class GenericTreeStructureTest {
         when(jspNode.getChildren()).thenReturn(getListTreeNode(messageJspNode, registrationJspNode, someHtmlNode));
     }
 
-    private Array<TreeNode<?>> getListTreeNode(TreeNode<?>... rootNodes) {
+    private List<TreeNode<?>> getListTreeNode(TreeNode<?>... rootNodes) {
         List<TreeNode<?>> nodeList = new ArrayList<>();
         addAll(nodeList, rootNodes);
-        return new JsonArrayListAdapter<>(nodeList);
+        return nodeList;
     }
 
     @Test
@@ -284,7 +282,7 @@ public class GenericTreeStructureTest {
         verify(appContext).getCurrentProject();
         verify(currentProject).getRootProject();
         verify(nodeFactory).newProjectNode(null, projectDescriptor, treeStructure);
-        verify(callback).onSuccess(Matchers.<Array<TreeNode<?>>>anyObject());
+        verify(callback).onSuccess(Matchers.<List<TreeNode<?>>>anyObject());
     }
 
     @Test
@@ -296,7 +294,7 @@ public class GenericTreeStructureTest {
         verify(currentProject).getRootProject();
         verify(nodeFactory).newProjectNode(null, projectDescriptor, treeStructure);
 
-        verify(callback, times(2)).onSuccess(Matchers.<Array<TreeNode<?>>>anyObject());
+        verify(callback, times(2)).onSuccess(Matchers.<List<TreeNode<?>>>anyObject());
     }
 
     @Test

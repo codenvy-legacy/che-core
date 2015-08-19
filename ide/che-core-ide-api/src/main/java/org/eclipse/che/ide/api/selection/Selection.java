@@ -15,9 +15,6 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
-
 /**
  * This class contains a single selected object or the bulk of selected objects.
  * Selection can contain any type of Objects and any number of them.
@@ -59,27 +56,6 @@ public class Selection<T> {
         } else {
             this.elements = java.util.Collections.singletonList(item);
             this.head = item;
-        }
-    }
-
-    /**
-     * Creates a MultiSelection, with the list of objects. <br/>
-     * Please note, if list contains zero elements, Selection is considered as empty,
-     * if single element placed in the list, the Selection is considered as SingleSelection.
-     *
-     * @param list
-     */
-    @Deprecated
-    public Selection(final Array<T> list) {
-        if (list == null || list.isEmpty()) {
-            this.elements = java.util.Collections.emptyList();
-            this.head = null;
-        } else {
-            this.elements = new ArrayList<>();
-            for (final T item : list.asIterable()) {
-                this.elements.add(item);
-            }
-            this.head = this.elements.get(0);
         }
     }
 
@@ -138,8 +114,8 @@ public class Selection<T> {
      * @deprecated use {@link #getAllElements()}
      */
     @Deprecated
-    public Array<T> getAll() {
-        final Array<T> copy = Collections.createArray();
+    public List<T> getAll() {
+        final List<T> copy = new ArrayList<>();
         for (final T item : this.elements) {
             copy.add(item);
         }

@@ -14,7 +14,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.eclipse.che.ide.api.texteditor.outline.OutlineModel;
-import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.jseditor.client.annotation.AnnotationModel;
 import org.eclipse.che.ide.jseditor.client.changeintercept.ChangeInterceptorProvider;
 import org.eclipse.che.ide.jseditor.client.codeassist.CodeAssistProcessor;
@@ -23,6 +22,8 @@ import org.eclipse.che.ide.jseditor.client.quickfix.QuickAssistProcessor;
 import org.eclipse.che.ide.jseditor.client.reconciler.Reconciler;
 import org.eclipse.che.ide.jseditor.client.formatter.ContentFormatter;
 import org.eclipse.che.ide.jseditor.client.partition.DocumentPositionMap;
+
+import java.util.Map;
 
 /**
  * Configure extended functions of the editor.
@@ -58,7 +59,7 @@ public interface TextEditorConfiguration {
      * @return the code assist processors
      */
     @Nullable
-    public StringMap<CodeAssistProcessor> getContentAssistantProcessors();
+    public Map<String, CodeAssistProcessor> getContentAssistantProcessors();
 
     /**
      * Returns the reconciler.

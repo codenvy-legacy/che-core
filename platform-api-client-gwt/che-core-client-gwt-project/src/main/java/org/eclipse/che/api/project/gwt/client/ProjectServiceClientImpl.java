@@ -26,7 +26,6 @@ import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.api.project.shared.dto.ProjectUpdate;
 import org.eclipse.che.api.project.shared.dto.TreeElement;
 import org.eclipse.che.ide.MimeType;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
@@ -108,7 +107,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void getProjects(AsyncRequestCallback<Array<ProjectReference>> callback) {
+    public void getProjects(AsyncRequestCallback<List<ProjectReference>> callback) {
         asyncRequestFactory.createGetRequest(getBasePath() + "?machineId=" + DevMachine.devMachineId)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loader, "Getting projects...")
@@ -116,7 +115,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void getProjectsInSpecificWorkspace(String wsId, AsyncRequestCallback<Array<ProjectReference>> callback) {
+    public void getProjectsInSpecificWorkspace(String wsId, AsyncRequestCallback<List<ProjectReference>> callback) {
         final String requestUrl = PROJECTS_IN_SPECIFIC_WORKSPACE + "/" + wsId + "?machineId=" + DevMachine.devMachineId;
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
@@ -175,7 +174,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void getModules(String path, AsyncRequestCallback<Array<ProjectDescriptor>> callback) {
+    public void getModules(String path, AsyncRequestCallback<List<ProjectDescriptor>> callback) {
         final String requestUrl = getBasePath() + "/modules" + normalizePath(path)+ "?machineId=" + DevMachine.devMachineId;
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
@@ -333,7 +332,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void getChildren(String path, AsyncRequestCallback<Array<ItemReference>> callback) {
+    public void getChildren(String path, AsyncRequestCallback<List<ItemReference>> callback) {
         final String requestUrl = getBasePath() + "/children" + normalizePath(path) + "?machineId=" + DevMachine.devMachineId;
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
@@ -349,7 +348,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void search(QueryExpression expression, AsyncRequestCallback<Array<ItemReference>> callback) {
+    public void search(QueryExpression expression, AsyncRequestCallback<List<ItemReference>> callback) {
         final String requestUrl = SEARCH + normalizePath(expression.getPath());
 
         StringBuilder queryParameters = new StringBuilder();

@@ -12,13 +12,14 @@ package org.eclipse.che.ide.theme;
 
 import org.eclipse.che.ide.api.theme.Theme;
 import org.eclipse.che.ide.api.theme.ThemeAgent;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
-import org.eclipse.che.ide.collections.StringMap;
 import com.google.gwt.storage.client.Storage;
 import com.google.inject.Inject;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -30,7 +31,7 @@ public class ThemeAgentImpl implements ThemeAgent {
 
     public static final String THEME_STORAGE = "codenvy-theme";
 
-    private StringMap<Theme> themes = Collections.createStringMap();
+    private Map<String, Theme> themes = new HashMap<>();
 
     private final Theme defaultTheme;
 
@@ -63,8 +64,8 @@ public class ThemeAgentImpl implements ThemeAgent {
     }
 
     @Override
-    public Array<Theme> getThemes() {
-        return themes.getValues();
+    public List<Theme> getThemes() {
+        return new ArrayList<>(themes.values());
     }
 
     @Override
