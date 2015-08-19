@@ -47,7 +47,7 @@ import java.util.regex.Pattern;
  * <li>Initializes Guice Injector</li>
  * <li>Automatically binds all the subclasses of com.google.inject.Module annotated with &#064DynaModule</li>
  * <li>Loads configuration from .properties and .xml files located in <i>/WEB-INF/classes/conf</i> directory</li>
- * <li>Overrides it with external configuration located in directory pointed by <i>CODENVY_LOCAL_CONF_DIR</i> env variable (if any)</li>
+ * <li>Overrides it with external configuration located in directory pointed by <i>CHE_LOCAL_CONF_DIR</i> env variable (if any)</li>
  * <li>Binds all environment variables (visible as prefixed with "env.") and system properties (visible as prefixed with "sys.")</li>
  * <li>Thanks to Everrest integration injects all the properly annotated (see Everrest docs) REST Resources. Providers and ExceptionMappers
  * and inject necessary dependencies</li>
@@ -129,7 +129,7 @@ public class CodenvyBootstrap extends EverrestGuiceContextListener {
 
     /**
      * ConfigurationModule binding environment variables, system properties and configuration in directory pointed by
-     * <i>CODENVY_LOCAL_CONF_DIR</i> Env variable.
+     * <i>CHE_LOCAL_CONF_DIR</i> Env variable.
      */
     static class ExtConfiguration extends AbstractConfigurationModule {
         @Override
@@ -138,7 +138,7 @@ public class CodenvyBootstrap extends EverrestGuiceContextListener {
             bindProperties("env.", System.getenv());
             // binds system properties visible as prefixed with "sys."
             bindProperties("sys.", System.getProperties());
-            String extConfig = System.getenv("CODENVY_LOCAL_CONF_DIR");
+            String extConfig = System.getenv("CHE_LOCAL_CONF_DIR");
             if (extConfig != null) {
                 bindConf(new File(extConfig));
             }
