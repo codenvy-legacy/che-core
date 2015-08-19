@@ -188,41 +188,38 @@ public class EditorAgentImpl implements EditorAgent {
     }
 
     private void doOpen(final VirtualFile file, final OpenEditorCallback callback) {
-        if (openedEditors.containsKey(file.getPath())) {
-            workspace.setActivePart(openedEditors.get(file.getPath()), EDITING);
-            String filePath = file.getPath();
-            if (openedEditors.containsKey(filePath)) {
-                workspace.setActivePart(openedEditors.get(filePath));
-            } else {
-                FileType fileType = fileTypeRegistry.getFileTypeByFile(file);
-                EditorProvider editorProvider = editorRegistry.getEditor(fileType);
-                final EditorPartPresenter editor = editorProvider.getEditor();
-                try {
-                    editor.init(new EditorInputImpl(fileType, file));
-                    editor.addCloseHandler(editorClosed);
-                } catch (EditorInitException e) {
-                    Log.error(getClass(), e);
-                }
-                workspace.openPart(editor, EDITING);
-                openedEditors.put(file.getPath(), editor);
-
-                workspace.setActivePart(editor);
-                editor.addPropertyListener(new PropertyListener() {
-                    @Override
-                    public void propertyChanged(PartPresenter source, int propId) {
-                        if (propId == EditorPartPresenter.PROP_INPUT) {
-                            if (editor instanceof HasReadOnlyProperty) {
-                                ((HasReadOnlyProperty)editor).setReadOnly(file.isReadOnly());
-                            }
-                            if (callback != null) {
-                                callback.onEditorOpened(editor);
-                            }
-                        }
-
-                    }
-                });
-
+        final String filePath = file.getPath();
+        if (openedEditors.containsKey(filePath)) {
+            workspace.setActivePart(openedEditors.get(filePath), EDITING);
+        } else {
+            FileType fileType = fileTypeRegistry.getFileTypeByFile(file);
+            EditorProvider editorProvider = editorRegistry.getEditor(fileType);
+            final EditorPartPresenter editor = editorProvider.getEditor();
+            try {
+                editor.init(new EditorInputImpl(fileType, file));
+                editor.addCloseHandler(editorClosed);
+            } catch (EditorInitException e) {
+                Log.error(getClass(), e);
             }
+            workspace.openPart(editor, EDITING);
+            openedEditors.put(filePath, editor);
+
+            workspace.setActivePart(editor);
+            editor.addPropertyListener(new PropertyListener() {
+                @Override
+                public void propertyChanged(PartPresenter source, int propId) {
+                    if (propId == EditorPartPresenter.PROP_INPUT) {
+                        if (editor instanceof HasReadOnlyProperty) {
+                            ((HasReadOnlyProperty)editor).setReadOnly(file.isReadOnly());
+                        }
+                        if (callback != null) {
+                            callback.onEditorOpened(editor);
+                        }
+                    }
+
+                }
+            });
+
         }
     }
 
