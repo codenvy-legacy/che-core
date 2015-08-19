@@ -15,7 +15,6 @@ import org.eclipse.che.api.builder.dto.BuildTaskDescriptor;
 import org.eclipse.che.api.builder.dto.BuilderDescriptor;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.ide.MimeType;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
@@ -25,6 +24,8 @@ import org.eclipse.che.ide.rest.RestContext;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+
+import java.util.List;
 
 /**
  * Implementation of {@link BuilderServiceClient} service.
@@ -101,7 +102,7 @@ public class BuilderServiceClientImpl implements BuilderServiceClient {
 
     /** {@inheritDoc} */
     @Override
-    public void getRegisteredServers(AsyncRequestCallback<Array<BuilderDescriptor>> callback) {
+    public void getRegisteredServers(AsyncRequestCallback<List<BuilderDescriptor>> callback) {
         final String requestUrl = baseUrl + "/builders";
         asyncRequestFactory.createGetRequest(requestUrl).loader(loader)
                            .header(HTTPHeader.CONTENT_TYPE, MimeType.APPLICATION_JSON)

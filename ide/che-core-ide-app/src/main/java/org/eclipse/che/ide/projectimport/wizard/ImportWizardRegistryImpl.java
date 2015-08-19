@@ -12,13 +12,13 @@ package org.eclipse.che.ide.projectimport.wizard;
 
 import org.eclipse.che.ide.api.project.wizard.ImportWizardRegistrar;
 import org.eclipse.che.ide.api.project.wizard.ImportWizardRegistry;
-import org.eclipse.che.ide.collections.Collections;
-import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.util.loging.Log;
 import com.google.inject.Inject;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -27,10 +27,10 @@ import java.util.Set;
  * @author Artem Zatsarynnyy
  */
 public class ImportWizardRegistryImpl implements ImportWizardRegistry {
-    private final StringMap<ImportWizardRegistrar> registrars;
+    private final Map<String, ImportWizardRegistrar> registrars;
 
     public ImportWizardRegistryImpl() {
-        registrars = Collections.createStringMap();
+        registrars = new HashMap<>();
     }
 
     @Inject(optional = true)

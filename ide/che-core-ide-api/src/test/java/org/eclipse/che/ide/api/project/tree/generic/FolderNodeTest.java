@@ -13,8 +13,6 @@ package org.eclipse.che.ide.api.project.tree.generic;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.test.GwtReflectionUtils;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -28,6 +26,9 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -49,9 +50,9 @@ public class FolderNodeTest extends BaseNodeTest {
     private static final String ITEM_PATH = "/project/folder/folder_name";
     private static final String ITEM_NAME = "folder_name";
     @Captor
-    private ArgumentCaptor<AsyncRequestCallback<Array<ItemReference>>> asyncRequestCallbackCaptor;
+    private ArgumentCaptor<AsyncRequestCallback<List<ItemReference>>> asyncRequestCallbackCaptor;
     @Captor
-    private ArgumentCaptor<Array<ItemReference>>                       arrayCaptor;
+    private ArgumentCaptor<List<ItemReference>>                       ListCaptor;
     @Mock
     private ItemReference                                              itemReference;
     @Mock
@@ -68,7 +69,7 @@ public class FolderNodeTest extends BaseNodeTest {
         when(itemReference.getPath()).thenReturn(ITEM_PATH);
         when(itemReference.getName()).thenReturn(ITEM_NAME);
 
-        final Array<TreeNode<?>> children = Collections.createArray();
+        final List<TreeNode<?>> children = new ArrayList<>();
         when(projectNode.getChildren()).thenReturn(children);
     }
 
@@ -218,7 +219,7 @@ public class FolderNodeTest extends BaseNodeTest {
 
         String path = "path";
         AsyncCallback asyncCallback = mock(AsyncCallback.class);
-        Array<ItemReference> children = Collections.createArray();
+        List<ItemReference> children = new ArrayList<>();
 
         ItemReference item = mock(ItemReference.class);
         when(item.getName()).thenReturn("item");
@@ -231,15 +232,15 @@ public class FolderNodeTest extends BaseNodeTest {
         folderNode.getChildren(path, asyncCallback);
 
         verify(projectServiceClient).getChildren(eq(path), asyncRequestCallbackCaptor.capture());
-        AsyncRequestCallback<Array<ItemReference>> requestCallback = asyncRequestCallbackCaptor.getValue();
+        AsyncRequestCallback<List<ItemReference>> requestCallback = asyncRequestCallbackCaptor.getValue();
         GwtReflectionUtils.callOnSuccess(requestCallback, children);
 
-        verify(asyncCallback).onSuccess(arrayCaptor.capture());
+        verify(asyncCallback).onSuccess(ListCaptor.capture());
 
-        Array<ItemReference> array = arrayCaptor.getValue();
-        assertEquals(children.size(), array.size());
-        assertTrue(array.contains(item));
-        assertTrue(array.contains(hiddenItem));
+        List<ItemReference> list = ListCaptor.getValue();
+        assertEquals(children.size(), list.size());
+        assertTrue(list.contains(item));
+        assertTrue(list.contains(hiddenItem));
     }
 
     @Test
@@ -248,7 +249,7 @@ public class FolderNodeTest extends BaseNodeTest {
 
         String path = "path";
         AsyncCallback asyncCallback = mock(AsyncCallback.class);
-        Array<ItemReference> children = Collections.createArray();
+        List<ItemReference> children = new ArrayList<>();
 
         ItemReference item = mock(ItemReference.class);
         when(item.getName()).thenReturn("item");
@@ -261,15 +262,15 @@ public class FolderNodeTest extends BaseNodeTest {
         folderNode.getChildren(path, asyncCallback);
 
         verify(projectServiceClient).getChildren(eq(path), asyncRequestCallbackCaptor.capture());
-        AsyncRequestCallback<Array<ItemReference>> requestCallback = asyncRequestCallbackCaptor.getValue();
+        AsyncRequestCallback<List<ItemReference>> requestCallback = asyncRequestCallbackCaptor.getValue();
         GwtReflectionUtils.callOnSuccess(requestCallback, children);
 
-        verify(asyncCallback).onSuccess(arrayCaptor.capture());
+        verify(asyncCallback).onSuccess(ListCaptor.capture());
 
-        Array<ItemReference> array = arrayCaptor.getValue();
-        assertEquals(1, array.size());
-        assertTrue(array.contains(item));
-        assertFalse(array.contains(hiddenItem));
+        List<ItemReference> list = ListCaptor.getValue();
+        assertEquals(1, list.size());
+        assertTrue(list.contains(item));
+        assertFalse(list.contains(hiddenItem));
     }
 
     @Test
@@ -280,7 +281,7 @@ public class FolderNodeTest extends BaseNodeTest {
         folderNode.getChildren(path, asyncCallback);
 
         verify(projectServiceClient).getChildren(eq(path), asyncRequestCallbackCaptor.capture());
-        AsyncRequestCallback<Array<ItemReference>> requestCallback = asyncRequestCallbackCaptor.getValue();
+        AsyncRequestCallback<List<ItemReference>> requestCallback = asyncRequestCallbackCaptor.getValue();
         GwtReflectionUtils.callOnFailure(requestCallback, mock(Throwable.class));
 
         verify(asyncCallback).onFailure(Matchers.<Throwable>anyObject());

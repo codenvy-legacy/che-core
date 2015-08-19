@@ -10,13 +10,13 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.notification;
 
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.json.JsonHelper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import static org.eclipse.che.ide.api.notification.Notification.State.READ;
 import static org.eclipse.che.ide.api.notification.Notification.State.UNREAD;
@@ -72,17 +72,17 @@ public final class Notification {
         READ, UNREAD
     }
 
-    private static int                         counter;
-    private        int                         id;
-    private        String                      message;
-    private        Type                        type;
-    private        Status                      status;
-    private        State                       state;
-    private        Date                        time;
-    private        boolean                     important;
-    private        OpenNotificationHandler     openHandler;
-    private        CloseNotificationHandler    closeHandler;
-    private        Array<NotificationObserver> observers;
+    private static int                        counter;
+    private        int                        id;
+    private        String                     message;
+    private        Type                       type;
+    private        Status                     status;
+    private        State                      state;
+    private        Date                       time;
+    private        boolean                    important;
+    private        OpenNotificationHandler    openHandler;
+    private        CloseNotificationHandler   closeHandler;
+    private        List<NotificationObserver> observers;
 
     /**
      * Create notification with message and type. Other parameters will be added with default values. This notification has got an unread
@@ -458,7 +458,7 @@ public final class Notification {
         this.important = important;
         this.openHandler = openHandler;
         this.closeHandler = closeHandler;
-        this.observers = Collections.createArray();
+        this.observers = new ArrayList<>();
         id = counter++;
     }
 
@@ -675,7 +675,7 @@ public final class Notification {
 
     /** Notify observes. */
     public void notifyObservers() {
-        for (NotificationObserver observer : observers.asIterable()) {
+        for (NotificationObserver observer : observers) {
             observer.onValueChanged();
         }
     }

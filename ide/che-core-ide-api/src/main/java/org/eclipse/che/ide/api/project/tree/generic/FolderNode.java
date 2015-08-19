@@ -14,8 +14,6 @@ import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.ide.api.project.tree.AbstractTreeNode;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.Unmarshallable;
@@ -26,6 +24,8 @@ import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A node that represents a folder (an {@link ItemReference} with type - folder or project).
@@ -53,9 +53,9 @@ public class FolderNode extends ItemNode {
     /** {@inheritDoc} */
     @Override
     public void refreshChildren(final AsyncCallback<TreeNode<?>> callback) {
-        getChildren(getPath(), new AsyncCallback<Array<ItemReference>>() {
+        getChildren(getPath(), new AsyncCallback<List<ItemReference>>() {
             @Override
-            public void onSuccess(Array<ItemReference> childItems) {
+            public void onSuccess(List<ItemReference> childItems) {
                 setChildren(getChildNodesForItems(childItems));
                 callback.onSuccess(FolderNode.this);
             }
@@ -67,10 +67,10 @@ public class FolderNode extends ItemNode {
         });
     }
 
-    private Array<TreeNode<?>> getChildNodesForItems(Array<ItemReference> childItems) {
-        Array<TreeNode<?>> oldChildren = Collections.createArray(getChildren().asIterable());
-        Array<TreeNode<?>> newChildren = Collections.createArray();
-        for (ItemReference item : childItems.asIterable()) {
+    private List<TreeNode<?>> getChildNodesForItems(List<ItemReference> childItems) {
+        List<TreeNode<?>> oldChildren = getChildren();
+        List<TreeNode<?>> newChildren = new ArrayList<>();
+        for (ItemReference item : childItems) {
             final AbstractTreeNode node = createChildNode(item);
             if (node != null) {
                 if (oldChildren.contains(node)) {
@@ -94,14 +94,14 @@ public class FolderNode extends ItemNode {
      * @param callback
      *         callback to return retrieved children
      */
-    protected void getChildren(String path, final AsyncCallback<Array<ItemReference>> callback) {
-        final Array<ItemReference> children = Collections.createArray();
-        final Unmarshallable<Array<ItemReference>> unmarshaller = dtoUnmarshallerFactory.newArrayUnmarshaller(ItemReference.class);
-        projectServiceClient.getChildren(path, new AsyncRequestCallback<Array<ItemReference>>(unmarshaller) {
+    protected void getChildren(String path, final AsyncCallback<List<ItemReference>> callback) {
+        final List<ItemReference> children = new ArrayList<>();
+        final Unmarshallable<List<ItemReference>> unmarshaller = dtoUnmarshallerFactory.newListUnmarshaller(ItemReference.class);
+        projectServiceClient.getChildren(path, new AsyncRequestCallback<List<ItemReference>>(unmarshaller) {
             @Override
-            protected void onSuccess(Array<ItemReference> result) {
+            protected void onSuccess(List<ItemReference> result) {
                 final boolean isShowHiddenItems = getTreeStructure().getSettings().isShowHiddenItems();
-                for (ItemReference item : result.asIterable()) {
+                for (ItemReference item : result) {
                     if (!isShowHiddenItems && item.getName().startsWith(".")) {
                         continue;
                     }

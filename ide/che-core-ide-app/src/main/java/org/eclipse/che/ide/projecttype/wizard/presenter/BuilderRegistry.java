@@ -13,9 +13,6 @@ package org.eclipse.che.ide.projecttype.wizard.presenter;
 import org.eclipse.che.api.builder.dto.BuilderDescriptor;
 import org.eclipse.che.api.builder.dto.BuilderEnvironment;
 import org.eclipse.che.api.builder.gwt.client.BuilderServiceClient;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
-import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.json.JsonHelper;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
@@ -25,6 +22,9 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import javax.annotation.Nonnull;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Helps to get name of the builder's default environment by builder name.
@@ -33,17 +33,17 @@ import javax.annotation.Nonnull;
  */
 @Singleton
 class BuilderRegistry {
-    private final StringMap<String> environments;
+    private final Map<String, String> environments;
 
     @Inject
     BuilderRegistry(BuilderServiceClient builderServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory) {
-        environments = Collections.createStringMap();
+        environments = new HashMap<>();
 
-        final Unmarshallable<Array<BuilderDescriptor>> unmarshaller = dtoUnmarshallerFactory.newArrayUnmarshaller(BuilderDescriptor.class);
-        builderServiceClient.getRegisteredServers(new AsyncRequestCallback<Array<BuilderDescriptor>>(unmarshaller) {
+        final Unmarshallable<List<BuilderDescriptor>> unmarshaller = dtoUnmarshallerFactory.newListUnmarshaller(BuilderDescriptor.class);
+        builderServiceClient.getRegisteredServers(new AsyncRequestCallback<List<BuilderDescriptor>>(unmarshaller) {
             @Override
-            protected void onSuccess(Array<BuilderDescriptor> result) {
-                for (BuilderDescriptor builderDescriptor : result.asIterable()) {
+            protected void onSuccess(List<BuilderDescriptor> result) {
+                for (BuilderDescriptor builderDescriptor : result) {
                     for (BuilderEnvironment environment : builderDescriptor.getEnvironments().values()) {
                         if (environment.getIsDefault()) {
                             environments.put(builderDescriptor.getName(), environment.getDisplayName());

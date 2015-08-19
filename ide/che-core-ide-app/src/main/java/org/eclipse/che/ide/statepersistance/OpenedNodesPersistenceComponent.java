@@ -19,7 +19,6 @@ import org.eclipse.che.ide.actions.OpenNodeAction;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerView;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 
@@ -52,7 +51,7 @@ public class OpenedNodesPersistenceComponent implements PersistenceComponent {
 
     @Override
     public List<ActionDescriptor> getActions(String projectPath) {
-        Array<TreeNode<?>> openedNodes = projectExplorerView.getOpenedTreeNodes();
+        List<TreeNode<?>> openedNodes = projectExplorerView.getOpenedTreeNodes();
         final List<ActionDescriptor> actions = new ArrayList<>();
 
         if (openedNodes == null || openedNodes.isEmpty()) {
@@ -61,7 +60,7 @@ public class OpenedNodesPersistenceComponent implements PersistenceComponent {
 
         String actionId = actionManager.getId(openNodeAction);
 
-        for (TreeNode<?> openedNode: openedNodes.asIterable()) {
+        for (TreeNode<?> openedNode: openedNodes) {
             if (openedNode instanceof StorableNode && !(openedNode instanceof FileNode)) {
                 String relNodePath = ((StorableNode)openedNode).getPath();
 

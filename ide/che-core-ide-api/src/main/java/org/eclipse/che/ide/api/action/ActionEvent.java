@@ -10,12 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.action;
 
-import org.eclipse.che.ide.collections.Collections;
-import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.util.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -26,8 +25,8 @@ import java.util.Map;
  * @see Action#update(ActionEvent)
  */
 public class ActionEvent {
-    private static final String            ourInjectedPrefix = "$injected$.";
-    private static final StringMap<String> ourInjectedIds    = Collections.createStringMap();
+    private static final String              ourInjectedPrefix = "$injected$.";
+    private static final Map<String, String> ourInjectedIds    = new HashMap<>();
     private final ActionManager       myActionManager;
     private final String              myPlace;
     private final Presentation        myPresentation;

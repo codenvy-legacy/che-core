@@ -13,8 +13,6 @@ package org.eclipse.che.ide.part.editor;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.parts.PartStackUIResources;
 import org.eclipse.che.ide.api.parts.PartStackView;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.part.FocusManager;
 import org.eclipse.che.ide.util.loging.Log;
 import com.google.gwt.core.client.GWT;
@@ -44,6 +42,7 @@ import com.google.inject.Inject;
 
 import org.vectomatic.dom.svg.ui.SVGImage;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.google.gwt.user.client.ui.InsertPanel.ForIsWidget;
@@ -71,7 +70,7 @@ public class EditorPartStackView extends ResizeComposite implements PartStackVie
     private HandlerRegistration focusRequestHandlerRegistration;
 
     // list of tabs
-    private final Array<TabButton> tabs = Collections.createArray();
+    private final List<TabButton> tabs = new ArrayList<>();
 
     @UiField
     DockLayoutPanel parent;

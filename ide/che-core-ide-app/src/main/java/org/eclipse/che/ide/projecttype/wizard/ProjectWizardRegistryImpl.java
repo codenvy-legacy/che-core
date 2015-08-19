@@ -12,13 +12,13 @@ package org.eclipse.che.ide.projecttype.wizard;
 
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistrar;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistry;
-import org.eclipse.che.ide.collections.Collections;
-import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.util.loging.Log;
 import com.google.inject.Inject;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -28,10 +28,10 @@ import java.util.Set;
  */
 public class ProjectWizardRegistryImpl implements ProjectWizardRegistry {
     private static final String DEFAULT_CATEGORY = "Other";
-    private final StringMap<ProjectWizardRegistrar> registrars;
+    private final Map<String, ProjectWizardRegistrar> registrars;
 
     public ProjectWizardRegistryImpl() {
-        registrars = Collections.createStringMap();
+        registrars = new HashMap<>();
     }
 
     @Inject(optional = true)

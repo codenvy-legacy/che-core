@@ -11,7 +11,8 @@
 package org.eclipse.che.ide.api.filetypes;
 
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
-import org.eclipse.che.ide.collections.Array;
+
+import java.util.List;
 
 /**
  * Registry allows to register new {@link FileType} and get the registered one.
@@ -28,11 +29,11 @@ public interface FileTypeRegistry {
     void registerFileType(FileType fileType);
 
     /**
-     * Returns the {@link Array} of all registered file types.
+     * Returns the {@link List} of all registered file types.
      *
-     * @return {@link Array} of all registered file types
+     * @return {@link List} of all registered file types
      */
-    Array<FileType> getRegisteredFileTypes();
+    List<FileType> getRegisteredFileTypes();
 
     /**
      * Returns the file type of the specified file.

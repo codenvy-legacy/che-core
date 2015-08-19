@@ -12,9 +12,9 @@ package org.eclipse.che.ide.texteditor.openedfiles;
 
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
-import org.eclipse.che.ide.collections.Array;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 
 /**
  * View for displaying all opened files of the editor.
@@ -27,7 +27,7 @@ public interface ListOpenedFilesView extends View<ListOpenedFilesView.ActionDele
      *
      * @param files
      */
-    void setOpenedFiles(@Nonnull Array<VirtualFile> files);
+    void setOpenedFiles(@Nonnull List<VirtualFile> files);
 
     /** Close dialog. */
     void close();

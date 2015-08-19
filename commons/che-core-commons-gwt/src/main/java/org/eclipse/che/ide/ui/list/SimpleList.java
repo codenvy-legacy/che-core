@@ -19,8 +19,6 @@ import elemental.events.EventListener;
 import elemental.dom.Element;
 import elemental.js.dom.JsElement;
 
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.mvp.UiComponent;
 import org.eclipse.che.ide.ui.ElementView;
 import org.eclipse.che.ide.util.CssUtils;
@@ -34,6 +32,7 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Widget;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -198,7 +197,7 @@ public class SimpleList<M> extends UiComponent<SimpleList.View> implements IsWid
 
         private final ListEventDelegate<M> delegate;
 
-        private final Array<ListItem<M>> listItems = Collections.createArray();
+        private final List<ListItem<M>> listItems = new ArrayList<>();
 
         private int selectedIndex;
 
@@ -367,17 +366,7 @@ public class SimpleList<M> extends UiComponent<SimpleList.View> implements IsWid
         return model.listItems.size();
     }
 
-    /**
-     * Refreshes list of items.
-     * <p/>
-     * <p>This method tries to keep selection.
-     */
     public void render(List<M> items) {
-        render(Collections.createArray(items));
-    }
-
-
-    public void render(Array<M> items) {
         M selectedItem = model.getSelectedItem();
         model.clearSelection();
 

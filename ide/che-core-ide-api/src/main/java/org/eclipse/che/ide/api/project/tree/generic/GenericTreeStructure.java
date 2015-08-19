@@ -18,14 +18,14 @@ import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.project.tree.TreeStructure;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.api.project.tree.TreeSettings;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Serves as a 'generic' tree and as the factory for creating new tree nodes owned by that tree.
@@ -55,7 +55,7 @@ public class GenericTreeStructure implements TreeStructure {
 
     /** {@inheritDoc} */
     @Override
-    public void getRootNodes(@Nonnull AsyncCallback<Array<TreeNode<?>>> callback) {
+    public void getRootNodes(@Nonnull AsyncCallback<List<TreeNode<?>>> callback) {
         if (projectNode == null) {
             final CurrentProject currentProject = appContext.getCurrentProject();
             if (currentProject != null) {
@@ -65,7 +65,7 @@ public class GenericTreeStructure implements TreeStructure {
                 return;
             }
         }
-        callback.onSuccess(Collections.<TreeNode<?>>createArray(projectNode));
+        callback.onSuccess(Arrays.<TreeNode<?>>asList(projectNode));
     }
 
     @Nonnull
@@ -80,11 +80,11 @@ public class GenericTreeStructure implements TreeStructure {
 
     @Override
     public void getNodeByPath(@Nonnull final String path, @Nonnull final AsyncCallback<TreeNode<?>> callback) {
-        getRootNodes(new AsyncCallback<Array<TreeNode<?>>>() {
+        getRootNodes(new AsyncCallback<List<TreeNode<?>>>() {
             @Override
-            public void onSuccess(Array<TreeNode<?>> result) {
+            public void onSuccess(List<TreeNode<?>> result) {
                 ProjectNode project = null;
-                for (TreeNode<?> node : result.asIterable()) {
+                for (TreeNode<?> node : result) {
                     if (node instanceof ProjectNode) {
                         project = (ProjectNode)node;
                         break;
@@ -115,7 +115,7 @@ public class GenericTreeStructure implements TreeStructure {
         node.refreshChildren(new AsyncCallback<TreeNode<?>>() {
             @Override
             public void onSuccess(TreeNode<?> result) {
-                for (TreeNode<?> childNode : result.getChildren().asIterable()) {
+                for (TreeNode<?> childNode : result.getChildren()) {
                     if (path.startsWith(childNode.getId(), offset)) {
 
                         final int nextOffset = offset + childNode.getId().length() + 1;

@@ -18,14 +18,13 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.editor.EditorAgent;
+import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.project.tree.generic.FolderNode;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
 
-import org.eclipse.che.ide.collections.StringMap;
-import org.eclipse.che.ide.collections.java.JsonArrayListAdapter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,7 +33,8 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.ArrayList;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
@@ -164,13 +164,12 @@ public class UploadFolderFromZipPresenterTest {
     public void onSubmitCompleteWhenOverwriteFileSelected() {
         Selection select = mock(Selection.class);
         FolderNode item = mock(FolderNode.class);
-        StringMap openEditors = mock(StringMap.class);
+        NavigableMap<String, EditorPartPresenter> openEditors = new TreeMap<>();
         when(selectionAgent.getSelection()).thenReturn(select);
         when(select.getFirstElement()).thenReturn(item);
         when(view.isOverwriteFileSelected()).thenReturn(true);
         when(view.getFileName()).thenReturn("fileName");
         when(editorAgent.getOpenedEditors()).thenReturn(openEditors);
-        when(openEditors.getValues()).thenReturn(new JsonArrayListAdapter(new ArrayList()));
 
         presenter.onSubmitComplete("");
 

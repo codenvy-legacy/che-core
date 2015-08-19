@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.websocket.rest;
 
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.commons.exception.UnmarshallerException;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.rest.HTTPHeader;
@@ -22,6 +21,8 @@ import org.eclipse.che.ide.websocket.MessageBuilder;
 import org.eclipse.che.ide.websocket.rest.exceptions.ServerException;
 import org.eclipse.che.ide.websocket.rest.exceptions.UnauthorizedException;
 import com.google.gwt.http.client.Response;
+
+import java.util.List;
 
 
 /**
@@ -123,10 +124,9 @@ public abstract class RequestCallback<T> {
             successCodes = DEFAULT_SUCCESS_CODES;
         }
 
-        Array<Pair> headers = response.getHeaders();
+        List<Pair> headers = response.getHeaders().toList();
         if (headers != null) {
-            for (int i = 0; i < headers.size(); i++) {
-                Pair header = headers.get(i);
+            for (Pair header : headers) {
                 if (HTTPHeader.JAXRS_BODY_PROVIDED.equals(header.getName()) && "Authentication-required".equals(header.getValue())) {
                     return false;
                 }

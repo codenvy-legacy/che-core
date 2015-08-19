@@ -20,8 +20,6 @@ import org.eclipse.che.ide.api.parts.PartPresenter;
 import org.eclipse.che.ide.api.parts.PartStackView;
 import org.eclipse.che.ide.api.parts.PropertyListener;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 
 import org.eclipse.che.ide.texteditor.openedfiles.ListOpenedFilesPresenter;
 import org.eclipse.che.ide.part.PartStackPresenter;
@@ -35,6 +33,9 @@ import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * EditorPartStackPresenter is a special PartStackPresenter that is shared among all
@@ -216,7 +217,7 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
     /** {@inheritDoc} */
     @Override
     public void onShowListClicked(int x, int y, AsyncCallback<Void> callback) {
-        Array<VirtualFile> openedFiles = Collections.createArray();
+        List<VirtualFile> openedFiles = new ArrayList<>();
         for (PartPresenter part : getParts()) {
             if (part instanceof EditorPartPresenter) {
                 openedFiles.add(((EditorPartPresenter)part).getEditorInput().getFile());

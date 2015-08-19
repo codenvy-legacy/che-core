@@ -41,7 +41,6 @@ import org.eclipse.che.ide.api.texteditor.HasReadOnlyProperty;
 import org.eclipse.che.ide.api.texteditor.TextEditorOperations;
 import org.eclipse.che.ide.api.texteditor.UndoableEditor;
 import org.eclipse.che.ide.api.texteditor.outline.OutlineModel;
-import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.debug.BreakpointManager;
 import org.eclipse.che.ide.debug.BreakpointRenderer;
 import org.eclipse.che.ide.debug.HasBreakpointRenderer;
@@ -85,6 +84,7 @@ import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
 
@@ -735,7 +735,7 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
     @Override
     public boolean canDoOperation(final int operation) {
         if (TextEditorOperations.CODEASSIST_PROPOSALS == operation) {
-            StringMap<CodeAssistProcessor> contentAssistProcessors = getConfiguration().getContentAssistantProcessors();
+            Map<String, CodeAssistProcessor> contentAssistProcessors = getConfiguration().getContentAssistantProcessors();
             if (contentAssistProcessors != null && !contentAssistProcessors.isEmpty()) {
                 return true;
             }

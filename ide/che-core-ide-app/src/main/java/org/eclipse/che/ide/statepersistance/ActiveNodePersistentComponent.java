@@ -21,7 +21,6 @@ import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.api.project.tree.generic.FileNode;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerView;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
@@ -76,7 +75,7 @@ public class ActiveNodePersistentComponent implements PersistenceComponent {
             return actions;
         }
 
-        Array<TreeNode<?>> openedNodes = projectExplorerView.getOpenedTreeNodes();
+        List<TreeNode<?>> openedNodes = projectExplorerView.getOpenedTreeNodes();
 
         if (openedNodes != null && openedNodes.contains(parentNode)) {
             String path = virtualFile.getPath();

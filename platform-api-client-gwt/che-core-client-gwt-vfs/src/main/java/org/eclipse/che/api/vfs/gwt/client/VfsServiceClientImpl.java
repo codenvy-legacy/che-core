@@ -12,7 +12,6 @@ package org.eclipse.che.api.vfs.gwt.client;
 
 import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.api.vfs.shared.dto.ReplacementSet;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
@@ -23,6 +22,8 @@ import com.google.inject.name.Named;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
+
+import java.util.List;
 
 import static org.eclipse.che.ide.MimeType.APPLICATION_JSON;
 import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
@@ -57,7 +58,7 @@ public class VfsServiceClientImpl implements VfsServiceClient {
 
     @Override
     public void replaceInCurrentWorkspace(@Nonnull String projectPath,
-                                          Array<ReplacementSet> replacementSets,
+                                          List<ReplacementSet> replacementSets,
                                           AsyncRequestCallback<Void> callback) {
         String path = FIND_REPLACE + normalizePath(projectPath);
 

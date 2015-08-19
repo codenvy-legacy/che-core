@@ -12,8 +12,9 @@ package org.eclipse.che.ide.navigation;
 
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.ide.api.mvp.View;
-import org.eclipse.che.ide.collections.Array;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+
+import java.util.List;
 
 /**
  * View for file navigation (find file by name and open it).
@@ -32,7 +33,7 @@ public interface NavigateToFileView extends View<NavigateToFileView.ActionDelega
          * @param callback
          *         callback
          */
-        void onRequestSuggestions(String query, AsyncCallback<Array<ItemReference>> callback);
+        void onRequestSuggestions(String query, AsyncCallback<List<ItemReference>> callback);
 
         /** Called when file selected. */
         void onFileSelected();

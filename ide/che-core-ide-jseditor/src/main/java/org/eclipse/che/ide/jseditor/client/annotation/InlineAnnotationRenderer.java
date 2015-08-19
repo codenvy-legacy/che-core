@@ -11,10 +11,10 @@
 package org.eclipse.che.ide.jseditor.client.annotation;
 
 import java.util.IdentityHashMap;
+import java.util.Map;
 
 import org.eclipse.che.ide.api.text.Position;
 import org.eclipse.che.ide.api.text.annotation.Annotation;
-import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.jseditor.client.document.Document;
 import org.eclipse.che.ide.jseditor.client.text.TextPosition;
 import org.eclipse.che.ide.jseditor.client.text.TextRange;
@@ -57,7 +57,7 @@ public class InlineAnnotationRenderer implements AnnotationModelHandler, ClearAn
 
         // add new and changed (new version) annotation
 
-        final StringMap<String> decorations = event.getAnnotationModel().getAnnotationDecorations();
+        final Map<String, String> decorations = event.getAnnotationModel().getAnnotationDecorations();
 
         for (final Annotation annotation : event.getAddedAnnotations()) {
             addAnnotationItem(event.getAnnotationModel(), annotation, decorations);
@@ -74,7 +74,7 @@ public class InlineAnnotationRenderer implements AnnotationModelHandler, ClearAn
      * @param annotation the annotation to add
      * @param decorations the available decorations
      */
-    private void addAnnotationItem(AnnotationModel annotationModel, Annotation annotation, StringMap<String> decorations) {
+    private void addAnnotationItem(AnnotationModel annotationModel, Annotation annotation, Map<String, String> decorations) {
         if (this.hasTextMarkers != null) {
             final String className = decorations.get(annotation.getType());
             if (className == null) {

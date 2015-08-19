@@ -41,11 +41,12 @@ import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.action.Separator;
 import org.eclipse.che.ide.api.action.ToggleAction;
 import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.util.input.KeyMapUtil;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * PopupMenu is visual component represents all known Popup Menu.
@@ -95,7 +96,7 @@ public class PopupMenu extends Composite {
      * This is debug feature.
      */
     private String              itemIdPrefix;
-    private Array<Action>       list;
+    private List<Action>        list;
 
     private Timer openSubPopupTimer = new Timer() {
         @Override
@@ -137,7 +138,7 @@ public class PopupMenu extends Composite {
         this.keyBindingAgent = keyBindingAgent;
         this.itemIdPrefix = itemIdPrefix;
 
-        list = Collections.createArray();
+        list = new ArrayList<>();
         Utils.expandActionGroup(actionGroup, list, presentationFactory, place, actionManager);
 
         this.lockLayer = lockLayer;

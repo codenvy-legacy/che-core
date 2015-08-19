@@ -14,10 +14,10 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.parts.base.BaseActionDelegate;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.ui.tree.SelectionModel;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 
 /**
  * Interface of project tree view.
@@ -32,7 +32,7 @@ public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDele
      * @param rootNodes
      *         root nodes to set
      */
-    void setRootNodes(@Nonnull Array<TreeNode<?>> rootNodes);
+    void setRootNodes(@Nonnull List<TreeNode<?>> rootNodes);
 
     /**
      * Updates the specified node.
@@ -84,9 +84,9 @@ public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDele
 
     /** Returns the currently selected nodes. */
     @Nonnull
-    Array<TreeNode<?>> getSelectedNodes();
+    List<TreeNode<?>> getSelectedNodes();
 
-    Array<TreeNode<?>> getOpenedTreeNodes();
+    List<TreeNode<?>> getOpenedTreeNodes();
 
     /**
      * Delegates view actions to its presenter.

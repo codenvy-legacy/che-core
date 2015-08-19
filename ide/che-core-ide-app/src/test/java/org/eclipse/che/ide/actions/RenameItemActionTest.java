@@ -21,7 +21,6 @@ import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.part.projectexplorer.ProjectListStructure;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
@@ -43,7 +42,9 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -63,8 +64,8 @@ import static org.eclipse.che.api.runner.ApplicationStatus.RUNNING;
 @RunWith(MockitoJUnitRunner.class)
 public class RenameItemActionTest {
 
-    private static final String TEXT          = "some text";
-    private static final String STOP_RUN      = "stop running process";
+    private static final String TEXT     = "some text";
+    private static final String STOP_RUN = "stop running process";
 
     //mocks for constructor
     @Mock
@@ -85,36 +86,36 @@ public class RenameItemActionTest {
     private AppContext               appContext;
 
     @Mock
-    private Selection<StorableNode>                             selection;
+    private Selection<StorableNode>                            selection;
     @Mock
-    private StorableNode                                        selectedNode;
+    private StorableNode                                       selectedNode;
     @Mock
-    private TreeNode                                            selectedParent;
+    private TreeNode                                           selectedParent;
     @Mock
-    private TreeNode                                            treeNode;
+    private TreeNode                                           treeNode;
     @Mock
-    private ActionEvent                                         e;
+    private ActionEvent                                        e;
     @Mock
-    private MessageDialog                                       messageDialog;
+    private MessageDialog                                      messageDialog;
     @Mock
-    private Unmarshallable<Array<ApplicationProcessDescriptor>> unmarshaller;
+    private Unmarshallable<List<ApplicationProcessDescriptor>> unmarshaller;
     @Mock
-    private Array<ApplicationProcessDescriptor>                 descriptors;
+    private List<ApplicationProcessDescriptor>                 descriptors;
     @Mock
-    private Iterable<ApplicationProcessDescriptor>              iterable;
+    private Iterable<ApplicationProcessDescriptor>             iterable;
     @Mock
-    private Iterator<ApplicationProcessDescriptor>              iterator;
+    private Iterator<ApplicationProcessDescriptor>             iterator;
     @Mock
-    private ApplicationProcessDescriptor                        applicationProcessDescriptor;
+    private ApplicationProcessDescriptor                       applicationProcessDescriptor;
     @Mock
-    private ProjectListStructure.ProjectNode                    projectNode;
+    private ProjectListStructure.ProjectNode                   projectNode;
     @Mock
-    private InputDialog                                         inputDialog;
+    private InputDialog                                        inputDialog;
 
     @Captor
     private ArgumentCaptor<InputCallback>                                             inputCallbackArgCaptor;
     @Captor
-    private ArgumentCaptor<AsyncRequestCallback<Array<ApplicationProcessDescriptor>>> processDescriptorArgCaptor;
+    private ArgumentCaptor<AsyncRequestCallback<List<ApplicationProcessDescriptor>>> processDescriptorArgCaptor;
 
     @InjectMocks
     private RenameItemAction renameItemAction;
@@ -140,15 +141,15 @@ public class RenameItemActionTest {
                                              inputCallbackArgCaptor.capture(),
                                              isNull(CancelCallback.class))).thenReturn(inputDialog);
 
-        when(dtoUnmarshallerFactory.newArrayUnmarshaller(ApplicationProcessDescriptor.class)).thenReturn(unmarshaller);
+        when(dtoUnmarshallerFactory.newListUnmarshaller(ApplicationProcessDescriptor.class)).thenReturn(unmarshaller);
 
         when(selection.getHeadElement()).thenReturn(projectNode);
         when(projectNode.getParent()).thenReturn(treeNode);
         when(projectNode.getPath()).thenReturn(TEXT);
         when(projectNode.getName()).thenReturn(TEXT);
 
-        when(descriptors.asIterable()).thenReturn(iterable);
-
+        descriptors = new ArrayList<>();
+        descriptors.add(applicationProcessDescriptor);
         when(iterable.iterator()).thenReturn(iterator);
         when(iterator.hasNext()).thenReturn(true).thenReturn(false);
         when(iterator.next()).thenReturn(applicationProcessDescriptor);
@@ -227,14 +228,13 @@ public class RenameItemActionTest {
         verify(selection).getHeadElement();
         verify(projectNode).getParent();
 
-        verify(dtoUnmarshallerFactory).newArrayUnmarshaller(ApplicationProcessDescriptor.class);
+        verify(dtoUnmarshallerFactory).newListUnmarshaller(ApplicationProcessDescriptor.class);
         verify(runnerServiceClient).getRunningProcesses(eq(TEXT), processDescriptorArgCaptor.capture());
-        AsyncRequestCallback<Array<ApplicationProcessDescriptor>> callback = processDescriptorArgCaptor.getValue();
+        AsyncRequestCallback<List<ApplicationProcessDescriptor>> callback = processDescriptorArgCaptor.getValue();
         Method method = callback.getClass().getDeclaredMethod("onSuccess", Object.class);
         method.setAccessible(true);
         method.invoke(callback, descriptors);
 
-        verify(descriptors).asIterable();
         verify(applicationProcessDescriptor).getStatus();
         verify(localization).stopProcessesBeforeRenamingProject();
         verify(dialogFactory).createMessageDialog("", STOP_RUN, null);
@@ -252,14 +252,13 @@ public class RenameItemActionTest {
         verify(selection).getHeadElement();
         verify(projectNode).getParent();
 
-        verify(dtoUnmarshallerFactory).newArrayUnmarshaller(ApplicationProcessDescriptor.class);
+        verify(dtoUnmarshallerFactory).newListUnmarshaller(ApplicationProcessDescriptor.class);
         verify(runnerServiceClient).getRunningProcesses(eq(TEXT), processDescriptorArgCaptor.capture());
-        AsyncRequestCallback<Array<ApplicationProcessDescriptor>> callback = processDescriptorArgCaptor.getValue();
+        AsyncRequestCallback<List<ApplicationProcessDescriptor>> callback = processDescriptorArgCaptor.getValue();
         Method method = callback.getClass().getDeclaredMethod("onSuccess", Object.class);
         method.setAccessible(true);
         method.invoke(callback, descriptors);
 
-        verify(descriptors).asIterable();
         verify(applicationProcessDescriptor, times(2)).getStatus();
         verify(localization).stopProcessesBeforeRenamingProject();
         verify(dialogFactory).createMessageDialog("", STOP_RUN, null);
@@ -275,14 +274,13 @@ public class RenameItemActionTest {
         verify(selection).getHeadElement();
         verify(projectNode).getParent();
 
-        verify(dtoUnmarshallerFactory).newArrayUnmarshaller(ApplicationProcessDescriptor.class);
+        verify(dtoUnmarshallerFactory).newListUnmarshaller(ApplicationProcessDescriptor.class);
         verify(runnerServiceClient).getRunningProcesses(eq(TEXT), processDescriptorArgCaptor.capture());
-        AsyncRequestCallback<Array<ApplicationProcessDescriptor>> callback = processDescriptorArgCaptor.getValue();
+        AsyncRequestCallback<List<ApplicationProcessDescriptor>> callback = processDescriptorArgCaptor.getValue();
         Method method = callback.getClass().getDeclaredMethod("onSuccess", Object.class);
         method.setAccessible(true);
         method.invoke(callback, descriptors);
 
-        verify(descriptors).asIterable();
         verify(applicationProcessDescriptor, times(2)).getStatus();
 
         verify(projectNode, times(3)).getName();

@@ -15,7 +15,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.ui.window.Window;
 import org.eclipse.che.ide.util.loging.Log;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -153,12 +152,12 @@ public class NavigateToFileViewImpl extends Window implements NavigateToFileView
 
         @Override
         public void requestSuggestions(final Request request, final Callback callback) {
-            delegate.onRequestSuggestions(request.getQuery(), new AsyncCallback<Array<ItemReference>>() {
+            delegate.onRequestSuggestions(request.getQuery(), new AsyncCallback<List<ItemReference>>() {
                 /** {@inheritDoc} */
                 @Override
-                public void onSuccess(Array<ItemReference> result) {
+                public void onSuccess(List<ItemReference> result) {
                     final List<SuggestOracle.Suggestion> suggestions = new ArrayList<>(result.size());
-                    for (final ItemReference item : result.asIterable()) {
+                    for (final ItemReference item : result) {
                         suggestions.add(new SuggestOracle.Suggestion() {
                             @Override
                             public String getDisplayString() {
