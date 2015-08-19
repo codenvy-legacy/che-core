@@ -10,13 +10,15 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.wizard;
 
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 import com.google.inject.Inject;
+
+import org.eclipse.che.ide.collections.ListHelper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,11 +28,11 @@ import java.util.Map;
  * @author Artem Zatsarynnyy
  */
 public abstract class AbstractWizard<T> implements Wizard<T> {
-    protected final T                    dataObject;
-    protected final Map<String, String>  context;
-    protected final Array<WizardPage<T>> wizardPages;
-    private         UpdateDelegate       delegate;
-    private         int                  currentPageIndex;
+    protected final T                   dataObject;
+    protected final Map<String, String> context;
+    protected List<WizardPage<T>>       wizardPages;
+    private         UpdateDelegate      delegate;
+    private         int                 currentPageIndex;
 
     /**
      * Creates new wizard with the specified {@code dataObject} which will be passed into every added page.
@@ -45,7 +47,7 @@ public abstract class AbstractWizard<T> implements Wizard<T> {
     public AbstractWizard(T dataObject) {
         this.dataObject = dataObject;
         context = new HashMap<>();
-        wizardPages = Collections.createArray();
+        wizardPages = new ArrayList<>();
     }
 
     public Map<String, String> getContext() {
@@ -90,9 +92,9 @@ public abstract class AbstractWizard<T> implements Wizard<T> {
         if (replace) {
             setPage(page, index);
         } else {
-            Array<WizardPage<T>> before = wizardPages.slice(0, index);
+            List<WizardPage<T>> before = ListHelper.slice(wizardPages, 0, index);
             WizardPage<T> currentPage = wizardPages.get(index);
-            Array<WizardPage<T>> after = wizardPages.slice(index + 1, wizardPages.size());
+            List<WizardPage<T>> after = ListHelper.slice(wizardPages, index + 1, wizardPages.size());
 
             wizardPages.clear();
             wizardPages.addAll(before);
@@ -112,7 +114,7 @@ public abstract class AbstractWizard<T> implements Wizard<T> {
     @Override
     public void setUpdateDelegate(@Nonnull UpdateDelegate delegate) {
         this.delegate = delegate;
-        for (WizardPage<T> page : wizardPages.asIterable()) {
+        for (WizardPage<T> page : wizardPages) {
             page.setUpdateDelegate(delegate);
         }
     }
@@ -183,7 +185,7 @@ public abstract class AbstractWizard<T> implements Wizard<T> {
 
     @Override
     public boolean canComplete() {
-        for (WizardPage<T> page : wizardPages.asIterable()) {
+        for (WizardPage<T> page : wizardPages) {
             if (!page.isCompleted()) {
                 return false;
             }

@@ -11,8 +11,9 @@
 package org.eclipse.che.api.project.gwt.client;
 
 import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
+
+import java.util.List;
 
 /**
  * Client for Project Type service.
@@ -26,5 +27,5 @@ public interface ProjectTypeServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void getProjectTypes(AsyncRequestCallback<Array<ProjectTypeDefinition>> callback);
+    void getProjectTypes(AsyncRequestCallback<List<ProjectTypeDefinition>> callback);
 }

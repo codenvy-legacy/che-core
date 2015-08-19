@@ -13,12 +13,13 @@ package org.eclipse.che.ide.projectimport.zip;
 import org.eclipse.che.api.project.shared.dto.ImportProject;
 import org.eclipse.che.ide.api.project.wizard.ImportWizardRegistrar;
 import org.eclipse.che.ide.api.wizard.WizardPage;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
 import javax.annotation.Nonnull;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.eclipse.che.api.project.shared.Constants.ZIP_IMPORTER_ID;
 
@@ -28,11 +29,11 @@ import static org.eclipse.che.api.project.shared.Constants.ZIP_IMPORTER_ID;
  * @author Artem Zatsarynnyy
  */
 public class ZipImportWizardRegistrar implements ImportWizardRegistrar {
-    private final Array<Provider<? extends WizardPage<ImportProject>>> wizardPages;
+    private final List<Provider<? extends WizardPage<ImportProject>>> wizardPages;
 
     @Inject
     public ZipImportWizardRegistrar(Provider<ZipImporterPagePresenter> provider) {
-        wizardPages = Collections.createArray();
+        wizardPages = new ArrayList<>();
         wizardPages.add(provider);
     }
 
@@ -42,7 +43,7 @@ public class ZipImportWizardRegistrar implements ImportWizardRegistrar {
     }
 
     @Nonnull
-    public Array<Provider<? extends WizardPage<ImportProject>>> getWizardPages() {
+    public List<Provider<? extends WizardPage<ImportProject>>> getWizardPages() {
         return wizardPages;
     }
 }

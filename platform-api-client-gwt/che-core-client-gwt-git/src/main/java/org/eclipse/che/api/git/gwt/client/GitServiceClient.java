@@ -25,7 +25,6 @@ import org.eclipse.che.api.git.shared.Revision;
 import org.eclipse.che.api.git.shared.Status;
 import org.eclipse.che.api.git.shared.StatusFormat;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.websocket.WebSocketException;
 import org.eclipse.che.ide.websocket.rest.RequestCallback;
@@ -95,7 +94,7 @@ public interface GitServiceClient {
      * @param callback
      */
     void branchList(@Nonnull ProjectDescriptor project, @Nullable String mode,
-                    @Nonnull AsyncRequestCallback<Array<Branch>> callback);
+                    @Nonnull AsyncRequestCallback<List<Branch>> callback);
 
     /**
      * Delete branch.
@@ -171,7 +170,7 @@ public interface GitServiceClient {
      * @param callback
      */
     void remoteList(@Nonnull ProjectDescriptor project, @Nullable String remoteName, boolean verbose,
-                    @Nonnull AsyncRequestCallback<Array<Remote>> callback);
+                    @Nonnull AsyncRequestCallback<List<Remote>> callback);
 
     /**
      * Adds remote repository to the list of remote repositories.

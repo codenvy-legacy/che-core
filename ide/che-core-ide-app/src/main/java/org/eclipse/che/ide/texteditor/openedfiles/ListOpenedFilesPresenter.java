@@ -13,13 +13,13 @@ package org.eclipse.che.ide.texteditor.openedfiles;
 import org.eclipse.che.ide.api.event.FileEvent;
 import org.eclipse.che.ide.api.event.FileEvent.FileOperation;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
-import org.eclipse.che.ide.collections.Array;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 
 /**
  * Presenter for listing opened files of the editor.
@@ -51,7 +51,7 @@ public class ListOpenedFilesPresenter implements ListOpenedFilesView.ActionDeleg
      *         y coordinate of the right top corner of the list view
      * @param callback
      */
-    public void showDialog(@Nonnull Array<VirtualFile> files, int x, int y, @Nonnull AsyncCallback<Void> callback) {
+    public void showDialog(@Nonnull List<VirtualFile> files, int x, int y, @Nonnull AsyncCallback<Void> callback) {
         this.callback = callback;
         view.setOpenedFiles(files);
         view.showDialog(x, y);

@@ -22,7 +22,6 @@ import org.eclipse.che.ide.api.project.tree.generic.FileNode;
 import org.eclipse.che.ide.api.project.tree.generic.FolderNode;
 import org.eclipse.che.ide.api.project.tree.generic.ProjectNode;
 import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.Unmarshallable;
@@ -167,14 +166,14 @@ public class DeleteNodeHandler {
      * @param callback callback returns true if project has any running processes and false - otherwise
      */
     private void checkRunningProcessesForProject(StorableNode projectNode, final AsyncCallback<Boolean> callback) {
-        Unmarshallable<Array<ApplicationProcessDescriptor>> unmarshaller =
-                dtoUnmarshallerFactory.newArrayUnmarshaller(ApplicationProcessDescriptor.class);
+        Unmarshallable<List<ApplicationProcessDescriptor>> unmarshaller =
+                dtoUnmarshallerFactory.newListUnmarshaller(ApplicationProcessDescriptor.class);
         runnerServiceClient.getRunningProcesses(projectNode.getPath(),
-                                                new AsyncRequestCallback<Array<ApplicationProcessDescriptor>>(unmarshaller) {
+                                                new AsyncRequestCallback<List<ApplicationProcessDescriptor>>(unmarshaller) {
                                                     @Override
-                                                    protected void onSuccess(Array<ApplicationProcessDescriptor> result) {
+                                                    protected void onSuccess(List<ApplicationProcessDescriptor> result) {
                                                         boolean hasRunningProcesses = false;
-                                                        for (ApplicationProcessDescriptor descriptor : result.asIterable()) {
+                                                        for (ApplicationProcessDescriptor descriptor : result) {
                                                             if (descriptor.getStatus() == NEW || descriptor.getStatus() == RUNNING) {
                                                                 hasRunningProcesses = true;
                                                                 break;

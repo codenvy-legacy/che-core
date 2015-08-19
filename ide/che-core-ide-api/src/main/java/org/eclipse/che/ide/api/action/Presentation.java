@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.action;
 
-import org.eclipse.che.ide.collections.Collections;
-import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.util.ListenerManager;
 import org.eclipse.che.ide.util.UIUtil;
 import com.google.gwt.resources.client.ImageResource;
@@ -20,6 +18,8 @@ import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The presentation of an action in a specific place in the user interface.
@@ -27,7 +27,7 @@ import javax.annotation.Nullable;
  * @author Evgen Vidolob
  */
 public final class Presentation {
-    private StringMap<Object> userMap;
+    private Map<String, Object> userMap;
     /**
      * Defines tool tip for button at tool bar or text for element at menu
      * value: String
@@ -249,7 +249,7 @@ public final class Presentation {
 
     public void putClientProperty(@Nonnull String key, @Nullable Object value) {
         if (userMap == null) {
-            userMap = Collections.createStringMap();
+            userMap = new HashMap<>();
         }
 
         Object oldValue = userMap.get(key);

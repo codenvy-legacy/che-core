@@ -14,8 +14,6 @@ import org.eclipse.che.api.project.shared.dto.RunnerEnvironment;
 import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentLeaf;
 import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentTree;
 import org.eclipse.che.api.runner.gwt.client.RunnerServiceClient;
-import org.eclipse.che.ide.collections.Collections;
-import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.json.JsonHelper;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
@@ -25,6 +23,8 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import javax.annotation.Nonnull;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Helps to get description of the runner by it's ID.
@@ -34,11 +34,11 @@ import javax.annotation.Nonnull;
 
 @Singleton
 class RunnersRegistry {
-    private final StringMap<String> descriptions;
+    private final Map<String, String> descriptions;
 
     @Inject
     RunnersRegistry(RunnerServiceClient runnerServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory) {
-        descriptions = Collections.createStringMap();
+        descriptions = new HashMap<>();
 
         final Unmarshallable<RunnerEnvironmentTree> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(RunnerEnvironmentTree.class);
         runnerServiceClient.getRunners(new AsyncRequestCallback<RunnerEnvironmentTree>(unmarshaller) {

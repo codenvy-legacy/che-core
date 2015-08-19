@@ -16,7 +16,6 @@ import org.eclipse.che.api.runner.dto.ResourcesDescriptor;
 import org.eclipse.che.api.runner.dto.ApplicationProcessDescriptor;
 import org.eclipse.che.api.runner.dto.RunOptions;
 import org.eclipse.che.api.runner.dto.RunnerDescriptor;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
@@ -25,6 +24,8 @@ import org.eclipse.che.ide.rest.RestContext;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+
+import java.util.List;
 
 /**
  * Implementation of {@link RunnerServiceClient} service.
@@ -64,7 +65,7 @@ public class RunnerServiceClientImpl implements RunnerServiceClient {
     }
 
     @Override
-    public void getRunningProcesses(String projectName, AsyncRequestCallback<Array<ApplicationProcessDescriptor>> callback) {
+    public void getRunningProcesses(String projectName, AsyncRequestCallback<List<ApplicationProcessDescriptor>> callback) {
         final String requestUrl = baseUrl + "/runner/" + workspaceId + "/processes";
         final String params = "project=" + projectName;
         asyncRequestFactory.createGetRequest(requestUrl + "?" + params).send(callback);
@@ -93,7 +94,7 @@ public class RunnerServiceClientImpl implements RunnerServiceClient {
 
     /** {@inheritDoc} */
     @Override
-    public void getRunners(String projectName, AsyncRequestCallback<Array<RunnerDescriptor>> callback) {
+    public void getRunners(String projectName, AsyncRequestCallback<List<RunnerDescriptor>> callback) {
         final String requestUrl = baseUrl + "/runner/" + workspaceId + "/available";
         final String params = "project=" + projectName;
         asyncRequestFactory.createGetRequest(requestUrl + "?" + params, false).send(callback);

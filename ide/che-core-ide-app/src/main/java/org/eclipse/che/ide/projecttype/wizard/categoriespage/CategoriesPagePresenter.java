@@ -19,7 +19,6 @@ import org.eclipse.che.ide.api.project.type.wizard.PreSelectedProjectTypeManager
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistry;
 import org.eclipse.che.ide.api.wizard.AbstractWizardPage;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.util.NameUtils;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
@@ -187,8 +186,8 @@ public class CategoriesPagePresenter extends AbstractWizardPage<ImportProject> i
                 typesByCategory.get(category).add(type);
             }
 
-            Array<ProjectTemplateDescriptor> templateDescriptors = projectTemplateRegistry.getTemplateDescriptors(type.getId());
-            for (ProjectTemplateDescriptor template : templateDescriptors.asIterable()) {
+            List<ProjectTemplateDescriptor> templateDescriptors = projectTemplateRegistry.getTemplateDescriptors(type.getId());
+            for (ProjectTemplateDescriptor template : templateDescriptors) {
                 final String category = template.getCategory() == null ? DEFAULT_TEMPLATE_CATEGORY : template.getCategory();
                 if (!templatesByCategory.containsKey(category)) {
                     templatesByCategory.put(category, new HashSet<ProjectTemplateDescriptor>());

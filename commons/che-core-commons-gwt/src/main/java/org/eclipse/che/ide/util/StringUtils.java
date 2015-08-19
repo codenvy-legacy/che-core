@@ -14,12 +14,13 @@
 
 package org.eclipse.che.ide.util;
 
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
-import org.eclipse.che.ide.collections.IntegerMap;
-import org.eclipse.che.ide.collections.js.JsoArray;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsArrayString;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /** Utility methods for string operations. */
@@ -117,13 +118,13 @@ public class StringUtils {
      * Map [N] -> string of N spaces. Used by {@link #getSpaces} to cache strings
      * of spaces.
      */
-    private static final IntegerMap<String> cachedSpaces   = Collections.createIntegerMap();
+    private static final Map<Integer, String> cachedSpaces = new HashMap<>();
     /**
      * By default, this is a pure java implementation, but can be set to a more
      * optimized version by the client
      */
-    private static       Implementation     implementation = GWT.isClient() || !GWT.isScript() ?
-                                                             new PureJavaImplementation() : new NativeImplementation();
+    private static       Implementation       implementation = GWT.isClient() || !GWT.isScript() ?
+                                                               new PureJavaImplementation() : new NativeImplementation();
 
     /** Sets the implementation for methods */
     public static void setImplementation(Implementation implementation) {
@@ -200,7 +201,7 @@ public class StringUtils {
         return s.toString();
     }
 
-    public static <T> String join(Array<T> items, String separator) {
+    public static <T> String join(List<T> items, String separator) {
         StringBuilder s = new StringBuilder();
         for (int i = 0; i < items.size(); i++) {
             s.append(items.get(i)).append(separator);
@@ -370,7 +371,7 @@ public class StringUtils {
      * <li>{@code split("ab", "")} should produce {@code ["a", "b"]}
      * </ul>
      */
-    public static Array<String> split(String s, String separator) {
+    public static List<String> split(String s, String separator) {
         return implementation.split(s, separator);
     }
 
@@ -427,7 +428,7 @@ public class StringUtils {
      * @return a {@link String} consisting of {@code size} spaces
      */
     public static String getSpaces(int size) {
-        if (cachedSpaces.hasKey(size)) {
+        if (cachedSpaces.containsKey(size)) {
             return cachedSpaces.get(size);
         }
 
@@ -556,13 +557,13 @@ public class StringUtils {
      * differing client and server implementations.
      */
     public interface Implementation {
-        Array<String> split(String string, String separator);
+        List<String> split(String string, String separator);
     }
 
     private static class PureJavaImplementation implements Implementation {
         @Override
-        public Array<String> split(String string, String separator) {
-            Array<String> result = Collections.createArray();
+        public List<String> split(String string, String separator) {
+            List<String> result = new ArrayList<>();
 
             int sepLength = separator.length();
             if (sepLength == 0) {
@@ -592,8 +593,14 @@ public class StringUtils {
         }-*/;
 
         @Override
-        public Array<String> split(String string, String separator) {
-            return nativeSplit(string, separator).<JsoArray<String>>cast();
+        public List<String> split(String string, String separator) {
+            JsArrayString jsArrayString = nativeSplit(string, separator);
+
+            List<String> result = new ArrayList<>();
+            for (int i = 0; i < jsArrayString.length(); i++) {
+                result.add(jsArrayString.get(i));
+            }
+            return result;
         }
 
     }

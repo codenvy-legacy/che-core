@@ -11,16 +11,16 @@
 package org.eclipse.che.api.project.gwt.client;
 
 import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.rest.RestContext;
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
 import javax.annotation.Nonnull;
+
+import java.util.List;
 
 import static org.eclipse.che.ide.MimeType.APPLICATION_JSON;
 import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
@@ -46,13 +46,13 @@ public class ProjectTemplateServiceClientImpl implements ProjectTemplateServiceC
 
     @Override
     public void getProjectTemplates(@Nonnull String projectTypeId,
-                                    @Nonnull AsyncRequestCallback<Array<ProjectTemplateDescriptor>> callback) {
+                                    @Nonnull AsyncRequestCallback<List<ProjectTemplateDescriptor>> callback) {
         final String requestUrl = baseUrl + projectTypeId;
         asyncRequestFactory.createGetRequest(requestUrl).header(ACCEPT, APPLICATION_JSON).loader(loader).send(callback);
     }
 
     @Override
-    public void getProjectTemplates(@Nonnull AsyncRequestCallback<Array<ProjectTemplateDescriptor>> callback) {
+    public void getProjectTemplates(@Nonnull AsyncRequestCallback<List<ProjectTemplateDescriptor>> callback) {
         asyncRequestFactory.createGetRequest(baseUrl).header(ACCEPT, APPLICATION_JSON).loader(loader).send(callback);
     }
 }

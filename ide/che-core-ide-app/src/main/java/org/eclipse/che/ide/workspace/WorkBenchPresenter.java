@@ -20,15 +20,14 @@ import org.eclipse.che.ide.api.parts.PartStack;
 import org.eclipse.che.ide.api.parts.PartStackType;
 import org.eclipse.che.ide.api.parts.PartStackView;
 import org.eclipse.che.ide.api.parts.ProjectExplorerPart;
-import org.eclipse.che.ide.collections.Collections;
-import org.eclipse.che.ide.collections.StringMap;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
 
 /**
  * General-purpose, displaying all the PartStacks in a default manner:
@@ -42,7 +41,7 @@ import java.util.List;
 @Singleton
 public class WorkBenchPresenter implements Presenter {
 
-    protected final StringMap<PartStack> partStacks = Collections.createStringMap();
+    protected final Map<String, PartStack> partStacks = new HashMap<>();
     private WorkBenchViewImpl   view;
     private List<PartPresenter> activeParts;
 
@@ -113,7 +112,7 @@ public class WorkBenchPresenter implements Presenter {
 
     public void expandEditorPart() {
         activeParts = new ArrayList<>();
-        for (PartStack value : partStacks.getValues().asIterable()) {
+        for (PartStack value : partStacks.values()) {
             if (value instanceof EditorPartStack) {
                 continue;
             }

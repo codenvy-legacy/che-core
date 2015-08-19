@@ -10,10 +10,10 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.project.tree;
 
-import org.eclipse.che.ide.collections.Array;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 
 /**
  * Defines the requirements for an object that can be used as a project's tree structure.
@@ -28,7 +28,7 @@ public interface TreeStructure {
      *         callback to return the root nodes
      */
     // TODO: should return one root node that may be visible/hidden in tree
-    void getRootNodes(@Nonnull AsyncCallback<Array<TreeNode<?>>> callback);
+    void getRootNodes(@Nonnull AsyncCallback<List<TreeNode<?>>> callback);
 
     /** Returns the settings for this tree structure. */
     @Nonnull

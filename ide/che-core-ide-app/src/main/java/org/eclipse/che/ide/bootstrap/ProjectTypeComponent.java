@@ -14,13 +14,14 @@ package org.eclipse.che.ide.bootstrap;
 import org.eclipse.che.api.project.gwt.client.ProjectTypeServiceClient;
 import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
 import org.eclipse.che.ide.api.project.type.ProjectTypeRegistry;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import com.google.gwt.core.client.Callback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
+import java.util.List;
 
 /**
  * @author Evgen Vidolob
@@ -42,12 +43,12 @@ public class ProjectTypeComponent implements Component {
     @Override
     public void start(final Callback<Component, Exception> callback) {
         projectTypeService.getProjectTypes(
-                new AsyncRequestCallback<Array<ProjectTypeDefinition>>(
-                        dtoUnmarshallerFactory.newArrayUnmarshaller(ProjectTypeDefinition.class)) {
+                new AsyncRequestCallback<List<ProjectTypeDefinition>>(
+                        dtoUnmarshallerFactory.newListUnmarshaller(ProjectTypeDefinition.class)) {
 
                     @Override
-                    protected void onSuccess(Array<ProjectTypeDefinition> result) {
-                        for (ProjectTypeDefinition projectType : result.asIterable()) {
+                    protected void onSuccess(List<ProjectTypeDefinition> result) {
+                        for (ProjectTypeDefinition projectType : result) {
                             projectTypeRegistry.register(projectType);
                         }
                         callback.onSuccess(ProjectTypeComponent.this);

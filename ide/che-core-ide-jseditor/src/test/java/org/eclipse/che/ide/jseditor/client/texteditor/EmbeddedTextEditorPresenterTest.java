@@ -15,7 +15,6 @@ import org.eclipse.che.ide.api.editor.EditorInput;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.api.texteditor.TextEditorOperations;
-import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.jseditor.client.JsEditorConstants;
 import org.eclipse.che.ide.jseditor.client.codeassist.CodeAssistProcessor;
 import org.eclipse.che.ide.jseditor.client.document.DocumentStorage;
@@ -37,6 +36,7 @@ import org.mockito.Mock;
 
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -78,9 +78,9 @@ public class EmbeddedTextEditorPresenterTest {
     private NotificationManager               notificationManager;
 
     @Mock
-    private ContentFormatter               contentFormatter;
+    private ContentFormatter                 contentFormatter;
     @Mock
-    private StringMap<CodeAssistProcessor> codeAssistProcessors;
+    private Map<String, CodeAssistProcessor> codeAssistProcessors;
 
     @InjectMocks
     private EmbeddedTextEditorPresenter<EditorWidget> embeddedTextEditorPresenter;

@@ -10,9 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.websocket;
 
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
-import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.rest.HTTPHeader;
 import org.eclipse.che.ide.util.ListenerManager;
 import org.eclipse.che.ide.util.loging.Log;
@@ -31,6 +28,11 @@ import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.user.client.Timer;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * The implementation of {@link MessageBus}.
@@ -104,15 +106,15 @@ public class MessageBusImpl implements MessageBus {
     /** WebSocket server URL. */
     private String    url;
     /** Map of the message identifier to the {@link org.eclipse.che.ide.websocket.events.ReplyHandler}. */
-    private StringMap<RequestCallback>               requestCallbackMap       = Collections.createStringMap();
-    private StringMap<ReplyHandler>                  replyCallbackMap         = Collections.createStringMap();
+    private Map<String, RequestCallback>             requestCallbackMap       = new HashMap<>();
+    private Map<String, ReplyHandler>                replyCallbackMap         = new HashMap<>();
     /** Map of the channel to the subscribers. */
-    private StringMap<Array<MessageHandler>>         channelToSubscribersMap  = Collections.createStringMap();
+    private Map<String, List<MessageHandler>>        channelToSubscribersMap  = new HashMap<>();
     private ListenerManager<ConnectionOpenedHandler> connectionOpenedHandlers = ListenerManager.create();
     private ListenerManager<ConnectionClosedHandler> connectionClosedHandlers = ListenerManager.create();
     private ListenerManager<ConnectionErrorHandler>  connectionErrorHandlers  = ListenerManager.create();
     private WsListener wsListener;
-    private Array<String> messages2send = Collections.createArray();
+    private List<String> messages2send = new ArrayList<>();
 
     /**
      * Creates new {@link MessageBus} instance.
@@ -190,10 +192,9 @@ public class MessageBusImpl implements MessageBus {
         }
 
         //TODO Should be revised to remove
-        Array<Pair> headers = message.getHeaders();
+        List<Pair> headers = message.getHeaders().toList();
         if (headers != null) {
-            for (int i = 0; i < headers.size(); i++) {
-                Pair header = headers.get(i);
+            for (Pair header : headers) {
                 if (HTTPHeader.LOCATION.equals(header.getName()) && header.getValue().contains("async/")) {
                     return;
                 }
@@ -225,10 +226,9 @@ public class MessageBusImpl implements MessageBus {
      */
     private void processSubscriptionMessage(Message message) {
         String channel = getChannel(message);
-        Array<MessageHandler> subscribersSet = channelToSubscribersMap.get(channel);
+        List<MessageHandler> subscribersSet = channelToSubscribersMap.get(channel);
         if (subscribersSet != null) {
-            for (int i = 0; i < subscribersSet.size(); i++) {
-                MessageHandler handler = subscribersSet.get(i);
+            for (MessageHandler handler : subscribersSet) {
                 //TODO this is nasty, need refactor this
                 if (handler instanceof SubscriptionHandler) {
                     ((SubscriptionHandler)handler).onMessage(message);
@@ -267,12 +267,10 @@ public class MessageBusImpl implements MessageBus {
      * @return channel identifier or <code>null</code> if message is invalid.
      */
     private String getChannel(Message message) {
-        Array<Pair> headers = message.getHeaders();
-
+        List<Pair> headers = message.getHeaders().toList();
 
         if (headers != null) {
-            for (int i = 0; i < headers.size(); i++) {
-                Pair header = headers.get(i);
+            for (Pair header : headers) {
                 if ("x-everrest-websocket-channel".equals(header.getName())) {
                     return header.getValue();
                 }
@@ -446,12 +444,12 @@ public class MessageBusImpl implements MessageBus {
     public void subscribe(String channel, MessageHandler handler) throws WebSocketException {
         checkWebSocketConnectionState();
 
-        Array<MessageHandler> subscribersSet = channelToSubscribersMap.get(channel);
+        List<MessageHandler> subscribersSet = channelToSubscribersMap.get(channel);
         if (subscribersSet != null) {
             subscribersSet.add(handler);
             return;
         }
-        subscribersSet = Collections.createArray();
+        subscribersSet = new ArrayList<>();
         subscribersSet.add(handler);
         channelToSubscribersMap.put(channel, subscribersSet);
         sendSubscribeMessage(channel);
@@ -462,7 +460,7 @@ public class MessageBusImpl implements MessageBus {
     public void unsubscribe(String channel, MessageHandler handler) throws WebSocketException {
         checkWebSocketConnectionState();
 
-        Array<MessageHandler> subscribersSet = channelToSubscribersMap.get(channel);
+        List<MessageHandler> subscribersSet = channelToSubscribersMap.get(channel);
         if (subscribersSet == null) {
             throw new IllegalArgumentException("Handler not subscribed to any channel.");
         }
@@ -476,7 +474,7 @@ public class MessageBusImpl implements MessageBus {
     /** {@inheritDoc} */
     @Override
     public boolean isHandlerSubscribed(MessageHandler handler, String channel) {
-        Array<MessageHandler> set = channelToSubscribersMap.get(channel);
+        List<MessageHandler> set = channelToSubscribersMap.get(channel);
         if (set == null) {
             return false;
         }
@@ -542,7 +540,7 @@ public class MessageBusImpl implements MessageBus {
             });
 
             try {
-                for (String message : messages2send.asIterable()) {
+                for (String message : messages2send) {
                     send(message);
                 }
                 messages2send.clear();

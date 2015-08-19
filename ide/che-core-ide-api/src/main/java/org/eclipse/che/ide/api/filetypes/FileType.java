@@ -10,11 +10,13 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.filetypes;
 
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 import com.google.gwt.resources.client.ImageResource;
 
+import org.eclipse.che.ide.collections.ListHelper;
 import org.vectomatic.dom.svg.ui.SVGResource;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * FileType is meta information about file.
@@ -40,7 +42,7 @@ public class FileType {
 
     private SVGResource imageSVG;
 
-    private Array<String> mimeTypes;
+    private List<String> mimeTypes;
 
     private String extension;
 
@@ -48,35 +50,36 @@ public class FileType {
 
     private String contentDescription;
 
+    @SuppressWarnings("unchecked")
     public FileType(ImageResource image, String mimeType, String extension) {
-        this(null, image, null, Collections.createArray(mimeType), extension, null);
+        this(null, image, null, Arrays.asList(mimeType), extension, null);
     }
 
     public FileType(SVGResource imageSVG, String mimeType, String extension) {
-        this(null, null, imageSVG, Collections.createArray(mimeType), extension, null);
+        this(null, null, imageSVG, Arrays.asList(mimeType), extension, null);
     }
 
     public FileType(String contentDescription, ImageResource image, String mimeType, String extension) {
-        this(contentDescription, image, null, Collections.createArray(mimeType), extension, null);
+        this(contentDescription, image, null, Arrays.asList(mimeType), extension, null);
     }
 
     public FileType(String contentDescription, SVGResource imageSVG, String mimeType, String extension) {
-        this(contentDescription, null, imageSVG, Collections.createArray(mimeType), extension, null);
+        this(contentDescription, null, imageSVG, Arrays.asList(mimeType), extension, null);
     }
 
-    public FileType(ImageResource image, Array<String> mimeTypes, String extension) {
+    public FileType(ImageResource image, List<String> mimeTypes, String extension) {
         this(null, image, null, mimeTypes, extension, null);
     }
 
-    public FileType(SVGResource imageSVG, Array<String> mimeTypes, String extension) {
+    public FileType(SVGResource imageSVG, List<String> mimeTypes, String extension) {
         this(null, null, imageSVG, mimeTypes, extension, null);
     }
 
-    public FileType(String contentDescription, ImageResource image, Array<String> mimeTypes, String extension) {
+    public FileType(String contentDescription, ImageResource image, List<String> mimeTypes, String extension) {
         this(contentDescription, image, null, mimeTypes, extension, null);
     }
 
-    public FileType(String contentDescription, SVGResource imageSVG, Array<String> mimeTypes, String extension) {
+    public FileType(String contentDescription, SVGResource imageSVG, List<String> mimeTypes, String extension) {
         this(contentDescription, null, imageSVG, mimeTypes, extension, null);
     }
 
@@ -96,7 +99,7 @@ public class FileType {
         this(contentDescription, null, imageSVG, null, null, namePattern);
     }
 
-    private FileType(String contentDescription, ImageResource image, SVGResource imageSVG, Array<String> mimeTypes, String extension,
+    private FileType(String contentDescription, ImageResource image, SVGResource imageSVG, List<String> mimeTypes, String extension,
                      String namePattern) {
         super();
         this.contentDescription = contentDescription;
@@ -105,7 +108,7 @@ public class FileType {
         this.mimeTypes = mimeTypes;
         this.extension = extension;
         this.namePattern = namePattern;
-        id = contentDescription + (mimeTypes == null ? "noMimeType" : mimeTypes.join(",")) + namePattern;
+        id = contentDescription + (mimeTypes == null ? "noMimeType" : ListHelper.join(mimeTypes, ",") + namePattern);
     }
 
 
@@ -115,7 +118,7 @@ public class FileType {
     }
 
     /** @return the mimeTypes */
-    public Array<String> getMimeTypes() {
+    public List<String> getMimeTypes() {
         return mimeTypes;
     }
 

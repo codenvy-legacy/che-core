@@ -11,14 +11,14 @@
 package org.eclipse.che.ide.keybinding;
 
 import org.eclipse.che.ide.api.keybinding.Scheme;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
-import org.eclipse.che.ide.collections.IntegerMap;
-import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.util.input.CharCodeWithModifiers;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Evgen Vidolob
@@ -30,15 +30,15 @@ public class SchemeImpl implements Scheme {
 
     private String description;
 
-    private IntegerMap<Array<String>> handlers;
+    private Map<Integer, List<String>> handlers;
 
-    private StringMap<CharCodeWithModifiers> actionId2CharCode;
+    private Map<String, CharCodeWithModifiers> actionId2CharCode;
 
     public SchemeImpl(String id, String description) {
         this.id = id;
         this.description = description;
-        handlers = Collections.createIntegerMap();
-        actionId2CharCode = Collections.createStringMap();
+        handlers = new HashMap<>();
+        actionId2CharCode = new HashMap<>();
     }
 
     /** {@inheritDoc} */
@@ -57,8 +57,8 @@ public class SchemeImpl implements Scheme {
     @Override
     public void addKey(@Nonnull CharCodeWithModifiers key, @Nonnull String actionId) {
         final int digest = key.getKeyDigest();
-        if (!handlers.hasKey(digest)) {
-            handlers.put(digest, Collections.<String>createArray());
+        if (!handlers.containsKey(digest)) {
+            handlers.put(digest, new ArrayList<String>());
         }
         handlers.get(digest).add(actionId);
         actionId2CharCode.put(actionId, key);
@@ -69,11 +69,11 @@ public class SchemeImpl implements Scheme {
     public void removeKey(@Nonnull CharCodeWithModifiers key, @Nonnull String actionId) {
         final int digest = key.getKeyDigest();
 
-        Array<String> array = handlers.get(digest);
+        List<String> array = handlers.get(digest);
         if (array != null) {
             array.remove(actionId);
             if (array.isEmpty()) {
-                handlers.erase(digest);
+                handlers.remove(digest);
             }
         }
 
@@ -83,11 +83,11 @@ public class SchemeImpl implements Scheme {
     /** {@inheritDoc} */
     @Nonnull
     @Override
-    public Array<String> getActionIds(int digest) {
-        if (handlers.hasKey(digest)) {
+    public List<String> getActionIds(int digest) {
+        if (handlers.containsKey(digest)) {
             return handlers.get(digest);
         }
-        return Collections.createArray();
+        return new ArrayList<>();
     }
 
     /** {@inheritDoc} */

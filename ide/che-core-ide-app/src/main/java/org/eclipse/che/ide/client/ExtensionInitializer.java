@@ -12,14 +12,14 @@ package org.eclipse.che.ide.client;
 
 import org.eclipse.che.ide.api.preferences.PreferencesManager;
 import org.eclipse.che.ide.collections.Jso;
-import org.eclipse.che.ide.collections.StringMap;
-import org.eclipse.che.ide.collections.StringMap.IterationCallback;
 import org.eclipse.che.ide.api.extension.ExtensionDescription;
 import org.eclipse.che.ide.api.extension.ExtensionRegistry;
 import org.eclipse.che.ide.util.loging.Log;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
+
+import java.util.Map;
 
 /**
  * {@link ExtensionInitializer} responsible for bringing up Extensions. It uses ExtensionRegistry to acquire
@@ -49,27 +49,26 @@ public class ExtensionInitializer {
     public void startExtensions() {
         String value = preferencesManager.getValue("ExtensionsPreferences");
         final Jso jso = Jso.deserialize(value == null ? "{}" : value);
-        extensionManager.getExtensions().iterate(new IterationCallback<Provider>() {
-            @Override
-            public void onIteration(String extensionFqn, Provider extensionProvider) {
-                boolean enabled = !jso.hasOwnProperty(extensionFqn) || jso.getBooleanField(extensionFqn);
-                try {
-                    if (enabled) {
-                        // this will instantiate extension so it's get enabled
-                        // Order of startup is managed by GIN dependency injection framework
-                        extensionProvider.get();
-                    }
-                    // extension has been enabled
-                    extensionRegistry.getExtensionDescriptions().get(extensionFqn).setEnabled(enabled);
-                } catch (Throwable e) {
-                    Log.error(ExtensionInitializer.class, "Can't initialize extension: " + extensionFqn, e);
+        Map<String, Provider> providers = extensionManager.getExtensions();
+        for (String extensionFqn: providers.keySet()) {
+            Provider extensionProvider = providers.get(extensionFqn);
+            boolean enabled = !jso.hasOwnProperty(extensionFqn) || jso.getBooleanField(extensionFqn);
+            try {
+                if (enabled) {
+                    // this will instantiate extension so it's get enabled
+                    // Order of startup is managed by GIN dependency injection framework
+                    extensionProvider.get();
                 }
+                // extension has been enabled
+                extensionRegistry.getExtensionDescriptions().get(extensionFqn).setEnabled(enabled);
+            } catch (Throwable e) {
+                Log.error(ExtensionInitializer.class, "Can't initialize extension: " + extensionFqn, e);
             }
-        });
+        }
     }
 
     /** {@inheritDoc} */
-    public StringMap<ExtensionDescription> getExtensionDescriptions() {
+    public Map<String, ExtensionDescription> getExtensionDescriptions() {
         return extensionRegistry.getExtensionDescriptions();
     }
 

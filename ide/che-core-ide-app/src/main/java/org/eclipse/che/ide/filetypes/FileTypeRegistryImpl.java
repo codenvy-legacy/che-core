@@ -13,12 +13,13 @@ package org.eclipse.che.ide.filetypes;
 import org.eclipse.che.ide.api.filetypes.FileType;
 import org.eclipse.che.ide.api.filetypes.FileTypeRegistry;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 import com.google.gwt.regexp.shared.RegExp;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Implementation of {@link org.eclipse.che.ide.api.filetypes.FileTypeRegistry}
@@ -27,13 +28,13 @@ import com.google.inject.name.Named;
  */
 @Singleton
 public class FileTypeRegistryImpl implements FileTypeRegistry {
-    private final FileType        unknownFileType;
-    private final Array<FileType> fileTypes;
+    private final FileType       unknownFileType;
+    private final List<FileType> fileTypes;
 
     @Inject
     public FileTypeRegistryImpl(@Named("defaultFileType") FileType unknownFileType) {
         this.unknownFileType = unknownFileType;
-        fileTypes = Collections.createArray();
+        fileTypes = new ArrayList<>();
     }
 
     @Override
@@ -42,8 +43,8 @@ public class FileTypeRegistryImpl implements FileTypeRegistry {
     }
 
     @Override
-    public Array<FileType> getRegisteredFileTypes() {
-        return Collections.createArray(fileTypes.asIterable());
+    public List<FileType> getRegisteredFileTypes() {
+        return new ArrayList<>(fileTypes);
     }
 
     @Override
@@ -60,7 +61,7 @@ public class FileTypeRegistryImpl implements FileTypeRegistry {
 
     @Override
     public FileType getFileTypeByExtension(String extension) {
-        for (FileType type : fileTypes.asIterable()) {
+        for (FileType type : fileTypes) {
             if (extension.equals(type.getExtension())) {
                 return type;
             }
@@ -70,7 +71,7 @@ public class FileTypeRegistryImpl implements FileTypeRegistry {
 
     @Override
     public FileType getFileTypeByMimeType(String mimeType) {
-        for (FileType type : fileTypes.asIterable()) {
+        for (FileType type : fileTypes) {
             if (type.getMimeTypes().contains(mimeType)) {
                 return type;
             }
@@ -80,7 +81,7 @@ public class FileTypeRegistryImpl implements FileTypeRegistry {
 
     @Override
     public FileType getFileTypeByNamePattern(String name) {
-        for (FileType type : fileTypes.asIterable()) {
+        for (FileType type : fileTypes) {
             if (type.getNamePattern() != null) {
                 RegExp regExp = RegExp.compile(type.getNamePattern());
                 if (regExp.test(name)) {

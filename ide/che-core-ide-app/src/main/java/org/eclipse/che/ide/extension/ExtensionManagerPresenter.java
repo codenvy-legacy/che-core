@@ -62,7 +62,7 @@ public class ExtensionManagerPresenter extends AbstractPreferencePagePresenter i
     public void go(AcceptsOneWidget container) {
         container.setWidget(view);
         extensions = new ArrayList<>();
-        for (ExtensionDescription ed : extensionRegistry.getExtensionDescriptions().getValues().asIterable()) {
+        for (ExtensionDescription ed : extensionRegistry.getExtensionDescriptions().values()) {
             extensions.add(ed);
         }
         view.setExtensions(extensions);

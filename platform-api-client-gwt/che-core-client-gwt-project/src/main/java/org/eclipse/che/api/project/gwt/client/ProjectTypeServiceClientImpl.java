@@ -11,14 +11,14 @@
 package org.eclipse.che.api.project.gwt.client;
 
 import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.rest.RestContext;
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
+
+import java.util.List;
 
 import static org.eclipse.che.ide.MimeType.APPLICATION_JSON;
 import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
@@ -43,7 +43,7 @@ public class ProjectTypeServiceClientImpl implements ProjectTypeServiceClient {
     }
 
     @Override
-    public void getProjectTypes(AsyncRequestCallback<Array<ProjectTypeDefinition>> callback) {
+    public void getProjectTypes(AsyncRequestCallback<List<ProjectTypeDefinition>> callback) {
         asyncRequestFactory.createGetRequest(baseUrl).header(ACCEPT, APPLICATION_JSON).loader(loader).send(callback);
     }
 }

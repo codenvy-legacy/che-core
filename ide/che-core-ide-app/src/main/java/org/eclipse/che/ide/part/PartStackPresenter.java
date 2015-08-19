@@ -21,7 +21,6 @@ import org.eclipse.che.ide.api.parts.PartStackView;
 import org.eclipse.che.ide.api.parts.PartStackView.TabItem;
 import org.eclipse.che.ide.api.parts.PropertyListener;
 import org.eclipse.che.ide.api.parts.base.BasePresenter;
-import org.eclipse.che.ide.collections.Array;
 
 import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerPartPresenter;
 import org.eclipse.che.ide.workspace.WorkBenchPartController;
@@ -415,7 +414,7 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
     /**
      * Returns the list of parts.
      *
-     * @return {@link Array} array of parts
+     * @return {@link java.util.List} array of parts
      */
     protected List<PartPresenter> getParts() {
         return parts;

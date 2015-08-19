@@ -591,7 +591,7 @@ public final class DefaultProjectManager implements ProjectManager {
 
         // Update config
         if (projectConfig != null && projectConfig.getTypeId() != null) {
-            //TODO: need add checking for concurebcy attributes name in giving config and in estimation
+            //TODO: need add checking for concurrency attributes name in giving config and in estimation
             Map<String, AttributeValue> estimateProject = estimateProject(workspace, path, projectConfig.getTypeId());
             projectConfig.getAttributes().putAll(estimateProject);
             project.updateConfig(projectConfig);

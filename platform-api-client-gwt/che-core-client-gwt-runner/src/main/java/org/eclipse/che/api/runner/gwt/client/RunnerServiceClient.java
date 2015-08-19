@@ -17,8 +17,9 @@ import org.eclipse.che.api.runner.dto.RunOptions;
 import org.eclipse.che.api.runner.dto.RunnerDescriptor;
 import org.eclipse.che.api.runner.dto.ApplicationProcessDescriptor;
 
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
+
+import java.util.List;
 
 /**
  * Client for Runner service.
@@ -56,7 +57,7 @@ public interface RunnerServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void getRunningProcesses(String project, AsyncRequestCallback<Array<ApplicationProcessDescriptor>> callback);
+    void getRunningProcesses(String project, AsyncRequestCallback<List<ApplicationProcessDescriptor>> callback);
 
     /**
      * Retrieve logs from application server where app is launched.
@@ -94,7 +95,7 @@ public interface RunnerServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void getRunners(String projectName, AsyncRequestCallback<Array<RunnerDescriptor>> callback);
+    void getRunners(String projectName, AsyncRequestCallback<List<RunnerDescriptor>> callback);
 
     /**
      * Get resources for user in current workspace.

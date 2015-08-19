@@ -22,9 +22,10 @@ import elemental.events.EventTarget;
 import elemental.events.MouseEvent;
 import elemental.dom.Element;
 
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 import com.google.gwt.user.client.Timer;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -125,7 +126,7 @@ public class HoverController {
 
     private Timer unhoverTimer;
 
-    private final Array<PartnerHolder> partners = Collections.createArray();
+    private final List<PartnerHolder> partners = new ArrayList<>();
 
     /**
      * Adds a partner element to this controller. See class javadoc for

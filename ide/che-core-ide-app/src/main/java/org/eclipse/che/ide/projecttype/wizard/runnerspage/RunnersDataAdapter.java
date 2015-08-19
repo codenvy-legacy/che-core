@@ -13,13 +13,14 @@ package org.eclipse.che.ide.projecttype.wizard.runnerspage;
 import org.eclipse.che.api.project.shared.dto.RunnerEnvironment;
 import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentLeaf;
 import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentTree;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.ui.tree.NodeDataAdapter;
 import org.eclipse.che.ide.ui.tree.TreeNodeElement;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * @author Evgen Vidolob
@@ -60,8 +61,8 @@ public class RunnersDataAdapter implements NodeDataAdapter<Object> {
     }
 
     @Override
-    public Array<Object> getChildren(Object data) {
-        Array<Object> res = Collections.createArray();
+    public List<Object> getChildren(Object data) {
+        List<Object> res = new ArrayList<>();
         if (data instanceof RunnerEnvironmentTree) {
             RunnerEnvironmentTree environmentTree = (RunnerEnvironmentTree)data;
             for (RunnerEnvironmentTree runnerEnvironmentTree : environmentTree.getNodes()) {
@@ -76,7 +77,7 @@ public class RunnersDataAdapter implements NodeDataAdapter<Object> {
             }
 
         }
-        res.sort(COMPARATOR);
+        Collections.sort(res, COMPARATOR);
         return res;
     }
 
@@ -121,12 +122,12 @@ public class RunnersDataAdapter implements NodeDataAdapter<Object> {
     }
 
     @Override
-    public Array<String> getNodePath(Object data) {
+    public List<String> getNodePath(Object data) {
         return PathUtils.getNodePath(this, data);
     }
 
     @Override
-    public Object getNodeByPath(Object root, Array<String> relativeNodePath) {
+    public Object getNodeByPath(Object root, List<String> relativeNodePath) {
         return null;
     }
 
