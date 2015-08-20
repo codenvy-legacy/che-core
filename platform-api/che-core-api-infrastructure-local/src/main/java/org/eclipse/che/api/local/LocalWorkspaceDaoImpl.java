@@ -10,14 +10,22 @@
  *******************************************************************************/
 package org.eclipse.che.api.local;
 
+
+import com.google.common.reflect.TypeToken;
+
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.local.storage.LocalStorage;
+import org.eclipse.che.api.local.storage.LocalStorageFactory;
 import org.eclipse.che.api.workspace.server.dao.Workspace;
 import org.eclipse.che.api.workspace.server.dao.WorkspaceDao;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,25 +34,35 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Pattern;
 
+/**
+ * @author Anton Korneta
+ */
 @Singleton
 public class LocalWorkspaceDaoImpl implements WorkspaceDao {
+
     private static final Pattern WS_NAME = Pattern.compile("[\\w][\\w\\.\\-]{1,18}[\\w]");
 
     private final List<Workspace> workspaces;
     private final ReadWriteLock   lock;
+    private final LocalStorage    workspaceStorage;
 
     @Inject
-    public LocalWorkspaceDaoImpl(@Named("codenvy.local.infrastructure.workspaces") Set<Workspace> workspaces) {
+    public LocalWorkspaceDaoImpl(LocalStorageFactory storageFactory) throws IOException {
         this.workspaces = new LinkedList<>();
         lock = new ReentrantReadWriteLock();
-        try {
-            for (Workspace workspace : workspaces) {
-                create(workspace);
-            }
-        } catch (Exception e) {
-            // fail if can't validate this instance properly
-            throw new RuntimeException(e);
-        }
+        workspaceStorage = storageFactory.create("workspaces.json");
+    }
+
+    @Inject
+    @PostConstruct
+    public void start(@Named("codenvy.local.infrastructure.workspaces") Set<Workspace> defaultWorkspaces) {
+        List<Workspace> storedWorkspaces = workspaceStorage.loadList(new TypeToken<List<Workspace>>() {});
+        workspaces.addAll(storedWorkspaces.isEmpty() ? defaultWorkspaces : storedWorkspaces);
+    }
+
+    @PreDestroy
+    public void stop() throws IOException {
+        workspaceStorage.store(workspaces);
     }
 
     @Override
