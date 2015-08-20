@@ -181,8 +181,7 @@ public class DtoConverter {
             }
         }
 
-        return new ProjectConfig(dto.getDescription(), dto.getType(), attributes,
-                                 fromDto(dto.getRunners()), fromDto(dto.getBuilders()), validMixins);
+        return new ProjectConfig(dto.getDescription(), dto.getType(), attributes, dto.getRecipe(), validMixins);
 
     }
 

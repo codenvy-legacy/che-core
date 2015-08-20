@@ -25,17 +25,17 @@ import java.util.Map;
 @DTO
 public interface ProjectModule {
 
-    /** Gets path of project. */
+    /** Gets path of module. */
     @ApiModelProperty(value = "Module path", position = 1)
     String getPath();
 
-    /** Sets path of project. */
+    /** Sets path of module. */
     void setPath(String path);
 
     ProjectModule withPath(String path);
 
 
-    /** Gets unique id of type of project. */
+    /** Gets unique id of type of module. */
     @ApiModelProperty(value = "Module type ID", position = 2)
     String getType();
 
@@ -44,26 +44,16 @@ public interface ProjectModule {
 
     ProjectModule withType(String type);
 
-    /** Gets builder configurations. */
-    @ApiModelProperty(value = "Builders configuration for the module", position = 3)
-    BuildersDescriptor getBuilders();
+    /** Gets recipe for this module */
+    @ApiModelProperty(value = "Module type ID", position = 3)
+    String getRecipe();
 
-    /** Sets builder configurations. */
-    void setBuilders(BuildersDescriptor builders);
+    void setRecipe(String recipe);
 
-    ProjectModule withBuilders(BuildersDescriptor builders);
-
-    /** Gets runner configurations. */
-    @ApiModelProperty(value = "Runners configuration for the module", position = 4)
-    RunnersDescriptor getRunners();
-
-    /** Sets runner configurations. */
-    void setRunners(RunnersDescriptor runners);
-
-    ProjectModule withRunners(RunnersDescriptor runners);
+    ProjectModule withRecipe(String recipe);
 
     /** Gets optional description of project. */
-    @ApiModelProperty(value = "Module description", position = 5)
+    @ApiModelProperty(value = "Module description", position = 4)
     String getDescription();
 
     /** Sets optional description of project. */
@@ -73,7 +63,7 @@ public interface ProjectModule {
 
 
     /** Gets attributes of this project. */
-    @ApiModelProperty(value = "Module attributes", position = 6)
+    @ApiModelProperty(value = "Module attributes", position = 5)
     Map<String, List<String>> getAttributes();
 
     /** Sets attributes of this project. */
@@ -82,7 +72,7 @@ public interface ProjectModule {
     ProjectModule withAttributes(Map<String, List<String>> attributes);
 
 
-    @ApiModelProperty(value = "Mixins of current module", position = 7)
+    @ApiModelProperty(value = "Mixins of current module", position = 6)
     List<String> getMixins();
 
     /** Sets permissions of current user on this project. */
