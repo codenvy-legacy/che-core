@@ -12,17 +12,16 @@ package org.eclipse.che.api.project.gwt.client;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
 import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper.RequestCall;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
-import org.eclipse.che.ide.rest.RestContext;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -44,32 +43,36 @@ public class ProjectTypeServiceClientImpl implements ProjectTypeServiceClient {
 
     private final AsyncRequestFactory    asyncRequestFactory;
     private final DtoUnmarshallerFactory dtoUnmarshallerFactory;
-    private final AsyncRequestLoader     loader;
+    private       String                 extPath;
+    private       String                 workspaceId;
+    private final AsyncRequestLoader loader;
 
     @Inject
-    protected ProjectTypeServiceClientImpl(@RestContext String restContext,
+    protected ProjectTypeServiceClientImpl(@Named("cheExtensionPath") String extPath,
+                                           @Named("workspaceId") String workspaceId,
                                            AsyncRequestLoader loader,
                                            AsyncRequestFactory asyncRequestFactory,
                                            DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+        this.extPath = extPath;
+        this.workspaceId = workspaceId;
         this.loader = loader;
         this.asyncRequestFactory = asyncRequestFactory;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
-
-        baseUrl = restContext + "/project-type";
+        baseUrl = extPath + "/project-type/" + workspaceId +"/";
     }
 
     @Override
     public Promise<List<ProjectTypeDefinition>> getProjectTypes() {
-        return newPromise(new RequestCall<Array<ProjectTypeDefinition>>() {
+        return newPromise(new RequestCall<List<ProjectTypeDefinition>>() {
             @Override
-            public void makeCall(AsyncCallback<Array<ProjectTypeDefinition>> callback) {
+            public void makeCall(AsyncCallback<List<ProjectTypeDefinition>> callback) {
                 getProjectTypes(callback);
             }
-        }).then(new Function<Array<ProjectTypeDefinition>, List<ProjectTypeDefinition>>() {
+        }).then(new Function<List<ProjectTypeDefinition>, List<ProjectTypeDefinition>>() {
             @Override
-            public List<ProjectTypeDefinition> apply(Array<ProjectTypeDefinition> arg) throws FunctionException {
+            public List<ProjectTypeDefinition> apply(List<ProjectTypeDefinition> arg) throws FunctionException {
                 final List<ProjectTypeDefinition> descriptors = new ArrayList<>();
-                for (ProjectTypeDefinition descriptor : arg.asIterable()) {
+                for (ProjectTypeDefinition descriptor : arg) {
                     descriptors.add(descriptor);
                 }
                 return descriptors;
@@ -77,12 +80,12 @@ public class ProjectTypeServiceClientImpl implements ProjectTypeServiceClient {
         });
     }
 
-    private void getProjectTypes(@Nonnull AsyncCallback<Array<ProjectTypeDefinition>> callback) {
+    private void getProjectTypes(@Nonnull AsyncCallback<List<ProjectTypeDefinition>> callback) {
         final String url = baseUrl;
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
                            .loader(loader, "Getting info about registered project types...")
-                           .send(newCallback(callback, dtoUnmarshallerFactory.newArrayUnmarshaller(ProjectTypeDefinition.class)));
+                           .send(newCallback(callback, dtoUnmarshallerFactory.newListUnmarshaller(ProjectTypeDefinition.class)));
     }
 
     @Override

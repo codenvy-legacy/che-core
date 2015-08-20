@@ -13,7 +13,6 @@ package org.eclipse.che.ide.jseditor.client.editortype;
 import org.eclipse.che.ide.api.filetypes.FileType;
 import org.eclipse.che.ide.api.filetypes.FileTypeRegistry;
 import org.eclipse.che.ide.api.preferences.PreferencesManager;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.jseditor.client.inject.PlainTextFileType;
 import org.eclipse.che.ide.jseditor.client.util.PrintMap;
 import org.eclipse.che.ide.jseditor.client.util.PrintMap.Converter;
@@ -27,6 +26,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -139,7 +139,7 @@ public class EditorTypeMappingImpl implements EditorTypeMapping {
                 if (fileType.equals(plainTextFileType)) {
                     keyMapping.put(CONTENT_TYPE_TEXT_PLAIN, new JSONString(entry.getValue().getEditorTypeKey()));
                 } else {
-                    final Array<String> mimeTypes = fileType.getMimeTypes();
+                    final List<String> mimeTypes = fileType.getMimeTypes();
                     if (mimeTypes != null && mimeTypes.size() > 0) {
                         final String firstMimeType = mimeTypes.get(0);
                         if (firstMimeType != null) {
@@ -183,7 +183,7 @@ public class EditorTypeMappingImpl implements EditorTypeMapping {
                 sb.append("|");
                 if (item.getMimeTypes() != null) {
                     String separator = "";
-                    for (final String s : item.getMimeTypes().asIterable()) {
+                    for (final String s : item.getMimeTypes()) {
                         sb.append(separator);
                         sb.append(s);
                         separator = " ";

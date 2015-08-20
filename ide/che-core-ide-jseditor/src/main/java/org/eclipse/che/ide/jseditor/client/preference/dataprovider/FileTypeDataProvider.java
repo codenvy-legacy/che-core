@@ -12,7 +12,6 @@ package org.eclipse.che.ide.jseditor.client.preference.dataprovider;
 
 import org.eclipse.che.ide.api.filetypes.FileType;
 import org.eclipse.che.ide.api.filetypes.FileTypeRegistry;
-import org.eclipse.che.ide.collections.Array;
 import com.google.gwt.view.client.AbstractDataProvider;
 import com.google.gwt.view.client.HasData;
 
@@ -52,11 +51,11 @@ public class FileTypeDataProvider extends AbstractDataProvider<FileType> impleme
     }
 
     private List<FileType> buildData() {
-        final Array<FileType> filetypes = this.fileTypeRegistry.getRegisteredFileTypes();
+        final List<FileType> filetypes = this.fileTypeRegistry.getRegisteredFileTypes();
         int size = filetypes.size();
         if (size > 0) {
             final List<FileType> list = new ArrayList<>(size);
-            for (final FileType filetype : filetypes.asIterable()) {
+            for (final FileType filetype : filetypes) {
                 list.add(filetype);
             }
             return list;

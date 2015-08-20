@@ -10,8 +10,8 @@
  *******************************************************************************/
 package com.google.gwt.webworker.client.messages;
 
-import org.eclipse.che.ide.collections.Collections;
-import org.eclipse.che.ide.collections.IntegerMap;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Class responsible for routing JsonMessages based on the message type that get
@@ -21,8 +21,7 @@ import org.eclipse.che.ide.collections.IntegerMap;
  * @version $Id:
  */
 public class MessageFilter {
-    private final IntegerMap<MessageRecipient<? extends Message>> messageRecipients =
-            Collections.createIntegerMap();
+    private final Map<Integer, MessageRecipient<? extends Message>> messageRecipients = new HashMap<>();
 
     /**
      * Dispatches an incoming DTO message to a registered recipient.
@@ -54,7 +53,7 @@ public class MessageFilter {
      * @param messageType
      */
     public void removeMessageRecipient(int messageType) {
-        messageRecipients.erase(messageType);
+        messageRecipients.remove(messageType);
     }
 
     /** Interface for receiving JSON messages. */

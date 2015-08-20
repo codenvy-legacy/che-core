@@ -16,7 +16,6 @@ import org.eclipse.che.api.account.server.dao.Member;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-//import org.eclipse.che.api.workspace.server.dao.WorkspaceDao;
 
 import javax.inject.Inject;
 import javax.inject.Named;

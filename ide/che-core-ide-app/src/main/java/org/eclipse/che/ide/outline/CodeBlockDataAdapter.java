@@ -16,6 +16,7 @@ import org.eclipse.che.ide.ui.tree.NodeDataAdapter;
 import org.eclipse.che.ide.ui.tree.TreeNodeElement;
 
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Default implementation of {@link NodeDataAdapter} for {@link CodeBlock}
@@ -25,8 +26,7 @@ import java.util.HashMap;
  */
 public class CodeBlockDataAdapter implements NodeDataAdapter<CodeBlock> {
 
-    private HashMap<CodeBlock, TreeNodeElement<CodeBlock>> renderNodes =
-            new HashMap<CodeBlock, TreeNodeElement<CodeBlock>>();
+    private HashMap<CodeBlock, TreeNodeElement<CodeBlock>> renderNodes = new HashMap<>();
 
     /** {@inheritDoc} */
     @Override
@@ -44,8 +44,8 @@ public class CodeBlockDataAdapter implements NodeDataAdapter<CodeBlock> {
 
     /** {@inheritDoc} */
     @Override
-    public Array<CodeBlock> getChildren(CodeBlock data) {
-        return data.getChildren();
+    public List<CodeBlock> getChildren(CodeBlock data) {
+        return data.getChildren().toList();
     }
 
     /** {@inheritDoc} */
@@ -91,13 +91,13 @@ public class CodeBlockDataAdapter implements NodeDataAdapter<CodeBlock> {
 
     /** {@inheritDoc} */
     @Override
-    public Array<String> getNodePath(CodeBlock data) {
+    public List<String> getNodePath(CodeBlock data) {
         return PathUtils.getNodePath(this, data);
     }
 
     /** {@inheritDoc} */
     @Override
-    public CodeBlock getNodeByPath(CodeBlock root, Array<String> relativeNodePath) {
+    public CodeBlock getNodeByPath(CodeBlock root, List<String> relativeNodePath) {
         // TODO Auto-generated method stub
         return null;
     }

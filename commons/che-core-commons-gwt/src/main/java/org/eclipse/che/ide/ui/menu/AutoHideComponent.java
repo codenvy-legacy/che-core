@@ -21,13 +21,13 @@ import elemental.events.EventRemover;
 import elemental.dom.Element;
 import elemental.util.Timer;
 
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.mvp.UiComponent;
 import org.eclipse.che.ide.util.HoverController;
 import org.eclipse.che.ide.util.HoverController.UnhoverListener;
 import org.eclipse.che.ide.util.dom.Elements;
 
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Component that can automatically hide its View when the mouse is not over it.
@@ -69,8 +69,8 @@ public abstract class AutoHideComponent<V extends AutoHideView<?>, M extends Aut
     private final EventListener outsideClickListener = new EventListener() {
         @Override
         public void handleEvent(Event evt) {
-            for (int i = 0; i < clickTargets.size(); i++) {
-                if (clickTargets.get(i).contains((Node)evt.getTarget())) {
+            for (Element clickTarget : clickTargets) {
+                if (clickTarget.contains((Node)evt.getTarget())) {
                     return;
                 }
             }
@@ -91,7 +91,7 @@ public abstract class AutoHideComponent<V extends AutoHideView<?>, M extends Aut
 
     private final HoverController hoverController;
 
-    private final Array<Element> clickTargets = Collections.createArray();
+    private final List<Element> clickTargets = new ArrayList<>();
 
     private final Timer hideTimer = new Timer() {
         @Override

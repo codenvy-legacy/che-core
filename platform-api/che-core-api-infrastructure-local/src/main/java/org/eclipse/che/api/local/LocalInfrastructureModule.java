@@ -16,14 +16,15 @@ import com.google.inject.Provides;
 import org.eclipse.che.api.account.server.dao.Account;
 import org.eclipse.che.api.account.server.dao.AccountDao;
 import org.eclipse.che.api.auth.AuthenticationDao;
+import org.eclipse.che.api.local.storage.LocalStorageFactory;
 import org.eclipse.che.api.machine.server.command.CommandImpl;
 import org.eclipse.che.api.machine.server.dao.CommandDao;
+import org.eclipse.che.api.machine.server.dao.RecipeDao;
 import org.eclipse.che.api.machine.server.recipe.GroupImpl;
 import org.eclipse.che.api.machine.server.recipe.PermissionsImpl;
 import org.eclipse.che.api.machine.server.recipe.RecipeImpl;
-import org.eclipse.che.api.machine.server.dao.RecipeDao;
-import org.eclipse.che.api.machine.shared.ManagedCommand;
 import org.eclipse.che.api.machine.shared.Group;
+import org.eclipse.che.api.machine.shared.ManagedCommand;
 import org.eclipse.che.api.machine.shared.ManagedRecipe;
 import org.eclipse.che.api.user.server.TokenValidator;
 import org.eclipse.che.api.user.server.dao.PreferenceDao;
@@ -61,6 +62,7 @@ public class LocalInfrastructureModule extends AbstractModule {
         bind(TokenValidator.class).to(DummyTokenValidator.class);
         bind(RecipeDao.class).to(LocalRecipeDaoImpl.class);
         bind(CommandDao.class).to(LocalCommandDaoImpl.class);
+        bind(LocalStorageFactory.class);
     }
 
 
@@ -142,14 +144,14 @@ public class LocalInfrastructureModule extends AbstractModule {
                                                       .withName("UBUNTU")
                                                       .withCreator("codenvy")
                                                       .withType("docker")
-                                                      .withScript("FROM ubuntu\nRUN tail -f /dev/null")
+                                                      .withScript("FROM ubuntu\nCMD tail -f /dev/null")
                                                       .withTags(singletonList("ubuntu"))
                                                       .withPermissions(new PermissionsImpl(null, singletonList(group)));
         final ManagedRecipe recipe2 = new RecipeImpl().withId("recipe2345678901")
                                                       .withName("BUSYBOX")
                                                       .withCreator("codenvy")
                                                       .withType("docker")
-                                                      .withScript("FROM busybox\nRUN tail -f /dev/null")
+                                                      .withScript("FROM busybox\nCMD tail -f /dev/null")
                                                       .withTags(asList("java", "busybox"))
                                                       .withPermissions(new PermissionsImpl(null, singletonList(group)));
 

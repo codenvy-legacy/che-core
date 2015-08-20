@@ -67,7 +67,7 @@ public class BootstrapController {
     private final ActionManager                actionManager;
     private final PresentationFactory          presentationFactory;
     private final DocumentTitleDecorator       documentTitleDecorator;
-    private final AppStateManager              appStateManager;
+    private final Provider<AppStateManager>    appStateManagerProvider;
     private final Provider<PerspectiveManager> managerProvider;
 
     @Inject
@@ -77,7 +77,7 @@ public class BootstrapController {
                                AnalyticsEventLoggerExt analyticsEventLoggerExt,
                                EventBus eventBus,
                                ActionManager actionManager,
-                               AppStateManager appStateManager,
+                               Provider<AppStateManager> appStateManagerProvider,
                                DocumentTitleDecorator documentTitleDecorator,
                                Provider<PerspectiveManager> managerProvider) {
         this.workspaceProvider = workspaceProvider;
@@ -86,7 +86,7 @@ public class BootstrapController {
         this.actionManager = actionManager;
         this.analyticsEventLoggerExt = analyticsEventLoggerExt;
         this.documentTitleDecorator = documentTitleDecorator;
-        this.appStateManager = appStateManager;
+        this.appStateManagerProvider = appStateManagerProvider;
         this.managerProvider = managerProvider;
 
         presentationFactory = new PresentationFactory();
@@ -113,6 +113,7 @@ public class BootstrapController {
 
                 @Override
                 public void onSuccess(Component result) {
+                    Log.info(getClass(), result.getClass());
                     startComponent(iterator);
                 }
             });
@@ -135,6 +136,8 @@ public class BootstrapController {
                         displayIDE();
                         boolean openLastProject = Config.getProjectName() == null && Config.getStartupParam("action") == null &&
                                                   Config.getStartupParam("id") == null;
+
+                        final AppStateManager appStateManager = appStateManagerProvider.get();
                         appStateManager.start(openLastProject);
                     }
                 });

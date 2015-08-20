@@ -14,8 +14,9 @@ import org.eclipse.che.api.builder.dto.BuildOptions;
 import org.eclipse.che.api.builder.dto.BuildTaskDescriptor;
 import org.eclipse.che.api.builder.dto.BuilderDescriptor;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
+
+import java.util.List;
 
 /**
  * Client for Builder service.
@@ -84,5 +85,5 @@ public interface BuilderServiceClient {
      * @param callback
      *         callback
      */
-    void getRegisteredServers(AsyncRequestCallback<Array<BuilderDescriptor>> callback);
+    void getRegisteredServers(AsyncRequestCallback<List<BuilderDescriptor>> callback);
 }

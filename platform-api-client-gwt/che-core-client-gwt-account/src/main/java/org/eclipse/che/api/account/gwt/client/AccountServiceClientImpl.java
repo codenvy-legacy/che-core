@@ -16,12 +16,12 @@ import com.google.inject.Singleton;
 import org.eclipse.che.api.account.shared.dto.AccountDescriptor;
 import org.eclipse.che.api.account.shared.dto.MemberDescriptor;
 import org.eclipse.che.ide.MimeType;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.HTTPHeader;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 
 /**
  * Implementation of {@link AccountServiceClient} service.
@@ -39,7 +39,7 @@ public class AccountServiceClientImpl implements AccountServiceClient {
 
     /** {@inheritDoc} */
     @Override
-    public void getMemberships(AsyncRequestCallback<Array<MemberDescriptor>> callback) {
+    public void getMemberships(AsyncRequestCallback<List<MemberDescriptor>> callback) {
         final String requestUrl = "/api/account/";
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(HTTPHeader.ACCEPT, MimeType.APPLICATION_JSON)

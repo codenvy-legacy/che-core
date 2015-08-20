@@ -23,8 +23,6 @@ import elemental.events.KeyboardEvent;
 import elemental.events.MouseEvent;
 import elemental.js.dom.JsElement;
 
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.mvp.CompositeView;
 import org.eclipse.che.ide.mvp.UiComponent;
 import org.eclipse.che.ide.util.AnimationController;
@@ -51,6 +49,9 @@ import com.google.gwt.user.client.ui.Widget;
 
 import org.vectomatic.dom.svg.ui.SVGResource;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * A tree widget that is capable of rendering any tree data structure whose node
@@ -941,7 +942,7 @@ public class Tree<D> extends UiComponent<Tree.View<D>> implements IsWidget {
         // Ensure that the node's children container is birthed.
         treeNode.ensureChildrenContainer(dataAdapter, getModel().resources.treeCss());
 
-        Array<D> children = dataAdapter.getChildren(treeNode.getData());
+        List<D> children = dataAdapter.getChildren(treeNode.getData());
 
         // Maybe render it's children if they aren't already rendered.
         if (treeNode.getChildrenContainer().getChildren().getLength() != children.size()) {
@@ -997,8 +998,8 @@ public class Tree<D> extends UiComponent<Tree.View<D>> implements IsWidget {
      *         whether to dispatch the NodeExpanded event
      * @return array of paths that were not expanded, or were partially expanded
      */
-    public Array<Array<String>> expandPaths(Array<Array<String>> paths, boolean dispatchNodeExpanded) {
-        Array<Array<String>> notExpanded = Collections.createArray();
+    public List<List<String>> expandPaths(List<List<String>> paths, boolean dispatchNodeExpanded) {
+        List<List<String>> notExpanded = new ArrayList<>();
         for (int i = 0, n = paths.size(); i < n; i++) {
             if (!expandPathRecursive(getModel().root, paths.get(i), dispatchNodeExpanded)) {
                 notExpanded.add(paths.get(i));
@@ -1070,7 +1071,7 @@ public class Tree<D> extends UiComponent<Tree.View<D>> implements IsWidget {
 
         // Root is special in that we don't render a directory for it. Only its
         // children.
-        Array<D> children = getModel().dataAdapter.getChildren(root);
+        List<D> children = getModel().dataAdapter.getChildren(root);
         for (int i = 0, n = children.size(); i < n; i++) {
             renderRecursive(rootElement, children.get(i), depth);
         }
@@ -1094,11 +1095,11 @@ public class Tree<D> extends UiComponent<Tree.View<D>> implements IsWidget {
      *         if true, the subtree will animate open if it is still open
      * @return array paths that could not be expanded in the new subtree
      */
-    public Array<Array<String>> replaceSubtree(D oldSubtreeData, D incomingSubtreeData, boolean shouldAnimate) {
+    public List<List<String>> replaceSubtree(D oldSubtreeData, D incomingSubtreeData, boolean shouldAnimate) {
 
         // Gather paths that were expanded in this subtree so that we can restore
         // them later after rendering.
-        Array<Array<String>> expandedPaths = gatherExpandedPaths(oldSubtreeData);
+        List<List<String>> expandedPaths = gatherExpandedPaths(oldSubtreeData);
 
         boolean wasRoot = (oldSubtreeData == getModel().root);
         TreeNodeElement<D> oldRenderedNode = null;
@@ -1170,7 +1171,7 @@ public class Tree<D> extends UiComponent<Tree.View<D>> implements IsWidget {
 
         // TODO: Be more surgical about restoring the selection model. We
         // are currently recomputing all selected nodes.
-        Array<Array<String>> selectedPaths = getModel().selectionModel.computeSelectedPaths();
+        List<List<String>> selectedPaths = getModel().selectionModel.computeSelectedPaths();
         restoreSelectionModel(selectedPaths);
 
         return expandedPaths;
@@ -1180,7 +1181,7 @@ public class Tree<D> extends UiComponent<Tree.View<D>> implements IsWidget {
      * Populates the selection model from a list of selected paths if they
      * resolve to nodes in the data model.
      */
-    private void restoreSelectionModel(Array<Array<String>> selectedPaths) {
+    private void restoreSelectionModel(List<List<String>> selectedPaths) {
         getModel().selectionModel.clearSelections();
         for (int i = 0, n = selectedPaths.size(); i < n; i++) {
             D node = getModel().dataAdapter.getNodeByPath(getModel().root, selectedPaths.get(i));
@@ -1207,8 +1208,8 @@ public class Tree<D> extends UiComponent<Tree.View<D>> implements IsWidget {
      * @param node subtree parent
      * @return array containing all visible nodes of subtree
      */
-    public Array<TreeNodeElement<D>> getVisibleTreeNodes(TreeNodeElement<D> node) {
-        Array<TreeNodeElement<D>> nodes = Collections.createArray();
+    public List<TreeNodeElement<D>> getVisibleTreeNodes(TreeNodeElement<D> node) {
+        List<TreeNodeElement<D>> nodes = new ArrayList<>();
         nodes.add(node);
 
         if (node.isOpen() && node.hasChildNodes()) {
@@ -1227,9 +1228,9 @@ public class Tree<D> extends UiComponent<Tree.View<D>> implements IsWidget {
      *
      * @return array containing all visible nodes of the tree
      */
-    public Array<TreeNodeElement<D>> getVisibleTreeNodes() {
-        Array<TreeNodeElement<D>> nodes = Collections.createArray();
-        Array<D> rootItems = getModel().dataAdapter.getChildren(getModel().getRoot());
+    public List<TreeNodeElement<D>> getVisibleTreeNodes() {
+        List<TreeNodeElement<D>> nodes = new ArrayList<>();
+        List<D> rootItems = getModel().dataAdapter.getChildren(getModel().getRoot());
         for (int i = 0; i < rootItems.size(); i++) {
             TreeNodeElement<D> rootTreeNode = getModel().dataAdapter.getRenderedTreeNode(rootItems.get(i));
             nodes.addAll(getVisibleTreeNodes(rootTreeNode));
@@ -1250,7 +1251,7 @@ public class Tree<D> extends UiComponent<Tree.View<D>> implements IsWidget {
         D selected = getSelectionModel().getSelectedNodes().get(0);
         TreeNodeElement<D> selectedTreeNodeElement = getModel().dataAdapter.getRenderedTreeNode(selected);
 
-        Array<TreeNodeElement<D>> visibleTreeNodes = getVisibleTreeNodes();
+        List<TreeNodeElement<D>> visibleTreeNodes = getVisibleTreeNodes();
         for (int i = 0; i < visibleTreeNodes.size(); i++) {
             TreeNodeElement<D> treeNode = visibleTreeNodes.get(i);
             if (treeNode == selectedTreeNodeElement) {
@@ -1275,7 +1276,7 @@ public class Tree<D> extends UiComponent<Tree.View<D>> implements IsWidget {
         D selected = getSelectionModel().getSelectedNodes().get(0);
         TreeNodeElement<D> selectedTreeNodeElement = getModel().dataAdapter.getRenderedTreeNode(selected);
 
-        Array<TreeNodeElement<D>> visibleTreeNodes = getVisibleTreeNodes();
+        List<TreeNodeElement<D>> visibleTreeNodes = getVisibleTreeNodes();
         for (int i = 0; i < visibleTreeNodes.size(); i++) {
             TreeNodeElement<D> treeNode = visibleTreeNodes.get(i);
             if (treeNode == selectedTreeNodeElement) {
@@ -1312,7 +1313,7 @@ public class Tree<D> extends UiComponent<Tree.View<D>> implements IsWidget {
             return;
         }
 
-        Array<TreeNodeElement<D>> visibleTreeNodes = getVisibleTreeNodes();
+        List<TreeNodeElement<D>> visibleTreeNodes = getVisibleTreeNodes();
         selectSingleNode(visibleTreeNodes.get(visibleTreeNodes.size() - 1));
     }
 
@@ -1331,7 +1332,7 @@ public class Tree<D> extends UiComponent<Tree.View<D>> implements IsWidget {
         int rowHeight = selectedTreeNodeElement.getSelectionElement().getOffsetHeight();
 
         int index = -1;
-        Array<TreeNodeElement<D>> visibleTreeNodes = getVisibleTreeNodes();
+        List<TreeNodeElement<D>> visibleTreeNodes = getVisibleTreeNodes();
         for (int i = 0; i < visibleTreeNodes.size(); i++) {
             TreeNodeElement<D> treeNode = visibleTreeNodes.get(i);
             if (treeNode == selectedTreeNodeElement) {
@@ -1369,7 +1370,7 @@ public class Tree<D> extends UiComponent<Tree.View<D>> implements IsWidget {
         int rowHeight = selectedTreeNodeElement.getSelectionElement().getOffsetHeight();
 
         int index = -1;
-        Array<TreeNodeElement<D>> visibleTreeNodes = getVisibleTreeNodes();
+        List<TreeNodeElement<D>> visibleTreeNodes = getVisibleTreeNodes();
         for (int i = 0; i < visibleTreeNodes.size(); i++) {
             TreeNodeElement<D> treeNode = visibleTreeNodes.get(i);
             if (treeNode == selectedTreeNodeElement) {
@@ -1480,7 +1481,7 @@ public class Tree<D> extends UiComponent<Tree.View<D>> implements IsWidget {
         }
     }
 
-    private boolean expandPathRecursive(D expandedParentNode, Array<String> pathToExpand, boolean dispatchNodeExpanded) {
+    private boolean expandPathRecursive(D expandedParentNode, List<String> pathToExpand, boolean dispatchNodeExpanded) {
         if (expandedParentNode == null) {
             return false;
         }
@@ -1496,7 +1497,7 @@ public class Tree<D> extends UiComponent<Tree.View<D>> implements IsWidget {
 
             // The root is already expanded by default. So we really want to recur the
             // child that matches the first component.
-            Array<D> children = getModel().dataAdapter.getChildren(previousParentNode);
+            List<D> children = getModel().dataAdapter.getChildren(previousParentNode);
             previousParentNode = null;
 
             for (int i = 0, n = children.size(); i < n; ++i) {
@@ -1538,8 +1539,8 @@ public class Tree<D> extends UiComponent<Tree.View<D>> implements IsWidget {
      * whose children are all leaves, or are all collapsed. That is, nodes whose
      * children all answer false to {@link TreeNodeElement#isOpen()}.
      */
-    private Array<Array<String>> gatherExpandedPaths(D rootData) {
-        final Array<Array<String>> expandedPaths = Collections.createArray();
+    private List<List<String>> gatherExpandedPaths(D rootData) {
+        final List<List<String>> expandedPaths = new ArrayList<>();
 
         // Can't gather the expansion state for a null parent.
         if (rootData == null) {
@@ -1579,14 +1580,14 @@ public class Tree<D> extends UiComponent<Tree.View<D>> implements IsWidget {
      *         iteration callback
      */
     public static <D> void iterateDfs(D rootData, NodeDataAdapter<D> dataAdapter, Visitor<D> callback) {
-        Array<D> nodes = Collections.createArray();
+        LinkedList<D> nodes = new LinkedList<>();
         nodes.add(rootData);
 
         // Iterative DFS.
         while (!nodes.isEmpty()) {
             D parentNodeData = nodes.pop();
             boolean willVisitChildren = false;
-            Array<D> children = dataAdapter.getChildren(parentNodeData);
+            List<D> children = dataAdapter.getChildren(parentNodeData);
 
             for (int i = 0, n = children.size(); i < n; i++) {
                 D child = children.get(i);
@@ -1626,7 +1627,7 @@ public class Tree<D> extends UiComponent<Tree.View<D>> implements IsWidget {
 
         // Maybe continue the expansion.
         newNode.openNode(dataAdapter, css, getModel().animator, false);
-        Array<D> children = dataAdapter.getChildren(nodeData);
+        List<D> children = dataAdapter.getChildren(nodeData);
         for (int i = 0, n = children.size(); i < n; i++) {
             renderRecursive(newNode.getChildrenContainer(), children.get(i), depth - 1);
         }

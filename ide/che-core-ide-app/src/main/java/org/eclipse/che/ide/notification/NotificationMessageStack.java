@@ -16,11 +16,11 @@ import com.google.inject.Singleton;
 
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.notification.Notification;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -53,7 +53,7 @@ public class NotificationMessageStack implements NotificationMessage.ActionDeleg
     private Resources                              resources;
     private ActionDelegate                         delegate;
     private Map<Notification, NotificationMessage> notificationMessage;
-    private Array<NotificationMessage>             messages;
+    private List<NotificationMessage>              messages;
 
     /**
      * Create message stack.
@@ -63,8 +63,8 @@ public class NotificationMessageStack implements NotificationMessage.ActionDeleg
     @Inject
     public NotificationMessageStack(Resources resources) {
         this.resources = resources;
-        this.notificationMessage = new HashMap<Notification, NotificationMessage>();
-        this.messages = Collections.createArray();
+        this.notificationMessage = new HashMap<>();
+        this.messages = new ArrayList<>();
     }
 
     /** Sets the delegate for receiving events from this view. */

@@ -20,8 +20,6 @@ import org.eclipse.che.ide.api.editor.EditorInput;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.api.project.tree.generic.FileNode;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.java.JsonArrayListAdapter;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerViewImpl;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
@@ -77,7 +75,7 @@ public class ActiveNodePersistentComponentTest {
     @Mock
     private ActionDescriptor    actionDescriptor;
     @Mock
-    private Array<TreeNode<?>>  emptyArray;
+    private List<TreeNode<?>>  emptyArray;
     private VirtualFile         virtualFile;
 
     @InjectMocks
@@ -89,7 +87,6 @@ public class ActiveNodePersistentComponentTest {
         List<TreeNode<?>> treeNodeList = new ArrayList<>();
         treeNodeList.add(parentNode);
         treeNodeList.add(treeNode);
-        Array<TreeNode<?>> openedNodes = new JsonArrayListAdapter<>(treeNodeList);
 
         when(editorAgentProvider.get()).thenReturn(editorAgent);
         when(editorAgent.getActiveEditor()).thenReturn(activeEditor);
@@ -103,7 +100,7 @@ public class ActiveNodePersistentComponentTest {
         when(actionDescriptor.withId(TEXT)).thenReturn(actionDescriptor);
         when(actionDescriptor.withParameters(Matchers.<Map<String, String>>anyObject())).thenReturn(actionDescriptor);
 
-        when(projectExplorerView.getOpenedTreeNodes()).thenReturn(openedNodes);
+        when(projectExplorerView.getOpenedTreeNodes()).thenReturn(treeNodeList);
     }
 
     @Test

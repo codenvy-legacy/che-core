@@ -24,10 +24,11 @@ import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.action.Separator;
 import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
 import org.eclipse.che.ide.api.parts.PerspectiveManager;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
+import org.eclipse.che.ide.collections.ListHelper;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The implementation of {@link ToolbarView}
@@ -49,13 +50,14 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
     private ActionManager   				actionManager;
     private KeyBindingAgent 				keyBindingAgent;
 
+    private List<Action> newLeftVisibleActions;
+    private List<Action> leftVisibleActions;
+    
     private Provider<PerspectiveManager> 	managerProvider;
 
-    private Array<Action> 					newLeftVisibleActions;
-    private Array<Action> 					leftVisibleActions;
+    private List<Action> newRightVisibleActions;
+    private List<Action> rightVisibleActions;
 
-    private Array<Action> 					newRightVisibleActions;
-    private Array<Action> 					rightVisibleActions;
 
 
     private PresentationFactory 			presentationFactory;
@@ -95,11 +97,11 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
         rightToolbar.addStyleName(toolbarResources.toolbar().rightPanel());
         add(rightToolbar);
 
-        newLeftVisibleActions = Collections.createArray();
-        leftVisibleActions = Collections.createArray();
+        newLeftVisibleActions = new ArrayList<>();
+        leftVisibleActions = new ArrayList<>();
 
-        newRightVisibleActions = Collections.createArray();
-        rightVisibleActions = Collections.createArray();
+        newRightVisibleActions = new ArrayList<>();
+        rightVisibleActions = new ArrayList<>();
 
         presentationFactory = new PresentationFactory();
     }
@@ -142,8 +144,8 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
                                     actionManager,
                                     false,
                                     managerProvider.get());
-            if (!Collections.equals(newLeftVisibleActions, leftVisibleActions)) {
-                final Array<Action> temp = leftVisibleActions;
+            if (!ListHelper.equals(newLeftVisibleActions, leftVisibleActions)) {
+                final List<Action> temp = leftVisibleActions;
                 leftVisibleActions = newLeftVisibleActions;
                 newLeftVisibleActions = temp;
                 leftToolbar.clear();
@@ -159,8 +161,8 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
                                     actionManager,
                                     false,
                                     managerProvider.get());
-            if (!Collections.equals(newRightVisibleActions, rightVisibleActions)) {
-                final Array<Action> temp = rightVisibleActions;
+            if (!ListHelper.equals(newRightVisibleActions, rightVisibleActions)) {
+                final List<Action> temp = rightVisibleActions;
                 rightVisibleActions = newRightVisibleActions;
                 newRightVisibleActions = temp;
                 rightToolbar.clear();
@@ -170,7 +172,7 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
     }
 
     //TODO need improve code : dublicate code
-    private void fillLeftToolbar(Array<Action> leftActions) {
+    private void fillLeftToolbar(List<Action> leftActions) {
         if (addSeparatorFirst) {
             leftToolbar.add(newDelimiter());
             rightToolbar.add(newDelimiter());
@@ -203,7 +205,7 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
     }
 
     //TODO need improve code : dublicate code
-    private void fillRightToolbar(Array<Action> rightActions) {
+    private void fillRightToolbar(List<Action> rightActions) {
         for (int i = 0; i < rightActions.size(); i++) {
             final Action action = rightActions.get(i);
             if (action instanceof Separator) {
@@ -244,7 +246,6 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
     private ActionButton createToolbarButton(Action action) {
         return new ActionButton(action, actionManager, presentationFactory.getPresentation(action), place, managerProvider.get(), toolbarResources);
     }
-
 
     @Override
     public void setAddSeparatorFirst(boolean addSeparatorFirst) {

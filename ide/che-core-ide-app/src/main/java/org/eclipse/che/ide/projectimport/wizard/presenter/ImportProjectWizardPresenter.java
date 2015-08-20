@@ -19,7 +19,6 @@ import org.eclipse.che.ide.api.project.wizard.ImportWizardRegistrar;
 import org.eclipse.che.ide.api.project.wizard.ImportWizardRegistry;
 import org.eclipse.che.ide.api.wizard.Wizard;
 import org.eclipse.che.ide.api.wizard.WizardPage;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.dto.DtoFactory;
 
 import org.eclipse.che.ide.projectimport.wizard.ImportWizardFactory;
@@ -32,6 +31,7 @@ import com.google.inject.Provider;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -152,9 +152,9 @@ public class ImportProjectWizardPresenter implements Wizard.UpdateDelegate,
             throw new IllegalStateException("WizardRegistrar for the importer " + importer.getId() + " isn't registered.");
         }
 
-        Array<Provider<? extends WizardPage<ImportProject>>> pageProviders = wizardRegistrar.getWizardPages();
+        List<Provider<? extends WizardPage<ImportProject>>> pageProviders = wizardRegistrar.getWizardPages();
         final ImportWizard importWizard = createDefaultWizard();
-        for (Provider<? extends WizardPage<ImportProject>> provider : pageProviders.asIterable()) {
+        for (Provider<? extends WizardPage<ImportProject>> provider : pageProviders) {
             importWizard.addPage(provider.get(), 1, false);
         }
 

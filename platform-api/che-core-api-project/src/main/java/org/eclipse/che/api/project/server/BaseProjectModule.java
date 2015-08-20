@@ -10,9 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.server;
 
-import org.eclipse.che.api.project.server.handlers.ProjectHandler;
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
+
+import org.eclipse.che.api.project.server.handlers.ProjectHandler;
+import org.eclipse.che.api.project.server.watcher.WatcherService;
 
 /**
  * Deploys project API components.
@@ -31,5 +33,6 @@ public class BaseProjectModule extends AbstractModule {
         bind(ProjectImportersService.class);
         bind(ProjectTemplateDescriptionLoader.class);
         bind(ProjectTemplateRegistry.class);
+        bind(WatcherService.class);
     }
 }

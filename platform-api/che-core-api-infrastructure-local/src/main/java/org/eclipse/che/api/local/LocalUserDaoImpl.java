@@ -10,14 +10,22 @@
  *******************************************************************************/
 package org.eclipse.che.api.local;
 
+
+import com.google.common.reflect.TypeToken;
+
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
-import org.eclipse.che.api.user.server.dao.UserDao;
+import org.eclipse.che.api.local.storage.LocalStorage;
+import org.eclipse.che.api.local.storage.LocalStorageFactory;
 import org.eclipse.che.api.user.server.dao.User;
+import org.eclipse.che.api.user.server.dao.UserDao;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -26,23 +34,33 @@ import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * @author Anton Korneta
+ */
 @Singleton
 public class LocalUserDaoImpl implements UserDao {
+
     private final List<User>    users;
     private final ReadWriteLock lock;
+    private final LocalStorage  userStorage;
 
     @Inject
-    public LocalUserDaoImpl(@Named("codenvy.local.infrastructure.users") Set<User> users) {
+    public LocalUserDaoImpl(LocalStorageFactory storageFactory) throws IOException {
         this.users = new LinkedList<>();
         lock = new ReentrantReadWriteLock();
-        try {
-            for (User user : users) {
-                create(user);
-            }
-        } catch (Exception e) {
-            // fail if can't validate this instance properly
-            throw new RuntimeException(e);
-        }
+        userStorage = storageFactory.create("users.json");
+    }
+
+    @Inject
+    @PostConstruct
+    public void start(@Named("codenvy.local.infrastructure.users") Set<User> defaultUsers) {
+        List<User> storedUsers = userStorage.loadList(new TypeToken<List<User>>() {});
+        users.addAll(storedUsers.isEmpty() ? defaultUsers : storedUsers);
+    }
+
+    @PreDestroy
+    public void stop() throws IOException {
+        userStorage.store(users);
     }
 
     @Override

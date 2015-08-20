@@ -10,12 +10,13 @@
  *******************************************************************************/
 package org.eclipse.che.ide.client;
 
-import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.dto.DtoFactoryVisitor;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
+
+import java.util.Map;
 
 /**
  * Class responsible for register DTO providers. It uses {@link DtoFactoryVisitorRegistry} to acquire
@@ -35,12 +36,11 @@ public class DtoRegistrar {
     }
 
     public void registerDtoProviders() {
-        dtoFactoryVisitorRegistry.getDtoFactoryVisitors().iterate(
-                new StringMap.IterationCallback<Provider>() {
-                    @Override
-                    public void onIteration(String dtoFactoryVisitorFqn, Provider dtoFactoryVisitorProvider) {
-                        ((DtoFactoryVisitor)dtoFactoryVisitorProvider.get()).accept(dtoFactory);
-                    }
-                });
+        Map<String, Provider> dtoVisitors = dtoFactoryVisitorRegistry.getDtoFactoryVisitors();
+
+        for (String dtoFactoryVisitorFqn: dtoVisitors.keySet()) {
+            Provider provider = dtoVisitors.get(dtoFactoryVisitorFqn);
+            ((DtoFactoryVisitor)provider.get()).accept(dtoFactory);
+        }
     }
 }

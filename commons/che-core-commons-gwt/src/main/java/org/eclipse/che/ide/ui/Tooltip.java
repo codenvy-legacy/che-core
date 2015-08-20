@@ -23,8 +23,6 @@ import elemental.events.MouseEvent;
 import elemental.dom.Element;
 import elemental.util.Timer;
 
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.ui.menu.AutoHideComponent;
 import org.eclipse.che.ide.ui.menu.AutoHideView;
 import org.eclipse.che.ide.ui.menu.PositionController;
@@ -35,6 +33,9 @@ import org.eclipse.che.ide.util.loging.Log;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Represents a single tooltip instance attached to any element, activated by
@@ -57,11 +58,11 @@ public class Tooltip extends AutoHideComponent<AutoHideView<Void>,
     private static Tooltip                       activeTooltip;
     /** Holds a reference to the css. */
     private final  Css                           css;
-    private final  Array<Element>                targetElements;
+    private final  List<Element>                targetElements;
     private final  Timer                         showTimer;
     private final  TooltipRenderer               renderer;
     private final  PositionController            positionController;
-    private final  Array<EventRemover>           eventRemovers;
+    private final  List<EventRemover>           eventRemovers;
     private final  PositionController.Positioner positioner;
     private        Element                       contentElement;
     private        String                        title;
@@ -76,7 +77,7 @@ public class Tooltip extends AutoHideComponent<AutoHideView<Void>,
 
     private Tooltip(AutoHideView<Void> view,
                     Resources res,
-                    Array<Element> targetElements,
+                    List<Element> targetElements,
                     PositionController.Positioner positioner,
                     TooltipRenderer renderer,
                     boolean shouldShowOnHover) {
@@ -87,7 +88,7 @@ public class Tooltip extends AutoHideComponent<AutoHideView<Void>,
         this.targetElements = targetElements;
 
         this.eventRemovers =
-                shouldShowOnHover ? attachToTargetElement() : Collections.<EventRemover>createArray();
+                shouldShowOnHover ? attachToTargetElement() : new ArrayList<EventRemover>();
 
         getView().setAnimationController(AnimationController.FADE_ANIMATION_CONTROLLER);
 
@@ -234,8 +235,8 @@ public class Tooltip extends AutoHideComponent<AutoHideView<Void>,
      * Adds event handlers to the target element for the tooltip to show it on
      * hover, and update position on mouse move.
      */
-    private Array<EventRemover> attachToTargetElement() {
-        Array<EventRemover> removers = Collections.createArray();
+    private List<EventRemover> attachToTargetElement() {
+        List<EventRemover> removers = new ArrayList<>();
         for (int i = 0; i < targetElements.size(); i++) {
             final Element targetElement = targetElements.get(i);
             addPartner(targetElement);
@@ -376,7 +377,7 @@ public class Tooltip extends AutoHideComponent<AutoHideView<Void>,
     public static class Builder {
 
         private final Resources                     res;
-        private final Array<Element>                targetElements;
+        private final List<Element> targetElements;
         private final PositionController.Positioner positioner;
         private boolean shouldShowOnHover = true;
         private TooltipRenderer renderer;
@@ -385,7 +386,8 @@ public class Tooltip extends AutoHideComponent<AutoHideView<Void>,
         public Builder(Element targetElement, PositionController.Positioner positioner) {
             this.res = RESOURCES;
             this.positioner = positioner;
-            this.targetElements = Collections.createArray(targetElement);
+            this.targetElements = new ArrayList<>();
+            this.targetElements.add(targetElement);
         }
 
         /**

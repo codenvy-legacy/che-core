@@ -28,7 +28,7 @@ public class AnalyticsModule extends AbstractModule {
 
     private static final Logger LOG = LoggerFactory.getLogger(AnalyticsModule.class);
 
-    private static final String CODENVY_LOCAL_CONF_DIR  = "codenvy.local.conf.dir";
+    private static final String CHE_LOCAL_CONF_DIR      = "che.local.conf.dir";
     private static final String ANALYTICS_CONF_FILENAME = "analytics.properties";
     
     private static final String METRIC_HANDLER_CLASS_NAME = "analytics.api.metric_handler";
@@ -82,7 +82,7 @@ public class AnalyticsModule extends AbstractModule {
     }
 
     private Properties readAnalyticsProperties() throws IOException {
-        String fileName = System.getProperty(CODENVY_LOCAL_CONF_DIR) + File.separator + ANALYTICS_CONF_FILENAME;
+        String fileName = System.getProperty(CHE_LOCAL_CONF_DIR) + File.separator + ANALYTICS_CONF_FILENAME;
 
         try (InputStream in = new FileInputStream(new File(fileName))) {
             Properties properties = new Properties();

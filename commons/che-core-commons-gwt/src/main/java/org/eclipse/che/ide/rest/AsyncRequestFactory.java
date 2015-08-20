@@ -11,11 +11,12 @@
 package org.eclipse.che.ide.rest;
 
 import org.eclipse.che.ide.MimeType;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.dto.DtoFactory;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
+import java.util.List;
 
 /**
  * Provides implementations of {@link AsyncRequest} instances.
@@ -80,7 +81,7 @@ public class AsyncRequestFactory {
      *         org.eclipse.che.ide.dto.JsonSerializable} interface. May be {@code null}.
      * @return new {@link AsyncRequest} instance to send POST request
      */
-    public AsyncRequest createPostRequest(String url, Array<Object> dtoArray) {
+    public AsyncRequest createPostRequest(String url, List<Object> dtoArray) {
         return createPostRequest(url, dtoArray, false);
     }
 
@@ -112,7 +113,7 @@ public class AsyncRequestFactory {
      *         if <b>true</b> - request will be sent in asynchronous mode
      * @return new {@link AsyncRequest} instance to send POST request
      */
-    public AsyncRequest createPostRequest(String url, Array<Object> dtoArray, boolean async) {
+    public AsyncRequest createPostRequest(String url, List<Object> dtoArray, boolean async) {
         return createRequest(RequestBuilder.POST, url, dtoArray, async);
     }
 
@@ -148,7 +149,7 @@ public class AsyncRequestFactory {
      *         if <b>true</b> - request will be sent in asynchronous mode
      * @return new {@link AsyncRequest} instance to send POST request
      */
-    public AsyncRequest createRequest(RequestBuilder.Method method, String url, Array<Object> dtoBody, boolean async) {
+    public AsyncRequest createRequest(RequestBuilder.Method method, String url, List<Object> dtoBody, boolean async) {
         return doCreateRequest(method, url, dtoBody, async);
     }
 
@@ -169,8 +170,8 @@ public class AsyncRequestFactory {
     private AsyncRequest doCreateRequest(RequestBuilder.Method method, String url, Object dtoBody, boolean async) {
         AsyncRequest asyncRequest = new AsyncRequest(method, url, async);
         if (dtoBody != null) {
-            if (dtoBody instanceof Array) {
-                asyncRequest.data(dtoFactory.toJson((Array)dtoBody));
+            if (dtoBody instanceof List) {
+                asyncRequest.data(dtoFactory.toJson((List)dtoBody));
             } else {
                 asyncRequest.data(dtoFactory.toJson(dtoBody));
             }

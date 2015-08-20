@@ -12,11 +12,12 @@ package org.eclipse.che.ide.debug;
 
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.ProjectActionHandler;
-import org.eclipse.che.ide.collections.Collections;
-import org.eclipse.che.ide.collections.StringMap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The manager provides to return debugger for current project.
@@ -25,8 +26,8 @@ import com.google.web.bindery.event.shared.EventBus;
  */
 @Singleton
 public class DebuggerManager {
-    private Debugger            currentDebugger;
-    private StringMap<Debugger> debuggers;
+    private Debugger              currentDebugger;
+    private Map<String, Debugger> debuggers;
 
     /**
      * Create manager.
@@ -35,7 +36,7 @@ public class DebuggerManager {
      */
     @Inject
     protected DebuggerManager(EventBus eventBus) {
-        this.debuggers = Collections.createStringMap();
+        this.debuggers = new HashMap<>();
         eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
             @Override
             public void onProjectOpened(ProjectActionEvent event) {

@@ -31,11 +31,13 @@ import java.nio.file.Paths;
 public class GitUrlResolver {
     private final LocalPathResolver pathResolver;
     private final String            mountPath;
+    private final String            gitServerUriPrefix;
 
     @Inject
-    public GitUrlResolver(@Named("vfs.local.fs_root_dir") java.io.File mountRoot, LocalPathResolver pathResolver) {
+    public GitUrlResolver(@Named("vfs.local.fs_root_dir") java.io.File mountRoot, @Named("git.server.uri.prefix") String gitServerUriPrefix, LocalPathResolver pathResolver) {
         this.mountPath = mountRoot.getAbsolutePath();
         this.pathResolver = pathResolver;
+        this.gitServerUriPrefix = gitServerUriPrefix;
     }
 
     public String resolve(UriInfo uriInfo, VirtualFileSystem vfs, String path)
@@ -67,7 +69,7 @@ public class GitUrlResolver {
             result.append(port);
         }
         result.append('/');
-        result.append("git");
+        result.append(gitServerUriPrefix);
         result.append(localPathNormalized.substring(mountPathNormalized.length() - 1));
 
         int lastSymbol = result.length() - 1;

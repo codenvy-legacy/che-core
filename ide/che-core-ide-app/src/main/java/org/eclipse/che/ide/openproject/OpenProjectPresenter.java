@@ -13,13 +13,14 @@ package org.eclipse.che.ide.openproject;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.ide.api.event.OpenProjectEvent;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.util.loging.Log;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
+
+import java.util.List;
 
 /**
  * Provides opening project.
@@ -77,9 +78,9 @@ public class OpenProjectPresenter implements OpenProjectView.ActionDelegate {
     /** Show dialog. */
     public void showDialog() {
         projectServiceClient.getProjects(
-                new AsyncRequestCallback<Array<ProjectReference>>(dtoUnmarshallerFactory.newArrayUnmarshaller(ProjectReference.class)) {
+                new AsyncRequestCallback<List<ProjectReference>>(dtoUnmarshallerFactory.newListUnmarshaller(ProjectReference.class)) {
                     @Override
-                    protected void onSuccess(Array<ProjectReference> result) {
+                    protected void onSuccess(List<ProjectReference> result) {
                         view.setProjects(result);
                         view.showDialog();
                     }

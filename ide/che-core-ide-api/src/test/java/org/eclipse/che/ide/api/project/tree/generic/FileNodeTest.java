@@ -18,10 +18,6 @@ import org.eclipse.che.ide.api.event.FileEvent;
 import org.eclipse.che.ide.api.event.NodeChangedEvent;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
-import org.eclipse.che.ide.collections.StringMap;
-import org.eclipse.che.ide.collections.java.JsonStringMapAdapter;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.Unmarshallable;
 import org.eclipse.che.test.GwtReflectionUtils;
@@ -36,8 +32,10 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 
 import static org.eclipse.che.ide.api.project.tree.TreeNode.DeleteCallback;
 import static org.eclipse.che.ide.api.project.tree.TreeNode.RenameCallback;
@@ -68,8 +66,7 @@ public class FileNodeTest extends BaseNodeTest {
     private static final String NEW_NAME          = "new_name";
     private static final String RENAMED_ITEM_PATH = PARENT_PATH + "/" + NEW_NAME;
 
-    private StringMap<EditorPartPresenter>   openedEditors;
-    private Map<String, EditorPartPresenter> openedEditorsMap;
+    private NavigableMap<String, EditorPartPresenter> openedEditorsMap;
 
     @Mock
     private ItemReference       itemReference;
@@ -116,17 +113,16 @@ public class FileNodeTest extends BaseNodeTest {
                                 dtoUnmarshallerFactory,
                                 editorAgent);
 
-        final Array<TreeNode<?>> children = Collections.createArray();
+        final List<TreeNode<?>> children = new ArrayList<>();
         when(projectNode.getChildren()).thenReturn(children);
         when(projectNode.getPath()).thenReturn(PARENT_PATH);
 
-        openedEditorsMap = new HashMap<>();
+        openedEditorsMap = new TreeMap<>();
         openedEditorsMap.put(ITEM_PATH, editorPartPresenter);
-        openedEditors = new JsonStringMapAdapter<>(openedEditorsMap);
 
         when(dtoUnmarshallerFactory.newUnmarshaller(ItemReference.class)).thenReturn(unmarshaller);
 
-        when(editorAgent.getOpenedEditors()).thenReturn(openedEditors);
+        when(editorAgent.getOpenedEditors()).thenReturn(openedEditorsMap);
     }
 
     @Test
@@ -351,9 +347,8 @@ public class FileNodeTest extends BaseNodeTest {
 
     @Test
     public void dataShouldBeUpdatedButEditorReferenceShouldNotBeUpdatedBecauseThisFileIsNotOpened() {
-        openedEditorsMap = new HashMap<>();
-        openedEditors = new JsonStringMapAdapter<>(openedEditorsMap);
-        when(editorAgent.getOpenedEditors()).thenReturn(openedEditors);
+        openedEditorsMap = new TreeMap<>();
+        when(editorAgent.getOpenedEditors()).thenReturn(openedEditorsMap);
 
         fileNode.updateData(asyncCallback, PARENT_PATH + "/" + NEW_NAME);
 

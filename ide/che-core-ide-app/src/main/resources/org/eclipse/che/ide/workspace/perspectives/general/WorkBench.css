@@ -8,66 +8,44 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
+
+
+/*******************************************************************************
+ *
+ * Panels where tab-buttons created
+ *
+ *******************************************************************************/
 .ide-work-bench-tool-panel-left,
 .ide-work-bench-tool-panel-right,
 .ide-work-bench-tool-panel-bottom {
     position: relative;
+
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+
+    background-color: tabsPanelBackground;
 }
 
 .ide-work-bench-tool-panel-left {
-    /* panel where tab-buttons created*/
-    background: tabsPanelBackground;
+    width: 24px;
     border-right: 1px solid tabBorder;
-    width: 100%;
-    box-sizing: border-box;
-    -moz-box-sizing: border-box; /* Firefox */
-    -webkit-box-sizing: border-box;
-}
-
-.ide-work-bench-tool-panel-left:before {
-    /* panel where tab-buttons created*/
-    position: absolute;
-    border-right: 1px solid tabBorderShadow;
-    right: 0px;
-    height: 100%;
-    width: 1px;
-    content: "";
+    padding-top: 26px;
 }
 
 .ide-work-bench-tool-panel-right {
-    /* panel where tab-buttons created*/
-    background: tabsPanelBackground;
+    width: 24px;
     border-left: 1px solid tabBorder;
-    z-index: 5;
-}
-
-.ide-work-bench-tool-panel-right:before {
-    /* panel where tab-buttons created*/
-    border-left: 1px solid tabBorderShadow;
-    position: absolute;
-    height: 100%;
-    width: 1px;
-    content: "";
+    padding-top: 26px;
 }
 
 .ide-work-bench-tool-panel-bottom {
-    /* panel where tab-buttons created*/
-    background: tabsPanelBackground;
+    height: 24px;
     border-top: 1px solid tabBorder;
-    z-index: 4;
 }
 
-.ide-work-bench-tool-panel-bottom:before {
-    /* panel where tab-buttons created*/
-    border-top: 1px solid tabBorderShadow;
-    position: absolute;
-    width: 100%;
-    height: 1px;
-    content: "";
-}
-
-.ide-work-bench-parent-panel > div {
-    overflow: hidden !important;
+.ide-work-bench-parent-panel {
+    opacity: 1;
 }
 
 svg[name="workBenchIconMinimize"] {

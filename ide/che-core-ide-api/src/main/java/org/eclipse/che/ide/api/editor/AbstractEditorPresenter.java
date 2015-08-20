@@ -13,10 +13,10 @@ package org.eclipse.che.ide.api.editor;
 import com.google.gwt.user.client.ui.IsWidget;
 
 import org.eclipse.che.ide.api.parts.AbstractPartPresenter;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Abstract implementation of {@link EditorPartPresenter} that is intended
@@ -28,7 +28,7 @@ import javax.annotation.Nonnull;
 public abstract class AbstractEditorPresenter extends AbstractPartPresenter implements EditorPartPresenter {
     protected boolean     dirtyState;
     protected EditorInput input;
-    protected final Array<EditorPartCloseHandler> closeHandlers = Collections.createArray();
+    protected final List<EditorPartCloseHandler> closeHandlers = new ArrayList<>();
 
     /** {@inheritDoc} */
     @Override
@@ -84,8 +84,7 @@ public abstract class AbstractEditorPresenter extends AbstractPartPresenter impl
     }
 
     protected void handleClose() {
-        for (int i = 0; i < closeHandlers.size(); i++) {
-            EditorPartCloseHandler handler = closeHandlers.get(i);
+        for (EditorPartCloseHandler handler : closeHandlers) {
             handler.onClose(this);
         }
     }

@@ -59,27 +59,37 @@ public class DarkTheme implements Theme {
 
     @Override
     public String getActiveTabBackground() {
-        return "#5a5c5c";
+        return "#292C2F";
     }
 
     @Override
     public String getActiveTabBorderColor() {
-        return "#232323";
+        return "#121416";
     }
 
     @Override
-    public String getTabFontColor() {
-        return "#989898";
+    public String getActiveTabTextColor() {
+        return "#FFFFFF";
+    }
+
+    @Override
+    public String getTabTextColor() {
+        return "#AAAAAA";
+    }
+
+    @Override
+    public String getHoveredTabTextColor() {
+        return "#FFFFFF";
     }
 
     @Override
     public String getTabsPanelBackground() {
-        return "#5a5c5c";
+        return "#33373B";
     }
 
     @Override
     public String getTabBorderColor() {
-        return "#232323";
+        return "#121416";
     }
 
     @Override
@@ -344,7 +354,7 @@ public class DarkTheme implements Theme {
 
     @Override
     public String getMainMenuBkgColor() {
-        return "#404040";
+        return "#292c2f";
     }
 
     @Override
@@ -444,7 +454,7 @@ public class DarkTheme implements Theme {
 
     @Override
     public String getToolbarBackgroundColor() {
-        return "#484848";
+        return "#292c2f";
     }
 
     @Override
@@ -453,7 +463,9 @@ public class DarkTheme implements Theme {
     }
 
     @Override
-    public String getTooltipBackgroundColor() { return "#202020";}
+    public String getTooltipBackgroundColor() {
+        return "#202020";
+    }
 
     @Override
     public String getProgressColor() {

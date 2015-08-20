@@ -159,8 +159,6 @@ import org.eclipse.che.ide.statepersistance.OpenedFilesPersistenceComponent;
 import org.eclipse.che.ide.statepersistance.OpenedNodesPersistenceComponent;
 import org.eclipse.che.ide.statepersistance.PersistenceComponent;
 import org.eclipse.che.ide.statepersistance.ShowHiddenFilesPersistenceComponent;
-import org.eclipse.che.ide.texteditor.openedfiles.ListOpenedFilesView;
-import org.eclipse.che.ide.texteditor.openedfiles.ListOpenedFilesViewImpl;
 import org.eclipse.che.ide.theme.AppearancePresenter;
 import org.eclipse.che.ide.theme.AppearanceView;
 import org.eclipse.che.ide.theme.AppearanceViewImpl;
@@ -217,6 +215,8 @@ import org.eclipse.che.ide.workspace.WorkspaceView;
 import org.eclipse.che.ide.workspace.WorkspaceViewImpl;
 import org.eclipse.che.ide.workspace.perspectives.general.PerspectiveViewImpl;
 import org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective;
+import org.eclipse.che.api.git.gwt.client.GitServiceClient;
+import org.eclipse.che.api.git.gwt.client.GitServiceClientImpl;
 
 import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
 
@@ -289,8 +289,8 @@ public class CoreGinModule extends AbstractGinModule {
         mapBinder.addBinding("Preferences").to(PreferencesComponent.class);
         mapBinder.addBinding("Workspace").to(WorkspaceComponent.class);
         mapBinder.addBinding("Profile").to(ProfileComponent.class);
-        mapBinder.addBinding("Project Types").to(ProjectTypeComponent.class);
-        mapBinder.addBinding("Project Templates").to(ProjectTemplatesComponent.class);
+//        mapBinder.addBinding("Project Types").to(ProjectTypeComponent.class);
+//        mapBinder.addBinding("Project Templates").to(ProjectTemplatesComponent.class);
 //        mapBinder.addBinding("Factory").to(FactoryComponent.class);
         mapBinder.addBinding("Project State Handler").to(ProjectStateHandler.class);
         mapBinder.addBinding("Standard components").to(StandartComponent.class);
@@ -314,6 +314,7 @@ public class CoreGinModule extends AbstractGinModule {
     private void configurePlatformApiGwtClients() {
         bind(UserServiceClient.class).to(UserServiceClientImpl.class).in(Singleton.class);
         bind(UserProfileServiceClient.class).to(UserProfileServiceClientImpl.class).in(Singleton.class);
+        bind(GitServiceClient.class).to(GitServiceClientImpl.class).in(Singleton.class);
         bind(AccountServiceClient.class).to(AccountServiceClientImpl.class).in(Singleton.class);
 //        bind(FactoryServiceClient.class).to(FactoryServiceClientImpl.class).in(Singleton.class);
         bind(WorkspaceServiceClient.class).to(WorkspaceServiceClientImpl.class).in(Singleton.class);
@@ -325,9 +326,6 @@ public class CoreGinModule extends AbstractGinModule {
         bind(RecipeServiceClient.class).to(RecipeServiceClientImpl.class).in(Singleton.class);
         bind(MachineServiceClient.class).to(MachineServiceClientImpl.class).in(Singleton.class);
         bind(CommandServiceClient.class).to(CommandServiceClientImpl.class).in(Singleton.class);
-//        bind(BuilderServiceClient.class).to(BuilderServiceClientImpl.class).in(Singleton.class);
-//        bind(RunnerServiceClient.class).to(RunnerServiceClientImpl.class).in(Singleton.class);
-
         bind(ProjectTypeRegistry.class).to(ProjectTypeRegistryImpl.class).in(Singleton.class);
         bind(ProjectTemplateRegistry.class).to(ProjectTemplateRegistryImpl.class).in(Singleton.class);
     }
@@ -397,7 +395,6 @@ public class CoreGinModule extends AbstractGinModule {
         bind(UploadFolderFromZipView.class).to(UploadFolderFromZipViewImpl.class);
         bind(PreferencesView.class).to(PreferencesViewImpl.class).in(Singleton.class);
         bind(NavigateToFileView.class).to(NavigateToFileViewImpl.class).in(Singleton.class);
-        bind(ListOpenedFilesView.class).to(ListOpenedFilesViewImpl.class);
 
         bind(ExtensionManagerView.class).to(ExtensionManagerViewImpl.class).in(Singleton.class);
         bind(AppearanceView.class).to(AppearanceViewImpl.class).in(Singleton.class);

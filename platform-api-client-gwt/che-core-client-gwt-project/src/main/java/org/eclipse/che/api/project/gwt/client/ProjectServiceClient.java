@@ -19,7 +19,6 @@ import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.api.project.shared.dto.ProjectUpdate;
 //import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentTree;
 import org.eclipse.che.api.project.shared.dto.TreeElement;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 
 import javax.annotation.Nullable;
@@ -40,7 +39,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void getProjects(AsyncRequestCallback<Array<ProjectReference>> callback);
+    void getProjects(AsyncRequestCallback<List<ProjectReference>> callback);
 
     /**
      * Get all projects in specific workspace.
@@ -48,7 +47,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void getProjectsInSpecificWorkspace(String wsId, AsyncRequestCallback<Array<ProjectReference>> callback);
+    void getProjectsInSpecificWorkspace(String wsId, AsyncRequestCallback<List<ProjectReference>> callback);
 
     /**
      * Clone project from some workspace.
@@ -112,7 +111,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void getModules(String path, AsyncRequestCallback<Array<ProjectDescriptor>> callback);
+    void getModules(String path, AsyncRequestCallback<List<ProjectDescriptor>> callback);
 
     /**
      * Create sub-project.
@@ -289,7 +288,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void getChildren(String path, AsyncRequestCallback<Array<ItemReference>> callback);
+    void getChildren(String path, AsyncRequestCallback<List<ItemReference>> callback);
 
     /**
      * Get folders tree starts from the specified path.
@@ -311,7 +310,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void search(QueryExpression expression, AsyncRequestCallback<Array<ItemReference>> callback);
+    void search(QueryExpression expression, AsyncRequestCallback<List<ItemReference>> callback);
 
     /**
      * Switch visibility(public/private) of the project represented by it's path.

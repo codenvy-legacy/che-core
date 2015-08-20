@@ -16,51 +16,19 @@ import com.google.gwt.resources.client.ImageResource;
 
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-/** @author <a href="mailto:nzamosenchuk@exoplatform.com">Nikolay Zamosenchuk</a> */
+/** @author Nikolay Zamosenchuk */
 public interface PartStackUIResources extends ClientBundle {
-    public interface PartStackCss extends CssResource {
 
-        @ClassName("ide-PartStack")
-        String idePartStack();
+    interface PartStackCss extends CssResource {
 
         @ClassName("ide-PartStack-Tab")
         String idePartStackTab();
 
-        @ClassName("ide-PartStack-Tabs")
-        String idePartStackTabs();
-
-        @ClassName("CloseButton")
-        String idePartStackTabCloseButton();
-
-        @ClassName("ide-PartStack-Tab-selected")
-        String idePartStackTabSelected();
-
-        @ClassName("ide-PartStack-Editor-Content")
-        String idePartStackEditorContent();
-
-        @ClassName("ide-PartStack-focused")
-        String idePartStackFocused();
-
-        @ClassName("ide-PartStack-Tab-Left")
-        String idePartStackTabLeft();
-
-        @ClassName("ide-PartStack-Tab-Right")
-        String idePartStackTabRight();
-
-        @ClassName("ide-PartStack-Tab-Below")
-        String idePartStackTabBelow();
-
         @ClassName("ide-Base-Part-Toolbar")
         String ideBasePartToolbar();
 
-        @ClassName("ide-PartStack-Tab-Label")
-        String idePartStackTabLabel();
-
         @ClassName("ide-PartStack-Content")
         String idePartStackContent();
-
-        @ClassName("ide-PartStack-Tool-Tab")
-        String idePartStackToolTab();
 
         @ClassName("ide-Base-Part-Toolbar-Bottom")
         String idePartStackToolbarBottom();
@@ -68,12 +36,8 @@ public interface PartStackUIResources extends ClientBundle {
         @ClassName("ide-Base-Part-Toolbar-Separator")
         String idePartStackToolbarSeparator();
 
-
         @ClassName("ide-Base-Part-Toolbar-Bottom-Icon")
         String idePartStackToolbarBottomIcon();
-
-        @ClassName("ide-Base-Part-Toolbar-Bottom-Icon-Right")
-        String idePartStackToolbarBottomIconRight();
 
         @ClassName("ide-Base-Part-Toolbar-Bottom-Button")
         String idePartStackToolbarBottomButton();
@@ -84,29 +48,8 @@ public interface PartStackUIResources extends ClientBundle {
         @ClassName("ide-PartStack-Tool-Tab-selected")
         String idePartStackToolTabSelected();
 
-        @ClassName("ide-PartStack-Tab-Right-Button")
-        String idePartStackTabRightButton();
-
-        @ClassName("ide-PartStack-Tab-Button")
-        String idePartStackTabButton();
-
-        @ClassName("ide-PartStack-Tab-Button-selected")
-        String idePartStackTabButtonSelected();
-
-        @ClassName("ide-PartStack-Multiple-Tabs-Container")
-        String idePartStackMultipleTabsContainer();
-
-        @ClassName("ide-PartStack-Multiple-Tabs-Item")
-        String idePartStackMultipleTabsItem();
-
         @ClassName("ide-Base-Part-Title-Label")
         String ideBasePartTitleLabel();
-
-        @ClassName("ide-PartStack-Button-Left")
-        String idePartStackButtonLeft();
-
-        @ClassName("ide-PartStack-Tab-Icon")
-        String idePartStackTabIcon();
 
         @ClassName("ide-PartStack-Tab-Line-Warning")
         String lineWarning();
@@ -116,8 +59,6 @@ public interface PartStackUIResources extends ClientBundle {
 
         @ClassName("ide-part-stack-header-menu-button")
         String headerMenuButton();
-
-        String onTabMouseOver();
 
         String leftTabs();
 

@@ -12,8 +12,6 @@ package org.eclipse.che.ide.debug;
 
 import java.util.List;
 
-import org.eclipse.che.ide.collections.Array;
-
 /** interface for breakpoints managers. */
 public interface BreakpointManager {
 
@@ -54,7 +52,7 @@ public interface BreakpointManager {
      * @deprecated use {@link #getBreakpointList()}
      */
     @Deprecated
-    Array<Breakpoint> getBreakpoints();
+    List<Breakpoint> getBreakpoints();
 
     void markCurrentBreakpoint(int lineNumber);
 

@@ -26,7 +26,7 @@ import java.util.List;
  *
  * @author Vitaly Parfonov
  */
-@Path("project-template")
+@Path("project-template/{ws-id}")
 public class ProjectTemplateService extends Service {
 
     private ProjectTemplateRegistry templateRegistry;

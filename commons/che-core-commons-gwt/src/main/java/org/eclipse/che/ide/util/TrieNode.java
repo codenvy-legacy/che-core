@@ -14,8 +14,8 @@
 
 package org.eclipse.che.ide.util;
 
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A node in a trie that can be used for efficient autocompletion lookup.
@@ -26,21 +26,21 @@ import org.eclipse.che.ide.collections.Collections;
 public final class TrieNode<T> {
     private final String prefix;
 
-    private final Array<TrieNode<T>> children;
+    private final List<TrieNode<T>> children;
 
     private T value;
 
     private TrieNode(String prefix) {
         this.prefix = prefix;
         this.value = null;
-        this.children = Collections.createArray();
+        this.children = new ArrayList<>();
     }
 
     public static <T> TrieNode<T> makeNode(String prefix) {
         return new TrieNode<T>(prefix);
     }
 
-    public Array<TrieNode<T>> getChildren() {
+    public List<TrieNode<T>> getChildren() {
         return children;
     }
 

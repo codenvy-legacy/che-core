@@ -11,10 +11,10 @@
 package org.eclipse.che.ide.jseditor.client.annotation;
 
 import java.util.Iterator;
+import java.util.Map;
 
 import org.eclipse.che.ide.api.text.Position;
 import org.eclipse.che.ide.api.text.annotation.Annotation;
-import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.jseditor.client.events.DocumentChangeHandler;
 import org.eclipse.che.ide.jseditor.client.document.UseDocumentHandle;
 
@@ -88,14 +88,14 @@ public interface AnnotationModel extends UseDocumentHandle, DocumentChangeHandle
      *
      * @return all decorations
      */
-    StringMap<String> getAnnotationDecorations();
+    Map<String, String> getAnnotationDecorations();
 
     /**
      * Returns styles (CSS styles) mapped to Annotation type
      *
      * @return all decorations
      */
-    StringMap<String> getAnnotationStyle();
+    Map<String, String> getAnnotationStyle();
 
     /**
      * Clear the annotation model.

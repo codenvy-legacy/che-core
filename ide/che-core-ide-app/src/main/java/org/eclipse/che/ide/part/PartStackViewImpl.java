@@ -29,6 +29,7 @@ import org.eclipse.che.ide.api.parts.PartStackView;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
+
 import java.util.List;
 import java.util.Map;
 

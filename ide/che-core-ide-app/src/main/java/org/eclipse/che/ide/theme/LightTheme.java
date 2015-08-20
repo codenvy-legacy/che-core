@@ -66,7 +66,18 @@ public class LightTheme implements Theme {
         return "#232323";
     }
 
-    public String getTabFontColor() {
+    @Override
+    public String getActiveTabTextColor() {
+        return "#333333";
+    }
+
+    @Override
+    public String getTabTextColor() {
+        return "#989898";
+    }
+
+    @Override
+    public String getHoveredTabTextColor() {
         return "#989898";
     }
 
@@ -97,7 +108,7 @@ public class LightTheme implements Theme {
 
     @Override
     public String getPartToolbarShadow() {
-        return getTabBorderColor();
+        return "#bdbdbd";
     }
 
     @Override
@@ -282,7 +293,7 @@ public class LightTheme implements Theme {
 
     @Override
     public String getWindowHeaderBackground() {
-        return getTabBorderColor();
+        return "#bdbdbd";
     }
 
     @Override
@@ -506,7 +517,7 @@ public class LightTheme implements Theme {
 
     @Override
     public String getEditorInfoBorderColor() {
-        return getTabBorderColor();
+        return "#bdbdbd";
     }
 
     @Override

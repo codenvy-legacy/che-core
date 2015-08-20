@@ -48,10 +48,9 @@ import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 @Singleton
 public class MachineExtensionProxyServlet extends HttpServlet {
     private static final Logger  LOG               = LoggerFactory.getLogger(MachineExtensionProxyServlet.class);
-    private static final Pattern EXTENSION_API_URI = Pattern.compile("/[^/]+/ext/(?<machineId>[^/]+)(?<destpath>/.*)");
+    private static final Pattern EXTENSION_API_URI = Pattern.compile(".*/ext/[^/]+/(?<workspaceId>[^/]+)/?.*");
 
-    private final int extServicesPort;
-
+    private final int            extServicesPort;
     private final MachineManager machineManager;
 
     @Inject
@@ -117,24 +116,23 @@ public class MachineExtensionProxyServlet extends HttpServlet {
     }
 
     private String getExtensionApiUrl(HttpServletRequest req) throws NotFoundException, ServerException {
-        String machineId;
+        String workspaceId;
         final Matcher matcher = EXTENSION_API_URI.matcher(req.getRequestURI());
         if (matcher.matches()) {
-            machineId = matcher.group("machineId");
+            workspaceId = matcher.group("workspaceId");
         } else {
-            throw new NotFoundException("No machine id is found in request.");
+            throw new NotFoundException("No workspace id is found in request.");
         }
 
-        final Instance machine = machineManager.getMachine(machineId);
+        final Instance machine = machineManager.getDevMachine(workspaceId);
         final Server server = machine.getServers().get(Integer.toString(extServicesPort));
         if (server == null) {
-            throw new ServerException("No extension server found in machine");
+            throw new ServerException("No extension server found in machine.");
         }
 
-        final StringBuilder url = new StringBuilder("http://").append(server.getAddress());
-
-        final String extPath = matcher.group("destpath");
-        url.append(extPath);
+        final StringBuilder url = new StringBuilder("http://")
+                .append(server.getAddress())
+                .append(req.getRequestURI());
 
         if (req.getQueryString() != null) {
             url.append("?").append(req.getQueryString());
@@ -145,12 +143,15 @@ public class MachineExtensionProxyServlet extends HttpServlet {
 
     private void setResponse(HttpServletResponse resp, HttpURLConnection conn) throws ServerException {
         try {
-            resp.setStatus(conn.getResponseCode());
+            final int responseCode = conn.getResponseCode();
 
-            InputStream responseStream = conn.getErrorStream();
+            resp.setStatus(responseCode);
 
-            if (responseStream == null) {
+            InputStream responseStream;
+            if (responseCode / 100 == 2 && responseCode != 204) {
                 responseStream = conn.getInputStream();
+            } else {
+                responseStream = conn.getErrorStream();
             }
 
             // copy headers from proxy response to origin response
@@ -160,10 +161,12 @@ public class MachineExtensionProxyServlet extends HttpServlet {
                 }
             }
 
-            // copy content of input or error stream from destination response to output stream of origin response
-            try (OutputStream os = resp.getOutputStream()) {
-                ByteStreams.copy(responseStream, os);
-                os.flush();
+            if (responseStream != null) {
+                // copy content of input or error stream from destination response to output stream of origin response
+                try (OutputStream os = resp.getOutputStream()) {
+                    ByteStreams.copy(responseStream, os);
+                    os.flush();
+                }
             }
         } catch (IOException e) {
             LOG.error(e.getLocalizedMessage(), e);
