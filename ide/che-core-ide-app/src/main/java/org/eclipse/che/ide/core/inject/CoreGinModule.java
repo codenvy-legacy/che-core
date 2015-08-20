@@ -159,8 +159,6 @@ import org.eclipse.che.ide.statepersistance.OpenedFilesPersistenceComponent;
 import org.eclipse.che.ide.statepersistance.OpenedNodesPersistenceComponent;
 import org.eclipse.che.ide.statepersistance.PersistenceComponent;
 import org.eclipse.che.ide.statepersistance.ShowHiddenFilesPersistenceComponent;
-import org.eclipse.che.ide.texteditor.openedfiles.ListOpenedFilesView;
-import org.eclipse.che.ide.texteditor.openedfiles.ListOpenedFilesViewImpl;
 import org.eclipse.che.ide.theme.AppearancePresenter;
 import org.eclipse.che.ide.theme.AppearanceView;
 import org.eclipse.che.ide.theme.AppearanceViewImpl;
@@ -325,9 +323,6 @@ public class CoreGinModule extends AbstractGinModule {
         bind(RecipeServiceClient.class).to(RecipeServiceClientImpl.class).in(Singleton.class);
         bind(MachineServiceClient.class).to(MachineServiceClientImpl.class).in(Singleton.class);
         bind(CommandServiceClient.class).to(CommandServiceClientImpl.class).in(Singleton.class);
-//        bind(BuilderServiceClient.class).to(BuilderServiceClientImpl.class).in(Singleton.class);
-//        bind(RunnerServiceClient.class).to(RunnerServiceClientImpl.class).in(Singleton.class);
-
         bind(ProjectTypeRegistry.class).to(ProjectTypeRegistryImpl.class).in(Singleton.class);
         bind(ProjectTemplateRegistry.class).to(ProjectTemplateRegistryImpl.class).in(Singleton.class);
     }
@@ -397,7 +392,6 @@ public class CoreGinModule extends AbstractGinModule {
         bind(UploadFolderFromZipView.class).to(UploadFolderFromZipViewImpl.class);
         bind(PreferencesView.class).to(PreferencesViewImpl.class).in(Singleton.class);
         bind(NavigateToFileView.class).to(NavigateToFileViewImpl.class).in(Singleton.class);
-        bind(ListOpenedFilesView.class).to(ListOpenedFilesViewImpl.class);
 
         bind(ExtensionManagerView.class).to(ExtensionManagerViewImpl.class).in(Singleton.class);
         bind(AppearanceView.class).to(AppearanceViewImpl.class).in(Singleton.class);
