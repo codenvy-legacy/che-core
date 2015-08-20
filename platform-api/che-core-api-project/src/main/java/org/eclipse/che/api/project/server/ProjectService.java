@@ -406,54 +406,9 @@ public class ProjectService extends Service {
                                            @PathParam("path") String path,
                                            ProjectUpdate update)
             throws NotFoundException, ConflictException, ForbiddenException, ServerException, IOException {
-        Project project = projectManager.getProject(workspace, path);
-        String oldProjectType = null;
-        List<String> oldMixinTypes = new ArrayList<>();
-        if (project == null) {
-            FolderEntry projectsRoot = projectManager.getProjectsRoot(workspace);
-            VirtualFileEntry child = projectsRoot.getChild(path);
-            if (child != null && child.isFolder() && child.getParent().isRoot()) {
-                project = new Project((FolderEntry)child, projectManager);
-            } else {
-                throw new NotFoundException(String.format("Project '%s' doesn't exist in workspace '%s'.", path, workspace));
-            }
-        } else {
-            try {
-                ProjectConfig config = project.getConfig();
-                oldProjectType = config.getTypeId();
-                oldMixinTypes = config.getMixinTypes();
-            } catch (ProjectTypeConstraintException | ValueStorageException e) {
-                //here we allow changing bad project type on registered
-                LOG.warn(e.getMessage());
-            }
-        }
-
-        String visibility = update.getVisibility();
-        if (visibility != null && !visibility.isEmpty()) {
-            project.setVisibility(visibility);
-        }
-        project.updateConfig(DtoConverter.fromDto2(update, projectManager.getProjectTypeRegistry()));
-
-        //handle project type changes
-        //post actions on changing project type
-        //base or mixin
-        if (!update.getType().equals(oldProjectType)) {
-            ProjectTypeChangedHandler projectTypeChangedHandler = projectHandlerRegistry.getProjectTypeChangedHandler(update.getType());
-            if (projectTypeChangedHandler != null) {
-                projectTypeChangedHandler.onProjectTypeChanged(project.getBaseFolder());
-            }
-        }
-
-        List<String> mixinTypes = firstNonNull(update.getMixinTypes(), Collections.<String>emptyList());
-        for (String mixin : mixinTypes) {
-            if (!oldMixinTypes.contains(mixin)) {
-                ProjectTypeChangedHandler projectTypeChangedHandler = projectHandlerRegistry.getProjectTypeChangedHandler(mixin);
-                if (projectTypeChangedHandler != null) {
-                    projectTypeChangedHandler.onProjectTypeChanged(project.getBaseFolder());
-                }
-            }
-        }
-
+        ProjectConfig newConfig = DtoConverter.fromDto2(update, projectManager.getProjectTypeRegistry());
+        String newVisibility = update.getVisibility();
+        Project project = projectManager.updateProject(workspace, path, newConfig, newVisibility);
         return DtoConverter.toDescriptorDto2(project,
                                              getServiceContext().getServiceUriBuilder(),
                                              getServiceContext().getBaseUriBuilder(),
@@ -685,37 +640,8 @@ public class ProjectService extends Service {
                        @PathParam("path") String path,
                        @QueryParam("module") String modulePath)
             throws NotFoundException, ForbiddenException, ConflictException, ServerException {
-
-        final VirtualFileEntry entry = getVirtualFileEntry(workspace, path);
-        if (entry.isFolder() && ((FolderEntry)entry).isProjectFolder()) {
-            // In case of folder extract some information about project for logger before delete project.
-            Project project = new Project((FolderEntry)entry, projectManager);
-            // remove module only
-            if (modulePath != null) {
-                project.getModules().remove(modulePath);
-                return;
-            }
-
-            final String name = project.getName();
-            String projectType = null;
-            try {
-                projectType = project.getConfig().getTypeId();
-            } catch (ServerException | ValueStorageException | ProjectTypeConstraintException e) {
-                // Let delete even project in invalid state.
-                entry.remove();
-                LOG.info("EVENT#project-destroyed# PROJECT#{}# TYPE#{}# WS#{}# USER#{}#", name, "unknown",
-                         EnvironmentContext.getCurrent().getWorkspaceName(), EnvironmentContext.getCurrent().getUser().getName());
-                LOG.warn(String.format("Removing not valid project ws : %s, project path: %s ", workspace, path) + e.getMessage(), e);
-            }
-            entry.remove();
-            LOG.info("EVENT#project-destroyed# PROJECT#{}# TYPE#{}# WS#{}# USER#{}#", name, projectType,
-                     EnvironmentContext.getCurrent().getWorkspaceName(), EnvironmentContext.getCurrent().getUser().getName());
-        } else {
-
-            eventService.publish(new ProjectItemModifiedEvent(ProjectItemModifiedEvent.EventType.DELETED,
-                                                              workspace, projectPath(entry.getPath()), entry.getPath(), entry.isFolder()));
-
-            entry.remove();
+        if (!projectManager.delete(workspace, path, modulePath)) {
+            throw new NotFoundException(String.format("Path '%s' doesn't exist.", path));
         }
     }
 
@@ -832,26 +758,9 @@ public class ProjectService extends Service {
                            @ApiParam(value = "New media type")
                            @QueryParam("mediaType") String newMediaType)
             throws NotFoundException, ConflictException, ForbiddenException, ServerException, IOException {
-        final VirtualFileEntry entry = getVirtualFileEntry(workspace, path);
-        if (entry.isFile() && newMediaType != null) {
-            // Use the same rules as in method createFile to make client side simpler.
-            ((FileEntry)entry).rename(newName, newMediaType);
-        } else {
-            entry.rename(newName);
-
-            String projectName = projectPath(path);
-
-            /* We should not edit Modules if resource to rename is project */
-            if (!projectName.equals(path) && entry.isFolder() && ((FolderEntry)entry).isProjectFolder()) {
-                Project project = projectManager.getProject(workspace, projectName);
-
-                /* We need module path without projectName, f.e projectName/module1/oldModuleName -> module1/oldModuleName */
-                String oldModulePath = path.replaceFirst(projectName + "/", "");
-                /* Calculates new module path, f.e module1/oldModuleName -> module1/newModuleName */
-                String newModulePath = oldModulePath.substring(0, oldModulePath.lastIndexOf("/") + 1) + newName;
-
-                project.getModules().update(oldModulePath, newModulePath);
-            }
+        final VirtualFileEntry entry = projectManager.rename(workspace, path, newName, newMediaType);
+        if (entry == null) {
+            throw new NotFoundException(String.format("Path '%s' doesn't exist.", path));
         }
         final URI location = getServiceContext().getServiceUriBuilder()
                                                 .path(getClass(), entry.isFile() ? "getFile" : "getChildren")
