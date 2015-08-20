@@ -22,7 +22,7 @@ import java.util.List;
 /** PartStack View interface */
 public interface PartStackView extends View<PartStackView.ActionDelegate> {
 
-    public enum TabPosition {
+    enum TabPosition {
         BELOW, LEFT, RIGHT
     }
 
@@ -53,24 +53,24 @@ public interface PartStackView extends View<PartStackView.ActionDelegate> {
     }
 
     /** Add Tab */
-    public void addTab(@Nonnull TabItem tabItem, @Nonnull PartPresenter presenter);
+    void addTab(@Nonnull TabItem tabItem, @Nonnull PartPresenter presenter);
 
     /** Remove Tab */
-    public void removeTab(@Nonnull PartPresenter presenter);
+    void removeTab(@Nonnull PartPresenter presenter);
 
-    public void selectTab(@Nonnull PartPresenter partPresenter);
+    void selectTab(@Nonnull PartPresenter partPresenter);
 
     /** Set new Tabs positions */
-    public void setTabPositions(List<PartPresenter> partPositions);
+    void setTabPositions(List<PartPresenter> partPositions);
 
     /** Set PartStack focused */
-    public void setFocus(boolean focused);
+    void setFocus(boolean focused);
 
     /** Update Tab */
-    public void updateTabItem(@Nonnull PartPresenter partPresenter);
+    void updateTabItem(@Nonnull PartPresenter partPresenter);
 
     /** Handles Focus Request Event. It is generated, when user clicks a stack anywhere */
-    public interface ActionDelegate {
+    interface ActionDelegate {
         /** PartStack is being clicked and requests Focus */
         void onRequestFocus();
     }

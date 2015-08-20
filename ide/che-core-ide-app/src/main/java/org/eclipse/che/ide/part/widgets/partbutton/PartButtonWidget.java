@@ -42,6 +42,8 @@ import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.RIGHT;
  * @author Valeriy Svydenko
  */
 public class PartButtonWidget extends Composite implements PartButton {
+
+    /** Shifting left and right panels from the top */
     private final static int TOP_SHIFT = 63;
 
     interface PartButtonWidgetUiBinder extends UiBinder<Widget, PartButtonWidget> {
@@ -64,6 +66,7 @@ public class PartButtonWidget extends Composite implements PartButton {
         this.resources = resources;
 
         initWidget(UI_BINDER.createAndBindUi(this));
+        setStyleName(resources.partStackCss().idePartStackTab());
 
         addDomHandler(this, ClickEvent.getType());
 

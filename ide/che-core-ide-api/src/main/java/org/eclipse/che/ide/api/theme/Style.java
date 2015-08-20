@@ -47,12 +47,20 @@ public class Style {
         return theme.getActiveTabBackground();
     }
 
-    public static String getTabFontColor() {
-        return theme.getTabFontColor();
+    public static String getTabTextColor() {
+        return theme.getTabTextColor();
+    }
+
+    public static String getHoveredTabTextColor() {
+        return theme.getHoveredTabTextColor();
     }
 
     public static String getActiveTabBorderColor() {
         return theme.getActiveTabBorderColor();
+    }
+
+    public static String getActiveTabTextColor() {
+        return theme.getActiveTabTextColor();
     }
 
     public static String getTabsPanelBackground() {
