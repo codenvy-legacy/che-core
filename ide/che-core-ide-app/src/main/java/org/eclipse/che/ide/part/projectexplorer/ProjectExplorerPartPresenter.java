@@ -56,6 +56,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -83,7 +84,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
     private Provider<EditorAgent>          editorAgentProvider;
 
     /** A list of nodes is used for asynchronously refreshing the tree. */
-    private Array<TreeNode<?>> nodesToRefresh;
+    private List<TreeNode<?>> nodesToRefresh;
 
     /** Instantiates the Project Explorer presenter. */
     @Inject
@@ -224,12 +225,12 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
 //                    return;
 //                }
 //
-//                currentTreeStructure.getRootNodes(new AsyncCallback<Array<TreeNode<?>>>() {
+//                currentTreeStructure.getRootNodes(new AsyncCallback<List<TreeNode<?>>>() {
 //                    @Override
-//                    public void onSuccess(Array<TreeNode<?>> result) {
-//                        for (TreeNode<?> childNode : result.asIterable()) {
+//                    public void onSuccess(List<TreeNode<?>> result) {
+//                        for (TreeNode<?> childNode : result) {
 //                            // clear children in order to force to refresh
-//                            childNode.setChildren(Collections.<TreeNode<?>>createArray());
+//                            childNode.setChildren(new ArrayList<TreeNode<?>>());
 //                            refreshAndSelectNode(childNode);
 //
 //                            ProjectDescriptor projectDescriptor = appContext.getCurrentProject().getRootProject();
@@ -279,11 +280,11 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
             public void onNodeRenamed(TreeNode<?> parentNode, String newParenNodePath) {
                 if (parentNode instanceof UpdateTreeNodeDataIterable) {
                     final StorableNode parent = (StorableNode) parentNode;
-                    Array<TreeNode<?>> children = JsoArray.create();
+                    List<TreeNode<?>> children = new ArrayList<>();
                     children.add(parent);
                     getAllChildren(parentNode, children);
                     getOpenedUnCashedFiles(parent, children);
-                    final Iterator<TreeNode<?>> treeNodeIterator = children.asIterable().iterator();
+                    final Iterator<TreeNode<?>> treeNodeIterator = children.iterator();
 
                     updateDataTreeNode(parent, newParenNodePath, treeNodeIterator);
                 }
@@ -333,8 +334,8 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
         return prefixPath + nodeRenamedPath + currentPath;
     }
 
-    private void getAllChildren(TreeNode<?> parent, Array<TreeNode<?>> children) {
-        Array<TreeNode<?>> childrenForCurrentDeep = parent.getChildren();
+    private void getAllChildren(TreeNode<?> parent, List<TreeNode<?>> children) {
+        List<TreeNode<?>> childrenForCurrentDeep = parent.getChildren();
 
         if (childrenForCurrentDeep.isEmpty()) {
             return;
@@ -342,7 +343,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
 
         children.addAll(childrenForCurrentDeep);
 
-        for (TreeNode<?> node: childrenForCurrentDeep.asIterable()) {
+        for (TreeNode<?> node: childrenForCurrentDeep) {
             getAllChildren(node, children);
         }
     }
@@ -415,7 +416,6 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
 //            }
 //        });
 //    }
-
     /**
      * Asynchronously refreshes all nodes from the nodesToRefresh list.
      */
@@ -444,9 +444,9 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
     /** {@inheritDoc} */
     @Override
     public void onNodeSelected(final TreeNode< ? > node, final SelectionModel< ? > model) {
-        final Array< ? > allSelected = model.getSelectedNodes();
+        final List<?> allSelected = model.getSelectedNodes();
         final List<Object> newSelection = new ArrayList<>();
-        for (final Object item : allSelected.asIterable()) {
+        for (final Object item : allSelected) {
             newSelection.add(item);
         }
         if (newSelection.contains(node)) {
@@ -508,7 +508,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
     @Override
     public void onDeleteKey() {
         List<StorableNode> selectedNodes = new ArrayList<>();
-        for (Object node : view.getSelectedNodes().asIterable()) {
+        for (Object node : view.getSelectedNodes()) {
             if (node instanceof StorableNode) {
                 selectedNodes.add((StorableNode) node);
             }
@@ -527,9 +527,9 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
         if (appContext.getCurrentProject() != null) {
             appContext.getCurrentProject().setCurrentTree(currentTreeStructure);
         }
-        treeStructure.getRootNodes(new AsyncCallback<Array<TreeNode<?>>>() {
+        treeStructure.getRootNodes(new AsyncCallback<List<TreeNode<?>>>() {
             @Override
-            public void onSuccess(Array<TreeNode<?>> result) {
+            public void onSuccess(List<TreeNode<?>> result) {
                 view.setRootNodes(result);
             }
 

@@ -10,16 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.git.impl.nativegit.commands;
 
-import com.google.common.collect.ImmutableMap;
-
 import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.git.impl.nativegit.GitUrl;
 import org.eclipse.che.git.impl.nativegit.ssh.GitSshScript;
 import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Sergii Kabashniuk

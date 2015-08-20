@@ -116,7 +116,7 @@ public class ExtensionManagerGenerator {
         builder.append(GeneratorUtils.TAB
                        + "/** Contains the map will all the Extension Providers <FullClassFQN, Provider>. */\n");
         builder.append(GeneratorUtils.TAB
-                       + "protected final StringMap<Provider> extensions = Collections.createStringMap();\n\n");
+                       + "protected final Map<String, Provider> extensions = new HashMap<>();\n\n");
 
         // generate constructor
 
@@ -155,7 +155,7 @@ public class ExtensionManagerGenerator {
         // generate getter
         builder.append(GeneratorUtils.TAB
                        + "/** Returns  the map will all the Extension Providers <FullClassFQN, Provider>. */\n");
-        builder.append(GeneratorUtils.TAB + "public StringMap<Provider> getExtensions()\n");
+        builder.append(GeneratorUtils.TAB + "public Map<String, Provider> getExtensions()\n");
         builder.append(GeneratorUtils.TAB + "{\n");
         builder.append(GeneratorUtils.TAB2 + "return extensions;\n");
         builder.append(GeneratorUtils.TAB + "}\n");
@@ -176,8 +176,8 @@ public class ExtensionManagerGenerator {
         builder.append("import com.google.inject.Provider;\n");
         builder.append("import com.google.inject.Singleton;\n");
 
-        builder.append("import org.eclipse.che.ide.collections.StringMap;\n");
-        builder.append("import org.eclipse.che.ide.collections.Collections;\n");
+        builder.append("import java.util.HashMap;\n");
+        builder.append("import java.util.Map;\n");
     }
 
     /**

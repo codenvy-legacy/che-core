@@ -20,9 +20,6 @@ import com.google.web.bindery.event.shared.EventBus;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
-import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.websocket.Message;
@@ -31,6 +28,11 @@ import org.eclipse.che.ide.websocket.MessageBus;
 import org.eclipse.che.ide.websocket.WebSocketException;
 import org.eclipse.che.ide.websocket.rest.RequestCallback;
 import org.eclipse.che.ide.websocket.rest.Unmarshallable;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.google.gwt.http.client.RequestBuilder.GET;
 import static org.eclipse.che.ide.MimeType.APPLICATION_JSON;
@@ -45,15 +47,15 @@ import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
 @Singleton
 public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegate {
 
-    private final String                   SEARCH_URL;
-    private       MessageBus               wsMessageBus;
-    private       DtoUnmarshallerFactory   dtoUnmarshallerFactory;
-    private       DialogFactory            dialogFactory;
-    private       CoreLocalizationConstant localizationConstant;
-    private       NavigateToFileView       view;
-    private       AppContext               appContext;
-    private       EventBus                 eventBus;
-    private       StringMap<ItemReference> resultMap;
+    private final String                     SEARCH_URL;
+    private       MessageBus                 wsMessageBus;
+    private       DtoUnmarshallerFactory     dtoUnmarshallerFactory;
+    private       DialogFactory              dialogFactory;
+    private       CoreLocalizationConstant   localizationConstant;
+    private       NavigateToFileView         view;
+    private       AppContext                 appContext;
+    private       EventBus                   eventBus;
+    private       Map<String, ItemReference> resultMap;
 
     @Inject
     public NavigateToFilePresenter(NavigateToFileView view,
@@ -72,7 +74,7 @@ public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegat
         this.dialogFactory = dialogFactory;
         this.localizationConstant = localizationConstant;
 
-        resultMap = Collections.createStringMap();
+        resultMap = new HashMap<>();
 
         SEARCH_URL = "/project/" + workspaceId + "/search";
         view.setDelegate(this);
@@ -86,21 +88,22 @@ public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegat
 
     /** {@inheritDoc} */
     @Override
-    public void onRequestSuggestions(String query, final AsyncCallback<Array<ItemReference>> callback) {
-        resultMap = Collections.createStringMap();
+    public void onRequestSuggestions(String query, final AsyncCallback<List<ItemReference>> callback) {
+        resultMap = new HashMap<>();
 
         // add '*' to allow search files by first letters
-        search(query + "*", new AsyncCallback<Array<ItemReference>>() {
+        search(query + "*", new AsyncCallback<List<ItemReference>>() {
             @Override
-            public void onSuccess(Array<ItemReference> result) {
-                for (ItemReference item : result.asIterable()) {
+            public void onSuccess(List<ItemReference> result) {
+                for (ItemReference item : result) {
                     final String path = item.getPath();
                     // skip hidden items
                     if (!isItemHidden(path)) {
                         resultMap.put(path, item);
                     }
                 }
-                callback.onSuccess(resultMap.getValues());
+                List itemReference = new ArrayList<>(resultMap.values());
+                callback.onSuccess(itemReference);
             }
 
             @Override
@@ -133,15 +136,15 @@ public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegat
 //        });
     }
 
-    private void search(String fileName, final AsyncCallback<Array<ItemReference>> callback) {
+    private void search(String fileName, final AsyncCallback<List<ItemReference>> callback) {
         final String projectPath = appContext.getCurrentProject().getRootProject().getPath();
         final String url = SEARCH_URL + projectPath + "/?name=" + URL.encodePathSegment(fileName);
         Message message = new MessageBuilder(GET, url).header(ACCEPT, APPLICATION_JSON).build();
-        Unmarshallable<Array<ItemReference>> unmarshaller = dtoUnmarshallerFactory.newWSArrayUnmarshaller(ItemReference.class);
+        Unmarshallable<List<ItemReference>> unmarshaller = dtoUnmarshallerFactory.newWSListUnmarshaller(ItemReference.class);
         try {
-            wsMessageBus.send(message, new RequestCallback<Array<ItemReference>>(unmarshaller) {
+            wsMessageBus.send(message, new RequestCallback<List<ItemReference>>(unmarshaller) {
                 @Override
-                protected void onSuccess(Array<ItemReference> result) {
+                protected void onSuccess(List<ItemReference> result) {
                     callback.onSuccess(result);
                 }
 

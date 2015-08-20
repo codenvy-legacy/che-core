@@ -19,7 +19,6 @@ import org.eclipse.che.ide.actions.OpenNodeAction;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerView;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 

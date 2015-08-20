@@ -10,10 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.ide.websocket.rest.exceptions;
 
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.HTTPHeader;
 import org.eclipse.che.ide.websocket.Message;
 import org.eclipse.che.ide.websocket.rest.Pair;
+
+import java.util.List;
 
 /**
  * Thrown when there was an any exception was received from the server over WebSocket.
@@ -44,10 +45,9 @@ public class ServerException extends Exception {
     }
 
     public String getHeader(String key) {
-        Array<Pair> headers = response.getHeaders();
+        List<Pair> headers = response.getHeaders().toList();
         if (headers != null) {
-            for (int i = 0; i < headers.size(); i++) {
-                Pair header = headers.get(i);
+            for (Pair header : headers) {
                 if (key.equals(header.getName())) {
                     return header.getValue();
                 }

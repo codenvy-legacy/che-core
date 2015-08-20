@@ -19,8 +19,8 @@ import elemental.events.Event;
 import elemental.events.EventListener;
 import elemental.events.EventTarget;
 
-import org.eclipse.che.ide.collections.js.JsoArray;
-
+import java.util.ArrayList;
+import java.util.List;
 
 /** Utility class which allows simulation of Event Capture. */
 public class MouseEventCapture {
@@ -37,7 +37,7 @@ public class MouseEventCapture {
      * When no UI component possesses capture (meaning that the captureOwner stack
      * is empty) we can disconnect these.
      */
-    private static final JsoArray<Remover> mouseRemovers = JsoArray.create();
+    private static final List<Remover> mouseRemovers = new ArrayList<>();
 
     /**
      * Capture happens on a per listener instance basis. We throw the

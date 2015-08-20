@@ -94,7 +94,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <environmentVariables>
-                        <CODENVY_LOCAL_CONF_DIR>${project.build.directory}/conf</CODENVY_LOCAL_CONF_DIR>
+                        <CHE_LOCAL_CONF_DIR>${project.build.directory}/conf</CHE_LOCAL_CONF_DIR>
                     </environmentVariables>
                 </configuration>
             </plugin>

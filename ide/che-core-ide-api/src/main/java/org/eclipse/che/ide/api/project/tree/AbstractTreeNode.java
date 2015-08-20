@@ -16,13 +16,13 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.api.event.NodeChangedEvent;
 import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
 import org.eclipse.che.ide.api.project.tree.generic.ProjectNode;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.ui.tree.TreeNodeElement;
 import org.vectomatic.dom.svg.ui.SVGImage;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -38,7 +38,7 @@ public abstract class AbstractTreeNode<T> implements TreeNode<T> {
     protected     EventBus                     eventBus;
     private       TreeNode<?>                  parent;
     private       T                            data;
-    private       Array<TreeNode<?>>           cachedChildren;
+    private       List<TreeNode<?>>           cachedChildren;
     private       SVGImage                     icon;
     private       TreeNodeElement<TreeNode<?>> treeNodeElement;
 
@@ -59,7 +59,7 @@ public abstract class AbstractTreeNode<T> implements TreeNode<T> {
         this.data = data;
         this.treeStructure = treeStructure;
         this.eventBus = eventBus;
-        cachedChildren = Collections.createArray();
+        cachedChildren = new ArrayList<>();
     }
 
     /** {@inheritDoc} */
@@ -134,13 +134,13 @@ public abstract class AbstractTreeNode<T> implements TreeNode<T> {
     /** {@inheritDoc} */
     @Nonnull
     @Override
-    public Array<TreeNode<?>> getChildren() {
+    public List<TreeNode<?>> getChildren() {
         return cachedChildren;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void setChildren(Array<TreeNode<?>> children) {
+    public void setChildren(List<TreeNode<?>> children) {
         cachedChildren = children;
     }
 

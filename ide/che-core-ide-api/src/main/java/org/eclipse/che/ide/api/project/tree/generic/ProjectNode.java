@@ -18,8 +18,6 @@ import org.eclipse.che.ide.api.event.RenameNodeEvent;
 import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
 import org.eclipse.che.ide.api.project.tree.AbstractTreeNode;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.Unmarshallable;
@@ -30,6 +28,7 @@ import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -163,12 +162,12 @@ public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements 
     /** {@inheritDoc} */
     @Override
     public void refreshChildren(final AsyncCallback<TreeNode<?>> callback) {
-        getModules(getData(), new AsyncCallback<Array<ProjectDescriptor>>() {
+        getModules(getData(), new AsyncCallback<List<ProjectDescriptor>>() {
             @Override
-            public void onSuccess(final Array<ProjectDescriptor> modules) {
-                getChildren(getData().getPath(), new AsyncCallback<Array<ItemReference>>() {
+            public void onSuccess(final List<ProjectDescriptor> modules) {
+                getChildren(getData().getPath(), new AsyncCallback<List<ItemReference>>() {
                     @Override
-                    public void onSuccess(Array<ItemReference> childItems) {
+                    public void onSuccess(List<ItemReference> childItems) {
                         setChildren(getChildNodesForItems(childItems, modules));
                         callback.onSuccess(ProjectNode.this);
                     }
@@ -183,9 +182,9 @@ public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements 
             @Override
             public void onFailure(Throwable caught) {
                 //can be if pom.xml not found
-                getChildren(getData().getPath(), new AsyncCallback<Array<ItemReference>>() {
+                getChildren(getData().getPath(), new AsyncCallback<List<ItemReference>>() {
                     @Override
-                    public void onSuccess(Array<ItemReference> childItems) {
+                    public void onSuccess(List<ItemReference> childItems) {
                         callback.onSuccess(ProjectNode.this);
                     }
 
@@ -199,11 +198,11 @@ public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements 
         });
     }
 
-    protected void getModules(ProjectDescriptor project, final AsyncCallback<Array<ProjectDescriptor>> callback) {
-        final Unmarshallable<Array<ProjectDescriptor>> unmarshaller = dtoUnmarshallerFactory.newArrayUnmarshaller(ProjectDescriptor.class);
-        projectServiceClient.getModules(project.getPath(), new AsyncRequestCallback<Array<ProjectDescriptor>>(unmarshaller) {
+    protected void getModules(ProjectDescriptor project, final AsyncCallback<List<ProjectDescriptor>> callback) {
+        final Unmarshallable<List<ProjectDescriptor>> unmarshaller = dtoUnmarshallerFactory.newListUnmarshaller(ProjectDescriptor.class);
+        projectServiceClient.getModules(project.getPath(), new AsyncRequestCallback<List<ProjectDescriptor>>(unmarshaller) {
             @Override
-            protected void onSuccess(Array<ProjectDescriptor> result) {
+            protected void onSuccess(List<ProjectDescriptor> result) {
                 callback.onSuccess(result);
             }
 
@@ -214,10 +213,10 @@ public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements 
         });
     }
 
-    private Array<TreeNode<?>> getChildNodesForItems(Array<ItemReference> childItems, Array<ProjectDescriptor> modules) {
-        Array<TreeNode<?>> oldChildren = Collections.createArray(getChildren().asIterable());
-        Array<TreeNode<?>> newChildren = Collections.createArray();
-        for (ItemReference item : childItems.asIterable()) {
+    private List<TreeNode<?>> getChildNodesForItems(List<ItemReference> childItems, List<ProjectDescriptor> modules) {
+        List<TreeNode<?>> oldChildren = getChildren();
+        List<TreeNode<?>> newChildren = new ArrayList<>();
+        for (ItemReference item : childItems) {
             AbstractTreeNode node = createChildNode(item, modules);
             if (node != null) {
                 if (oldChildren.contains(node)) {
@@ -276,14 +275,14 @@ public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements 
      * @param callback
      *         callback to return retrieved children
      */
-    protected void getChildren(String path, final AsyncCallback<Array<ItemReference>> callback) {
-        final Array<ItemReference> children = Collections.createArray();
-        final Unmarshallable<Array<ItemReference>> unmarshaller = dtoUnmarshallerFactory.newArrayUnmarshaller(ItemReference.class);
-        projectServiceClient.getChildren(path, new AsyncRequestCallback<Array<ItemReference>>(unmarshaller) {
+    protected void getChildren(String path, final AsyncCallback<List<ItemReference>> callback) {
+        final List<ItemReference> children = new ArrayList<>();
+        final Unmarshallable<List<ItemReference>> unmarshaller = dtoUnmarshallerFactory.newListUnmarshaller(ItemReference.class);
+        projectServiceClient.getChildren(path, new AsyncRequestCallback<List<ItemReference>>(unmarshaller) {
             @Override
-            protected void onSuccess(Array<ItemReference> result) {
+            protected void onSuccess(List<ItemReference> result) {
                 final boolean isShowHiddenItems = getTreeStructure().getSettings().isShowHiddenItems();
-                for (ItemReference item : result.asIterable()) {
+                for (ItemReference item : result) {
                     if (!isShowHiddenItems && item.getName().startsWith(".")) {
                         continue;
                     }
@@ -315,7 +314,7 @@ public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements 
      * @return new node instance or {@code null} if the specified item is not supported
      */
     @Nullable
-    protected AbstractTreeNode<?> createChildNode(ItemReference item, Array<ProjectDescriptor> modules) {
+    protected AbstractTreeNode<?> createChildNode(ItemReference item, List<ProjectDescriptor> modules) {
         if ("project".equals(item.getType())) {
             ProjectDescriptor module = getModule(item, modules);
 //            if (module != null) {
@@ -333,9 +332,9 @@ public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements 
     }
 
     @Nullable
-    private ProjectDescriptor getModule(ItemReference folderItem, Array<ProjectDescriptor> modules) {
+    private ProjectDescriptor getModule(ItemReference folderItem, List<ProjectDescriptor> modules) {
         if ("project".equals(folderItem.getType())) {
-            for (ProjectDescriptor module : modules.asIterable()) {
+            for (ProjectDescriptor module : modules) {
                 if (folderItem.getName().equals(module.getName())) {
                     return module;
                 }

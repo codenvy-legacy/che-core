@@ -25,7 +25,6 @@ import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
 import org.eclipse.che.ide.api.project.node.resource.SupportRename;
 import org.eclipse.che.ide.api.selection.Selection;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
 import org.eclipse.che.ide.project.node.FileReferenceNode;
 import org.eclipse.che.ide.project.node.FolderReferenceNode;
@@ -43,6 +42,8 @@ import org.eclipse.che.ide.ui.dialogs.input.InputValidator;
 import org.eclipse.che.ide.util.NameUtils;
 
 import javax.annotation.Nullable;
+
+import java.util.List;
 
 import static org.eclipse.che.api.runner.ApplicationStatus.NEW;
 import static org.eclipse.che.api.runner.ApplicationStatus.RUNNING;
@@ -190,14 +191,14 @@ public class RenameItemAction extends Action {
      *         callback returns true if project has any running processes and false - otherwise
      */
     private void checkRunningProcessesForProject(HasProjectDescriptor projectNode, final AsyncCallback<Boolean> callback) {
-        Unmarshallable<Array<ApplicationProcessDescriptor>> unmarshaller =
-                dtoUnmarshallerFactory.newArrayUnmarshaller(ApplicationProcessDescriptor.class);
-        runnerServiceClient.getRunningProcesses(projectNode.getProjectDescriptor().getName(),
-                                                new AsyncRequestCallback<Array<ApplicationProcessDescriptor>>(unmarshaller) {
+        Unmarshallable<List<ApplicationProcessDescriptor>> unmarshaller =
+                dtoUnmarshallerFactory.newListUnmarshaller(ApplicationProcessDescriptor.class);
+        runnerServiceClient.getRunningProcesses(projectNode.getPath(),
+                                                new AsyncRequestCallback<List<ApplicationProcessDescriptor>>(unmarshaller) {
                                                     @Override
-                                                    protected void onSuccess(Array<ApplicationProcessDescriptor> result) {
+                                                    protected void onSuccess(List<ApplicationProcessDescriptor> result) {
                                                         boolean hasRunningProcesses = false;
-                                                        for (ApplicationProcessDescriptor descriptor : result.asIterable()) {
+                                                        for (ApplicationProcessDescriptor descriptor : result) {
                                                             if (descriptor.getStatus() == NEW || descriptor.getStatus() == RUNNING) {
                                                                 hasRunningProcesses = true;
                                                                 break;

@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ui.list;
 
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
@@ -20,6 +18,7 @@ import com.google.gwt.user.client.ui.FlowPanel;
 
 import org.vectomatic.dom.svg.ui.SVGResource;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -31,11 +30,11 @@ public class CategoriesList extends Composite {
     private final Resources                  resources;
     private final SelectionManager           selectionManager;
     private       FlowPanel                  root;
-    private       Array<CategoryNodeElement> categoryNodeElements;
+    private       List<CategoryNodeElement> categoryNodeElements;
 
     public CategoriesList(Resources resources) {
         this.resources = resources;
-        this.categoryNodeElements = Collections.createArray();
+        this.categoryNodeElements = new ArrayList<>();
         root = new FlowPanel();
         initWidget(root);
         root.setStyleName(resources.defaultCategoriesListCss().listContainer());
@@ -51,7 +50,7 @@ public class CategoriesList extends Composite {
      *         the categories
      */
     public void render(List<Category<?>> categories) {
-        this.categoryNodeElements = Collections.createArray();
+        this.categoryNodeElements = new ArrayList<>();
         for (Category category : categories) {
             CategoryNodeElement categoryNodeElement = new CategoryNodeElement(category, selectionManager, resources);
             categoryNodeElements.add(categoryNodeElement);
@@ -69,7 +68,7 @@ public class CategoriesList extends Composite {
         if (categoryNodeElements == null || categoryNodeElements.isEmpty()) {
             return false;
         }
-        for (CategoryNodeElement category : categoryNodeElements.asIterable()) {
+        for (CategoryNodeElement category : categoryNodeElements) {
             if (category.containsItem(element)) {
                 category.selectItem(element);
                 return true;

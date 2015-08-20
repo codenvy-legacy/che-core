@@ -20,7 +20,6 @@ import java.util.logging.Logger;
 
 import org.eclipse.che.ide.api.text.Position;
 import org.eclipse.che.ide.api.text.annotation.Annotation;
-import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.jseditor.client.document.Document;
 import org.eclipse.che.ide.jseditor.client.minimap.Minimap;
 import org.eclipse.che.ide.jseditor.client.text.LinearRange;
@@ -67,7 +66,7 @@ public class MinimapAnnotationRenderer implements AnnotationModelHandler, ClearA
             removeAnnotationItem(event, annotation, toRestore);
         }
 
-        final StringMap<String> decorations = event.getAnnotationModel().getAnnotationStyle();
+        final Map<String, String> decorations = event.getAnnotationModel().getAnnotationStyle();
         // restore annotations that were deleted but shouldn't have
         for (final List<Annotation> annotations : toRestore.values()) {
             for (final Annotation annotation: annotations) {
@@ -118,7 +117,7 @@ public class MinimapAnnotationRenderer implements AnnotationModelHandler, ClearA
         }
     }
 
-    private void addAnnotationItem(final AnnotationModel model, final Annotation annotation, final StringMap<String> decorations) {
+    private void addAnnotationItem(final AnnotationModel model, final Annotation annotation, final Map<String, String> decorations) {
         final Position position = model.getPosition(annotation);
         if (position == null) {
             Log.warn(MinimapAnnotationRenderer.class, "No position for annotation " + annotation);

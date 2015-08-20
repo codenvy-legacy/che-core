@@ -12,8 +12,6 @@ package org.eclipse.che.ide.part;
 
 import org.eclipse.che.ide.api.parts.PartStackUIResources;
 import org.eclipse.che.ide.api.parts.PartStackView;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -38,6 +36,7 @@ import com.google.inject.assistedinject.Assisted;
 
 import org.vectomatic.dom.svg.ui.SVGImage;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.BELOW;
@@ -55,10 +54,10 @@ public class PartStackViewImpl extends ResizeComposite implements PartStackView 
     private final PartStackUIResources resources;
 
     // list of tabs
-    private final Array<PartButton>     tabButtons = Collections.createArray();
-    private PartButton       activeTabButton;
+    private final List<PartButton> tabButtons = new ArrayList<>();
+    private PartButton activeTabButton;
 
-    final         int                   margin     = 8;//tabButtons text margin
+    final int margin = 8;//tabButtons text margin
     private InsertPanel     tabsPanel;
     private DeckLayoutPanel contentPanel;
     private ActionDelegate  delegate;

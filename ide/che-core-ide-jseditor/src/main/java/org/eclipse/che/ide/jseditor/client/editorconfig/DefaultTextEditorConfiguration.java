@@ -11,7 +11,6 @@
 package org.eclipse.che.ide.jseditor.client.editorconfig;
 
 import org.eclipse.che.ide.api.texteditor.outline.OutlineModel;
-import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.jseditor.client.annotation.AnnotationModel;
 import org.eclipse.che.ide.jseditor.client.changeintercept.ChangeInterceptorProvider;
 import org.eclipse.che.ide.jseditor.client.codeassist.CodeAssistProcessor;
@@ -21,6 +20,8 @@ import org.eclipse.che.ide.jseditor.client.partition.DocumentPartitioner;
 import org.eclipse.che.ide.jseditor.client.partition.DocumentPositionMap;
 import org.eclipse.che.ide.jseditor.client.quickfix.QuickAssistProcessor;
 import org.eclipse.che.ide.jseditor.client.reconciler.Reconciler;
+
+import java.util.Map;
 
 /**
  * Default implementation of the {@link TextEditorConfiguration}.
@@ -43,7 +44,7 @@ public class DefaultTextEditorConfiguration implements TextEditorConfiguration {
     }
 
     @Override
-    public StringMap<CodeAssistProcessor> getContentAssistantProcessors() {
+    public Map<String, CodeAssistProcessor> getContentAssistantProcessors() {
         return null;
     }
 

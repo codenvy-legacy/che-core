@@ -18,6 +18,7 @@ import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.ArrayIterator;
 import com.google.gwt.core.client.JavaScriptObject;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -297,6 +298,14 @@ public class JsoArray<T> extends JavaScriptObject implements Array<T> {
     public final native JsoArray<T> splice(int index, int n) /*-{
         return this.splice(index, n);
     }-*/;
+
+    public final List<T> toList() {
+        List<T> list = new ArrayList<>();
+        for (T t: asIterable()) {
+            list.add(t);
+        }
+        return list;
+    }
 
     /**
      * Removes n elements found at the specified index. And then inserts the

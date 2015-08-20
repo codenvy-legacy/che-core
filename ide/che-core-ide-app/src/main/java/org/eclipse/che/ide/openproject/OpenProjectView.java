@@ -12,7 +12,8 @@ package org.eclipse.che.ide.openproject;
 
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.ide.api.mvp.View;
-import org.eclipse.che.ide.collections.Array;
+
+import java.util.List;
 
 /**
  * The view of {@link OpenProjectPresenter}.
@@ -45,7 +46,7 @@ public interface OpenProjectView extends View<OpenProjectView.ActionDelegate> {
      *
      * @param projects
      */
-    void setProjects(Array<ProjectReference> projects);
+    void setProjects(List<ProjectReference> projects);
 
     /** Close dialog. */
     void close();

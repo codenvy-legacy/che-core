@@ -17,7 +17,6 @@ import org.eclipse.che.api.vfs.shared.dto.Variable;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.util.loging.Log;
@@ -74,7 +73,7 @@ public class FindReplaceAction extends Action {
                                                                                              .withReplacemode(mode)));
 
         vfsServiceClient.replaceInCurrentWorkspace(appContext.getCurrentProject().getRootProject().getPath(),
-                                                   Collections.createArray(replacementSet),
+                                                   Arrays.asList(replacementSet),
                                                    new AsyncRequestCallback<Void>() {
                                                        @Override
                                                        protected void onSuccess(Void result) {

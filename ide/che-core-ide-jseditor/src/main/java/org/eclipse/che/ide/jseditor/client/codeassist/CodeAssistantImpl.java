@@ -11,20 +11,21 @@
 package org.eclipse.che.ide.jseditor.client.codeassist;
 
 import org.eclipse.che.ide.api.autocomplete.AutoCompleteResources;
-import org.eclipse.che.ide.collections.Collections;
-import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.jseditor.client.partition.DocumentPartitioner;
 import org.eclipse.che.ide.jseditor.client.texteditor.TextEditor;
 import com.google.gwt.core.client.GWT;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Implementation of CodeAssistant.
  */
 public class CodeAssistantImpl implements CodeAssistant {
 
-    private final StringMap<CodeAssistProcessor> processors;
+    private final Map<String, CodeAssistProcessor> processors;
 
     private final TextEditor textEditor;
 
@@ -38,7 +39,7 @@ public class CodeAssistantImpl implements CodeAssistant {
     @AssistedInject
     public CodeAssistantImpl(@Assisted final DocumentPartitioner partitioner,
                              @Assisted TextEditor textEditor) {
-        processors = Collections.createStringMap();
+        processors = new HashMap<>();
         res.defaultSimpleListCss().ensureInjected();
         res.autocompleteComponentCss().ensureInjected();
         res.popupCss().ensureInjected();

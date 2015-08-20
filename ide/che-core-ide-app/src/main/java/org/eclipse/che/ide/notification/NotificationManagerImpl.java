@@ -17,8 +17,6 @@ import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.parts.base.BasePresenter;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.i18n.client.DateTimeFormat;
@@ -33,6 +31,9 @@ import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.eclipse.che.ide.api.notification.Notification.State.READ;
 import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
@@ -57,7 +58,7 @@ public class NotificationManagerImpl extends BasePresenter implements Notificati
     private DialogFactory            dialogFactory;
     private NotificationContainer    notificationContainer;
     private NotificationMessageStack notificationMessageStack;
-    private Array<Notification>      notifications;
+    private List<Notification>       notifications;
 
     /**
      * Create manager.
@@ -83,7 +84,7 @@ public class NotificationManagerImpl extends BasePresenter implements Notificati
         this.notificationContainer.setDelegate(this);
         this.notificationMessageStack = notificationMessageStack;
         this.notificationMessageStack.setDelegate(this);
-        this.notifications = Collections.createArray();
+        this.notifications = new ArrayList<>();
 
         eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
             @Override
@@ -115,7 +116,7 @@ public class NotificationManagerImpl extends BasePresenter implements Notificati
         int countUnread = 0;
         boolean inProgress = false;
 
-        for (Notification notification : notifications.asIterable()) {
+        for (Notification notification : notifications) {
             if (!notification.isRead()) {
                 countUnread++;
             }

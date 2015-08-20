@@ -12,15 +12,13 @@ package org.eclipse.che.api.project.gwt.client;
 
 import org.eclipse.che.api.project.shared.dto.ProjectImporterDescriptor;
 import org.eclipse.che.ide.MimeType;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.HTTPHeader;
 import org.eclipse.che.ide.rest.RestContext;
 
-import com.google.inject.name.Named;
-
 import javax.inject.Inject;
+import java.util.List;
 
 /**
  * @author Vitaly Parfonov
@@ -39,7 +37,7 @@ public class ProjectImportersServiceClientImpl implements ProjectImportersServic
     }
 
     @Override
-    public void getProjectImporters(AsyncRequestCallback<Array<ProjectImporterDescriptor>> callback) {
+    public void getProjectImporters(AsyncRequestCallback<List<ProjectImporterDescriptor>> callback) {
         asyncRequestFactory.createGetRequest(restContext + "/project-importers")
                            .header(HTTPHeader.CONTENT_TYPE, MimeType.APPLICATION_JSON)
                            .send(callback);

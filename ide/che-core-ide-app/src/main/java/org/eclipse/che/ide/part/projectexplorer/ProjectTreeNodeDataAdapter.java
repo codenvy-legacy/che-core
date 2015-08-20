@@ -12,9 +12,10 @@ package org.eclipse.che.ide.part.projectexplorer;
 
 import org.eclipse.che.ide.api.project.tree.AbstractTreeNode;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.ui.tree.NodeDataAdapter;
 import org.eclipse.che.ide.ui.tree.TreeNodeElement;
+
+import java.util.List;
 
 /**
  * An {@link NodeDataAdapter} that allows to visit the {@link AbstractTreeNode}.
@@ -38,7 +39,7 @@ public class ProjectTreeNodeDataAdapter implements NodeDataAdapter<TreeNode<?>> 
 
     /** {@inheritDoc} */
     @Override
-    public Array<TreeNode<?>> getChildren(TreeNode<?> data) {
+    public List<TreeNode<?>> getChildren(TreeNode<?> data) {
         return data.getChildren();
     }
 
@@ -85,13 +86,13 @@ public class ProjectTreeNodeDataAdapter implements NodeDataAdapter<TreeNode<?>> 
 
     /** {@inheritDoc} */
     @Override
-    public Array<String> getNodePath(TreeNode<?> data) {
+    public List<String> getNodePath(TreeNode<?> data) {
         return PathUtils.getNodePath(this, data);
     }
 
     /** {@inheritDoc} */
     @Override
-    public TreeNode<?> getNodeByPath(TreeNode<?> root, Array<String> relativeNodePath) {
+    public TreeNode<?> getNodeByPath(TreeNode<?> root, List<String> relativeNodePath) {
         return null;
     }
 

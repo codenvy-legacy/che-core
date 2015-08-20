@@ -10,9 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ui.tree;
 
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.js.JsoArray;
+import org.eclipse.che.ide.collections.ListHelper;
 import org.eclipse.che.ide.util.input.SignalEvent;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 //import com.google.collide.client.util.logging.Log;
@@ -30,7 +32,7 @@ import org.eclipse.che.ide.util.input.SignalEvent;
  */
 public class SelectionModel<D> {
 
-    private       JsoArray<D>        selectedNodes;
+    private       List<D>        selectedNodes;
     private final NodeDataAdapter<D> dataAdapter;
     private final Tree.Css           css;
     private final boolean            multilevelSelection;
@@ -42,7 +44,7 @@ public class SelectionModel<D> {
     public SelectionModel(final NodeDataAdapter<D> dataAdapter, final Tree.Css css, final boolean multilevelSelection) {
         this.dataAdapter = dataAdapter;
         this.css = css;
-        this.selectedNodes = JsoArray.create();
+        this.selectedNodes = new ArrayList<>();
         this.multilevelSelection = multilevelSelection;
     }
 
@@ -76,7 +78,7 @@ public class SelectionModel<D> {
      * Returns the list of selected nodes. Not a copy. So don't play fast and
      * loose mutating the list outside of this API!
      */
-    public Array<D> getSelectedNodes() {
+    public List<D> getSelectedNodes() {
         return selectedNodes;
     }
 
@@ -88,8 +90,8 @@ public class SelectionModel<D> {
      * Restores visual selection for all selected nodes tracked by the
      * SelectionModel.
      */
-    public Array<Array<String>> computeSelectedPaths() {
-        Array<Array<String>> selectedPaths = JsoArray.create();
+    public List<List<String>> computeSelectedPaths() {
+        List<List<String>> selectedPaths = new ArrayList<>();
         for (int i = 0, n = selectedNodes.size(); i < n; i++) {
             D nodeData = selectedNodes.get(i);
             selectedPaths.add(dataAdapter.getNodePath(nodeData));
@@ -191,7 +193,7 @@ public class SelectionModel<D> {
      * params for the boundaries. These nodes are not allowed to be in the
      * selected list.
      */
-    private JsoArray<D> collectRangeToSelect(
+    private List<D> collectRangeToSelect(
             D startNode, D endNode, boolean includeStart, boolean includeEnd) {
         D parentNode = dataAdapter.getParent(startNode);
 
@@ -203,10 +205,10 @@ public class SelectionModel<D> {
                 "Nodes are in reverse order for range select! " + dataAdapter.getNodeName(startNode) + " - "
                 + dataAdapter.getNodeName(endNode);
 
-        JsoArray<D> range = JsoArray.create();
+        List<D> range = new ArrayList<>();
 
         // Do a linear scan until we find the startNode.
-        Array<D> children = dataAdapter.getChildren(parentNode);
+        List<D> children = dataAdapter.getChildren(parentNode);
         int i = 0;
         boolean adding = false;
         for (int n = children.size(); i < n; i++) {
@@ -284,11 +286,11 @@ public class SelectionModel<D> {
         if (selectingNewNode) {
 
             // The node was not in the list. Add it.
-            selectedNodes.splice(insertionIndex, 0, nodeData);
+            ListHelper.splice(selectedNodes, insertionIndex, 0, nodeData);
         } else {
 
             // The node was already in the list. Take it out.
-            selectedNodes.splice(insertionIndex, 1);
+            ListHelper.splice(selectedNodes, insertionIndex, 1);
         }
     }
 
@@ -311,17 +313,17 @@ public class SelectionModel<D> {
 
         // If it is to the left.
         if (comparisonToFirst < 0) {
-            JsoArray<D> range = collectRangeToSelect(nodeData, firstNode, true, false);
+            List<D> range = collectRangeToSelect(nodeData, firstNode, true, false);
             visuallySelect(range, true);
-            selectedNodes = JsoArray.concat(range, selectedNodes);
+            selectedNodes.addAll(range);
             return true;
         }
 
         // If it is to the right.
         if (comparisonToLast > 0) {
-            JsoArray<D> range = collectRangeToSelect(lastNode, nodeData, false, true);
+            List<D> range = collectRangeToSelect(lastNode, nodeData, false, true);
             visuallySelect(range, true);
-            selectedNodes = JsoArray.concat(selectedNodes, range);
+            selectedNodes.addAll(range);
             return true;
         }
 
@@ -348,9 +350,9 @@ public class SelectionModel<D> {
         }
     }
 
-    private void visuallySelect(Array<D> nodeDatas, boolean isSelected) {
-        for (int i = 0, n = nodeDatas.size(); i < n; i++) {
-            visuallySelect(nodeDatas.get(i), isSelected);
+    private void visuallySelect(List<D> nodeDatas, boolean isSelected) {
+        for (D nodeData : nodeDatas) {
+            visuallySelect(nodeData, isSelected);
         }
     }
 

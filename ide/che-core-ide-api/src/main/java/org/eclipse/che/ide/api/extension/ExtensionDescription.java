@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.extension;
 
-import org.eclipse.che.ide.collections.Array;
+import java.util.List;
 
 /**
  * Provides Extension information:
@@ -26,7 +26,7 @@ import org.eclipse.che.ide.collections.Array;
 public class ExtensionDescription {
     private final String                       id;
     private final String                       version;
-    private final Array<DependencyDescription> dependencies;
+    private final List<DependencyDescription> dependencies;
     private final String                       title;
     private final String                       description;
     private boolean enabled = false;
@@ -40,8 +40,11 @@ public class ExtensionDescription {
      * @param dependencies
      * @param description
      */
-    public ExtensionDescription(String id, String version, String title, String description,
-                                Array<DependencyDescription> dependencies) {
+    public ExtensionDescription(String id,
+                                String version,
+                                String title,
+                                String description,
+                                List<DependencyDescription> dependencies) {
         this.id = id;
         this.version = version;
         this.title = title;
@@ -90,7 +93,7 @@ public class ExtensionDescription {
      *
      * @return
      */
-    public Array<DependencyDescription> getDependencies() {
+    public List<DependencyDescription> getDependencies() {
         return dependencies;
     }
 
