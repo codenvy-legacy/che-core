@@ -37,6 +37,7 @@ import org.eclipse.che.api.project.shared.dto.ImportSourceDescriptor;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.NewProject;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.api.project.shared.dto.ProjectModule;
 import org.eclipse.che.api.project.shared.dto.ProjectProblem;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.api.project.shared.dto.ProjectUpdate;
@@ -889,14 +890,7 @@ public class ProjectService extends Service {
                                                     projectSource.getLocation(), projectSource.getType()));
         }
         // Preparing websocket output publisher to broadcast output of import process to the ide clients while importing
-        final String fWorkspace = workspace;
-        final String fPath = path;
-        final LineConsumerFactory outputOutputConsumerFactory = new LineConsumerFactory() {
-            @Override
-            public LineConsumer newLineConsumer() {
-                return new ProjectImportOutputWSLineConsumer(fPath, fWorkspace, 300);
-            }
-        };
+        final LineConsumerFactory outputOutputConsumerFactory = () -> new ProjectImportOutputWSLineConsumer(path, workspace, 300);
 
         // Not all importers uses virtual file system API. In this case virtual file system API doesn't get events and isn't able to set
         // correct creation time. Need do it manually.
@@ -941,7 +935,6 @@ public class ProjectService extends Service {
         try {
             if (newProject != null) {
                 visibility = newProject.getVisibility();
-
                 //TODO:
                 //this trick need for fixing problem for default runners in case
                 //scripts downloaded  from remote resources "docker" this is only marker not real path in file system
@@ -956,6 +949,18 @@ public class ProjectService extends Service {
                                                             baseProjectFolder.getPath(),
                                                             projectConfig,
                                                             visibility);
+
+            if (newProject != null) {
+                for (ProjectModule projectModule : newProject.getModules()) {
+                    ProjectConfig moduleConfig = DtoConverter.toProjectConfig(projectModule, projectManager.getProjectTypeRegistry());
+                    projectManager.convertFolderToProject(workspace,
+                                                          baseProjectFolder.getPath() +
+                                                          projectModule.getPath(),
+                                                          moduleConfig,
+                                                          visibility);
+                }
+            }
+
             projectDescriptor = DtoConverter.toDescriptorDto2(project,
                                                               getServiceContext().getServiceUriBuilder(),
                                                               getServiceContext().getBaseUriBuilder(),
