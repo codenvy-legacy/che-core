@@ -19,7 +19,6 @@ import org.eclipse.che.ide.api.event.NodeChangedEvent;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.api.project.tree.TreeStructure;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.StringUnmarshaller;
@@ -30,6 +29,7 @@ import com.google.inject.assistedinject.Assisted;
 import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -110,7 +110,7 @@ public class FileNode extends ItemNode implements VirtualFile {
     }
 
     private void updateEditorPartData(String oldPath) {
-        final Array<String> pathOpenedEditors = editorAgent.getOpenedEditors().getKeys();
+        final Collection<String> pathOpenedEditors = editorAgent.getOpenedEditors().keySet();
 
         if (pathOpenedEditors.contains(oldPath)) {
             editorAgent.updateEditorNode(oldPath, FileNode.this);

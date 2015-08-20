@@ -13,9 +13,9 @@ package org.eclipse.che.api.workspace.gwt.client;
 import org.eclipse.che.api.workspace.shared.dto.MemberDescriptor;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceUpdate;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -45,7 +45,7 @@ public interface WorkspaceServiceClient {
      *
      * @param callback
      */
-    public void getMemberships(AsyncRequestCallback<Array<MemberDescriptor>> callback);
+    public void getMemberships(AsyncRequestCallback<List<MemberDescriptor>> callback);
 
     /**
      * Update workspace

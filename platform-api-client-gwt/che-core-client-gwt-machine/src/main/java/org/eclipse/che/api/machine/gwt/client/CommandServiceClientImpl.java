@@ -21,7 +21,6 @@ import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper.RequestCall;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
@@ -99,16 +98,16 @@ public class CommandServiceClientImpl implements CommandServiceClient {
 
     @Override
     public Promise<List<CommandDescriptor>> getCommands() {
-        return newPromise(new RequestCall<Array<CommandDescriptor>>() {
+        return newPromise(new RequestCall<List<CommandDescriptor>>() {
             @Override
-            public void makeCall(AsyncCallback<Array<CommandDescriptor>> callback) {
+            public void makeCall(AsyncCallback<List<CommandDescriptor>> callback) {
                 getCommands(workspaceId, callback);
             }
-        }).then(new Function<Array<CommandDescriptor>, List<CommandDescriptor>>() {
+        }).then(new Function<List<CommandDescriptor>, List<CommandDescriptor>>() {
             @Override
-            public List<CommandDescriptor> apply(Array<CommandDescriptor> arg) throws FunctionException {
+            public List<CommandDescriptor> apply(List<CommandDescriptor> arg) throws FunctionException {
                 final ArrayList<CommandDescriptor> descriptors = new ArrayList<>();
-                for (CommandDescriptor descriptor : arg.asIterable()) {
+                for (CommandDescriptor descriptor : arg) {
                     descriptors.add(descriptor);
                 }
                 return descriptors;
@@ -116,12 +115,12 @@ public class CommandServiceClientImpl implements CommandServiceClient {
         });
     }
 
-    private void getCommands(@Nonnull String workspaceId, @Nonnull AsyncCallback<Array<CommandDescriptor>> callback) {
+    private void getCommands(@Nonnull String workspaceId, @Nonnull AsyncCallback<List<CommandDescriptor>> callback) {
         final String url = baseHttpUrl + '/' + workspaceId + "/all";
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
                            .loader(loader, "Getting commands...")
-                           .send(newCallback(callback, dtoUnmarshallerFactory.newArrayUnmarshaller(CommandDescriptor.class)));
+                           .send(newCallback(callback, dtoUnmarshallerFactory.newListUnmarshaller(CommandDescriptor.class)));
     }
 
     @Override

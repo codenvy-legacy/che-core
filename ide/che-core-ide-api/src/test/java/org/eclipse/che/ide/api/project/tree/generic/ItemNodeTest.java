@@ -19,7 +19,6 @@ import org.eclipse.che.ide.api.event.RenameNodeEvent;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.api.project.tree.TreeStructure;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.test.GwtReflectionUtils;
@@ -30,6 +29,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -83,11 +84,11 @@ public class ItemNodeTest {
     private AsyncCallback<Void>     asyncCallback;
 
     @Captor
-    private ArgumentCaptor<AsyncRequestCallback<Array<ItemReference>>> itemReferenceCaptor;
+    private ArgumentCaptor<AsyncRequestCallback<List<ItemReference>>> itemReferenceCaptor;
     @Captor
-    private ArgumentCaptor<AsyncRequestCallback<Void>>                 argumentCaptor;
+    private ArgumentCaptor<AsyncRequestCallback<Void>>                argumentCaptor;
     @Captor
-    private ArgumentCaptor<AsyncRequestCallback<ItemReference>>        asyncRequestCallbackArgumentCaptor;
+    private ArgumentCaptor<AsyncRequestCallback<ItemReference>>       asyncRequestCallbackArgumentCaptor;
 
     private ItemNodeImpl itemNode;
 

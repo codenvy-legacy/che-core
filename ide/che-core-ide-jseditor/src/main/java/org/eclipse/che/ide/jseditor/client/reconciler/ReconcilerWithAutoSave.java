@@ -19,9 +19,6 @@ import org.eclipse.che.ide.api.editor.EditorInput;
 import org.eclipse.che.ide.api.text.Region;
 import org.eclipse.che.ide.api.text.RegionImpl;
 import org.eclipse.che.ide.api.text.TypedRegion;
-import org.eclipse.che.ide.collections.Collections;
-import org.eclipse.che.ide.collections.StringMap;
-import org.eclipse.che.ide.collections.StringMap.IterationCallback;
 import org.eclipse.che.ide.jseditor.client.document.Document;
 import org.eclipse.che.ide.jseditor.client.document.DocumentHandle;
 import org.eclipse.che.ide.jseditor.client.events.DocumentChangeEvent;
@@ -29,7 +26,9 @@ import org.eclipse.che.ide.jseditor.client.partition.DocumentPartitioner;
 import org.eclipse.che.ide.jseditor.client.texteditor.TextEditor;
 import org.eclipse.che.ide.util.loging.Log;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -46,7 +45,7 @@ public class ReconcilerWithAutoSave implements Reconciler {
     private static final int DELAY = 1000;
 
 
-    private final StringMap<ReconcilingStrategy> strategies;
+    private final Map<String, ReconcilingStrategy> strategies;
 
     private final String partition;
 
@@ -63,24 +62,22 @@ public class ReconcilerWithAutoSave implements Reconciler {
     };
 
     private DocumentHandle documentHandle;
-    private TextEditor editor;
+    private TextEditor     editor;
 
     @AssistedInject
     public ReconcilerWithAutoSave(@Assisted final String partition,
                                   @Assisted final DocumentPartitioner partitioner) {
         this.partition = partition;
-        strategies = Collections.createStringMap();
+        strategies = new HashMap<>();
         this.partitioner = partitioner;
     }
 
     private void reconcilerDocumentChanged() {
-        strategies.iterate(new IterationCallback<ReconcilingStrategy>() {
+        for (String key : strategies.keySet()) {
+            ReconcilingStrategy reconcilingStrategy = strategies.get(key);
+            reconcilingStrategy.setDocument(documentHandle.getDocument());
+        }
 
-            @Override
-            public void onIteration(final String key, final ReconcilingStrategy value) {
-                value.setDocument(documentHandle.getDocument());
-            }
-        });
         timer.cancel();
         timer.schedule(DELAY);
     }

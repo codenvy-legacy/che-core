@@ -15,13 +15,15 @@ import org.eclipse.che.api.project.gwt.client.ProjectTemplateServiceClient;
 import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
 
 import org.eclipse.che.ide.api.project.type.ProjectTemplateRegistry;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
+
 import com.google.gwt.core.client.Callback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
+import java.util.List;
 
 /**
  * @author Evgen Vidolob
@@ -44,11 +46,11 @@ public class ProjectTemplatesComponent implements Component {
 
     @Override
     public void start(final Callback<Component, Exception> callback) {
-        projectTemplateServiceClient.getProjectTemplates(new AsyncRequestCallback<Array<ProjectTemplateDescriptor>>(
-                dtoUnmarshallerFactory.newArrayUnmarshaller(ProjectTemplateDescriptor.class)) {
+        projectTemplateServiceClient.getProjectTemplates(new AsyncRequestCallback<List<ProjectTemplateDescriptor>>(
+                dtoUnmarshallerFactory.newListUnmarshaller(ProjectTemplateDescriptor.class)) {
             @Override
-            protected void onSuccess(Array<ProjectTemplateDescriptor> result) {
-                for (ProjectTemplateDescriptor template : result.asIterable()) {
+            protected void onSuccess(List<ProjectTemplateDescriptor> result) {
+                for (ProjectTemplateDescriptor template : result) {
                     projectTemplateRegistry.register(template);
                 }
                 callback.onSuccess(ProjectTemplatesComponent.this);

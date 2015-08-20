@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.extension;
 
-import org.eclipse.che.ide.collections.StringMap;
+import java.util.Map;
 
 /**
  * Provides information about Extensions, their description, version and the list of dependencies.
@@ -26,5 +26,5 @@ public interface ExtensionRegistry {
      *
      * @return
      */
-    StringMap<ExtensionDescription> getExtensionDescriptions();
+    Map<String, ExtensionDescription> getExtensionDescriptions();
 }

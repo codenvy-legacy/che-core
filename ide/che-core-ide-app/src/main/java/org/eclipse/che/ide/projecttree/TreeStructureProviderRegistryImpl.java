@@ -15,11 +15,11 @@ import com.google.inject.Inject;
 import org.eclipse.che.ide.api.project.tree.TreeStructureProvider;
 import org.eclipse.che.ide.api.project.tree.TreeStructureProviderRegistry;
 import org.eclipse.che.ide.api.project.tree.generic.GenericTreeStructureProvider;
-import org.eclipse.che.ide.collections.Collections;
-import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.util.loging.Log;
 
 import javax.annotation.Nonnull;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -28,14 +28,14 @@ import java.util.Set;
  * @author Artem Zatsarynnyy
  */
 public class TreeStructureProviderRegistryImpl implements TreeStructureProviderRegistry {
-    private final StringMap<TreeStructureProvider> treeProviders;
-    private final StringMap<String>                projectType2TreeProvider;
-    private final GenericTreeStructureProvider     defaultTreeStructureProvider;
+    private final Map<String, TreeStructureProvider> treeProviders;
+    private final Map<String, String>                projectType2TreeProvider;
+    private final GenericTreeStructureProvider       defaultTreeStructureProvider;
 
     @Inject
     public TreeStructureProviderRegistryImpl(GenericTreeStructureProvider defaultTreeStructureProvider) {
-        treeProviders = Collections.createStringMap();
-        projectType2TreeProvider = Collections.createStringMap();
+        treeProviders = new HashMap();
+        projectType2TreeProvider = new HashMap();
         this.defaultTreeStructureProvider = defaultTreeStructureProvider;
     }
 

@@ -13,9 +13,6 @@ package org.eclipse.che.util;
 import org.eclipse.che.ide.api.extension.Extension;
 import org.eclipse.che.ide.api.extension.ExtensionRegistry;
 import org.eclipse.che.ide.api.extension.SDK;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
-import org.eclipse.che.ide.collections.StringMap;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.ext.Generator;
 import com.google.gwt.core.ext.GeneratorContext;
@@ -32,7 +29,9 @@ import com.google.inject.Provider;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This class generates implementation for {@link org.eclipse.che.ide.api.extension.ExtensionRegistry} that contains descriptive information about
@@ -61,7 +60,7 @@ public class ExtensionRegistryGenerator extends Generator {
             throw new UnableToCompleteException();
         }
 
-        List<JClassType> extensions = new ArrayList<JClassType>();
+        List<JClassType> extensions = new ArrayList<>();
         for (JClassType type : typeOracle.getTypes()) {
             if (type.isAnnotationPresent(Extension.class)) {
                 extensions.add(type);
@@ -104,7 +103,7 @@ public class ExtensionRegistryGenerator extends Generator {
         SourceWriter sw = composerFactory.createSourceWriter(context, pw);
         // begin class definition
         // fields
-        sw.println("private final StringMap<ExtensionDescription> extensions = Collections.createStringMap();");
+        sw.println("private final Map<String, ExtensionDescription> extensions = new HashMap<>();");
 
         generateConstructor(className, extensions, sw);
 
@@ -130,10 +129,10 @@ public class ExtensionRegistryGenerator extends Generator {
         composerFactory.addImport(ExtensionRegistry.class.getCanonicalName());
         composerFactory.addImport(Inject.class.getCanonicalName());
         composerFactory.addImport(Provider.class.getCanonicalName());
-        composerFactory.addImport(StringMap.class.getCanonicalName());
-        composerFactory.addImport(StringMap.IterationCallback.class.getCanonicalName());
-        composerFactory.addImport(Array.class.getCanonicalName());
-        composerFactory.addImport(Collections.class.getCanonicalName());
+        composerFactory.addImport(List.class.getCanonicalName());
+        composerFactory.addImport(ArrayList.class.getCanonicalName());
+        composerFactory.addImport(Map.class.getCanonicalName());
+        composerFactory.addImport(HashMap.class.getCanonicalName());
         // import for extensions
         for (JClassType jClassType : extensions) {
             composerFactory.addImport(jClassType.getQualifiedSourceName());
@@ -205,8 +204,7 @@ public class ExtensionRegistryGenerator extends Generator {
         if (extension.getConstructors().length == 0) {
             throw new UnableToCompleteException();
         }
-
-        sw.println("Array<DependencyDescription> deps = Collections.<DependencyDescription> createArray();");
+        sw.println("List<DependencyDescription> deps = new ArrayList<>();");
 
         JConstructor jConstructor = extension.getConstructors()[0];
         JType[] parameterTypes = jConstructor.getParameterTypes();
@@ -243,7 +241,7 @@ public class ExtensionRegistryGenerator extends Generator {
        */
 
         sw.println("@Override");
-        sw.println("public StringMap<ExtensionDescription> getExtensionDescriptions()");
+        sw.println("public Map<String, ExtensionDescription> getExtensionDescriptions()");
 
         sw.println("{");
         sw.indent();

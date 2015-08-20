@@ -21,8 +21,6 @@ import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.api.project.tree.TreeStructureProviderRegistry;
 import org.eclipse.che.ide.api.project.tree.generic.ProjectNode;
 import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.java.JsonArrayListAdapter;
 import org.eclipse.che.ide.menu.ContextMenu;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.ui.tree.SelectionModel;
@@ -105,7 +103,7 @@ public class ProjectExplorerPartPresenterTest {
     public void shouldSetSelectionFirstElement() throws Exception {
         final TreeNode node = mock(TreeNode.class);
         final SelectionModel selectionModel = mock(SelectionModel.class);
-        final Array selection = new JsonArrayListAdapter(Collections.singletonList(node));
+        final List selection = Collections.singletonList(node);
         when(selectionModel.getSelectedNodes()).thenReturn(selection);
         presenter.onNodeSelected(node, selectionModel);
 
@@ -117,10 +115,10 @@ public class ProjectExplorerPartPresenterTest {
         final TreeNode node1 = mock(TreeNode.class);
         final TreeNode node2 = mock(TreeNode.class);
         final SelectionModel selectionModel = mock(SelectionModel.class);
-        final Array selection = new JsonArrayListAdapter(new ArrayList<Object>() {{
+        final List selection = new ArrayList<Object>() {{
             add(node1);
             add(node2);
-        }});
+        }};
         when(selectionModel.getSelectedNodes()).thenReturn(selection);
         presenter.onNodeSelected(node1, selectionModel);
 
@@ -131,7 +129,7 @@ public class ProjectExplorerPartPresenterTest {
     public void shouldSetSelectionHead() throws Exception {
         final TreeNode node = mock(TreeNode.class);
         final SelectionModel selectionModel = mock(SelectionModel.class);
-        final Array selection = new JsonArrayListAdapter(Collections.singletonList(node));
+        final List selection = Collections.singletonList(node);
         when(selectionModel.getSelectedNodes()).thenReturn(selection);
         presenter.onNodeSelected(node, selectionModel);
 
@@ -147,7 +145,7 @@ public class ProjectExplorerPartPresenterTest {
         when(node.getProject()).thenReturn(project);
 
         final SelectionModel selectionModel = mock(SelectionModel.class);
-        final Array selection = new JsonArrayListAdapter(Collections.singletonList(node));
+        final List selection = Collections.singletonList(node);
         when(selectionModel.getSelectedNodes()).thenReturn(selection);
 
         presenter.onNodeSelected(node, selectionModel);
@@ -176,7 +174,7 @@ public class ProjectExplorerPartPresenterTest {
     public void testOnDeleteKey() throws Exception {
         StorableNode firstNode = mock(StorableNode.class);
         StorableNode secondNode = mock(StorableNode.class);
-        Array<?> array = new JsonArrayListAdapter<>(Arrays.asList(firstNode, secondNode));
+        List<?> array = Arrays.asList(firstNode, secondNode);
         doReturn(array).when(view).getSelectedNodes();
         presenter.onDeleteKey();
 

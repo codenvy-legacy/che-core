@@ -21,7 +21,6 @@ import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.project.wizard.ImportWizardRegistry;
 import org.eclipse.che.ide.api.wizard.AbstractWizardPage;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.Unmarshallable;
@@ -34,6 +33,7 @@ import com.google.inject.Inject;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -123,12 +123,12 @@ public class MainPagePresenter extends AbstractWizardPage<ImportProject> impleme
     private void loadImporters() {
         final Map<String, Set<ProjectImporterDescriptor>> importersByCategory = new HashMap<>();
 
-        final Unmarshallable<Array<ProjectImporterDescriptor>> unmarshaller =
-                dtoUnmarshallerFactory.newArrayUnmarshaller(ProjectImporterDescriptor.class);
-        projectImportersService.getProjectImporters(new AsyncRequestCallback<Array<ProjectImporterDescriptor>>(unmarshaller) {
+        final Unmarshallable<List<ProjectImporterDescriptor>> unmarshaller =
+                dtoUnmarshallerFactory.newListUnmarshaller(ProjectImporterDescriptor.class);
+        projectImportersService.getProjectImporters(new AsyncRequestCallback<List<ProjectImporterDescriptor>>(unmarshaller) {
             @Override
-            protected void onSuccess(Array<ProjectImporterDescriptor> result) {
-                for (ProjectImporterDescriptor importer : result.asIterable()) {
+            protected void onSuccess(List<ProjectImporterDescriptor> result) {
+                for (ProjectImporterDescriptor importer : result) {
                     if (importer.isInternal() ||
                         importer.getCategory() == null ||
                         importWizardRegistry.getWizardRegistrar(importer.getId()) == null) {

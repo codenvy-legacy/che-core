@@ -16,8 +16,6 @@ import org.eclipse.che.ide.actions.OpenNodeAction;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.api.project.tree.generic.FolderNode;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.java.JsonArrayListAdapter;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerViewImpl;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
@@ -69,7 +67,7 @@ public class OpenedNodesPersistenceComponentTest {
     @Mock
     private ActionDescriptor actionDescriptor2;
     @Mock
-    private Array<TreeNode<?>>  emptyArray;
+    private List<TreeNode<?>>  emptyArray;
 
     @InjectMocks
     private OpenedNodesPersistenceComponent openedNodesComponent;
@@ -80,9 +78,8 @@ public class OpenedNodesPersistenceComponentTest {
         treeNodeList.add(node1);
         treeNodeList.add(node2);
         treeNodeList.add(node3);
-        Array<TreeNode<?>> openedNodes = new JsonArrayListAdapter<>(treeNodeList);
 
-        when(projectExplorerView.getOpenedTreeNodes()).thenReturn(openedNodes);
+        when(projectExplorerView.getOpenedTreeNodes()).thenReturn(treeNodeList);
         when(actionManager.getId(openNodeAction)).thenReturn(TEXT1);
 
         when(node1.getPath()).thenReturn(PROJECT_PATH + TEXT1);

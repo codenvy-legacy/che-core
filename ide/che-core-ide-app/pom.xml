@@ -109,16 +109,21 @@
             <artifactId>che-core-client-gwt-analytics</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.eclipse.che.core</groupId>
-            <artifactId>che-core-client-gwt-machine</artifactId>
-            <version>${project.version}</version>
-        </dependency>
         <!--dependency>
             <groupId>org.eclipse.che.core</groupId>
             <artifactId>che-core-client-gwt-builder</artifactId>
             <version>${project.version}</version>
         </dependency-->
+        <dependency>
+            <groupId>org.eclipse.che.core</groupId>
+            <artifactId>che-core-client-gwt-git</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.che.core</groupId>
+            <artifactId>che-core-client-gwt-machine</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
             <artifactId>che-core-client-gwt-project</artifactId>

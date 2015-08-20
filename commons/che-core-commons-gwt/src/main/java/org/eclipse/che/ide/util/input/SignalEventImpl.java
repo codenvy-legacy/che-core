@@ -16,14 +16,15 @@
 
 package org.eclipse.che.ide.util.input;
 
-import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.collections.Jso;
-import org.eclipse.che.ide.collections.StringSet;
 import org.eclipse.che.ide.util.browser.QuirksConstants;
 import org.eclipse.che.ide.util.browser.UserAgent;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Attempts to bring sanity to the incredibly complex and inconsistent world of
@@ -148,25 +149,25 @@ public class SignalEventImpl implements SignalEvent {
         }
     }
 
-    private static final StringSet KEY_EVENTS = Collections.createStringSet();
+    private static final Set<String> KEY_EVENTS = new HashSet<>();
 
-    private static final StringSet COMPOSITION_EVENTS = Collections.createStringSet();
+    private static final Set<String> COMPOSITION_EVENTS = new HashSet<>();
 
-    private static final StringSet MOUSE_EVENTS = Collections.createStringSet();
+    private static final Set<String> MOUSE_EVENTS = new HashSet<>();
 
-    private static final StringSet MOUSE_BUTTON_EVENTS = Collections.createStringSet();
+    private static final Set<String> MOUSE_BUTTON_EVENTS = new HashSet<>();
 
-    private static final StringSet MOUSE_BUTTONLESS_EVENTS = Collections.createStringSet();
+    private static final Set<String> MOUSE_BUTTONLESS_EVENTS = new HashSet<>();
 
-    private static final StringSet FOCUS_EVENTS = Collections.createStringSet();
+    private static final Set<String> FOCUS_EVENTS = new HashSet<>();
 
-    private static final StringSet CLIPBOARD_EVENTS = Collections.createStringSet();
+    private static final Set<String> CLIPBOARD_EVENTS = new HashSet<>();
 
     /**
      * Events affected by
      * {@link QuirksConstants#CANCEL_BUBBLING_CANCELS_IME_COMPOSITION_AND_CONTEXTMENU}.
      */
-    private static final StringSet CANCEL_BUBBLE_QUIRKS = Collections.createStringSet();
+    private static final Set<String> CANCEL_BUBBLE_QUIRKS = new HashSet<>();
 
     static {
         for (String e : new String[]{"keydown", "keypress", "keyup"}) {

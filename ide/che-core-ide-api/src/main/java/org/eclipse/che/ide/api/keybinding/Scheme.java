@@ -10,11 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.keybinding;
 
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.util.input.CharCodeWithModifiers;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * Scheme is set of the key bindings.
@@ -63,7 +63,7 @@ public interface Scheme {
      * such actions then the method returns an empty array
      */
     @Nonnull
-    Array<String> getActionIds(int digest);
+    List<String> getActionIds(int digest);
 
     /**
      * @return keyboard shortcut for the action with the specified <code>actionId</code>

@@ -10,13 +10,13 @@
  *******************************************************************************/
 package org.eclipse.che.ide.dto;
 
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONParser;
 import com.google.inject.Singleton;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -68,16 +68,14 @@ public class DtoFactory {
      * @throws IllegalArgumentException
      *         if can't provide any implementation for specified interface
      */
-    public <T> Array<T> createListDtoFromJson(String json, Class<T> dtoInterface) {
+    public <T> List<T> createListDtoFromJson(String json, Class<T> dtoInterface) {
         final DtoProvider<T> dtoProvider = getDtoProvider(dtoInterface);
         final JSONArray jsonArray = JSONParser.parseStrict(json).isArray();
-        final Array<T> result = Collections.createArray();
-
+        final List<T> result = new ArrayList<>();
         for (int i = 0; i < jsonArray.size(); i++) {
             String payload = jsonArray.get(i).isObject().toString();
             result.add(dtoProvider.fromJson(payload));
         }
-
         return result;
     }
 
@@ -90,7 +88,7 @@ public class DtoFactory {
     }
     
     /** Serializes array of DTO objects to JSON format. */
-    public <T> String toJson(Array<T> array) {
+    public <T> String toJson(List<T> array) {
         StringBuilder sb = new StringBuilder("[");
         for (int i = 0; i < array.size(); i++){
             T dto = array.get(i);

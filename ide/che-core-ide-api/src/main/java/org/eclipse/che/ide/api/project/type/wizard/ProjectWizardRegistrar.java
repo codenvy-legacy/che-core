@@ -12,10 +12,10 @@ package org.eclipse.che.ide.api.project.type.wizard;
 
 import org.eclipse.che.api.project.shared.dto.ImportProject;
 import org.eclipse.che.ide.api.wizard.WizardPage;
-import org.eclipse.che.ide.collections.Array;
 import com.google.inject.Provider;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 
 /**
  * Defines the requirements for an object that provides an information
@@ -47,5 +47,5 @@ public interface ProjectWizardRegistrar {
 
     /** Returns pages that should be used in project wizard. */
     @Nonnull
-    Array<Provider<? extends WizardPage<ImportProject>>> getWizardPages();
+    List<Provider<? extends WizardPage<ImportProject>>> getWizardPages();
 }

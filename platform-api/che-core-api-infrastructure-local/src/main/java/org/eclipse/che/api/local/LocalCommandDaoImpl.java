@@ -12,17 +12,23 @@ package org.eclipse.che.api.local;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
+import com.google.common.reflect.TypeToken;
 
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.local.storage.LocalStorage;
+import org.eclipse.che.api.local.storage.LocalStorageFactory;
 import org.eclipse.che.api.machine.server.command.CommandImpl;
 import org.eclipse.che.api.machine.server.dao.CommandDao;
 import org.eclipse.che.api.machine.shared.ManagedCommand;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,25 +43,41 @@ import static org.eclipse.che.commons.lang.Strings.isNullOrEmpty;
  * In memory implementation of {@link CommandDao}
  *
  * @author Eugene Voevodin
+ * @author Anton Korneta
  */
 @Singleton
 public class LocalCommandDaoImpl implements CommandDao {
 
     private final Map<String, ManagedCommand> commands;
     private final ReadWriteLock               lock;
+    private final LocalStorage                commandStorage;
 
     @Inject
-    public LocalCommandDaoImpl(@Named("codenvy.local.infrastructure.commands") Set<ManagedCommand> commands) {
+    public LocalCommandDaoImpl(LocalStorageFactory storageFactory) throws IOException {
         this.commands = new HashMap<>();
         lock = new ReentrantReadWriteLock();
-        try {
-            for (ManagedCommand command : commands) {
-                create(command);
+        commandStorage = storageFactory.create("commands.json");
+    }
+
+    @Inject
+    @PostConstruct
+    public void start(@Named("codenvy.local.infrastructure.commands") Set<ManagedCommand> defaultCommands) {
+        commands.putAll(commandStorage.loadMap(new TypeToken<Map<String, CommandImpl>>() {}));
+        if (commands.isEmpty()) {
+            try {
+                for (ManagedCommand command : defaultCommands) {
+                    create(command);
+                }
+            } catch (Exception ex) {
+                // fail if can't validate this instance properly
+                throw new RuntimeException(ex);
             }
-        } catch (Exception ex) {
-            // fail if can't validate this instance properly
-            throw new RuntimeException(ex);
         }
+    }
+
+    @PreDestroy
+    public void stop() throws IOException {
+        commandStorage.store(commands);
     }
 
     @Override

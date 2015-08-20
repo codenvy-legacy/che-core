@@ -11,12 +11,12 @@
 package org.eclipse.che.ide.api.editor;
 
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.StringMap;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.NavigableMap;
 
 /**
  * Editor Agent manages Editors, it allows to open a new editor with given file,
@@ -50,7 +50,7 @@ public interface EditorAgent {
      *
      * @return Array<EditorPartPresenter>
      */
-    Array<EditorPartPresenter> getDirtyEditors();
+    List<EditorPartPresenter> getDirtyEditors();
 
     /**
      * Get all opened editors
@@ -58,7 +58,7 @@ public interface EditorAgent {
      * @return map with all opened editors
      */
     @Nonnull
-    StringMap<EditorPartPresenter> getOpenedEditors();
+    NavigableMap<String, EditorPartPresenter> getOpenedEditors();
 
     /**
      * Saves all opened files whose content have changed since the last save operation

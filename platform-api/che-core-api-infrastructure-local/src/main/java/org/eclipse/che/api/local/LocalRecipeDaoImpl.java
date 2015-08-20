@@ -10,18 +10,30 @@
  *******************************************************************************/
 package org.eclipse.che.api.local;
 
+
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
 
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.local.storage.LocalStorage;
+import org.eclipse.che.api.local.storage.LocalStorageFactory;
+import org.eclipse.che.api.local.storage.deserialize.GroupSerializer;
+import org.eclipse.che.api.local.storage.deserialize.PermissionsSerializer;
 import org.eclipse.che.api.machine.server.dao.RecipeDao;
 import org.eclipse.che.api.machine.server.recipe.RecipeImpl;
+import org.eclipse.che.api.machine.shared.Group;
 import org.eclipse.che.api.machine.shared.ManagedRecipe;
+import org.eclipse.che.api.machine.shared.Permissions;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,25 +45,44 @@ import static java.lang.String.format;
 
 /**
  * @author Eugene Voevodin
+ * @author Anton Korneta
  */
 @Singleton
 public class LocalRecipeDaoImpl implements RecipeDao {
 
     private final Map<String, ManagedRecipe> recipes;
     private final ReadWriteLock              lock;
+    private final LocalStorage               recipeStorage;
 
     @Inject
-    public LocalRecipeDaoImpl(@Named("codenvy.local.infrastructure.recipes") Set<ManagedRecipe> recipes) {
+    public LocalRecipeDaoImpl(LocalStorageFactory storageFactory) throws IOException {
+        Map<Class<?>, Object> adapters = ImmutableMap.of(Permissions.class, new PermissionsSerializer(),
+                                                         Group.class, new GroupSerializer());
+        this.recipeStorage = storageFactory.create("recipes.json", adapters);
         this.recipes = new HashMap<>();
         lock = new ReentrantReadWriteLock();
-        try {
-            for (ManagedRecipe recipe : recipes) {
-                create(recipe);
+    }
+
+    @Inject
+    @PostConstruct
+    public void start(@Named("codenvy.local.infrastructure.recipes") Set<ManagedRecipe> defaultRecipes) {
+        recipes.putAll(recipeStorage.loadMap(new TypeToken<Map<String, RecipeImpl>>() {}));
+
+        if (recipes.isEmpty()) {
+            try {
+                for (ManagedRecipe recipe : defaultRecipes) {
+                    create(recipe);
+                }
+            } catch (Exception ex) {
+                // fail if can't validate this instance properly
+                throw new RuntimeException(ex);
             }
-        } catch (Exception ex) {
-            // fail if can't validate this instance properly
-            throw new RuntimeException(ex);
         }
+    }
+
+    @PreDestroy
+    public void stop() throws IOException {
+        recipeStorage.store(recipes);
     }
 
     @Override

@@ -15,8 +15,6 @@ import elemental.events.KeyboardEvent.KeyCode;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.ide.api.text.TypedRegion;
-import org.eclipse.che.ide.collections.StringMap;
-import org.eclipse.che.ide.collections.StringMap.IterationCallback;
 import org.eclipse.che.ide.jseditor.client.annotation.AnnotationModel;
 import org.eclipse.che.ide.jseditor.client.annotation.HasAnnotationRendering;
 import org.eclipse.che.ide.jseditor.client.annotation.QueryAnnotationsEvent;
@@ -51,6 +49,7 @@ import org.eclipse.che.ide.jseditor.client.text.TextPosition;
 import org.eclipse.che.ide.util.browser.UserAgent;
 
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -192,19 +191,17 @@ public class TextEditorInit<T extends EditorWidget> {
         if (this.codeAssistantFactory == null) {
             return;
         }
-        final StringMap<CodeAssistProcessor> processors = configuration.getContentAssistantProcessors();
+        final Map<String, CodeAssistProcessor> processors = configuration.getContentAssistantProcessors();
 
         if (processors != null && !processors.isEmpty()) {
             LOG.info("Creating code assistant.");
 
             final CodeAssistant codeAssistant = this.codeAssistantFactory.create(this.textEditor,
                                                                                  this.configuration.getPartitioner());
-            processors.iterate(new IterationCallback<CodeAssistProcessor>() {
-                @Override
-                public void onIteration(final String key, final CodeAssistProcessor value) {
-                    codeAssistant.setCodeAssistantProcessor(key, value);
-                }
-            });
+            for (String key: processors.keySet()) {
+                codeAssistant.setCodeAssistantProcessor(key, processors.get(key));
+            }
+
             final KeyBindingAction action = new KeyBindingAction() {
                 @Override
                 public void action() {

@@ -41,7 +41,7 @@ public final class SignalKeyLogic {
     public static final int IME_CODE = 229;
 
     //TODO(danilatos): Use int map
-    private static final Set<Integer> NAVIGATION_KEYS = new HashSet();
+    private static final Set<Integer> NAVIGATION_KEYS = new HashSet<>();
 
     static {
         NAVIGATION_KEYS.add(KeyCodes.KEY_LEFT);

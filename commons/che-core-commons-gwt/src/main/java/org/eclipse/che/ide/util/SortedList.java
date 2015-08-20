@@ -14,9 +14,11 @@
 
 package org.eclipse.che.ide.util;
 
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
+import org.eclipse.che.ide.collections.ListHelper;
 import org.eclipse.che.ide.runtime.Assert;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -77,14 +79,14 @@ public class SortedList<T> {
 
     private static final boolean ENSURE_SORTED_PRECONDITIONS_ENABLED = false;
 
-    private final Array<T> array;
+    private List<T> list;
 
     private final Comparator<T> comparator;
 
     private final ComparatorDelegator comparatorDelegator = new ComparatorDelegator();
 
     public SortedList(Comparator<T> comparator) {
-        this.array = Collections.createArray();
+        this.list = new ArrayList<>();
         this.comparator = comparator;
     }
 
@@ -97,14 +99,14 @@ public class SortedList<T> {
      */
     public int add(T item) {
         int index = findInsertionIndex(item);
-        array.splice(index, 0, item);
+        ListHelper.splice(list, index, 0, item);
         ensureSortedIfEnabled();
         return index;
     }
 
     /** Clears the list. */
     public void clear() {
-        array.clear();
+        list.clear();
     }
 
     /**
@@ -167,7 +169,7 @@ public class SortedList<T> {
      *         less than the comparator's value will be returned.
      */
     public int findInsertionIndex(OneWayComparator<T> comparator, boolean greaterItemIfNoMatch) {
-        int insertionPoint = binarySearch(array, comparator);
+        int insertionPoint = binarySearch(list, comparator);
         if (insertionPoint >= 0) {
             return insertionPoint;
         }
@@ -190,9 +192,9 @@ public class SortedList<T> {
      * @return index of item in the list, or {@code -1} if not found
      */
     public int findIndex(T item) {
-        for (int i = findInsertionIndex(item); i < array.size()
-                                               && comparator.compare(item, array.get(i)) == 0; i++) {
-            if (array.get(i).equals(item)) {
+        for (int i = findInsertionIndex(item); i < list.size()
+                                               && comparator.compare(item, list.get(i)) == 0; i++) {
+            if (list.get(i).equals(item)) {
                 return i;
             }
         }
@@ -201,35 +203,35 @@ public class SortedList<T> {
 
     /** Returns the item at the given {@code index}. */
     public T get(int index) {
-        return array.get(index);
+        return list.get(index);
     }
 
     /** Removes the item at the given {@code index}. */
     public T remove(int index) {
-        T item = array.remove(index);
+        T item = list.remove(index);
         ensureSortedIfEnabled();
         return item;
     }
 
     /** Removes the items starting at {@code index} through to the end. */
-    public Array<T> removeThisAndFollowing(int index) {
-        Array<T> items = removeSublist(index, array.size() - index);
+    public List<T> removeThisAndFollowing(int index) {
+        List<T> items = removeSublist(index, list.size() - index);
         ensureSortedIfEnabled();
         return items;
     }
 
     /** Removes the items starting at {@code index} through to the end. */
-    public Array<T> removeSublist(int index, int sublistSize) {
-        Array<T> sublist = array.splice(index, sublistSize);
+    public List<T> removeSublist(int index, int sublistSize) {
+        ListHelper.splice(list, index, sublistSize);
         ensureSortedIfEnabled();
-        return sublist;
+        return list;
     }
 
     /** Removes the given {@code item}. Performance is O(lg N). */
     public boolean remove(T item) {
         int index = findIndex(item);
         if (index >= 0) {
-            array.remove(index);
+            list.remove(index);
             ensureSortedIfEnabled();
             return true;
         }
@@ -238,12 +240,14 @@ public class SortedList<T> {
 
     /** @return the size of this list */
     public int size() {
-        return array.size();
+        return list.size();
     }
 
-    /** @return copy of this list as an array */
-    public Array<T> toArray() {
-        return array.copy();
+    /** @return copy of this list as an list */
+    public List<T> toArray() {
+        List<T> copy = new ArrayList<>();
+        java.util.Collections.copy(copy, list);
+        return copy;
     }
 
     /**
@@ -261,13 +265,13 @@ public class SortedList<T> {
         ensureSortedIfEnabled();
     }
 
-    public static <T> int binarySearch(Array<T> array, OneWayComparator<T> comparator) {
+    public static <T> int binarySearch(List<T> list, OneWayComparator<T> comparator) {
         int lower = 0;
-        int upper = array.size() - 1;
+        int upper = list.size() - 1;
 
         while (lower <= upper) {
             int middle = lower + (upper - lower) / 2;
-            int c = comparator.compareTo(array.get(middle));
+            int c = comparator.compareTo(list.get(middle));
             if (c < 0) {
                 upper = middle - 1;
             } else if (c > 0) {
@@ -280,7 +284,7 @@ public class SortedList<T> {
 
                 // Move backward to the first non-equal value
                 int i = middle;
-                while (i >= 0 && comparator.compareTo(array.get(i)) == 0) {
+                while (i >= 0 && comparator.compareTo(list.get(i)) == 0) {
                     i--;
                 }
 
@@ -293,8 +297,8 @@ public class SortedList<T> {
 
     public final void ensureSortedIfEnabled() {
         if (ENSURE_SORTED_PRECONDITIONS_ENABLED) {
-            for (int i = 1; i < array.size(); i++) {
-                Assert.isTrue(comparator.compare(array.get(i - 1), array.get(i)) <= 0);
+            for (int i = 1; i < list.size(); i++) {
+                Assert.isTrue(comparator.compare(list.get(i - 1), list.get(i)) <= 0);
             }
         }
     }
