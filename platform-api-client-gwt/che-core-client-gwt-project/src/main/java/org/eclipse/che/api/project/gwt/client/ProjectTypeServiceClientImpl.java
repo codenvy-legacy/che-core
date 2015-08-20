@@ -12,6 +12,7 @@ package org.eclipse.che.api.project.gwt.client;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
 import org.eclipse.che.api.promises.client.Function;
@@ -44,18 +45,22 @@ public class ProjectTypeServiceClientImpl implements ProjectTypeServiceClient {
 
     private final AsyncRequestFactory    asyncRequestFactory;
     private final DtoUnmarshallerFactory dtoUnmarshallerFactory;
-    private final AsyncRequestLoader     loader;
+    private       String                 extPath;
+    private       String                 workspaceId;
+    private final AsyncRequestLoader loader;
 
     @Inject
-    protected ProjectTypeServiceClientImpl(@RestContext String restContext,
+    protected ProjectTypeServiceClientImpl(@Named("cheExtensionPath") String extPath,
+                                           @Named("workspaceId") String workspaceId,
                                            AsyncRequestLoader loader,
                                            AsyncRequestFactory asyncRequestFactory,
                                            DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+        this.extPath = extPath;
+        this.workspaceId = workspaceId;
         this.loader = loader;
         this.asyncRequestFactory = asyncRequestFactory;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
-
-        baseUrl = restContext + "/project-type";
+        baseUrl = extPath + "/project-type/" + workspaceId +"/";
     }
 
     @Override

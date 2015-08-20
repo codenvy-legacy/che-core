@@ -22,6 +22,7 @@ import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.api.vfs.shared.dto.Property;
 import org.eclipse.che.commons.lang.Pair;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
@@ -263,16 +264,22 @@ public interface VirtualFile extends Comparable<VirtualFile> {
     /**
      * Copies this file to the new parent.
      *
-     * @param parent the new parent
-     * @param name a new name for the moved source, can be left {@code null} or empty {@code String} for current source name
-     * @param overWrite should the destination be overwritten, set to true to overwrite, false otherwise
+     * @param parent
+     *         the new parent
+     * @param name
+     *         a new name for the moved source, can be left {@code null} or empty {@code String} for current source name
+     * @param overWrite
+     *         should the destination be overwritten, set to true to overwrite, false otherwise
      * @return reference to copy
-     * @throws ForbiddenException if specified {@code parent} doesn't denote a
-     * folder or user doesn't have write permission to the specified
-     * {@code parent}
-     * @throws ConflictException if {@code parent} already contains item with
-     * the same name as this virtual file has
-     * @throws ServerException if other error occurs
+     * @throws ForbiddenException
+     *         if specified {@code parent} doesn't denote a
+     *         folder or user doesn't have write permission to the specified
+     *         {@code parent}
+     * @throws ConflictException
+     *         if {@code parent} already contains item with
+     *         the same name as this virtual file has
+     * @throws ServerException
+     *         if other error occurs
      * @see #isFolder()
      */
     @Beta
@@ -304,26 +311,34 @@ public interface VirtualFile extends Comparable<VirtualFile> {
     /**
      * Moves this VirtualFile under new parent.
      *
-     * @param parent parent to move
-     * @param name a new name for the moved source, can be left {@code null} or empty {@code String} for current source name
-     * @param overWrite should the destination be overwritten, set to true to overwrite, false otherwise
-     * @param lockToken lock token. This parameter is required if the file is
-     * locked
-     * @throws ForbiddenException if any of following conditions are met:
-     * <ul>
-     * <li>specified {@code parent} doesn't denote a folder</li>
-     * <li>user doesn't have write permission to the specified {@code parent} or
-     * this item</li>
-     * <li>this item is locked file and {@code lockToken} is {@code null} or
-     * doesn't match</li>
-     * </ul>
-     * @throws ConflictException if {@code parent} already contains item with
-     * the same name as this virtual file has
-     * @throws ServerException if other error occurs
+     * @param parent
+     *         parent to move
+     * @param name
+     *         a new name for the moved source, can be left {@code null} or empty {@code String} for current source name
+     * @param overWrite
+     *         should the destination be overwritten, set to true to overwrite, false otherwise
+     * @param lockToken
+     *         lock token. This parameter is required if the file is
+     *         locked
+     * @throws ForbiddenException
+     *         if any of following conditions are met:
+     *         <ul>
+     *         <li>specified {@code parent} doesn't denote a folder</li>
+     *         <li>user doesn't have write permission to the specified {@code parent} or
+     *         this item</li>
+     *         <li>this item is locked file and {@code lockToken} is {@code null} or
+     *         doesn't match</li>
+     *         </ul>
+     * @throws ConflictException
+     *         if {@code parent} already contains item with
+     *         the same name as this virtual file has
+     * @throws ServerException
+     *         if other error occurs
      * @see #isFolder()
      */
-    VirtualFile moveTo(VirtualFile parent, String name, boolean overWrite, String lockToken) throws ForbiddenException, ConflictException, ServerException;
-    
+    VirtualFile moveTo(VirtualFile parent, String name, boolean overWrite, String lockToken)
+            throws ForbiddenException, ConflictException, ServerException;
+
     /**
      * Renames and (or) update media type of this VirtualFile.
      *
@@ -592,4 +607,8 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      *         if any error occurs
      */
     LazyIterator<Pair<String, String>> countMd5Sums() throws ServerException;
+
+    /** Returns instance of {@link java.io.File} */
+    @Beta
+    File getIoFile();
 }

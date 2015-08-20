@@ -26,7 +26,7 @@ import java.util.List;
  *
  * @author Vitaly Parfonov
  */
-@Path("project-importers")
+@Path("project-importers/{wsId}")
 public class ProjectImportersService extends Service {
 
     private final ProjectImporterRegistry importersRegistry;

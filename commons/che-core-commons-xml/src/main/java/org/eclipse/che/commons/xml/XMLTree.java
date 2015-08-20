@@ -197,7 +197,7 @@ public final class XMLTree {
      * @see Element#getText()
      */
     public String getSingleText(String expression) {
-        return evaluateXPath(expression, STRING);
+        return (String)evaluateXPath(expression, STRING);
     }
 
     /**
@@ -226,12 +226,12 @@ public final class XMLTree {
      * @return list of found elements or empty list if elements were not found
      */
     public List<Element> getElements(String expression) {
-        final NodeList nodes = evaluateXPath(expression, NODESET);
+        final NodeList nodes = (NodeList)evaluateXPath(expression, NODESET);
         return asElements(nodes);
     }
 
     public <R> List<R> getElements(String expression, ElementMapper<? extends R> mapper) {
-        final NodeList nodes = evaluateXPath(expression, NODESET);
+        final NodeList nodes = (NodeList)evaluateXPath(expression, NODESET);
         return asElements(nodes, mapper);
     }
 
@@ -381,10 +381,10 @@ public final class XMLTree {
      * Rethrows all exceptions as {@link XMLTreeException}
      */
     @SuppressWarnings("unchecked")
-    private <T> T evaluateXPath(String expression, QName returnType) {
+    private Object evaluateXPath(String expression, QName returnType) {
         final XPath xpath = XPATH_FACTORY.newXPath();
         try {
-            return (T)xpath.evaluate(expression, document, returnType);
+            return xpath.evaluate(expression, document, returnType);
         } catch (XPathExpressionException xpathEx) {
             throw XMLTreeException.wrap(xpathEx);
         }
@@ -408,7 +408,7 @@ public final class XMLTree {
      * using {@link Node#getTextContent()} method
      */
     private List<String> retrieveText(String expression) {
-        final NodeList nodeList = evaluateXPath(expression, NODESET);
+        final NodeList nodeList = (NodeList)evaluateXPath(expression, NODESET);
         final List<String> elementsText = new ArrayList<>(nodeList.getLength());
         for (int i = 0; i < nodeList.getLength(); i++) {
             elementsText.add(nodeList.item(i).getTextContent());
@@ -486,6 +486,8 @@ public final class XMLTree {
                         beforeStart = lastIndexOf(xml, '>', reader.getLocation().getCharacterOffset());
                     }
                     break;
+                default:
+                    //DO NOTHING
             }
             prevEvent = reader.getEventType();
         }

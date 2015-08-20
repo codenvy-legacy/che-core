@@ -48,10 +48,9 @@ import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 @Singleton
 public class MachineExtensionProxyServlet extends HttpServlet {
     private static final Logger  LOG               = LoggerFactory.getLogger(MachineExtensionProxyServlet.class);
-    private static final Pattern EXTENSION_API_URI = Pattern.compile("/[^/]+/ext/(?<machineId>[^/]+)(?<destpath>/.*)");
+    private static final Pattern EXTENSION_API_URI = Pattern.compile(".*/ext/[^/]+/(?<workspaceId>[^/]+)/?.*");
 
-    private final int extServicesPort;
-
+    private final int            extServicesPort;
     private final MachineManager machineManager;
 
     @Inject
@@ -117,24 +116,23 @@ public class MachineExtensionProxyServlet extends HttpServlet {
     }
 
     private String getExtensionApiUrl(HttpServletRequest req) throws NotFoundException, ServerException {
-        String machineId;
+        String workspaceId;
         final Matcher matcher = EXTENSION_API_URI.matcher(req.getRequestURI());
         if (matcher.matches()) {
-            machineId = matcher.group("machineId");
+            workspaceId = matcher.group("workspaceId");
         } else {
-            throw new NotFoundException("No machine id is found in request.");
+            throw new NotFoundException("No workspace id is found in request.");
         }
 
-        final Instance machine = machineManager.getMachine(machineId);
+        final Instance machine = machineManager.getDevMachine(workspaceId);
         final Server server = machine.getServers().get(Integer.toString(extServicesPort));
         if (server == null) {
-            throw new ServerException("No extension server found in machine");
+            throw new ServerException("No extension server found in machine.");
         }
 
-        final StringBuilder url = new StringBuilder("http://").append(server.getAddress());
-
-        final String extPath = matcher.group("destpath");
-        url.append(extPath);
+        final StringBuilder url = new StringBuilder("http://")
+                .append(server.getAddress())
+                .append(req.getRequestURI());
 
         if (req.getQueryString() != null) {
             url.append("?").append(req.getQueryString());

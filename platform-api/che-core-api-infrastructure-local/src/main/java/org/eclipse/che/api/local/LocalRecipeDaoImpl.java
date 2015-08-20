@@ -10,26 +10,20 @@
  *******************************************************************************/
 package org.eclipse.che.api.local;
 
+
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
-import com.google.common.io.Files;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.reflect.TypeToken;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonSyntaxException;
 import com.google.inject.Inject;
 
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.local.storage.LocalStorage;
 import org.eclipse.che.api.local.storage.LocalStorageFactory;
+import org.eclipse.che.api.local.storage.deserialize.GroupSerializer;
+import org.eclipse.che.api.local.storage.deserialize.PermissionsSerializer;
 import org.eclipse.che.api.machine.server.dao.RecipeDao;
-import org.eclipse.che.api.machine.server.recipe.GroupImpl;
-import org.eclipse.che.api.machine.server.recipe.PermissionsImpl;
 import org.eclipse.che.api.machine.server.recipe.RecipeImpl;
 import org.eclipse.che.api.machine.shared.Group;
 import org.eclipse.che.api.machine.shared.ManagedRecipe;
@@ -39,12 +33,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Named;
 import javax.inject.Singleton;
-import java.io.File;
 import java.io.IOException;
-import java.io.Reader;
-import java.lang.reflect.Type;
-import java.nio.charset.Charset;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,13 +54,11 @@ public class LocalRecipeDaoImpl implements RecipeDao {
     private final ReadWriteLock              lock;
     private final LocalStorage               recipeStorage;
 
-    @javax.inject.Inject
-    @Named("local.storage.path")
-    private String pathToStorage;
-
     @Inject
     public LocalRecipeDaoImpl(LocalStorageFactory storageFactory) throws IOException {
-        this.recipeStorage = storageFactory.create("recipes.json");
+        Map<Class<?>, Object> adapters = ImmutableMap.of(Permissions.class, new PermissionsSerializer(),
+                                                         Group.class, new GroupSerializer());
+        this.recipeStorage = storageFactory.create("recipes.json", adapters);
         this.recipes = new HashMap<>();
         lock = new ReentrantReadWriteLock();
     }
@@ -79,42 +66,7 @@ public class LocalRecipeDaoImpl implements RecipeDao {
     @Inject
     @PostConstruct
     public void start(@Named("codenvy.local.infrastructure.recipes") Set<ManagedRecipe> defaultRecipes) {
-        class GroupDeserializer implements JsonDeserializer<Group> {
-            @Override
-            public Group deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-                String name = json.getAsJsonObject().get("name").getAsString();
-                String unit = json.getAsJsonObject().get("unit").getAsString();
-                List<String> acl = context.deserialize(json.getAsJsonObject().get("acl"), new TypeToken<List<String>>() {}.getType());
-                return new GroupImpl(name == null ? "" : name, unit == null ? "" : unit, acl == null ? Collections.emptyList() : acl);
-            }
-        }
-
-        class PermissionsDeserializer implements JsonDeserializer<PermissionsImpl> {
-            @Override
-            public PermissionsImpl deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-                    throws JsonParseException {
-
-                Map<String, List<String>> users =
-                        context.deserialize(json.getAsJsonObject().get("users"),
-                                            new com.google.gson.reflect.TypeToken<Map<String, List<String>>>() {}.getType());
-                List<Group> groups =
-                        context.deserialize(json.getAsJsonObject().get("groups"),
-                                            new com.google.gson.reflect.TypeToken<Group>() {}.getType());
-                return new PermissionsImpl(users == null ? Collections.emptyMap() : users,
-                                           groups == null ? Collections.emptyList() : groups);
-            }
-        }
-
-        Gson gson = new GsonBuilder().registerTypeAdapter(Group.class, new GroupDeserializer())
-                                     .registerTypeAdapter(Permissions.class, new PermissionsDeserializer())
-                                     .create();
-
-
-        File storedFile = new File(pathToStorage, "recipes.json");
-        try (Reader reader = Files.newReader(storedFile, Charset.forName("UTF-8"))) {
-            recipes.putAll(gson.fromJson(reader, new TypeToken<Map<String, RecipeImpl>>() {}.getType()));
-        } catch (JsonSyntaxException | IOException ignored) {
-        }
+        recipes.putAll(recipeStorage.loadMap(new TypeToken<Map<String, RecipeImpl>>() {}));
 
         if (recipes.isEmpty()) {
             try {

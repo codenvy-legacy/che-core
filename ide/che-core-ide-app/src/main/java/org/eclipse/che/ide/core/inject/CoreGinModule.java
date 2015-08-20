@@ -291,8 +291,8 @@ public class CoreGinModule extends AbstractGinModule {
         mapBinder.addBinding("Preferences").to(PreferencesComponent.class);
         mapBinder.addBinding("Workspace").to(WorkspaceComponent.class);
         mapBinder.addBinding("Profile").to(ProfileComponent.class);
-        mapBinder.addBinding("Project Types").to(ProjectTypeComponent.class);
-        mapBinder.addBinding("Project Templates").to(ProjectTemplatesComponent.class);
+//        mapBinder.addBinding("Project Types").to(ProjectTypeComponent.class);
+//        mapBinder.addBinding("Project Templates").to(ProjectTemplatesComponent.class);
 //        mapBinder.addBinding("Factory").to(FactoryComponent.class);
         mapBinder.addBinding("Project State Handler").to(ProjectStateHandler.class);
         mapBinder.addBinding("Standard components").to(StandartComponent.class);

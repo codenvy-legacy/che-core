@@ -28,19 +28,22 @@ import javax.inject.Inject;
 public class ProjectImportersServiceClientImpl implements ProjectImportersServiceClient {
 
 
-    private String              restContext;
+    private String extPath;
+    private String workspaceId;
     private AsyncRequestFactory asyncRequestFactory;
 
     @Inject
-    public ProjectImportersServiceClientImpl(@RestContext String restContext,
+    public ProjectImportersServiceClientImpl(@Named("cheExtensionPath") String extPath,
+                                             @Named("workspaceId") String workspaceId,
                                              AsyncRequestFactory asyncRequestFactory) {
-        this.restContext = restContext;
+        this.extPath = extPath;
+        this.workspaceId = workspaceId;
         this.asyncRequestFactory = asyncRequestFactory;
     }
 
     @Override
     public void getProjectImporters(AsyncRequestCallback<Array<ProjectImporterDescriptor>> callback) {
-        asyncRequestFactory.createGetRequest(restContext + "/project-importers")
+        asyncRequestFactory.createGetRequest(extPath + "/project-importers/" + workspaceId)
                            .header(HTTPHeader.CONTENT_TYPE, MimeType.APPLICATION_JSON)
                            .send(callback);
 

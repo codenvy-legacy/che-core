@@ -32,7 +32,7 @@ import static org.eclipse.che.api.project.server.DtoConverter.toTypeDescriptor2;
  *
  * @author gazarenkov
  */
-@Path("project-type")
+@Path("project-type/{ws-id}")
 public class ProjectTypeService extends Service {
 
     private ProjectTypeRegistry registry;
