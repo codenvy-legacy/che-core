@@ -150,7 +150,6 @@ public class DtoConverter {
     }
 
 
-
     public static ProjectConfig toProjectConfig(ProjectModule dto, ProjectTypeRegistry typeRegistry) throws ServerException,
                                                                                                      ProjectTypeConstraintException,
                                                                                                      InvalidValueException,
@@ -194,8 +193,6 @@ public class DtoConverter {
                                  fromDto(dto.getRunners()), fromDto(dto.getBuilders()), validMixins);
 
     }
-
-
 
     /*================================ Methods for conversion to DTO. ===============================*/
 
