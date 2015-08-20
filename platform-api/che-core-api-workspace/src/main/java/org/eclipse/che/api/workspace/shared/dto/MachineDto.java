@@ -11,7 +11,10 @@
 package org.eclipse.che.api.workspace.shared.dto;
 
 import org.eclipse.che.api.core.model.workspace.Machine;
+import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
+import org.eclipse.che.api.core.rest.shared.dto.Link;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -55,4 +58,8 @@ public interface MachineDto extends MachineConfigDto, Machine {
 
     @Override
     MachineDto withMemorySize(int memorySize);
+
+    List<Link> getLinks();
+
+    MachineDto withLinks(List<Link> links);
 }

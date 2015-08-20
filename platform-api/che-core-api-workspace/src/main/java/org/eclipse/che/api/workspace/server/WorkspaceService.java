@@ -67,6 +67,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.RUNNING;
@@ -335,29 +336,36 @@ public class WorkspaceService extends Service {
                                        .path(getClass(), "startById")
                                        .build(workspace.getId())
                                        .toString(),
-                             "application/json",
+                             APPLICATION_JSON,
                              START_WORKSPACE));
         links.add(createLink("DELETE",
                              uriBuilder.clone()
                                        .path(getClass(), "delete")
                                        .build(workspace.getId())
                                        .toString(),
-                             "application/json",
+                             APPLICATION_JSON,
                              LINK_REL_REMOVE_WORKSPACE));
         links.add(createLink("GET",
                              uriBuilder.clone()
                                        .path(getClass(), "getList")
                                        .build()
                                        .toString(),
-                             "application/json",
+                             APPLICATION_JSON,
                              GET_ALL_USER_WORKSPACES));
+        links.add(createLink("GET",
+                             uriBuilder.clone()
+                                       .path(getClass(), "getById")
+                                       .build(workspace.getId())
+                                       .toString(),
+                             APPLICATION_JSON,
+                             "self link"));
         if (workspace.getStatus() == RUNNING) {
             links.add(createLink("GET",
                                  uriBuilder.clone()
                                            .path(getClass(), "getRuntimeWorkspaceById")
                                            .build(workspace.getId())
                                            .toString(),
-                                 "application/json",
+                                 APPLICATION_JSON,
                                  GET_RUNTIME_WORKSPACE));
         }
 
@@ -389,13 +397,13 @@ public class WorkspaceService extends Service {
     }
 
     private RuntimeWorkspaceDto asDto(RuntimeWorkspace workspace) {
-        final UriBuilder uriBuilder = getServiceContext().getBaseUriBuilder();
+        final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
 
         final List<Link> links = new ArrayList<>();
         if (workspace.getStatus() == RUNNING) {
             links.add(createLink("DELETE",
                                  uriBuilder.clone()
-                                           .path(getClass(), "startById")
+                                           .path(getClass(), "stop")
                                            .build(workspace.getId())
                                            .toString(),
                                  STOP_WORKSPACE));
@@ -406,15 +414,22 @@ public class WorkspaceService extends Service {
                                        .build(workspace.getId())
                                        .toString(),
                              null,
-                             "application/json",
+                             APPLICATION_JSON,
                              GET_USERS_WORKSPACE));
         links.add(createLink("GET",
                              uriBuilder.clone()
                                        .path(getClass(), "getList")
                                        .build()
                                        .toString(),
-                             "application/json",
+                             APPLICATION_JSON,
                              GET_ALL_USER_WORKSPACES));
+        links.add(createLink("GET",
+                             uriBuilder.clone()
+                                       .path(getClass(), "getRuntimeWorkspaceById")
+                                       .build(workspace.getId())
+                                       .toString(),
+                             APPLICATION_JSON,
+                             "self link"));
         final List<MachineDto> machines = workspace.getMachines()
                                                    .stream()
                                                    .map(this::asDto)
@@ -424,6 +439,7 @@ public class WorkspaceService extends Service {
                                                 .withName(workspace.getName())
                                                 .withStatus(workspace.getStatus())
                                                 .withOwner(workspace.getOwner())
+                                                .withActiveEnvName(workspace.getActiveEnvName())
                                                 .withDefaultEnvName(workspace.getDefaultEnvName())
                                                 .withCommands(usersWorkspace.getCommands())
                                                 .withProjects(usersWorkspace.getProjects())
@@ -437,6 +453,13 @@ public class WorkspaceService extends Service {
     }
 
     private MachineDto asDto(Machine machine) {
+        final Link machineLink = createLink("GET",
+                                            getServiceContext().getBaseUriBuilder()
+                                                               .path("/machine/{id}")
+                                                               .build(machine.getId())
+                                                               .toString(),
+                                            APPLICATION_JSON,
+                                            "get machine");
         final Map<String, ServerDto> servers = machine.getServers()
                                                       .entrySet()
                                                       .stream()
@@ -450,7 +473,8 @@ public class WorkspaceService extends Service {
                                        .withOutputChannel(machine.getOutputChannel())
                                        .withProperties(machine.getProperties())
                                        .withSource(asDto(machine.getSource()))
-                                       .withServers(servers);
+                                       .withServers(servers)
+                                       .withLinks(singletonList(machineLink));
     }
 
     private MachineSourceDto asDto(MachineSource source) {

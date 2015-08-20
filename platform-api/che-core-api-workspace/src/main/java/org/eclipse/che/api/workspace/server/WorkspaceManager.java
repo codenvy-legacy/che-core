@@ -50,8 +50,6 @@ import static org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEven
 import static org.eclipse.che.commons.lang.NameGenerator.generate;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
-// TODO Use Impls
-
 /**
  * Facade for Workspace related operations
  *
@@ -126,7 +124,7 @@ public class WorkspaceManager {
         return workspace;
     }
 
-    public UsersWorkspace startWorkspaceByName(String workspaceName, String envName, String owner)
+    public UsersWorkspaceImpl startWorkspaceByName(String workspaceName, String envName, String owner)
             throws NotFoundException, ServerException, BadRequestException {
         requiredNotNull(workspaceName, "Workspace name");
         requiredNotNull(owner, "Workspace owner");
@@ -139,7 +137,7 @@ public class WorkspaceManager {
     }
 
     // TODO should we store temp workspaces and where?
-    public UsersWorkspace startTemporaryWorkspace(WorkspaceConfig workspaceConfig, final String accountId)
+    public UsersWorkspaceImpl startTemporaryWorkspace(WorkspaceConfig workspaceConfig, final String accountId)
             throws ServerException, BadRequestException, ForbiddenException, NotFoundException {
         final UsersWorkspaceImpl workspace = fromConfig(workspaceConfig);
         workspace.setTemporary(true);
@@ -182,14 +180,15 @@ public class WorkspaceManager {
         });
     }
 
-    public UsersWorkspace createWorkspace(final WorkspaceConfig workspaceConfig, final String accountId)
+    public UsersWorkspaceImpl createWorkspace(final WorkspaceConfig workspaceConfig, final String accountId)
             throws NotFoundException, ForbiddenException, ServerException, BadRequestException, ConflictException {
 
         final UsersWorkspaceImpl workspace = fromConfig(workspaceConfig);
 
         hooks.beforeCreate(workspace, accountId);
 
-        UsersWorkspace newWorkspace = workspaceDao.create(workspace);
+        final UsersWorkspaceImpl newWorkspace = workspaceDao.create(workspace);
+        newWorkspace.setStatus(STOPPED);
 
         hooks.afterCreate(workspace, accountId);
 
@@ -240,10 +239,18 @@ public class WorkspaceManager {
     public UsersWorkspaceImpl getWorkspace(String workspaceId) throws NotFoundException, ServerException, BadRequestException {
         requiredNotNull(workspaceId, "Workspace id");
 
-        return workspaceDao.get(workspaceId);
+        final UsersWorkspaceImpl workspace = workspaceDao.get(workspaceId);
+        try {
+            final RuntimeWorkspaceImpl runtimeWorkspace = workspaceRegistry.get(workspaceId);
+            workspace.setStatus(runtimeWorkspace.getStatus());
+        } catch (NotFoundException ignored) {
+            //if registry doesn't contain workspace it should have stopped status
+            workspace.setStatus(STOPPED);
+        }
+        return workspace;
     }
 
-    public RuntimeWorkspace getRuntimeWorkspace(String workspaceId) throws BadRequestException, NotFoundException, ServerException {
+    public RuntimeWorkspaceImpl getRuntimeWorkspace(String workspaceId) throws BadRequestException, NotFoundException, ServerException {
         requiredNotNull(workspaceId, "Workspace id");
 
         return workspaceRegistry.get(workspaceId);
