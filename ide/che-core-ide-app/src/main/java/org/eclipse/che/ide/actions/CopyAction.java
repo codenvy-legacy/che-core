@@ -77,10 +77,8 @@ public class CopyAction extends Action {
         }
 
         String projectPath = appContext.getCurrentProject().getRootProject().getPath();
-
-        List<?> selectedItems = selection.getAllElements();
-        for (int i = 0; i < selectedItems.size(); i++) {
-            Object o = selectedItems.get(i);
+        
+        for (Object o : selection.getAllElements()) {
 
             if (!(o instanceof StorableNode)) {
                 return false;
