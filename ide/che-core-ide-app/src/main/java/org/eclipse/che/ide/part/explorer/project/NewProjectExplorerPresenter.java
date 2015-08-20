@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.part.explorer.project;
 
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
@@ -22,12 +23,11 @@ import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.ProjectActionHandler;
-import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
-import org.eclipse.che.ide.api.event.RefreshProjectTreeHandler;
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.parts.HasView;
 import org.eclipse.che.ide.api.parts.base.BasePresenter;
 import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
+import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.project.node.event.ProjectPartLoadEvent;
 import org.eclipse.che.ide.api.project.node.event.ProjectPartLoadEvent.ProjectPartLoadHandler;
@@ -36,9 +36,9 @@ import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerView.ActionDe
 import org.eclipse.che.ide.project.event.ResourceNodeEvent;
 import org.eclipse.che.ide.project.event.ResourceNodeEvent.Event;
 import org.eclipse.che.ide.project.event.ResourceNodeEvent.ResourceNodeHandler;
-import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
 import org.eclipse.che.ide.project.node.NodeManager;
-import org.eclipse.che.ide.api.project.node.HasStorablePath;
+import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
+import org.eclipse.che.ide.ui.smartTree.event.BeforeExpandNodeEvent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -150,13 +150,6 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
                 }
             }
         });
-
-        eventBus.addHandler(RefreshProjectTreeEvent.TYPE, new RefreshProjectTreeHandler() {
-            @Override
-            public void onRefreshProjectTree(RefreshProjectTreeEvent event) {
-//                view.synchronizeTree();
-            }
-        });
     }
 
     /** {@inheritDoc} */
@@ -206,12 +199,13 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
     }
 
     private void updateAppContext(List<Node> nodes) {
-        Set<ProjectDescriptor> selectedDescriptors = new HashSet<>();
-
         for (Node node : nodes) {
             if (node instanceof HasProjectDescriptor) {
                 ProjectDescriptor descriptor = ((HasProjectDescriptor)node).getProjectDescriptor();
-                selectedDescriptors.add(descriptor);
+                if (appContext.getCurrentProject() != null) {
+                    appContext.getCurrentProject().setProjectDescription(descriptor);
+                    return;
+                }
             }
         }
     }
@@ -239,5 +233,13 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
 
     public void synchronizeTree() {
         view.synchronizeTree();
+    }
+
+    public HandlerRegistration addBeforeExpandNodeHandler(BeforeExpandNodeEvent.BeforeExpandNodeHandler handler) {
+        return view.addBeforeExpandNodeHandler(handler);
+    }
+
+    public void reloadChildren(Node node) {
+        view.reloadChildren(node);
     }
 }

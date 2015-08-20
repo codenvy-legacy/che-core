@@ -20,9 +20,6 @@ import com.google.web.bindery.event.shared.EventBus;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.event.FileEvent;
-import org.eclipse.che.ide.api.project.tree.TreeNode;
-import org.eclipse.che.ide.api.project.tree.generic.FileNode;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.collections.StringMap;
@@ -118,19 +115,22 @@ public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegat
     public void onFileSelected() {
         view.close();
         ItemReference selectedItem = resultMap.get(view.getItemPath());
-        appContext.getCurrentProject().getCurrentTree().getNodeByPath(selectedItem.getPath(), new AsyncCallback<TreeNode<?>>() {
-            @Override
-            public void onSuccess(TreeNode<?> result) {
-                if (result instanceof FileNode) {
-//                    eventBus.fireEvent(new FileEvent((FileNode)result, FileEvent.FileOperation.OPEN));
-                }
-            }
 
-            @Override
-            public void onFailure(Throwable caught) {
-                dialogFactory.createMessageDialog("", localizationConstant.navigateToFileCanNotOpenFile(), null).show();
-            }
-        });
+
+
+//        appContext.getCurrentProject().getCurrentTree().getNodeByPath(selectedItem.getPath(), new AsyncCallback<TreeNode<?>>() {
+//            @Override
+//            public void onSuccess(TreeNode<?> result) {
+//                if (result instanceof FileNode) {
+////                    eventBus.fireEvent(new FileEvent((FileNode)result, FileEvent.FileOperation.OPEN));
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Throwable caught) {
+//                dialogFactory.createMessageDialog("", localizationConstant.navigateToFileCanNotOpenFile(), null).show();
+//            }
+//        });
     }
 
     private void search(String fileName, final AsyncCallback<Array<ItemReference>> callback) {

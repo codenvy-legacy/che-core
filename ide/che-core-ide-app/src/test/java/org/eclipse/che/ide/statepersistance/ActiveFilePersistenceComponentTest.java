@@ -17,7 +17,7 @@ import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorInput;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
-import org.eclipse.che.ide.api.project.tree.generic.FileNode;
+import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
@@ -122,7 +122,7 @@ public class ActiveFilePersistenceComponentTest {
         EditorInput editorInput = mock(EditorInput.class);
         when(activeEditor.getEditorInput()).thenReturn(editorInput);
 
-        FileNode file = mock(FileNode.class);
+        VirtualFile file = mock(VirtualFile.class);
         when(file.getPath()).thenReturn(activeFilePath);
         when(editorInput.getFile()).thenReturn(file);
     }

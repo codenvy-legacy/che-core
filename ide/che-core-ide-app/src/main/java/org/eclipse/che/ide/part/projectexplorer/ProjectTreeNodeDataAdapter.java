@@ -21,6 +21,7 @@ import org.eclipse.che.ide.ui.tree.TreeNodeElement;
  *
  * @author Artem Zatsarynnyy
  */
+@Deprecated
 public class ProjectTreeNodeDataAdapter implements NodeDataAdapter<TreeNode<?>> {
 
     /** {@inheritDoc} */

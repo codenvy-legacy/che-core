@@ -93,7 +93,6 @@ public class FileReferenceNode extends ItemReferenceBasedNode implements Virtual
 
     @Override
     public Promise<Void> updateContent(final String content) {
-//        return nodeManager.updateContent(this, content);
         return AsyncPromiseHelper.createFromAsyncRequest(new AsyncPromiseHelper.RequestCall<Void>() {
             @Override
             public void makeCall(final AsyncCallback<Void> callback) {
@@ -119,7 +118,6 @@ public class FileReferenceNode extends ItemReferenceBasedNode implements Virtual
 
     @Override
     public Promise<String> getContent() {
-//        return nodeManager.getContent(this);
         return AsyncPromiseHelper.createFromAsyncRequest(new AsyncPromiseHelper.RequestCall<String>() {
             @Override
             public void makeCall(final AsyncCallback<String> callback) {

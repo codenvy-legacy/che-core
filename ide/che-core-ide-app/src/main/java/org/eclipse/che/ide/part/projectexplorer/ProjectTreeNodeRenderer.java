@@ -44,6 +44,7 @@ import org.vectomatic.dom.svg.ui.SVGResource;
  *
  * @author Artem Zatsarynnyy
  */
+@Deprecated
 public class ProjectTreeNodeRenderer implements NodeRenderer<TreeNode<?>> {
     private final Css                      css;
     private final Resources                resources;

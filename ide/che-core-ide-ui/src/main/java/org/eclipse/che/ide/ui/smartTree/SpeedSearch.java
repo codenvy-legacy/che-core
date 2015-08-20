@@ -59,6 +59,7 @@ public class SpeedSearch {
 
         @Override
         public void onBackspace(NativeEvent evt) {
+            evt.preventDefault();
             if (!Strings.isNullOrEmpty(searchRequest.toString())) {
                 searchRequest.setLength(searchRequest.length() - 1);
                 doSearch();

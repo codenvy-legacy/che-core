@@ -86,7 +86,7 @@ public abstract class BaseView<T extends BaseActionDelegate> extends Composite i
 
         menuPanel = new FlowPanel();
         menuPanel.addStyleName(resources.partStackCss().headerMenuButton());
-        toolbarHeader.addEast(menuPanel, 100);
+        toolbarHeader.addEast(menuPanel, 75);
 
         toolBar.addNorth(toolbarHeader, 20);
     }

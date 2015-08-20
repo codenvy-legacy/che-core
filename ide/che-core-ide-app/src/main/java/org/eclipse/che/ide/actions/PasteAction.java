@@ -22,12 +22,14 @@ import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.notification.NotificationManager;
+import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.commons.exception.ServerException;
 import org.eclipse.che.ide.json.JsonHelper;
 import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
+import org.eclipse.che.ide.project.node.ResourceBasedNode;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.ui.dialogs.CancelCallback;
 import org.eclipse.che.ide.ui.dialogs.ConfirmCallback;
@@ -48,16 +50,16 @@ import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
 public class PasteAction extends Action {
 
     private final AnalyticsEventLogger        eventLogger;
-    private       SelectionAgent              selectionAgent;
+    //    private       SelectionAgent              selectionAgent;
     private       AppContext                  appContext;
     private       DialogFactory               dialogFactory;
     private       ProjectServiceClient        projectServiceClient;
     private       NotificationManager         notificationManager;
-    private       NewProjectExplorerPresenter projectExplorerPartPresenter;
+    private       NewProjectExplorerPresenter projectExplorer;
     private       RenameItemAction            renameItemAction;
 
     /** List of items to do. */
-    private List<StorableNode> items;
+    private List<ResourceBasedNode<?>> items;
 
     /** Move items, don't copy. */
     private boolean moveItems = false;
@@ -72,22 +74,27 @@ public class PasteAction extends Action {
     private int itemIndex;
 
     /** Destination directory to paste. */
-    private StorableNode destination;
+    private ResourceBasedNode<?> destination;
 
 
     @Inject
-    public PasteAction(Resources resources, AnalyticsEventLogger eventLogger, SelectionAgent selectionAgent,
-                       CoreLocalizationConstant localization, AppContext appContext, DialogFactory dialogFactory,
-                       ProjectServiceClient projectServiceClient, NotificationManager notificationManager,
-                       NewProjectExplorerPresenter projectExplorerPartPresenter, RenameItemAction renameItemAction) {
+    public PasteAction(Resources resources,
+                       AnalyticsEventLogger eventLogger,
+                       CoreLocalizationConstant localization,
+                       AppContext appContext,
+                       DialogFactory dialogFactory,
+                       ProjectServiceClient projectServiceClient,
+                       NotificationManager notificationManager,
+                       NewProjectExplorerPresenter projectExplorer,
+                       RenameItemAction renameItemAction) {
         super(localization.pasteItemsActionText(), localization.pasteItemsActionDescription(), null, resources.paste());
-        this.selectionAgent = selectionAgent;
+//        this.selectionAgent = selectionAgent;
         this.eventLogger = eventLogger;
         this.appContext = appContext;
         this.dialogFactory = dialogFactory;
         this.projectServiceClient = projectServiceClient;
         this.notificationManager = notificationManager;
-        this.projectExplorerPartPresenter = projectExplorerPartPresenter;
+        this.projectExplorer = projectExplorer;
         this.renameItemAction = renameItemAction;
     }
 
@@ -107,9 +114,10 @@ public class PasteAction extends Action {
     /**
      * Sets list of items for copying.
      *
-     * @param items items to copy
+     * @param items
+     *         items to copy
      */
-    public void copyItems(List<StorableNode> items) {
+    public void copyItems(List<ResourceBasedNode<?>> items) {
         this.items = items;
         moveItems = false;
 
@@ -119,9 +127,10 @@ public class PasteAction extends Action {
     /**
      * Sets list of items for moving.
      *
-     * @param items items to move
+     * @param items
+     *         items to move
      */
-    public void moveItems(List<StorableNode> items) {
+    public void moveItems(List<ResourceBasedNode<?>> items) {
         this.items = items;
         moveItems = true;
 
@@ -140,61 +149,62 @@ public class PasteAction extends Action {
         }
 
         /** Test current selection */
-        Selection<?> selection = selectionAgent.getSelection();
-
-        /** The selection must not be empty */
-        if (selection == null) {
-            return false;
-        }
+        Selection<?> selection = projectExplorer.getSelection();
 
         /** Only one resource must be selected */
-        if (!selection.isSingleSelection()) {
+        if (selection == null || !selection.isSingleSelection()) {
             return false;
         }
 
+        Object headElement = selection.getHeadElement();
+
         /** Selected resource must be storable */
-        if (!(selection.getHeadElement() instanceof StorableNode)) {
+        if (!(headElement instanceof HasStorablePath
+              && headElement instanceof ResourceBasedNode<?>
+              && !((ResourceBasedNode)headElement).isLeaf())) {
             return false;
         }
 
         /** Test selected node */
-        StorableNode selectedNode = (StorableNode)selection.getHeadElement();
-        if (selectedNode.getPath().equals(checkedPath)) {
+        HasStorablePath selectedNode = (HasStorablePath)headElement;
+        if (selectedNode.getStorablePath().equals(checkedPath)) {
             return checkResult;
         }
-        checkedPath = selectedNode.getPath();
+        checkedPath = selectedNode.getStorablePath();
 
-        for (StorableNode item : items) {
+        for (ResourceBasedNode<?> item : items) {
 
-            if (item.canContainsFolder()) {
+            if (item.isLeaf()) {
                 // item is folder
 
                 /** Unable to copy or move folder itself */
-                if (item.getPath().equals(selectedNode.getPath())) {
+                if (((HasStorablePath)item).getStorablePath().equals(selectedNode.getStorablePath())) {
                     checkResult = false;
                     return false;
                 }
 
                 /** Unable to copy or move folder to its children */
-                if (selectedNode.getPath().startsWith(item.getPath())) {
+                if (selectedNode.getStorablePath().startsWith(((HasStorablePath)item).getStorablePath())) {
                     checkResult = false;
                     return false;
                 }
 
                 /** Unable to move folder to its parent */
                 if (moveItems) {
-                    String folderDirectory = item.getPath().substring(0, item.getPath().lastIndexOf("/"));
-                    if (selectedNode.canContainsFolder()) {
+                    String folderDirectory = ((HasStorablePath)item).getStorablePath().substring(0,
+                                                                                                 ((HasStorablePath)item).getStorablePath()
+                                                                                                                        .lastIndexOf("/"));
+                    if (!((ResourceBasedNode<?>)selectedNode).isLeaf()) {
                         // when selected a folder
 
-                        if (selectedNode.getPath().equals(folderDirectory)) {
+                        if (selectedNode.getStorablePath().equals(folderDirectory)) {
                             checkResult = false;
                             return false;
                         }
                     } else {
                         // when selected a file
 
-                        String fileDirectory = selectedNode.getPath().substring(0, selectedNode.getPath().lastIndexOf("/"));
+                        String fileDirectory = selectedNode.getStorablePath().substring(0, selectedNode.getStorablePath().lastIndexOf("/"));
                         if (fileDirectory.equals(fileDirectory)) {
                             checkResult = false;
                             return false;
@@ -205,13 +215,16 @@ public class PasteAction extends Action {
             } else {
                 // item is file
 
-                if (selectedNode.canContainsFolder()) {
+                if (!((ResourceBasedNode<?>)selectedNode).isLeaf()) {
                     // when selected a folder
 
                     /** Unable to move file in the same directory */
                     if (moveItems) {
-                        String folderPath = selectedNode.getPath();
-                        String fileDirectory = item.getPath().substring(0, item.getPath().lastIndexOf("/"));
+                        String folderPath = selectedNode.getStorablePath();
+                        String fileDirectory = ((HasStorablePath)item).getStorablePath().substring(0,
+                                                                                                   ((HasStorablePath)item).getStorablePath()
+                                                                                                                          .lastIndexOf(
+                                                                                                                                  "/"));
 
                         if (moveItems && folderPath.equals(fileDirectory)) {
                             checkResult = false;
@@ -223,8 +236,12 @@ public class PasteAction extends Action {
 
                     /** Unable to move file in the same directory */
                     if (moveItems) {
-                        String selectedFileDirectory = selectedNode.getPath().substring(0, selectedNode.getPath().lastIndexOf("/"));
-                        String fileDirectory = item.getPath().substring(0, item.getPath().lastIndexOf("/"));
+                        String selectedFileDirectory =
+                                selectedNode.getStorablePath().substring(0, selectedNode.getStorablePath().lastIndexOf("/"));
+                        String fileDirectory = ((HasStorablePath)item).getStorablePath().substring(0,
+                                                                                                   ((HasStorablePath)item).getStorablePath()
+                                                                                                                          .lastIndexOf(
+                                                                                                                                  "/"));
 
                         if (selectedFileDirectory.equals(fileDirectory)) {
                             checkResult = false;
@@ -250,10 +267,10 @@ public class PasteAction extends Action {
         }
 
         /** Fetch destination directory from selection */
-        destination = (StorableNode)selectionAgent.getSelection().getHeadElement();
+        destination = (ResourceBasedNode<?>)projectExplorer.getSelection().getHeadElement();
         /** Get parent directory if destination is file */
-        if (!destination.canContainsFolder()) {
-            destination = (StorableNode)destination.getParent();
+        if (destination.isLeaf()) {
+            destination = (ResourceBasedNode<?>)destination.getParent();
         }
 
         /** Reset item index */
@@ -278,11 +295,12 @@ public class PasteAction extends Action {
         }
 
         /** Get item to copy */
-        final StorableNode item = items.get(itemIndex);
+        final ResourceBasedNode<?> item = items.get(itemIndex);
 
         try {
             /** Copy the item */
-            projectServiceClient.copy(item.getPath(), destination.getPath(), null, copyCallback);
+            projectServiceClient
+                    .copy(((HasStorablePath)item).getStorablePath(), ((HasStorablePath)destination).getStorablePath(), null, copyCallback);
         } catch (Exception error) {
             /** Handle error and stop copying */
             notificationManager.showNotification(new Notification(error.getMessage(), ERROR));
@@ -295,13 +313,13 @@ public class PasteAction extends Action {
      */
     private void resolveCopyConflict(String cause) {
         ChoiceDialog dialog = dialogFactory.createChoiceDialog("Copy conflict", cause, "Rename", "Skip", "Overwrite",
-                new ConfirmCallback() {
-                    @Override
-                    public void accepted() {
-                        /** Copy with new name */
-                        copyWithNewName();
-                    }
-                }, new ConfirmCallback() {
+                                                               new ConfirmCallback() {
+                                                                   @Override
+                                                                   public void accepted() {
+                                                                       /** Copy with new name */
+                                                                       copyWithNewName();
+                                                                   }
+                                                               }, new ConfirmCallback() {
                     @Override
                     public void accepted() {
                         /** Skip resource and copy next */
@@ -314,7 +332,7 @@ public class PasteAction extends Action {
                         copyWithOverwriting();
                     }
                 }
-        );
+                                                              );
         dialog.show();
     }
 
@@ -323,7 +341,7 @@ public class PasteAction extends Action {
      */
     private void copyWithNewName() {
         /** Get item to copy */
-        final StorableNode item = items.get(itemIndex);
+        final ResourceBasedNode<?> item = items.get(itemIndex);
 
         /** Ask user for new resource name. */
         renameItemAction.askForNewName(item, new InputCallback() {
@@ -331,7 +349,9 @@ public class PasteAction extends Action {
             public void accepted(String value) {
                 try {
                     /** Copy the item, giving new name */
-                    projectServiceClient.copy(item.getPath(), destination.getPath(), value, copyCallback);
+                    projectServiceClient
+                            .copy(((HasStorablePath)item).getStorablePath(), ((HasStorablePath)destination).getStorablePath(), value,
+                                  copyCallback);
                 } catch (Exception error) {
                     /** Handle error and stop copying */
                     notificationManager.showNotification(new Notification(error.getMessage(), ERROR));
@@ -352,16 +372,18 @@ public class PasteAction extends Action {
      */
     private void copyWithOverwriting() {
         /** Get item to copy */
-        final StorableNode item = items.get(itemIndex);
+        final ResourceBasedNode<?> item = items.get(itemIndex);
 
         try {
             /** Delete destination item */
-            String deletePath = destination.getPath() + "/" + item.getName();
+            String deletePath = ((HasStorablePath)destination).getStorablePath() + "/" + item.getName();
             projectServiceClient.delete(deletePath, new AsyncRequestCallback<Void>() {
                 @Override
                 protected void onSuccess(Void result) {
                     /** Copy the item */
-                    projectServiceClient.copy(item.getPath(), destination.getPath(), null, copyCallback);
+                    projectServiceClient
+                            .copy(((HasStorablePath)item).getStorablePath(), ((HasStorablePath)destination).getStorablePath(), null,
+                                  copyCallback);
                 }
 
                 @Override
@@ -385,6 +407,7 @@ public class PasteAction extends Action {
         @Override
         protected void onSuccess(Void result) {
             /** Item copied, refresh project explorer */
+            projectExplorer.synchronizeTree();
 //            projectExplorerPartPresenter.refreshNode(destination, new AsyncCallback<TreeNode<?>>() {
 //                @Override
 //                public void onFailure(Throwable caught) {
@@ -430,11 +453,12 @@ public class PasteAction extends Action {
         }
 
         /** Get item to move */
-        final StorableNode item = items.get(itemIndex);
+        final ResourceBasedNode<?> item = items.get(itemIndex);
 
         try {
             /** Move the item */
-            projectServiceClient.move(item.getPath(), destination.getPath(), null, moveCallback);
+            projectServiceClient
+                    .move(((HasStorablePath)item).getStorablePath(), ((HasStorablePath)destination).getStorablePath(), null, moveCallback);
         } catch (Exception error) {
             /** Handle error and stop moving */
             notificationManager.showNotification(new Notification(error.getMessage(), ERROR));
@@ -450,13 +474,13 @@ public class PasteAction extends Action {
      */
     private void resolveMoveConflict(String cause) {
         ChoiceDialog dialog = dialogFactory.createChoiceDialog("Move conflict", cause, "Rename", "Skip", "Overwrite",
-                new ConfirmCallback() {
-                    @Override
-                    public void accepted() {
-                        /** Rename */
-                        moveWithNewName();
-                    }
-                }, new ConfirmCallback() {
+                                                               new ConfirmCallback() {
+                                                                   @Override
+                                                                   public void accepted() {
+                                                                       /** Rename */
+                                                                       moveWithNewName();
+                                                                   }
+                                                               }, new ConfirmCallback() {
                     @Override
                     public void accepted() {
                         /** Skip */
@@ -469,7 +493,7 @@ public class PasteAction extends Action {
                         moveWithOverwriting();
                     }
                 }
-        );
+                                                              );
         dialog.show();
     }
 
@@ -478,7 +502,7 @@ public class PasteAction extends Action {
      */
     private void moveWithNewName() {
         /** Get item to move */
-        final StorableNode item = items.get(itemIndex);
+        final ResourceBasedNode<?> item = items.get(itemIndex);
 
         /** Ask user for new resource name. */
         renameItemAction.askForNewName(item, new InputCallback() {
@@ -486,7 +510,9 @@ public class PasteAction extends Action {
             public void accepted(String value) {
                 try {
                     /** Move the item, giving new name */
-                    projectServiceClient.move(item.getPath(), destination.getPath(), value, moveCallback);
+                    projectServiceClient
+                            .move(((HasStorablePath)item).getStorablePath(), ((HasStorablePath)destination).getStorablePath(), value,
+                                  moveCallback);
                 } catch (Exception error) {
                     /** Handle error and stop moving */
                     notificationManager.showNotification(new Notification(error.getMessage(), ERROR));
@@ -511,16 +537,18 @@ public class PasteAction extends Action {
      */
     private void moveWithOverwriting() {
         /** Get item to move */
-        final StorableNode item = items.get(itemIndex);
+        final ResourceBasedNode<?> item = items.get(itemIndex);
 
         try {
             /** Delete destination item */
-            String deletePath = destination.getPath() + "/" + item.getName();
+            String deletePath = ((HasStorablePath)destination).getStorablePath() + "/" + item.getName();
             projectServiceClient.delete(deletePath, new AsyncRequestCallback<Void>() {
                 @Override
                 protected void onSuccess(Void result) {
                     /** Move the item */
-                    projectServiceClient.move(item.getPath(), destination.getPath(), null, moveCallback);
+                    projectServiceClient
+                            .move(((HasStorablePath)item).getStorablePath(), ((HasStorablePath)destination).getStorablePath(), null,
+                                  moveCallback);
                 }
 
                 @Override
@@ -615,7 +643,8 @@ public class PasteAction extends Action {
     /**
      * Logs text to browser console.
      *
-     * @param text text to log
+     * @param text
+     *         text to log
      */
     public final native void log(String text) /*-{
         console.log(text);

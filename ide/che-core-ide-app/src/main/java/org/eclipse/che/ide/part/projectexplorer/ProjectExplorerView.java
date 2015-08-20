@@ -25,6 +25,7 @@ import javax.annotation.Nonnull;
  * @author Andrey Plotnikov
  * @author Artem Zatsarynnyy
  */
+@Deprecated
 public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDelegate> {
     /**
      * Sets root nodes into tree.

@@ -15,16 +15,16 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.google.web.bindery.event.shared.EventBus;
 
-import org.eclipse.che.ide.rest.RestContext;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.event.FileContentUpdateEvent;
-import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.project.tree.generic.FileNode;
 import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
+import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
+import org.eclipse.che.ide.rest.RestContext;
 
 /**
  * The purpose of this class is upload folder from zip
@@ -34,12 +34,13 @@ import org.eclipse.che.ide.api.selection.SelectionAgent;
 public class UploadFolderFromZipPresenter implements UploadFolderFromZipView.ActionDelegate {
 
     private UploadFolderFromZipView view;
-    private EditorAgent             editorAgent;
-    private SelectionAgent          selectionAgent;
-    private String                  restContext;
-    private String                  workspaceId;
-    private EventBus                eventBus;
-    private NotificationManager     notificationManager;
+    private final NewProjectExplorerPresenter projectExplorer;
+    private EditorAgent         editorAgent;
+    private SelectionAgent      selectionAgent;
+    private String              restContext;
+    private String              workspaceId;
+    private EventBus            eventBus;
+    private NotificationManager notificationManager;
 
     @Inject
     public UploadFolderFromZipPresenter(UploadFolderFromZipView view,
@@ -48,13 +49,15 @@ public class UploadFolderFromZipPresenter implements UploadFolderFromZipView.Act
                                         SelectionAgent selectionAgent,
                                         EditorAgent editorAgent,
                                         EventBus eventBus,
-                                        NotificationManager notificationManager) {
+                                        NotificationManager notificationManager,
+                                        NewProjectExplorerPresenter projectExplorer) {
         this.restContext = restContext;
         this.workspaceId = workspaceId;
         this.editorAgent = editorAgent;
         this.selectionAgent = selectionAgent;
         this.eventBus = eventBus;
         this.view = view;
+        this.projectExplorer = projectExplorer;
         this.view.setDelegate(this);
         this.view.setEnabledUploadButton(false);
         this.notificationManager = notificationManager;
@@ -75,7 +78,8 @@ public class UploadFolderFromZipPresenter implements UploadFolderFromZipView.Act
     @Override
     public void onSubmitComplete(String result) {
         view.setLoaderVisibility(false);
-        eventBus.fireEvent(new RefreshProjectTreeEvent(getParent()));
+//        eventBus.fireEvent(new RefreshProjectTreeEvent(getParent()));
+        projectExplorer.synchronizeTree();
 
         if (result != null && !result.isEmpty()) {
             view.closeDialog();

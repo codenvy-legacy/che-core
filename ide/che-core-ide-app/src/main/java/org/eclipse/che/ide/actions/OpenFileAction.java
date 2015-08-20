@@ -105,23 +105,23 @@ public class OpenFileAction extends Action implements PromisableAction {
             return;
         }
 
-        currentProject.getCurrentTree().getNodeByPath(filePath, new AsyncCallback<TreeNode<?>>() {
-            @Override
-            public void onSuccess(TreeNode<?> result) {
-                if (result instanceof FileNode) {
-//                    eventBus.fireEvent(new FileEvent((FileNode)result, OPEN));
-                }
-            }
-
-            @Override
-            public void onFailure(Throwable caught) {
-                notificationManager.showNotification(new Notification(localization.unableOpenResource(filePath), WARNING));
-
-                if (actionCompletedCallBack != null) {
-                    actionCompletedCallBack.onFailure(caught);
-                }
-            }
-        });
+//        currentProject.getCurrentTree().getNodeByPath(filePath, new AsyncCallback<TreeNode<?>>() {
+//            @Override
+//            public void onSuccess(TreeNode<?> result) {
+//                if (result instanceof FileNode) {
+////                    eventBus.fireEvent(new FileEvent((FileNode)result, OPEN));
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Throwable caught) {
+//                notificationManager.showNotification(new Notification(localization.unableOpenResource(filePath), WARNING));
+//
+//                if (actionCompletedCallBack != null) {
+//                    actionCompletedCallBack.onFailure(caught);
+//                }
+//            }
+//        });
     }
 
     @Override

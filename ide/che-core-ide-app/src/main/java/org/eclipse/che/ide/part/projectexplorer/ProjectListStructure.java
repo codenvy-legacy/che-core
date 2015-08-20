@@ -37,6 +37,7 @@ import javax.annotation.Nullable;
  *
  * @author Artem Zatsarynnyy
  */
+@Deprecated
 public class ProjectListStructure implements TreeStructure {
     private EventBus               eventBus;
     private ProjectServiceClient   projectServiceClient;

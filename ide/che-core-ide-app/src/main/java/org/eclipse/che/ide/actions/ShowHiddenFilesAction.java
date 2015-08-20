@@ -11,6 +11,10 @@
 package org.eclipse.che.ide.actions;
 
 import com.google.gwt.core.client.Callback;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.web.bindery.event.shared.EventBus;
+
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper;
@@ -22,13 +26,7 @@ import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.PromisableAction;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
-import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
-import org.eclipse.che.ide.api.project.tree.TreeSettings;
 import org.eclipse.che.ide.util.loging.Log;
-
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.google.web.bindery.event.shared.EventBus;
 
 import static org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper.createFromCallback;
 
@@ -55,19 +53,23 @@ public class ShowHiddenFilesAction extends Action implements PromisableAction {
     /** {@inheritDoc} */
     @Override
     public void update(ActionEvent e) {
-        e.getPresentation().setVisible(appContext.getCurrentProject() != null);
+//        e.getPresentation().setVisible(appContext.getCurrentProject() != null);
+        e.getPresentation().setVisible(false); //TODO temporary
     }
 
     /** {@inheritDoc} */
     @Override
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
-        CurrentProject currentProject = appContext.getCurrentProject();
-        if (currentProject != null) {
-            TreeSettings treeSettings = currentProject.getCurrentTree().getSettings();
-            treeSettings.setShowHiddenItems(!treeSettings.isShowHiddenItems());
-            eventBus.fireEvent(new RefreshProjectTreeEvent());
-        }
+
+        //TODO replace this
+
+//        CurrentProject currentProject = appContext.getCurrentProject();
+//        if (currentProject != null) {
+//            TreeSettings treeSettings = currentProject.getCurrentTree().getSettings();
+//            treeSettings.setShowHiddenItems(!treeSettings.isShowHiddenItems());
+//            eventBus.fireEvent(new RefreshProjectTreeEvent());
+//        }
     }
 
     @Override

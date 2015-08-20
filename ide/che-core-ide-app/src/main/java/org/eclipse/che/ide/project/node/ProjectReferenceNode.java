@@ -27,6 +27,7 @@ import org.eclipse.che.ide.api.project.node.settings.NodeSettings;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.project.node.resource.ProjectReferenceProcessor;
 import org.eclipse.che.ide.ui.smartTree.presentation.NodePresentation;
+import org.eclipse.che.ide.util.Pair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -62,6 +63,10 @@ public class ProjectReferenceNode extends ResourceBasedNode<ProjectReference> im
         presentation.setPresentableText(getData().getName());
         presentation.setPresentableIcon(isValid(getData()) ? nodeManager.getNodesResources().projectRoot()
                                                            : nodeManager.getNodesResources().invalidProjectRoot());
+        if ("private".equals(getData().getVisibility())) {
+            presentation.setInfoText("private");
+            presentation.setInfoTextWrapper(Pair.of("[", "]"));
+        }
     }
 
     @Nonnull

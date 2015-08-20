@@ -18,9 +18,12 @@ import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
+import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
+import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
+import org.eclipse.che.ide.project.node.ResourceBasedNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,19 +35,19 @@ import java.util.List;
  */
 @Singleton
 public class CutAction extends Action {
-    private final AnalyticsEventLogger eventLogger;
-    private       SelectionAgent       selectionAgent;
-    private       AppContext           appContext;
+    private final AnalyticsEventLogger        eventLogger;
+    private       NewProjectExplorerPresenter projectExplorer;
+    private       AppContext                  appContext;
 
-    private       PasteAction          pasteAction;
+    private PasteAction pasteAction;
 
     @Inject
     public CutAction(Resources resources,
                      AnalyticsEventLogger eventLogger,
-                     SelectionAgent selectionAgent, CoreLocalizationConstant localization, AppContext appContext,
+                     NewProjectExplorerPresenter projectExplorer, CoreLocalizationConstant localization, AppContext appContext,
                      PasteAction pasteAction) {
         super(localization.cutItemsActionText(), localization.cutItemsActionDescription(), null, resources.cut());
-        this.selectionAgent = selectionAgent;
+        this.projectExplorer = projectExplorer;
         this.eventLogger = eventLogger;
         this.appContext = appContext;
         this.pasteAction = pasteAction;
@@ -69,7 +72,7 @@ public class CutAction extends Action {
      * @return <b>true</b> if the selection can be moved, otherwise returns <b>false</b>
      */
     private boolean canMoveSelection() {
-        Selection<?> selection = selectionAgent.getSelection();
+        Selection<?> selection = projectExplorer.getSelection();
         if (selection == null || selection.isEmpty()) {
             return false;
         }
@@ -80,15 +83,12 @@ public class CutAction extends Action {
 
         String projectPath = appContext.getCurrentProject().getRootProject().getPath();
 
-        List<?> selectedItems = selection.getAllElements();
-        for (int i = 0; i < selectedItems.size(); i++) {
-            Object o = selectedItems.get(i);
-
-            if (!(o instanceof StorableNode)) {
+        for (Object o : selection.getAllElements()) {
+            if (!(o instanceof ResourceBasedNode<?> && o instanceof HasStorablePath)) {
                 return false;
             }
 
-            if (projectPath.equals(((StorableNode)o).getPath())) {
+            if (projectPath.equals(((HasStorablePath)o).getStorablePath())) {
                 return false;
             }
         }
@@ -105,10 +105,10 @@ public class CutAction extends Action {
             return;
         }
 
-        List<StorableNode> moveItems = new ArrayList<StorableNode>();
-        List<?> selectionItems = selectionAgent.getSelection().getAllElements();
-        for (int i = 0; i < selectionItems.size(); i++) {
-            moveItems.add(((StorableNode) selectionItems.get(i)));
+        List<ResourceBasedNode<?>> moveItems = new ArrayList<>();
+        List<?> selection = projectExplorer.getSelection().getAllElements();
+        for (Object aSelection : selection) {
+            moveItems.add(((ResourceBasedNode<?>)aSelection));
         }
         pasteAction.moveItems(moveItems);
     }

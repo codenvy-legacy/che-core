@@ -17,16 +17,10 @@ import com.google.inject.Singleton;
 
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ToggleAction;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
 import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerViewImpl;
-import org.eclipse.che.ide.ui.smartTree.SortDir;
-import org.eclipse.che.ide.ui.smartTree.TreeNodeStorage;
 import org.eclipse.che.ide.ui.smartTree.TreeNodeStorage.StoreSortInfo;
 import org.eclipse.che.ide.ui.smartTree.sorting.AlphabeticalFilter;
-import org.eclipse.che.ide.ui.smartTree.sorting.FoldersOnTopFilter;
-import org.eclipse.che.ide.util.loging.Log;
-
-import java.util.List;
+import org.eclipse.che.ide.part.explorer.project.FoldersOnTopFilter;
 
 import static org.eclipse.che.ide.ui.smartTree.SortDir.ASC;
 

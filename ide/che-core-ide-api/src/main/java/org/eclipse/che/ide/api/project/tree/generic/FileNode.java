@@ -60,36 +60,36 @@ public class FileNode extends ItemNode implements VirtualFile {
     /** {@inheritDoc} */
     @Override
     public void rename(final String newName, final RenameCallback renameCallback) {
-        final FileNode fileNode = this;
-        String newMediaType = fileNode.getMediaType();
-
-        final String parentPath = ((StorableNode)getParent()).getPath();
-        final String oldNodePath = getPath();
-        final String newPath = parentPath + "/" + newName;
-
-        projectServiceClient.rename(oldNodePath, newName, newMediaType, new AsyncRequestCallback<Void>() {
-            @Override
-            protected void onSuccess(Void result) {
-
-                updateData(new AsyncCallback<Void>() {
-                    @Override
-                    public void onSuccess(Void result) {
-                        eventBus.fireEvent(NodeChangedEvent.createNodeRenamedEvent(fileNode));
-                    }
-
-                    @Override
-                    public void onFailure(Throwable exception) {
-                        renameCallback.onFailure(exception);
-                    }
-                }, newPath);
-
-            }
-
-            @Override
-            protected void onFailure(Throwable exception) {
-                renameCallback.onFailure(exception);
-            }
-        });
+//        final FileNode fileNode = this;
+//        String newMediaType = fileNode.getMediaType();
+//
+//        final String parentPath = ((StorableNode)getParent()).getPath();
+//        final String oldNodePath = getPath();
+//        final String newPath = parentPath + "/" + newName;
+//
+//        projectServiceClient.rename(oldNodePath, newName, newMediaType, new AsyncRequestCallback<Void>() {
+//            @Override
+//            protected void onSuccess(Void result) {
+//
+//                updateData(new AsyncCallback<Void>() {
+//                    @Override
+//                    public void onSuccess(Void result) {
+//                        eventBus.fireEvent(NodeChangedEvent.createNodeRenamedEvent(fileNode));
+//                    }
+//
+//                    @Override
+//                    public void onFailure(Throwable exception) {
+//                        renameCallback.onFailure(exception);
+//                    }
+//                }, newPath);
+//
+//            }
+//
+//            @Override
+//            protected void onFailure(Throwable exception) {
+//                renameCallback.onFailure(exception);
+//            }
+//        });
     }
 
     /** {@inheritDoc} */

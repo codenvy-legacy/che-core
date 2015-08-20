@@ -68,7 +68,7 @@ public abstract class StatusText {
 
         VerticalPanel verticalPanel = new VerticalPanel();
 
-        verticalPanel.setHeight("100%");
+        verticalPanel.setHeight("50px");
         verticalPanel.setWidth("100%");
 
         verticalPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);

@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.ide.part.explorer.project;
 
+import com.google.gwt.event.shared.HandlerRegistration;
+
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.parts.base.BaseActionDelegate;
 import org.eclipse.che.ide.ui.smartTree.TreeNodeStorage;
@@ -49,6 +51,10 @@ public interface NewProjectExplorerView extends View<NewProjectExplorerView.Acti
     void setFoldersAlwaysOnTop(boolean foldersAlwaysOnTop);
 
     void synchronizeTree();
+
+    HandlerRegistration addBeforeExpandNodeHandler(BeforeExpandNodeHandler handler);
+
+    void reloadChildren(Node node);
 
     public interface ActionDelegate extends BaseActionDelegate {
         void onSelectionChanged(List<Node> selection);

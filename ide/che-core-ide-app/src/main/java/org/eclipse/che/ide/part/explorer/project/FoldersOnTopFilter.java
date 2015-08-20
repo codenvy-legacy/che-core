@@ -8,9 +8,10 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.ui.smartTree.sorting;
+package org.eclipse.che.ide.part.explorer.project;
 
 import org.eclipse.che.ide.api.project.node.Node;
+import org.eclipse.che.ide.project.node.SyntheticBasedNode;
 
 import java.util.Comparator;
 
@@ -20,7 +21,9 @@ import java.util.Comparator;
 public class FoldersOnTopFilter implements Comparator<Node> {
     @Override
     public int compare(Node o1, Node o2) {
-        if (!o1.isLeaf() && o2.isLeaf()) {
+        if (o1 instanceof SyntheticBasedNode<?>) {
+            return 1;
+        } else if (!o1.isLeaf() && o2.isLeaf()) {
             //Directory before files
             return -1;
         } else if (o1.isLeaf() && !o2.isLeaf()) {

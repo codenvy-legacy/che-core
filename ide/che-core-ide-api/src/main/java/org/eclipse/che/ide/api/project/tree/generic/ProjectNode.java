@@ -318,9 +318,9 @@ public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements 
     protected AbstractTreeNode<?> createChildNode(ItemReference item, Array<ProjectDescriptor> modules) {
         if ("project".equals(item.getType())) {
             ProjectDescriptor module = getModule(item, modules);
-            if (module != null) {
-                return getTreeStructure().newModuleNode(this, module);
-            }
+//            if (module != null) {
+//                return getTreeStructure().newModuleNode(this, module);
+//            }
             // if project isn't a module - show it as folder
             return getTreeStructure().newFolderNode(this, item);
         } else if ("folder".equals(item.getType())) {

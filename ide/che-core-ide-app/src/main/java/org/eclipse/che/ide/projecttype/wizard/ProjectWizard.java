@@ -25,10 +25,10 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.OpenProjectEvent;
-import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode;
 import org.eclipse.che.ide.api.wizard.AbstractWizard;
 import org.eclipse.che.ide.dto.DtoFactory;
+import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.Unmarshallable;
@@ -61,6 +61,7 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
     private final DialogFactory            dialogFactory;
     private final EventBus                 eventBus;
     private final AppContext               appContext;
+    private final NewProjectExplorerPresenter projectExplorer;
 
     /**
      * Creates project wizard.
@@ -95,7 +96,8 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
                          DtoFactory dtoFactory,
                          DialogFactory dialogFactory,
                          EventBus eventBus,
-                         AppContext appContext) {
+                         AppContext appContext,
+                         NewProjectExplorerPresenter projectExplorer) {
         super(dataObject);
         this.mode = mode;
         this.localizationConstants = localizationConstants;
@@ -105,6 +107,7 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
         this.dialogFactory = dialogFactory;
         this.eventBus = eventBus;
         this.appContext = appContext;
+        this.projectExplorer = projectExplorer;
 
         context.put(WIZARD_MODE_KEY, mode.toString());
         context.put(PROJECT_NAME_KEY, dataObject.getProject().getName());
@@ -175,7 +178,7 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
                 parentPath, modulePath, project, new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
                     @Override
                     protected void onSuccess(ProjectDescriptor result) {
-                        eventBus.fireEvent(new RefreshProjectTreeEvent());
+                        projectExplorer.synchronizeTree();
                         callback.onCompleted();
                     }
 

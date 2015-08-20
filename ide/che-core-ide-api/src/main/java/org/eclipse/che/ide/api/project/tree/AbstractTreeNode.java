@@ -10,16 +10,15 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.project.tree;
 
+import com.google.web.bindery.event.shared.EventBus;
+
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.api.event.NodeChangedEvent;
-import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
 import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
 import org.eclipse.che.ide.api.project.tree.generic.ProjectNode;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.ui.tree.TreeNodeElement;
-import com.google.web.bindery.event.shared.EventBus;
-
 import org.vectomatic.dom.svg.ui.SVGImage;
 
 import javax.annotation.Nonnull;
@@ -174,7 +173,7 @@ public abstract class AbstractTreeNode<T> implements TreeNode<T> {
     public void delete(DeleteCallback callback) {
         if (parent != null) {
             parent.getChildren().remove(this);
-            eventBus.fireEvent(new RefreshProjectTreeEvent(parent));
+//            eventBus.fireEvent(new RefreshProjectTreeEvent(parent));
         }
         // do not reset parent in order to know which parent this node belonged to before deleting
         callback.onDeleted();

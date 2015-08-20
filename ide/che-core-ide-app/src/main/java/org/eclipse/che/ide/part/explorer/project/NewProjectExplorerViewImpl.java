@@ -50,6 +50,7 @@ import org.eclipse.che.ide.ui.smartTree.TreeNodeLoader;
 import org.eclipse.che.ide.ui.smartTree.TreeNodeStorage;
 import org.eclipse.che.ide.ui.smartTree.TreeNodeStorage.StoreSortInfo;
 import org.eclipse.che.ide.ui.smartTree.TreeStyles;
+import org.eclipse.che.ide.ui.smartTree.event.BeforeExpandNodeEvent;
 import org.eclipse.che.ide.ui.smartTree.event.ExpandNodeEvent;
 import org.eclipse.che.ide.ui.smartTree.event.ExpandNodeEvent.ExpandNodeHandler;
 import org.eclipse.che.ide.ui.smartTree.event.GoIntoStateEvent;
@@ -58,8 +59,6 @@ import org.eclipse.che.ide.ui.smartTree.event.SelectionChangedEvent;
 import org.eclipse.che.ide.ui.smartTree.event.SelectionChangedEvent.SelectionChangedHandler;
 import org.eclipse.che.ide.ui.smartTree.presentation.DefaultPresentationRenderer;
 import org.eclipse.che.ide.ui.smartTree.sorting.AlphabeticalFilter;
-import org.eclipse.che.ide.ui.smartTree.sorting.FoldersOnTopFilter;
-import org.eclipse.che.ide.util.loging.Log;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
@@ -293,19 +292,20 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
                                "Show Settings");
                 addMenuButton(settings);
 
-                SVGImage scrollFromSourceIcon = new SVGImage(explorerResources.source());
-                ToolButton scrollFromSource = new ToolButton(scrollFromSourceIcon);
-                scrollFromSource.addClickHandler(new ClickHandler() {
-                    @Override
-                    public void onClick(ClickEvent event) {
-                        throw new UnsupportedOperationException("Not implemented yet.");
-                    }
-                });
-                Tooltip.create((elemental.dom.Element)scrollFromSource.getElement(),
-                               BOTTOM,
-                               MIDDLE,
-                               "Scroll from Source");
-                addMenuButton(scrollFromSource);
+                //TODO get virtual file from active editor and search node in the tree, then expand and select it
+//                SVGImage scrollFromSourceIcon = new SVGImage(explorerResources.source());
+//                ToolButton scrollFromSource = new ToolButton(scrollFromSourceIcon);
+//                scrollFromSource.addClickHandler(new ClickHandler() {
+//                    @Override
+//                    public void onClick(ClickEvent event) {
+//                        throw new UnsupportedOperationException("Not implemented yet.");
+//                    }
+//                });
+//                Tooltip.create((elemental.dom.Element)scrollFromSource.getElement(),
+//                               BOTTOM,
+//                               MIDDLE,
+//                               "Scroll from Source");
+//                addMenuButton(scrollFromSource);
 
                 SVGImage collapseAllIcon = new SVGImage(explorerResources.collapse());
                 ToolButton collapseAll = new ToolButton(collapseAllIcon);
@@ -350,6 +350,16 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
     @Override
     public void synchronizeTree() {
         tree.synchronize();
+    }
+
+    @Override
+    public HandlerRegistration addBeforeExpandNodeHandler(BeforeExpandNodeEvent.BeforeExpandNodeHandler handler) {
+        return tree.addBeforeExpandHandler(handler);
+    }
+
+    @Override
+    public void reloadChildren(Node node) {
+        tree.getNodeLoader().loadChildren(node);
     }
 
     private void hideProjectInfo() {

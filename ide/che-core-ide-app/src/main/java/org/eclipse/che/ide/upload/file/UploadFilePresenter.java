@@ -10,19 +10,19 @@
  *******************************************************************************/
 package org.eclipse.che.ide.upload.file;
 
+import com.google.gwt.user.client.ui.FormPanel;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+import com.google.web.bindery.event.shared.EventBus;
+
 import org.eclipse.che.ide.api.event.FileContentUpdateEvent;
-import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.project.tree.generic.FileNode;
 import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
+import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
 import org.eclipse.che.ide.rest.RestContext;
-
-import com.google.gwt.user.client.ui.FormPanel;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-import com.google.web.bindery.event.shared.EventBus;
 
 /**
  * The purpose of this class is upload file
@@ -31,26 +31,29 @@ import com.google.web.bindery.event.shared.EventBus;
  */
 public class UploadFilePresenter implements UploadFileView.ActionDelegate {
 
-    private UploadFileView      view;
-    private SelectionAgent      selectionAgent;
-    private String              restContext;
-    private String              workspaceId;
-    private EventBus            eventBus;
-    private NotificationManager notificationManager;
+    private UploadFileView              view;
+    private SelectionAgent              selectionAgent;
+    private String                      restContext;
+    private String                      workspaceId;
+    private EventBus                    eventBus;
+    private NotificationManager         notificationManager;
+    private NewProjectExplorerPresenter projectExplorer;
 
     @Inject
     public UploadFilePresenter(UploadFileView view,
-                              @RestContext String restContext,
+                               @RestContext String restContext,
                                @Named("workspaceId") String workspaceId,
                                SelectionAgent selectionAgent,
                                EventBus eventBus,
-                               NotificationManager notificationManager) {
+                               NotificationManager notificationManager,
+                               NewProjectExplorerPresenter projectExplorer) {
 
         this.restContext = restContext;
         this.workspaceId = workspaceId;
         this.selectionAgent = selectionAgent;
         this.eventBus = eventBus;
         this.view = view;
+        this.projectExplorer = projectExplorer;
         this.view.setDelegate(this);
         this.view.setEnabledUploadButton(false);
         this.notificationManager = notificationManager;
@@ -70,7 +73,8 @@ public class UploadFilePresenter implements UploadFileView.ActionDelegate {
     /** {@inheritDoc} */
     @Override
     public void onSubmitComplete(String result) {
-        eventBus.fireEvent(new RefreshProjectTreeEvent(getParent()));
+//        eventBus.fireEvent(new RefreshProjectTreeEvent(getParent()));
+        projectExplorer.synchronizeTree();
         if (result != null && !result.isEmpty()) {
             view.closeDialog();
             notificationManager.showError(parseMessage(result));
