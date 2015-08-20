@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Module configuration DTO.
+ *
  * @author Max Shaposhnik
  */
 @DTO
