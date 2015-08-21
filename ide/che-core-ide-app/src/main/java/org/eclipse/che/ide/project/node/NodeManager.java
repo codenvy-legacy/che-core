@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.project.node;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.core.client.JsArrayMixed;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
@@ -32,7 +31,6 @@ import org.eclipse.che.api.promises.client.js.Promises;
 import org.eclipse.che.ide.api.project.node.settings.NodeSettings;
 import org.eclipse.che.ide.api.project.node.settings.SettingsProvider;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.project.node.factory.NodeFactory;
 import org.eclipse.che.ide.project.shared.NodesResources;
@@ -97,28 +95,17 @@ public class NodeManager {
                                            @Nonnull NodeSettings nodeSettings,
                                            final @Nullable ItemReferenceChainFilter... filters) {
         return AsyncPromiseHelper.createFromAsyncRequest(getItemReferenceRC(path))
-                .thenPromise(getListFromArray()) //TODO remove this function after JsoArray remove in 4.x
                 .thenPromise(filterItemReference(filters))
                 .thenPromise(createItemReferenceNodes(relProjectDescriptor, nodeSettings))
                 .catchError(handleError());
     }
 
     @Nonnull
-    public RequestCall<Array<ItemReference>> getItemReferenceRC(@Nonnull final String path) {
-        return new RequestCall<Array<ItemReference>>() {
+    public RequestCall<List<ItemReference>> getItemReferenceRC(@Nonnull final String path) {
+        return new RequestCall<List<ItemReference>>() {
             @Override
-            public void makeCall(AsyncCallback<Array<ItemReference>> callback) {
-                projectService.getChildren(path, _callback(callback, dtoUnmarshaller.newArrayUnmarshaller(ItemReference.class)));
-            }
-        };
-    }
-
-    @Nonnull
-    public <T extends ItemReference> Function<Array<T>, Promise<List<T>>> getListFromArray() {
-        return new Function<Array<T>, Promise<List<T>>>() {
-            @Override
-            public Promise<List<T>> apply(Array<T> objects) throws FunctionException {
-                return Promises.resolve((List<T>)Lists.newArrayList(objects.asIterable()));
+            public void makeCall(AsyncCallback<List<ItemReference>> callback) {
+                projectService.getChildren(path, _callback(callback, dtoUnmarshaller.newListUnmarshaller(ItemReference.class)));
             }
         };
     }
@@ -184,20 +171,6 @@ public class NodeManager {
                         modules.add(itemReference);
                     }
 
-
-
-
-
-//                    if ("file".equals(itemReference.getType())) {
-//                        nodes.add(nodeFactory.newFileReferenceNode(itemReference, relProjectDescriptor, nodeSettings));
-//                    } else if ("folder".equals(itemReference.getType())) {
-//                        nodes.add(nodeFactory.newFolderReferenceNode(itemReference, relProjectDescriptor, nodeSettings));
-//                    } else if ("project".equals(itemReference.getType())) {
-//                        if (modules == null) {
-//                            modules = new ArrayList<>();
-//                        }
-//                        modules.add(itemReference);
-//                    }
                     //NOTE if we want support more type nodes than we should refactor mechanism of hardcoded types for item references
                 }
 
@@ -293,20 +266,20 @@ public class NodeManager {
     }
 
     @Nonnull
-    private RequestCall<Array<ProjectReference>> getProjectsRC() {
-        return new RequestCall<Array<ProjectReference>>() {
+    private RequestCall<List<ProjectReference>> getProjectsRC() {
+        return new RequestCall<List<ProjectReference>>() {
             @Override
-            public void makeCall(AsyncCallback<Array<ProjectReference>> callback) {
-                projectService.getProjects(_callback(callback, dtoUnmarshaller.newArrayUnmarshaller(ProjectReference.class)));
+            public void makeCall(AsyncCallback<List<ProjectReference>> callback) {
+                projectService.getProjects(_callback(callback, dtoUnmarshaller.newListUnmarshaller(ProjectReference.class)));
             }
         };
     }
 
     @Nonnull
-    private Function<Array<ProjectReference>, List<Node>> createProjectReferenceNodes() {
-        return new Function<Array<ProjectReference>, List<Node>>() {
+    private Function<List<ProjectReference>, List<Node>> createProjectReferenceNodes() {
+        return new Function<List<ProjectReference>, List<Node>>() {
             @Override
-            public List<Node> apply(Array<ProjectReference> projects) throws FunctionException {
+            public List<Node> apply(List<ProjectReference> projects) throws FunctionException {
                 if (projects == null) {
                     return Collections.emptyList();
                 }
@@ -318,7 +291,7 @@ public class NodeManager {
 
                 List<Node> projectList = new ArrayList<>(projects.size());
 
-                for (ProjectReference reference : projects.asIterable()) {
+                for (ProjectReference reference : projects) {
                     ProjectReferenceNode node = nodeFactory.newProjectReferenceNode(reference, convert(reference), nodeSettings);
                     projectList.add(node);
                 }

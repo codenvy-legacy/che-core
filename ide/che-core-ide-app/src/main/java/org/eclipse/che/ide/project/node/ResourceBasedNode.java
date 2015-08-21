@@ -10,18 +10,21 @@
  *******************************************************************************/
 package org.eclipse.che.ide.project.node;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.PromiseError;
+import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.resource.DeleteProcessor;
 import org.eclipse.che.ide.api.project.node.resource.RenameProcessor;
 import org.eclipse.che.ide.api.project.node.resource.SupportDelete;
 import org.eclipse.che.ide.api.project.node.resource.SupportRename;
 import org.eclipse.che.ide.api.project.node.settings.NodeSettings;
-import org.eclipse.che.ide.project.event.ResourceNodeEvent;
+import org.eclipse.che.ide.project.event.ResourceNodeDeletedEvent;
+import org.eclipse.che.ide.project.event.ResourceNodeRenamedEvent;
 import org.eclipse.che.ide.util.loging.Log;
 
 import javax.annotation.Nonnull;
@@ -62,7 +65,12 @@ public abstract class ResourceBasedNode<DataObject> extends AbstractProjectBased
         return new Operation<DataObject>() {
             @Override
             public void apply(DataObject deletedObject) throws OperationException {
-                eventBus.fireEvent(new ResourceNodeEvent(ResourceBasedNode.this, ResourceNodeEvent.Event.DELETED));
+                Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+                    @Override
+                    public void execute() {
+                        eventBus.fireEvent(new ResourceNodeDeletedEvent(ResourceBasedNode.this));
+                    }
+                });
             }
         };
     }
@@ -80,8 +88,13 @@ public abstract class ResourceBasedNode<DataObject> extends AbstractProjectBased
     private Operation<DataObject> onRename() {
         return new Operation<DataObject>() {
             @Override
-            public void apply(DataObject arg) throws OperationException {
-                eventBus.fireEvent(new ResourceNodeEvent(ResourceBasedNode.this, ResourceNodeEvent.Event.RENAMED));
+            public void apply(final DataObject arg) throws OperationException {
+                Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+                    @Override
+                    public void execute() {
+                        eventBus.fireEvent(new ResourceNodeRenamedEvent<>(ResourceBasedNode.this, arg));
+                    }
+                });
             }
         };
     }
@@ -93,8 +106,16 @@ public abstract class ResourceBasedNode<DataObject> extends AbstractProjectBased
             return;
         }
 
-        renameProcessor.rename(this, newName)
-                       .then(onRename())
-                       .catchError(onFailed());
+        if (getParent() != null && getParent() instanceof HasStorablePath) {
+            renameProcessor.rename((HasStorablePath)getParent(), this, newName)
+                           .then(onRename())
+                           .catchError(onFailed());
+        } else {
+            renameProcessor.rename(null, this, newName)
+                           .then(onRename())
+                           .catchError(onFailed());
+        }
+
+
     }
 }

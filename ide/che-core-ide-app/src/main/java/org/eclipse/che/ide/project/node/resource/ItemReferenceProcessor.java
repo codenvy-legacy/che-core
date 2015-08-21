@@ -20,10 +20,12 @@ import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper.RequestCall;
 import org.eclipse.che.ide.api.project.node.HasDataObject;
+import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author Vlad Zhukovskiy
@@ -38,9 +40,6 @@ public class ItemReferenceProcessor extends AbstractResourceProcessor<ItemRefere
 
     @Override
     public Promise<ItemReference> delete(@Nonnull final HasDataObject<ItemReference> node) {
-//        return AsyncPromiseHelper.createFromAsyncRequest(createDeleteRequest(node.getData().getPath()))
-//                                 .thenPromise(returnSelf(node.getData()));
-
         return AsyncPromiseHelper.createFromAsyncRequest(new RequestCall<ItemReference>() {
             @Override
             public void makeCall(final AsyncCallback<ItemReference> callback) {
@@ -60,25 +59,33 @@ public class ItemReferenceProcessor extends AbstractResourceProcessor<ItemRefere
     }
 
     @Override
-    public Promise<ItemReference> rename(@Nonnull HasDataObject<ItemReference> node, @Nonnull String newName) {
-        return null;
-    }
-
-    private <T> RequestCall<T> createRequestCall() {
-        return new RequestCall<T>() {
+    public Promise<ItemReference> rename(@Nullable final HasStorablePath parent, final @Nonnull HasDataObject<ItemReference> node, final @Nonnull String newName) {
+        return AsyncPromiseHelper.createFromAsyncRequest(new RequestCall<ItemReference>() {
             @Override
-            public void makeCall(AsyncCallback<T> callback) {
+            public void makeCall(final AsyncCallback<ItemReference> callback) {
+                projectService.rename(node.getData().getPath(), newName, null, new AsyncRequestCallback<Void>() {
+                    @Override
+                    protected void onSuccess(Void result) {
+                        String newPath = parent.getStorablePath() + "/" + newName;
+                        projectService.getItem(newPath, new AsyncRequestCallback<ItemReference>(unmarshallerFactory.newUnmarshaller(ItemReference.class)) {
+                            @Override
+                            protected void onSuccess(ItemReference result) {
+                                callback.onSuccess(result);
+                            }
 
-            }
-        };
-    }
+                            @Override
+                            protected void onFailure(Throwable exception) {
+                                callback.onFailure(exception);
+                            }
+                        });
+                    }
 
-    private RequestCall<Void> createDeleteRequest(final String path) {
-        return new RequestCall<Void>() {
-            @Override
-            public void makeCall(AsyncCallback<Void> callback) {
-                projectService.delete(path, _createCallback(callback, unmarshallerFactory.newUnmarshaller(Void.class)));
+                    @Override
+                    protected void onFailure(Throwable exception) {
+                        callback.onFailure(exception);
+                    }
+                });
             }
-        };
+        });
     }
 }

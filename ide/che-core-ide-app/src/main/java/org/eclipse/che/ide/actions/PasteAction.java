@@ -23,9 +23,7 @@ import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
-import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
 import org.eclipse.che.ide.api.selection.Selection;
-import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.commons.exception.ServerException;
 import org.eclipse.che.ide.json.JsonHelper;
 import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
@@ -407,21 +405,8 @@ public class PasteAction extends Action {
         @Override
         protected void onSuccess(Void result) {
             /** Item copied, refresh project explorer */
-            projectExplorer.synchronizeTree();
-//            projectExplorerPartPresenter.refreshNode(destination, new AsyncCallback<TreeNode<?>>() {
-//                @Override
-//                public void onFailure(Throwable caught) {
-//                    /** Ignore errors and continue copying */
-//                    notificationManager.showNotification(new Notification(caught.getMessage(), ERROR));
-//                    copy();
-//                }
-//
-//                @Override
-//                public void onSuccess(TreeNode<?> result) {
-//                    /** Refreshing complete, copy next item */
-//                    copy();
-//                }
-//            });
+            projectExplorer.reloadChildren(destination);
+            copy();
         }
 
         @Override
@@ -605,49 +590,15 @@ public class PasteAction extends Action {
      * Refreshes item parent directory.
      */
     private void refreshSourcePath() {
-//        projectExplorerPartPresenter.refreshNode(items.get(itemIndex).getParent(), new AsyncCallback<TreeNode<?>>() {
-//            @Override
-//            public void onSuccess(TreeNode<?> result) {
-//                refreshDestinationPath();
-//            }
-//
-//            @Override
-//            public void onFailure(Throwable caught) {
-//                /** Ignore error and refresh destination */
-//                notificationManager.showNotification(new Notification(caught.getMessage(), ERROR));
-//                refreshDestinationPath();
-//            }
-//        });
+        projectExplorer.reloadChildren(items.get(itemIndex).getParent());
+        refreshDestinationPath();
     }
 
     /**
      * Refreshes destination directory.
      */
     private void refreshDestinationPath() {
-//        projectExplorerPartPresenter.refreshNode(destination, new AsyncCallback<TreeNode<?>>() {
-//            @Override
-//            public void onSuccess(TreeNode<?> result) {
-//                /** Refreshing complete, move next item */
-//                move();
-//            }
-//
-//            @Override
-//            public void onFailure(Throwable caught) {
-//                /** Ignore error and continue moving */
-//                notificationManager.showNotification(new Notification(caught.getMessage(), ERROR));
-//                move();
-//            }
-//        });
+        projectExplorer.reloadChildren(destination);
+        move();
     }
-
-    /**
-     * Logs text to browser console.
-     *
-     * @param text
-     *         text to log
-     */
-    public final native void log(String text) /*-{
-        console.log(text);
-    }-*/;
-
 }

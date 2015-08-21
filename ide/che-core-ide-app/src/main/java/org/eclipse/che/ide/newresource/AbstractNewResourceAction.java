@@ -27,16 +27,14 @@ import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ProjectAction;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.editor.EditorAgent;
+import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.json.JsonHelper;
 import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
-import org.eclipse.che.ide.project.event.ResourceNodeEvent;
-import org.eclipse.che.ide.project.event.ResourceNodeEvent.Event;
 import org.eclipse.che.ide.project.node.FileReferenceNode;
 import org.eclipse.che.ide.project.node.ItemReferenceBasedNode;
-import org.eclipse.che.ide.project.node.ResourceBasedNode;
 import org.eclipse.che.ide.project.node.NodeManager;
-import org.eclipse.che.ide.api.project.node.HasStorablePath;
+import org.eclipse.che.ide.project.node.ResourceBasedNode;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
@@ -126,7 +124,7 @@ public abstract class AbstractNewResourceAction extends ProjectAction {
         return new AsyncRequestCallback<ItemReference>(dtoUnmarshallerFactory.newUnmarshaller(ItemReference.class)) {
             @Override
             protected void onSuccess(ItemReference itemReference) {
-                getCreatedItem(parent, itemReference);
+                projectExplorer.reloadChildren(parent, itemReference, "file".equals(itemReference.getType()));
             }
 
             @Override
@@ -173,7 +171,6 @@ public abstract class AbstractNewResourceAction extends ProjectAction {
                     return;
                 }
 
-                eventBus.fireEvent(new ResourceNodeEvent(parent, newItemReferenceNode, Event.CREATED));
 
                 if (newItemReferenceNode instanceof FileReferenceNode) {
                     Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
@@ -222,7 +219,7 @@ public abstract class AbstractNewResourceAction extends ProjectAction {
     protected ResourceBasedNode<?> getResourceBasedNode() {
         List<?> selection = projectExplorer.getSelection().getAllElements();
         //we should be sure that user selected single element to work with it
-        if (selection.isEmpty() || selection.size() > 1) {
+        if (selection != null && selection.isEmpty() || selection.size() > 1) {
             return null;
         }
 

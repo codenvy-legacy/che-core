@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ui.smartTree;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.DivElement;
@@ -27,9 +25,12 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.impl.FocusImpl;
 
-import org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor;
+import org.eclipse.che.ide.api.project.node.HasAction;
+import org.eclipse.che.ide.api.project.node.MutableNode;
+import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.ui.smartTree.event.BeforeCollapseNodeEvent;
 import org.eclipse.che.ide.ui.smartTree.event.BeforeCollapseNodeEvent.HasBeforeCollapseItemHandlers;
+import org.eclipse.che.ide.ui.smartTree.event.BeforeExpandNodeEvent;
 import org.eclipse.che.ide.ui.smartTree.event.BeforeExpandNodeEvent.HasBeforeExpandNodeHandlers;
 import org.eclipse.che.ide.ui.smartTree.event.BlurEvent;
 import org.eclipse.che.ide.ui.smartTree.event.BlurEvent.HasBlurHandlers;
@@ -38,6 +39,7 @@ import org.eclipse.che.ide.ui.smartTree.event.CollapseNodeEvent;
 import org.eclipse.che.ide.ui.smartTree.event.CollapseNodeEvent.HasCollapseItemHandlers;
 import org.eclipse.che.ide.ui.smartTree.event.ExpandNodeEvent;
 import org.eclipse.che.ide.ui.smartTree.event.ExpandNodeEvent.HasExpandItemHandlers;
+import org.eclipse.che.ide.ui.smartTree.event.FocusEvent;
 import org.eclipse.che.ide.ui.smartTree.event.StoreAddEvent;
 import org.eclipse.che.ide.ui.smartTree.event.StoreAddEvent.StoreAddHandler;
 import org.eclipse.che.ide.ui.smartTree.event.StoreClearEvent;
@@ -51,9 +53,6 @@ import org.eclipse.che.ide.ui.smartTree.event.StoreSortEvent.StoreSortHandler;
 import org.eclipse.che.ide.ui.smartTree.event.StoreUpdateEvent;
 import org.eclipse.che.ide.ui.smartTree.event.StoreUpdateEvent.StoreUpdateHandler;
 import org.eclipse.che.ide.ui.smartTree.event.internal.NativeTreeEvent;
-import org.eclipse.che.ide.api.project.node.HasAction;
-import org.eclipse.che.ide.api.project.node.MutableNode;
-import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.ui.smartTree.presentation.DefaultPresentationRenderer;
 import org.eclipse.che.ide.ui.smartTree.presentation.HasPresentation;
 import org.eclipse.che.ide.ui.smartTree.presentation.PresentationRenderer;
@@ -61,9 +60,6 @@ import org.eclipse.che.ide.ui.smartTree.state.ExpandStateHandler;
 import org.eclipse.che.ide.ui.smartTree.state.HtmlStorageProvider;
 import org.eclipse.che.ide.ui.status.ComponentWithEmptyText;
 import org.eclipse.che.ide.ui.status.StatusText;
-import org.eclipse.che.ide.ui.smartTree.event.BeforeExpandNodeEvent;
-import org.eclipse.che.ide.ui.smartTree.event.FocusEvent;
-import org.eclipse.che.ide.util.loging.Log;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -72,10 +68,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
- * TODO do we need to allow use selection?
  *
  * @author Vlad Zhukovskiy
  */
@@ -469,7 +463,7 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
 
             update();
 
-            moveFocus(nodeDescriptor.getRootContainer());
+//            moveFocus(nodeDescriptor.getRootContainer());
             fireEvent(new CollapseNodeEvent(node));
         }
 
@@ -804,6 +798,7 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
             if (isAttached()) {
                 moveFocus(getContainer(null));
             }
+            getEmptyText().paint(); //draw empty label
         }
     }
 
@@ -1101,23 +1096,6 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
     }
 
     public void synchronize() {
-//        List<Node> selectionStorage = selectionModel.selectionStorage;
-//        if (selectionStorage.isEmpty()) {
-//            redraw(null, true);
-//            return;
-//        }
-//
-//        if (Iterables.any(selectionStorage, isRootNode())) {
-//            redraw(null, true);
-//            return;
-//        }
-//
-//        for (Node node : selectionStorage) {
-//            if (!node.isLeaf()) {
-//                nodeLoader.loadChildren(node);
-//            }
-//        }
-
         //TODO need to improve this block of code to support refreshing dedicated folder
         redraw(null, true);
     }
@@ -1156,13 +1134,23 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
             nodeDescriptor.setLoaded(true);
             nodeDescriptor.setLoading(false);
 
-            if (nodeDescriptor.isExpand() && !isLeaf(nodeDescriptor.getNode())) {
-                nodeDescriptor.setExpand(false);
-                boolean deep = nodeDescriptor.isExpandDeep();
-                nodeDescriptor.setExpandDeep(false);
-                setExpanded(parent, true, deep);
+            if (isLeaf(nodeDescriptor.getNode())) {
+                return;
+            }
+
+            if (isExpanded(parent)) {
+                setExpanded(parent, false, true);
+                Element container = getContainer(parent);
+                container.setInnerHTML("");
+                nodeDescriptor.setChildrenRendered(false);
+                setExpanded(parent, true, nodeDescriptor.isExpandDeep());
             } else {
-                refresh(parent);
+                if (nodeDescriptor.isChildrenRendered()) {
+                    Element container = getContainer(parent);
+                    container.setInnerHTML("");
+                    nodeDescriptor.setChildrenRendered(false);
+                }
+                setExpanded(parent, true, nodeDescriptor.isExpandDeep());
             }
         }
     }

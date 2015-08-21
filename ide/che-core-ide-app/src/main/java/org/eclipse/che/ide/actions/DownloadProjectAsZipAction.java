@@ -22,9 +22,9 @@ import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
+import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.download.DownloadContainer;
 import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
-import org.eclipse.che.ide.part.projectexplorer.ProjectListStructure;
 import org.eclipse.che.ide.project.node.ProjectReferenceNode;
 import org.eclipse.che.ide.rest.RestContext;
 
@@ -75,10 +75,9 @@ public class DownloadProjectAsZipAction extends Action {
     /** {@inheritDoc} */
     @Override
     public void update(ActionEvent event) {
-        List<?> selection = projectExplorer.getSelection().getAllElements();
-
-        boolean enabled = appContext.getCurrentProject() != null ||
-                          (!selection.isEmpty() && selection.get(0) instanceof ProjectReferenceNode);
+        Selection<?> selection = projectExplorer.getSelection();
+        boolean enabled = appContext.getCurrentProject() != null || selection != null ||
+                          (!selection.isEmpty() && selection.getHeadElement() instanceof ProjectReferenceNode);
 
         event.getPresentation().setVisible(true);
         event.getPresentation().setEnabled(enabled);
@@ -95,7 +94,7 @@ public class DownloadProjectAsZipAction extends Action {
             selectedNode = (HasStorablePath)selection.get(0);
         }
 
-        if (selectedNode != null && selectedNode instanceof ProjectListStructure.ProjectNode) {
+        if (selectedNode != null && selectedNode instanceof ProjectReferenceNode) {
             path = selectedNode.getStorablePath();
         } else if (currentProject != null) {
             path = currentProject.getProjectDescription().getPath();

@@ -12,8 +12,10 @@ package org.eclipse.che.ide.api.project.node.resource;
 
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.ide.api.project.node.HasDataObject;
+import org.eclipse.che.ide.api.project.node.HasStorablePath;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Provide mechanism to allow physically renaming data object during node rename.
@@ -30,5 +32,5 @@ public interface RenameProcessor<DataObject> {
      *         new name for data object
      * @return promise with updated data object
      */
-    Promise<DataObject> rename(@Nonnull HasDataObject<DataObject> node, @Nonnull String newName);
+    Promise<DataObject> rename(@Nullable HasStorablePath parent, @Nonnull HasDataObject<DataObject> node, @Nonnull String newName);
 }

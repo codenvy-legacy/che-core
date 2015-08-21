@@ -14,7 +14,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
-import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Promise;
@@ -32,8 +31,8 @@ import javax.annotation.Nonnull;
  * @author Vlad Zhukovskiy
  */
 public abstract class AbstractResourceProcessor<DataObject> implements DeleteProcessor<DataObject>, RenameProcessor<DataObject> {
-    protected EventBus             eventBus;
-    protected ProjectServiceClient projectService;
+    protected EventBus               eventBus;
+    protected ProjectServiceClient   projectService;
     protected DtoUnmarshallerFactory unmarshallerFactory;
 
     public AbstractResourceProcessor(EventBus eventBus, ProjectServiceClient projectService, DtoUnmarshallerFactory unmarshallerFactory) {
@@ -43,7 +42,7 @@ public abstract class AbstractResourceProcessor<DataObject> implements DeletePro
     }
 
     @Nonnull
-    protected  <T> AsyncRequestCallback<T> _createCallback(@Nonnull final AsyncCallback<T> callback, @Nonnull Unmarshallable<T> u) {
+    protected <T> AsyncRequestCallback<T> _createCallback(@Nonnull final AsyncCallback<T> callback, @Nonnull Unmarshallable<T> u) {
         return new AsyncRequestCallback<T>(u) {
             @Override
             protected void onSuccess(T result) {

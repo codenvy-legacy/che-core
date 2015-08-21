@@ -17,7 +17,7 @@
     <ui:style>
 
         .controlPanel {
-            float: left;
+            float: right;
             overflow: hidden;
 
             position: relative;

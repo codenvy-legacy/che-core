@@ -115,7 +115,6 @@ public class GoIntoMode implements HasGoIntoStateHandlers {
     }
 
     private void saveState() {
-        selection.addAll(tree.getSelectionModel().selectionStorage);
         treeElement = DOM.clone(tree.getContainer(null), true);
         wasExpanded = tree.findNode(node).isExpanded();
     }
@@ -168,14 +167,14 @@ public class GoIntoMode implements HasGoIntoStateHandlers {
 
         tree.redraw(null, false);
 
-        tree.getSelectionModel().select(selection, false);
-
         tree.scrollIntoView(node);
 
         selection.clear();
         treeElement = null;
         descendants = null;
         expandHandlerRegistration = null;
+
+        tree.getSelectionModel().select(getLastNode(), false);
 
         fireEvent(new GoIntoStateEvent(DEACTIVATED, node));
     }

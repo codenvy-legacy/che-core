@@ -10,27 +10,24 @@
  *******************************************************************************/
 package org.eclipse.che.ide.actions;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
 import org.eclipse.che.ide.api.selection.Selection;
-import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
 import org.eclipse.che.ide.part.projectexplorer.DeleteNodeHandler;
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
 import org.eclipse.che.ide.util.loging.Log;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Iterables;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -67,6 +64,7 @@ public class DeleteItemAction extends Action {
         if (selection.size() == 1) {
             Object o = selection.get(0);
             if (o instanceof ResourceBasedNode<?>) {
+                projectExplorer.resetGoIntoMode();
                 ((ResourceBasedNode)o).delete();
             } else {
                 throw new IllegalArgumentException("Node isn't resource based.");
@@ -75,15 +73,6 @@ public class DeleteItemAction extends Action {
             Iterable<ResourceBasedNode<?>> nodes = Iterables.transform(selection, castNode());
             doDelete(nodes);
         }
-
-//        Selection<?> selection = selectionAgent.getSelection();
-//        if (selection != null && !selection.isEmpty() & selection.getHeadElement() instanceof StorableNode) {
-//            if (selection.isSingleSelection()) {
-//                deleteNodeHandler.delete((StorableNode)selection.getHeadElement());
-//            } else {
-//                deleteNodeHandler.deleteNodes((List<StorableNode>)selection.getAllElements());
-//            }
-//        }
     }
 
     private Function<Object, ResourceBasedNode<?>> castNode() {

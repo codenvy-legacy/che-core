@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.part.explorer.project;
 
-import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
@@ -33,22 +32,17 @@ import org.eclipse.che.ide.api.project.node.event.ProjectPartLoadEvent;
 import org.eclipse.che.ide.api.project.node.event.ProjectPartLoadEvent.ProjectPartLoadHandler;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerView.ActionDelegate;
-import org.eclipse.che.ide.project.event.ResourceNodeEvent;
-import org.eclipse.che.ide.project.event.ResourceNodeEvent.Event;
-import org.eclipse.che.ide.project.event.ResourceNodeEvent.ResourceNodeHandler;
+import org.eclipse.che.ide.project.event.ResourceNodeDeletedEvent;
+import org.eclipse.che.ide.project.event.ResourceNodeDeletedEvent.ResourceNodeDeletedHandler;
+import org.eclipse.che.ide.project.event.ResourceNodeRenamedEvent;
 import org.eclipse.che.ide.project.node.NodeManager;
 import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
-import org.eclipse.che.ide.ui.smartTree.event.BeforeExpandNodeEvent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-
-import static org.eclipse.che.ide.project.event.ResourceNodeEvent.Event.CREATED;
-import static org.eclipse.che.ide.project.event.ResourceNodeEvent.Event.DELETED;
-import static org.eclipse.che.ide.project.event.ResourceNodeEvent.Event.RENAMED;
 
 /**
  * @author Vlad Zhukovskiy
@@ -83,7 +77,7 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
         super.onOpen();
         if (appContext.getCurrentProject() == null) {
             nodeManager.getProjects()
-                       .then(showProjectsList());
+                       .then(_showProjectsList());
         } else {
             ProjectDescriptor rootProject = appContext.getCurrentProject().getRootProject();
             ProjectDescriptorNode projectDescriptorNode = nodeManager.wrap(rootProject);
@@ -98,7 +92,7 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
             public void onProjectPartLoad(ProjectPartLoadEvent event) {
                 if (appContext.getCurrentProject() == null) {
                     nodeManager.getProjects()
-                               .then(showProjectsList());
+                               .then(_showProjectsList());
                 } else {
                     ProjectDescriptor rootProject = appContext.getCurrentProject().getRootProject();
                     ProjectDescriptorNode projectDescriptorNode = nodeManager.wrap(rootProject);
@@ -128,26 +122,23 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
             public void onProjectClosed(ProjectActionEvent event) {
                 view.resetGoIntoMode();
                 nodeManager.getProjects()
-                           .then(showProjectsList());
+                           .then(_showProjectsList());
             }
         });
 
 
-        eventBus.addHandler(ResourceNodeEvent.getType(), new ResourceNodeHandler() {
+        eventBus.addHandler(ResourceNodeDeletedEvent.getType(), new ResourceNodeDeletedHandler() {
             /** {@inheritDoc} */
             @Override
-            public void onResourceEvent(ResourceNodeEvent evt) {
-                Event event = evt.getEvent();
+            public void onResourceEvent(ResourceNodeDeletedEvent evt) {
+                reloadChildren(evt.getNode().getParent(), null);
+            }
+        });
 
-                if (event == CREATED) {
-                    //process created
-                    view.onChildrenCreated(evt.getParent(), evt.getNode());
-                } else if (event == DELETED) {
-                    //process deleted
-                    view.onChildrenRemoved(evt.getNode());
-                } else if (event == RENAMED) {
-                    //process renamed
-                }
+        eventBus.addHandler(ResourceNodeRenamedEvent.getType(), new ResourceNodeRenamedEvent.ResourceNodeRenamedHandler() {
+            @Override
+            public void onResourceRenamedEvent(ResourceNodeRenamedEvent event) {
+                reloadChildren(event.getNode().getParent(), event.getNewDataObject());
             }
         });
     }
@@ -198,6 +189,25 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
         updateAppContext(selection);
     }
 
+    @Override
+    public void reloadSelectedNodes() {
+        Selection<?> selection = getSelection();
+        if (selection.isEmpty()) {
+            return;
+        }
+
+        List<?> nodes = selection.getAllElements();
+        List<Node> nodesToReload = new ArrayList<>();
+
+        for (Object o : nodes) {
+            if (o instanceof Node && !((Node)o).isLeaf()) {
+                nodesToReload.add((Node)o);
+            }
+        }
+
+        view.reloadChildren(nodesToReload, null, false);
+    }
+
     private void updateAppContext(List<Node> nodes) {
         for (Node node : nodes) {
             if (node instanceof HasProjectDescriptor) {
@@ -211,14 +221,14 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
     }
 
     public void expand(HasStorablePath node) {
-
+        //temporary stub
     }
 
     public void goInto(Node node) {
         view.goInto(node);
     }
 
-    private Operation<List<Node>> showProjectsList() {
+    private Operation<List<Node>> _showProjectsList() {
         return new Operation<List<Node>>() {
             @Override
             public void apply(List<Node> nodes) throws OperationException {
@@ -227,19 +237,31 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
         };
     }
 
-    public void scrollFromSource(Object object) {
-
-    }
-
     public void synchronizeTree() {
         view.synchronizeTree();
     }
 
-    public HandlerRegistration addBeforeExpandNodeHandler(BeforeExpandNodeEvent.BeforeExpandNodeHandler handler) {
-        return view.addBeforeExpandNodeHandler(handler);
+    public void reloadChildren(Node node) {
+        reloadChildren(node, null);
     }
 
-    public void reloadChildren(Node node) {
-        view.reloadChildren(node);
+    public void reloadChildren(Node node, Object selectAfter) {
+        reloadChildren(node, selectAfter, false);
+    }
+
+    public void reloadChildren(Node node, Object selectAfter, boolean callAction) {
+        reloadChildren(node != null ? Collections.singletonList(node) : null, selectAfter, callAction);
+    }
+
+    public void reloadChildren(List<Node> node, Object selectAfter, boolean callAction) {
+        view.reloadChildren(node, selectAfter, callAction);
+    }
+
+    public void reloadChildrenByType(Class<?> type) {
+        view.reloadChildrenByType(type);
+    }
+
+    public void resetGoIntoMode() {
+        view.resetGoIntoMode();
     }
 }

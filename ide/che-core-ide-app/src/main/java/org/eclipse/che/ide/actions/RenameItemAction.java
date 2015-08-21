@@ -104,8 +104,6 @@ public class RenameItemAction extends Action {
             return;
         }
 
-//        ResourceBasedNode<?> selectedParent = selectedNode.getParent();
-
         if (selectedNode instanceof ProjectDescriptorNode) {
             dialogFactory.createMessageDialog("", localization.closeProjectBeforeRenaming(), null).show();
         } else {
@@ -138,7 +136,9 @@ public class RenameItemAction extends Action {
         }
 
         Selection<?> selection = projectExplorer.getSelection();
-        e.getPresentation().setEnabled(!selection.isEmpty() && selection.getHeadElement() instanceof SupportRename<?>);
+        e.getPresentation().setEnabled(selection != null && !selection.isEmpty()
+                                       && selection.getHeadElement() instanceof SupportRename<?>
+                                       && !(selection.getHeadElement() instanceof ProjectDescriptorNode));
     }
 
     /**
@@ -193,7 +193,7 @@ public class RenameItemAction extends Action {
     private void checkRunningProcessesForProject(HasProjectDescriptor projectNode, final AsyncCallback<Boolean> callback) {
         Unmarshallable<List<ApplicationProcessDescriptor>> unmarshaller =
                 dtoUnmarshallerFactory.newListUnmarshaller(ApplicationProcessDescriptor.class);
-        runnerServiceClient.getRunningProcesses(projectNode.getPath(),
+        runnerServiceClient.getRunningProcesses(projectNode.getProjectDescriptor().getPath(),
                                                 new AsyncRequestCallback<List<ApplicationProcessDescriptor>>(unmarshaller) {
                                                     @Override
                                                     protected void onSuccess(List<ApplicationProcessDescriptor> result) {

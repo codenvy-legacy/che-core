@@ -11,6 +11,7 @@
 package org.eclipse.che.ide.part.explorer.project;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Iterables;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -24,6 +25,8 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.api.promises.client.Operation;
+import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.parts.base.BaseView;
@@ -37,6 +40,7 @@ import org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor;
 import org.eclipse.che.ide.menu.ContextMenu;
 import org.eclipse.che.ide.project.ProjectContextMenu;
 import org.eclipse.che.ide.project.node.AbstractProjectBasedNode;
+import org.eclipse.che.ide.project.node.NodeManager;
 import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
 import org.eclipse.che.ide.project.node.SyntheticBasedNode;
 import org.eclipse.che.ide.ui.Tooltip;
@@ -82,6 +86,7 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
     private       Resources                resources;
     private final ProjectExplorerResources explorerResources;
     private final ProjectContextMenu       projectContextMenu;
+    private final NodeManager              nodeManager;
     private       Tree                     tree;
     private       FlowPanel                projectHeader;
     private       ToolButton               goIntoBackButton;
@@ -94,11 +99,13 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
                                       final ContextMenu contextMenu,
                                       final ProjectContextMenu projectContextMenu,
                                       CoreLocalizationConstant coreLocalizationConstant,
-                                      Set<NodeInterceptor> nodeInterceptorSet) {
+                                      Set<NodeInterceptor> nodeInterceptorSet,
+                                      NodeManager nodeManager) {
         super(resources);
         this.resources = resources;
         this.explorerResources = explorerResources;
         this.projectContextMenu = projectContextMenu;
+        this.nodeManager = nodeManager;
 
         setTitle(coreLocalizationConstant.projectExplorerTitleBarText());
 
@@ -145,11 +152,20 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
 
         new SpeedSearch(tree, new NodeNameConverter());
 
-        setContentWidget(new ScrollPanel(tree));
+        ScrollPanel panel = new ScrollPanel(tree);
+        panel.ensureDebugId("projectExplorer");
+
+        setContentWidget(panel);
     }
 
     @Override
     public void setRootNodes(List<Node> nodes) {
+        if (nodes == null || nodes.isEmpty()) {
+            tree.getNodeStorage().clear();
+            hideProjectInfo();
+            return;
+        }
+
         tree.getNodeStorage().replaceChildren(null, nodes);
 
         if (nodes.size() == 1) {
@@ -277,20 +293,20 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
                 InlineLabel projectTitle = new InlineLabel(descriptor.getName());
                 projectHeader.add(projectTitle);
 
-                SVGImage gearSettingsIcon = new SVGImage(explorerResources.gear());
-
-                ToolButton settings = new ToolButton(gearSettingsIcon);
-                settings.addClickHandler(new ClickHandler() {
-                    @Override
-                    public void onClick(ClickEvent event) {
-                        projectContextMenu.show(event.getClientX(), event.getClientY());
-                    }
-                });
-                Tooltip.create((elemental.dom.Element)settings.getElement(),
-                               BOTTOM,
-                               MIDDLE,
-                               "Show Settings");
-                addMenuButton(settings);
+//                SVGImage gearSettingsIcon = new SVGImage(explorerResources.gear());
+//
+//                ToolButton settings = new ToolButton(gearSettingsIcon);
+//                settings.addClickHandler(new ClickHandler() {
+//                    @Override
+//                    public void onClick(ClickEvent event) {
+//                        projectContextMenu.show(event.getClientX(), event.getClientY());
+//                    }
+//                });
+//                Tooltip.create((elemental.dom.Element)settings.getElement(),
+//                               BOTTOM,
+//                               MIDDLE,
+//                               "Show Settings");
+//                addMenuButton(settings);
 
                 //TODO get virtual file from active editor and search node in the tree, then expand and select it
 //                SVGImage scrollFromSourceIcon = new SVGImage(explorerResources.source());
@@ -336,9 +352,15 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
                 refreshButton.addDomHandler(new ClickHandler() {
                     @Override
                     public void onClick(ClickEvent event) {
-                        synchronizeTree();
+                        delegate.reloadSelectedNodes();
                     }
                 }, ClickEvent.getType());
+
+                Tooltip.create((elemental.dom.Element)refreshButton.getElement(),
+                               BOTTOM,
+                               MIDDLE,
+                               "Refresh selected folder");
+                addMenuButton(collapseAll);
 
                 return;
             }
@@ -358,8 +380,84 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
     }
 
     @Override
-    public void reloadChildren(Node node) {
-        tree.getNodeLoader().loadChildren(node);
+    public void reloadChildren(List<Node> nodes, final Object selectAfter, final boolean callAction) {
+        if (nodes == null || nodes.isEmpty()) {
+            nodeManager.getProjects().then(selectAfter(selectAfter));
+            return;
+        }
+
+        List<Node> rootNodes = tree.getRootNodes();
+
+        boolean rootNodeFound = false;
+
+        for (Node nodeToReload : nodes) {
+            if (Iterables.contains(rootNodes, nodeToReload)) {
+                rootNodeFound = true;
+                break;
+            }
+        }
+
+        if (rootNodeFound) {
+            for (Node rootNode : rootNodes) {
+                tree.getNodeLoader().loadChildren(rootNode);
+            }
+        } else {
+            for (Node nodeToReload : nodes) {
+                tree.getNodeLoader().loadChildren(nodeToReload);
+            }
+
+            if (nodes.size() == 1 && selectAfter != null) {
+                tree.addExpandHandler(new ExpandNodeHandler() {
+                    @Override
+                    public void onExpand(ExpandNodeEvent event) {
+                        List<Node> children = tree.getNodeStorage().getChildren(event.getNode());
+                        for (Node child : children) {
+                            if (child instanceof HasDataObject<?> && ((HasDataObject<?>)child).getData().equals(selectAfter)) {
+                                tree.getSelectionModel().select(child, false);
+
+                                if (callAction && child instanceof HasAction) {
+                                    ((HasAction)child).actionPerformed();
+                                }
+
+                                return;
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    @Override
+    public void reloadChildrenByType(Class<?> type) {
+        List<Node> rootNodes = tree.getRootNodes();
+        for (Node rootNode : rootNodes) {
+            List<Node> allChildren = tree.getNodeStorage().getAllChildren(rootNode);
+            for (Node child : allChildren) {
+                if (child.getClass().equals(type)) {
+                    NodeDescriptor nodeDescriptor = tree.findNode(child);
+                    if (nodeDescriptor.isLoaded()) {
+                        tree.getNodeLoader().loadChildren(child);
+                    }
+                }
+            }
+        }
+    }
+
+    private Operation<List<Node>> selectAfter(final Object selectAfter) {
+        return new Operation<List<Node>>() {
+            @Override
+            public void apply(List<Node> nodes) throws OperationException {
+                setRootNodes(nodes);
+
+                for (Node node : nodes) {
+                    if (node instanceof HasDataObject<?> && ((HasDataObject<?>)node).getData().equals(selectAfter)) {
+                        tree.getSelectionModel().select(node, false);
+                        return;
+                    }
+                }
+            }
+        };
     }
 
     private void hideProjectInfo() {

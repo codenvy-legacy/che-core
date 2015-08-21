@@ -29,6 +29,7 @@ import org.eclipse.che.ide.ui.smartTree.event.StoreUpdateEvent.StoreUpdateHandle
 import org.eclipse.che.ide.util.loging.Log;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -56,6 +57,12 @@ public class ExpandStateHandler extends AbstractStateHandler<Set<String>> {
             String key = tree.getNodeStorage().getKeyProvider().getKey(event.getNode());
             getState().remove(key);
 
+            List<Node> allChildren = tree.getNodeStorage().getAllChildren(event.getNode());
+            for (Node allChild : allChildren) {
+                key = tree.getNodeStorage().getKeyProvider().getKey(allChild);
+                getState().remove(key);
+            }
+
             saveState();
         }
 
@@ -75,7 +82,7 @@ public class ExpandStateHandler extends AbstractStateHandler<Set<String>> {
 
         @Override
         public void onUpdate(StoreUpdateEvent event) {
-            Log.info(this.getClass(), "onUpdate():76: " + "state handler on update fired");
+            //Stub
 //            getState().clear();
 //            tree.getNodeStorage().
 //            String key = tree.getNodeStorage().getKeyProvider().getKey(event.getNode());

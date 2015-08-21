@@ -17,8 +17,6 @@ import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ProjectAction;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
-import org.eclipse.che.ide.project.node.AbstractProjectBasedNode;
-import org.eclipse.che.ide.project.node.FolderReferenceNode;
 
 import java.util.List;
 
@@ -59,6 +57,6 @@ public class GoIntoAction extends ProjectAction {
     }
 
     private boolean isNodeSupportGoInto(Object node) {
-        return node != null && node instanceof Node && ((Node)node).supportGoInto();
+        return node != null && node instanceof Node && ((Node)node).getParent() != null && ((Node)node).supportGoInto();
     }
 }

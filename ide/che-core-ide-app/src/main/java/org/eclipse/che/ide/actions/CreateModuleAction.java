@@ -15,17 +15,13 @@ import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
-import org.eclipse.che.api.project.server.handlers.CreateModuleHandler;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ProjectAction;
-import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.ModuleCreatedEvent;
 import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
 import org.eclipse.che.ide.project.node.FolderReferenceNode;
 import org.eclipse.che.ide.project.shared.NodesResources;
 import org.eclipse.che.ide.projecttype.wizard.presenter.ProjectWizardPresenter;
-import org.eclipse.che.ide.ui.smartTree.Tree;
-import org.eclipse.che.ide.util.loging.Log;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -84,11 +80,9 @@ public class CreateModuleAction extends ProjectAction implements ModuleCreatedEv
 
     @Override
     public void onModuleCreated(ModuleCreatedEvent event) {
-        Log.info(this.getClass(), "onModuleCreated():86: " + "get res node");
         FolderReferenceNode selectedFolder = getResourceBasedNode();
         if (selectedFolder != null && selectedFolder.getParent() != null) {
-            Log.info(this.getClass(), "onModuleCreated():90: " + "lets try to reload children");
-            projectExplorer.reloadChildren(selectedFolder.getParent());
+            projectExplorer.reloadChildren(selectedFolder.getParent(), event.getModule());
         }
     }
 }

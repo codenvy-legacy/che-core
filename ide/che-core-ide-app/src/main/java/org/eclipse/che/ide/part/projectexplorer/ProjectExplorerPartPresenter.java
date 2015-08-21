@@ -348,7 +348,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
         }
     }
 
-    private void getOpenedUnCashedFiles(StorableNode parentNode, Array<TreeNode<?>> children) {
+    private void getOpenedUnCashedFiles(StorableNode parentNode, List<TreeNode<?>> children) {
 //        StringMap<EditorPartPresenter> editorParts = editorAgentProvider.get().getOpenedEditors();
 //        for (EditorPartPresenter editorPart: editorParts.getValues().asIterable()) {
 //            VirtualFile file = editorPart.getEditorInput().getFile();

@@ -14,16 +14,15 @@ import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.event.shared.HandlerManager;
 import com.google.gwt.event.shared.HandlerRegistration;
 
+import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.ui.smartTree.event.StoreAddEvent;
 import org.eclipse.che.ide.ui.smartTree.event.StoreClearEvent;
 import org.eclipse.che.ide.ui.smartTree.event.StoreDataChangeEvent;
-import org.eclipse.che.ide.ui.smartTree.event.StoreRemoveEvent;
-import org.eclipse.che.ide.ui.smartTree.event.StoreSortEvent;
 import org.eclipse.che.ide.ui.smartTree.event.StoreHandlers;
 import org.eclipse.che.ide.ui.smartTree.event.StoreRecordChangeEvent;
+import org.eclipse.che.ide.ui.smartTree.event.StoreRemoveEvent;
+import org.eclipse.che.ide.ui.smartTree.event.StoreSortEvent;
 import org.eclipse.che.ide.ui.smartTree.event.StoreUpdateEvent;
-import org.eclipse.che.ide.api.project.node.Node;
-import org.eclipse.che.ide.util.loging.Log;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -496,10 +495,6 @@ public class TreeNodeStorage implements StoreHandlers.HasStoreHandlers {
     }
 
     public void replaceChildren(Node parent, List<Node> children) {
-        if (children.isEmpty()) {
-            return;
-        }
-
         if (parent == null) {
             roots.clear();
             idToNodeMap.clear();
