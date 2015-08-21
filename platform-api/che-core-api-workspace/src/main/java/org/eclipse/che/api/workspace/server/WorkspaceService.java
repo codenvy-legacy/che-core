@@ -67,6 +67,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -164,14 +165,22 @@ public class WorkspaceService extends Service {
 
     @GET
     @Produces(APPLICATION_JSON)
-    public List<UsersWorkspaceDto> getList(@DefaultValue("0") @QueryParam("skipCount") Integer skipCount,
-                                           @DefaultValue("30") @QueryParam("maxItems") Integer maxItems)
+    public List<UsersWorkspaceDto> getWorkspaces(@DefaultValue("0") @QueryParam("skipCount") Integer skipCount,
+                                                 @DefaultValue("30") @QueryParam("maxItems") Integer maxItems)
             throws ServerException, BadRequestException {
         //TODO add maxItems & skipCount to manager
         return workspaceManager.getWorkspaces(securityContext.getUserPrincipal().getName())
                                .stream()
                                .map(this::asUsersWorkspaceDto)
                                .collect(toList());
+    }
+
+    //TODO
+    @GET
+    @Produces(APPLICATION_JSON)
+    public List<RuntimeWorkspaceDto> getRuntimeWorkspaces(@DefaultValue("0") @QueryParam("skipCount") Integer skipCount,
+                                                          @DefaultValue("30") @QueryParam("maxItems") Integer maxItems) {
+        return emptyList();
     }
 
     @GET
@@ -307,7 +316,7 @@ public class WorkspaceService extends Service {
     @Path("/{id}/project")
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
-    public UsersWorkspaceDto updateEnvironment(@PathParam("id") String id, ProjectConfigDto update)
+    public UsersWorkspaceDto updateProject(@PathParam("id") String id, ProjectConfigDto update)
             throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
         if (!workspace.getProjects().removeIf(project -> project.getName().equals(update.getName()))) {

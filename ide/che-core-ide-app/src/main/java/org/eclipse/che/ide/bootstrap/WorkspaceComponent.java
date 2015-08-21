@@ -58,6 +58,6 @@ public class WorkspaceComponent implements Component {
                 callback.onFailure(new Exception("Unable to get Workspace", throwable));
             }
         };
-        workspaceServiceClient.getWorkspace(Config.getWorkspaceId(), asyncRequestCallback);
+        workspaceServiceClient.getUsersWorkspace(Config.getWorkspaceId(), asyncRequestCallback);
     }
 }
