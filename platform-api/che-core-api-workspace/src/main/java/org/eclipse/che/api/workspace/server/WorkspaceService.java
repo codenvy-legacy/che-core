@@ -177,6 +177,7 @@ public class WorkspaceService extends Service {
 
     //TODO
     @GET
+    @Path("/runtime")
     @Produces(APPLICATION_JSON)
     public List<RuntimeWorkspaceDto> getRuntimeWorkspaces(@DefaultValue("0") @QueryParam("skipCount") Integer skipCount,
                                                           @DefaultValue("30") @QueryParam("maxItems") Integer maxItems) {
