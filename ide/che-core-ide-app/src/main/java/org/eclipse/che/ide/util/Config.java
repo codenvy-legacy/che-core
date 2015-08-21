@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.util;
 
-import org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor;
+import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 
 /**
  * A smattering of useful methods.
@@ -21,7 +21,7 @@ import org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor;
 @Deprecated
 public class Config {
 
-    private static WorkspaceDescriptor _workspace;
+    private static UsersWorkspaceDto _workspace;
 
     /**
      * Returns the base context of the IDE.
@@ -146,7 +146,7 @@ public class Config {
      * @param workspace
      *         the Workspace to set
      */
-    public static void setCurrentWorkspace(WorkspaceDescriptor workspace) {
+    public static void setCurrentWorkspace(UsersWorkspaceDto workspace) {
         _workspace = workspace;
     }
 
@@ -155,7 +155,7 @@ public class Config {
      *
      * @return workspace
      */
-    public static WorkspaceDescriptor getCurrentWorkspace() {
+    public static UsersWorkspaceDto getCurrentWorkspace() {
         return _workspace;
     }
 

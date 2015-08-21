@@ -12,7 +12,7 @@
 package org.eclipse.che.ide.bootstrap;
 
 import org.eclipse.che.api.workspace.gwt.client.WorkspaceServiceClient;
-import org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor;
+import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
@@ -43,10 +43,10 @@ public class WorkspaceComponent implements Component {
 
     @Override
     public void start(final Callback<Component, Exception> callback) {
-        AsyncRequestCallback<WorkspaceDescriptor> asyncRequestCallback = new AsyncRequestCallback<WorkspaceDescriptor>(
-                dtoUnmarshallerFactory.newUnmarshaller(WorkspaceDescriptor.class)) {
+        AsyncRequestCallback<UsersWorkspaceDto> asyncRequestCallback = new AsyncRequestCallback<UsersWorkspaceDto>(
+                dtoUnmarshallerFactory.newUnmarshaller(UsersWorkspaceDto.class)) {
             @Override
-            protected void onSuccess(WorkspaceDescriptor result) {
+            protected void onSuccess(UsersWorkspaceDto result) {
                 Config.setCurrentWorkspace(result);
                 appContext.setWorkspace(result);
                 callback.onSuccess(WorkspaceComponent.this);
@@ -58,6 +58,6 @@ public class WorkspaceComponent implements Component {
                 callback.onFailure(new Exception("Unable to get Workspace", throwable));
             }
         };
-        workspaceServiceClient.getUsersWorkspace(Config.getWorkspaceId(), asyncRequestCallback);
+        workspaceServiceClient.getUsersWorkspace(Config.getWorkspaceId());
     }
 }

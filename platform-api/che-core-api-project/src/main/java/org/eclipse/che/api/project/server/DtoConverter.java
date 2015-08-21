@@ -22,6 +22,7 @@ import org.eclipse.che.api.project.shared.dto.ImportSourceDescriptor;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectImporterDescriptor;
+import org.eclipse.che.api.project.shared.dto.ProjectModule;
 import org.eclipse.che.api.project.shared.dto.ProjectProblem;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
@@ -140,6 +141,48 @@ public class DtoConverter {
     }
 
 
+    public static ProjectConfig toProjectConfig(ProjectModule dto, ProjectTypeRegistry typeRegistry) throws ServerException,
+                                                                                                     ProjectTypeConstraintException,
+                                                                                                     InvalidValueException,
+                                                                                                     ValueStorageException {
+
+        if (dto.getType() == null)
+            throw new InvalidValueException("Invalid Project definition. Primary module type is not defined.");
+
+        if (typeRegistry.getProjectType(dto.getType()) == null)
+            throw new ProjectTypeConstraintException("Primary module type is not registered " + dto.getType());
+
+        // primary
+        final Set<ProjectType> validTypes = new HashSet<>();
+        validTypes.add(typeRegistry.getProjectType(dto.getType()));
+
+        // mixins
+        final List<String> validMixins = new ArrayList<>();
+        dto.getMixins().stream().forEach(typeId -> {
+            ProjectType mixinType = typeRegistry.getProjectType(typeId);
+            if (mixinType != null) {  // otherwise just ignore
+                validTypes.add(mixinType);
+                validMixins.add(typeId);
+            }
+        });
+
+        // attributes
+        final Map<String, List<String>> updateAttributes = dto.getAttributes();
+        final HashMap<String, AttributeValue> attributes = new HashMap<>(updateAttributes.size());
+        for (Map.Entry<String, List<String>> entry : updateAttributes.entrySet()) {
+
+            for (ProjectType projectType : validTypes) {
+                Attribute attr = projectType.getAttribute(entry.getKey());
+                if (attr != null) {
+                    attributes.put(attr.getName(), new AttributeValue(entry.getValue()));
+
+                }
+            }
+        }
+
+        return new ProjectConfig(dto.getDescription(), dto.getType(), attributes, dto.getRecipe(), validMixins);
+
+    }
 
     /*================================ Methods for conversion to DTO. ===============================*/
 /*
