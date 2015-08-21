@@ -36,6 +36,7 @@ import org.eclipse.che.api.user.server.dao.UserProfileDao;
 //import org.eclipse.che.api.workspace.server.dao.MemberDao;
 //import org.eclipse.che.api.workspace.server.dao.Workspace;
 //import org.eclipse.che.api.workspace.server.dao.WorkspaceDao;
+import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
 import org.eclipse.che.inject.DynaModule;
 
 import javax.inject.Named;
@@ -52,7 +53,7 @@ public class LocalInfrastructureModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(UserDao.class).to(LocalUserDaoImpl.class);
-//        bind(WorkspaceDao.class).to(LocalWorkspaceDaoImpl.class);
+        bind(WorkspaceDao.class).to(LocalWorkspaceDaoImpl.class);
         bind(UserProfileDao.class).to(LocalProfileDaoImpl.class);
         bind(PreferenceDao.class).to(LocalPreferenceDaoImpl.class);
 //        bind(MemberDao.class).to(LocalMemberDaoImpl.class);
