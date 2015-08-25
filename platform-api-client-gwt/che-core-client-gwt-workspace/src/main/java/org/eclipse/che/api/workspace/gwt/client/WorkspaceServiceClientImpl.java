@@ -10,17 +10,31 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.gwt.client;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.inject.Inject;
+
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
 import org.eclipse.che.api.workspace.shared.dto.CommandDto;
 import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.RuntimeWorkspaceDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
+import org.eclipse.che.ide.rest.AsyncRequestFactory;
+import org.eclipse.che.ide.rest.AsyncRequestLoader;
+import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
+import org.eclipse.che.ide.rest.RestContext;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 
-//TODO
+import static org.eclipse.che.api.promises.client.callback.PromiseHelper.newCallback;
+import static org.eclipse.che.api.promises.client.callback.PromiseHelper.newPromise;
+import static org.eclipse.che.ide.MimeType.APPLICATION_JSON;
+import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
+import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
 
 /**
  * Implementation for {@link WorkspaceServiceClient}.
@@ -29,14 +43,43 @@ import java.util.List;
  */
 public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
 
+    private final DtoUnmarshallerFactory dtoUnmarshallerFactory;
+    private final AsyncRequestFactory asyncRequestFactory;
+    private final AsyncRequestLoader  loader;
+    private final String              baseHttpUrl;
+
+    @Inject
+    protected WorkspaceServiceClientImpl(@RestContext String restContext,
+                                         DtoUnmarshallerFactory dtoUnmarshallerFactory,
+                                         AsyncRequestFactory asyncRequestFactory,
+                                         AsyncRequestLoader loader) {
+        this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
+        this.asyncRequestFactory = asyncRequestFactory;
+        this.loader = loader;
+        this.baseHttpUrl = restContext + "/workspace";
+    }
+
     @Override
     public Promise<UsersWorkspaceDto> create(UsersWorkspaceDto newWorkspace, String account) {
         return null;
     }
 
     @Override
-    public Promise<UsersWorkspaceDto> getUsersWorkspace(String wsId) {
-        return null;
+    public Promise<UsersWorkspaceDto> getUsersWorkspace(final String wsId) {
+        return newPromise(new AsyncPromiseHelper.RequestCall<UsersWorkspaceDto>() {
+            @Override
+            public void makeCall(AsyncCallback<UsersWorkspaceDto> callback) {
+                getUsersWorkspace(wsId, callback);
+            }
+        });
+    }
+
+    private void getUsersWorkspace(@Nonnull String wsId, @Nonnull AsyncCallback<UsersWorkspaceDto> callback) {
+        final String url = baseHttpUrl + '/' + wsId;
+        asyncRequestFactory.createGetRequest(url)
+                           .header(ACCEPT, APPLICATION_JSON)
+                           .loader(loader, "Getting info about workspace...")
+                           .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(UsersWorkspaceDto.class)));
     }
 
     @Override
@@ -65,13 +108,40 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
     }
 
     @Override
-    public Promise<UsersWorkspaceDto> startTemporary(WorkspaceConfig cfg, String accountId) {
-        return null;
+    public Promise<UsersWorkspaceDto> startTemporary(final WorkspaceConfig cfg, final String accountId) {
+        return newPromise(new AsyncPromiseHelper.RequestCall<UsersWorkspaceDto>() {
+            @Override
+            public void makeCall(AsyncCallback<UsersWorkspaceDto> callback) {
+                startTemporary(cfg, accountId, callback);
+            }
+        });
+    }
+
+    private void startTemporary(@Nonnull WorkspaceConfig cfg, @Nonnull String accountId, @Nonnull AsyncCallback<UsersWorkspaceDto> callback) {
+        asyncRequestFactory.createPostRequest(baseHttpUrl + "/runtime", cfg)
+                           .header(ACCEPT, APPLICATION_JSON)
+                           .header(CONTENT_TYPE, APPLICATION_JSON)
+                           .loader(loader, "Creating machine from recipe...")
+                           .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(UsersWorkspaceDto.class)));
     }
 
     @Override
-    public Promise<UsersWorkspaceDto> startById(String id, String envName) {
-        return null;
+    public Promise<UsersWorkspaceDto> startById(final String id, final String envName) {
+        return newPromise(new AsyncPromiseHelper.RequestCall<UsersWorkspaceDto>() {
+            @Override
+            public void makeCall(AsyncCallback<UsersWorkspaceDto> callback) {
+                startById(id, envName, callback);
+            }
+        });
+    }
+
+    private void startById(@Nonnull String id,
+                           @Nullable final String envName,
+                           @Nonnull AsyncCallback<UsersWorkspaceDto> callback) {
+        asyncRequestFactory.createPostRequest(baseHttpUrl + '/' + id + "/runtime?environment=" + envName, null)
+                           .header(ACCEPT, APPLICATION_JSON)
+                           .loader(loader, "Starting workspace...")
+                           .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(UsersWorkspaceDto.class)));
     }
 
     @Override

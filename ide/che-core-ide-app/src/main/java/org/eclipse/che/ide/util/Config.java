@@ -56,13 +56,16 @@ public class Config {
      *
      * @return
      */
-    public static native String getWorkspaceName() /*-{
-        if ($wnd.IDE && $wnd.IDE.config) {
-            return $wnd.IDE.config.workspaceName;
-        } else {
-            return null;
-        }
-    }-*/;
+    public static String getWorkspaceName() {
+        return _workspace.getName();
+    }
+//    public static native String getWorkspaceName() /*-{
+//        if ($wnd.IDE && $wnd.IDE.config) {
+//            return $wnd.IDE.config.workspaceName;
+//        } else {
+//            return null;
+//        }
+//    }-*/;
 
 
     /**
@@ -70,13 +73,16 @@ public class Config {
      *
      * @return
      */
-    public static native String getWorkspaceId() /*-{
-        if ($wnd.IDE && $wnd.IDE.config) {
-            return $wnd.IDE.config.workspaceId;
-        } else {
-            return null;
-        }
-    }-*/;
+    public static String getWorkspaceId() {
+        return _workspace.getId();
+    }
+//    public static native String getWorkspaceId() /*-{
+//        if ($wnd.IDE && $wnd.IDE.config) {
+//            return $wnd.IDE.config.workspaceId;
+//        } else {
+//            return null;
+//        }
+//    }-*/;
 
 
     /**
