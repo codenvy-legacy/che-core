@@ -618,11 +618,9 @@ public class FactoryService extends Service {
                 ProjectConfig moduleConfig = module.getConfig();
                 final Map<String, AttributeValue> moduleAttributes = moduleConfig.getAttributes();
                 final Map<String, List<String>> attributesMap = new LinkedHashMap<>(moduleAttributes.size());
-                if (!moduleAttributes.isEmpty()) {
-                    for (String attrName : moduleAttributes.keySet()) {
-                        attributesMap.put(attrName, moduleAttributes.get(attrName).getList());
-                    }
-                }
+                moduleAttributes.keySet().forEach(attrName ->
+                                                          attributesMap.put(attrName, moduleAttributes.get(attrName).getList())
+                                                 );
                 String parentPath = module.getBaseFolder().getParent().getPath();
                 String moduleRelativePath = module.getPath().substring(parentPath.length());
                 newProject.getModules().add(DtoFactory.newDto(ProjectModule.class).withType(moduleConfig.getTypeId())

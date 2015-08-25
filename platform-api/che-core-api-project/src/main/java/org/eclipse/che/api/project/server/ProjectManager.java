@@ -109,8 +109,8 @@ public interface ProjectManager {
      * Gets Project modules.
      *
      * @param project
-     *         project
-     * @return Set<Project>
+     *         project to get modules of
+     * @return Set<Project> set of modules
      * @throws ServerException
      *         if an error occurs
      *
