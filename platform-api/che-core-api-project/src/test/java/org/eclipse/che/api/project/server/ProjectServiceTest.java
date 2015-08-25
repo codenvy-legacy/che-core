@@ -1697,9 +1697,6 @@ public class ProjectServiceTest {
             @Override
             public void onProjectImported(FolderEntry projectFolder)
                     throws ForbiddenException, ConflictException, ServerException, IOException, NotFoundException {
-                VirtualFileEntry module1 = projectFolder.getChild("module1");
-                pm.addModule(workspace, projectFolder.getPath(), module1.getPath(), new ProjectConfig("ggg", "chuck_project_type"), null, null);
-
             }
 
             @Override

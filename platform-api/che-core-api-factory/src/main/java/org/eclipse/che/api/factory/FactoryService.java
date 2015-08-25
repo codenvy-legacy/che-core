@@ -26,6 +26,7 @@ import org.eclipse.che.api.factory.dto.FactoryV2_1;
 import org.eclipse.che.api.project.server.ProjectConfig;
 import org.eclipse.che.api.project.server.ProjectJson;
 import org.eclipse.che.api.project.server.type.AttributeValue;
+import org.eclipse.che.api.project.shared.dto.ProjectModule;
 import org.eclipse.che.api.project.shared.dto.Source;
 import org.eclipse.che.api.project.server.Project;
 import org.eclipse.che.api.project.server.ProjectManager;
@@ -79,6 +80,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -618,6 +620,23 @@ public class FactoryService extends Service {
 //            if (runners != null) {
 //                newProject.withRunners(DtoConverter.toDto(runners));
 //            }
+
+            for (Project module : projectManager.getProjectModules(project)) {
+                ProjectConfig moduleConfig = module.getConfig();
+                final Map<String, AttributeValue> moduleAttributes = moduleConfig.getAttributes();
+                final Map<String, List<String>> attributesMap = new LinkedHashMap<>(moduleAttributes.size());
+                moduleAttributes.keySet().forEach(attrName ->
+                                                          attributesMap.put(attrName, moduleAttributes.get(attrName).getList())
+                                                 );
+                String parentPath = module.getBaseFolder().getParent().getPath();
+                String moduleRelativePath = module.getPath().substring(parentPath.length());
+                newProject.getModules().add(DtoFactory.newDto(ProjectModule.class).withType(moduleConfig.getTypeId())
+                                                      .withPath(moduleRelativePath)
+                                                      .withAttributes(attributesMap)
+                                                      .withRecipe(moduleConfig.getRecipe())
+                                                      .withMixins(moduleConfig.getMixinTypes())
+                                                      .withDescription(moduleConfig.getDescription()));
+            }
         } catch (IOException e) {
             throw new ServerException(e.getLocalizedMessage());
         }
