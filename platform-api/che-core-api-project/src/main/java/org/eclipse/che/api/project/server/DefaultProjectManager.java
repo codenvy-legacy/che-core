@@ -18,6 +18,7 @@ import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.notification.EventSubscriber;
 import org.eclipse.che.api.project.server.handlers.CreateModuleHandler;
 import org.eclipse.che.api.project.server.handlers.CreateProjectHandler;
+import org.eclipse.che.api.project.server.handlers.GetModulesHandler;
 import org.eclipse.che.api.project.server.handlers.ProjectHandlerRegistry;
 import org.eclipse.che.api.project.server.type.Attribute;
 import org.eclipse.che.api.project.server.type.AttributeValue;
@@ -25,6 +26,7 @@ import org.eclipse.che.api.project.server.type.BaseProjectType;
 import org.eclipse.che.api.project.server.type.ProjectType;
 import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
 import org.eclipse.che.api.project.server.type.Variable;
+import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 
 import org.eclipse.che.api.vfs.server.Path;
@@ -47,9 +49,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -367,6 +372,31 @@ public final class DefaultProjectManager implements ProjectManager {
         } finally {
             miscLocks[index].unlock();
         }
+    }
+
+
+    public Set<Project> getProjectModules(Project parent)
+            throws ServerException, ForbiddenException, ConflictException, IOException, NotFoundException {
+        final List<String> modulePaths = new LinkedList<>();
+        final Set<Project> modules = new LinkedHashSet<>();
+        for (String p : parent.getModules().get()) {
+            String modulePath = p.startsWith("/") ? p : parent.getPath() + "/" + p;
+            modulePaths.add(modulePath);
+        }
+
+        //get modules via handler
+        GetModulesHandler modulesHandler = handlers.getModulesHandler(parent.getConfig().getTypeId());
+        if (modulesHandler != null) {
+            modulesHandler.onGetModules(parent.getBaseFolder(), modulePaths);
+        }
+
+        for (String modulePath : modulePaths) {
+            Project module = this.getProject(parent.getWorkspace(), modulePath);
+            if (module != null && module.getBaseFolder().isProjectFolder()) {
+                modules.add(module);
+            }
+        }
+        return modules;
     }
 
     private ProjectMisc readProjectMisc(Project project) throws ServerException {

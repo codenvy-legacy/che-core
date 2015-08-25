@@ -22,8 +22,10 @@ import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
 import com.google.inject.ImplementedBy;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A manager for codenvy projects.
@@ -101,6 +103,20 @@ public interface ProjectManager {
      * @see ProjectMisc
      */
     ProjectMisc getProjectMisc(Project project) throws ServerException;
+
+
+    /**
+     * Gets Project modules.
+     *
+     * @param project
+     *         project
+     * @return Set<Project>
+     * @throws ServerException
+     *         if an error occurs
+     *
+     */
+    public Set<Project> getProjectModules(Project project)
+            throws ServerException, ForbiddenException, ConflictException, IOException, NotFoundException;
 
     /**
      * Gets ProjectMisc.
