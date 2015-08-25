@@ -18,6 +18,7 @@ import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Collection;
@@ -53,8 +54,34 @@ public class ZipUtils {
         }
     }
 
+    /**
+     * Create an output ZIP stream and add each file to that stream. Directory files are added recursively. The contents
+     * of the zip are written to the given file.
+     * 
+     * @param zip
+     *            The file to write the zip contents to.
+     * @param files
+     *            The files to add to the zip stream.
+     * @throws IOException
+     */
     public static void zipFiles(File zip, File... files) throws IOException {
-        try (ZipOutputStream zipOut = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(zip)))) {
+        try (BufferedOutputStream bufferedOut = new BufferedOutputStream(new FileOutputStream(zip))) {
+            zipFiles(bufferedOut, files);
+        }
+    }
+
+    /**
+     * Create an output ZIP stream and add each file to that stream. Directory files are added recursively. The contents
+     * of the zip are written to the given stream.
+     * 
+     * @param output
+     *            The stream to write the zip contents to.
+     * @param files
+     *            The files to add to the zip stream.
+     * @throws IOException
+     */
+    public static void zipFiles(OutputStream output, File... files) throws IOException {
+        try (ZipOutputStream zipOut = new ZipOutputStream(output)) {
             for (File f : files) {
                 if (f.isDirectory()) {
                     addDirectoryEntry(zipOut, f.getName());
