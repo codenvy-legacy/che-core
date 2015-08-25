@@ -54,8 +54,8 @@ public interface InstanceProvider {
      *         id of creator of machine
      * @param workspaceId
      *         workspace this instance belongs to
-     * @param bindWorkspace
-     *         is workspace should be bound on instance start
+     * @param isDev
+     *         is this machine dev
      * @param displayName
      *         user-friendly machine identifier. Doesn't have to be unique.
      * @param creationLogsOutput
@@ -74,7 +74,7 @@ public interface InstanceProvider {
                             String machineId,
                             String userId,
                             String workspaceId,
-                            boolean bindWorkspace,
+                            boolean isDev,
                             String displayName,
                             int memorySizeMB,
                             LineConsumer creationLogsOutput) throws UnsupportedRecipeException, InvalidRecipeException, MachineException;
@@ -90,8 +90,8 @@ public interface InstanceProvider {
      *         id of creator of machine
      * @param workspaceId
      *         workspace this instance belongs to
-     * @param bindWorkspace
-     *         is workspace should be bound on instance start
+     * @param isDev
+     *         is this machine dev
      * @param displayName
      *         user-friendly machine identifier. Doesn't have to be unique.
      * @param creationLogsOutput
@@ -112,7 +112,7 @@ public interface InstanceProvider {
                             String machineId,
                             String userId,
                             String workspaceId,
-                            boolean bindWorkspace,
+                            boolean isDev,
                             String displayName,
                             Recipe recipe,
                             int memorySizeMB,

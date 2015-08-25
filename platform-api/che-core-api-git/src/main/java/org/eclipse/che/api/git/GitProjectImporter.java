@@ -30,6 +30,7 @@ import org.eclipse.che.api.git.shared.FetchRequest;
 import org.eclipse.che.api.git.shared.InitRequest;
 import org.eclipse.che.api.git.shared.RemoteAddRequest;
 import org.eclipse.che.vfs.impl.fs.LocalPathResolver;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -129,7 +130,7 @@ public class GitProjectImporter implements ProjectImporter {
                     sparsecheckout(git, location, branch == null ? "master" : branch, keepDirectory, dtoFactory);
                     // Copy content of directory to the project folder.
                     final File projectDir = new File(localPath);
-                    IoUtil.copy(new File(temp, keepDirectory), projectDir, IoUtil.ANY_FILTER);
+                    IoUtil.copy(temp, projectDir, IoUtil.ANY_FILTER);
                 } finally {
                     FileCleaner.addFile(temp);
                 }
@@ -273,10 +274,8 @@ public class GitProjectImporter implements ProjectImporter {
         git.getConfig().add("core.sparsecheckout", "true");
         final File workingDir = git.getWorkingDir();
         final File sparseCheckout = new File(workingDir, ".git" + File.separator + "info" + File.separator + "sparse-checkout");
-        try {
-            try (BufferedWriter writer = Files.newBufferedWriter(sparseCheckout.toPath(), Charset.forName("UTF-8"))) {
-                writer.write(directory);
-            }
+        try (BufferedWriter writer = Files.newBufferedWriter(sparseCheckout.toPath(), Charset.forName("UTF-8"))) {
+            writer.write(directory);
         } catch (IOException e) {
             throw new GitException(e);
         }

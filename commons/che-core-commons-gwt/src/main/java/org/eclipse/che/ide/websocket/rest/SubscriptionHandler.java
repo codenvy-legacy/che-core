@@ -10,11 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.ide.websocket.rest;
 
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.commons.exception.UnmarshallerException;
 import org.eclipse.che.ide.websocket.Message;
 import org.eclipse.che.ide.websocket.events.MessageHandler;
 import org.eclipse.che.ide.websocket.rest.exceptions.ServerException;
+
+import java.util.List;
 
 /**
  * Handler to receive messages by subscription.
@@ -80,9 +81,8 @@ public abstract class SubscriptionHandler<T> implements MessageHandler {
      * @return <code>true</code> if message is successful and <code>false</code> if not
      */
     protected final boolean isSuccessful(Message message) {
-        Array<Pair> headers = message.getHeaders();
-        for (int i = 0; i < headers.size(); i++) {
-            Pair header = headers.get(i);
+        List<Pair> headers = message.getHeaders().toList();
+        for (Pair header : headers) {
             if ("x-everrest-websocket-message-type".equals(header.getName()) && "none".equals(header.getValue())) {
                 return true;
             }

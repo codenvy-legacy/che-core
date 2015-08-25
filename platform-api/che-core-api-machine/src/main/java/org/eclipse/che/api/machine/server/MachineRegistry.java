@@ -74,7 +74,7 @@ public class MachineRegistry {
      */
     public synchronized Instance getDevMachine(String workspaceId) throws NotFoundException, MachineException {
         for (Instance instance : instances.values()) {
-            if (instance.getWorkspaceId().equals(workspaceId) && instance.isWorkspaceBound()) {
+            if (instance.getWorkspaceId().equals(workspaceId) && instance.isDev()) {
                 return instance;
             }
         }
@@ -149,6 +149,6 @@ public class MachineRegistry {
 
     private MachineImpl getState(Instance instance) {
         return new MachineImpl(instance.getId(), instance.getType(), instance.getRecipe(), instance.getWorkspaceId(), instance.getOwner(),
-                                instance.isWorkspaceBound(), instance.getDisplayName(), instance.getMemorySize(), instance.getStatus());
+                                instance.isDev(), instance.getDisplayName(), instance.getMemorySize(), instance.getStatus());
     }
 }

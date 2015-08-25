@@ -28,8 +28,6 @@ import org.eclipse.che.ide.api.event.ProjectActionEvent.ProjectAction;
 import org.eclipse.che.ide.api.parts.base.BaseView;
 import org.eclipse.che.ide.api.project.tree.AbstractTreeNode;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.ui.tree.Tree;
 import org.eclipse.che.ide.ui.tree.TreeNodeElement;
 import org.eclipse.che.ide.util.input.SignalEvent;
@@ -166,11 +164,10 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
     }
 
     @Override
-    public Array<TreeNode<?>> getOpenedTreeNodes() {
-        Array<TreeNodeElement<TreeNode<?>>> treeNodes = tree.getVisibleTreeNodes();
-        Array<TreeNode<?>> openedNodes = Collections.createArray();
-        for (int i = 0; i < treeNodes.size(); i++) {
-            TreeNodeElement<TreeNode<?>> treeNodeElement = treeNodes.get(i);
+    public List<TreeNode<?>> getOpenedTreeNodes() {
+        List<TreeNodeElement<TreeNode<?>>> treeNodes = tree.getVisibleTreeNodes();
+        List<TreeNode<?>> openedNodes = new ArrayList<>();
+        for (TreeNodeElement<TreeNode<?>> treeNodeElement : treeNodes) {
             if (treeNodeElement.isOpen()) {
                 openedNodes.add(treeNodeElement.getData());
             }
@@ -180,7 +177,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
 
     /** {@inheritDoc} */
     @Override
-    public void setRootNodes(@Nonnull final Array<TreeNode<?>> rootNodes, @Nonnull ProjectAction projectAction) {
+    public void setRootNodes(@Nonnull final List<TreeNode<?>> rootNodes, @Nonnull ProjectAction projectAction) {
         switch (projectAction) {
             case OPENED:
                 TreeNode<?> openedNode = rootNodes.get(0);
@@ -233,7 +230,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
 
     /** {@inheritDoc} */
     @Override
-    public void setRootNodes(@Nonnull Array<TreeNode<?>> rootNodes) {
+    public void setRootNodes(@Nonnull List<TreeNode<?>> rootNodes) {
         rootNode.setChildren(rootNodes);
 
         defineParent(rootNodes);
@@ -251,13 +248,13 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
     @Override
     public void updateNode(@Nonnull TreeNode<?> oldNode, @Nonnull TreeNode<?> newNode) {
         // get currently selected node
-        final Array<TreeNode<?>> selectedNodes = tree.getSelectionModel().getSelectedNodes();
+        final List<TreeNode<?>> selectedNodes = tree.getSelectionModel().getSelectedNodes();
         TreeNode<?> selectedNode = null;
         if (!selectedNodes.isEmpty()) {
             selectedNode = selectedNodes.get(0);
         }
 
-        Array<Array<String>> pathsToExpand = tree.replaceSubtree(oldNode, newNode, false);
+        List<List<String>> pathsToExpand = tree.replaceSubtree(oldNode, newNode, false);
         tree.expandPaths(pathsToExpand, false);
 
         // restore selected node
@@ -335,7 +332,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
     }
 
     @Nonnull
-    public Array<TreeNode<?>> getSelectedNodes() {
+    public List<TreeNode<?>> getSelectedNodes() {
         return tree.getSelectionModel().getSelectedNodes();
     }
 

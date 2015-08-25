@@ -11,12 +11,25 @@
 
 /*Tabs*/
 
+/** Tab panel background */
+@eval tabsPanelBackground org.eclipse.che.ide.api.theme.Style.getTabsPanelBackground();
+
+/** Tab button border color */
 @eval tabBorder org.eclipse.che.ide.api.theme.Style.getTabBorderColor();
-@eval inactiveTabBackground org.eclipse.che.ide.api.theme.Style.getInactiveTabBackground();
-@eval inactiveTabBorderColor org.eclipse.che.ide.api.theme.Style.getInactiveTabBorderColor();
+
+/** Tab button text color */
+@eval tabTextColor org.eclipse.che.ide.api.theme.Style.getTabTextColor();
+
+/** Hovered tab button text color */
+@eval hoveredTabTextColor org.eclipse.che.ide.api.theme.Style.getHoveredTabTextColor();
+
 @eval activeTabBackground org.eclipse.che.ide.api.theme.Style.getActiveTabBackground();
 @eval activeTabBorderColor org.eclipse.che.ide.api.theme.Style.getActiveTabBorderColor();
-@eval tabsPanelBackground org.eclipse.che.ide.api.theme.Style.getTabsPanelBackground();
+@eval activeTabTextColor org.eclipse.che.ide.api.theme.Style.getActiveTabTextColor();
+
+@eval inactiveTabBackground org.eclipse.che.ide.api.theme.Style.getInactiveTabBackground();
+@eval inactiveTabBorderColor org.eclipse.che.ide.api.theme.Style.getInactiveTabBorderColor();
+
 @eval highlightFocus org.eclipse.che.ide.api.theme.Style.getHighlightFocus();
 
 @eval hoverBackgroundColor org.eclipse.che.ide.api.theme.Style.getHoverBackgroundColor();
@@ -134,7 +147,6 @@
 @def fontMenuSize 12px;
 
 @eval mainFontColor org.eclipse.che.ide.api.theme.Style.getMainFontColor();
-@eval tabFontColor org.eclipse.che.ide.api.theme.Style.getTabFontColor();
 @eval welcomeFontColor org.eclipse.che.ide.api.theme.Style.getWelcomeFontColor();
 @eval captionFontColor org.eclipse.che.ide.api.theme.Style.getCaptionFontColor();
 @eval factoryLinkColor org.eclipse.che.ide.api.theme.Style.getFactoryLinkColor();
@@ -144,7 +156,6 @@
 /*Toolbar*/
 @eval toolbarBackgroundColor org.eclipse.che.ide.api.theme.Style.getToolbarBackgroundColor();
 @eval toolbarIconColor org.eclipse.che.ide.api.theme.Style.getToolbarIconColor();
-
 @eval tooltipBackgroundColor org.eclipse.che.ide.api.theme.Style.getTooltipBackgroundColor();
 
 /* DialogBox*/

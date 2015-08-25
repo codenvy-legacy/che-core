@@ -17,7 +17,6 @@ import elemental.html.TableElement;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
 
 import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.ui.list.SimpleList;
 import org.eclipse.che.ide.ui.window.Window;
 import org.eclipse.che.ide.util.dom.Elements;
@@ -33,6 +32,8 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
+import java.util.List;
 
 /**
  * The implementation of {@link OpenProjectView}.
@@ -142,7 +143,7 @@ public class OpenProjectViewImpl extends Window implements OpenProjectView {
 
     /** {@inheritDoc} */
     @Override
-    public void setProjects(Array<ProjectReference> projects) {
+    public void setProjects(List<ProjectReference> projects) {
         list.render(projects);
     }
 

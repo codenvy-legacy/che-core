@@ -10,10 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.ide.rest;
 
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.dto.DtoFactory;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
+import java.util.List;
 
 /**
  * Provides implementations of Unmarshallable instances to
@@ -52,7 +53,7 @@ public class DtoUnmarshallerFactory {
      * @return new instance of {@link org.eclipse.che.ide.rest.Unmarshallable}
      * @see org.eclipse.che.dto.shared.DTO
      */
-    public <T> org.eclipse.che.ide.rest.Unmarshallable<Array<T>> newArrayUnmarshaller(Class<T> dtoType) {
+    public <T> org.eclipse.che.ide.rest.Unmarshallable<List<T>> newListUnmarshaller(Class<T> dtoType) {
         return new DtoUnmarshaller<>(dtoType, dtoFactory);
     }
 
@@ -71,14 +72,14 @@ public class DtoUnmarshallerFactory {
 
     /**
      * Create new instance of {@link org.eclipse.che.ide.websocket.rest.Unmarshallable}
-     * to deserialize WebSocket message to {@link Array} of DTO.
+     * to deserialize WebSocket message to {@link List} of DTO.
      *
      * @param dtoType
      *         type of DTO
      * @return new instance of {@link org.eclipse.che.ide.websocket.rest.Unmarshallable}
      * @see org.eclipse.che.dto.shared.DTO
      */
-    public <T> org.eclipse.che.ide.websocket.rest.Unmarshallable<Array<T>> newWSArrayUnmarshaller(Class<T> dtoType) {
+    public <T> org.eclipse.che.ide.websocket.rest.Unmarshallable<List<T>> newWSListUnmarshaller(Class<T> dtoType) {
         return new org.eclipse.che.ide.websocket.rest.DtoUnmarshaller<>(dtoType, dtoFactory);
     }
 }

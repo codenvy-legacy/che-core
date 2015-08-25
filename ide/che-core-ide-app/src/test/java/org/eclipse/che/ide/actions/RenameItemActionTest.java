@@ -22,7 +22,6 @@ import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.part.projectexplorer.ProjectListStructure;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
@@ -45,7 +44,9 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -103,13 +104,13 @@ public class RenameItemActionTest {
     private MessageDialog                    messageDialog;
     /*
     @Mock
-    private Unmarshallable<Array<ApplicationProcessDescriptor>> unmarshaller;
+    private Unmarshallable<List<ApplicationProcessDescriptor>> unmarshaller;
     @Mock
-    private Array<ApplicationProcessDescriptor>                 descriptors;
+    private List<ApplicationProcessDescriptor>                 descriptors;
     @Mock
-    private Iterable<ApplicationProcessDescriptor>              iterable;
+    private Iterable<ApplicationProcessDescriptor>             iterable;
     @Mock
-    private Iterator<ApplicationProcessDescriptor>              iterator;
+    private Iterator<ApplicationProcessDescriptor>             iterator;
     @Mock
     private ApplicationProcessDescriptor                        applicationProcessDescriptor;
     */
@@ -289,6 +290,7 @@ public class RenameItemActionTest {
         verify(selection).getHeadElement();
 /*
         verify(projectNode).getParent();
+
         verify(dtoUnmarshallerFactory).newArrayUnmarshaller(ApplicationProcessDescriptor.class);
         verify(runnerServiceClient).getRunningProcesses(eq(TEXT), processDescriptorArgCaptor.capture());
         AsyncRequestCallback<Array<ApplicationProcessDescriptor>> callback = processDescriptorArgCaptor.getValue();

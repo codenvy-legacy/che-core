@@ -16,8 +16,9 @@
 
     <ui:style>
         .tabsPanel {
-            margin-top: 3px;
-            background: #373737;
+            padding-top: 3px;
+            /*background: #373737;*/
+            background-color: #21252b;
             border-bottom: 1px solid #232323;
         }
 

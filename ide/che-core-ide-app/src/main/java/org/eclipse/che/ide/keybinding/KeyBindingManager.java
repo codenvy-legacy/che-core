@@ -23,7 +23,6 @@ import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
 import org.eclipse.che.ide.api.keybinding.Scheme;
 import org.eclipse.che.ide.api.parts.PerspectiveManager;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.browser.UserAgent;
 import org.eclipse.che.ide.util.dom.Elements;
@@ -33,6 +32,8 @@ import org.eclipse.che.ide.util.input.SignalEventUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import java.util.List;
 
 /**
  * Implementation of the {@link KeyBindingAgent}.
@@ -74,7 +75,7 @@ public class KeyBindingManager implements KeyBindingAgent {
                 //handle event in active scheme
                 int digest = CharCodeWithModifiers.computeKeyDigest(signalEvent);
 
-                Array<String> actionIds = activeScheme.getActionIds(digest);
+                List<String> actionIds = activeScheme.getActionIds(digest);
 
                 if (!actionIds.isEmpty()) {
                     runActions(actionIds, event);
@@ -102,8 +103,8 @@ public class KeyBindingManager implements KeyBindingAgent {
      * @param actionIds list containing action ids
      * @param keyEvent original key event
      */
-    private void runActions(Array<String> actionIds, Event keyEvent) {
-        for (String actionId : actionIds.asIterable()) {
+    private void runActions(List<String> actionIds, Event keyEvent) {
+        for (String actionId : actionIds) {
             Action action = actionManager.getAction(actionId);
             if (action == null) {
                 continue;

@@ -65,25 +65,39 @@ public interface Theme {
     String getInactiveTabBorderColor();
 
     /**
-     * Background color for active (selected part button)
+     * Background color for active (selected) part button
      *
      * @return the color
      */
     String getActiveTabBackground();
 
     /**
-     * Border color for active (selected part button)
+     * Border color for active (selected) part button
      *
      * @return the color
      */
     String getActiveTabBorderColor();
 
     /**
-     * Font color for active(slected) tab.
+     * Text color for active (selected) part button
      *
      * @return the color
      */
-    String getTabFontColor();
+    String getActiveTabTextColor();
+
+    /**
+     * Text color for part button.
+     *
+     * @return the color
+     */
+    String getTabTextColor();
+
+    /**
+     * Text color for hovered part button.
+     *
+     * @return the color
+     */
+    String getHoveredTabTextColor();
 
     /**
      * Background color of part stack panel(where placed part button)

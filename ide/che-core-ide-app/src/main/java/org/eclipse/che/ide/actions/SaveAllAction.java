@@ -22,9 +22,11 @@ import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorInput;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.editor.EditorWithAutoSave;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.util.loging.Log;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /** @author Evgen Vidolob */
 @Singleton
@@ -44,12 +46,12 @@ public class SaveAllAction extends ProjectAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
-        Array<EditorPartPresenter> values = editorAgent.getOpenedEditors().getValues();
-        Array<EditorPartPresenter> editors = Collections.createArray(values.asIterable());
+        Collection<EditorPartPresenter> values = editorAgent.getOpenedEditors().values();
+        List<EditorPartPresenter> editors = new ArrayList<>(values);
         save(editors);
     }
 
-    private void save(final Array<EditorPartPresenter> editors) {
+    private void save(final List<EditorPartPresenter> editors) {
         if (editors.isEmpty()) {
             return;
         }
@@ -82,7 +84,7 @@ public class SaveAllAction extends ProjectAction {
     public void updateProjectAction(ActionEvent e) {
 //        e.getPresentation().setVisible(true);
         boolean hasDirtyEditor = false;
-        for (EditorPartPresenter editor : editorAgent.getOpenedEditors().getValues().asIterable()) {
+        for (EditorPartPresenter editor : editorAgent.getOpenedEditors().values()) {
             if(editor instanceof EditorWithAutoSave) {
                 if (((EditorWithAutoSave)editor).isAutoSaveEnabled()) {
                     continue;

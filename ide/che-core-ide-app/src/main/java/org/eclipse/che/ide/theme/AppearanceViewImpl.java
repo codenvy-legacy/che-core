@@ -11,7 +11,6 @@
 package org.eclipse.che.ide.theme;
 
 import org.eclipse.che.ide.api.theme.Theme;
-import org.eclipse.che.ide.collections.Array;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.uibinder.client.UiBinder;
@@ -20,6 +19,8 @@ import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Widget;
+
+import java.util.List;
 
 /**
  * @author Evgen Vidolob
@@ -48,10 +49,10 @@ public class AppearanceViewImpl implements AppearanceView {
     }
 
     @Override
-    public void setThemes(Array<Theme> themes, String currentThemeId) {
+    public void setThemes(List<Theme> themes, String currentThemeId) {
         themeBox.clear();
 
-        for (Theme t : themes.asIterable()) {
+        for (Theme t : themes) {
             themeBox.addItem(t.getDescription(), t.getId());
             if (t.getId().equals(currentThemeId)) {
                 themeBox.setSelectedIndex(themes.indexOf(t));

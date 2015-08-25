@@ -27,7 +27,6 @@ import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistrar;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistry;
 import org.eclipse.che.ide.api.wizard.Wizard;
 import org.eclipse.che.ide.api.wizard.WizardPage;
-import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.projecttype.wizard.ProjectWizard;
 import org.eclipse.che.ide.projecttype.wizard.ProjectWizardFactory;
@@ -38,6 +37,7 @@ import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode.CREATE;
@@ -250,9 +250,9 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
             throw new IllegalStateException("WizardRegistrar for the project type " + projectType.getId() + " isn't registered.");
         }
 
-        Array<Provider<? extends WizardPage<ImportProject>>> pageProviders = wizardRegistrar.getWizardPages();
+        List<Provider<? extends WizardPage<ImportProject>>> pageProviders = wizardRegistrar.getWizardPages();
         final ProjectWizard projectWizard = createDefaultWizard(null, wizardMode);
-        for (Provider<? extends WizardPage<ImportProject>> provider : pageProviders.asIterable()) {
+        for (Provider<? extends WizardPage<ImportProject>> provider : pageProviders) {
             projectWizard.addPage(provider.get(), 1, false);
         }
 

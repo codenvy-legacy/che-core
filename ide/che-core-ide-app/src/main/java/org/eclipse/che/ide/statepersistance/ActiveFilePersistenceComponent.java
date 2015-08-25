@@ -18,13 +18,13 @@ import org.eclipse.che.ide.actions.OpenFileAction;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
-import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.NavigableMap;
 
 import static org.eclipse.che.ide.actions.OpenFileAction.FILE_PARAM_ID;
 
@@ -57,7 +57,7 @@ public class ActiveFilePersistenceComponent implements PersistenceComponent {
         final EditorAgent editorAgent = editorAgentProvider.get();
         final List<ActionDescriptor> actions = new ArrayList<>();
         final String openFileActionId = actionManager.getId(openFileAction);
-        final StringMap<EditorPartPresenter> openedEditors = editorAgent.getOpenedEditors();
+        final NavigableMap<String, EditorPartPresenter> openedEditors = editorAgent.getOpenedEditors();
         final EditorPartPresenter activeEditor = editorAgent.getActiveEditor();
 
         if (activeEditor != null) {

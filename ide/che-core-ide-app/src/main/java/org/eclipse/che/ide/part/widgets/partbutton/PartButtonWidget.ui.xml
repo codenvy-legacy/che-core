@@ -14,25 +14,6 @@
              xmlns:g='urn:import:com.google.gwt.user.client.ui'>
 
     <ui:style>
-        .main {
-            width: 82px;
-            height: 17px;
-            font-size: 11px;
-            cursor: pointer;
-            float: left;
-            text-shadow: 0 1px 0 rgba(0, 0, 0, 1);
-        }
-
-        .main:hover {
-            background: #818181 !important;
-        }
-
-        .main::before {
-            content: "";
-            width: 100%;
-            height: 1px;
-            background: #47afdd;
-        }
 
         .icon {
             float: left;
@@ -42,9 +23,10 @@
             margin-top: 2px;
             float: left;
         }
+
     </ui:style>
 
-    <g:DockLayoutPanel addStyleNames="{style.main}">
+    <g:DockLayoutPanel>
         <g:west size="20">
             <g:SimplePanel ui:field="icon" addStyleNames="{style.icon}"/>
         </g:west>

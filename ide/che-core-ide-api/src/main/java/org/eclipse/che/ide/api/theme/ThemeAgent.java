@@ -10,9 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.theme;
 
-import org.eclipse.che.ide.collections.Array;
-
 import javax.annotation.Nonnull;
+import java.util.List;
 
 /**
  * Manages UI Themes
@@ -45,7 +44,7 @@ public interface ThemeAgent {
     /**
      * @return all known themes
      */
-    Array<Theme> getThemes();
+    List<Theme> getThemes();
 
     /**
      * @return current theme

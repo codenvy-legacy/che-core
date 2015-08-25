@@ -18,8 +18,6 @@ import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.api.project.tree.TreeSettings;
 import org.eclipse.che.ide.api.project.tree.TreeStructure;
 import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
-import org.eclipse.che.ide.collections.Array;
-import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.Unmarshallable;
@@ -28,6 +26,8 @@ import com.google.inject.Inject;
 import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Structure for displaying list of all projects from the workspace.
@@ -48,13 +48,13 @@ public class ProjectListStructure implements TreeStructure {
 
     /** {@inheritDoc} */
     @Override
-    public void getRootNodes(@Nonnull final AsyncCallback<Array<TreeNode<?>>> callback) {
-        Unmarshallable<Array<ProjectReference>> unmarshaller = dtoUnmarshallerFactory.newArrayUnmarshaller(ProjectReference.class);
-        projectServiceClient.getProjects(new AsyncRequestCallback<Array<ProjectReference>>(unmarshaller) {
+    public void getRootNodes(@Nonnull final AsyncCallback<List<TreeNode<?>>> callback) {
+        Unmarshallable<List<ProjectReference>> unmarshaller = dtoUnmarshallerFactory.newListUnmarshaller(ProjectReference.class);
+        projectServiceClient.getProjects(new AsyncRequestCallback<List<ProjectReference>>(unmarshaller) {
             @Override
-            protected void onSuccess(Array<ProjectReference> result) {
-                Array<TreeNode<?>> array = Collections.createArray();
-                for (ProjectReference projectReference : result.asIterable()) {
+            protected void onSuccess(List<ProjectReference> result) {
+                List<TreeNode<?>> array = new ArrayList<>();
+                for (ProjectReference projectReference : result) {
                     array.add(new ProjectNode(null, projectReference, eventBus, projectServiceClient));
                 }
                 callback.onSuccess(array);

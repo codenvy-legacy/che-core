@@ -37,6 +37,7 @@ import org.eclipse.che.api.project.shared.dto.ImportSourceDescriptor;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.NewProject;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.api.project.shared.dto.ProjectModule;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.api.project.shared.dto.ProjectUpdate;
 import org.eclipse.che.api.project.shared.dto.Source;
@@ -167,8 +168,10 @@ public class ProjectServiceTest {
         };
 
         Set<ProjectType> projTypes = new HashSet<>();
-        projTypes.add(new MyProjType());
+        projTypes.add(new MyProjType("my_project_type", "my project type"));
+        projTypes.add(new MyProjType("module_type", "module type"));
         projTypes.add(chuck);
+
         ProjectTypeRegistry ptRegistry = new ProjectTypeRegistry(projTypes);
 
         phRegistry = new ProjectHandlerRegistry(new HashSet<ProjectHandler>());
@@ -1636,7 +1639,6 @@ public class ProjectServiceTest {
     @Test
     public void testImportProjectWithModules() throws Exception {
 
-
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
         ZipOutputStream zipOut = new ZipOutputStream(bout);
         zipOut.putNextEntry(new ZipEntry("module1/"));
@@ -1644,8 +1646,8 @@ public class ProjectServiceTest {
         zipOut.write("to be or not to be".getBytes());
         zipOut.putNextEntry(new ZipEntry(Constants.CODENVY_DIR + "/"));
         zipOut.putNextEntry(new ZipEntry(Constants.CODENVY_PROJECT_FILE_RELATIVE_PATH));
-        zipOut.write(("{\"type\":\"chuck_project_type\"," +
-                      "\"description\":\"import test\"," +
+        zipOut.write(("{\"type\":\"chuck_project_type_old\"," +
+                      "\"description\":\"import test old\"," +
                       "\"attributes\":{\"x\": [\"a\",\"b\"]}}").getBytes());
         zipOut.close();
         final InputStream zip = new ByteArrayInputStream(bout.toByteArray());
@@ -1710,10 +1712,22 @@ public class ProjectServiceTest {
 
         Map<String, List<String>> headers = new HashMap<>();
         headers.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
-        byte[] b = String.format("{\"source\":{\"project\":{\"location\":null,\"type\":\"%s\",\"parameters\":{}},\"runners\":{}}}", importType).getBytes();
+        Source source = DtoFactory.newDto(Source.class).withProject(
+                DtoFactory.newDto(ImportSourceDescriptor.class).withLocation(null).withType(importType));
+
+        ProjectModule pModule =
+                DtoFactory.newDto(ProjectModule.class).withPath("/module1").withType("module_type").withDescription("module description");
+
+        NewProject project =
+                DtoFactory.newDto(NewProject.class).withVisibility("public").withDescription("import test").withType("chuck_project_type")
+                          .withModules(Arrays.asList(pModule));
+
+        ImportProject importProject = DtoFactory.newDto(ImportProject.class).
+                                           withSource(source).withProject(project);
+
         ContainerResponse response = launcher.service(HttpMethod.POST,
                                                       String.format("http://localhost:8080/api/project/%s/import/new_project", workspace),
-                                                      "http://localhost:8080/api", headers, b, null);
+                                                      "http://localhost:8080/api", headers, JsonHelper.toJson(importProject).getBytes(), null);
         assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
         ImportResponse importResponse = (ImportResponse)response.getEntity();
         ProjectDescriptor descriptor = importResponse.getProjectDescriptor();
@@ -1727,8 +1741,10 @@ public class ProjectServiceTest {
         assertNotNull(module);
         ProjectConfig moduleConfig = module.getConfig();
         assertNotNull(moduleConfig);
-        assertEquals(moduleConfig.getTypeId(), "chuck_project_type");
+        assertEquals(moduleConfig.getTypeId(), "module_type");
+        assertEquals(moduleConfig.getDescription(), "module description");
     }
+
 
 
     @Test
@@ -3032,11 +3048,9 @@ public class ProjectServiceTest {
 
 
     private class MyProjType extends ProjectType {
-        private MyProjType() {
-
-            super("my_project_type", "my project type", true, false);
+        private MyProjType(String typeId, String typeName) {
+            super(typeId, typeName, true, false);
             addConstantDefinition("my_attribute", "Constant", "attribute value 1");
-
         }
     }
 

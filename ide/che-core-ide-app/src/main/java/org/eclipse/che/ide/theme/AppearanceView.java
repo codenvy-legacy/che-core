@@ -12,14 +12,15 @@ package org.eclipse.che.ide.theme;
 
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.theme.Theme;
-import org.eclipse.che.ide.collections.Array;
+
+import java.util.List;
 
 /**
  * @author Evgen Vidolob
  */
 public interface AppearanceView extends View<AppearanceView.ActionDelegate> {
 
-    void setThemes(Array<Theme> themes, String currentThemeId);
+    void setThemes(List<Theme> themes, String currentThemeId);
 
     public interface ActionDelegate {
 

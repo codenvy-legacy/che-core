@@ -11,6 +11,8 @@
 package org.eclipse.che.api.machine.shared;
 
 
+import org.eclipse.che.api.core.model.machine.Command;
+
 /**
  * Command that can be used to create {@link Process} in a machine
  *

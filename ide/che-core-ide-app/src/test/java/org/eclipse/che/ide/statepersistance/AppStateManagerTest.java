@@ -20,6 +20,7 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.PromiseError;
+import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
@@ -110,7 +111,7 @@ public class AppStateManagerTest {
     @Mock
     private AppState                     appState;
     @Mock
-    private WorkspaceDescriptor          workspaceDescriptor;
+    private UsersWorkspaceDto            workspaceDescriptor;
     @Mock
     private RecentProject                recentProject;
     @Mock

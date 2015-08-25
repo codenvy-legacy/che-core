@@ -17,4 +17,7 @@
     <inherits name="com.google.gwt.json.JSON"/>
     <source path='core/rest/shared'/>
     <source path='core/gwt'/>
+    <source path='core/model/workspace'/>
+    <source path='core/model/machine'/>
+    <source path='core/model/project'/>
 </module>
