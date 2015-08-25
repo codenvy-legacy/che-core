@@ -11,6 +11,8 @@
 package org.eclipse.che.git.impl.nativegit.commands;
 
 import org.eclipse.che.api.git.GitException;
+import org.eclipse.che.git.impl.nativegit.CredentialsLoader;
+import org.eclipse.che.git.impl.nativegit.GitAskPassScript;
 import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
 
 import java.io.File;
@@ -24,8 +26,8 @@ public class CloneCommand extends RemoteOperationCommand<Void> {
 
     private String remoteName;
 
-    public CloneCommand(File repository, GitSshScriptProvider gitSshScriptProvider) {
-        super(repository, gitSshScriptProvider);
+    public CloneCommand(File repository, GitSshScriptProvider gitSshScriptProvider, CredentialsLoader credentialsLoader, GitAskPassScript gitAskPassScript) {
+        super(repository, gitSshScriptProvider, credentialsLoader, gitAskPassScript);
     }
 
     /** @see GitCommand#execute() */
