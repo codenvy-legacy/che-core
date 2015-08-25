@@ -25,11 +25,4 @@ public interface LsRemoteRequest extends GitRequest {
     void setRemoteUrl(String remoteUrl);
 
     LsRemoteRequest withRemoteUrl(String remoteUrl);
-
-    /** @return true if request require authorization, false otherwise. */
-    boolean isUseAuthorization();
-
-    void setUseAuthorization(boolean useAuthorization);
-
-    LsRemoteRequest withUseAuthorization(boolean useAuthorization);
 }
