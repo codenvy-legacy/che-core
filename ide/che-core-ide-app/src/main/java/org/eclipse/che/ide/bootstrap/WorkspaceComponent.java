@@ -55,12 +55,28 @@ public class WorkspaceComponent implements Component {
 
     @Override
     public void start(final Callback<Component, Exception> callback) {
-        workspaceServiceClient.startTemporary(getWorkspaceConfig(), null).then(new Operation<UsersWorkspaceDto>() {
+        workspaceServiceClient.getWorkspaces(0, 0).then(new Operation<List<UsersWorkspaceDto>>() {
             @Override
-            public void apply(UsersWorkspaceDto arg) throws OperationException {
-                Config.setCurrentWorkspace(arg);
-                appContext.setWorkspace(arg);
-                callback.onSuccess(WorkspaceComponent.this);
+            public void apply(List<UsersWorkspaceDto> arg) throws OperationException {
+                if (!arg.isEmpty()) {
+                    Config.setCurrentWorkspace(arg.get(0));
+                    appContext.setWorkspace(arg.get(0));
+                    callback.onSuccess(WorkspaceComponent.this);
+                } else {
+                    workspaceServiceClient.startTemporary(getWorkspaceConfig(), null).then(new Operation<UsersWorkspaceDto>() {
+                        @Override
+                        public void apply(UsersWorkspaceDto arg) throws OperationException {
+                            Config.setCurrentWorkspace(arg);
+                            appContext.setWorkspace(arg);
+                            callback.onSuccess(WorkspaceComponent.this);
+                        }
+                    }).catchError(new Operation<PromiseError>() {
+                        @Override
+                        public void apply(PromiseError arg) throws OperationException {
+                            callback.onFailure(new Exception(arg.getCause()));
+                        }
+                    });
+                }
             }
         }).catchError(new Operation<PromiseError>() {
             @Override
@@ -74,8 +90,8 @@ public class WorkspaceComponent implements Component {
         final String recipeURL =
                 "https://gist.githubusercontent.com/evoevodin/100608a19c255cec28df/raw/0c2fafa2e918abfc22eb6d694f068b6d3ff1d2d0/dockerfile-test";
 
-        List<MachineConfigDto> machineConfigDtos = new ArrayList<>();
-        machineConfigDtos.add(dtoFactory.createDto(MachineConfigDto.class)
+        List<MachineConfigDto> machineConfigs = new ArrayList<>();
+        machineConfigs.add(dtoFactory.createDto(MachineConfigDto.class)
                                         .withName("dev-machine")
                                         .withType("docker")
                                         .withSource(dtoFactory.createDto(MachineSourceDto.class)
@@ -93,7 +109,7 @@ public class WorkspaceComponent implements Component {
         attrs.put("fake_attr", "attr_value");
 
         Map<String, EnvironmentDto> environments = new HashMap<>();
-        environments.put("dev-env", dtoFactory.createDto(EnvironmentDto.class).withName("dev-env").withMachineConfigs(machineConfigDtos));
+        environments.put("dev-env", dtoFactory.createDto(EnvironmentDto.class).withName("dev-env").withMachineConfigs(machineConfigs));
 
         return dtoFactory.createDto(WorkspaceConfigDto.class)
                          .withName("dev-cfg")

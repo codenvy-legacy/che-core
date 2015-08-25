@@ -14,6 +14,8 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
+import org.eclipse.che.api.promises.client.Function;
+import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
 import org.eclipse.che.api.workspace.shared.dto.CommandDto;
@@ -28,6 +30,7 @@ import org.eclipse.che.ide.rest.RestContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.eclipse.che.api.promises.client.callback.PromiseHelper.newCallback;
@@ -89,7 +92,29 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
 
     @Override
     public Promise<List<UsersWorkspaceDto>> getWorkspaces(Integer skip, Integer limit) {
-        return null;
+        return newPromise(new AsyncPromiseHelper.RequestCall<List<UsersWorkspaceDto>>() {
+            @Override
+            public void makeCall(AsyncCallback<List<UsersWorkspaceDto>> callback) {
+                getWorkspaces(callback);
+            }
+        }).then(new Function<List<UsersWorkspaceDto>, List<UsersWorkspaceDto>>() {
+            @Override
+            public List<UsersWorkspaceDto> apply(List<UsersWorkspaceDto> arg) throws FunctionException {
+                final List<UsersWorkspaceDto> descriptors = new ArrayList<>();
+                for (UsersWorkspaceDto descriptor : arg) {
+                    descriptors.add(descriptor);
+                }
+                return descriptors;
+            }
+        });
+    }
+
+    private void getWorkspaces(@Nonnull AsyncCallback<List<UsersWorkspaceDto>> callback) {
+        final String url = baseHttpUrl;
+        asyncRequestFactory.createGetRequest(url)
+                           .header(ACCEPT, APPLICATION_JSON)
+                           .loader(loader, "Getting info about bound workspaces...")
+                           .send(newCallback(callback, dtoUnmarshallerFactory.newListUnmarshaller(UsersWorkspaceDto.class)));
     }
 
     @Override
