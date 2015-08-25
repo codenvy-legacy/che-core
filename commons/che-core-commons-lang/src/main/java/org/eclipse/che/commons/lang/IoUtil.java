@@ -74,7 +74,7 @@ public class IoUtil {
         while ((r = inputStream.read(buf)) != -1) {
             bout.write(buf, 0, r);
         }
-        return bout.toString();
+        return bout.toString("UTF-8");
     }
 
     /**
