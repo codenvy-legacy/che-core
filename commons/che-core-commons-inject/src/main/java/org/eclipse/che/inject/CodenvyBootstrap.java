@@ -193,7 +193,7 @@ public class CodenvyBootstrap extends EverrestGuiceContextListener {
         }
 
         protected <K, V> void bindProperties(String prefix, Iterable<Map.Entry<K, V>> properties) {
-            StringBuilder buf = null;
+            StringBuilder buf = new StringBuilder();
             for (Map.Entry<K, V> e : properties) {
                 String pValue = (String)e.getValue();
                 if ("NULL".equals(pValue)) {
@@ -203,11 +203,6 @@ public class CodenvyBootstrap extends EverrestGuiceContextListener {
                     final Matcher matcher = PATTERN.matcher(pValue);
                     if (matcher.find()) {
                         int start = 0;
-                        if (buf == null) {
-                            buf = new StringBuilder();
-                        } else {
-                            buf.setLength(0);
-                        }
                         do {
                             final int i = matcher.start();
                             final int j = matcher.end();
