@@ -18,6 +18,8 @@ import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -29,6 +31,7 @@ import java.util.zip.ZipOutputStream;
  * Utils for ZIP.
  *
  * @author Eugene Voevodin
+ * @author Sergii Kabashniuk
  */
 public class ZipUtils {
     private static final int BUF_SIZE = 4096;
@@ -178,8 +181,10 @@ public class ZipUtils {
                 return false;
             }
         }
-        final int header = bytes[0] + (bytes[1] << 8) + (bytes[2] << 16) + (bytes[3] << 24);
-        return 0x04034b50 == header;
+        
+        ByteBuffer zipFileHeaderSignature = ByteBuffer.wrap(bytes);
+        zipFileHeaderSignature.order(ByteOrder.LITTLE_ENDIAN);
+        return 0x04034b50 ==  zipFileHeaderSignature.getInt();
     }
 
     private ZipUtils() {
