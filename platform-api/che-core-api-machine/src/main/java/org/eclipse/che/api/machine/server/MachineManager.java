@@ -582,42 +582,28 @@ public class MachineManager {
      */
     public InstanceProcess exec(final String machineId, final Command command, String clientOutputChannel)
             throws NotFoundException, MachineException {
+        return exec(machineId, command, clientOutputChannel, null, true);
+    }
+
+    public InstanceProcess exec(final String machineId,
+                                final Command command,
+                                final String clientOutputChannel,
+                                LineConsumer processLogger,
+                                boolean async)
+            throws MachineException, NotFoundException {
         final Instance machine = getMachine(machineId);
         final InstanceProcess instanceProcess = machine.createProcess(command.getCommandLine());
-        final int pid = instanceProcess.getPid();
 
-        final LineConsumer processLogger = getProcessLogger(machineId, pid, clientOutputChannel);
+        if (processLogger == null) {
+            processLogger = getProcessLogger(machineId, instanceProcess.getPid(), clientOutputChannel);
+        }
 
-        executor.execute(ThreadLocalPropagateContext.wrap(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    eventService.publish(DtoFactory.newDto(MachineProcessEvent.class)
-                                                   .withEventType(MachineProcessEvent.EventType.STARTED)
-                                                   .withMachineId(machineId)
-                                                   .withProcessId(pid));
-
-                    instanceProcess.start(processLogger);
-
-                    eventService.publish(DtoFactory.newDto(MachineProcessEvent.class)
-                                                   .withEventType(MachineProcessEvent.EventType.STOPPED)
-                                                   .withMachineId(machineId)
-                                                   .withProcessId(pid));
-                } catch (ConflictException | MachineException error) {
-                    eventService.publish(DtoFactory.newDto(MachineProcessEvent.class)
-                                                   .withEventType(MachineProcessEvent.EventType.ERROR)
-                                                   .withMachineId(machineId)
-                                                   .withProcessId(pid)
-                                                   .withError(error.getLocalizedMessage()));
-
-                    LOG.warn(error.getMessage());
-                    try {
-                        processLogger.writeLine(String.format("[ERROR] %s", error.getMessage()));
-                    } catch (IOException ignored) {
-                    }
-                }
-            }
-        }));
+        if (async) {
+            final LineConsumer finalProcessLogger = processLogger;
+            executor.execute(ThreadLocalPropagateContext.wrap(() -> exec(instanceProcess, machineId, finalProcessLogger)));
+        } else {
+            exec(instanceProcess, machineId, processLogger);
+        }
         return instanceProcess;
     }
 
@@ -650,6 +636,7 @@ public class MachineManager {
      * @throws MachineException
      *         if other error occur
      */
+
     public void stopProcess(String machineId, int pid) throws NotFoundException, MachineException, ForbiddenException {
         final InstanceProcess process = getMachine(machineId).getProcess(pid);
         if (!process.isAlive()) {
@@ -801,6 +788,36 @@ public class MachineManager {
             return new CompositeLineConsumer(fileLogger, new WebsocketLineConsumer(outputChannel));
         }
         return fileLogger;
+    }
+
+    private void exec(final InstanceProcess instanceProcess, final String machineId, final LineConsumer processLogger) {
+        final int pid = instanceProcess.getPid();
+
+        try {
+            eventService.publish(DtoFactory.newDto(MachineProcessEvent.class)
+                                           .withEventType(MachineProcessEvent.EventType.STARTED)
+                                           .withMachineId(machineId)
+                                           .withProcessId(pid));
+
+            instanceProcess.start(processLogger);
+
+            eventService.publish(DtoFactory.newDto(MachineProcessEvent.class)
+                                           .withEventType(MachineProcessEvent.EventType.STOPPED)
+                                           .withMachineId(machineId)
+                                           .withProcessId(pid));
+        } catch (ConflictException | MachineException error) {
+            eventService.publish(DtoFactory.newDto(MachineProcessEvent.class)
+                                           .withEventType(MachineProcessEvent.EventType.ERROR)
+                                           .withMachineId(machineId)
+                                           .withProcessId(pid)
+                                           .withError(error.getLocalizedMessage()));
+
+            LOG.warn(error.getMessage());
+            try {
+                processLogger.writeLine(String.format("[ERROR] %s", error.getMessage()));
+            } catch (IOException ignored) {
+            }
+        }
     }
 
     @PostConstruct
