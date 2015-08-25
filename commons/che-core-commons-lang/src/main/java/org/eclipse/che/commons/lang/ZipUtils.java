@@ -156,7 +156,7 @@ public class ZipUtils {
                     }
                 }
             } else {
-                if( file.mkdirs()){
+                if(!file.mkdirs()){
                     throw new IOException("Unable to create folder "+ file.getAbsolutePath());
                 }
 
