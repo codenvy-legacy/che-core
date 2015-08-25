@@ -58,6 +58,7 @@ public class RenameItemAction extends AbstractPerspectiveAction {
     private final SelectionAgent           selectionAgent;
     private final InputValidator           fileNameValidator;
     private final InputValidator           folderNameValidator;
+    private final InputValidator           projectNameValidator;
 
     @Inject
     public RenameItemAction(Resources resources,
@@ -80,6 +81,7 @@ public class RenameItemAction extends AbstractPerspectiveAction {
         this.appContext = appContext;
         this.fileNameValidator = new FileNameValidator();
         this.folderNameValidator = new FolderNameValidator();
+        this.projectNameValidator = new ProjectNameValidator();
     }
 
     /** {@inheritDoc} */
@@ -164,7 +166,10 @@ public class RenameItemAction extends AbstractPerspectiveAction {
             inputDialog.withValidator(fileNameValidator);
         } else if (node instanceof FolderNode) {
             inputDialog.withValidator(folderNameValidator);
+        } else if (node instanceof ProjectNode) {
+            inputDialog.withValidator(projectNameValidator);
         }
+
         inputDialog.show();
     }
 

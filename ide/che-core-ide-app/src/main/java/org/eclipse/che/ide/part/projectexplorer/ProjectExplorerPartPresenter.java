@@ -19,6 +19,8 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateEvent;
+import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateHandler;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
@@ -27,8 +29,6 @@ import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
-import org.eclipse.che.ide.api.event.ExtServerStateEvent;
-import org.eclipse.che.ide.api.event.ExtServerStateHandler;
 import org.eclipse.che.ide.api.event.ItemEvent;
 import org.eclipse.che.ide.api.event.ItemHandler;
 import org.eclipse.che.ide.api.event.NodeChangedEvent;
@@ -184,14 +184,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
                     public void run() {
                         addProject(project);
 
-                        Timer timer1 = new Timer() {
-                            @Override
-                            public void run() {
-                                eventBus.fireEvent(new RestoreProjectTreeStateEvent(project.getPath()));
-                            }
-                        };
-
-                        timer1.schedule(5000);
+                        eventBus.fireEvent(new RestoreProjectTreeStateEvent(project.getPath()));
                     }
                 };
 

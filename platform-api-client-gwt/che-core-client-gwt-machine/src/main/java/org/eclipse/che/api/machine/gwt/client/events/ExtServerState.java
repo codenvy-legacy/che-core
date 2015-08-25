@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.api.event;
+package org.eclipse.che.api.machine.gwt.client.events;
 
 /**
  * Describes state of a extension server

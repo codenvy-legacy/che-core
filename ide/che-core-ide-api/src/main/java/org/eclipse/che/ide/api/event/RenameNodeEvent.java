@@ -23,8 +23,8 @@ public class RenameNodeEvent extends GwtEvent<RenameNodeEventHandler> {
 
     public static final Type<RenameNodeEventHandler> TYPE = new Type<>();
 
-    private final TreeNode<?>             treeNode;
-    private final String                  newParenNodePath;
+    private final TreeNode<?> treeNode;
+    private final String      newParenNodePath;
 
     public RenameNodeEvent(TreeNode<?> treeNode, String newParenNodePath) {
         this.treeNode = treeNode;

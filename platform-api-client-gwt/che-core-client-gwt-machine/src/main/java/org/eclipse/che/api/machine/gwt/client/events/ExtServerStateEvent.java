@@ -8,12 +8,12 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.api.event;
+package org.eclipse.che.api.machine.gwt.client.events;
 
 import com.google.gwt.event.shared.GwtEvent;
 
-import static org.eclipse.che.ide.api.event.ExtServerState.STARTED;
-import static org.eclipse.che.ide.api.event.ExtServerState.STOPPED;
+import static org.eclipse.che.api.machine.gwt.client.events.ExtServerState.STARTED;
+import static org.eclipse.che.api.machine.gwt.client.events.ExtServerState.STOPPED;
 
 
 /**
