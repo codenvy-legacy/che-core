@@ -357,7 +357,7 @@ public class WorkspaceService extends Service {
                              LINK_REL_REMOVE_WORKSPACE));
         links.add(createLink("GET",
                              uriBuilder.clone()
-                                       .path(getClass(), "getList")
+                                       .path(getClass(), "getWorkspaces")
                                        .build()
                                        .toString(),
                              APPLICATION_JSON,
@@ -428,7 +428,7 @@ public class WorkspaceService extends Service {
                              GET_USERS_WORKSPACE));
         links.add(createLink("GET",
                              uriBuilder.clone()
-                                       .path(getClass(), "getList")
+                                       .path(getClass(), "getWorkspaces")
                                        .build()
                                        .toString(),
                              APPLICATION_JSON,
