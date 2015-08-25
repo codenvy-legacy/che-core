@@ -46,7 +46,7 @@ public class IoUtil {
             return true;
         }
     };
-    /** Represent filter what select only .git entries. */
+    /** Represent filter, that excludes .git entries. */
     public static final FilenameFilter GIT_FILTER = new FilenameFilter() {
         @Override
         public boolean accept(File dir, String name) {
