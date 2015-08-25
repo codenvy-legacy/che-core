@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 import javax.ws.rs.HttpMethod;
 
@@ -241,7 +242,7 @@ public class IoUtil {
     public static File downloadFile(File parent, String prefix, String suffix, URL url) throws IOException {
         File file = File.createTempFile(prefix, suffix, parent);
         URLConnection conn = null;
-        final String protocol = url.getProtocol().toLowerCase();
+        final String protocol = url.getProtocol().toLowerCase(Locale.ENGLISH);
         try {
             conn = url.openConnection();
             if ("http".equals(protocol) || "https".equals(protocol)) {
