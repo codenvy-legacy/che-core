@@ -27,6 +27,7 @@ import org.eclipse.che.api.project.server.ProjectConfig;
 import org.eclipse.che.api.project.server.ProjectJson;
 import org.eclipse.che.api.project.server.DtoConverter;
 import org.eclipse.che.api.project.server.type.AttributeValue;
+import org.eclipse.che.api.project.shared.dto.ProjectModule;
 import org.eclipse.che.api.project.shared.dto.Source;
 import org.eclipse.che.api.project.shared.Builders;
 import org.eclipse.che.api.project.server.Project;
@@ -82,6 +83,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -611,6 +613,24 @@ public class FactoryService extends Service {
                                    .withVisibility(project.getVisibility())
                                    .withDescription(projectJson.getDescription());
             newProject.setMixinTypes(projectJson.getMixinTypes());
+
+            for (Project module : projectManager.getProjectModules(project)) {
+                ProjectConfig moduleConfig = module.getConfig();
+                final Map<String, AttributeValue> moduleAttributes = moduleConfig.getAttributes();
+                final Map<String, List<String>> attributesMap = new LinkedHashMap<>(moduleAttributes.size());
+                moduleAttributes.keySet().forEach(attrName ->
+                                                          attributesMap.put(attrName, moduleAttributes.get(attrName).getList())
+                                                 );
+                String parentPath = module.getBaseFolder().getParent().getPath();
+                String moduleRelativePath = module.getPath().substring(parentPath.length());
+                newProject.getModules().add(DtoFactory.newDto(ProjectModule.class).withType(moduleConfig.getTypeId())
+                                                      .withPath(moduleRelativePath)
+                                                      .withAttributes(attributesMap)
+                                                      .withBuilders(DtoConverter.toDto(moduleConfig.getBuilders()))
+                                                      .withRunners(DtoConverter.toDto(moduleConfig.getRunners()))
+                                                      .withMixins(moduleConfig.getMixinTypes())
+                                                      .withDescription(moduleConfig.getDescription()));
+            }
 
             final Builders builders = projectJson.getBuilders();
             if (builders != null) {

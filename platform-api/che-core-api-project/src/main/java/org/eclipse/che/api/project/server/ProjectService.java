@@ -321,28 +321,13 @@ public class ProjectService extends Service {
         if (parent == null) {
             throw new NotFoundException("Project " + path + " was not found");
         }
-        final List<String> modulePaths = new LinkedList<>();
         final List<ProjectDescriptor> modules = new LinkedList<>();
-        for (String p : parent.getModules().get()) {
-            String modulePath = p.startsWith("/") ? p : parent.getPath() + "/" + p;
-            modulePaths.add(modulePath);
-        }
-
-        //get modules via handler
-        GetModulesHandler modulesHandler = projectHandlerRegistry.getModulesHandler(parent.getConfig().getTypeId());
-        if (modulesHandler != null) {
-            modulesHandler.onGetModules(parent.getBaseFolder(), modulePaths);
-        }
-
-        for (String modulePath : modulePaths) {
-            Project module = projectManager.getProject(workspace, modulePath);
-            if (module != null) {
+        for (Project module : projectManager.getProjectModules(parent)) {
                 modules.add(DtoConverter.toDescriptorDto2(module,
                                                           getServiceContext().getServiceUriBuilder(),
                                                           getServiceContext().getBaseUriBuilder(),
                                                           projectManager.getProjectTypeRegistry(),
                                                           workspace));
-            }
         }
         return modules;
     }
@@ -958,6 +943,14 @@ public class ProjectService extends Service {
                                                           projectModule.getPath(),
                                                           moduleConfig,
                                                           visibility);
+
+                    projectManager.addModule(workspace,
+                                             baseProjectFolder.getPath(),
+                                             baseProjectFolder.getPath() +
+                                             projectModule.getPath(),
+                                             moduleConfig,
+                                             null,
+                                             visibility);
                 }
             }
 
