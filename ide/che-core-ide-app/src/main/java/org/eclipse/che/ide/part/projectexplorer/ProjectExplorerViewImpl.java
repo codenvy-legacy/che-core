@@ -24,7 +24,6 @@ import com.google.inject.Singleton;
 
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.api.event.ProjectActionEvent.ProjectAction;
 import org.eclipse.che.ide.api.parts.base.BaseView;
 import org.eclipse.che.ide.api.project.tree.AbstractTreeNode;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
@@ -50,7 +49,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
     private final Resources           resources;
     private final FlowPanel           projectHeader;
     private final AbstractTreeNode<?> rootNode;
-    private final Array<TreeNode<?>>  openedNodes;
+    private final List<TreeNode<?>>   openedNodes;
     private final List<String>        openedNodeNames;
 
     protected final Tree<TreeNode<?>> tree;
@@ -65,7 +64,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
         tree = Tree.create(resources, projectTreeNodeDataAdapter, projectTreeNodeRenderer, true);
         setContentWidget(tree.asWidget());
 
-        this.openedNodes = Collections.createArray();
+        this.openedNodes = new ArrayList<>();
         this.openedNodeNames = new ArrayList<>();
 
         projectHeader = new FlowPanel();
@@ -177,71 +176,39 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
 
     /** {@inheritDoc} */
     @Override
-    public void setRootNodes(@Nonnull final List<TreeNode<?>> rootNodes, @Nonnull ProjectAction projectAction) {
-        switch (projectAction) {
-            case OPENED:
-                TreeNode<?> openedNode = rootNodes.get(0);
-                String nodeName = openedNode.getDisplayName();
+    public void showEmptyTree() {
+        openedNodes.clear();
 
-                if (!openedNodeNames.contains(nodeName)) {
-                    openedNodeNames.add(nodeName);
+        rootNode.setChildren(openedNodes);
 
-                    openedNodes.add(openedNode);
-                }
+        updateTree();
 
-                rootNode.setChildren(openedNodes);
-
-                defineParent(openedNodes);
-
-                break;
-            case CLOSED:
-                rootNode.setChildren(rootNodes);
-
-                defineParent(rootNodes);
-
-                openedNodeNames.clear();
-                openedNodes.clear();
-                break;
-            default:
-        }
-
-        selectFirstNode(rootNodes);
+        toolBar.remove(projectHeader);
+        setToolbarHeight(22);
     }
 
-    private void selectFirstNode(@Nonnull Array<TreeNode<?>> rootNodes) {
+    private void updateTree() {
         tree.getSelectionModel().clearSelections();
         tree.getModel().setRoot(rootNode);
         tree.renderTree(0);
-
-        if (rootNodes.isEmpty()) {
-            delegate.onNodeSelected(null, tree.getSelectionModel());
-        } else {
-            final TreeNode<?> firstNode = rootNodes.get(0);
-            if (!firstNode.isLeaf()) {
-                // expand first node that usually represents project itself
-                tree.autoExpandAndSelectNode(firstNode, false);
-                delegate.onNodeExpanded(firstNode);
-            }
-            // auto-select first node
-            tree.getSelectionModel().selectSingleNode(firstNode);
-            delegate.onNodeSelected(firstNode, tree.getSelectionModel());
-        }
     }
 
     /** {@inheritDoc} */
     @Override
-    public void setRootNodes(@Nonnull List<TreeNode<?>> rootNodes) {
-        rootNode.setChildren(rootNodes);
+    public void addNodeToTree(@Nonnull TreeNode<?> openedNode) {
+        String nodeName = openedNode.getDisplayName();
 
-        defineParent(rootNodes);
+        if (!openedNodeNames.contains(nodeName)) {
+            openedNodeNames.add(nodeName);
 
-        selectFirstNode(rootNodes);
-    }
-
-    private void defineParent(@Nonnull Array<TreeNode<?>> nodes) {
-        for (TreeNode<?> treeNode : nodes.asIterable()) {
-            treeNode.setParent(rootNode);
+            openedNodes.add(openedNode);
         }
+
+        openedNode.setParent(rootNode);
+
+        rootNode.setChildren(openedNodes);
+
+        updateTree();
     }
 
     /** {@inheritDoc} */
@@ -314,13 +281,6 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
                 }
             }
         }, ClickEvent.getType());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void hideProjectHeader() {
-        toolBar.remove(projectHeader);
-        setToolbarHeight(22);
     }
 
     @Nonnull

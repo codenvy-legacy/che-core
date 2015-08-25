@@ -10,6 +10,10 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projectimport.wizard;
 
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
+import com.google.web.bindery.event.shared.EventBus;
+
 import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ImportProject;
@@ -17,10 +21,8 @@ import org.eclipse.che.api.project.shared.dto.ImportResponse;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.vfs.gwt.client.VfsServiceClient;
 import org.eclipse.che.api.vfs.shared.dto.Item;
-
 import org.eclipse.che.ide.CoreLocalizationConstant;
-
-import org.eclipse.che.ide.api.event.OpenProjectEvent;
+import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
 import org.eclipse.che.ide.api.wizard.AbstractWizard;
 import org.eclipse.che.ide.commons.exception.JobNotFoundException;
@@ -30,10 +32,6 @@ import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.Unmarshallable;
 import org.eclipse.che.ide.util.loging.Log;
-
-import com.google.inject.Inject;
-import com.google.inject.assistedinject.Assisted;
-import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nonnull;
 
@@ -121,7 +119,7 @@ public class ImportWizard extends AbstractWizard<ImportProject> {
             protected void onSuccess(final ImportResponse result) {
                 importProjectNotificationSubscriber.onSuccess();
                 callback.onCompleted();
-                openProject(result.getProjectDescriptor());
+                createProject(result.getProjectDescriptor());
             }
 
             @Override
@@ -139,11 +137,8 @@ public class ImportWizard extends AbstractWizard<ImportProject> {
         });
     }
 
-    private void openProject(ProjectDescriptor project) {
-        eventBus.fireEvent(new OpenProjectEvent(project.getName()));
-        //if (!project.getProblems().isEmpty()) {
-        //    eventBus.fireEvent(new ConfigureProjectEvent(project));
-        //}
+    private void createProject(ProjectDescriptor project) {
+        eventBus.fireEvent(ProjectActionEvent.createProjectCreatedEvent(project));
     }
 
     private String getImportErrorMessage(Throwable exception) {

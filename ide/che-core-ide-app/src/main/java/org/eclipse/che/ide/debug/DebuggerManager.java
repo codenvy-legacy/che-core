@@ -10,11 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.ide.debug;
 
-import org.eclipse.che.ide.api.event.ProjectActionEvent;
-import org.eclipse.che.ide.api.event.ProjectActionHandler;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
+
+import org.eclipse.che.ide.api.event.ProjectActionEvent;
+import org.eclipse.che.ide.api.event.ProjectActionHandler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,16 +40,12 @@ public class DebuggerManager {
         this.debuggers = new HashMap<>();
         eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
             @Override
-            public void onProjectOpened(ProjectActionEvent event) {
+            public void onProjectCreated(ProjectActionEvent event) {
                 currentDebugger = debuggers.get(event.getProject().getType());
             }
 
             @Override
-            public void onProjectClosing(ProjectActionEvent event) {
-            }
-
-            @Override
-            public void onProjectClosed(ProjectActionEvent event) {
+            public void onProjectDeleted(ProjectActionEvent event) {
                 currentDebugger = null;
             }
         });

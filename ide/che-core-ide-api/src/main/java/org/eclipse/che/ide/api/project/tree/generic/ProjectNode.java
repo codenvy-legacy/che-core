@@ -10,11 +10,16 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.project.tree.generic;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
+import com.google.web.bindery.event.shared.EventBus;
+
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.ide.api.event.CloseCurrentProjectEvent;
 import org.eclipse.che.ide.api.event.DeleteModuleEvent;
+import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.ProjectDescriptorChangedEvent;
 import org.eclipse.che.ide.api.event.ProjectDescriptorChangedHandler;
 import org.eclipse.che.ide.api.event.RenameNodeEvent;
@@ -23,10 +28,6 @@ import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.Unmarshallable;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.inject.Inject;
-import com.google.inject.assistedinject.Assisted;
-import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -241,7 +242,7 @@ public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements 
             @Override
             protected void onSuccess(Void result) {
                 if (isRootProject()) {
-                    eventBus.fireEvent(new CloseCurrentProjectEvent());
+                    eventBus.fireEvent(ProjectActionEvent.createProjectDeletedEvent(getName()));
                 } else {
                     eventBus.fireEvent(new DeleteModuleEvent(ProjectNode.this));
                 }

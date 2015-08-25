@@ -10,19 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.event;
 
-import com.google.gwt.event.shared.EventHandler;
-
 /**
- * A handler for handling {@link CloseCurrentProjectEvent}.
+ * Describes state of a extension server
  *
- * @author Artem Zatsarynnyy
+ * @author Roman Nikitenko.
  */
-public interface CloseCurrentProjectHandler extends EventHandler {
-    /**
-     * Called when someone is going to close the currently opened project.
-     *
-     * @param event
-     *         the fired {@link CloseCurrentProjectEvent}
-     */
-    void onCloseCurrentProject(CloseCurrentProjectEvent event);
+public enum ExtServerState {
+    STARTED, STOPPED
 }

@@ -13,26 +13,23 @@ package org.eclipse.che.ide.actions;
 import org.eclipse.che.api.runner.dto.ApplicationProcessDescriptor;
 import org.eclipse.che.api.runner.gwt.client.RunnerServiceClient;
 */
+
+import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.Resources;
-import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
+import org.eclipse.che.ide.api.project.tree.generic.ProjectNode;
 import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
-import org.eclipse.che.ide.part.projectexplorer.ProjectListStructure;
-import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
-import org.eclipse.che.ide.rest.Unmarshallable;
 import org.eclipse.che.ide.ui.dialogs.CancelCallback;
 import org.eclipse.che.ide.ui.dialogs.ConfirmCallback;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.ui.dialogs.InputCallback;
 import org.eclipse.che.ide.ui.dialogs.input.InputDialog;
-import org.eclipse.che.ide.ui.dialogs.input.InputValidator;
-import org.eclipse.che.ide.api.project.tree.generic.ProjectNode;
 import org.eclipse.che.ide.ui.dialogs.message.MessageDialog;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,25 +40,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-/*
-import static org.eclipse.che.api.runner.ApplicationStatus.NEW;
-import static org.eclipse.che.api.runner.ApplicationStatus.RUNNING;
-*/
+
 /**
- *
  * @author Andrienko Alexander
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -91,33 +77,33 @@ public class RenameItemActionTest {
     private AppContext               appContext;
 
     @Mock
-    private Selection<StorableNode>          selection;
+    private Selection<StorableNode> selection;
     @Mock
-    private StorableNode                     selectedNode;
+    private StorableNode            selectedNode;
     @Mock
-    private ProjectNode selectedParent;
+    private ProjectNode             selectedParent;
     @Mock
-    private TreeNode                         treeNode;
+    private TreeNode                treeNode;
     @Mock
-    private ActionEvent                      e;
+    private ActionEvent             e;
     @Mock
-    private MessageDialog                    messageDialog;
+    private MessageDialog           messageDialog;
     /*
     @Mock
-    private Unmarshallable<List<ApplicationProcessDescriptor>> unmarshaller;
+    private Unmarshallable<Array<ApplicationProcessDescriptor>> unmarshaller;
     @Mock
-    private List<ApplicationProcessDescriptor>                 descriptors;
+    private Array<ApplicationProcessDescriptor>                 descriptors;
     @Mock
-    private Iterable<ApplicationProcessDescriptor>             iterable;
+    private Iterable<ApplicationProcessDescriptor>              iterable;
     @Mock
-    private Iterator<ApplicationProcessDescriptor>             iterator;
+    private Iterator<ApplicationProcessDescriptor>              iterator;
     @Mock
     private ApplicationProcessDescriptor                        applicationProcessDescriptor;
     */
     @Mock
-    private ProjectListStructure.ProjectNode projectNode;
+    private InputDialog             inputDialog;
     @Mock
-    private InputDialog                      inputDialog;
+    private StorableNode            storableNode;
 
     @Captor
     private ArgumentCaptor<InputCallback> inputCallbackArgCaptor;
@@ -151,10 +137,10 @@ public class RenameItemActionTest {
 
 //        when(dtoUnmarshallerFactory.newArrayUnmarshaller(ApplicationProcessDescriptor.class)).thenReturn(unmarshaller);
 
-        when(selection.getHeadElement()).thenReturn(projectNode);
-        when(projectNode.getParent()).thenReturn(treeNode);
-        when(projectNode.getPath()).thenReturn(TEXT);
-        when(projectNode.getName()).thenReturn(TEXT);
+        when(selection.getHeadElement()).thenReturn(storableNode);
+        when(storableNode.getParent()).thenReturn(treeNode);
+        when(storableNode.getPath()).thenReturn(TEXT);
+        when(storableNode.getName()).thenReturn(TEXT);
 /*
         when(descriptors.asIterable()).thenReturn(iterable);
 

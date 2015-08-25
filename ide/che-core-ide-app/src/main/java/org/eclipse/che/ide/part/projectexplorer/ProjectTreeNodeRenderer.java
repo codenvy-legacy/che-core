@@ -10,11 +10,14 @@
  *******************************************************************************/
 package org.eclipse.che.ide.part.projectexplorer;
 
-import org.eclipse.che.ide.CoreLocalizationConstant;
-
 import elemental.dom.Element;
 import elemental.html.SpanElement;
 
+import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.user.client.ui.UIObject;
+import com.google.inject.Inject;
+
+import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.filetypes.FileType;
@@ -31,10 +34,6 @@ import org.eclipse.che.ide.ui.tree.TreeNodeElement;
 import org.eclipse.che.ide.ui.tree.TreeNodeMutator;
 import org.eclipse.che.ide.util.TextUtils;
 import org.eclipse.che.ide.util.dom.Elements;
-import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.user.client.ui.UIObject;
-import com.google.inject.Inject;
-
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
@@ -90,11 +89,7 @@ public class ProjectTreeNodeRenderer implements NodeRenderer<TreeNode<?>> {
 
         Elements.addClassName(css.label(), root);
 
-        if (node instanceof ProjectListStructure.ProjectNode) {
-            if (hasProblems((ProjectListStructure.ProjectNode)node)) {
-                root.setTitle(constant.projectExplorerProblemProjetTitle());
-            }
-        } else if (node instanceof FileNode) {
+        if (node instanceof FileNode) {
             Elements.addClassName(css.fileFont(), root);
         } else if (node instanceof FolderNode) {
             Elements.addClassName(css.folderFont(), root);
@@ -113,12 +108,6 @@ public class ProjectTreeNodeRenderer implements NodeRenderer<TreeNode<?>> {
         SVGImage nodeIcon = node.getDisplayIcon();
         if (nodeIcon != null) {
             return nodeIcon;
-        }
-
-        if (node instanceof ProjectListStructure.ProjectNode) {
-            if (hasProblems((ProjectListStructure.ProjectNode)node)) {
-                return new SVGImage(resources.projectProblem());
-            }
         }
 
         CurrentProject project = appContext.getCurrentProject();
@@ -156,10 +145,6 @@ public class ProjectTreeNodeRenderer implements NodeRenderer<TreeNode<?>> {
             return null;
         }
         return icon.getSVGImage();
-    }
-
-    private boolean hasProblems(ProjectListStructure.ProjectNode project) {
-        return !project.getData().getProblems().isEmpty();
     }
 
     @Override

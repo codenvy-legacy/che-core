@@ -25,6 +25,8 @@ import com.google.web.bindery.event.shared.SimpleEventBus;
 import org.eclipse.che.api.account.gwt.client.AccountServiceClient;
 import org.eclipse.che.api.account.gwt.client.AccountServiceClientImpl;
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
+import org.eclipse.che.api.git.gwt.client.GitServiceClient;
+import org.eclipse.che.api.git.gwt.client.GitServiceClientImpl;
 import org.eclipse.che.api.machine.gwt.client.CommandServiceClient;
 import org.eclipse.che.api.machine.gwt.client.CommandServiceClientImpl;
 import org.eclipse.che.api.machine.gwt.client.MachineServiceClient;
@@ -89,13 +91,10 @@ import org.eclipse.che.ide.api.theme.ThemeAgent;
 import org.eclipse.che.ide.bootstrap.DefaultIconsComponent;
 import org.eclipse.che.ide.bootstrap.PreferencesComponent;
 import org.eclipse.che.ide.bootstrap.ProfileComponent;
-import org.eclipse.che.ide.bootstrap.ProjectTemplatesComponent;
-import org.eclipse.che.ide.bootstrap.ProjectTypeComponent;
 import org.eclipse.che.ide.bootstrap.StandartComponent;
 import org.eclipse.che.ide.bootstrap.WorkspaceComponent;
 import org.eclipse.che.ide.bootstrap.ZeroClipboardInjector;
 import org.eclipse.che.ide.core.Component;
-import org.eclipse.che.ide.core.ProjectStateHandler;
 import org.eclipse.che.ide.core.StandardComponentInitializer;
 import org.eclipse.che.ide.core.editor.EditorAgentImpl;
 import org.eclipse.che.ide.core.editor.EditorRegistryImpl;
@@ -116,8 +115,6 @@ import org.eclipse.che.ide.navigation.NavigateToFileViewImpl;
 import org.eclipse.che.ide.notification.NotificationManagerImpl;
 import org.eclipse.che.ide.notification.NotificationManagerView;
 import org.eclipse.che.ide.notification.NotificationManagerViewImpl;
-import org.eclipse.che.ide.openproject.OpenProjectView;
-import org.eclipse.che.ide.openproject.OpenProjectViewImpl;
 import org.eclipse.che.ide.outline.OutlinePartPresenter;
 import org.eclipse.che.ide.outline.OutlinePartView;
 import org.eclipse.che.ide.outline.OutlinePartViewImpl;
@@ -136,7 +133,6 @@ import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerViewImpl;
 import org.eclipse.che.ide.preferences.PreferencesManagerImpl;
 import org.eclipse.che.ide.preferences.PreferencesView;
 import org.eclipse.che.ide.preferences.PreferencesViewImpl;
-import org.eclipse.che.ide.privacy.PrivacyPresenter;
 import org.eclipse.che.ide.projectimport.wizard.ImportProjectNotificationSubscriberImpl;
 import org.eclipse.che.ide.projectimport.wizard.ImportWizardFactory;
 import org.eclipse.che.ide.projectimport.wizard.ImportWizardRegistryImpl;
@@ -215,8 +211,6 @@ import org.eclipse.che.ide.workspace.WorkspaceView;
 import org.eclipse.che.ide.workspace.WorkspaceViewImpl;
 import org.eclipse.che.ide.workspace.perspectives.general.PerspectiveViewImpl;
 import org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective;
-import org.eclipse.che.api.git.gwt.client.GitServiceClient;
-import org.eclipse.che.api.git.gwt.client.GitServiceClientImpl;
 
 import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
 
@@ -292,7 +286,6 @@ public class CoreGinModule extends AbstractGinModule {
 //        mapBinder.addBinding("Project Types").to(ProjectTypeComponent.class);
 //        mapBinder.addBinding("Project Templates").to(ProjectTemplatesComponent.class);
 //        mapBinder.addBinding("Factory").to(FactoryComponent.class);
-        mapBinder.addBinding("Project State Handler").to(ProjectStateHandler.class);
         mapBinder.addBinding("Standard components").to(StandartComponent.class);
     }
 
@@ -390,7 +383,6 @@ public class CoreGinModule extends AbstractGinModule {
                                              .implement(ChoiceDialog.class, ChoiceDialogPresenter.class)
                                              .build(DialogFactory.class));
 
-        bind(OpenProjectView.class).to(OpenProjectViewImpl.class);
         bind(UploadFileView.class).to(UploadFileViewImpl.class);
         bind(UploadFolderFromZipView.class).to(UploadFolderFromZipViewImpl.class);
         bind(PreferencesView.class).to(PreferencesViewImpl.class).in(Singleton.class);

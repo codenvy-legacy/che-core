@@ -20,7 +20,7 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.vfs.gwt.client.VfsServiceClient;
 import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.api.event.OpenProjectEvent;
+import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
@@ -56,7 +56,8 @@ import static org.mockito.Mockito.when;
 public class LocalZipImporterPagePresenterTest {
     private static final String PROJECT_NAME    = "test";
     private static final String FILE_NAME       = "test.zip";
-    private static final String RESPONSE        = "<pre style=\"word-wrap: break-word; white-space: pre-wrap;\">{\"projectDescriptor\":{}}</pre>";
+    private static final String RESPONSE        =
+            "<pre style=\"word-wrap: break-word; white-space: pre-wrap;\">{\"projectDescriptor\":{}}</pre>";
     private static final String PARSED_RESPONSE = "{\"projectDescriptor\":{}}";
 
     @Captor
@@ -195,7 +196,7 @@ public class LocalZipImporterPagePresenterTest {
         verify(dtoFactory).createDtoFromJson(PARSED_RESPONSE, ImportResponse.class);
         verify(view).closeDialog();
         verify(importProjectNotificationSubscriber).onSuccess();
-        verify(eventBus).fireEvent(Matchers.<Event<OpenProjectEvent>>anyObject());
+        verify(eventBus).fireEvent(Matchers.<Event<ProjectActionEvent>>anyObject());
         verify(importProjectNotificationSubscriber, never()).onFailure(anyString());
     }
 

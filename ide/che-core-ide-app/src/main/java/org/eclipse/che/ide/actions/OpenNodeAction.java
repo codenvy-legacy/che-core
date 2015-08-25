@@ -10,13 +10,16 @@
  *******************************************************************************/
 package org.eclipse.che.ide.actions;
 
-import com.google.web.bindery.event.shared.HandlerRegistration;
+import com.google.gwt.core.client.Callback;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
+import com.google.web.bindery.event.shared.HandlerRegistration;
+
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper.Call;
 import org.eclipse.che.api.promises.client.js.JsPromiseError;
 import org.eclipse.che.api.promises.client.js.Promises;
 import org.eclipse.che.ide.CoreLocalizationConstant;
@@ -33,12 +36,8 @@ import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerPartPresenter;
 import org.eclipse.che.ide.util.loging.Log;
 
-import com.google.gwt.core.client.Callback;
-
-import org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper.Call;
-
-import static org.eclipse.che.ide.api.notification.Notification.Type.WARNING;
 import static org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper.createFromCallback;
+import static org.eclipse.che.ide.api.notification.Notification.Type.WARNING;
 
 /**
  * @author Andrienko Alexander
@@ -55,7 +54,7 @@ public class OpenNodeAction extends Action implements PromisableAction {
     private final CoreLocalizationConstant     localization;
     private final ProjectExplorerPartPresenter projectExplorerPartPresenter;
 
-    private Callback<Void, Throwable>      actionCompletedCallBack;
+    private Callback<Void, Throwable> actionCompletedCallBack;
 
     @Inject
     public OpenNodeAction(EventBus eventBus,
@@ -93,10 +92,10 @@ public class OpenNodeAction extends Action implements PromisableAction {
 
         String nodePathToOpen = activeProject.getPath() + (!path.startsWith("/") ? "/".concat(path) : path);
 
-        openNodeByPath(nodePathToOpen, currentProject, event);
+        openNodeByPath(nodePathToOpen, currentProject);
     }
 
-    private void openNodeByPath(final String path, CurrentProject currentProject, final ActionEvent event) {
+    private void openNodeByPath(final String path, CurrentProject currentProject) {
         currentProject.getCurrentTree().getNodeByPath(path, new AsyncCallback<TreeNode<?>>() {
 
             @Override

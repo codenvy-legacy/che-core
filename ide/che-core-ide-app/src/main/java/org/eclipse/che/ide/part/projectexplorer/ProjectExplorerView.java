@@ -11,7 +11,6 @@
 package org.eclipse.che.ide.part.projectexplorer;
 
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.ide.api.event.ProjectActionEvent.ProjectAction;
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.parts.base.BaseActionDelegate;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
@@ -28,25 +27,17 @@ import java.util.List;
  * @author Dmitry Shnurenko
  */
 public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDelegate> {
+
+    /** Shows empty tree when all projects are removed. */
+    void showEmptyTree();
+
     /**
      * Sets root nodes into tree.
      *
-     * @param rootNodes
-     *         root nodes to set
-     * @param actionType
-     *         root nodes which will be set depend on this type. Type is CLOSED shows all existing project nodes. Type is OPENED
-     *         shows only opened project nodes.
+     * @param result
+     *         root node to set
      */
-    void setRootNodes(@Nonnull Array<TreeNode<?>> rootNodes, @Nonnull ProjectAction actionType);
-
-    /**
-     * Sets root nodes into tree. This method is used when we refreshes project or deletes project and in other situation
-     * when we can't define project action.
-     *
-     * @param rootNodes
-     *         root nodes to set
-     */
-    void setRootNodes(@Nonnull List<TreeNode<?>> rootNodes);
+    void addNodeToTree(@Nonnull TreeNode<?> result);
 
     /**
      * Updates the specified node.
@@ -90,9 +81,6 @@ public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDele
      * @param project
      */
     void setProjectHeader(@Nonnull ProjectDescriptor project);
-
-    /** Hide the project's header panel. */
-    void hideProjectHeader();
 
     /** Returns the currently selected node. */
     @Nonnull

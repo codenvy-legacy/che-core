@@ -13,16 +13,25 @@ package org.eclipse.che.ide.api.event;
 import com.google.gwt.event.shared.EventHandler;
 
 /**
- * A handler for handling {@link OpenProjectEvent}.
+ * A handler for handling {@link ExtServerStateEvent}.
  *
- * @author Artem Zatsarynnyy
+ * @author Roman Nikitenko
  */
-public interface OpenProjectHandler extends EventHandler {
+public interface ExtServerStateHandler extends EventHandler {
+
     /**
-     * Called when someone is going to open a project.
+     * Called when extension server has been started.
      *
      * @param event
-     *         the fired {@link OpenProjectEvent}
+     *         the fired {@link ExtServerStateEvent}
      */
-    void onOpenProject(OpenProjectEvent event);
+    void onExtServerStarted(ExtServerStateEvent event);
+
+    /**
+     * Called when extension server has been stopped.
+     *
+     * @param event
+     *         the fired {@link ExtServerStateEvent}
+     */
+    void onExtServerStopped(ExtServerStateEvent event);
 }

@@ -59,7 +59,7 @@ public class OpenedFilesPersistenceComponent implements PersistenceComponent {
         final String openFileActionId = actionManager.getId(openFileAction);
         final Map<String, EditorPartPresenter> openedEditors = editorAgent.getOpenedEditors();
 
-        for (String filePath : openedEditors.getKeys().asIterable()) {
+        for (String filePath : openedEditors.keySet()) {
             if (filePath.startsWith(projectPath)) {
                 final String relFilePath = filePath.replaceFirst(projectPath, "");
 

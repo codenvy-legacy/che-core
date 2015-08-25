@@ -10,25 +10,19 @@
  *******************************************************************************/
 package org.eclipse.che.ide.statepersistance;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwtmockito.GwtMockitoTestRunner;
 import com.google.inject.Provider;
 import com.google.web.bindery.event.shared.EventBus;
 
-import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.Promise;
-import org.eclipse.che.api.promises.client.PromiseError;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
-import org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
-import org.eclipse.che.ide.api.event.OpenProjectEvent;
 import org.eclipse.che.ide.api.event.PersistProjectTreeStateEvent;
 import org.eclipse.che.ide.api.event.PersistProjectTreeStateHandler;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
@@ -53,7 +47,6 @@ import org.mockito.Captor;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -63,14 +56,10 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.eclipse.che.ide.statepersistance.AppStateManager.PREFERENCE_PROPERTY_NAME;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -90,24 +79,19 @@ public class AppStateManagerTest {
     private static final String FULL_PROJECT_PATH = "/" + WORKSPACE_NAME + PROJECT_PATH;
 
     @Mock
-    private Set<PersistenceComponent> persistenceComponents;
-
-    private Map<String, PersistenceComponent> projectTreePersistenceComponents;
+    private Set<PersistenceComponent>    persistenceComponents;
     @Mock
-    private EventBus                          eventBus;
+    private EventBus                     eventBus;
     @Mock
-    private PreferencesManager                preferencesManager;
+    private PreferencesManager           preferencesManager;
     @Mock
-    private AppContext                        appContext;
+    private AppContext                   appContext;
     @Mock
-    private DtoFactory                        dtoFactory;
+    private DtoFactory                   dtoFactory;
     @Mock
-    private ActionManager                     actionManager;
+    private ActionManager                actionManager;
     @Mock
-    private PresentationFactory               presentationFactory;
-    @Mock
-    private ProjectServiceClient              projectServiceClient;
-
+    private PresentationFactory          presentationFactory;
     @Mock
     private AppState                     appState;
     @Mock
@@ -157,13 +141,13 @@ public class AppStateManagerTest {
         Map<String, ProjectState> stateMap = new HashMap<>();
         stateMap.put(FULL_PROJECT_PATH, projectState);
 
-        projectTreePersistenceComponents = new HashMap<>();
+        Map<String, PersistenceComponent> projectTreePersistenceComponents = new HashMap<>();
         projectTreePersistenceComponents.put(PROJECT_PATH, persistenceComponent);
         List<ActionDescriptor> actionDescriptors = new ArrayList<>();
         actionDescriptors.add(actionDescriptor);
         when(persistenceComponent.getActions(PROJECT_PATH)).thenReturn(actionDescriptors);
 
-        when(appState.getProjects()).thenReturn(new HashMap<String, ProjectState>());
+        when(appState.getProjects()).thenReturn(new HashMap<>());
 
         List<PersistenceComponent> componentList = new ArrayList<>();
         Collections.addAll(componentList, c1, c2);
@@ -204,154 +188,42 @@ public class AppStateManagerTest {
                                               dtoFactory,
                                               actionManager,
                                               presentationFactory,
-                                              projectServiceClient,
                                               managerProvider);
     }
 
     @Test
     public void shouldAddEventHandlers() {
-        appStateManager.start(false);
+        appStateManager.start();
 
         verify(eventBus).addHandler(eq(WindowActionEvent.TYPE), eq(appStateManager));
-        verify(eventBus).addHandler(eq(ProjectActionEvent.TYPE), eq(appStateManager));
-        verify(eventBus).addHandler(eq(PersistProjectTreeStateEvent.TYPE), (PersistProjectTreeStateHandler)anyObject());
-        verify(eventBus).addHandler(eq(RestoreProjectTreeStateEvent.TYPE), (RestoreProjectTreeStateHandler)anyObject());
+        verify(eventBus).addHandler(eq(PersistProjectTreeStateEvent.TYPE), anyObject());
+        verify(eventBus).addHandler(eq(RestoreProjectTreeStateEvent.TYPE), anyObject());
     }
 
     @Test
     public void shouldDeserializeStateOnStart() {
-        appStateManager.start(false);
+        appStateManager.start();
 
         verify(dtoFactory).createDtoFromJson(eq(SERIALIZED_STATE), Matchers.<Class<AppState>>anyObject());
     }
 
     @Test
-    public void shouldOpenRecentlyProjectOnStart() throws Exception {
-        appStateManager.start(true);
-
-        ProjectDescriptor result = mock(ProjectDescriptor.class);
-
-        verify(projectServiceClient).getProject(anyString(), projectDescriptorCaptor.capture());
-        AsyncRequestCallback<ProjectDescriptor> asyncRequestCallback = projectDescriptorCaptor.getValue();
-
-        //noinspection NonJREEmulationClassesInClientCode
-        Method method = asyncRequestCallback.getClass().getDeclaredMethod("onSuccess", Object.class);
-        method.setAccessible(true);
-        method.invoke(asyncRequestCallback, result);
-
-        verify(eventBus).fireEvent(any(OpenProjectEvent.class));
-    }
-
-    @Test
     public void userPreferenceShouldBeCleanedUp() throws Exception {
-        appStateManager.start(true);
+        when(preferencesManager.getValue(PREFERENCE_PROPERTY_NAME)).thenReturn(null);
 
-        Throwable exception = mock(Throwable.class);
+        appStateManager.start();
 
-        verify(projectServiceClient).getProject(anyString(), projectDescriptorCaptor.capture());
-        AsyncRequestCallback<ProjectDescriptor> asyncRequestCallback = projectDescriptorCaptor.getValue();
-
-        //noinspection NonJREEmulationClassesInClientCode
-        Method method = asyncRequestCallback.getClass().getDeclaredMethod("onFailure", Throwable.class);
-        method.setAccessible(true);
-        method.invoke(asyncRequestCallback, exception);
-
-        verify(appState).getProjects();
-        verify(appState, times(2)).getRecentProject();
+        verify(preferencesManager).getValue(PREFERENCE_PROPERTY_NAME);
+        verify(dtoFactory).createDto(AppState.class);
+        verify(dtoFactory).createDto(RecentProject.class);
         verify(recentProject).setPath("");
-
-        verify(dtoFactory).toJson(appState);
-        preferencesManager.setValue(PREFERENCE_PROPERTY_NAME, SERIALIZED_STATE);
-        verify(preferencesManager).flushPreferences(Matchers.<AsyncCallback<Map<String, String>>>anyObject());
-    }
-
-    @Test
-    public void shouldEraseRecentlyProjectPathOnWindowClosingWhenNoOpenedProject() {
-        appStateManager.start(false);
-        when(appContext.getCurrentProject()).thenReturn(null);
-
-        appStateManager.onWindowClosing(mock(WindowActionEvent.class));
-
         verify(recentProject).setWorkspaceId("");
-        verify(appState, times(2)).getRecentProject();
-        verify(recentProject).setPath("");
-
-        verify(dtoFactory).toJson(appState);
-        verify(preferencesManager).setValue(anyString(), eq(SERIALIZED_STATE));
-        verify(preferencesManager).flushPreferences(Matchers.<AsyncCallback<Map<String, String>>>anyObject());
-    }
-
-    @Test
-    public void shouldCallAllRegisteredComponents() {
-        appStateManager.start(true);
-
-        when(dtoFactory.toJson(appState)).thenReturn(SERIALIZED_STATE);
-        when(dtoFactory.toJson(eq(appState))).thenReturn(SERIALIZED_STATE);
-
-        ProjectState projectState = mock(ProjectState.class);
-        when(dtoFactory.createDto(eq(ProjectState.class))).thenReturn(projectState);
-
-        appStateManager.onWindowClosing(mock(WindowActionEvent.class));
-
-        verify(appContext).getOpenedProjects();
-        verify(appState, times(3)).getRecentProject();
-        verify(appContext).getWorkspace();
-        verify(workspaceDescriptor).getId();
-        verify(recentProject).setWorkspaceId(WORKSPACE_ID);
-        verify(currentProject).getRootProject();
-        verify(rootProject, times(2)).getPath();
-        verify(rootProject, times(2)).getWorkspaceName();
-        verify(appState, times(3)).getRecentProject();
-        verify(recentProject).setPath(FULL_PROJECT_PATH);
-        verify(dtoFactory).createDto(ProjectState.class);
-        verify(appState).getProjects();
-        verify(projectState).getActions();
-        verify(dtoFactory).toJson(appState);
-        verify(preferencesManager).setValue(PREFERENCE_PROPERTY_NAME, SERIALIZED_STATE);
-        verify(preferencesManager).flushPreferences(Matchers.<AsyncCallback<Map<String, String>>>anyObject());
-
-        verify(c1).getActions(eq(PROJECT_PATH));
-        verify(c2).getActions(eq(PROJECT_PATH));
-
-        assertThat(appState.getRecentProject().getPath(), is(PROJECT_PATH));
-        assertThat(appState.getRecentProject().getWorkspaceId(), is(WORKSPACE_ID));
-    }
-
-    @Test
-    public void projectShouldNotBeOpenedBecauseCurrentProjectIsNull() {
-        when(event.getProject()).thenReturn(rootProject);
-
-        appStateManager.start(false);
-
-        when(appContext.getCurrentProject()).thenReturn(null);
-
-        appStateManager.onProjectOpened(event);
-
-        verify(event).getProject();
-        verify(rootProject).getPath();
-        verify(rootProject).getWorkspaceName();
-    }
-
-    @Test
-    public void projectShouldBeOpenedAndRestored() {
-        appStateManager.start(false);
-
-        appStateManager.onProjectOpened(event);
-
-        verify(event).getProject();
-        verify(rootProject).getWorkspaceName();
-        verify(event).getProject();
-        verify(rootProject).getPath();
-        verify(appState).getProjects();
-
-        verify(projectState).getActions();
-        verify(presentationFactory).getPresentation(action);
-        verify(actionDescriptor).getParameters();
+        verify(appState).setRecentProject(recentProject);
     }
 
     @Test
     public void projectTreeShouldBePersisted() {
-        appStateManager.start(false);
+        appStateManager.start();
 
         PersistProjectTreeStateEvent projectTreeStateEvent = mock(PersistProjectTreeStateEvent.class);
 
@@ -360,7 +232,6 @@ public class AppStateManagerTest {
 
         verify(appContext).getOpenedProjects();
         verify(rootProject).getPath();
-        verify(rootProject).getWorkspaceName();
         verify(dtoFactory).createDto(ProjectState.class);
         verify(appState).getProjects();
         verify(projectState).getActions();
@@ -368,32 +239,11 @@ public class AppStateManagerTest {
     }
 
     @Test
-    public void projectTreeStateShouldBeRestored() {
-        RestoreProjectTreeStateEvent event = mock(RestoreProjectTreeStateEvent.class);
-        when(event.getProjectPath()).thenReturn("/" + WORKSPACE_NAME + PROJECT_PATH);
-        appStateManager.start(false);
-
-        verify(eventBus).addHandler(eq(RestoreProjectTreeStateEvent.TYPE), treeStateHandlerArgumentCaptor.capture());
-        treeStateHandlerArgumentCaptor.getValue().onRestore(event);
-
-        verify(event).getProjectPath();
-        verify(appState).getProjects();
-        verify(projectState).getActions();
-        verify(actionManager).getAction(SERIALIZED_STATE);
-        verify(presentationFactory).getPresentation(action);
-        verify(actionDescriptor).getParameters();
-
-        verify(actionManager).performActions(Matchers.<List<Pair<Action, ActionEvent>>>anyObject(), eq(false));
-        verify(promise).catchError(Matchers.<Operation<PromiseError>>anyObject());
-    }
-
-    @Test
     public void preferenceShouldBeCleanBecauseAppStateJsonIsNull() {
         when(preferencesManager.getValue(PREFERENCE_PROPERTY_NAME)).thenReturn(null);
-        appStateManager.start(false);
+        appStateManager.start();
 
         verify(eventBus).addHandler(WindowActionEvent.TYPE, appStateManager);
-        verify(eventBus).addHandler(ProjectActionEvent.TYPE, appStateManager);
 
         verify(preferencesManager).getValue(PREFERENCE_PROPERTY_NAME);
         verify(dtoFactory).createDto(AppState.class);
@@ -407,10 +257,9 @@ public class AppStateManagerTest {
     @Test
     public void preferenceShouldBeCleanBecauseAppStateJsonIsNull2() {
         when(appState.getRecentProject()).thenReturn(null);
-        appStateManager.start(false);
+        appStateManager.start();
 
         verify(eventBus).addHandler(WindowActionEvent.TYPE, appStateManager);
-        verify(eventBus).addHandler(ProjectActionEvent.TYPE, appStateManager);
 
         verify(preferencesManager).getValue(PREFERENCE_PROPERTY_NAME);
         verify(dtoFactory).createDtoFromJson(anyString(), eq(AppState.class));
@@ -422,24 +271,4 @@ public class AppStateManagerTest {
         verify(appState).setRecentProject(recentProject);
     }
 
-    @Test
-    public void shouldPersistStateWhenProjectIsClosing() {
-        ProjectActionEvent projectActionEvent = mock(ProjectActionEvent.class);
-        appStateManager.start(true);
-
-        appStateManager.onProjectClosing(projectActionEvent);
-
-        verify(appContext).getOpenedProjects();
-        verify(rootProject).getPath();
-        verify(rootProject).getWorkspaceName();
-        verify(dtoFactory).createDto(ProjectState.class);
-        verify(appState).getProjects();
-        verify(projectState).getActions();
-        verify(c1).getActions(PROJECT_PATH);
-        verify(c2).getActions(PROJECT_PATH);
-
-        verify(dtoFactory).toJson(appState);
-        verify(preferencesManager).setValue(eq(PREFERENCE_PROPERTY_NAME), anyString());
-        verify(preferencesManager).flushPreferences(Matchers.<AsyncCallback<Map<String, String>>>anyObject());
-    }
 }

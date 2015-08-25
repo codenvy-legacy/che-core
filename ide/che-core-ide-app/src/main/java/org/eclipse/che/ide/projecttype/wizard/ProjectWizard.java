@@ -24,7 +24,7 @@ import org.eclipse.che.api.project.shared.dto.NewProject;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.event.OpenProjectEvent;
+import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode;
 import org.eclipse.che.ide.api.wizard.AbstractWizard;
@@ -135,7 +135,7 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
             @Override
             protected void onSuccess(ProjectDescriptor result) {
                 // just re-open project if it's already opened
-                ProjectWizard.this.eventBus.fireEvent(new OpenProjectEvent(result.getName()));
+                ProjectWizard.this.eventBus.fireEvent(ProjectActionEvent.createProjectCreatedEvent(result));
                 callback.onCompleted();
             }
 
@@ -154,7 +154,7 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
         projectServiceClient.createProject(project.getName(), project, new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
             @Override
             protected void onSuccess(ProjectDescriptor result) {
-                eventBus.fireEvent(new OpenProjectEvent(result.getName()));
+                eventBus.fireEvent(ProjectActionEvent.createProjectCreatedEvent(result));
                 callback.onCompleted();
             }
 
@@ -193,7 +193,7 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
                 project.getName(), false, dataObject, new AsyncRequestCallback<ImportResponse>(unmarshaller) {
                     @Override
                     protected void onSuccess(ImportResponse result) {
-                        eventBus.fireEvent(new OpenProjectEvent(result.getProjectDescriptor().getName()));
+                        eventBus.fireEvent(ProjectActionEvent.createProjectCreatedEvent(result.getProjectDescriptor()));
                         callback.onCompleted();
                     }
 
@@ -233,7 +233,7 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
             @Override
             protected void onSuccess(ProjectDescriptor result) {
                 // just re-open project if it's already opened
-                eventBus.fireEvent(new OpenProjectEvent(result.getName()));
+                eventBus.fireEvent(ProjectActionEvent.createProjectCreatedEvent(result));
                 callback.onCompleted();
             }
 

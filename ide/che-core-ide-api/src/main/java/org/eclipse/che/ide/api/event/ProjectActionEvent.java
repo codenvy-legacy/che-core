@@ -10,8 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.event;
 
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import com.google.gwt.event.shared.GwtEvent;
+
+import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 
 /**
  * Event that describes the fact that Project Action (opened/closing/closed) has been performed.
@@ -24,7 +25,7 @@ public class ProjectActionEvent extends GwtEvent<ProjectActionHandler> {
     public static Type<ProjectActionHandler> TYPE = new Type<>();
     private final ProjectDescriptor project;
     private final ProjectAction     projectAction;
-    private final boolean           closingBeforeOpening;
+    private final String            projectName;
 
     /**
      * Create new {@link ProjectActionEvent}.
@@ -33,13 +34,11 @@ public class ProjectActionEvent extends GwtEvent<ProjectActionHandler> {
      *         an instance of affected project
      * @param projectAction
      *         the type of action
-     * @param closingBeforeOpening
-     *         whether is this closing project before opening another one
      */
-    protected ProjectActionEvent(ProjectDescriptor project, ProjectAction projectAction, boolean closingBeforeOpening) {
+    protected ProjectActionEvent(ProjectDescriptor project, String projectName, ProjectAction projectAction) {
         this.project = project;
+        this.projectName = projectName;
         this.projectAction = projectAction;
-        this.closingBeforeOpening = closingBeforeOpening;
     }
 
     /**
@@ -48,28 +47,13 @@ public class ProjectActionEvent extends GwtEvent<ProjectActionHandler> {
      * @param project
      *         opened project
      */
-    public static ProjectActionEvent createProjectOpenedEvent(ProjectDescriptor project) {
-        return new ProjectActionEvent(project, ProjectAction.OPENED, false);
+    public static ProjectActionEvent createProjectCreatedEvent(ProjectDescriptor project) {
+        return new ProjectActionEvent(project, project.getName(), ProjectAction.CREATED);
     }
 
-    /**
-     * Creates a Project Closing Event.
-     *
-     * @param project
-     *         closing project
-     */
-    public static ProjectActionEvent createProjectClosingEvent(ProjectDescriptor project) {
-        return new ProjectActionEvent(project, ProjectAction.CLOSING, false);
-    }
-
-    /**
-     * Creates a Project Closed Event.
-     *
-     * @param project
-     *         closed project
-     */
-    public static ProjectActionEvent createProjectClosedEvent(ProjectDescriptor project, boolean closingBeforeOpening) {
-        return new ProjectActionEvent(project, ProjectAction.CLOSED, closingBeforeOpening);
+    /** Creates a Project Deleting Event. */
+    public static ProjectActionEvent createProjectDeletedEvent(String projectName) {
+        return new ProjectActionEvent(null, projectName, ProjectAction.DELETED);
     }
 
     @Override
@@ -82,27 +66,24 @@ public class ProjectActionEvent extends GwtEvent<ProjectActionHandler> {
         return project;
     }
 
+    /** Returns project name */
+    public String getProjectName() {
+        return projectName;
+    }
+
     /** @return the type of action */
     public ProjectAction getProjectAction() {
         return projectAction;
     }
 
-    /** @return {@code true} if this is a Project Close Event that preceding opening other project. */
-    public boolean isCloseBeforeOpening() {
-        return closingBeforeOpening;
-    }
-
     @Override
     protected void dispatch(ProjectActionHandler handler) {
         switch (projectAction) {
-            case OPENED:
-                handler.onProjectOpened(this);
+            case CREATED:
+                handler.onProjectCreated(this);
                 break;
-            case CLOSING:
-                handler.onProjectClosing(this);
-                break;
-            case CLOSED:
-                handler.onProjectClosed(this);
+            case DELETED:
+                handler.onProjectDeleted(this);
                 break;
             default:
                 break;
@@ -111,6 +92,6 @@ public class ProjectActionEvent extends GwtEvent<ProjectActionHandler> {
 
     /** Set of possible Project Actions */
     public static enum ProjectAction {
-        OPENED, CLOSING, CLOSED
+        CREATED, DELETED
     }
 }

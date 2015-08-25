@@ -16,7 +16,6 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.actions.CloseProjectAction;
 import org.eclipse.che.ide.actions.CompleteAction;
 import org.eclipse.che.ide.actions.CopyAction;
 import org.eclipse.che.ide.actions.CreateModuleAction;
@@ -33,7 +32,6 @@ import org.eclipse.che.ide.actions.NavigateToFileAction;
 import org.eclipse.che.ide.actions.NewProjectAction;
 import org.eclipse.che.ide.actions.OpenFileAction;
 import org.eclipse.che.ide.actions.OpenNodeAction;
-import org.eclipse.che.ide.actions.OpenProjectAction;
 import org.eclipse.che.ide.actions.OpenSelectedFileAction;
 import org.eclipse.che.ide.actions.PasteAction;
 import org.eclipse.che.ide.actions.ProjectConfigurationAction;
@@ -138,12 +136,6 @@ public class StandardComponentInitializer {
 
     @Inject
     private RenameItemAction renameItemAction;
-
-    @Inject
-    private OpenProjectAction openProjectAction;
-
-    @Inject
-    private CloseProjectAction closeProjectAction;
 
     @Inject
     private OpenSelectedFileAction openSelectedFileAction;
@@ -347,8 +339,6 @@ public class StandardComponentInitializer {
         DefaultActionGroup fileGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_FILE);
         fileGroup.add(importProjectGroup);
         fileGroup.add(newGroup);
-        fileGroup.add(openProjectAction);
-        fileGroup.add(closeProjectAction);
         fileGroup.add(projectConfigurationAction);
         fileGroup.addAction(createModuleAction);
         fileGroup.add(uploadFileAction);
@@ -411,7 +401,6 @@ public class StandardComponentInitializer {
         DefaultActionGroup closeProjectGroup = new DefaultActionGroup(actionManager);
         actionManager.registerAction("closeProjectGroup", closeProjectGroup);
         closeProjectGroup.addSeparator();
-        closeProjectGroup.add(closeProjectAction);
 
         DefaultActionGroup mainContextMenuGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_MAIN_CONTEXT_MENU);
         mainContextMenuGroup.add(newGroup);
@@ -426,8 +415,6 @@ public class StandardComponentInitializer {
         // Compose main toolbar
         DefaultActionGroup changeResourceGroup = new DefaultActionGroup(actionManager);
         actionManager.registerAction("changeResourceGroup", changeResourceGroup);
-        actionManager.registerAction("openProject", openProjectAction);
-        actionManager.registerAction("closeProject", closeProjectAction);
         actionManager.registerAction("openSelectedFile", openSelectedFileAction);
 
         actionManager.registerAction("cut", cutAction);
@@ -442,7 +429,6 @@ public class StandardComponentInitializer {
         actionManager.registerAction("openNode", openNodeAction);
         actionManager.registerAction("selectNode", selectNodeAction);
 
-        changeResourceGroup.add(closeProjectAction);
         changeResourceGroup.add(cutAction);
         changeResourceGroup.add(copyAction);
         changeResourceGroup.add(pasteAction);

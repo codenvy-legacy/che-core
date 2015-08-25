@@ -90,15 +90,11 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
 
         eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
             @Override
-            public void onProjectOpened(ProjectActionEvent event) {
+            public void onProjectCreated(ProjectActionEvent event) {
             }
 
             @Override
-            public void onProjectClosing(ProjectActionEvent event) {
-            }
-
-            @Override
-            public void onProjectClosed(ProjectActionEvent event) {
+            public void onProjectDeleted(ProjectActionEvent event) {
                 Iterator<TabItem> itemIterator = parts.keySet().iterator();
 
                 while (itemIterator.hasNext()) {

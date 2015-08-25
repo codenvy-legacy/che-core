@@ -10,33 +10,24 @@
  *******************************************************************************/
 package org.eclipse.che.ide.actions;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
-//import org.eclipse.che.api.runner.dto.ApplicationProcessDescriptor;
-//import org.eclipse.che.api.runner.gwt.client.RunnerServiceClient;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
-import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.project.tree.AbstractTreeNode;
-import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.api.project.tree.generic.FileNode;
 import org.eclipse.che.ide.api.project.tree.generic.FolderNode;
 import org.eclipse.che.ide.api.project.tree.generic.ProjectNode;
 import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
-import org.eclipse.che.ide.part.projectexplorer.ProjectListStructure;
-import org.eclipse.che.ide.rest.AsyncRequestCallback;
-import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
-import org.eclipse.che.ide.rest.Unmarshallable;
 import org.eclipse.che.ide.ui.dialogs.CancelCallback;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.ui.dialogs.InputCallback;
@@ -46,14 +37,11 @@ import org.eclipse.che.ide.util.NameUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
-//import org.eclipse.che.api.runner.ApplicationStatus;
+import java.util.Arrays;
 
 import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
 import static org.eclipse.che.ide.api.project.tree.TreeNode.RenameCallback;
 import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
-
-import java.util.Arrays;
 
 /**
  * Action for renaming an item which is selected in 'Project Explorer'.
@@ -70,7 +58,6 @@ public class RenameItemAction extends AbstractPerspectiveAction {
     private final SelectionAgent           selectionAgent;
     private final InputValidator           fileNameValidator;
     private final InputValidator           folderNameValidator;
-    private final InputValidator           projectNameValidator;
 
     @Inject
     public RenameItemAction(Resources resources,
@@ -93,7 +80,6 @@ public class RenameItemAction extends AbstractPerspectiveAction {
         this.appContext = appContext;
         this.fileNameValidator = new FileNameValidator();
         this.folderNameValidator = new FolderNameValidator();
-        this.projectNameValidator = new ProjectNameValidator();
     }
 
     /** {@inheritDoc} */
@@ -108,25 +94,6 @@ public class RenameItemAction extends AbstractPerspectiveAction {
         final StorableNode selectedNode = (StorableNode)selection.getHeadElement();
         if (selectedNode instanceof ProjectNode) {
             dialogFactory.createMessageDialog("", localization.closeProjectBeforeRenaming(), null).show();
-        } else if (selectedNode instanceof ProjectListStructure.ProjectNode) {
-                /*checkRunningProcessesForProject(selectedNode, new AsyncCallback<Boolean>() {
-                    @Override
-                    public void onSuccess(Boolean hasRunningProcesses) {
-                        if (hasRunningProcesses) {
-                            dialogFactory.createMessageDialog("", localization.stopProcessesBeforeRenamingProject(), null).show();
-                        } else {
-                        */
-            renameNode(selectedNode);
-                        /*
-                        }
-                    }
-        final StorableNode selectedNode = (StorableNode)selection.getHeadElement();
-
-                    @Override
-                    public void onFailure(Throwable caught) {
-                        askForRenamingNode(selectedNode);
-                    }
-                });*/
         } else {
             renameNode(selectedNode);
         }
@@ -154,7 +121,8 @@ public class RenameItemAction extends AbstractPerspectiveAction {
     /**
      * Asks the user for new name and renames the node.
      *
-     * @param node node to rename
+     * @param node
+     *         node to rename
      */
     private void renameNode(final StorableNode node) {
         final InputCallback inputCallback = new InputCallback() {
@@ -186,18 +154,16 @@ public class RenameItemAction extends AbstractPerspectiveAction {
      */
     public void askForNewName(final StorableNode node, final InputCallback inputCallback, final CancelCallback cancelCallback) {
         final int selectionLength = node.getName().indexOf('.') >= 0
-                ? node.getName().lastIndexOf('.')
-                : node.getName().length();
+                                    ? node.getName().lastIndexOf('.')
+                                    : node.getName().length();
 
         InputDialog inputDialog = dialogFactory.createInputDialog(getDialogTitle(node),
-                localization.renameDialogNewNameLabel(),
-                node.getName(), 0, selectionLength, inputCallback, null);
+                                                                  localization.renameDialogNewNameLabel(),
+                                                                  node.getName(), 0, selectionLength, inputCallback, null);
         if (node instanceof FileNode) {
             inputDialog.withValidator(fileNameValidator);
         } else if (node instanceof FolderNode) {
             inputDialog.withValidator(folderNameValidator);
-        } else if (node instanceof ProjectNode || node instanceof ProjectListStructure.ProjectNode) {
-            inputDialog.withValidator(projectNameValidator);
         }
         inputDialog.show();
     }
@@ -207,8 +173,6 @@ public class RenameItemAction extends AbstractPerspectiveAction {
             return localization.renameFileDialogTitle();
         } else if (node instanceof FolderNode) {
             return localization.renameFolderDialogTitle();
-        } else if (node instanceof ProjectNode || node instanceof ProjectListStructure.ProjectNode) {
-            return localization.renameProjectDialogTitle();
         }
         return localization.renameNodeDialogTitle();
     }

@@ -34,9 +34,6 @@ import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.Presentation;
-import org.eclipse.che.ide.api.event.OpenProjectEvent;
-import org.eclipse.che.ide.api.event.ProjectActionEvent;
-import org.eclipse.che.ide.api.event.ProjectActionHandler;
 import org.eclipse.che.ide.api.event.WindowActionEvent;
 import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.eclipse.che.ide.core.Component;
@@ -67,7 +64,7 @@ public class BootstrapController {
     private final ActionManager                actionManager;
     private final PresentationFactory          presentationFactory;
     private final DocumentTitleDecorator       documentTitleDecorator;
-    private final Provider<AppStateManager>    appStateManagerProvider;
+    private final AppStateManager              appStateManager;
     private final Provider<PerspectiveManager> managerProvider;
 
     @Inject
@@ -77,7 +74,7 @@ public class BootstrapController {
                                AnalyticsEventLoggerExt analyticsEventLoggerExt,
                                EventBus eventBus,
                                ActionManager actionManager,
-                               Provider<AppStateManager> appStateManagerProvider,
+                               AppStateManager appStateManager,
                                DocumentTitleDecorator documentTitleDecorator,
                                Provider<PerspectiveManager> managerProvider) {
         this.workspaceProvider = workspaceProvider;
@@ -86,7 +83,7 @@ public class BootstrapController {
         this.actionManager = actionManager;
         this.analyticsEventLoggerExt = analyticsEventLoggerExt;
         this.documentTitleDecorator = documentTitleDecorator;
-        this.appStateManagerProvider = appStateManagerProvider;
+        this.appStateManager = appStateManager;
         this.managerProvider = managerProvider;
 
         presentationFactory = new PresentationFactory();
@@ -102,7 +99,7 @@ public class BootstrapController {
     }
 
     private void startComponent(final Iterator<Map.Entry<String, Provider<Component>>> iterator) {
-        if (iterator.hasNext()) {
+        while (iterator.hasNext()) {
             final Map.Entry<String, Provider<Component>> componentEntry = iterator.next();
             componentEntry.getValue().get().start(new Callback<Component, Exception>() {
                 @Override
@@ -117,10 +114,25 @@ public class BootstrapController {
                     startComponent(iterator);
                 }
             });
-        } else {
-            startExtensions();
         }
+
+        startExtensions();
     }
+
+    /**
+     * Handles any of initialization errors.
+     * Tries to call predefined IDE.eventHandlers.ideInitializationFailed function.
+     *
+     * @param reason
+     *         failure encountered
+     */
+    private native void initializationFailed(Exception reason) /*-{
+        try {
+            $wnd.IDE.eventHandlers.initializationFailed(reason);
+        } catch (e) {
+            console.log(e.message);
+        }
+    }-*/;
 
     /** Start extensions */
     private void startExtensions() {
@@ -134,11 +146,8 @@ public class BootstrapController {
                     @Override
                     public void execute() {
                         displayIDE();
-                        boolean openLastProject = Config.getProjectName() == null && Config.getStartupParam("action") == null &&
-                                                  Config.getStartupParam("id") == null;
 
-                        final AppStateManager appStateManager = appStateManagerProvider.get();
-                        appStateManager.start(openLastProject);
+                        appStateManager.start();
                     }
                 });
             }
@@ -165,9 +174,9 @@ public class BootstrapController {
 
         Document.get().setTitle(documentTitleDecorator.getDocumentTitle());
 
-        processStartupParameters();
-
         final AnalyticsSessions analyticsSessions = new AnalyticsSessions();
+
+        launchStartupAction();
 
         // Bind browser's window events
         Window.addWindowClosingHandler(new Window.ClosingHandler() {
@@ -204,6 +213,31 @@ public class BootstrapController {
         onSessionUsage(analyticsSessions, true); // This is necessary to forcibly print the very first event
     }
 
+    private void launchStartupAction() {
+        final String actionId = Config.getStartupParam("action");
+
+        if (actionId == null) {
+            return;
+        }
+
+        Action action = actionManager.getAction(actionId);
+
+        if (action == null) {
+            return;
+        }
+
+        final Presentation presentation = presentationFactory.getPresentation(action);
+
+        PerspectiveManager manager = managerProvider.get();
+
+        ActionEvent actionEvent = new ActionEvent("", presentation, actionManager, manager, null);
+        action.update(actionEvent);
+
+        if (presentation.isEnabled() && presentation.isVisible()) {
+            action.actionPerformed(actionEvent);
+        }
+    }
+
     private void onSessionUsage(AnalyticsSessions analyticsSessions, boolean force) {
         if (analyticsSessions.getIdleUsageTime() > 600000) { // 10 min
             analyticsSessions.makeNew();
@@ -235,79 +269,4 @@ public class BootstrapController {
             analyticsSessions.updateLogTime();
         }
     }
-
-
-    private void processStartupParameters() {
-        final String projectNameToOpen = Config.getProjectName();
-        if (projectNameToOpen != null) {
-            eventBus.addHandler(ProjectActionEvent.TYPE, getStartupActionHandler());
-            eventBus.fireEvent(new OpenProjectEvent(projectNameToOpen));
-        } else {
-            processStartupAction();
-        }
-    }
-
-    private ProjectActionHandler getStartupActionHandler() {
-        return new ProjectActionHandler() {
-            //process action only after opening project
-            @Override
-            public void onProjectOpened(ProjectActionEvent event) {
-                processStartupAction();
-            }
-
-            @Override
-            public void onProjectClosing(ProjectActionEvent event) {
-            }
-
-            @Override
-            public void onProjectClosed(ProjectActionEvent event) {
-            }
-        };
-    }
-
-    private void processStartupAction() {
-        final String startupAction = Config.getStartupParam("action");
-        if (startupAction != null) {
-            performAction(startupAction);
-        }
-    }
-
-    private void performAction(String actionId) {
-        performAction(actionId, null);
-    }
-
-    private void performAction(String actionId, Map<String, String> parameters) {
-        Action action = actionManager.getAction(actionId);
-
-        if (action == null) {
-            return;
-        }
-
-        final Presentation presentation = presentationFactory.getPresentation(action);
-
-        PerspectiveManager manager = managerProvider.get();
-
-        ActionEvent e = new ActionEvent("", presentation, actionManager, manager, parameters);
-        action.update(e);
-
-        if (presentation.isEnabled() && presentation.isVisible()) {
-            action.actionPerformed(e);
-        }
-    }
-
-    /**
-     * Handles any of initialization errors.
-     * Tries to call predefined IDE.eventHandlers.ideInitializationFailed function.
-     *
-     * @param reason
-     *         failure encountered
-     */
-    private native void initializationFailed(Exception reason) /*-{
-        try {
-            $wnd.IDE.eventHandlers.initializationFailed(reason);
-        } catch (e) {
-            console.log(e.message);
-        }
-    }-*/;
-
 }

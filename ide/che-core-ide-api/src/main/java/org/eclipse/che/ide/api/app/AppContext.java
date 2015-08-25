@@ -11,8 +11,6 @@
 package org.eclipse.che.ide.api.app;
 
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor;
-//import org.eclipse.che.api.factory.dto.Factory;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 
 import javax.annotation.Nonnull;
@@ -26,6 +24,7 @@ import java.util.List;
  * E.g. current project, current workspace and etc.
  *
  * @author Vitaly Parfonov
+ * @author Dmitry Shnurenko
  */
 @Singleton
 public class AppContext {
@@ -54,12 +53,19 @@ public class AppContext {
      *         project which will be opened
      */
     public void addOpenedProject(@Nonnull ProjectDescriptor openedProject) {
-        openedProjects.add(openedProject);
+        if (!openedProjects.contains(openedProject)) {
+            openedProjects.add(openedProject);
+        }
     }
 
     /** Removes all opened projects. */
-    public void clearOpenedProject() {
-        openedProjects.clear();
+    public void removeOpenedProject(@Nonnull String deletedProjectName) {
+        for (ProjectDescriptor descriptor : openedProjects) {
+
+            if (deletedProjectName.equals(descriptor.getName())) {
+                openedProjects.remove(descriptor);
+            }
+        }
     }
 
     public UsersWorkspaceDto getWorkspace() {
