@@ -113,6 +113,10 @@ public interface ProjectManager {
      * @return Set<Project> set of modules
      * @throws ServerException
      *         if an error occurs
+     * @throws ConflictException
+     *         if operation causes conflict, e.g. name conflict if project with specified name already exists
+     * @throws ForbiddenException
+     *         if user which perform operation doesn't have required permissions
      *
      */
     public Set<Project> getProjectModules(Project project)
