@@ -144,7 +144,7 @@ public class ZipUtils {
             if (!zipEntry.isDirectory()) {
                 final File parent = file.getParentFile();
                 if (!parent.exists()) {
-                    if(parent.mkdirs()){
+                    if(!parent.mkdirs()){
                         throw new IOException("Unable to create parent folder "+ parent.getAbsolutePath());
                     }
 
