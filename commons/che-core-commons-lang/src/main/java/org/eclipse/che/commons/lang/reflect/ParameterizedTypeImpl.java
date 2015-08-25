@@ -56,7 +56,7 @@ public final class ParameterizedTypeImpl implements ParameterizedType {
 
     @Override
     public Type[] getActualTypeArguments() {
-        return typeArguments;
+        return Arrays.copyOf(typeArguments, typeArguments.length);
     }
 
     @Override
