@@ -141,7 +141,10 @@ public class ZipUtils {
             if (!zipEntry.isDirectory()) {
                 final File parent = file.getParentFile();
                 if (!parent.exists()) {
-                    parent.mkdirs();
+                    if(parent.mkdirs()){
+                        throw new IOException("Unable to create parent folder "+ parent.getAbsolutePath());
+                    }
+
                 }
                 try (FileOutputStream fos = new FileOutputStream(file)) {
                     int r;
@@ -150,7 +153,10 @@ public class ZipUtils {
                     }
                 }
             } else {
-                file.mkdirs();
+                if( file.mkdirs()){
+                    throw new IOException("Unable to create folder "+ file.getAbsolutePath());
+                }
+
             }
             zipIn.closeEntry();
         }
