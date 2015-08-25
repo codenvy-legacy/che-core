@@ -149,7 +149,7 @@ public class NativeGit {
      * @return ls command
      */
     public LsRemoteCommand createLsRemoteCommand() {
-        LsRemoteCommand command = new LsRemoteCommand(repository);
+        LsRemoteCommand command = new LsRemoteCommand(repository, gitSshScriptProvider, credentialsLoader, gitAskPassScript);
         command.setLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }

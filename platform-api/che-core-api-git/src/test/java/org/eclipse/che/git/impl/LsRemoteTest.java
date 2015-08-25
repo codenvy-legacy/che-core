@@ -58,8 +58,7 @@ public class LsRemoteTest {
         //when
         Set<RemoteReference> remoteReferenceSet =
                 new HashSet<>(connection.lsRemote(newDto(LsRemoteRequest.class)
-                                                          .withRemoteUrl("https://github.com/codenvy/everrest.git")
-                                                          .withUseAuthorization(false)));
+                                                          .withRemoteUrl("https://github.com/codenvy/everrest.git")));
 
         //then
         assertTrue(remoteReferenceSet.contains(newDto(RemoteReference.class)
@@ -68,14 +67,14 @@ public class LsRemoteTest {
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class,
-            expectedExceptions = GitException.class)
-    public void testShouldThrowGitExceptionIfUserTryGetInfoAboutPrivateRepoAndUserIsUnauthorized(GitConnectionFactory connectionFactory)
+          expectedExceptions = UnauthorizedException.class,
+          expectedExceptionsMessageRegExp = "Not authorized")
+    public void testShouldThrowUnauthorizedExceptionIfUserTryGetInfoAboutPrivateRepoAndUserIsUnauthorized(GitConnectionFactory connectionFactory)
             throws GitException, UnauthorizedException, IOException {
 
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
 
         connection.lsRemote(newDto(LsRemoteRequest.class)
-                .withRemoteUrl("https://bitbucket.org/exoinvitemain/privater.git")
-                .withUseAuthorization(false));
+                                    .withRemoteUrl("https://bitbucket.org/exoinvitemain/privater.git"));
     }
 }

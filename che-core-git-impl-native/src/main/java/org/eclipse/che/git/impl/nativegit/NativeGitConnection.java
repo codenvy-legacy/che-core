@@ -393,7 +393,7 @@ public class NativeGitConnection implements GitConnection {
     @Override
     public List<RemoteReference> lsRemote(LsRemoteRequest request) throws GitException, UnauthorizedException {
         LsRemoteCommand command = nativeGit.createLsRemoteCommand().setRemoteUrl(request.getRemoteUrl());
-        command.execute();
+        executeRemoteCommand(command);
         return command.getRemoteReferences();
     }
 
