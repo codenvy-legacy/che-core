@@ -357,6 +357,10 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
                 return;
             }
 
+            if (!fireCancellableEvent(new BeforeExpandNodeEvent(node))) {
+                return;
+            }
+
             if (!nodeDescriptor.isExpanded() && nodeLoader != null && (!nodeDescriptor.isLoaded())) {
                 nodeStorage.removeChildren(node);
                 nodeDescriptor.setExpand(true);
@@ -367,7 +371,7 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
                 return;
             }
 
-            if (!nodeDescriptor.isExpanded() && fireCancellableEvent(new BeforeExpandNodeEvent(node))) {
+            if (!nodeDescriptor.isExpanded()) {
                 nodeDescriptor.setExpanded(true);
 
                 if (!nodeDescriptor.isChildrenRendered()) {

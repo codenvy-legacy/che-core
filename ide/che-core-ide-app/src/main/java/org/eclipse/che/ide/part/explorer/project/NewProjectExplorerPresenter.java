@@ -241,6 +241,10 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
         view.synchronizeTree();
     }
 
+    public void navigate(HasStorablePath node, boolean select, boolean callAction) {
+        view.navigate(node, select, callAction);
+    }
+
     public void reloadChildren(Node node) {
         reloadChildren(node, null);
     }

@@ -14,6 +14,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.parts.base.BaseActionDelegate;
+import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.ui.smartTree.TreeNodeStorage.StoreSortInfo;
 import org.eclipse.che.ide.ui.smartTree.event.BeforeExpandNodeEvent.BeforeExpandNodeHandler;
@@ -54,6 +55,8 @@ public interface NewProjectExplorerView extends View<NewProjectExplorerView.Acti
     void reloadChildren(List<Node> nodes, Object selectAfter, boolean callAction);
 
     void reloadChildrenByType(Class<?> type);
+
+    void navigate(HasStorablePath node, boolean select, boolean callAction);
 
     public interface ActionDelegate extends BaseActionDelegate {
         void onSelectionChanged(List<Node> selection);

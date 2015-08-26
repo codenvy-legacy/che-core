@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.part.explorer.project;
 
+import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.gwt.core.client.Scheduler;
@@ -38,7 +39,6 @@ import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor;
 import org.eclipse.che.ide.menu.ContextMenu;
-import org.eclipse.che.ide.project.ProjectContextMenu;
 import org.eclipse.che.ide.project.node.AbstractProjectBasedNode;
 import org.eclipse.che.ide.project.node.NodeManager;
 import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
@@ -63,6 +63,7 @@ import org.eclipse.che.ide.ui.smartTree.event.SelectionChangedEvent;
 import org.eclipse.che.ide.ui.smartTree.event.SelectionChangedEvent.SelectionChangedHandler;
 import org.eclipse.che.ide.ui.smartTree.presentation.DefaultPresentationRenderer;
 import org.eclipse.che.ide.ui.smartTree.sorting.AlphabeticalFilter;
+import org.eclipse.che.ide.util.loging.Log;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
@@ -70,6 +71,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import static org.eclipse.che.ide.ui.menu.PositionController.HorizontalAlign.MIDDLE;
@@ -85,26 +87,25 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
                                                                                                            GoIntoStateHandler {
     private       Resources                resources;
     private final ProjectExplorerResources explorerResources;
-    private final ProjectContextMenu       projectContextMenu;
     private final NodeManager              nodeManager;
     private       Tree                     tree;
     private       FlowPanel                projectHeader;
     private       ToolButton               goIntoBackButton;
     private StoreSortInfo foldersOnTopSort = new StoreSortInfo(new FoldersOnTopFilter(), SortDir.ASC);
     private HandlerRegistration contentRootExpanderRegistration;
+    private HandlerRegistration navigateBeforeExpandHandler = null;
+    private HandlerRegistration navigateExpandHandler       = null;
 
     @Inject
     public NewProjectExplorerViewImpl(Resources resources,
                                       ProjectExplorerResources explorerResources,
                                       final ContextMenu contextMenu,
-                                      final ProjectContextMenu projectContextMenu,
                                       CoreLocalizationConstant coreLocalizationConstant,
                                       Set<NodeInterceptor> nodeInterceptorSet,
                                       NodeManager nodeManager) {
         super(resources);
         this.resources = resources;
         this.explorerResources = explorerResources;
-        this.projectContextMenu = projectContextMenu;
         this.nodeManager = nodeManager;
 
         setTitle(coreLocalizationConstant.projectExplorerTitleBarText());
@@ -156,6 +157,18 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
         panel.ensureDebugId("projectExplorer");
 
         setContentWidget(panel);
+
+        tree.addDomHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                if (navigateBeforeExpandHandler != null) {
+                    navigateBeforeExpandHandler.removeHandler();
+                }
+                if (navigateExpandHandler != null) {
+                    navigateExpandHandler.removeHandler();
+                }
+            }
+        }, ClickEvent.getType());
     }
 
     @Override
@@ -314,7 +327,7 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
 //                scrollFromSource.addClickHandler(new ClickHandler() {
 //                    @Override
 //                    public void onClick(ClickEvent event) {
-//                        throw new UnsupportedOperationException("Not implemented yet.");
+//
 //                    }
 //                });
 //                Tooltip.create((elemental.dom.Element)scrollFromSource.getElement(),
@@ -458,6 +471,110 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
                 }
             }
         };
+    }
+
+    @Override
+    public void navigate(final HasStorablePath node, final boolean select, final boolean callAction) {
+        if (navigateBeforeExpandHandler != null) {
+            navigateBeforeExpandHandler.removeHandler();
+        }
+        if (navigateExpandHandler != null) {
+            navigateExpandHandler.removeHandler();
+        }
+
+        List<Node> rootNodes = tree.getRootNodes();
+
+        //first get all rendered node, maybe we already have this node in the list
+        for (Node rootNode : rootNodes) {
+            List<Node> allChildren = tree.getNodeStorage().getAllChildren(rootNode);
+
+            Node seekNode = null;
+
+            try {
+                seekNode = Iterables.find(allChildren, new Predicate<Node>() {
+                    @Override
+                    public boolean apply(@Nullable Node possible) {
+                        return possible instanceof HasStorablePath
+                               && ((HasStorablePath)possible).getStorablePath().equals(node.getStorablePath());
+                    }
+                });
+            } catch (NoSuchElementException e) {
+                Log.info(this.getClass(), "Node doesn't found, continue searching");
+            }
+
+            if (seekNode != null && seekNode instanceof HasAction && callAction) {
+                Node parent = seekNode.getParent();
+                if (!tree.isExpanded(parent)) {
+                    tree.setExpanded(parent, true);
+                }
+
+                if (select) {
+                    tree.getSelectionModel().select(seekNode, false);
+                    tree.scrollIntoView(seekNode);
+                }
+                ((HasAction)seekNode).actionPerformed();
+                return;
+            }
+        }
+
+        //so, we don't have rendered node yet, iterate through root nodes and search parent root node
+        Node preProcessedNode = null;
+        for (Node rootNode : rootNodes) {
+            if (rootNode instanceof HasStorablePath && node.getStorablePath().startsWith(((HasStorablePath)rootNode).getStorablePath())) {
+                preProcessedNode = rootNode;
+                break;
+            }
+        }
+
+        if (preProcessedNode == null) {
+            //we have nothing to do, just exit
+            return;
+        }
+
+        BeforeExpandNodeEvent.BeforeExpandNodeHandler beforeExpandNodeHandler = new BeforeExpandNodeEvent.BeforeExpandNodeHandler() {
+            @Override
+            public void onBeforeExpand(BeforeExpandNodeEvent event) {
+                Node eventNode = event.getNode();
+
+                if (!(eventNode instanceof HasStorablePath)) {
+                    event.setCancelled(true);
+                    return;
+                }
+
+                HasStorablePath path = (HasStorablePath)eventNode;
+
+                if (!node.getStorablePath().startsWith(path.getStorablePath())) {
+                    event.setCancelled(true);
+                }
+            }
+        };
+
+        ExpandNodeHandler expandNodeHandler = new ExpandNodeHandler() {
+            @Override
+            public void onExpand(ExpandNodeEvent event) {
+                final Node eventNode = event.getNode();
+                List<Node> children = tree.getNodeStorage().getChildren(eventNode);
+                for (Node child : children) {
+                    if (child instanceof HasStorablePath &&
+                        ((HasStorablePath)child).getStorablePath().equals(node.getStorablePath())) {
+                        if (child instanceof HasAction) {
+                            if (select) {
+                                tree.getSelectionModel().select(child, false);
+                                tree.scrollIntoView(child);
+                            }
+                            ((HasAction)child).actionPerformed();
+                        }
+
+                        return;
+                    }
+                }
+            }
+        };
+
+        navigateBeforeExpandHandler = tree.addBeforeExpandHandler(beforeExpandNodeHandler);
+        navigateExpandHandler = tree.addExpandHandler(expandNodeHandler);
+
+        tree.setExpanded(preProcessedNode, true, true);
     }
 
     private void hideProjectInfo() {
