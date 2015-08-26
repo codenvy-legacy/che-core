@@ -165,29 +165,31 @@ public class BuildQueueTask implements Cancellable {
                                      .withName(BuilderMetric.WAITING_TIME_LIMIT)
                                      .withValue(Long.toString(created + waitingTimeout))
                                      .withDescription("Waiting for start limit"));
-            descriptor = dtoFactory.createDto(BuildTaskDescriptor.class)
-                                   .withTaskId(id)
+            descriptor = withCommonDescriptorProperties(dtoFactory.createDto(BuildTaskDescriptor.class))
                                    .withStatus(BuildStatus.IN_QUEUE)
                                    .withBuildStats(buildStats)
                                    .withLinks(links)
                                    .withStartTime(-1)
-                                   .withEndTime(-1)
-                                   .withCreationTime(created);
+                                   .withEndTime(-1);
         } else if (future.isCancelled()) {
-            descriptor = dtoFactory.createDto(BuildTaskDescriptor.class)
-                                   .withTaskId(id)
+            descriptor = withCommonDescriptorProperties(dtoFactory.createDto(BuildTaskDescriptor.class))
                                    .withStatus(BuildStatus.CANCELLED)
-                                   .withCreationTime(created)
                                    .withStartTime(-1)
                                    .withEndTime(-1);
         } else {
             final BuildTaskDescriptor remote = getRemoteTask().getBuildTaskDescriptor();
-            descriptor = dtoFactory.clone(remote)
-                                   .withTaskId(id)
-                                   .withCreationTime(created)
+            descriptor = withCommonDescriptorProperties(dtoFactory.clone(remote))
                                    .withLinks(rewriteKnownLinks(remote.getLinks()));
         }
         return descriptor;
+    }
+
+    private BuildTaskDescriptor withCommonDescriptorProperties(BuildTaskDescriptor descriptor) {
+        return descriptor
+                        .withTaskId(id)
+                        .withWorkspace(request.getWorkspace())
+                        .withProject(request.getProject())
+                        .withCreationTime(created);
     }
 
     private List<Link> rewriteKnownLinks(List<Link> links) {
