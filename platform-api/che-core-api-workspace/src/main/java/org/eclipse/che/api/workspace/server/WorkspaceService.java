@@ -66,7 +66,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilder;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -142,7 +141,7 @@ public class WorkspaceService extends Service {
      */
     @ApiOperation(value = "Create a new workspace",
                   notes = "User and system/admin can create a new persistent workspace. To create a new workspace, a user needs " +
-                    "a valid account. Workspace attributes are optional and used as a storage for any workspace specific information",
+                          "a valid account. Workspace attributes are optional and used as a storage for any workspace specific information",
                   response = WorkspaceDescriptor.class)
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "CREATED"),
@@ -220,7 +219,7 @@ public class WorkspaceService extends Service {
                           "a persistent workspace. Temporary workspace name is automatically generated when it is system created," +
                           "otherwise a name can be passed in JSON params",
                   response = WorkspaceDescriptor.class
-                  )
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "CREATED"),
             @ApiResponse(code = 403, message = "You have no access to create more workspaces"),
@@ -757,6 +756,7 @@ public class WorkspaceService extends Service {
 
     /**
      * Removes user with given identifier as member from certain workspace.
+     * <strong>Note:</strong> user who has only workspace/developer role can remove only his own memberships.
      *
      * @param wsId
      *         workspace identifier
@@ -772,22 +772,30 @@ public class WorkspaceService extends Service {
      * @see #getMembers(String, SecurityContext)
      */
     @ApiOperation(value = "Remove user from workspace",
-                  notes = "Remove a user from a workspace by User ID. Roles allowed: account/owner, workspace/admin")
+                  notes = "Remove a user from a workspace by User ID. Roles allowed: account/owner, workspace/admin, workspace/developer." +
+                          "User who has only workspace/developer role can remove only his own memberships.")
     @ApiResponses(value = {
             @ApiResponse(code = 204, message = "No Content"),
+            @ApiResponse(code = 403, message = "User not authorized to perform this operation"),
             @ApiResponse(code = 404, message = "Not Found"),
             @ApiResponse(code = 409, message = "Cannot remove workspace/admin"),
             @ApiResponse(code = 500, message = "Internal Server Error")})
     @DELETE
     @Path("/{id}/members/{userid}")
-    @RolesAllowed({"account/owner", "workspace/admin"})
+    @RolesAllowed({"account/owner", "workspace/admin", "workspace/developer"})
     public void removeMember(@ApiParam(value = "Workspace ID")
                              @PathParam("id")
                              String wsId,
                              @ApiParam(value = "User ID")
                              @PathParam("userid")
                              String userId,
-                             @Context SecurityContext context) throws NotFoundException, ServerException, ConflictException {
+                             @Context SecurityContext context)
+            throws NotFoundException, ServerException, ConflictException, ForbiddenException {
+        String currentUserId = EnvironmentContext.getCurrent().getUser().getId();
+        if (!context.isUserInRole("workspace/admin") && context.isUserInRole("workspace/developer") && !userId.equals(currentUserId)) {
+            throw new ForbiddenException("Access denied");
+        }
+
         memberDao.remove(new Member().withUserId(userId).withWorkspaceId(wsId));
     }
 
