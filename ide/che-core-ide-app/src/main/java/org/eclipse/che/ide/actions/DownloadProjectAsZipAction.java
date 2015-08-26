@@ -76,8 +76,8 @@ public class DownloadProjectAsZipAction extends Action {
     @Override
     public void update(ActionEvent event) {
         Selection<?> selection = projectExplorer.getSelection();
-        boolean enabled = appContext.getCurrentProject() != null || selection != null ||
-                          (!selection.isEmpty() && selection.getHeadElement() instanceof ProjectReferenceNode);
+        boolean enabled = appContext.getCurrentProject() != null || (selection != null &&
+                          (!selection.isEmpty() && selection.getHeadElement() instanceof ProjectReferenceNode));
 
         event.getPresentation().setVisible(true);
         event.getPresentation().setEnabled(enabled);
