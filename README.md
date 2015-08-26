@@ -3,9 +3,14 @@
 ## About Eclipse Che
 High performance, open source developer environments in the cloud.
 
-[Main repo: github.com/codenvy/che] (https://github.com/codenvy/che)
+* **che**:                     [Main assembly repo - start here] (https://github.com/codenvy/che)
+* **che-plugins**:             [Language & tooling extensions] (http://github.com/codenvy/che-plugins)
+* **che-depmgt**:              [Maven dependency management POM] (http://github.com/codenvy/che-depmgt)
+* **che-parent**:              [Maven parent POM] (http://github.com/codenvy/che-parent)
+* **cli**:                     [CLI for interacting with Che remotely] (http://github.com/codenvy/cli)
+* **eclipse-plugin**:          [Eclipse IDE plug-in for Che projects] (http://github.com/codenvy/eclipse-plugin)
 
-## This Module
+## About This Module
 This module contains the platform API, virtual file system, testing framework, IDE skeleton, and commons. You need Java SDK 1.8 and maven 3.x to build this module.
 
 ## License
