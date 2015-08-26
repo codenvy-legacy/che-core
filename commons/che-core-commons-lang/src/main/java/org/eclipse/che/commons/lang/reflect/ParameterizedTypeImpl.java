@@ -21,14 +21,10 @@ import java.util.Arrays;
  */
 public final class ParameterizedTypeImpl implements ParameterizedType {
 
-    public static ParameterizedType newParameterizedType(Class<?> rawType, Type... typeArguments) {
-        return new ParameterizedTypeImpl(rawType, typeArguments);
-    }
-
     private final Type[]   typeArguments;
     private final Class<?> rawType;
 
-    private ParameterizedTypeImpl(Class<?> rawType, Type[] typeArguments) {
+    public ParameterizedTypeImpl(Class<?> rawType, Type... typeArguments) {
         this.rawType = rawType;
         this.typeArguments = new Type[typeArguments.length];
         System.arraycopy(typeArguments, 0, this.typeArguments, 0, this.typeArguments.length);
