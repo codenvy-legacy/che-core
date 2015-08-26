@@ -57,7 +57,7 @@ public class ZipUtils {
     /**
      * Create an output ZIP stream and add each file to that stream. Directory files are added recursively. The contents
      * of the zip are written to the given file.
-     * 
+     *
      * @param zip
      *            The file to write the zip contents to.
      * @param files
@@ -73,7 +73,7 @@ public class ZipUtils {
     /**
      * Create an output ZIP stream and add each file to that stream. Directory files are added recursively. The contents
      * of the zip are written to the given stream.
-     * 
+     *
      * @param output
      *            The stream to write the zip contents to.
      * @param files
@@ -171,8 +171,8 @@ public class ZipUtils {
             if (!zipEntry.isDirectory()) {
                 final File parent = file.getParentFile();
                 if (!parent.exists()) {
-                    if(!parent.mkdirs()){
-                        throw new IOException("Unable to create parent folder "+ parent.getAbsolutePath());
+                    if (!parent.mkdirs()) {
+                        throw new IOException("Unable to create parent folder " + parent.getAbsolutePath());
                     }
 
                 }
@@ -183,8 +183,10 @@ public class ZipUtils {
                     }
                 }
             } else {
-                if(!file.mkdirs()){
-                    throw new IOException("Unable to create folder "+ file.getAbsolutePath());
+                if (!file.exists()) {
+                    if (!file.mkdirs()) {
+                        throw new IOException("Unable to create folder " + file.getAbsolutePath());
+                    }
                 }
 
             }
@@ -208,10 +210,10 @@ public class ZipUtils {
                 return false;
             }
         }
-        
+
         ByteBuffer zipFileHeaderSignature = ByteBuffer.wrap(bytes);
         zipFileHeaderSignature.order(ByteOrder.LITTLE_ENDIAN);
-        return 0x04034b50 ==  zipFileHeaderSignature.getInt();
+        return 0x04034b50 == zipFileHeaderSignature.getInt();
     }
 
     private ZipUtils() {
