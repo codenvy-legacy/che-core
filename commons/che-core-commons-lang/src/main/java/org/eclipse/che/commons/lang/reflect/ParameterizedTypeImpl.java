@@ -25,17 +25,8 @@ public final class ParameterizedTypeImpl implements ParameterizedType {
         return new ParameterizedTypeImpl(rawType, typeArguments);
     }
 
-    public static ParameterizedType newParameterizedType(Class<?> rawType, Type typeArgument) {
-        return new ParameterizedTypeImpl(rawType, typeArgument);
-    }
-
     private final Type[]   typeArguments;
     private final Class<?> rawType;
-
-    private ParameterizedTypeImpl(Class<?> rawType, Type typeArgument) {
-        this.rawType = rawType;
-        this.typeArguments = new Type[]{typeArgument};
-    }
 
     private ParameterizedTypeImpl(Class<?> rawType, Type[] typeArguments) {
         this.rawType = rawType;
