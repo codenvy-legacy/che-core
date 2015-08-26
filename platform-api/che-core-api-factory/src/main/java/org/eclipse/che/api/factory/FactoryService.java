@@ -628,8 +628,7 @@ public class FactoryService extends Service {
                 moduleAttributes.keySet().forEach(attrName ->
                                                           attributesMap.put(attrName, moduleAttributes.get(attrName).getList())
                                                  );
-                String parentPath = module.getBaseFolder().getParent().getPath();
-                String moduleRelativePath = module.getPath().substring(parentPath.length());
+                String moduleRelativePath = module.getPath().substring(project.getPath().length());
                 newProject.getModules().add(DtoFactory.newDto(ProjectModule.class).withType(moduleConfig.getTypeId())
                                                       .withPath(moduleRelativePath)
                                                       .withAttributes(attributesMap)
