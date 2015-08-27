@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ui.smartTree;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.event.shared.HandlerManager;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -518,6 +521,45 @@ public class TreeNodeStorage implements StoreHandlers.HasStoreHandlers {
         fireEvent(new StoreDataChangeEvent(parent));
     }
 
+    private List<NodeDescriptor> findRemovedNodes(NodeDescriptor parent, final List<Node> loadedChildren) {
+        List<NodeDescriptor> existed = parent.getChildren();
+
+        if (existed == null || existed.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Iterable<NodeDescriptor> removedItems = Iterables.filter(existed, new Predicate<NodeDescriptor>() {
+            @Override
+            public boolean apply(NodeDescriptor existedChild) {
+                return !loadedChildren.contains(existedChild.getNode());
+            }
+        });
+
+        return Lists.newArrayList(removedItems);
+    }
+
+    private List<Node> findNewNodes(NodeDescriptor parent, final List<Node> loadedChildren) {
+        final List<NodeDescriptor> existed = parent.getChildren();
+
+        if (existed == null || existed.isEmpty()) {
+            return loadedChildren;
+        }
+
+        Iterable<Node> newItems = Iterables.filter(loadedChildren, new Predicate<Node>() {
+            @Override
+            public boolean apply(Node loadedChild) {
+                for (NodeDescriptor nodeDescriptor : existed) {
+                    if (nodeDescriptor.getNode().equals(loadedChild)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        });
+
+        return Lists.newArrayList(newItems);
+    }
+
     private List<NodeDescriptor> convertTreeNodesHelper(List<Node> children) {
         List<NodeDescriptor> nodeDescriptors = new ArrayList<>();
         if (children != null) {
@@ -627,12 +669,10 @@ public class TreeNodeStorage implements StoreHandlers.HasStoreHandlers {
 
 
     public NodeDescriptor getWrapper(Node node) {
-//        Log.info(this.getClass(), "getWrapper():661: " + idToNodeMap.toString());
         return idToNodeMap.get(getKeyProvider().getKey(node));
     }
 
     public NodeDescriptor wrap(Node node) {
-//        Log.info(this.getClass(), "wrap():663: " + "wrap node: " + node.getName());
         NodeDescriptor nodeDescriptor = new NodeDescriptor(this, node);
         idToNodeMap.put(getKeyProvider().getKey(node), nodeDescriptor);
         return nodeDescriptor;
@@ -704,7 +744,7 @@ public class TreeNodeStorage implements StoreHandlers.HasStoreHandlers {
     }
 
     public static class StoreSortInfo implements Comparator<Node> {
-        private       SortDir               direction;
+        private       SortDir          direction;
         private final Comparator<Node> comparator;
 
         /**
