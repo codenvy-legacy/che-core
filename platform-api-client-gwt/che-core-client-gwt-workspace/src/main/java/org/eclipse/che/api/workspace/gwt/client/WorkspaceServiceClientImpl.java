@@ -42,20 +42,20 @@ import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
 /**
  * Implementation for {@link WorkspaceServiceClient}.
  *
- * @author Roman Nikitenko
+ * @author Artem Zatsarynnyy
  */
 public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
 
     private final DtoUnmarshallerFactory dtoUnmarshallerFactory;
-    private final AsyncRequestFactory asyncRequestFactory;
-    private final AsyncRequestLoader  loader;
-    private final String              baseHttpUrl;
+    private final AsyncRequestFactory    asyncRequestFactory;
+    private final AsyncRequestLoader     loader;
+    private final String                 baseHttpUrl;
 
     @Inject
-    protected WorkspaceServiceClientImpl(@RestContext String restContext,
-                                         DtoUnmarshallerFactory dtoUnmarshallerFactory,
-                                         AsyncRequestFactory asyncRequestFactory,
-                                         AsyncRequestLoader loader) {
+    private WorkspaceServiceClientImpl(@RestContext String restContext,
+                                       DtoUnmarshallerFactory dtoUnmarshallerFactory,
+                                       AsyncRequestFactory asyncRequestFactory,
+                                       AsyncRequestLoader loader) {
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.asyncRequestFactory = asyncRequestFactory;
         this.loader = loader;
@@ -113,7 +113,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
         final String url = baseHttpUrl;
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
-                           .loader(loader, "Getting info about bound workspaces...")
+                           .loader(loader, "Getting info about workspaces...")
                            .send(newCallback(callback, dtoUnmarshallerFactory.newListUnmarshaller(UsersWorkspaceDto.class)));
     }
 
@@ -142,7 +142,9 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
         });
     }
 
-    private void startTemporary(@Nonnull WorkspaceConfig cfg, @Nonnull String accountId, @Nonnull AsyncCallback<UsersWorkspaceDto> callback) {
+    private void startTemporary(@Nonnull WorkspaceConfig cfg,
+                                @Nonnull String accountId,
+                                @Nonnull AsyncCallback<UsersWorkspaceDto> callback) {
         asyncRequestFactory.createPostRequest(baseHttpUrl + "/runtime", cfg)
                            .header(ACCEPT, APPLICATION_JSON)
                            .header(CONTENT_TYPE, APPLICATION_JSON)

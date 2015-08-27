@@ -55,7 +55,7 @@ public class WorkspaceComponent implements Component {
 
     @Override
     public void start(final Callback<Component, Exception> callback) {
-        workspaceServiceClient.getWorkspaces(0, 0).then(new Operation<List<UsersWorkspaceDto>>() {
+        workspaceServiceClient.getWorkspaces(0, 1).then(new Operation<List<UsersWorkspaceDto>>() {
             @Override
             public void apply(List<UsersWorkspaceDto> arg) throws OperationException {
                 if (!arg.isEmpty()) {

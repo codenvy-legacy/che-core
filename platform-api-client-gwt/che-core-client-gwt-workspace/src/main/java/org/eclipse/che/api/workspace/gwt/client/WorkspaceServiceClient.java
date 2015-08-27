@@ -12,12 +12,12 @@ package org.eclipse.che.api.workspace.gwt.client;
 
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.api.workspace.server.WorkspaceService;
 import org.eclipse.che.api.workspace.shared.dto.CommandDto;
 import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.RuntimeWorkspaceDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
-import org.eclipse.che.api.workspace.server.WorkspaceService;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
 
 import java.util.List;

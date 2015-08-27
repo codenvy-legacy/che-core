@@ -17,11 +17,9 @@ import org.eclipse.che.api.project.shared.dto.NewProject;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.api.project.shared.dto.ProjectUpdate;
-//import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentTree;
 import org.eclipse.che.api.project.shared.dto.TreeElement;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
@@ -55,8 +53,10 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void cloneProjectToCurrentWorkspace(String srcWorkspaceId, String srcProjectPath, String newNameForProject,
-                                               AsyncRequestCallback<String> callback);
+    void cloneProjectToCurrentWorkspace(String srcWorkspaceId,
+                                        String srcProjectPath,
+                                        String newNameForProject,
+                                        AsyncRequestCallback<String> callback);
 
     /**
      * Get project.
@@ -264,7 +264,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void rename(String path, String newName, @Nullable String newMediaType, AsyncRequestCallback<Void> callback);
+    void rename(String path, String newName, String newMediaType, AsyncRequestCallback<Void> callback);
 
     /**
      * Import sources into project.
@@ -323,14 +323,4 @@ public interface ProjectServiceClient {
      *         the callback to use for the response
      */
     void switchVisibility(String path, String visibility, AsyncRequestCallback<Void> callback);
-
-    /**
-     * Get available project-scoped runner environments.
-     *
-     * @param path
-     *         path to the project
-     * @param callback
-     *         the callback to use for the response
-     */
-//    void getRunnerEnvironments(String path, AsyncRequestCallback<RunnerEnvironmentTree> callback);
 }
