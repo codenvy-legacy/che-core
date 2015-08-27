@@ -1,4 +1,10 @@
+# Eclipse Che Core
+[![Join the chat at https://gitter.im/eclipse/che](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/eclipse/che?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/codenvy/che-core.svg?branch=master)](https://travis-ci.org/codenvy/che-core) 
+
+[![License](https://img.shields.io/github/license/codenvy/che-core.svg)](https://github.com/codenvy/che-core)
+[![Latest tag](https://img.shields.io/github/tag/codenvy/che-core.svg)](https://github.com/codenvy/che-core/tags)
+
 
 ## About Eclipse Che
 High performance, open source developer environments in the cloud.
