@@ -19,6 +19,9 @@ import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.model.machine.Command;
+import org.eclipse.che.api.core.model.machine.MachineConfig;
+import org.eclipse.che.api.core.model.workspace.Environment;
 import org.eclipse.che.api.core.model.workspace.RuntimeWorkspace;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
@@ -42,6 +45,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static java.lang.String.format;
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.STOPPED;
 import static org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent.EventType.ERROR;
 import static org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent.EventType.RUNNING;
@@ -49,6 +54,8 @@ import static org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEven
 import static org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent.EventType.STOPPING;
 import static org.eclipse.che.commons.lang.NameGenerator.generate;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
+
+//TODO document it
 
 /**
  * Facade for Workspace related operations
@@ -76,7 +83,9 @@ public class WorkspaceManager {
         this.workspaceRegistry = workspaceRegistry;
         this.eventService = eventService;
 
-        executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("WorkspaceManager-%d").setDaemon(true).build());
+        executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("WorkspaceManager-%d")
+                                                                           .setDaemon(true)
+                                                                           .build());
     }
 
     @Inject(optional = true)
@@ -94,7 +103,7 @@ public class WorkspaceManager {
      *         if any error occurs
      */
     public List<UsersWorkspace> getWorkspaces(String owner) throws ServerException, BadRequestException {
-        requiredNotNull(owner, "Workspace owner");
+        requiredNotNull(owner, "Workspace owner required");
 
         final List<RuntimeWorkspaceImpl> runtimeWorkspaces = workspaceRegistry.getList(owner);
         final List<UsersWorkspaceImpl> usersWorkspaces = workspaceDao.getList(owner);
@@ -115,7 +124,7 @@ public class WorkspaceManager {
 
     public UsersWorkspace startWorkspaceById(String workspaceId, String envName)
             throws NotFoundException, ServerException, BadRequestException {
-        requiredNotNull(workspaceId, "Workspace id");
+        requiredNotNull(workspaceId, "Workspace id required");
 
         final UsersWorkspaceImpl workspace = workspaceDao.get(workspaceId);
         workspace.setTemporary(false);
@@ -126,8 +135,8 @@ public class WorkspaceManager {
 
     public UsersWorkspaceImpl startWorkspaceByName(String workspaceName, String envName, String owner)
             throws NotFoundException, ServerException, BadRequestException {
-        requiredNotNull(workspaceName, "Workspace name");
-        requiredNotNull(owner, "Workspace owner");
+        requiredNotNull(workspaceName, "Workspace name required");
+        requiredNotNull(owner, "Workspace owner required");
 
         final UsersWorkspaceImpl workspace = workspaceDao.get(workspaceName, owner);
         workspace.setTemporary(false);
@@ -137,6 +146,7 @@ public class WorkspaceManager {
     }
 
     // TODO should we store temp workspaces and where?
+    // should it be sync or async?
     public UsersWorkspaceImpl startTemporaryWorkspace(WorkspaceConfig workspaceConfig, final String accountId)
             throws ServerException, BadRequestException, ForbiddenException, NotFoundException {
         final UsersWorkspaceImpl workspace = fromConfig(workspaceConfig);
@@ -154,30 +164,14 @@ public class WorkspaceManager {
                  workspace.getId(),
                  EnvironmentContext.getCurrent().getUser().getId());
 
-        workspace.setStatus(WorkspaceStatus.STARTING);
+        workspace.setStatus(WorkspaceStatus.RUNNING);
         return workspace;
     }
 
     public void stopWorkspace(String workspaceId) throws ServerException, NotFoundException, ForbiddenException, BadRequestException {
-        requiredNotNull(workspaceId, "Workspace id");
+        requiredNotNull(workspaceId, "Workspace id required");
 
-        eventService.publish(newDto(WorkspaceStatusEvent.class)
-                                     .withEventType(STOPPING)
-                                     .withWorkspaceId(workspaceId));
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    workspaceRegistry.stop(workspaceId);
-                } catch (ForbiddenException | NotFoundException | ServerException e) {
-                    LOG.error(e.getLocalizedMessage(), e);
-                }
-
-                eventService.publish(newDto(WorkspaceStatusEvent.class)
-                                             .withEventType(WorkspaceStatusEvent.EventType.STOPPED)
-                                             .withWorkspaceId(workspaceId));
-            }
-        });
+        stopWorkspaceAsync(workspaceId);
     }
 
     public UsersWorkspaceImpl createWorkspace(final WorkspaceConfig workspaceConfig, final String accountId)
@@ -192,52 +186,45 @@ public class WorkspaceManager {
 
         hooks.afterCreate(workspace, accountId);
 
-        LOG.info("EVENT#workspace-created# WS#{}# WS-ID#{}# USER#{}#", workspace.getName(), workspace.getId(),
-                 EnvironmentContext.getCurrent().getUser().getId());
+        LOG.info("EVENT#workspace-created# WS#{}# WS-ID#{}# USER#{}#",
+                 workspace.getName(),
+                 workspace.getId(),
+                 getCurrentUserId());
 
         return newWorkspace;
     }
 
-    public UsersWorkspace updateWorkspace(String workspaceId, final WorkspaceConfig workspace)
-            throws ConflictException, ServerException, BadRequestException, NotFoundException, ForbiddenException {
+    public UsersWorkspace updateWorkspace(String workspaceId, WorkspaceConfig update)
+            throws ConflictException, ServerException, BadRequestException, NotFoundException {
+        validateName(update.getName());
+        validateConfig(update);
 
-        requiredNotNull(workspace, "Workspace config");
-        requiredNotNull(workspace.getDefaultEnvName(), "Workspace default environment");
-        requiredNotNull(workspace.getEnvironments(), "Workspace default environment configuration");
-        requiredNotNull(workspace.getEnvironments().get(workspace.getDefaultEnvName()), "Workspace default environment configuration");
-
-        validateName(workspace.getName());
-        validateAttributes(workspace.getAttributes());
-
-        UsersWorkspace currentWorkspace = workspaceDao.get(workspaceId);
-        UsersWorkspaceImpl newWorkspace = new UsersWorkspaceImpl(workspace, currentWorkspace.getId(), currentWorkspace.getOwner());
-
-        UsersWorkspace updated = workspaceDao.update(newWorkspace);
+        final UsersWorkspaceImpl oldWorkspace = workspaceDao.get(workspaceId);
+        final UsersWorkspaceImpl updated = workspaceDao.update(new UsersWorkspaceImpl(update,
+                                                                                      oldWorkspace.getId(),
+                                                                                      oldWorkspace.getOwner()));
 
         LOG.info("EVENT#workspace-updated# WS#{}# WS-ID#{}#", updated.getName(), updated.getId());
 
         return updated;
-
     }
 
     public void removeWorkspace(String workspaceId) throws ConflictException, ServerException, NotFoundException, BadRequestException {
-        requiredNotNull(workspaceId, "Workspace id");
+        requiredNotNull(workspaceId, "Workspace id required");
 
-        try {
-            workspaceRegistry.get(workspaceId);
-
+        if (workspaceRegistry.isRunning(workspaceId)) {
             throw new ConflictException("Can't remove running workspace " + workspaceId);
-        } catch (NotFoundException e) {
-            workspaceDao.remove(workspaceId);
-
-            hooks.afterRemove(workspaceId);
-
-            LOG.info("EVENT#workspace-remove# WS-ID#{}#", workspaceId);
         }
+
+        workspaceDao.remove(workspaceId);
+
+        hooks.afterRemove(workspaceId);
+
+        LOG.info("EVENT#workspace-remove# WS-ID#{}#", workspaceId);
     }
 
     public UsersWorkspaceImpl getWorkspace(String workspaceId) throws NotFoundException, ServerException, BadRequestException {
-        requiredNotNull(workspaceId, "Workspace id");
+        requiredNotNull(workspaceId, "Workspace id required");
 
         final UsersWorkspaceImpl workspace = workspaceDao.get(workspaceId);
         try {
@@ -251,7 +238,7 @@ public class WorkspaceManager {
     }
 
     public RuntimeWorkspaceImpl getRuntimeWorkspace(String workspaceId) throws BadRequestException, NotFoundException, ServerException {
-        requiredNotNull(workspaceId, "Workspace id");
+        requiredNotNull(workspaceId, "Workspace id required");
 
         return workspaceRegistry.get(workspaceId);
     }
@@ -262,15 +249,15 @@ public class WorkspaceManager {
     }
 
     public UsersWorkspace getWorkspace(String name, String owner) throws BadRequestException, NotFoundException, ServerException {
-        requiredNotNull(name, "Workspace name");
-        requiredNotNull(owner, "Workspace owner");
+        requiredNotNull(name, "Workspace name required");
+        requiredNotNull(owner, "Workspace owner required");
 
         return workspaceDao.get(name, owner);
     }
 
     /*******************************/
 
-    private void startWorkspaceAsync(final UsersWorkspaceImpl usersWorkspace, final String envName) {
+    void startWorkspaceAsync(final UsersWorkspaceImpl usersWorkspace, final String envName) {
         executor.execute(ThreadLocalPropagateContext.wrap(new Runnable() {
             @Override
             public void run() {
@@ -279,7 +266,7 @@ public class WorkspaceManager {
         }));
     }
 
-    private void startWorkspaceSync(final UsersWorkspaceImpl usersWorkspace, final String envName) {
+    void startWorkspaceSync(final UsersWorkspaceImpl usersWorkspace, final String envName) {
         eventService.publish(newDto(WorkspaceStatusEvent.class)
                                      .withEventType(STARTING)
                                      .withWorkspaceId(usersWorkspace.getId()));
@@ -301,12 +288,26 @@ public class WorkspaceManager {
         }
     }
 
-    private UsersWorkspaceImpl fromConfig(final WorkspaceConfig cfg) throws BadRequestException, ForbiddenException, ServerException {
-        requiredNotNull(cfg, "Workspace config");
-        requiredNotNull(cfg.getDefaultEnvName(), "Workspace default environment");
-        requiredNotNull(cfg.getEnvironments(), "Workspace default environment configuration");
-        requiredNotNull(cfg.getEnvironments().get(cfg.getDefaultEnvName()), "Workspace default environment configuration");
-        validateAttributes(cfg.getAttributes());
+    void stopWorkspaceAsync(String workspaceId) {
+        eventService.publish(newDto(WorkspaceStatusEvent.class)
+                                     .withEventType(STOPPING)
+                                     .withWorkspaceId(workspaceId));
+        executor.execute(() -> {
+            try {
+                workspaceRegistry.stop(workspaceId);
+            } catch (ForbiddenException | NotFoundException | ServerException e) {
+                LOG.error(e.getLocalizedMessage(), e);
+            }
+
+            eventService.publish(newDto(WorkspaceStatusEvent.class)
+                                         .withEventType(WorkspaceStatusEvent.EventType.STOPPED)
+                                         .withWorkspaceId(workspaceId));
+        });
+    }
+
+    UsersWorkspaceImpl fromConfig(final WorkspaceConfig cfg) throws BadRequestException, ForbiddenException, ServerException {
+        requiredNotNull(cfg, "Workspace config required");
+        validateConfig(cfg);
 
         final UsersWorkspaceImpl workspace = new UsersWorkspaceImpl(cfg, generateWorkspaceId(), getCurrentUserId());
 
@@ -319,9 +320,72 @@ public class WorkspaceManager {
         return workspace;
     }
 
+    /**
+     * Checks that {@link WorkspaceConfig cfg} contains valid values, if it is not throws {@link BadRequestException}.
+     *
+     * Validation rules:
+     * <ul>
+     * <li>{@link WorkspaceConfig#getDefaultEnvName()} must not be empty or null</li>
+     * <li>{@link WorkspaceConfig#getEnvironments()} must contain {@link WorkspaceConfig#getDefaultEnvName() default environment}
+     * which is declared in the same configuration</li>
+     * <li>{@link Environment#getName()} must not be null</li>
+     * <li>{@link Environment#getMachineConfigs()} must contain at least 1 machine(which is dev),
+     * also it must contain exactly one dev machine</li>
+     * </ul>
+     */
+    private void validateConfig(WorkspaceConfig cfg) throws BadRequestException {
+        //attributes
+        for (String attributeName : cfg.getAttributes().keySet()) {
+            //attribute name should not be empty and should not start with codenvy
+            if (attributeName.trim().isEmpty() || attributeName.toLowerCase().startsWith("codenvy")) {
+                throw new BadRequestException(format("Attribute name '%s' is not valid", attributeName));
+            }
+        }
+
+        //environments
+        requiredNotNull(cfg.getDefaultEnvName(), "Workspace default environment name required");
+        requiredNotNull(cfg.getEnvironments().get(cfg.getDefaultEnvName()), "Workspace default environment configuration required");
+        for (Environment environment : cfg.getEnvironments().values()) {
+            final String envName = environment.getName();
+            requiredNotNull(envName, "Environment name should not be null");
+
+            //machine configs
+            if (environment.getMachineConfigs().isEmpty()) {
+                throw new BadRequestException("Environment '" + envName + "' should contain at least 1 machine");
+            }
+            final long devCount = environment.getMachineConfigs()
+                                             .stream()
+                                             .filter(MachineConfig::isDev)
+                                             .count();
+            if (devCount != 1) {
+                throw new BadRequestException(format("Environment should contain exactly 1 dev machine, but '%s' contains '%d'",
+                                                     envName,
+                                                     devCount));
+            }
+            for (MachineConfig machineCfg : environment.getMachineConfigs()) {
+                if (isNullOrEmpty(machineCfg.getName())) {
+                    throw new BadRequestException("Environment " + envName + " contains machine without of name");
+                }
+                requiredNotNull(machineCfg.getSource(), "Environment " + envName + " contains machine without of source");
+                //TODO require type?
+            }
+        }
+
+        //commands
+        for (Command command : cfg.getCommands()) {
+            requiredNotNull(command.getName(), "Workspace " + cfg.getName() + " contains command without of name");
+            requiredNotNull(command.getCommandLine(), format("Command line required for command '%s' in workspace '%s'",
+                                                             command.getName(),
+                                                             cfg.getName()));
+        }
+
+        //projects
+        //TODO
+    }
+
     private void validateName(String workspaceName) throws BadRequestException {
-        if (Strings.isNullOrEmpty(workspaceName)) {
-            throw new BadRequestException("Workspace name required");
+        if (isNullOrEmpty(workspaceName)) {
+            throw new BadRequestException("Workspace name should not be null or empty");
         }
         if (!WS_NAME.matcher(workspaceName).matches()) {
             throw new BadRequestException("Incorrect workspace name, it should be between 3 to 20 characters and may contain digits, " +
@@ -339,37 +403,14 @@ public class WorkspaceManager {
      *
      * @param object
      *         object reference to check
-     * @param subject
+     * @param message
      *         used as subject of exception message "{subject} required"
      * @throws org.eclipse.che.api.core.BadRequestException
      *         when object reference is {@code null}
      */
-    private void requiredNotNull(Object object, String subject) throws BadRequestException {
+    private void requiredNotNull(Object object, String message) throws BadRequestException {
         if (object == null) {
-            throw new BadRequestException(subject + " required");
-        }
-    }
-
-    /**
-     * Validates attribute name.
-     *
-     * @param attributeName
-     *         attribute name to check
-     * @throws org.eclipse.che.api.core.ForbiddenException
-     *         when attribute name is {@code null}, empty or it starts with "codenvy"
-     */
-    // TODO rename restricted attribute suffix to 'che:'
-    private void validateAttributeName(String attributeName) throws ForbiddenException {
-        if (attributeName == null || attributeName.isEmpty() || attributeName.toLowerCase().startsWith("codenvy")) {
-            throw new ForbiddenException(String.format("Attribute name '%s' is not valid", attributeName));
-        }
-    }
-
-    private void validateAttributes(Map<String, String> attributes) throws ForbiddenException {
-        if (attributes != null) {
-            for (String attributeName : attributes.keySet()) {
-                validateAttributeName(attributeName);
-            }
+            throw new BadRequestException(message);
         }
     }
 
@@ -382,7 +423,7 @@ public class WorkspaceManager {
      */
     private String generateWorkspaceName() throws ServerException {
         //should be email
-        String userName = currentUser().getName();
+        String userName = EnvironmentContext.getCurrent().getUser().getName();
         int atIdx = userName.indexOf('@');
         //if username contains email then fetch part before '@'
         if (atIdx != -1) {
@@ -410,7 +451,4 @@ public class WorkspaceManager {
         return true;
     }
 
-    private org.eclipse.che.commons.user.User currentUser() {
-        return EnvironmentContext.getCurrent().getUser();
-    }
 }

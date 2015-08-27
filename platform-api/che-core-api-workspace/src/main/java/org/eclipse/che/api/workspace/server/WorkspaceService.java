@@ -63,13 +63,13 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilder;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.RUNNING;
 import static org.eclipse.che.api.core.util.LinksHelper.createLink;
@@ -388,11 +388,9 @@ public class WorkspaceService extends Service {
                                                          .map(this::asDto)
                                                          .collect(toList());
         final Map<String, EnvironmentDto> environments = workspace.getEnvironments()
-                                                                  .entrySet()
+                                                                  .values()
                                                                   .stream()
-                                                                  .collect(HashMap::new,
-                                                                           (map, entry) -> map.put(entry.getKey(), asDto(entry.getValue())),
-                                                                           HashMap::putAll);
+                                                                  .collect(toMap(Environment::getName, this::asDto));
 
         return newDto(UsersWorkspaceDto.class).withId(workspace.getId())
                                               .withStatus(workspace.getStatus())
@@ -470,12 +468,11 @@ public class WorkspaceService extends Service {
                                                                .toString(),
                                             APPLICATION_JSON,
                                             "get machine");
-        final Map<String, ServerDto> servers = machine.getServers()
-                                                      .entrySet()
-                                                      .stream()
-                                                      .collect(HashMap::new,
-                                                               (map, entry) -> map.put(entry.getKey(), asDto(entry.getValue())),
-                                                               HashMap::putAll);
+
+        Map<String, ServerDto> servers = machine.getServers()
+                                                .values()
+                                                .stream()
+                                                .collect(toMap(Server::getUrl, this::asDto));
         return newDto(MachineDto.class).withId(machine.getId())
                                        .withName(machine.getName())
                                        .withDev(machine.isDev())

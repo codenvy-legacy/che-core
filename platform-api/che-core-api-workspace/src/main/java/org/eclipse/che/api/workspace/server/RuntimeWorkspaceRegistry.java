@@ -99,6 +99,15 @@ public class RuntimeWorkspaceRegistry {
         remove(runtimeWorkspace);
     }
 
+    public boolean isRunning(String workspaceId) {
+        lock.readLock().lock();
+        try {
+            return idToWorkspaces.containsKey(workspaceId);
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
     public RuntimeWorkspaceImpl get(String workspaceId) throws NotFoundException {
         lock.readLock().lock();
         final RuntimeWorkspaceImpl runtimeWorkspace;
@@ -122,7 +131,7 @@ public class RuntimeWorkspaceRegistry {
         }
     }
 
-    private List<Machine> startEnvironment(Environment environment, String workspaceId)
+    List<Machine> startEnvironment(Environment environment, String workspaceId)
             throws BadRequestException, ServerException, NotFoundException, ConflictException {
         /* todo replace with environments management
            for now we consider environment is:
