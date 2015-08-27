@@ -11,6 +11,8 @@
 package org.eclipse.che.git.impl.nativegit.commands;
 
 import org.eclipse.che.api.git.GitException;
+import org.eclipse.che.git.impl.nativegit.CredentialsLoader;
+import org.eclipse.che.git.impl.nativegit.GitAskPassScript;
 import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
 
 import java.io.File;
@@ -26,8 +28,8 @@ public class BranchDeleteCommand extends RemoteOperationCommand<Void> {
     private String  branchName;
     private String  remote;
 
-    public BranchDeleteCommand(File repository, GitSshScriptProvider gitSshScriptProvider) {
-        super(repository, gitSshScriptProvider);
+    public BranchDeleteCommand(File repository, GitSshScriptProvider gitSshScriptProvider, CredentialsLoader credentialsLoader, GitAskPassScript gitAskPassScript) {
+        super(repository, gitSshScriptProvider, credentialsLoader, gitAskPassScript);
     }
 
     /**

@@ -51,10 +51,6 @@ public class CommandProcess {
         Map<String, String> environment = pb.environment();
 
         environment.put("HOME", System.getProperty("user.home"));
-        // if command should be executed with credentials
-        if (command.getAskPassScriptPath() != null) {
-            environment.put("GIT_ASKPASS", command.getAskPassScriptPath());
-        }
         environment.put("LANG", "en_US.UTF-8");
         environment.put("GDM_LANG", "en_US.UTF-8");
         environment.put("LANGUAGE", "us");

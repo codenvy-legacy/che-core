@@ -30,8 +30,6 @@ public abstract class GitCommand<T> extends ListLineConsumer {
     private final File repository;
 
     private int                 timeout;
-    private String              SSHScriptPath;
-    private String              askPassScriptPath;
     private LineConsumerFactory lineConsumerFactory;
     private Map<String, String> commandEnvironment;
 
@@ -59,33 +57,9 @@ public abstract class GitCommand<T> extends ListLineConsumer {
         return repository;
     }
 
-    /**
-     * If command needs ssh, then it needs path to ssh script,
-     * that use stored key.
-     *
-     * @param SSHScriptPath
-     *         path to ssh script
-     */
-    public void setSSHScriptPath(String SSHScriptPath) {
-        this.SSHScriptPath = SSHScriptPath;
-    }
-
     /** @return current command line */
     public CommandLine getCommandLine() {
         return new CommandLine(commandLine);
-    }
-
-    /** @return path to ssh script */
-    public String getSSHScriptPath() {
-        return SSHScriptPath;
-    }
-
-    public void setAskPassScriptPath(String askPassScriptPath) {
-        this.askPassScriptPath = askPassScriptPath;
-    }
-
-    public String getAskPassScriptPath() {
-        return askPassScriptPath;
     }
 
     /**

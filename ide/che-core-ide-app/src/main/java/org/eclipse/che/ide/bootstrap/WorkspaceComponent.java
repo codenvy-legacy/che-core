@@ -88,7 +88,7 @@ public class WorkspaceComponent implements Component {
 
     private WorkspaceConfig getWorkspaceConfig() {
         final String recipeURL =
-                "https://gist.githubusercontent.com/evoevodin/100608a19c255cec28df/raw/0c2fafa2e918abfc22eb6d694f068b6d3ff1d2d0/dockerfile-test";
+                "https://gist.githubusercontent.com/vparfonov/5c633534bfb0c127854f/raw/f176ee3428c2d39d08c7b4762aee6855dc5c8f75/jdk8_maven3_tomcat8";
 
         List<MachineConfigDto> machineConfigs = new ArrayList<>();
         machineConfigs.add(dtoFactory.createDto(MachineConfigDto.class)

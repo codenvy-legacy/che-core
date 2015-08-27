@@ -15,11 +15,11 @@ import com.google.common.base.Joiner;
 import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.api.git.shared.GitUser;
 import org.eclipse.che.api.git.shared.PullResponse;
+import org.eclipse.che.git.impl.nativegit.CredentialsLoader;
+import org.eclipse.che.git.impl.nativegit.GitAskPassScript;
 import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
@@ -35,8 +35,8 @@ public class PullCommand extends RemoteOperationCommand<Void> {
     private GitUser      author;
     private PullResponse pullResponse;
 
-    public PullCommand(File repository, GitSshScriptProvider gitSshScriptProvider) {
-        super(repository, gitSshScriptProvider);
+    public PullCommand(File repository, GitSshScriptProvider gitSshScriptProvider, CredentialsLoader credentialsLoader, GitAskPassScript gitAskPassScript) {
+        super(repository, gitSshScriptProvider, credentialsLoader, gitAskPassScript);
     }
 
     /** @see GitCommand#execute() */
