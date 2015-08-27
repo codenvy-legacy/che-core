@@ -55,14 +55,14 @@ public interface WorkspaceServiceClient {
      *
      * @see WorkspaceService#getWorkspaces(Integer, Integer)
      */
-    Promise<List<UsersWorkspaceDto>> getWorkspaces(Integer skip, Integer limit);
+    Promise<List<UsersWorkspaceDto>> getWorkspaces(int skip, int limit);
 
     /**
      * Gets all runtime workspaces of current user.
      *
      * @see WorkspaceService#getRuntimeWorkspaces(Integer, Integer)
      */
-    Promise<List<RuntimeWorkspaceDto>> getRuntimeWorkspaces(Integer skip, Integer limit);
+    Promise<List<RuntimeWorkspaceDto>> getRuntimeWorkspaces(int skip, int limit);
 
     /**
      * Updates workspace.
