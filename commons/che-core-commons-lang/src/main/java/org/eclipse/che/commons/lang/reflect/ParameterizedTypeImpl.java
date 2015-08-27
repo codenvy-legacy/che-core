@@ -21,37 +21,13 @@ import java.util.Arrays;
  */
 public final class ParameterizedTypeImpl implements ParameterizedType {
 
-    public static ParameterizedType newParameterizedType(Class<?> rawType, Type... typeArguments) {
-        return new ParameterizedTypeImpl(rawType, typeArguments);
-    }
-
-    public static ParameterizedType newParameterizedType(Class<?> rawType, Type typeArgument) {
-        return new ParameterizedTypeImpl(rawType, typeArgument);
-    }
-
-    private final Type     ownerType;
     private final Type[]   typeArguments;
     private final Class<?> rawType;
 
-    private ParameterizedTypeImpl(Type ownerType, Class<?> rawType, Type typeArgument) {
-        this.ownerType = ownerType; // always null for now
-        this.rawType = rawType;
-        this.typeArguments = new Type[]{typeArgument};
-    }
-
-    private ParameterizedTypeImpl(Class<?> rawType, Type typeArgument) {
-        this(null, rawType, typeArgument);
-    }
-
-    private ParameterizedTypeImpl(Type ownerType, Class<?> rawType, Type[] typeArguments) {
-        this.ownerType = ownerType; // always null for now
+    public ParameterizedTypeImpl(Class<?> rawType, Type... typeArguments) {
         this.rawType = rawType;
         this.typeArguments = new Type[typeArguments.length];
         System.arraycopy(typeArguments, 0, this.typeArguments, 0, this.typeArguments.length);
-    }
-
-    private ParameterizedTypeImpl(Class<?> rawType, Type[] typeArguments) {
-        this(null, rawType, typeArguments);
     }
 
     @Override
@@ -66,17 +42,13 @@ public final class ParameterizedTypeImpl implements ParameterizedType {
 
     @Override
     public Type getOwnerType() {
-        return ownerType;
+        return null;
     }
 
 
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        if (ownerType != null) {
-            builder.append(ownerType instanceof Class ? ((Class<?>)ownerType).getName() : ownerType.toString());
-            builder.append('.');
-        }
         builder.append(rawType.getName());
         builder.append('<');
         for (int i = 0, length = typeArguments.length; i < length; i++) {
@@ -92,9 +64,6 @@ public final class ParameterizedTypeImpl implements ParameterizedType {
     @Override
     public int hashCode() {
         int hashCode = 7;
-        if (ownerType != null) {
-            hashCode = 31 * hashCode + ownerType.hashCode();
-        }
         hashCode = 31 * hashCode + rawType.hashCode();
         hashCode = 31 * hashCode + Arrays.hashCode(typeArguments);
         return hashCode;
@@ -109,8 +78,7 @@ public final class ParameterizedTypeImpl implements ParameterizedType {
             return false;
         }
         ParameterizedType other = (ParameterizedType)o;
-        return (ownerType == null ? other.getOwnerType() == null : ownerType.equals(other.getOwnerType())) &&
-               rawType.equals(other.getRawType()) && Arrays.equals(typeArguments, other.getActualTypeArguments());
+        return rawType.equals(other.getRawType()) && Arrays.equals(typeArguments, other.getActualTypeArguments());
 
     }
 }

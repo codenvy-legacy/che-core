@@ -48,14 +48,14 @@ public final class DtoFactory {
             new LoadingValueSLRUCache<Type, ParameterizedType>(16, 16) {
                 @Override
                 protected ParameterizedType loadValue(Type type) {
-                    return ParameterizedTypeImpl.newParameterizedType(List.class, type);
+                    return new ParameterizedTypeImpl(List.class, type);
                 }
             });
     private static final Cache<Type, ParameterizedType> mapTypeCache  = new SynchronizedCache<>(
             new LoadingValueSLRUCache<Type, ParameterizedType>(16, 16) {
                 @Override
                 protected ParameterizedType loadValue(Type type) {
-                    return ParameterizedTypeImpl.newParameterizedType(Map.class, String.class, type);
+                    return new ParameterizedTypeImpl(Map.class, String.class, type);
                 }
             });
 
