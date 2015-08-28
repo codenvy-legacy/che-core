@@ -847,12 +847,6 @@ public class WorkspaceService extends Service {
         //creating profile for it
         profileDao.create(new Profile().withId(id).withUserId(id));
 
-        //storing preferences
-        final Map<String, String> preferences = new HashMap<>(4);
-        preferences.put("temporary", String.valueOf(true));
-        preferences.put("codenvy:created", Long.toString(System.currentTimeMillis()));
-        preferenceDao.setPreferences(id, preferences);
-
         return user;
     }
 
