@@ -23,6 +23,7 @@ import org.eclipse.che.api.core.model.machine.MachineConfig;
 import org.eclipse.che.api.core.model.workspace.Environment;
 import org.eclipse.che.api.core.model.workspace.Machine;
 import org.eclipse.che.api.core.model.workspace.RuntimeWorkspace;
+import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.workspace.server.model.impl.RuntimeWorkspaceImpl;
 import org.slf4j.Logger;
@@ -71,20 +72,43 @@ public class RuntimeWorkspaceRegistry {
         this.lock = new ReentrantReadWriteLock();
     }
 
-    public RuntimeWorkspace start(UsersWorkspace usersWs, String envName)
-            throws ConflictException, ServerException, BadRequestException, NotFoundException {
-        final RuntimeWorkspaceImpl runtimeWs = new RuntimeWorkspaceImpl(usersWs, null, envName);
-        runtimeWs.setStatus(STARTING);
+    /**
+     * Starts {@link UsersWorkspace workspace} with specified environment.
+     *
+     * <p>Actually starts all machines in certain environment starting from dev-machine.
+     * When environment is not specified - default one is going to be used.
+     *
+     * <p>Note that it doesn't provide any events for machines start, Machine API is responsible for it.
+     *
+     * @param usersWorkspace
+     *         workspace which should be started
+     * @param envName
+     *         name of environment or null when default environment should be used
+     * @return runtime view of {@code usersWorkspace} with status {@link WorkspaceStatus#RUNNING}
+     * @throws ConflictException
+     * @throws ServerException
+     * @throws BadRequestException
+     * @throws NotFoundException
+     */
+    public RuntimeWorkspaceImpl start(UsersWorkspace usersWorkspace, String envName) throws ConflictException,
+                                                                                            ServerException,
+                                                                                            BadRequestException,
+                                                                                            NotFoundException {
+        final String activeEnvName = firstNonNull(envName, usersWorkspace.getDefaultEnvName());
+        final RuntimeWorkspaceImpl runtimeWorkspace = RuntimeWorkspaceImpl.builder()
+                                                                          .fromWorkspace(usersWorkspace)
+                                                                          .setActiveEnvName(activeEnvName)
+                                                                          .setStatus(STARTING)
+                                                                          .build();
+        save(runtimeWorkspace);
 
-        add(runtimeWs);
+        final Environment environment = runtimeWorkspace.getEnvironments().get(activeEnvName);
 
-        final Environment environment = runtimeWs.getEnvironments().get(firstNonNull(envName, runtimeWs.getDefaultEnvName()));
-
-        final List<Machine> machines = startEnvironment(environment, runtimeWs.getId());
-        runtimeWs.setDevMachine(findDev(machines));
-        runtimeWs.setMachines(machines);
-        runtimeWs.setStatus(RUNNING);
-        return runtimeWs;
+        final List<Machine> machines = startEnvironment(environment, runtimeWorkspace.getId());
+        runtimeWorkspace.setDevMachine(findDev(machines));
+        runtimeWorkspace.setMachines(machines);
+        runtimeWorkspace.setStatus(RUNNING);
+        return runtimeWorkspace;
     }
 
     public void stop(String workspaceId) throws ForbiddenException, NotFoundException, ServerException {
@@ -168,7 +192,7 @@ public class RuntimeWorkspaceRegistry {
         return machines;
     }
 
-    private void add(RuntimeWorkspaceImpl runtimeWorkspace) throws ConflictException, ServerException {
+    private void save(RuntimeWorkspaceImpl runtimeWorkspace) throws ConflictException, ServerException {
         final String wsId = runtimeWorkspace.getId();
         final String owner = runtimeWorkspace.getOwner();
         lock.writeLock().lock();

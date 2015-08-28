@@ -16,6 +16,7 @@ import org.eclipse.che.api.core.model.workspace.Machine;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.model.workspace.RuntimeWorkspace;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
+import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +27,12 @@ import java.util.Objects;
  * @author Alexander Garagatyi
  */
 public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeWorkspace {
-    private final String                  rootFolder;
+
+    public static RuntimeWorkspaceBuilder builder() {
+        return new RuntimeWorkspaceBuilder();
+    }
+
+    private final String rootFolder;
 
     private Machine                 devMachine;
     private List<? extends Machine> machines;
@@ -44,12 +50,14 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
                                 Machine devMachine,
                                 List<? extends Machine> machines,
                                 String rootFolder,
-                                String currentEnvironment) {
+                                String currentEnvironment,
+                                WorkspaceStatus status) {
         super(id, name, owner, attributes, commands, projects, environments, defaultEnvironment, description);
         this.devMachine = devMachine;
         this.currentEnvironment = currentEnvironment;
         this.machines = machines != null ? machines : new ArrayList<Machine>();
         this.rootFolder = rootFolder;
+        setStatus(status);
     }
 
     public RuntimeWorkspaceImpl(UsersWorkspace usersWorkspace,
@@ -67,7 +75,8 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
              null,
              null,
              rootFolder,
-             currentEnvironment);
+             currentEnvironment,
+             usersWorkspace.getStatus());
     }
 
     @Override
@@ -118,5 +127,128 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), devMachine, machines, rootFolder);
+    }
+
+    /**
+     * Helps to build complex {@link RuntimeWorkspaceImpl runtime workspace}.
+     *
+     * @see RuntimeWorkspaceImpl#builder()
+     */
+    public static class RuntimeWorkspaceBuilder {
+
+        private String                             id;
+        private String                             name;
+        private String                             owner;
+        private String                             description;
+        private String                             defaultEnvName;
+        private String                             rootFolder;
+        private String                             activeEnvName;
+        private WorkspaceStatus                    status;
+        private Machine                            devMachine;
+        private Map<String, String>                attributes;
+        private List<? extends Command>            commands;
+        private List<? extends ProjectConfig>      projects;
+        private Map<String, ? extends Environment> environments;
+        private List<? extends Machine>            machines;
+
+        public RuntimeWorkspaceImpl build() {
+            return new RuntimeWorkspaceImpl(id,
+                                            name,
+                                            owner,
+                                            attributes,
+                                            commands,
+                                            projects,
+                                            environments,
+                                            defaultEnvName,
+                                            description,
+                                            devMachine,
+                                            machines,
+                                            rootFolder,
+                                            activeEnvName,
+                                            status);
+        }
+
+        public RuntimeWorkspaceBuilder fromWorkspace(UsersWorkspace workspace) {
+            this.id = workspace.getId();
+            this.name = workspace.getName();
+            this.owner = workspace.getOwner();
+            this.description = workspace.getDescription();
+            this.defaultEnvName = workspace.getDefaultEnvName();
+            this.commands = workspace.getCommands();
+            this.projects = workspace.getProjects();
+            this.environments = workspace.getEnvironments();
+            this.attributes = workspace.getAttributes();
+            return this;
+        }
+
+        public RuntimeWorkspaceBuilder setId(String id) {
+            this.id = id;
+            return this;
+        }
+
+        public RuntimeWorkspaceBuilder setName(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public RuntimeWorkspaceBuilder setOwner(String owner) {
+            this.owner = owner;
+            return this;
+        }
+
+        public RuntimeWorkspaceBuilder setDescription(String description) {
+            this.description = description;
+            return this;
+        }
+
+        public RuntimeWorkspaceBuilder setDefaultEnvName(String defaultEnvName) {
+            this.defaultEnvName = defaultEnvName;
+            return this;
+        }
+
+        public RuntimeWorkspaceBuilder setRootFolder(String rootFolder) {
+            this.rootFolder = rootFolder;
+            return this;
+        }
+
+        public RuntimeWorkspaceBuilder setActiveEnvName(String activeEnvName) {
+            this.activeEnvName = activeEnvName;
+            return this;
+        }
+
+        public RuntimeWorkspaceBuilder setDevMachine(Machine devMachine) {
+            this.devMachine = devMachine;
+            return this;
+        }
+
+        public RuntimeWorkspaceBuilder setStatus(WorkspaceStatus status) {
+            this.status = status;
+            return this;
+        }
+
+        public RuntimeWorkspaceBuilder setAttributes(Map<String, String> attributes) {
+            this.attributes = attributes;
+            return this;
+        }
+
+        public RuntimeWorkspaceBuilder setCommands(List<? extends Command> commands) {
+            this.commands = commands;
+            return this;
+        }
+
+        public RuntimeWorkspaceBuilder setProjects(List<? extends ProjectConfig> projects) {
+            this.projects = projects;
+            return this;
+        }
+
+        public RuntimeWorkspaceBuilder setEnvironments(Map<String, ? extends Environment> environments) {
+            this.environments = environments;
+            return this;
+        }
+
+        public RuntimeWorkspaceBuilder setMachines(List<? extends Machine> machines) {
+            this.machines = machines;
+            return this;
+        }
     }
 }
