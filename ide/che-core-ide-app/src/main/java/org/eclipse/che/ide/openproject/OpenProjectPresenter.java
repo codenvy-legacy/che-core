@@ -14,6 +14,7 @@ import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.ide.api.app.AppContext;
+import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.event.OpenProjectEvent;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
@@ -64,8 +65,8 @@ public class OpenProjectPresenter implements OpenProjectView.ActionDelegate {
     @Override
     public void onOpenClicked() {
         //if user select already opened project, we just hide dialog
-        ProjectDescriptor rootProject = appContext.getCurrentProject().getRootProject();
-        if (!selectedProject.getName().equals(rootProject.getName())) {
+        CurrentProject currentProject = appContext.getCurrentProject();
+        if (currentProject == null || !selectedProject.getName().equals(currentProject.getRootProject().getName())) {
             eventBus.fireEvent(new OpenProjectEvent(selectedProject.getName()));
         }
 
