@@ -19,6 +19,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.resources.client.ClientBundle;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.ScrollPanel;
@@ -28,6 +29,8 @@ import com.google.inject.Singleton;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
+import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.parts.base.BaseView;
@@ -474,7 +477,16 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
     }
 
     @Override
-    public void navigate(final HasStorablePath node, final boolean select, final boolean callAction) {
+    public Promise<Node> navigate(final HasStorablePath node, final boolean select) {
+        return AsyncPromiseHelper.createFromAsyncRequest(new AsyncPromiseHelper.RequestCall<Node>() {
+            @Override
+            public void makeCall(AsyncCallback<Node> callback) {
+                navigate(node, select, false, callback);
+            }
+        });
+    }
+
+    protected void navigate(final HasStorablePath node, final boolean select, final boolean callAction, final AsyncCallback<Node> callback) {
         if (navigateBeforeExpandHandler != null) {
             navigateBeforeExpandHandler.removeHandler();
         }
@@ -502,7 +514,7 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
                 Log.info(this.getClass(), "Node doesn't found, continue searching");
             }
 
-            if (seekNode != null && seekNode instanceof HasAction && callAction) {
+            if (seekNode != null) {
                 Node parent = seekNode.getParent();
                 if (!tree.isExpanded(parent)) {
                     tree.setExpanded(parent, true);
@@ -512,7 +524,14 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
                     tree.getSelectionModel().select(seekNode, false);
                     tree.scrollIntoView(seekNode);
                 }
-                ((HasAction)seekNode).actionPerformed();
+
+                if (seekNode instanceof HasAction && callAction) {
+                    ((HasAction)seekNode).actionPerformed();
+                }
+
+                if (callback != null) {
+                    callback.onSuccess(seekNode);
+                }
                 return;
             }
         }
@@ -557,12 +576,17 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
                 for (Node child : children) {
                     if (child instanceof HasStorablePath &&
                         ((HasStorablePath)child).getStorablePath().equals(node.getStorablePath())) {
+                        if (select) {
+                            tree.getSelectionModel().select(child, false);
+                            tree.scrollIntoView(child);
+                        }
+
                         if (child instanceof HasAction) {
-                            if (select) {
-                                tree.getSelectionModel().select(child, false);
-                                tree.scrollIntoView(child);
-                            }
                             ((HasAction)child).actionPerformed();
+                        }
+
+                        if (callback != null) {
+                            callback.onSuccess(child);
                         }
 
                         return;
@@ -575,6 +599,11 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
         navigateExpandHandler = tree.addExpandHandler(expandNodeHandler);
 
         tree.setExpanded(preProcessedNode, true, true);
+    }
+
+    @Override
+    public void navigate(final HasStorablePath node, final boolean select, final boolean callAction) {
+        navigate(node, select, callAction, null);
     }
 
     private void hideProjectInfo() {

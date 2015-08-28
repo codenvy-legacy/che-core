@@ -19,6 +19,7 @@ import com.google.web.bindery.event.shared.EventBus;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
+import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.ProjectActionHandler;
@@ -243,6 +244,10 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
 
     public void navigate(HasStorablePath node, boolean select, boolean callAction) {
         view.navigate(node, select, callAction);
+    }
+
+    public Promise<Node> navigate(HasStorablePath node, boolean select) {
+        return view.navigate(node, select);
     }
 
     public void reloadChildren(Node node) {

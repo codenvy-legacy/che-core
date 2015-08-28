@@ -12,6 +12,7 @@ package org.eclipse.che.ide.part.explorer.project;
 
 import com.google.gwt.event.shared.HandlerRegistration;
 
+import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.parts.base.BaseActionDelegate;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
@@ -57,6 +58,8 @@ public interface NewProjectExplorerView extends View<NewProjectExplorerView.Acti
     void reloadChildrenByType(Class<?> type);
 
     void navigate(HasStorablePath node, boolean select, boolean callAction);
+
+    Promise<Node> navigate(HasStorablePath node, boolean select);
 
     public interface ActionDelegate extends BaseActionDelegate {
         void onSelectionChanged(List<Node> selection);
