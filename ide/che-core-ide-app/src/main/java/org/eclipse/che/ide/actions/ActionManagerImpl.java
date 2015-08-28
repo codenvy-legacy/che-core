@@ -38,6 +38,8 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
+import static org.eclipse.che.ide.api.action.IdeActions.REFACTOR_GROUP;
+
 /** @author Evgen Vidolob */
 public class ActionManagerImpl implements ActionManager {
 
@@ -61,6 +63,11 @@ public class ActionManagerImpl implements ActionManager {
         DefaultActionGroup fileGroup = new DefaultActionGroup("File", true, this);
         registerAction(IdeActions.GROUP_FILE, fileGroup);
         mainMenu.add(fileGroup);
+
+        DefaultActionGroup refactorGroup = new DefaultActionGroup("Refactor", true, this);
+        registerAction(REFACTOR_GROUP, refactorGroup);
+        Constraints addAfterCode = new Constraints(Anchor.AFTER, IdeActions.GROUP_CODE);
+        mainMenu.add(refactorGroup, addAfterCode);
 
         DefaultActionGroup codeGroup = new DefaultActionGroup("Code", true, this);
         registerAction(IdeActions.GROUP_CODE, codeGroup);
