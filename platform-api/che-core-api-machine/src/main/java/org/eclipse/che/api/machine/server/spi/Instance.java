@@ -119,4 +119,19 @@ public interface Instance extends Machine {
      * Returns {@link InstanceNode} that represents server where machine is launched
      */
     InstanceNode getNode();
+
+    /**
+     * Reads file content from machine by specified path.
+     *
+     * @param filePath
+     *         path to file on machine instance
+     * @param startFrom
+     *         line number to start reading from
+     * @param limit
+     *         limitation on line
+     * @return file content
+     * @throws MachineException
+     *         if any error occurs with file reading
+     */
+    String readFileContent(String filePath, int startFrom, int limit) throws MachineException;
 }

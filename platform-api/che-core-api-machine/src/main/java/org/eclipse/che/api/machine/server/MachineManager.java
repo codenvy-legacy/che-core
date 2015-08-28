@@ -701,6 +701,81 @@ public class MachineManager {
         }
     }
 
+    /**
+     * Gets logs reader from machine by specified id
+     *
+     * @param machineId
+     *         machine id whose process reader will be returned
+     * @return reader for logs on specified machine
+     * @throws NotFoundException
+     *         if machine with specified id not found
+     * @throws MachineException
+     *         if other error occur
+     */
+    public Reader getMachineLogReader(String machineId) throws NotFoundException, MachineException {
+        final File machineLogsFile = getMachineLogsFile(machineId);
+        if (machineLogsFile.isFile()) {
+            try {
+                return Files.newBufferedReader(machineLogsFile.toPath(), Charset.defaultCharset());
+            } catch (IOException e) {
+                throw new MachineException(String.format("Unable read log file for machine '%s'. %s", machineId, e.getMessage()));
+            }
+        }
+        throw new NotFoundException(String.format("Logs for machine '%s' are not available", machineId));
+    }
+
+    /**
+     * Gets machines states.
+     *
+     * @return list of machine states
+     * @throws MachineException
+     *         if any error occur with machine registry
+     */
+    public List<MachineImpl> getMachinesStates() throws MachineException {
+        return machineRegistry.getStates();
+    }
+
+    /**
+     * Gets projects from machine by specified id.
+     *
+     * @param machineId
+     *         machine id whose projects will be returned
+     * @return list of bonded projects on machine
+     * @throws NotFoundException
+     *         if machine with specified id not found
+     * @throws MachineException
+     *         if other error occur
+     */
+    public List<ProjectBinding> getProjects(String machineId) throws NotFoundException, MachineException {
+        return new ArrayList<>(getMachine(machineId).getProjects());
+    }
+
+    /**
+     * Gets process reader from machine by specified id.
+     *
+     * @param machineId
+     *         machine id whose process reader will be returned
+     * @param pid
+     *         process id
+     * @return reader for specified process on machine
+     * @throws NotFoundException
+     *         if machine with specified id not found
+     * @throws MachineException
+     *         if other error occur
+     */
+    public Reader getProcessLogReader(String machineId, int pid) throws NotFoundException, MachineException {
+        final File processLogsFile = getProcessLogsFile(machineId, pid);
+        if (processLogsFile.isFile()) {
+            try {
+                return Files.newBufferedReader(processLogsFile.toPath(), Charset.defaultCharset());
+            } catch (IOException e) {
+                throw new MachineException(
+                        String.format("Unable read log file for process '%s' of machine '%s'. %s", pid, machineId, e.getMessage()));
+            }
+        }
+        throw new NotFoundException(String.format("Logs for process '%s' of machine '%s' are not available", pid, machineId));
+    }
+
     private void doDestroy(Instance machine) throws MachineException, NotFoundException {
         machine.destroy();
 
@@ -714,14 +789,6 @@ public class MachineManager {
         eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
                                        .withEventType(MachineStatusEvent.EventType.DESTROYED)
                                        .withMachineId(machine.getId()));
-    }
-
-    public List<MachineImpl> getMachinesStates() throws MachineException {
-        return machineRegistry.getStates();
-    }
-
-    public List<ProjectBinding> getProjects(String machineId) throws NotFoundException, MachineException {
-        return new ArrayList<>(getMachine(machineId).getProjects());
     }
 
     private void createMachineLogsDir(String machineId) throws MachineException {
@@ -742,18 +809,6 @@ public class MachineManager {
         return new File(new File(machineLogsDir, machineId), "machineId.logs");
     }
 
-    public Reader getMachineLogReader(String machineId) throws NotFoundException, MachineException {
-        final File machineLogsFile = getMachineLogsFile(machineId);
-        if (machineLogsFile.isFile()) {
-            try {
-                return Files.newBufferedReader(machineLogsFile.toPath(), Charset.defaultCharset());
-            } catch (IOException e) {
-                throw new MachineException(String.format("Unable read log file for machine '%s'. %s", machineId, e.getMessage()));
-            }
-        }
-        throw new NotFoundException(String.format("Logs for machine '%s' are not available", machineId));
-    }
-
     private File getProcessLogsFile(String machineId, int pid) {
         return new File(new File(machineLogsDir, machineId), Integer.toString(pid));
     }
@@ -765,19 +820,6 @@ public class MachineManager {
             throw new MachineException(
                     String.format("Unable create log file for process '%s' of machine '%s'. %s", pid, machineId, e.getMessage()));
         }
-    }
-
-    public Reader getProcessLogReader(String machineId, int pid) throws NotFoundException, MachineException {
-        final File processLogsFile = getProcessLogsFile(machineId, pid);
-        if (processLogsFile.isFile()) {
-            try {
-                return Files.newBufferedReader(processLogsFile.toPath(), Charset.defaultCharset());
-            } catch (IOException e) {
-                throw new MachineException(
-                        String.format("Unable read log file for process '%s' of machine '%s'. %s", pid, machineId, e.getMessage()));
-            }
-        }
-        throw new NotFoundException(String.format("Logs for process '%s' of machine '%s' are not available", pid, machineId));
     }
 
     private String generateMachineId() {
