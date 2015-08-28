@@ -22,8 +22,8 @@ import java.io.File;
 public class BranchCheckoutCommand extends GitCommand<Void> {
 
     private boolean createNew;
-    private boolean isRemote;
     private String  branchName;
+    private String  trackBranch;
     private String  startPoint;
 
     public BranchCheckoutCommand(File place) {
@@ -33,25 +33,31 @@ public class BranchCheckoutCommand extends GitCommand<Void> {
     /** @see GitCommand#execute() */
     @Override
     public Void execute() throws GitException {
-        if (branchName == null) {
-            throw new GitException("Branch name was not set.");
+        if (startPoint != null && trackBranch != null) {
+            throw new GitException("Start point and track branch can not be used together.");
         }
+
+        if (createNew && branchName == null) {
+            throw new GitException("Branch name must be set when createNew equals to true.");
+        }
+
         reset();
         commandLine.add("checkout");
-        if (isRemote) {
-            commandLine.add("-t");
-            commandLine.add(branchName);
-            start();
-            return null;
-        }
 
         if (createNew) {
             commandLine.add("-b");
+            commandLine.add(branchName);
+        } else if (branchName != null) {
+            commandLine.add(branchName);
         }
-        commandLine.add(branchName);
-        if (startPoint != null) {
+
+        if (trackBranch != null) {
+            commandLine.add("-t");
+            commandLine.add(trackBranch);
+        } else if (startPoint != null) {
             commandLine.add(startPoint);
         }
+
         start();
         return null;
     }
@@ -77,12 +83,12 @@ public class BranchCheckoutCommand extends GitCommand<Void> {
     }
 
     /**
-     * @param remote
-     *         if <code>true</code> branch will be tracked to remote
-     * @return BranchCheckoutCommand with established remote parameter
+     * @param trackBranch
+     *         branch to track
+     * @return BranchCheckoutCommand with track branch
      */
-    public BranchCheckoutCommand setRemote(boolean remote) {
-        isRemote = remote;
+    public BranchCheckoutCommand setTrackBranch(String trackBranch) {
+        this.trackBranch = trackBranch;
         return this;
     }
 
