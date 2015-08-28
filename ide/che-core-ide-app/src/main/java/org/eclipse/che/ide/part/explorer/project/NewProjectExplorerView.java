@@ -61,6 +61,10 @@ public interface NewProjectExplorerView extends View<NewProjectExplorerView.Acti
 
     Promise<Node> navigate(HasStorablePath node, boolean select);
 
+    void expandAll();
+
+    void collapseAll();
+
     public interface ActionDelegate extends BaseActionDelegate {
         void onSelectionChanged(List<Node> selection);
 

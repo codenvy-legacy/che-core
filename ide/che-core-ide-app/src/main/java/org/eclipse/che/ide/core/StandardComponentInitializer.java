@@ -18,12 +18,14 @@ import com.google.inject.name.Named;
 import org.eclipse.che.api.project.shared.Constants;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.actions.CloseProjectAction;
+import org.eclipse.che.ide.actions.CollapseAllAction;
 import org.eclipse.che.ide.actions.CopyAction;
 import org.eclipse.che.ide.actions.CreateModuleAction;
 import org.eclipse.che.ide.actions.CutAction;
 import org.eclipse.che.ide.actions.DeleteItemAction;
 import org.eclipse.che.ide.actions.DownloadItemAction;
 import org.eclipse.che.ide.actions.DownloadProjectAsZipAction;
+import org.eclipse.che.ide.actions.ExpandAllAction;
 import org.eclipse.che.ide.actions.ExpandEditorAction;
 import org.eclipse.che.ide.actions.FindReplaceAction;
 import org.eclipse.che.ide.actions.FoldersAlwaysOnTopAction;
@@ -135,6 +137,12 @@ public class StandardComponentInitializer {
 
     @Inject
     private RenameItemAction renameItemAction;
+
+    @Inject
+    private CollapseAllAction collapseAllAction;
+
+    @Inject
+    private ExpandAllAction expandAllAction;
 
     @Inject
     private OpenProjectAction openProjectAction;
@@ -364,6 +372,9 @@ public class StandardComponentInitializer {
         fileGroup.add(renameItemAction);
         fileGroup.add(deleteItemAction);
         fileGroup.addSeparator();
+//        fileGroup.add(expandAllAction);
+        fileGroup.add(collapseAllAction);
+        fileGroup.addSeparator();
         fileGroup.add(saveGroup);
 
         // Compose Code menu
@@ -401,6 +412,9 @@ public class StandardComponentInitializer {
         resourceOperation.add(renameItemAction);
         resourceOperation.add(deleteItemAction);
         resourceOperation.addSeparator();
+//        resourceOperation.add(expandAllAction);
+        resourceOperation.add(collapseAllAction);
+        resourceOperation.addSeparator();
         resourceOperation.add(downloadItemAction);
         resourceOperation.addSeparator();
         resourceOperation.add(createModuleAction);
@@ -433,6 +447,9 @@ public class StandardComponentInitializer {
 
         actionManager.registerAction("renameResource", renameItemAction);
         actionManager.registerAction("deleteItem", deleteItemAction);
+
+//        actionManager.registerAction("expandAll", expandAllAction);
+        actionManager.registerAction("collapseAll", collapseAllAction);
 
         actionManager.registerAction("findReplace", findReplaceAction);
         actionManager.registerAction("openFile", openFileAction);

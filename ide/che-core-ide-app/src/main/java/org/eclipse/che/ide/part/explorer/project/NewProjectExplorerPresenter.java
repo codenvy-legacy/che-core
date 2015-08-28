@@ -273,4 +273,12 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
     public void resetGoIntoMode() {
         view.resetGoIntoMode();
     }
+
+    public void expandAll() {
+        view.expandAll();
+    }
+
+    public void collapseAll() {
+        view.collapseAll();
+    }
 }

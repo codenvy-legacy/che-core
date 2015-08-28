@@ -673,6 +673,16 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
         }
     }
 
+    @Override
+    public void expandAll() {
+        tree.expandAll();
+    }
+
+    @Override
+    public void collapseAll() {
+        tree.collapseAll();
+    }
+
     public class ContentRootExpander implements ExpandNodeHandler {
         private String contentRoot;
         private boolean onceExecuted = false;
