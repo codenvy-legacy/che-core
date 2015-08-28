@@ -105,7 +105,7 @@ public class EditorAgentImpl implements EditorAgent {
                 if (node instanceof FileReferenceNode) {
                     for (EditorPartPresenter editor : getOpenedEditors().values()) {
                         VirtualFile deletedVFile = (VirtualFile)node;
-                        if (deletedVFile.equals(editor.getEditorInput().getFile())) {
+                        if (deletedVFile.getPath().equals(editor.getEditorInput().getFile().getPath())) {
                             eventBus.fireEvent(new FileEvent(editor.getEditorInput().getFile(), CLOSE));
                         }
                     }
