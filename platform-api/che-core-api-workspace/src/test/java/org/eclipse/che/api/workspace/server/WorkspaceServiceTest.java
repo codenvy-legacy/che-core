@@ -55,7 +55,6 @@ import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
-
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -641,6 +640,26 @@ public class WorkspaceServiceTest {
         doDelete(SERVICE_PATH + "/" + testWorkspace.getId() + "/members/" + testUser.getId(), NO_CONTENT);
 
         verify(memberDao).remove(any(Member.class));
+    }
+
+    @Test
+    public void shouldBeAbleForWorkspaceDeveloperToRemoveHisMemberships() throws Exception {
+        final Workspace testWorkspace = createWorkspace();
+        prepareRole("workspace/developer");
+
+        doDelete(SERVICE_PATH + "/" + testWorkspace.getId() + "/members/" + testUser.getId(), NO_CONTENT);
+
+        verify(memberDao).remove(any(Member.class));
+    }
+
+    @Test
+    public void shouldNotBeAbleForWorkspaceDeveloperToRemoveNotHisMemberships() throws Exception {
+        final Workspace testWorkspace = createWorkspace();
+        prepareRole("workspace/developer");
+
+        final String errorJson = doDelete(SERVICE_PATH + "/" + testWorkspace.getId() + "/members/anotherUserId", FORBIDDEN);
+
+        assertEquals(asError(errorJson).getMessage(), "Access denied");
     }
 
     @Test

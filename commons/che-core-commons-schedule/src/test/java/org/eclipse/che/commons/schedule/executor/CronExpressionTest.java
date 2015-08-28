@@ -1,16 +1,16 @@
-/*.
- * Copyright 2001-2009 Terracotta, Inc..
- *.
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not.
- * use this file except in compliance with the License. You may obtain a copy.
- * of the License at.
- *.
- *   http://www.apache.org/licenses/LICENSE-2.0.
- *...
- * Unless required by applicable law or agreed to in writing, software.
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT.
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the.
- * License for the specific language governing permissions and limitations.
+/* 
+ * Copyright 2001-2009 Terracotta, Inc. 
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not 
+ * use this file except in compliance with the License. You may obtain a copy 
+ * of the License at 
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0 
+ *   
+ * Unless required by applicable law or agreed to in writing, software 
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT 
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
+ * License for the specific language governing permissions and limitations 
  * under the License.
  */
 package org.eclipse.che.commons.schedule.executor;
@@ -19,6 +19,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
@@ -27,13 +31,47 @@ import java.util.TimeZone;
 import static org.testng.Assert.*;
 
 public class CronExpressionTest {
-    private static final Logger   LOG      = LoggerFactory.getLogger(CronExpressionTest.class);
-    
+    private static final Logger LOG = LoggerFactory.getLogger(CronExpressionTest.class);
+
     private static final String[] VERSIONS = new String[]{"1.5.2"};
 
     private static final TimeZone EST_TIME_ZONE = TimeZone.getTimeZone("US/Eastern");
 
+    /**
+     * Get the object to serialize when generating serialized file for future
+     * tests, and against which to validate deserialized object.
+     */
+    protected Object getTargetObject() throws ParseException {
+        CronExpression cronExpression = new CronExpression("0 15 10 * * ? 2005");
+        cronExpression.setTimeZone(EST_TIME_ZONE);
 
+        return cronExpression;
+    }
+
+    /**
+     * Get the Quartz versions for which we should verify
+     * serialization backwards compatibility.
+     */
+    protected String[] getVersions() {
+        return VERSIONS;
+    }
+
+    /**
+     * Verify that the target object and the object we just deserialized
+     * match.
+     */
+    protected void verifyMatch(Object target, Object deserialized) {
+        CronExpression targetCronExpression = (CronExpression)target;
+        CronExpression deserializedCronExpression = (CronExpression)deserialized;
+
+        assertNotNull(deserializedCronExpression);
+        assertEquals(targetCronExpression.getCronExpression(), deserializedCronExpression.getCronExpression());
+        assertEquals(targetCronExpression.getTimeZone(), deserializedCronExpression.getTimeZone());
+    }
+
+    /*
+     * Test method for 'org.quartz.CronExpression.isSatisfiedBy(Date)'.
+     */
     @Test
     public void testIsSatisfiedBy() throws Exception {
         CronExpression cronExpression = new CronExpression("0 15 10 * * ? 2005");
@@ -84,6 +122,26 @@ public class CronExpressionTest {
 
     }
 
+    /*
+     * QUARTZ-571: Showing that expressions with months correctly serialize.
+     */
+    @Test
+    public void testQuartz571() throws Exception {
+        CronExpression cronExpression = new CronExpression("19 15 10 4 Apr ? ");
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(baos);
+        oos.writeObject(cronExpression);
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+        ObjectInputStream ois = new ObjectInputStream(bais);
+        CronExpression newExpression = (CronExpression)ois.readObject();
+
+        assertEquals(newExpression.getCronExpression(), cronExpression.getCronExpression());
+
+        // if broken, this will throw an exception
+        newExpression.getNextValidTimeAfter(new Date());
+    }
+
 
     /**
      * QTZ-259 : last day offset causes repeating fire time
@@ -129,17 +187,17 @@ public class CronExpressionTest {
         try {
             new CronExpression("* * * * Foo ? ");
             fail("Expected ParseException did not fire for non-existent month");
-        } catch (IllegalArgumentException pe) {
-            assertTrue(pe.getMessage().startsWith("Invalid Month value:"), "Incorrect ParseException thrown"
-                      );
+        } catch (ParseException pe) {
+            assertTrue(
+                    pe.getMessage().startsWith("Invalid Month value:"), "Incorrect ParseException thrown");
         }
 
         try {
             new CronExpression("* * * * Jan-Foo ? ");
             fail("Expected ParseException did not fire for non-existent month");
-        } catch (IllegalArgumentException pe) {
-            assertTrue(pe.getMessage().startsWith("Invalid Month value:"), "Incorrect ParseException thrown"
-                      );
+        } catch (ParseException pe) {
+            assertTrue(
+                    pe.getMessage().startsWith("Invalid Month value:"), "Incorrect ParseException thrown");
         }
     }
 
@@ -148,29 +206,29 @@ public class CronExpressionTest {
         try {
             new CronExpression("0 0 * * * *");
             fail("Expected ParseException did not fire for wildcard day-of-month and day-of-week");
-        } catch (IllegalArgumentException pe) {
+        } catch (ParseException pe) {
             assertTrue(
-                    pe.getMessage().startsWith(
-                            "Support for specifying both a day-of-week AND a day-of-month parameter is not " +
-                            "implemented."), "Incorrect ParseException thrown");
+                    pe.getMessage()
+                      .startsWith("Support for specifying both a day-of-week AND a day-of-month parameter is not implemented."),
+                    "Incorrect ParseException thrown");
         }
         try {
             new CronExpression("0 0 * 4 * *");
             fail("Expected ParseException did not fire for specified day-of-month and wildcard day-of-week");
-        } catch (IllegalArgumentException pe) {
+        } catch (ParseException pe) {
             assertTrue(
-                    pe.getMessage().startsWith(
-                            "Support for specifying both a day-of-week AND a day-of-month parameter is not " +
-                            "implemented."), "Incorrect ParseException thrown");
+                    pe.getMessage()
+                      .startsWith("Support for specifying both a day-of-week AND a day-of-month parameter is not implemented."),
+                    "Incorrect ParseException thrown");
         }
         try {
             new CronExpression("0 0 * * * 4");
             fail("Expected ParseException did not fire for wildcard day-of-month and specified day-of-week");
-        } catch (IllegalArgumentException pe) {
+        } catch (ParseException pe) {
             assertTrue(
-                    pe.getMessage().startsWith(
-                            "Support for specifying both a day-of-week AND a day-of-month parameter is not " +
-                            "implemented."), "Incorrect ParseException thrown");
+                    pe.getMessage()
+                      .startsWith("Support for specifying both a day-of-week AND a day-of-month parameter is not implemented."),
+                    "Incorrect ParseException thrown");
         }
     }
 
@@ -179,33 +237,30 @@ public class CronExpressionTest {
         try {
             new CronExpression("0 43 9 1,5,29,L * ?");
             fail("Expected ParseException did not fire for L combined with other days of the month");
-        } catch (IllegalArgumentException pe) {
+        } catch (ParseException pe) {
             assertTrue(
-                    pe.getMessage().startsWith(
-                            "Support for specifying 'L' and 'LW' with other days of the month is not implemented"),
+                    pe.getMessage().startsWith("Support for specifying 'L' and 'LW' with other days of the month is not implemented"),
                     "Incorrect ParseException thrown");
         }
         try {
             new CronExpression("0 43 9 ? * SAT,SUN,L");
             fail("Expected ParseException did not fire for L combined with other days of the week");
-        } catch (IllegalArgumentException pe) {
+        } catch (ParseException pe) {
             assertTrue(
-                    pe.getMessage()
-                      .startsWith("Support for specifying 'L' with other days of the week is not implemented"),
+                    pe.getMessage().startsWith("Support for specifying 'L' with other days of the week is not implemented"),
                     "Incorrect ParseException thrown");
         }
         try {
             new CronExpression("0 43 9 ? * 6,7,L");
             fail("Expected ParseException did not fire for L combined with other days of the week");
-        } catch (IllegalArgumentException pe) {
+        } catch (ParseException pe) {
             assertTrue(
-                    pe.getMessage()
-                      .startsWith("Support for specifying 'L' with other days of the week is not implemented"),
+                    pe.getMessage().startsWith("Support for specifying 'L' with other days of the week is not implemented"),
                     "Incorrect ParseException thrown");
         }
         try {
             new CronExpression("0 43 9 ? * 5L");
-        } catch (IllegalArgumentException pe) {
+        } catch (ParseException pe) {
             fail("Unexpected ParseException thrown for supported '5L' expression.");
         }
     }
@@ -215,13 +270,15 @@ public class CronExpressionTest {
         try {
             new CronExpression("0/5 * * 32W 1 ?");
             fail("Expected ParseException did not fire for W with value larger than 31");
-        } catch (IllegalArgumentException pe) {
-            assertTrue(pe.getMessage().startsWith("The 'W' option does not make sense with values larger than"),
-                       "Incorrect ParseException thrown");
+        } catch (ParseException pe) {
+            assertTrue(
+                    pe.getMessage().startsWith("The 'W' option does not make sense with values larger than"),
+                    "Incorrect ParseException thrown");
         }
     }
 
     @Test
+
     public void testQtz395_CopyConstructorMustPreserveTimeZone() throws ParseException {
         TimeZone nonDefault = TimeZone.getTimeZone("Europe/Brussels");
         if (nonDefault.equals(TimeZone.getDefault())) {
@@ -234,102 +291,9 @@ public class CronExpressionTest {
         assertEquals(nonDefault, copyCronExpression.getTimeZone());
     }
 
-    @Test
-    public void cron() {
-        CronExpression expression = new CronExpression("0 0 14-6 ? * FRI-MON");
-        assertEquals(expression.getExpressionSummary(),
-                     "seconds: 0\n" +
-                     "minutes: 0\n" +
-                     "hours: 0,1,2,3,4,5,6,14,15,16,17,18,19,20,21,22,23\n" +
-                     "daysOfMonth: ?\n" +
-                     "months: *\n" +
-                     "daysOfWeek: 1,2,6,7\n" +
-                     "lastdayOfWeek: false\n" +
-                     "nearestWeekday: false\n" +
-                     "NthDayOfWeek: 0\n" +
-                     "lastdayOfMonth: false\n" +
-                     "years: *\n"
-                    );
-
-        expression = new CronExpression("0 0 0-23 ? * *");
-        assertEquals(expression.getExpressionSummary(),
-                     "seconds: 0\n" +
-                     "minutes: 0\n" +
-                     "hours: 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23\n" +
-                     "daysOfMonth: ?\n" +
-                     "months: *\n" +
-                     "daysOfWeek: *\n" +
-                     "lastdayOfWeek: false\n" +
-                     "nearestWeekday: false\n" +
-                     "NthDayOfWeek: 0\n" +
-                     "lastdayOfMonth: false\n" +
-                     "years: *\n"
-                    );
-
-
-        expression = new CronExpression("0-59 0-59 0-23 ? * *");
-        assertEquals(expression.getExpressionSummary(),
-                     "seconds: 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31," +
-                     "32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59\n" +
-                     "minutes: 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31," +
-                     "32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59\n" +
-                     "hours: 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23\n" +
-                     "daysOfMonth: ?\n" +
-                     "months: *\n" +
-                     "daysOfWeek: *\n" +
-                     "lastdayOfWeek: false\n" +
-                     "nearestWeekday: false\n" +
-                     "NthDayOfWeek: 0\n" +
-                     "lastdayOfMonth: false\n" +
-                     "years: *\n"
-                    );
-
-        expression = new CronExpression("0/5 0-59 0-23 ? * *");
-        assertEquals(expression.getExpressionSummary(),
-                     "seconds: 0,5,10,15,20,25,30,35,40,45,50,55\n" +
-                     "minutes: 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31," +
-                     "32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59\n" +
-                     "hours: 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23\n" +
-                     "daysOfMonth: ?\n" +
-                     "months: *\n" +
-                     "daysOfWeek: *\n" +
-                     "lastdayOfWeek: false\n" +
-                     "nearestWeekday: false\n" +
-                     "NthDayOfWeek: 0\n" +
-                     "lastdayOfMonth: false\n" +
-                     "years: *\n"
-                    );
-
-        // comma test
-        expression = new CronExpression("0 5,35 * * * ?");
-        assertEquals(expression.getExpressionSummary(),
-                     "seconds: 0\n" +
-                     "minutes: 5,35\n" +
-                     "hours: *\n" +
-                     "daysOfMonth: *\n" +
-                     "months: *\n" +
-                     "daysOfWeek: ?\n" +
-                     "lastdayOfWeek: false\n" +
-                     "nearestWeekday: false\n" +
-                     "NthDayOfWeek: 0\n" +
-                     "lastdayOfMonth: false\n" +
-                     "years: *\n"
-                    );
-
-        expression = new CronExpression("0/2 * * * * ?");
-        assertEquals(expression.getExpressionSummary(),
-                     "seconds: 0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58\n" +
-                     "minutes: *\n" +
-                     "hours: *\n" +
-                     "daysOfMonth: *\n" +
-                     "months: *\n" +
-                     "daysOfWeek: ?\n" +
-                     "lastdayOfWeek: false\n" +
-                     "nearestWeekday: false\n" +
-                     "NthDayOfWeek: 0\n" +
-                     "lastdayOfMonth: false\n" +
-                     "years: *\n"
-                    );
-    }
+//    // execute with version number to generate a new version's serialized form
+//    public static void main(String[] args) throws Exception {
+//        new CronExpressionTest().writeJobDataFile("1.5.2");
+//    }
 
 }

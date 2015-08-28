@@ -36,6 +36,7 @@ public class FactoryCreateValidatorImpl extends FactoryBaseValidator implements 
         validateSource(factory);
         validateProjectName(factory);
         validateCreator(factory);
+        validateModules(factory);
         validateWorkspace(factory);
         validateAccountId(factory);
         validateCurrentTimeBeforeSinceUntil(factory);

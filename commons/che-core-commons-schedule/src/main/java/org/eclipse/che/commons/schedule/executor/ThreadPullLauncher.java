@@ -22,6 +22,7 @@ import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import java.text.ParseException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -74,9 +75,14 @@ public class ThreadPullLauncher implements Launcher {
         if (cron == null || cron.isEmpty()) {
             throw new ConfigurationException("Cron parameter can't be null");
         }
-        CronExpression expression = new CronExpression(cron);
-        service.schedule(runnable, expression);
-        LOG.debug("Schedule method {} with cron  {} schedule", runnable, cron);
+        try {
+            CronExpression expression = new CronExpression(cron);
+            service.schedule(runnable, expression);
+            LOG.debug("Schedule method {} with cron  {} schedule", runnable, cron);
+        } catch (ParseException e) {
+            LOG.error(e.getLocalizedMessage(), e);
+            throw new ConfigurationException(e.getLocalizedMessage());
+        }
     }
 
     @Override

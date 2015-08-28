@@ -55,6 +55,8 @@ public class NativeGit {
 
     private final File                 repository;
     private final GitSshScriptProvider gitSshScriptProvider;
+    private final CredentialsLoader    credentialsLoader;
+    private final GitAskPassScript     gitAskPassScript;
 
     protected LineConsumerFactory gitOutputPublisherFactory;
 
@@ -63,9 +65,12 @@ public class NativeGit {
      *         directory where will be executed all commands created with
      *         this NativeGit object
      */
-    public NativeGit(File repository, GitSshScriptProvider gitSshScriptProvider) {
+    public NativeGit(File repository, GitSshScriptProvider gitSshScriptProvider,
+                     CredentialsLoader credentialsLoader, GitAskPassScript gitAskPassScript) {
         this.repository = repository;
         this.gitSshScriptProvider = gitSshScriptProvider;
+        this.credentialsLoader = credentialsLoader;
+        this.gitAskPassScript = gitAskPassScript;
     }
 
     /**
@@ -81,7 +86,7 @@ public class NativeGit {
      * @return clone command
      */
     public CloneCommand createCloneCommand() {
-        CloneCommand cloneCommand = new CloneCommand(repository, gitSshScriptProvider);
+        CloneCommand cloneCommand = new CloneCommand(repository, gitSshScriptProvider, credentialsLoader, gitAskPassScript);
         cloneCommand.setLineConsumerFactory(gitOutputPublisherFactory);
         return cloneCommand;
     }
@@ -99,7 +104,7 @@ public class NativeGit {
      * @return branch create command
      */
     public BranchRenameCommand createBranchRenameCommand() {
-        BranchRenameCommand command = new BranchRenameCommand(repository, gitSshScriptProvider);
+        BranchRenameCommand command = new BranchRenameCommand(repository, gitSshScriptProvider, credentialsLoader, gitAskPassScript);
         command.setLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
@@ -144,7 +149,7 @@ public class NativeGit {
      * @return ls command
      */
     public LsRemoteCommand createLsRemoteCommand() {
-        LsRemoteCommand command = new LsRemoteCommand(repository);
+        LsRemoteCommand command = new LsRemoteCommand(repository, gitSshScriptProvider, credentialsLoader, gitAskPassScript);
         command.setLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
@@ -259,7 +264,7 @@ public class NativeGit {
      * @return branch delete command
      */
     public BranchDeleteCommand createBranchDeleteCommand() {
-        BranchDeleteCommand command = new BranchDeleteCommand(repository, gitSshScriptProvider);
+        BranchDeleteCommand command = new BranchDeleteCommand(repository, gitSshScriptProvider, credentialsLoader, gitAskPassScript);
         command.setLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
@@ -306,7 +311,7 @@ public class NativeGit {
      * @return fetch command
      */
     public FetchCommand createFetchCommand() {
-        FetchCommand command = new FetchCommand(repository, gitSshScriptProvider);
+        FetchCommand command = new FetchCommand(repository, gitSshScriptProvider, credentialsLoader, gitAskPassScript);
         command.setLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
@@ -317,7 +322,7 @@ public class NativeGit {
      * @return pull command
      */
     public PullCommand createPullCommand() {
-        PullCommand command = new PullCommand(repository, gitSshScriptProvider);
+        PullCommand command = new PullCommand(repository, gitSshScriptProvider, credentialsLoader, gitAskPassScript);
         command.setLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
@@ -337,7 +342,7 @@ public class NativeGit {
      * @return push command
      */
     public PushCommand createPushCommand() {
-        PushCommand command = new PushCommand(repository, gitSshScriptProvider);
+        PushCommand command = new PushCommand(repository, gitSshScriptProvider, credentialsLoader, gitAskPassScript);
         command.setLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
