@@ -56,7 +56,6 @@ import org.eclipse.che.api.git.shared.TagDeleteRequest;
 import org.eclipse.che.api.git.shared.TagListRequest;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.eclipse.che.git.impl.nativegit.commands.AddCommand;
-import org.eclipse.che.git.impl.nativegit.commands.BranchCheckoutCommand;
 import org.eclipse.che.git.impl.nativegit.commands.BranchCreateCommand;
 import org.eclipse.che.git.impl.nativegit.commands.BranchDeleteCommand;
 import org.eclipse.che.git.impl.nativegit.commands.BranchListCommand;
@@ -153,26 +152,12 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public void branchCheckout(BranchCheckoutRequest request) throws GitException {
-        BranchCheckoutCommand command = nativeGit.createBranchCheckoutCommand();
-        /*
-         * IF branch name is origin/HEAD then *(no branch).
-         * Create new means that remote branch was selected,
-         * so git checkout -t remote/branchName will create
-         * branchName tracked to remote/branchName
-         */
-        if (request.isCreateNew()) {
-            try {
-                if (!(getBranchRef(request.getName()).startsWith("refs/remotes/") && request.getName().endsWith("/HEAD"))) {
-                    command.setRemote(true);
-                }
-            } catch (GitException ignored) {
-                //ignored
-            }
-        }
-        command.setBranchName(request.getName())
-               .setStartPoint(request.getStartPoint())
-               .setCreateNew(request.isCreateNew())
-               .execute();
+        nativeGit.createBranchCheckoutCommand()
+                 .setBranchName(request.getName())
+                 .setStartPoint(request.getStartPoint())
+                 .setCreateNew(request.isCreateNew())
+                 .setTrackBranch(request.getTrackBranch())
+                 .execute();
     }
 
     @Override
