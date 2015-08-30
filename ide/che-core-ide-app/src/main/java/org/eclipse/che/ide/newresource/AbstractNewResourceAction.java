@@ -180,9 +180,9 @@ public abstract class AbstractNewResourceAction extends ProjectAction {
     @Nullable
     protected StorableNode getNewResourceParent() {
         Selection<?> selection = selectionAgent.getSelection();
-        if (selection != null && selection.getFirstElement() != null) {
-            if (selection.getFirstElement() instanceof StorableNode) {
-                final StorableNode selectedNode = (StorableNode)selection.getFirstElement();
+        if (selection != null && selection.getHeadElement() != null) {
+            if (selection.getHeadElement() instanceof StorableNode) {
+                final StorableNode selectedNode = (StorableNode)selection.getHeadElement();
                 if (selectedNode instanceof FileNode) {
                     return (StorableNode)selectedNode.getParent();
                 }

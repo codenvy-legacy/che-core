@@ -74,19 +74,13 @@ public class Selection<T> {
         this.head = head;
     }
 
+    /**
+     * Returns the head element of the selection.
+     *
+     * @return the head element of the selection
+     */
     public T getHeadElement() {
         return this.head;
-    }
-
-    /**
-     * Returns the first element of the selection.
-     * 
-     * @return the first element of the selection
-     * @deprecated use {@link #getHeadElement()}
-     */
-    @Deprecated
-    public T getFirstElement() {
-        return getHeadElement();
     }
 
     /**

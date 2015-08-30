@@ -93,7 +93,7 @@ public class UploadFilePresenterTest {
         Selection select = mock(Selection.class);
         FolderNode item = mock(FolderNode.class);
         when(selectionAgent.getSelection()).thenReturn(select);
-        when(select.getFirstElement()).thenReturn(item);
+        when(select.getHeadElement()).thenReturn(item);
 
         presenter.onUploadClicked();
 
@@ -127,7 +127,7 @@ public class UploadFilePresenterTest {
         Selection select = mock(Selection.class);
         FolderNode item = mock(FolderNode.class);
         when(selectionAgent.getSelection()).thenReturn(select);
-        when(select.getFirstElement()).thenReturn(item);
+        when(select.getHeadElement()).thenReturn(item);
         when(view.isOverwriteFileSelected()).thenReturn(false);
         when(view.getFileName()).thenReturn("fileName");
 
@@ -143,7 +143,7 @@ public class UploadFilePresenterTest {
         Selection select = mock(Selection.class);
         FolderNode item = mock(FolderNode.class);
         when(selectionAgent.getSelection()).thenReturn(select);
-        when(select.getFirstElement()).thenReturn(item);
+        when(select.getHeadElement()).thenReturn(item);
         when(view.isOverwriteFileSelected()).thenReturn(true);
         when(view.getFileName()).thenReturn("fileName");
 

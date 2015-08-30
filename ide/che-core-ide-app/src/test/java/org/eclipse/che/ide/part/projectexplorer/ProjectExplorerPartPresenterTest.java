@@ -100,18 +100,18 @@ public class ProjectExplorerPartPresenterTest {
     }
 
     @Test
-    public void shouldSetSelectionFirstElement() throws Exception {
+    public void shouldSetSelectionHeadElement() throws Exception {
         final TreeNode node = mock(TreeNode.class);
         final SelectionModel selectionModel = mock(SelectionModel.class);
         final List selection = Collections.singletonList(node);
         when(selectionModel.getSelectedNodes()).thenReturn(selection);
         presenter.onNodeSelected(node, selectionModel);
 
-        assertEquals(node, presenter.getSelection().getFirstElement());
+        assertEquals(node, presenter.getSelection().getHeadElement());
     }
 
     @Test
-    public void shouldSetSelectinoFirstElementMultiple() throws Exception {
+    public void shouldSetSelectinoHeadElementMultiple() throws Exception {
         final TreeNode node1 = mock(TreeNode.class);
         final TreeNode node2 = mock(TreeNode.class);
         final SelectionModel selectionModel = mock(SelectionModel.class);
@@ -122,7 +122,7 @@ public class ProjectExplorerPartPresenterTest {
         when(selectionModel.getSelectedNodes()).thenReturn(selection);
         presenter.onNodeSelected(node1, selectionModel);
 
-        assertEquals(node1, presenter.getSelection().getFirstElement());
+        assertEquals(node1, presenter.getSelection().getHeadElement());
     }
 
     @Test

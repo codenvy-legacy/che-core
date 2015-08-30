@@ -76,8 +76,8 @@ public class DeleteItemAction extends Action {
 
         boolean isEnabled = false;
         Selection<?> selection = selectionAgent.getSelection();
-        if (selection != null && selection.getFirstElement() instanceof StorableNode) {
-            isEnabled = ((StorableNode)selection.getFirstElement()).isDeletable();
+        if (selection != null && selection.getHeadElement() instanceof StorableNode) {
+            isEnabled = ((StorableNode)selection.getHeadElement()).isDeletable();
         }
         e.getPresentation().setEnabled(isEnabled);
     }

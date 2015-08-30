@@ -65,9 +65,9 @@ public class CreateModuleAction extends Action {
     @Nullable
     private FolderNode getSelectedFolder() {
         Selection<?> selection = selectionAgent.getSelection();
-        if (selection != null && selection.getFirstElement() != null) {
-            if (selection.getFirstElement() instanceof FolderNode) {
-                return (FolderNode)selection.getFirstElement();
+        if (selection != null && selection.getHeadElement() != null) {
+            if (selection.getHeadElement() instanceof FolderNode) {
+                return (FolderNode)selection.getHeadElement();
             }
         }
         return null;
