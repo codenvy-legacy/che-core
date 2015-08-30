@@ -10,25 +10,15 @@
  *******************************************************************************/
 package org.eclipse.che.ide.core.editor;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.web.bindery.event.shared.EventBus;
 import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.api.editor.EditorAgent;
-import org.eclipse.che.ide.api.editor.EditorInitException;
-import org.eclipse.che.ide.api.editor.EditorInput;
-import org.eclipse.che.ide.api.editor.EditorPartPresenter;
+import org.eclipse.che.ide.api.editor.*;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter.EditorPartCloseHandler;
-import org.eclipse.che.ide.api.editor.EditorProvider;
-import org.eclipse.che.ide.api.editor.EditorRegistry;
-import org.eclipse.che.ide.api.event.ActivePartChangedEvent;
-import org.eclipse.che.ide.api.event.ActivePartChangedHandler;
-import org.eclipse.che.ide.api.event.DeleteModuleEvent;
-import org.eclipse.che.ide.api.event.DeleteModuleEventHandler;
-import org.eclipse.che.ide.api.event.FileEvent;
+import org.eclipse.che.ide.api.event.*;
 import org.eclipse.che.ide.api.event.FileEvent.FileOperation;
-import org.eclipse.che.ide.api.event.FileEventHandler;
-import org.eclipse.che.ide.api.event.ItemEvent;
-import org.eclipse.che.ide.api.event.ItemHandler;
-import org.eclipse.che.ide.api.event.WindowActionEvent;
-import org.eclipse.che.ide.api.event.WindowActionHandler;
 import org.eclipse.che.ide.api.filetypes.FileType;
 import org.eclipse.che.ide.api.filetypes.FileTypeRegistry;
 import org.eclipse.che.ide.api.notification.Notification;
@@ -43,13 +33,8 @@ import org.eclipse.che.ide.api.project.tree.generic.ItemNode;
 import org.eclipse.che.ide.api.project.tree.generic.ProjectNode;
 import org.eclipse.che.ide.api.texteditor.HasReadOnlyProperty;
 import org.eclipse.che.ide.util.loging.Log;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nonnull;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NavigableMap;
@@ -121,7 +106,6 @@ public class EditorAgentImpl implements EditorAgent {
                            final WorkspaceAgent workspace,
                            final NotificationManager notificationManager,
                            CoreLocalizationConstant coreLocalizationConstant) {
-        super();
         this.eventBus = eventBus;
         this.fileTypeRegistry = fileTypeRegistry;
         this.editorRegistry = editorRegistry;
