@@ -10,6 +10,10 @@
  *******************************************************************************/
 package org.eclipse.che.util;
 
+import org.eclipse.che.ide.util.loging.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
@@ -73,6 +77,7 @@ public class SetupPomAndGWTModule {
 
     // =======================================================================================================
 
+    private static final Logger LOG = LoggerFactory.getLogger(SetupPomAndGWTModule.class);
 
     /**
      * Collect extension description and process project settings
@@ -82,12 +87,12 @@ public class SetupPomAndGWTModule {
     public static void main(String args[]) {
         // validate args
         if (args.length != 4) {
-            System.out
-                    .println("Ooops, wrong usage. This tool requires 4 arguments to be able to register an extension properly.");
-            System.out.println("- Maven Group ID of the extension (i.e. 'org.eclipse.che.ide')");
-            System.out.println("- Maven Artifact ID of the extension (i.e. 'ide-ext-tasks')");
-            System.out.println("- Maven Module Version of the extension (i.e. '3.0')");
-            System.out.println("- GWT Module FQN (i.e. 'org.eclipse.che.ide.extension.tasks.Tasks')");
+            StringBuilder stringBuilder = new StringBuilder("Ooops, wrong usage. This tool requires 4 arguments to be able to register an extension properly:\n");
+            stringBuilder.append("- Maven Group ID of the extension (i.e. 'org.eclipse.che.ide');\n");
+            stringBuilder.append("- Maven Artifact ID of the extension (i.e. 'ide-ext-tasks');\n");
+            stringBuilder.append("- Maven Module Version of the extension (i.e. '3.0');\n");
+            stringBuilder.append("- GWT Module FQN (i.e. 'org.eclipse.che.ide.extension.tasks.Tasks').");
+            LOG.info(stringBuilder.toString());
             return;
         }
 
@@ -105,7 +110,7 @@ public class SetupPomAndGWTModule {
         try {
             projectWithExtensionsInitializer.setupProject();
         } catch (IOException e) {
-            System.err.println("failed to setup the project.");//NOSONAR
+            LOG.error("Failed to setup the project.");//NOSONAR
             e.printStackTrace(); //NOSONAR // display on console
             System.exit(1); //NOSONAR abnormal exit, exception ocurred.
         }
@@ -113,7 +118,6 @@ public class SetupPomAndGWTModule {
 
     public SetupPomAndGWTModule(String mavenGroupId, String mavenArtifactId, String mavenModuleVersion, String gwtModuleFQN,
                                 File projectRoot) {
-        super();
         this.mavenGroupId = mavenGroupId;
         this.mavenArtifactId = mavenArtifactId;
         this.mavenModuleVersion = mavenModuleVersion;
