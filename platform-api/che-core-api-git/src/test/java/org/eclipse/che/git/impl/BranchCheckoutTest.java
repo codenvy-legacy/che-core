@@ -14,6 +14,7 @@ package org.eclipse.che.git.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
 
+import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.git.GitConnection;
 import org.eclipse.che.api.git.GitConnectionFactory;
 import org.eclipse.che.api.git.GitException;
@@ -22,6 +23,7 @@ import org.eclipse.che.api.git.shared.BranchCheckoutRequest;
 import org.eclipse.che.api.git.shared.BranchCreateRequest;
 import org.eclipse.che.api.git.shared.BranchListRequest;
 import org.eclipse.che.api.git.shared.CommitRequest;
+import org.eclipse.che.api.git.shared.PullRequest;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -125,6 +127,36 @@ public class BranchCheckoutTest {
                                           .withName(SECOND_BRANCH_NAME)
                                           .withStartPoint(FIRST_BRANCH_NAME)
                                           .withCreateNew(true));
+        //then
+        assertEquals(connection.branchList(newDto(BranchListRequest.class)).size(), 3);
+        assertTrue(new File(repository, "newfile").exists());
+    }
+
+    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
+    public void testTrackRemoteBranch(GitConnectionFactory connectionFactory) throws GitException, IOException, UnauthorizedException {
+        //given
+        GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
+        addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
+        connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));
+        connection.commit(newDto(CommitRequest.class).withMessage("Initial add"));
+
+        //when
+        //create branch additional branch and make a commit
+        connection.branchCreate(newDto(BranchCreateRequest.class).withName(FIRST_BRANCH_NAME));
+        connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName(FIRST_BRANCH_NAME));
+        addFile(connection, "newfile", "new file content");
+        connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
+        connection.commit(newDto(CommitRequest.class).withMessage("Commit message"));
+        connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName("master"));
+
+        //check existence of 2 branches
+        assertEquals(connection.branchList(newDto(BranchListRequest.class)).size(), 2);
+
+        //when
+        connection.branchCheckout(newDto(BranchCheckoutRequest.class)
+                                          .withCreateNew(true)
+                                          .withName(SECOND_BRANCH_NAME)
+                                          .withTrackBranch(FIRST_BRANCH_NAME));
         //then
         assertEquals(connection.branchList(newDto(BranchListRequest.class)).size(), 3);
         assertTrue(new File(repository, "newfile").exists());
