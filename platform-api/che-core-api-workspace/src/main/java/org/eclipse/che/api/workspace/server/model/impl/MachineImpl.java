@@ -44,6 +44,7 @@ public class MachineImpl extends MachineConfigImpl implements Machine {
                        String id,
                        Map<String, String> properties,
                        Map<String, ? extends Server> servers) {
+        super(isDev, name, type, source, memorySize, outputChannel);
         this.id = id;
         this.properties = properties;
         if (servers != null) {

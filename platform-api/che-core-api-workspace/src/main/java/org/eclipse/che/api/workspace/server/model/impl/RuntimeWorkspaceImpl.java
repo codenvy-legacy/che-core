@@ -58,7 +58,9 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
                                 String currentEnvironment,
                                 WorkspaceStatus status) {
         super(id, name, owner, attributes, commands, projects, environments, defaultEnvironment, description);
-        this.devMachine = new MachineImpl(devMachine);
+        if (devMachine != null) {
+            this.devMachine = new MachineImpl(devMachine);
+        }
         this.activeEnvName = currentEnvironment;
         this.rootFolder = rootFolder;
         setStatus(status);

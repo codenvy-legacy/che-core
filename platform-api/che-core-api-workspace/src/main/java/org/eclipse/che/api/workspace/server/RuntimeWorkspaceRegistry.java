@@ -87,9 +87,13 @@ public class RuntimeWorkspaceRegistry {
      *         name of environment or null when default environment should be used
      * @return runtime view of {@code usersWorkspace} with status {@link WorkspaceStatus#RUNNING}
      * @throws ConflictException
-     * @throws ServerException
+     *         when workspace is already running or any other conflict error occurs during environment start
      * @throws BadRequestException
+     *         when active environment is in inconsistent state
      * @throws NotFoundException
+     *         whe any not found exception occurs during environment start
+     * @throws ServerException
+     *         when registry {@link #isStopped is stopped} other error occurs during environment start
      */
     public RuntimeWorkspaceImpl start(UsersWorkspace usersWorkspace, String envName) throws ConflictException,
                                                                                             ServerException,
@@ -147,7 +151,7 @@ public class RuntimeWorkspaceRegistry {
         return runtimeWorkspace;
     }
 
-    public List<RuntimeWorkspaceImpl> getList(String ownerId) {
+    public List<RuntimeWorkspaceImpl> getByOwner(String ownerId) {
         lock.readLock().lock();
         try {
             return ownerToWorkspaces.get(ownerId);
@@ -156,8 +160,13 @@ public class RuntimeWorkspaceRegistry {
         }
     }
 
-    List<MachineImpl> startEnvironment(Environment environment, String workspaceId)
-            throws BadRequestException, ServerException, NotFoundException, ConflictException {
+    /**
+     * Starts all environment machines, starting from dev machine.
+     */
+    List<MachineImpl> startEnvironment(Environment environment, String workspaceId) throws BadRequestException,
+                                                                                           ServerException,
+                                                                                           NotFoundException,
+                                                                                           ConflictException {
         /* todo replace with environments management
            for now we consider environment is:
            - recipe with type "docker"

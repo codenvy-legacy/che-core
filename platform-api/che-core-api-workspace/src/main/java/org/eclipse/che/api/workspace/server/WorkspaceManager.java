@@ -107,7 +107,7 @@ public class WorkspaceManager {
     public List<UsersWorkspace> getWorkspaces(String owner) throws ServerException, BadRequestException {
         requiredNotNull(owner, "Workspace owner required");
 
-        final List<RuntimeWorkspaceImpl> runtimeWorkspaces = workspaceRegistry.getList(owner);
+        final List<RuntimeWorkspaceImpl> runtimeWorkspaces = workspaceRegistry.getByOwner(owner);
         final List<UsersWorkspaceImpl> usersWorkspaces = workspaceDao.getList(owner);
         Map<String, UsersWorkspace> workspaces = new HashMap<>();
         for (RuntimeWorkspace runtimeWorkspace : runtimeWorkspaces) {
