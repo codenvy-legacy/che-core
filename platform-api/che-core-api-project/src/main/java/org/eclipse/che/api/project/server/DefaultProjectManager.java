@@ -21,6 +21,7 @@ import org.eclipse.che.api.project.server.handlers.CreateProjectHandler;
 import org.eclipse.che.api.project.server.handlers.GetModulesHandler;
 import org.eclipse.che.api.project.server.handlers.ProjectHandlerRegistry;
 import org.eclipse.che.api.project.server.handlers.ProjectTypeChangedHandler;
+import org.eclipse.che.api.project.server.handlers.RemoveModuleHandler;
 import org.eclipse.che.api.project.server.notification.ProjectItemModifiedEvent;
 import org.eclipse.che.api.project.server.type.Attribute;
 import org.eclipse.che.api.project.server.type.AttributeValue;
@@ -28,7 +29,6 @@ import org.eclipse.che.api.project.server.type.BaseProjectType;
 import org.eclipse.che.api.project.server.type.ProjectType;
 import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
 import org.eclipse.che.api.project.server.type.Variable;
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 
 import org.eclipse.che.api.vfs.server.Path;
@@ -43,14 +43,10 @@ import org.eclipse.che.dto.server.DtoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.wordnik.swagger.annotations.ApiParam;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
@@ -758,6 +754,10 @@ public final class DefaultProjectManager implements ProjectManager {
             Project project = new Project((FolderEntry) entry, this);
             // remove module only
             if (modulePath != null) {
+                RemoveModuleHandler removeModuleHandler = this.getHandlers().getRemoveModuleHandler(project.getConfig().getTypeId());
+                if (removeModuleHandler != null) {
+                    removeModuleHandler.onRemoveModule(project.getBaseFolder(), modulePath, project.getConfig());
+                }
                 return project.getModules().remove(modulePath);
             }
             final String name = project.getName();

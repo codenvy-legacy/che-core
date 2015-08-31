@@ -28,6 +28,7 @@ public class ProjectHandlerRegistry {
     private final Map<String, PostImportProjectHandler>  postImportProjectHandlers  = new HashMap<>();
     private final Map<String, GetItemHandler>            getItemHandlers            = new HashMap<>();
     private final Map<String, CreateModuleHandler>       createModuleHandlers       = new HashMap<>();
+    private final Map<String, RemoveModuleHandler>       removeModuleHandlers       = new HashMap<>();
     private final Map<String, ProjectTypeChangedHandler> projectTypeChangedHandlers = new HashMap<>();
     private final Map<String, GetModulesHandler>         getModulesHandlers         = new HashMap<>();
 
@@ -45,6 +46,8 @@ public class ProjectHandlerRegistry {
             getItemHandlers.put(handler.getProjectType(), (GetItemHandler)handler);
         } else if (handler instanceof CreateModuleHandler) {
             createModuleHandlers.put(handler.getProjectType(), (CreateModuleHandler)handler);
+        } else if (handler instanceof RemoveModuleHandler) {
+                removeModuleHandlers.put(handler.getProjectType(), (RemoveModuleHandler)handler);
         } else if (handler instanceof PostImportProjectHandler) {
             postImportProjectHandlers.put(handler.getProjectType(), (PostImportProjectHandler)handler);
         } else if (handler instanceof ProjectTypeChangedHandler) {
@@ -67,6 +70,11 @@ public class ProjectHandlerRegistry {
     @Nullable
     public CreateModuleHandler getCreateModuleHandler(@Nonnull String projectType) {
         return createModuleHandlers.get(projectType);
+    }
+
+    @Nullable
+    public RemoveModuleHandler getRemoveModuleHandler(@Nonnull String projectType) {
+        return removeModuleHandlers.get(projectType);
     }
 
     @Nullable

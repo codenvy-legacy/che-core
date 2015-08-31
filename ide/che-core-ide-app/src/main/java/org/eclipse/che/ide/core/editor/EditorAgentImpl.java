@@ -22,6 +22,7 @@ import org.eclipse.che.ide.api.event.ActivePartChangedEvent;
 import org.eclipse.che.ide.api.event.ActivePartChangedHandler;
 import org.eclipse.che.ide.api.event.DeleteModuleEvent;
 import org.eclipse.che.ide.api.event.DeleteModuleEventHandler;
+import org.eclipse.che.ide.api.event.FileContentUpdateEvent;
 import org.eclipse.che.ide.api.event.FileEvent;
 import org.eclipse.che.ide.api.event.FileEvent.FileOperation;
 import org.eclipse.che.ide.api.event.FileEventHandler;
@@ -155,10 +156,16 @@ public class EditorAgentImpl implements EditorAgent {
         });
     }
 
+    /** Close all files by module and refresh .codenvy/modules and pom.xml after remove module */
     private void closeAllFilesByModule(ProjectNode projectNode) {
         for (EditorPartPresenter editor : getOpenedEditors().values()) {
             VirtualFile virtualFile = editor.getEditorInput().getFile();
             ProjectNode projectParent = virtualFile.getProject();
+
+            String fileName = virtualFile.getName();
+            if (fileName.equals("modules") || fileName.equals("pom.xml")) {
+                eventBus.fireEvent(new FileContentUpdateEvent(virtualFile.getPath()));
+            }
 
             if (projectParent.equals(projectNode)) {
                 eventBus.fireEvent(new FileEvent(virtualFile, CLOSE));

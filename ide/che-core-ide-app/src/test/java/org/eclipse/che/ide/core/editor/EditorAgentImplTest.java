@@ -20,6 +20,7 @@ import org.eclipse.che.ide.api.editor.EditorProvider;
 import org.eclipse.che.ide.api.editor.EditorRegistry;
 import org.eclipse.che.ide.api.event.DeleteModuleEvent;
 import org.eclipse.che.ide.api.event.DeleteModuleEventHandler;
+import org.eclipse.che.ide.api.event.FileContentUpdateEvent;
 import org.eclipse.che.ide.api.event.FileEvent;
 import org.eclipse.che.ide.api.filetypes.FileType;
 import org.eclipse.che.ide.api.filetypes.FileTypeRegistry;
@@ -131,6 +132,7 @@ public class EditorAgentImplTest {
     public void filesShouldBeClosedAfterDeletionModule() {
         final String modulePath = "/Project/module1";
         final String filePath = modulePath + "/someFile";
+        final String fileName = "testFile";
         final String jarFilePath = "com.oracle.someFile";
 
         DeleteModuleEvent event = mock(DeleteModuleEvent.class);
@@ -144,6 +146,9 @@ public class EditorAgentImplTest {
         when(fileNode2.getPath()).thenReturn(jarFilePath);
         when(fileNode2.getProject()).thenReturn(moduleNode);
         when(editorInput.getFile()).thenReturn(newFileNode).thenReturn(fileNode2);
+        when(newFileNode.getName()).thenReturn(fileName);
+        when(fileNode2.getName()).thenReturn(fileName);
+
 
         editorAgent.openEditor(newFileNode);
         editorAgent.openEditor(fileNode2);
@@ -160,5 +165,73 @@ public class EditorAgentImplTest {
         verify(newFileNode).getProject();
         verify(fileNode2).getProject();
         verify(eventBus, times(2)).fireEvent(any(FileEvent.class));
+    }
+
+    @Test
+    public void modulesFileShouldBeUpdateAfterRemoveModule() {
+        //test for update the content of './codenvy/modules' file
+        final String modulePath = "/Project/module1";
+        final String filePath = modulePath + "/someFile";
+        final String file1Name = "modules";
+
+        DeleteModuleEvent event = mock(DeleteModuleEvent.class);
+
+        ModuleNode moduleNode = mock(ModuleNode.class);
+
+        when(event.getModule()).thenReturn(moduleNode);
+        when(moduleNode.getPath()).thenReturn(modulePath);
+        when(newFileNode.getPath()).thenReturn(filePath);
+        when(newFileNode.getProject()).thenReturn(mock(ModuleNode.class));
+        when(editorInput.getFile()).thenReturn(newFileNode);
+        when(newFileNode.getName()).thenReturn(file1Name);
+
+
+        editorAgent.openEditor(newFileNode);
+
+        assertThat(editorAgent.getOpenedEditors().size(), is(1));
+
+        //close opened files for deleted module
+        verify(eventBus).addHandler(eq(DeleteModuleEvent.TYPE), deleteModuleHandlerCaptor.capture());
+        deleteModuleHandlerCaptor.getValue().onModuleDeleted(event);
+
+        verify(event).getModule();
+        verify(editor).getEditorInput();
+        verify(editorInput).getFile();
+        verify(newFileNode).getProject();
+        verify(eventBus).fireEvent(any(FileContentUpdateEvent.class));
+    }
+
+    @Test
+    public void pomFileShouldBeUpdateAfterRemoveModule() {
+        //test for update the content of 'pom.xml' file
+        final String modulePath = "/Project/module1";
+        final String filePath = modulePath + "/someFile";
+        final String file1Name = "pom.xml";
+
+        DeleteModuleEvent event = mock(DeleteModuleEvent.class);
+
+        ModuleNode moduleNode = mock(ModuleNode.class);
+
+        when(event.getModule()).thenReturn(moduleNode);
+        when(moduleNode.getPath()).thenReturn(modulePath);
+        when(newFileNode.getPath()).thenReturn(filePath);
+        when(newFileNode.getProject()).thenReturn(mock(ModuleNode.class));
+        when(editorInput.getFile()).thenReturn(newFileNode);
+        when(newFileNode.getName()).thenReturn(file1Name);
+
+
+        editorAgent.openEditor(newFileNode);
+
+        assertThat(editorAgent.getOpenedEditors().size(), is(1));
+
+        //close opened files for deleted module
+        verify(eventBus).addHandler(eq(DeleteModuleEvent.TYPE), deleteModuleHandlerCaptor.capture());
+        deleteModuleHandlerCaptor.getValue().onModuleDeleted(event);
+
+        verify(event).getModule();
+        verify(editor).getEditorInput();
+        verify(editorInput).getFile();
+        verify(newFileNode).getProject();
+        verify(eventBus).fireEvent(any(FileContentUpdateEvent.class));
     }
 }
