@@ -146,9 +146,9 @@ public class RenameItemAction extends Action {
 
         boolean enabled = false;
         Selection<?> selection = selectionAgent.getSelection();
-        if (selection != null && selection.getFirstElement() instanceof AbstractTreeNode) {
-            enabled = selection.getFirstElement() instanceof StorableNode
-                      && ((AbstractTreeNode)selection.getFirstElement()).isRenamable();
+        if (selection != null && selection.getHeadElement() instanceof AbstractTreeNode) {
+            enabled = selection.getHeadElement() instanceof StorableNode
+                      && ((AbstractTreeNode)selection.getHeadElement()).isRenamable();
         }
         e.getPresentation().setEnabled(enabled);
     }

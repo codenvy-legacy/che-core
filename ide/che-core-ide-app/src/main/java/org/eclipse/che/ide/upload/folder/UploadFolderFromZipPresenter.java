@@ -109,8 +109,8 @@ public class UploadFolderFromZipPresenter implements UploadFolderFromZipView.Act
     private StorableNode getParent() {
         Selection<?> selection = selectionAgent.getSelection();
         if (selection != null) {
-            if (selection.getFirstElement() instanceof StorableNode) {
-                final StorableNode selectedNode = (StorableNode)selection.getFirstElement();
+            if (selection.getHeadElement() instanceof StorableNode) {
+                final StorableNode selectedNode = (StorableNode)selection.getHeadElement();
                 if (selectedNode instanceof FileNode) {
                     return (StorableNode)selectedNode.getParent();
                 } else {

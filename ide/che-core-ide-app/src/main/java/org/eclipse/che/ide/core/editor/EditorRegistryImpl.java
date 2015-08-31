@@ -39,7 +39,6 @@ public class EditorRegistryImpl implements EditorRegistry {
     @Inject
     public EditorRegistryImpl(@Named("defaultEditor") EditorProvider defaultProvider,
                               @Named("defaultFileType") FileType defaultFile) {
-        super();
         this.defaultProvider = defaultProvider;
         registry = new HashMap<>();
         register(defaultFile, defaultProvider);

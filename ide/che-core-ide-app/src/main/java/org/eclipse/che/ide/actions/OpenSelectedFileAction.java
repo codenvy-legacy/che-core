@@ -52,8 +52,8 @@ public class OpenSelectedFileAction extends Action {
         eventLogger.log(this);
 
         Selection<?> selection = selectionAgent.getSelection();
-        if (selection != null && selection.getFirstElement() instanceof FileNode) {
-            FileNode fileNode = (FileNode)selection.getFirstElement();
+        if (selection != null && selection.getHeadElement() instanceof FileNode) {
+            FileNode fileNode = (FileNode)selection.getHeadElement();
             eventBus.fireEvent(new FileEvent(fileNode, FileEvent.FileOperation.OPEN));
         }
     }
@@ -66,7 +66,7 @@ public class OpenSelectedFileAction extends Action {
         }
 
         Selection<?> selection = selectionAgent.getSelection();
-        final boolean isFileSelected = selection != null && selection.getFirstElement() instanceof FileNode;
+        final boolean isFileSelected = selection != null && selection.getHeadElement() instanceof FileNode;
         e.getPresentation().setVisible(isFileSelected);
     }
 }

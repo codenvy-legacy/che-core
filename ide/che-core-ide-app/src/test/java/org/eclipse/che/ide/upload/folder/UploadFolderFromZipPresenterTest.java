@@ -101,7 +101,7 @@ public class UploadFolderFromZipPresenterTest {
         Selection select = mock(Selection.class);
         FolderNode item = mock(FolderNode.class);
         when(selectionAgent.getSelection()).thenReturn(select);
-        when(select.getFirstElement()).thenReturn(item);
+        when(select.getHeadElement()).thenReturn(item);
 
         presenter.onUploadClicked();
 
@@ -149,7 +149,7 @@ public class UploadFolderFromZipPresenterTest {
         Selection select = mock(Selection.class);
         FolderNode item = mock(FolderNode.class);
         when(selectionAgent.getSelection()).thenReturn(select);
-        when(select.getFirstElement()).thenReturn(item);
+        when(select.getHeadElement()).thenReturn(item);
         when(view.isOverwriteFileSelected()).thenReturn(false);
         when(view.getFileName()).thenReturn("fileName");
 
@@ -166,7 +166,7 @@ public class UploadFolderFromZipPresenterTest {
         FolderNode item = mock(FolderNode.class);
         NavigableMap<String, EditorPartPresenter> openEditors = new TreeMap<>();
         when(selectionAgent.getSelection()).thenReturn(select);
-        when(select.getFirstElement()).thenReturn(item);
+        when(select.getHeadElement()).thenReturn(item);
         when(view.isOverwriteFileSelected()).thenReturn(true);
         when(view.getFileName()).thenReturn("fileName");
         when(editorAgent.getOpenedEditors()).thenReturn(openEditors);
