@@ -31,10 +31,12 @@ import org.eclipse.che.api.user.server.dao.PreferenceDao;
 import org.eclipse.che.api.user.server.dao.User;
 import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.api.user.server.dao.UserProfileDao;
-import org.eclipse.che.api.workspace.server.dao.Member;
-import org.eclipse.che.api.workspace.server.dao.MemberDao;
-import org.eclipse.che.api.workspace.server.dao.Workspace;
-import org.eclipse.che.api.workspace.server.dao.WorkspaceDao;
+//import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
+//import org.eclipse.che.api.workspace.server.dao.Member;
+//import org.eclipse.che.api.workspace.server.dao.MemberDao;
+//import org.eclipse.che.api.workspace.server.dao.Workspace;
+//import org.eclipse.che.api.workspace.server.dao.WorkspaceDao;
+import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
 import org.eclipse.che.inject.DynaModule;
 
 import javax.inject.Named;
@@ -54,7 +56,7 @@ public class LocalInfrastructureModule extends AbstractModule {
         bind(WorkspaceDao.class).to(LocalWorkspaceDaoImpl.class);
         bind(UserProfileDao.class).to(LocalProfileDaoImpl.class);
         bind(PreferenceDao.class).to(LocalPreferenceDaoImpl.class);
-        bind(MemberDao.class).to(LocalMemberDaoImpl.class);
+//        bind(MemberDao.class).to(LocalMemberDaoImpl.class);
         bind(AccountDao.class).to(LocalAccountDaoImpl.class);
         bind(AuthenticationDao.class).to(LocalAuthenticationDaoImpl.class);
 //        bind(FactoryStore.class).to(InMemoryFactoryStore.class);
@@ -90,7 +92,7 @@ public class LocalInfrastructureModule extends AbstractModule {
 
 
     // ~~~ WorkspaceDao
-
+/*
     @Provides
     @Named("codenvy.local.infrastructure.workspaces")
     Set<Workspace> workspaces() {
@@ -114,7 +116,7 @@ public class LocalInfrastructureModule extends AbstractModule {
         members.add(member);
         return members;
     }
-
+*/
     // MemberDao ~~~
 
 
@@ -125,6 +127,7 @@ public class LocalInfrastructureModule extends AbstractModule {
     Set<User> users() {
         final Set<User> users = new HashSet<>(1);
         final User user = new User().withId("codenvy")
+                                    .withName("codenvy")
                                     .withEmail("che@eclipse.org")
                                     .withPassword("secret");
         user.getAliases().add("che@eclipse.org");

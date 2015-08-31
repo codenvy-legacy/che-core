@@ -88,7 +88,7 @@ public abstract class AbstractInstance implements Instance {
     }
 
     @Override
-    public boolean isWorkspaceBound() {
+    public boolean isDev() {
         return isWorkspaceBound;
     }
 

@@ -11,7 +11,7 @@
 package org.eclipse.che.ide.api.app;
 
 //import org.eclipse.che.api.factory.dto.Factory;
-import org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor;
+import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 
 import javax.annotation.Nullable;
 import javax.inject.Singleton;
@@ -25,17 +25,17 @@ import javax.inject.Singleton;
 @Singleton
 public class AppContext {
 
-    private WorkspaceDescriptor workspace;
-    private CurrentProject      currentProject;
-    private CurrentUser         currentUser;
-//    private Factory             factory;
-    private String              devMachineId;
+    private UsersWorkspaceDto workspace;
+    private CurrentProject    currentProject;
+    private CurrentUser       currentUser;
+    //    private Factory             factory;
+    private String            devMachineId;
 
-    public WorkspaceDescriptor getWorkspace() {
+    public UsersWorkspaceDto getWorkspace() {
         return workspace;
     }
 
-    public void setWorkspace(WorkspaceDescriptor workspace) {
+    public void setWorkspace(UsersWorkspaceDto workspace) {
         this.workspace = workspace;
     }
 

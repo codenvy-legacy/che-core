@@ -35,7 +35,7 @@ import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 /**
  * Manages the Content menu.
  * Call <b>show</b> method to show menu and <b>hide</b> to hide it.
- * Also this manager filters the list of actions and displays only actions that are belong to Main Context menu group.
+ * Also this manager filters the list of actions and displays only actions that are belong to Main MachineContext menu group.
  *
  * @author Vitaliy Guliy
  * @author Dmitry Shnurenko

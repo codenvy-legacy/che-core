@@ -47,11 +47,11 @@ public interface RecipeMachineCreationMetadata extends MachineCreationMetadata {
 
     RecipeMachineCreationMetadata withWorkspaceId(String workspaceId);
 
-    boolean isBindWorkspace();
+    boolean isDev();
 
-    void setBindWorkspace(boolean bindWorkspace);
+    void setDev(boolean bindWorkspace);
 
-    RecipeMachineCreationMetadata withBindWorkspace(boolean bindWorkspace);
+    RecipeMachineCreationMetadata withDev(boolean bindWorkspace);
 
     @Override
     RecipeMachineCreationMetadata withOutputChannel(String outputChannel);

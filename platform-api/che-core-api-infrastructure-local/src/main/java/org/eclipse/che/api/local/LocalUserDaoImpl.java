@@ -187,6 +187,7 @@ public class LocalUserDaoImpl implements UserDao {
 
     private User doClone(User user) {
         return new User().withId(user.getId())
+                         .withName(user.getName())
                          .withEmail(user.getEmail())
                          .withPassword(user.getPassword())
                          .withAliases(new ArrayList<>(user.getAliases()));

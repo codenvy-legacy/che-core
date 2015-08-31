@@ -105,7 +105,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
                                                                 .withType(machineType)
                                                                 .withRecipe(machineRecipe)
                                                                 .withDisplayName(displayName)
-                                                                .withBindWorkspace(bindWorkspace)
+                                                                .withDev(bindWorkspace)
                                                                 .withOutputChannel(outputChannel);
 
         asyncRequestFactory.createPostRequest(baseHttpUrl + "/recipe", request)

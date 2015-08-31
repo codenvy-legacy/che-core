@@ -13,7 +13,7 @@ package org.eclipse.che.ide.api.build;
 //import org.eclipse.che.api.builder.dto.BuildTaskDescriptor;
 
 /**
- * Context interface, used for communication between different action that used builder to avoid
+ * MachineContext interface, used for communication between different action that used builder to avoid
  * running several builder tasks in one time.
  *
  * @author Evgen Vidolob

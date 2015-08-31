@@ -18,6 +18,8 @@ import java.util.regex.Pattern;
  * Unique identifier of recipe in format: scope:/[ca/te/go/ry]/name.
  *
  * @author andrew00x
+ *
+ * @deprecated
  */
 public class RecipeId {
     public enum Scope {

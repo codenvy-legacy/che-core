@@ -30,7 +30,7 @@ public class MachineImpl implements Machine {
     private final String  owner;
     private final Recipe  recipe;
     private final String  workspaceId;
-    private final boolean isWorkspaceBound;
+    private final boolean isDev;
     private final String  displayName;
     private final int     memorySizeMB;
 
@@ -41,7 +41,7 @@ public class MachineImpl implements Machine {
                        Recipe recipe,
                        String workspaceId,
                        String owner,
-                       boolean isWorkspaceBound,
+                       boolean isDev,
                        String displayName,
                        int memorySizeMB,
                        MachineStatus status) {
@@ -50,7 +50,7 @@ public class MachineImpl implements Machine {
         this.owner = owner;
         this.recipe = recipe;
         this.workspaceId = workspaceId;
-        this.isWorkspaceBound = isWorkspaceBound;
+        this.isDev = isDev;
         this.displayName = displayName;
         this.memorySizeMB = memorySizeMB;
         this.status = status;
@@ -88,8 +88,8 @@ public class MachineImpl implements Machine {
         return displayName;
     }
 
-    public boolean isWorkspaceBound() {
-        return isWorkspaceBound;
+    public boolean isDev() {
+        return isDev;
     }
 
     public int getMemorySize() {
@@ -101,7 +101,7 @@ public class MachineImpl implements Machine {
         if (this == o) return true;
         if (!(o instanceof MachineImpl)) return false;
         MachineImpl state = (MachineImpl)o;
-        return Objects.equals(isWorkspaceBound, state.isWorkspaceBound) &&
+        return Objects.equals(isDev, state.isDev) &&
                Objects.equals(memorySizeMB, state.memorySizeMB) &&
                Objects.equals(id, state.id) &&
                Objects.equals(type, state.type) &&
@@ -114,6 +114,6 @@ public class MachineImpl implements Machine {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, type, recipe, owner, workspaceId, isWorkspaceBound, displayName, memorySizeMB, status);
+        return Objects.hash(id, type, recipe, owner, workspaceId, isDev, displayName, memorySizeMB, status);
     }
 }

@@ -54,7 +54,7 @@ public interface Machine {
     /**
      * Is workspace bound to machine or not
      */
-    boolean isWorkspaceBound();
+    boolean isDev();
 
     String getDisplayName();
 

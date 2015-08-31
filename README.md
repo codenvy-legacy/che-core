@@ -2,7 +2,7 @@ This repository contains core components of Che. [![Build Status](https://travis
 
 ## How to build
 
-Requirements: Maven 3.1.1+, Java 1.7 (JDK)
+Requirements: Maven 3.1.1+, Java 1.8 (JDK)
 ```
 mvn clean install
 ```

@@ -10,52 +10,162 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.gwt.client;
 
-import org.eclipse.che.api.workspace.shared.dto.MemberDescriptor;
-import org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor;
-import org.eclipse.che.api.workspace.shared.dto.WorkspaceUpdate;
-import org.eclipse.che.ide.rest.AsyncRequestCallback;
+import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
+import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.api.workspace.server.WorkspaceService;
+import org.eclipse.che.api.workspace.shared.dto.CommandDto;
+import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.RuntimeWorkspaceDto;
+import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
+import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * GWT Client for Workspace Service.
  *
- * @author Roman Nikitenko
+ * @author Eugene Voevodin
  */
 public interface WorkspaceServiceClient {
-    /**
-     * Get workspace information by ID.
-     *
-     * @param wsId
-     *         workspace's id
-     * @param callback
-     */
-    public void getWorkspace(String wsId, AsyncRequestCallback<WorkspaceDescriptor> callback);
 
     /**
-     * Get membership of current user in the given workspace.
+     * Creates new workspace.
      *
-     * @param callback
+     * @see WorkspaceService#create(UsersWorkspaceDto, String)
      */
-    public void getMembership(String wsId, AsyncRequestCallback<MemberDescriptor> callback);
+    Promise<UsersWorkspaceDto> create(UsersWorkspaceDto newWorkspace, String account);
 
     /**
-     * Get memberships of current user.
+     * Gets users workspace by id.
      *
-     * @param callback
+     * @see WorkspaceService#getById(String)
      */
-    public void getMemberships(AsyncRequestCallback<List<MemberDescriptor>> callback);
+    Promise<UsersWorkspaceDto> getUsersWorkspace(String wsId);
 
     /**
-     * Update workspace
+     * Gets runtime workspace by id.
      *
-     * @param callback
+     * @see WorkspaceService#getRuntimeWorkspaceById(String)
      */
-    public void update(String wsId, WorkspaceUpdate update, AsyncRequestCallback<WorkspaceDescriptor> callback);
+    Promise<RuntimeWorkspaceDto> getRuntimeWorkspace(String wsId);
 
     /**
-     * Update attributes of current workspace
+     * Gets all workspaces of current user.
+     *
+     * @see WorkspaceService#getWorkspaces(Integer, Integer)
      */
-    public void updateAttributes(Map<String, String> attributes, AsyncRequestCallback<WorkspaceDescriptor> callback);
+    Promise<List<UsersWorkspaceDto>> getWorkspaces(int skip, int limit);
+
+    /**
+     * Gets all runtime workspaces of current user.
+     *
+     * @see WorkspaceService#getRuntimeWorkspaces(Integer, Integer)
+     */
+    Promise<List<RuntimeWorkspaceDto>> getRuntimeWorkspaces(int skip, int limit);
+
+    /**
+     * Updates workspace.
+     *
+     * @see WorkspaceService#update(String, WorkspaceConfig)
+     */
+    Promise<UsersWorkspaceDto> update(String wsId, WorkspaceConfig newCfg);
+
+    /**
+     * Removes workspace.
+     *
+     * @see WorkspaceService#delete(String)
+     */
+    Promise<Void> delete(String wsId);
+
+    /**
+     * Starts temporary workspace based on given workspace configuration.
+     *
+     * @see WorkspaceService#startTemporary(WorkspaceConfigDto, String)
+     */
+    Promise<UsersWorkspaceDto> startTemporary(WorkspaceConfig cfg, String accountId);
+
+    /**
+     * Starts workspace based on workspace id and environment.
+     *
+     * @see WorkspaceService#startById(String, String)
+     */
+    Promise<UsersWorkspaceDto> startById(String id, String envName);
+
+    /**
+     * Starts workspace based on workspace name and environment.
+     *
+     * @see WorkspaceService#startByName(String, String)
+     */
+    Promise<UsersWorkspaceDto> startByName(String name, String envName);
+
+    /**
+     * Stops running workspace.
+     *
+     * @see WorkspaceService#stop(String)
+     */
+    Promise<Void> stop(String wsId);
+
+    /**
+     * Adds command to workspace
+     *
+     * @see WorkspaceService#addCommand(String, CommandDto)
+     */
+    Promise<UsersWorkspaceDto> addCommand(String wsId, CommandDto newCommand);
+
+    /**
+     * Updates command.
+     *
+     * @see WorkspaceService#updateCommand(String, CommandDto)
+     */
+    Promise<UsersWorkspaceDto> updateCommand(String wsId, CommandDto commandUpdate);
+
+    /**
+     * Removes command from workspace.
+     *
+     * @see WorkspaceService#deleteCommand(String, String)
+     */
+    Promise<UsersWorkspaceDto> deleteCommand(String wsId, String commandName);
+
+    /**
+     * Adds environment to workspace.
+     *
+     * @see WorkspaceService#addEnvironment(String, EnvironmentDto)
+     */
+    Promise<UsersWorkspaceDto> addEnvironment(String wsId, EnvironmentDto newEnv);
+
+    /**
+     * Updates environment.
+     *
+     * @see WorkspaceService#updateEnvironment(String, EnvironmentDto)
+     */
+    Promise<UsersWorkspaceDto> updateEnvironment(String wsId, EnvironmentDto environmentUpdate);
+
+    /**
+     * Removes environment.
+     *
+     * @see WorkspaceService#deleteEnvironment(String, String)
+     */
+    Promise<UsersWorkspaceDto> addEnvironment(String wsId, String envName);
+
+    /**
+     * Adds project configuration to workspace.
+     *
+     * @see WorkspaceService#addProject(String, ProjectConfigDto)
+     */
+    Promise<UsersWorkspaceDto> addProject(String wsId, ProjectConfigDto newProject);
+
+    /**
+     * Updates project configuration.
+     *
+     * @see WorkspaceService#updateProject(String wsId, ProjectConfigDto projectUpdate);
+     */
+    Promise<UsersWorkspaceDto> updateProject(String wsId, ProjectConfigDto newEnv);
+
+    /**
+     * Removes project from workspace.
+     *
+     * @see WorkspaceService#deleteProject(String, String)
+     */
+    Promise<UsersWorkspaceDto> deleteProject(String wsId, String projectName);
 }

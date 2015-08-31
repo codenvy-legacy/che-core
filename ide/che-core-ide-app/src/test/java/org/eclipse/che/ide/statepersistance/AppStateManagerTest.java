@@ -20,8 +20,7 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.PromiseError;
-import org.eclipse.che.api.user.shared.dto.ProfileDescriptor;
-import org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor;
+import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionManager;
@@ -90,7 +89,7 @@ public class AppStateManagerTest {
     private static final String FULL_PROJECT_PATH = "/" + WORKSPACE_NAME + PROJECT_PATH;
 
     @Mock
-    private Set<PersistenceComponent>         persistenceComponents;
+    private Set<PersistenceComponent> persistenceComponents;
 
     private Map<String, PersistenceComponent> projectTreePersistenceComponents;
     @Mock
@@ -111,7 +110,7 @@ public class AppStateManagerTest {
     @Mock
     private AppState                     appState;
     @Mock
-    private WorkspaceDescriptor          workspaceDescriptor;
+    private UsersWorkspaceDto            workspaceDescriptor;
     @Mock
     private RecentProject                recentProject;
     @Mock
@@ -144,9 +143,9 @@ public class AppStateManagerTest {
     @Captor
     private ArgumentCaptor<AsyncRequestCallback<ProjectDescriptor>> projectDescriptorCaptor;
     @Captor
-    private ArgumentCaptor<PersistProjectTreeStateHandler> projectTreeStateHandlerArgCaptor;
+    private ArgumentCaptor<PersistProjectTreeStateHandler>          projectTreeStateHandlerArgCaptor;
     @Captor
-    private ArgumentCaptor<RestoreProjectTreeStateHandler> treeStateHandlerArgumentCaptor;
+    private ArgumentCaptor<RestoreProjectTreeStateHandler>          treeStateHandlerArgumentCaptor;
 
     private AppStateManager appStateManager;
 
@@ -213,8 +212,8 @@ public class AppStateManagerTest {
 
         verify(eventBus).addHandler(eq(WindowActionEvent.TYPE), eq(appStateManager));
         verify(eventBus).addHandler(eq(ProjectActionEvent.TYPE), eq(appStateManager));
-        verify(eventBus).addHandler(eq(PersistProjectTreeStateEvent.TYPE), (PersistProjectTreeStateHandler) anyObject());
-        verify(eventBus).addHandler(eq(RestoreProjectTreeStateEvent.TYPE), (RestoreProjectTreeStateHandler) anyObject());
+        verify(eventBus).addHandler(eq(PersistProjectTreeStateEvent.TYPE), (PersistProjectTreeStateHandler)anyObject());
+        verify(eventBus).addHandler(eq(RestoreProjectTreeStateEvent.TYPE), (RestoreProjectTreeStateHandler)anyObject());
     }
 
     @Test
@@ -440,6 +439,6 @@ public class AppStateManagerTest {
 
         verify(dtoFactory).toJson(appState);
         verify(preferencesManager).setValue(eq(PREFERENCE_PROPERTY_NAME), anyString());
-        verify( preferencesManager).flushPreferences(Matchers.<AsyncCallback<Map<String, String>>>anyObject());
+        verify(preferencesManager).flushPreferences(Matchers.<AsyncCallback<Map<String, String>>>anyObject());
     }
 }
