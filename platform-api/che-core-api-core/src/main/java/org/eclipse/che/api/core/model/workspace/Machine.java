@@ -28,11 +28,6 @@ public interface Machine extends MachineConfig {
     String getId();
 
     /**
-     * Returns channel of websocket where machine logs should be put.
-     */
-    String getOutputChannel();
-
-    /**
      * Returns machine specific metadata
      */
     Map<String, String> getProperties();

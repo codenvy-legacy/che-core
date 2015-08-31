@@ -35,16 +35,30 @@ public class ProjectConfigImpl implements ProjectConfig {
     private String                    type;
     private List<String>              mixinTypes;
     private Map<String, List<String>> attributes;
-    private SourceStorage             sourceStorage;
+    private SourceStorageImpl         sourceStorage;
+
+    public ProjectConfigImpl() {
+    }
+
+    public ProjectConfigImpl(ProjectConfig projectCfg) {
+        name = projectCfg.getName();
+        path = projectCfg.getPath();
+        description = projectCfg.getDescription();
+        type = projectCfg.getType();
+        mixinTypes = projectCfg.getMixinTypes();
+        attributes = projectCfg.getAttributes();
+        sourceStorage = new SourceStorageImpl(projectCfg.getSourceStorage().getType(),
+                                              projectCfg.getSourceStorage().getLocation(),
+                                              projectCfg.getSourceStorage().getParameters());
+    }
 
     @Override
     public String getName() {
         return name;
     }
 
-    public ProjectConfigImpl setName(String name) {
+    public void setName(String name) {
         this.name = name;
-        return this;
     }
 
     @Override
@@ -52,9 +66,8 @@ public class ProjectConfigImpl implements ProjectConfig {
         return path;
     }
 
-    public ProjectConfigImpl setPath(String path) {
+    public void setPath(String path) {
         this.path = path;
-        return this;
     }
 
     @Override
@@ -62,9 +75,8 @@ public class ProjectConfigImpl implements ProjectConfig {
         return description;
     }
 
-    public ProjectConfigImpl setDescription(String description) {
+    public void setDescription(String description) {
         this.description = description;
-        return this;
     }
 
     @Override
@@ -72,22 +84,20 @@ public class ProjectConfigImpl implements ProjectConfig {
         return type;
     }
 
-    public ProjectConfigImpl setType(String type) {
+    public void setType(String type) {
         this.type = type;
-        return this;
     }
 
     @Override
     public List<String> getMixinTypes() {
         if (mixinTypes == null) {
-            this.mixinTypes = new ArrayList<>();
+            mixinTypes = new ArrayList<>();
         }
         return mixinTypes;
     }
 
-    public ProjectConfigImpl setMixinTypes(List<String> mixinTypes) {
+    public void setMixinTypes(List<String> mixinTypes) {
         this.mixinTypes = mixinTypes;
-        return this;
     }
 
     @Override
@@ -98,9 +108,8 @@ public class ProjectConfigImpl implements ProjectConfig {
         return attributes;
     }
 
-    public ProjectConfigImpl setAttributes(Map<String, List<String>> attributes) {
+    public void setAttributes(Map<String, List<String>> attributes) {
         this.attributes = attributes;
-        return this;
     }
 
     @Override
@@ -108,9 +117,8 @@ public class ProjectConfigImpl implements ProjectConfig {
         return sourceStorage;
     }
 
-    public ProjectConfigImpl setSourceStorage(SourceStorage sourceStorage) {
+    public void setSourceStorage(SourceStorageImpl sourceStorage) {
         this.sourceStorage = sourceStorage;
-        return this;
     }
 
     @Override

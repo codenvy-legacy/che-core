@@ -37,4 +37,9 @@ public interface MachineConfig {
 
     /** Get memory size (in megabytes) that is allocated for starting machine. */
     int getMemorySize();
+
+    /**
+     * Returns channel of websocket where machine logs should be put.
+     */
+    String getOutputChannel();
 }

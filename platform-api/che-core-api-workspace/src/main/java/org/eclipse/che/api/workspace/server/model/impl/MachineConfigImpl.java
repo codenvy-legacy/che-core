@@ -29,15 +29,36 @@ public class MachineConfigImpl implements MachineConfig {
     private String            type;
     private MachineSourceImpl source;
     private int               memorySize;
+    private String            outputChannel;
+
+    public MachineConfigImpl() {
+    }
+
+    public MachineConfigImpl(boolean isDev, String name, String type, MachineSource source, int memorySize, String outputChannel) {
+        this.isDev = isDev;
+        this.name = name;
+        this.type = type;
+        this.source = new MachineSourceImpl(source.getType(), source.getLocation());
+        this.memorySize = memorySize;
+        this.outputChannel = outputChannel;
+    }
+
+    public MachineConfigImpl(MachineConfig machineCfg) {
+        this(machineCfg.isDev(),
+             machineCfg.getName(),
+             machineCfg.getType(),
+             machineCfg.getSource(),
+             machineCfg.getMemorySize(),
+             machineCfg.getOutputChannel());
+    }
 
     @Override
     public String getName() {
         return name;
     }
 
-    public MachineConfigImpl setName(String name) {
+    public void setName(String name) {
         this.name = name;
-        return this;
     }
 
     @Override
@@ -45,9 +66,8 @@ public class MachineConfigImpl implements MachineConfig {
         return source;
     }
 
-    public MachineConfigImpl setSource(MachineSourceImpl source) {
+    public void setSource(MachineSourceImpl source) {
         this.source = source;
-        return this;
     }
 
     @Override
@@ -55,9 +75,8 @@ public class MachineConfigImpl implements MachineConfig {
         return isDev;
     }
 
-    public MachineConfigImpl setDev(boolean isDev) {
+    public void setDev(boolean isDev) {
         this.isDev = isDev;
-        return this;
     }
 
     @Override
@@ -74,9 +93,17 @@ public class MachineConfigImpl implements MachineConfig {
         this.memorySize = memorySize;
     }
 
-    public MachineConfigImpl setType(String type) {
+    public void setType(String type) {
         this.type = type;
-        return this;
+    }
+
+    @Override
+    public String getOutputChannel() {
+        return outputChannel;
+    }
+
+    public void setOutputChannel(String outputChannel) {
+        this.outputChannel = outputChannel;
     }
 
     @Override
@@ -88,17 +115,19 @@ public class MachineConfigImpl implements MachineConfig {
                Objects.equals(name, other.name) &&
                Objects.equals(source, other.source) &&
                Objects.equals(memorySize, other.memorySize) &&
-               Objects.equals(type, other.type);
+               Objects.equals(type, other.type) &&
+               Objects.equals(outputChannel, other.outputChannel);
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = hash * 31 + (isDev ? 1231 : 1237);
+        hash = hash * 31 + Boolean.hashCode(isDev);
         hash = hash * 31 + Objects.hashCode(name);
         hash = hash * 31 + Objects.hashCode(type);
         hash = hash * 31 + Objects.hashCode(source);
         hash = hash * 31 + Objects.hashCode(memorySize);
+        hash = hash * 31 + Objects.hashCode(outputChannel);
         return hash;
     }
 
@@ -108,8 +137,9 @@ public class MachineConfigImpl implements MachineConfig {
                "isDev=" + isDev +
                ", name='" + name + '\'' +
                ", type='" + type + '\'' +
-               ", source=" + source + '\'' +
+               ", source=" + source +
                ", memorySize=" + memorySize +
+               ", outputChannel='" + outputChannel + '\'' +
                '}';
     }
 }

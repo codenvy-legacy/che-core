@@ -34,6 +34,9 @@ import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.core.rest.Service;
 import org.eclipse.che.api.core.rest.annotations.GenerateLink;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
+import org.eclipse.che.api.workspace.server.model.impl.CommandImpl;
+import org.eclipse.che.api.workspace.server.model.impl.EnvironmentImpl;
+import org.eclipse.che.api.workspace.server.model.impl.ProjectConfigImpl;
 import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
 import org.eclipse.che.api.workspace.shared.dto.CommandDto;
 import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
@@ -238,7 +241,7 @@ public class WorkspaceService extends Service {
     public UsersWorkspaceDto addCommand(@PathParam("id") String id, CommandDto newCommand)
             throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
-        workspace.getCommands().add(newCommand);
+        workspace.getCommands().add(new CommandImpl(newCommand));
         return asUsersWorkspaceDto(workspaceManager.updateWorkspace(workspace.getId(), workspace));
     }
 
@@ -252,7 +255,7 @@ public class WorkspaceService extends Service {
         if (!workspace.getCommands().removeIf(cmd -> cmd.getName().equals(update.getName()))) {
             throw new NotFoundException("Workspace " + id + " doesn't contain command " + update.getName());
         }
-        workspace.getCommands().add(update);
+        workspace.getCommands().add(new CommandImpl(update));
         return asUsersWorkspaceDto(workspaceManager.updateWorkspace(workspace.getId(), workspace));
     }
 
@@ -273,7 +276,7 @@ public class WorkspaceService extends Service {
     public UsersWorkspaceDto addEnvironment(@PathParam("id") String id, EnvironmentDto newEnvironment)
             throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
-        workspace.getEnvironments().put(newEnvironment.getName(), newEnvironment);
+        workspace.getEnvironments().put(newEnvironment.getName(), new EnvironmentImpl(newEnvironment));
         return asUsersWorkspaceDto(workspaceManager.updateWorkspace(id, workspace));
     }
 
@@ -287,7 +290,7 @@ public class WorkspaceService extends Service {
         if (!workspace.getEnvironments().containsKey(update.getName())) {
             throw new NotFoundException("Workspace " + id + " doesn't contain environment " + update.getName());
         }
-        workspace.getEnvironments().put(update.getName(), update);
+        workspace.getEnvironments().put(update.getName(), new EnvironmentImpl(update));
         return asUsersWorkspaceDto(workspaceManager.updateWorkspace(id, workspace));
     }
 
@@ -309,7 +312,7 @@ public class WorkspaceService extends Service {
     public UsersWorkspaceDto addProject(@PathParam("id") String id, ProjectConfigDto newProject)
             throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
-        workspace.getProjects().add(newProject);
+        workspace.getProjects().add(new ProjectConfigImpl(newProject));
         return asUsersWorkspaceDto(workspaceManager.updateWorkspace(id, workspace));
     }
 
@@ -323,7 +326,7 @@ public class WorkspaceService extends Service {
         if (!workspace.getProjects().removeIf(project -> project.getName().equals(update.getName()))) {
             throw new NotFoundException("Workspace " + id + " doesn't contain project " + update.getName());
         }
-        workspace.getProjects().add(update);
+        workspace.getProjects().add(new ProjectConfigImpl(update));
         return asUsersWorkspaceDto(workspaceManager.updateWorkspace(id, workspace));
     }
 
@@ -529,6 +532,7 @@ public class WorkspaceService extends Service {
         return newDto(MachineConfigDto.class).withName(config.getName())
                                              .withType(config.getType())
                                              .withDev(config.isDev())
+                                             .withOutputChannel(config.getOutputChannel())
                                              .withSource(asDto(config.getSource()));
     }
 }

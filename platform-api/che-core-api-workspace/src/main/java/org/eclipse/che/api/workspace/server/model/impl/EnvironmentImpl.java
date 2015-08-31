@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static java.util.stream.Collectors.toList;
+
 //TODO move?
 
 /**
@@ -34,6 +36,17 @@ public class EnvironmentImpl implements Environment {
         this.name = name;
         this.recipe = recipe;
         this.machineConfigs = machineConfigs;
+    }
+
+    public EnvironmentImpl(Environment environment) {
+        name = environment.getName();
+        recipe = environment.getRecipe();
+        if (environment.getMachineConfigs() != null) {
+            machineConfigs = environment.getMachineConfigs()
+                                        .stream()
+                                        .map(MachineConfigImpl::new)
+                                        .collect(toList());
+        }
     }
 
     @Override

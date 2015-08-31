@@ -27,6 +27,8 @@ import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 import org.eclipse.che.api.core.notification.EventService;
+import org.eclipse.che.api.workspace.server.model.impl.EnvironmentImpl;
+import org.eclipse.che.api.workspace.server.model.impl.MachineConfigImpl;
 import org.eclipse.che.api.workspace.server.model.impl.RuntimeWorkspaceImpl;
 import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
 import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
@@ -315,6 +317,13 @@ public class WorkspaceManager {
             workspace.setName(generateWorkspaceName());
         } else {
             validateName(cfg.getName());
+        }
+
+        //set websocket output channels
+        for (EnvironmentImpl environment : workspace.getEnvironments().values()) {
+            for (MachineConfigImpl machineConfig : environment.getMachineConfigs()) {
+                machineConfig.setOutputChannel(workspace.getId() + ':' + environment.getName() + ':' + machineConfig.getName());
+            }
         }
 
         return workspace;

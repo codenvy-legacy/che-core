@@ -25,6 +25,7 @@ import org.eclipse.che.api.core.model.workspace.Machine;
 import org.eclipse.che.api.core.model.workspace.RuntimeWorkspace;
 import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
+import org.eclipse.che.api.workspace.server.model.impl.MachineImpl;
 import org.eclipse.che.api.workspace.server.model.impl.RuntimeWorkspaceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,7 +105,7 @@ public class RuntimeWorkspaceRegistry {
 
         final Environment environment = runtimeWorkspace.getEnvironments().get(activeEnvName);
 
-        final List<Machine> machines = startEnvironment(environment, runtimeWorkspace.getId());
+        final List<MachineImpl> machines = startEnvironment(environment, runtimeWorkspace.getId());
         runtimeWorkspace.setDevMachine(findDev(machines));
         runtimeWorkspace.setMachines(machines);
         runtimeWorkspace.setStatus(RUNNING);
@@ -155,7 +156,7 @@ public class RuntimeWorkspaceRegistry {
         }
     }
 
-    List<Machine> startEnvironment(Environment environment, String workspaceId)
+    List<MachineImpl> startEnvironment(Environment environment, String workspaceId)
             throws BadRequestException, ServerException, NotFoundException, ConflictException {
         /* todo replace with environments management
            for now we consider environment is:
@@ -170,18 +171,18 @@ public class RuntimeWorkspaceRegistry {
             throw new BadRequestException("Invalid environment recipe type " + envRecipeType);
         }
 
-        final List<Machine> machines = new ArrayList<>();
+        final List<MachineImpl> machines = new ArrayList<>();
 
         MachineConfig devMachine = findDev(environment.getMachineConfigs());
         if (devMachine == null) {
             throw new BadRequestException("Dev machine was not found in workspace environment " + environment.getName());
         }
-        machines.add(machineClient.start(devMachine, workspaceId));
+        machines.add(machineClient.start(devMachine, workspaceId, environment.getName()));
 
         for (MachineConfig machineConfig : environment.getMachineConfigs()) {
             if (!machineConfig.isDev()) {
                 try {
-                    machines.add(machineClient.start(machineConfig, workspaceId));
+                    machines.add(machineClient.start(machineConfig, workspaceId, environment.getName()));
                 } catch (ApiException apiEx) {
                     //TODO should it be error?
                     LOG.error(apiEx.getMessage(), apiEx);

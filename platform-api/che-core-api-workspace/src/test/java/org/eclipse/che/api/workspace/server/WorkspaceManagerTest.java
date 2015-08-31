@@ -163,7 +163,7 @@ public class WorkspaceManagerTest {
                                                                     .withType("docker")
                                                                     .withSource(newDto(MachineSourceDto.class).withLocation("location")
                                                                                                               .withType("recipe"));
-        EnvironmentDto devEnv = newDto(EnvironmentDto.class).withName("dev")
+        EnvironmentDto devEnv = newDto(EnvironmentDto.class).withName("dev-env")
                                                             .withMachineConfigs(new ArrayList<>(singletonList(devMachine)))
                                                             .withRecipe(null);
         return newDto(WorkspaceConfigDto.class).withName("dev-workspace")

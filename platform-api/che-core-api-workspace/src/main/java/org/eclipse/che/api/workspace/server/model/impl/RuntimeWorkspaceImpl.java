@@ -23,7 +23,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static java.util.stream.Collectors.toList;
+
 /**
+ * Data object for {@link RuntimeWorkspace}.
+ *
+ * @author Eugene Voevodin
  * @author Alexander Garagatyi
  */
 public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeWorkspace {
@@ -34,9 +39,9 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
 
     private final String rootFolder;
 
-    private Machine                 devMachine;
-    private List<? extends Machine> machines;
-    private String                  currentEnvironment;
+    private MachineImpl       devMachine;
+    private List<MachineImpl> machines;
+    private String            activeEnvName;
 
     public RuntimeWorkspaceImpl(String id,
                                 String name,
@@ -53,16 +58,18 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
                                 String currentEnvironment,
                                 WorkspaceStatus status) {
         super(id, name, owner, attributes, commands, projects, environments, defaultEnvironment, description);
-        this.devMachine = devMachine;
-        this.currentEnvironment = currentEnvironment;
-        this.machines = machines != null ? machines : new ArrayList<Machine>();
+        this.devMachine = new MachineImpl(devMachine);
+        this.activeEnvName = currentEnvironment;
         this.rootFolder = rootFolder;
         setStatus(status);
+        if (machines != null) {
+            this.machines = machines.stream()
+                                    .map(MachineImpl::new)
+                                    .collect(toList());
+        }
     }
 
-    public RuntimeWorkspaceImpl(UsersWorkspace usersWorkspace,
-                                String rootFolder,
-                                String currentEnvironment) {
+    public RuntimeWorkspaceImpl(UsersWorkspace usersWorkspace, String rootFolder, String activeEnvName) {
         this(usersWorkspace.getId(),
              usersWorkspace.getName(),
              usersWorkspace.getOwner(),
@@ -75,7 +82,7 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
              null,
              null,
              rootFolder,
-             currentEnvironment,
+             activeEnvName,
              usersWorkspace.getStatus());
     }
 
@@ -90,7 +97,10 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
     }
 
     @Override
-    public List<? extends Machine> getMachines() {
+    public List<MachineImpl> getMachines() {
+        if (machines == null) {
+            machines = new ArrayList<>();
+        }
         return machines;
     }
 
@@ -101,14 +111,14 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
 
     @Override
     public String getActiveEnvName() {
-        return currentEnvironment;
+        return activeEnvName;
     }
 
-    public void setDevMachine(Machine devMachine) {
+    public void setDevMachine(MachineImpl devMachine) {
         this.devMachine = devMachine;
     }
 
-    public void setMachines(List<? extends Machine> machines) {
+    public void setMachines(List<MachineImpl> machines) {
         this.machines = machines;
     }
 
@@ -120,7 +130,7 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
         RuntimeWorkspaceImpl that = (RuntimeWorkspaceImpl)o;
         return Objects.equals(devMachine, that.devMachine) &&
                Objects.equals(machines, that.machines) &&
-               Objects.equals(currentEnvironment, that.currentEnvironment) &&
+               Objects.equals(activeEnvName, that.activeEnvName) &&
                Objects.equals(rootFolder, that.rootFolder);
     }
 
