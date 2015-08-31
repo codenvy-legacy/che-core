@@ -22,6 +22,7 @@ import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 
 import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.app.AppContext;
@@ -96,7 +97,9 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
     private Provider<EditorAgent>          editorAgentProvider;
 
     /** A list of nodes is used for asynchronously refreshing the tree. */
-    private List<TreeNode<?>> nodesToRefresh;
+    private List<TreeNode<?>>              nodesToRefresh;
+
+    private Resources                      resources;
 
     /** Instantiates the Project Explorer presenter. */
     @Inject
@@ -110,7 +113,8 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
                                         DeleteNodeHandler deleteNodeHandler,
                                         AnalyticsEventLoggerExt eventLogger,
                                         Provider<ProjectListStructure> projectListStructureProvider,
-                                        Provider<EditorAgent> editorAgentProvider) {
+                                        Provider<EditorAgent> editorAgentProvider,
+                                        Resources resources) {
         this.view = view;
         this.eventBus = eventBus;
         this.contextMenu = contextMenu;
@@ -123,6 +127,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
         this.projectListStructureProvider = projectListStructureProvider;
         this.view.setTitle(coreLocalizationConstant.projectExplorerTitleBarText());
         this.editorAgentProvider = editorAgentProvider;
+        this.resources = resources;
 
         bind();
     }
@@ -179,7 +184,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
     /** {@inheritDoc} */
     @Override
     public SVGResource getTitleSVGImage() {
-        return null;
+        return resources.projectExplorerPartIcon();
     }
 
     /** {@inheritDoc} */
@@ -222,49 +227,6 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
         });
 
         eventBus.addHandler(RefreshProjectTreeEvent.TYPE, this);
-
-//        eventBus.addHandler(RefreshProjectTreeEvent.TYPE, new RefreshProjectTreeHandler() {
-//            @Override
-//            public void onRefreshProjectTree(RefreshProjectTreeEvent event) {
-//                eventBus.fireEvent(new PersistProjectTreeStateEvent());
-//                if (appContext.getCurrentProject() == null) {
-//                    setTree(projectListStructureProvider.get());
-//                    return;
-//                }
-//
-//                if (event.refreshSubtree()) {
-//                    nodesToRefresh = view.getOpenedTreeNodes();
-//                    refreshTreeNodes();
-//                    return;
-//                }
-//
-//                if (event.getNode() != null) {
-//                    refreshAndSelectNode(event.getNode());
-//                    return;
-//                }
-//
-//                currentTreeStructure.getRootNodes(new AsyncCallback<List<TreeNode<?>>>() {
-//                    @Override
-//                    public void onSuccess(List<TreeNode<?>> result) {
-//                        for (TreeNode<?> childNode : result) {
-//                            // clear children in order to force to refresh
-//                            childNode.setChildren(new ArrayList<TreeNode<?>>());
-//                            refreshAndSelectNode(childNode);
-//
-//                            ProjectDescriptor projectDescriptor = appContext.getCurrentProject().getRootProject();
-//                            String workspaceName = projectDescriptor.getWorkspaceName();
-//                            String fullProjectPath = "/" + workspaceName + projectDescriptor.getPath();
-//                            eventBus.fireEvent(new RestoreProjectTreeStateEvent(fullProjectPath));
-//                        }
-//                    }
-//
-//                    @Override
-//                    public void onFailure(Throwable caught) {
-//                        Log.error(ProjectExplorerPartPresenter.class, caught);
-//                    }
-//                });
-//            }
-//        });
 
         eventBus.addHandler(NodeChangedEvent.TYPE, new NodeChangedHandler() {
             @Override

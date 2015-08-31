@@ -45,9 +45,6 @@ public interface PartStackUIResources extends ClientBundle {
         @ClassName("ide-Base-Part-Toolbar-Bottom-Button-Right")
         String idePartStackToolbarBottomButtonRight();
 
-        @ClassName("ide-PartStack-Tool-Tab-selected")
-        String idePartStackToolTabSelected();
-
         @ClassName("ide-Base-Part-Title-Label")
         String ideBasePartTitleLabel();
 
@@ -60,11 +57,20 @@ public interface PartStackUIResources extends ClientBundle {
         @ClassName("ide-part-stack-header-menu-button")
         String headerMenuButton();
 
+        @ClassName("leftTabs")
         String leftTabs();
 
-        String tabBordersDefault();
+        @ClassName("rightTabs")
+        String rightTabs();
 
+        @ClassName("bottomTabs")
+        String bottomTabs();
+
+        @ClassName("selectedRightOrLeftTab")
         String selectedRightOrLeftTab();
+
+        @ClassName("selectedBottomTab")
+        String selectedBottomTab();
 
         String selectEditorTab();
 
@@ -78,7 +84,6 @@ public interface PartStackUIResources extends ClientBundle {
 
         String unSelectEditorBorder();
 
-        String rightTabs();
     }
 
     @Source({"partstack.css", "org/eclipse/che/ide/api/ui/style.css"})

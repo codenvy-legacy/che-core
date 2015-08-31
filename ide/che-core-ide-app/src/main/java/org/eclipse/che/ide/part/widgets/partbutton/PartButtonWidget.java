@@ -90,18 +90,8 @@ public class PartButtonWidget extends Composite implements PartButton {
     /** {@inheritDoc} */
     @Nonnull
     public PartButton addIcon(@Nullable SVGResource resource) {
-        icon.getElement().setInnerHTML(getSvgDiv(resource));
+        icon.getElement().setInnerHTML(resource == null ? "" : new SVGImage(resource).toString());
         return this;
-    }
-
-    private String getSvgDiv(@Nullable SVGResource resource) {
-        if (resource == null) {
-            return "";
-        }
-
-        SVGImage image = new SVGImage(resource);
-
-        return image.toString();
     }
 
     /** {@inheritDoc} */
@@ -119,25 +109,21 @@ public class PartButtonWidget extends Composite implements PartButton {
     /** {@inheritDoc} */
     @Override
     public void select() {
-        if (!BELOW.equals(tabPosition)) {
+        if (BELOW.equals(tabPosition)) {
+            addStyleName(resources.partStackCss().selectedBottomTab());
+        } else {
             addStyleName(resources.partStackCss().selectedRightOrLeftTab());
-
-            return;
         }
-
-        addStyleName(resources.partStackCss().idePartStackToolTabSelected());
     }
 
     /** {@inheritDoc} */
     @Override
     public void unSelect() {
-        if (!BELOW.equals(tabPosition)) {
+        if (BELOW.equals(tabPosition)) {
+            removeStyleName(resources.partStackCss().selectedBottomTab());
+        } else {
             removeStyleName(resources.partStackCss().selectedRightOrLeftTab());
-
-            return;
         }
-
-        removeStyleName(resources.partStackCss().idePartStackToolTabSelected());
     }
 
     /** {@inheritDoc} */
@@ -147,20 +133,13 @@ public class PartButtonWidget extends Composite implements PartButton {
 
         if (LEFT.equals(tabPosition)) {
             addStyleName(resources.partStackCss().leftTabs());
-
             getElement().getStyle().setTop((countWidgets - 1) * TOP_SHIFT, PX);
-
-            return;
-        }
-
-        if (RIGHT.equals(tabPosition)) {
+        } else if (RIGHT.equals(tabPosition)) {
             addStyleName(resources.partStackCss().rightTabs());
             getElement().getStyle().setTop((countWidgets - 1) * TOP_SHIFT, PX);
-
-            return;
+        } else {
+            addStyleName(resources.partStackCss().bottomTabs());
         }
-
-        addStyleName(resources.partStackCss().tabBordersDefault());
     }
 
     /** {@inheritDoc} */
