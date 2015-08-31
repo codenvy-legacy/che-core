@@ -415,7 +415,7 @@ public final class CronExpression implements Serializable, Cloneable {
         
         try {
             new CronExpression(cronExpression);
-        } catch (ParseException pe) {
+        } catch (Exception ex) {
             return false;
         }
         
