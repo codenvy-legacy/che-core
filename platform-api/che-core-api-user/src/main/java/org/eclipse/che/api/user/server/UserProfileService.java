@@ -268,10 +268,14 @@ public class UserProfileService extends Service {
         if (update == null || update.isEmpty()) {
             throw new ConflictException("Preferences to update required");
         }
-        final Map<String, String> preferences = preferenceDao.getPreferences(currentUser().getId());
-        preferences.putAll(update);
-        preferenceDao.setPreferences(currentUser().getId(), preferences);
-        return preferences;
+		
+		String userId = currentUser().getId();
+		synchronized (userId.intern()) {
+			final Map<String, String> preferences = preferenceDao.getPreferences(userId);
+			preferences.putAll(update);
+			preferenceDao.setPreferences(currentUser().getId(), preferences);
+			return preferences;
+		}
     }
 
     /**
@@ -340,14 +344,17 @@ public class UserProfileService extends Service {
     public void removePreferences(@ApiParam(value = "Preferences to remove", required = true)
                                   @Required
                                   List<String> names) throws ServerException, NotFoundException {
+		String userId = currentUser().getId();
         if (names == null) {
-            preferenceDao.remove(currentUser().getId());
+            preferenceDao.remove(userId);
         } else {
-            final Map<String, String> preferences = preferenceDao.getPreferences(currentUser().getId());
-            for (String name : names) {
-                preferences.remove(name);
-            }
-            preferenceDao.setPreferences(currentUser().getId(), preferences);
+			synchronized (userId.intern()) {
+				final Map<String, String> preferences = preferenceDao.getPreferences(userId);
+				for (String name : names) {
+					preferences.remove(name);
+				}
+				preferenceDao.setPreferences(userId, preferences);
+			}
         }
     }
 
