@@ -81,6 +81,8 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 public class UserProfileService extends Service {
 
     private static final Logger LOG = LoggerFactory.getLogger(UserProfileService.class);
+	
+	private static final String PREFERENCES_LOCK_PREFIX = "PreferencesLock_";
 
     private final UserProfileDao profileDao;
     private final UserDao        userDao;
@@ -270,7 +272,10 @@ public class UserProfileService extends Service {
         }
 		
 		String userId = currentUser().getId();
-		synchronized (userId.intern()) {
+		// Internalized strings are kept on the heap as of Java 7 and are garbage collected
+		// The lock object itself is referenced by the lockKey variable so it will not be garbage collected during this clause.
+		String lockKey = (PREFERENCES_LOCK_PREFIX + userId).intern();
+		synchronized (lockKey) {
 			final Map<String, String> preferences = preferenceDao.getPreferences(userId);
 			preferences.putAll(update);
 			preferenceDao.setPreferences(currentUser().getId(), preferences);
@@ -348,7 +353,10 @@ public class UserProfileService extends Service {
         if (names == null) {
             preferenceDao.remove(userId);
         } else {
-			synchronized (userId.intern()) {
+			// Internalized strings are kept on the heap as of Java 7 and are garbage collected.
+			// The lock object itself is referenced by the lockKey variable so it will not be garbage collected during this clause.
+			String lockKey = (PREFERENCES_LOCK_PREFIX + userId).intern();
+			synchronized (lockKey) {
 				final Map<String, String> preferences = preferenceDao.getPreferences(userId);
 				for (String name : names) {
 					preferences.remove(name);
