@@ -23,6 +23,7 @@ import java.util.Set;
 public class ProjectMisc {
     static final String UPDATED = "updated";
     static final String CREATED = "created";
+    static final String CONTENT_ROOT = "contentRoot";
 
     private final InternalMisc data;
     private final Project      project;
@@ -55,6 +56,14 @@ public class ProjectMisc {
 
     public void setCreationDate(long date) {
         data.setLong(CREATED, date);
+    }
+
+    public String getContentRoot() {
+        return data.get(CONTENT_ROOT);
+    }
+
+    public void setContentRoot(String contentRoot) {
+        data.set(CONTENT_ROOT, contentRoot);
     }
 
     public void save() throws ServerException {

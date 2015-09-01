@@ -12,15 +12,17 @@ package org.eclipse.che.ide.actions;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
+import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.selection.Selection;
-import org.eclipse.che.ide.api.selection.SelectionAgent;
+import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
+import org.eclipse.che.ide.project.node.ResourceBasedNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,17 +34,20 @@ import java.util.List;
  */
 @Singleton
 public class CopyAction extends Action {
-    private final AnalyticsEventLogger eventLogger;
-    private       SelectionAgent       selectionAgent;
-    private       AppContext           appContext;
+    private final AnalyticsEventLogger        eventLogger;
+    private       NewProjectExplorerPresenter projectExplorer;
+    private       AppContext                  appContext;
 
-    private       PasteAction          pasteAction;
+    private PasteAction pasteAction;
 
     @Inject
-    public CopyAction(Resources resources, AnalyticsEventLogger eventLogger, SelectionAgent selectionAgent,
-                      CoreLocalizationConstant localization, AppContext appContext, PasteAction pasteAction) {
+    public CopyAction(Resources resources,
+                      AnalyticsEventLogger eventLogger,
+                      NewProjectExplorerPresenter projectExplorer,
+                      CoreLocalizationConstant localization,
+                      AppContext appContext, PasteAction pasteAction) {
         super(localization.copyItemsActionText(), localization.copyItemsActionDescription(), null, resources.copy());
-        this.selectionAgent = selectionAgent;
+        this.projectExplorer = projectExplorer;
         this.eventLogger = eventLogger;
         this.appContext = appContext;
         this.pasteAction = pasteAction;
@@ -67,7 +72,7 @@ public class CopyAction extends Action {
      * @return <b>true</b> if the selection can be copied, otherwise returns <b>false</b>
      */
     private boolean canCopySelection() {
-        Selection<?> selection = selectionAgent.getSelection();
+        Selection<?> selection = projectExplorer.getSelection();
         if (selection == null || selection.isEmpty()) {
             return false;
         }
@@ -77,14 +82,13 @@ public class CopyAction extends Action {
         }
 
         String projectPath = appContext.getCurrentProject().getRootProject().getPath();
-        
-        for (Object o : selection.getAllElements()) {
 
-            if (!(o instanceof StorableNode)) {
+        for (Object o : selection.getAllElements()) {
+            if (!(o instanceof ResourceBasedNode<?> && o instanceof HasStorablePath)) {
                 return false;
             }
 
-            if (projectPath.equals(((StorableNode)o).getPath())) {
+            if (projectPath.equals(((HasStorablePath)o).getStorablePath())) {
                 return false;
             }
         }
@@ -101,10 +105,10 @@ public class CopyAction extends Action {
             return;
         }
 
-        List<StorableNode> copyItems = new ArrayList<StorableNode>();
-        List<?> selectionItems = selectionAgent.getSelection().getAllElements();
-        for (int i = 0; i < selectionItems.size(); i++) {
-            copyItems.add(((StorableNode) selectionItems.get(i)));
+        List<ResourceBasedNode<?>> copyItems = new ArrayList<>();
+        List<?> selection = projectExplorer.getSelection().getAllElements();
+        for (Object aSelection : selection) {
+            copyItems.add(((ResourceBasedNode<?>)aSelection));
         }
         pasteAction.copyItems(copyItems);
     }
