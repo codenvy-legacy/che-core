@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.regex.Matcher;
 
 /**
  * If user doesn't have permissions to repository, filter will deny request with 403.
@@ -87,7 +88,7 @@ public class VFSPermissionsFilter implements Filter {
             url = url.replaceFirst("/info/refs", "");
             url = url.replaceFirst("/git-upload-pack", "");
             //adaptation to fs
-            url = url.replaceAll("/", File.separator);
+            url = url.replaceAll("/", Matcher.quoteReplacement(File.separator));
             //search for dotVFS directory
             File projectDirectory = Paths.get(vfsRoot, url).toFile();
             String auth;
