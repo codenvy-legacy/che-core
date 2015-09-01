@@ -680,7 +680,7 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
         return (int)((visibleHeight < 1) ? 0 : Math.ceil(visibleHeight / rh));
     }
 
-    protected List<Node> getAllChildNodes(List<Node> parent, boolean onlyVisible) {
+    public List<Node> getAllChildNodes(List<Node> parent, boolean onlyVisible) {
         List<Node> list = new ArrayList<>();
         for (Node node : parent) {
             list.add(node);

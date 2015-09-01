@@ -613,6 +613,10 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
         setToolbarHeight(22);
     }
 
+    public List<Node> getVisibleNodes() {
+        return tree.getAllChildNodes(tree.getRootNodes(), true);
+    }
+
     @Override
     public boolean goInto(Node node) {
         return tree.getGoIntoMode().goInto(node);

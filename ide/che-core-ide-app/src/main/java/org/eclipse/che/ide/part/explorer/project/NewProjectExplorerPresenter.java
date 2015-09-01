@@ -281,4 +281,8 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
     public void collapseAll() {
         view.collapseAll();
     }
+
+    public List<Node> getVisibleNodes() {
+        return view.getVisibleNodes();
+    }
 }

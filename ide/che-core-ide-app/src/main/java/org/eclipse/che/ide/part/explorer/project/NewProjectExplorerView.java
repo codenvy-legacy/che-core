@@ -65,6 +65,8 @@ public interface NewProjectExplorerView extends View<NewProjectExplorerView.Acti
 
     void collapseAll();
 
+    List<Node> getVisibleNodes();
+
     public interface ActionDelegate extends BaseActionDelegate {
         void onSelectionChanged(List<Node> selection);
 
