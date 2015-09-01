@@ -46,13 +46,15 @@ import org.eclipse.che.api.git.shared.RmRequest;
 import org.eclipse.che.api.git.shared.Status;
 import org.eclipse.che.api.git.shared.StatusFormat;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.api.promises.client.Operation;
+import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.ide.MimeType;
 import org.eclipse.che.ide.dto.DtoFactory;
+import org.eclipse.che.ide.extension.machine.client.machine.extserver.ExtServerStateController;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.rest.HTTPHeader;
-import org.eclipse.che.ide.rest.RestContext;
 import org.eclipse.che.ide.websocket.Message;
 import org.eclipse.che.ide.websocket.MessageBuilder;
 import org.eclipse.che.ide.websocket.MessageBus;
@@ -75,6 +77,7 @@ import static org.eclipse.che.ide.rest.HTTPHeader.CONTENTTYPE;
  * Implementation of the {@link GitServiceClient}.
  *
  * @author Ann Zhuleva
+ * @author Valeriy Svydenko
  */
 @Singleton
 public class GitServiceClientImpl implements GitServiceClient {
@@ -107,29 +110,30 @@ public class GitServiceClientImpl implements GitServiceClient {
     private final String              baseHttpUrl;
     private final String              gitServicePath;
     /** Loader to be displayed. */
-    private final AsyncRequestLoader  loader;
-    private final MessageBus          wsMessageBus;
-    private final DtoFactory          dtoFactory;
-    private final AsyncRequestFactory asyncRequestFactory;
+    private final AsyncRequestLoader       loader;
+    private final ExtServerStateController extServerStateController;
+    private final DtoFactory               dtoFactory;
+    private final AsyncRequestFactory      asyncRequestFactory;
 
     @Inject
-    protected GitServiceClientImpl(@RestContext String restContext,
-                                   @Named("workspaceId") String workspaceId,
+    protected GitServiceClientImpl(@Named("workspaceId") String workspaceId,
+                                   @Named("cheExtensionPath") String extPath,
                                    AsyncRequestLoader loader,
-                                   MessageBus wsMessageBus,
+                                   ExtServerStateController extServerStateController,
                                    DtoFactory dtoFactory,
                                    AsyncRequestFactory asyncRequestFactory) {
         this.loader = loader;
+        this.extServerStateController = extServerStateController;
         this.gitServicePath = "/git/" + workspaceId;
-        this.baseHttpUrl = restContext + gitServicePath;
-        this.wsMessageBus = wsMessageBus;
+        this.baseHttpUrl = extPath + gitServicePath;
         this.dtoFactory = dtoFactory;
         this.asyncRequestFactory = asyncRequestFactory;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void init(@Nonnull ProjectDescriptor project, boolean bare, @Nonnull RequestCallback<Void> callback) throws WebSocketException {
+    public void init(@Nonnull ProjectDescriptor project, boolean bare, final @Nonnull RequestCallback<Void> callback)
+            throws WebSocketException {
         InitRequest initRequest = dtoFactory.createDto(InitRequest.class);
         initRequest.setBare(bare);
         initRequest.setWorkingDir(project.getName());
@@ -141,7 +145,7 @@ public class GitServiceClientImpl implements GitServiceClient {
         builder.data(dtoFactory.toJson(initRequest)).header(CONTENTTYPE, APPLICATION_JSON);
         Message message = builder.build();
 
-        wsMessageBus.send(message, callback);
+        sendMessageToWS(message, callback);
     }
 
     /** {@inheritDoc} */
@@ -163,7 +167,20 @@ public class GitServiceClientImpl implements GitServiceClient {
                .header(ACCEPT, APPLICATION_JSON);
         Message message = builder.build();
 
-        wsMessageBus.send(message, callback);
+        sendMessageToWS(message, callback);
+    }
+
+    private void sendMessageToWS(final @Nonnull Message message, final @Nonnull RequestCallback<?> callback) {
+        extServerStateController.getMessageBus().then(new Operation<MessageBus>() {
+            @Override
+            public void apply(MessageBus arg) throws OperationException {
+                try {
+                    arg.send(message, callback);
+                } catch (WebSocketException e) {
+                    throw new OperationException(e.getMessage(), e);
+                }
+            }
+        });
     }
 
     /** {@inheritDoc} */
@@ -196,7 +213,7 @@ public class GitServiceClientImpl implements GitServiceClient {
                .header(CONTENTTYPE, APPLICATION_JSON);
         Message message = builder.build();
 
-        wsMessageBus.send(message, callback);
+        sendMessageToWS(message, callback);
     }
 
     /** {@inheritDoc} */
@@ -386,7 +403,8 @@ public class GitServiceClientImpl implements GitServiceClient {
         builder.data(dtoFactory.toJson(fetchRequest))
                .header(CONTENTTYPE, APPLICATION_JSON);
         Message message = builder.build();
-        wsMessageBus.send(message, callback);
+
+        sendMessageToWS(message, callback);
     }
 
     /** {@inheritDoc} */
