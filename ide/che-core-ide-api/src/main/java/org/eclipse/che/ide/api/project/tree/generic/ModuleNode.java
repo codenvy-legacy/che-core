@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.project.tree.generic;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import com.google.web.bindery.event.shared.EventBus;
@@ -54,9 +55,24 @@ public class ModuleNode extends ProjectNode {
             throw new IllegalStateException("No opened project.");
         }
 
-        final String rootProjectPath = currentProject.getRootProject().getPath();
-        final String moduleRelativePath = getPath().substring(rootProjectPath.length() + 1);
-        projectServiceClient.deleteModule(rootProjectPath, moduleRelativePath, new AsyncRequestCallback<Void>() {
+        currentProject.getCurrentTree().getNodeByPath(getPath(), new AsyncCallback<TreeNode<?>>() {
+            @Override
+            public void onFailure(Throwable caught) {
+                callback.onFailure(caught);
+            }
+
+            @Override
+            public void onSuccess(TreeNode<?> result) {
+                String parentPath = result.getParent().getProject().getPath();
+                String moduleRelativePath = getPath().substring(parentPath.length() + 1);
+                removeModule(parentPath, moduleRelativePath, callback);
+            }
+        });
+
+    }
+
+    private void removeModule(String parentPath, String moduleRelativePath,  DeleteCallback callback) {
+        projectServiceClient.deleteModule(parentPath, moduleRelativePath, new AsyncRequestCallback<Void>() {
             @Override
             protected void onSuccess(Void result) {
                 ModuleNode.super.delete(callback);

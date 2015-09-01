@@ -758,7 +758,16 @@ public final class DefaultProjectManager implements ProjectManager {
                 if (removeModuleHandler != null) {
                     removeModuleHandler.onRemoveModule(project.getBaseFolder(), modulePath, project.getConfig());
                 }
-                return project.getModules().remove(modulePath);
+                Set<String> modules = project.getModules().get();
+                if (modules == null || modules.isEmpty()) {
+                    return false;
+                }
+                if (modules.contains(modulePath)) {
+                    return project.getModules().remove(modulePath);
+                } else {
+                    String absoluteModulePath = project.getPath() + "/" + modulePath;
+                    return project.getModules().remove(absoluteModulePath);
+                }
             }
             final String name = project.getName();
             String projectType = null;
