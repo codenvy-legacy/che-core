@@ -43,4 +43,11 @@ public interface BranchCheckoutRequest extends GitRequest {
     void setCreateNew(boolean isCreateNew);
     
     BranchCheckoutRequest withCreateNew(boolean isCreateNew);
+
+    /** @return name of branch that will be tracked */
+    String getTrackBranch();
+
+    void setTrackBranch(String trackBranch);
+
+    BranchCheckoutRequest withTrackBranch(String trackBranch);
 }
