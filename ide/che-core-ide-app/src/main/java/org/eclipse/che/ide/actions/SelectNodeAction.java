@@ -36,6 +36,7 @@ import static org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper
 /**
  * @author Andrienko Alexander
  */
+@Deprecated
 @Singleton
 public class SelectNodeAction extends Action implements PromisableAction {
 

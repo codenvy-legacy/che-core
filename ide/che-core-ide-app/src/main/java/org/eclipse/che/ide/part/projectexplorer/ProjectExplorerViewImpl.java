@@ -42,6 +42,7 @@ import java.util.List;
  * @author Andrey Plotnikov
  * @author Artem Zatsarynnyy
  */
+@Deprecated
 @Singleton
 public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.ActionDelegate> implements ProjectExplorerView {
 

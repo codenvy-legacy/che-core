@@ -44,6 +44,7 @@ import org.vectomatic.dom.svg.ui.SVGResource;
  *
  * @author Artem Zatsarynnyy
  */
+@Deprecated
 public class ProjectTreeNodeRenderer implements NodeRenderer<TreeNode<?>> {
     private final Css                      css;
     private final Resources                resources;
@@ -146,10 +147,10 @@ public class ProjectTreeNodeRenderer implements NodeRenderer<TreeNode<?>> {
             }
             //use default icons from file type
             if (icon == null) {
-                FileType fileType = fileTypeRegistry.getFileTypeByFile((FileNode)node);
-                if (fileType != null && fileType.getSVGImage() != null) {
-                    return new SVGImage(fileType.getSVGImage());
-                }
+//                FileType fileType = fileTypeRegistry.getFileTypeByFile((FileNode)node);
+//                if (fileType != null && fileType.getSVGImage() != null) {
+//                    return new SVGImage(fileType.getSVGImage());
+//                }
             }
         }
         if (icon == null) {

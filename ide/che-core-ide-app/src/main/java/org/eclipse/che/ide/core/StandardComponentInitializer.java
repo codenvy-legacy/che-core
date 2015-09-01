@@ -18,15 +18,19 @@ import com.google.inject.name.Named;
 import org.eclipse.che.api.project.shared.Constants;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.actions.CloseProjectAction;
+import org.eclipse.che.ide.actions.CollapseAllAction;
 import org.eclipse.che.ide.actions.CopyAction;
 import org.eclipse.che.ide.actions.CreateModuleAction;
 import org.eclipse.che.ide.actions.CutAction;
 import org.eclipse.che.ide.actions.DeleteItemAction;
 import org.eclipse.che.ide.actions.DownloadItemAction;
 import org.eclipse.che.ide.actions.DownloadProjectAsZipAction;
+import org.eclipse.che.ide.actions.ExpandAllAction;
 import org.eclipse.che.ide.actions.ExpandEditorAction;
 import org.eclipse.che.ide.actions.FindReplaceAction;
+import org.eclipse.che.ide.actions.FoldersAlwaysOnTopAction;
 import org.eclipse.che.ide.actions.FormatterAction;
+import org.eclipse.che.ide.actions.GoIntoAction;
 import org.eclipse.che.ide.actions.ImportLocalProjectAction;
 import org.eclipse.che.ide.actions.ImportProjectFromLocationAction;
 import org.eclipse.che.ide.actions.NavigateToFileAction;
@@ -135,6 +139,12 @@ public class StandardComponentInitializer {
     private RenameItemAction renameItemAction;
 
     @Inject
+    private CollapseAllAction collapseAllAction;
+
+    @Inject
+    private ExpandAllAction expandAllAction;
+
+    @Inject
     private OpenProjectAction openProjectAction;
 
     @Inject
@@ -205,6 +215,12 @@ public class StandardComponentInitializer {
 
     @Inject
     private ExpandEditorAction expandEditorAction;
+
+    @Inject
+    private FoldersAlwaysOnTopAction foldersAlwaysOnTopAction;
+
+    @Inject
+    private GoIntoAction goIntoAction;
 
     @Inject
     @Named("XMLFileType")
@@ -356,6 +372,9 @@ public class StandardComponentInitializer {
         fileGroup.add(renameItemAction);
         fileGroup.add(deleteItemAction);
         fileGroup.addSeparator();
+//        fileGroup.add(expandAllAction);
+        fileGroup.add(collapseAllAction);
+        fileGroup.addSeparator();
         fileGroup.add(saveGroup);
 
         // Compose Code menu
@@ -383,6 +402,7 @@ public class StandardComponentInitializer {
         DefaultActionGroup resourceOperation = new DefaultActionGroup(actionManager);
         actionManager.registerAction("resourceOperation", resourceOperation);
         resourceOperation.addSeparator();
+        resourceOperation.add(goIntoAction);
         resourceOperation.add(openSelectedFileAction);
 
         resourceOperation.add(cutAction);
@@ -391,6 +411,9 @@ public class StandardComponentInitializer {
 
         resourceOperation.add(renameItemAction);
         resourceOperation.add(deleteItemAction);
+        resourceOperation.addSeparator();
+//        resourceOperation.add(expandAllAction);
+        resourceOperation.add(collapseAllAction);
         resourceOperation.addSeparator();
         resourceOperation.add(downloadItemAction);
         resourceOperation.addSeparator();
@@ -425,6 +448,9 @@ public class StandardComponentInitializer {
         actionManager.registerAction("renameResource", renameItemAction);
         actionManager.registerAction("deleteItem", deleteItemAction);
 
+//        actionManager.registerAction("expandAll", expandAllAction);
+        actionManager.registerAction("collapseAll", collapseAllAction);
+
         actionManager.registerAction("findReplace", findReplaceAction);
         actionManager.registerAction("openFile", openFileAction);
         actionManager.registerAction("openNode", openNodeAction);
@@ -449,6 +475,10 @@ public class StandardComponentInitializer {
 
         DefaultActionGroup rightToolbarGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_RIGHT_TOOLBAR);
         toolbarPresenter.bindRightGroup(rightToolbarGroup);
+
+        DefaultActionGroup projectExplorerContextMenu = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_PROJECT_EXPLORER_CONTEXT_MENU);
+        projectExplorerContextMenu.add(foldersAlwaysOnTopAction);
+        actionManager.registerAction("foldersAlwaysOnTop", foldersAlwaysOnTopAction);
 
         // Define hot-keys
         keyBinding.getGlobal().addKey(new KeyBuilder().action().alt().charCode('n').build(), "navigateToFile");

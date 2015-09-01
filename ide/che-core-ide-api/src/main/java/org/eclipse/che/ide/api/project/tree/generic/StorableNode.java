@@ -20,6 +20,7 @@ import org.eclipse.che.ide.api.project.tree.TreeNode;
  *         the type of the associated data
  * @author Artem Zatsarynnyy
  */
+@Deprecated
 public interface StorableNode<T> extends TreeNode<T> {
     /** Returns name of the item which this node represents. */
     String getName();
