@@ -20,9 +20,8 @@ import com.google.web.bindery.event.shared.EventBus;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.event.FileEvent;
-import org.eclipse.che.ide.api.project.tree.TreeNode;
-import org.eclipse.che.ide.api.project.tree.generic.FileNode;
+import org.eclipse.che.ide.api.project.node.HasStorablePath;
+import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.websocket.Message;
@@ -32,6 +31,7 @@ import org.eclipse.che.ide.websocket.WebSocketException;
 import org.eclipse.che.ide.websocket.rest.RequestCallback;
 import org.eclipse.che.ide.websocket.rest.Unmarshallable;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,15 +50,16 @@ import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
 @Singleton
 public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegate {
 
-    private final String                     SEARCH_URL;
-    private       MessageBus                 wsMessageBus;
-    private       DtoUnmarshallerFactory     dtoUnmarshallerFactory;
-    private       DialogFactory              dialogFactory;
-    private       CoreLocalizationConstant   localizationConstant;
-    private       NavigateToFileView         view;
-    private       AppContext                 appContext;
-    private       EventBus                   eventBus;
-    private       Map<String, ItemReference> resultMap;
+    private final String                      SEARCH_URL;
+    private       MessageBus                  wsMessageBus;
+    private       DtoUnmarshallerFactory      dtoUnmarshallerFactory;
+    private       DialogFactory               dialogFactory;
+    private       CoreLocalizationConstant    localizationConstant;
+    private final NewProjectExplorerPresenter projectExplorer;
+    private       NavigateToFileView          view;
+    private       AppContext                  appContext;
+    private       EventBus                    eventBus;
+    private       Map<String, ItemReference>  resultMap;
 
     @Inject
     public NavigateToFilePresenter(NavigateToFileView view,
@@ -68,7 +69,8 @@ public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegat
                                    @Named("workspaceId") String workspaceId,
                                    DtoUnmarshallerFactory dtoUnmarshallerFactory,
                                    DialogFactory dialogFactory,
-                                   CoreLocalizationConstant localizationConstant) {
+                                   CoreLocalizationConstant localizationConstant,
+                                   NewProjectExplorerPresenter projectExplorer) {
         this.view = view;
         this.appContext = appContext;
         this.eventBus = eventBus;
@@ -76,6 +78,7 @@ public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegat
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.dialogFactory = dialogFactory;
         this.localizationConstant = localizationConstant;
+        this.projectExplorer = projectExplorer;
 
         resultMap = new HashMap<>();
 
@@ -120,20 +123,17 @@ public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegat
     @Override
     public void onFileSelected() {
         view.close();
-        ItemReference selectedItem = resultMap.get(view.getItemPath());
-        appContext.getCurrentProject().getCurrentTree().getNodeByPath(selectedItem.getPath(), new AsyncCallback<TreeNode<?>>() {
-            @Override
-            public void onSuccess(TreeNode<?> result) {
-                if (result instanceof FileNode) {
-                    eventBus.fireEvent(new FileEvent((FileNode)result, FileEvent.FileOperation.OPEN));
-                }
-            }
+        final ItemReference selectedItem = resultMap.get(view.getItemPath());
 
+        HasStorablePath selectedPath = new HasStorablePath() {
+            @Nonnull
             @Override
-            public void onFailure(Throwable caught) {
-                dialogFactory.createMessageDialog("", localizationConstant.navigateToFileCanNotOpenFile(), null).show();
+            public String getStorablePath() {
+                return selectedItem.getPath();
             }
-        });
+        };
+
+        projectExplorer.navigate(selectedPath, true, true);
     }
 
     private void search(String fileName, final AsyncCallback<List<ItemReference>> callback) {

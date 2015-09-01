@@ -10,12 +10,13 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.project.tree;
 
-import org.eclipse.che.ide.api.event.NodeChangedEvent;
-import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
-import org.eclipse.che.ide.api.project.tree.generic.ProjectNode;
-import org.eclipse.che.ide.ui.tree.TreeNodeElement;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.ide.api.event.NodeChangedEvent;
+import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
+import org.eclipse.che.ide.api.project.tree.generic.ProjectNode;
+import org.eclipse.che.ide.ui.tree.TreeNodeElement;
 import org.vectomatic.dom.svg.ui.SVGImage;
 
 import javax.annotation.Nonnull;
@@ -93,17 +94,28 @@ public abstract class AbstractTreeNode<T> implements TreeNode<T> {
     }
 
     /** {@inheritDoc} */
-    @Nonnull
+    @Nullable
     @Override
-    public ProjectNode getProject() {
-        TreeNode<?> candidate = getParent();
-        while (candidate != null) {
-            if (candidate instanceof ProjectNode) {
-                return (ProjectNode)candidate;
+    public HasProjectDescriptor getProject() {
+        return new HasProjectDescriptor() {
+            @Nonnull
+            @Override
+            public ProjectDescriptor getProjectDescriptor() {
+                TreeNode<?> candidate = getParent();
+                while (candidate != null) {
+                    if (candidate instanceof ProjectNode) {
+                        return ((ProjectNode)candidate).getData();
+                    }
+                    candidate = candidate.getParent();
+                }
+                throw new IllegalStateException("Node is not owned by some project node.");
             }
-            candidate = candidate.getParent();
-        }
-        throw new IllegalStateException("Node is not owned by some project node.");
+
+            @Override
+            public void setProjectDescriptor(@Nonnull ProjectDescriptor projectDescriptor) {
+                //stub
+            }
+        };
     }
 
     /** {@inheritDoc} */
@@ -161,7 +173,7 @@ public abstract class AbstractTreeNode<T> implements TreeNode<T> {
     public void delete(DeleteCallback callback) {
         if (parent != null) {
             parent.getChildren().remove(this);
-            eventBus.fireEvent(new RefreshProjectTreeEvent(parent));
+//            eventBus.fireEvent(new RefreshProjectTreeEvent(parent));
         }
         // do not reset parent in order to know which parent this node belonged to before deleting
         callback.onDeleted();

@@ -107,4 +107,10 @@ public interface ProjectUpdate {
     void setMixinTypes(List<String> mixinTypes);
 
     ProjectUpdate withMixinTypes(List<String> mixinTypes);
+
+    String getContentRoot();
+
+    void setContentRoot(String contentRoot);
+
+    ProjectUpdate withContentRoot(String contentRoot);
 }
