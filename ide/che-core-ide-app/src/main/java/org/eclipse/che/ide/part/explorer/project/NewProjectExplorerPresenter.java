@@ -206,7 +206,9 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
             }
         }
 
-        view.reloadChildren(nodesToReload, null, false);
+        if (!nodesToReload.isEmpty()) {
+            view.reloadChildren(nodesToReload, null, false);
+        }
     }
 
     private void updateAppContext(List<Node> nodes) {

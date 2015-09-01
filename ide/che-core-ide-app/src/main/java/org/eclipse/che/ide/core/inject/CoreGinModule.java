@@ -335,13 +335,10 @@ public class CoreGinModule extends AbstractGinModule {
         // Parts
         bind(ConsolePart.class).to(ConsolePartPresenter.class).in(Singleton.class);
         bind(OutlinePart.class).to(OutlinePartPresenter.class).in(Singleton.class);
-//        bind(ProjectExplorerPart.class).to(ProjectExplorerPartPresenter.class).in(Singleton.class);
         bind(NewProjectExplorerPart.class).to(NewProjectExplorerPresenter.class).in(Singleton.class);
-//        GinMultibinder.newSetBinder(binder(), NodeInterceptor.class).addBinding().to(NewProjectExplorerViewImpl.ContentRootInterceptor.class);
 
-        GinMapBinder<String, SettingsProvider> mapBinder =
-                GinMapBinder.newMapBinder(binder(), String.class, SettingsProvider.class);
-        mapBinder.addBinding("default").to(DummySettingsProvider.class);
+        install(new GinFactoryModuleBuilder().build(NodeFactory.class));
+        bind(NodeManager.class);
 
         bind(ActionManager.class).to(ActionManagerImpl.class).in(Singleton.class);
     }
@@ -373,7 +370,6 @@ public class CoreGinModule extends AbstractGinModule {
         bind(NotificationManagerView.class).to(NotificationManagerViewImpl.class).in(Singleton.class);
 
         bind(EditorPartStackView.class);
-        bind(ProjectExplorerView.class).to(ProjectExplorerViewImpl.class).in(Singleton.class);
         bind(NewProjectExplorerView.class).to(NewProjectExplorerViewImpl.class).in(Singleton.class);
         bind(SettingsProvider.class).to(DummySettingsProvider.class).in(Singleton.class);
         bind(ConsolePartView.class).to(ConsolePartViewImpl.class).in(Singleton.class);
@@ -404,8 +400,6 @@ public class CoreGinModule extends AbstractGinModule {
         bind(FindActionView.class).to(FindActionViewImpl.class).in(Singleton.class);
 
         bind(PrivacyPresenter.class).asEagerSingleton();
-        install(new GinFactoryModuleBuilder().build(NodeFactory.class));
-        bind(NodeManager.class);
     }
 
     /** Configures binding for Editor API */

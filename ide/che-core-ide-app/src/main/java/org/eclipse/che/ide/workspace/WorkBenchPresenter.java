@@ -54,7 +54,6 @@ public class WorkBenchPresenter implements Presenter {
      * @param stackPresenterFactory
      * @param partViewFactory
      * @param outlinePart
-     * @param projectExplorerPart
      * @param notificationManager
      */
     @Inject
@@ -63,7 +62,6 @@ public class WorkBenchPresenter implements Presenter {
                               PartStackPresenterFactory stackPresenterFactory,
                               PartStackViewFactory partViewFactory,
                               OutlinePart outlinePart,
-//                              ProjectExplorerPart projectExplorerPart,
                               NewProjectExplorerPart newProjectExplorerPart,
                               NotificationManager notificationManager,
                               HideWidgetCallback hideWidgetCallback) {
@@ -92,7 +90,6 @@ public class WorkBenchPresenter implements Presenter {
         partStacks.put(PartStackType.TOOLING.toString(), toolingPartStack);
 
         openPart(outlinePart, PartStackType.TOOLING);
-//        openPart(projectExplorerPart, PartStackType.NAVIGATION);
         openPart(newProjectExplorerPart, PartStackType.NAVIGATION);
         openPart(notificationManager, PartStackType.INFORMATION, Constraints.FIRST);
 
@@ -126,12 +123,6 @@ public class WorkBenchPresenter implements Presenter {
                 activeParts.add(part);
             }
         }
-//        partStacks.iterate(new StringMap.IterationCallback<PartStack>() {
-//            @Override
-//            public void onIteration(String key, PartStack value) {
-//
-//            }
-//        });
     }
 
     public void restoreEditorPart() {

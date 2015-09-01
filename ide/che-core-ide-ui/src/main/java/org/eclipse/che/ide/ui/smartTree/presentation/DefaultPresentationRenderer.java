@@ -19,7 +19,6 @@ import com.google.gwt.dom.client.Style;
 import org.eclipse.che.ide.ui.smartTree.Tree;
 import org.eclipse.che.ide.ui.smartTree.TreeStyles;
 import org.eclipse.che.ide.api.project.node.Node;
-import org.vectomatic.dom.svg.OMSVGSVGElement;
 
 /**
  * @author Vlad Zhukovskiy
@@ -58,15 +57,11 @@ public class DefaultPresentationRenderer<N extends Node> extends AbstractPresent
 
         Element descendantsContainer = getDescendantsContainer();
 
-//        Element loadIconContainer = createLoadingIconContainer();
-
         nodeContainer.appendChild(jointContainer);
         nodeContainer.appendChild(iconContainer);
         nodeContainer.appendChild(userElement == null ? Document.get().createSpanElement() : userElement);
         nodeContainer.appendChild(presentableTextContainer);
         nodeContainer.appendChild(infoTextContainer);
-//        nodeContainer.appendChild(loadIconContainer);
-
 
         rootContainer.appendChild(nodeContainer);
         rootContainer.appendChild(descendantsContainer);
@@ -107,22 +102,6 @@ public class DefaultPresentationRenderer<N extends Node> extends AbstractPresent
 
         return textElement;
     }
-
-//    private Element createLoadingIconContainer() {
-//        SpanElement loadingIconElement = Document.get().createSpanElement();
-//
-//        OMSVGSVGElement loadingSvg = treeStyles.iconLoading().getSvg();
-//        loadingIconElement.getStyle().setVisibility(Style.Visibility.HIDDEN);
-//        loadingSvg.setWidth(Style.Unit.PX, 16f);
-//        loadingSvg.setHeight(Style.Unit.PX, 16f);
-//
-//        loadingIconElement.addClassName(treeStyles.styles().loadIconContainer());
-//
-//
-//        loadingIconElement.appendChild(loadingSvg.getElement());
-//
-//        return loadingIconElement;
-//    }
 
     private void setIndentLevel(Element element, int depth) {
         element.getStyle().setPaddingLeft((double)depth * 16, Style.Unit.PX);

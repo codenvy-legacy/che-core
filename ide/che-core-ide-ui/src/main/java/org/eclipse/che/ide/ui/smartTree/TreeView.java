@@ -21,7 +21,6 @@ import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.client.Event;
 
 import org.eclipse.che.ide.api.project.node.Node;
-import org.eclipse.che.ide.util.loging.Log;
 
 /**
  * @author Vlad Zhukovskiy
@@ -37,7 +36,6 @@ public class TreeView {
 
     public static String blankImageUrl = "data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==";
 
-    @SuppressWarnings("unchecked")
     public void bind(Tree tree) {
         this.tree = tree;
     }
@@ -143,14 +141,6 @@ public class TreeView {
         return node.getInfoTextContainer();
     }
 
-//    public Element getLoadIconContainer(NodeDescriptor node) {
-//        if (node.getIconContainerElement() == null) {
-//            Element element = getNodeContainer(node).getChildNodes().getItem(5).cast();
-//            node.setIconContainerElement(element);
-//        }
-//        return node.getIconContainerElement();
-//    }
-
     public int getScrollDelay() {
         return scrollDelay;
     }
@@ -220,8 +210,6 @@ public class TreeView {
         } else {
             rootContainer.removeClassName(tree.getTreeStyles().styles().loading());
         }
-//        Element loadIconElement = getLoadIconContainer(node);
-//        loadIconElement.getStyle().setVisibility(loading ? Style.Visibility.VISIBLE : Style.Visibility.HIDDEN);
     }
 
     public void onOverChange(NodeDescriptor node, boolean over) {
