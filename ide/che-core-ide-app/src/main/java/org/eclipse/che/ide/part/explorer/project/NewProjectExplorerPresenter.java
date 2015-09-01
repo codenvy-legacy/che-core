@@ -122,8 +122,11 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
             @Override
             public void onProjectClosed(ProjectActionEvent event) {
                 view.resetGoIntoMode();
-                nodeManager.getProjects()
-                           .then(_showProjectsList());
+                if (!event.isCloseBeforeOpening()) {
+                    nodeManager.getProjects()
+                               .then(_showProjectsList());
+                }
+
             }
         });
 

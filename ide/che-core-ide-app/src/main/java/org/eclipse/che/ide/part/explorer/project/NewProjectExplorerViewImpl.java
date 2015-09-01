@@ -191,7 +191,7 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
 
             tree.setExpanded(nodes.get(0), true);
         }
-
+        hideProjectInfo();
         showProjectInfo();
     }
 
