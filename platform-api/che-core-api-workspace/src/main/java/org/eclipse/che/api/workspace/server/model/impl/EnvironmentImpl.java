@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server.model.impl;
 
+import org.eclipse.che.api.core.model.machine.MachineConfig;
 import org.eclipse.che.api.core.model.machine.Recipe;
 import org.eclipse.che.api.core.model.workspace.Environment;
 
@@ -32,21 +33,18 @@ public class EnvironmentImpl implements Environment {
     private Recipe                  recipe;
     private List<MachineConfigImpl> machineConfigs;
 
-    public EnvironmentImpl(String name, Recipe recipe, List<MachineConfigImpl> machineConfigs) {
+    public EnvironmentImpl(String name, Recipe recipe, List<? extends MachineConfig> machineConfigs) {
         this.name = name;
         this.recipe = recipe;
-        this.machineConfigs = machineConfigs;
+        if (machineConfigs != null) {
+            this.machineConfigs = machineConfigs.stream()
+                                                .map(MachineConfigImpl::new)
+                                                .collect(toList());
+        }
     }
 
     public EnvironmentImpl(Environment environment) {
-        name = environment.getName();
-        recipe = environment.getRecipe();
-        if (environment.getMachineConfigs() != null) {
-            machineConfigs = environment.getMachineConfigs()
-                                        .stream()
-                                        .map(MachineConfigImpl::new)
-                                        .collect(toList());
-        }
+        this(environment.getName(), environment.getRecipe(), environment.getMachineConfigs());
     }
 
     @Override
