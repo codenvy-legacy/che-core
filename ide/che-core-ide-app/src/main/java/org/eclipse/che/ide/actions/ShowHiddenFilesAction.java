@@ -26,8 +26,6 @@ import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.PromisableAction;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
-import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
-import org.eclipse.che.ide.api.project.tree.TreeSettings;
 import org.eclipse.che.ide.util.loging.Log;
 
 import javax.annotation.Nonnull;
@@ -75,12 +73,15 @@ public class ShowHiddenFilesAction extends AbstractPerspectiveAction implements 
     @Override
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
-        CurrentProject currentProject = appContext.getCurrentProject();
-        if (currentProject != null) {
-            TreeSettings treeSettings = currentProject.getCurrentTree().getSettings();
-            treeSettings.setShowHiddenItems(!treeSettings.isShowHiddenItems());
-            eventBus.fireEvent(new RefreshProjectTreeEvent());
-        }
+
+        //TODO replace this
+
+//        CurrentProject currentProject = appContext.getCurrentProject();
+//        if (currentProject != null) {
+//            TreeSettings treeSettings = currentProject.getCurrentTree().getSettings();
+//            treeSettings.setShowHiddenItems(!treeSettings.isShowHiddenItems());
+//            eventBus.fireEvent(new RefreshProjectTreeEvent());
+//        }
     }
 
     @Override

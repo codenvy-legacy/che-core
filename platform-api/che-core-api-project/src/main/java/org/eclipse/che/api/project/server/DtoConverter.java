@@ -434,6 +434,12 @@ public class DtoConverter {
         }
 
         try {
+            dto.withContentRoot(project.getContentRoot());
+        } catch (ServerException e) {
+            dto.getProblems().add(createProjectProblem(dtoFactory, e));
+        }
+
+        try {
             dto.withVisibility(project.getVisibility());
         } catch (ServerException e) {
             dto.getProblems().add(createProjectProblem(dtoFactory, e));

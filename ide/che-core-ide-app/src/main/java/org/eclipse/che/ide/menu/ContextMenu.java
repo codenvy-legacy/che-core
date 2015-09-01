@@ -116,7 +116,7 @@ public class ContextMenu implements CloseMenuHandler, ActionSelectedHandler {
     private void updateActions() {
         actions.removeAll();
 
-        final ActionGroup mainActionGroup = (ActionGroup)actionManager.getAction(IdeActions.GROUP_MAIN_CONTEXT_MENU);
+        final ActionGroup mainActionGroup = (ActionGroup)actionManager.getAction(getGroupMenu());
         if (mainActionGroup == null) {
             return;
         }
@@ -131,6 +131,10 @@ public class ContextMenu implements CloseMenuHandler, ActionSelectedHandler {
                 actions.add(action);
             }
         }
+    }
+
+    protected String getGroupMenu() {
+        return IdeActions.GROUP_MAIN_CONTEXT_MENU;
     }
 
     @Override
