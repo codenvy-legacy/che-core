@@ -13,6 +13,8 @@ package org.eclipse.che.ide.api.project.tree.generic;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
+import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.event.FileEvent;
 import org.eclipse.che.ide.api.event.NodeChangedEvent;
@@ -38,6 +40,7 @@ import java.util.Objects;
  *
  * @author Artem Zatsarynnyy
  */
+@Deprecated
 public class FileNode extends ItemNode implements VirtualFile {
 
     private final EditorAgent editorAgent;
@@ -57,36 +60,36 @@ public class FileNode extends ItemNode implements VirtualFile {
     /** {@inheritDoc} */
     @Override
     public void rename(final String newName, final RenameCallback renameCallback) {
-        final FileNode fileNode = this;
-        String newMediaType = fileNode.getMediaType();
-
-        final String parentPath = ((StorableNode)getParent()).getPath();
-        final String oldNodePath = getPath();
-        final String newPath = parentPath + "/" + newName;
-
-        projectServiceClient.rename(oldNodePath, newName, newMediaType, new AsyncRequestCallback<Void>() {
-            @Override
-            protected void onSuccess(Void result) {
-
-                updateData(new AsyncCallback<Void>() {
-                    @Override
-                    public void onSuccess(Void result) {
-                        eventBus.fireEvent(NodeChangedEvent.createNodeRenamedEvent(fileNode));
-                    }
-
-                    @Override
-                    public void onFailure(Throwable exception) {
-                        renameCallback.onFailure(exception);
-                    }
-                }, newPath);
-
-            }
-
-            @Override
-            protected void onFailure(Throwable exception) {
-                renameCallback.onFailure(exception);
-            }
-        });
+//        final FileNode fileNode = this;
+//        String newMediaType = fileNode.getMediaType();
+//
+//        final String parentPath = ((StorableNode)getParent()).getPath();
+//        final String oldNodePath = getPath();
+//        final String newPath = parentPath + "/" + newName;
+//
+//        projectServiceClient.rename(oldNodePath, newName, newMediaType, new AsyncRequestCallback<Void>() {
+//            @Override
+//            protected void onSuccess(Void result) {
+//
+//                updateData(new AsyncCallback<Void>() {
+//                    @Override
+//                    public void onSuccess(Void result) {
+//                        eventBus.fireEvent(NodeChangedEvent.createNodeRenamedEvent(fileNode));
+//                    }
+//
+//                    @Override
+//                    public void onFailure(Throwable exception) {
+//                        renameCallback.onFailure(exception);
+//                    }
+//                }, newPath);
+//
+//            }
+//
+//            @Override
+//            protected void onFailure(Throwable exception) {
+//                renameCallback.onFailure(exception);
+//            }
+//        });
     }
 
     /** {@inheritDoc} */
@@ -173,20 +176,23 @@ public class FileNode extends ItemNode implements VirtualFile {
 
     /**
      * Get content of the file which this node represents.
-     *
-     * @param callback
-     *         callback to return retrieved content
      */
-    public void getContent(final AsyncCallback<String> callback) {
-        projectServiceClient.getFileContent(getPath(), new AsyncRequestCallback<String>(new StringUnmarshaller()) {
+    @Override
+    public Promise<String> getContent() {
+        return AsyncPromiseHelper.createFromAsyncRequest(new AsyncPromiseHelper.RequestCall<String>() {
             @Override
-            protected void onSuccess(String result) {
-                callback.onSuccess(result);
-            }
+            public void makeCall(final AsyncCallback<String> callback) {
+                projectServiceClient.getFileContent(getPath(), new AsyncRequestCallback<String>(new StringUnmarshaller()) {
+                    @Override
+                    protected void onSuccess(String result) {
+                        callback.onSuccess(result);
+                    }
 
-            @Override
-            protected void onFailure(Throwable exception) {
-                callback.onFailure(exception);
+                    @Override
+                    protected void onFailure(Throwable exception) {
+                        callback.onFailure(exception);
+                    }
+                });
             }
         });
     }
@@ -196,19 +202,23 @@ public class FileNode extends ItemNode implements VirtualFile {
      *
      * @param content
      *         new content of the file
-     * @param callback
-     *         callback to return retrieved content
      */
-    public void updateContent(String content, final AsyncCallback<Void> callback) {
-        projectServiceClient.updateFile(getPath(), content, null, new AsyncRequestCallback<Void>() {
+    @Override
+    public Promise<Void> updateContent(final String content) {
+        return AsyncPromiseHelper.createFromAsyncRequest(new AsyncPromiseHelper.RequestCall<Void>() {
             @Override
-            protected void onSuccess(Void result) {
-                callback.onSuccess(result);
-            }
+            public void makeCall(final AsyncCallback<Void> callback) {
+                projectServiceClient.updateFile(getPath(), content, null, new AsyncRequestCallback<Void>() {
+                    @Override
+                    protected void onSuccess(Void result) {
+                        callback.onSuccess(result);
+                    }
 
-            @Override
-            protected void onFailure(Throwable exception) {
-                callback.onFailure(exception);
+                    @Override
+                    protected void onFailure(Throwable exception) {
+                        callback.onFailure(exception);
+                    }
+                });
             }
         });
     }

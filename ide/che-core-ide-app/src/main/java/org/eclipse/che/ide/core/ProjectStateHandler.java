@@ -34,8 +34,6 @@ import org.eclipse.che.ide.api.event.ConfigureProjectHandler;
 import org.eclipse.che.ide.api.event.OpenProjectEvent;
 import org.eclipse.che.ide.api.event.OpenProjectHandler;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
-import org.eclipse.che.ide.api.event.ProjectDescriptorChangedEvent;
-import org.eclipse.che.ide.api.event.ProjectDescriptorChangedHandler;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.core.problemDialog.ProjectProblemDialog;
 import org.eclipse.che.ide.dto.DtoFactory;
@@ -64,7 +62,7 @@ import javax.annotation.Nullable;
  * @author Artem Zatsarynnyy
  */
 @Singleton
-public class ProjectStateHandler implements Component, OpenProjectHandler, CloseCurrentProjectHandler, ProjectDescriptorChangedHandler,
+public class ProjectStateHandler implements Component, OpenProjectHandler, CloseCurrentProjectHandler, /*ProjectDescriptorChangedHandler,*/
                                             ConfigureProjectHandler {
     private final EventBus                 eventBus;
     private final AppContext               appContext;
@@ -101,7 +99,7 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
     public void start(Callback<Component, Exception> callback) {
         eventBus.addHandler(OpenProjectEvent.TYPE, this);
         eventBus.addHandler(CloseCurrentProjectEvent.TYPE, this);
-        eventBus.addHandler(ProjectDescriptorChangedEvent.TYPE, this);
+//        eventBus.addHandler(ProjectDescriptorChangedEvent.TYPE, this);
         eventBus.addHandler(ConfigureProjectEvent.TYPE, this);
         callback.onSuccess(this);
     }
@@ -116,14 +114,14 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
         closeCurrentProject(null, false);
     }
 
-    @Override
-    public void onProjectDescriptorChanged(ProjectDescriptorChangedEvent event) {
-        final String path = event.getProjectDescriptor().getPath();
-        final CurrentProject currentProject = appContext.getCurrentProject();
-        if (currentProject != null && currentProject.getProjectDescription().getPath().equals(path)) {
-            currentProject.setProjectDescription(event.getProjectDescriptor());
-        }
-    }
+//    @Override
+//    public void onProjectDescriptorChanged(ProjectDescriptorChangedEvent event) {
+//        final String path = event.getProjectDescriptor().getPath();
+//        final CurrentProject currentProject = appContext.getCurrentProject();
+//        if (currentProject != null && currentProject.getProjectDescription().getPath().equals(path)) {
+//            currentProject.setProjectDescription(event.getProjectDescriptor());
+//        }
+//    }
 
     @Override
     public void onConfigureProject(@Nonnull ConfigureProjectEvent event) {

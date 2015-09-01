@@ -22,7 +22,7 @@ import org.eclipse.che.ide.api.parts.PartStackView.TabItem;
 import org.eclipse.che.ide.api.parts.PropertyListener;
 import org.eclipse.che.ide.api.parts.base.BasePresenter;
 
-import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerPartPresenter;
+import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
 import org.eclipse.che.ide.workspace.WorkBenchPartController;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
@@ -337,7 +337,7 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
                 if (activePart == part) {
                     PartPresenter newActivePart = null;
                     for (PartPresenter tmpPart : parts) {
-                        if (tmpPart instanceof ProjectExplorerPartPresenter) {
+                        if (tmpPart instanceof NewProjectExplorerPresenter) {
                             newActivePart = tmpPart;
                             break;
                         }
