@@ -17,10 +17,11 @@ public interface IdeActions {
     String GROUP_FILE_NEW       = "newGroup";
     String GROUP_CODE           = "codeGroup";
     String GROUP_IMPORT_PROJECT = "importProjectGroup";
-//    String GROUP_BUILD          = "buildGroup";
+    //    String GROUP_BUILD          = "buildGroup";
 //    String GROUP_RUN            = "runGroupMainMenu";
     String GROUP_WINDOW         = "windowGroup";
     String GROUP_HELP           = "helpGroup";
+    String GROUP_REFACTORING    = "refactoringGroup";
 
     String GROUP_MAIN_TOOLBAR  = "mainToolBar";
     String GROUP_RIGHT_TOOLBAR = "rightToolBar";
@@ -31,7 +32,7 @@ public interface IdeActions {
     String GROUP_BUILD_CONTEXT_MENU = "buildGroupContextMenu";
     String GROUP_RUN_CONTEXT_MENU   = "runGroupContextMenu";
 
-//    String GROUP_EDITOR_POPUP    = "editorPopupMenu";
+    //    String GROUP_EDITOR_POPUP    = "editorPopupMenu";
 //    String GROUP_EDITOR          = "editorActions";
     String GROUP_OTHER_MENU      = "otherMenu";
     String GROUP_LEFT_MAIN_MENU  = "leftMainMenu";
