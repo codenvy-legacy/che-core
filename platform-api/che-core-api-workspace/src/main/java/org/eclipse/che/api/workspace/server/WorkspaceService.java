@@ -533,6 +533,7 @@ public class WorkspaceService extends Service {
                                              .withType(config.getType())
                                              .withDev(config.isDev())
                                              .withOutputChannel(config.getOutputChannel())
+                                             .withStatusChannel(config.getStatusChannel())
                                              .withSource(asDto(config.getSource()));
     }
 }

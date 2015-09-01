@@ -42,4 +42,9 @@ public interface MachineConfig {
      * Returns channel of websocket where machine logs should be put.
      */
     String getOutputChannel();
+
+    /**
+     * Returns channel of websocket where machine status events should be put.
+     */
+    String getStatusChannel();
 }

@@ -83,6 +83,7 @@ public class MachineClientImpl implements MachineClient {
                               .setDev(machine.isDev())
                               .setSource(new MachineSourceImpl(machineSourceType, machineConfig.getSource().getLocation()))
                               .setMemorySize(machine.getMemorySize())
+                              .setOutputChannel(outputChannel)
                               .build();
         } else if ("Snapshot".equalsIgnoreCase(machineSourceType)) {
             final SnapshotMachineCreationMetadata snapshotMetadata = DtoFactory.newDto(SnapshotMachineCreationMetadata.class)

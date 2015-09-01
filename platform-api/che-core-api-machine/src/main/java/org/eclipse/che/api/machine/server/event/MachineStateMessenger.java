@@ -44,7 +44,7 @@ public class MachineStateMessenger implements EventSubscriber<MachineStatusEvent
     public void onEvent(MachineStatusEvent event) {
         try {
             final ChannelBroadcastMessage bm = new ChannelBroadcastMessage();
-            bm.setChannel("machine:status:" + event.getMachineId());
+            bm.setChannel("machine:status:" + event.getWorkspaceId() + ':' + event.getMachineName());
             bm.setBody(DtoFactory.getInstance().toJson(event));
             WSConnectionContext.sendMessage(bm);
         } catch (Exception e) {
