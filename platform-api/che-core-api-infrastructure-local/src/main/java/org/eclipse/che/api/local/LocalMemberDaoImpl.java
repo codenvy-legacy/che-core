@@ -18,9 +18,12 @@ package org.eclipse.che.api.local;
 //import org.eclipse.che.api.workspace.server.dao.MemberDao;
 //import org.eclipse.che.api.workspace.server.dao.WorkspaceDao;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,6 +31,9 @@ import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * @author Anton Korneta
+ */
 @Singleton
 public class LocalMemberDaoImpl {
 ////    private final List<Member>  members;

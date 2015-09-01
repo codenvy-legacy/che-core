@@ -615,7 +615,12 @@ public class DtoImplServerTemplate extends DtoImpl {
         return builder;
     }
     private static StringBuilder appendNaiveCopyJsonExpression(String inValue, StringBuilder builder) {
-        return builder.append("new JsonParser().parse((").append(inValue).append(").toString())");
+        builder.append("((");
+        builder.append(inValue);
+        builder.append(") != null ? new JsonParser().parse((");
+        builder.append(inValue);
+        builder.append(").toString()) : null)");
+        return builder;
     }
 
     private void emitPreamble(Class<?> dtoInterface, StringBuilder builder) {

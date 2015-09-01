@@ -164,11 +164,15 @@ public class TarUtils {
         while ((tarEntry = tarIn.getNextTarEntry()) != null) {
             final File file = new File(targetDir, tarEntry.getName());
             if (tarEntry.isDirectory()) {
-                file.mkdirs();
+                if(!file.mkdirs()){
+                    throw  new IOException("Unable to create folder "+ file.getAbsolutePath());
+                }
             } else {
                 final File parent = file.getParentFile();
                 if (!parent.exists()) {
-                    parent.mkdirs();
+                    if(!parent.mkdirs()){
+                        throw  new IOException("Unable to create folder "+ parent.getAbsolutePath());
+                    }
                 }
                 try (FileOutputStream fos = new FileOutputStream(file)) {
                     int r;

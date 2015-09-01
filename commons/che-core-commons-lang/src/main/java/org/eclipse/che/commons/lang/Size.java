@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.commons.lang;
 
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -100,7 +101,7 @@ public class Size {
             if (suffix == null) {
                 return (long)size;
             }
-            final String suffixL = suffix.toLowerCase();
+            final String suffixL = suffix.toLowerCase(Locale.ENGLISH);
             switch (suffixL) {
                 case "b":
                     return (long)(size);

@@ -14,6 +14,7 @@ import org.eclipse.che.ide.api.parts.PerspectiveManager;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.Map;
 
 /**

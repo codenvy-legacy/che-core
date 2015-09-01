@@ -58,6 +58,7 @@ public class FactoryCreateAndAcceptValidatorsImplsTest {
         doNothing().when(spy).validateSource(any(Factory.class));
         doNothing().when(spy).validateAccountId(any(Factory.class));
         doNothing().when(spy).validateProjectName(any(Factory.class));
+        doNothing().when(spy).validateModules(any(Factory.class));
         doNothing().when(spy).validateCurrentTimeBeforeSinceUntil(any(Factory.class));
         doNothing().when(spy).validateProjectActions(any(Factory.class));
         doNothing().when(spy).validateWorkspace(any(Factory.class));
@@ -69,6 +70,7 @@ public class FactoryCreateAndAcceptValidatorsImplsTest {
         verify(spy).validateSource(any(Factory.class));
         verify(spy).validateAccountId(any(Factory.class));
         verify(spy).validateProjectName(any(Factory.class));
+        verify(spy).validateModules(any(Factory.class));
         verify(spy).validateCurrentTimeBeforeSinceUntil(any(Factory.class));
         verify(spy).validateOnCreate(any(Factory.class));
         verify(spy).validateProjectActions(any(Factory.class));
@@ -82,6 +84,7 @@ public class FactoryCreateAndAcceptValidatorsImplsTest {
         FactoryAcceptValidatorImpl spy = spy(acceptValidator);
         doNothing().when(spy).validateSource(any(Factory.class));
         doNothing().when(spy).validateProjectName(any(Factory.class));
+        doNothing().when(spy).validateModules(any(Factory.class));
         doNothing().when(spy).validateCurrentTimeBetweenSinceUntil(any(Factory.class));
         doNothing().when(spy).validateProjectActions(any(Factory.class));
         doNothing().when(spy).validateWorkspace(any(Factory.class));
@@ -94,6 +97,7 @@ public class FactoryCreateAndAcceptValidatorsImplsTest {
         verify(spy).validateProjectName(any(Factory.class));
         verify(spy).validateCurrentTimeBetweenSinceUntil(any(Factory.class));
         verify(spy).validateOnAccept(any(Factory.class), eq(false));
+        verify(spy).validateModules(any(Factory.class));
         verify(spy).validateProjectActions(any(Factory.class));
         verify(spy).validateWorkspace(any(Factory.class));
         verify(spy).validateCreator(any(Factory.class));
@@ -105,6 +109,7 @@ public class FactoryCreateAndAcceptValidatorsImplsTest {
         FactoryAcceptValidatorImpl spy = spy(acceptValidator);
         doNothing().when(spy).validateCurrentTimeBetweenSinceUntil(any(Factory.class));
         doNothing().when(spy).validateProjectActions(any(Factory.class));
+        doNothing().when(spy).validateModules(any(Factory.class));
         doNothing().when(spy).validateWorkspace(any(Factory.class));
         doNothing().when(spy).validateCreator(any(Factory.class));
 
@@ -113,6 +118,7 @@ public class FactoryCreateAndAcceptValidatorsImplsTest {
 
         verify(spy).validateCurrentTimeBetweenSinceUntil(any(Factory.class));
         verify(spy).validateOnAccept(any(Factory.class), eq(true));
+        verify(spy).validateModules(any(Factory.class));
         verify(spy).validateProjectActions(any(Factory.class));
         verify(spy).validateWorkspace(any(Factory.class));
         verify(spy).validateCreator(any(Factory.class));

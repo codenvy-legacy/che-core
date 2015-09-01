@@ -82,6 +82,17 @@ public interface ProjectManager {
             throws ConflictException, ForbiddenException, ServerException, ProjectTypeConstraintException, NotFoundException;
 
     /**
+     * Update the given project
+     * @param workspace The workspace that contains the project to update.
+     * @param path The path to the project.
+     * @param newConfig The new configuration of the project
+     * @param newVisibility Then new visibility of the project. If not, visibility is not changed.
+     * @return The updated project.
+     */
+    Project updateProject(String workspace, String path, ProjectConfig newConfig, String newVisibility)
+            throws ForbiddenException, ServerException, NotFoundException, ConflictException, IOException;
+
+    /**
      * Gets root folder od project tree.
      *
      * @param workspace
@@ -169,4 +180,26 @@ public interface ProjectManager {
 
     Project convertFolderToProject(String workspace, String path, ProjectConfig projectConfig, String visibility)
             throws ConflictException, ForbiddenException, ServerException, NotFoundException;
+
+    /**
+     * Rename the given item.
+     * @param workspace The workspace that contains the item.
+     * @param path The current path to the path being renamed
+     * @param newName The name name of the item.
+     * @param newMediaType A new media type to set
+     * @return The renamed virtual file entry, or null if no entry with the given path was found.
+     */
+    VirtualFileEntry rename(String workspace, String path, String newName, String newMediaType)
+            throws ForbiddenException, ServerException, ConflictException, NotFoundException;
+
+    /**
+     * Delete the given item from the workspace.
+     * @param workspace The workspace to delete from.
+     * @param path Path to the item (file / folder / project) to delete.
+     * @param modulePath In case a module is being deleted, the module's path relative to the provided path.
+     * @return True if the path was found and deleted, false if the path was not found.
+     */
+    boolean delete(String workspace, String path, String modulePath)
+            throws ServerException, ForbiddenException, NotFoundException, ConflictException;
+
 }
