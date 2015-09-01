@@ -16,6 +16,7 @@ import org.eclipse.che.dto.shared.DTO;
 /**
  * Describes event about status of machine
  *
+ * @author Eugene Voevodin
  * @author Alexander Garagatyi
  */
 @EventOrigin("machine")
@@ -46,4 +47,12 @@ public interface MachineStatusEvent {
     void setError(String error);
 
     MachineStatusEvent withError(String error);
+
+    String getWorkspaceId();
+
+    MachineStatusEvent withWorkspaceId(String workspaceId);
+
+    String getMachineName();
+
+    MachineStatusEvent withMachineName(String machineName);
 }

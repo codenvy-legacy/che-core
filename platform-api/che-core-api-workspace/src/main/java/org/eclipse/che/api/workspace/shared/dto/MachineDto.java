@@ -46,6 +46,8 @@ public interface MachineDto extends MachineConfigDto, Machine {
 
     MachineDto withOutputChannel(String outputChannel);
 
+    MachineDto withStatusChannel(String statusChannel);
+
     @Override
     Map<String, String> getProperties();
 

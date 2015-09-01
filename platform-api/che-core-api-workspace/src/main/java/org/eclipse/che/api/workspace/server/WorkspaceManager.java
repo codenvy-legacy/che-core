@@ -323,6 +323,7 @@ public class WorkspaceManager {
         for (EnvironmentImpl environment : workspace.getEnvironments().values()) {
             for (MachineConfigImpl machineConfig : environment.getMachineConfigs()) {
                 machineConfig.setOutputChannel(workspace.getId() + ':' + environment.getName() + ':' + machineConfig.getName());
+                machineConfig.setStatusChannel("machine:status:" + workspace.getId() + ':' + machineConfig.getName());
             }
         }
 

@@ -264,7 +264,9 @@ public class MachineManager {
             try {
                 eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
                                                .withEventType(MachineStatusEvent.EventType.CREATING)
-                                               .withMachineId(machine.getId()));
+                                               .withMachineId(machine.getId())
+                                               .withWorkspaceId(machine.getWorkspaceId())
+                                               .withMachineName(machine.getDisplayName()));
 
                 final Instance instance = this.createInstance(machine, machineLogger);
 
@@ -274,13 +276,17 @@ public class MachineManager {
 
                 eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
                                                .withEventType(MachineStatusEvent.EventType.RUNNING)
-                                               .withMachineId(machine.getId()));
+                                               .withMachineId(machine.getId())
+                                               .withWorkspaceId(machine.getWorkspaceId())
+                                               .withMachineName(machine.getDisplayName()));
 
                 return instance;
             } catch (ServerException | ConflictException e) {
                 eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
                                                .withEventType(MachineStatusEvent.EventType.ERROR)
                                                .withMachineId(machine.getId())
+                                               .withWorkspaceId(machine.getWorkspaceId())
+                                               .withMachineName(machine.getDisplayName())
                                                .withError(e.getLocalizedMessage()));
 
                 try {
@@ -681,9 +687,13 @@ public class MachineManager {
 
         machine.setStatus(MachineStatus.DESTROYING);
 
+        final MachineImpl machineState = machineRegistry.getState(machineId);
+
         eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
                                        .withEventType(MachineStatusEvent.EventType.DESTROYING)
-                                       .withMachineId(machineId));
+                                       .withMachineId(machineId)
+                                       .withWorkspaceId(machineState.getWorkspaceId())
+                                       .withMachineName(machineState.getDisplayName()));
 
         if (async) {
             executor.execute(ThreadLocalPropagateContext.wrap(new Runnable() {
@@ -784,11 +794,15 @@ public class MachineManager {
         } catch (IOException ignore) {
         }
 
+        final MachineImpl machineState = machineRegistry.getState(machine.getId());
+
         machineRegistry.remove(machine.getId());
 
         eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
                                        .withEventType(MachineStatusEvent.EventType.DESTROYED)
-                                       .withMachineId(machine.getId()));
+                                       .withMachineId(machine.getId())
+                                       .withWorkspaceId(machineState.getWorkspaceId())
+                                       .withMachineName(machineState.getDisplayName()));
     }
 
     private void createMachineLogsDir(String machineId) throws MachineException {

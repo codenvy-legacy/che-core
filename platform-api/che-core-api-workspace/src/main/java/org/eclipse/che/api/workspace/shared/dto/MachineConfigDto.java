@@ -57,4 +57,9 @@ public interface MachineConfigDto extends MachineConfig {
     String getOutputChannel();
 
     MachineConfigDto withOutputChannel(String outputChannel);
+
+    @Override
+    String getStatusChannel();
+
+    MachineConfigDto withStatusChannel(String statusChannel);
 }

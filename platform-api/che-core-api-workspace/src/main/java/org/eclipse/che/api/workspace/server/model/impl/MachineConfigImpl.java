@@ -30,17 +30,25 @@ public class MachineConfigImpl implements MachineConfig {
     private MachineSourceImpl source;
     private int               memorySize;
     private String            outputChannel;
+    private String            statusChannel;
 
     public MachineConfigImpl() {
     }
 
-    public MachineConfigImpl(boolean isDev, String name, String type, MachineSource source, int memorySize, String outputChannel) {
+    public MachineConfigImpl(boolean isDev,
+                             String name,
+                             String type,
+                             MachineSource source,
+                             int memorySize,
+                             String outputChannel,
+                             String statusChannel) {
         this.isDev = isDev;
         this.name = name;
         this.type = type;
         this.source = new MachineSourceImpl(source.getType(), source.getLocation());
         this.memorySize = memorySize;
         this.outputChannel = outputChannel;
+        this.statusChannel = statusChannel;
     }
 
     public MachineConfigImpl(MachineConfig machineCfg) {
@@ -49,7 +57,8 @@ public class MachineConfigImpl implements MachineConfig {
              machineCfg.getType(),
              machineCfg.getSource(),
              machineCfg.getMemorySize(),
-             machineCfg.getOutputChannel());
+             machineCfg.getOutputChannel(),
+             machineCfg.getStatusChannel());
     }
 
     @Override
@@ -107,6 +116,15 @@ public class MachineConfigImpl implements MachineConfig {
     }
 
     @Override
+    public String getStatusChannel() {
+        return statusChannel;
+    }
+
+    public void setStatusChannel(String statusChannel) {
+        this.statusChannel = statusChannel;
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (!(obj instanceof MachineConfigImpl)) return false;
@@ -116,7 +134,8 @@ public class MachineConfigImpl implements MachineConfig {
                Objects.equals(source, other.source) &&
                Objects.equals(memorySize, other.memorySize) &&
                Objects.equals(type, other.type) &&
-               Objects.equals(outputChannel, other.outputChannel);
+               Objects.equals(outputChannel, other.outputChannel) &&
+               Objects.equals(statusChannel, other.statusChannel);
     }
 
     @Override
@@ -128,6 +147,7 @@ public class MachineConfigImpl implements MachineConfig {
         hash = hash * 31 + Objects.hashCode(source);
         hash = hash * 31 + Objects.hashCode(memorySize);
         hash = hash * 31 + Objects.hashCode(outputChannel);
+        hash = hash * 31 + Objects.hashCode(statusChannel);
         return hash;
     }
 
@@ -140,6 +160,7 @@ public class MachineConfigImpl implements MachineConfig {
                ", source=" + source +
                ", memorySize=" + memorySize +
                ", outputChannel='" + outputChannel + '\'' +
+               ", statusChannel='" + statusChannel + '\'' +
                '}';
     }
 }

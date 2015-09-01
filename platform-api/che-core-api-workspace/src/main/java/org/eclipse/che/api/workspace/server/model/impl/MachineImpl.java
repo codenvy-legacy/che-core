@@ -41,10 +41,11 @@ public class MachineImpl extends MachineConfigImpl implements Machine {
                        MachineSource source,
                        int memorySize,
                        String outputChannel,
+                       String statusChannel,
                        String id,
                        Map<String, String> properties,
                        Map<String, ? extends Server> servers) {
-        super(isDev, name, type, source, memorySize, outputChannel);
+        super(isDev, name, type, source, memorySize, outputChannel, statusChannel);
         this.id = id;
         this.properties = properties;
         if (servers != null) {
@@ -61,6 +62,7 @@ public class MachineImpl extends MachineConfigImpl implements Machine {
              machine.getSource(),
              machine.getMemorySize(),
              machine.getOutputChannel(),
+             machine.getStatusChannel(),
              machine.getId(),
              machine.getProperties(),
              machine.getServers());
@@ -120,6 +122,7 @@ public class MachineImpl extends MachineConfigImpl implements Machine {
         private String                        type;
         private String                        id;
         private String                        outputChannel;
+        private String                        statusChannel;
         private MachineSource                 source;
         private Map<String, String>           properties;
         private Map<String, ? extends Server> servers;
@@ -131,6 +134,7 @@ public class MachineImpl extends MachineConfigImpl implements Machine {
                                    source,
                                    memorySize,
                                    outputChannel,
+                                   statusChannel,
                                    id,
                                    properties,
                                    servers);
@@ -178,6 +182,11 @@ public class MachineImpl extends MachineConfigImpl implements Machine {
 
         public MachineImplBuilder setServers(Map<String, ? extends Server> servers) {
             this.servers = servers;
+            return this;
+        }
+
+        public MachineImplBuilder setStatusChannel(String statusChannel) {
+            this.statusChannel = statusChannel;
             return this;
         }
     }
