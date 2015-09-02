@@ -36,6 +36,7 @@ import java.util.regex.Pattern;
  * @author Eugene Voevodin
  * @author Dmitry Shnurenko
  * @author Anton Korneta
+ * @author Valeriy Svydenko
  */
 @Singleton
 public class LocalPreferenceDaoImpl implements PreferenceDao {
