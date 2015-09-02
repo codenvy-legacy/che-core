@@ -32,6 +32,9 @@ import java.util.Map;
  */
 @Singleton
 public class PreferencesComponent implements Component {
+
+    public static final String PREF_IDE_THEME = "ide.theme";
+
     private final UserProfileServiceClient userProfileService;
     private final CurrentUser              currentUser;
     private final AppContext               appContext;
@@ -62,7 +65,9 @@ public class PreferencesComponent implements Component {
                 currentUser.setPreferences(preferences);
                 appContext.setCurrentUser(currentUser);
                 preferencesManager.load(preferences);
+
                 setTheme();
+
                 styleInjector.inject();
                 callback.onSuccess(PreferencesComponent.this);
             }
@@ -76,7 +81,7 @@ public class PreferencesComponent implements Component {
 
     /** Applying user defined Theme. */
     private void setTheme() {
-        String storedThemeId = preferencesManager.getValue("Theme");
+        String storedThemeId = preferencesManager.getValue(PREF_IDE_THEME);
         storedThemeId = storedThemeId != null ? storedThemeId : themeAgent.getCurrentThemeId();
         Theme themeToSet = storedThemeId != null ? themeAgent.getTheme(storedThemeId) : themeAgent.getDefault();
         Style.setTheme(themeToSet);
