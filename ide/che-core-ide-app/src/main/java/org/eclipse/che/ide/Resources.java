@@ -60,7 +60,7 @@ public interface Resources extends Tree.Resources,
                                    ProjectWizardResources {
 
     /** Interface for css resources. */
-    public interface CoreCss extends CssResource {
+    interface CoreCss extends CssResource {
         String simpleListContainer();
 
         String mainText();
@@ -230,4 +230,18 @@ public interface Resources extends Tree.Resources,
 
     @Source("part/outline/no-outline.svg")
     SVGResource noOutline();
+
+
+    @Source("part/project-explorer-part-icon.svg")
+    SVGResource projectExplorerPartIcon();
+
+    @Source("part/events-part-icon.svg")
+    SVGResource eventsPartIcon();
+
+    @Source("part/output-part-icon.svg")
+    SVGResource outputPartIcon();
+
+    @Source("part/outline-part-icon.svg")
+    SVGResource outlinePartIcon();
+
 }

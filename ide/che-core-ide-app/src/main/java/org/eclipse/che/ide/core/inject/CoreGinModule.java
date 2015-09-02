@@ -163,6 +163,7 @@ import org.eclipse.che.ide.theme.AppearancePresenter;
 import org.eclipse.che.ide.theme.AppearanceView;
 import org.eclipse.che.ide.theme.AppearanceViewImpl;
 import org.eclipse.che.ide.theme.DarkTheme;
+import org.eclipse.che.ide.theme.LightTheme;
 import org.eclipse.che.ide.theme.ThemeAgentImpl;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.ui.dialogs.choice.ChoiceDialog;
@@ -354,6 +355,7 @@ public class CoreGinModule extends AbstractGinModule {
 
         GinMultibinder<Theme> themeBinder = GinMultibinder.newSetBinder(binder(), Theme.class);
         themeBinder.addBinding().to(DarkTheme.class);
+        themeBinder.addBinding().to(LightTheme.class);
 
         // Resources
         bind(PartStackUIResources.class).to(Resources.class).in(Singleton.class);

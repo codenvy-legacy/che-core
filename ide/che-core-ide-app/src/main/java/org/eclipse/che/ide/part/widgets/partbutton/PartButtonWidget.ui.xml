@@ -17,17 +17,18 @@
 
         .icon {
             float: left;
+            margin-left: 5px;
         }
 
         .label {
-            margin-top: 2px;
+            margin-top: 3px;
             float: left;
         }
 
     </ui:style>
 
     <g:DockLayoutPanel>
-        <g:west size="20">
+        <g:west size="25">
             <g:SimplePanel ui:field="icon" addStyleNames="{style.icon}"/>
         </g:west>
         <g:center>

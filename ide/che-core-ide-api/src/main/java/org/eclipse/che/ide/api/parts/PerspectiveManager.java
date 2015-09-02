@@ -35,8 +35,8 @@ public class PerspectiveManager {
 
     @Inject
     public PerspectiveManager(Map<String, Perspective> perspectives) {
-        this.listeners = new ArrayList<>();
         this.perspectives = perspectives;
+        listeners = new ArrayList<>();
 
         //perspective by default
         currentPerspectiveId = "Project Perspective";
@@ -57,7 +57,9 @@ public class PerspectiveManager {
     public void setPerspectiveId(@Nonnull String perspectiveId) {
         currentPerspectiveId = perspectiveId;
 
-        notifyListeners();
+        for (PerspectiveTypeListener container : listeners) {
+            container.onPerspectiveChanged();
+        }
     }
 
     /** Returns current perspective type. */
@@ -76,16 +78,10 @@ public class PerspectiveManager {
         listeners.add(listener);
     }
 
-    /** Notifies all listeners of perspective type. */
-    public void notifyListeners() {
-        for (PerspectiveTypeListener container : listeners) {
-            container.onPerspectiveChanged();
-        }
-    }
-
     /** The interface which must be implemented by all elements who need react on perspective changing. */
     public interface PerspectiveTypeListener {
         /** Performs some action when perspective was changed. */
         void onPerspectiveChanged();
     }
+
 }

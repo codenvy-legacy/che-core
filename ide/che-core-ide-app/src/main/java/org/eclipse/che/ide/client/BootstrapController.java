@@ -268,12 +268,8 @@ public class BootstrapController {
     private void processStartupAction() {
         final String startupAction = Config.getStartupParam("action");
         if (startupAction != null) {
-            performAction(startupAction);
+            performAction(startupAction, null);
         }
-    }
-
-    private void performAction(String actionId) {
-        performAction(actionId, null);
     }
 
     private void performAction(String actionId, Map<String, String> parameters) {

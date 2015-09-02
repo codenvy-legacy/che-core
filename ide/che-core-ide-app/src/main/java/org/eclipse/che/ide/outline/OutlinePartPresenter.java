@@ -17,6 +17,7 @@ import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.event.ActivePartChangedEvent;
 import org.eclipse.che.ide.api.event.ActivePartChangedHandler;
@@ -44,11 +45,16 @@ public class OutlinePartPresenter extends BasePresenter implements ActivePartCha
     private final OutlinePartView          view;
     private final CoreLocalizationConstant coreLocalizationConstant;
     private       HasOutline               lastHasOutlineActivePart;
+    private       Resources                resources;
 
     @Inject
-    public OutlinePartPresenter(final OutlinePartView view, EventBus eventBus, CoreLocalizationConstant coreLocalizationConstant) {
+    public OutlinePartPresenter(final OutlinePartView view,
+                                EventBus eventBus,
+                                CoreLocalizationConstant coreLocalizationConstant,
+                                Resources resources) {
         this.view = view;
         this.coreLocalizationConstant = coreLocalizationConstant;
+        this.resources = resources;
 
         view.setTitle(coreLocalizationConstant.outlineTitleBarText());
         view.setDelegate(this);
@@ -99,7 +105,7 @@ public class OutlinePartPresenter extends BasePresenter implements ActivePartCha
     /** {@inheritDoc} */
     @Override
     public SVGResource getTitleSVGImage() {
-        return null;
+        return resources.outlinePartIcon();
     }
 
     /** {@inheritDoc} */
