@@ -16,6 +16,8 @@ import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.project.shared.dto.ItemReference;
+import org.eclipse.che.api.promises.client.Operation;
+import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorInitException;
@@ -26,8 +28,7 @@ import org.eclipse.che.ide.api.editor.EditorProvider;
 import org.eclipse.che.ide.api.editor.EditorRegistry;
 import org.eclipse.che.ide.api.event.ActivePartChangedEvent;
 import org.eclipse.che.ide.api.event.ActivePartChangedHandler;
-import org.eclipse.che.ide.api.event.DeleteModuleEvent;
-import org.eclipse.che.ide.api.event.DeleteModuleEventHandler;
+import org.eclipse.che.ide.api.event.FileContentUpdateEvent;
 import org.eclipse.che.ide.api.event.FileEvent;
 import org.eclipse.che.ide.api.event.FileEvent.FileOperation;
 import org.eclipse.che.ide.api.event.FileEventHandler;
@@ -41,6 +42,8 @@ import org.eclipse.che.ide.api.parts.PartPresenter;
 import org.eclipse.che.ide.api.parts.PartStackType;
 import org.eclipse.che.ide.api.parts.PropertyListener;
 import org.eclipse.che.ide.api.parts.WorkspaceAgent;
+import org.eclipse.che.ide.api.project.node.HasStorablePath;
+import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.api.texteditor.HasReadOnlyProperty;
 import org.eclipse.che.ide.project.event.ResourceNodeDeletedEvent;
@@ -124,6 +127,17 @@ public class EditorAgentImpl implements EditorAgent {
                             && virtualFile.getProject().getProjectDescriptor().equals(node.getProjectDescriptor())) {
                             eventBus.fireEvent(new FileEvent(virtualFile, CLOSE));
                         }
+                        if (node.getParent() == null || !(node.getParent() instanceof HasStorablePath)) {
+                            return;
+                        }
+
+                        String parentPath = ((HasStorablePath)node.getParent()).getStorablePath();
+                        String openFileName = virtualFile.getName();
+                        String openFilePath = virtualFile.getPath();
+                        if (openFilePath.contains(parentPath) &&
+                            (openFileName.equals("pom.xml") || openFileName.equals("modules"))) {
+                            eventBus.fireEvent(new FileContentUpdateEvent(openFilePath));
+                        }
                     }
                 }
             }
@@ -149,12 +163,15 @@ public class EditorAgentImpl implements EditorAgent {
 
     }
 
-    private void closeAllFilesByModule(ProjectNode projectNode) {
-        for (EditorPartPresenter editor : getOpenedEditors().values()) {
-            VirtualFile virtualFile = editor.getEditorInput().getFile();
-            ProjectNode projectParent = virtualFile.getProject();
+    /** Used to notify {@link EditorAgentImpl} that editor has closed */
+    private final EditorPartCloseHandler editorClosed = new EditorPartCloseHandler() {
+        @Override
+        public void onClose(EditorPartPresenter editor) {
+            editorClosed(editor);
+        }
+    };
 
-    private final FileEventHandler       fileEventHandler = new FileEventHandler() {
+    private final FileEventHandler fileEventHandler = new FileEventHandler() {
         @Override
         public void onFileOperation(final FileEvent event) {
             if (event.getOperationType() == FileOperation.OPEN) {
@@ -274,7 +291,9 @@ public class EditorAgentImpl implements EditorAgent {
 
     /** {@inheritDoc} */
     @Override
-    public @Nonnull NavigableMap<String, EditorPartPresenter> getOpenedEditors() {
+    public
+    @Nonnull
+    NavigableMap<String, EditorPartPresenter> getOpenedEditors() {
         return openedEditors;
     }
 

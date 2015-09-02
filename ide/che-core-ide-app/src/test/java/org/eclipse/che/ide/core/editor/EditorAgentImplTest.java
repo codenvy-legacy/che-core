@@ -112,39 +112,4 @@ public class EditorAgentImplTest {
 
         verifyNoMoreInteractions(editor, newFileNode, editorInput);
     }
-
-    @Test
-    public void filesShouldBeClosedAfterDeletionModule() {
-        final String modulePath = "/Project/module1";
-        final String filePath = modulePath + "/someFile";
-        final String jarFilePath = "com.oracle.someFile";
-
-        DeleteModuleEvent event = mock(DeleteModuleEvent.class);
-
-        ModuleNode moduleNode = mock(ModuleNode.class);
-
-        when(event.getModule()).thenReturn(moduleNode);
-        when(moduleNode.getPath()).thenReturn(modulePath);
-        when(newFileNode.getPath()).thenReturn(filePath);
-        when(newFileNode.getProject()).thenReturn(moduleNode);
-        when(fileNode2.getPath()).thenReturn(jarFilePath);
-        when(fileNode2.getProject()).thenReturn(moduleNode);
-        when(editorInput.getFile()).thenReturn(newFileNode).thenReturn(fileNode2);
-
-        editorAgent.openEditor(newFileNode);
-        editorAgent.openEditor(fileNode2);
-
-        assertThat(editorAgent.getOpenedEditors().size(), is(2));
-
-        //close opened files for deleted module
-        verify(eventBus).addHandler(eq(DeleteModuleEvent.TYPE), deleteModuleHandlerCaptor.capture());
-        deleteModuleHandlerCaptor.getValue().onModuleDeleted(event);
-
-        verify(event).getModule();
-        verify(editor, times(2)).getEditorInput();
-        verify(editorInput, times(2)).getFile();
-        verify(newFileNode).getProject();
-        verify(fileNode2).getProject();
-        verify(eventBus, times(2)).fireEvent(any(FileEvent.class));
-    }
 }
