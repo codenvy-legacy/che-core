@@ -31,6 +31,7 @@ import org.eclipse.che.api.factory.dto.WelcomePage;
 import org.eclipse.che.api.factory.dto.Workspace;
 import org.eclipse.che.api.project.shared.dto.ImportSourceDescriptor;
 import org.eclipse.che.api.project.shared.dto.NewProject;
+import org.eclipse.che.api.project.shared.dto.ProjectModule;
 import org.eclipse.che.api.project.shared.dto.Source;
 import org.eclipse.che.api.user.server.dao.PreferenceDao;
 import org.eclipse.che.api.user.server.dao.User;
@@ -311,6 +312,26 @@ public class FactoryBaseValidatorTest {
 
         // when, then
         validator.validateAccountId(factory);
+    }
+
+    @Test(expectedExceptions = ApiException.class)
+    public void shouldNotValidateIfNoModulePath() throws ApiException, ParseException {
+        ProjectModule module = DtoFactory.newDto(ProjectModule.class).withType("maven");
+        NewProject newProject = DtoFactory.newDto(NewProject.class).withModules(Arrays.asList(module));
+        Factory localFactory = DtoFactory.getInstance().clone(factory).withProject(newProject);
+
+        // when, then
+        validator.validateModules(localFactory);
+    }
+
+    @Test(expectedExceptions = ApiException.class)
+    public void shouldNotValidateIfNoModuleType() throws ApiException, ParseException {
+        ProjectModule module = DtoFactory.newDto(ProjectModule.class).withPath("/module/path");
+        NewProject newProject = DtoFactory.newDto(NewProject.class).withModules(Arrays.asList(module));
+        Factory localFactory = DtoFactory.getInstance().clone(factory).withProject(newProject);
+
+        // when, then
+        validator.validateModules(localFactory);
     }
 
 

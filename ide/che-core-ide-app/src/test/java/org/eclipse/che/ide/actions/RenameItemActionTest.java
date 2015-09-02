@@ -241,12 +241,11 @@ public class RenameItemActionTest {
         verify(projectNode).getParent();
         verify(dtoUnmarshallerFactory).newArrayUnmarshaller(ApplicationProcessDescriptor.class);
         verify(runnerServiceClient).getRunningProcesses(eq(TEXT), processDescriptorArgCaptor.capture());
-        AsyncRequestCallback<Array<ApplicationProcessDescriptor>> callback = processDescriptorArgCaptor.getValue();
+        AsyncRequestCallback<List<ApplicationProcessDescriptor>> callback = processDescriptorArgCaptor.getValue();
         Method method = callback.getClass().getDeclaredMethod("onSuccess", Object.class);
         method.setAccessible(true);
         method.invoke(callback, descriptors);
 
-        verify(descriptors).asIterable();
         verify(applicationProcessDescriptor).getStatus();
         verify(localization).stopProcessesBeforeRenamingProject();
         verify(dialogFactory).createMessageDialog("", STOP_RUN, null);
@@ -268,12 +267,11 @@ public class RenameItemActionTest {
         verify(projectNode).getParent();
         verify(dtoUnmarshallerFactory).newArrayUnmarshaller(ApplicationProcessDescriptor.class);
         verify(runnerServiceClient).getRunningProcesses(eq(TEXT), processDescriptorArgCaptor.capture());
-        AsyncRequestCallback<Array<ApplicationProcessDescriptor>> callback = processDescriptorArgCaptor.getValue();
+        AsyncRequestCallback<List<ApplicationProcessDescriptor>> callback = processDescriptorArgCaptor.getValue();
         Method method = callback.getClass().getDeclaredMethod("onSuccess", Object.class);
         method.setAccessible(true);
         method.invoke(callback, descriptors);
 
-        verify(descriptors).asIterable();
         verify(applicationProcessDescriptor, times(2)).getStatus();
         verify(localization).stopProcessesBeforeRenamingProject();
         verify(dialogFactory).createMessageDialog("", STOP_RUN, null);
@@ -291,14 +289,13 @@ public class RenameItemActionTest {
 /*
         verify(projectNode).getParent();
 
-        verify(dtoUnmarshallerFactory).newArrayUnmarshaller(ApplicationProcessDescriptor.class);
+        verify(dtoUnmarshallerFactory).newListUnmarshaller(ApplicationProcessDescriptor.class);
         verify(runnerServiceClient).getRunningProcesses(eq(TEXT), processDescriptorArgCaptor.capture());
-        AsyncRequestCallback<Array<ApplicationProcessDescriptor>> callback = processDescriptorArgCaptor.getValue();
+        AsyncRequestCallback<List<ApplicationProcessDescriptor>> callback = processDescriptorArgCaptor.getValue();
         Method method = callback.getClass().getDeclaredMethod("onSuccess", Object.class);
         method.setAccessible(true);
         method.invoke(callback, descriptors);
 
-        verify(descriptors).asIterable();
         verify(applicationProcessDescriptor, times(2)).getStatus();
         verify(projectNode, times(3)).getName();
         verify(localization).renameProjectDialogTitle();

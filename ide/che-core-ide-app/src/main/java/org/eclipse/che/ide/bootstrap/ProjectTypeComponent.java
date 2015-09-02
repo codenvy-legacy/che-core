@@ -25,6 +25,8 @@ import org.eclipse.che.ide.core.Component;
 
 import java.util.List;
 
+import java.util.List;
+
 /**
  * @author Evgen Vidolob
  * @author Artem Zatsarynnyy

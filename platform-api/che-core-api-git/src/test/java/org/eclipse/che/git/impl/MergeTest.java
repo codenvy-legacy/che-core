@@ -87,7 +87,7 @@ public class MergeTest {
         assertEquals(connection.log(newDto(LogRequest.class)).getCommits().get(0).getMessage(), "add file in new branch");
     }
 
-    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
+    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class , enabled = false)
     public void testMergeConflict(GitConnectionFactory connectionFactory) throws Exception {
         //given
         GitConnection connection = connectToGitRepositoryWithContent(connectionFactory, repository);

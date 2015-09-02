@@ -23,6 +23,7 @@ import org.eclipse.che.dto.server.DtoFactory;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
@@ -140,6 +141,18 @@ public class ServerDtoTest {
         DtoWithAny dto = dtoFactory.createDtoFromJson(json.toString(), DtoWithAny.class);
 
         Assert.assertEquals(dto.getStuff(), createTestValueForAny());
+    }
+
+    @Test
+    public void testCloneWithNullAny() throws Exception {
+        DtoWithAny dto1 = dtoFactory.createDto(DtoWithAny.class);
+        DtoWithAny dto2 = dtoFactory.clone(dto1);
+        Assert.assertEquals(dto1, dto2);
+        JsonElement json = new JsonParser().parse(dtoFactory.toJson(dto1));
+        JsonObject expJson = new JsonObject();
+        expJson.addProperty("id", 0);
+        expJson.add("stuff", JsonNull.INSTANCE);
+        assertEquals(expJson, json);
     }
 
     /** Intentionally call several times to ensure non-reference equality */
