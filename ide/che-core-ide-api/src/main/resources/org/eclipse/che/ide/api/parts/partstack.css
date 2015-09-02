@@ -88,7 +88,7 @@
 .selectedBottomTab,
 .selectedRightOrLeftTab {
     color: activeTabTextColor;
-    text-shadow: 0px 1px 1px rgba(0, 0, 0, 0.5);
+    text-shadow: activeTabTextShadow;
     background-color: activeTabBackground;
     border-left: 1px solid activeTabBorderColor;
     border-right: 1px solid activeTabBorderColor;
@@ -103,8 +103,8 @@
 .selectedRightOrLeftTab svg,
 .selectedRightOrLeftTab svg rect,
 .selectedRightOrLeftTab svg path {
-    fill: activeTabTextColor;
-    stroke: activeTabTextColor;
+    fill: activeTabIconColor;
+    stroke: activeTabIconColor;
 }
 
 /* This style removes double border from left tab on the bottom panel. */

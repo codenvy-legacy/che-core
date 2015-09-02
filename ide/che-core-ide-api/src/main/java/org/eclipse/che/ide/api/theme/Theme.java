@@ -86,6 +86,20 @@ public interface Theme {
     String getActiveTabTextColor();
 
     /**
+     * Text shadow for active tab.
+     *
+     * @return text shadow
+     */
+    String getActiveTabTextShadow();
+
+    /**
+     * Icon color in active (selected) tab.
+     *
+     * @return color for icon
+     */
+    String getActiveTabIconColor();
+
+    /**
      * Text color for part button.
      *
      * @return the color
@@ -211,6 +225,13 @@ public interface Theme {
      * @return the color
      */
     String getInputBackground();
+
+    /**
+     * Background for editor panel ( place where the editor will be placed )
+     *
+     * @return color for editor panel
+     */
+    String getEditorPanelBackgroundColor();
 
     /**
      * Background color of the editor

@@ -26,6 +26,8 @@
 @eval activeTabBackground org.eclipse.che.ide.api.theme.Style.getActiveTabBackground();
 @eval activeTabBorderColor org.eclipse.che.ide.api.theme.Style.getActiveTabBorderColor();
 @eval activeTabTextColor org.eclipse.che.ide.api.theme.Style.getActiveTabTextColor();
+@eval activeTabIconColor org.eclipse.che.ide.api.theme.Style.getActiveTabIconColor();
+@eval activeTabTextShadow org.eclipse.che.ide.api.theme.Style.getActiveTabTextShadow();
 
 @eval inactiveTabBackground org.eclipse.che.ide.api.theme.Style.getInactiveTabBackground();
 @eval inactiveTabBorderColor org.eclipse.che.ide.api.theme.Style.getInactiveTabBorderColor();
@@ -80,6 +82,7 @@
 @eval inputBackground org.eclipse.che.ide.api.theme.Style.getInputBackground();
 
 /*Editor*/
+@eval editorPanelBackgroundColor org.eclipse.che.ide.api.theme.Style.getEditorPanelBackgroundColor();
 @eval editorBackgroundColor org.eclipse.che.ide.api.theme.Style.getEditorBackgroundColor();
 @eval editorCurrentLineColor org.eclipse.che.ide.api.theme.Style.getEditorCurrentLineColor();
 @eval editorDefaultFontColor org.eclipse.che.ide.api.theme.Style.getEditorDefaultFontColor();

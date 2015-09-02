@@ -63,6 +63,14 @@ public class Style {
         return theme.getActiveTabTextColor();
     }
 
+    public static String getActiveTabTextShadow() {
+        return theme.getActiveTabTextShadow();
+    }
+
+    public static String getActiveTabIconColor() {
+        return theme.getActiveTabIconColor();
+    }
+
     public static String getTabsPanelBackground() {
         return theme.getTabsPanelBackground();
     }
@@ -133,6 +141,10 @@ public class Style {
 
     public static String getInputBackground() {
         return theme.getInputBackground();
+    }
+
+    public static String getEditorPanelBackgroundColor() {
+        return theme.getEditorPanelBackgroundColor();
     }
 
     public static String getEditorBackgroundColor() {
