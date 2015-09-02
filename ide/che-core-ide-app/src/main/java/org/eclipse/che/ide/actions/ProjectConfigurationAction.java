@@ -58,6 +58,6 @@ public class ProjectConfigurationAction extends ProjectAction {
         }
 
         eventLogger.log(this);
-        eventBus.fireEvent(new ConfigureProjectEvent(appContext.getCurrentProject().getRootProject()));
+        eventBus.fireEvent(new ConfigureProjectEvent(appContext.getCurrentProject().getProjectDescription()));
     }
 }
