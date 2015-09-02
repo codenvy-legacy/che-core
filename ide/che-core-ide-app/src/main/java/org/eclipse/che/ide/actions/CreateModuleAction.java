@@ -10,79 +10,66 @@
  *******************************************************************************/
 package org.eclipse.che.ide.actions;
 
+import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
+
+import org.eclipse.che.ide.projecttype.wizard.presenter.ProjectWizardPresenter;
+import org.eclipse.che.ide.Resources;
+import org.eclipse.che.ide.api.action.Action;
+import org.eclipse.che.ide.api.action.ActionEvent;
+import org.eclipse.che.ide.api.app.AppContext;
+import org.eclipse.che.ide.api.project.tree.generic.FolderNode;
+import org.eclipse.che.ide.api.selection.Selection;
+import org.eclipse.che.ide.api.selection.SelectionAgent;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.web.bindery.event.shared.EventBus;
-
-import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
-import org.eclipse.che.ide.api.action.ActionEvent;
-import org.eclipse.che.ide.api.action.ProjectAction;
-import org.eclipse.che.ide.api.event.ModuleCreatedEvent;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
-import org.eclipse.che.ide.project.node.FolderReferenceNode;
-import org.eclipse.che.ide.project.shared.NodesResources;
-import org.eclipse.che.ide.projecttype.wizard.presenter.ProjectWizardPresenter;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 /** @author Artem Zatsarynnyy */
 @Singleton
-public class CreateModuleAction extends ProjectAction implements ModuleCreatedEvent.ModuleCreatedHandler {
+public class CreateModuleAction extends Action {
 
-    private final ProjectWizardPresenter      wizard;
-    private final AnalyticsEventLogger        eventLogger;
-    private final NewProjectExplorerPresenter projectExplorer;
+    private final ProjectWizardPresenter wizard;
+    private final AnalyticsEventLogger   eventLogger;
+    private final AppContext             appContext;
+    private final SelectionAgent         selectionAgent;
 
     @Inject
-    public CreateModuleAction(NodesResources resources,
+    public CreateModuleAction(Resources resources,
                               ProjectWizardPresenter wizard,
                               AnalyticsEventLogger eventLogger,
-                              NewProjectExplorerPresenter projectExplorer,
-                              EventBus eventBus) {
-        super("Create Module...", "Create module from existing folder", resources.moduleRoot());
+                              AppContext appContext,
+                              SelectionAgent selectionAgent) {
+        super("Create Module...", "Create module from existing folder", resources.project());
         this.wizard = wizard;
         this.eventLogger = eventLogger;
-        this.projectExplorer = projectExplorer;
-        eventBus.addHandler(ModuleCreatedEvent.getType(), this);
+        this.appContext = appContext;
+        this.selectionAgent = selectionAgent;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
-        FolderReferenceNode selectedFolder = getResourceBasedNode();
+        FolderNode selectedFolder = getSelectedFolder();
         if (selectedFolder != null) {
             wizard.show(selectedFolder.getData());
         }
     }
 
     @Override
-    protected void updateProjectAction(ActionEvent e) {
-        e.getPresentation().setEnabledAndVisible(getResourceBasedNode() != null);
+    public void update(ActionEvent e) {
+        e.getPresentation().setEnabledAndVisible(appContext.getCurrentProject() != null && getSelectedFolder() != null);
     }
 
     @Nullable
-    protected FolderReferenceNode getResourceBasedNode() {
-        List<?> selection = projectExplorer.getSelection().getAllElements();
-        //we should be sure that user selected single element to work with it
-        if (selection.isEmpty() || selection.size() > 1) {
-            return null;
+    private FolderNode getSelectedFolder() {
+        Selection<?> selection = selectionAgent.getSelection();
+        if (selection != null && selection.getFirstElement() != null) {
+            if (selection.getFirstElement() instanceof FolderNode) {
+                return (FolderNode)selection.getFirstElement();
+            }
         }
-
-        Object o = selection.get(0);
-
-        if (o instanceof FolderReferenceNode) {
-            return (FolderReferenceNode)o;
-        }
-
         return null;
-    }
-
-    @Override
-    public void onModuleCreated(ModuleCreatedEvent event) {
-        FolderReferenceNode selectedFolder = getResourceBasedNode();
-        if (selectedFolder != null && selectedFolder.getParent() != null) {
-            projectExplorer.reloadChildren(selectedFolder.getParent(), event.getModule());
-        }
     }
 }

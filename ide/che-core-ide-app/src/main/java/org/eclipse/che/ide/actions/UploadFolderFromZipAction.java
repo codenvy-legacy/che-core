@@ -70,7 +70,7 @@ public class UploadFolderFromZipAction extends AbstractPerspectiveAction {
         boolean enabled = false;
         Selection<?> selection = selectionAgent.getSelection();
         if (selection != null) {
-            enabled = selection.getHeadElement() != null;
+            enabled = selection.getFirstElement() != null;
         }
         event.getPresentation().setEnabled(enabled);
     }

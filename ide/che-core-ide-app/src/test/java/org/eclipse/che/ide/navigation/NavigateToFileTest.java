@@ -15,7 +15,6 @@ import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.event.FileEvent;
 import org.eclipse.che.ide.api.notification.NotificationManager;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 
 import org.eclipse.che.ide.navigation.NavigateToFilePresenter;
@@ -65,8 +64,6 @@ public class NavigateToFileTest {
     private DtoUnmarshallerFactory  dtoUnmarshallerFactory;
     @Mock
     private NotificationManager     notificationManager;
-    @Mock
-    private NewProjectExplorerPresenter projectExplorer;
 
     @Mock
     private CoreLocalizationConstant localizationConstant;
@@ -76,7 +73,7 @@ public class NavigateToFileTest {
         when(appContext.getCurrentProject()).thenReturn(project);
 
         presenter = new NavigateToFilePresenter(view, appContext, eventBus, messageBus, anyString(), dtoUnmarshallerFactory, dialogFactory,
-                                                localizationConstant, projectExplorer);
+                                                localizationConstant);
     }
 
     @Test

@@ -15,18 +15,16 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.ide.rest.RestContext;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.event.FileContentUpdateEvent;
+import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
 import org.eclipse.che.ide.api.notification.NotificationManager;
-import org.eclipse.che.ide.api.project.node.HasStorablePath;
-import org.eclipse.che.ide.api.project.node.Node;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
-import org.eclipse.che.ide.project.node.ResourceBasedNode;
-import org.eclipse.che.ide.rest.RestContext;
-
-import javax.annotation.Nullable;
-import java.util.List;
+import org.eclipse.che.ide.api.project.tree.generic.FileNode;
+import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
+import org.eclipse.che.ide.api.selection.Selection;
+import org.eclipse.che.ide.api.selection.SelectionAgent;
 
 /**
  * The purpose of this class is upload folder from zip
@@ -36,27 +34,27 @@ import java.util.List;
 public class UploadFolderFromZipPresenter implements UploadFolderFromZipView.ActionDelegate {
 
     private UploadFolderFromZipView view;
-    private final NewProjectExplorerPresenter projectExplorer;
-    private EditorAgent         editorAgent;
-    private String              restContext;
-    private String              workspaceId;
-    private EventBus            eventBus;
-    private NotificationManager notificationManager;
+    private EditorAgent             editorAgent;
+    private SelectionAgent          selectionAgent;
+    private String                  restContext;
+    private String                  workspaceId;
+    private EventBus                eventBus;
+    private NotificationManager     notificationManager;
 
     @Inject
     public UploadFolderFromZipPresenter(UploadFolderFromZipView view,
                                         @RestContext String restContext,
                                         @Named("workspaceId") String workspaceId,
+                                        SelectionAgent selectionAgent,
                                         EditorAgent editorAgent,
                                         EventBus eventBus,
-                                        NotificationManager notificationManager,
-                                        NewProjectExplorerPresenter projectExplorer) {
+                                        NotificationManager notificationManager) {
         this.restContext = restContext;
         this.workspaceId = workspaceId;
         this.editorAgent = editorAgent;
+        this.selectionAgent = selectionAgent;
         this.eventBus = eventBus;
         this.view = view;
-        this.projectExplorer = projectExplorer;
         this.view.setDelegate(this);
         this.view.setEnabledUploadButton(false);
         this.notificationManager = notificationManager;
@@ -77,7 +75,7 @@ public class UploadFolderFromZipPresenter implements UploadFolderFromZipView.Act
     @Override
     public void onSubmitComplete(String result) {
         view.setLoaderVisibility(false);
-        projectExplorer.reloadChildren(getResourceBasedNode());
+        eventBus.fireEvent(new RefreshProjectTreeEvent(getParent()));
 
         if (result != null && !result.isEmpty()) {
             view.closeDialog();
@@ -96,7 +94,7 @@ public class UploadFolderFromZipPresenter implements UploadFolderFromZipView.Act
     public void onUploadClicked() {
         view.setLoaderVisibility(true);
         view.setEncoding(FormPanel.ENCODING_MULTIPART);
-        view.setAction(restContext + "/project/" + workspaceId + "/upload/zipfolder/" + ((HasStorablePath)getResourceBasedNode()).getStorablePath());
+        view.setAction(restContext + "/project/" + workspaceId + "/upload/zipfolder/" + getParent().getPath());
         view.submit();
     }
 
@@ -108,30 +106,19 @@ public class UploadFolderFromZipPresenter implements UploadFolderFromZipView.Act
         view.setEnabledUploadButton(enabled);
     }
 
-    protected ResourceBasedNode<?> getResourceBasedNode() {
-        List<?> selection = projectExplorer.getSelection().getAllElements();
-        //we should be sure that user selected single element to work with it
-        if (selection != null && selection.isEmpty() || selection.size() > 1) {
-            return null;
-        }
-
-        Object o = selection.get(0);
-
-        if (o instanceof ResourceBasedNode<?>) {
-            ResourceBasedNode<?> node = (ResourceBasedNode<?>)o;
-            //it may be file node, so we should take parent node
-            if (node.isLeaf() && isResourceAndStorableNode(node.getParent())) {
-                return (ResourceBasedNode<?>)node.getParent();
+    private StorableNode getParent() {
+        Selection<?> selection = selectionAgent.getSelection();
+        if (selection != null) {
+            if (selection.getFirstElement() instanceof StorableNode) {
+                final StorableNode selectedNode = (StorableNode)selection.getFirstElement();
+                if (selectedNode instanceof FileNode) {
+                    return (StorableNode)selectedNode.getParent();
+                } else {
+                    return selectedNode;
+                }
             }
-
-            return isResourceAndStorableNode(node) ? node : null;
         }
-
         return null;
-    }
-
-    protected boolean isResourceAndStorableNode(@Nullable Node node) {
-        return node != null && node instanceof ResourceBasedNode<?> && node instanceof HasStorablePath;
     }
 
     private String parseMessage(String message) {
@@ -153,8 +140,8 @@ public class UploadFolderFromZipPresenter implements UploadFolderFromZipView.Act
     private void updateOpenedEditors() {
         for (EditorPartPresenter partPresenter : editorAgent.getOpenedEditors().values()) {
             String filePath = partPresenter.getEditorInput().getFile().getPath();
-            String path = ((HasStorablePath)getResourceBasedNode()).getStorablePath();
-            if (filePath.contains(path)) {
+            StorableNode parentNode = getParent();
+            if (parentNode != null && filePath.contains(parentNode.getPath())) {
                 eventBus.fireEvent(new FileContentUpdateEvent(filePath));
             }
         }

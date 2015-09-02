@@ -32,7 +32,6 @@ import java.util.List;
  *
  * @author Artem Zatsarynnyy
  */
-@Deprecated
 public class FolderNode extends ItemNode {
 
     @Inject

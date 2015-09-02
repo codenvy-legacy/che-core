@@ -10,9 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.document;
 
-import org.eclipse.che.api.promises.client.Operation;
-import org.eclipse.che.api.promises.client.OperationException;
-import org.eclipse.che.api.promises.client.PromiseError;
 import org.eclipse.che.ide.api.editor.EditorInput;
 import org.eclipse.che.ide.api.event.FileEvent;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
@@ -20,7 +17,6 @@ import org.eclipse.che.ide.util.loging.Log;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
 
-import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
 /**
@@ -36,10 +32,10 @@ public class DocumentStorageImpl implements DocumentStorage {
     }
 
     @Override
-    public void getDocument(@Nonnull final VirtualFile file, @Nonnull final EmbeddedDocumentCallback callback) {
-        file.getContent().then(new Operation<String>() {
+    public void getDocument(final VirtualFile file, final EmbeddedDocumentCallback callback) {
+        file.getContent(new AsyncCallback<String>() {
             @Override
-            public void apply(String result) throws OperationException {
+            public void onSuccess(final String result) {
                 Log.debug(DocumentStorageImpl.class, "Document retrieved (" + file.getPath() + ").");
                 try {
                     callback.onDocumentReceived(result);
@@ -47,27 +43,26 @@ public class DocumentStorageImpl implements DocumentStorage {
                     Log.warn(DocumentStorageImpl.class, "Exception during doc retrieve success callback: ", e);
                 }
             }
-        }).catchError(new Operation<PromiseError>() {
+
             @Override
-            public void apply(PromiseError arg) throws OperationException {
+            public void onFailure(final Throwable caught) {
                 try {
-                    callback.onDocumentLoadFailure(arg.getCause());
+                    callback.onDocumentLoadFailure(caught);
                 } catch (final Exception e) {
                     Log.warn(DocumentStorageImpl.class, "Exception during doc retrieve failure callback: ", e);
                 }
-                Log.error(DocumentStorageImpl.class, "Could not retrieve document (" + file.getPath() + ").", arg.getCause());
+                Log.error(DocumentStorageImpl.class, "Could not retrieve document (" + file.getPath() + ").", caught);
             }
         });
     }
 
     @Override
-    public void saveDocument(final EditorInput editorInput, @Nonnull final Document document,
-                             final boolean overwrite, @Nonnull final AsyncCallback<EditorInput> callback) {
+    public void saveDocument(final EditorInput editorInput, final Document document,
+                             final boolean overwrite, final AsyncCallback<EditorInput> callback) {
         final VirtualFile file = editorInput.getFile();
-
-        file.updateContent(document.getContents()).then(new Operation<Void>() {
+        file.updateContent(document.getContents(), new AsyncCallback<Void>() {
             @Override
-            public void apply(Void arg) throws OperationException {
+            public void onSuccess(Void result) {
                 Log.debug(DocumentStorageImpl.class, "Document saved (" + file.getPath() + ").");
                 DocumentStorageImpl.this.eventBus.fireEvent(new FileEvent(file, FileEvent.FileOperation.SAVE));
                 try {
@@ -76,12 +71,12 @@ public class DocumentStorageImpl implements DocumentStorage {
                     Log.warn(DocumentStorageImpl.class, "Exception during save success callback: ", e);
                 }
             }
-        }).catchError(new Operation<PromiseError>() {
+
             @Override
-            public void apply(PromiseError arg) throws OperationException {
-                Log.error(DocumentStorageImpl.class, "Document save failed (" + file.getPath() + ").", arg.getCause());
+            public void onFailure(Throwable caught) {
+                Log.error(DocumentStorageImpl.class, "Document save failed (" + file.getPath() + ").", caught);
                 try {
-                    callback.onFailure(arg.getCause());
+                    callback.onFailure(caught);
                 } catch (final Exception e) {
                     Log.warn(DocumentStorageImpl.class, "Exception during save failure callback: ", e);
                 }

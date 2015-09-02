@@ -19,8 +19,9 @@ import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
+import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
 import org.eclipse.che.ide.api.selection.Selection;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
+import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.part.projectexplorer.DeleteNodeHandler;
 
 import javax.annotation.Nonnull;
@@ -45,7 +46,7 @@ public class DeleteItemAction extends AbstractPerspectiveAction {
     @Inject
     public DeleteItemAction(Resources resources,
                             AnalyticsEventLogger eventLogger,
-                            NewProjectExplorerPresenter projectExplorer,
+                            SelectionAgent selectionAgent,
                             DeleteNodeHandler deleteNodeHandler, CoreLocalizationConstant localization, AppContext appContext) {
         super(Arrays.asList(PROJECT_PERSPECTIVE_ID),
               localization.deleteItemActionText(),
@@ -63,38 +64,14 @@ public class DeleteItemAction extends AbstractPerspectiveAction {
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
 
-        List<?> selection = projectExplorer.getSelection().getAllElements();
-
-        if (selection.size() == 1) {
-            Object o = selection.get(0);
-            if (o instanceof ResourceBasedNode<?>) {
-                projectExplorer.resetGoIntoMode();
-                ((ResourceBasedNode)o).delete();
+        Selection<?> selection = selectionAgent.getSelection();
+        if (selection != null && !selection.isEmpty() & selection.getHeadElement() instanceof StorableNode) {
+            if (selection.isSingleSelection()) {
+                deleteNodeHandler.delete((StorableNode)selection.getHeadElement());
             } else {
-                throw new IllegalArgumentException("Node isn't resource based.");
+                deleteNodeHandler.deleteNodes((List<StorableNode>)selection.getAllElements());
             }
-        } else {
-            Iterable<ResourceBasedNode<?>> nodes = Iterables.transform(selection, castNode());
-            doDelete(nodes);
         }
-    }
-
-    private Function<Object, ResourceBasedNode<?>> castNode() {
-        return new Function<Object, ResourceBasedNode<?>>() {
-            @Nullable
-            @Override
-            public ResourceBasedNode<?> apply(Object o) {
-                if (o instanceof ResourceBasedNode<?>) {
-                    return (ResourceBasedNode<?>)o;
-                }
-
-                throw new IllegalArgumentException("Node isn't resource based");
-            }
-        };
-    }
-
-    private void doDelete(Iterable<ResourceBasedNode<?>> nodes) {
-        Log.info(this.getClass(), "doDelete():103: " + "nodes: " + nodes);
     }
 
     /** {@inheritDoc} */
@@ -107,18 +84,10 @@ public class DeleteItemAction extends AbstractPerspectiveAction {
             return;
         }
 
-        Selection<?> selection = projectExplorer.getSelection();
-
-        if (selection == null) {
-            e.getPresentation().setEnabled(false);
-            return;
-        }
-
-        for (Object o : selection.getAllElements()) {
-            if (!(o instanceof ResourceBasedNode<?>)) {
-                e.getPresentation().setEnabled(false);
-                return;
-            }
+        boolean isEnabled = false;
+        Selection<?> selection = selectionAgent.getSelection();
+        if (selection != null && selection.getFirstElement() instanceof StorableNode) {
+            isEnabled = ((StorableNode)selection.getFirstElement()).isDeletable();
         }
         event.getPresentation().setEnabled(isEnabled);
     }

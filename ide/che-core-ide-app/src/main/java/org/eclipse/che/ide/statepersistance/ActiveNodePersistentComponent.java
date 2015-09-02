@@ -15,18 +15,22 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 import org.eclipse.che.ide.actions.SelectNodeAction;
+import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
-import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.api.project.tree.generic.FileNode;
 import org.eclipse.che.ide.dto.DtoFactory;
+import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerView;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
+import static org.eclipse.che.ide.actions.SelectNodeAction.SELECT_NODE_PARAM_ID;
 
 /**
  * @author Andrienko Alexander
@@ -38,16 +42,19 @@ public class ActiveNodePersistentComponent implements PersistenceComponent {
     private DtoFactory            dtoFactory;
     private ActionManager         actionManager;
     private SelectNodeAction      selectNodeAction;
+    private ProjectExplorerView   projectExplorerView;
 
     @Inject
     public ActiveNodePersistentComponent(Provider<EditorAgent> editorAgentProvider,
                                          DtoFactory dtoFactory,
                                          ActionManager actionManager,
-                                         SelectNodeAction selectNodeAction) {
+                                         SelectNodeAction selectNodeAction,
+                                         ProjectExplorerView projectExplorerView) {
         this.editorAgentProvider = editorAgentProvider;
         this.dtoFactory = dtoFactory;
         this.actionManager = actionManager;
         this.selectNodeAction = selectNodeAction;
+        this.projectExplorerView = projectExplorerView;
     }
 
     @Override
@@ -68,18 +75,18 @@ public class ActiveNodePersistentComponent implements PersistenceComponent {
             return actions;
         }
 
-//        Array<TreeNode<?>> openedNodes = projectExplorerView.getOpenedTreeNodes();
-//
-//        if (openedNodes != null && openedNodes.contains(parentNode)) {
-//            String path = virtualFile.getPath();
-//            path = path.replaceFirst(projectPath, "");
-//
-//            String openNodeActionId = actionManager.getId(selectNodeAction);
-//
-//            actions.add(dtoFactory.createDto(ActionDescriptor.class)
-//                                  .withId(openNodeActionId)
-//                                  .withParameters(Collections.singletonMap(SELECT_NODE_PARAM_ID, path)));
-//        }
+        List<TreeNode<?>> openedNodes = projectExplorerView.getOpenedTreeNodes();
+
+        if (openedNodes != null && openedNodes.contains(parentNode)) {
+            String path = virtualFile.getPath();
+            path = path.replaceFirst(projectPath, "");
+
+            String openNodeActionId = actionManager.getId(selectNodeAction);
+
+            actions.add(dtoFactory.createDto(ActionDescriptor.class)
+                                  .withId(openNodeActionId)
+                                  .withParameters(Collections.singletonMap(SELECT_NODE_PARAM_ID, path)));
+        }
 
         return actions;
     }

@@ -73,9 +73,8 @@ import org.eclipse.che.ide.api.parts.WorkBenchView;
 import org.eclipse.che.ide.api.parts.WorkspaceAgent;
 import org.eclipse.che.ide.api.preferences.PreferencePagePresenter;
 import org.eclipse.che.ide.api.preferences.PreferencesManager;
-import org.eclipse.che.ide.api.project.node.settings.SettingsProvider;
-import org.eclipse.che.ide.api.project.node.settings.impl.DummySettingsProvider;
 import org.eclipse.che.ide.api.project.tree.TreeStructureProviderRegistry;
+import org.eclipse.che.ide.api.project.tree.generic.NodeFactory;
 import org.eclipse.che.ide.api.project.type.ProjectTemplateRegistry;
 import org.eclipse.che.ide.api.project.type.ProjectTypeRegistry;
 import org.eclipse.che.ide.api.project.type.wizard.PreSelectedProjectTypeManager;
@@ -131,18 +130,13 @@ import org.eclipse.che.ide.part.console.ConsolePartView;
 import org.eclipse.che.ide.part.console.ConsolePartViewImpl;
 import org.eclipse.che.ide.part.editor.EditorPartStackPresenter;
 import org.eclipse.che.ide.part.editor.EditorPartStackView;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPart;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerView;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerViewImpl;
+import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerPartPresenter;
 import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerView;
 import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerViewImpl;
 import org.eclipse.che.ide.preferences.PreferencesManagerImpl;
 import org.eclipse.che.ide.preferences.PreferencesView;
 import org.eclipse.che.ide.preferences.PreferencesViewImpl;
 import org.eclipse.che.ide.privacy.PrivacyPresenter;
-import org.eclipse.che.ide.project.node.factory.NodeFactory;
-import org.eclipse.che.ide.project.node.NodeManager;
 import org.eclipse.che.ide.projectimport.wizard.ImportProjectNotificationSubscriberImpl;
 import org.eclipse.che.ide.projectimport.wizard.ImportWizardFactory;
 import org.eclipse.che.ide.projectimport.wizard.ImportWizardRegistryImpl;
@@ -348,11 +342,7 @@ public class CoreGinModule extends AbstractGinModule {
         // Parts
         bind(ConsolePart.class).to(ConsolePartPresenter.class).in(Singleton.class);
         bind(OutlinePart.class).to(OutlinePartPresenter.class).in(Singleton.class);
-        bind(NewProjectExplorerPart.class).to(NewProjectExplorerPresenter.class).in(Singleton.class);
-
-        install(new GinFactoryModuleBuilder().build(NodeFactory.class));
-        bind(NodeManager.class);
-
+        bind(ProjectExplorerPart.class).to(ProjectExplorerPartPresenter.class).in(Singleton.class);
         bind(ActionManager.class).to(ActionManagerImpl.class).in(Singleton.class);
     }
 
@@ -383,8 +373,7 @@ public class CoreGinModule extends AbstractGinModule {
         bind(NotificationManagerView.class).to(NotificationManagerViewImpl.class).in(Singleton.class);
 
         bind(EditorPartStackView.class);
-        bind(NewProjectExplorerView.class).to(NewProjectExplorerViewImpl.class).in(Singleton.class);
-        bind(SettingsProvider.class).to(DummySettingsProvider.class).in(Singleton.class);
+        bind(ProjectExplorerView.class).to(ProjectExplorerViewImpl.class).in(Singleton.class);
         bind(ConsolePartView.class).to(ConsolePartViewImpl.class).in(Singleton.class);
 
         bind(MessageDialogFooter.class);
@@ -428,7 +417,7 @@ public class CoreGinModule extends AbstractGinModule {
     /** Configure bindings for project's tree. */
     private void configureProjectTree() {
         bind(TreeStructureProviderRegistry.class).to(TreeStructureProviderRegistryImpl.class).in(Singleton.class);
-        install(new GinFactoryModuleBuilder().build(org.eclipse.che.ide.api.project.tree.generic.NodeFactory.class));
+        install(new GinFactoryModuleBuilder().build(NodeFactory.class));
     }
 
     @Provides

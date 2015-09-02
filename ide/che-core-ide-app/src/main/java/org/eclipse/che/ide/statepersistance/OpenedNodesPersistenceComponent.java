@@ -13,20 +13,19 @@ package org.eclipse.che.ide.statepersistance;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import org.eclipse.che.ide.actions.OpenNodeAction;
-import org.eclipse.che.ide.actions.SelectNodeAction;
-import org.eclipse.che.ide.api.action.ActionManager;
-import org.eclipse.che.ide.api.project.node.HasStorablePath;
-import org.eclipse.che.ide.api.project.node.Node;
+import org.eclipse.che.ide.api.project.tree.generic.FileNode;
 import org.eclipse.che.ide.dto.DtoFactory;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
+import org.eclipse.che.ide.actions.OpenNodeAction;
+import org.eclipse.che.ide.api.action.ActionManager;
+import org.eclipse.che.ide.api.project.tree.TreeNode;
+import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
 import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerView;
-import org.eclipse.che.ide.project.node.FileReferenceNode;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import static org.eclipse.che.ide.actions.OpenNodeAction.NODE_PARAM_ID;
 
 /**
  * @author Andrienko Alexander
@@ -34,50 +33,49 @@ import java.util.List;
 @Singleton
 public class OpenedNodesPersistenceComponent implements PersistenceComponent {
 
+    private final ProjectExplorerView projectExplorerView;
     private final OpenNodeAction openNodeAction;
-    private final ActionManager  actionManager;
-    private final DtoFactory     dtoFactory;
-    private final NewProjectExplorerPresenter projectExplorer;
+    private final ActionManager actionManager;
+    private final DtoFactory dtoFactory;
 
     @Inject
-    public OpenedNodesPersistenceComponent(ActionManager actionManager,
+    public OpenedNodesPersistenceComponent(ProjectExplorerView projectExplorerView,
+                                           ActionManager actionManager,
                                            OpenNodeAction openNodeAction,
-                                           DtoFactory dtoFactory,
-                                           NewProjectExplorerPresenter projectExplorer) {
+                                           DtoFactory dtoFactory) {
+        this.projectExplorerView = projectExplorerView;
         this.actionManager = actionManager;
         this.openNodeAction = openNodeAction;
         this.dtoFactory = dtoFactory;
-        this.projectExplorer = projectExplorer;
     }
 
     @Override
     public List<ActionDescriptor> getActions(String projectPath) {
-//        List<Node> visible = projectExplorer.getVisibleNodes();
+        List<TreeNode<?>> openedNodes = projectExplorerView.getOpenedTreeNodes();
         final List<ActionDescriptor> actions = new ArrayList<>();
 
-//        if (visible == null || visible.isEmpty()) {
-//            return actions;
-//        }
-//
-//        String actionId = actionManager.getId(openNodeAction);
-//
-//        for (Node openedNode : visible) {
-//            if (openedNode instanceof HasStorablePath && !(openedNode instanceof FileReferenceNode)) {
-//                String relNodePath = ((HasStorablePath)openedNode).getStorablePath();
-//
-//                relNodePath = relNodePath.replaceFirst(projectPath, "");
-//
-//                if (relNodePath.equals("")) {
-//                    continue;
-//                }
-//
-//                ActionDescriptor actionDescriptor = dtoFactory.createDto(ActionDescriptor.class)
-//                                                              .withId(actionId)
-//                                                              .withParameters(
-//                                                                      Collections.singletonMap(SelectNodeAction.NODE_PARAM_ID, relNodePath));
-//                actions.add(actionDescriptor);
-//            }
-//        }
+        if (openedNodes == null || openedNodes.isEmpty()) {
+            return actions;
+        }
+
+        String actionId = actionManager.getId(openNodeAction);
+
+        for (TreeNode<?> openedNode: openedNodes) {
+            if (openedNode instanceof StorableNode && !(openedNode instanceof FileNode)) {
+                String relNodePath = ((StorableNode)openedNode).getPath();
+
+                relNodePath = relNodePath.replaceFirst(projectPath, "");
+
+                if (relNodePath.equals("")) {
+                    continue;
+                }
+
+                ActionDescriptor actionDescriptor = dtoFactory.createDto(ActionDescriptor.class)
+                                                              .withId(actionId)
+                                                              .withParameters(Collections.singletonMap(NODE_PARAM_ID, relNodePath));
+                actions.add(actionDescriptor);
+            }
+        }
         return actions;
     }
 

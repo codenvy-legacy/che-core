@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.project.tree;
 
-import org.eclipse.che.api.promises.client.Promise;
-import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
 import org.eclipse.che.ide.api.project.tree.generic.ProjectNode;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -43,8 +41,8 @@ public interface VirtualFile {
     /** if user doesn't have wright rights, or file comes from external sources thad doesn't support modifying file content*/
     boolean isReadOnly();
 
-    @Nullable
-    HasProjectDescriptor getProject();
+    @Nonnull
+    ProjectNode getProject();
 
     /**
      * Some file type can't represent their content as string.
@@ -56,7 +54,7 @@ public interface VirtualFile {
     String getContentUrl();
 
     /** * Get content of the file which this node represents. */
-    Promise<String> getContent();
+    void getContent(AsyncCallback<String> callback);
 
     /**
      * Update content of the file.
@@ -66,6 +64,6 @@ public interface VirtualFile {
      * @param callback
      *         callback to return retrieved content
      */
-     Promise<Void> updateContent(String content);
+     void updateContent(String content, AsyncCallback<Void> callback);
 
 }

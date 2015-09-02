@@ -90,10 +90,6 @@ public class Project {
         return getMisc().getModificationDate();
     }
 
-    public String getContentRoot() throws ServerException {
-        return getMisc().getContentRoot();
-    }
-
     /** @see ProjectMisc */
     public ProjectMisc getMisc() throws ServerException {
         return manager.getProjectMisc(this);

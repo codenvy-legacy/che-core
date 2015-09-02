@@ -15,7 +15,6 @@ package org.eclipse.che.ide.api.project.tree.generic;
  *
  * @author Evgen Vidolob
  */
-@Deprecated
 public interface Openable {
     /**
      * Closes this element.

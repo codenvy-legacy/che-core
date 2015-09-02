@@ -17,13 +17,8 @@
     <ui:style>
 
         .controlPanel {
-            float: right;
+            float: left;
             overflow: hidden;
-
-            position: relative;
-            top: 1px;
-            margin: 2px 0 0 2px;
-            padding: 0 3px 0 3px;
 
             -moz-box-sizing: border-box !important;
             box-sizing: border-box !important;
@@ -33,28 +28,35 @@
         }
 
         .button {
-            padding: 0 3px 0 3px;
-            margin: 1px 0 1px 0;
-            cursor: pointer;
+            bottom: 2px;
+            left: 2px;
+            overflow: hidden;
+            position: absolute;
+            right: 4px;
+            top: 4px;
+            border-radius: 2px;
         }
 
-        .button:HOVER,
-        .button:ACTIVE {
-            -webkit-box-shadow: 0 0 2px rgba(50, 50, 50, 1);
-            -moz-box-shadow: 0 0 2px rgba(50, 50, 50, 1);
-            box-shadow: 0 0 2px rgba(50, 50, 50, 1);
-            border-radius: 2px;
+        .button:HOVER {
+            -webkit-box-shadow: 0px 0px 2px rgba(50, 50, 50, 1);
+            -moz-box-shadow: 0px 0px 2px rgba(50, 50, 50, 1);
+            box-shadow: 0px 0px 2px rgba(50, 50, 50, 1);
         }
 
         .button:ACTIVE {
             -webkit-transform: scale(0.9);
             -moz-transform: scale(0.9);
             transform: scale(0.9);
-            background-color: rgb(97, 125, 145);
         }
 
         .iconPanel {
-         }
+            bottom: 0px;
+            left: 0px;
+            overflow: hidden;
+            position: absolute;
+            right: 0px;
+            top: 0px;
+        }
 
     </ui:style>
 

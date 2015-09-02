@@ -22,7 +22,6 @@ import java.util.List;
  *
  * @author Artem Zatsarynnyy
  */
-@Deprecated
 public class ProjectTreeNodeDataAdapter implements NodeDataAdapter<TreeNode<?>> {
 
     /** {@inheritDoc} */

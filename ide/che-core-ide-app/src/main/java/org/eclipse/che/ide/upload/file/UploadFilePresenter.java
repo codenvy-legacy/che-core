@@ -10,21 +10,19 @@
  *******************************************************************************/
 package org.eclipse.che.ide.upload.file;
 
+import org.eclipse.che.ide.api.event.FileContentUpdateEvent;
+import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
+import org.eclipse.che.ide.api.notification.NotificationManager;
+import org.eclipse.che.ide.api.project.tree.generic.FileNode;
+import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
+import org.eclipse.che.ide.api.selection.Selection;
+import org.eclipse.che.ide.api.selection.SelectionAgent;
+import org.eclipse.che.ide.rest.RestContext;
+
 import com.google.gwt.user.client.ui.FormPanel;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.google.web.bindery.event.shared.EventBus;
-
-import org.eclipse.che.ide.api.event.FileContentUpdateEvent;
-import org.eclipse.che.ide.api.notification.NotificationManager;
-import org.eclipse.che.ide.api.project.node.HasStorablePath;
-import org.eclipse.che.ide.api.project.node.Node;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
-import org.eclipse.che.ide.project.node.ResourceBasedNode;
-import org.eclipse.che.ide.rest.RestContext;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 /**
  * The purpose of this class is upload file
@@ -33,26 +31,26 @@ import java.util.List;
  */
 public class UploadFilePresenter implements UploadFileView.ActionDelegate {
 
-    private UploadFileView              view;
-    private String                      restContext;
-    private String                      workspaceId;
-    private EventBus                    eventBus;
-    private NotificationManager         notificationManager;
-    private NewProjectExplorerPresenter projectExplorer;
+    private UploadFileView      view;
+    private SelectionAgent      selectionAgent;
+    private String              restContext;
+    private String              workspaceId;
+    private EventBus            eventBus;
+    private NotificationManager notificationManager;
 
     @Inject
     public UploadFilePresenter(UploadFileView view,
-                               @RestContext String restContext,
+                              @RestContext String restContext,
                                @Named("workspaceId") String workspaceId,
+                               SelectionAgent selectionAgent,
                                EventBus eventBus,
-                               NotificationManager notificationManager,
-                               NewProjectExplorerPresenter projectExplorer) {
+                               NotificationManager notificationManager) {
 
         this.restContext = restContext;
         this.workspaceId = workspaceId;
+        this.selectionAgent = selectionAgent;
         this.eventBus = eventBus;
         this.view = view;
-        this.projectExplorer = projectExplorer;
         this.view.setDelegate(this);
         this.view.setEnabledUploadButton(false);
         this.notificationManager = notificationManager;
@@ -72,7 +70,7 @@ public class UploadFilePresenter implements UploadFileView.ActionDelegate {
     /** {@inheritDoc} */
     @Override
     public void onSubmitComplete(String result) {
-        projectExplorer.reloadChildren(getResourceBasedNode());
+        eventBus.fireEvent(new RefreshProjectTreeEvent(getParent()));
         if (result != null && !result.isEmpty()) {
             view.closeDialog();
             notificationManager.showError(parseMessage(result));
@@ -80,7 +78,7 @@ public class UploadFilePresenter implements UploadFileView.ActionDelegate {
         }
 
         if (view.isOverwriteFileSelected()) {
-            String path = ((HasStorablePath)getResourceBasedNode()).getStorablePath() + "/" + view.getFileName();
+            String path = getParent().getPath() + "/" + view.getFileName();
             eventBus.fireEvent(new FileContentUpdateEvent(path));
         }
         view.closeDialog();
@@ -90,7 +88,7 @@ public class UploadFilePresenter implements UploadFileView.ActionDelegate {
     @Override
     public void onUploadClicked() {
         view.setEncoding(FormPanel.ENCODING_MULTIPART);
-        view.setAction(restContext + "/project/" + workspaceId + "/uploadfile" + ((HasStorablePath)getResourceBasedNode()).getStorablePath());
+        view.setAction(restContext + "/project/" + workspaceId + "/uploadfile" + getParent().getPath());
         view.submit();
     }
 
@@ -102,30 +100,19 @@ public class UploadFilePresenter implements UploadFileView.ActionDelegate {
         view.setEnabledUploadButton(enabled);
     }
 
-    protected ResourceBasedNode<?> getResourceBasedNode() {
-        List<?> selection = projectExplorer.getSelection().getAllElements();
-        //we should be sure that user selected single element to work with it
-        if (selection != null && selection.isEmpty() || selection.size() > 1) {
-            return null;
-        }
-
-        Object o = selection.get(0);
-
-        if (o instanceof ResourceBasedNode<?>) {
-            ResourceBasedNode<?> node = (ResourceBasedNode<?>)o;
-            //it may be file node, so we should take parent node
-            if (node.isLeaf() && isResourceAndStorableNode(node.getParent())) {
-                return (ResourceBasedNode<?>)node.getParent();
+    private StorableNode getParent() {
+        Selection<?> selection = selectionAgent.getSelection();
+        if (selection != null) {
+            if (selection.getFirstElement() instanceof StorableNode) {
+                final StorableNode selectedNode = (StorableNode)selection.getFirstElement();
+                if (selectedNode instanceof FileNode) {
+                    return (StorableNode)selectedNode.getParent();
+                } else {
+                    return selectedNode;
+                }
             }
-
-            return isResourceAndStorableNode(node) ? node : null;
         }
-
         return null;
-    }
-
-    protected boolean isResourceAndStorableNode(@Nullable Node node) {
-        return node != null && node instanceof ResourceBasedNode<?> && node instanceof HasStorablePath;
     }
 
     private String parseMessage(String message) {

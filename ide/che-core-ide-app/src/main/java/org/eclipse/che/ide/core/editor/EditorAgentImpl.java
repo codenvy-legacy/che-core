@@ -25,9 +25,13 @@ import org.eclipse.che.ide.api.editor.EditorProvider;
 import org.eclipse.che.ide.api.editor.EditorRegistry;
 import org.eclipse.che.ide.api.event.ActivePartChangedEvent;
 import org.eclipse.che.ide.api.event.ActivePartChangedHandler;
+import org.eclipse.che.ide.api.event.DeleteModuleEvent;
+import org.eclipse.che.ide.api.event.DeleteModuleEventHandler;
 import org.eclipse.che.ide.api.event.FileEvent;
 import org.eclipse.che.ide.api.event.FileEvent.FileOperation;
 import org.eclipse.che.ide.api.event.FileEventHandler;
+import org.eclipse.che.ide.api.event.ItemEvent;
+import org.eclipse.che.ide.api.event.ItemHandler;
 import org.eclipse.che.ide.api.event.WindowActionEvent;
 import org.eclipse.che.ide.api.event.WindowActionHandler;
 import org.eclipse.che.ide.api.filetypes.FileType;
@@ -38,22 +42,21 @@ import org.eclipse.che.ide.api.parts.PartPresenter;
 import org.eclipse.che.ide.api.parts.PropertyListener;
 import org.eclipse.che.ide.api.parts.WorkspaceAgent;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
+import org.eclipse.che.ide.api.project.tree.generic.FolderNode;
+import org.eclipse.che.ide.api.project.tree.generic.ItemNode;
+import org.eclipse.che.ide.api.project.tree.generic.ProjectNode;
 import org.eclipse.che.ide.api.texteditor.HasReadOnlyProperty;
-import org.eclipse.che.ide.project.event.ResourceNodeDeletedEvent;
-import org.eclipse.che.ide.project.event.ResourceNodeRenamedEvent;
-import org.eclipse.che.ide.project.node.FileReferenceNode;
-import org.eclipse.che.ide.project.node.FolderReferenceNode;
-import org.eclipse.che.ide.project.node.ModuleDescriptorNode;
-import org.eclipse.che.ide.project.node.ResourceBasedNode;
 import org.eclipse.che.ide.util.loging.Log;
 
 import javax.annotation.Nonnull;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
 import static org.eclipse.che.ide.api.event.FileEvent.FileOperation.CLOSE;
+import static org.eclipse.che.ide.api.event.ItemEvent.ItemOperation.DELETED;
 import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
 import static org.eclipse.che.ide.api.notification.Notification.Type.INFO;
 import static org.eclipse.che.ide.api.parts.PartStackType.EDITING;
@@ -63,14 +66,54 @@ import static org.eclipse.che.ide.api.parts.PartStackType.EDITING;
 public class EditorAgentImpl implements EditorAgent {
 
     private final NavigableMap<String, EditorPartPresenter> openedEditors;
+    /** Used to notify {@link EditorAgentImpl} that editor has closed */
+    private final EditorPartCloseHandler editorClosed     = new EditorPartCloseHandler() {
+        @Override
+        public void onClose(EditorPartPresenter editor) {
+            editorClosed(editor);
+        }
+    };
+    private final FileEventHandler       fileEventHandler = new FileEventHandler() {
+        @Override
+        public void onFileOperation(final FileEvent event) {
+            if (event.getOperationType() == FileOperation.OPEN) {
+                openEditor(event.getFile());
+            } else if (event.getOperationType() == CLOSE) {
+                // close associated editor. OR it can be closed itself TODO
+            }
+        }
+    };
     private final EventBus                  eventBus;
     private final WorkspaceAgent            workspace;
     private       List<EditorPartPresenter> dirtyEditors;
     private       FileTypeRegistry          fileTypeRegistry;
     private       EditorRegistry            editorRegistry;
     private       EditorPartPresenter       activeEditor;
+    private final ActivePartChangedHandler activePartChangedHandler = new ActivePartChangedHandler() {
+        @Override
+        public void onActivePartChanged(ActivePartChangedEvent event) {
+            if (event.getActivePart() instanceof EditorPartPresenter) {
+                activeEditor = (EditorPartPresenter)event.getActivePart();
+                activeEditor.activate();
+            }
+        }
+    };
     private NotificationManager      notificationManager;
     private CoreLocalizationConstant coreLocalizationConstant;
+    private final WindowActionHandler windowActionHandler = new WindowActionHandler() {
+        @Override
+        public void onWindowClosing(final WindowActionEvent event) {
+            for (EditorPartPresenter editorPartPresenter : openedEditors.values()) {
+                if (editorPartPresenter.isDirty()) {
+                    event.setMessage(coreLocalizationConstant.changesMayBeLost());
+                }
+            }
+        }
+
+        @Override
+        public void onWindowClosed(WindowActionEvent event) {
+        }
+    };
 
     @Inject
     public EditorAgentImpl(EventBus eventBus,
@@ -95,100 +138,42 @@ public class EditorAgentImpl implements EditorAgent {
         eventBus.addHandler(ActivePartChangedEvent.TYPE, activePartChangedHandler);
         eventBus.addHandler(FileEvent.TYPE, fileEventHandler);
         eventBus.addHandler(WindowActionEvent.TYPE, windowActionHandler);
-
-        eventBus.addHandler(ResourceNodeDeletedEvent.getType(), new ResourceNodeDeletedEvent.ResourceNodeDeletedHandler() {
+        eventBus.addHandler(ItemEvent.TYPE, new ItemHandler() {
             @Override
-            public void onResourceEvent(ResourceNodeDeletedEvent event) {
-                ResourceBasedNode node = event.getNode();
-
-                if (node instanceof FileReferenceNode) {
-                    for (EditorPartPresenter editor : getOpenedEditors().values()) {
-                        VirtualFile deletedVFile = (VirtualFile)node;
-                        if (deletedVFile.getPath().equals(editor.getEditorInput().getFile().getPath())) {
-                            eventBus.fireEvent(new FileEvent(editor.getEditorInput().getFile(), CLOSE));
-                        }
-                    }
-                } else if (node instanceof FolderReferenceNode) {
-                    for (EditorPartPresenter editor : getOpenedEditors().values()) {
-                        if (editor.getEditorInput().getFile().getPath().startsWith(((FolderReferenceNode)node).getStorablePath())) {
-                            eventBus.fireEvent(new FileEvent(editor.getEditorInput().getFile(), CLOSE));
-                        }
-                    }
-                } else if (node instanceof ModuleDescriptorNode) {
-                    for (EditorPartPresenter editor : getOpenedEditors().values()) {
-                        VirtualFile virtualFile = editor.getEditorInput().getFile();
-                        if (virtualFile.getProject() != null
-                            && virtualFile.getProject().getProjectDescriptor().equals(node.getProjectDescriptor())) {
-                            eventBus.fireEvent(new FileEvent(virtualFile, CLOSE));
-                        }
-                    }
+            public void onItem(ItemEvent event) {
+                final ItemNode item = event.getItem();
+                if (event.getOperation() == DELETED && item instanceof FolderNode) {
+                    closeAllFilesByPath(item.getPath());
                 }
             }
         });
-
-        eventBus.addHandler(ResourceNodeRenamedEvent.getType(), new ResourceNodeRenamedEvent.ResourceNodeRenamedHandler() {
+        eventBus.addHandler(DeleteModuleEvent.TYPE, new DeleteModuleEventHandler() {
             @Override
-            public void onResourceRenamedEvent(ResourceNodeRenamedEvent event) {
-                if (event.getNode() instanceof FileReferenceNode) {
-
-                    FileReferenceNode fileReferenceNode = (FileReferenceNode)event.getNode();
-
-                    String oldPath = fileReferenceNode.getPath();
-
-                    if (event.getNewDataObject() instanceof ItemReference) {
-                        fileReferenceNode.setData((ItemReference)event.getNewDataObject());
-                    }
-
-                    updateEditorNode(oldPath, fileReferenceNode);
-                }
+            public void onModuleDeleted(DeleteModuleEvent event) {
+                ProjectNode projectNode = event.getModule();
+                closeAllFilesByModule(projectNode);
             }
         });
-
     }
 
-    /** Used to notify {@link EditorAgentImpl} that editor has closed */
-    private final EditorPartCloseHandler editorClosed     = new EditorPartCloseHandler() {
-        @Override
-        public void onClose(EditorPartPresenter editor) {
-            editorClosed(editor);
-        }
-    };
+    private void closeAllFilesByModule(ProjectNode projectNode) {
+        for (EditorPartPresenter editor : getOpenedEditors().values()) {
+            VirtualFile virtualFile = editor.getEditorInput().getFile();
+            ProjectNode projectParent = virtualFile.getProject();
 
-    private final FileEventHandler       fileEventHandler = new FileEventHandler() {
-        @Override
-        public void onFileOperation(final FileEvent event) {
-            if (event.getOperationType() == FileOperation.OPEN) {
-                openEditor(event.getFile());
-            } else if (event.getOperationType() == CLOSE) {
-                // close associated editor. OR it can be closed itself TODO
+            if (projectParent.equals(projectNode)) {
+                eventBus.fireEvent(new FileEvent(virtualFile, CLOSE));
             }
         }
-    };
+    }
 
-    private final ActivePartChangedHandler activePartChangedHandler = new ActivePartChangedHandler() {
-        @Override
-        public void onActivePartChanged(ActivePartChangedEvent event) {
-            if (event.getActivePart() instanceof EditorPartPresenter) {
-                activeEditor = (EditorPartPresenter)event.getActivePart();
-                activeEditor.activate();
+    private void closeAllFilesByPath(String path) {
+        for (EditorPartPresenter editor : getOpenedEditors().values()) {
+            if (editor.getEditorInput().getFile().getPath().startsWith(path)) {
+                eventBus.fireEvent(new FileEvent(editor.getEditorInput().getFile(), CLOSE));
             }
         }
-    };
-
-    private final WindowActionHandler windowActionHandler = new WindowActionHandler() {
-        @Override
-        public void onWindowClosing(final WindowActionEvent event) {
-            for (EditorPartPresenter editorPartPresenter : openedEditors.values()) {
-                if (editorPartPresenter.isDirty()) {
-                    event.setMessage(coreLocalizationConstant.changesMayBeLost());
-                }
-            }
-        }
-
-        @Override
-        public void onWindowClosed(WindowActionEvent event) {
-        }
-    };
+    }
 
     /** {@inheritDoc} */
     @Override
@@ -314,8 +299,6 @@ public class EditorAgentImpl implements EditorAgent {
             }
         });
     }
-
-    //TODO highly recommend to refactor or remove this method
 
     /** {@inheritDoc} */
     @Override

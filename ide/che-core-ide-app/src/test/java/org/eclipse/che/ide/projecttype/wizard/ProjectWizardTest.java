@@ -25,7 +25,6 @@ import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode;
 import org.eclipse.che.ide.api.wizard.Wizard;
 import org.eclipse.che.ide.dto.DtoFactory;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.ui.dialogs.CancelCallback;
@@ -92,8 +91,6 @@ public class ProjectWizardTest {
     private Wizard.CompleteCallback  completeCallback;
     @Mock
     private ConfirmDialog            confirmDialog;
-    @Mock
-    private NewProjectExplorerPresenter projectExplorer;
 
 
     private ProjectWizard wizard;
@@ -251,7 +248,6 @@ public class ProjectWizardTest {
                                    dtoFactory,
                                    dialogFactory,
                                    eventBus,
-                                   appContext,
-                                   projectExplorer);
+                                   appContext);
     }
 }

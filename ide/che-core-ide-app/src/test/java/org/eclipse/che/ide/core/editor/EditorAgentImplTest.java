@@ -18,20 +18,31 @@ import org.eclipse.che.ide.api.editor.EditorInput;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.editor.EditorProvider;
 import org.eclipse.che.ide.api.editor.EditorRegistry;
+import org.eclipse.che.ide.api.event.DeleteModuleEvent;
+import org.eclipse.che.ide.api.event.DeleteModuleEventHandler;
+import org.eclipse.che.ide.api.event.FileEvent;
 import org.eclipse.che.ide.api.filetypes.FileType;
 import org.eclipse.che.ide.api.filetypes.FileTypeRegistry;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.parts.WorkspaceAgent;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
+import org.eclipse.che.ide.api.project.tree.generic.FileNode;
+import org.eclipse.che.ide.api.project.tree.generic.ModuleNode;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -66,15 +77,18 @@ public class EditorAgentImplTest {
     @Mock
     private FileType                       fileType;
     @Mock
-    private VirtualFile                       newFileNode;
+    private FileNode                       newFileNode;
     @Mock
-    private VirtualFile                       fileNode2;
+    private FileNode                       fileNode2;
     @Mock
     private EditorProvider                 editorProvider;
     @Mock
     private EditorPartPresenter            editor;
     @Mock
     private EditorInput                    editorInput;
+
+    @Captor
+    private ArgumentCaptor<DeleteModuleEventHandler> deleteModuleHandlerCaptor;
 
     @InjectMocks
     private EditorAgentImpl editorAgent;
@@ -111,5 +125,40 @@ public class EditorAgentImplTest {
         editorAgent.updateEditorNode(TEXT, newFileNode);
 
         verifyNoMoreInteractions(editor, newFileNode, editorInput);
+    }
+
+    @Test
+    public void filesShouldBeClosedAfterDeletionModule() {
+        final String modulePath = "/Project/module1";
+        final String filePath = modulePath + "/someFile";
+        final String jarFilePath = "com.oracle.someFile";
+
+        DeleteModuleEvent event = mock(DeleteModuleEvent.class);
+
+        ModuleNode moduleNode = mock(ModuleNode.class);
+
+        when(event.getModule()).thenReturn(moduleNode);
+        when(moduleNode.getPath()).thenReturn(modulePath);
+        when(newFileNode.getPath()).thenReturn(filePath);
+        when(newFileNode.getProject()).thenReturn(moduleNode);
+        when(fileNode2.getPath()).thenReturn(jarFilePath);
+        when(fileNode2.getProject()).thenReturn(moduleNode);
+        when(editorInput.getFile()).thenReturn(newFileNode).thenReturn(fileNode2);
+
+        editorAgent.openEditor(newFileNode);
+        editorAgent.openEditor(fileNode2);
+
+        assertThat(editorAgent.getOpenedEditors().size(), is(2));
+
+        //close opened files for deleted module
+        verify(eventBus).addHandler(eq(DeleteModuleEvent.TYPE), deleteModuleHandlerCaptor.capture());
+        deleteModuleHandlerCaptor.getValue().onModuleDeleted(event);
+
+        verify(event).getModule();
+        verify(editor, times(2)).getEditorInput();
+        verify(editorInput, times(2)).getFile();
+        verify(newFileNode).getProject();
+        verify(fileNode2).getProject();
+        verify(eventBus, times(2)).fireEvent(any(FileEvent.class));
     }
 }

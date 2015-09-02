@@ -82,11 +82,11 @@ public abstract class BaseView<T extends BaseActionDelegate> extends Composite i
             }
         });
         toolbarHeader.addWest(titleLabel, 200);
-        toolbarHeader.addEast(minimizeButton, 20);
+        toolbarHeader.addEast(minimizeButton, 29);
 
         menuPanel = new FlowPanel();
         menuPanel.addStyleName(resources.partStackCss().headerMenuButton());
-        toolbarHeader.addEast(menuPanel, 75);
+        toolbarHeader.addEast(menuPanel, 20);
 
         toolBar.addNorth(toolbarHeader, 20);
     }

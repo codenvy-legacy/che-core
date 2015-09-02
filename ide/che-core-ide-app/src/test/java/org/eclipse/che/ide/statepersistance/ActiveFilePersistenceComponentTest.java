@@ -17,7 +17,7 @@ import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorInput;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
-import org.eclipse.che.ide.api.project.tree.VirtualFile;
+import org.eclipse.che.ide.api.project.tree.generic.FileNode;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 import org.junit.Before;
@@ -108,7 +108,7 @@ public class ActiveFilePersistenceComponentTest {
     }
 
     private void configureOpenedEditors() {
-        NavigableMap<String, EditorPartPresenter> openedEditors = new TreeMap<>(); //TODO do we really need treemap?
+        NavigableMap<String, EditorPartPresenter> openedEditors = new TreeMap<>();
         when(editorAgent.getOpenedEditors()).thenReturn(openedEditors);
 
         EditorPartPresenter editorPartPresenter = mock(EditorPartPresenter.class);
@@ -122,7 +122,7 @@ public class ActiveFilePersistenceComponentTest {
         EditorInput editorInput = mock(EditorInput.class);
         when(activeEditor.getEditorInput()).thenReturn(editorInput);
 
-        VirtualFile file = mock(VirtualFile.class);
+        FileNode file = mock(FileNode.class);
         when(file.getPath()).thenReturn(activeFilePath);
         when(editorInput.getFile()).thenReturn(file);
     }

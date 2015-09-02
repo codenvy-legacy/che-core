@@ -156,18 +156,18 @@ public class GenericTreeStructure implements TreeStructure {
         return getNodeFactory().newProjectNode(null, data, this);
     }
 
-//    /**
-//     * Creates a new {@link ModuleNode} owned by this tree with the specified associated {@code data}.
-//     *
-//     * @param parent
-//     *         the parent node
-//     * @param data
-//     *         the associated {@link ProjectDescriptor}
-//     * @return a new {@link ModuleNode}
-//     */
-//    public ModuleNode newModuleNode(@Nonnull TreeNode parent, @Nonnull ProjectDescriptor data) {
-//        return getNodeFactory().newModuleNode(parent, data, this);
-//    }
+    /**
+     * Creates a new {@link ModuleNode} owned by this tree with the specified associated {@code data}.
+     *
+     * @param parent
+     *         the parent node
+     * @param data
+     *         the associated {@link ProjectDescriptor}
+     * @return a new {@link ModuleNode}
+     */
+    public ModuleNode newModuleNode(@Nonnull TreeNode parent, @Nonnull ProjectDescriptor data) {
+        return getNodeFactory().newModuleNode(parent, data, this);
+    }
 
     /**
      * Creates a new {@link FileNode} owned by this tree

@@ -23,15 +23,17 @@ import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
-import org.eclipse.che.ide.api.project.node.resource.SupportRename;
+import org.eclipse.che.ide.api.notification.Notification;
+import org.eclipse.che.ide.api.notification.NotificationManager;
+import org.eclipse.che.ide.api.project.tree.AbstractTreeNode;
+import org.eclipse.che.ide.api.project.tree.TreeNode;
+import org.eclipse.che.ide.api.project.tree.generic.FileNode;
+import org.eclipse.che.ide.api.project.tree.generic.FolderNode;
+import org.eclipse.che.ide.api.project.tree.generic.ProjectNode;
+import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
 import org.eclipse.che.ide.api.selection.Selection;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
-import org.eclipse.che.ide.project.node.FileReferenceNode;
-import org.eclipse.che.ide.project.node.FolderReferenceNode;
-import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
-import org.eclipse.che.ide.project.node.ProjectReferenceNode;
-import org.eclipse.che.ide.project.node.ResourceBasedNode;
+import org.eclipse.che.ide.api.selection.SelectionAgent;
+import org.eclipse.che.ide.part.projectexplorer.ProjectListStructure;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.Unmarshallable;
@@ -73,7 +75,8 @@ public class RenameItemAction extends AbstractPerspectiveAction {
     @Inject
     public RenameItemAction(Resources resources,
                             AnalyticsEventLogger eventLogger,
-                            NewProjectExplorerPresenter projectExplorer,
+                            SelectionAgent selectionAgent,
+                            NotificationManager notificationManager,
                             CoreLocalizationConstant localization,
                             DialogFactory dialogFactory,
                             AppContext appContext) {
@@ -84,6 +87,7 @@ public class RenameItemAction extends AbstractPerspectiveAction {
               resources.rename());
         this.selectionAgent = selectionAgent;
         this.eventLogger = eventLogger;
+        this.notificationManager = notificationManager;
         this.localization = localization;
         this.dialogFactory = dialogFactory;
         this.appContext = appContext;
@@ -97,8 +101,8 @@ public class RenameItemAction extends AbstractPerspectiveAction {
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
 
-        Selection<?> selection = projectExplorer.getSelection();
-        if (selection.isEmpty()) {
+        Selection<?> selection = selectionAgent.getSelection();
+        if (selection == null) {
             return;
         }
         final StorableNode selectedNode = (StorableNode)selection.getHeadElement();
@@ -152,7 +156,7 @@ public class RenameItemAction extends AbstractPerspectiveAction {
      *
      * @param node node to rename
      */
-    private void renameNode(final ResourceBasedNode<?> node) {
+    private void renameNode(final StorableNode node) {
         final InputCallback inputCallback = new InputCallback() {
             @Override
             public void accepted(final String value) {
@@ -180,7 +184,7 @@ public class RenameItemAction extends AbstractPerspectiveAction {
      * @param inputCallback
      * @param cancelCallback
      */
-    public void askForNewName(final ResourceBasedNode<?> node, final InputCallback inputCallback, final CancelCallback cancelCallback) {
+    public void askForNewName(final StorableNode node, final InputCallback inputCallback, final CancelCallback cancelCallback) {
         final int selectionLength = node.getName().indexOf('.') >= 0
                 ? node.getName().lastIndexOf('.')
                 : node.getName().length();
@@ -188,11 +192,11 @@ public class RenameItemAction extends AbstractPerspectiveAction {
         InputDialog inputDialog = dialogFactory.createInputDialog(getDialogTitle(node),
                 localization.renameDialogNewNameLabel(),
                 node.getName(), 0, selectionLength, inputCallback, null);
-        if (node instanceof FileReferenceNode) {
+        if (node instanceof FileNode) {
             inputDialog.withValidator(fileNameValidator);
-        } else if (node instanceof FolderReferenceNode) {
+        } else if (node instanceof FolderNode) {
             inputDialog.withValidator(folderNameValidator);
-        } else if (node instanceof ProjectDescriptorNode || node instanceof ProjectReferenceNode) {
+        } else if (node instanceof ProjectNode || node instanceof ProjectListStructure.ProjectNode) {
             inputDialog.withValidator(projectNameValidator);
         }
         inputDialog.show();
@@ -201,9 +205,9 @@ public class RenameItemAction extends AbstractPerspectiveAction {
     private String getDialogTitle(StorableNode node) {
         if (node instanceof FileNode) {
             return localization.renameFileDialogTitle();
-        } else if (node instanceof FolderReferenceNode) {
+        } else if (node instanceof FolderNode) {
             return localization.renameFolderDialogTitle();
-        } else if (node instanceof ProjectDescriptorNode || node instanceof ProjectReferenceNode) {
+        } else if (node instanceof ProjectNode || node instanceof ProjectListStructure.ProjectNode) {
             return localization.renameProjectDialogTitle();
         }
         return localization.renameNodeDialogTitle();

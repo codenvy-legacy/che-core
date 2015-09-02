@@ -19,11 +19,11 @@ import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
+import org.eclipse.che.ide.api.project.tree.generic.FileNode;
+import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
 import org.eclipse.che.ide.api.selection.Selection;
+import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.download.DownloadContainer;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPart;
-import org.eclipse.che.ide.project.node.FileReferenceNode;
-import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.rest.RestContext;
 
 /**
@@ -37,22 +37,22 @@ public class DownloadItemAction extends Action {
 
     private final String BASE_URL;
 
-    private final AnalyticsEventLogger   eventLogger;
-    private       DownloadContainer      downloadContainer;
-    private final NewProjectExplorerPart projectExplorer;
+    private final SelectionAgent       selectionAgent;
+    private final AnalyticsEventLogger eventLogger;
+    private       DownloadContainer    downloadContainer;
 
     @Inject
     public DownloadItemAction(@RestContext String restContext,
                               @Named("workspaceId") String workspaceId,
                               CoreLocalizationConstant locale,
+                              SelectionAgent selectionAgent,
                               AnalyticsEventLogger eventLogger,
                               Resources resources,
-                              DownloadContainer downloadContainer,
-                              NewProjectExplorerPart projectExplorer) {
+                              DownloadContainer downloadContainer) {
         super(locale.downloadItemName(), locale.downloadItemDescription(), null);
+        this.selectionAgent = selectionAgent;
         this.eventLogger = eventLogger;
         this.downloadContainer = downloadContainer;
-        this.projectExplorer = projectExplorer;
 
         BASE_URL = restContext + "/project/" + workspaceId + "/export/";
     }
@@ -62,40 +62,36 @@ public class DownloadItemAction extends Action {
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
 
-        Selection<?> selection = projectExplorer.getSelection();
-        if (selection.isEmpty() || selection.getAllElements().size() > 1) {
+        Selection<?> selection = selectionAgent.getSelection();
+        if (selection == null) {
             return;
         }
 
-        Object selectedNode = selection.getHeadElement();
-
-        if (!(selectedNode instanceof HasStorablePath)) {
+        final StorableNode selectedNode = (StorableNode)selection.getHeadElement();
+        if (selectedNode == null) {
             return;
         }
 
-        String url = getUrl((HasStorablePath)selectedNode);
+        String url = getUrl(selectedNode);
         downloadContainer.setUrl(url);
     }
 
     /** {@inheritDoc} */
     @Override
     public void update(ActionEvent event) {
-        Selection<?> selection = projectExplorer.getSelection();
-
-        if (selection.isEmpty() || selection.getAllElements().size() > 1) {
-            event.getPresentation().setEnabledAndVisible(false);
-            return;
+        event.getPresentation().setVisible(true);
+        boolean enabled = false;
+        Selection<?> selection = selectionAgent.getSelection();
+        if (selection != null) {
+            enabled = selection.getHeadElement() != null;
         }
-
-        Object selectedNode = selection.getHeadElement();
-
-        event.getPresentation().setEnabledAndVisible(selectedNode instanceof HasStorablePath);
+        event.getPresentation().setEnabled(enabled);
     }
 
-    private String getUrl(HasStorablePath node) {
-        String path = normalizePath(node.getStorablePath());
+    private String getUrl(StorableNode selectedNode) {
+        String path = normalizePath(selectedNode.getPath());
 
-        if (node instanceof FileReferenceNode) {
+        if (selectedNode instanceof FileNode) {
             return BASE_URL + "file/" + path;
         }
         return BASE_URL + path;
