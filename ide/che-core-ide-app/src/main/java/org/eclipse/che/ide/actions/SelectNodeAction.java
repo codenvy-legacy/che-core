@@ -11,9 +11,9 @@
 package org.eclipse.che.ide.actions;
 
 import com.google.gwt.core.client.Callback;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper;
@@ -25,17 +25,15 @@ import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.PromisableAction;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
-import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.notification.NotificationManager;
-import org.eclipse.che.ide.api.project.tree.TreeNode;
-import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerView;
 import org.eclipse.che.ide.util.loging.Log;
-import static org.eclipse.che.ide.api.notification.Notification.Type.WARNING;
+
 import static org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper.createFromCallback;
 
 /**
  * @author Andrienko Alexander
  */
+@Deprecated
 @Singleton
 public class SelectNodeAction extends Action implements PromisableAction {
 
@@ -45,17 +43,14 @@ public class SelectNodeAction extends Action implements PromisableAction {
     private final AppContext appContext;
     private final NotificationManager notificationManager;
     private final CoreLocalizationConstant localization;
-    private final ProjectExplorerView projectExplorerView;
 
     @Inject
     public SelectNodeAction(AppContext appContext,
                             NotificationManager notificationManager,
-                            CoreLocalizationConstant localization,
-                            ProjectExplorerView projectExplorerView) {
+                            CoreLocalizationConstant localization) {
         this.appContext = appContext;
         this.notificationManager = notificationManager;
         this.localization = localization;
-        this.projectExplorerView = projectExplorerView;
     }
 
     @Override
@@ -85,18 +80,18 @@ public class SelectNodeAction extends Action implements PromisableAction {
     }
 
     private void selectNodeByPath(final String path, CurrentProject currentProject) {
-        currentProject.getCurrentTree().getNodeByPath(path, new AsyncCallback<TreeNode<?>>() {
-
-            @Override
-            public void onSuccess(TreeNode<?> treeNode) {
-                projectExplorerView.selectNode(treeNode);
-            }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-                notificationManager.showNotification(new Notification(localization.unableSelectResource(path), WARNING));
-            }
-        });
+//        currentProject.getCurrentTree().getNodeByPath(path, new AsyncCallback<TreeNode<?>>() {
+//
+//            @Override
+//            public void onSuccess(TreeNode<?> treeNode) {
+//                projectExplorerView.selectNode(treeNode);
+//            }
+//
+//            @Override
+//            public void onFailure(Throwable throwable) {
+//                notificationManager.showNotification(new Notification(localization.unableSelectResource(path), WARNING));
+//            }
+//        });
     }
 
     @Override
