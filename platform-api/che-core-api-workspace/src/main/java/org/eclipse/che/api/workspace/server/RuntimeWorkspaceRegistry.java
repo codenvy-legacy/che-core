@@ -52,13 +52,13 @@ import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.STOPPING;
  * First for <i>identifier -> workspace</i> mapping, second for <i>owner -> list of workspaces</i> mapping.
  * Maps are guarded by {@link ReentrantReadWriteLock}.
  *
+ * <p>It is thread-safe!
+ *
  * @author Eugene Voevodin
  * @author Alexander Garagatyi
  */
 @Singleton
 public class RuntimeWorkspaceRegistry {
-
-    //TODO add LOCK cache
 
     private static final Logger LOG = LoggerFactory.getLogger(RuntimeWorkspaceRegistry.class);
 
@@ -123,8 +123,6 @@ public class RuntimeWorkspaceRegistry {
         return runtimeWorkspace;
     }
 
-    //TODO throw conflict exception when trying to stop 'STARTING' | 'STOPPING' workspace
-
     /**
      * Stops running workspace.
      *
@@ -142,16 +140,19 @@ public class RuntimeWorkspaceRegistry {
      *         when any error occurs during workspace stopping
      * @see MachineClient#destroy(String)
      */
-    public void stop(String workspaceId) throws NotFoundException, ServerException {
-        final RuntimeWorkspaceImpl runtimeWorkspace = get(workspaceId);
-
-        runtimeWorkspace.setStatus(STOPPING);
-
-        for (Machine machine : runtimeWorkspace.getMachines()) {
-            machineClient.destroy(machine.getId());
+    public void stop(String workspaceId) throws NotFoundException, ServerException, ConflictException {
+        lock.writeLock().lock();
+        final RuntimeWorkspaceImpl workspace;
+        try {
+            workspace = get(workspaceId);
+            if (workspace.getStatus() != RUNNING) {
+                throw new ConflictException("Can't stop " + workspace.getId() + " workspace, it is " + workspace.getStatus());
+            }
+            workspace.setStatus(STOPPING);
+        } finally {
+            lock.writeLock().unlock();
         }
-
-        remove(runtimeWorkspace);
+        doStop(workspace);
     }
 
     /**
@@ -296,11 +297,19 @@ public class RuntimeWorkspaceRegistry {
         return null;
     }
 
-    private void remove(RuntimeWorkspaceImpl runtimeWorkspace) {
+    /**
+     * Stops workspace destroying all its machines and removing it from in memory storage.
+     */
+    private void doStop(RuntimeWorkspaceImpl workspace) throws NotFoundException, ServerException {
+        //destroy all machines
+        for (Machine machine : workspace.getMachines()) {
+            machineClient.destroy(machine.getId());
+        }
+
         lock.writeLock().lock();
         try {
-            idToWorkspaces.remove(runtimeWorkspace.getId());
-            ownerToWorkspaces.get(runtimeWorkspace.getOwner()).removeIf(ws -> ws.getId().equals(runtimeWorkspace.getId()));
+            idToWorkspaces.remove(workspace.getId());
+            ownerToWorkspaces.get(workspace.getOwner()).removeIf(ws -> ws.getId().equals(workspace.getId()));
         } finally {
             lock.writeLock().unlock();
         }
@@ -308,13 +317,12 @@ public class RuntimeWorkspaceRegistry {
 
     @PreDestroy
     private void stopWorkspaces() {
-        isStopped = true;
-
         lock.writeLock().lock();
+        isStopped = true;
         try {
-            for (RuntimeWorkspaceImpl runtimeWorkspace : idToWorkspaces.values()) {
+            for (RuntimeWorkspaceImpl workspace : idToWorkspaces.values()) {
                 try {
-                    stop(runtimeWorkspace.getId());
+                    doStop(workspace);
                 } catch (NotFoundException | ServerException e) {
                     LOG.error(e.getLocalizedMessage(), e);
                 }

@@ -297,7 +297,7 @@ public class WorkspaceManager {
         executor.execute(() -> {
             try {
                 workspaceRegistry.stop(workspaceId);
-            } catch (NotFoundException | ServerException e) {
+            } catch (ConflictException | NotFoundException | ServerException e) {
                 LOG.error(e.getLocalizedMessage(), e);
             }
 
