@@ -131,8 +131,7 @@ public class EditorAgentImpl implements EditorAgent {
                         String parentPath = ((HasStorablePath)node.getParent()).getStorablePath();
                         String openFileName = virtualFile.getName();
                         String openFilePath = virtualFile.getPath();
-                        if (openFilePath.contains(parentPath) &&
-                            (openFileName.equals("pom.xml") || openFileName.equals("modules"))) {
+                        if (openFilePath.contains(parentPath) && openFileName.equals("modules")) {
                             eventBus.fireEvent(new FileContentUpdateEvent(openFilePath));
                         }
                     }
