@@ -17,7 +17,7 @@ import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Promise;
-import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
+import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper.RequestCall;
 import org.eclipse.che.api.workspace.shared.dto.CommandDto;
 import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
@@ -29,7 +29,6 @@ import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.RestContext;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,20 +41,20 @@ import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
 /**
  * Implementation for {@link WorkspaceServiceClient}.
  *
- * @author Roman Nikitenko
+ * @author Artem Zatsarynnyy
  */
 public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
 
     private final DtoUnmarshallerFactory dtoUnmarshallerFactory;
-    private final AsyncRequestFactory asyncRequestFactory;
-    private final AsyncRequestLoader  loader;
-    private final String              baseHttpUrl;
+    private final AsyncRequestFactory    asyncRequestFactory;
+    private final AsyncRequestLoader     loader;
+    private final String                 baseHttpUrl;
 
     @Inject
-    protected WorkspaceServiceClientImpl(@RestContext String restContext,
-                                         DtoUnmarshallerFactory dtoUnmarshallerFactory,
-                                         AsyncRequestFactory asyncRequestFactory,
-                                         AsyncRequestLoader loader) {
+    private WorkspaceServiceClientImpl(@RestContext String restContext,
+                                       DtoUnmarshallerFactory dtoUnmarshallerFactory,
+                                       AsyncRequestFactory asyncRequestFactory,
+                                       AsyncRequestLoader loader) {
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.asyncRequestFactory = asyncRequestFactory;
         this.loader = loader;
@@ -69,7 +68,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
 
     @Override
     public Promise<UsersWorkspaceDto> getUsersWorkspace(final String wsId) {
-        return newPromise(new AsyncPromiseHelper.RequestCall<UsersWorkspaceDto>() {
+        return newPromise(new RequestCall<UsersWorkspaceDto>() {
             @Override
             public void makeCall(AsyncCallback<UsersWorkspaceDto> callback) {
                 getUsersWorkspace(wsId, callback);
@@ -91,8 +90,8 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
     }
 
     @Override
-    public Promise<List<UsersWorkspaceDto>> getWorkspaces(Integer skip, Integer limit) {
-        return newPromise(new AsyncPromiseHelper.RequestCall<List<UsersWorkspaceDto>>() {
+    public Promise<List<UsersWorkspaceDto>> getWorkspaces(int skip, int limit) {
+        return newPromise(new RequestCall<List<UsersWorkspaceDto>>() {
             @Override
             public void makeCall(AsyncCallback<List<UsersWorkspaceDto>> callback) {
                 getWorkspaces(callback);
@@ -113,12 +112,12 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
         final String url = baseHttpUrl;
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
-                           .loader(loader, "Getting info about bound workspaces...")
+                           .loader(loader, "Getting info about workspaces...")
                            .send(newCallback(callback, dtoUnmarshallerFactory.newListUnmarshaller(UsersWorkspaceDto.class)));
     }
 
     @Override
-    public Promise<List<RuntimeWorkspaceDto>> getRuntimeWorkspaces(Integer skip, Integer limit) {
+    public Promise<List<RuntimeWorkspaceDto>> getRuntimeWorkspaces(int skip, int limit) {
         return null;
     }
 
@@ -134,7 +133,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
 
     @Override
     public Promise<UsersWorkspaceDto> startTemporary(final WorkspaceConfig cfg, final String accountId) {
-        return newPromise(new AsyncPromiseHelper.RequestCall<UsersWorkspaceDto>() {
+        return newPromise(new RequestCall<UsersWorkspaceDto>() {
             @Override
             public void makeCall(AsyncCallback<UsersWorkspaceDto> callback) {
                 startTemporary(cfg, accountId, callback);
@@ -142,7 +141,9 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
         });
     }
 
-    private void startTemporary(@Nonnull WorkspaceConfig cfg, @Nonnull String accountId, @Nonnull AsyncCallback<UsersWorkspaceDto> callback) {
+    private void startTemporary(@Nonnull WorkspaceConfig cfg,
+                                @Nonnull String accountId,
+                                @Nonnull AsyncCallback<UsersWorkspaceDto> callback) {
         asyncRequestFactory.createPostRequest(baseHttpUrl + "/runtime", cfg)
                            .header(ACCEPT, APPLICATION_JSON)
                            .header(CONTENT_TYPE, APPLICATION_JSON)
@@ -152,21 +153,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
 
     @Override
     public Promise<UsersWorkspaceDto> startById(final String id, final String envName) {
-        return newPromise(new AsyncPromiseHelper.RequestCall<UsersWorkspaceDto>() {
-            @Override
-            public void makeCall(AsyncCallback<UsersWorkspaceDto> callback) {
-                startById(id, envName, callback);
-            }
-        });
-    }
-
-    private void startById(@Nonnull String id,
-                           @Nullable final String envName,
-                           @Nonnull AsyncCallback<UsersWorkspaceDto> callback) {
-        asyncRequestFactory.createPostRequest(baseHttpUrl + '/' + id + "/runtime?environment=" + envName, null)
-                           .header(ACCEPT, APPLICATION_JSON)
-                           .loader(loader, "Starting workspace...")
-                           .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(UsersWorkspaceDto.class)));
+        return null;
     }
 
     @Override

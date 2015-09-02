@@ -393,54 +393,9 @@ public class ProjectService extends Service {
                                            @PathParam("path") String path,
                                            ProjectUpdate update)
             throws NotFoundException, ConflictException, ForbiddenException, ServerException, IOException {
-        Project project = projectManager.getProject(workspace, path);
-        String oldProjectType = null;
-        List<String> oldMixinTypes = new ArrayList<>();
-        if (project == null) {
-            FolderEntry projectsRoot = projectManager.getProjectsRoot(workspace);
-            VirtualFileEntry child = projectsRoot.getChild(path);
-            if (child != null && child.isFolder() && child.getParent().isRoot()) {
-                project = new Project((FolderEntry)child, projectManager);
-            } else {
-                throw new NotFoundException(String.format("Project '%s' doesn't exist in workspace '%s'.", path, workspace));
-            }
-        } else {
-            try {
-                ProjectConfig config = project.getConfig();
-                oldProjectType = config.getTypeId();
-                oldMixinTypes = config.getMixinTypes();
-            } catch (ProjectTypeConstraintException | ValueStorageException e) {
-                //here we allow changing bad project type on registered
-                LOG.warn(e.getMessage());
-            }
-        }
-
-        String visibility = update.getVisibility();
-        if (visibility != null && !visibility.isEmpty()) {
-            project.setVisibility(visibility);
-        }
-        project.updateConfig(DtoConverter.fromDto2(update, projectManager.getProjectTypeRegistry()));
-
-        //handle project type changes
-        //post actions on changing project type
-        //base or mixin
-        if (!update.getType().equals(oldProjectType)) {
-            ProjectTypeChangedHandler projectTypeChangedHandler = projectHandlerRegistry.getProjectTypeChangedHandler(update.getType());
-            if (projectTypeChangedHandler != null) {
-                projectTypeChangedHandler.onProjectTypeChanged(project.getBaseFolder());
-            }
-        }
-
-        List<String> mixinTypes = firstNonNull(update.getMixinTypes(), Collections.<String>emptyList());
-        for (String mixin : mixinTypes) {
-            if (!oldMixinTypes.contains(mixin)) {
-                ProjectTypeChangedHandler projectTypeChangedHandler = projectHandlerRegistry.getProjectTypeChangedHandler(mixin);
-                if (projectTypeChangedHandler != null) {
-                    projectTypeChangedHandler.onProjectTypeChanged(project.getBaseFolder());
-                }
-            }
-        }
-
+        ProjectConfig newConfig = DtoConverter.fromDto2(update, projectManager.getProjectTypeRegistry());
+        String newVisibility = update.getVisibility();
+        Project project = projectManager.updateProject(workspace, path, newConfig, newVisibility);
         return DtoConverter.toDescriptorDto2(project,
                                              getServiceContext().getServiceUriBuilder(),
                                              getServiceContext().getBaseUriBuilder(),

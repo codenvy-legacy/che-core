@@ -38,14 +38,10 @@ import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
  * @author Artem Zatsarynnyy
  */
 public class ProjectTypeServiceClientImpl implements ProjectTypeServiceClient {
-
-    private final String baseUrl;
-
+    private final AsyncRequestLoader     loader;
     private final AsyncRequestFactory    asyncRequestFactory;
     private final DtoUnmarshallerFactory dtoUnmarshallerFactory;
-    private       String                 extPath;
-    private       String                 workspaceId;
-    private final AsyncRequestLoader loader;
+    private final String                 baseUrl;
 
     @Inject
     protected ProjectTypeServiceClientImpl(@Named("cheExtensionPath") String extPath,
@@ -53,12 +49,10 @@ public class ProjectTypeServiceClientImpl implements ProjectTypeServiceClient {
                                            AsyncRequestLoader loader,
                                            AsyncRequestFactory asyncRequestFactory,
                                            DtoUnmarshallerFactory dtoUnmarshallerFactory) {
-        this.extPath = extPath;
-        this.workspaceId = workspaceId;
         this.loader = loader;
         this.asyncRequestFactory = asyncRequestFactory;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
-        baseUrl = extPath + "/project-type/" + workspaceId +"/";
+        baseUrl = extPath + "/project-type/" + workspaceId;
     }
 
     @Override
@@ -98,8 +92,8 @@ public class ProjectTypeServiceClientImpl implements ProjectTypeServiceClient {
         });
     }
 
-    private void getProjectType(@Nonnull String machineId, @Nonnull AsyncCallback<ProjectTypeDefinition> callback) {
-        final String url = baseUrl + '/' + machineId;
+    private void getProjectType(@Nonnull String id, @Nonnull AsyncCallback<ProjectTypeDefinition> callback) {
+        final String url = baseUrl + '/' + id;
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
                            .loader(loader, "Getting info about project type...")

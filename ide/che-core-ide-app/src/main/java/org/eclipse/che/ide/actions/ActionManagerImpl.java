@@ -67,6 +67,10 @@ public class ActionManagerImpl implements ActionManager {
         Constraints afterView = new Constraints(Anchor.AFTER, IdeActions.GROUP_FILE);
         mainMenu.add(codeGroup, afterView);
 
+        DefaultActionGroup refactorGroup = new DefaultActionGroup("Refactor", true, this);
+        registerAction(IdeActions.GROUP_REFACTORING, refactorGroup);
+        Constraints afterCode = new Constraints(Anchor.AFTER, IdeActions.GROUP_CODE);
+        mainMenu.add(refactorGroup, afterCode);
 //        DefaultActionGroup buildGroup = new DefaultActionGroup("Build", true, this);
 //        registerAction(IdeActions.GROUP_BUILD, buildGroup);
 //        Constraints afterCode = new Constraints(Anchor.AFTER, IdeActions.GROUP_CODE);

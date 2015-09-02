@@ -10,12 +10,15 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server.model.impl;
 
+import org.eclipse.che.api.core.model.machine.MachineConfig;
 import org.eclipse.che.api.core.model.machine.Recipe;
 import org.eclipse.che.api.core.model.workspace.Environment;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import static java.util.stream.Collectors.toList;
 
 //TODO move?
 
@@ -30,10 +33,18 @@ public class EnvironmentImpl implements Environment {
     private Recipe                  recipe;
     private List<MachineConfigImpl> machineConfigs;
 
-    public EnvironmentImpl(String name, Recipe recipe, List<MachineConfigImpl> machineConfigs) {
+    public EnvironmentImpl(String name, Recipe recipe, List<? extends MachineConfig> machineConfigs) {
         this.name = name;
         this.recipe = recipe;
-        this.machineConfigs = machineConfigs;
+        if (machineConfigs != null) {
+            this.machineConfigs = machineConfigs.stream()
+                                                .map(MachineConfigImpl::new)
+                                                .collect(toList());
+        }
+    }
+
+    public EnvironmentImpl(Environment environment) {
+        this(environment.getName(), environment.getRecipe(), environment.getMachineConfigs());
     }
 
     @Override

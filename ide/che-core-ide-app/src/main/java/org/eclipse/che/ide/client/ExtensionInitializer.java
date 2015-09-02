@@ -24,6 +24,8 @@ import org.eclipse.che.ide.util.loging.Log;
 
 import java.util.Map;
 
+import java.util.Map;
+
 /**
  * {@link ExtensionInitializer} responsible for bringing up Extensions. It uses ExtensionRegistry to acquire
  * Extension description and dependencies.

@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 import javax.ws.rs.HttpMethod;
 
@@ -73,7 +74,7 @@ public class IoUtil {
         while ((r = inputStream.read(buf)) != -1) {
             bout.write(buf, 0, r);
         }
-        return bout.toString();
+        return bout.toString("UTF-8");
     }
 
     /**
@@ -241,7 +242,7 @@ public class IoUtil {
     public static File downloadFile(File parent, String prefix, String suffix, URL url) throws IOException {
         File file = File.createTempFile(prefix, suffix, parent);
         URLConnection conn = null;
-        final String protocol = url.getProtocol().toLowerCase();
+        final String protocol = url.getProtocol().toLowerCase(Locale.ENGLISH);
         try {
             conn = url.openConnection();
             if ("http".equals(protocol) || "https".equals(protocol)) {
@@ -395,22 +396,12 @@ public class IoUtil {
                 throw new IOException(String.format("File '%s' already exists. ", target.getAbsolutePath()));
             }
         }
-        FileInputStream in = null;
-        FileOutputStream out = null;
+
         byte[] b = new byte[8192];
-        try {
-            in = new FileInputStream(source);
-            out = new FileOutputStream(target);
+        try (FileInputStream in = new FileInputStream(source); FileOutputStream out = new FileOutputStream(target)) {
             int r;
             while ((r = in.read(b)) != -1) {
                 out.write(b, 0, r);
-            }
-        } finally {
-            if (in != null) {
-                in.close();
-            }
-            if (out != null) {
-                out.close();
             }
         }
     }
@@ -422,32 +413,20 @@ public class IoUtil {
                 throw new IOException(String.format("File '%s' already exists. ", target.getAbsolutePath()));
             }
         }
-        FileInputStream sourceStream = null;
-        FileOutputStream targetStream = null;
-        FileChannel sourceChannel = null;
-        FileChannel targetChannel = null;
-        try {
-            sourceStream = new FileInputStream(source);
-            targetStream = new FileOutputStream(target);
-            sourceChannel = sourceStream.getChannel();
-            targetChannel = targetStream.getChannel();
+
+
+        try (
+                FileInputStream sourceStream = new FileInputStream(source);
+                FileOutputStream targetStream = new FileOutputStream(target);
+                FileChannel sourceChannel = sourceStream.getChannel();
+                FileChannel targetChannel = targetStream.getChannel()
+        ) {
+
+
             final long size = sourceChannel.size();
             long transferred = 0L;
             while (transferred < size) {
                 transferred += targetChannel.transferFrom(sourceChannel, transferred, (size - transferred));
-            }
-        } finally {
-            if (sourceChannel != null) {
-                sourceChannel.close();
-            }
-            if (targetChannel != null) {
-                targetChannel.close();
-            }
-            if (sourceStream != null) {
-                sourceStream.close();
-            }
-            if (targetStream != null) {
-                targetStream.close();
             }
         }
     }

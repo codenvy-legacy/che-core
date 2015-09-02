@@ -78,7 +78,6 @@
                     <excludes>
                         <!-- Apache license -->
                         <exclude>**/org/eclipse/che/ide/collections/**</exclude>
-                        <exclude>**/org/eclipse/che/ide/dto/shared/**</exclude>
                         <exclude>**/org/eclipse/che/ide/dto/JsonSerializable.java</exclude>
                         <exclude>**/org/eclipse/che/ide/mvp/**</exclude>
                         <exclude>**/org/eclipse/che/ide/ui/list/*.java</exclude>

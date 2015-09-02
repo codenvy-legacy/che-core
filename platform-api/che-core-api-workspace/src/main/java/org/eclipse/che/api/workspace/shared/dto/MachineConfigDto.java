@@ -52,4 +52,14 @@ public interface MachineConfigDto extends MachineConfig {
     void setMemorySize(int memorySize);
 
     MachineConfigDto withMemorySize(int memorySize);
+
+    @Override
+    String getOutputChannel();
+
+    MachineConfigDto withOutputChannel(String outputChannel);
+
+    @Override
+    String getStatusChannel();
+
+    MachineConfigDto withStatusChannel(String statusChannel);
 }

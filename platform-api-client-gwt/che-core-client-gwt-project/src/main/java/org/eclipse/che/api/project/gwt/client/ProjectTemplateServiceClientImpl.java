@@ -21,6 +21,8 @@ import javax.annotation.Nonnull;
 import javax.inject.Named;
 import java.util.List;
 
+import java.util.List;
+
 import static org.eclipse.che.ide.MimeType.APPLICATION_JSON;
 import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
 

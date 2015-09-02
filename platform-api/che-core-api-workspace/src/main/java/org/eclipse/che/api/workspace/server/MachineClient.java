@@ -16,12 +16,13 @@ import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.machine.MachineConfig;
 import org.eclipse.che.api.core.model.workspace.Machine;
+import org.eclipse.che.api.workspace.server.model.impl.MachineImpl;
 
 /**
  * @author Alexander Garagatyi
  */
 public interface MachineClient {
-    Machine start(MachineConfig machineConfig, String workspaceId)
+    MachineImpl start(MachineConfig machineConfig, String workspaceId, String envName)
             throws ServerException, BadRequestException, NotFoundException, ConflictException;
 
     void destroy(String machineId) throws NotFoundException, ServerException;

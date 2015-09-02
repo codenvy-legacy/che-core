@@ -12,12 +12,12 @@ package org.eclipse.che.api.workspace.gwt.client;
 
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.api.workspace.server.WorkspaceService;
 import org.eclipse.che.api.workspace.shared.dto.CommandDto;
 import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.RuntimeWorkspaceDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
-import org.eclipse.che.api.workspace.server.WorkspaceService;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
 
 import java.util.List;
@@ -55,14 +55,14 @@ public interface WorkspaceServiceClient {
      *
      * @see WorkspaceService#getWorkspaces(Integer, Integer)
      */
-    Promise<List<UsersWorkspaceDto>> getWorkspaces(Integer skip, Integer limit);
+    Promise<List<UsersWorkspaceDto>> getWorkspaces(int skip, int limit);
 
     /**
      * Gets all runtime workspaces of current user.
      *
      * @see WorkspaceService#getRuntimeWorkspaces(Integer, Integer)
      */
-    Promise<List<RuntimeWorkspaceDto>> getRuntimeWorkspaces(Integer skip, Integer limit);
+    Promise<List<RuntimeWorkspaceDto>> getRuntimeWorkspaces(int skip, int limit);
 
     /**
      * Updates workspace.

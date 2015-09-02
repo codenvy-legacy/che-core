@@ -42,6 +42,9 @@ import java.util.Map;
 @Singleton
 public class WorkspaceComponent implements Component {
 
+    private static final String RECIPE_URL =
+            "https://gist.githubusercontent.com/vparfonov/5c633534bfb0c127854f/raw/f176ee3428c2d39d08c7b4762aee6855dc5c8f75/jdk8_maven3_tomcat8";
+
     private final WorkspaceServiceClient workspaceServiceClient;
     private final AppContext             appContext;
     private final DtoFactory             dtoFactory;
@@ -55,7 +58,7 @@ public class WorkspaceComponent implements Component {
 
     @Override
     public void start(final Callback<Component, Exception> callback) {
-        workspaceServiceClient.getWorkspaces(0, 0).then(new Operation<List<UsersWorkspaceDto>>() {
+        workspaceServiceClient.getWorkspaces(0, 1).then(new Operation<List<UsersWorkspaceDto>>() {
             @Override
             public void apply(List<UsersWorkspaceDto> arg) throws OperationException {
                 if (!arg.isEmpty()) {
@@ -87,18 +90,20 @@ public class WorkspaceComponent implements Component {
     }
 
     private WorkspaceConfig getWorkspaceConfig() {
-        final String recipeURL =
-                "https://gist.githubusercontent.com/vparfonov/5c633534bfb0c127854f/raw/f176ee3428c2d39d08c7b4762aee6855dc5c8f75/jdk8_maven3_tomcat8";
-
         List<MachineConfigDto> machineConfigs = new ArrayList<>();
         machineConfigs.add(dtoFactory.createDto(MachineConfigDto.class)
-                                        .withName("dev-machine")
-                                        .withType("docker")
-                                        .withSource(dtoFactory.createDto(MachineSourceDto.class)
-                                                              .withType("recipe")
-                                                              .withLocation(recipeURL))
-                                        .withDev(true)
-                                        .withMemorySize(512));
+                                     .withName("dev-machine")
+                                     .withType("docker")
+                                     .withSource(dtoFactory.createDto(MachineSourceDto.class)
+                                                           .withType("recipe")
+                                                           .withLocation(RECIPE_URL))
+                                     .withDev(true)
+                                     .withMemorySize(512));
+
+        Map<String, EnvironmentDto> environments = new HashMap<>();
+        environments.put("dev-env", dtoFactory.createDto(EnvironmentDto.class)
+                                              .withName("dev-env")
+                                              .withMachineConfigs(machineConfigs));
 
         List<CommandDto> commands = new ArrayList<>();
         commands.add(dtoFactory.createDto(CommandDto.class)
@@ -107,9 +112,6 @@ public class WorkspaceComponent implements Component {
 
         Map<String, String> attrs = new HashMap<>();
         attrs.put("fake_attr", "attr_value");
-
-        Map<String, EnvironmentDto> environments = new HashMap<>();
-        environments.put("dev-env", dtoFactory.createDto(EnvironmentDto.class).withName("dev-env").withMachineConfigs(machineConfigs));
 
         return dtoFactory.createDto(WorkspaceConfigDto.class)
                          .withName("dev-cfg")

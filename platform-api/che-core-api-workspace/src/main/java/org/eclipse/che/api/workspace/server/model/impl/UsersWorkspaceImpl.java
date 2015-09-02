@@ -24,6 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+
 /**
  * Data object for {@link UsersWorkspace}.
  *
@@ -32,17 +35,17 @@ import java.util.Objects;
  */
 public class UsersWorkspaceImpl implements UsersWorkspace {
 
-    private String                   id;
-    private String                   name;
-    private String                   owner;
-    private String                   defaultEnvName;
-    private List<Command>            commands;
-    private List<ProjectConfig>      projects;
-    private Map<String, String>      attributes;
-    private Map<String, Environment> environments;
-    private String                   description;
-    private boolean                  isTemporary;
-    private WorkspaceStatus          status;
+    private String                       id;
+    private String                       name;
+    private String                       owner;
+    private String                       defaultEnvName;
+    private List<CommandImpl>            commands;
+    private List<ProjectConfigImpl>      projects;
+    private Map<String, String>          attributes;
+    private Map<String, EnvironmentImpl> environments;
+    private String                       description;
+    private boolean                      isTemporary;
+    private WorkspaceStatus              status;
 
     public UsersWorkspaceImpl(String id,
                               String name,
@@ -57,10 +60,22 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
         this.name = name;
         this.owner = owner;
         this.description = description;
-        setEnvironments(environments);
-        setCommands(commands);
-        setProjects(projects);
-        setAttributes(attributes);
+        if (environments != null) {
+            this.environments = environments.values()
+                                            .stream()
+                                            .collect(toMap(Environment::getName, EnvironmentImpl::new));
+        }
+        if (commands != null) {
+            this.commands = commands.stream()
+                                    .map(CommandImpl::new)
+                                    .collect(toList());
+        }
+        if (projects != null) {
+            this.projects = projects.stream()
+                                    .map(ProjectConfigImpl::new)
+                                    .collect(toList());
+        }
+        this.attributes = attributes;
         setDefaultEnvName(defaultEnvironment);
     }
 
@@ -88,6 +103,11 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Override
+    public String getOwner() {
+        return owner;
     }
 
     @Override
@@ -134,43 +154,50 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
 
     @Override
     public Map<String, String> getAttributes() {
+        if (attributes == null) {
+            attributes = new HashMap<>();
+        }
         return attributes;
     }
 
     public void setAttributes(Map<String, String> attributes) {
-        this.attributes = attributes == null ? new HashMap<String, String>() : new HashMap<>(attributes);
+        this.attributes = attributes;
     }
 
     @Override
-    public List<Command> getCommands() {
+    public List<CommandImpl> getCommands() {
+        if (commands == null) {
+            commands = new ArrayList<>();
+        }
         return commands;
     }
 
-    public void setCommands(List<? extends Command> commands) {
-        this.commands = commands == null ? new ArrayList<Command>() : new ArrayList<>(commands);
+    public void setCommands(List<CommandImpl> commands) {
+        this.commands = commands;
     }
 
     @Override
-    public List<ProjectConfig> getProjects() {
+    public List<ProjectConfigImpl> getProjects() {
+        if (projects == null) {
+            projects = new ArrayList<>();
+        }
         return projects;
     }
 
-    public void setProjects(List<? extends ProjectConfig> projects) {
-        this.projects = projects == null ? new ArrayList<ProjectConfig>() : new ArrayList<>(projects);
+    public void setProjects(List<ProjectConfigImpl> projects) {
+        this.projects = projects;
     }
 
     @Override
-    public Map<String, Environment> getEnvironments() {
+    public Map<String, EnvironmentImpl> getEnvironments() {
+        if (environments == null) {
+            environments = new HashMap<>();
+        }
         return environments;
     }
 
-    public void setEnvironments(Map<String, ? extends Environment> environments) {
-        this.environments = environments == null ? new HashMap<String, Environment>() : new HashMap<>(environments);
-    }
-
-    @Override
-    public String getOwner() {
-        return this.owner;
+    public void setEnvironments(Map<String, EnvironmentImpl> environments) {
+        this.environments = environments;
     }
 
     @Override
@@ -198,11 +225,11 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
         hash = 31 * hash + Objects.hashCode(name);
         hash = 31 * hash + Objects.hashCode(defaultEnvName);
         hash = 31 * hash + Objects.hashCode(status);
-        hash = 31 * hash + (isTemporary ? 123 : 321);
-        hash = 31 * hash + commands.hashCode();
-        hash = 31 * hash + environments.hashCode();
-        hash = 31 * hash + projects.hashCode();
-        hash = 31 * hash + attributes.hashCode();
+        hash = 31 * hash + Boolean.hashCode(isTemporary);
+        hash = 31 * hash + getCommands().hashCode();
+        hash = 31 * hash + getEnvironments().hashCode();
+        hash = 31 * hash + getProjects().hashCode();
+        hash = 31 * hash + getAttributes().hashCode();
         return hash;
     }
 }
