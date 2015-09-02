@@ -88,6 +88,8 @@ public class LocalPreferenceDaoImpl implements PreferenceDao {
     public Map<String, String> getPreferences(String userId) throws ServerException {
         lock.readLock().lock();
         try {
+            //Need read all new preferences without restarting dev-machine. It is needed for  IDEX-2180
+            preferences.putAll(preferenceStorage.loadMap(new TypeToken<Map<String, Map<String, String>>>() {}));
             final Map<String, String> prefs = new HashMap<>();
             if (preferences.containsKey(userId)) {
                 prefs.putAll(preferences.get(userId));
