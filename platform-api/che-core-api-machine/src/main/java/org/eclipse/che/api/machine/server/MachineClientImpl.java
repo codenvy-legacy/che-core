@@ -15,16 +15,14 @@ import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.machine.MachineConfig;
-import org.eclipse.che.api.core.model.workspace.Machine;
 import org.eclipse.che.api.core.util.FileCleaner;
 import org.eclipse.che.api.machine.server.exception.MachineException;
-import org.eclipse.che.api.machine.server.impl.MachineImpl;
 import org.eclipse.che.api.machine.shared.dto.RecipeMachineCreationMetadata;
 import org.eclipse.che.api.machine.shared.dto.SnapshotMachineCreationMetadata;
 import org.eclipse.che.api.machine.shared.dto.recipe.MachineRecipe;
 import org.eclipse.che.api.workspace.server.MachineClient;
-import org.eclipse.che.api.workspace.shared.dto.MachineDto;
-import org.eclipse.che.api.workspace.shared.dto.MachineSourceDto;
+import org.eclipse.che.api.workspace.server.model.impl.MachineImpl;
+import org.eclipse.che.api.workspace.server.model.impl.MachineSourceImpl;
 import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.dto.server.DtoFactory;
 
@@ -46,9 +44,11 @@ public class MachineClientImpl implements MachineClient {
     }
 
     @Override
-    public Machine start(MachineConfig machineConfig, String workspaceId)
+    public org.eclipse.che.api.workspace.server.model.impl.MachineImpl start(MachineConfig machineConfig, String workspaceId,
+                                                                             String envName)
             throws ServerException, BadRequestException, NotFoundException, ConflictException {
         final String machineSourceType = machineConfig.getSource().getType();
+        final String outputChannel = workspaceId + ':' + envName + ':' + machineConfig.getName();
         if ("Recipe".equalsIgnoreCase(machineSourceType)) {
             String recipeContent;
             File file = null;
@@ -67,42 +67,42 @@ public class MachineClientImpl implements MachineClient {
 
             // TODO do we need output channel?
             final RecipeMachineCreationMetadata creationMetadata = DtoFactory.newDto(RecipeMachineCreationMetadata.class)
-                                                                                          .withType(machineConfig.getType())
-                                                                                          .withDev(machineConfig.isDev())
-                                                                                          .withDisplayName(machineConfig.getName())
-                                                                                          .withMemorySize(machineConfig.getMemorySize())
-                                                                                          .withOutputChannel(machineConfig.getName())
-                                                                                          .withRecipe(recipe)
-                                                                                          .withWorkspaceId(workspaceId);
-            final MachineImpl machine = machineManager.create(creationMetadata, false);
+                                                                             .withType(machineConfig.getType())
+                                                                             .withDev(machineConfig.isDev())
+                                                                             .withDisplayName(machineConfig.getName())
+                                                                             .withMemorySize(machineConfig.getMemorySize())
+                                                                             .withOutputChannel(outputChannel)
+                                                                             .withRecipe(recipe)
+                                                                             .withWorkspaceId(workspaceId);
+            final org.eclipse.che.api.machine.server.impl.MachineImpl machine = machineManager.create(creationMetadata, false);
 
-            return DtoFactory.newDto(MachineDto.class)
-                             .withId(machine.getId())
-                             .withType(machine.getType())
-                             .withName(machine.getDisplayName())
-                             .withDev(machine.isDev())
-                             .withSource(DtoFactory.newDto(MachineSourceDto.class)
-                                                   .withType(machineSourceType)
-                                                   .withLocation(machineConfig.getSource().getLocation()))
-                             .withMemorySize(machine.getMemorySize());
+            return MachineImpl.builder()
+                              .setId(machine.getId())
+                              .setType(machine.getType())
+                              .setName(machine.getDisplayName())
+                              .setDev(machine.isDev())
+                              .setSource(new MachineSourceImpl(machineSourceType, machineConfig.getSource().getLocation()))
+                              .setMemorySize(machine.getMemorySize())
+                              .setOutputChannel(outputChannel)
+                              .build();
         } else if ("Snapshot".equalsIgnoreCase(machineSourceType)) {
             final SnapshotMachineCreationMetadata snapshotMetadata = DtoFactory.newDto(SnapshotMachineCreationMetadata.class)
                                                                                .withSnapshotId(machineConfig.getSource().getLocation())
                                                                                .withDisplayName(machineConfig.getName())
                                                                                .withMemorySize(machineConfig.getMemorySize())
-                                                                               .withOutputChannel(machineConfig.getName());
+                                                                               .withOutputChannel(outputChannel);
 
-            final MachineImpl machine = machineManager.create(snapshotMetadata, false);
+            final org.eclipse.che.api.machine.server.impl.MachineImpl machine = machineManager.create(snapshotMetadata, false);
 
-            return DtoFactory.newDto(MachineDto.class)
-                             .withId(machine.getId())
-                             .withType(machine.getType())
-                             .withName(machine.getDisplayName())
-                             .withDev(machine.isDev())
-                             .withSource(DtoFactory.newDto(MachineSourceDto.class)
-                                                   .withType(machineSourceType)
-                                                   .withLocation(machineConfig.getSource().getLocation()))
-                             .withMemorySize(machine.getMemorySize());
+            return MachineImpl.builder()
+                              .setId(machine.getId())
+                              .setType(machine.getType())
+                              .setName(machine.getDisplayName())
+                              .setDev(machine.isDev())
+                              .setSource(new MachineSourceImpl(machineSourceType, machineConfig.getSource().getLocation()))
+                              .setMemorySize(machine.getMemorySize())
+                              .setOutputChannel(outputChannel)
+                              .build();
         } else {
             throw new BadRequestException("Machine source type is unknown " + machineSourceType);
         }

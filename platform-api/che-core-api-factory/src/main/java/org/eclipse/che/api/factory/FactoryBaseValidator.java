@@ -22,6 +22,7 @@ import org.eclipse.che.api.factory.dto.OnAppLoaded;
 import org.eclipse.che.api.factory.dto.OnProjectOpened;
 import org.eclipse.che.api.factory.dto.Policies;
 import org.eclipse.che.api.factory.dto.Workspace;
+import org.eclipse.che.api.project.shared.dto.ProjectModule;
 import org.eclipse.che.api.user.server.dao.PreferenceDao;
 import org.eclipse.che.api.user.server.dao.User;
 import org.eclipse.che.api.user.server.dao.UserDao;
@@ -107,6 +108,21 @@ public abstract class FactoryBaseValidator {
         if (null != projectName && !PROJECT_NAME_VALIDATOR.matcher(projectName).matches()) {
             throw new ConflictException(
                     "Project name must contain only Latin letters, digits or these following special characters -._.");
+        }
+    }
+
+    protected void  validateModules(Factory factory) throws ApiException {
+        if (factory.getProject() != null && !factory.getProject().getModules().isEmpty()) {
+            for (ProjectModule module : factory.getProject().getModules()) {
+                String path = emptyToNull(module.getPath());
+                String type = emptyToNull(module.getType());
+                if (path == null) {
+                    throw new ConflictException("Module path cannot be empty.");
+                }
+                else if (type == null) {
+                    throw new ConflictException("Module type cannot be empty");
+                }
+            }
         }
     }
 

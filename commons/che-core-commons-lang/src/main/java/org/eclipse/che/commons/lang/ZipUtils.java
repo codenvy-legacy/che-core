@@ -18,6 +18,9 @@ import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -29,6 +32,7 @@ import java.util.zip.ZipOutputStream;
  * Utils for ZIP.
  *
  * @author Eugene Voevodin
+ * @author Sergii Kabashniuk
  */
 public class ZipUtils {
     private static final int BUF_SIZE = 4096;
@@ -50,8 +54,34 @@ public class ZipUtils {
         }
     }
 
+    /**
+     * Create an output ZIP stream and add each file to that stream. Directory files are added recursively. The contents
+     * of the zip are written to the given file.
+     *
+     * @param zip
+     *            The file to write the zip contents to.
+     * @param files
+     *            The files to add to the zip stream.
+     * @throws IOException
+     */
     public static void zipFiles(File zip, File... files) throws IOException {
-        try (ZipOutputStream zipOut = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(zip)))) {
+        try (BufferedOutputStream bufferedOut = new BufferedOutputStream(new FileOutputStream(zip))) {
+            zipFiles(bufferedOut, files);
+        }
+    }
+
+    /**
+     * Create an output ZIP stream and add each file to that stream. Directory files are added recursively. The contents
+     * of the zip are written to the given stream.
+     *
+     * @param output
+     *            The stream to write the zip contents to.
+     * @param files
+     *            The files to add to the zip stream.
+     * @throws IOException
+     */
+    public static void zipFiles(OutputStream output, File... files) throws IOException {
+        try (ZipOutputStream zipOut = new ZipOutputStream(output)) {
             for (File f : files) {
                 if (f.isDirectory()) {
                     addDirectoryEntry(zipOut, f.getName());
@@ -141,7 +171,10 @@ public class ZipUtils {
             if (!zipEntry.isDirectory()) {
                 final File parent = file.getParentFile();
                 if (!parent.exists()) {
-                    parent.mkdirs();
+                    if (!parent.mkdirs()) {
+                        throw new IOException("Unable to create parent folder " + parent.getAbsolutePath());
+                    }
+
                 }
                 try (FileOutputStream fos = new FileOutputStream(file)) {
                     int r;
@@ -150,7 +183,12 @@ public class ZipUtils {
                     }
                 }
             } else {
-                file.mkdirs();
+                if (!file.exists()) {
+                    if (!file.mkdirs()) {
+                        throw new IOException("Unable to create folder " + file.getAbsolutePath());
+                    }
+                }
+
             }
             zipIn.closeEntry();
         }
@@ -172,8 +210,10 @@ public class ZipUtils {
                 return false;
             }
         }
-        final int header = bytes[0] + (bytes[1] << 8) + (bytes[2] << 16) + (bytes[3] << 24);
-        return 0x04034b50 == header;
+
+        ByteBuffer zipFileHeaderSignature = ByteBuffer.wrap(bytes);
+        zipFileHeaderSignature.order(ByteOrder.LITTLE_ENDIAN);
+        return 0x04034b50 == zipFileHeaderSignature.getInt();
     }
 
     private ZipUtils() {

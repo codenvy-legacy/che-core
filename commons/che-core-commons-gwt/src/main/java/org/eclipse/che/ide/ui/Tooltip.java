@@ -208,7 +208,6 @@ public class Tooltip extends AutoHideComponent<AutoHideView<Void>,
     }
 
     private void setPositionStyle() {
-        PositionController.VerticalAlign vAlign = positioner.getVerticalAlignment();
         PositionController.HorizontalAlign hAlign = positioner.getHorizontalAlignment();
         switch (positioner.getVerticalAlignment()) {
             case TOP:

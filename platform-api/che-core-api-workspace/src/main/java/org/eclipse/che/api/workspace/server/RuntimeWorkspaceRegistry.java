@@ -16,14 +16,15 @@ import com.google.common.collect.ListMultimap;
 import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
-import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.machine.MachineConfig;
 import org.eclipse.che.api.core.model.workspace.Environment;
 import org.eclipse.che.api.core.model.workspace.Machine;
 import org.eclipse.che.api.core.model.workspace.RuntimeWorkspace;
+import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
+import org.eclipse.che.api.workspace.server.model.impl.MachineImpl;
 import org.eclipse.che.api.workspace.server.model.impl.RuntimeWorkspaceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +46,11 @@ import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.STOPPING;
 
 /**
  * Defines {@link RuntimeWorkspace} internal API.
+ *
+ * @implNote
+ * Workspaces are stored in memory - in 2 Maps.
+ * First for <i>identifier -> workspace</i> mapping, second for <i>owner -> list of workspaces</i> mapping.
+ * Maps are guarded by {@link ReentrantReadWriteLock}.
  *
  * @author Eugene Voevodin
  * @author Alexander Garagatyi
@@ -71,23 +77,72 @@ public class RuntimeWorkspaceRegistry {
         this.lock = new ReentrantReadWriteLock();
     }
 
-    public RuntimeWorkspace start(UsersWorkspace usersWs, String envName)
-            throws ConflictException, ServerException, BadRequestException, NotFoundException {
-        final RuntimeWorkspaceImpl runtimeWs = new RuntimeWorkspaceImpl(usersWs, null, envName);
-        runtimeWs.setStatus(STARTING);
+    /**
+     * Starts {@link UsersWorkspace workspace} with specified environment.
+     *
+     * <p>Actually starts all machines in certain environment starting from dev-machine.
+     * When environment is not specified - default one is going to be used.
+     * During workspace starting workspace is visible with {@link WorkspaceStatus#STARTING starting} status,
+     * until all machines in workspace is not started, after that status will be changed to {@link WorkspaceStatus#RUNNING running}.
+     *
+     * <p>Note that it doesn't provide any events for machines start, Machine API is responsible for it.
+     *
+     * @param usersWorkspace
+     *         workspace which should be started
+     * @param envName
+     *         name of environment or null when default environment should be used
+     * @return runtime view of {@code usersWorkspace} with status {@link WorkspaceStatus#RUNNING}
+     * @throws ConflictException
+     *         when workspace is already running or any other conflict error occurs during environment start
+     * @throws BadRequestException
+     *         when active environment is in inconsistent state
+     * @throws NotFoundException
+     *         whe any not found exception occurs during environment start
+     * @throws ServerException
+     *         when registry {@link #isStopped is stopped} other error occurs during environment start
+     * @see MachineClient#start(MachineConfig, String, String)
+     */
+    public RuntimeWorkspaceImpl start(UsersWorkspace usersWorkspace, String envName) throws ConflictException,
+                                                                                            ServerException,
+                                                                                            BadRequestException,
+                                                                                            NotFoundException {
+        final String activeEnvName = firstNonNull(envName, usersWorkspace.getDefaultEnvName());
+        final RuntimeWorkspaceImpl runtimeWorkspace = RuntimeWorkspaceImpl.builder()
+                                                                          .fromWorkspace(usersWorkspace)
+                                                                          .setActiveEnvName(activeEnvName)
+                                                                          .setStatus(STARTING)
+                                                                          .build();
+        save(runtimeWorkspace);
 
-        add(runtimeWs);
+        final Environment environment = runtimeWorkspace.getEnvironments().get(activeEnvName);
 
-        final Environment environment = runtimeWs.getEnvironments().get(firstNonNull(envName, runtimeWs.getDefaultEnvName()));
-
-        final List<Machine> machines = startEnvironment(environment, runtimeWs.getId());
-        runtimeWs.setDevMachine(findDev(machines));
-        runtimeWs.setMachines(machines);
-        runtimeWs.setStatus(RUNNING);
-        return runtimeWs;
+        final List<MachineImpl> machines = startEnvironment(environment, runtimeWorkspace.getId());
+        runtimeWorkspace.setDevMachine(findDev(machines));
+        runtimeWorkspace.setMachines(machines);
+        runtimeWorkspace.setStatus(RUNNING);
+        return runtimeWorkspace;
     }
 
-    public void stop(String workspaceId) throws ForbiddenException, NotFoundException, ServerException {
+    //TODO throw conflict exception when trying to stop 'STARTING' | 'STOPPING' workspace
+
+    /**
+     * Stops running workspace.
+     *
+     * <p>Actually stops all machines related to certain workspace one by one (order is not specified).
+     * During workspace stopping workspace still will be accessible with {@link WorkspaceStatus#STOPPING stopping} status,
+     * and invoking {@link #start(UsersWorkspace, String)} for the same workspace {@code workspaceId} will throw {@link ConflictException}.
+     *
+     * <p>Note that it doesn't provide any events for machines stop, Machine API is responsible for it.
+     *
+     * @param workspaceId
+     *         identifier of workspace which should be stopped
+     * @throws NotFoundException
+     *         when workspace with specified identifier is not running
+     * @throws ServerException
+     *         when any error occurs during workspace stopping
+     * @see MachineClient#destroy(String)
+     */
+    public void stop(String workspaceId) throws NotFoundException, ServerException {
         final RuntimeWorkspaceImpl runtimeWorkspace = get(workspaceId);
 
         runtimeWorkspace.setStatus(STOPPING);
@@ -99,6 +154,31 @@ public class RuntimeWorkspaceRegistry {
         remove(runtimeWorkspace);
     }
 
+    /**
+     * Returns true if workspace was started and it's status is {@link WorkspaceStatus#RUNNING running},
+     * {@link WorkspaceStatus#STARTING starting} or {@link WorkspaceStatus#STOPPING stopping} - otherwise returns false.
+     *
+     * <p> Using of this method is equivalent to {@link #get(String)} + {@code try catch}, see example:
+     * <pre>
+     *
+     *     if (!registry.isRunning("workspace123")) {
+     *         doStuff("workspace123");
+     *     }
+     *
+     *     //vs
+     *
+     *     try {
+     *         registry.get("workspace123");
+     *     } catch (NotFoundException ex) {
+     *         doStuff("workspace123");
+     *     }
+     *
+     * </pre>
+     *
+     * @param workspaceId
+     *         workspace identifier to perform check
+     * @return true if workspace is running, otherwise false
+     */
     public boolean isRunning(String workspaceId) {
         lock.readLock().lock();
         try {
@@ -108,21 +188,37 @@ public class RuntimeWorkspaceRegistry {
         }
     }
 
+    /**
+     * Returns runtime view of {@link UsersWorkspace} if exists, throws {@link NotFoundException} otherwise.
+     *
+     * @param workspaceId
+     *         workspace identifier to get runtime workspace
+     * @return runtime view of {@link UsersWorkspace}
+     * @throws NotFoundException
+     *         when workspace with specified {@code workspaceId} was not found
+     */
     public RuntimeWorkspaceImpl get(String workspaceId) throws NotFoundException {
         lock.readLock().lock();
         final RuntimeWorkspaceImpl runtimeWorkspace;
         try {
             runtimeWorkspace = idToWorkspaces.get(workspaceId);
+            if (runtimeWorkspace == null) {
+                throw new NotFoundException("Workspace with id " + workspaceId + " is not running.");
+            }
         } finally {
             lock.readLock().unlock();
-        }
-        if (null == runtimeWorkspace) {
-            throw new NotFoundException("Workspace with id " + workspaceId + " is not running.");
         }
         return runtimeWorkspace;
     }
 
-    public List<RuntimeWorkspaceImpl> getList(String ownerId) {
+    /**
+     * Gets runtime workspaces owned by certain user.
+     *
+     * @param ownerId
+     *         owner identifier
+     * @return list of workspace owned by {@code ownerId} or empty list when user doesn't have any workspaces running
+     */
+    public List<RuntimeWorkspaceImpl> getByOwner(String ownerId) {
         lock.readLock().lock();
         try {
             return ownerToWorkspaces.get(ownerId);
@@ -131,8 +227,13 @@ public class RuntimeWorkspaceRegistry {
         }
     }
 
-    List<Machine> startEnvironment(Environment environment, String workspaceId)
-            throws BadRequestException, ServerException, NotFoundException, ConflictException {
+    /**
+     * Starts all environment machines, starting from dev machine.
+     */
+    List<MachineImpl> startEnvironment(Environment environment, String workspaceId) throws BadRequestException,
+                                                                                           ServerException,
+                                                                                           NotFoundException,
+                                                                                           ConflictException {
         /* todo replace with environments management
            for now we consider environment is:
            - recipe with type "docker"
@@ -146,18 +247,18 @@ public class RuntimeWorkspaceRegistry {
             throw new BadRequestException("Invalid environment recipe type " + envRecipeType);
         }
 
-        final List<Machine> machines = new ArrayList<>();
+        final List<MachineImpl> machines = new ArrayList<>();
 
         MachineConfig devMachine = findDev(environment.getMachineConfigs());
         if (devMachine == null) {
             throw new BadRequestException("Dev machine was not found in workspace environment " + environment.getName());
         }
-        machines.add(machineClient.start(devMachine, workspaceId));
+        machines.add(machineClient.start(devMachine, workspaceId, environment.getName()));
 
         for (MachineConfig machineConfig : environment.getMachineConfigs()) {
             if (!machineConfig.isDev()) {
                 try {
-                    machines.add(machineClient.start(machineConfig, workspaceId));
+                    machines.add(machineClient.start(machineConfig, workspaceId, environment.getName()));
                 } catch (ApiException apiEx) {
                     //TODO should it be error?
                     LOG.error(apiEx.getMessage(), apiEx);
@@ -168,7 +269,7 @@ public class RuntimeWorkspaceRegistry {
         return machines;
     }
 
-    private void add(RuntimeWorkspaceImpl runtimeWorkspace) throws ConflictException, ServerException {
+    private void save(RuntimeWorkspaceImpl runtimeWorkspace) throws ConflictException, ServerException {
         final String wsId = runtimeWorkspace.getId();
         final String owner = runtimeWorkspace.getOwner();
         lock.writeLock().lock();
@@ -214,7 +315,7 @@ public class RuntimeWorkspaceRegistry {
             for (RuntimeWorkspaceImpl runtimeWorkspace : idToWorkspaces.values()) {
                 try {
                     stop(runtimeWorkspace.getId());
-                } catch (ForbiddenException | NotFoundException | ServerException e) {
+                } catch (NotFoundException | ServerException e) {
                     LOG.error(e.getLocalizedMessage(), e);
                 }
             }

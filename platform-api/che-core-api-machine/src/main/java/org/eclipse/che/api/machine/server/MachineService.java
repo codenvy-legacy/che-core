@@ -18,6 +18,7 @@ import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.machine.server.exception.MachineException;
 import org.eclipse.che.api.machine.server.impl.MachineImpl;
 import org.eclipse.che.api.machine.server.impl.ProjectBindingImpl;
 import org.eclipse.che.api.machine.server.impl.SnapshotImpl;
@@ -44,6 +45,7 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -58,6 +60,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 /**
  * Machine API
@@ -331,6 +335,33 @@ public class MachineService {
         addLogsToResponse(machineManager.getProcessLogReader(machineId, pid), httpServletResponse);
     }
 
+    /**
+     * Reads file content by specified file path.
+     *
+     * @param path
+     *         path to file on machine instance
+     * @param startFrom
+     *         line number to start reading from
+     * @param limit
+     *         limitation on line if not specified will used 2000 lines
+     * @return file content.
+     * @throws MachineException
+     *         if any error occurs with file reading
+     */
+    @GET
+    @Path("/{machineId}/filepath/{path:.*}")
+    @Produces(MediaType.TEXT_PLAIN)
+    @RolesAllowed("user")
+    public String getFileContent(@PathParam("machineId") String machineId,
+                                 @PathParam("path") String path,
+                                 @DefaultValue("1") @QueryParam("startFrom") Integer startFrom,
+                                 @DefaultValue("2000") @QueryParam("limit") Integer limit)
+            throws NotFoundException, ForbiddenException, ServerException {
+        checkCurrentUserPermissions(machineManager.getMachine(machineId));
+
+        return machineManager.getMachine(machineId).readFileContent(path, startFrom, limit);
+    }
+
     private void addLogsToResponse(Reader logsReader, HttpServletResponse httpServletResponse) throws IOException {
         // Response is written directly to the servlet request stream
         httpServletResponse.setContentType("text/plain");
@@ -385,9 +416,9 @@ public class MachineService {
                                              .withLinks(null)); // TODO
         }
 
-        MachineRecipe machineRecipe = DtoFactory.newDto(MachineRecipe.class)
-                                                .withType(machineState.getRecipe().getType())
-                                                .withScript(machineState.getRecipe().getScript());
+        MachineRecipe machineRecipe = newDto(MachineRecipe.class)
+                .withType(machineState.getRecipe().getType())
+                .withScript(machineState.getRecipe().getScript());
 
         final MachineStateDescriptor machineDescriptor = dtoFactory.createDto(MachineStateDescriptor.class)
                                                                    .withId(machineState.getId())
@@ -414,9 +445,9 @@ public class MachineService {
                                              .withLinks(null)); // TODO
         }
 
-        MachineRecipe machineRecipe = DtoFactory.newDto(MachineRecipe.class)
-                                                .withType(machine.getRecipe().getType())
-                                                .withScript(machine.getRecipe().getScript());
+        MachineRecipe machineRecipe = newDto(MachineRecipe.class)
+                .withType(machine.getRecipe().getType())
+                .withScript(machine.getRecipe().getScript());
 
         final MachineDescriptor machineDescriptor = dtoFactory.createDto(MachineDescriptor.class)
                                                               .withId(machine.getId())
@@ -462,9 +493,9 @@ public class MachineService {
                                              .withLinks(null));
         }
 
-        MachineRecipe machineRecipe = DtoFactory.newDto(MachineRecipe.class)
-                                                .withType(snapshot.getRecipe().getType())
-                                                .withScript(snapshot.getRecipe().getScript());
+        MachineRecipe machineRecipe = newDto(MachineRecipe.class)
+                .withType(snapshot.getRecipe().getType())
+                .withScript(snapshot.getRecipe().getScript());
 
         return dtoFactory.createDto(SnapshotDescriptor.class)
                          .withId(snapshot.getId())

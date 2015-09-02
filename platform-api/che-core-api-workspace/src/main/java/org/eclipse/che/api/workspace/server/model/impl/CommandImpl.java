@@ -42,6 +42,14 @@ public class CommandImpl implements Command {
         this.workingDir = workingDir;
     }
 
+    public CommandImpl(Command command) {
+        this.name = command.getName();
+        this.commandLine = command.getCommandLine();
+        this.visibility = command.getVisibility();
+        this.type = command.getType();
+        this.workingDir = command.getWorkingDir();
+    }
+
     @Override
     public String getName() {
         return name;

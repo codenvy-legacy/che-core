@@ -36,7 +36,7 @@ import java.util.Map;
 /** Abstract base class for the source generating template for a single DTO. */
 abstract class DtoImpl {
     protected static final String COPY_JSONS_PARAM = "copyJsons";
-    
+
     private final Class<?>     dtoInterface;
     private final DtoTemplate  enclosingTemplate;
     private final boolean      compactJson;
@@ -392,7 +392,7 @@ abstract class DtoImpl {
         Preconditions.checkNotNull(method);
         return method == dtoMethods.get(dtoMethods.size() - 1);
     }
-    
+
     /**
      * Create a textual representation of a string literal that evaluates to the given value.
      */

@@ -27,6 +27,8 @@ import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 import org.eclipse.che.api.core.notification.EventService;
+import org.eclipse.che.api.workspace.server.model.impl.EnvironmentImpl;
+import org.eclipse.che.api.workspace.server.model.impl.MachineConfigImpl;
 import org.eclipse.che.api.workspace.server.model.impl.RuntimeWorkspaceImpl;
 import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
 import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
@@ -105,7 +107,7 @@ public class WorkspaceManager {
     public List<UsersWorkspace> getWorkspaces(String owner) throws ServerException, BadRequestException {
         requiredNotNull(owner, "Workspace owner required");
 
-        final List<RuntimeWorkspaceImpl> runtimeWorkspaces = workspaceRegistry.getList(owner);
+        final List<RuntimeWorkspaceImpl> runtimeWorkspaces = workspaceRegistry.getByOwner(owner);
         final List<UsersWorkspaceImpl> usersWorkspaces = workspaceDao.getList(owner);
         Map<String, UsersWorkspace> workspaces = new HashMap<>();
         for (RuntimeWorkspace runtimeWorkspace : runtimeWorkspaces) {
@@ -295,7 +297,7 @@ public class WorkspaceManager {
         executor.execute(() -> {
             try {
                 workspaceRegistry.stop(workspaceId);
-            } catch (ForbiddenException | NotFoundException | ServerException e) {
+            } catch (NotFoundException | ServerException e) {
                 LOG.error(e.getLocalizedMessage(), e);
             }
 
@@ -315,6 +317,14 @@ public class WorkspaceManager {
             workspace.setName(generateWorkspaceName());
         } else {
             validateName(cfg.getName());
+        }
+
+        //set websocket output channels
+        for (EnvironmentImpl environment : workspace.getEnvironments().values()) {
+            for (MachineConfigImpl machineConfig : environment.getMachineConfigs()) {
+                machineConfig.setOutputChannel(workspace.getId() + ':' + environment.getName() + ':' + machineConfig.getName());
+                machineConfig.setStatusChannel("machine:status:" + workspace.getId() + ':' + machineConfig.getName());
+            }
         }
 
         return workspace;
