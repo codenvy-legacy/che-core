@@ -24,6 +24,7 @@ import org.eclipse.che.dto.server.DtoFactory;
 
 import com.google.common.base.Joiner;
 
+import org.eclipse.che.git.impl.nativegit.commands.EmptyGitCommand;
 import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
