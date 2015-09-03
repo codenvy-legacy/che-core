@@ -72,7 +72,7 @@ public class ProjectDescriptorProcessor extends AbstractResourceProcessor<Projec
             final String parentPath = ((HasProjectDescriptor)parent).getProjectDescriptor().getPath();
             final String modulePath = node.getData().getPath();
 
-            final String relPath = modulePath.substring(modulePath.lastIndexOf(parentPath) + 1);
+            final String relPath = modulePath.substring(parentPath.length() + 1);
 
             return AsyncPromiseHelper.createFromAsyncRequest(new AsyncPromiseHelper.RequestCall<ProjectDescriptor>() {
                 @Override
@@ -80,7 +80,7 @@ public class ProjectDescriptorProcessor extends AbstractResourceProcessor<Projec
                     projectService.deleteModule(parentPath, relPath, new AsyncRequestCallback<Void>() {
                         @Override
                         protected void onSuccess(Void result) {
-                            callback.onSuccess(node.getData());
+                            deleteFolder(node, modulePath, callback);
                         }
 
                         @Override
@@ -129,5 +129,19 @@ public class ProjectDescriptorProcessor extends AbstractResourceProcessor<Projec
         }
 
         return Promises.reject(JsPromiseError.create(""));
+    }
+
+    private void deleteFolder(final HasDataObject<ProjectDescriptor> node, String path, final AsyncCallback<ProjectDescriptor> callback) {
+        projectService.delete(path, new AsyncRequestCallback<Void>() {
+            @Override
+            protected void onSuccess(Void result) {
+                callback.onSuccess(node.getData());
+            }
+
+            @Override
+            protected void onFailure(Throwable exception) {
+                callback.onFailure(exception);
+            }
+        });
     }
 }
