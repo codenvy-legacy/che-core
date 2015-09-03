@@ -33,6 +33,7 @@ public class CreateModuleAction extends ProjectAction implements ModuleCreatedEv
     private final ProjectWizardPresenter      wizard;
     private final AnalyticsEventLogger        eventLogger;
     private final NewProjectExplorerPresenter projectExplorer;
+    private       FolderReferenceNode         folderNode;
 
     @Inject
     public CreateModuleAction(NodesResources resources,
@@ -50,9 +51,9 @@ public class CreateModuleAction extends ProjectAction implements ModuleCreatedEv
     @Override
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
-        FolderReferenceNode selectedFolder = getResourceBasedNode();
-        if (selectedFolder != null) {
-            wizard.show(selectedFolder.getData());
+        folderNode = getResourceBasedNode();
+        if (folderNode != null) {
+            wizard.show(folderNode.getData());
         }
     }
 
@@ -80,9 +81,15 @@ public class CreateModuleAction extends ProjectAction implements ModuleCreatedEv
 
     @Override
     public void onModuleCreated(ModuleCreatedEvent event) {
-        FolderReferenceNode selectedFolder = getResourceBasedNode();
-        if (selectedFolder != null && selectedFolder.getParent() != null) {
-            projectExplorer.reloadChildren(selectedFolder.getParent(), event.getModule());
+        if (folderNode != null && folderNode.getParent() != null) {
+
+            boolean goIntoState = projectExplorer.isGoIntoActivated();
+
+            if (goIntoState) {
+                projectExplorer.resetGoIntoMode();
+            }
+
+            projectExplorer.reloadChildren(folderNode.getParent(), event.getModule(), false, goIntoState);
         }
     }
 }

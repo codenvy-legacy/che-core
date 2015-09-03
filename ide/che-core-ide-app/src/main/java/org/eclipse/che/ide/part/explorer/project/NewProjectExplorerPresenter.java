@@ -210,7 +210,7 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
         }
 
         if (!nodesToReload.isEmpty()) {
-            view.reloadChildren(nodesToReload, null, false);
+            reloadChildren(nodesToReload, null, false);
         }
     }
 
@@ -267,8 +267,16 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
         reloadChildren(node != null ? Collections.singletonList(node) : null, selectAfter, callAction);
     }
 
+    public void reloadChildren(Node node, Object selectAfter, boolean callAction, boolean goInto) {
+        reloadChildren(node != null ? Collections.singletonList(node) : null, selectAfter, callAction, goInto);
+    }
+
     public void reloadChildren(List<Node> node, Object selectAfter, boolean callAction) {
-        view.reloadChildren(node, selectAfter, callAction);
+        reloadChildren(node, selectAfter, callAction, false);
+    }
+
+    public void reloadChildren(List<Node> node, Object selectAfter, boolean callAction, boolean goInto) {
+        view.reloadChildren(node, selectAfter, callAction, goInto);
     }
 
     public void reloadChildrenByType(Class<?> type) {
@@ -277,6 +285,10 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
 
     public void resetGoIntoMode() {
         view.resetGoIntoMode();
+    }
+
+    public boolean isGoIntoActivated() {
+        return view.isGoIntoActivated();
     }
 
     public void expandAll() {

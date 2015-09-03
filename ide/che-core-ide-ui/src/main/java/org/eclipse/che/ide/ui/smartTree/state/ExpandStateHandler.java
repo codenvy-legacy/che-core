@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ui.smartTree.state;
 
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONString;
@@ -26,7 +25,6 @@ import org.eclipse.che.ide.ui.smartTree.event.StoreDataChangeEvent;
 import org.eclipse.che.ide.ui.smartTree.event.StoreDataChangeEvent.StoreDataChangeHandler;
 import org.eclipse.che.ide.ui.smartTree.event.StoreUpdateEvent;
 import org.eclipse.che.ide.ui.smartTree.event.StoreUpdateEvent.StoreUpdateHandler;
-import org.eclipse.che.ide.util.loging.Log;
 
 import java.util.HashSet;
 import java.util.List;
@@ -94,17 +92,17 @@ public class ExpandStateHandler extends AbstractStateHandler<Set<String>> {
 
 
     public void applyState() {
-        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-            @Override
-            public void execute() {
-                for (String key : getState()) {
-                    Node item = tree.getNodeStorage().findNodeWithKey(key);
-                    if (item != null && !tree.isExpanded(item)) {
-                        tree.setExpanded(item, true);
-                    }
-                }
-            }
-        });
+//        new DelayedTask() {
+//            @Override
+//            public void onExecute() {
+//                for (String key : getState()) {
+//                    Node item = tree.getNodeStorage().findNodeWithKey(key);
+//                    if (item != null && !tree.isExpanded(item)) {
+//                        tree.setExpanded(item, true);
+//                    }
+//                }
+//            }
+//        }.delay(500);
     }
 
     public void loadState() {

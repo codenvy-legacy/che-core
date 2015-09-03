@@ -396,10 +396,22 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
     }
 
     @Override
-    public void reloadChildren(List<Node> nodes, final Object selectAfter, final boolean callAction) {
+    public void reloadChildren(List<Node> nodes, final Object selectAfter, final boolean callAction, final boolean goInto) {
         if (nodes == null || nodes.isEmpty()) {
             nodeManager.getProjects().then(selectAfter(selectAfter));
             return;
+        }
+
+        //check if we in go into mode
+        if (tree.getGoIntoMode().isActivated()) {
+            //if we in go into node then we know that root node is one
+            Node goIntoParentNode = tree.getRootNodes().get(0);
+
+            List<Node> cachedChildren = tree.getNodeStorage().getChildren(goIntoParentNode);
+            //if in children we contains
+            if (Iterables.contains(cachedChildren, tree.getGoIntoMode().getLastNode())) {
+                tree.getGoIntoMode().reset();
+            }
         }
 
         List<Node> rootNodes = tree.getRootNodes();
@@ -421,26 +433,30 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
             for (Node nodeToReload : nodes) {
                 tree.getNodeLoader().loadChildren(nodeToReload);
             }
+        }
 
-            if (nodes.size() == 1 && selectAfter != null) {
-                tree.addExpandHandler(new ExpandNodeHandler() {
-                    @Override
-                    public void onExpand(ExpandNodeEvent event) {
-                        List<Node> children = tree.getNodeStorage().getChildren(event.getNode());
-                        for (Node child : children) {
-                            if (child instanceof HasDataObject<?> && ((HasDataObject<?>)child).getData().equals(selectAfter)) {
-                                tree.getSelectionModel().select(child, false);
+        if (nodes.size() == 1 && selectAfter != null) {
+            tree.addExpandHandler(new ExpandNodeHandler() {
+                @Override
+                public void onExpand(ExpandNodeEvent event) {
+                    List<Node> children = tree.getNodeStorage().getChildren(event.getNode());
+                    for (Node child : children) {
+                        if (child instanceof HasDataObject<?> && ((HasDataObject<?>)child).getData().equals(selectAfter)) {
+                            tree.getSelectionModel().select(child, false);
 
-                                if (callAction && child instanceof HasAction) {
-                                    ((HasAction)child).actionPerformed();
-                                }
-
-                                return;
+                            if (callAction && child instanceof HasAction) {
+                                ((HasAction)child).actionPerformed();
                             }
+
+                            if (goInto && child.supportGoInto()) {
+                                goInto(child);
+                            }
+
+                            return;
                         }
                     }
-                });
-            }
+                }
+            });
         }
     }
 
@@ -486,7 +502,8 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
         });
     }
 
-    protected void navigate(final HasStorablePath node, final boolean select, final boolean callAction, final AsyncCallback<Node> callback) {
+    protected void navigate(final HasStorablePath node, final boolean select, final boolean callAction,
+                            final AsyncCallback<Node> callback) {
         if (navigateBeforeExpandHandler != null) {
             navigateBeforeExpandHandler.removeHandler();
         }
@@ -627,6 +644,11 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
         if (tree.getGoIntoMode().isActivated()) {
             tree.getGoIntoMode().reset();
         }
+    }
+
+    @Override
+    public boolean isGoIntoActivated() {
+        return tree.getGoIntoMode().isActivated();
     }
 
     @Override

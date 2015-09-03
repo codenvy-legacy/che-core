@@ -136,8 +136,19 @@ public class RenameItemAction extends Action {
         }
 
         Selection<?> selection = projectExplorer.getSelection();
-        e.getPresentation().setEnabled(selection != null && !selection.isEmpty()
-                                       && selection.getHeadElement() instanceof SupportRename<?>
+
+        if (selection == null || selection.isEmpty()) {
+            e.getPresentation().setEnabled(false);
+            return;
+        }
+
+        if (selection.isMultiSelection()) {
+            //this is temporary commented
+            e.getPresentation().setEnabled(false);
+            return;
+        }
+
+        e.getPresentation().setEnabled(selection.getHeadElement() instanceof ResourceBasedNode<?>
                                        && !(selection.getHeadElement() instanceof ProjectDescriptorNode));
     }
 

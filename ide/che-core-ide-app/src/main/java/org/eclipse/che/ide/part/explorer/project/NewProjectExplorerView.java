@@ -45,6 +45,8 @@ public interface NewProjectExplorerView extends View<NewProjectExplorerView.Acti
 
     void resetGoIntoMode();
 
+    boolean isGoIntoActivated();
+
     boolean isFoldersAlwaysOnTop();
 
     void setFoldersAlwaysOnTop(boolean foldersAlwaysOnTop);
@@ -53,7 +55,7 @@ public interface NewProjectExplorerView extends View<NewProjectExplorerView.Acti
 
     HandlerRegistration addBeforeExpandNodeHandler(BeforeExpandNodeHandler handler);
 
-    void reloadChildren(List<Node> nodes, Object selectAfter, boolean callAction);
+    void reloadChildren(List<Node> nodes, Object selectAfter, boolean callAction, boolean goInto);
 
     void reloadChildrenByType(Class<?> type);
 

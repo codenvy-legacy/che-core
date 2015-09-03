@@ -38,7 +38,9 @@ public class GoIntoAction extends ProjectAction {
     protected void updateProjectAction(ActionEvent e) {
         List<?> selection = projectExplorer.getSelection().getAllElements();
 
-        e.getPresentation().setEnabledAndVisible(selection.size() == 1 && isNodeSupportGoInto(selection.get(0)));
+        e.getPresentation().setEnabledAndVisible(!projectExplorer.isGoIntoActivated()
+                                                 && selection.size() == 1
+                                                 && isNodeSupportGoInto(selection.get(0)));
     }
 
     @Override

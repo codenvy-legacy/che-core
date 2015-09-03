@@ -91,7 +91,7 @@ public class ShowHiddenFilesAction extends Action implements PromisableAction {
 
             @Override
             public void makeCall(final Callback<Void, Throwable> callback) {
-                currentProject.getCurrentTree().getSettings().setShowHiddenItems(isShowHiddenFiles);
+//                currentProject.getCurrentTree().getSettings().setShowHiddenItems(isShowHiddenFiles);
 
                 callback.onSuccess(null);
             }

@@ -11,6 +11,7 @@
 package org.eclipse.che.ide.actions;
 
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -64,7 +65,6 @@ public class DeleteItemAction extends Action {
         if (selection.size() == 1) {
             Object o = selection.get(0);
             if (o instanceof ResourceBasedNode<?>) {
-                projectExplorer.resetGoIntoMode();
                 ((ResourceBasedNode)o).delete();
             } else {
                 throw new IllegalArgumentException("Node isn't resource based.");
@@ -110,20 +110,19 @@ public class DeleteItemAction extends Action {
             return;
         }
 
-        for (Object o : selection.getAllElements()) {
-            if (!(o instanceof ResourceBasedNode<?>)) {
-                e.getPresentation().setEnabled(false);
-                return;
-            }
+        if (selection.isMultiSelection()) {
+            //this is temporary commented
+            e.getPresentation().setEnabled(false);
+            return;
         }
 
-        e.getPresentation().setEnabled(true);
+        boolean enable = Iterables.all(selection.getAllElements(), new Predicate<Object>() {
+            @Override
+            public boolean apply(@Nullable Object o) {
+                return o instanceof ResourceBasedNode<?>;
+            }
+        });
 
-//        boolean isEnabled = false;
-//        Selection<?> selection = selectionAgent.getSelection();
-//        if (selection != null && selection.getFirstElement() instanceof StorableNode) {
-//            isEnabled = ((StorableNode)selection.getFirstElement()).isDeletable();
-//        }
-//        e.getPresentation().setEnabled(isEnabled);
+        e.getPresentation().setEnabled(enable);
     }
 }
