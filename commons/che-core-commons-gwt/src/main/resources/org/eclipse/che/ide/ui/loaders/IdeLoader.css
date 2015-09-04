@@ -42,6 +42,35 @@
     -moz-animation-name: invertBarrelRoll;
     animation-name: invertBarrelRoll;
 }
+.expandControl {
+    float: left;
+    transition: all 300ms;
+    width: 15px;
+    height: 15px;
+    margin-top: 2px;
+    margin-right: 1px;
+}
+
+.expandedImage {
+    transform: rotate(90deg);
+    -webkit-transform: rotate(90deg);
+    margin-right: 3px
+}
+
+.errorStatus {
+    color: #F62217;
+    text-align: center;
+}
+
+.successStatus {
+    color: lightgreen;
+    text-align: center;
+}
+
+.inProgressStatus {
+    color: #61b7ef;
+    text-align: center;
+}
 
 @-webkit-keyframes barrelRoll {
     0% {
