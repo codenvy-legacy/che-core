@@ -11,6 +11,7 @@
 package org.eclipse.che.inject;
 
 import org.eclipse.che.commons.lang.Pair;
+
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.google.inject.AbstractModule;
@@ -33,7 +34,9 @@ public class PairArrayConverter extends AbstractModule implements TypeConverter 
 
     @Override
     protected void configure() {
-        convertToTypes(Matchers.only(new TypeLiteral<Pair<String, String>[]>() {
-        }), this);
+        convertToTypes(Matchers.only(new StringPairTypeLiteral()), this);
+    }
+
+    private static class StringPairTypeLiteral extends TypeLiteral<Pair<String, String>[]> {
     }
 }
