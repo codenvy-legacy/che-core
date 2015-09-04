@@ -29,6 +29,7 @@ import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.RestContext;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,8 +63,24 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
     }
 
     @Override
-    public Promise<UsersWorkspaceDto> create(UsersWorkspaceDto newWorkspace, String account) {
-        return null;
+    public Promise<UsersWorkspaceDto> create(final UsersWorkspaceDto newWorkspace, final String accountId) {
+        return newPromise(new RequestCall<UsersWorkspaceDto>() {
+            @Override
+            public void makeCall(AsyncCallback<UsersWorkspaceDto> callback) {
+                create(newWorkspace, accountId, callback);
+            }
+        });
+    }
+
+    private void create(@Nonnull UsersWorkspaceDto newWorkspace,
+                        String accountId,
+                        @Nonnull AsyncCallback<UsersWorkspaceDto> callback) {
+        String url = baseHttpUrl + "/config?account=" + accountId;
+        asyncRequestFactory.createPostRequest(url, newWorkspace)
+                           .header(ACCEPT, APPLICATION_JSON)
+                           .header(CONTENT_TYPE, APPLICATION_JSON)
+                           .loader(loader, "Creating workspace...")
+                           .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(UsersWorkspaceDto.class)));
     }
 
     @Override
@@ -152,8 +169,24 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
     }
 
     @Override
-    public Promise<UsersWorkspaceDto> startById(final String id, final String envName) {
-        return null;
+    public Promise<UsersWorkspaceDto> startById(@Nonnull final String id, final String envName) {
+        return newPromise(new RequestCall<UsersWorkspaceDto>() {
+            @Override
+            public void makeCall(AsyncCallback<UsersWorkspaceDto> callback) {
+                startById(id, envName, callback);
+            }
+        });
+    }
+
+    private void startById(@Nonnull String workspaceId,
+                           @Nullable String envName,
+                           @Nonnull AsyncCallback<UsersWorkspaceDto> callback) {
+        String url = baseHttpUrl + "/" + workspaceId + "/runtime?environment=" + envName;
+        asyncRequestFactory.createPostRequest(url, null)
+                           .header(ACCEPT, APPLICATION_JSON)
+                           .header(CONTENT_TYPE, APPLICATION_JSON)
+                           .loader(loader, "Starting workspace...")
+                           .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(UsersWorkspaceDto.class)));
     }
 
     @Override

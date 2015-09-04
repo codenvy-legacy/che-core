@@ -8,30 +8,30 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.machine.gwt.client;
+package org.eclipse.che.api.machine.gwt.client.events;
 
 import com.google.gwt.event.shared.EventHandler;
 
 /**
- * A handler for handling {@link ExtServerStateEvent}.
+ * A handler for handling {@link DevMachineStateEvent}.
  *
  * @author Roman Nikitenko
  */
-public interface ExtServerStateHandler extends EventHandler {
+public interface DevMachineStateHandler extends EventHandler {
 
     /**
-     * Called when extension server has been started.
+     * Called when dev machine has been started.
      *
      * @param event
-     *         the fired {@link ExtServerStateEvent}
+     *         the fired {@link DevMachineStateEvent}
      */
-    void onExtServerStarted(ExtServerStateEvent event);
+    void onMachineStarted(DevMachineStateEvent event);
 
     /**
-     * Called when extension server has been stopped.
+     * Called when dev machine has been destroyed.
      *
      * @param event
-     *         the fired {@link ExtServerStateEvent}
+     *         the fired {@link DevMachineStateEvent}
      */
-    void onExtServerStopped(ExtServerStateEvent event);
+    void onMachineDestroyed(DevMachineStateEvent event);
 }

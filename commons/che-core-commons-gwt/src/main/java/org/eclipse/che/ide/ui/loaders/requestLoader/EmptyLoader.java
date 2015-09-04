@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.ui.loader;
+package org.eclipse.che.ide.ui.loaders.requestLoader;
 
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
 

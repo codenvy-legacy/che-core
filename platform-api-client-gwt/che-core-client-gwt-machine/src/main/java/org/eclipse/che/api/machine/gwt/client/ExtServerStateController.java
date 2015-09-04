@@ -16,8 +16,12 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateEvent;
+import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
+import org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo;
+import org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status;
 import org.eclipse.che.ide.websocket.MessageBus;
 import org.eclipse.che.ide.websocket.MessageBusImpl;
 import org.eclipse.che.ide.websocket.WebSocket;
@@ -33,8 +37,10 @@ import org.eclipse.che.ide.websocket.events.WebSocketClosedEvent;
 @Singleton
 public class ExtServerStateController implements ConnectionOpenedHandler, ConnectionClosedHandler, ConnectionErrorHandler {
 
-    private final Timer               retryConnectionTimer;
-    private final EventBus            eventBus;
+    private final Timer           retryConnectionTimer;
+    private final EventBus        eventBus;
+    private       LoaderPresenter loader;
+    private       OperationInfo   startExtServerOperation;
 
     private ExtServerState            state;
     private String                    wsUrl;
@@ -43,8 +49,10 @@ public class ExtServerStateController implements ConnectionOpenedHandler, Connec
     private AsyncCallback<MessageBus> messageBusCallback;
 
     @Inject
-    public ExtServerStateController(EventBus eventBus) {
+    public ExtServerStateController(EventBus eventBus,
+                                    LoaderPresenter loader) {
         this.eventBus = eventBus;
+        this.loader = loader;
         retryConnectionTimer = new Timer() {
             @Override
             public void run() {
@@ -60,6 +68,8 @@ public class ExtServerStateController implements ConnectionOpenedHandler, Connec
         this.state = ExtServerState.STOPPED;
 
         connect();
+        startExtServerOperation = new OperationInfo("Starting extension server", Status.IN_PROGRESS, loader);
+        loader.print(startExtServerOperation);
     }
 
     @Override
@@ -75,6 +85,8 @@ public class ExtServerStateController implements ConnectionOpenedHandler, Connec
         if (countRetry > 0) {
             retryConnectionTimer.schedule(1000);
         } else {
+            startExtServerOperation.setStatus(Status.ERROR);
+            loader.hide();
             state = ExtServerState.STOPPED;
             eventBus.fireEvent(ExtServerStateEvent.createExtServerStoppedEvent());
         }
@@ -83,6 +95,9 @@ public class ExtServerStateController implements ConnectionOpenedHandler, Connec
     @Override
     public void onOpen() {
         state = ExtServerState.STARTED;
+        startExtServerOperation.setStatus(Status.FINISHED);
+        loader.hide();
+
         eventBus.fireEvent(ExtServerStateEvent.createExtServerStartedEvent());
         messageBus = new MessageBusImpl(wsUrl);
         messageBusCallback.onSuccess(messageBus);

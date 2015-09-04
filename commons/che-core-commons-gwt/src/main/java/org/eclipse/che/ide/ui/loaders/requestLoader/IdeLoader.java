@@ -8,9 +8,11 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.ui.loader;
+package org.eclipse.che.ide.ui.loaders.requestLoader;
 
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
+import org.eclipse.che.ide.ui.loaders.LoaderResources;
+
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTML;
@@ -92,7 +94,7 @@ public class IdeLoader implements AsyncRequestLoader {
             setGlassEnabled(true);
             getGlassElement().getStyle().setOpacity(0);
             getGlassElement().getStyle().setZIndex(9999998);
-            getElement().getStyle().setZIndex(9999999);
+            getElement().getStyle().setZIndex(9999998);
         }
 
         public void setMessage(String message) {

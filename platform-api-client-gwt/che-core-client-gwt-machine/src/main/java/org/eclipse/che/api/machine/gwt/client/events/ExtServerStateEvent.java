@@ -8,9 +8,11 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.machine.gwt.client;
+package org.eclipse.che.api.machine.gwt.client.events;
 
 import com.google.gwt.event.shared.GwtEvent;
+
+import org.eclipse.che.api.machine.gwt.client.ExtServerState;
 
 /**
  * Event that describes the fact that extension server state has been changed.
