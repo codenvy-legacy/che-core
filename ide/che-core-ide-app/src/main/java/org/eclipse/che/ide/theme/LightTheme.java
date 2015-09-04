@@ -11,6 +11,7 @@
 package org.eclipse.che.ide.theme;
 
 import org.eclipse.che.ide.api.theme.Theme;
+
 import com.google.inject.Singleton;
 
 /**
@@ -462,17 +463,44 @@ public class LightTheme implements Theme {
     }
 
     @Override
+    public String getToolbarActionGroupShadowColor() {
+        return "#c5c5c5";
+    }
+
+    @Override
+    public String getToolbarActionGroupBackgroundColor() {
+        return "#ffffff";
+    }
+
+    @Override
+    public String getToolbarActionGroupBorderColor() {
+        return "#afafaf";
+    }
+
+    @Override
+    public String getToolbarBackgroundImage() {
+        return "linear-gradient(-180deg, #d3d3d4   0%, #bdbec0   100%)";
+    }
+
+    @Override
     public String getToolbarBackgroundColor() {
         return " #EAEAEA";
     }
 
     @Override
     public String getToolbarIconColor() {
-        return "#606060";
+        return "#7c7c7c";
     }
 
     @Override
-    public String getTooltipBackgroundColor() { return "#FFFFFF";}
+    public String getToolbarHoverIconColor() {
+        return "#565656";
+    }
+
+    @Override
+    public String getTooltipBackgroundColor() {
+        return "#FFFFFF";
+    }
 
     @Override
     public String getProgressColor() {

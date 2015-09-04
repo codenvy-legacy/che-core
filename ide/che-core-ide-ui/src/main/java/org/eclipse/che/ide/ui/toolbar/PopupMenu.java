@@ -146,11 +146,16 @@ public class PopupMenu extends Composite {
         this.keyBindingAgent = keyBindingAgent;
         this.itemIdPrefix = itemIdPrefix;
 
-        list = new ArrayList<>();
-        Utils.expandActionGroup(actionGroup, list, presentationFactory, place, actionManager, managerProvider.get());
-
         this.lockLayer = lockLayer;
         this.actionSelectedHandler = actionSelectedHandler;
+
+        List<Utils.VisibleActionGroup> visibleActionGroupList =
+                Utils.renderActionGroup(actionGroup, presentationFactory, place, actionManager, managerProvider.get());
+
+        list = new ArrayList<>();
+        for (Utils.VisibleActionGroup groupActions : visibleActionGroupList) {
+            list.addAll(groupActions.getActionList());
+        }
 
         popupMenuPanel = new SimplePanel();
         initWidget(popupMenuPanel);

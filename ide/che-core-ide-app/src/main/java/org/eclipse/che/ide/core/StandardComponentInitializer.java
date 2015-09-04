@@ -447,11 +447,9 @@ public class StandardComponentInitializer {
         changeResourceGroup.add(copyAction);
         changeResourceGroup.add(pasteAction);
         changeResourceGroup.add(deleteItemAction);
-        changeResourceGroup.addSeparator();
 
         DefaultActionGroup mainToolbarGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_MAIN_TOOLBAR);
         mainToolbarGroup.add(newGroup);
-        mainToolbarGroup.addSeparator();
         mainToolbarGroup.add(changeResourceGroup);
         toolbarPresenter.bindMainGroup(mainToolbarGroup);
 

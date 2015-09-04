@@ -26,19 +26,15 @@ public interface ToolbarResources extends ClientBundle {
 
         String toolbarPanel();
 
-//        String toolbarMenuPanel();
-
         String iconButtonPanelDown();
-
-        String iconButtonPanelSelectedOver();
 
         String iconButtonPanelSelectedDown();
 
         String toolbarDelimiter();
 
-        String iconButtonPanelSelected();
+        String toolbarActionGroupPanel();
 
-        String iconButtonPanelOver();
+        String iconButtonPanelSelected();
 
         String disabled();
 
@@ -47,8 +43,6 @@ public interface ToolbarResources extends ClientBundle {
         String popupButtonPanelDown();
 
         String popupButtonIcon();
-
-        String popupButtonPanelOver();
 
         String tooltip();
 

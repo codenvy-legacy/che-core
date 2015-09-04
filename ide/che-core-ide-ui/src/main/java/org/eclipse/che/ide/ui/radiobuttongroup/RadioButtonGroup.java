@@ -97,7 +97,7 @@ public class RadioButtonGroup extends Composite {
     public interface Resources extends ClientBundle {
 
         /** Returns the CSS resource for the {@link RadioButtonGroup} widget. */
-        @Source({"radio-button-group.css"})
+        @Source({"radio-button-group.css", "org/eclipse/che/ide/api/ui/style.css"})
         CSS getCSS();
 
         /** The CssResource interface for the {@link RadioButtonGroup} widget. */

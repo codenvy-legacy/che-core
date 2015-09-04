@@ -200,13 +200,6 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
         if (panel.getAbsoluteLeft() + tooltip.getOffsetWidth() > screenSize) {
             tooltipBody.getStyle().setRight(panel.getAbsoluteLeft() + tooltip.getOffsetWidth() - screenSize, Style.Unit.PX);
         }
-
-        panel.setStyleName(toolbarResources.toolbar().popupButtonPanelOver());
-    }
-
-    /** Mouse Up handler. */
-    private void onMouseUp() {
-        panel.setStyleName(toolbarResources.toolbar().popupButtonPanelOver());
     }
 
     /** Opens Popup Menu. */
@@ -274,12 +267,6 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
                     }
                     break;
 
-                case Event.ONMOUSEUP:
-                    if (event.getButton() == Event.BUTTON_LEFT) {
-                        onMouseUp();
-                    }
-                    break;
-
                 case Event.ONCLICK:
                     onMouseClick();
                     break;
@@ -321,8 +308,6 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
         private void setSelected(boolean selected) {
             if (selected) {
                 panel.setStyleName(toolbarResources.toolbar().iconButtonPanelSelected());
-            } else {
-                panel.setStyleName(toolbarResources.toolbar().iconButtonPanelOver());
             }
         }
     }

@@ -17,52 +17,59 @@ import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.action.Separator;
 import org.eclipse.che.ide.api.parts.PerspectiveManager;
+import org.eclipse.che.ide.collections.ListHelper;
 import org.eclipse.che.ide.util.loging.Log;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
  * @author Dmitry Shnurenko
+ * @author Oleksii Orel
  */
 public class Utils {
 
     /**
-     * @param list
-     *         this list contains expanded actions.
+     * Returns the list of visible action group.
+     *
+     * @param group
+     *         action group
+     * @param presentationFactory
+     *         presentation factory
+     * @param place
+     *         position name on the page
      * @param actionManager
-     *         manager
+     *         action manager
+     * @param perspectiveManager
+     *         perspective manager
+     * @return list of visible action group
      */
-    public static void expandActionGroup(@Nonnull ActionGroup group,
-                                         List<Action> list,
-                                         PresentationFactory presentationFactory,
-                                         @Nonnull String place,
-                                         ActionManager actionManager,
-                                         boolean transparentOnly,
-                                         PerspectiveManager perspectiveManager) {
+    public static List<VisibleActionGroup> renderActionGroup(@Nonnull ActionGroup group,
+                                                             PresentationFactory presentationFactory,
+                                                             @Nonnull String place,
+                                                             ActionManager actionManager,
+                                                             PerspectiveManager perspectiveManager) {
         Presentation presentation = presentationFactory.getPresentation(group);
         ActionEvent event = new ActionEvent(place, presentation, actionManager, perspectiveManager);
 
-        if (!presentation.isVisible()) {
-            return;
+        if (!presentation.isVisible()) { // don't process invisible groups
+            return null;
         }
 
         Action[] children = group.getChildren(event);
-
+        List<VisibleActionGroup> currentVisibleActionGroupList = new ArrayList<>();
+        List<Action> currentActionList = new ArrayList<>();
+        String currentGroupId = actionManager.getId(group);
         for (Action child : children) {
             if (child == null) {
-                String groupId = actionManager.getId(group);
-                Log.error(Utils.class, "action is null: group=" + group + " group id=" + groupId);
+                Log.error(Utils.class, "action is null: group=" + group + " group id=" + currentGroupId);
                 continue;
             }
 
             presentation = presentationFactory.getPresentation(child);
-            ActionEvent e1 = new ActionEvent(place, presentation, actionManager, perspectiveManager);
-
-            if (transparentOnly && child.isTransparentUpdate() || !transparentOnly) {
-                if (!doUpdate(child, e1)) continue;
-            }
+            child.update(new ActionEvent(place, presentation, actionManager, perspectiveManager));
 
             if (!presentation.isVisible()) { // don't create invisible items in the menu
                 continue;
@@ -82,51 +89,50 @@ public class Utils {
                         }
                         presentation.setEnabled(actionGroup.canBePerformed() || visibleChildren);
                     }
-
-                    list.add(child);
+                    currentActionList.add(child);
                 } else {
-                    expandActionGroup((ActionGroup)child, list, presentationFactory, place, actionManager, perspectiveManager);
+                    List<VisibleActionGroup> newVisibleActionGroupList = renderActionGroup((ActionGroup)child,
+                                                                                           presentationFactory,
+                                                                                           place,
+                                                                                           actionManager,
+                                                                                           perspectiveManager);
+                    currentVisibleActionGroupList.addAll(newVisibleActionGroupList);
                 }
             } else if (child instanceof Separator) {
-                if (!list.isEmpty() && !(list.get(list.size() - 1) instanceof Separator)) {
-                    list.add(child);
+                if (!currentActionList.isEmpty() && !(currentActionList.get(currentActionList.size() - 1) instanceof Separator)) {
+                    currentActionList.add(child);
                 }
             } else {
-                list.add(child);
+                currentActionList.add(child);
             }
         }
+        currentVisibleActionGroupList.add(0, new VisibleActionGroup(currentGroupId, currentActionList));
+
+        return currentVisibleActionGroupList;
     }
 
 
     /**
-     * @param list
-     *         this list contains expanded actions.
+     * Returns true if action group has visible children.
+     *
+     * @param group
+     *         action group
+     * @param factory
+     *         presentation factory
      * @param actionManager
-     *         manager
+     *         action manager
+     * @param place
+     *         position name on the page
+     * @param perspectiveManager
+     *         perspective manager
+     * @return boolean
      */
-    public static void expandActionGroup(@Nonnull ActionGroup group,
-                                         List<Action> list,
-                                         PresentationFactory presentationFactory,
-                                         String place,
-                                         ActionManager actionManager,
-                                         PerspectiveManager perspectiveManager) {
-        expandActionGroup(group, list, presentationFactory, place, actionManager, false, perspectiveManager);
-    }
-
-    // returns false if exception was thrown and handled
-    private static boolean doUpdate(final Action action, final ActionEvent event) {
-        final boolean result = true;
-        action.update(event);
-        return result;
-    }
-
     public static boolean hasVisibleChildren(ActionGroup group,
                                              PresentationFactory factory,
                                              ActionManager actionManager,
                                              String place,
                                              PerspectiveManager perspectiveManager) {
         ActionEvent event = new ActionEvent(place, factory.getPresentation(group), actionManager, perspectiveManager);
-//        event.setInjectedContext(group.isInInjectedContext());
         for (Action anAction : group.getChildren(event)) {
             if (anAction == null) {
                 Log.error(Utils.class, "Null action found in group " + group + ", " + factory.getPresentation(group));
@@ -137,7 +143,7 @@ public class Utils {
             }
 
             final Presentation presentation = factory.getPresentation(anAction);
-            updateGroupChild(place, anAction, presentation, actionManager, perspectiveManager);
+            anAction.update(new ActionEvent(place, presentation, actionManager, perspectiveManager));
             if (anAction instanceof ActionGroup) {
                 ActionGroup childGroup = (ActionGroup)anAction;
 
@@ -159,12 +165,82 @@ public class Utils {
         return false;
     }
 
-    public static void updateGroupChild(String place,
-                                        Action anAction,
-                                        final Presentation presentation,
-                                        ActionManager actionManager,
-                                        PerspectiveManager perspectiveManager) {
-        ActionEvent event1 = new ActionEvent(place, presentation, actionManager, perspectiveManager);
-        doUpdate(anAction, event1);
+
+    public static class VisibleActionGroup {
+        private String       groupId;
+        private List<Action> actionList;
+
+        /**
+         * Creates a new <code>VisibleActionGroup</code> with groupId set to <code>null</code> and
+         * actionList set to <code>null</code>.
+         */
+        VisibleActionGroup() {
+            this(null, null);
+        }
+
+        /**
+         * Creates a new <code>VisibleActionGroup</code> with the specified groupId
+         * and actionList.
+         *
+         * @param groupId
+         *         Action group ID
+         * @param actionList
+         *         List of actions
+         */
+        VisibleActionGroup(String groupId, List<Action> actionList) {
+            this.groupId = groupId;
+            this.actionList = actionList;
+        }
+
+        public String getGroupId() {
+            return groupId;
+        }
+
+        public void setGroupId(String groupId) {
+            this.groupId = groupId;
+        }
+
+        public List<Action> getActionList() {
+            return actionList;
+        }
+
+        public void setActionList(List<Action> actionList) {
+            this.actionList = actionList;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof VisibleActionGroup)) {
+                return false;
+            }
+            VisibleActionGroup other = (VisibleActionGroup)o;
+            if (this.groupId != null) {
+                if (!this.groupId.equals(other.groupId)) {
+                    return false;
+                }
+            } else {
+                if (other.groupId != null) {
+                    return false;
+                }
+            }
+            if (this.actionList != null) {
+                if (!ListHelper.equals(this.actionList, other.actionList)) {
+                    return false;
+                }
+            } else {
+                if (other.actionList != null) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = hash * 31 + (groupId != null ? groupId.hashCode() : 0);
+            hash = hash * 31 + (actionList != null ? actionList.hashCode() : 0);
+            return hash;
+        }
     }
 }

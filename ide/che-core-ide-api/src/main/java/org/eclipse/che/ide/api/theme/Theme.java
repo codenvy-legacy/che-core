@@ -596,6 +596,34 @@ public interface Theme {
     String getBoxBackgroundColorDisabled();
 
     /**
+     * The color of the action group shadow.
+     *
+     * @return {@link String} color
+     */
+    String getToolbarActionGroupShadowColor();
+
+    /**
+     * The color of the action group background.
+     *
+     * @return {@link String} color
+     */
+    String getToolbarActionGroupBackgroundColor();
+
+    /**
+     * The color of the action group border.
+     *
+     * @return {@link String} color
+     */
+    String getToolbarActionGroupBorderColor();
+
+    /**
+     * The background image of the toolbar.
+     *
+     * @return {@link String} background image
+     */
+    String getToolbarBackgroundImage();
+
+    /**
      * The color of the toolbar background.
      *
      * @return {@link String} color
@@ -608,6 +636,13 @@ public interface Theme {
      * @return {@link String} color
      */
     String getToolbarIconColor();
+
+    /**
+     * The color of the toolbar icons if hover.
+     *
+     * @return {@link String} hover color
+     */
+    String getToolbarHoverIconColor();
 
     /**
      * The color of the tooltip background.
