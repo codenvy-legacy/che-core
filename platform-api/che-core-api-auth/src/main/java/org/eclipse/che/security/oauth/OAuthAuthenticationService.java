@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.security.oauth;
 
+import org.eclipse.che.api.auth.shared.dto.OAuthToken;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.core.rest.shared.dto.LinkParameter;
 import org.eclipse.che.api.core.util.LinksHelper;
@@ -17,12 +18,14 @@ import org.eclipse.che.security.oauth.shared.dto.OAuthAuthenticatorDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.GET;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -236,6 +239,20 @@ public class OAuthAuthenticationService {
                                                                            null)).type(MediaType.TEXT_PLAIN).build();
     }
 
+    @GET
+    @Produces({MediaType.APPLICATION_JSON})
+    @RolesAllowed({"user", "temp_user"})
+    @Path("token")
+    public OAuthToken token(@QueryParam("oauth_provider") String oauth_provider, @Context SecurityContext security)
+            throws Exception {
+        final Principal principal = security.getUserPrincipal();
+        OAuthAuthenticator provider = providers.getAuthenticator(oauth_provider);
+        if (provider != null) {
+            return provider.getToken(principal.getName());
+        }
+        return null;
+    }
+
     protected OAuthAuthenticator getAuthenticator(String oauthProviderName) {
         OAuthAuthenticator oauth = providers.getAuthenticator(oauthProviderName);
         if (oauth == null) {
@@ -246,5 +263,4 @@ public class OAuthAuthenticationService {
         }
         return oauth;
     }
-
 }
