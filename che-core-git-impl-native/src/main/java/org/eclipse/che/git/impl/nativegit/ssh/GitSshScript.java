@@ -29,7 +29,7 @@ import java.io.IOException;
 public class GitSshScript {
 
     private static final Logger LOG                 = LoggerFactory.getLogger(GitSshScriptProvider.class);
-    private static final String SSH_SCRIPT_TEMPLATE = "exec ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $ssh_key $@";
+    private static final String SSH_SCRIPT_TEMPLATE = "exec ssh -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $ssh_key $@";
     private static final String SSH_SCRIPT          = "ssh_script";
     private static final String DEFAULT_KEY_NAME    = "identity";
 
