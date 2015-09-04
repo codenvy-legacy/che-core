@@ -11,6 +11,7 @@
 package org.eclipse.che.ide.theme;
 
 import org.eclipse.che.ide.api.theme.Theme;
+
 import com.google.inject.Singleton;
 
 /**
@@ -94,7 +95,7 @@ public class DarkTheme implements Theme {
 
     @Override
     public String getTabsPanelBackground() {
-        return "#33373B";
+        return "#5a5c5c";
     }
 
     @Override
@@ -473,8 +474,33 @@ public class DarkTheme implements Theme {
     }
 
     @Override
+    public String getToolbarActionGroupShadowColor() {
+        return "#3c3c3c";
+    }
+
+    @Override
+    public String getToolbarActionGroupBackgroundColor() {
+        return "#33373b";
+    }
+
+    @Override
+    public String getToolbarActionGroupBorderColor() {
+        return "#24272c";
+    }
+
+    @Override
+    public String getToolbarBackgroundImage() {
+        return "none";
+    }
+
+    @Override
     public String getToolbarIconColor() {
-        return "#dbdbdb";
+        return "#aaaaaa";
+    }
+
+    @Override
+    public String getToolbarHoverIconColor() {
+        return "#e0e0e0";
     }
 
     @Override

@@ -157,8 +157,13 @@
 @eval disabledMenuItemColor org.eclipse.che.ide.api.theme.Style.getDeisabledMenuColor();
 
 /*Toolbar*/
+@eval toolbarBackgroundImage org.eclipse.che.ide.api.theme.Style.getToolbarBackgroundImage();
+@eval toolbarActionGroupShadowColor org.eclipse.che.ide.api.theme.Style.getToolbarActionGroupShadowColor();
+@eval toolbarActionGroupBackgroundColor org.eclipse.che.ide.api.theme.Style.getToolbarActionGroupBackgroundColor();
+@eval toolbarActionGroupBorderColor org.eclipse.che.ide.api.theme.Style.getToolbarActionGroupBorderColor();
 @eval toolbarBackgroundColor org.eclipse.che.ide.api.theme.Style.getToolbarBackgroundColor();
 @eval toolbarIconColor org.eclipse.che.ide.api.theme.Style.getToolbarIconColor();
+@eval toolbarHoverIconColor org.eclipse.che.ide.api.theme.Style.getToolbarHoverIconColor();
 @eval tooltipBackgroundColor org.eclipse.che.ide.api.theme.Style.getTooltipBackgroundColor();
 
 /* DialogBox*/

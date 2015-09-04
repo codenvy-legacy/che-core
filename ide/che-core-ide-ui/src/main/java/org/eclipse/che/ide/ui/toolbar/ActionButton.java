@@ -167,8 +167,6 @@ public class ActionButton extends Composite implements MouseOverHandler,
         this.selected = selected;
         if (selected) {
             panel.setStyleName(toolbarResources.toolbar().iconButtonPanelSelected());
-        } else {
-            panel.setStyleName(toolbarResources.toolbar().iconButtonPanelOver());
         }
     }
 
@@ -184,11 +182,6 @@ public class ActionButton extends Composite implements MouseOverHandler,
         }
         if (!enabled) {
             return;
-        }
-        if (selected) {
-            panel.setStyleName(toolbarResources.toolbar().iconButtonPanelSelectedOver());
-        } else {
-            panel.setStyleName(toolbarResources.toolbar().iconButtonPanelOver());
         }
     }
 
@@ -223,11 +216,6 @@ public class ActionButton extends Composite implements MouseOverHandler,
     public void onMouseUp(MouseUpEvent event) {
         if (!enabled) {
             return;
-        }
-        if (selected) {
-            panel.setStyleName(toolbarResources.toolbar().iconButtonPanelSelectedOver());
-        } else {
-            panel.setStyleName(toolbarResources.toolbar().iconButtonPanelOver());
         }
     }
 

@@ -372,12 +372,32 @@ public class Style {
         return theme.getButtonHoverColor();
     }
 
+    public static String getToolbarBackgroundImage() {
+        return theme.getToolbarBackgroundImage();
+    }
+
+    public static String getToolbarActionGroupShadowColor() {
+        return theme.getToolbarActionGroupShadowColor();
+    }
+
+    public static String getToolbarActionGroupBackgroundColor() {
+        return theme.getToolbarActionGroupBackgroundColor();
+    }
+
+    public static String getToolbarActionGroupBorderColor() {
+        return theme.getToolbarActionGroupBorderColor();
+    }
+
     public static String getToolbarBackgroundColor() {
         return theme.getToolbarBackgroundColor();
     }
 
     public static String getToolbarIconColor() {
         return theme.getToolbarIconColor();
+    }
+
+    public static String getToolbarHoverIconColor() {
+        return theme.getToolbarHoverIconColor();
     }
 
     public static String getTooltipBackgroundColor() {
