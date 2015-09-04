@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
+import static org.eclipse.che.git.impl.GitTestUtil.*;
 import static org.eclipse.che.git.impl.GitTestUtil.addFile;
 import static org.eclipse.che.git.impl.GitTestUtil.cleanupTestRepo;
 import static org.eclipse.che.git.impl.GitTestUtil.connectToInitializedGitRepository;
@@ -64,7 +65,6 @@ public class GetCommitersTest {
 
         //then
         assertEquals(committers.size(), 1);
-        assertEquals(committers.get(0).getEmail(), "test@email");
-        assertEquals(committers.get(0).getName(), "test_name");
+        assertEquals(committers.get(0), getTestGitUser());
     }
 }

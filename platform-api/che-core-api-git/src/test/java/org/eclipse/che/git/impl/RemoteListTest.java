@@ -32,7 +32,6 @@ import java.util.List;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 import static org.eclipse.che.git.impl.GitTestUtil.cleanupTestRepo;
 import static org.eclipse.che.git.impl.GitTestUtil.connectToGitRepositoryWithContent;
-import static org.eclipse.che.git.impl.GitTestUtil.getTestGitUser;
 import static org.testng.Assert.assertEquals;
 
 /**
@@ -60,7 +59,7 @@ public class RemoteListTest {
             throws ServerException, URISyntaxException, UnauthorizedException, IOException {
         //given
         GitConnection connection = connectToGitRepositoryWithContent(connectionFactory, repository);
-        GitConnection connection2 = connectionFactory.getConnection(remoteRepo.getAbsolutePath(), getTestGitUser());
+        GitConnection connection2 = connectionFactory.getConnection(remoteRepo.getAbsolutePath());
         connection2.clone(newDto(CloneRequest.class).withRemoteUri(connection.getWorkingDir().getAbsolutePath())
                                                     .withWorkingDir(connection2.getWorkingDir().getAbsolutePath()));
         assertEquals(connection2.remoteList(newDto(RemoteListRequest.class)).size(), 1);

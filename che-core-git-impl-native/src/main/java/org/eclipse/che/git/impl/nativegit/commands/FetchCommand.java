@@ -11,7 +11,7 @@
 package org.eclipse.che.git.impl.nativegit.commands;
 
 import org.eclipse.che.api.git.GitException;
-import org.eclipse.che.git.impl.nativegit.CredentialsLoader;
+import org.eclipse.che.api.git.CredentialsLoader;
 import org.eclipse.che.git.impl.nativegit.GitAskPassScript;
 import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
 

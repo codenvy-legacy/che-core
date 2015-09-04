@@ -8,10 +8,9 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.git.impl.nativegit;
+package org.eclipse.che.api.git;
 
 
-import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.api.git.shared.GitUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
