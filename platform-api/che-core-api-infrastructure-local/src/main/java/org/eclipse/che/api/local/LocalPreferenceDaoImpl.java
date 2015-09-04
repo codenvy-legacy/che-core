@@ -18,6 +18,8 @@ import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.local.storage.LocalStorage;
 import org.eclipse.che.api.local.storage.LocalStorageFactory;
 import org.eclipse.che.api.user.server.dao.PreferenceDao;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -34,9 +36,12 @@ import java.util.regex.Pattern;
  * @author Eugene Voevodin
  * @author Dmitry Shnurenko
  * @author Anton Korneta
+ * @author Valeriy Svydenko
  */
 @Singleton
 public class LocalPreferenceDaoImpl implements PreferenceDao {
+
+    private static final Logger LOG = LoggerFactory.getLogger(LocalPreferenceDaoImpl.class);
 
     private final Map<String, Map<String, String>> preferences;
     private final ReadWriteLock                    lock;
@@ -71,6 +76,9 @@ public class LocalPreferenceDaoImpl implements PreferenceDao {
         lock.writeLock().lock();
         try {
             preferences.put(userId, new HashMap<>(prefs));
+            preferenceStorage.store(preferences);
+        } catch (IOException e) {
+            LOG.warn("Impossible to store preferences");
         } finally {
             lock.writeLock().unlock();
         }
@@ -80,6 +88,8 @@ public class LocalPreferenceDaoImpl implements PreferenceDao {
     public Map<String, String> getPreferences(String userId) throws ServerException {
         lock.readLock().lock();
         try {
+            //Need read all new preferences without restarting dev-machine. It is needed for  IDEX-2180
+            preferences.putAll(preferenceStorage.loadMap(new TypeToken<Map<String, Map<String, String>>>() {}));
             final Map<String, String> prefs = new HashMap<>();
             if (preferences.containsKey(userId)) {
                 prefs.putAll(preferences.get(userId));

@@ -78,7 +78,7 @@ public class ThemeAgentImpl implements ThemeAgent {
     }
 
     /**
-     * Sharing theme ID through "IDE3" object makes it readable from native JavaScript.
+     * Sharing theme ID through "IDE" object makes it readable from native JavaScript.
      * It's needed to display additional menu items in the same style as IDE
      * (style of menu additions must depend on style of IDE).
      */
@@ -90,8 +90,8 @@ public class ThemeAgentImpl implements ThemeAgent {
             localStorage.setItem(@org.eclipse.che.ide.theme.ThemeAgentImpl::THEME_STORAGE, id);
         }
 
-        if ($wnd["IDE3"]) {
-            $wnd["IDE3"].theme = id;
+        if ($wnd["IDE"]) {
+            $wnd["IDE"].theme = id;
         }
     }-*/;
 

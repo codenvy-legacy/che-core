@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.notification;
 
+import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.notification.Notification;
 
 import org.eclipse.che.ide.notification.NotificationContainer;
@@ -25,6 +26,7 @@ import com.google.web.bindery.event.shared.EventBus;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 
@@ -47,6 +49,10 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(GwtMockitoTestRunner.class)
 public class NotificationManagerImplTest {
+
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private Resources resources;
+
     @Mock
     private EventBus                 eventBus;
     @Mock
@@ -65,7 +71,7 @@ public class NotificationManagerImplTest {
 
     @Before
     public void disarm() {
-        manager = new NotificationManagerImpl(eventBus, view, dialogFactory, notificationContainer, notificationMessageStack);
+        manager = new NotificationManagerImpl(eventBus, view, dialogFactory, notificationContainer, notificationMessageStack, resources);
         manager.setPartStack(partStack);
         when(partStack.getActivePart()).thenReturn(manager);
         reset(view);

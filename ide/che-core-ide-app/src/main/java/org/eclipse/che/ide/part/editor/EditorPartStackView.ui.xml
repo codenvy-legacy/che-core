@@ -15,10 +15,13 @@
              xmlns:g="urn:import:com.google.gwt.user.client.ui">
 
     <ui:style>
+
+        @eval editorPanelBackgroundColor org.eclipse.che.ide.api.theme.Style.getEditorPanelBackgroundColor();
+
         .tabsPanel {
             padding-top: 3px;
-            /*background: #373737;*/
-            background-color: #21252b;
+            /*background: #373737; #21252b;*/
+            background-color: editorPanelBackgroundColor;
             border-bottom: 1px solid #232323;
         }
 

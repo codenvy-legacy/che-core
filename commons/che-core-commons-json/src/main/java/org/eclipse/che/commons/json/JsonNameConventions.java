@@ -178,14 +178,14 @@ public enum JsonNameConventions implements JsonNameConvention {
     private static String camelToSeparateWith(String src, char separator) {
         final StringBuilder sb = new StringBuilder();
         final char[] chars = src.toCharArray();
-        for (int i = 0, length = chars.length; i < length; i++) {
-            if (Character.isUpperCase(chars[i])) {
+        for (char character : chars) {
+            if (Character.isUpperCase(character)) {
                 if (sb.length() > 0) {
                     sb.append(separator);
                 }
-                sb.append(Character.toLowerCase(chars[i]));
+                sb.append(Character.toLowerCase(character));
             } else {
-                sb.append(chars[i]);
+                sb.append(character);
             }
         }
         return sb.toString();

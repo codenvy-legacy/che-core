@@ -23,10 +23,35 @@
 
     border-left: 1px solid tabsPanelBackground;
     border-right: 1px solid tabsPanelBackground;
+
+    box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+}
+
+.ide-PartStack-Tab svg {
+    width: 14px;
+    height: 14px;
+    margin-top: 5px;
+    margin-left: 1px;
+}
+
+.ide-PartStack-Tab svg,
+.ide-PartStack-Tab svg rect,
+.ide-PartStack-Tab svg path {
+    fill: tabTextColor;
+    stroke: tabTextColor;
 }
 
 .ide-PartStack-Tab:hover {
     color: hoveredTabTextColor;
+}
+
+.ide-PartStack-Tab:hover svg,
+.ide-PartStack-Tab:hover svg rect,
+.ide-PartStack-Tab:hover svg path {
+    fill: hoveredTabTextColor;
+    stroke: hoveredTabTextColor;
 }
 
 .leftTabs {
@@ -37,10 +62,6 @@
     transform-origin: 42px 42px;
     -webkit-transform-origin: 42px 42px;
     -moz-transform-origin: 42px 42px;
-
-    box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
 }
 
 .rightTabs {
@@ -51,33 +72,46 @@
     transform-origin: 12px 11px;
     -webkit-transform-origin: 12px 11px;
     -moz-transform-origin: 12px 11px;
-
-    box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
 }
 
-.ide-PartStack-Tool-Tab-selected,
+.bottomTabs {
+    top: -1px;
+}
+
+.leftTabs,
+.rightTabs,
+.bottomTabs {
+    /* A little hack is needed to tune bottom parts panel. Please ask Vitaliy Gulity for details. */
+    border-radius: 5px;
+}
+
+.selectedBottomTab,
 .selectedRightOrLeftTab {
     color: activeTabTextColor;
-    text-shadow: 0px 1px 1px rgba(0, 0, 0, 0.5);
+    text-shadow: activeTabTextShadow;
     background-color: activeTabBackground;
     border-left: 1px solid activeTabBorderColor;
     border-right: 1px solid activeTabBorderColor;
+
+    /* Unhack the panel */
+    border-radius: 0px;
 }
 
-.ide-PartStack-Tool-Tab-selected {
+.selectedBottomTab svg,
+.selectedBottomTab svg rect,
+.selectedBottomTab svg path,
+.selectedRightOrLeftTab svg,
+.selectedRightOrLeftTab svg rect,
+.selectedRightOrLeftTab svg path {
+    fill: activeTabIconColor;
+    stroke: activeTabIconColor;
 }
 
-.ide-PartStack-Tool-Tab-selected:first-child {
+/* This style removes double border from left tab on the bottom panel. */
+.selectedBottomTab:first-child {
     border-left-color: transparent;
 }
 
-.selectedRightOrLeftTab {
-}
-
-.tabBordersDefault {
-}
 
 .selectEditorTab {
     background: #4D7191 !important;

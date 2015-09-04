@@ -17,9 +17,8 @@ import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.HTTPHeader;
 import org.eclipse.che.ide.rest.RestContext;
 
-import com.google.inject.name.Named;
-
 import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.List;
 
 /**

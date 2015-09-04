@@ -19,6 +19,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.ProjectActionHandler;
 import org.eclipse.che.ide.api.mvp.View;
@@ -43,7 +44,7 @@ import static org.eclipse.che.ide.api.notification.Notification.Type.WARNING;
 /**
  * The implementation of {@link NotificationManager}.
  *
- * @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a>
+ * @author Andrey Plotnikov
  * @author Dmitry Shnurenko
  */
 @Singleton
@@ -61,12 +62,15 @@ public class NotificationManagerImpl extends BasePresenter implements Notificati
     private NotificationMessageStack notificationMessageStack;
     private List<Notification>       notifications;
 
+    private Resources                resources;
+
     @Inject
     public NotificationManagerImpl(EventBus eventBus,
                                    NotificationManagerView view,
                                    DialogFactory dialogFactory,
                                    final NotificationContainer notificationContainer,
-                                   final NotificationMessageStack notificationMessageStack) {
+                                   final NotificationMessageStack notificationMessageStack,
+                                   final Resources resources) {
         this.view = view;
         this.dialogFactory = dialogFactory;
         this.notificationContainer = notificationContainer;
@@ -77,6 +81,7 @@ public class NotificationManagerImpl extends BasePresenter implements Notificati
         this.notificationMessageStack = notificationMessageStack;
         this.notificationMessageStack.setDelegate(this);
         this.notifications = new ArrayList<>();
+        this.resources = resources;
 
         eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
             @Override
@@ -106,15 +111,10 @@ public class NotificationManagerImpl extends BasePresenter implements Notificati
     @Override
     public void onValueChanged() {
         int countUnread = 0;
-        boolean inProgress = false;
 
         for (Notification notification : notifications) {
             if (!notification.isRead()) {
                 countUnread++;
-            }
-
-            if (!inProgress) {
-                inProgress = !notification.isFinished();
             }
         }
 
@@ -248,7 +248,7 @@ public class NotificationManagerImpl extends BasePresenter implements Notificati
     @Nullable
     @Override
     public SVGResource getTitleSVGImage() {
-        return null;
+        return resources.eventsPartIcon();
     }
 
     /** {@inheritDoc} */

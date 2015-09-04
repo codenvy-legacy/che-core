@@ -12,7 +12,6 @@ package org.eclipse.che.api.git;
 
 import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.git.shared.AddRequest;
 import org.eclipse.che.api.git.shared.Branch;
 import org.eclipse.che.api.git.shared.BranchCheckoutRequest;
@@ -107,11 +106,8 @@ public class GitService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public void add(AddRequest request) throws ApiException {
-        GitConnection gitConnection = getGitConnection();
-        try {
+        try (GitConnection gitConnection = getGitConnection()) {
             gitConnection.add(request);
-        } finally {
-            gitConnection.close();
         }
     }
 
@@ -119,11 +115,8 @@ public class GitService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public void branchCheckout(BranchCheckoutRequest request) throws ApiException {
-        GitConnection gitConnection = getGitConnection();
-        try {
+        try (GitConnection gitConnection = getGitConnection()) {
             gitConnection.branchCheckout(request);
-        } finally {
-            gitConnection.close();
         }
     }
 
@@ -132,24 +125,17 @@ public class GitService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Branch branchCreate(BranchCreateRequest request) throws ApiException {
-        GitConnection gitConnection = getGitConnection();
-        try {
+        try (GitConnection gitConnection = getGitConnection()) {
             return gitConnection.branchCreate(request);
-        } finally {
-            gitConnection.close();
         }
     }
 
     @Path("branch-delete")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public void branchDelete(BranchDeleteRequest request)
-            throws ApiException, UnauthorizedException {
-        GitConnection gitConnection = getGitConnection();
-        try {
+    public void branchDelete(BranchDeleteRequest request) throws ApiException {
+        try (GitConnection gitConnection = getGitConnection()) {
             gitConnection.branchDelete(request);
-        } finally {
-            gitConnection.close();
         }
     }
 
@@ -157,11 +143,8 @@ public class GitService {
     @POST
     public void branchRename(@QueryParam("oldName") String oldName,
                              @QueryParam("newName") String newName) throws ApiException {
-        GitConnection gitConnection = getGitConnection();
-        try {
+        try (GitConnection gitConnection = getGitConnection()) {
             gitConnection.branchRename(oldName, newName);
-        } finally {
-            gitConnection.close();
         }
     }
 
@@ -170,12 +153,9 @@ public class GitService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
     public GenericEntity<List<Branch>> branchList(BranchListRequest request) throws ApiException {
-        GitConnection gitConnection = getGitConnection();
-        try {
+        try (GitConnection gitConnection = getGitConnection()) {
             return new GenericEntity<List<Branch>>(gitConnection.branchList(request)) {
             };
-        } finally {
-            gitConnection.close();
         }
     }
 
@@ -183,8 +163,7 @@ public class GitService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public RepoInfo clone(final CloneRequest request)
-            throws URISyntaxException, UnauthorizedException, ApiException {
+    public RepoInfo clone(final CloneRequest request) throws URISyntaxException, ApiException {
         long start = System.currentTimeMillis();
         // On-the-fly resolving of repository's working directory.
         request.setWorkingDir(resolveLocalPathByPath(request.getWorkingDir()));
@@ -207,9 +186,8 @@ public class GitService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
     public Revision commit(CommitRequest request) throws ApiException {
-        GitConnection gitConnection = getGitConnection();
-        Revision revision = gitConnection.commit(request);
-        try {
+        try (GitConnection gitConnection = getGitConnection()) {
+            Revision revision = gitConnection.commit(request);
             if (revision.isFake()) {
                 Status status = status(StatusFormat.LONG);
 
@@ -221,10 +199,8 @@ public class GitService {
                     throw new GitException("Cant execute status");
                 }
             }
-        } finally {
-            gitConnection.close();
+            return revision;
         }
-        return revision;
     }
 
     @Path("diff")
@@ -232,11 +208,8 @@ public class GitService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
     public InfoPage diff(DiffRequest request) throws ApiException {
-        GitConnection gitConnection = getGitConnection();
-        try {
+        try (GitConnection gitConnection = getGitConnection()) {
             return gitConnection.diff(request);
-        } finally {
-            gitConnection.close();
         }
     }
 
@@ -244,11 +217,8 @@ public class GitService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public void fetch(FetchRequest request) throws ApiException {
-        GitConnection gitConnection = getGitConnection();
-        try {
+        try (GitConnection gitConnection = getGitConnection()) {
             gitConnection.fetch(request);
-        } finally {
-            gitConnection.close();
         }
     }
 
@@ -257,11 +227,8 @@ public class GitService {
     @Consumes(MediaType.APPLICATION_JSON)
     public void init(final InitRequest request) throws ApiException {
         request.setWorkingDir(resolveLocalPathByPath(projectPath));
-        GitConnection gitConnection = getGitConnection();
-        try {
+        try (GitConnection gitConnection = getGitConnection()) {
             gitConnection.init(request);
-        } finally {
-            gitConnection.close();
         }
     }
 
@@ -270,11 +237,8 @@ public class GitService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
     public LogPage log(LogRequest request) throws ApiException {
-        GitConnection gitConnection = getGitConnection();
-        try {
+        try (GitConnection gitConnection = getGitConnection()) {
             return gitConnection.log(request);
-        } finally {
-            gitConnection.close();
         }
     }
 
@@ -283,11 +247,8 @@ public class GitService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
     public MergeResult merge(MergeRequest request) throws ApiException {
-        GitConnection gitConnection = getGitConnection();
-        try {
+        try (GitConnection gitConnection = getGitConnection()) {
             return gitConnection.merge(request);
-        } finally {
-            gitConnection.close();
         }
     }
 
@@ -295,11 +256,8 @@ public class GitService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public void mv(MoveRequest request) throws ApiException {
-        GitConnection gitConnection = getGitConnection();
-        try {
+        try (GitConnection gitConnection = getGitConnection()) {
             gitConnection.mv(request);
-        } finally {
-            gitConnection.close();
         }
     }
 
@@ -307,11 +265,8 @@ public class GitService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public PullResponse pull(PullRequest request) throws ApiException {
-        GitConnection gitConnection = getGitConnection();
-        try {
+        try (GitConnection gitConnection = getGitConnection()) {
             return gitConnection.pull(request);
-        } finally {
-            gitConnection.close();
         }
     }
 
@@ -319,11 +274,8 @@ public class GitService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public PushResponse push(PushRequest request) throws ApiException {
-        GitConnection gitConnection = getGitConnection();
-        try {
+        try (GitConnection gitConnection = getGitConnection()) {
             return gitConnection.push(request);
-        } finally {
-            gitConnection.close();
         }
     }
 
@@ -331,22 +283,16 @@ public class GitService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public void remoteAdd(RemoteAddRequest request) throws ApiException {
-        GitConnection gitConnection = getGitConnection();
-        try {
+        try (GitConnection gitConnection = getGitConnection()) {
             gitConnection.remoteAdd(request);
-        } finally {
-            gitConnection.close();
         }
     }
 
     @Path("remote-delete/{name}")
     @POST
     public void remoteDelete(@PathParam("name") String name) throws ApiException {
-        GitConnection gitConnection = getGitConnection();
-        try {
+        try (GitConnection gitConnection = getGitConnection()) {
             gitConnection.remoteDelete(name);
-        } finally {
-            gitConnection.close();
         }
     }
 
@@ -355,12 +301,9 @@ public class GitService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
     public GenericEntity<List<Remote>> remoteList(RemoteListRequest request) throws ApiException {
-        GitConnection gitConnection = getGitConnection();
-        try {
+        try (GitConnection gitConnection = getGitConnection()) {
             return new GenericEntity<List<Remote>>(gitConnection.remoteList(request)) {
             };
-        } finally {
-            gitConnection.close();
         }
     }
 
@@ -368,11 +311,8 @@ public class GitService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public void remoteUpdate(RemoteUpdateRequest request) throws ApiException {
-        GitConnection gitConnection = getGitConnection();
-        try {
+        try (GitConnection gitConnection = getGitConnection()) {
             gitConnection.remoteUpdate(request);
-        } finally {
-            gitConnection.close();
         }
     }
 
@@ -380,11 +320,8 @@ public class GitService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public void reset(ResetRequest request) throws ApiException {
-        GitConnection gitConnection = getGitConnection();
-        try {
+        try (GitConnection gitConnection = getGitConnection()) {
             gitConnection.reset(request);
-        } finally {
-            gitConnection.close();
         }
     }
 
@@ -392,11 +329,8 @@ public class GitService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public void rm(RmRequest request) throws ApiException {
-        GitConnection gitConnection = getGitConnection();
-        try {
+        try (GitConnection gitConnection = getGitConnection()) {
             gitConnection.rm(request);
-        } finally {
-            gitConnection.close();
         }
     }
 
@@ -404,11 +338,8 @@ public class GitService {
     @POST
     @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
     public Status status(@QueryParam("format") StatusFormat format) throws ApiException {
-        GitConnection gitConnection = getGitConnection();
-        try {
+        try (GitConnection gitConnection = getGitConnection()) {
             return gitConnection.status(format);
-        } finally {
-            gitConnection.close();
         }
     }
 
@@ -429,11 +360,8 @@ public class GitService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public void tagDelete(TagDeleteRequest request) throws ApiException {
-        GitConnection gitConnection = getGitConnection();
-        try {
+        try (GitConnection gitConnection = getGitConnection()) {
             gitConnection.tagDelete(request);
-        } finally {
-            gitConnection.close();
         }
     }
 
@@ -443,9 +371,8 @@ public class GitService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Map<String, String> getConfig(ConfigRequest request) throws ApiException {
-        GitConnection gitConnection = getGitConnection();
         Map<String, String> result = new HashMap<>();
-        try {
+        try (GitConnection gitConnection = getGitConnection()) {
             Config config = gitConnection.getConfig();
             if (request.isGetAll()) {
                 for (String row : config.getList()) {
@@ -462,8 +389,6 @@ public class GitService {
                     }
                 }
             }
-        } finally {
-            gitConnection.close();
         }
         return result;
     }
@@ -473,12 +398,9 @@ public class GitService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
     public GenericEntity<List<Tag>> tagList(TagListRequest request) throws ApiException {
-        GitConnection gitConnection = getGitConnection();
-        try {
+        try (GitConnection gitConnection = getGitConnection()) {
             return new GenericEntity<List<Tag>>(gitConnection.tagList(request)) {
             };
-        } finally {
-            gitConnection.close();
         }
     }
 
@@ -501,10 +423,7 @@ public class GitService {
         final VirtualFile virtualFile = vfsRegistry.getProvider(vfsId).getMountPoint(true).getVirtualFile(projectPath);
         if (virtualFile.getChild(".git") != null) {
 
-            GitConnection gitConnection = getGitConnection();
-            try {
-
-
+            try (GitConnection gitConnection = getGitConnection()) {
                 return DtoFactory.getInstance().createDto(ImportSourceDescriptor.class)
                                  .withType("git")
                                  .withLocation(
@@ -512,8 +431,6 @@ public class GitService {
                                  .withParameters(
                                          Collections.singletonMap("commitId", gitConnection.log(null).getCommits().get(0).getId()));
 
-            } finally {
-                gitConnection.close();
             }
         } else {
             throw new ServerException("Not git repository");
@@ -523,11 +440,8 @@ public class GitService {
     @GET
     @Path("commiters")
     public Commiters getCommiters(@Context UriInfo uriInfo) throws ApiException {
-        GitConnection gitConnection = getGitConnection();
-        try {
+        try (GitConnection gitConnection = getGitConnection()) {
             return DtoFactory.getInstance().createDto(Commiters.class).withCommiters(gitConnection.getCommiters());
-        } finally {
-            gitConnection.close();
         }
     }
 
@@ -542,10 +456,8 @@ public class GitService {
     }
 
     // TODO: this is temporary method
-    private Item getGitProjectByPath(VirtualFileSystem vfs, String projectPath)
-            throws ApiException {
-        final Item project = vfs.getItemByPath(projectPath, null, false, PropertyFilter.ALL_FILTER);
-        return project;
+    private Item getGitProjectByPath(VirtualFileSystem vfs, String projectPath) throws ApiException {
+        return vfs.getItemByPath(projectPath, null, false, PropertyFilter.ALL_FILTER);
     }
 
 

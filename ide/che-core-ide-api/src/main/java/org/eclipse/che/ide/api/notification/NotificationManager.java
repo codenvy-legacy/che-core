@@ -17,7 +17,7 @@ import javax.annotation.Nonnull;
 /**
  * The manager for notifications. Used to show notifications and change their states.
  *
- * @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a>
+ * @author Andrey Plotnikov
  */
 public interface NotificationManager extends PartPresenter {
     /**

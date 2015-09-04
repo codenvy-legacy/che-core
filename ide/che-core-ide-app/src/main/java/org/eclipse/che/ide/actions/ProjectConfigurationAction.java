@@ -63,7 +63,7 @@ public class ProjectConfigurationAction extends AbstractPerspectiveAction {
         }
 
         eventLogger.log(this);
-        eventBus.fireEvent(new ConfigureProjectEvent(appContext.getCurrentProject().getRootProject()));
+        eventBus.fireEvent(new ConfigureProjectEvent(appContext.getCurrentProject().getProjectDescription()));
     }
 
     @Override

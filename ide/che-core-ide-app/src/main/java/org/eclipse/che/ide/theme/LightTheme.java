@@ -48,12 +48,12 @@ public class LightTheme implements Theme {
 
     @Override
     public String getInactiveTabBackground() {
-        return "#d6d6d6";
+        return "#D6D6D9";
     }
 
     @Override
     public String getInactiveTabBorderColor() {
-        return "#353535";
+        return "#D6D6D9";
     }
 
     @Override
@@ -63,32 +63,42 @@ public class LightTheme implements Theme {
 
     @Override
     public String getActiveTabBorderColor() {
-        return "#232323";
+        return "#8E8E8E";
     }
 
     @Override
     public String getActiveTabTextColor() {
-        return "#333333";
+        return "#555555";
+    }
+
+    @Override
+    public String getActiveTabTextShadow() {
+        return "none";
+    }
+
+    @Override
+    public String getActiveTabIconColor() {
+        return "#1A68AF";
     }
 
     @Override
     public String getTabTextColor() {
-        return "#989898";
+        return "#555555";
     }
 
     @Override
     public String getHoveredTabTextColor() {
-        return "#989898";
+        return "#333333";
     }
 
     @Override
     public String getTabsPanelBackground() {
-        return "#f6f6f6";
+        return "#D6D6D9";
     }
 
     @Override
     public String getTabBorderColor() {
-        return "#bdbdbd";
+        return "#8E8E8E";
     }
 
     @Override
@@ -159,6 +169,11 @@ public class LightTheme implements Theme {
     @Override
     public String getInputBackground() {
         return "#FFFFFF";
+    }
+
+    @Override
+    public String getEditorPanelBackgroundColor() {
+        return "#D6D6D9";
     }
 
     @Override

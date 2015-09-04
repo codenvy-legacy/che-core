@@ -17,12 +17,14 @@
 
     <ui:style>
 
-        @eval bgColor org.eclipse.che.ide.api.theme.Style.getPartBackground();
+        /*@eval bgColor org.eclipse.che.ide.api.theme.Style.getPartBackground();*/
+        @eval editorPanelBackgroundColor org.eclipse.che.ide.api.theme.Style.getEditorPanelBackgroundColor();
 
         @sprite .bg {
             gwt-image: "placeholder";
             /*background-color: bgColor;*/
-            background-color: #21252b;
+            /*background-color: #21252b;*/
+            background-color: editorPanelBackgroundColor;
             background-position: center;
         }
 

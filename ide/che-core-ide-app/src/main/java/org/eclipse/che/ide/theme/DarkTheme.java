@@ -73,6 +73,16 @@ public class DarkTheme implements Theme {
     }
 
     @Override
+    public String getActiveTabTextShadow() {
+        return "0px 1px 1px rgba(0, 0, 0, 0.5)";
+    }
+
+    @Override
+    public String getActiveTabIconColor() {
+        return "#FFFFFF";
+    }
+
+    @Override
     public String getTabTextColor() {
         return "#AAAAAA";
     }
@@ -155,6 +165,11 @@ public class DarkTheme implements Theme {
     @Override
     public String getInputBackground() {
         return "#272727";
+    }
+
+    @Override
+    public String getEditorPanelBackgroundColor() {
+        return "#21252b";
     }
 
     @Override
