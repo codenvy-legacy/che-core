@@ -90,5 +90,5 @@ public interface WorkspaceDao {
      * @return list of workspaces of the user
      * @throws ServerException if any error occurs
      */
-    List<UsersWorkspaceImpl> getList(String owner) throws ServerException;
+    List<UsersWorkspaceImpl> getByOwner(String owner) throws ServerException;
 }

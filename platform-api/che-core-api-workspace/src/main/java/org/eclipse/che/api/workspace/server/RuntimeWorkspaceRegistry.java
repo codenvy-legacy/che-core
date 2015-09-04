@@ -222,7 +222,7 @@ public class RuntimeWorkspaceRegistry {
     public List<RuntimeWorkspaceImpl> getByOwner(String ownerId) {
         lock.readLock().lock();
         try {
-            return ownerToWorkspaces.get(ownerId);
+            return new ArrayList<>(ownerToWorkspaces.get(ownerId));
         } finally {
             lock.readLock().unlock();
         }

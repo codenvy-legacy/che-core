@@ -86,7 +86,7 @@ public class LocalWorkspaceDaoImpl implements WorkspaceDao {
     }
 
     @Override
-    public synchronized List<UsersWorkspaceImpl> getList(String owner) throws ServerException {
+    public synchronized List<UsersWorkspaceImpl> getByOwner(String owner) throws ServerException {
         return workspaces.values()
                          .stream()
                          .filter(ws -> ws.getOwner().equals(owner))

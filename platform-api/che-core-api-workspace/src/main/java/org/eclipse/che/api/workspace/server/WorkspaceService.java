@@ -68,7 +68,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -182,8 +181,13 @@ public class WorkspaceService extends Service {
     @Path("/runtime")
     @Produces(APPLICATION_JSON)
     public List<RuntimeWorkspaceDto> getRuntimeWorkspaces(@DefaultValue("0") @QueryParam("skipCount") Integer skipCount,
-                                                          @DefaultValue("30") @QueryParam("maxItems") Integer maxItems) {
-        return emptyList();
+                                                          @DefaultValue("30") @QueryParam("maxItems") Integer maxItems)
+            throws BadRequestException {
+        //TODO add maxItems & skipCount to manager
+        return workspaceManager.getRuntimeWorkspaces(securityContext.getUserPrincipal().getName())
+                               .stream()
+                               .map(this::asDto)
+                               .collect(toList());
     }
 
     @GET

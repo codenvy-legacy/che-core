@@ -39,7 +39,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -104,27 +103,42 @@ public class WorkspaceManager {
      * @throws ServerException
      *         if any error occurs
      */
-    public List<UsersWorkspace> getWorkspaces(String owner) throws ServerException, BadRequestException {
+    public List<UsersWorkspaceImpl> getWorkspaces(String owner) throws ServerException, BadRequestException {
         requiredNotNull(owner, "Workspace owner required");
 
-        final List<RuntimeWorkspaceImpl> runtimeWorkspaces = workspaceRegistry.getByOwner(owner);
-        final List<UsersWorkspaceImpl> usersWorkspaces = workspaceDao.getList(owner);
-        Map<String, UsersWorkspace> workspaces = new HashMap<>();
-        for (RuntimeWorkspace runtimeWorkspace : runtimeWorkspaces) {
-            workspaces.put(runtimeWorkspace.getId(), runtimeWorkspace);
-        }
-        for (UsersWorkspaceImpl usersWorkspace : usersWorkspaces) {
-            if (!workspaces.containsKey(usersWorkspace.getId())) {
-                usersWorkspace.setTemporary(false);
-                usersWorkspace.setStatus(STOPPED);
-                workspaces.put(usersWorkspace.getId(), usersWorkspace);
-            }
+        //Get list of runtime workspace, it is needed for usersWorkspaces status
+        final Map<String, UsersWorkspace> runtimeWorkspaces = new HashMap<>();
+        for (RuntimeWorkspace runtimeWorkspace : workspaceRegistry.getByOwner(owner)) {
+            runtimeWorkspaces.put(runtimeWorkspace.getId(), runtimeWorkspace);
         }
 
-        return new ArrayList<>(workspaces.values());
+        //Get list of users workspaces + set statuses
+        final List<UsersWorkspaceImpl> usersWorkspaces = workspaceDao.getByOwner(owner);
+        for (UsersWorkspaceImpl usersWorkspace : usersWorkspaces) {
+            if (runtimeWorkspaces.containsKey(usersWorkspace.getId())) {
+                usersWorkspace.setStatus(runtimeWorkspaces.get(usersWorkspace.getId()).getStatus());
+            } else {
+                usersWorkspace.setStatus(STOPPED);
+            }
+            usersWorkspace.setTemporary(false);
+        }
+        return usersWorkspaces;
     }
 
-    public UsersWorkspace startWorkspaceById(String workspaceId, String envName)
+    /**
+     * Gets runtime workspaces owned by specified user.
+     *
+     * @param owner
+     *         workspaces owner identifier
+     * @return list of runtime workspaces owned by {@code owner} or empty list when user doesn't have workspaces running
+     */
+    public List<RuntimeWorkspaceImpl> getRuntimeWorkspaces(String owner) throws BadRequestException {
+        requiredNotNull(owner, "Workspace owner required");
+
+        return workspaceRegistry.getByOwner(owner);
+    }
+
+    public UsersWorkspaceImpl startWorkspaceById(String workspaceId, String envName)
             throws NotFoundException, ServerException, BadRequestException {
         requiredNotNull(workspaceId, "Workspace id required");
 
