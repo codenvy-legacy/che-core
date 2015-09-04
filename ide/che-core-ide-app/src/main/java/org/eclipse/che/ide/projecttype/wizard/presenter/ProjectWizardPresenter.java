@@ -65,10 +65,8 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
     private final ProjectWizardFactory                      projectWizardFactory;
     private final ProjectWizardRegistry                     wizardRegistry;
     private final Provider<CategoriesPagePresenter>         categoriesPageProvider;
-    private final Provider<RecipesPagePresenter>            runnersPageProvider;
     private final Map<ProjectTypeDefinition, ProjectWizard> wizardsCache;
     private       CategoriesPagePresenter                   categoriesPage;
-    private       RecipesPagePresenter                      recipesPage;
     private       ProjectWizard                             wizard;
     private       ProjectWizard                             importWizard;
     private       WizardPage                                currentPage;
@@ -83,15 +81,13 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
                                   DialogFactory dialogFactory,
                                   ProjectWizardFactory projectWizardFactory,
                                   ProjectWizardRegistry wizardRegistry,
-                                  Provider<CategoriesPagePresenter> categoriesPageProvider,
-                                  Provider<RecipesPagePresenter> runnersPageProvider) {
+                                  Provider<CategoriesPagePresenter> categoriesPageProvider) {
         this.view = view;
         this.dtoFactory = dtoFactory;
         this.dialogFactory = dialogFactory;
         this.projectWizardFactory = projectWizardFactory;
         this.wizardRegistry = wizardRegistry;
         this.categoriesPageProvider = categoriesPageProvider;
-        this.runnersPageProvider = runnersPageProvider;
         wizardsCache = new HashMap<>();
         view.setDelegate(this);
     }
@@ -180,7 +176,6 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
     private void resetState() {
         wizardsCache.clear();
         categoriesPage = categoriesPageProvider.get();
-        recipesPage = runnersPageProvider.get();
         wizardMode = null;
         categoriesPage.setProjectTypeSelectionListener(this);
         categoriesPage.setProjectTemplateSelectionListener(this);
@@ -274,9 +269,6 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
 
         // add pre-defined pages - first and last
         projectWizard.addPage(categoriesPage);
-        if (mode != IMPORT) {
-            projectWizard.addPage(recipesPage);
-        }
         return projectWizard;
     }
 
