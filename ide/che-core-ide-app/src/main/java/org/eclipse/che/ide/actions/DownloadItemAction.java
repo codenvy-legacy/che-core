@@ -82,7 +82,7 @@ public class DownloadItemAction extends Action {
     public void update(ActionEvent event) {
         Selection<?> selection = projectExplorer.getSelection();
 
-        if (selection.isEmpty() || selection.getAllElements().size() > 1) {
+        if (selection == null || selection.isEmpty() || selection.getAllElements().size() > 1) {
             event.getPresentation().setEnabledAndVisible(false);
             return;
         }

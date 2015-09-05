@@ -42,7 +42,6 @@ import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor;
 import org.eclipse.che.ide.menu.ContextMenu;
-import org.eclipse.che.ide.project.node.AbstractProjectBasedNode;
 import org.eclipse.che.ide.project.node.NodeManager;
 import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
 import org.eclipse.che.ide.project.node.SyntheticBasedNode;
@@ -58,6 +57,7 @@ import org.eclipse.che.ide.ui.smartTree.TreeNodeStorage;
 import org.eclipse.che.ide.ui.smartTree.TreeNodeStorage.StoreSortInfo;
 import org.eclipse.che.ide.ui.smartTree.TreeStyles;
 import org.eclipse.che.ide.ui.smartTree.event.BeforeExpandNodeEvent;
+import org.eclipse.che.ide.ui.smartTree.event.BeforeExpandNodeEvent.BeforeExpandNodeHandler;
 import org.eclipse.che.ide.ui.smartTree.event.ExpandNodeEvent;
 import org.eclipse.che.ide.ui.smartTree.event.ExpandNodeEvent.ExpandNodeHandler;
 import org.eclipse.che.ide.ui.smartTree.event.GoIntoStateEvent;
@@ -95,7 +95,7 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
     private       FlowPanel                projectHeader;
     private       ToolButton               goIntoBackButton;
     private StoreSortInfo foldersOnTopSort = new StoreSortInfo(new FoldersOnTopFilter(), SortDir.ASC);
-    private HandlerRegistration contentRootExpanderRegistration;
+
     private HandlerRegistration navigateBeforeExpandHandler = null;
     private HandlerRegistration navigateExpandHandler       = null;
 
@@ -120,10 +120,11 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
             @Nonnull
             @Override
             public String getKey(@Nonnull Node item) {
-                if (item instanceof AbstractProjectBasedNode) {
-                    return ((AbstractProjectBasedNode)item).getData() + "";
+                if (item instanceof HasStorablePath) {
+                    return ((HasStorablePath)item).getStorablePath();
+                } else {
+                    return String.valueOf(item.hashCode());
                 }
-                return item.getName();
             }
         });
 
@@ -153,6 +154,8 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
         tree.getGoIntoMode().addGoIntoHandler(this);
 
         tree.setNodePresentationRenderer(new ProjectExplorerRenderer(tree.getTreeStyles()));
+        tree.ensureDebugId("projectTree");
+        tree.setAutoSelect(true);
 
         new SpeedSearch(tree, new NodeNameConverter());
 
@@ -185,29 +188,28 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
         tree.getNodeStorage().replaceChildren(null, nodes);
 
         if (nodes.size() == 1) {
-            if (nodes.get(0) instanceof ProjectDescriptorNode) {
-                contentRootExpanderRegistration = registerContentRootExpander(nodes.get(0));
+            if (!registerContentRootExpander(nodes.get(0))) {
+                tree.setExpanded(nodes.get(0), true);
             }
-
-            tree.setExpanded(nodes.get(0), true);
         }
+
         hideProjectInfo();
         showProjectInfo();
     }
 
-    @Nullable
-    private HandlerRegistration registerContentRootExpander(@Nonnull Node node) {
-        String contentRoot = getContentRootOrNull(node);
+    private boolean registerContentRootExpander(@Nonnull Node node) {
+        final String contentRoot = getContentRootOrNull(node);
         if (contentRoot != null) {
-            return tree.addExpandHandler(new ContentRootExpander(contentRoot));
+            new GoIntoHandler(tree, contentRoot);
+            return true;
         }
 
-        return null;
+        return false;
     }
 
     @Nullable
     private String getContentRootOrNull(@Nonnull Node node) {
-        if (node instanceof HasProjectDescriptor && isValidContentRoot((HasProjectDescriptor)node)) {
+        if (node instanceof ProjectDescriptorNode && isValidContentRoot((HasProjectDescriptor)node)) {
             ProjectDescriptor descriptor = ((HasProjectDescriptor)node).getProjectDescriptor();
             String rawContentRoot = descriptor.getContentRoot();
 
@@ -391,7 +393,7 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
     }
 
     @Override
-    public HandlerRegistration addBeforeExpandNodeHandler(BeforeExpandNodeEvent.BeforeExpandNodeHandler handler) {
+    public HandlerRegistration addBeforeExpandNodeHandler(BeforeExpandNodeHandler handler) {
         return tree.addBeforeExpandHandler(handler);
     }
 
@@ -567,7 +569,7 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
             return;
         }
 
-        BeforeExpandNodeEvent.BeforeExpandNodeHandler beforeExpandNodeHandler = new BeforeExpandNodeEvent.BeforeExpandNodeHandler() {
+        BeforeExpandNodeHandler beforeExpandNodeHandler = new BeforeExpandNodeHandler() {
             @Override
             public void onBeforeExpand(BeforeExpandNodeEvent event) {
                 Node eventNode = event.getNode();
@@ -709,33 +711,46 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
         tree.collapseAll();
     }
 
-    public class ContentRootExpander implements ExpandNodeHandler {
-        private String contentRoot;
-        private boolean onceExecuted = false;
+    public class GoIntoHandler implements BeforeExpandNodeHandler {
+        private final Tree                tree;
+        private       String              contentRoot;
+        private       HandlerRegistration contentRootExpanderRegistration;
 
-        public ContentRootExpander(@Nonnull String contentRoot) {
+        public GoIntoHandler(Tree tree, String contentRoot) {
+            this.tree = tree;
             this.contentRoot = contentRoot;
+
+            if (!Strings.isNullOrEmpty(contentRoot)) {
+                contentRootExpanderRegistration = this.tree.addBeforeExpandHandler(this);
+                this.tree.expandAll();
+            }
         }
 
         @Override
-        public void onExpand(ExpandNodeEvent event) {
-            if (onceExecuted) {
-                if (contentRootExpanderRegistration != null) {
-                    contentRootExpanderRegistration.removeHandler();
-                }
+        public void onBeforeExpand(BeforeExpandNodeEvent event) {
+            if (tree.getGoIntoMode().isActivated() || Strings.isNullOrEmpty(contentRoot) || contentRootExpanderRegistration == null) {
                 return;
             }
 
-            for (Node child : tree.getNodeStorage().getChildren(event.getNode())) {
-                if (child instanceof HasStorablePath) {
-                    if (contentRoot.equals(((HasStorablePath)child).getStorablePath())) {
-                        tree.getSelectionModel().select(child, false);
-                        tree.getGoIntoMode().goInto(child);
-                        onceExecuted = true;
-                        return;
-                    } else if (contentRoot.startsWith(((HasStorablePath)child).getStorablePath())) {
-                        tree.setExpanded(child, true);
-                    }
+            Node beforeExpandedNode = event.getNode();
+
+            if (!(beforeExpandedNode instanceof HasStorablePath)) {
+                return;
+            }
+
+            final String path = ((HasStorablePath)beforeExpandedNode).getStorablePath();
+
+            if (!contentRoot.startsWith(path)) {
+                event.setCancelled(true);
+            }
+
+            //we match child with content root, so call go into on this child
+            if (contentRoot.equals(path)) {
+                event.setCancelled(true);
+                this.tree.getGoIntoMode().goInto(beforeExpandedNode);
+                if (contentRootExpanderRegistration != null) {
+                    contentRootExpanderRegistration.removeHandler();
+                    contentRootExpanderRegistration = null;
                 }
             }
         }

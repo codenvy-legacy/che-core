@@ -57,7 +57,6 @@ import org.eclipse.che.ide.ui.smartTree.presentation.DefaultPresentationRenderer
 import org.eclipse.che.ide.ui.smartTree.presentation.HasPresentation;
 import org.eclipse.che.ide.ui.smartTree.presentation.PresentationRenderer;
 import org.eclipse.che.ide.ui.smartTree.state.ExpandStateHandler;
-import org.eclipse.che.ide.ui.smartTree.state.HtmlStorageProvider;
 import org.eclipse.che.ide.ui.status.ComponentWithEmptyText;
 import org.eclipse.che.ide.ui.status.StatusText;
 
@@ -216,7 +215,7 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
         setGoIntoMode(new GoIntoMode());
 
 
-        this.expandStateHandler = new ExpandStateHandler(this, new HtmlStorageProvider());
+//        this.expandStateHandler = new ExpandStateHandler(this, new HtmlStorageProvider());
 
 
         view.bind(this);
@@ -635,7 +634,7 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
     protected void doClean() {
         int count = getVisibleRowCount();
         if (count > 0) {
-            List<Node> rows = getAllChildNodes(nodeStorage.getRootItems(), true);
+            List<Node> rows = getAllChildNodes(getRootNodes(), true);
             int[] vr = getVisibleRows(rows, count);
             vr[0] -= view.getCacheSize();
             vr[1] += view.getCacheSize();

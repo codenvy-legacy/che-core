@@ -86,28 +86,17 @@ public abstract class AbstractProjectBasedNode<DataObject> extends AbstractTreeN
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof AbstractProjectBasedNode)) return false;
 
         AbstractProjectBasedNode that = (AbstractProjectBasedNode)o;
 
         if (!dataObject.equals(that.dataObject)) return false;
-        if (!projectDescriptor.equals(that.projectDescriptor)) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = dataObject.hashCode();
-        result = 31 * result + projectDescriptor.hashCode();
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        return "AbstractProjectBasedNode{" +
-               "dataObject=" + dataObject +
-               ", projectDescriptor=" + projectDescriptor +
-               '}';
+        return dataObject.hashCode();
     }
 }

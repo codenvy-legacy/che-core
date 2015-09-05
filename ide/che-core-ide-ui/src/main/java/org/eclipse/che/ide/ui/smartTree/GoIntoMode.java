@@ -103,10 +103,12 @@ public class GoIntoMode implements HasGoIntoStateHandlers {
 
         saveState();
 
+        activated = true;
+
         if (!tree.findNode(node).isExpanded()) {
-            expandHandlerRegistration = tree.addExpandHandler(expandHandler);
+//            expandHandlerRegistration = tree.addExpandHandler(expandHandler);
             tree.setExpanded(node, true);
-            return false;
+//            return false;
         }
 
         setNodes();
@@ -127,7 +129,7 @@ public class GoIntoMode implements HasGoIntoStateHandlers {
         root.setInnerHTML("");
         root.appendChild(descendants);
 
-        activated = true;
+
 
         tree.update();
         tree.ensureFocusElement();

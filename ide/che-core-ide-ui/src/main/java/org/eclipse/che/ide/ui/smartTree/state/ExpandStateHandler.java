@@ -52,29 +52,29 @@ public class ExpandStateHandler extends AbstractStateHandler<Set<String>> {
     private class Handler implements CollapseNodeHandler, ExpandNodeHandler, StoreDataChangeHandler, StoreUpdateHandler {
         @Override
         public void onCollapse(CollapseNodeEvent event) {
-            String key = tree.getNodeStorage().getKeyProvider().getKey(event.getNode());
-            getState().remove(key);
-
-            List<Node> allChildren = tree.getNodeStorage().getAllChildren(event.getNode());
-            for (Node allChild : allChildren) {
-                key = tree.getNodeStorage().getKeyProvider().getKey(allChild);
-                getState().remove(key);
-            }
-
-            saveState();
+//            String key = tree.getNodeStorage().getKeyProvider().getKey(event.getNode());
+//            getState().remove(key);
+//
+//            List<Node> allChildren = tree.getNodeStorage().getAllChildren(event.getNode());
+//            for (Node allChild : allChildren) {
+//                key = tree.getNodeStorage().getKeyProvider().getKey(allChild);
+//                getState().remove(key);
+//            }
+//
+//            saveState();
         }
 
         @Override
         public void onExpand(ExpandNodeEvent event) {
-            String key = tree.getNodeStorage().getKeyProvider().getKey(event.getNode());
-            getState().add(key);
-
-            saveState();
+//            String key = tree.getNodeStorage().getKeyProvider().getKey(event.getNode());
+//            getState().add(key);
+//
+//            saveState();
         }
 
         @Override
         public void onDataChange(StoreDataChangeEvent event) {
-            applyState();
+//            applyState();
         }
 
 
@@ -106,27 +106,27 @@ public class ExpandStateHandler extends AbstractStateHandler<Set<String>> {
     }
 
     public void loadState() {
-        String value = stateProvider.getValue(DEF_KEY);
-        JSONValue jsonValue = JSONParser.parseStrict(value);
-        if (jsonValue.isArray() != null) {
-            JSONArray array = jsonValue.isArray();
-            state.clear();
-
-            for (int i = 0; i < array.size(); i++) {
-                state.add(array.get(i).isString().stringValue());
-            }
-        }
-
-        applyState();
+//        String value = stateProvider.getValue(DEF_KEY);
+//        JSONValue jsonValue = JSONParser.parseStrict(value);
+//        if (jsonValue.isArray() != null) {
+//            JSONArray array = jsonValue.isArray();
+//            state.clear();
+//
+//            for (int i = 0; i < array.size(); i++) {
+//                state.add(array.get(i).isString().stringValue());
+//            }
+//        }
+//
+//        applyState();
     }
 
     public void saveState() {
-        String[] array = state.toArray(new String[state.size()]);
-
-        JSONArray obj = new JSONArray();
-        for (int i = 0; i < array.length; i++) {
-            obj.set(i, new JSONString(array[i]));
-        }
-        stateProvider.setValue(DEF_KEY, obj.toString());
+//        String[] array = state.toArray(new String[state.size()]);
+//
+//        JSONArray obj = new JSONArray();
+//        for (int i = 0; i < array.length; i++) {
+//            obj.set(i, new JSONString(array[i]));
+//        }
+//        stateProvider.setValue(DEF_KEY, obj.toString());
     }
 }
