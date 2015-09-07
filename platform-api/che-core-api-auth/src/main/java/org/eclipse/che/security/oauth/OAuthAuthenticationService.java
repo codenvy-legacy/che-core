@@ -246,7 +246,7 @@ public class OAuthAuthenticationService {
     public OAuthToken token(@QueryParam("oauth_provider") String oauth_provider, @Context SecurityContext security)
             throws Exception {
         final Principal principal = security.getUserPrincipal();
-        OAuthAuthenticator provider = providers.getAuthenticator(oauth_provider);
+        OAuthAuthenticator provider = getAuthenticator(oauth_provider);
         if (provider != null) {
             return provider.getToken(principal.getName());
         }
