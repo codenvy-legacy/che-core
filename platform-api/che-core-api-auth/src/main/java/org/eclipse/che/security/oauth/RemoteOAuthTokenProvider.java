@@ -54,6 +54,7 @@ public class RemoteOAuthTokenProvider implements OAuthTokenProvider {
                         LOG.warn("Token not found for user {}", userId);
                         return null;
                     }
+                    return token;
                 } catch (ServerException | NotFoundException | ForbiddenException | UnauthorizedException | ConflictException e) {
                     LOG.error("Exception on token retrieval, message : {}", e.getLocalizedMessage());
                     return null;
