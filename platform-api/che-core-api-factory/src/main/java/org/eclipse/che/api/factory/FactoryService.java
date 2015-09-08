@@ -39,7 +39,6 @@ import org.eclipse.che.commons.lang.URLEncodedUtils;
 import org.eclipse.che.commons.user.User;
 import org.eclipse.che.dto.server.DtoFactory;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.gson.JsonSyntaxException;
 import com.wordnik.swagger.annotations.Api;
@@ -80,7 +79,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -623,18 +621,14 @@ public class FactoryService extends Service {
 
             for (Project module : projectManager.getProjectModules(project)) {
                 ProjectConfig moduleConfig = module.getConfig();
-                final Map<String, AttributeValue> moduleAttributes = moduleConfig.getAttributes();
-                final Map<String, List<String>> attributesMap = new LinkedHashMap<>(moduleAttributes.size());
-                moduleAttributes.keySet().forEach(attrName ->
-                                                          attributesMap.put(attrName, moduleAttributes.get(attrName).getList())
-                                                 );
                 String moduleRelativePath = module.getPath().substring(project.getPath().length());
+                final ProjectJson moduleJson = ProjectJson.load(module);
                 newProject.getModules().add(DtoFactory.newDto(ProjectModule.class).withType(moduleConfig.getTypeId())
                                                       .withPath(moduleRelativePath)
-                                                      .withAttributes(attributesMap)
                                                       .withRecipe(moduleConfig.getRecipe())
+                                                      .withAttributes(moduleJson.getAttributes())
                                                       .withMixins(moduleConfig.getMixinTypes())
-                                                      .withDescription(moduleConfig.getDescription()));
+                                                      .withDescription(moduleJson.getDescription()));
             }
         } catch (IOException e) {
             throw new ServerException(e.getLocalizedMessage());
