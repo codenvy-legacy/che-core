@@ -11,6 +11,7 @@
 package org.eclipse.che.security.oauth;
 
 import org.eclipse.che.api.auth.shared.dto.OAuthToken;
+import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.rest.annotations.Required;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.core.rest.shared.dto.LinkParameter;
@@ -245,16 +246,20 @@ public class OAuthAuthenticationService {
      *
      * @param oauthProvider OAuth provider name
      * @return OAuthToken
-     * @throws IOException
+     * @throws ServerException
      */
     @GET
     @Path("token")
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed({"user", "temp_user"})
-    public OAuthToken token(@Required @QueryParam("oauth_provider") String oauthProvider)
-            throws IOException {
+    public OAuthToken token(@Required @QueryParam("oauth_provider") String oauthProvider) throws ServerException {
         OAuthAuthenticator provider = getAuthenticator(oauthProvider);
-        return provider.getToken(security.getUserPrincipal().getName());
+        try {
+            return provider.getToken(security.getUserPrincipal()
+                                             .getName());
+        } catch (IOException e) {
+            throw new ServerException(e.getLocalizedMessage(), e);
+        }
     }
 
     protected OAuthAuthenticator getAuthenticator(String oauthProviderName) {
