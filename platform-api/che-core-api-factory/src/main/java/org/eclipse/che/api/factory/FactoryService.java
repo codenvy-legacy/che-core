@@ -616,19 +616,15 @@ public class FactoryService extends Service {
 
             for (Project module : projectManager.getProjectModules(project)) {
                 ProjectConfig moduleConfig = module.getConfig();
-                final Map<String, AttributeValue> moduleAttributes = moduleConfig.getAttributes();
-                final Map<String, List<String>> attributesMap = new LinkedHashMap<>(moduleAttributes.size());
-                moduleAttributes.keySet().forEach(attrName ->
-                                                          attributesMap.put(attrName, moduleAttributes.get(attrName).getList())
-                                                 );
                 String moduleRelativePath = module.getPath().substring(project.getPath().length());
+                final ProjectJson moduleJson = ProjectJson.load(module);
                 newProject.getModules().add(DtoFactory.newDto(ProjectModule.class).withType(moduleConfig.getTypeId())
                                                       .withPath(moduleRelativePath)
-                                                      .withAttributes(attributesMap)
+                                                      .withAttributes(moduleJson.getAttributes())
                                                       .withBuilders(DtoConverter.toDto(moduleConfig.getBuilders()))
                                                       .withRunners(DtoConverter.toDto(moduleConfig.getRunners()))
                                                       .withMixins(moduleConfig.getMixinTypes())
-                                                      .withDescription(moduleConfig.getDescription()));
+                                                      .withDescription(moduleJson.getDescription()));
             }
 
             final Builders builders = projectJson.getBuilders();
