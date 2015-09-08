@@ -60,6 +60,12 @@
             <groupId>com.google.http-client</groupId>
             <artifactId>google-http-client</artifactId>
             <version>${com.google.http-client.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>httpclient</artifactId>
+                    <groupId>org.apache.httpcomponents</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.google.oauth-client</groupId>
