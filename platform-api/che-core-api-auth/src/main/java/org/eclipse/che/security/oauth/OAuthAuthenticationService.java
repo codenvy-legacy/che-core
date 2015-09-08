@@ -11,6 +11,7 @@
 package org.eclipse.che.security.oauth;
 
 import org.eclipse.che.api.auth.shared.dto.OAuthToken;
+import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.rest.annotations.Required;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
@@ -28,7 +29,6 @@ import javax.ws.rs.HttpMethod;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -92,7 +92,7 @@ public class OAuthAuthenticationService {
      */
     @GET
     @Path("authenticate")
-    public Response authenticate() throws OAuthAuthenticationException {
+    public Response authenticate() throws OAuthAuthenticationException, BadRequestException {
         OAuthAuthenticator oauth = getAuthenticator(uriInfo.getQueryParameters().getFirst("oauth_provider"));
         final URL requestUrl = getRequestUrl(uriInfo);
         final List<String> scopes = uriInfo.getQueryParameters().get("scope");
@@ -105,7 +105,7 @@ public class OAuthAuthenticationService {
 
     @GET
     @Path("callback")
-    public Response callback() throws OAuthAuthenticationException {
+    public Response callback() throws OAuthAuthenticationException, BadRequestException {
         URL requestUrl = getRequestUrl(uriInfo);
         Map<String, List<String>> params = getRequestParameters(getState(requestUrl));
         List<String> errorValues = uriInfo.getQueryParameters().get("error");
@@ -231,7 +231,7 @@ public class OAuthAuthenticationService {
 
     @GET
     @Path("invalidate")
-    public Response invalidate() throws IOException {
+    public Response invalidate() throws IOException, BadRequestException {
         final Principal principal = security.getUserPrincipal();
         OAuthAuthenticator oauth = getAuthenticator(uriInfo.getQueryParameters().getFirst("oauth_provider"));
         if (principal != null && oauth.invalidateToken(principal.getName())) {
@@ -252,7 +252,7 @@ public class OAuthAuthenticationService {
     @Path("token")
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed({"user", "temp_user"})
-    public OAuthToken token(@Required @QueryParam("oauth_provider") String oauthProvider) throws ServerException {
+    public OAuthToken token(@Required @QueryParam("oauth_provider") String oauthProvider) throws ServerException, BadRequestException {
         OAuthAuthenticator provider = getAuthenticator(oauthProvider);
         try {
             return provider.getToken(security.getUserPrincipal()
@@ -262,13 +262,11 @@ public class OAuthAuthenticationService {
         }
     }
 
-    protected OAuthAuthenticator getAuthenticator(String oauthProviderName) {
+    protected OAuthAuthenticator getAuthenticator(String oauthProviderName) throws BadRequestException {
         OAuthAuthenticator oauth = providers.getAuthenticator(oauthProviderName);
         if (oauth == null) {
             LOG.error("Unsupported OAuth provider {} ", oauthProviderName);
-            throw new WebApplicationException(Response.status(400).entity("Unsupported OAuth provider " +
-                                                                          oauthProviderName).type(MediaType.TEXT_PLAIN)
-                                                      .build());
+            throw new BadRequestException("Unsupported OAuth provider " + oauthProviderName);
         }
         return oauth;
     }

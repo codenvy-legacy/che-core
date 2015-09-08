@@ -13,6 +13,8 @@ package org.eclipse.che.security.oauth;
 import com.jayway.restassured.response.Response;
 
 import org.eclipse.che.api.auth.shared.dto.OAuthToken;
+import org.eclipse.che.api.core.rest.ApiExceptionMapper;
+import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.everrest.assured.EverrestJetty;
 import org.mockito.InjectMocks;
@@ -44,6 +46,9 @@ import static org.testng.Assert.assertEquals;
 @Listeners(value = {EverrestJetty.class, MockitoTestNGListener.class})
 public class OAuthAuthenticationServiceTest {
 
+    @SuppressWarnings("unused")
+    private final ApiExceptionMapper exceptionMapper = new ApiExceptionMapper();
+
     @Mock
     protected OAuthAuthenticatorProvider providers;
     @Mock
@@ -55,7 +60,7 @@ public class OAuthAuthenticationServiceTest {
 
 
     @Test
-    public void shouldThrowWebApplicationExceptionIfNoSuchProviderFound() {
+    public void shouldThrowExceptionIfNoSuchProviderFound() throws Exception {
         final Response response = given().auth()
                                          .basic(ADMIN_USER_NAME, ADMIN_USER_PASSWORD)
                                          .contentType("application/json")
@@ -64,7 +69,9 @@ public class OAuthAuthenticationServiceTest {
                                          .get(SECURE_PATH + "/oauth/token");
 
         assertEquals(response.getStatusCode(), 400);
-        assertEquals(response.getBody().print(), "Unsupported OAuth provider unknown");
+        assertEquals(DtoFactory.getInstance()
+                               .createDtoFromJson(response.getBody().asInputStream(), ServiceError.class)
+                               .getMessage(), "Unsupported OAuth provider unknown");
     }
 
 
@@ -72,12 +79,13 @@ public class OAuthAuthenticationServiceTest {
     public void shouldBeAbleToGetUserToken() throws Exception {
         String provider = "myprovider";
         String token = "token123";
-        OAuthAuthenticator authenticator  = mock(OAuthAuthenticator.class);
+        OAuthAuthenticator authenticator = mock(OAuthAuthenticator.class);
         Principal principal = mock(Principal.class);
         when(principal.getName()).thenReturn("username");
         when(security.getUserPrincipal()).thenReturn(principal);
         when(providers.getAuthenticator(eq(provider))).thenReturn(authenticator);
-        when(authenticator.getToken(anyString())).thenReturn(DtoFactory.newDto(OAuthToken.class).withToken(token));
+        when(authenticator.getToken(anyString())).thenReturn(DtoFactory.newDto(OAuthToken.class)
+                                                                       .withToken(token));
 
         final Response response = given().auth()
                                          .basic(ADMIN_USER_NAME, ADMIN_USER_PASSWORD)
