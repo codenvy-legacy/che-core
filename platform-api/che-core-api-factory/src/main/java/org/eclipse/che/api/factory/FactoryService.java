@@ -42,8 +42,6 @@ import org.eclipse.che.commons.lang.URLEncodedUtils;
 import org.eclipse.che.commons.user.User;
 import org.eclipse.che.dto.server.DtoFactory;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
 import com.google.gson.JsonSyntaxException;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -83,10 +81,10 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.base.Strings.nullToEmpty;
@@ -409,7 +407,7 @@ public class FactoryService extends Service {
     @SuppressWarnings("unchecked")
     public List<Link> getFactoryByAttribute(@Context UriInfo uriInfo) throws ApiException {
         List<Link> result = new ArrayList<>();
-        URI uri = UriBuilder.fromUri(uriInfo.getRequestUri()).replaceQueryParam("token", null).build();
+        URI uri = UriBuilder.fromUri(uriInfo.getRequestUri()).replaceQueryParam("token").build();
         Map<String, Set<String>> queryParams = URLEncodedUtils.parse(uri, "UTF-8");
         if (queryParams.isEmpty()) {
             throw new IllegalArgumentException("Query must contain at least one attribute.");
@@ -663,12 +661,10 @@ public class FactoryService extends Service {
 
         if (factory.getWorkspace() != null && "owner".equals(factory.getWorkspace().getLocation()) &&
             factory.getCreator().getAccountId() == null) {
-            List<Member> ownedAccounts = FluentIterable.from(accountDao.getByMember(currentUser.getId())).filter(new Predicate<Member>() {
-                @Override
-                public boolean apply(Member input) {
-                    return input.getRoles().contains("account/owner");
-                }
-            }).toList();
+            List<Member> ownedAccounts = accountDao.getByMember(currentUser.getId())
+                                                   .stream()
+                                                   .filter(member -> member.getRoles().contains("account/owner"))
+                                                   .collect(Collectors.toList());
             switch (ownedAccounts.size()) {
                 case 0: {
                     // must never happen but who knows
