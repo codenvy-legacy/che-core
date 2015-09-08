@@ -33,6 +33,8 @@ import java.io.IOException;
 
 /**
  * Allow get token from OAuth service over http.
+ *
+ *  @author Max Shaposhnik
  */
 public class RemoteOAuthTokenProvider implements OAuthTokenProvider {
     private static final Logger LOG = LoggerFactory.getLogger(RemoteOAuthTokenProvider.class);
@@ -49,7 +51,7 @@ public class RemoteOAuthTokenProvider implements OAuthTokenProvider {
         }
         try {
             UriBuilder ub = UriBuilder.fromUri(apiEndpoint)
-                                      .path("/oauth/token/")
+                                      .path(OAuthAuthenticationService.class, "token")
                                       .queryParam("oauth_provider", oauthProviderName);
             Link getTokenLink  = DtoFactory.newDto(Link.class).withHref(ub.build().toString()).withMethod("GET");
             OAuthToken token =  HttpJsonHelper.request(OAuthToken.class, getTokenLink);

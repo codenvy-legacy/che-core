@@ -244,7 +244,6 @@ public class OAuthAuthenticationService {
      * Gets OAuth token for user.
      *
      * @param oauthProvider OAuth provider name
-     * @param security Security context
      * @return OAuthToken
      * @throws IOException
      */
@@ -252,13 +251,10 @@ public class OAuthAuthenticationService {
     @Path("token")
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed({"user", "temp_user"})
-    public OAuthToken token(@Required @QueryParam("oauth_provider") String oauthProvider, @Context SecurityContext security)
+    public OAuthToken token(@Required @QueryParam("oauth_provider") String oauthProvider)
             throws IOException {
         OAuthAuthenticator provider = getAuthenticator(oauthProvider);
-        if (provider != null) {
-            return provider.getToken(security.getUserPrincipal().getName());
-        }
-        return null;
+        return provider.getToken(security.getUserPrincipal().getName());
     }
 
     protected OAuthAuthenticator getAuthenticator(String oauthProviderName) {
