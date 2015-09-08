@@ -41,25 +41,26 @@ public class RemoteOAuthTokenProvider implements OAuthTokenProvider {
     @Named("api.endpoint")
     protected String apiEndpoint;
 
+    /** {@inheritDoc} */
     @Override
     public OAuthToken getToken(String oauthProviderName, String userId) throws IOException {
-        if (!userId.isEmpty()) {
-                try {
-                    UriBuilder ub = UriBuilder.fromUri(apiEndpoint)
-                                              .path("/oauth/token/")
-                                              .queryParam("oauth_provider", oauthProviderName);
-                    Link getTokenLink  = DtoFactory.newDto(Link.class).withHref(ub.build().toString()).withMethod("GET");
-                    OAuthToken token =  HttpJsonHelper.request(OAuthToken.class, getTokenLink);
-                    if (token == null) {
-                        LOG.warn("Token not found for user {}", userId);
-                        return null;
-                    }
-                    return token;
-                } catch (ServerException | NotFoundException | ForbiddenException | UnauthorizedException | ConflictException e) {
-                    LOG.error("Exception on token retrieval, message : {}", e.getLocalizedMessage());
-                    return null;
-                }
+        if (userId.isEmpty()) {
+            return null;
         }
-        return null;
+        try {
+            UriBuilder ub = UriBuilder.fromUri(apiEndpoint)
+                                      .path("/oauth/token/")
+                                      .queryParam("oauth_provider", oauthProviderName);
+            Link getTokenLink  = DtoFactory.newDto(Link.class).withHref(ub.build().toString()).withMethod("GET");
+            OAuthToken token =  HttpJsonHelper.request(OAuthToken.class, getTokenLink);
+            if (token == null) {
+                LOG.warn("Token not found for user {}", userId);
+                return null;
+            }
+            return token;
+        } catch (ServerException | NotFoundException | ForbiddenException | UnauthorizedException | ConflictException e) {
+            LOG.error("Exception on token retrieval, message : {}", e.getLocalizedMessage());
+            return null;
+        }
     }
 }

@@ -11,6 +11,7 @@
 package org.eclipse.che.security.oauth;
 
 import org.eclipse.che.api.auth.shared.dto.OAuthToken;
+import org.eclipse.che.api.core.rest.annotations.Required;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.core.rest.shared.dto.LinkParameter;
 import org.eclipse.che.api.core.util.LinksHelper;
@@ -239,16 +240,23 @@ public class OAuthAuthenticationService {
                                                                            null)).type(MediaType.TEXT_PLAIN).build();
     }
 
+    /**
+     * Gets OAuth token for user.
+     *
+     * @param oauthProvider OAuth provider name
+     * @param security Security context
+     * @return OAuthToken
+     * @throws IOException
+     */
     @GET
-    @Produces({MediaType.APPLICATION_JSON})
-    @RolesAllowed({"user", "temp_user"})
     @Path("token")
-    public OAuthToken token(@QueryParam("oauth_provider") String oauth_provider, @Context SecurityContext security)
-            throws Exception {
-        final Principal principal = security.getUserPrincipal();
-        OAuthAuthenticator provider = getAuthenticator(oauth_provider);
+    @Produces(MediaType.APPLICATION_JSON)
+    @RolesAllowed({"user", "temp_user"})
+    public OAuthToken token(@Required @QueryParam("oauth_provider") String oauthProvider, @Context SecurityContext security)
+            throws IOException {
+        OAuthAuthenticator provider = getAuthenticator(oauthProvider);
         if (provider != null) {
-            return provider.getToken(principal.getName());
+            return provider.getToken(security.getUserPrincipal().getName());
         }
         return null;
     }
