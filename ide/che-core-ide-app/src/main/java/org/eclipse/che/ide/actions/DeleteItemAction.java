@@ -26,10 +26,11 @@ import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
 import org.eclipse.che.ide.part.projectexplorer.DeleteNodeHandler;
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
-import org.eclipse.che.ide.util.loging.Log;
 
 import javax.annotation.Nullable;
 import java.util.List;
+
+import static com.google.common.collect.Lists.transform;
 
 /**
  * Action for deleting an item which is selected in 'Project Explorer'.
@@ -65,13 +66,13 @@ public class DeleteItemAction extends Action {
         if (selection.size() == 1) {
             Object o = selection.get(0);
             if (o instanceof ResourceBasedNode<?>) {
-                ((ResourceBasedNode)o).delete();
+                deleteNodeHandler.delete((ResourceBasedNode<?>)o);
             } else {
                 throw new IllegalArgumentException("Node isn't resource based.");
             }
         } else {
-            Iterable<ResourceBasedNode<?>> nodes = Iterables.transform(selection, castNode());
-            doDelete(nodes);
+            List<ResourceBasedNode<?>> nodes = transform(selection, castNode());
+            deleteNodeHandler.deleteNodes(nodes);
         }
     }
 
@@ -89,10 +90,6 @@ public class DeleteItemAction extends Action {
         };
     }
 
-    private void doDelete(Iterable<ResourceBasedNode<?>> nodes) {
-        Log.info(this.getClass(), "doDelete():103: " + "nodes: " + nodes);
-    }
-
     /** {@inheritDoc} */
     @Override
     public void update(ActionEvent e) {
@@ -106,12 +103,6 @@ public class DeleteItemAction extends Action {
         Selection<?> selection = projectExplorer.getSelection();
 
         if (selection == null) {
-            e.getPresentation().setEnabled(false);
-            return;
-        }
-
-        if (selection.isMultiSelection()) {
-            //this is temporary commented
             e.getPresentation().setEnabled(false);
             return;
         }

@@ -119,6 +119,9 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("deleteFolderDialogTitle")
     String deleteFolderDialogTitle();
 
+    @Key("deleteModuleDialogTitle")
+    String deleteModuleDialogTitle();
+
     @Key("deleteProjectDialogTitle")
     String deleteProjectDialogTitle();
 
