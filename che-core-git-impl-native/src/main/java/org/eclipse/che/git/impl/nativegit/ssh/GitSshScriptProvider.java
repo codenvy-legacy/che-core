@@ -11,7 +11,10 @@
 package org.eclipse.che.git.impl.nativegit.ssh;
 
 import org.eclipse.che.api.git.GitException;
-import org.eclipse.che.git.impl.nativegit.GitUrl;
+
+import static org.eclipse.che.api.core.util.SystemInfo.isUnix;
+import static org.eclipse.che.api.core.util.SystemInfo.isWindows;
+import static org.eclipse.che.git.impl.nativegit.GitUrl.getHost;
 
 import javax.inject.Inject;
 
@@ -39,10 +42,16 @@ public class GitSshScriptProvider {
      *         if an error occurs when creating a script file
      */
     public GitSshScript gitSshScript(String url) throws GitException {
-        String host = GitUrl.getHost(url);
+        String host = getHost(url);
         if (host == null) {
             throw new GitException("URL does not have a host");
         }
-        return new GitSshScript(host, sshKeyProvider.getPrivateKey(url));
+        if (isWindows()) {
+            return new WindowsGitSshScript(host, sshKeyProvider.getPrivateKey(url));
+        }
+        if (isUnix()) {
+            return new UnixGitSshScript(host, sshKeyProvider.getPrivateKey(url));
+        }
+        throw new GitException("Unsupported OS.");
     }
 }

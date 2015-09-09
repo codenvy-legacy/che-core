@@ -578,12 +578,17 @@ public class NativeGitConnection implements GitConnection {
         //do not need to do anything
     }
 
+    /**
+     * Ensure existence repository root directory inside working directory
+     * @throws GitException if git root folder is not in working directory
+     */
     private void ensureExistenceRepoRootInWorkingDirectory() throws GitException {
         final EmptyGitCommand emptyGitCommand = nativeGit.createEmptyGitCommand();
-        emptyGitCommand.setNextParameter("rev-parse").setNextParameter("--show-toplevel").execute();
-        final String absolutePathToRepoRoot = emptyGitCommand.getText();
+        //get repo root directory in format relative path, f.e "../", command return "" in the repo root directory
+        emptyGitCommand.setNextParameter("rev-parse").setNextParameter("--show-cdup").execute();
+        final String relativePathToRepositoryRoot = emptyGitCommand.getText();
 
-        if (!getWorkingDir().getAbsolutePath().equals(absolutePathToRepoRoot)) {
+        if (!relativePathToRepositoryRoot.isEmpty()) {
             throw new GitException("Project is not a git repository.");
         }
     }
