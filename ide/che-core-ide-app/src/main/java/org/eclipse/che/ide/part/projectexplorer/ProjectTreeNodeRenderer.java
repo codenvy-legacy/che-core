@@ -92,7 +92,7 @@ public class ProjectTreeNodeRenderer implements NodeRenderer<TreeNode<?>> {
 
         if (node instanceof ProjectListStructure.ProjectNode) {
             if (hasProblems((ProjectListStructure.ProjectNode)node)) {
-                root.setTitle(constant.projectExplorerProblemProjetTitle());
+                root.setTitle(constant.projectExplorerProblemProjectTitle());
             }
         } else if (node instanceof FileNode) {
             Elements.addClassName(css.fileFont(), root);

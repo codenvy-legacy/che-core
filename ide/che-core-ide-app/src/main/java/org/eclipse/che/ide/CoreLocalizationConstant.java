@@ -294,7 +294,7 @@ public interface CoreLocalizationConstant extends Messages {
 
     @Key("projectExplorer.problemProject.title")
     @DefaultMessage("Looks like your project needs to be configured")
-    String projectExplorerProblemProjetTitle();
+    String projectExplorerProblemProjectTitle();
 
     @Key("importProject.message.success")
     String importProjectMessageSuccess();
