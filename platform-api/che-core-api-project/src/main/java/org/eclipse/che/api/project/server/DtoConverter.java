@@ -122,7 +122,7 @@ public class DtoConverter {
 
         // mixins
         final List<String> validMixins = new ArrayList<>();
-        for (String typeId : dto.getMixinTypes()) {
+        for (String typeId : dto.getMixins()) {
             ProjectType mixinType = typeRegistry.getProjectType(typeId);
             if (mixinType != null) {  // otherwise just ignore
                 validTypes.add(mixinType);

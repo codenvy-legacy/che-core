@@ -746,7 +746,7 @@ public class ProjectTest {
 
         final ProjectUpdate projectUpdate = DtoFactory.getInstance().createDto(ProjectUpdate.class)
                 .withType("blank")
-                .withMixinTypes(Arrays.asList("testDtoConverterWithMixin"))
+                .withMixins(Arrays.asList("testDtoConverterWithMixin"))
                 .withAttributes(attributes);
 
         final ProjectConfig projectConfig = DtoConverter.fromDto2(projectUpdate, pm.getProjectTypeRegistry());
