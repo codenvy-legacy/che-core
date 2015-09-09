@@ -67,7 +67,6 @@ public class WorkspaceComponent implements Component {
     private final AppContext               appContext;
     private final DtoFactory               dtoFactory;
     private       OperationInfo            startMachineOperation;
-    private       String                   machineStatusChanel;
 
     @Inject
     public WorkspaceComponent(WorkspaceServiceClient workspaceServiceClient,
@@ -194,7 +193,6 @@ public class WorkspaceComponent implements Component {
     }
 
     private void subscribeToMachineStatus(String machineStatusChanel) {
-        this.machineStatusChanel = machineStatusChanel;
         final Unmarshallable<MachineStatusEvent> unmarshaller = dtoUnmarshallerFactory.newWSUnmarshaller(MachineStatusEvent.class);
         try {
             messageBus.subscribe(machineStatusChanel, new SubscriptionHandler<MachineStatusEvent>(unmarshaller) {
@@ -214,28 +212,20 @@ public class WorkspaceComponent implements Component {
     }
 
     private void onMachineStatusChanged(MachineStatusEvent event, SubscriptionHandler<MachineStatusEvent> handler) {
-        try {
-            eventBus.fireEvent(new DevMachineStateEvent(event));
-            switch (event.getEventType()) {
-                case CREATING:
-                    startMachineOperation = new OperationInfo(localizedConstants.startingMachine(event.getMachineName()), Status.IN_PROGRESS, loader);
-                    loader.print(startMachineOperation);
-                    break;
-                case RUNNING:
-                    startMachineOperation.setStatus(Status.FINISHED);
-                    break;
-                case ERROR:
-                    startMachineOperation.setStatus(Status.ERROR);
-                    messageBus.unsubscribe(machineStatusChanel, handler);
-                    break;
-                case DESTROYED:
-                    messageBus.unsubscribe(machineStatusChanel, handler);
-                    break;
-                default:
-                    break;
-            }
-        } catch (WebSocketException e) {
-            Log.error(getClass(), e);
+        eventBus.fireEvent(new DevMachineStateEvent(event));
+        switch (event.getEventType()) {
+            case CREATING:
+                startMachineOperation = new OperationInfo(localizedConstants.startingMachine(event.getMachineName()), Status.IN_PROGRESS, loader);
+                loader.print(startMachineOperation);
+                break;
+            case RUNNING:
+                startMachineOperation.setStatus(Status.FINISHED);
+                break;
+            case ERROR:
+                startMachineOperation.setStatus(Status.ERROR);
+                break;
+            default:
+                break;
         }
     }
 

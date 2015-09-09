@@ -191,7 +191,9 @@ public class LoaderViewImpl extends PopupPanel implements LoaderView, ResizeHand
     /** {@inheritDoc} */
     @Override
     public void hide() {
-        resizeHandler.removeHandler();
+        if (resizeHandler != null) {
+            resizeHandler.removeHandler();
+        }
         resizeHandler = null;
         super.hide();
     }
