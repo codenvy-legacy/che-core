@@ -652,6 +652,13 @@ public interface Theme {
     String getTooltipBackgroundColor();
 
     /**
+     * The background color of the perspective switcher if checked.
+     *
+     * @return {@link String} color
+     */
+    String getPerspectiveSwitcherBackgroundColor();
+
+    /**
      * @return the progress icon color
      */
     String getProgressColor();

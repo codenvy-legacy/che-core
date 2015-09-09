@@ -66,7 +66,7 @@ public class ActionButton extends Composite implements MouseOverHandler,
     private boolean selected = false;
     private ActionManager            actionManager;
     private ActionButtonSynchronizer actionButtonSynchronizer;
-    private ToolbarResources toolbarResources;
+    private ToolbarResources         toolbarResources;
 
     public ActionButton(Action action,
                         ActionManager actionManager,
@@ -180,9 +180,6 @@ public class ActionButton extends Composite implements MouseOverHandler,
         if (image.getAbsoluteLeft() + tooltip.getOffsetWidth() > screenSize) {
             tooltipBody.getStyle().setRight(image.getAbsoluteLeft() + tooltip.getOffsetWidth() - screenSize, Style.Unit.PX);
         }
-        if (!enabled) {
-            return;
-        }
     }
 
     /** Mouse Out handler. */
@@ -214,9 +211,6 @@ public class ActionButton extends Composite implements MouseOverHandler,
     /** Mouse Up handler. */
     @Override
     public void onMouseUp(MouseUpEvent event) {
-        if (!enabled) {
-            return;
-        }
     }
 
     /** Mouse Click handler. */

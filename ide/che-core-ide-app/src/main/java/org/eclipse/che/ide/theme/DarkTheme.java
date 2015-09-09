@@ -509,6 +509,11 @@ public class DarkTheme implements Theme {
     }
 
     @Override
+    public String getPerspectiveSwitcherBackgroundColor() {
+        return "#4eabff";
+    }
+
+    @Override
     public String getProgressColor() {
         return "#ffffff";
     }

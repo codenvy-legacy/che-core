@@ -166,6 +166,9 @@
 @eval toolbarHoverIconColor org.eclipse.che.ide.api.theme.Style.getToolbarHoverIconColor();
 @eval tooltipBackgroundColor org.eclipse.che.ide.api.theme.Style.getTooltipBackgroundColor();
 
+/*PerspectiveSwitcher*/
+@eval perspectiveSwitcherBackgroundColor org.eclipse.che.ide.api.theme.Style.getPerspectiveSwitcherBackgroundColor();
+
 /* DialogBox*/
 @eval dialogTopLeft org.eclipse.che.ide.api.theme.Style.getTabBorderColor();
 @eval dialogTopCenter org.eclipse.che.ide.api.theme.Style.getTabBorderColor();

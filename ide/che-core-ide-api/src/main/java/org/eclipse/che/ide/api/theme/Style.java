@@ -404,6 +404,10 @@ public class Style {
         return theme.getTooltipBackgroundColor();
     }
 
+    public static String getPerspectiveSwitcherBackgroundColor() {
+        return theme.getPerspectiveSwitcherBackgroundColor();
+    }
+
     public static String getProgressColor() {
         return theme.getProgressColor();
     }

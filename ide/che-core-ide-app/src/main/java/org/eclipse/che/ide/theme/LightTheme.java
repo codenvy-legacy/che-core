@@ -503,6 +503,11 @@ public class LightTheme implements Theme {
     }
 
     @Override
+    public String getPerspectiveSwitcherBackgroundColor() {
+        return "#1a68af";
+    }
+
+    @Override
     public String getProgressColor() {
         return "#000000";
     }
