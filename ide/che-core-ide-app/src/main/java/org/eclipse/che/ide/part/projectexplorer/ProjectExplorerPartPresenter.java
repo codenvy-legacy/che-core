@@ -506,18 +506,6 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
 
     /** {@inheritDoc} */
     @Override
-    public void onDeleteKey() {
-        List<StorableNode> selectedNodes = new ArrayList<>();
-        for (Object node : view.getSelectedNodes()) {
-            if (node instanceof StorableNode) {
-                selectedNodes.add((StorableNode) node);
-            }
-        }
-        deleteNodeHandler.deleteNodes(selectedNodes);
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public void onEnterKey() {
         view.getSelectedNode().processNodeAction();
     }

@@ -17,11 +17,14 @@ import org.eclipse.che.ide.CoreLocalizationConstant;
 
 import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.notification.NotificationManager;
-import org.eclipse.che.ide.api.project.tree.TreeNode;
-import org.eclipse.che.ide.api.project.tree.generic.FileNode;
-import org.eclipse.che.ide.api.project.tree.generic.FolderNode;
-import org.eclipse.che.ide.api.project.tree.generic.ProjectNode;
-import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
+import org.eclipse.che.ide.api.project.node.HasStorablePath;
+import org.eclipse.che.ide.api.project.node.Node;
+import org.eclipse.che.ide.project.node.FileReferenceNode;
+import org.eclipse.che.ide.project.node.FolderReferenceNode;
+import org.eclipse.che.ide.project.node.ModuleDescriptorNode;
+import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
+import org.eclipse.che.ide.project.node.ProjectReferenceNode;
+import org.eclipse.che.ide.project.node.ResourceBasedNode;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.Unmarshallable;
@@ -37,7 +40,6 @@ import com.google.inject.Singleton;
 import static org.eclipse.che.api.runner.ApplicationStatus.NEW;
 import static org.eclipse.che.api.runner.ApplicationStatus.RUNNING;
 import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
-import static org.eclipse.che.ide.api.project.tree.TreeNode.DeleteCallback;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -45,7 +47,7 @@ import java.util.List;
 import java.util.Queue;
 
 /**
- * Used for deleting a {@link StorableNode}.
+ * Used for deleting a {@link Node}.
  *
  * @author Ann Shumilova
  * @author Artem Zatsarynnyy
@@ -77,15 +79,15 @@ public class DeleteNodeHandler {
      * @param nodeToDelete
      *         node to be deleted
      */
-    public void delete(final StorableNode nodeToDelete) {
-        if (nodeToDelete instanceof ProjectNode || nodeToDelete instanceof ProjectListStructure.ProjectNode) {
-            deleteProjectNode(nodeToDelete);
+    public void delete(final ResourceBasedNode<?> nodeToDelete) {
+        if (nodeToDelete instanceof ProjectDescriptorNode) {
+            deleteProjectNode((ProjectDescriptorNode)nodeToDelete);
         } else {
             askForDeletingNode(nodeToDelete);
         }
     }
 
-    private void deleteProjectNode(final StorableNode projectNodeToDelete) {
+    private void deleteProjectNode(final ProjectDescriptorNode projectNodeToDelete) {
         checkRunningProcessesForProject(projectNodeToDelete, new AsyncCallback<Boolean>() {
             @Override
             public void onSuccess(final Boolean hasRunningProcesses) {
@@ -108,21 +110,11 @@ public class DeleteNodeHandler {
      *
      * @param nodeToDelete
      */
-    private void askForDeletingNode(final StorableNode nodeToDelete) {
+    private void askForDeletingNode(final ResourceBasedNode<?> nodeToDelete) {
         dialogFactory.createConfirmDialog(getDialogTitle(nodeToDelete), getDialogQuestion(nodeToDelete), new ConfirmCallback() {
             @Override
             public void accepted() {
-                nodeToDelete.delete(new DeleteCallback() {
-                    @Override
-                    public void onDeleted() {
-                    }
-
-                    @Override
-                    public void onFailure(Throwable caught) {
-                        notificationManager.showNotification(new Notification(caught.getMessage(), ERROR));
-                    }
-                });
-
+                nodeToDelete.delete();
             }
         }, null).show();
     }
@@ -132,31 +124,46 @@ public class DeleteNodeHandler {
      *
      * @param nodesToDelete node list for deletion
      */
-    private void askForDeletingNodes(final List<StorableNode> nodesToDelete) {
+    private void askForDeletingNodes(final List<ResourceBasedNode<?>> nodesToDelete) {
         final ConfirmDialog dialog = dialogFactory.createConfirmDialog(localization.deleteMultipleDialogTitle(),
                                           getDialogWidget(nodesToDelete),
                                           new ConfirmCallback() {
-            @Override
-            public void accepted() {
-                for (final StorableNode nodeToDelete : nodesToDelete) {
-                    nodeToDelete.delete(new DeleteCallback() {
-                        @Override
-                        public void onDeleted() {
-                        }
+                                                @Override
+                                                public void accepted() {
+                                                    List<ResourceBasedNode<?>> nodes = filterParentNode(nodesToDelete);
+                                                    for (final ResourceBasedNode nodeToDelete : nodes) {
+                                                        nodeToDelete.delete();
+                                                    }
+                                                }
+                                            }, null);
+                                            dialog.show();
+                                        }
 
-                        @Override
-                        public void onFailure(final Throwable caught) {
-                            notificationManager.showNotification(new Notification(caught.getMessage(), ERROR));
-                        }
-                    });
-                }
-            }
-        }, null);
-        dialog.show();
+    private IsWidget getDialogWidget(final List<ResourceBasedNode<?>> nodesToDelete) {
+        return new ConfirmMultipleDeleteWidget(nodesToDelete, this.localization);
     }
 
-    private IsWidget getDialogWidget(final List<StorableNode> nodesToDelete) {
-        return new ConfirmMultipleDeleteWidget(nodesToDelete, this.localization);
+    /**
+     * Filter nodes by parent. We should not delete nodes if they situated inside some parent node which was selected for deletion.
+     * @param nodes to filter
+     * @return list node for deletion after filtration
+     */
+    private List<ResourceBasedNode<?>> filterParentNode(List<ResourceBasedNode<?>> nodes) {
+        List<ResourceBasedNode<?>> result = new ArrayList<>(nodes);
+
+            for (ResourceBasedNode<?> elem: nodes) {
+                String elemPath = ((HasStorablePath)elem).getStorablePath();
+                for (ResourceBasedNode<?> node: nodes) {
+                    if (node instanceof FileReferenceNode) {
+                        continue;
+                    }
+                    String nodePath = ((HasStorablePath)node).getStorablePath();
+                    if (!elem.equals(node) && elemPath.startsWith(nodePath + "/")) {
+                        result.remove(elem);
+                    }
+                }
+            }
+        return result;
     }
 
     /**
@@ -165,10 +172,10 @@ public class DeleteNodeHandler {
      * @param projectNode
      * @param callback callback returns true if project has any running processes and false - otherwise
      */
-    private void checkRunningProcessesForProject(StorableNode projectNode, final AsyncCallback<Boolean> callback) {
+    private void checkRunningProcessesForProject(ResourceBasedNode<?> projectNode, final AsyncCallback<Boolean> callback) {
         Unmarshallable<List<ApplicationProcessDescriptor>> unmarshaller =
                 dtoUnmarshallerFactory.newListUnmarshaller(ApplicationProcessDescriptor.class);
-        runnerServiceClient.getRunningProcesses(projectNode.getPath(),
+        runnerServiceClient.getRunningProcesses(((ProjectDescriptorNode)projectNode).getStorablePath(),//todo
                                                 new AsyncRequestCallback<List<ApplicationProcessDescriptor>>(unmarshaller) {
                                                     @Override
                                                     protected void onSuccess(List<ApplicationProcessDescriptor> result) {
@@ -195,13 +202,15 @@ public class DeleteNodeHandler {
      * @param node
      * @return {@link String} title
      */
-    private String getDialogTitle(StorableNode node) {
-        if (node instanceof FileNode) {
+    private String getDialogTitle(Node node) {
+        if (node instanceof FileReferenceNode) {
             return localization.deleteFileDialogTitle();
-        } else if (node instanceof FolderNode) {
+        } else if (node instanceof FolderReferenceNode) {
             return localization.deleteFolderDialogTitle();
-        } else if (node instanceof ProjectNode || node instanceof ProjectListStructure.ProjectNode) {
+        } else if (node instanceof ProjectReferenceNode) {
             return localization.deleteProjectDialogTitle();
+        } else if (node instanceof ModuleDescriptorNode) {
+            return localization.deleteModuleDialogTitle();
         }
         return localization.deleteNodeDialogTitle();
     }
@@ -212,25 +221,26 @@ public class DeleteNodeHandler {
      * @param node
      * @return {@link String} content
      */
-    private String getDialogQuestion(StorableNode node) {
+    private String getDialogQuestion(Node node) {
         final String name = node.getName();
-        if (node instanceof FileNode) {
+        if (node instanceof FileReferenceNode) {
             return localization.deleteFileDialogQuestion(name);
-        } else if (node instanceof FolderNode) {
+        } else if (node instanceof FolderReferenceNode) {
             return localization.deleteFolderDialogQuestion(name);
-        } else if (node instanceof ProjectNode || node instanceof ProjectListStructure.ProjectNode) {
-            TreeNode parent = node.getParent().getParent();
-            return  (parent == null) ? localization.deleteProjectDialogQuestion(name) : localization.deleteModuleDialogQuestion(name);
+        } else if (node instanceof ProjectDescriptorNode) {
+            return localization.deleteProjectDialogQuestion(name);
+        } else if (node instanceof ModuleDescriptorNode) {
+            return localization.deleteModuleDialogQuestion(name);
         }
         return localization.deleteNodeDialogQuestion(name);
     }
 
-    public void deleteNodes(final List<StorableNode> nodes) {
+    public void deleteNodes(final List<ResourceBasedNode<?>> nodes) {
         if (nodes != null && !nodes.isEmpty()) {
             if (nodes.size() == 1) {
                 delete(nodes.get(0));
             } else {
-                final List<StorableNode> projects = extractProjectNodes(nodes);
+                final List<ResourceBasedNode<?>> projects = extractProjectNodes(nodes);
                 if (projects.isEmpty()) {
                     askForDeletingNodes(nodes);
                 } else if (projects.size() < nodes.size()) {
@@ -247,8 +257,8 @@ public class DeleteNodeHandler {
         }
     }
 
-    private void deleteProjectNodes(final List<StorableNode> nodes) {
-        final Queue<StorableNode> nodeStack = new LinkedList<>(nodes);
+    private void deleteProjectNodes(final List<ResourceBasedNode<?>> nodes) {
+        final Queue<ResourceBasedNode<?>> nodeStack = new LinkedList<>(nodes);
         checkRunningForAllProjects(nodeStack, new AsyncCallback<Boolean>() {
             @Override
             public void onSuccess(final Boolean result) {
@@ -265,9 +275,9 @@ public class DeleteNodeHandler {
         });
     }
 
-    private void checkRunningForAllProjects(final Queue<StorableNode> nodes, final AsyncCallback<Boolean> callback) {
+    private void checkRunningForAllProjects(final Queue<ResourceBasedNode<?>> nodes, final AsyncCallback<Boolean> callback) {
         if (!nodes.isEmpty()) {
-            final StorableNode projectNode = nodes.remove();
+            final ResourceBasedNode<?> projectNode = nodes.remove();
             checkRunningProcessesForProject(projectNode, new AsyncCallback<Boolean>() {
                 @Override
                 public void onSuccess(final Boolean result) {
@@ -294,14 +304,14 @@ public class DeleteNodeHandler {
 
     /**
      * Search all the nodes that are project nodes inside the given nodes.
-     * 
+     *
      * @param nodes the nodes
      * @return the project nodes
      */
-    private List<StorableNode> extractProjectNodes(final List<StorableNode> nodes) {
-        final List<StorableNode> result = new ArrayList<>();
-        for (StorableNode node : nodes) {
-            if (node instanceof ProjectNode || node instanceof ProjectListStructure.ProjectNode) {
+    private List<ResourceBasedNode<?>> extractProjectNodes(final List<ResourceBasedNode<?>> nodes) {
+        final List<ResourceBasedNode<?>> result = new ArrayList<>();
+        for (ResourceBasedNode node : nodes) {
+            if (node instanceof ProjectDescriptorNode) {
                 result.add(node);
             }
         }

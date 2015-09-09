@@ -13,7 +13,7 @@ package org.eclipse.che.ide.part.projectexplorer;
 import java.util.List;
 
 import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
+import org.eclipse.che.ide.project.node.ResourceBasedNode;
 
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.uibinder.client.UiField;
@@ -42,12 +42,12 @@ public class ConfirmMultipleDeleteWidget implements IsWidget {
     @UiField
     Label message;
 
-    public ConfirmMultipleDeleteWidget(final List<StorableNode> nodes, final CoreLocalizationConstant localization) {
+    public ConfirmMultipleDeleteWidget(final List<ResourceBasedNode<?>> nodes, final CoreLocalizationConstant localization) {
         this.widget = UIBINDER.createAndBindUi(this);
         this.message.setText(localization.deleteMultipleDialogMessage());
         final StringBuilder sb = new StringBuilder();
         String toAppend = "";
-        for (StorableNode node : nodes) {
+        for (ResourceBasedNode node : nodes) {
             sb.append(toAppend);
             toAppend = "\n";
             sb.append(node.getName());
