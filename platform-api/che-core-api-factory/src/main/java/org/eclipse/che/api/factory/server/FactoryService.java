@@ -574,7 +574,7 @@ public class FactoryService extends Service {
                                    .withAttributes(projectAttributes)
                                    .withVisibility(project.getVisibility())
                                    .withDescription(projectDescription.getDescription());
-            newProject.setMixinTypes(projectDescription.getMixinTypes());
+            newProject.setMixins(projectDescription.getMixinTypes());
             newProject.setRecipe(projectDescription.getRecipe());
 
             for (Project module : projectManager.getProjectModules(project)) {

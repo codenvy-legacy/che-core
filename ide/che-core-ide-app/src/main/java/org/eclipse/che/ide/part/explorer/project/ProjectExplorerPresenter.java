@@ -389,7 +389,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
                 final ProjectUpdate toUpdate = dtoFactory.createDto(ProjectUpdate.class)
                                                          .withType(descriptor.getType())
                                                          .withVisibility(descriptor.getVisibility())
-                                                         .withMixinTypes(descriptor.getMixins())
+                                                         .withMixins(descriptor.getMixins())
                                                          .withDescription(descriptor.getDescription())
                                                          .withAttributes(descriptor.getAttributes())
                                                          .withContentRoot(descriptor.getContentRoot())
