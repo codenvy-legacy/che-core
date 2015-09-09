@@ -11,6 +11,7 @@
 package org.eclipse.che.ide.api.selection;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -39,7 +40,7 @@ public class Selection<T> {
 
     /** Creates an empty selection */
     public Selection() {
-        this.elements = java.util.Collections.emptyList();
+        this.elements = Collections.emptyList();
         this.head = null;
     }
 
@@ -51,17 +52,17 @@ public class Selection<T> {
      */
     public Selection(final T item) {
         if (item == null) {
-            this.elements = java.util.Collections.emptyList();
+            this.elements = Collections.emptyList();
             this.head = null;
         } else {
-            this.elements = java.util.Collections.singletonList(item);
+            this.elements = Collections.singletonList(item);
             this.head = item;
         }
     }
 
     public Selection(final List<T> list) {
         if (list == null || list.isEmpty()) {
-            this.elements = java.util.Collections.emptyList();
+            this.elements = Collections.emptyList();
             this.head = null;
         } else {
             this.elements = list;

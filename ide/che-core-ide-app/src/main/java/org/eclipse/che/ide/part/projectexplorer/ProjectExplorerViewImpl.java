@@ -152,10 +152,6 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
             public void onKeyboard(KeyboardEvent event) {
                 if (event.getKeyCode() == KeyboardEvent.KeyCode.ENTER) {
                     delegate.onEnterKey();
-
-                } else
-                if (event.getKeyCode() == KeyboardEvent.KeyCode.DELETE) {
-                    delegate.onDeleteKey();
                 }
             }
         });
