@@ -20,10 +20,18 @@ public interface NodeSettings {
 
     boolean isFoldersAlwaysOnTop();
 
+    void setShowHiddenFiles(boolean show);
+
     NodeSettings DEFAULT_SETTINGS = new NodeSettings() {
+        boolean showHiddenFiles;
+
         @Override
         public boolean isShowHiddenFiles() {
-            return false;
+            return showHiddenFiles;
+        }
+
+        public void setShowHiddenFiles(boolean show) {
+            this.showHiddenFiles = show;
         }
 
         @Override

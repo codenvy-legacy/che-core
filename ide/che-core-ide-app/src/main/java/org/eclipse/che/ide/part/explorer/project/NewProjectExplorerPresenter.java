@@ -302,4 +302,12 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
     public List<Node> getVisibleNodes() {
         return view.getVisibleNodes();
     }
+
+    public void showHiddenFiles(boolean show) {
+        view.showHiddenFiles(show);
+    }
+
+    public boolean isShowHiddenFiles() {
+        return view.isShowHiddenFiles();
+    }
 }
