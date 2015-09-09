@@ -580,10 +580,10 @@ public class NativeGitConnection implements GitConnection {
 
     private void ensureExistenceRepoRootInWorkingDirectory() throws GitException {
         final EmptyGitCommand emptyGitCommand = nativeGit.createEmptyGitCommand();
-        emptyGitCommand.setNextParameter("rev-parse").setNextParameter("--show-toplevel").execute();
-        final String absolutePathToRepoRoot = emptyGitCommand.getText();
+        emptyGitCommand.setNextParameter("rev-parse").setNextParameter("--show-cdup").execute();
+        final String relativePathToRepositoryRoot = emptyGitCommand.getText();
 
-        if (!getWorkingDir().getAbsolutePath().equals(absolutePathToRepoRoot)) {
+        if (!relativePathToRepositoryRoot.isEmpty()) {
             throw new GitException("Project is not a git repository.");
         }
     }
