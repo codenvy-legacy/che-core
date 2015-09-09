@@ -25,7 +25,6 @@ import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscribe
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.json.JsonHelper;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
-import org.eclipse.che.ide.rest.RestContext;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.util.NameUtils;
 import org.eclipse.che.ide.util.loging.Log;
@@ -34,14 +33,15 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Roman Nikitenko
+ * @author Valeriy Svydenko
  */
 public class LocalZipImporterPagePresenter implements LocalZipImporterPageView.ActionDelegate {
 
-    private       CoreLocalizationConstant            locale;
-    private       LocalZipImporterPageView            view;
-    private       DtoFactory                          dtoFactory;
-    private       String                              restContext;
-    private       String                              workspaceId;
+    private final CoreLocalizationConstant            locale;
+    private final LocalZipImporterPageView            view;
+    private final DtoFactory                          dtoFactory;
+    private final String                              workspaceId;
+    private final String                              extPath;
     private final EventBus                            eventBus;
     private final VfsServiceClient                    vfsServiceClient;
     private final ProjectServiceClient                projectServiceClient;
@@ -52,8 +52,8 @@ public class LocalZipImporterPagePresenter implements LocalZipImporterPageView.A
     public LocalZipImporterPagePresenter(LocalZipImporterPageView view,
                                          DtoFactory dtoFactory,
                                          CoreLocalizationConstant locale,
-                                         @RestContext String restContext,
                                          @Named("workspaceId") String workspaceId,
+                                         @Named("cheExtensionPath") String extPath,
                                          EventBus eventBus,
                                          VfsServiceClient vfsServiceClient,
                                          ProjectServiceClient projectServiceClient,
@@ -62,8 +62,8 @@ public class LocalZipImporterPagePresenter implements LocalZipImporterPageView.A
         this.view = view;
         this.locale = locale;
         this.dtoFactory = dtoFactory;
-        this.restContext = restContext;
         this.workspaceId = workspaceId;
+        this.extPath = extPath;
         this.eventBus = eventBus;
         this.vfsServiceClient = vfsServiceClient;
         this.projectServiceClient = projectServiceClient;
@@ -141,7 +141,7 @@ public class LocalZipImporterPagePresenter implements LocalZipImporterPageView.A
         importProjectNotificationSubscriber.subscribe(projectName);
 
         view.setEncoding(FormPanel.ENCODING_MULTIPART);
-        view.setAction(restContext + "/project/" + workspaceId + "/upload/zipproject/" + projectName + "?force=false");
+        view.setAction(extPath + "/project/" + workspaceId + "/upload/zipproject/" + projectName + "?force=false");
         view.submit();
         showProcessing(true);
     }

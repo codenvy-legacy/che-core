@@ -10,6 +10,10 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projectimport.wizard;
 
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
+import com.google.web.bindery.event.shared.EventBus;
+
 import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ImportProject;
@@ -17,9 +21,7 @@ import org.eclipse.che.api.project.shared.dto.ImportResponse;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.vfs.gwt.client.VfsServiceClient;
 import org.eclipse.che.api.vfs.shared.dto.Item;
-
 import org.eclipse.che.ide.CoreLocalizationConstant;
-
 import org.eclipse.che.ide.api.event.OpenProjectEvent;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
 import org.eclipse.che.ide.api.wizard.AbstractWizard;
@@ -28,12 +30,9 @@ import org.eclipse.che.ide.commons.exception.UnauthorizedException;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
-import org.eclipse.che.ide.rest.Unmarshallable;
 import org.eclipse.che.ide.util.loging.Log;
-
-import com.google.inject.Inject;
-import com.google.inject.assistedinject.Assisted;
-import com.google.web.bindery.event.shared.EventBus;
+import org.eclipse.che.ide.websocket.rest.RequestCallback;
+import org.eclipse.che.ide.websocket.rest.Unmarshallable;
 
 import javax.annotation.Nonnull;
 
@@ -114,9 +113,9 @@ public class ImportWizard extends AbstractWizard<ImportProject> {
     private void importProject(final CompleteCallback callback) {
         final String projectName = dataObject.getProject().getName();
         importProjectNotificationSubscriber.subscribe(projectName);
-        final Unmarshallable<ImportResponse> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ImportResponse.class);
+        Unmarshallable<ImportResponse> unmarshaller = dtoUnmarshallerFactory.newWSUnmarshaller(ImportResponse.class);
 
-        projectServiceClient.importProject(projectName, false, dataObject, new AsyncRequestCallback<ImportResponse>(unmarshaller) {
+        projectServiceClient.importProject(projectName, false, dataObject, new RequestCallback<ImportResponse>(unmarshaller) {
             @Override
             protected void onSuccess(final ImportResponse result) {
                 importProjectNotificationSubscriber.onSuccess();

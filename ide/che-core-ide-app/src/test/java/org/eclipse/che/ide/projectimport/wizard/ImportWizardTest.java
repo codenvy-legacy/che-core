@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projectimport.wizard;
 
+import com.google.web.bindery.event.shared.Event;
+import com.google.web.bindery.event.shared.EventBus;
+
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ImportProject;
 import org.eclipse.che.api.project.shared.dto.ImportResponse;
@@ -24,11 +27,8 @@ import org.eclipse.che.ide.api.wizard.Wizard;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
+import org.eclipse.che.ide.websocket.rest.RequestCallback;
 import org.eclipse.che.test.GwtReflectionUtils;
-
-import com.google.web.bindery.event.shared.Event;
-import com.google.web.bindery.event.shared.EventBus;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,11 +58,11 @@ public class ImportWizardTest {
     private static final String PROJECT_NAME = "project1";
 
     @Captor
-    private ArgumentCaptor<AsyncRequestCallback<Item>>           callbackCaptorForItem;
+    private ArgumentCaptor<AsyncRequestCallback<Item>>      callbackCaptorForItem;
     @Captor
-    private ArgumentCaptor<AsyncRequestCallback<ImportResponse>> callbackCaptorForProject;
+    private ArgumentCaptor<RequestCallback<ImportResponse>> callbackCaptorForProject;
     @Captor
-    private ArgumentCaptor<AsyncRequestCallback<Void>>           callbackCaptorForVoid;
+    private ArgumentCaptor<AsyncRequestCallback<Void>>      callbackCaptorForVoid;
 
     @Mock
     private ProjectServiceClient                projectServiceClient;
@@ -120,7 +120,7 @@ public class ImportWizardTest {
 
         ImportResponse importResponse = mock(ImportResponse.class);
         when(importResponse.getProjectDescriptor()).thenReturn(mock(ProjectDescriptor.class));
-        AsyncRequestCallback<ImportResponse> callback = callbackCaptorForProject.getValue();
+        RequestCallback<ImportResponse> callback = callbackCaptorForProject.getValue();
         GwtReflectionUtils.callOnSuccess(callback, importResponse);
 
         verify(eventBus).fireEvent(Matchers.<Event<Object>>anyObject());
@@ -145,7 +145,7 @@ public class ImportWizardTest {
 
         verify(projectServiceClient).importProject(eq(PROJECT_NAME), eq(false), eq(importProject), callbackCaptorForProject.capture());
 
-        AsyncRequestCallback<ImportResponse> callback = callbackCaptorForProject.getValue();
+        RequestCallback<ImportResponse> callback = callbackCaptorForProject.getValue();
         GwtReflectionUtils.callOnSuccess(callback, importResponse);
 
         verify(eventBus, times(2)).fireEvent(Matchers.<Event<Object>>anyObject());
