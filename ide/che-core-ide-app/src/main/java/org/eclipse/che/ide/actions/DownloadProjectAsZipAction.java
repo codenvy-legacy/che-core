@@ -25,7 +25,6 @@ import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.download.DownloadContainer;
 import org.eclipse.che.ide.part.projectexplorer.ProjectListStructure;
-import org.eclipse.che.ide.rest.RestContext;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -49,8 +48,8 @@ public class DownloadProjectAsZipAction extends AbstractPerspectiveAction {
     private       DownloadContainer    downloadContainer;
 
     @Inject
-    public DownloadProjectAsZipAction(@RestContext String restContext,
-                                      @Named("workspaceId") String workspaceId,
+    public DownloadProjectAsZipAction(@Named("workspaceId") String workspaceId,
+                                      @Named("cheExtensionPath") String extPath,
                                       AppContext appContext,
                                       CoreLocalizationConstant locale,
                                       SelectionAgent selectionAgent,
@@ -66,7 +65,7 @@ public class DownloadProjectAsZipAction extends AbstractPerspectiveAction {
         this.selectionAgent = selectionAgent;
         this.downloadContainer = downloadContainer;
 
-        BASE_URL = restContext + "/project/" + workspaceId + "/export/";
+        BASE_URL = extPath + "/project/" + workspaceId + "/export/";
     }
 
     /** {@inheritDoc} */

@@ -11,9 +11,11 @@
 
 package org.eclipse.che.test;
 
-import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.web.bindery.event.shared.UmbrellaException;
+
+import org.eclipse.che.ide.rest.AsyncRequestCallback;
+import org.eclipse.che.ide.websocket.rest.RequestCallback;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -29,6 +31,14 @@ public class GwtReflectionUtils {
     }
 
     public static void callOnSuccess(AsyncRequestCallback<?> callback, Object... args){
+        callPrivateMethod(callback, "onSuccess", args);
+    }
+
+    public static void callOnFailure(RequestCallback<?> callback, Object... args){
+        callPrivateMethod(callback, "onFailure", args);
+    }
+
+    public static void callOnSuccess(RequestCallback<?> callback, Object... args){
         callPrivateMethod(callback, "onSuccess", args);
     }
 
