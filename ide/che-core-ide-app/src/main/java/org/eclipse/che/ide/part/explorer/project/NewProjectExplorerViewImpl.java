@@ -41,6 +41,7 @@ import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor;
+import org.eclipse.che.ide.api.project.node.settings.HasSettings;
 import org.eclipse.che.ide.menu.ContextMenu;
 import org.eclipse.che.ide.project.node.NodeManager;
 import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
@@ -634,6 +635,26 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
 
     public List<Node> getVisibleNodes() {
         return tree.getAllChildNodes(tree.getRootNodes(), true);
+    }
+
+    @Override
+    public void showHiddenFiles(boolean show) {
+        for (Node node: tree.getRootNodes()) {
+            if (node instanceof HasSettings) {
+                ((HasSettings)node).getSettings().setShowHiddenFiles(show);
+            }
+        }
+        synchronizeTree();
+    }
+
+    @Override
+    public boolean isShowHiddenFiles() {
+        for (Node node: tree.getRootNodes()) {
+            if (node instanceof HasSettings) {
+                return ((HasSettings)node).getSettings().isShowHiddenFiles();
+            }
+        }
+        return false;
     }
 
     @Override

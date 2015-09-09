@@ -69,6 +69,10 @@ public interface NewProjectExplorerView extends View<NewProjectExplorerView.Acti
 
     List<Node> getVisibleNodes();
 
+    void showHiddenFiles(boolean show);
+
+    boolean isShowHiddenFiles();
+
     public interface ActionDelegate extends BaseActionDelegate {
         void onSelectionChanged(List<Node> selection);
 
