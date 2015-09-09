@@ -170,7 +170,7 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
                                                                           .withAttributes(new HashMap<>(project.getAttributes()))
                                                                           .withBuilders(project.getBuilders())
                                                                           .withRunners(project.getRunners()));
-        dataObject.getProject().setMixinTypes(project.getMixins());
+        dataObject.getProject().setMixins(project.getMixins());
         showDialog(dataObject);
     }
 
@@ -223,7 +223,7 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
         newProject.setName(prevDataProject.getName());
         newProject.setDescription(prevDataProject.getDescription());
         newProject.setVisibility(prevDataProject.getVisibility());
-        newProject.setMixinTypes(prevDataProject.getMixinTypes());
+        newProject.setMixins(prevDataProject.getMixins());
         if (wizardMode == UPDATE) {
             newProject.setAttributes(prevDataProject.getAttributes());
         }
