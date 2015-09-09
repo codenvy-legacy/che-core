@@ -19,6 +19,7 @@ import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.api.project.shared.dto.ProjectUpdate;
 import org.eclipse.che.api.project.shared.dto.TreeElement;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
+import org.eclipse.che.ide.websocket.rest.RequestCallback;
 
 import java.util.List;
 import java.util.Map;
@@ -278,7 +279,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void importProject(String path, boolean force, ImportProject importProject, AsyncRequestCallback<ImportResponse> callback);
+    void importProject(String path, boolean force, ImportProject importProject, RequestCallback<ImportResponse> callback);
 
     /**
      * Get children for the specified path.
