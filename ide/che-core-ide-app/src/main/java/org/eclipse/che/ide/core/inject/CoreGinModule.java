@@ -62,6 +62,8 @@ import org.eclipse.che.ide.api.parts.WorkBenchView;
 import org.eclipse.che.ide.api.parts.WorkspaceAgent;
 import org.eclipse.che.ide.api.preferences.PreferencePagePresenter;
 import org.eclipse.che.ide.api.preferences.PreferencesManager;
+import org.eclipse.che.ide.part.explorer.project.DefaultNodeInterceptor;
+import org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor;
 import org.eclipse.che.ide.api.project.node.settings.SettingsProvider;
 import org.eclipse.che.ide.api.project.node.settings.impl.DummySettingsProvider;
 import org.eclipse.che.ide.api.project.tree.TreeStructureProviderRegistry;
@@ -126,8 +128,6 @@ import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPart;
 import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
 import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerView;
 import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerViewImpl;
-import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerView;
-import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerViewImpl;
 import org.eclipse.che.ide.preferences.PreferencesManagerImpl;
 import org.eclipse.che.ide.preferences.PreferencesView;
 import org.eclipse.che.ide.preferences.PreferencesViewImpl;
@@ -335,6 +335,10 @@ public class CoreGinModule extends AbstractGinModule {
         // Parts
         bind(ConsolePart.class).to(ConsolePartPresenter.class).in(Singleton.class);
         bind(OutlinePart.class).to(OutlinePartPresenter.class).in(Singleton.class);
+
+        GinMultibinder<NodeInterceptor> nodeInterceptors = GinMultibinder.newSetBinder(binder(), NodeInterceptor.class);
+        nodeInterceptors.addBinding().to(DefaultNodeInterceptor.class);
+
         bind(NewProjectExplorerPart.class).to(NewProjectExplorerPresenter.class).in(Singleton.class);
 
         install(new GinFactoryModuleBuilder().build(NodeFactory.class));
