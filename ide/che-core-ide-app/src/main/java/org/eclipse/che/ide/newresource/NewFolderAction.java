@@ -10,27 +10,16 @@
  *******************************************************************************/
 package org.eclipse.che.ide.newresource;
 
-import org.eclipse.che.api.project.shared.dto.ItemReference;
-
-import org.eclipse.che.api.promises.client.Function;
-import org.eclipse.che.api.promises.client.FunctionException;
-import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.Resources;
-
-import org.eclipse.che.ide.api.action.ActionEvent;
-import org.eclipse.che.ide.project.node.FolderReferenceNode;
-import org.eclipse.che.ide.project.node.ItemReferenceBasedNode;
-import org.eclipse.che.ide.project.node.ResourceBasedNode;
-import org.eclipse.che.ide.api.project.node.HasStorablePath;
-import org.eclipse.che.ide.ui.dialogs.InputCallback;
-import org.eclipse.che.ide.ui.dialogs.input.InputDialog;
-import org.eclipse.che.ide.api.project.node.Node;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.annotation.Nonnull;
-import java.util.List;
+import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.Resources;
+import org.eclipse.che.ide.api.action.ActionEvent;
+import org.eclipse.che.ide.api.project.node.HasStorablePath;
+import org.eclipse.che.ide.project.node.ResourceBasedNode;
+import org.eclipse.che.ide.ui.dialogs.InputCallback;
+import org.eclipse.che.ide.ui.dialogs.input.InputDialog;
 
 /**
  * Action to create new folder.
@@ -75,26 +64,5 @@ public class NewFolderAction extends AbstractNewResourceAction {
         final String folderPath = ((HasStorablePath)parent).getStorablePath() + '/' + value;
 
         projectServiceClient.createFolder(folderPath, createCallback(parent));
-    }
-
-    @Nonnull
-    @Override
-    protected Function<List<Node>, ItemReferenceBasedNode> iterateAndFindCreatedNode(@Nonnull final ItemReference itemReference) {
-        return new Function<List<Node>, ItemReferenceBasedNode>() {
-            @Override
-            public ItemReferenceBasedNode apply(List<Node> nodes) throws FunctionException {
-                if (nodes.isEmpty()) {
-                    return null;
-                }
-
-                for (Node node : nodes) {
-                    if (node instanceof FolderReferenceNode && ((FolderReferenceNode)node).getData().equals(itemReference)) {
-                        return (FolderReferenceNode)node;
-                    }
-                }
-
-                return null;
-            }
-        };
     }
 }

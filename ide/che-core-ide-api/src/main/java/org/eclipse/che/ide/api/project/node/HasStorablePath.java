@@ -16,6 +16,22 @@ import javax.annotation.Nonnull;
  * @author Vlad Zhukovskiy
  */
 public interface HasStorablePath {
+
+    public class StorablePath implements HasStorablePath {
+
+        private String path;
+
+        public StorablePath(String path) {
+            this.path = path;
+        }
+
+        @Nonnull
+        @Override
+        public String getStorablePath() {
+            return path;
+        }
+    }
+
     @Nonnull
     String getStorablePath();
 }

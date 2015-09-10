@@ -47,7 +47,9 @@ import org.eclipse.che.ide.project.event.ResourceNodeDeletedEvent;
 import org.eclipse.che.ide.project.event.ResourceNodeRenamedEvent;
 import org.eclipse.che.ide.project.node.FileReferenceNode;
 import org.eclipse.che.ide.project.node.FolderReferenceNode;
+import org.eclipse.che.ide.project.node.ItemReferenceBasedNode;
 import org.eclipse.che.ide.project.node.ModuleDescriptorNode;
+import org.eclipse.che.ide.project.node.NodeManager;
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
 import org.eclipse.che.ide.util.loging.Log;
 
@@ -66,14 +68,15 @@ import static org.eclipse.che.ide.api.notification.Notification.Type.INFO;
 public class EditorAgentImpl implements EditorAgent {
 
     private final NavigableMap<String, EditorPartPresenter> openedEditors;
-    private final EventBus                  eventBus;
-    private final WorkspaceAgent            workspace;
-    private       List<EditorPartPresenter> dirtyEditors;
-    private       FileTypeRegistry          fileTypeRegistry;
-    private       EditorRegistry            editorRegistry;
-    private       EditorPartPresenter       activeEditor;
-    private NotificationManager      notificationManager;
-    private CoreLocalizationConstant coreLocalizationConstant;
+    private final EventBus                                  eventBus;
+    private final WorkspaceAgent                            workspace;
+    private       List<EditorPartPresenter>                 dirtyEditors;
+    private       FileTypeRegistry                          fileTypeRegistry;
+    private       EditorRegistry                            editorRegistry;
+    private       EditorPartPresenter                       activeEditor;
+    private       NotificationManager                       notificationManager;
+    private       CoreLocalizationConstant                  coreLocalizationConstant;
+    private final NodeManager nodeManager;
 
     @Inject
     public EditorAgentImpl(EventBus eventBus,
@@ -81,7 +84,8 @@ public class EditorAgentImpl implements EditorAgent {
                            EditorRegistry editorRegistry,
                            final WorkspaceAgent workspace,
                            final NotificationManager notificationManager,
-                           CoreLocalizationConstant coreLocalizationConstant) {
+                           CoreLocalizationConstant coreLocalizationConstant,
+                           NodeManager nodeManager) {
         super();
         this.eventBus = eventBus;
         this.fileTypeRegistry = fileTypeRegistry;
@@ -89,6 +93,7 @@ public class EditorAgentImpl implements EditorAgent {
         this.workspace = workspace;
         this.notificationManager = notificationManager;
         this.coreLocalizationConstant = coreLocalizationConstant;
+        this.nodeManager = nodeManager;
         openedEditors = new TreeMap<>();
 
         bind();
@@ -143,16 +148,17 @@ public class EditorAgentImpl implements EditorAgent {
             @Override
             public void onResourceRenamedEvent(ResourceNodeRenamedEvent event) {
                 if (event.getNode() instanceof FileReferenceNode) {
-
                     FileReferenceNode fileReferenceNode = (FileReferenceNode)event.getNode();
 
                     String oldPath = fileReferenceNode.getPath();
 
                     if (event.getNewDataObject() instanceof ItemReference) {
-                        fileReferenceNode.setData((ItemReference)event.getNewDataObject());
+                        ItemReferenceBasedNode wrapped =
+                                nodeManager.wrap((ItemReference)event.getNewDataObject(), fileReferenceNode.getProjectDescriptor());
+                        if (wrapped instanceof FileReferenceNode) {
+                            updateEditorNode(oldPath, (FileReferenceNode)wrapped);
+                        }
                     }
-
-                    updateEditorNode(oldPath, fileReferenceNode);
                 }
             }
         });

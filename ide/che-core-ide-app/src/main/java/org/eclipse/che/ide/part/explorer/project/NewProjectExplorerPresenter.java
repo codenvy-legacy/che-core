@@ -26,6 +26,7 @@ import org.eclipse.che.ide.api.event.ProjectActionHandler;
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.parts.HasView;
 import org.eclipse.che.ide.api.parts.base.BasePresenter;
+import org.eclipse.che.ide.api.project.node.HasDataObject;
 import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
@@ -42,7 +43,6 @@ import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -135,14 +135,26 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
             /** {@inheritDoc} */
             @Override
             public void onResourceEvent(ResourceNodeDeletedEvent evt) {
-                reloadChildren(evt.getNode().getParent(), null);
+                reloadChildren(evt.getNode().getParent());
             }
         });
 
         eventBus.addHandler(ResourceNodeRenamedEvent.getType(), new ResourceNodeRenamedEvent.ResourceNodeRenamedHandler() {
             @Override
-            public void onResourceRenamedEvent(ResourceNodeRenamedEvent event) {
-                reloadChildren(event.getNode().getParent(), event.getNewDataObject());
+            public void onResourceRenamedEvent(final ResourceNodeRenamedEvent event) {
+                HasDataObject dataObject = new HasDataObject() {
+                    @Nonnull
+                    @Override
+                    public Object getData() {
+                        return event.getNewDataObject();
+                    }
+
+                    @Override
+                    public void setData(@Nonnull Object data) {
+
+                    }
+                };
+                reloadChildren(event.getNode().getParent(), dataObject);
             }
         });
     }
@@ -210,7 +222,7 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
         }
 
         if (!nodesToReload.isEmpty()) {
-            reloadChildren(nodesToReload, null, false);
+            reloadChildren();
         }
     }
 
@@ -231,7 +243,7 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
     }
 
     public void goInto(Node node) {
-        view.goInto(node);
+        view.setGoIntoModeOn(node);
     }
 
     private Operation<List<Node>> _showProjectsList() {
@@ -243,10 +255,6 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
         };
     }
 
-    public void synchronizeTree() {
-        view.synchronizeTree();
-    }
-
     public void navigate(HasStorablePath node, boolean select, boolean callAction) {
         view.navigate(node, select, callAction);
     }
@@ -255,28 +263,21 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
         return view.navigate(node, select);
     }
 
+
+    public void reloadChildren() {
+        reloadChildren(null, null, false, false);
+    }
+
     public void reloadChildren(Node node) {
-        reloadChildren(node, null);
+        reloadChildren(node, null, false, false);
     }
 
-    public void reloadChildren(Node node, Object selectAfter) {
-        reloadChildren(node, selectAfter, false);
+    public void reloadChildren(Node parent, HasDataObject<?> selectAfter) {
+        reloadChildren(parent, selectAfter, false, false);
     }
 
-    public void reloadChildren(Node node, Object selectAfter, boolean callAction) {
-        reloadChildren(node != null ? Collections.singletonList(node) : null, selectAfter, callAction);
-    }
-
-    public void reloadChildren(Node node, Object selectAfter, boolean callAction, boolean goInto) {
-        reloadChildren(node != null ? Collections.singletonList(node) : null, selectAfter, callAction, goInto);
-    }
-
-    public void reloadChildren(List<Node> node, Object selectAfter, boolean callAction) {
-        reloadChildren(node, selectAfter, callAction, false);
-    }
-
-    public void reloadChildren(List<Node> node, Object selectAfter, boolean callAction, boolean goInto) {
-        view.reloadChildren(node, selectAfter, callAction, goInto);
+    public void reloadChildren(Node parent, HasDataObject<?> selectAfter, boolean actionPerformed, boolean goInto) {
+        view.reloadChildren(parent, selectAfter, actionPerformed, goInto);
     }
 
     public void reloadChildrenByType(Class<?> type) {

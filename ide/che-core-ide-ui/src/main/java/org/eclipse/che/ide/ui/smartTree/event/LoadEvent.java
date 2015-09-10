@@ -15,6 +15,7 @@ import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.event.shared.HandlerRegistration;
 
 import org.eclipse.che.ide.api.project.node.Node;
+import org.eclipse.che.ide.ui.smartTree.LoadParams;
 
 import java.util.List;
 
@@ -44,10 +45,17 @@ public class LoadEvent extends GwtEvent<LoadEvent.LoadHandler> {
 
     private Node       requestedNode;
     private List<Node> receivedNodes;
+    private LoadParams params;
 
     public LoadEvent(Node requestedNode, List<Node> receivedNodes) {
         this.requestedNode = requestedNode;
         this.receivedNodes = receivedNodes;
+    }
+
+    public LoadEvent(Node requestedNode, List<Node> receivedNodes, LoadParams params) {
+        this.requestedNode = requestedNode;
+        this.receivedNodes = receivedNodes;
+        this.params = params;
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -62,6 +70,10 @@ public class LoadEvent extends GwtEvent<LoadEvent.LoadHandler> {
 
     public List<Node> getReceivedNodes() {
         return receivedNodes;
+    }
+
+    public LoadParams getParams() {
+        return params;
     }
 
     @Override
