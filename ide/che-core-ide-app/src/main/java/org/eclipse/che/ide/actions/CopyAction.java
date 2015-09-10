@@ -21,6 +21,7 @@ import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.selection.Selection;
+import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
 
@@ -39,18 +40,20 @@ public class CopyAction extends Action {
     private       AppContext                  appContext;
 
     private PasteAction pasteAction;
+    private SelectionAgent agent;
 
     @Inject
     public CopyAction(Resources resources,
                       AnalyticsEventLogger eventLogger,
                       NewProjectExplorerPresenter projectExplorer,
                       CoreLocalizationConstant localization,
-                      AppContext appContext, PasteAction pasteAction) {
+                      AppContext appContext, PasteAction pasteAction, SelectionAgent agent) {
         super(localization.copyItemsActionText(), localization.copyItemsActionDescription(), null, resources.copy());
         this.projectExplorer = projectExplorer;
         this.eventLogger = eventLogger;
         this.appContext = appContext;
         this.pasteAction = pasteAction;
+        this.agent = agent;
     }
 
     /** {@inheritDoc} */
@@ -72,7 +75,7 @@ public class CopyAction extends Action {
      * @return <b>true</b> if the selection can be copied, otherwise returns <b>false</b>
      */
     private boolean canCopySelection() {
-        Selection<?> selection = projectExplorer.getSelection();
+        Selection<?> selection = agent.getSelection();
         if (selection == null || selection.isEmpty()) {
             return false;
         }

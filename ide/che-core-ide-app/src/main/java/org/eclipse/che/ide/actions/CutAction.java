@@ -21,6 +21,7 @@ import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.selection.Selection;
+import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
 
@@ -39,17 +40,19 @@ public class CutAction extends Action {
     private       AppContext                  appContext;
 
     private PasteAction pasteAction;
+    private SelectionAgent agent;
 
     @Inject
     public CutAction(Resources resources,
                      AnalyticsEventLogger eventLogger,
                      NewProjectExplorerPresenter projectExplorer, CoreLocalizationConstant localization, AppContext appContext,
-                     PasteAction pasteAction) {
+                     PasteAction pasteAction, SelectionAgent agent) {
         super(localization.cutItemsActionText(), localization.cutItemsActionDescription(), null, resources.cut());
         this.projectExplorer = projectExplorer;
         this.eventLogger = eventLogger;
         this.appContext = appContext;
         this.pasteAction = pasteAction;
+        this.agent = agent;
     }
 
     /** {@inheritDoc} */
@@ -71,7 +74,7 @@ public class CutAction extends Action {
      * @return <b>true</b> if the selection can be moved, otherwise returns <b>false</b>
      */
     private boolean canMoveSelection() {
-        Selection<?> selection = projectExplorer.getSelection();
+        Selection<?> selection = agent.getSelection();
         if (selection == null || selection.isEmpty()) {
             return false;
         }
