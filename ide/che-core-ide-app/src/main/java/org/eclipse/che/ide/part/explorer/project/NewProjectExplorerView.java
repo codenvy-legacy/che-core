@@ -15,6 +15,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.parts.base.BaseActionDelegate;
+import org.eclipse.che.ide.api.project.node.HasDataObject;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.ui.smartTree.TreeNodeStorage.StoreSortInfo;
@@ -31,17 +32,13 @@ public interface NewProjectExplorerView extends View<NewProjectExplorerView.Acti
 
     void setRootNode(Node node);
 
-    void onChildrenCreated(Node parent, Node child);
-
-    void onChildrenRemoved(Node node);
-
     List<StoreSortInfo> getSortInfo();
 
     void onApplySort();
 
     void scrollFromSource(Object object);
 
-    boolean goInto(Node node);
+    boolean setGoIntoModeOn(Node node);
 
     void resetGoIntoMode();
 
@@ -51,11 +48,7 @@ public interface NewProjectExplorerView extends View<NewProjectExplorerView.Acti
 
     void setFoldersAlwaysOnTop(boolean foldersAlwaysOnTop);
 
-    void synchronizeTree();
-
-    HandlerRegistration addBeforeExpandNodeHandler(BeforeExpandNodeHandler handler);
-
-    void reloadChildren(List<Node> nodes, Object selectAfter, boolean callAction, boolean goInto);
+    void reloadChildren(Node parent, HasDataObject<?> selectAfter, boolean actionPerformed, boolean goInto);
 
     void reloadChildrenByType(Class<?> type);
 

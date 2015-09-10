@@ -10,7 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ui.smartTree;
 
-import com.google.common.collect.Sets;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -19,6 +21,8 @@ import com.google.gwt.event.shared.SimpleEventBus;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.PromiseError;
+import org.eclipse.che.ide.api.project.node.HasAction;
+import org.eclipse.che.ide.api.project.node.HasDataObject;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor;
 import org.eclipse.che.ide.ui.smartTree.event.BeforeLoadEvent;
@@ -26,13 +30,17 @@ import org.eclipse.che.ide.ui.smartTree.event.CancellableEvent;
 import org.eclipse.che.ide.ui.smartTree.event.LoadEvent;
 import org.eclipse.che.ide.ui.smartTree.event.LoadExceptionEvent;
 import org.eclipse.che.ide.ui.smartTree.event.LoaderHandler;
+import org.eclipse.che.ide.util.loging.Log;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -45,7 +53,7 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
     /**
      * Temporary storage for current requested nodes. When children have been loaded requested node removes from temporary set.
      */
-    Set<Node> childRequested = new HashSet<>();
+    Map<Node, LoadParams> childRequested = new HashMap<>();
 
     /**
      * Last processed node. Maybe used in general purpose.
@@ -57,7 +65,7 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
      *
      * @see org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor
      */
-    private Set<NodeInterceptor> nodeInterceptors;
+    private List<NodeInterceptor> nodeInterceptors;
 
     /**
      * When caching is on nodes will be loaded from cache if they exist otherwise nodes will be loaded every time forcibly.
@@ -77,7 +85,7 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
                                                     LoadExceptionEvent.LoadExceptionHandler,
                                                     BeforeLoadEvent.BeforeLoadHandler {
         @Override
-        public void onLoad(LoadEvent event) {
+        public void onLoad(final LoadEvent event) {
             Node parent = event.getRequestedNode();
             tree.getView().onLoadChange(tree.findNode(parent), false);
 
@@ -86,7 +94,64 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
                 tree.getView().onJointChange(tree.findNode(parent), Tree.Joint.NONE);
             }
 
-            tree.getNodeStorage().replaceChildren(parent, event.getReceivedNodes());
+            NodeDescriptor requested = tree.findNode(parent);
+
+            if (requested == null) {
+                //smth happened, that requested node isn't registered in storage
+                Log.info(this.getClass(), "Requested node not found.");
+            }
+
+            //search node which has been removed from server to remove them from the tree
+            List<NodeDescriptor> removedNodes = findRemovedNodes(requested, event.getReceivedNodes());
+
+            //now search new nodes to add then into the tree
+            List<Node> newNodes = findNewNodes(requested, event.getReceivedNodes());
+
+            if (removedNodes.isEmpty() && newNodes.equals(event.getReceivedNodes())) {
+                tree.getNodeStorage().replaceChildren(parent, newNodes);
+            } else {
+                for (NodeDescriptor removed : removedNodes) {
+                    if (!tree.getNodeStorage().remove(removed.getNode())) {
+                        Log.info(this.getClass(), "Failed to remove node: " + removed.getNode().getName());
+                    }
+                }
+
+                for (Node newNode : newNodes) {
+                    tree.getNodeStorage().add(parent, newNode);
+                }
+            }
+
+
+            LoadParams params = event.getParams();
+
+            if (params != null) {
+                List<Node> children = tree.getNodeStorage().getChildren(event.getRequestedNode());
+                for (Node node : children) {
+                    if (isNodeHasSameDataObject(node, params.getSelectAfter())) {
+                        tree.getSelectionModel().select(node, false);
+
+                        if (params.isCallAction() && node instanceof HasAction) {
+                            ((HasAction)node).actionPerformed();
+                        }
+
+                        if (params.isGoInto() && node.supportGoInto()) {
+                            tree.getGoIntoMode().goInto(node);
+                        }
+                    }
+                }
+            }
+
+            Iterable<Node> filter = Iterables.filter(tree.getNodeStorage().getChildren(parent), new Predicate<Node>() {
+                @Override
+                public boolean apply(@Nullable Node input) {
+                    return tree.hasChildren(input) && tree.isExpanded(input);
+                }
+            });
+
+            for (Node node : filter) {
+                loadChildren(node);
+            }
+
         }
 
         @Override
@@ -100,6 +165,60 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
         }
     }
 
+    private boolean isNodeHasSameDataObject(Node node, HasDataObject<?> dataNode) {
+        return node != null
+               && dataNode != null
+               && node instanceof HasDataObject<?>
+               && ((HasDataObject)node).getData().equals(dataNode.getData());
+    }
+
+    private List<Node> findNewNodes(NodeDescriptor parent, final List<Node> loadedChildren) {
+        final List<NodeDescriptor> existed = parent.getChildren();
+
+        if (existed == null || existed.isEmpty()) {
+            return loadedChildren;
+        }
+
+        Iterable<Node> newItems = Iterables.filter(loadedChildren, new Predicate<Node>() {
+            @Override
+            public boolean apply(Node loadedChild) {
+                for (NodeDescriptor nodeDescriptor : existed) {
+                    if (nodeDescriptor.getNode().getName().equals(loadedChild.getName())
+                        && nodeDescriptor.getNode().getClass().equals(loadedChild.getClass())) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        });
+
+        return Lists.newArrayList(newItems);
+    }
+
+    private List<NodeDescriptor> findRemovedNodes(NodeDescriptor parent, final List<Node> loadedChildren) {
+        List<NodeDescriptor> existed = parent.getChildren();
+
+        if (existed == null || existed.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Iterable<NodeDescriptor> removedItems = Iterables.filter(existed, new Predicate<NodeDescriptor>() {
+            @Override
+            public boolean apply(NodeDescriptor existedChild) {
+                boolean found = false;
+                for (Node loadedChild : loadedChildren) {
+                    if (loadedChild.getName().equals(existedChild.getNode().getName())
+                        && loadedChild.getClass().equals(existedChild.getNode().getClass())) {
+                        found = true;
+                    }
+                }
+                return !found;
+            }
+        });
+
+        return Lists.newArrayList(removedItems);
+    }
+
     private SimpleEventBus eventBus;
 
     /**
@@ -109,13 +228,16 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
      *         set of {@link org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor}
      */
     public TreeNodeLoader(@Nullable Set<NodeInterceptor> nodeInterceptors) {
-        this.nodeInterceptors = Sets.newTreeSet(new Comparator<NodeInterceptor>() {
-            @Override
-            public int compare(NodeInterceptor o1, NodeInterceptor o2) {
-                return o1.weightOrder().compareTo(o2.weightOrder());
-            }
-        });
-        this.nodeInterceptors.addAll(nodeInterceptors);
+        this.nodeInterceptors = new ArrayList<>();
+        if (nodeInterceptors != null) {
+            this.nodeInterceptors.addAll(nodeInterceptors);
+            Collections.sort(this.nodeInterceptors, new Comparator<NodeInterceptor>() {
+                @Override
+                public int compare(NodeInterceptor o1, NodeInterceptor o2) {
+                    return o1.weightOrder().compareTo(o2.weightOrder());
+                }
+            });
+        }
     }
 
     /**
@@ -138,11 +260,15 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
      * @return true if the load was requested, otherwise false
      */
     public boolean loadChildren(@Nonnull Node parent) {
-        if (childRequested.contains(parent)) {
+        return loadChildren(parent, null);
+    }
+
+    public boolean loadChildren(Node parent, LoadParams params) {
+        if (childRequested.containsKey(parent)) {
             return false;
         }
 
-        childRequested.add(parent);
+        childRequested.put(parent, params);
         return _load(parent);
     }
 
@@ -171,12 +297,10 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
      *
      * @param parent
      *         parent node, children which have been loaded
-     * @return instance of {@link org.eclipse.che.api.promises.client.Operation} which contains promise with loaded children
      */
-    @Nonnull
     private void onLoadSuccess(@Nonnull final Node parent, List<Node> children) {
-        childRequested.remove(parent);
-        fireEvent(new LoadEvent(parent, children));
+        LoadParams loadParams = childRequested.remove(parent);
+        fireEvent(new LoadEvent(parent, children, loadParams));
     }
 
     /**
