@@ -10,33 +10,30 @@
  *******************************************************************************/
 package org.eclipse.che.git.impl;
 
+import org.eclipse.che.api.git.GitConnection;
+import org.eclipse.che.api.git.GitConnectionFactory;
+import org.eclipse.che.api.git.GitException;
+import org.eclipse.che.api.git.shared.AddRequest;
+import org.eclipse.che.api.git.shared.CommitRequest;
+import org.eclipse.che.api.git.shared.GitUser;
+import org.eclipse.che.api.git.shared.InitRequest;
+import org.eclipse.che.commons.env.EnvironmentContext;
+import org.eclipse.che.commons.lang.IoUtil;
+import org.eclipse.che.commons.user.UserImpl;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Arrays;
+
 import static java.nio.file.Files.createDirectories;
 import static java.nio.file.Files.delete;
 import static java.nio.file.Files.exists;
 import static java.nio.file.Files.write;
 import static org.eclipse.che.api.core.util.LineConsumerFactory.NULL;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
-import static org.testng.Assert.fail;
-
-import org.eclipse.che.api.git.GitConnection;
-import org.eclipse.che.api.git.GitConnectionFactory;
-import org.eclipse.che.api.git.GitException;
-import org.eclipse.che.api.git.shared.AddRequest;
-import org.eclipse.che.api.git.shared.Branch;
-import org.eclipse.che.api.git.shared.CommitRequest;
-import org.eclipse.che.api.git.shared.GitUser;
-import org.eclipse.che.api.git.shared.InitRequest;
-import org.eclipse.che.api.git.shared.LsFilesRequest;
-import org.eclipse.che.commons.env.EnvironmentContext;
-import org.eclipse.che.commons.lang.IoUtil;
-import org.eclipse.che.commons.user.UserImpl;
-
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Sergii Kabashniuk
@@ -46,25 +43,21 @@ public class GitTestUtil {
 
     public static final String CONTENT = "git repository content\n";
 
+    public static GitConnection connectToGitRepositoryWithContent(GitConnectionFactory connectionFactory, File repository)
+            throws GitException, IOException {
 
-    public static GitConnection connectToGitRepositoryWithContent(GitConnectionFactory connectionFactory, File repository) throws GitException, IOException {
-
-        GitConnection connection = getTestUserConnection(connectionFactory, repository);
-        init(connection);
-        addFile(repository.toPath(), "README.txt", CONTENT);
+        GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
+        addFile(connection, "README.txt", CONTENT);
         connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList("README.txt")));
         connection.commit(newDto(CommitRequest.class).withMessage("Initial commit"));
-        EnvironmentContext.getCurrent().setUser(
-                new UserImpl("codenvy", "codenvy", null, Arrays.asList("workspace/developer"), false));
         return connection;
     }
 
-    public static GitConnection connectToInitializedGitRepository(GitConnectionFactory connectionFactory, File repository) throws GitException, IOException {
+    public static GitConnection connectToInitializedGitRepository(GitConnectionFactory connectionFactory, File repository)
+            throws GitException, IOException {
 
         GitConnection connection = getTestUserConnection(connectionFactory, repository);
-        init(connection);
-        EnvironmentContext.getCurrent().setUser(
-                new UserImpl("codenvy", "codenvy", null, Arrays.asList("workspace/developer"), false));
+        connection.init(newDto(InitRequest.class).withBare(false));
         return connection;
     }
 
@@ -72,22 +65,18 @@ public class GitTestUtil {
         IoUtil.deleteRecursive(testRepo);
     }
 
+    public static GitConnection getTestUserConnection(GitConnectionFactory connectionFactory, File repository) throws GitException {
+        EnvironmentContext.getCurrent().setUser(new UserImpl("codenvy", "codenvy", null, Arrays.asList("workspace/developer"), false));
+        when(connectionFactory.getCredentialsLoader().getUser(anyString())).thenReturn(getTestGitUser());
+        return connectionFactory.getConnection(repository, NULL);
+    }
+
     public static GitUser getTestGitUser() {
         return newDto(GitUser.class).withName("test_name").withEmail("test@email");
     }
 
-    public static GitConnection getTestUserConnection(GitConnectionFactory connectionFactory, File repository) throws GitException {
-        GitUser user = getTestGitUser();
-        return connectionFactory.getConnection(repository, user, NULL);
-    }
-
-
-    public static void addFile(GitConnection connection, String name, String content) throws IOException {
-        addFile(connection.getWorkingDir().toPath(), name, content);
-    }
-
-    public static void deleteFile(GitConnection connection, String name) throws IOException {
-        delete(connection.getWorkingDir().toPath().resolve(name));
+    public static File addFile(GitConnection connection, String name, String content) throws IOException {
+        return addFile(connection.getWorkingDir().toPath(), name, content);
     }
 
     public static File addFile(Path parent, String name, String content) throws IOException {
@@ -97,9 +86,9 @@ public class GitTestUtil {
         return write(parent.resolve(name), content.getBytes()).toFile();
     }
 
-//    public static <T> T newDTO(Class<T> dtoInterface) {
-//        return DtoFactory.getInstance().createDto(dtoInterface);
-//    }
+    public static void deleteFile(GitConnection connection, String name) throws IOException {
+        delete(connection.getWorkingDir().toPath().resolve(name));
+    }
 
     public static void init(GitConnection connection) throws GitException {
         connection.init(newDto(InitRequest.class).withBare(false));

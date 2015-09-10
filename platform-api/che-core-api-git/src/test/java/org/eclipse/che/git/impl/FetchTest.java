@@ -36,7 +36,6 @@ import static org.eclipse.che.dto.server.DtoFactory.newDto;
 import static org.eclipse.che.git.impl.GitTestUtil.addFile;
 import static org.eclipse.che.git.impl.GitTestUtil.cleanupTestRepo;
 import static org.eclipse.che.git.impl.GitTestUtil.connectToInitializedGitRepository;
-import static org.eclipse.che.git.impl.GitTestUtil.getTestGitUser;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
@@ -66,7 +65,7 @@ public class FetchTest {
 
         //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
-        GitConnection fetchConnection = connectionFactory.getConnection(fetchTestRepo.getAbsolutePath(), getTestGitUser());
+        GitConnection fetchConnection = connectionFactory.getConnection(fetchTestRepo.getAbsolutePath());
 
         addFile(connection, "README", "readme content");
         connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
@@ -96,7 +95,7 @@ public class FetchTest {
 
         //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
-        GitConnection fetchConnection = connectionFactory.getConnection(fetchTestRepo.getAbsolutePath(), getTestGitUser());
+        GitConnection fetchConnection = connectionFactory.getConnection(fetchTestRepo.getAbsolutePath());
 
         addFile(connection, "README", "readme content");
         connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
