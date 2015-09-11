@@ -101,7 +101,7 @@ public class FileNode extends ItemNode implements VirtualFile {
             @Override
             protected void onSuccess(ItemReference result) {
                 setData(result);
-                updateEditorPartData(oldNodePath);
+
                 asyncCallback.onSuccess(null);
             }
 
@@ -110,14 +110,6 @@ public class FileNode extends ItemNode implements VirtualFile {
                 asyncCallback.onFailure(exception);
             }
         });
-    }
-
-    private void updateEditorPartData(String oldPath) {
-        final Collection<String> pathOpenedEditors = editorAgent.getOpenedEditors().keySet();
-
-        if (pathOpenedEditors.contains(oldPath)) {
-            editorAgent.updateEditorNode(oldPath, FileNode.this);
-        }
     }
 
     /** {@inheritDoc} */
