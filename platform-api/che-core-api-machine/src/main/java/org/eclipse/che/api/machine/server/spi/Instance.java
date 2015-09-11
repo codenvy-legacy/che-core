@@ -18,6 +18,7 @@ import org.eclipse.che.api.machine.shared.MachineStatus;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
 import org.eclipse.che.api.machine.shared.Server;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -134,4 +135,22 @@ public interface Instance extends Machine {
      *         if any error occurs with file reading
      */
     String readFileContent(String filePath, int startFrom, int limit) throws MachineException;
+
+
+    /**
+     * Copies files from specified machine into current machine.
+     *
+     * @param sourceMachine
+     *         source machine
+     * @param sourcePath
+     *         path to file or directory inside specified machine
+     * @param targetPath
+     *         path to destination file or directory inside machine
+     * @param overwrite
+     *         If "false" then it will be an error if unpacking the given content would cause
+     *         an existing directory to be replaced with a non-directory and vice versa.
+     * @throws MachineException
+     *         if any error occurs when files are being copied
+     */
+    void copy(Instance sourceMachine, String sourcePath, String targetPath, boolean overwrite) throws MachineException;
 }

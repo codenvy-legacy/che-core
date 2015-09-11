@@ -67,6 +67,7 @@ import static org.eclipse.che.dto.server.DtoFactory.newDto;
  * Machine API
  *
  * @author Alexander Garagatyi
+ * @author Anton Korneta
  */
 @Path("/machine")
 public class MachineService {
@@ -360,6 +361,45 @@ public class MachineService {
         checkCurrentUserPermissions(machineManager.getMachine(machineId));
 
         return machineManager.getMachine(machineId).readFileContent(path, startFrom, limit);
+    }
+
+    /**
+     * Copies files from specified machine into current machine.
+     *
+     * @param sourceMachineId
+     *         source machine id
+     * @param targetMachineId
+     *         target machine id
+     * @param sourcePath
+     *         path to file or directory inside specified machine
+     * @param targetPath
+     *         path to destination file or directory inside machine
+     * @param overwrite
+     *         If "false" then it will be an error if unpacking the given content would cause
+     *         an existing directory to be replaced with a non-directory and vice versa.
+     * @throws MachineException
+     *         if any error occurs when files are being copied
+     * @throws NotFoundException
+     *         if any error occurs with getting source machine
+     */
+    @POST
+    @Path("/copy")
+    @RolesAllowed("user")
+    public void copyFilesBetweenMachines(@QueryParam("sourceMachineId") String sourceMachineId,
+                                         @QueryParam("targetMachineId") String targetMachineId,
+                                         @QueryParam("sourcePath") String sourcePath,
+                                         @QueryParam("targetPath") String targetPath,
+                                         @DefaultValue("false") @QueryParam("overwrite") Boolean overwrite)
+            throws NotFoundException, ServerException, ForbiddenException {
+        requiredNotNull(sourceMachineId, "Source machine id");
+        requiredNotNull(targetMachineId, "Target machine id");
+        requiredNotNull(sourcePath, "Source path");
+        requiredNotNull(targetPath, "Target path");
+
+        checkCurrentUserPermissions(machineManager.getMachine(sourceMachineId));
+        checkCurrentUserPermissions(machineManager.getMachine(targetMachineId));
+
+        machineManager.getMachine(targetMachineId).copy(machineManager.getMachine(sourceMachineId), sourcePath, targetPath, overwrite);
     }
 
     private void addLogsToResponse(Reader logsReader, HttpServletResponse httpServletResponse) throws IOException {
