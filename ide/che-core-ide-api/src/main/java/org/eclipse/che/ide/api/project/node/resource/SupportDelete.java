@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.project.node.resource;
 
-import javax.annotation.Nullable;
+import org.eclipse.che.commons.annotation.Nullable;
 
 /**
  * Indicates node which allow deletion.

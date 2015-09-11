@@ -17,7 +17,7 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
 import org.eclipse.che.ide.project.event.DescriptorRemovedEvent.DescriptorRemoveHandler;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author Vlad Zhukovskiy
@@ -39,11 +39,11 @@ public class DescriptorRemovedEvent extends GwtEvent<DescriptorRemoveHandler> {
 
     private final ProjectDescriptor descriptor;
 
-    public DescriptorRemovedEvent(@Nonnull ProjectDescriptor descriptor) {
+    public DescriptorRemovedEvent(@NotNull ProjectDescriptor descriptor) {
         this.descriptor = descriptor;
     }
 
-    @Nonnull
+    @NotNull
     public ProjectDescriptor getDescriptor() {
         return descriptor;
     }

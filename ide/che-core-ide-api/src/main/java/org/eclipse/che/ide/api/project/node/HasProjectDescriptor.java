@@ -12,8 +12,8 @@ package org.eclipse.che.ide.api.project.node;
 
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 
 /**
  * @author Vlad Zhukovskiy
@@ -21,20 +21,20 @@ import javax.annotation.Nullable;
 public interface HasProjectDescriptor {
 
     HasProjectDescriptor EMPTY = new HasProjectDescriptor() {
-        @Nonnull
+        @NotNull
         @Override
         public ProjectDescriptor getProjectDescriptor() {
             return null;
         }
 
         @Override
-        public void setProjectDescriptor(@Nonnull ProjectDescriptor projectDescriptor) {
+        public void setProjectDescriptor(@NotNull ProjectDescriptor projectDescriptor) {
 
         }
     };
 
-    @Nonnull
+    @NotNull
     ProjectDescriptor getProjectDescriptor();
 
-    void setProjectDescriptor(@Nonnull ProjectDescriptor projectDescriptor);
+    void setProjectDescriptor(@NotNull ProjectDescriptor projectDescriptor);
 }

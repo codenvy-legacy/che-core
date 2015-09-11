@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.collections;
 
-import javax.annotation.Nullable;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;

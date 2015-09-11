@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.editorconfig;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 
 import org.eclipse.che.ide.api.texteditor.outline.OutlineModel;
 import org.eclipse.che.ide.jseditor.client.annotation.AnnotationModel;
@@ -74,7 +74,7 @@ public interface TextEditorConfiguration {
      *
      * @return the document partitioner
      */
-    @Nonnull
+    @NotNull
     public DocumentPartitioner getPartitioner();
 
     /**

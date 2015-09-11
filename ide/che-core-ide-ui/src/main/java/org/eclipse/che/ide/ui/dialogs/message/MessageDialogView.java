@@ -12,7 +12,7 @@ package org.eclipse.che.ide.ui.dialogs.message;
 
 import com.google.gwt.user.client.ui.IsWidget;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * The view interface for the message dialog component.
@@ -23,7 +23,7 @@ import javax.annotation.Nonnull;
 public interface MessageDialogView {
 
     /** Sets the action delegate. */
-    void setDelegate(@Nonnull ActionDelegate delegate);
+    void setDelegate(@NotNull ActionDelegate delegate);
 
     /** Displays the dialog window. */
     void showDialog();
@@ -32,13 +32,13 @@ public interface MessageDialogView {
     void closeDialog();
 
     /** Fill the window with its content. */
-    void setContent(@Nonnull IsWidget content);
+    void setContent(@NotNull IsWidget content);
 
     /** Sets the window title. */
-    void setTitle(@Nonnull String title);
+    void setTitle(@NotNull String title);
 
     /** Sets the Confirm button text. */
-    void setConfirmButtonText(@Nonnull String text);
+    void setConfirmButtonText(@NotNull String text);
 
     /** The interface for the action delegate. */
     public interface ActionDelegate {

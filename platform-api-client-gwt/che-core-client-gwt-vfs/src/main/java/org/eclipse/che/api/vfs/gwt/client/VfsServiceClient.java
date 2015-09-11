@@ -14,7 +14,7 @@ import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.api.vfs.shared.dto.ReplacementSet;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -24,9 +24,9 @@ import java.util.List;
  * @author Artem Zatsarynnyy
  */
 public interface VfsServiceClient {
-    public void replaceInCurrentWorkspace(@Nonnull String projectPath,
+    public void replaceInCurrentWorkspace(@NotNull String projectPath,
                                           List<ReplacementSet> replacementSets,
                                           AsyncRequestCallback<Void> callback);
 
-    public void getItemByPath(@Nonnull String path, AsyncRequestCallback<Item> callback);
+    public void getItemByPath(@NotNull String path, AsyncRequestCallback<Item> callback);
 }

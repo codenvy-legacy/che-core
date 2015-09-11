@@ -17,7 +17,7 @@ import com.google.inject.Inject;
 
 import org.vectomatic.dom.svg.ui.SVGImage;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Implementation of ClipboardButtonBuilder is able to create "copy to clipboard" or "select button"
@@ -62,37 +62,37 @@ public class ClipboardButtonBuilderImpl implements ClipboardButtonBuilder {
     }
 
     @Override
-    public ClipboardButtonBuilder withSvgImage(@Nonnull SVGImage svgImage) {
+    public ClipboardButtonBuilder withSvgImage(@NotNull SVGImage svgImage) {
         this.svgImage = svgImage;
         return this;
     }
 
     @Override
-    public ClipboardButtonBuilder withMimeType(@Nonnull String mimeType) {
+    public ClipboardButtonBuilder withMimeType(@NotNull String mimeType) {
         this.mimeType = mimeType;
         return this;
     }
 
     @Override
-    public ClipboardButtonBuilder withPromptReadyToCopy(@Nonnull String promptReadyToCopy) {
+    public ClipboardButtonBuilder withPromptReadyToCopy(@NotNull String promptReadyToCopy) {
         this.promptReadyToCopy = promptReadyToCopy;
         return this;
     }
 
     @Override
-    public ClipboardButtonBuilder withPromptAfterCopy(@Nonnull String promptAfterCopy) {
+    public ClipboardButtonBuilder withPromptAfterCopy(@NotNull String promptAfterCopy) {
         this.promptAfterCopy = promptAfterCopy;
         return this;
     }
 
     @Override
-    public ClipboardButtonBuilder withPromptCopyError(@Nonnull String promptCopyError) {
+    public ClipboardButtonBuilder withPromptCopyError(@NotNull String promptCopyError) {
         this.promptCopyError = promptCopyError;
         return this;
     }
 
     @Override
-    public ClipboardButtonBuilder withPromptReadyToSelect(@Nonnull String promptReadyToSelect) {
+    public ClipboardButtonBuilder withPromptReadyToSelect(@NotNull String promptReadyToSelect) {
         this.promptReadyToSelect = promptReadyToSelect;
         return this;
     }

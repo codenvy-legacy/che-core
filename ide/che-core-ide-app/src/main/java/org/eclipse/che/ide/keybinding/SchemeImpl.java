@@ -13,8 +13,8 @@ package org.eclipse.che.ide.keybinding;
 import org.eclipse.che.ide.api.keybinding.Scheme;
 import org.eclipse.che.ide.util.input.CharCodeWithModifiers;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,7 +55,7 @@ public class SchemeImpl implements Scheme {
 
     /** {@inheritDoc} */
     @Override
-    public void addKey(@Nonnull CharCodeWithModifiers key, @Nonnull String actionId) {
+    public void addKey(@NotNull CharCodeWithModifiers key, @NotNull String actionId) {
         final int digest = key.getKeyDigest();
         if (!handlers.containsKey(digest)) {
             handlers.put(digest, new ArrayList<String>());
@@ -66,7 +66,7 @@ public class SchemeImpl implements Scheme {
 
     /** {@inheritDoc} */
     @Override
-    public void removeKey(@Nonnull CharCodeWithModifiers key, @Nonnull String actionId) {
+    public void removeKey(@NotNull CharCodeWithModifiers key, @NotNull String actionId) {
         final int digest = key.getKeyDigest();
 
         List<String> array = handlers.get(digest);
@@ -81,7 +81,7 @@ public class SchemeImpl implements Scheme {
     }
 
     /** {@inheritDoc} */
-    @Nonnull
+    @NotNull
     @Override
     public List<String> getActionIds(int digest) {
         if (handlers.containsKey(digest)) {
@@ -93,7 +93,7 @@ public class SchemeImpl implements Scheme {
     /** {@inheritDoc} */
     @Nullable
     @Override
-    public CharCodeWithModifiers getKeyBinding(@Nonnull String actionId) {
+    public CharCodeWithModifiers getKeyBinding(@NotNull String actionId) {
         return actionId2CharCode.get(actionId);
     }
 }

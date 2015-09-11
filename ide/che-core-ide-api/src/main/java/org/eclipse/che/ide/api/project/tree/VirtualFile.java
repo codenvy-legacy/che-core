@@ -16,8 +16,8 @@ import org.eclipse.che.ide.api.project.tree.generic.ProjectNode;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 
 /**
  * File that may be opened in editor.
@@ -27,11 +27,11 @@ import javax.annotation.Nullable;
 public interface VirtualFile {
 
     /** get this file path */
-    @Nonnull
+    @NotNull
     String getPath();
 
     /** get this file name*/
-    @Nonnull
+    @NotNull
     String getName();
 
     String getDisplayName();

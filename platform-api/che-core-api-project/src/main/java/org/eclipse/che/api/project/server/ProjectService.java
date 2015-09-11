@@ -68,7 +68,7 @@ import org.eclipse.che.dto.server.DtoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import javax.annotation.PreDestroy;
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
@@ -1468,7 +1468,7 @@ public class ProjectService extends Service {
         return entry;
     }
 
-    private void logProjectCreatedEvent(@Nonnull String projectName, @Nonnull String projectType) {
+    private void logProjectCreatedEvent(@NotNull String projectName, @NotNull String projectType) {
         LOG.info("EVENT#project-created# PROJECT#{}# TYPE#{}# WS#{}# USER#{}# PAAS#default#",
                  projectName,
                  projectType,

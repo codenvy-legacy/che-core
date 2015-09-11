@@ -21,7 +21,7 @@ import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentTree;
 import org.eclipse.che.api.project.shared.dto.TreeElement;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 
-import javax.annotation.Nullable;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 

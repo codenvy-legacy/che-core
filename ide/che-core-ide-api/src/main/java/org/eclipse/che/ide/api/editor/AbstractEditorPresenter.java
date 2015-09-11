@@ -12,7 +12,7 @@ package org.eclipse.che.ide.api.editor;
 
 import org.eclipse.che.ide.api.parts.AbstractPartPresenter;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +29,7 @@ public abstract class AbstractEditorPresenter extends AbstractPartPresenter impl
 
     /** {@inheritDoc} */
     @Override
-    public void init(@Nonnull EditorInput input) throws EditorInitException {
+    public void init(@NotNull EditorInput input) throws EditorInitException {
         this.input = input;
         initializeEditor();
     }
@@ -56,7 +56,7 @@ public abstract class AbstractEditorPresenter extends AbstractPartPresenter impl
 
     /** {@inheritDoc} */
     @Override
-    public void addCloseHandler(@Nonnull EditorPartCloseHandler closeHandler) {
+    public void addCloseHandler(@NotNull EditorPartCloseHandler closeHandler) {
         if (!closeHandlers.contains(closeHandler)) {
             closeHandlers.add(closeHandler);
         }

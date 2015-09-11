@@ -15,7 +15,7 @@ import org.eclipse.che.ide.api.theme.ThemeAgent;
 import com.google.gwt.storage.client.Storage;
 import com.google.inject.Inject;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,12 +46,12 @@ public class ThemeAgentImpl implements ThemeAgent {
     }
 
     @Override
-    public void addTheme(@Nonnull Theme theme) {
+    public void addTheme(@NotNull Theme theme) {
         themes.put(theme.getId(), theme);
     }
 
     @Override
-    public Theme getTheme(@Nonnull String themeId) {
+    public Theme getTheme(@NotNull String themeId) {
         if (themes.containsKey(themeId))
             return themes.get(themeId);
 

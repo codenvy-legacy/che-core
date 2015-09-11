@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.action;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.Map;
 
 /**
@@ -22,17 +22,17 @@ import java.util.Map;
 public class AppCloseActionEvent extends ActionEvent {
     private String cancelMessage;
 
-    public AppCloseActionEvent(@Nonnull String place,
-                               @Nonnull Presentation presentation,
-                               @Nonnull ActionManager actionManager,
+    public AppCloseActionEvent(@NotNull String place,
+                               @NotNull Presentation presentation,
+                               @NotNull ActionManager actionManager,
                                int modifiers) {
 
         super(place, presentation, actionManager, modifiers);
     }
 
-    public AppCloseActionEvent(@Nonnull String place,
-                               @Nonnull Presentation presentation,
-                               @Nonnull ActionManager actionManager,
+    public AppCloseActionEvent(@NotNull String place,
+                               @NotNull Presentation presentation,
+                               @NotNull ActionManager actionManager,
                                int modifiers,
                                @Nullable Map<String, String> parameters) {
 

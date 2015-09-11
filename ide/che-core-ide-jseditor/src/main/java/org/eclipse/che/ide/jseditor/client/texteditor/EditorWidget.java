@@ -13,7 +13,7 @@ package org.eclipse.che.ide.jseditor.client.texteditor;
 
 import java.util.List;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 import org.eclipse.che.ide.api.text.Region;
 import org.eclipse.che.ide.api.texteditor.UndoableEditor;
@@ -138,7 +138,7 @@ public interface EditorWidget extends IsWidget,
      *
      * @return the current keymap
      */
-    @Nonnull
+    @NotNull
     Keymap getKeymap();
 
     /** Give the focus to the editor. */

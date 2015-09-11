@@ -35,7 +35,7 @@ import org.eclipse.che.ide.projectimport.ProjectImporterResource;
 import org.eclipse.che.ide.ui.Styles;
 import org.eclipse.che.ide.ui.window.Window;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author Roman Nikitenko
@@ -144,12 +144,12 @@ public class LocalZipImporterPageViewImpl extends Window implements LocalZipImpo
     }
 
     @Override
-    public void setEncoding(@Nonnull String encodingType) {
+    public void setEncoding(@NotNull String encodingType) {
         submitForm.setEncoding(encodingType);
     }
 
     @Override
-    public void setAction(@Nonnull String url) {
+    public void setAction(@NotNull String url) {
         submitForm.setMethod(FormPanel.METHOD_POST);
         submitForm.setAction(url);
     }
@@ -171,13 +171,13 @@ public class LocalZipImporterPageViewImpl extends Window implements LocalZipImpo
         projectName.removeStyleName(importerStyle.inputError());
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public String getProjectName() {
         return projectName.getValue();
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public String getFileName() {
         String name = file.getFilename();
@@ -185,12 +185,12 @@ public class LocalZipImporterPageViewImpl extends Window implements LocalZipImpo
     }
 
     @Override
-    public void setProjectName(@Nonnull String projectName) {
+    public void setProjectName(@NotNull String projectName) {
         this.projectName.setValue(projectName);
     }
 
     @Override
-    public void setProjectDescription(@Nonnull String projectDescription) {
+    public void setProjectDescription(@NotNull String projectDescription) {
         this.projectDescription.setValue(projectDescription);
     }
 
@@ -232,7 +232,7 @@ public class LocalZipImporterPageViewImpl extends Window implements LocalZipImpo
         }
     }
 
-    public void setDelegate(@Nonnull ActionDelegate delegate) {
+    public void setDelegate(@NotNull ActionDelegate delegate) {
         this.delegate = delegate;
     }
 

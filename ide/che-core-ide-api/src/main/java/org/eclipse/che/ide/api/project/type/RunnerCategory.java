@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.project.type;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * The class contains values of runner categories.
@@ -28,11 +28,11 @@ public enum RunnerCategory {
 
     private final String type;
 
-    RunnerCategory(@Nonnull String type) {
+    RunnerCategory(@NotNull String type) {
         this.type = type;
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public String toString() {
         return type;

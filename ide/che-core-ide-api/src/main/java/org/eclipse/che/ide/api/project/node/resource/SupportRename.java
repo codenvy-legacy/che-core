@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.project.node.resource;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 
 /**
  * Indicates node which allow renaming.
@@ -33,5 +33,5 @@ public interface SupportRename<DataObject> {
      * @param newName
      *         new name for the data object
      */
-    void rename(@Nonnull String newName);
+    void rename(@NotNull String newName);
 }

@@ -80,7 +80,7 @@ import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.ui.dialogs.choice.ChoiceDialog;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
@@ -384,7 +384,7 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
         }
     }
 
-    @Nonnull
+    @NotNull
     protected Widget getWidget() {
         return this.editorView.asWidget();
     }
@@ -400,7 +400,7 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
     }
 
     @Override
-    public void onClose(@Nonnull final AsyncCallback<Void> callback) {
+    public void onClose(@NotNull final AsyncCallback<Void> callback) {
         if (isDirty()) {
             dialogFactory.createConfirmDialog(
                     constant.askWindowCloseTitle(),
@@ -462,8 +462,8 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
     }
 
     @Override
-    public void initialize(@Nonnull final TextEditorConfiguration configuration,
-                           @Nonnull final NotificationManager notificationManager) {
+    public void initialize(@NotNull final TextEditorConfiguration configuration,
+                           @NotNull final NotificationManager notificationManager) {
         this.configuration = configuration;
         this.notificationManager = notificationManager;
     }
@@ -483,7 +483,7 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
         return input.getSVGResource();
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public String getTitle() {
         if (isDirty()) {

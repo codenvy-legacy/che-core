@@ -13,7 +13,7 @@ package org.eclipse.che.ide.api.project.node.resource;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.ide.api.project.node.HasDataObject;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Provide mechanism to allow physically removing data object during node deletion.
@@ -28,5 +28,5 @@ public interface DeleteProcessor<DataObject> {
      *         data store node
      * @return promise with deleted data object
      */
-    Promise<DataObject> delete(@Nonnull HasDataObject<DataObject> node);
+    Promise<DataObject> delete(@NotNull HasDataObject<DataObject> node);
 }

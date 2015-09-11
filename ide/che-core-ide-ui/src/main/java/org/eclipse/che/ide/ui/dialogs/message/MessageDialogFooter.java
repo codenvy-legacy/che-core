@@ -22,7 +22,7 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 import static org.eclipse.che.ide.ui.dialogs.message.MessageDialogView.ActionDelegate;
 
@@ -46,7 +46,7 @@ public class MessageDialogFooter extends Composite {
     private ActionDelegate actionDelegate;
 
     @Inject
-    public MessageDialogFooter(final @Nonnull UILocalizationConstant messages) {
+    public MessageDialogFooter(final @NotNull UILocalizationConstant messages) {
         this.messages = messages;
         initWidget(uiBinder.createAndBindUi(this));
         okButton.addStyleName(resources.centerPanelCss().button());
@@ -59,7 +59,7 @@ public class MessageDialogFooter extends Composite {
      * @param delegate
      *         the new value
      */
-    public void setDelegate(@Nonnull ActionDelegate delegate) {
+    public void setDelegate(@NotNull ActionDelegate delegate) {
         actionDelegate = delegate;
     }
 
@@ -69,7 +69,7 @@ public class MessageDialogFooter extends Composite {
      * @param text
      *         the text
      */
-    public void setConfirmButtonText(@Nonnull String text) {
+    public void setConfirmButtonText(@NotNull String text) {
         okButton.setText(text);
     }
 

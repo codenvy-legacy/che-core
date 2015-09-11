@@ -24,7 +24,7 @@ import com.google.inject.Singleton;
 
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 
 /**
@@ -46,7 +46,7 @@ public class ConsolePartPresenter extends BasePresenter implements ConsolePartVi
     }
 
     /** {@inheritDoc} */
-    @Nonnull
+    @NotNull
     @Override
     public String getTitle() {
         return TITLE;

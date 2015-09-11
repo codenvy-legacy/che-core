@@ -13,7 +13,7 @@ package org.eclipse.che.ide.project.node;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.api.project.node.settings.NodeSettings;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Base class for the synthetic, non-resourced item
@@ -22,9 +22,9 @@ import javax.annotation.Nonnull;
  */
 public abstract class SyntheticBasedNode<DataObject> extends AbstractProjectBasedNode<DataObject> {
 
-    public SyntheticBasedNode(@Nonnull DataObject dataObject,
-                              @Nonnull ProjectDescriptor projectDescriptor,
-                              @Nonnull NodeSettings nodeSettings) {
+    public SyntheticBasedNode(@NotNull DataObject dataObject,
+                              @NotNull ProjectDescriptor projectDescriptor,
+                              @NotNull NodeSettings nodeSettings) {
         super(dataObject, projectDescriptor, nodeSettings);
     }
 

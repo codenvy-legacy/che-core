@@ -40,8 +40,8 @@ import org.eclipse.che.ide.project.event.ResourceNodeRenamedEvent;
 import org.eclipse.che.ide.project.node.NodeManager;
 import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -143,14 +143,14 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
             @Override
             public void onResourceRenamedEvent(final ResourceNodeRenamedEvent event) {
                 HasDataObject dataObject = new HasDataObject() {
-                    @Nonnull
+                    @NotNull
                     @Override
                     public Object getData() {
                         return event.getNewDataObject();
                     }
 
                     @Override
-                    public void setData(@Nonnull Object data) {
+                    public void setData(@NotNull Object data) {
 
                     }
                 };
@@ -166,7 +166,7 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
     }
 
     /** {@inheritDoc} */
-    @Nonnull
+    @NotNull
     @Override
     public String getTitle() {
         return "Project";

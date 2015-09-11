@@ -35,7 +35,7 @@ import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import com.google.web.bindery.event.shared.EventBus;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Project import wizard used for importing a project.
@@ -91,7 +91,7 @@ public class ImportWizard extends AbstractWizard<ImportProject> {
 
     /** {@inheritDoc} */
     @Override
-    public void complete(@Nonnull CompleteCallback callback) {
+    public void complete(@NotNull CompleteCallback callback) {
         checkFolderExistenceAndImport(callback);
     }
 

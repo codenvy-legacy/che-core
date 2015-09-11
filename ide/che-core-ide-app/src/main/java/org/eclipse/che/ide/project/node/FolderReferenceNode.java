@@ -20,7 +20,7 @@ import org.eclipse.che.ide.api.project.node.settings.NodeSettings;
 import org.eclipse.che.ide.project.node.resource.ItemReferenceProcessor;
 import org.eclipse.che.ide.ui.smartTree.presentation.NodePresentation;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author Vlad Zhukovskiy
@@ -30,14 +30,14 @@ public class FolderReferenceNode extends ItemReferenceBasedNode {
     public FolderReferenceNode(@Assisted ItemReference itemReference,
                                @Assisted ProjectDescriptor projectDescriptor,
                                @Assisted NodeSettings nodeSettings,
-                               @Nonnull EventBus eventBus,
-                               @Nonnull NodeManager nodeManager,
-                               @Nonnull ItemReferenceProcessor resourceProcessor) {
+                               @NotNull EventBus eventBus,
+                               @NotNull NodeManager nodeManager,
+                               @NotNull ItemReferenceProcessor resourceProcessor) {
         super(itemReference, projectDescriptor, nodeSettings, eventBus, nodeManager, resourceProcessor);
     }
 
     @Override
-    public void updatePresentation(@Nonnull NodePresentation presentation) {
+    public void updatePresentation(@NotNull NodePresentation presentation) {
         presentation.setPresentableText(getData().getName());
         presentation.setPresentableIcon(nodeManager.getNodesResources().simpleRoot());
     }

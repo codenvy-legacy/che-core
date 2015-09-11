@@ -24,8 +24,8 @@ import org.eclipse.che.ide.project.node.FolderReferenceNode;
 import org.eclipse.che.ide.project.shared.NodesResources;
 import org.eclipse.che.ide.projecttype.wizard.presenter.ProjectWizardPresenter;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.List;
 
 /** @author Artem Zatsarynnyy */
@@ -92,14 +92,14 @@ public class CreateModuleAction extends ProjectAction implements ModuleCreatedEv
             }
 
             HasDataObject dataObject = new HasDataObject() {
-                @Nonnull
+                @NotNull
                 @Override
                 public Object getData() {
                     return event.getModule();
                 }
 
                 @Override
-                public void setData(@Nonnull Object data) {
+                public void setData(@NotNull Object data) {
                 }
             };
 

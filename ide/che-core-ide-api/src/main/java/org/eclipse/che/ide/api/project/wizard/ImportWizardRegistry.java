@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.project.wizard;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 
 /**
  * Picks-up all bounded {@link ImportWizardRegistrar}s to be able to return it for the particular project importer ID.
@@ -27,5 +27,5 @@ public interface ImportWizardRegistry {
      * @return {@link ImportWizardRegistrar} for the specified project importer ID or {@code null} if none
      */
     @Nullable
-    ImportWizardRegistrar getWizardRegistrar(@Nonnull String importerId);
+    ImportWizardRegistrar getWizardRegistrar(@NotNull String importerId);
 }

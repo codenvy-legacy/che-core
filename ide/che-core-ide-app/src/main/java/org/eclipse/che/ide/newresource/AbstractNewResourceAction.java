@@ -38,8 +38,8 @@ import org.eclipse.che.ide.ui.dialogs.input.InputValidator;
 import org.eclipse.che.ide.util.NameUtils;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -120,14 +120,14 @@ public abstract class AbstractNewResourceAction extends ProjectAction {
             protected void onSuccess(final ItemReference itemReference) {
 
                 HasDataObject dataObject = new HasDataObject() {
-                    @Nonnull
+                    @NotNull
                     @Override
                     public Object getData() {
                         return itemReference;
                     }
 
                     @Override
-                    public void setData(@Nonnull Object data) {
+                    public void setData(@NotNull Object data) {
                     }
                 };
 

@@ -16,8 +16,8 @@ import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.ImplementedBy;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 
 /**
  * Interface for file retrieval and storage operations.
@@ -31,8 +31,8 @@ public interface DocumentStorage {
      * @param file the file
      * @param callback operation to do when the content is ready
      */
-    void getDocument(@Nonnull VirtualFile file,
-                     @Nonnull final EmbeddedDocumentCallback callback);
+    void getDocument(@NotNull VirtualFile file,
+                     @NotNull final EmbeddedDocumentCallback callback);
 
     /**
      * Saves the file content.
@@ -42,15 +42,15 @@ public interface DocumentStorage {
      * @param callback operation to do when the content is ready
      */
     void saveDocument(@Nullable final EditorInput editorInput,
-                      @Nonnull Document document,
+                      @NotNull Document document,
                       boolean overwrite,
-                      @Nonnull final AsyncCallback<EditorInput> callback);
+                      @NotNull final AsyncCallback<EditorInput> callback);
 
     /**
      * Action taken when the document is closed.
      * @param document the document
      */
-    public void documentClosed(@Nonnull Document document);
+    public void documentClosed(@NotNull Document document);
 
     /**
      * Action taken when retrieve action is successful.

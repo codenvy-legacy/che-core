@@ -28,8 +28,8 @@ import org.eclipse.che.ide.util.input.CharCodeWithModifiers;
 import org.eclipse.che.ide.util.input.SignalEvent;
 import org.eclipse.che.ide.util.input.SignalEventUtils;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -132,7 +132,7 @@ public class KeyBindingManager implements KeyBindingAgent {
     /** {@inheritDoc} */
     @Nullable
     @Override
-    public CharCodeWithModifiers getKeyBinding(@Nonnull String actionId) {
+    public CharCodeWithModifiers getKeyBinding(@NotNull String actionId) {
         CharCodeWithModifiers keyBinding = activeScheme.getKeyBinding(actionId);
         if (keyBinding != null)
             return keyBinding;

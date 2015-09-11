@@ -19,8 +19,8 @@ import org.eclipse.che.ide.api.project.tree.generic.ProjectNode;
 import org.eclipse.che.ide.ui.tree.TreeNodeElement;
 import org.vectomatic.dom.svg.ui.SVGImage;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -87,7 +87,7 @@ public abstract class AbstractTreeNode<T> implements TreeNode<T> {
     }
 
     /** {@inheritDoc} */
-    @Nonnull
+    @NotNull
     @Override
     public TreeStructure getTreeStructure() {
         return treeStructure;
@@ -98,7 +98,7 @@ public abstract class AbstractTreeNode<T> implements TreeNode<T> {
     @Override
     public HasProjectDescriptor getProject() {
         return new HasProjectDescriptor() {
-            @Nonnull
+            @NotNull
             @Override
             public ProjectDescriptor getProjectDescriptor() {
                 TreeNode<?> candidate = getParent();
@@ -112,7 +112,7 @@ public abstract class AbstractTreeNode<T> implements TreeNode<T> {
             }
 
             @Override
-            public void setProjectDescriptor(@Nonnull ProjectDescriptor projectDescriptor) {
+            public void setProjectDescriptor(@NotNull ProjectDescriptor projectDescriptor) {
                 //stub
             }
         };
@@ -132,7 +132,7 @@ public abstract class AbstractTreeNode<T> implements TreeNode<T> {
     }
 
     /** {@inheritDoc} */
-    @Nonnull
+    @NotNull
     @Override
     public List<TreeNode<?>> getChildren() {
         return cachedChildren;

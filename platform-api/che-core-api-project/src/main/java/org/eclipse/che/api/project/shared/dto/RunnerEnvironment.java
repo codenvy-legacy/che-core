@@ -12,8 +12,8 @@ package org.eclipse.che.api.project.shared.dto;
 
 import org.eclipse.che.dto.shared.DTO;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.Map;
 
 /**
@@ -24,19 +24,19 @@ public interface RunnerEnvironment {
     /**
      * Gets unique identifier of runner environment.
      */
-    @Nonnull
+    @NotNull
     String getId();
 
     /** Sets unique identifier of runner environment. */
-    void setId(@Nonnull String id);
+    void setId(@NotNull String id);
 
-    RunnerEnvironment withId(@Nonnull String id);
+    RunnerEnvironment withId(@NotNull String id);
 
     /**
      * Gets runtime options of this runner environment. If {@code Map} contains mapping to empty string for some option it means that
      * environment doesn't provide any default value for this option.
      */
-    @Nonnull
+    @NotNull
     Map<String, String> getOptions();
 
     /**
@@ -53,7 +53,7 @@ public interface RunnerEnvironment {
      * Gets environment variables of this runner environment. If {@code Map} contains mapping to empty string for some variable it means
      * that environment doesn't provide any default value for this variable.
      */
-    @Nonnull
+    @NotNull
     Map<String, String> getVariables();
 
     /**
@@ -84,7 +84,7 @@ public interface RunnerEnvironment {
 
     void setDisplayName(@Nullable String displayName);
 
-    @Nonnull
+    @NotNull
     RunnerEnvironment withDisplayName(@Nullable String displayName);
 
 }

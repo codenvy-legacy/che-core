@@ -13,7 +13,7 @@ package org.eclipse.che.ide.ui.smartTree;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.ui.smartTree.UniqueKeyProvider;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Current ID provider is responsible for providing a unique identification for a specified node.
@@ -22,6 +22,6 @@ import javax.annotation.Nonnull;
  */
 public interface NodeUniqueKeyProvider extends UniqueKeyProvider<Node> {
     /** {@inheritDoc} */
-    @Nonnull
-    public String getKey(@Nonnull Node item);
+    @NotNull
+    public String getKey(@NotNull Node item);
 }

@@ -32,8 +32,8 @@ import org.eclipse.che.ide.ui.smartTree.event.LoadExceptionEvent;
 import org.eclipse.che.ide.ui.smartTree.event.LoaderHandler;
 import org.eclipse.che.ide.util.loging.Log;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -248,7 +248,7 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
      *         node
      * @return true if node has children, otherwise false
      */
-    public boolean mayHaveChildren(@Nonnull Node parent) {
+    public boolean mayHaveChildren(@NotNull Node parent) {
         return !parent.isLeaf();
     }
 
@@ -259,7 +259,7 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
      *         parent node
      * @return true if the load was requested, otherwise false
      */
-    public boolean loadChildren(@Nonnull Node parent) {
+    public boolean loadChildren(@NotNull Node parent) {
         return loadChildren(parent, null);
     }
 
@@ -280,8 +280,8 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
      *         parent node, children which haven't been loaded
      * @return instance of {@link org.eclipse.che.api.promises.client.Operation} which contains promise with error
      */
-    @Nonnull
-    private Operation<PromiseError> onLoadFailure(@Nonnull final Node parent) {
+    @NotNull
+    private Operation<PromiseError> onLoadFailure(@NotNull final Node parent) {
         return new Operation<PromiseError>() {
             @Override
             public void apply(PromiseError t) throws OperationException {
@@ -298,7 +298,7 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
      * @param parent
      *         parent node, children which have been loaded
      */
-    private void onLoadSuccess(@Nonnull final Node parent, List<Node> children) {
+    private void onLoadSuccess(@NotNull final Node parent, List<Node> children) {
         LoadParams loadParams = childRequested.remove(parent);
         fireEvent(new LoadEvent(parent, children, loadParams));
     }
@@ -311,7 +311,7 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
      *         parent node
      * @return true if load was requested, otherwise false
      */
-    private boolean _load(@Nonnull final Node parent) {
+    private boolean _load(@NotNull final Node parent) {
         if (fireEvent(new BeforeLoadEvent(parent))) {
             lastRequest = parent;
 
@@ -331,7 +331,7 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
      *         event to fire
      * @return true if the specified event wasn't cancelled, otherwise false
      */
-    private boolean fireEvent(@Nonnull GwtEvent<?> event) {
+    private boolean fireEvent(@NotNull GwtEvent<?> event) {
         if (eventBus != null) {
             eventBus.fireEvent(event);
         }
@@ -359,8 +359,8 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
      *         parent node
      * @return instance of {@link org.eclipse.che.api.promises.client.Function} with promise that contains list of intercepted children
      */
-    @Nonnull
-    private Operation<List<Node>> interceptChildren(@Nonnull final Node parent) {
+    @NotNull
+    private Operation<List<Node>> interceptChildren(@NotNull final Node parent) {
         return new Operation<List<Node>>() {
             @Override
             public void apply(List<Node> children) throws OperationException {
@@ -391,16 +391,16 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
     }
 
     /** {@inheritDoc} */
-    @Nonnull
+    @NotNull
     @Override
-    public HandlerRegistration addBeforeLoadHandler(@Nonnull BeforeLoadEvent.BeforeLoadHandler handler) {
+    public HandlerRegistration addBeforeLoadHandler(@NotNull BeforeLoadEvent.BeforeLoadHandler handler) {
         return addHandler(BeforeLoadEvent.getType(), handler);
     }
 
     /** {@inheritDoc} */
-    @Nonnull
+    @NotNull
     @Override
-    public HandlerRegistration addLoadExceptionHandler(@Nonnull LoadExceptionEvent.LoadExceptionHandler handler) {
+    public HandlerRegistration addLoadExceptionHandler(@NotNull LoadExceptionEvent.LoadExceptionHandler handler) {
         return addHandler(LoadExceptionEvent.getType(), handler);
     }
 
@@ -420,8 +420,8 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
         return addHandler(LoadEvent.getType(), handler);
     }
 
-    @Nonnull
-    protected <H extends EventHandler> HandlerRegistration addHandler(@Nonnull GwtEvent.Type<H> type, @Nonnull H handler) {
+    @NotNull
+    protected <H extends EventHandler> HandlerRegistration addHandler(@NotNull GwtEvent.Type<H> type, @NotNull H handler) {
         if (eventBus == null) {
             eventBus = new SimpleEventBus();
         }

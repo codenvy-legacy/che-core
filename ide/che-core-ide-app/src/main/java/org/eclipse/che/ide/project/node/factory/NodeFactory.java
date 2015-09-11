@@ -20,7 +20,7 @@ import org.eclipse.che.ide.project.node.ModuleDescriptorNode;
 import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
 import org.eclipse.che.ide.project.node.ProjectReferenceNode;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Factory that helps to create nodes.
@@ -37,8 +37,8 @@ public interface NodeFactory {
      *         node view settings
      * @return instance of {@link ProjectDescriptorNode}
      */
-    ProjectDescriptorNode newProjectDescriptorNode(@Nonnull ProjectDescriptor projectDescriptor,
-                                                   @Nonnull NodeSettings nodeSettings);
+    ProjectDescriptorNode newProjectDescriptorNode(@NotNull ProjectDescriptor projectDescriptor,
+                                                   @NotNull NodeSettings nodeSettings);
 
     /**
      * Creates project node that represent project in project list.
@@ -51,9 +51,9 @@ public interface NodeFactory {
      *         node view settings
      * @return instance of {@link ProjectReferenceNode}
      */
-    ProjectReferenceNode newProjectReferenceNode(@Nonnull ProjectReference projectReference,
-                                                 @Nonnull ProjectDescriptor projectDescriptor,
-                                                 @Nonnull NodeSettings nodeSettings);
+    ProjectReferenceNode newProjectReferenceNode(@NotNull ProjectReference projectReference,
+                                                 @NotNull ProjectDescriptor projectDescriptor,
+                                                 @NotNull NodeSettings nodeSettings);
 
     /**
      * Creates module node that represent project module.
@@ -64,8 +64,8 @@ public interface NodeFactory {
      *         node view settings
      * @return instance of {@link ModuleDescriptorNode}
      */
-    ModuleDescriptorNode newModuleNode(@Nonnull ProjectDescriptor projectDescriptor,
-                                       @Nonnull NodeSettings nodeSettings);
+    ModuleDescriptorNode newModuleNode(@NotNull ProjectDescriptor projectDescriptor,
+                                       @NotNull NodeSettings nodeSettings);
 
     /**
      * Creates folder referenced node.
@@ -78,9 +78,9 @@ public interface NodeFactory {
      *         node view settings
      * @return instance of {@link FolderReferenceNode}
      */
-    FolderReferenceNode newFolderReferenceNode(@Nonnull ItemReference itemReference,
-                                               @Nonnull ProjectDescriptor projectDescriptor,
-                                               @Nonnull NodeSettings nodeSettings);
+    FolderReferenceNode newFolderReferenceNode(@NotNull ItemReference itemReference,
+                                               @NotNull ProjectDescriptor projectDescriptor,
+                                               @NotNull NodeSettings nodeSettings);
 
     /**
      * Creates file referenced node.
@@ -93,7 +93,7 @@ public interface NodeFactory {
      *         node view settings
      * @return instance of {@link FileReferenceNode}
      */
-    FileReferenceNode newFileReferenceNode(@Nonnull ItemReference itemReference,
-                                           @Nonnull ProjectDescriptor projectDescriptor,
-                                           @Nonnull NodeSettings nodeSettings);
+    FileReferenceNode newFileReferenceNode(@NotNull ItemReference itemReference,
+                                           @NotNull ProjectDescriptor projectDescriptor,
+                                           @NotNull NodeSettings nodeSettings);
 }

@@ -53,7 +53,7 @@ import org.eclipse.che.ide.project.node.NodeManager;
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
 import org.eclipse.che.ide.util.loging.Log;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NavigableMap;
@@ -211,12 +211,12 @@ public class EditorAgentImpl implements EditorAgent {
 
     /** {@inheritDoc} */
     @Override
-    public void openEditor(@Nonnull final VirtualFile file) {
+    public void openEditor(@NotNull final VirtualFile file) {
         doOpen(file, null);
     }
 
     @Override
-    public void openEditor(@Nonnull VirtualFile file, @Nonnull OpenEditorCallback callback) {
+    public void openEditor(@NotNull VirtualFile file, @NotNull OpenEditorCallback callback) {
         doOpen(file, callback);
     }
 
@@ -257,7 +257,7 @@ public class EditorAgentImpl implements EditorAgent {
     }
 
     @Override
-    public void activateEditor(@Nonnull EditorPartPresenter editor) {
+    public void activateEditor(@NotNull EditorPartPresenter editor) {
         workspace.setActivePart(editor);
     }
 
@@ -293,7 +293,7 @@ public class EditorAgentImpl implements EditorAgent {
 
     /** {@inheritDoc} */
     @Override
-    @Nonnull
+    @NotNull
     public NavigableMap<String, EditorPartPresenter> getOpenedEditors() {
         return openedEditors;
     }
@@ -339,7 +339,7 @@ public class EditorAgentImpl implements EditorAgent {
 
     /** {@inheritDoc} */
     @Override
-    public void updateEditorNode(@Nonnull String path, @Nonnull VirtualFile virtualFile) {
+    public void updateEditorNode(@NotNull String path, @NotNull VirtualFile virtualFile) {
         final EditorPartPresenter editor = getOpenedEditors().remove(path);
         if (editor != null) {
             editor.getEditorInput().setFile(virtualFile);

@@ -23,8 +23,8 @@ import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -39,7 +39,7 @@ public class ProjectReferenceProcessor extends AbstractResourceProcessor<Project
     }
 
     @Override
-    public Promise<ProjectReference> delete(@Nonnull final HasDataObject<ProjectReference> node) {
+    public Promise<ProjectReference> delete(@NotNull final HasDataObject<ProjectReference> node) {
         return AsyncPromiseHelper.createFromAsyncRequest(new AsyncPromiseHelper.RequestCall<ProjectReference>() {
             @Override
             public void makeCall(final AsyncCallback<ProjectReference> callback) {
@@ -59,7 +59,7 @@ public class ProjectReferenceProcessor extends AbstractResourceProcessor<Project
     }
 
     @Override
-    public Promise<ProjectReference> rename(@Nullable final HasStorablePath parent, @Nonnull final HasDataObject<ProjectReference> node, @Nonnull final String newName) {
+    public Promise<ProjectReference> rename(@Nullable final HasStorablePath parent, @NotNull final HasDataObject<ProjectReference> node, @NotNull final String newName) {
         return AsyncPromiseHelper.createFromAsyncRequest(new AsyncPromiseHelper.RequestCall<ProjectReference>() {
             @Override
             public void makeCall(final AsyncCallback<ProjectReference> callback) {

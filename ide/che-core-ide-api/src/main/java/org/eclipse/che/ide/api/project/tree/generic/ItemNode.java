@@ -22,7 +22,7 @@ import org.eclipse.che.ide.rest.Unmarshallable;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Abstract base class for all tree nodes that represent an {@link ItemReference}.
@@ -65,14 +65,14 @@ public abstract class ItemNode extends AbstractTreeNode<ItemReference> implement
     }
 
     /** {@inheritDoc} */
-    @Nonnull
+    @NotNull
     @Override
     public String getId() {
         return getData().getName();
     }
 
     /** {@inheritDoc} */
-    @Nonnull
+    @NotNull
     @Override
     public String getDisplayName() {
         return getData().getName();
@@ -84,14 +84,14 @@ public abstract class ItemNode extends AbstractTreeNode<ItemReference> implement
     }
 
     /** {@inheritDoc} */
-    @Nonnull
+    @NotNull
     @Override
     public String getName() {
         return getData().getName();
     }
 
     /** {@inheritDoc} */
-    @Nonnull
+    @NotNull
     @Override
     public String getPath() {
         return getData().getPath();

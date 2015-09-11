@@ -17,8 +17,8 @@ import com.google.gwt.user.client.ui.IsWidget;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 
 /**
  * {@link ConfirmDialog} implementation.
@@ -38,18 +38,18 @@ public class ConfirmDialogPresenter implements ConfirmDialog, ConfirmDialogView.
     private final CancelCallback cancelCallback;
 
     @AssistedInject
-    public ConfirmDialogPresenter(final @Nonnull ConfirmDialogView view,
-                                  final @Nonnull @Assisted("title") String title,
-                                  final @Nonnull @Assisted("message") String message,
+    public ConfirmDialogPresenter(final @NotNull ConfirmDialogView view,
+                                  final @NotNull @Assisted("title") String title,
+                                  final @NotNull @Assisted("message") String message,
                                   final @Nullable @Assisted ConfirmCallback confirmCallback,
                                   final @Nullable @Assisted CancelCallback cancelCallback) {
         this(view, title, new InlineHTML(message), confirmCallback, cancelCallback);
     }
 
     @AssistedInject
-    public ConfirmDialogPresenter(final @Nonnull ConfirmDialogView view,
-                                  final @Nonnull @Assisted String title,
-                                  final @Nonnull @Assisted IsWidget content,
+    public ConfirmDialogPresenter(final @NotNull ConfirmDialogView view,
+                                  final @NotNull @Assisted String title,
+                                  final @NotNull @Assisted IsWidget content,
                                   final @Nullable @Assisted ConfirmCallback confirmCallback,
                                   final @Nullable @Assisted CancelCallback cancelCallback) {
         this.view = view;

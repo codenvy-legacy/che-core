@@ -15,8 +15,8 @@ import com.google.gwt.event.shared.GwtEvent;
 
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 
 /**
  * @author Vlad Zhukovskiy
@@ -39,12 +39,12 @@ public class ResourceNodeRenamedEvent<DataObject> extends GwtEvent<ResourceNodeR
     private final ResourceBasedNode node;
     private final DataObject        newDataObject;
 
-    public ResourceNodeRenamedEvent(@Nullable ResourceBasedNode node, @Nonnull DataObject newDataObject) {
+    public ResourceNodeRenamedEvent(@Nullable ResourceBasedNode node, @NotNull DataObject newDataObject) {
         this.node = node;
         this.newDataObject = newDataObject;
     }
 
-    @Nonnull
+    @NotNull
     public ResourceBasedNode getNode() {
         return node;
     }

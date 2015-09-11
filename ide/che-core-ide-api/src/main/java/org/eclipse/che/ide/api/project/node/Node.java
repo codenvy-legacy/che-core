@@ -12,8 +12,8 @@ package org.eclipse.che.ide.api.project.node;
 
 import org.eclipse.che.api.promises.client.Promise;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -27,7 +27,7 @@ public interface Node {
      *
      * @return node name
      */
-    @Nonnull
+    @NotNull
     String getName();
 
     /**
@@ -44,7 +44,7 @@ public interface Node {
      * @param parent
      *         parent node descriptor
      */
-    void setParent(@Nonnull Node parent);
+    void setParent(@NotNull Node parent);
 
 
     /**
@@ -75,7 +75,7 @@ public interface Node {
      *         they exist or empty list
      * @return descendants promise
      */
-    @Nonnull
+    @NotNull
     Promise<List<Node>> getChildren(boolean forceUpdate);
 
     /**

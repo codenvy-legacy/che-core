@@ -27,7 +27,7 @@ import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
 import org.eclipse.che.ide.part.projectexplorer.DeleteNodeHandler;
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
 
-import javax.annotation.Nullable;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.List;
 
 import static com.google.common.collect.Lists.transform;

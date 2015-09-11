@@ -12,16 +12,16 @@ package org.eclipse.che.ide.api.project.type;
 
 import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
  * @author Vitaly Parfonov
  */
 public interface ProjectTypeRegistry {
-    void setProjectTypes(@Nonnull List<ProjectTypeDefinition> projectTypes);
+    void setProjectTypes(@NotNull List<ProjectTypeDefinition> projectTypes);
 
-    ProjectTypeDefinition getProjectType(@Nonnull String id);
+    ProjectTypeDefinition getProjectType(@NotNull String id);
 
     List<ProjectTypeDefinition> getProjectTypes();
 

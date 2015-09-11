@@ -29,8 +29,8 @@ import com.google.web.bindery.event.shared.EventBus;
 
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -132,7 +132,7 @@ public class NotificationManagerImpl extends BasePresenter implements Notificati
 
     /** {@inheritDoc} */
     @Override
-    public void showNotification(@Nonnull Notification notification) {
+    public void showNotification(@NotNull Notification notification) {
         notification.addObserver(this);
         notifications.add(notification);
         notificationMessageStack.addNotification(notification);
@@ -149,19 +149,19 @@ public class NotificationManagerImpl extends BasePresenter implements Notificati
 
     /** {@inheritDoc} */
     @Override
-    public void showInfo(@Nonnull String message) {
+    public void showInfo(@NotNull String message) {
         showNotification(new Notification(message, INFO));
     }
 
     /** {@inheritDoc} */
     @Override
-    public void showWarning(@Nonnull String message) {
+    public void showWarning(@NotNull String message) {
         showNotification(new Notification(message, WARNING));
     }
 
     /** {@inheritDoc} */
     @Override
-    public void showError(@Nonnull String message) {
+    public void showError(@NotNull String message) {
         showNotification(new Notification(message, ERROR));
     }
 
@@ -171,7 +171,7 @@ public class NotificationManagerImpl extends BasePresenter implements Notificati
      * @param notification
      *         notification that need to remove
      */
-    public void removeNotification(@Nonnull Notification notification) {
+    public void removeNotification(@NotNull Notification notification) {
         notification.removeObserver(this);
         notifications.remove(notification);
         notificationContainer.removeNotification(notification);
@@ -181,13 +181,13 @@ public class NotificationManagerImpl extends BasePresenter implements Notificati
 
     /** {@inheritDoc} */
     @Override
-    public void onOpenMessageClicked(@Nonnull Notification notification) {
+    public void onOpenMessageClicked(@NotNull Notification notification) {
         onOpenClicked(notification);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void onOpenItemClicked(@Nonnull Notification notification) {
+    public void onOpenItemClicked(@NotNull Notification notification) {
         onOpenClicked(notification);
     }
 
@@ -197,7 +197,7 @@ public class NotificationManagerImpl extends BasePresenter implements Notificati
      * @param notification
      *         notification that is opening
      */
-    private void onOpenClicked(@Nonnull Notification notification) {
+    private void onOpenClicked(@NotNull Notification notification) {
         notification.setState(READ);
 
         Notification.OpenNotificationHandler openHandler = notification.getOpenHandler();
@@ -211,14 +211,14 @@ public class NotificationManagerImpl extends BasePresenter implements Notificati
 
     /** {@inheritDoc} */
     @Override
-    public void onCloseMessageClicked(@Nonnull Notification notification) {
+    public void onCloseMessageClicked(@NotNull Notification notification) {
         notification.setState(READ);
         onCloseClicked(notification);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void onCloseItemClicked(@Nonnull Notification notification) {
+    public void onCloseItemClicked(@NotNull Notification notification) {
         removeNotification(notification);
         onCloseClicked(notification);
     }
@@ -229,14 +229,14 @@ public class NotificationManagerImpl extends BasePresenter implements Notificati
      * @param notification
      *         notification that is closing
      */
-    private void onCloseClicked(@Nonnull Notification notification) {
+    private void onCloseClicked(@NotNull Notification notification) {
         Notification.CloseNotificationHandler closeHandler = notification.getCloseHandler();
         if (closeHandler != null) {
             closeHandler.onCloseClicked();
         }
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public String getTitle() {
         return TITLE;

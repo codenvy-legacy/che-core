@@ -20,7 +20,7 @@ import org.eclipse.che.ide.rest.RestContext;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.inject.name.Named;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import javax.inject.Inject;
 
 import java.util.List;
@@ -57,7 +57,7 @@ public class VfsServiceClientImpl implements VfsServiceClient {
     }
 
     @Override
-    public void replaceInCurrentWorkspace(@Nonnull String projectPath,
+    public void replaceInCurrentWorkspace(@NotNull String projectPath,
                                           List<ReplacementSet> replacementSets,
                                           AsyncRequestCallback<Void> callback) {
         String path = FIND_REPLACE + normalizePath(projectPath);
@@ -69,7 +69,7 @@ public class VfsServiceClientImpl implements VfsServiceClient {
     }
 
     @Override
-    public void getItemByPath(@Nonnull String path, AsyncRequestCallback<Item> callback) {
+    public void getItemByPath(@NotNull String path, AsyncRequestCallback<Item> callback) {
         final String url = GET_ITEM_BY_PATH + normalizePath(path);
 
         asyncRequestFactory.createGetRequest(url)

@@ -14,7 +14,7 @@ import org.eclipse.che.dto.shared.DTO;
 import org.eclipse.che.dto.shared.DelegateRule;
 import org.eclipse.che.dto.shared.DelegateTo;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -89,7 +89,7 @@ public interface RunnerEnvironmentTree {
     RunnerEnvironmentTree withLeaves(List<RunnerEnvironmentLeaf> leaves);
 
     /** Gets node name. Need this for display tree on client side. */
-    @Nonnull
+    @NotNull
     String getDisplayName();
 
     /**
@@ -97,14 +97,14 @@ public interface RunnerEnvironmentTree {
      *
      * @see #getDisplayName()
      */
-    void setDisplayName(@Nonnull String name);
+    void setDisplayName(@NotNull String name);
 
-    RunnerEnvironmentTree withDisplayName(@Nonnull String name);
+    RunnerEnvironmentTree withDisplayName(@NotNull String name);
 
     /**
      * Gets child environments. Empty list means that current tree level is last in hierarchy.
      */
-    @Nonnull
+    @NotNull
     List<RunnerEnvironmentTree> getNodes();
 
     /**

@@ -22,7 +22,7 @@ import com.google.gwt.user.client.ui.HTMLTable;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -88,7 +88,7 @@ public class NotificationContainer extends FlowPanel implements View<Notificatio
      * @param notification
      *         notification that need to show
      */
-    public void addNotification(@Nonnull Notification notification) {
+    public void addNotification(@NotNull Notification notification) {
         //Will be added to parent container itself.
         NotificationItem item = new NotificationItem(resources, notification, delegate, panel);
         notificationWidget.add(notification);
@@ -100,7 +100,7 @@ public class NotificationContainer extends FlowPanel implements View<Notificatio
      * @param notification
      *         notification that need to disable
      */
-    public void removeNotification(@Nonnull Notification notification) {
+    public void removeNotification(@NotNull Notification notification) {
         int index = notificationWidget.indexOf(notification);
         if (index >= 0) {
             panel.removeRow(index);

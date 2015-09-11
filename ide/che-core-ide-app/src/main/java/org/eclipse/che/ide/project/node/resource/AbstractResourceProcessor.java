@@ -25,7 +25,7 @@ import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.Unmarshallable;
 import org.eclipse.che.ide.util.loging.Log;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author Vlad Zhukovskiy
@@ -41,8 +41,8 @@ public abstract class AbstractResourceProcessor<DataObject> implements DeletePro
         this.unmarshallerFactory = unmarshallerFactory;
     }
 
-    @Nonnull
-    protected <T> AsyncRequestCallback<T> _createCallback(@Nonnull final AsyncCallback<T> callback, @Nonnull Unmarshallable<T> u) {
+    @NotNull
+    protected <T> AsyncRequestCallback<T> _createCallback(@NotNull final AsyncCallback<T> callback, @NotNull Unmarshallable<T> u) {
         return new AsyncRequestCallback<T>(u) {
             @Override
             protected void onSuccess(T result) {

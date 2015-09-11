@@ -12,7 +12,7 @@ package org.eclipse.che.ide.api.notification;
 
 import org.eclipse.che.ide.api.parts.PartPresenter;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * The manager for notifications. Used to show notifications and change their states.
@@ -26,7 +26,7 @@ public interface NotificationManager extends PartPresenter {
      * @param notification
      *         notification that need to show
      */
-    void showNotification(@Nonnull Notification notification);
+    void showNotification(@NotNull Notification notification);
 
     /**
      * Show information notification with the specified message.
@@ -36,7 +36,7 @@ public interface NotificationManager extends PartPresenter {
      * @param message
      *         notification's message
      */
-    void showInfo(@Nonnull String message);
+    void showInfo(@NotNull String message);
 
     /**
      * Show warning notification with the specified message.
@@ -46,7 +46,7 @@ public interface NotificationManager extends PartPresenter {
      * @param message
      *         notification's message
      */
-    void showWarning(@Nonnull String message);
+    void showWarning(@NotNull String message);
 
     /**
      * Show error notification with the specified message.
@@ -56,5 +56,5 @@ public interface NotificationManager extends PartPresenter {
      * @param message
      *         notification's message
      */
-    void showError(@Nonnull String message);
+    void showError(@NotNull String message);
 }

@@ -39,8 +39,8 @@ import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.Unmarshallable;
 import org.eclipse.che.ide.api.project.node.Node;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -74,25 +74,25 @@ public class NodeManager {
 
     /** ***************** Children operations ********************* */
 
-    @Nonnull
-    public Promise<List<Node>> getChildren(@Nonnull ItemReference itemReference,
-                                           @Nonnull ProjectDescriptor relProjectDescriptor,
-                                           @Nonnull NodeSettings nodeSettings,
+    @NotNull
+    public Promise<List<Node>> getChildren(@NotNull ItemReference itemReference,
+                                           @NotNull ProjectDescriptor relProjectDescriptor,
+                                           @NotNull NodeSettings nodeSettings,
                                            @Nullable ItemReferenceChainFilter... filters) {
         return getChildren(itemReference.getPath(), relProjectDescriptor, nodeSettings, filters);
     }
 
-    @Nonnull
-    public Promise<List<Node>> getChildren(@Nonnull ProjectDescriptor projectDescriptor,
-                                           @Nonnull NodeSettings nodeSettings,
+    @NotNull
+    public Promise<List<Node>> getChildren(@NotNull ProjectDescriptor projectDescriptor,
+                                           @NotNull NodeSettings nodeSettings,
                                            @Nullable ItemReferenceChainFilter... filters) {
         return getChildren(projectDescriptor.getPath(), projectDescriptor, nodeSettings, filters);
     }
 
-    @Nonnull
-    public Promise<List<Node>> getChildren(@Nonnull String path,
-                                           @Nonnull ProjectDescriptor relProjectDescriptor,
-                                           @Nonnull NodeSettings nodeSettings,
+    @NotNull
+    public Promise<List<Node>> getChildren(@NotNull String path,
+                                           @NotNull ProjectDescriptor relProjectDescriptor,
+                                           @NotNull NodeSettings nodeSettings,
                                            final @Nullable ItemReferenceChainFilter... filters) {
         return AsyncPromiseHelper.createFromAsyncRequest(getItemReferenceRC(path))
                 .thenPromise(filterItemReference(filters))
@@ -100,8 +100,8 @@ public class NodeManager {
                 .catchError(handleError());
     }
 
-    @Nonnull
-    public RequestCall<List<ItemReference>> getItemReferenceRC(@Nonnull final String path) {
+    @NotNull
+    public RequestCall<List<ItemReference>> getItemReferenceRC(@NotNull final String path) {
         return new RequestCall<List<ItemReference>>() {
             @Override
             public void makeCall(AsyncCallback<List<ItemReference>> callback) {
@@ -140,10 +140,10 @@ public class NodeManager {
         };
     }
 
-    @Nonnull
+    @NotNull
     private Function<List<ItemReference>, Promise<List<Node>>> createItemReferenceNodes(
-            @Nonnull final ProjectDescriptor relProjectDescriptor,
-            @Nonnull final NodeSettings nodeSettings) {
+            @NotNull final ProjectDescriptor relProjectDescriptor,
+            @NotNull final NodeSettings nodeSettings) {
         return new Function<List<ItemReference>, Promise<List<Node>>>() {
             @Override
             public Promise<List<Node>> apply(List<ItemReference> itemRefList) throws FunctionException {
@@ -238,8 +238,8 @@ public class NodeManager {
         };
     }
 
-    @Nonnull
-    private Operation<Node> _collectNodesFromPromises(@Nonnull final List<Node> collector) {
+    @NotNull
+    private Operation<Node> _collectNodesFromPromises(@NotNull final List<Node> collector) {
         return new Operation<Node>() {
             @Override
             public void apply(Node nodes) throws OperationException {
@@ -248,7 +248,7 @@ public class NodeManager {
         };
     }
 
-    @Nonnull
+    @NotNull
     private Function<PromiseError, List<Node>> handleError() {
         return new Function<PromiseError, List<Node>>() {
             @Override
@@ -260,12 +260,12 @@ public class NodeManager {
 
     /** ***************** Project Reference operations ********************* */
 
-    @Nonnull
+    @NotNull
     public Promise<List<Node>> getProjects() {
         return AsyncPromiseHelper.createFromAsyncRequest(getProjectsRC()).then(createProjectReferenceNodes());
     }
 
-    @Nonnull
+    @NotNull
     private RequestCall<List<ProjectReference>> getProjectsRC() {
         return new RequestCall<List<ProjectReference>>() {
             @Override
@@ -275,7 +275,7 @@ public class NodeManager {
         };
     }
 
-    @Nonnull
+    @NotNull
     private Function<List<ProjectReference>, List<Node>> createProjectReferenceNodes() {
         return new Function<List<ProjectReference>, List<Node>>() {
             @Override
@@ -303,13 +303,13 @@ public class NodeManager {
 
     /** ***************** Content methods ********************* */
 
-    @Nonnull
-    public Promise<String> getContent(@Nonnull final VirtualFile virtualFile) {
+    @NotNull
+    public Promise<String> getContent(@NotNull final VirtualFile virtualFile) {
         return AsyncPromiseHelper.createFromAsyncRequest(contentGetRC(virtualFile));
     }
 
-    @Nonnull
-    private RequestCall<String> contentGetRC(@Nonnull final VirtualFile vFile) {
+    @NotNull
+    private RequestCall<String> contentGetRC(@NotNull final VirtualFile vFile) {
         return new RequestCall<String>() {
             @Override
             public void makeCall(AsyncCallback<String> callback) {
@@ -318,13 +318,13 @@ public class NodeManager {
         };
     }
 
-    @Nonnull
-    public Promise<Void> updateContent(@Nonnull VirtualFile virtualFile, @Nonnull String content) {
+    @NotNull
+    public Promise<Void> updateContent(@NotNull VirtualFile virtualFile, @NotNull String content) {
         return AsyncPromiseHelper.createFromAsyncRequest(contentUpdateRC(virtualFile, content));
     }
 
-    @Nonnull
-    private RequestCall<Void> contentUpdateRC(@Nonnull final VirtualFile vFile, @Nonnull final String content) {
+    @NotNull
+    private RequestCall<Void> contentUpdateRC(@NotNull final VirtualFile vFile, @NotNull final String content) {
         return new RequestCall<Void>() {
             @Override
             public void makeCall(AsyncCallback<Void> callback) {
@@ -338,8 +338,8 @@ public class NodeManager {
 
     /** ***************** Common methods ********************* */
 
-    @Nonnull
-    protected <T> AsyncRequestCallback<T> _callback(@Nonnull final AsyncCallback<T> callback, @Nonnull Unmarshallable<T> u) {
+    @NotNull
+    protected <T> AsyncRequestCallback<T> _callback(@NotNull final AsyncCallback<T> callback, @NotNull Unmarshallable<T> u) {
         return new AsyncRequestCallback<T>(u) {
             @Override
             protected void onSuccess(T result) {
@@ -353,8 +353,8 @@ public class NodeManager {
         };
     }
 
-    @Nonnull
-    public ProjectDescriptor convert(@Nonnull ProjectReference reference) {
+    @NotNull
+    public ProjectDescriptor convert(@NotNull ProjectReference reference) {
         ProjectDescriptor descriptor = dtoFactory.createDto(ProjectDescriptor.class);
 
         descriptor.setName(reference.getName());
@@ -374,19 +374,19 @@ public class NodeManager {
         return descriptor;
     }
 
-    @Nonnull
+    @NotNull
     public NodesResources getNodesResources() {
         return nodesResources;
     }
 
-    @Nonnull
-    public ProjectDescriptorNode wrap(@Nonnull ProjectDescriptor projectDescriptor) {
+    @NotNull
+    public ProjectDescriptorNode wrap(@NotNull ProjectDescriptor projectDescriptor) {
         NodeSettings nodeSettings = nodeSettingsProvider.getSettings();
         return nodeFactory.newProjectDescriptorNode(projectDescriptor, nodeSettings == null ? NodeSettings.DEFAULT_SETTINGS : nodeSettings);
     }
 
     @Nullable
-    public ItemReferenceBasedNode wrap(@Nonnull ItemReference itemReference, @Nonnull ProjectDescriptor relProjectDescriptor) {
+    public ItemReferenceBasedNode wrap(@NotNull ItemReference itemReference, @NotNull ProjectDescriptor relProjectDescriptor) {
         NodeSettings nodeSettings = nodeSettingsProvider.getSettings();
         if (nodeSettings == null) {
             nodeSettings = NodeSettings.DEFAULT_SETTINGS;

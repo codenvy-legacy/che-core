@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.quickfix;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 
 import org.eclipse.che.ide.jseditor.client.texteditor.TextEditor;
 
@@ -26,7 +26,7 @@ public final class QuickAssistInvocationContext {
     private final TextEditor textEditor;
 
     public QuickAssistInvocationContext(@Nullable final Integer line,
-                                        @Nonnull final TextEditor textEditor) {
+                                        @NotNull final TextEditor textEditor) {
         if (textEditor == null) {
             throw new IllegalArgumentException("editor handle cannot be null");
         }
@@ -49,7 +49,7 @@ public final class QuickAssistInvocationContext {
      *
      * @return the editor handle
      */
-    @Nonnull
+    @NotNull
     public TextEditor getTextEditor() {
         return this.textEditor;
     }

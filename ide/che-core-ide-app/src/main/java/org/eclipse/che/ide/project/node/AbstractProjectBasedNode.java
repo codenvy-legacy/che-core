@@ -19,7 +19,7 @@ import org.eclipse.che.ide.api.project.node.settings.NodeSettings;
 import org.eclipse.che.ide.ui.smartTree.presentation.HasPresentation;
 import org.eclipse.che.ide.ui.smartTree.presentation.NodePresentation;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Base class for the project related nodes.
@@ -35,22 +35,22 @@ public abstract class AbstractProjectBasedNode<DataObject> extends AbstractTreeN
     private NodeSettings      nodeSettings;
     private NodePresentation  nodePresentation;
 
-    public AbstractProjectBasedNode(@Nonnull DataObject dataObject,
-                                    @Nonnull ProjectDescriptor projectDescriptor,
-                                    @Nonnull NodeSettings nodeSettings) {
+    public AbstractProjectBasedNode(@NotNull DataObject dataObject,
+                                    @NotNull ProjectDescriptor projectDescriptor,
+                                    @NotNull NodeSettings nodeSettings) {
         this.dataObject = dataObject;
         this.projectDescriptor = projectDescriptor;
         this.nodeSettings = nodeSettings;
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public ProjectDescriptor getProjectDescriptor() {
         return projectDescriptor;
     }
 
     @Override
-    public void setProjectDescriptor(@Nonnull ProjectDescriptor projectDescriptor) {
+    public void setProjectDescriptor(@NotNull ProjectDescriptor projectDescriptor) {
         this.projectDescriptor = projectDescriptor;
     }
 
@@ -59,14 +59,14 @@ public abstract class AbstractProjectBasedNode<DataObject> extends AbstractTreeN
         return nodeSettings;
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public DataObject getData() {
         return dataObject;
     }
 
     @Override
-    public void setData(@Nonnull DataObject data) {
+    public void setData(@NotNull DataObject data) {
         this.dataObject = data;
     }
 

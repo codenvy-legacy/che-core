@@ -30,8 +30,8 @@ import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.StringUnmarshaller;
 import org.eclipse.che.ide.ui.smartTree.presentation.NodePresentation;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 
 /**
  * @author Vlad Zhukovskiy
@@ -44,19 +44,19 @@ public class FileReferenceNode extends ItemReferenceBasedNode implements Virtual
     public FileReferenceNode(@Assisted ItemReference itemReference,
                              @Assisted ProjectDescriptor projectDescriptor,
                              @Assisted NodeSettings nodeSettings,
-                             @Nonnull EventBus eventBus,
-                             @Nonnull NodeManager nodeManager,
-                             @Nonnull ItemReferenceProcessor resourceProcessor) {
+                             @NotNull EventBus eventBus,
+                             @NotNull NodeManager nodeManager,
+                             @NotNull ItemReferenceProcessor resourceProcessor) {
         super(itemReference, projectDescriptor, nodeSettings, eventBus, nodeManager, resourceProcessor);
     }
 
     @Override
-    public void updatePresentation(@Nonnull NodePresentation presentation) {
+    public void updatePresentation(@NotNull NodePresentation presentation) {
         presentation.setPresentableText(getData().getName());
         presentation.setPresentableIcon(nodeManager.getNodesResources().file());
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public String getPath() {
         return getData().getPath();

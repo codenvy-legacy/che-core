@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.icon;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 
 /**
  * Client-side singleton component that provides possibility to define icons for UI in extensions.
@@ -41,7 +41,7 @@ public interface IconRegistry {
      *         icon id
      * @return registered icon or the same named "default" icon or "generic" icon
      */
-    @Nonnull
+    @NotNull
     Icon getIcon(String id);
 
     /**

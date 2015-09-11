@@ -12,7 +12,7 @@ package org.eclipse.che.ide.api.parts;
 
 import org.eclipse.che.ide.api.extension.SDK;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 
 /**
@@ -29,7 +29,7 @@ public interface ConsolePart extends PartPresenter {
      * @param text
      *         text that need to be shown
      */
-    void print(@Nonnull String text);
+    void print(@NotNull String text);
 
     /**
      * Display an exception.

@@ -29,8 +29,8 @@ import org.eclipse.che.ide.project.node.resource.ProjectReferenceProcessor;
 import org.eclipse.che.ide.ui.smartTree.presentation.NodePresentation;
 import org.eclipse.che.ide.util.Pair;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 
@@ -45,21 +45,21 @@ public class ProjectReferenceNode extends ResourceBasedNode<ProjectReference> im
     public ProjectReferenceNode(@Assisted ProjectReference projectReference,
                                 @Assisted ProjectDescriptor projectDescriptor,
                                 @Assisted NodeSettings nodeSettings,
-                                @Nonnull EventBus eventBus,
-                                @Nonnull NodeManager nodeManager,
-                                @Nonnull ProjectReferenceProcessor resourceProcessor) {
+                                @NotNull EventBus eventBus,
+                                @NotNull NodeManager nodeManager,
+                                @NotNull ProjectReferenceProcessor resourceProcessor) {
         super(projectReference, projectDescriptor, nodeSettings, eventBus, nodeManager);
         this.resourceProcessor = resourceProcessor;
     }
 
-    @Nonnull
+    @NotNull
     @Override
     protected Promise<List<Node>> getChildrenImpl() {
         return Promises.resolve(Collections.<Node>emptyList());
     }
 
     @Override
-    public void updatePresentation(@Nonnull NodePresentation presentation) {
+    public void updatePresentation(@NotNull NodePresentation presentation) {
         presentation.setPresentableText(getData().getName());
         presentation.setPresentableIcon(isValid(getData()) ? nodeManager.getNodesResources().projectRoot()
                                                            : nodeManager.getNodesResources().invalidProjectRoot());
@@ -69,7 +69,7 @@ public class ProjectReferenceNode extends ResourceBasedNode<ProjectReference> im
         }
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public String getName() {
         return getData().getName();
@@ -97,7 +97,7 @@ public class ProjectReferenceNode extends ResourceBasedNode<ProjectReference> im
         eventBus.fireEvent(new OpenProjectEvent(getData().getName()));
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public String getStorablePath() {
         return getData().getPath();

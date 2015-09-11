@@ -20,7 +20,7 @@ import org.eclipse.che.ide.util.loging.Log;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import javax.inject.Inject;
 
 /**
@@ -36,7 +36,7 @@ public class DocumentStorageImpl implements DocumentStorage {
     }
 
     @Override
-    public void getDocument(@Nonnull final VirtualFile file, @Nonnull final EmbeddedDocumentCallback callback) {
+    public void getDocument(@NotNull final VirtualFile file, @NotNull final EmbeddedDocumentCallback callback) {
         file.getContent().then(new Operation<String>() {
             @Override
             public void apply(String result) throws OperationException {
@@ -61,8 +61,8 @@ public class DocumentStorageImpl implements DocumentStorage {
     }
 
     @Override
-    public void saveDocument(final EditorInput editorInput, @Nonnull final Document document,
-                             final boolean overwrite, @Nonnull final AsyncCallback<EditorInput> callback) {
+    public void saveDocument(final EditorInput editorInput, @NotNull final Document document,
+                             final boolean overwrite, @NotNull final AsyncCallback<EditorInput> callback) {
         final VirtualFile file = editorInput.getFile();
 
         file.updateContent(document.getContents()).then(new Operation<Void>() {

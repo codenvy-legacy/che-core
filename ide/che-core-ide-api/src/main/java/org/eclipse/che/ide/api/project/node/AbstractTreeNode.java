@@ -15,8 +15,8 @@ import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.js.Promises;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -58,12 +58,12 @@ public abstract class AbstractTreeNode implements Node, HasAttributes {
 
     /** {@inheritDoc} */
     @Override
-    public void setParent(@Nonnull Node parent) {
+    public void setParent(@NotNull Node parent) {
         this.parent = parent;
     }
 
     /** {@inheritDoc} */
-    @Nonnull
+    @NotNull
     @Override
     public final Promise<List<Node>> getChildren(boolean forceUpdate) {
         if (children == null || children.isEmpty() || forceUpdate) {
@@ -74,7 +74,7 @@ public abstract class AbstractTreeNode implements Node, HasAttributes {
     }
 
     /** {@inheritDoc} */
-    @Nonnull
+    @NotNull
     protected abstract Promise<List<Node>> getChildrenImpl();
 
     /** {@inheritDoc} */

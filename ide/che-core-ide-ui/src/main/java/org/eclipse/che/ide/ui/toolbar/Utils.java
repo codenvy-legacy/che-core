@@ -18,7 +18,7 @@ import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.action.Separator;
 import org.eclipse.che.ide.util.loging.Log;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -33,10 +33,10 @@ public class Utils {
      * @param actionManager
      *         manager
      */
-    public static void expandActionGroup(@Nonnull ActionGroup group,
+    public static void expandActionGroup(@NotNull ActionGroup group,
                                          List<Action> list,
                                          PresentationFactory presentationFactory,
-                                         @Nonnull String place,
+                                         @NotNull String place,
                                          ActionManager actionManager,
                                          boolean transparentOnly) {
         Presentation presentation = presentationFactory.getPresentation(group);
@@ -103,7 +103,7 @@ public class Utils {
      * @param actionManager
      *         manager
      */
-    public static void expandActionGroup(@Nonnull ActionGroup group,
+    public static void expandActionGroup(@NotNull ActionGroup group,
                                          List<Action> list,
                                          PresentationFactory presentationFactory,
                                          String place,

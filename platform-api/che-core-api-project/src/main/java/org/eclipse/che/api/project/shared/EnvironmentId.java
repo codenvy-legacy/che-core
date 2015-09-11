@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.shared;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -120,7 +120,7 @@ public class EnvironmentId {
     }
 
     /** Gets scope of this runner environment. Scope helps identify how environment was delivered, e.g. "project", "system". */
-    @Nonnull
+    @NotNull
     public Scope getScope() {
         return scope;
     }
@@ -141,7 +141,7 @@ public class EnvironmentId {
      * Gets name of this runner environment. Scope together with category and name gives fully-qualified name of runner environment. FQN of
      * runner environment has a following syntax: <i>&lt;scope&gt;:/&lt;category&gt;/&lt;name&gt;</i>.
      */
-    @Nonnull
+    @NotNull
     public String getName() {
         return name;
     }

@@ -60,8 +60,8 @@ import org.eclipse.che.ide.ui.smartTree.state.ExpandStateHandler;
 import org.eclipse.che.ide.ui.status.ComponentWithEmptyText;
 import org.eclipse.che.ide.ui.status.StatusText;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -256,7 +256,7 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
 
 
     @Nullable
-    public NodeDescriptor findNode(@Nonnull Element target) {
+    public NodeDescriptor findNode(@NotNull Element target) {
         Element nodeElement = getNearestParentElement(target, treeStyles.styles().rootContainer());
         if (nodeElement != null) {
             return nodesByDom.get(nodeElement.getId());
@@ -278,7 +278,7 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
         return expandStateHandler;
     }
 
-    public void setExpandStateHandler(@Nonnull ExpandStateHandler expandStateHandler) {
+    public void setExpandStateHandler(@NotNull ExpandStateHandler expandStateHandler) {
         this.expandStateHandler = expandStateHandler;
     }
 
@@ -1174,7 +1174,7 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
         return treeStyles;
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public StatusText getEmptyText() {
         return emptyText;

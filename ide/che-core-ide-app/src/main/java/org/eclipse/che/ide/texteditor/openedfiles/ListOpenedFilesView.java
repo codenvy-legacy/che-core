@@ -13,7 +13,7 @@ package org.eclipse.che.ide.texteditor.openedfiles;
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -27,7 +27,7 @@ public interface ListOpenedFilesView extends View<ListOpenedFilesView.ActionDele
      *
      * @param files
      */
-    void setOpenedFiles(@Nonnull List<VirtualFile> files);
+    void setOpenedFiles(@NotNull List<VirtualFile> files);
 
     /** Close dialog. */
     void close();

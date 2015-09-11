@@ -23,7 +23,7 @@ import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.Arrays;
 import java.util.List;
 
@@ -55,7 +55,7 @@ public class GenericTreeStructure implements TreeStructure {
 
     /** {@inheritDoc} */
     @Override
-    public void getRootNodes(@Nonnull AsyncCallback<List<TreeNode<?>>> callback) {
+    public void getRootNodes(@NotNull AsyncCallback<List<TreeNode<?>>> callback) {
         if (projectNode == null) {
             final CurrentProject currentProject = appContext.getCurrentProject();
             if (currentProject != null) {
@@ -68,7 +68,7 @@ public class GenericTreeStructure implements TreeStructure {
         callback.onSuccess(Arrays.<TreeNode<?>>asList(projectNode));
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public TreeSettings getSettings() {
         return TreeSettings.DEFAULT;
@@ -79,7 +79,7 @@ public class GenericTreeStructure implements TreeStructure {
     }
 
     @Override
-    public void getNodeByPath(@Nonnull final String path, @Nonnull final AsyncCallback<TreeNode<?>> callback) {
+    public void getNodeByPath(@NotNull final String path, @NotNull final AsyncCallback<TreeNode<?>> callback) {
         getRootNodes(new AsyncCallback<List<TreeNode<?>>>() {
             @Override
             public void onSuccess(List<TreeNode<?>> result) {
@@ -152,7 +152,7 @@ public class GenericTreeStructure implements TreeStructure {
      *         the associated {@link ProjectDescriptor}
      * @return a new {@link ProjectNode}
      */
-    public ProjectNode newProjectNode(@Nonnull ProjectDescriptor data) {
+    public ProjectNode newProjectNode(@NotNull ProjectDescriptor data) {
         return getNodeFactory().newProjectNode(null, data, this);
     }
 
@@ -165,7 +165,7 @@ public class GenericTreeStructure implements TreeStructure {
 //     *         the associated {@link ProjectDescriptor}
 //     * @return a new {@link ModuleNode}
 //     */
-//    public ModuleNode newModuleNode(@Nonnull TreeNode parent, @Nonnull ProjectDescriptor data) {
+//    public ModuleNode newModuleNode(@NotNull TreeNode parent, @NotNull ProjectDescriptor data) {
 //        return getNodeFactory().newModuleNode(parent, data, this);
 //    }
 
@@ -179,7 +179,7 @@ public class GenericTreeStructure implements TreeStructure {
      *         the associated {@link ItemReference}
      * @return a new {@link FileNode}
      */
-    public FileNode newFileNode(@Nonnull TreeNode parent, @Nonnull ItemReference data) {
+    public FileNode newFileNode(@NotNull TreeNode parent, @NotNull ItemReference data) {
         if (!"file".equals(data.getType())) {
             throw new IllegalArgumentException("The associated ItemReference type must be - file.");
         }
@@ -196,7 +196,7 @@ public class GenericTreeStructure implements TreeStructure {
      *         the associated {@link ItemReference}
      * @return a new {@link FolderNode}
      */
-    public FolderNode newFolderNode(@Nonnull TreeNode parent, @Nonnull ItemReference data) {
+    public FolderNode newFolderNode(@NotNull TreeNode parent, @NotNull ItemReference data) {
         if (!"folder".equals(data.getType()) && !"project".equals(data.getType())) {
             throw new IllegalArgumentException("The associated ItemReference type must be - folder or project.");
         }

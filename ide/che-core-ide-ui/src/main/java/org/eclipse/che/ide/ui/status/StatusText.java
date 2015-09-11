@@ -16,7 +16,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author Vlad Zhukovskiy
@@ -40,7 +40,7 @@ public abstract class StatusText {
         this.widget = widget;
     }
 
-    @Nonnull
+    @NotNull
     public String getText() {
         return myText;
     }

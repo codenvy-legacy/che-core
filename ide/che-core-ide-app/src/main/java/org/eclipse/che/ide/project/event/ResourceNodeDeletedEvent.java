@@ -16,8 +16,8 @@ import com.google.gwt.event.shared.GwtEvent;
 import org.eclipse.che.ide.project.event.ResourceNodeDeletedEvent.ResourceNodeDeletedHandler;
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 
 /**
  * @author Vlad Zhukovskiy
@@ -39,11 +39,11 @@ public class ResourceNodeDeletedEvent extends GwtEvent<ResourceNodeDeletedHandle
 
     private final ResourceBasedNode node;
 
-    public ResourceNodeDeletedEvent(@Nonnull ResourceBasedNode node) {
+    public ResourceNodeDeletedEvent(@NotNull ResourceBasedNode node) {
         this.node = node;
     }
 
-    @Nonnull
+    @NotNull
     public ResourceBasedNode getNode() {
         return node;
     }

@@ -13,8 +13,8 @@ package org.eclipse.che.ide.api.editor;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.List;
 import java.util.NavigableMap;
 
@@ -30,20 +30,20 @@ public interface EditorAgent {
      *
      * @param file the file to open
      */
-    void openEditor(@Nonnull final VirtualFile file);
+    void openEditor(@NotNull final VirtualFile file);
 
     /**
      * Open editor with given file, call callback when editor fully loaded and initialized.
      * @param file the file to open
      * @param callback
      */
-    void openEditor(@Nonnull VirtualFile file, @Nonnull OpenEditorCallback callback);
+    void openEditor(@NotNull VirtualFile file, @NotNull OpenEditorCallback callback);
 
     /**
      * Sets editor as active(switch tabs and pace cursor)
      * @param editor the editor that must be active
      */
-    void activateEditor(@Nonnull EditorPartPresenter editor);
+    void activateEditor(@NotNull EditorPartPresenter editor);
 
     /**
      * Returns array of EditorPartPresenters whose content have changed since the last save operation.
@@ -57,7 +57,7 @@ public interface EditorAgent {
      *
      * @return map with all opened editors
      */
-    @Nonnull
+    @NotNull
     NavigableMap<String, EditorPartPresenter> getOpenedEditors();
 
     /**
@@ -81,7 +81,7 @@ public interface EditorAgent {
      * @param path editor path
      * @param virtualFile new file for editor
      */
-    void updateEditorNode(@Nonnull String path, @Nonnull VirtualFile virtualFile);
+    void updateEditorNode(@NotNull String path, @NotNull VirtualFile virtualFile);
 
     interface OpenEditorCallback{
         void onEditorOpened(EditorPartPresenter editor);

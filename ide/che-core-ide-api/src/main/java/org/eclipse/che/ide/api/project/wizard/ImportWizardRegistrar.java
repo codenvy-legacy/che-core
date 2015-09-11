@@ -14,7 +14,7 @@ import org.eclipse.che.api.project.shared.dto.ImportProject;
 import org.eclipse.che.ide.api.wizard.WizardPage;
 import com.google.inject.Provider;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -29,10 +29,10 @@ import java.util.List;
 public interface ImportWizardRegistrar {
 
     /** Returns ID of the project importer that should be registered in project import wizard. */
-    @Nonnull
+    @NotNull
     String getImporterId();
 
     /** Returns pages that should be used in project import wizard. */
-    @Nonnull
+    @NotNull
     List<Provider<? extends WizardPage<ImportProject>>> getWizardPages();
 }

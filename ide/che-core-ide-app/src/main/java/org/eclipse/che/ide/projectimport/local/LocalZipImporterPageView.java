@@ -14,7 +14,7 @@ import com.google.inject.ImplementedBy;
 
 import org.eclipse.che.ide.api.mvp.View;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author Roman Nikitenko
@@ -55,7 +55,7 @@ public interface LocalZipImporterPageView extends View<LocalZipImporterPageView.
      * @param encodingType
      *         the form's encoding
      */
-    void setEncoding(@Nonnull String encodingType);
+    void setEncoding(@NotNull String encodingType);
 
     /**
      * Sets the 'action' associated with form. This is the URL to which it will be submitted.
@@ -63,7 +63,7 @@ public interface LocalZipImporterPageView extends View<LocalZipImporterPageView.
      * @param url
      *         the form's action
      */
-    void setAction(@Nonnull String url);
+    void setAction(@NotNull String url);
 
     /** Submits the form. */
     void submit();
@@ -79,7 +79,7 @@ public interface LocalZipImporterPageView extends View<LocalZipImporterPageView.
      *
      * @return {@link String} project's name
      */
-    @Nonnull
+    @NotNull
     String getProjectName();
 
     /**
@@ -88,10 +88,10 @@ public interface LocalZipImporterPageView extends View<LocalZipImporterPageView.
      * @param projectName
      *         project's name to set
      */
-    void setProjectName(@Nonnull String projectName);
+    void setProjectName(@NotNull String projectName);
 
     /** @return file name */
-    @Nonnull
+    @NotNull
     String getFileName();
 
     /**
@@ -100,7 +100,7 @@ public interface LocalZipImporterPageView extends View<LocalZipImporterPageView.
      * @param projectDescription
      *         project's description to set
      */
-    void setProjectDescription(@Nonnull String projectDescription);
+    void setProjectDescription(@NotNull String projectDescription);
 
     /**
      * Set the project's visibility value.

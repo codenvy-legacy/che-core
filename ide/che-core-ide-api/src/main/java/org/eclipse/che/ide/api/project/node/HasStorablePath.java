@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.project.node;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Represent storable path for any object that support storing.
@@ -29,7 +29,7 @@ public interface HasStorablePath {
             this.path = path;
         }
 
-        @Nonnull
+        @NotNull
         @Override
         public String getStorablePath() {
             return path;
@@ -41,6 +41,6 @@ public interface HasStorablePath {
      *
      * @return path for the element
      */
-    @Nonnull
+    @NotNull
     String getStorablePath();
 }

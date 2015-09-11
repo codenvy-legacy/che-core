@@ -72,8 +72,8 @@ import org.eclipse.che.ide.util.loging.Log;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -127,9 +127,9 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
         projectHeader.setStyleName(resources.partStackCss().idePartStackToolbarBottom());
 
         TreeNodeStorage nodeStorage = new TreeNodeStorage(new NodeUniqueKeyProvider() {
-            @Nonnull
+            @NotNull
             @Override
-            public String getKey(@Nonnull Node item) {
+            public String getKey(@NotNull Node item) {
                 if (item instanceof HasStorablePath) {
                     return ((HasStorablePath)item).getStorablePath();
                 } else {
@@ -210,7 +210,7 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
     }
 
     @Nullable
-    private String getContentRootOrNull(@Nonnull Node node) {
+    private String getContentRootOrNull(@NotNull Node node) {
         if (node instanceof ProjectDescriptorNode && isValidContentRoot((HasProjectDescriptor)node)) {
             ProjectDescriptor descriptor = ((HasProjectDescriptor)node).getProjectDescriptor();
             String rawContentRoot = descriptor.getContentRoot();
@@ -221,7 +221,7 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
         return null;
     }
 
-    private boolean isValidContentRoot(@Nonnull HasProjectDescriptor node) {
+    private boolean isValidContentRoot(@NotNull HasProjectDescriptor node) {
         return !Strings.isNullOrEmpty(node.getProjectDescriptor().getContentRoot()); //TODO maybe add more checks
     }
 

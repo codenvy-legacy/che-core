@@ -31,7 +31,7 @@ import org.eclipse.che.ide.websocket.WebSocketException;
 import org.eclipse.che.ide.websocket.rest.RequestCallback;
 import org.eclipse.che.ide.websocket.rest.Unmarshallable;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -126,7 +126,7 @@ public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegat
         final ItemReference selectedItem = resultMap.get(view.getItemPath());
 
         HasStorablePath selectedPath = new HasStorablePath() {
-            @Nonnull
+            @NotNull
             @Override
             public String getStorablePath() {
                 return selectedItem.getPath();

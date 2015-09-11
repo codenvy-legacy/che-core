@@ -22,7 +22,7 @@ import org.eclipse.che.ide.util.loging.Log;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -67,7 +67,7 @@ class RunnersRegistry {
     }
 
     /** Returns description of the given runner. */
-    String getDescription(@Nonnull String runnerId) {
+    String getDescription(@NotNull String runnerId) {
         return descriptions.get(runnerId);
     }
 }

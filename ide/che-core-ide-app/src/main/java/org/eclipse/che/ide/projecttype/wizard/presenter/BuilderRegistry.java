@@ -21,7 +21,7 @@ import org.eclipse.che.ide.util.loging.Log;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +61,7 @@ class BuilderRegistry {
     }
 
     /** Returns display name of the default environment for the given builder. */
-    String getDefaultEnvironmentName(@Nonnull String builderName) {
+    String getDefaultEnvironmentName(@NotNull String builderName) {
         return environments.get(builderName);
     }
 }

@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ui.smartTree.presentation;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Indicates that specified node can has presentation to allow customize various
@@ -25,7 +25,7 @@ public interface HasPresentation {
      * @param presentation
      *         node presentation
      */
-    void updatePresentation(@Nonnull NodePresentation presentation);
+    void updatePresentation(@NotNull NodePresentation presentation);
 
     NodePresentation getPresentation(boolean update);
 }

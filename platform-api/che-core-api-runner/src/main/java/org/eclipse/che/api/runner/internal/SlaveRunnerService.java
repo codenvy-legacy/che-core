@@ -29,11 +29,11 @@ import org.eclipse.che.api.runner.dto.ServerState;
 import org.eclipse.che.api.runner.dto.ApplicationProcessDescriptor;
 import org.eclipse.che.api.runner.dto.PortMapping;
 import org.eclipse.che.api.runner.dto.RunnerState;
+import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.dto.server.DtoFactory;
 
 import com.google.common.io.Files;
 
-import javax.annotation.CheckForNull;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletResponse;
@@ -87,7 +87,7 @@ public class SlaveRunnerService extends Service {
 
     @Inject
     @Named(DOCKERFILES_REPO)
-    @CheckForNull
+    @Nullable
     private String dockerfilesRepository;
 
     @GenerateLink(rel = Constants.LINK_REL_RUN)

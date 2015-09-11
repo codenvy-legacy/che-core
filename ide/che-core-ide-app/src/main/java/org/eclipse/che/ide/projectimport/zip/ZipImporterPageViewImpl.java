@@ -27,7 +27,7 @@ import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.inject.Inject;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author Roman Nikitenko
@@ -101,7 +101,7 @@ public class ZipImporterPageViewImpl extends Composite implements ZipImporterPag
     }
 
     @Override
-    public void setProjectUrl(@Nonnull String url) {
+    public void setProjectUrl(@NotNull String url) {
         projectUrl.setText(url);
         delegate.projectUrlChanged(url);
     }
@@ -117,7 +117,7 @@ public class ZipImporterPageViewImpl extends Composite implements ZipImporterPag
     }
 
     @Override
-    public void showUrlError(@Nonnull String message) {
+    public void showUrlError(@NotNull String message) {
         projectUrl.addStyleName(style.inputError());
         labelUrlError.setText(message);
     }
@@ -128,19 +128,19 @@ public class ZipImporterPageViewImpl extends Composite implements ZipImporterPag
         labelUrlError.setText("");
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public String getProjectName() {
         return projectName.getValue();
     }
 
     @Override
-    public void setProjectName(@Nonnull String projectName) {
+    public void setProjectName(@NotNull String projectName) {
         this.projectName.setValue(projectName);
     }
 
     @Override
-    public void setProjectDescription(@Nonnull String projectDescription) {
+    public void setProjectDescription(@NotNull String projectDescription) {
         this.projectDescription.setValue(projectDescription);
     }
 
@@ -176,7 +176,7 @@ public class ZipImporterPageViewImpl extends Composite implements ZipImporterPag
         projectPrivate.setValue(!visible, false);
     }
 
-    public void setDelegate(@Nonnull ActionDelegate delegate) {
+    public void setDelegate(@NotNull ActionDelegate delegate) {
         this.delegate = delegate;
     }
 

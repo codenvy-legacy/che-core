@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ui.dialogs;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 
 import org.eclipse.che.ide.ui.dialogs.choice.ChoiceDialog;
 import org.eclipse.che.ide.ui.dialogs.confirm.ConfirmDialog;
@@ -39,8 +39,8 @@ public interface DialogFactory {
      *         the callback used on OK
      * @return a {@link ConfirmDialog} instance
      */
-    MessageDialog createMessageDialog(@Nonnull @Assisted("title") String title,
-                                      @Nonnull @Assisted("message") String content,
+    MessageDialog createMessageDialog(@NotNull @Assisted("title") String title,
+                                      @NotNull @Assisted("message") String content,
                                       @Nullable ConfirmCallback confirmCallback);
 
     /**
@@ -57,10 +57,10 @@ public interface DialogFactory {
      * @return a {@link ConfirmDialog} instance
      */
 
-    MessageDialog createMessageDialog(@Nonnull @Assisted("title") String title,
-                                      @Nonnull IsWidget content,
+    MessageDialog createMessageDialog(@NotNull @Assisted("title") String title,
+                                      @NotNull IsWidget content,
                                       @Nullable ConfirmCallback confirmCallback,
-                                      @Nonnull @Assisted("confirmButtonText") String confirmButtonText);
+                                      @NotNull @Assisted("confirmButtonText") String confirmButtonText);
 
     /**
      * Create a message dialog with a widget as content.
@@ -73,8 +73,8 @@ public interface DialogFactory {
      *         the callback used on OK
      * @return a {@link ConfirmDialog} instance
      */
-    MessageDialog createMessageDialog(@Nonnull String title,
-                                      @Nonnull IsWidget content,
+    MessageDialog createMessageDialog(@NotNull String title,
+                                      @NotNull IsWidget content,
                                       @Nullable ConfirmCallback confirmCallback);
 
     /**
@@ -90,8 +90,8 @@ public interface DialogFactory {
      *         the callback used on cancel
      * @return a {@link ConfirmDialog} instance
      */
-    ConfirmDialog createConfirmDialog(@Nonnull @Assisted("title") String title,
-                                      @Nonnull @Assisted("message") String content,
+    ConfirmDialog createConfirmDialog(@NotNull @Assisted("title") String title,
+                                      @NotNull @Assisted("message") String content,
                                       @Nullable ConfirmCallback confirmCallback,
                                       @Nullable CancelCallback cancelCallback);
 
@@ -108,8 +108,8 @@ public interface DialogFactory {
      *         the callback used on cancel
      * @return a {@link ConfirmDialog} instance
      */
-    ConfirmDialog createConfirmDialog(@Nonnull String title,
-                                      @Nonnull IsWidget content,
+    ConfirmDialog createConfirmDialog(@NotNull String title,
+                                      @NotNull IsWidget content,
                                       @Nullable ConfirmCallback confirmCallback,
                                       @Nullable CancelCallback cancelCallback);
 
@@ -126,8 +126,8 @@ public interface DialogFactory {
      *         the callback used on cancel
      * @return an {@link InputDialog} instance
      */
-    InputDialog createInputDialog(@Nonnull @Assisted("title") String title,
-                                  @Nonnull @Assisted("label") String label,
+    InputDialog createInputDialog(@NotNull @Assisted("title") String title,
+                                  @NotNull @Assisted("label") String label,
                                   @Nullable InputCallback inputCallback,
                                   @Nullable CancelCallback cancelCallback);
 
@@ -154,11 +154,11 @@ public interface DialogFactory {
      *         the callback used on cancel
      * @return an {@link InputDialog} instance
      */
-    InputDialog createInputDialog(@Nonnull @Assisted("title") String title,
-                                  @Nonnull @Assisted("label") String label,
-                                  @Nonnull @Assisted("initialValue") String initialValue,
-                                  @Nonnull @Assisted("selectionStartIndex") Integer selectionStartIndex,
-                                  @Nonnull @Assisted("selectionLength") Integer selectionLength,
+    InputDialog createInputDialog(@NotNull @Assisted("title") String title,
+                                  @NotNull @Assisted("label") String label,
+                                  @NotNull @Assisted("initialValue") String initialValue,
+                                  @NotNull @Assisted("selectionStartIndex") Integer selectionStartIndex,
+                                  @NotNull @Assisted("selectionLength") Integer selectionLength,
                                   @Nullable InputCallback inputCallback,
                                   @Nullable CancelCallback cancelCallback);
 
@@ -180,10 +180,10 @@ public interface DialogFactory {
      *         the callback used on second choice
      * @return a {@link ConfirmDialog} instance
      */
-    ChoiceDialog createChoiceDialog(@Nonnull @Assisted("title") String title,
-                                     @Nonnull @Assisted("message") String content,
-                                     @Nonnull @Assisted("firstChoice") String firstChoiceLabel,
-                                     @Nonnull @Assisted("secondChoice") String secondChoiceLabel,
+    ChoiceDialog createChoiceDialog(@NotNull @Assisted("title") String title,
+                                     @NotNull @Assisted("message") String content,
+                                     @NotNull @Assisted("firstChoice") String firstChoiceLabel,
+                                     @NotNull @Assisted("secondChoice") String secondChoiceLabel,
                                     @Nullable @Assisted("firstCallback") ConfirmCallback firstChoiceCallback,
                                     @Nullable @Assisted("secondCallback") ConfirmCallback secondChoiceCallback);
 
@@ -205,10 +205,10 @@ public interface DialogFactory {
      *         the callback used on second choice
      * @return a {@link ConfirmDialog} instance
      */
-    ChoiceDialog createChoiceDialog(@Nonnull String title,
-                                     @Nonnull IsWidget content,
-                                     @Nonnull @Assisted("firstChoice") String firstChoiceLabel,
-                                     @Nonnull @Assisted("secondChoice") String secondChoiceLabel,
+    ChoiceDialog createChoiceDialog(@NotNull String title,
+                                     @NotNull IsWidget content,
+                                     @NotNull @Assisted("firstChoice") String firstChoiceLabel,
+                                     @NotNull @Assisted("secondChoice") String secondChoiceLabel,
                                     @Nullable @Assisted("firstCallback") ConfirmCallback firstChoiceCallback,
                                     @Nullable @Assisted("secondCallback") ConfirmCallback secondChoiceCallback);
 
@@ -234,11 +234,11 @@ public interface DialogFactory {
      *         the callback used on third choice
      * @return a {@link ConfirmDialog} instance
      */
-    ChoiceDialog createChoiceDialog(@Nonnull @Assisted("title") String title,
-                                    @Nonnull @Assisted("message") String content,
-                                    @Nonnull @Assisted("firstChoice") String firstChoiceLabel,
-                                    @Nonnull @Assisted("secondChoice") String secondChoiceLabel,
-                                    @Nonnull @Assisted("thirdChoice") String thirdChoiceLabel,
+    ChoiceDialog createChoiceDialog(@NotNull @Assisted("title") String title,
+                                    @NotNull @Assisted("message") String content,
+                                    @NotNull @Assisted("firstChoice") String firstChoiceLabel,
+                                    @NotNull @Assisted("secondChoice") String secondChoiceLabel,
+                                    @NotNull @Assisted("thirdChoice") String thirdChoiceLabel,
                                     @Nullable @Assisted("firstCallback") ConfirmCallback firstChoiceCallback,
                                     @Nullable @Assisted("secondCallback") ConfirmCallback secondChoiceCallback,
                                     @Nullable @Assisted("thirdCallback") ConfirmCallback thirdChoiceCallback);
@@ -265,11 +265,11 @@ public interface DialogFactory {
      *         the callback used on third choice
      * @return a {@link ConfirmDialog} instance
      */
-    ChoiceDialog createChoiceDialog(@Nonnull String title,
-                                    @Nonnull IsWidget content,
-                                    @Nonnull @Assisted("firstChoice") String firstChoiceLabel,
-                                    @Nonnull @Assisted("secondChoice") String secondChoiceLabel,
-                                    @Nonnull @Assisted("thirdChoice") String thirdChoiceLabel,
+    ChoiceDialog createChoiceDialog(@NotNull String title,
+                                    @NotNull IsWidget content,
+                                    @NotNull @Assisted("firstChoice") String firstChoiceLabel,
+                                    @NotNull @Assisted("secondChoice") String secondChoiceLabel,
+                                    @NotNull @Assisted("thirdChoice") String thirdChoiceLabel,
                                     @Nullable @Assisted("firstCallback") ConfirmCallback firstChoiceCallback,
                                     @Nullable @Assisted("secondCallback") ConfirmCallback secondChoiceCallback,
                                     @Nullable @Assisted("thirdCallback") ConfirmCallback thirdChoiceCallback);

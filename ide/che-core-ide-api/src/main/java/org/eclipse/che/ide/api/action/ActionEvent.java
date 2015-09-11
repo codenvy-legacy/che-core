@@ -12,8 +12,8 @@ package org.eclipse.che.ide.api.action;
 
 import org.eclipse.che.ide.util.StringUtils;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,9 +46,9 @@ public class ActionEvent {
      * @param modifiers
      *         the modifier keys held down during this action event
      */
-    public ActionEvent(@Nonnull String place,
-                       @Nonnull Presentation presentation,
-                       @Nonnull ActionManager actionManager,
+    public ActionEvent(@NotNull String place,
+                       @NotNull Presentation presentation,
+                       @NotNull ActionManager actionManager,
                        int modifiers) {
         this(place, presentation, actionManager, modifiers, null);
     }
@@ -67,9 +67,9 @@ public class ActionEvent {
      * @param parameters
      *         the parameters with which the action is invoked or updated
      */
-    public ActionEvent(@Nonnull String place,
-                       @Nonnull Presentation presentation,
-                       @Nonnull ActionManager actionManager,
+    public ActionEvent(@NotNull String place,
+                       @NotNull Presentation presentation,
+                       @NotNull ActionManager actionManager,
                        int modifiers,
                        @Nullable Map<String, String> parameters) {
         myActionManager = actionManager;

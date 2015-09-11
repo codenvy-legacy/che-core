@@ -30,7 +30,7 @@ import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.util.NameUtils;
 import org.eclipse.che.ide.util.loging.Log;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author Roman Nikitenko
@@ -174,7 +174,7 @@ public class LocalZipImporterPagePresenter implements LocalZipImporterPageView.A
         view.setInputsEnableState(!inProgress);
     }
 
-    private String extractProjectName(@Nonnull String zipName) {
+    private String extractProjectName(@NotNull String zipName) {
         int indexStartProjectName = zipName.lastIndexOf("\\") + 1;
         int indexFinishProjectName = zipName.indexOf(".zip");
         if (indexFinishProjectName != (-1)) {

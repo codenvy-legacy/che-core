@@ -34,7 +34,7 @@ import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.util.loging.Log;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 import static org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper.createFromCallback;
 
@@ -93,7 +93,7 @@ public class OpenNodeAction extends Action implements PromisableAction {
         final String nodePathToOpen = activeProject.getPath() + (!path.startsWith("/") ? "/".concat(path) : path);
 
         projectExplorerPartPresenter.expand(new HasStorablePath() {
-            @Nonnull
+            @NotNull
             @Override
             public String getStorablePath() {
                 return nodePathToOpen;

@@ -30,8 +30,8 @@ import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 
 /**
  * @author Vlad Zhukovskiy
@@ -44,7 +44,7 @@ public class ProjectDescriptorProcessor extends AbstractResourceProcessor<Projec
     }
 
     @Override
-    public Promise<ProjectDescriptor> delete(@Nonnull final HasDataObject<ProjectDescriptor> node) {
+    public Promise<ProjectDescriptor> delete(@NotNull final HasDataObject<ProjectDescriptor> node) {
         if (node instanceof ProjectDescriptorNode) {
             return AsyncPromiseHelper.createFromAsyncRequest(new AsyncPromiseHelper.RequestCall<ProjectDescriptor>() {
                 @Override
@@ -96,7 +96,7 @@ public class ProjectDescriptorProcessor extends AbstractResourceProcessor<Projec
     }
 
     @Override
-    public Promise<ProjectDescriptor> rename(@Nullable final HasStorablePath parent, @Nonnull final HasDataObject<ProjectDescriptor> node, @Nonnull final String newName) {
+    public Promise<ProjectDescriptor> rename(@Nullable final HasStorablePath parent, @NotNull final HasDataObject<ProjectDescriptor> node, @NotNull final String newName) {
         if (node instanceof ModuleDescriptorNode) {
             return AsyncPromiseHelper.createFromAsyncRequest(new AsyncPromiseHelper.RequestCall<ProjectDescriptor>() {
                 @Override

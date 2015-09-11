@@ -10,11 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ui.status;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author Vlad Zhukovskiy
  */
 public interface ComponentWithEmptyText {
-    @Nonnull StatusText getEmptyText();
+    @NotNull StatusText getEmptyText();
 }

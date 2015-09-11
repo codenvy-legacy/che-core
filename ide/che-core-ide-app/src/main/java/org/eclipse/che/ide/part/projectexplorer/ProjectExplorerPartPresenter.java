@@ -51,7 +51,7 @@ import org.eclipse.che.ide.util.Config;
 import org.eclipse.che.ide.util.loging.Log;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -146,7 +146,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
     }
 
     /** {@inheritDoc} */
-    @Nonnull
+    @NotNull
     @Override
     public String getTitle() {
         return coreLocalizationConstant.projectExplorerButtonTitle();
@@ -470,7 +470,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
 
     /** {@inheritDoc} */
     @Override
-    public void onNodeExpanded(@Nonnull final TreeNode<?> node) {
+    public void onNodeExpanded(@NotNull final TreeNode<?> node) {
         if (node.getChildren().isEmpty()) {
             // If children is empty then node may be not refreshed yet?
             node.refreshChildren(new AsyncCallback<TreeNode<?>>() {
@@ -494,7 +494,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
 
     /** {@inheritDoc} */
     @Override
-    public void onNodeAction(@Nonnull TreeNode<?> node) {
+    public void onNodeAction(@NotNull TreeNode<?> node) {
         node.processNodeAction();
     }
 
@@ -510,7 +510,7 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
         view.getSelectedNode().processNodeAction();
     }
 
-    private void setTree(@Nonnull final TreeStructure treeStructure) {
+    private void setTree(@NotNull final TreeStructure treeStructure) {
         currentTreeStructure = treeStructure;
         if (appContext.getCurrentProject() != null) {
             appContext.getCurrentProject().setCurrentTree(currentTreeStructure);

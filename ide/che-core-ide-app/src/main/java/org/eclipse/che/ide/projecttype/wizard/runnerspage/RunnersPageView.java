@@ -15,7 +15,7 @@ import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentTree;
 import org.eclipse.che.ide.api.mvp.View;
 import com.google.inject.ImplementedBy;
 
-import javax.annotation.Nullable;
+import org.eclipse.che.commons.annotation.Nullable;
 
 /**
  * @author Evgen Vidolob

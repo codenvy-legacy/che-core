@@ -18,7 +18,7 @@ import org.eclipse.che.ide.rest.RestContext;
 
 import com.google.inject.Inject;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 import java.util.List;
 
@@ -45,14 +45,14 @@ public class ProjectTemplateServiceClientImpl implements ProjectTemplateServiceC
     }
 
     @Override
-    public void getProjectTemplates(@Nonnull String projectTypeId,
-                                    @Nonnull AsyncRequestCallback<List<ProjectTemplateDescriptor>> callback) {
+    public void getProjectTemplates(@NotNull String projectTypeId,
+                                    @NotNull AsyncRequestCallback<List<ProjectTemplateDescriptor>> callback) {
         final String requestUrl = baseUrl + projectTypeId;
         asyncRequestFactory.createGetRequest(requestUrl).header(ACCEPT, APPLICATION_JSON).loader(loader).send(callback);
     }
 
     @Override
-    public void getProjectTemplates(@Nonnull AsyncRequestCallback<List<ProjectTemplateDescriptor>> callback) {
+    public void getProjectTemplates(@NotNull AsyncRequestCallback<List<ProjectTemplateDescriptor>> callback) {
         asyncRequestFactory.createGetRequest(baseUrl).header(ACCEPT, APPLICATION_JSON).loader(loader).send(callback);
     }
 }

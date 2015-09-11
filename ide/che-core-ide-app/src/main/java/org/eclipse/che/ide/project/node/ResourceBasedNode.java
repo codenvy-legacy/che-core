@@ -27,7 +27,7 @@ import org.eclipse.che.ide.project.event.ResourceNodeDeletedEvent;
 import org.eclipse.che.ide.project.event.ResourceNodeRenamedEvent;
 import org.eclipse.che.ide.util.loging.Log;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author Vlad Zhukovskiy
@@ -38,11 +38,11 @@ public abstract class ResourceBasedNode<DataObject> extends AbstractProjectBased
     protected EventBus    eventBus;
     protected NodeManager nodeManager;
 
-    public ResourceBasedNode(@Nonnull DataObject dataObject,
-                             @Nonnull ProjectDescriptor projectDescriptor,
-                             @Nonnull NodeSettings nodeSettings,
-                             @Nonnull EventBus eventBus,
-                             @Nonnull NodeManager nodeManager) {
+    public ResourceBasedNode(@NotNull DataObject dataObject,
+                             @NotNull ProjectDescriptor projectDescriptor,
+                             @NotNull NodeSettings nodeSettings,
+                             @NotNull EventBus eventBus,
+                             @NotNull NodeManager nodeManager) {
         super(dataObject, projectDescriptor, nodeSettings);
         this.eventBus = eventBus;
         this.nodeManager = nodeManager;
@@ -60,7 +60,7 @@ public abstract class ResourceBasedNode<DataObject> extends AbstractProjectBased
                        .catchError(onFailed());
     }
 
-    @Nonnull
+    @NotNull
     private Operation<DataObject> onDelete() {
         return new Operation<DataObject>() {
             @Override
@@ -75,7 +75,7 @@ public abstract class ResourceBasedNode<DataObject> extends AbstractProjectBased
         };
     }
 
-    @Nonnull
+    @NotNull
     private Operation<PromiseError> onFailed() {
         return new Operation<PromiseError>() {
             @Override
@@ -100,7 +100,7 @@ public abstract class ResourceBasedNode<DataObject> extends AbstractProjectBased
     }
 
     @Override
-    public void rename(@Nonnull String newName) {
+    public void rename(@NotNull String newName) {
         RenameProcessor<DataObject> renameProcessor = getRenameProcessor();
         if (renameProcessor == null) {
             return;

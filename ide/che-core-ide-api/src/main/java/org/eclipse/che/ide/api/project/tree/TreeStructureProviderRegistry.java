@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.project.tree;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Registry for tree structure providers. It also allows to associate project type with {@link TreeStructureProvider}.
@@ -30,8 +30,8 @@ public interface TreeStructureProviderRegistry {
      * @return {@link TreeStructureProvider} that can provide {@link TreeStructure} for project with the given type ID or
      * {@link org.eclipse.che.ide.api.project.tree.generic.GenericTreeStructureProvider} if none was associated
      */
-    @Nonnull
-    TreeStructureProvider getTreeStructureProvider(@Nonnull String projectTypeId);
+    @NotNull
+    TreeStructureProvider getTreeStructureProvider(@NotNull String projectTypeId);
 
     /**
      * Associates the given project type ID to the given tree structure provider ID.
@@ -43,5 +43,5 @@ public interface TreeStructureProviderRegistry {
      *         ID of the {@code TreeStructureProvider}
      *         which should be used for project with the given {@code projectTypeId}
      */
-    void associateProjectTypeToTreeProvider(@Nonnull String projectTypeId, @Nonnull String treeStructureProviderId);
+    void associateProjectTypeToTreeProvider(@NotNull String projectTypeId, @NotNull String treeStructureProviderId);
 }

@@ -12,8 +12,8 @@ package org.eclipse.che.ide.api.keybinding;
 
 import org.eclipse.che.ide.util.input.CharCodeWithModifiers;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -46,7 +46,7 @@ public interface Scheme {
      * @param actionId
      *         the action id which keys bind
      */
-    void addKey(@Nonnull CharCodeWithModifiers key, @Nonnull String actionId);
+    void addKey(@NotNull CharCodeWithModifiers key, @NotNull String actionId);
 
     /**
      * Remove key binding for action.
@@ -56,13 +56,13 @@ public interface Scheme {
      * @param actionId
      *         the action's id for which key need to remove
      */
-    void removeKey(@Nonnull CharCodeWithModifiers key, @Nonnull String actionId);
+    void removeKey(@NotNull CharCodeWithModifiers key, @NotNull String actionId);
 
     /**
      * @return all actions that have the specified key. If there are no
      * such actions then the method returns an empty array
      */
-    @Nonnull
+    @NotNull
     List<String> getActionIds(int digest);
 
     /**
@@ -70,5 +70,5 @@ public interface Scheme {
      * or an null if the action doesn't have any keyboard shortcut
      */
     @Nullable
-    CharCodeWithModifiers getKeyBinding(@Nonnull String actionId);
+    CharCodeWithModifiers getKeyBinding(@NotNull String actionId);
 }

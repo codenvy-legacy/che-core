@@ -24,7 +24,7 @@ import org.eclipse.che.ide.api.action.Separator;
 import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
 import org.eclipse.che.ide.collections.ListHelper;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -105,12 +105,12 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
     }
 
     @Override
-    public void setPlace(@Nonnull String place) {
+    public void setPlace(@NotNull String place) {
         this.place = place;
     }
 
     @Override
-    public void setLeftActionGroup(@Nonnull ActionGroup leftActionGroup) {
+    public void setLeftActionGroup(@NotNull ActionGroup leftActionGroup) {
         this.leftActionGroup = leftActionGroup;
         updateActions();
         if (!timer.isRunning())
@@ -118,7 +118,7 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
     }
 
     @Override
-    public void setRightActionGroup(@Nonnull ActionGroup rightActionGroup) {
+    public void setRightActionGroup(@NotNull ActionGroup rightActionGroup) {
         this.rightActionGroup = rightActionGroup;
         updateActions();
         if (!timer.isRunning())

@@ -47,7 +47,7 @@ import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.Pair;
 import org.eclipse.che.ide.util.loging.Log;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -270,7 +270,7 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
     }
 
     /** Restores state of the currently opened project. */
-    private void restoreCurrentProjectState(@Nonnull ProjectState projectState) {
+    private void restoreCurrentProjectState(@NotNull ProjectState projectState) {
         final List<ActionDescriptor> actions = projectState.getActions();
         final List<Pair<Action, ActionEvent>> actionsToPerform = new ArrayList<>(actions.size());
 

@@ -24,8 +24,8 @@ import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.project.node.resource.ProjectDescriptorProcessor;
 import org.eclipse.che.ide.ui.smartTree.presentation.NodePresentation;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -38,26 +38,26 @@ public class ModuleDescriptorNode extends ResourceBasedNode<ProjectDescriptor> i
     @Inject
     public ModuleDescriptorNode(@Assisted ProjectDescriptor projectDescriptor,
                                 @Assisted NodeSettings nodeSettings,
-                                @Nonnull EventBus eventBus,
-                                @Nonnull NodeManager nodeManager,
-                                @Nonnull ProjectDescriptorProcessor resourceProcessor) {
+                                @NotNull EventBus eventBus,
+                                @NotNull NodeManager nodeManager,
+                                @NotNull ProjectDescriptorProcessor resourceProcessor) {
         super(projectDescriptor, projectDescriptor, nodeSettings, eventBus, nodeManager);
         this.resourceProcessor = resourceProcessor;
     }
 
-    @Nonnull
+    @NotNull
     @Override
     protected Promise<List<Node>> getChildrenImpl() {
         return nodeManager.getChildren(getData(), getSettings());
     }
 
     @Override
-    public void updatePresentation(@Nonnull NodePresentation presentation) {
+    public void updatePresentation(@NotNull NodePresentation presentation) {
         presentation.setPresentableText(getData().getName());
         presentation.setPresentableIcon(nodeManager.getNodesResources().moduleRoot());
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public String getName() {
         return getData().getName();
@@ -80,7 +80,7 @@ public class ModuleDescriptorNode extends ResourceBasedNode<ProjectDescriptor> i
         return resourceProcessor;
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public String getStorablePath() {
         return getData().getPath();

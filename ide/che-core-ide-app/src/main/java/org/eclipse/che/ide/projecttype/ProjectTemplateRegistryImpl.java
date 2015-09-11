@@ -13,7 +13,7 @@ package org.eclipse.che.ide.projecttype;
 import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
 import org.eclipse.che.ide.api.project.type.ProjectTemplateRegistry;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +32,7 @@ public class ProjectTemplateRegistryImpl implements ProjectTemplateRegistry {
     }
 
     @Override
-    public void register(@Nonnull ProjectTemplateDescriptor descriptor) {
+    public void register(@NotNull ProjectTemplateDescriptor descriptor) {
         final String projectTypeId = descriptor.getProjectType();
         List<ProjectTemplateDescriptor> templates = templateDescriptors.get(projectTypeId);
         if (templates == null) {
@@ -43,9 +43,9 @@ public class ProjectTemplateRegistryImpl implements ProjectTemplateRegistry {
         templates.add(descriptor);
     }
 
-    @Nonnull
+    @NotNull
     @Override
-    public List<ProjectTemplateDescriptor> getTemplateDescriptors(@Nonnull String projectTypeId) {
+    public List<ProjectTemplateDescriptor> getTemplateDescriptors(@NotNull String projectTypeId) {
         List<ProjectTemplateDescriptor> templateDescriptors = this.templateDescriptors.get(projectTypeId);
         if (templateDescriptors != null) {
             return templateDescriptors;
