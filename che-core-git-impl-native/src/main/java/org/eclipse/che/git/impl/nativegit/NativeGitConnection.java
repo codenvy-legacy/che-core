@@ -688,7 +688,7 @@ public class NativeGitConnection implements GitConnection {
     }
 
     private GitUser getLocalCommitter() throws GitException {
-        String credentialsProvider = "codenvy";
+        String credentialsProvider = "che";
         try {
             credentialsProvider = getConfig().get("codenvy.credentialsProvider");
         } catch (GitException e) {

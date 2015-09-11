@@ -113,7 +113,7 @@ public class VFSPermissionsFilter implements Filter {
             User user;
             try {
                 if (!userName.isEmpty()) {
-                    if (password.equals("x-codenvy")) { // internal SSO
+                    if (password.equals("x-che")) { // internal SSO
                         token = userName;
                     } else {
                         token = getToken(userName, password);
