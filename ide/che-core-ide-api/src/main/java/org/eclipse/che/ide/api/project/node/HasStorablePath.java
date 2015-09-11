@@ -13,10 +13,14 @@ package org.eclipse.che.ide.api.project.node;
 import javax.annotation.Nonnull;
 
 /**
+ * Represent storable path for any object that support storing.
+ * For example for file or folder it will be the path from root of the workspace.
+ *
  * @author Vlad Zhukovskiy
  */
 public interface HasStorablePath {
 
+    /** Default implementation of the {@link HasStorablePath} */
     public class StorablePath implements HasStorablePath {
 
         private String path;
@@ -32,6 +36,11 @@ public interface HasStorablePath {
         }
     }
 
+    /**
+     * Storable path for the element. For files and folder this may be path which starts from the root of the workspace.
+     *
+     * @return path for the element
+     */
     @Nonnull
     String getStorablePath();
 }
