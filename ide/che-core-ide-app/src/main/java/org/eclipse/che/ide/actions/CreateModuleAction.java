@@ -18,11 +18,13 @@ import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ProjectAction;
 import org.eclipse.che.ide.api.event.ModuleCreatedEvent;
+import org.eclipse.che.ide.api.project.node.HasDataObject;
 import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
 import org.eclipse.che.ide.project.node.FolderReferenceNode;
 import org.eclipse.che.ide.project.shared.NodesResources;
 import org.eclipse.che.ide.projecttype.wizard.presenter.ProjectWizardPresenter;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
@@ -80,7 +82,7 @@ public class CreateModuleAction extends ProjectAction implements ModuleCreatedEv
     }
 
     @Override
-    public void onModuleCreated(ModuleCreatedEvent event) {
+    public void onModuleCreated(final ModuleCreatedEvent event) {
         if (folderNode != null && folderNode.getParent() != null) {
 
             boolean goIntoState = projectExplorer.isGoIntoActivated();
@@ -89,7 +91,19 @@ public class CreateModuleAction extends ProjectAction implements ModuleCreatedEv
                 projectExplorer.resetGoIntoMode();
             }
 
-            projectExplorer.reloadChildren(folderNode.getParent(), event.getModule(), false, goIntoState);
+            HasDataObject dataObject = new HasDataObject() {
+                @Nonnull
+                @Override
+                public Object getData() {
+                    return event.getModule();
+                }
+
+                @Override
+                public void setData(@Nonnull Object data) {
+                }
+            };
+
+            projectExplorer.reloadChildren(folderNode.getParent(), dataObject, false, goIntoState);
         }
     }
 }

@@ -211,12 +211,7 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
         setNodeLoader(nodeLoader);
         disableBrowserContextMenu(true);
 
-
         setGoIntoMode(new GoIntoMode());
-
-
-//        this.expandStateHandler = new ExpandStateHandler(this, new HtmlStorageProvider());
-
 
         view.bind(this);
 
@@ -244,13 +239,14 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
 
     protected boolean hasChildren(Node node) {
         NodeDescriptor nodeDescriptor = findNode(node);
-        if (nodeLoader != null && !nodeDescriptor.isLoaded()) {
-            return nodeLoader.mayHaveChildren(nodeDescriptor.getNode());
+        if (nodeDescriptor != null) {
+            if (nodeLoader != null && !nodeDescriptor.isLoaded()) {
+                return nodeLoader.mayHaveChildren(nodeDescriptor.getNode());
+            }
+            return !nodeDescriptor.isLeaf() || nodeStorage.hasChildren(nodeDescriptor.getNode());
         }
-        if (!nodeDescriptor.isLeaf() || nodeStorage.hasChildren(nodeDescriptor.getNode())) {
-            return true;
-        }
-        return false;
+
+        return !node.isLeaf();
     }
 
     public NodeDescriptor findNode(Node node) {
@@ -466,7 +462,6 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
 
             update();
 
-//            moveFocus(nodeDescriptor.getRootContainer());
             fireEvent(new CollapseNodeEvent(node));
         }
 
@@ -1026,8 +1021,10 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
                         container.insertBefore(renderChild(child, parentDepth), container.getChild(index));
                     }
                 }
+            } else {
+                redraw(parent);
             }
-            refresh(parent);
+//            refresh(parent);
             update();
         }
     }

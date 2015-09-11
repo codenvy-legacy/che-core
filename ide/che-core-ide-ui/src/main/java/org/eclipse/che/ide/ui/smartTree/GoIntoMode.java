@@ -10,22 +10,16 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ui.smartTree;
 
-import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.event.shared.HandlerManager;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.DOM;
 
 import org.eclipse.che.ide.api.project.node.Node;
-import org.eclipse.che.ide.ui.smartTree.event.ExpandNodeEvent;
-import org.eclipse.che.ide.ui.smartTree.event.ExpandNodeEvent.ExpandNodeHandler;
 import org.eclipse.che.ide.ui.smartTree.event.GoIntoStateEvent;
 import org.eclipse.che.ide.ui.smartTree.event.GoIntoStateEvent.GoIntoStateHandler;
 import org.eclipse.che.ide.ui.smartTree.event.GoIntoStateEvent.HasGoIntoStateHandlers;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.eclipse.che.ide.ui.smartTree.event.GoIntoStateEvent.State.ACTIVATED;
@@ -39,36 +33,15 @@ public class GoIntoMode implements HasGoIntoStateHandlers {
 
     private boolean activated;
 
-    private Element treeElement;
+    private Node goIntoNode;
 
-    private List<Node> selection = new ArrayList<>();
+    private HandlerManager handlerManager;
 
-    private Node node;
-
-    private boolean wasExpanded;
-
-    private Element descendants;
-
-    private Handler expandHandler;
-
-    private HandlerRegistration expandHandlerRegistration;
-
-    private   HandlerManager handlerManager;
+    private List<Node> rootNodes;
 
     @Override
     public HandlerRegistration addGoIntoHandler(GoIntoStateHandler handler) {
         return ensureHandlers().addHandler(GoIntoStateEvent.getType(), handler);
-    }
-
-    private class Handler implements ExpandNodeHandler {
-        @Override
-        public void onExpand(ExpandNodeEvent event) {
-            if (expandHandlerRegistration != null) {
-                expandHandlerRegistration.removeHandler();
-            }
-
-            setNodes();
-        }
     }
 
     public void bindTree(Tree tree) {
@@ -90,56 +63,37 @@ public class GoIntoMode implements HasGoIntoStateHandlers {
         }
     }
 
-    public GoIntoMode() {
-        expandHandler = new Handler();
-    }
-
     public boolean goInto(Node node) {
-        if (!isNodeSupportGoMode(node)) {
+        if (!node.supportGoInto()) {
             return false;
         }
 
-        this.node = node;
+        //save node
+        goIntoNode = node;
 
-        saveState();
+        //save root nodes
+        rootNodes = tree.getRootNodes();
 
-        activated = true;
+        //reset selection
+        tree.getSelectionModel().deselectAll();
 
+        Element rootContainer = tree.getContainer(null);
+        rootContainer.setInnerHTML("");
+        rootContainer.appendChild(tree.findNode(node).getRootContainer());
+
+        //if go into node is collapsed - then we need to expand it
         if (!tree.findNode(node).isExpanded()) {
-//            expandHandlerRegistration = tree.addExpandHandler(expandHandler);
             tree.setExpanded(node, true);
-//            return false;
         }
 
-        setNodes();
-
-        return activated;
-    }
-
-    private void saveState() {
-        treeElement = DOM.clone(tree.getContainer(null), true);
-        wasExpanded = tree.findNode(node).isExpanded();
-    }
-
-    private void setNodes() {
-        tree.getSelectionModel().deselectAll();
-        descendants = tree.getView().getRootContainer(tree.findNode(node));
-
-        Element root = tree.getContainer(null);
-        root.setInnerHTML("");
-        root.appendChild(descendants);
-
-
-
-        tree.update();
-        tree.ensureFocusElement();
+        //then select go into node
         tree.getSelectionModel().select(node, false);
 
-        fireEvent(new GoIntoStateEvent(ACTIVATED, node));
-    }
+        tree.update();
 
-    private boolean isNodeSupportGoMode(Node node) {
-        return node.supportGoInto();
+        fireEvent(new GoIntoStateEvent(ACTIVATED, node));
+
+        return activated = true;
     }
 
     public boolean isActivated() {
@@ -147,41 +101,31 @@ public class GoIntoMode implements HasGoIntoStateHandlers {
     }
 
     public void reset() {
+        //reset selection
         tree.getSelectionModel().deselectAll();
-        Element root = tree.getContainer(null);
-        root.setInnerHTML("");
 
-        NodeList<com.google.gwt.dom.client.Node> childNodes = treeElement.getChildNodes();
-        for (int i = 0; i < childNodes.getLength(); i++) {
-            root.appendChild(childNodes.getItem(i));
+        Element rootContainer = tree.getContainer(null);
+        rootContainer.setInnerHTML("");
+
+        //restore root nodes
+        for (Node rootNode : rootNodes) {
+            NodeDescriptor descriptor = tree.findNode(rootNode);
+            rootContainer.appendChild(descriptor.getRootContainer());
         }
 
-        Element foundNode = Document.get().getElementById(tree.findNode(node).getDomId());
+        //then re-add our go into node
+        tree.getNodeStorage().add(goIntoNode.getParent(), goIntoNode);
+        tree.scrollIntoView(goIntoNode);
+        tree.getSelectionModel().select(goIntoNode, false);
 
-        com.google.gwt.dom.client.Node oldDescendants = foundNode.getChild(1);
-        foundNode.replaceChild(descendants, oldDescendants);
-
-        if (!wasExpanded) {
-            tree.setExpanded(node, false);
-        }
+        tree.update();
 
         activated = false;
 
-        tree.redraw(null, false);
-
-        tree.scrollIntoView(node);
-
-        selection.clear();
-        treeElement = null;
-        descendants = null;
-        expandHandlerRegistration = null;
-
-        tree.getSelectionModel().select(getLastNode(), false);
-
-        fireEvent(new GoIntoStateEvent(DEACTIVATED, node));
+        fireEvent(new GoIntoStateEvent(DEACTIVATED, goIntoNode));
     }
 
     public Node getLastNode() {
-        return node;
+        return goIntoNode;
     }
 }

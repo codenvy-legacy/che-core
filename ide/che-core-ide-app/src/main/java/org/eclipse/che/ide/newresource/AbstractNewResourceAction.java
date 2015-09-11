@@ -10,29 +10,23 @@
  *******************************************************************************/
 package org.eclipse.che.ide.newresource;
 
-import com.google.gwt.core.client.Scheduler;
 import com.google.inject.Inject;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
-import org.eclipse.che.api.promises.client.Function;
-import org.eclipse.che.api.promises.client.FunctionException;
-import org.eclipse.che.api.promises.client.Operation;
-import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ProjectAction;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.editor.EditorAgent;
+import org.eclipse.che.ide.api.project.node.HasDataObject;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.json.JsonHelper;
 import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
-import org.eclipse.che.ide.project.node.FileReferenceNode;
-import org.eclipse.che.ide.project.node.ItemReferenceBasedNode;
 import org.eclipse.che.ide.project.node.NodeManager;
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
@@ -123,63 +117,26 @@ public abstract class AbstractNewResourceAction extends ProjectAction {
     protected AsyncRequestCallback<ItemReference> createCallback(final ResourceBasedNode<?> parent) {
         return new AsyncRequestCallback<ItemReference>(dtoUnmarshallerFactory.newUnmarshaller(ItemReference.class)) {
             @Override
-            protected void onSuccess(ItemReference itemReference) {
-                projectExplorer.reloadChildren(parent, itemReference, "file".equals(itemReference.getType()));
+            protected void onSuccess(final ItemReference itemReference) {
+
+                HasDataObject dataObject = new HasDataObject() {
+                    @Nonnull
+                    @Override
+                    public Object getData() {
+                        return itemReference;
+                    }
+
+                    @Override
+                    public void setData(@Nonnull Object data) {
+                    }
+                };
+
+                projectExplorer.reloadChildren(parent, dataObject, "file".equals(itemReference.getType()), false);
             }
 
             @Override
             protected void onFailure(Throwable exception) {
                 dialogFactory.createMessageDialog("", JsonHelper.parseJsonMessage(exception.getMessage()), null).show();
-            }
-        };
-    }
-
-    protected void getCreatedItem(ResourceBasedNode<?> parent, ItemReference item) {
-        nodeManager.getChildren(((HasStorablePath)parent).getStorablePath(),
-                                parent.getProjectDescriptor(),
-                                parent.getSettings())
-                   .then(iterateAndFindCreatedNode(item))
-                   .then(fireNodeCreated(parent));
-    }
-
-    @Nonnull
-    protected Function<List<Node>, ItemReferenceBasedNode> iterateAndFindCreatedNode(@Nonnull final ItemReference itemReference) {
-        return new Function<List<Node>, ItemReferenceBasedNode>() {
-            @Override
-            public ItemReferenceBasedNode apply(List<Node> nodes) throws FunctionException {
-                if (nodes.isEmpty()) {
-                    return null;
-                }
-
-                for (Node node : nodes) {
-                    if (node instanceof FileReferenceNode && ((FileReferenceNode)node).getData().equals(itemReference)) {
-                        return (FileReferenceNode)node;
-                    }
-                }
-
-                return null;
-            }
-        };
-    }
-
-    @Nonnull
-    protected Operation<ItemReferenceBasedNode> fireNodeCreated(@Nonnull final ResourceBasedNode<?> parent) {
-        return new Operation<ItemReferenceBasedNode>() {
-            @Override
-            public void apply(final ItemReferenceBasedNode newItemReferenceNode) throws OperationException {
-                if (newItemReferenceNode == null) {
-                    return;
-                }
-
-
-                if (newItemReferenceNode instanceof FileReferenceNode) {
-                    Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-                        @Override
-                        public void execute() {
-                            editorAgent.openEditor((FileReferenceNode)newItemReferenceNode);
-                        }
-                    });
-                }
             }
         };
     }
