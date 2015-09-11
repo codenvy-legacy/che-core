@@ -23,7 +23,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <requirejs.upstream.url>http://requirejs.org/docs/release/${requirejs.upstream.version}/comments/</requirejs.upstream.url>
-        <requirejs.upstream.version>2.1.14</requirejs.upstream.version>
+        <requirejs.upstream.version>2.1.15</requirejs.upstream.version>
     </properties>
     <dependencies>
         <dependency>
