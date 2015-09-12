@@ -20,6 +20,7 @@ import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.ui.smartTree.TreeNodeStorage.StoreSortInfo;
 import org.eclipse.che.ide.ui.smartTree.event.BeforeExpandNodeEvent.BeforeExpandNodeHandler;
+import org.eclipse.che.ide.ui.smartTree.event.GoIntoStateEvent;
 
 import java.util.List;
 
@@ -39,6 +40,8 @@ public interface NewProjectExplorerView extends View<NewProjectExplorerView.Acti
     void scrollFromSource(Object object);
 
     boolean setGoIntoModeOn(Node node);
+
+    void addGoIntoStateHandler(GoIntoStateEvent.GoIntoStateHandler handler);
 
     void resetGoIntoMode();
 

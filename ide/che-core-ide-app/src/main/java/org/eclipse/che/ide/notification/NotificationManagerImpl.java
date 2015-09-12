@@ -88,7 +88,7 @@ public class NotificationManagerImpl extends BasePresenter implements Notificati
 
         eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
             @Override
-            public void onProjectOpened(ProjectActionEvent event) {
+            public void onProjectReady(ProjectActionEvent event) {
             }
 
             @Override
@@ -101,6 +101,11 @@ public class NotificationManagerImpl extends BasePresenter implements Notificati
                 notificationMessageStack.clear();
                 notificationContainer.clear();
                 onValueChanged();
+            }
+
+            @Override
+            public void onProjectOpened(ProjectActionEvent event) {
+
             }
         });
     }

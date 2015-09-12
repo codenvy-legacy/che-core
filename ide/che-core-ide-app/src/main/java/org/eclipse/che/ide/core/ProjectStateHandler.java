@@ -99,7 +99,6 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
     public void start(Callback<Component, Exception> callback) {
         eventBus.addHandler(OpenProjectEvent.TYPE, this);
         eventBus.addHandler(CloseCurrentProjectEvent.TYPE, this);
-//        eventBus.addHandler(ProjectDescriptorChangedEvent.TYPE, this);
         eventBus.addHandler(ConfigureProjectEvent.TYPE, this);
         callback.onSuccess(this);
     }
@@ -113,15 +112,6 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
     public void onCloseCurrentProject(CloseCurrentProjectEvent event) {
         closeCurrentProject(null, false);
     }
-
-//    @Override
-//    public void onProjectDescriptorChanged(ProjectDescriptorChangedEvent event) {
-//        final String path = event.getProjectDescriptor().getPath();
-//        final CurrentProject currentProject = appContext.getCurrentProject();
-//        if (currentProject != null && currentProject.getProjectDescription().getPath().equals(path)) {
-//            currentProject.setProjectDescription(event.getProjectDescriptor());
-//        }
-//    }
 
     @Override
     public void onConfigureProject(@Nonnull ConfigureProjectEvent event) {
@@ -207,7 +197,7 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
         rewriteBrowserHistory(project.getName());
 
         // notify all listeners about opening project
-        eventBus.fireEvent(ProjectActionEvent.createProjectOpenedEvent(project));
+        eventBus.fireEvent(ProjectActionEvent.createBeforeOpenProjectEvent(project));
     }
 
     private void openProblemProject(final ProjectDescriptor project) {

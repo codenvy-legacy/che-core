@@ -39,7 +39,7 @@ public class DebuggerManager {
         this.debuggers = new HashMap<>();
         eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
             @Override
-            public void onProjectOpened(ProjectActionEvent event) {
+            public void onProjectReady(ProjectActionEvent event) {
                 currentDebugger = debuggers.get(event.getProject().getType());
             }
 
@@ -50,6 +50,11 @@ public class DebuggerManager {
             @Override
             public void onProjectClosed(ProjectActionEvent event) {
                 currentDebugger = null;
+            }
+
+            @Override
+            public void onProjectOpened(ProjectActionEvent event) {
+
             }
         });
     }
