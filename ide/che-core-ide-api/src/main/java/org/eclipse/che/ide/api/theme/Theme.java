@@ -128,6 +128,13 @@ public interface Theme {
     String getTabBorderColor();
 
     /**
+     * Color to underline active tab
+     *
+     * @return
+     */
+    String getTabUnderlineColor();
+
+    /**
      * Background color of the tab(part button)
      *
      * @return
@@ -689,9 +696,14 @@ public interface Theme {
     String getDelimeterColor();
 
     /**
-     * @return the color of part minimize button color.
+     * @return the color of part minimize button
      */
     String getMinimizeIconColor();
+
+    /**
+     * @return the hovering color of part minimize button
+     */
+    String getMinimizeIconHoverColor();
 
     /**
      * @return the color of the output font.

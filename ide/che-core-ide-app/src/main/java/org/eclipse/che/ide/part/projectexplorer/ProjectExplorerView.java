@@ -70,16 +70,6 @@ public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDele
      */
     void setTitle(@Nonnull String title);
 
-    /**
-     * Sets project's name and visibility icon.
-     *
-     * @param project
-     */
-    void setProjectHeader(@Nonnull ProjectDescriptor project);
-
-    /** Hide the project's header panel. */
-    void hideProjectHeader();
-
     /** Returns the currently selected node. */
     @Nonnull
     TreeNode<?> getSelectedNode();
@@ -139,4 +129,5 @@ public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDele
         /** Requests to refresh the tree. */
         void onRefreshTree();
     }
+
 }

@@ -46,7 +46,6 @@ import java.util.List;
 public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.ActionDelegate> implements ProjectExplorerView {
 
     protected Tree<TreeNode<?>>   tree;
-    private   Resources           resources;
     private   FlowPanel           projectHeader;
     private   AbstractTreeNode<?> rootNode;
 
@@ -57,8 +56,6 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
     public ProjectExplorerViewImpl(Resources resources,
                                    ProjectTreeNodeRenderer projectTreeNodeRenderer) {
         super(resources);
-
-        this.resources = resources;
 
         projectTreeNodeDataAdapter = new ProjectTreeNodeDataAdapter();
         tree = Tree.create(resources, projectTreeNodeDataAdapter, projectTreeNodeRenderer, true);
@@ -231,52 +228,6 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
     public void expandAndSelectNode(@Nonnull TreeNode<?> node) {
         tree.autoExpandAndSelectNode(node, true);
         delegate.onNodeSelected(node, tree.getSelectionModel());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void setProjectHeader(@Nonnull ProjectDescriptor project) {
-        if (toolBar.getWidgetIndex(projectHeader) < 0) {
-            toolBar.addSouth(projectHeader, 28);
-            setToolbarHeight(50);
-        }
-
-        projectHeader.clear();
-
-        FlowPanel delimiter = new FlowPanel();
-        delimiter.setStyleName(resources.partStackCss().idePartStackToolbarSeparator());
-        projectHeader.add(delimiter);
-
-        SVGImage icon = new SVGImage("private".equals(project.getVisibility()) ?
-                resources.privateProject() : resources.publicProject());
-        icon.getElement().setAttribute("class", resources.partStackCss().idePartStackToolbarBottomIcon());
-        projectHeader.add(icon);
-
-        InlineLabel projectTitle = new InlineLabel(project.getName());
-        projectHeader.add(projectTitle);
-
-        FlowPanel refreshButton = new FlowPanel();
-        refreshButton.add(new SVGImage(resources.refresh()));
-        refreshButton.setStyleName(resources.partStackCss().idePartStackToolbarBottomButton());
-        refreshButton.addStyleName(resources.partStackCss().idePartStackToolbarBottomButtonRight());
-        refreshButton.ensureDebugId("projectExplorer-button-refreshTree");
-        projectHeader.add(refreshButton);
-
-        refreshButton.addDomHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                if (delegate != null) {
-                    delegate.onRefreshTree();
-                }
-            }
-        }, ClickEvent.getType());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void hideProjectHeader() {
-        toolBar.remove(projectHeader);
-        setToolbarHeight(22);
     }
 
     @Nonnull

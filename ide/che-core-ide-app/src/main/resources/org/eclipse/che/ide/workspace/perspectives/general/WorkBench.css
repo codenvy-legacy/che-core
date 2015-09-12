@@ -49,22 +49,39 @@
 }
 
 svg[name="workBenchIconMinimize"] {
-    margin: 2px 5px;
-    width: 14px;
-    height: 11px;
+    margin: 2px 2px;
+    width: 8px;
+    height: 8px;
+}
+
+svg[name="workBenchIconMinimize"],
+svg[name="workBenchIconMinimize"] g {
     fill: minimizeIconColor;
+
+    -webkit-transition: color 0.1s ease-in-out,
+                fill 0.1s ease-in-out,
+                stroke 0.1s ease-in-out;
+    transition: color 0.1s ease-in-out,
+                fill 0.1s ease-in-out,
+                stroke 0.1s ease-in-out;
+}
+
+svg[name="workBenchIconMinimize"]:HOVER,
+svg[name="workBenchIconMinimize"]:HOVER g {
+    fill: minimizeIconHoverColor;
 }
 
 .ide-work-bench-split-panel-left svg[name="workBenchIconMinimize"] {
+}
+
+.ide-work-bench-split-panel-right svg[name="workBenchIconMinimize"] {
     -webkit-transform: rotate(180deg);
     -moz-transform: rotate(180deg);
     transform: rotate(180deg);
-    margin-left: 3px;
 }
 
 .ide-work-bench-split-panel-bottom svg[name="workBenchIconMinimize"] {
-    -webkit-transform: rotate(90deg);
-    -moz-transform: rotate(90deg);
-    transform: rotate(90deg);
-    margin: 2px 4px;
+    -webkit-transform: rotate(-90deg);
+    -moz-transform: rotate(-90deg);
+    transform: rotate(-90deg);
 }

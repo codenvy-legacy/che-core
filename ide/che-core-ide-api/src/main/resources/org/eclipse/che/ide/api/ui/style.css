@@ -17,6 +17,9 @@
 /** Tab button border color */
 @eval tabBorder org.eclipse.che.ide.api.theme.Style.getTabBorderColor();
 
+/** Color used for underlining active tab */
+@eval tabUnderlineColor org.eclipse.che.ide.api.theme.Style.getTabUnderlineColor();
+
 /** Tab button text color */
 @eval tabTextColor org.eclipse.che.ide.api.theme.Style.getTabTextColor();
 
@@ -39,6 +42,7 @@
 @eval barBackgroundColor org.eclipse.che.ide.api.theme.Style.getBarBackgroundColor();
 
 @eval partBackground org.eclipse.che.ide.api.theme.Style.getPartBackground();
+
 @eval partToolbar org.eclipse.che.ide.api.theme.Style.getPartToolbar();
 @eval partToolbarActive org.eclipse.che.ide.api.theme.Style.getPartToolbarActive();
 @eval partToolbarShadow org.eclipse.che.ide.api.theme.Style.getPartToolbarShadow();
@@ -50,6 +54,7 @@
 @eval tabBorderShadow org.eclipse.che.ide.api.theme.Style.getTabBorderShadow();
 @eval buttonTextShadow org.eclipse.che.ide.api.theme.Style.getButtonTextShadow();
 @eval minimizeIconColor org.eclipse.che.ide.api.theme.Style.getMinimizeIconColor();
+@eval minimizeIconHoverColor org.eclipse.che.ide.api.theme.Style.getMinimizeIconHoverColor();
 
 /* Indicates a completed action. Preferred text color is lightTextColor. */
 @eval completedBackgroundColor org.eclipse.che.ide.api.theme.Style.getCompletedBackgroundColor();

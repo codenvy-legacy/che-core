@@ -79,6 +79,10 @@ public class Style {
         return theme.getTabBorderColor();
     }
 
+    public static String getTabUnderlineColor() {
+        return theme.getTabUnderlineColor();
+    }
+
     public static String getPartBackground() {
         return theme.getPartBackground();
     }
@@ -434,6 +438,10 @@ public class Style {
 
     public static String getMinimizeIconColor() {
         return theme.getMinimizeIconColor();
+    }
+
+    public static String getMinimizeIconHoverColor() {
+        return theme.getMinimizeIconHoverColor();
     }
 
     public static String getOutputFontColor() {

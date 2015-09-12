@@ -103,6 +103,11 @@ public class LightTheme implements Theme {
     }
 
     @Override
+    public String getTabUnderlineColor() {
+        return "rgb(70,102,149)";
+    }
+
+    @Override
     public String getPartBackground() {
         return "#ffffff";
     }
@@ -545,6 +550,11 @@ public class LightTheme implements Theme {
     @Override
     public String getMinimizeIconColor() {
         return "#7b7b7b";
+    }
+
+    @Override
+    public String getMinimizeIconHoverColor() {
+        return "#333333";
     }
 
     @Override
