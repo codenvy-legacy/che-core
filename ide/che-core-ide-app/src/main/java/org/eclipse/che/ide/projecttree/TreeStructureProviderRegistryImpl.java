@@ -17,7 +17,7 @@ import org.eclipse.che.ide.api.project.tree.TreeStructureProviderRegistry;
 import org.eclipse.che.ide.api.project.tree.generic.GenericTreeStructureProvider;
 import org.eclipse.che.ide.util.loging.Log;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -52,13 +52,13 @@ public class TreeStructureProviderRegistryImpl implements TreeStructureProviderR
     }
 
     @Override
-    public void associateProjectTypeToTreeProvider(@Nonnull String projectTypeId, @Nonnull String treeStructureProviderId) {
+    public void associateProjectTypeToTreeProvider(@NotNull String projectTypeId, @NotNull String treeStructureProviderId) {
         projectType2TreeProvider.put(projectTypeId, treeStructureProviderId);
     }
 
-    @Nonnull
+    @NotNull
     @Override
-    public TreeStructureProvider getTreeStructureProvider(@Nonnull String projectTypeId) {
+    public TreeStructureProvider getTreeStructureProvider(@NotNull String projectTypeId) {
         final String providerId = projectType2TreeProvider.get(projectTypeId);
         if (providerId != null) {
             TreeStructureProvider provider = treeProviders.get(providerId);

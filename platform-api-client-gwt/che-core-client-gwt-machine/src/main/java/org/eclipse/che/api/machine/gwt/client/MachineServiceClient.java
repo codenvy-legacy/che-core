@@ -15,8 +15,8 @@ import org.eclipse.che.api.machine.shared.dto.MachineStateDescriptor;
 import org.eclipse.che.api.machine.shared.dto.ProcessDescriptor;
 import org.eclipse.che.api.promises.client.Promise;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -43,9 +43,9 @@ public interface MachineServiceClient {
      * @param outputChannel
      *         websocket chanel where machine logs should be put
      */
-    Promise<MachineDescriptor> createMachineFromRecipe(@Nonnull String machineType,
-                                                       @Nonnull String recipeType,
-                                                       @Nonnull String recipeScript,
+    Promise<MachineDescriptor> createMachineFromRecipe(@NotNull String machineType,
+                                                       @NotNull String recipeType,
+                                                       @NotNull String recipeScript,
                                                        @Nullable String displayName,
                                                        boolean bindWorkspace,
                                                        @Nullable String outputChannel);
@@ -60,7 +60,7 @@ public interface MachineServiceClient {
      * @param outputChannel
      *         websocket chanel where machine logs should be put
      */
-    Promise<MachineDescriptor> createMachineFromSnapshot(@Nonnull String snapshotId,
+    Promise<MachineDescriptor> createMachineFromSnapshot(@NotNull String snapshotId,
                                                          @Nullable String displayName,
                                                          @Nullable String outputChannel);
 
@@ -70,7 +70,7 @@ public interface MachineServiceClient {
      * @param machineId
      *         ID of the machine
      */
-    Promise<MachineDescriptor> getMachine(@Nonnull String machineId);
+    Promise<MachineDescriptor> getMachine(@NotNull String machineId);
 
     /**
      * Get machine state information by it's id.
@@ -78,7 +78,7 @@ public interface MachineServiceClient {
      * @param machineId
      *         ID of the machine
      */
-    Promise<MachineStateDescriptor> getMachineState(@Nonnull String machineId);
+    Promise<MachineStateDescriptor> getMachineState(@NotNull String machineId);
 
     /**
      * Find machines bound to the workspace/project.
@@ -104,7 +104,7 @@ public interface MachineServiceClient {
      * @param machineId
      *         ID of machine that should be destroyed
      */
-    Promise<Void> destroyMachine(@Nonnull String machineId);
+    Promise<Void> destroyMachine(@NotNull String machineId);
 
     /**
      * Execute a command in machine.
@@ -116,7 +116,7 @@ public interface MachineServiceClient {
      * @param outputChannel
      *         websocket chanel for execution logs
      */
-    Promise<ProcessDescriptor> executeCommand(@Nonnull String machineId, @Nonnull String commandLine, @Nullable String outputChannel);
+    Promise<ProcessDescriptor> executeCommand(@NotNull String machineId, @NotNull String commandLine, @Nullable String outputChannel);
 
     /**
      * Get processes from the specified machine.
@@ -124,7 +124,7 @@ public interface MachineServiceClient {
      * @param machineId
      *         ID of machine to get processes information from
      */
-    Promise<List<ProcessDescriptor>> getProcesses(@Nonnull String machineId);
+    Promise<List<ProcessDescriptor>> getProcesses(@NotNull String machineId);
 
     /**
      * Stop process in machine.
@@ -134,7 +134,7 @@ public interface MachineServiceClient {
      * @param processId
      *         ID of the process to stop
      */
-    Promise<Void> stopProcess(@Nonnull String machineId, int processId);
+    Promise<Void> stopProcess(@NotNull String machineId, int processId);
 
     /**
      * Bind project to machine.
@@ -144,7 +144,7 @@ public interface MachineServiceClient {
      * @param projectPath
      *         project that should be bound
      */
-    Promise<Void> bindProject(@Nonnull String machineId, @Nonnull String projectPath);
+    Promise<Void> bindProject(@NotNull String machineId, @NotNull String projectPath);
 
     /**
      * Unbind project from machine.
@@ -154,5 +154,5 @@ public interface MachineServiceClient {
      * @param projectPath
      *         project that should be unbound
      */
-    Promise<Void> unbindProject(@Nonnull String machineId, @Nonnull String projectPath);
+    Promise<Void> unbindProject(@NotNull String machineId, @NotNull String projectPath);
 }

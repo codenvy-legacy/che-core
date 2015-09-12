@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.theme;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -26,15 +26,15 @@ public interface ThemeAgent {
      * @param theme
      *         the theme
      */
-    void addTheme(@Nonnull Theme theme);
+    void addTheme(@NotNull Theme theme);
 
     /**
      * @param themeId
      *         the id of the theme
      * @return theme with theme id or default theme if theme not found
      */
-    @Nonnull
-    Theme getTheme(@Nonnull String themeId);
+    @NotNull
+    Theme getTheme(@NotNull String themeId);
 
     /**
      * @return default theme

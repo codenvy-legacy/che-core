@@ -14,8 +14,8 @@ import com.google.gwt.user.client.ui.AcceptsOneWidget;
 
 import org.eclipse.che.ide.api.constraints.Constraints;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 
 /**
  * This interface is a general type for all perspectives. You must implement the interface when you add new perspective.
@@ -29,7 +29,7 @@ public interface Perspective {
 
     public void expandEditorPart();
 
-    void setActivePart(@Nonnull PartPresenter part, @Nonnull PartStackType type);
+    void setActivePart(@NotNull PartPresenter part, @NotNull PartStackType type);
 
     /**
      * Removes part.
@@ -37,7 +37,7 @@ public interface Perspective {
      * @param part
      *         part which will be removed
      */
-    void removePart(@Nonnull PartPresenter part);
+    void removePart(@NotNull PartPresenter part);
 
     /**
      * Reveals given Part and requests focus for it.
@@ -45,7 +45,7 @@ public interface Perspective {
      * @param part
      *         part which wil be focused
      */
-    void setActivePart(@Nonnull PartPresenter part);
+    void setActivePart(@NotNull PartPresenter part);
 
     /**
      * Hides current part.
@@ -53,7 +53,7 @@ public interface Perspective {
      * @param part
      *         part which need hide
      */
-    void hidePart(@Nonnull PartPresenter part);
+    void hidePart(@NotNull PartPresenter part);
 
     /**
      * Opens new Part or shows already opened
@@ -63,7 +63,7 @@ public interface Perspective {
      * @param type
      *         type of part
      */
-    void addPart(@Nonnull PartPresenter part, @Nonnull PartStackType type);
+    void addPart(@NotNull PartPresenter part, @NotNull PartStackType type);
 
     /**
      * Opens part with special constraint.
@@ -75,7 +75,7 @@ public interface Perspective {
      * @param constraint
      *         constraints with which need open part
      */
-    void addPart(@Nonnull PartPresenter part, @Nonnull PartStackType type, @Nullable Constraints constraint);
+    void addPart(@NotNull PartPresenter part, @NotNull PartStackType type, @Nullable Constraints constraint);
 
     /**
      * Retrieves the instance of the {@link PartStack} for given {@link PartStackType}
@@ -85,7 +85,7 @@ public interface Perspective {
      * @return an instance of {@link PartStack}
      */
     @Nullable
-    PartStack getPartStack(@Nonnull PartStackType type);
+    PartStack getPartStack(@NotNull PartStackType type);
 
     /**
      * Allows perspective to expose it's view to the container.
@@ -93,5 +93,5 @@ public interface Perspective {
      * @param container
      *         container in which need expose view
      */
-    void go(@Nonnull AcceptsOneWidget container);
+    void go(@NotNull AcceptsOneWidget container);
 }

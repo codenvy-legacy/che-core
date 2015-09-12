@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.promises.client;
 
-import javax.annotation.Nullable;
+import org.eclipse.che.commons.annotation.Nullable;
 
 
 public interface PromiseError {

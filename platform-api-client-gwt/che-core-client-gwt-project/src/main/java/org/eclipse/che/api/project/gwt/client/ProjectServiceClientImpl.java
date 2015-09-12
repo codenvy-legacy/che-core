@@ -37,7 +37,7 @@ import org.eclipse.che.ide.websocket.MessageBus;
 import org.eclipse.che.ide.websocket.WebSocketException;
 import org.eclipse.che.ide.websocket.rest.RequestCallback;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
 
@@ -307,7 +307,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
 
-    private void sendMessageToWS(final @Nonnull Message message, final @Nonnull RequestCallback<?> callback) {
+    private void sendMessageToWS(final @NotNull Message message, final @NotNull RequestCallback<?> callback) {
         extServerStateController.getMessageBus().then(new Operation<MessageBus>() {
             @Override
             public void apply(MessageBus arg) throws OperationException {

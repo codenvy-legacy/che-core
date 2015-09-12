@@ -12,17 +12,17 @@ package org.eclipse.che.ide.part.widgets.listtab.item;
 
 import org.eclipse.che.ide.api.mvp.View;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author Dmitry Shnurenko
  */
 public interface ListItem extends View<ListItem.ActionDelegate> {
 
-    @Nonnull
+    @NotNull
     String getTitle();
 
     interface ActionDelegate {
-        void onCloseItemClicked(@Nonnull ListItem listItem);
+        void onCloseItemClicked(@NotNull ListItem listItem);
     }
 }

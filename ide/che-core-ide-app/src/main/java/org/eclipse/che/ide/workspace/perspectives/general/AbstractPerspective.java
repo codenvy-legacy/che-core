@@ -22,8 +22,8 @@ import org.eclipse.che.ide.workspace.PartStackViewFactory;
 import org.eclipse.che.ide.workspace.WorkBenchControllerFactory;
 import org.eclipse.che.ide.workspace.WorkBenchPartController;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,11 +54,11 @@ public abstract class AbstractPerspective implements Presenter, Perspective {
     private double rightPartSize;
     private double belowPartSize;
 
-    protected AbstractPerspective(@Nonnull String perspectiveId,
-                                  @Nonnull PerspectiveViewImpl view,
-                                  @Nonnull PartStackPresenterFactory stackPresenterFactory,
-                                  @Nonnull PartStackViewFactory partViewFactory,
-                                  @Nonnull WorkBenchControllerFactory controllerFactory) {
+    protected AbstractPerspective(@NotNull String perspectiveId,
+                                  @NotNull PerspectiveViewImpl view,
+                                  @NotNull PartStackPresenterFactory stackPresenterFactory,
+                                  @NotNull PartStackViewFactory partViewFactory,
+                                  @NotNull WorkBenchControllerFactory controllerFactory) {
         this.view = view;
         this.perspectiveId = perspectiveId;
         this.partStacks = new HashMap<>();
@@ -88,7 +88,7 @@ public abstract class AbstractPerspective implements Presenter, Perspective {
      * @param partStackType
      *         part type on which need open previous active part
      */
-    protected void openActivePart(@Nonnull PartStackType partStackType) {
+    protected void openActivePart(@NotNull PartStackType partStackType) {
         PartStack partStack = partStacks.get(partStackType);
 
         partStack.openPreviousActivePart();
@@ -96,7 +96,7 @@ public abstract class AbstractPerspective implements Presenter, Perspective {
 
     /** {@inheritDoc} */
     @Override
-    public void removePart(@Nonnull PartPresenter part) {
+    public void removePart(@NotNull PartPresenter part) {
         PartStack destPartStack = findPartStackByPart(part);
         if (destPartStack != null) {
             destPartStack.removePart(part);
@@ -105,7 +105,7 @@ public abstract class AbstractPerspective implements Presenter, Perspective {
 
     /** {@inheritDoc} */
     @Override
-    public void hidePart(@Nonnull PartPresenter part) {
+    public void hidePart(@NotNull PartPresenter part) {
         PartStack destPartStack = findPartStackByPart(part);
         if (destPartStack != null) {
             destPartStack.hidePart(part);
@@ -132,7 +132,7 @@ public abstract class AbstractPerspective implements Presenter, Perspective {
 
     /** {@inheritDoc} */
     @Override
-    public void setActivePart(@Nonnull PartPresenter part) {
+    public void setActivePart(@NotNull PartPresenter part) {
         PartStack destPartStack = findPartStackByPart(part);
         if (destPartStack != null) {
             destPartStack.setActivePart(part);
@@ -141,7 +141,7 @@ public abstract class AbstractPerspective implements Presenter, Perspective {
 
     /** {@inheritDoc} */
     @Override
-    public void setActivePart(@Nonnull PartPresenter part, @Nonnull PartStackType type) {
+    public void setActivePart(@NotNull PartPresenter part, @NotNull PartStackType type) {
         PartStack destPartStack = partStacks.get(type);
 
         destPartStack.setActivePart(part);
@@ -154,7 +154,7 @@ public abstract class AbstractPerspective implements Presenter, Perspective {
      *         part for which need find parent
      * @return Parent PartStackPresenter or null if part not registered
      */
-    public PartStack findPartStackByPart(@Nonnull PartPresenter part) {
+    public PartStack findPartStackByPart(@NotNull PartPresenter part) {
         for (PartStackType partStackType : PartStackType.values()) {
 
             if (partStacks.get(partStackType).containsPart(part)) {
@@ -167,13 +167,13 @@ public abstract class AbstractPerspective implements Presenter, Perspective {
 
     /** {@inheritDoc} */
     @Override
-    public void addPart(@Nonnull PartPresenter part, @Nonnull PartStackType type) {
+    public void addPart(@NotNull PartPresenter part, @NotNull PartStackType type) {
         addPart(part, type, null);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void addPart(@Nonnull PartPresenter part, @Nonnull PartStackType type, @Nullable Constraints constraint) {
+    public void addPart(@NotNull PartPresenter part, @NotNull PartStackType type, @Nullable Constraints constraint) {
         PartStack destPartStack = partStacks.get(type);
 
         List<String> rules = part.getRules();
@@ -192,7 +192,7 @@ public abstract class AbstractPerspective implements Presenter, Perspective {
     /** {@inheritDoc} */
     @Override
     @Nullable
-    public PartStack getPartStack(@Nonnull PartStackType type) {
+    public PartStack getPartStack(@NotNull PartStackType type) {
         return partStacks.get(type);
     }
 }

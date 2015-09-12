@@ -37,7 +37,7 @@ import org.eclipse.che.ide.ui.dialogs.ConfirmCallback;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.websocket.rest.RequestCallback;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode.CREATE;
 import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode.CREATE_MODULE;
@@ -116,7 +116,7 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
 
     /** {@inheritDoc} */
     @Override
-    public void complete(@Nonnull final CompleteCallback callback) {
+    public void complete(@NotNull final CompleteCallback callback) {
         if (mode == CREATE) {
             createProject(callback);
         } else if (mode == CREATE_MODULE) {

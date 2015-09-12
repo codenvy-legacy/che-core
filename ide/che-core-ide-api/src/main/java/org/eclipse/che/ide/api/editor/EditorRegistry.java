@@ -12,7 +12,7 @@ package org.eclipse.che.ide.api.editor;
 
 import org.eclipse.che.ide.api.filetypes.FileType;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 
@@ -29,7 +29,7 @@ public interface EditorRegistry {
      * @param fileType
      * @param provider
      */
-    void register(@Nonnull FileType fileType, @Nonnull EditorProvider provider);
+    void register(@NotNull FileType fileType, @NotNull EditorProvider provider);
 
     /**
      * Register default editor.
@@ -39,7 +39,7 @@ public interface EditorRegistry {
      * @param provider
      *         the provider
      */
-    void registerDefaultEditor(@Nonnull FileType fileType, @Nonnull EditorProvider provider);
+    void registerDefaultEditor(@NotNull FileType fileType, @NotNull EditorProvider provider);
 
     /**
      * Get editor provide assigned for file type;
@@ -48,8 +48,8 @@ public interface EditorRegistry {
      *         resource file type
      * @return editor provider
      */
-    @Nonnull
-    EditorProvider getEditor(@Nonnull FileType fileType);
+    @NotNull
+    EditorProvider getEditor(@NotNull FileType fileType);
 
 
     /**
@@ -59,6 +59,6 @@ public interface EditorRegistry {
      *         the file type
      * @return the all editors for file type
      */
-    @Nonnull
-    List<EditorProvider> getAllEditorsForFileType(@Nonnull FileType fileType);
+    @NotNull
+    List<EditorProvider> getAllEditorsForFileType(@NotNull FileType fileType);
 }

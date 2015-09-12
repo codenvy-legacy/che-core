@@ -23,7 +23,7 @@ import com.google.inject.Inject;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.part.widgets.listtab.item.ListItem;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,7 +85,7 @@ public class ListButtonWidget extends Composite implements ListButton {
 
     /** {@inheritDoc} */
     @Override
-    public void addListItem(@Nonnull ListItem listItem) {
+    public void addListItem(@NotNull ListItem listItem) {
         if (items.isEmpty()) {
             removeStyleName(resources.partStackCss().listShownButtonBackground());
         }
@@ -97,7 +97,7 @@ public class ListButtonWidget extends Composite implements ListButton {
 
     /** {@inheritDoc} */
     @Override
-    public void removeListItem(@Nonnull ListItem listItem) {
+    public void removeListItem(@NotNull ListItem listItem) {
         items.remove(listItem);
 
         listPanel.remove(listItem);
@@ -113,7 +113,7 @@ public class ListButtonWidget extends Composite implements ListButton {
 
     /** {@inheritDoc} */
     @Override
-    public void onClick(@Nonnull ClickEvent event) {
+    public void onClick(@NotNull ClickEvent event) {
         if (isShown) {
             hide();
         } else {
@@ -127,7 +127,7 @@ public class ListButtonWidget extends Composite implements ListButton {
 
     /** {@inheritDoc} */
     @Override
-    public void setDelegate(@Nonnull ActionDelegate delegate) {
+    public void setDelegate(@NotNull ActionDelegate delegate) {
         this.delegate = delegate;
     }
 

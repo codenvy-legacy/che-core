@@ -28,9 +28,9 @@ import org.eclipse.che.ide.api.parts.PartStackView.TabPosition;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.annotation.Nonnegative;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 
 import static com.google.gwt.dom.client.Style.Unit.PX;
 import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.BELOW;
@@ -74,21 +74,21 @@ public class PartButtonWidget extends Composite implements PartButton {
     }
 
     /** {@inheritDoc} */
-    @Nonnull
+    @NotNull
     @Override
     public IsWidget getView() {
         return this.asWidget();
     }
 
     /** {@inheritDoc} */
-    @Nonnull
+    @NotNull
     public PartButton addTooltip(@Nullable String tooltip) {
         setTitle(tooltip);
         return this;
     }
 
     /** {@inheritDoc} */
-    @Nonnull
+    @NotNull
     public PartButton addIcon(@Nullable SVGResource resource) {
         icon.getElement().setInnerHTML(resource == null ? "" : new SVGImage(resource).toString());
         return this;
@@ -96,13 +96,13 @@ public class PartButtonWidget extends Composite implements PartButton {
 
     /** {@inheritDoc} */
     @Override
-    public void update(@Nonnull PartPresenter part) {
+    public void update(@NotNull PartPresenter part) {
         icon.add(part.getTitleWidget());
     }
 
     /** {@inheritDoc} */
     @Override
-    public void onClick(@Nonnull ClickEvent event) {
+    public void onClick(@NotNull ClickEvent event) {
         delegate.onTabClicked(this);
     }
 
@@ -128,7 +128,7 @@ public class PartButtonWidget extends Composite implements PartButton {
 
     /** {@inheritDoc} */
     @Override
-    public void setTabPosition(@Nonnull TabPosition tabPosition, @Nonnegative int countWidgets) {
+    public void setTabPosition(@NotNull TabPosition tabPosition, @Min(value=0) int countWidgets) {
         this.tabPosition = tabPosition;
 
         if (LEFT.equals(tabPosition)) {
@@ -144,7 +144,7 @@ public class PartButtonWidget extends Composite implements PartButton {
 
     /** {@inheritDoc} */
     @Override
-    public void setDelegate(@Nonnull ActionDelegate delegate) {
+    public void setDelegate(@NotNull ActionDelegate delegate) {
         this.delegate = delegate;
     }
 }

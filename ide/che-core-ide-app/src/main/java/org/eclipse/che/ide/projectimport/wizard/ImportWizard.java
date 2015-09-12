@@ -34,7 +34,7 @@ import org.eclipse.che.ide.util.loging.Log;
 import org.eclipse.che.ide.websocket.rest.RequestCallback;
 import org.eclipse.che.ide.websocket.rest.Unmarshallable;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Project import wizard used for importing a project.
@@ -90,7 +90,7 @@ public class ImportWizard extends AbstractWizard<ImportProject> {
 
     /** {@inheritDoc} */
     @Override
-    public void complete(@Nonnull CompleteCallback callback) {
+    public void complete(@NotNull CompleteCallback callback) {
         checkFolderExistenceAndImport(callback);
     }
 

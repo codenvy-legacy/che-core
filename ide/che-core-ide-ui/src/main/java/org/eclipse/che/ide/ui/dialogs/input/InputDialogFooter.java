@@ -21,7 +21,7 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 import static org.eclipse.che.ide.ui.dialogs.input.InputDialogView.ActionDelegate;
 import static org.eclipse.che.ide.ui.window.Window.Resources;
@@ -48,7 +48,7 @@ public class InputDialogFooter extends Composite {
     private ActionDelegate actionDelegate;
 
     @Inject
-    public InputDialogFooter(final @Nonnull UILocalizationConstant messages) {
+    public InputDialogFooter(final @NotNull UILocalizationConstant messages) {
         this.messages = messages;
         initWidget(uiBinder.createAndBindUi(this));
 

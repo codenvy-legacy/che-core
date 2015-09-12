@@ -44,7 +44,7 @@ import org.eclipse.che.ide.jseditor.client.texteditor.ConfigurableTextEditor;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -185,7 +185,7 @@ public class DefaultEditorAdapter extends Composite implements EditorAdapter, Fi
     }
 
     @Override
-    public void addRule(@Nonnull String perspectiveId) {
+    public void addRule(@NotNull String perspectiveId) {
         throw new UnsupportedOperationException("The method isn't available in this class " + getClass());
     }
 

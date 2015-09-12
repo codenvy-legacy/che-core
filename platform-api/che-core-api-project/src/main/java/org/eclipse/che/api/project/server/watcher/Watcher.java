@@ -14,7 +14,7 @@ import org.eclipse.che.api.project.server.FilesBuffer;
 import org.everrest.websockets.WSConnectionContext;
 import org.everrest.websockets.message.ChannelBroadcastMessage;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import javax.websocket.EncodeException;
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -98,7 +98,7 @@ class Watcher {
         });
     }
 
-    private boolean absentServiceDirectory(@Nonnull String path) {
+    private boolean absentServiceDirectory(@NotNull String path) {
         boolean isTargetFolder = path.contains("target");
         boolean isCheFolder = path.contains(".che");
         //noinspection SpellCheckingInspection
@@ -157,7 +157,7 @@ class Watcher {
         }
     }
 
-    private void registerChild(@Nonnull WatchEvent.Kind kind, @Nonnull Path pathToChild) {
+    private void registerChild(@NotNull WatchEvent.Kind kind, @NotNull Path pathToChild) {
         if (recursive && (kind == ENTRY_CREATE)) {
             try {
                 if (Files.isDirectory(pathToChild, NOFOLLOW_LINKS)) {
@@ -169,7 +169,7 @@ class Watcher {
         }
     }
 
-    private void sendEvents(@Nonnull WatchEvent.Kind eventKind, @Nonnull String pathToNewFile) {
+    private void sendEvents(@NotNull WatchEvent.Kind eventKind, @NotNull String pathToNewFile) {
         String relativePath = pathToNewFile.substring(pathToRoot.length() + 1);
 
         if (eventKind == ENTRY_CREATE || eventKind == ENTRY_DELETE) {
@@ -191,7 +191,7 @@ class Watcher {
     }
 
     //need for cloud
-    private boolean correctNodeName(@Nonnull String relativePath) {
+    private boolean correctNodeName(@NotNull String relativePath) {
         int startName = relativePath.lastIndexOf("/") + 1;
         String name = relativePath.substring(startName);
 

@@ -12,8 +12,8 @@ package org.eclipse.che.ide.jseditor.client.quickfix;
 
 import org.eclipse.che.ide.jseditor.client.texteditor.TextEditor;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 
 /**
  * MachineContext information for quick fix and quick assist processors.
@@ -26,7 +26,7 @@ public final class QuickAssistInvocationContext {
     private final TextEditor textEditor;
 
     public QuickAssistInvocationContext(@Nullable final Integer offset,
-                                        @Nonnull final TextEditor textEditor) {
+                                        @NotNull final TextEditor textEditor) {
         if (textEditor == null) {
             throw new IllegalArgumentException("editor handle cannot be null");
         }
@@ -49,7 +49,7 @@ public final class QuickAssistInvocationContext {
      *
      * @return the editor handle
      */
-    @Nonnull
+    @NotNull
     public TextEditor getTextEditor() {
         return this.textEditor;
     }

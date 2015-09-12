@@ -18,8 +18,8 @@ import com.google.inject.assistedinject.AssistedInject;
 
 import org.eclipse.che.ide.ui.dialogs.ConfirmCallback;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 
 import static org.eclipse.che.ide.ui.dialogs.message.MessageDialogView.ActionDelegate;
 
@@ -38,25 +38,25 @@ public class MessageDialogPresenter implements MessageDialog, MessageDialogView.
     private final ConfirmCallback confirmCallback;
 
     @AssistedInject
-    public MessageDialogPresenter(@Nonnull MessageDialogView view,
-                                  @Nonnull @Assisted("title") String title,
-                                  @Nonnull @Assisted("message") String message,
+    public MessageDialogPresenter(@NotNull MessageDialogView view,
+                                  @NotNull @Assisted("title") String title,
+                                  @NotNull @Assisted("message") String message,
                                   @Nullable @Assisted ConfirmCallback confirmCallback) {
         this(view, title, new InlineHTML(message), confirmCallback);
     }
 
     @AssistedInject
-    public MessageDialogPresenter(@Nonnull MessageDialogView view,
-                                  @Nonnull @Assisted String title,
-                                  @Nonnull @Assisted IsWidget content,
+    public MessageDialogPresenter(@NotNull MessageDialogView view,
+                                  @NotNull @Assisted String title,
+                                  @NotNull @Assisted IsWidget content,
                                   @Nullable @Assisted ConfirmCallback confirmCallback) {
         this(view, title, content, confirmCallback, null);
     }
 
     @AssistedInject
-    public MessageDialogPresenter(@Nonnull MessageDialogView view,
-                                  @Nonnull @Assisted("title") String title,
-                                  @Nonnull @Assisted IsWidget content,
+    public MessageDialogPresenter(@NotNull MessageDialogView view,
+                                  @NotNull @Assisted("title") String title,
+                                  @NotNull @Assisted IsWidget content,
                                   @Nullable @Assisted ConfirmCallback confirmCallback,
                                   @Nullable @Assisted("confirmButtonText") String confirmButtonText) {
         this.view = view;

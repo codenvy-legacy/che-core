@@ -14,15 +14,15 @@ import org.eclipse.che.ide.part.widgets.editortab.EditorTab;
 import org.eclipse.che.ide.part.widgets.partbutton.PartButton;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 
 /**
  * @author Dmitry Shnurenko
  */
 public interface TabItemFactory {
 
-    PartButton createPartButton(@Nonnull String title);
+    PartButton createPartButton(@NotNull String title);
 
-    EditorTab createEditorPartButton(@Nullable SVGResource icon, @Nonnull String title);
+    EditorTab createEditorPartButton(@Nullable SVGResource icon, @NotNull String title);
 }

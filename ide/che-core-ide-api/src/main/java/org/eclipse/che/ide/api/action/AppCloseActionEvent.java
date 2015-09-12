@@ -12,8 +12,8 @@ package org.eclipse.che.ide.api.action;
 
 import org.eclipse.che.ide.api.parts.PerspectiveManager;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.Map;
 
 /**
@@ -24,18 +24,18 @@ import java.util.Map;
 public class AppCloseActionEvent extends ActionEvent {
     private String cancelMessage;
 
-    public AppCloseActionEvent(@Nonnull String place,
-                               @Nonnull Presentation presentation,
-                               @Nonnull ActionManager actionManager,
-                               @Nonnull PerspectiveManager perspectiveManager) {
+    public AppCloseActionEvent(@NotNull String place,
+                               @NotNull Presentation presentation,
+                               @NotNull ActionManager actionManager,
+                               @NotNull PerspectiveManager perspectiveManager) {
 
         super(place, presentation, actionManager, perspectiveManager);
     }
 
-    public AppCloseActionEvent(@Nonnull String place,
-                               @Nonnull Presentation presentation,
-                               @Nonnull ActionManager actionManager,
-                               @Nonnull PerspectiveManager perspectiveManager,
+    public AppCloseActionEvent(@NotNull String place,
+                               @NotNull Presentation presentation,
+                               @NotNull ActionManager actionManager,
+                               @NotNull PerspectiveManager perspectiveManager,
                                @Nullable Map<String, String> parameters) {
 
         super(place, presentation, actionManager, perspectiveManager, parameters);

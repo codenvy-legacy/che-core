@@ -12,7 +12,7 @@ package org.eclipse.che.ide.api.project.type;
 
 import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -27,9 +27,9 @@ public interface ProjectTemplateRegistry {
      * @param descriptor
      *         template descriptor to register
      */
-    void register(@Nonnull ProjectTemplateDescriptor descriptor);
+    void register(@NotNull ProjectTemplateDescriptor descriptor);
 
     /** Get all {@link org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor}s for the specified {@code projectTypeId}. */
-    @Nonnull
-    List<ProjectTemplateDescriptor> getTemplateDescriptors(@Nonnull String projectTypeId);
+    @NotNull
+    List<ProjectTemplateDescriptor> getTemplateDescriptors(@NotNull String projectTypeId);
 }

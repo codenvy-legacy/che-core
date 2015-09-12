@@ -26,7 +26,7 @@ import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.download.DownloadContainer;
 import org.eclipse.che.ide.part.projectexplorer.ProjectListStructure;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.Arrays;
 
 import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
@@ -79,7 +79,7 @@ public class DownloadProjectAsZipAction extends AbstractPerspectiveAction {
 
     /** {@inheritDoc} */
     @Override
-    public void updateInPerspective(@Nonnull ActionEvent event) {
+    public void updateInPerspective(@NotNull ActionEvent event) {
         Selection<?> selection = selectionAgent.getSelection();
 
         boolean enabled = appContext.getCurrentProject() != null ||

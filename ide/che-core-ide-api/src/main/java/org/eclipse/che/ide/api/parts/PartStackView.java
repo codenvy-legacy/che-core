@@ -15,8 +15,8 @@ import com.google.gwt.user.client.ui.IsWidget;
 
 import org.eclipse.che.ide.api.mvp.View;
 
-import javax.annotation.Nonnegative;
-import javax.annotation.Nonnull;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /** PartStack View interface */
@@ -29,13 +29,13 @@ public interface PartStackView extends View<PartStackView.ActionDelegate> {
     /** Tab which can be clicked and closed */
     interface TabItem extends ClickHandler {
 
-        @Nonnull
+        @NotNull
         IsWidget getView();
 
-        @Nonnull
+        @NotNull
         String getTitle();
 
-        void update(@Nonnull PartPresenter part);
+        void update(@NotNull PartPresenter part);
 
         void select();
 
@@ -49,16 +49,16 @@ public interface PartStackView extends View<PartStackView.ActionDelegate> {
          * @param countWidgets
          *         number of widgets(tabs) which are including in the current part. It is necessary for ranking the tab.
          */
-        void setTabPosition(@Nonnull TabPosition tabPosition, @Nonnegative int countWidgets);
+        void setTabPosition(@NotNull TabPosition tabPosition, @Min(value=0) int countWidgets);
     }
 
     /** Add Tab */
-    void addTab(@Nonnull TabItem tabItem, @Nonnull PartPresenter presenter);
+    void addTab(@NotNull TabItem tabItem, @NotNull PartPresenter presenter);
 
     /** Remove Tab */
-    void removeTab(@Nonnull PartPresenter presenter);
+    void removeTab(@NotNull PartPresenter presenter);
 
-    void selectTab(@Nonnull PartPresenter partPresenter);
+    void selectTab(@NotNull PartPresenter partPresenter);
 
     /** Set new Tabs positions */
     void setTabPositions(List<PartPresenter> partPositions);
@@ -67,7 +67,7 @@ public interface PartStackView extends View<PartStackView.ActionDelegate> {
     void setFocus(boolean focused);
 
     /** Update Tab */
-    void updateTabItem(@Nonnull PartPresenter partPresenter);
+    void updateTabItem(@NotNull PartPresenter partPresenter);
 
     /** Handles Focus Request Event. It is generated, when user clicks a stack anywhere */
     interface ActionDelegate {

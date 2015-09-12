@@ -30,7 +30,7 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 import org.vectomatic.dom.svg.ui.SVGImage;
 
-import javax.annotation.Nullable;
+import org.eclipse.che.commons.annotation.Nullable;
 
 /**
  * A popup that automatically centers its content, even if the dimensions of the content change. The

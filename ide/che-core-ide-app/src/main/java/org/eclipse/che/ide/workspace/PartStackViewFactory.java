@@ -15,7 +15,7 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import org.eclipse.che.ide.api.parts.PartStackView;
 import org.eclipse.che.ide.api.parts.PartStackView.TabPosition;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Gin factory for PartStackView.
@@ -33,5 +33,5 @@ public interface PartStackViewFactory {
      *         panel on which tab will be added
      * @return an instance of {@link PartStackView}
      */
-    PartStackView create(@Nonnull TabPosition tabPosition, @Nonnull FlowPanel tabsPanel);
+    PartStackView create(@NotNull TabPosition tabPosition, @NotNull FlowPanel tabsPanel);
 }

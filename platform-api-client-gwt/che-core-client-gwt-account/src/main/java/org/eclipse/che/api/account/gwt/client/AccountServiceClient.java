@@ -14,7 +14,7 @@ import org.eclipse.che.api.account.shared.dto.AccountDescriptor;
 import org.eclipse.che.api.account.shared.dto.MemberDescriptor;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -32,7 +32,7 @@ public interface AccountServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void getAccountById(@Nonnull String accountId, AsyncRequestCallback<AccountDescriptor> callback);
+    void getAccountById(@NotNull String accountId, AsyncRequestCallback<AccountDescriptor> callback);
 
     /**
      * Get memberships for current user

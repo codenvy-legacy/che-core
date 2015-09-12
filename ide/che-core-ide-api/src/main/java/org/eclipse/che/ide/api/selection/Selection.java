@@ -13,7 +13,7 @@ package org.eclipse.che.ide.api.selection;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * This class contains a single selected object or the bulk of selected objects.
@@ -69,7 +69,7 @@ public class Selection<T> {
         }
     }
 
-    public Selection(final List<T> list, @Nonnull final T head) {
+    public Selection(final List<T> list, @NotNull final T head) {
         this.elements = list;
         this.head = head;
     }

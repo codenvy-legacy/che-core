@@ -13,7 +13,7 @@ package org.eclipse.che.security.oauth1;
 
 import org.eclipse.che.api.auth.oauth.OAuthAuthorizationHeaderProvider;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.IOException;
@@ -29,16 +29,16 @@ public class OAuthAuthenticatorAuthorizationHeaderProvider implements OAuthAutho
     private final OAuthAuthenticatorProvider oAuthAuthenticatorProvider;
 
     @Inject
-    public OAuthAuthenticatorAuthorizationHeaderProvider(@Nonnull final OAuthAuthenticatorProvider oAuthAuthenticatorProvider) {
+    public OAuthAuthenticatorAuthorizationHeaderProvider(@NotNull final OAuthAuthenticatorProvider oAuthAuthenticatorProvider) {
         this.oAuthAuthenticatorProvider = oAuthAuthenticatorProvider;
     }
 
     @Override
-    public String getAuthorizationHeader(@Nonnull final String oauthProviderName,
-                                         @Nonnull final String userId,
-                                         @Nonnull final String requestMethod,
-                                         @Nonnull final String requestUrl,
-                                         @Nonnull final Map<String, String> requestParameters) throws IOException {
+    public String getAuthorizationHeader(@NotNull final String oauthProviderName,
+                                         @NotNull final String userId,
+                                         @NotNull final String requestMethod,
+                                         @NotNull final String requestUrl,
+                                         @NotNull final Map<String, String> requestParameters) throws IOException {
 
         final OAuthAuthenticator oAuthAuthenticator = oAuthAuthenticatorProvider.getAuthenticator(oauthProviderName);
         if (oAuthAuthenticator != null) {

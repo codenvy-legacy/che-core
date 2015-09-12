@@ -12,8 +12,8 @@ package org.eclipse.che.ide.ui.dropdown;
 
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 
 /**
  * Provides methods which allow change visual representation of header of the list.
@@ -36,7 +36,7 @@ public interface DropDownHeaderWidget {
      * @param title
      *         title of the selected element
      */
-    void selectElement(@Nullable SVGResource icon, @Nonnull String title);
+    void selectElement(@Nullable SVGResource icon, @NotNull String title);
 
     interface ActionDelegate {
     }

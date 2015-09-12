@@ -29,8 +29,8 @@ import org.eclipse.che.ide.client.inject.factories.TabItemFactory;
 import org.eclipse.che.ide.part.widgets.partbutton.PartButton;
 import org.eclipse.che.ide.workspace.WorkBenchPartController;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -73,7 +73,7 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
                               TabItemFactory tabItemFactory,
                               PartsComparator partsComparator,
                               @Assisted final PartStackView view,
-                              @Assisted @Nonnull WorkBenchPartController workBenchPartController) {
+                              @Assisted @NotNull WorkBenchPartController workBenchPartController) {
         this.view = view;
         this.view.setDelegate(this);
 
@@ -99,7 +99,7 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
         partSize = DEFAULT_PART_SIZE;
     }
 
-    private void updatePartTab(@Nonnull PartPresenter part) {
+    private void updatePartTab(@NotNull PartPresenter part) {
         if (!containsPart(part)) {
             throw new IllegalArgumentException("This part stack not contains: " + part.getTitle());
         }
@@ -115,13 +115,13 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
 
     /** {@inheritDoc} */
     @Override
-    public void addPart(@Nonnull PartPresenter part) {
+    public void addPart(@NotNull PartPresenter part) {
         addPart(part, null);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void addPart(@Nonnull PartPresenter part, @Nullable Constraints constraint) {
+    public void addPart(@NotNull PartPresenter part, @Nullable Constraints constraint) {
         if (containsPart(part)) {
             workBenchPartController.setHidden(true);
 
@@ -179,7 +179,7 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
 
     /** {@inheritDoc} */
     @Override
-    public void setActivePart(@Nonnull PartPresenter part) {
+    public void setActivePart(@NotNull PartPresenter part) {
         TabItem activeTab = getTabByPart(part);
 
         if (activeTab == null) {
@@ -191,7 +191,7 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
     }
 
     @Nullable
-    protected TabItem getTabByPart(@Nonnull PartPresenter part) {
+    protected TabItem getTabByPart(@NotNull PartPresenter part) {
         for (Map.Entry<TabItem, PartPresenter> entry : parts.entrySet()) {
 
             if (part.equals(entry.getValue())) {
@@ -252,7 +252,7 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
 
     /** {@inheritDoc} */
     @Override
-    public void onTabClicked(@Nonnull TabItem selectedTab) {
+    public void onTabClicked(@NotNull TabItem selectedTab) {
         if (selectedTab.equals(activeTab)) {
             selectedTab.unSelect();
 
@@ -274,7 +274,7 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
         selectActiveTab(activeTab);
     }
 
-    private void selectActiveTab(@Nonnull TabItem selectedTab) {
+    private void selectActiveTab(@NotNull TabItem selectedTab) {
         workBenchPartController.setSize(partSize);
         workBenchPartController.setHidden(false);
 

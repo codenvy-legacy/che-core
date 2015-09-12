@@ -20,7 +20,7 @@ import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.HTTPHeader;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -48,7 +48,7 @@ public class AccountServiceClientImpl implements AccountServiceClient {
 
     /** {@inheritDoc} */
     @Override
-    public void getAccountById(@Nonnull String accountId, AsyncRequestCallback<AccountDescriptor> callback) {
+    public void getAccountById(@NotNull String accountId, AsyncRequestCallback<AccountDescriptor> callback) {
         final String requestUrl = "/api/account/" + accountId;
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(HTTPHeader.ACCEPT, MimeType.APPLICATION_JSON)

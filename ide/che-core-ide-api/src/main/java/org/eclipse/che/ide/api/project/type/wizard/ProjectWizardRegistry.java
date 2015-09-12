@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.project.type.wizard;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 
 /**
  * Picks-up all bounded {@link ProjectWizardRegistrar}s to be able to return it for the particular project type ID.
@@ -27,7 +27,7 @@ public interface ProjectWizardRegistry {
      * @return {@link ProjectWizardRegistrar} for the specified project type ID or {@code null} if none
      */
     @Nullable
-    ProjectWizardRegistrar getWizardRegistrar(@Nonnull String projectTypeId);
+    ProjectWizardRegistrar getWizardRegistrar(@NotNull String projectTypeId);
 
     /**
      * Returns wizard category of the specified {@code projectTypeId} or {@code null} if none.
@@ -37,5 +37,5 @@ public interface ProjectWizardRegistry {
      * @return wizard category of the specified {@code projectTypeId} or {@code null}
      */
     @Nullable
-    String getWizardCategory(@Nonnull String projectTypeId);
+    String getWizardCategory(@NotNull String projectTypeId);
 }

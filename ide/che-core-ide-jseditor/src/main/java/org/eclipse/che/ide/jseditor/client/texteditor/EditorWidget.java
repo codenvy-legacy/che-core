@@ -29,7 +29,7 @@ import org.eclipse.che.ide.jseditor.client.events.HasGutterClickHandlers;
 import org.eclipse.che.ide.jseditor.client.keymap.Keymap;
 import org.eclipse.che.ide.jseditor.client.position.PositionConverter;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /** An interface for editor widget implementations. */
@@ -137,7 +137,7 @@ public interface EditorWidget extends IsWidget,
      *
      * @return the current keymap
      */
-    @Nonnull
+    @NotNull
     Keymap getKeymap();
 
     /** Give the focus to the editor. */

@@ -22,7 +22,7 @@ import com.google.gwt.user.client.ui.*;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * The wrapper for {@link Notification}. It is a graphic view of notification in notification manager popup.
@@ -33,10 +33,10 @@ public class NotificationItem extends Composite implements Notification.Notifica
     /** Required for delegating open and close functions in view. */
     public interface ActionDelegate {
         /** Performs some actions in response to a user's opening a notification */
-        void onOpenItemClicked(@Nonnull Notification notification);
+        void onOpenItemClicked(@NotNull Notification notification);
 
         /** Performs some actions in response to a user's closing a notification */
-        void onCloseItemClicked(@Nonnull Notification notification);
+        void onCloseItemClicked(@NotNull Notification notification);
     }
 
     private static final DateTimeFormat DATA_FORMAT = DateTimeFormat.getFormat("hh:mm:ss");
@@ -56,7 +56,7 @@ public class NotificationItem extends Composite implements Notification.Notifica
      * @param notification
      * @param delegate
      */
-    public NotificationItem(@Nonnull Resources resources, @Nonnull Notification notification, @Nonnull final ActionDelegate delegate,
+    public NotificationItem(@NotNull Resources resources, @NotNull Notification notification, @NotNull final ActionDelegate delegate,
                             final Grid container) {
         this.resources = resources;
         this.notification = notification;
@@ -118,7 +118,7 @@ public class NotificationItem extends Composite implements Notification.Notifica
      * @param icon
      *         icon that need to set
      */
-    private SVGImage changeImage(@Nonnull SVGResource icon) {
+    private SVGImage changeImage(@NotNull SVGResource icon) {
         SVGImage messageIcon = new SVGImage(icon);
         iconPanel.setWidget(messageIcon);
         return messageIcon;

@@ -28,7 +28,7 @@ import org.eclipse.che.ide.ui.toolbar.MenuLockLayer;
 import org.eclipse.che.ide.ui.toolbar.PopupMenu;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 import static com.google.gwt.dom.client.Style.Unit.PX;
 
@@ -76,7 +76,7 @@ public class DropDownListMenu implements ActionSelectedHandler {
      * @param itemIdPrefix
      *         list identifier
      */
-    public void show(final int x, final int y, @Nonnull String itemIdPrefix) {
+    public void show(final int x, final int y, @NotNull String itemIdPrefix) {
         hide();
         updateActions(itemIdPrefix);
 
@@ -115,7 +115,7 @@ public class DropDownListMenu implements ActionSelectedHandler {
      * @param listId
      *         identifier of action group which contains elements of list
      */
-    private void updateActions(@Nonnull String listId) {
+    private void updateActions(@NotNull String listId) {
         actions.removeAll();
 
         ActionGroup mainActionGroup = (ActionGroup)actionManager.getAction(listId);

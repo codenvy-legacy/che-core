@@ -13,7 +13,7 @@ package org.eclipse.che.ide.api.editor;
 import org.eclipse.che.ide.api.parts.PartPresenter;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * An editor is a visual component.
@@ -53,7 +53,7 @@ public interface EditorPartPresenter extends PartPresenter {
      * @throws EditorInitException
      *         if this editor was not initialized successfully
      */
-    void init(@Nonnull EditorInput input) throws EditorInitException;
+    void init(@NotNull EditorInput input) throws EditorInitException;
 
     /**
      * Returns the input for this editor.  If this value changes the part must
@@ -61,7 +61,7 @@ public interface EditorPartPresenter extends PartPresenter {
      *
      * @return the editor input
      */
-    @Nonnull
+    @NotNull
     EditorInput getEditorInput();
 
     /** Saves the contents of this editor. */
@@ -73,7 +73,7 @@ public interface EditorPartPresenter extends PartPresenter {
      * @param callback
      *         the callback for save operation
      */
-    void doSave(@Nonnull AsyncCallback<EditorInput> callback);
+    void doSave(@NotNull AsyncCallback<EditorInput> callback);
 
     /** Saves the contents of this part to another object. */
     void doSaveAs();
@@ -97,7 +97,7 @@ public interface EditorPartPresenter extends PartPresenter {
      * @param closeHandler
      *         the instance of CloseHandler
      */
-    void addCloseHandler(@Nonnull EditorPartCloseHandler closeHandler);
+    void addCloseHandler(@NotNull EditorPartCloseHandler closeHandler);
 
     /** Call this method then editor became visible */
     void activate();

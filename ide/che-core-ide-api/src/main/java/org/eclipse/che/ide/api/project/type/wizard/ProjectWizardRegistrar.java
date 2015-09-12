@@ -14,7 +14,7 @@ import org.eclipse.che.api.project.shared.dto.ImportProject;
 import org.eclipse.che.ide.api.wizard.WizardPage;
 import com.google.inject.Provider;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -38,14 +38,14 @@ public interface ProjectWizardRegistrar {
     String PROJECT_PATH_KEY = "ProjectWizard:CurrentProjectPath";
 
     /** Returns ID of the project type that should be registered in project wizard. */
-    @Nonnull
+    @NotNull
     String getProjectTypeId();
 
     /** Returns project type category for the project wizard. */
-    @Nonnull
+    @NotNull
     String getCategory();
 
     /** Returns pages that should be used in project wizard. */
-    @Nonnull
+    @NotNull
     List<Provider<? extends WizardPage<ImportProject>>> getWizardPages();
 }

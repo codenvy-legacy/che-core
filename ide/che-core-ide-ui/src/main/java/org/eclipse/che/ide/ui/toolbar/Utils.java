@@ -20,7 +20,7 @@ import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.eclipse.che.ide.collections.ListHelper;
 import org.eclipse.che.ide.util.loging.Log;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,9 +46,9 @@ public class Utils {
      *         perspective manager
      * @return list of visible action group
      */
-    public static List<VisibleActionGroup> renderActionGroup(@Nonnull ActionGroup group,
+    public static List<VisibleActionGroup> renderActionGroup(@NotNull ActionGroup group,
                                                              PresentationFactory presentationFactory,
-                                                             @Nonnull String place,
+                                                             @NotNull String place,
                                                              ActionManager actionManager,
                                                              PerspectiveManager perspectiveManager) {
         Presentation presentation = presentationFactory.getPresentation(group);

@@ -13,7 +13,7 @@ package org.eclipse.che.ide.api.parts;
 import org.eclipse.che.ide.api.constraints.Constraints;
 import org.eclipse.che.ide.api.mvp.Presenter;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Part Stack is tabbed layout element, containing Parts.
@@ -65,7 +65,7 @@ public interface PartStack extends Presenter {
      *
      * @param part
      */
-    void setActivePart(@Nonnull PartPresenter part);
+    void setActivePart(@NotNull PartPresenter part);
 
     /**
      * Hide given part (remove from the screen). If part not active part that method has no effect.

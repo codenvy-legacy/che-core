@@ -12,8 +12,8 @@ package org.eclipse.che.ide.api.action;
 
 import org.eclipse.che.ide.api.parts.PerspectiveManager;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,10 +42,10 @@ public class ActionEvent {
      * @param perspectiveManager
      *         perspective manager which contains information about current perspective
      */
-    public ActionEvent(@Nonnull String place,
-                       @Nonnull Presentation presentation,
-                       @Nonnull ActionManager actionManager,
-                       @Nonnull PerspectiveManager perspectiveManager) {
+    public ActionEvent(@NotNull String place,
+                       @NotNull Presentation presentation,
+                       @NotNull ActionManager actionManager,
+                       @NotNull PerspectiveManager perspectiveManager) {
         this(place, presentation, actionManager, perspectiveManager, null);
     }
 
@@ -63,10 +63,10 @@ public class ActionEvent {
      * @param parameters
      *         the parameters with which the action is invoked or updated
      */
-    public ActionEvent(@Nonnull String place,
-                       @Nonnull Presentation presentation,
-                       @Nonnull ActionManager actionManager,
-                       @Nonnull PerspectiveManager perspectiveManager,
+    public ActionEvent(@NotNull String place,
+                       @NotNull Presentation presentation,
+                       @NotNull ActionManager actionManager,
+                       @NotNull PerspectiveManager perspectiveManager,
                        @Nullable Map<String, String> parameters) {
         this.actionManager = actionManager;
         this.place = place;

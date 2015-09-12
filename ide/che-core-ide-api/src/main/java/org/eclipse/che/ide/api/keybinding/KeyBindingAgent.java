@@ -13,8 +13,8 @@ package org.eclipse.che.ide.api.keybinding;
 import org.eclipse.che.ide.api.extension.SDK;
 import org.eclipse.che.ide.util.input.CharCodeWithModifiers;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 
 /**
  * Public interface of the key binding management.
@@ -55,7 +55,7 @@ public interface KeyBindingAgent {
      * or an null if the action doesn't have any keyboard shortcut.
      */
     @Nullable
-    CharCodeWithModifiers getKeyBinding(@Nonnull String actionId);
+    CharCodeWithModifiers getKeyBinding(@NotNull String actionId);
 
 
 }

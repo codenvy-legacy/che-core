@@ -13,7 +13,7 @@ package org.eclipse.che.ide.workspace;
 import org.eclipse.che.ide.api.parts.PartStack;
 import org.eclipse.che.ide.api.parts.PartStackView;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Gin factory for PartStack
@@ -31,5 +31,5 @@ public interface PartStackPresenterFactory {
      *         controller which is used by part stack
      * @return an instance of {@link PartStack}
      */
-    PartStack create(@Nonnull PartStackView view, @Nonnull WorkBenchPartController workBenchPartController);
+    PartStack create(@NotNull PartStackView view, @NotNull WorkBenchPartController workBenchPartController);
 }

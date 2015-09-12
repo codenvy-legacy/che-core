@@ -30,8 +30,8 @@ import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.websocket.WebSocketException;
 import org.eclipse.che.ide.websocket.rest.RequestCallback;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
@@ -56,8 +56,8 @@ public interface GitServiceClient {
      *         callback
      * @throws WebSocketException
      */
-    void add(@Nonnull ProjectDescriptor project, boolean update, @Nullable List<String> filePattern,
-             @Nonnull RequestCallback<Void> callback) throws WebSocketException;
+    void add(@NotNull ProjectDescriptor project, boolean update, @Nullable List<String> filePattern,
+             @NotNull RequestCallback<Void> callback) throws WebSocketException;
 
     /**
      * Fetch changes from remote repository to local one (sends request over WebSocket).
@@ -81,8 +81,8 @@ public interface GitServiceClient {
      *         callback
      * @throws WebSocketException
      */
-    void fetch(@Nonnull ProjectDescriptor project, @Nonnull String remote, List<String> refspec,
-               boolean removeDeletedRefs, @Nonnull RequestCallback<String> callback) throws WebSocketException;
+    void fetch(@NotNull ProjectDescriptor project, @NotNull String remote, List<String> refspec,
+               boolean removeDeletedRefs, @NotNull RequestCallback<String> callback) throws WebSocketException;
 
     /**
      * Get the list of the branches. For now, all branches cannot be returned at once, so the parameter <code>remote</code> tells to get
@@ -94,8 +94,8 @@ public interface GitServiceClient {
      *         get remote branches
      * @param callback
      */
-    void branchList(@Nonnull ProjectDescriptor project, @Nullable String mode,
-                    @Nonnull AsyncRequestCallback<List<Branch>> callback);
+    void branchList(@NotNull ProjectDescriptor project, @Nullable String mode,
+                    @NotNull AsyncRequestCallback<List<Branch>> callback);
 
     /**
      * Delete branch.
@@ -108,8 +108,8 @@ public interface GitServiceClient {
      *         force if <code>true</code> delete branch {@code name} even if it is not fully merged
      * @param callback
      */
-    void branchDelete(@Nonnull ProjectDescriptor project, @Nonnull String name, boolean force,
-                      @Nonnull AsyncRequestCallback<String> callback);
+    void branchDelete(@NotNull ProjectDescriptor project, @NotNull String name, boolean force,
+                      @NotNull AsyncRequestCallback<String> callback);
 
     /**
      * Checkout the branch with pointed name.
@@ -122,8 +122,8 @@ public interface GitServiceClient {
      *         branch's new name
      * @param callback
      */
-    void branchRename(@Nonnull ProjectDescriptor project, @Nonnull String oldName, @Nonnull String newName,
-                      @Nonnull AsyncRequestCallback<String> callback);
+    void branchRename(@NotNull ProjectDescriptor project, @NotNull String oldName, @NotNull String newName,
+                      @NotNull AsyncRequestCallback<String> callback);
 
     /**
      * Create new branch with pointed name.
@@ -136,14 +136,14 @@ public interface GitServiceClient {
      *         name of a commit at which to start the new branch
      * @param callback
      */
-    void branchCreate(@Nonnull ProjectDescriptor project, @Nonnull String name, @Nullable String startPoint,
-                      @Nonnull AsyncRequestCallback<Branch> callback);
+    void branchCreate(@NotNull ProjectDescriptor project, @NotNull String name, @Nullable String startPoint,
+                      @NotNull AsyncRequestCallback<Branch> callback);
 
     /**
      * Checkout the branch with pointed name.
      */
-    void branchCheckout(@Nonnull ProjectDescriptor project, @Nonnull BranchCheckoutRequest branchCheckoutRequest,
-                        @Nonnull AsyncRequestCallback<String> callback);
+    void branchCheckout(@NotNull ProjectDescriptor project, @NotNull BranchCheckoutRequest branchCheckoutRequest,
+                        @NotNull AsyncRequestCallback<String> callback);
 
     /**
      * Get the list of remote repositories for pointed by <code>workDir</code> parameter one.
@@ -156,8 +156,8 @@ public interface GitServiceClient {
      *         If <code>true</code> show remote url and name otherwise show remote name
      * @param callback
      */
-    void remoteList(@Nonnull ProjectDescriptor project, @Nullable String remoteName, boolean verbose,
-                    @Nonnull AsyncRequestCallback<List<Remote>> callback);
+    void remoteList(@NotNull ProjectDescriptor project, @Nullable String remoteName, boolean verbose,
+                    @NotNull AsyncRequestCallback<List<Remote>> callback);
 
     /**
      * Adds remote repository to the list of remote repositories.
@@ -170,8 +170,8 @@ public interface GitServiceClient {
      *         remote repository's URL
      * @param callback
      */
-    void remoteAdd(@Nonnull ProjectDescriptor project, @Nonnull String name, @Nonnull String url,
-                   @Nonnull AsyncRequestCallback<String> callback);
+    void remoteAdd(@NotNull ProjectDescriptor project, @NotNull String name, @NotNull String url,
+                   @NotNull AsyncRequestCallback<String> callback);
 
     /**
      * Deletes the pointed(by name) remote repository from the list of repositories.
@@ -182,8 +182,8 @@ public interface GitServiceClient {
      *         remote repository name to delete
      * @param callback
      */
-    void remoteDelete(@Nonnull ProjectDescriptor project, @Nonnull String name,
-                      @Nonnull AsyncRequestCallback<String> callback);
+    void remoteDelete(@NotNull ProjectDescriptor project, @NotNull String name,
+                      @NotNull AsyncRequestCallback<String> callback);
 
     /**
      * Remove items from the working tree and the index.
@@ -196,7 +196,7 @@ public interface GitServiceClient {
      *         is for removal only from index
      * @param callback
      */
-    void remove(@Nonnull ProjectDescriptor project, List<String> items, boolean cached, @Nonnull AsyncRequestCallback<String> callback);
+    void remove(@NotNull ProjectDescriptor project, List<String> items, boolean cached, @NotNull AsyncRequestCallback<String> callback);
 
     /**
      * Reset current HEAD to the specified state. There two types of the reset: <br>
@@ -215,8 +215,8 @@ public interface GitServiceClient {
      *         else reset received files in index.
      * @param callback
      */
-    void reset(@Nonnull ProjectDescriptor project, @Nonnull String commit, @Nullable ResetRequest.ResetType resetType,
-               @Nullable List<String> filePattern, @Nonnull AsyncRequestCallback<Void> callback);
+    void reset(@NotNull ProjectDescriptor project, @NotNull String commit, @Nullable ResetRequest.ResetType resetType,
+               @Nullable List<String> filePattern, @NotNull AsyncRequestCallback<Void> callback);
 
     /**
      * Initializes new Git repository (over WebSocket).
@@ -228,7 +228,7 @@ public interface GitServiceClient {
      * @param callback
      *         callback
      */
-    void init(@Nonnull ProjectDescriptor project, boolean bare, @Nonnull RequestCallback<Void> callback) throws WebSocketException;
+    void init(@NotNull ProjectDescriptor project, boolean bare, @NotNull RequestCallback<Void> callback) throws WebSocketException;
 
     /**
      * Pull (fetch and merge) changes from remote repository to local one (sends request over WebSocket).
@@ -250,8 +250,8 @@ public interface GitServiceClient {
      *         callback
      * @throws WebSocketException
      */
-    void pull(@Nonnull ProjectDescriptor project, @Nonnull String refSpec, @Nonnull String remote,
-              @Nonnull AsyncRequestCallback<PullResponse> callback);
+    void pull(@NotNull ProjectDescriptor project, @NotNull String refSpec, @NotNull String remote,
+              @NotNull AsyncRequestCallback<PullResponse> callback);
 
     /**
      * Push changes from local repository to remote one (sends request over WebSocket).
@@ -269,8 +269,8 @@ public interface GitServiceClient {
      *         callback
      * @throws WebSocketException
      */
-    void push(@Nonnull ProjectDescriptor project, @Nonnull List<String> refSpec, @Nonnull String remote, boolean force,
-              @Nonnull AsyncRequestCallback<PushResponse> callback);
+    void push(@NotNull ProjectDescriptor project, @NotNull List<String> refSpec, @NotNull String remote, boolean force,
+              @NotNull AsyncRequestCallback<PushResponse> callback);
 
     /**
      * Clones one remote repository to local one (over WebSocket).
@@ -285,8 +285,8 @@ public interface GitServiceClient {
      *         callback
      * @throws WebSocketException
      */
-    void cloneRepository(@Nonnull ProjectDescriptor project, @Nonnull String remoteUri, @Nonnull String remoteName,
-                         @Nonnull RequestCallback<RepoInfo> callback) throws WebSocketException;
+    void cloneRepository(@NotNull ProjectDescriptor project, @NotNull String remoteUri, @NotNull String remoteName,
+                         @NotNull RequestCallback<RepoInfo> callback) throws WebSocketException;
 
     /**
      * Performs commit changes from index to repository. The result of the commit is represented by {@link Revision}, which is returned by
@@ -304,8 +304,8 @@ public interface GitServiceClient {
      *         callback
      * @throws WebSocketException
      */
-    void commit(@Nonnull ProjectDescriptor project, @Nonnull String message, boolean all, boolean amend,
-                @Nonnull AsyncRequestCallback<Revision> callback);
+    void commit(@NotNull ProjectDescriptor project, @NotNull String message, boolean all, boolean amend,
+                @NotNull AsyncRequestCallback<Revision> callback);
 
     /**
      * Performs commit for the given files (ignoring git index).
@@ -322,8 +322,8 @@ public interface GitServiceClient {
      *         callback
      * @throws WebSocketException
      */
-    void commit(@Nonnull ProjectDescriptor project, @Nonnull String message, @Nonnull List<String> files, boolean amend,
-                @Nonnull AsyncRequestCallback<Revision> callback);
+    void commit(@NotNull ProjectDescriptor project, @NotNull String message, @NotNull List<String> files, boolean amend,
+                @NotNull AsyncRequestCallback<Revision> callback);
 
     /**
      * Performs commit changes from index to repository. The result of the commit is represented by {@link Revision}, which is returned by
@@ -336,8 +336,8 @@ public interface GitServiceClient {
      * @param callback
      *         callback for sending asynchronous response
      */
-    void config(@Nonnull ProjectDescriptor project, @Nullable List<String> entries, boolean all,
-                @Nonnull AsyncRequestCallback<Map<String, String>> callback);
+    void config(@NotNull ProjectDescriptor project, @Nullable List<String> entries, boolean all,
+                @NotNull AsyncRequestCallback<Map<String, String>> callback);
 
     /**
      * Compare two commits, get the diff for pointed file(s) or for the whole project in text format.
@@ -358,9 +358,9 @@ public interface GitServiceClient {
      *         second commit to be compared
      * @param callback
      */
-    void diff(@Nonnull ProjectDescriptor project, @Nonnull List<String> fileFilter, @Nonnull DiffRequest.DiffType type,
-              boolean noRenames, int renameLimit, @Nonnull String commitA, @Nonnull String commitB,
-              @Nonnull AsyncRequestCallback<String> callback);
+    void diff(@NotNull ProjectDescriptor project, @NotNull List<String> fileFilter, @NotNull DiffRequest.DiffType type,
+              boolean noRenames, int renameLimit, @NotNull String commitA, @NotNull String commitB,
+              @NotNull AsyncRequestCallback<String> callback);
 
     /**
      * Compare commit with index or working tree (depends on {@code cached}), get the diff for pointed file(s) or for the whole project in
@@ -382,8 +382,8 @@ public interface GitServiceClient {
      *         if <code>true</code> then compare commit with index, if <code>false</code>, then compare with working tree.
      * @param callback
      */
-    void diff(@Nonnull ProjectDescriptor project, @Nonnull List<String> fileFilter, @Nonnull DiffRequest.DiffType type,
-              boolean noRenames, int renameLimit, @Nonnull String commitA, boolean cached, @Nonnull AsyncRequestCallback<String> callback);
+    void diff(@NotNull ProjectDescriptor project, @NotNull List<String> fileFilter, @NotNull DiffRequest.DiffType type,
+              boolean noRenames, int renameLimit, @NotNull String commitA, boolean cached, @NotNull AsyncRequestCallback<String> callback);
 
     /**
      * Get log of commits. The result is the list of {@link Revision}, which is returned by callback in
@@ -395,7 +395,7 @@ public interface GitServiceClient {
      *         if <code>true</code> the loq response will be in text format
      * @param callback
      */
-    void log(@Nonnull ProjectDescriptor project, boolean isTextFormat, @Nonnull AsyncRequestCallback<LogResponse> callback);
+    void log(@NotNull ProjectDescriptor project, boolean isTextFormat, @NotNull AsyncRequestCallback<LogResponse> callback);
 
     /**
      * Merge the pointed commit with current HEAD.
@@ -406,8 +406,8 @@ public interface GitServiceClient {
      *         commit's reference to merge with
      * @param callback
      */
-    void merge(@Nonnull ProjectDescriptor project, @Nonnull String commit,
-               @Nonnull AsyncRequestCallback<MergeResult> callback);
+    void merge(@NotNull ProjectDescriptor project, @NotNull String commit,
+               @NotNull AsyncRequestCallback<MergeResult> callback);
 
     /**
      * Gets the working tree status. The status of added, modified or deleted files is shown is written in {@link String}. The format may
@@ -438,7 +438,7 @@ public interface GitServiceClient {
      *         to show in short format or not
      * @param callback
      */
-    void statusText(@Nonnull ProjectDescriptor project, StatusFormat format, @Nonnull AsyncRequestCallback<String> callback);
+    void statusText(@NotNull ProjectDescriptor project, StatusFormat format, @NotNull AsyncRequestCallback<String> callback);
 
     /**
      * Gets the working tree status : list of untracked, changed not commited and changed not updated.
@@ -447,7 +447,7 @@ public interface GitServiceClient {
      *         project (root of GIT repository)
      * @param callback
      */
-    void status(@Nonnull ProjectDescriptor project, @Nonnull AsyncRequestCallback<Status> callback);
+    void status(@NotNull ProjectDescriptor project, @NotNull AsyncRequestCallback<Status> callback);
 
     /**
      * Get the Git ReadOnly Url for the pointed item's location.
@@ -456,11 +456,11 @@ public interface GitServiceClient {
      *         project (root of GIT repository)
      * @param callback
      */
-    void getGitReadOnlyUrl(@Nonnull ProjectDescriptor project, @Nonnull AsyncRequestCallback<String> callback);
+    void getGitReadOnlyUrl(@NotNull ProjectDescriptor project, @NotNull AsyncRequestCallback<String> callback);
 
-    void getCommitters(@Nonnull ProjectDescriptor project, @Nonnull AsyncRequestCallback<Commiters> callback);
+    void getCommitters(@NotNull ProjectDescriptor project, @NotNull AsyncRequestCallback<Commiters> callback);
 
-    void deleteRepository(@Nonnull ProjectDescriptor project, @Nonnull AsyncRequestCallback<Void> callback);
+    void deleteRepository(@NotNull ProjectDescriptor project, @NotNull AsyncRequestCallback<Void> callback);
 
-    void getUrlVendorInfo(@Nonnull String vcsUrl, @Nonnull AsyncRequestCallback<GitUrlVendorInfo> callback);
+    void getUrlVendorInfo(@NotNull String vcsUrl, @NotNull AsyncRequestCallback<GitUrlVendorInfo> callback);
 }

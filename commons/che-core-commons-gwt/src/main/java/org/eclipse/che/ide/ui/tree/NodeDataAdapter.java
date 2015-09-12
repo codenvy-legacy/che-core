@@ -97,7 +97,7 @@ public interface NodeDataAdapter<D> {
      * @return the node that should be the drag-and-drop target for the given
      *         node. The returned node must already be rendered.
      */
-    //@Nonnull D getDragDropTarget(D data);
+    //@NotNull D getDragDropTarget(D data);
     D getDragDropTarget(D data);
 
     /**

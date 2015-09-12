@@ -12,7 +12,7 @@ package org.eclipse.che.ide.api.project.tree;
 
 import com.google.inject.Provider;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Provides an instances of {@code TreeStructure}.
@@ -25,7 +25,7 @@ import javax.annotation.Nonnull;
 public interface TreeStructureProvider extends Provider<TreeStructure> {
 
     /** Returns ID of the {@code TreeStructure} what this provider can supply. */
-    @Nonnull
+    @NotNull
     String getId();
 
     /** Provides an instance of {@code TreeStructure}. */

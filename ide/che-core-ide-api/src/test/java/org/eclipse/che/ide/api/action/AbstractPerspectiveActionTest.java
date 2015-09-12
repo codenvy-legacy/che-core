@@ -18,7 +18,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.NotSupportedException;
 import java.util.Arrays;
 import java.util.List;
@@ -64,15 +64,15 @@ public class AbstractPerspectiveActionTest {
 
     private class DummyAction extends AbstractPerspectiveAction {
 
-        public DummyAction(@Nonnull List<String> activePerspectives,
-                           @Nonnull String tooltip,
-                           @Nonnull String description,
-                           @Nonnull SVGResource icon) {
+        public DummyAction(@NotNull List<String> activePerspectives,
+                           @NotNull String tooltip,
+                           @NotNull String description,
+                           @NotNull SVGResource icon) {
             super(activePerspectives, tooltip, description, null, icon);
         }
 
         @Override
-        public void updateInPerspective(@Nonnull ActionEvent event) {
+        public void updateInPerspective(@NotNull ActionEvent event) {
             throw new NotSupportedException("Method isn't supported in current mode...");
         }
 
