@@ -12,6 +12,7 @@ package org.eclipse.che.git.impl.nativegit;
 
 import org.eclipse.che.api.core.util.LineConsumerFactory;
 import org.eclipse.che.api.git.Config;
+import org.eclipse.che.api.git.CredentialsLoader;
 import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.git.impl.nativegit.commands.AddCommand;
 import org.eclipse.che.git.impl.nativegit.commands.BranchCheckoutCommand;

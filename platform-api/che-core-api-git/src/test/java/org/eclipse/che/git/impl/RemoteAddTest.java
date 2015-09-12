@@ -37,7 +37,6 @@ import static org.eclipse.che.dto.server.DtoFactory.newDto;
 import static org.eclipse.che.git.impl.GitTestUtil.cleanupTestRepo;
 import static org.eclipse.che.git.impl.GitTestUtil.connectToGitRepositoryWithContent;
 import static org.eclipse.che.git.impl.GitTestUtil.connectToInitializedGitRepository;
-import static org.eclipse.che.git.impl.GitTestUtil.getTestGitUser;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
@@ -82,7 +81,7 @@ public class RemoteAddTest {
         connection.branchCreate(newDto(BranchCreateRequest.class).withName("b2"));
         connection.branchCreate(newDto(BranchCreateRequest.class).withName("b3"));
 
-        GitConnection connection2 = connectionFactory.getConnection(remoteRepo.getAbsolutePath(), getTestGitUser());
+        GitConnection connection2 = connectionFactory.getConnection(remoteRepo.getAbsolutePath());
         connection2.init(newDto(InitRequest.class).withBare(false));
         //when
         //add remote tracked only to b1 and b3 branches.

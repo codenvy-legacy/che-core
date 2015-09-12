@@ -36,7 +36,6 @@ import static org.eclipse.che.dto.server.DtoFactory.newDto;
 import static org.eclipse.che.git.impl.GitTestUtil.addFile;
 import static org.eclipse.che.git.impl.GitTestUtil.cleanupTestRepo;
 import static org.eclipse.che.git.impl.GitTestUtil.connectToInitializedGitRepository;
-import static org.eclipse.che.git.impl.GitTestUtil.getTestGitUser;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
@@ -65,10 +64,10 @@ public class PushTest {
             throws IOException, ServerException, URISyntaxException, UnauthorizedException {
         //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
-        GitConnection remoteConnection = connectionFactory.getConnection(remoteRepo.getAbsolutePath(), getTestGitUser());
+        GitConnection remoteConnection = connectionFactory.getConnection(remoteRepo.getAbsolutePath());
         remoteConnection.clone(newDto(CloneRequest.class).withRemoteUri(connection.getWorkingDir().getAbsolutePath())
                                                          .withWorkingDir(remoteConnection.getWorkingDir().getAbsolutePath()));
-        addFile(remoteRepo.toPath(), "newfile", "content");
+        addFile(remoteConnection, "newfile", "content");
         remoteConnection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
         remoteConnection.commit(newDto(CommitRequest.class).withMessage("Fake commit"));
         //when
@@ -90,7 +89,7 @@ public class PushTest {
         //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
         GitConnection remoteConnection = connectToInitializedGitRepository(connectionFactory, remoteRepo);
-        addFile(repository.toPath(), "README", "README");
+        addFile(connection, "README", "README");
         connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
         connection.commit(newDto(CommitRequest.class).withMessage("Init commit."));
         //make push

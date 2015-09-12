@@ -413,9 +413,6 @@ public interface GitConnection extends Closeable {
      */
     List<Tag> tagList(TagListRequest request) throws GitException;
 
-    /** @return user associated with this connection */
-    GitUser getUser();
-
     /**
      * Gel list of commiters in current repository.
      *

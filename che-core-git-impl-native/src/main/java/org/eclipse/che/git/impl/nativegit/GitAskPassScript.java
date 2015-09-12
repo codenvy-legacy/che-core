@@ -10,10 +10,10 @@
  *******************************************************************************/
 package org.eclipse.che.git.impl.nativegit;
 
+import org.eclipse.che.api.git.UserCredential;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.api.git.GitException;
-import org.eclipse.che.api.git.shared.GitUser;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -151,7 +151,7 @@ public class VFSPermissionsFilterTest {
             throws IOException, ServletException, ApiException {
         //given
         when(request.getHeader("authorization")).thenReturn(
-                "BASIC " + (Base64.encodeBase64String(("OTHERUSER" + ":" + "x-codenvy").getBytes())));
+                "BASIC " + (Base64.encodeBase64String(("OTHERUSER" + ":" + "x-che").getBytes())));
 
         // get user by token
         when(httpJsonHelper.requestString(contains("internal/sso/server"), eq("GET"), isNull(), eq(Pair.of("clienturl",
