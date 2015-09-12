@@ -15,6 +15,8 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
+import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.editor.EditorAgent;
@@ -51,10 +53,14 @@ import org.eclipse.che.ide.project.node.ItemReferenceBasedNode;
 import org.eclipse.che.ide.project.node.ModuleDescriptorNode;
 import org.eclipse.che.ide.project.node.NodeManager;
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
+import org.eclipse.che.ide.rest.AsyncRequestCallback;
+import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
+import org.eclipse.che.ide.rest.Unmarshallable;
 import org.eclipse.che.ide.util.loging.Log;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.NavigableMap;
 import java.util.TreeMap;
@@ -69,6 +75,9 @@ public class EditorAgentImpl implements EditorAgent {
 
     private final NavigableMap<String, EditorPartPresenter> openedEditors;
     private final EventBus                                  eventBus;
+    private final NodeManager                               nodeManager;
+    private final ProjectServiceClient                      projectService;
+    private final DtoUnmarshallerFactory                    unmarshallerFactory;
     private final WorkspaceAgent                            workspace;
     private       List<EditorPartPresenter>                 dirtyEditors;
     private       FileTypeRegistry                          fileTypeRegistry;
@@ -76,7 +85,6 @@ public class EditorAgentImpl implements EditorAgent {
     private       EditorPartPresenter                       activeEditor;
     private       NotificationManager                       notificationManager;
     private       CoreLocalizationConstant                  coreLocalizationConstant;
-    private final NodeManager nodeManager;
 
     @Inject
     public EditorAgentImpl(EventBus eventBus,
@@ -85,7 +93,9 @@ public class EditorAgentImpl implements EditorAgent {
                            final WorkspaceAgent workspace,
                            final NotificationManager notificationManager,
                            CoreLocalizationConstant coreLocalizationConstant,
-                           NodeManager nodeManager) {
+                           NodeManager nodeManager,
+                           ProjectServiceClient projectService,
+                           DtoUnmarshallerFactory unmarshallerFactory) {
         super();
         this.eventBus = eventBus;
         this.fileTypeRegistry = fileTypeRegistry;
@@ -95,6 +105,8 @@ public class EditorAgentImpl implements EditorAgent {
         this.coreLocalizationConstant = coreLocalizationConstant;
         this.nodeManager = nodeManager;
         openedEditors = new TreeMap<>();
+        this.projectService = projectService;
+        this.unmarshallerFactory = unmarshallerFactory;
 
         bind();
     }
@@ -110,20 +122,20 @@ public class EditorAgentImpl implements EditorAgent {
                 ResourceBasedNode node = event.getNode();
 
                 if (node instanceof FileReferenceNode) {
-                    for (EditorPartPresenter editor : getOpenedEditors().values()) {
+                    for (EditorPartPresenter editor : openedEditors.values()) {
                         VirtualFile deletedVFile = (VirtualFile)node;
                         if (deletedVFile.getPath().equals(editor.getEditorInput().getFile().getPath())) {
                             eventBus.fireEvent(new FileEvent(editor.getEditorInput().getFile(), CLOSE));
                         }
                     }
                 } else if (node instanceof FolderReferenceNode) {
-                    for (EditorPartPresenter editor : getOpenedEditors().values()) {
+                    for (EditorPartPresenter editor : openedEditors.values()) {
                         if (editor.getEditorInput().getFile().getPath().startsWith(((FolderReferenceNode)node).getStorablePath())) {
                             eventBus.fireEvent(new FileEvent(editor.getEditorInput().getFile(), CLOSE));
                         }
                     }
                 } else if (node instanceof ModuleDescriptorNode) {
-                    for (EditorPartPresenter editor : getOpenedEditors().values()) {
+                    for (EditorPartPresenter editor : openedEditors.values()) {
                         VirtualFile virtualFile = editor.getEditorInput().getFile();
                         if (virtualFile.getProject() != null
                             && virtualFile.getProject().getProjectDescriptor().equals(node.getProjectDescriptor())) {
@@ -147,7 +159,9 @@ public class EditorAgentImpl implements EditorAgent {
         eventBus.addHandler(ResourceNodeRenamedEvent.getType(), new ResourceNodeRenamedEvent.ResourceNodeRenamedHandler() {
             @Override
             public void onResourceRenamedEvent(ResourceNodeRenamedEvent event) {
-                if (event.getNode() instanceof FileReferenceNode) {
+                ResourceBasedNode<?> resourceBaseNode = event.getNode();
+
+                if (resourceBaseNode instanceof FileReferenceNode) {
                     FileReferenceNode fileReferenceNode = (FileReferenceNode)event.getNode();
 
                     String oldPath = fileReferenceNode.getPath();
@@ -159,10 +173,65 @@ public class EditorAgentImpl implements EditorAgent {
                             updateEditorNode(oldPath, (FileReferenceNode)wrapped);
                         }
                     }
+                } else if (resourceBaseNode instanceof FolderReferenceNode || resourceBaseNode instanceof ModuleDescriptorNode) {
+                    HasStorablePath renamedTargetStoragePath = ((HasStorablePath)resourceBaseNode);
+                    final String oldTargetPath = renamedTargetStoragePath.getStorablePath();
+                    final String newTargetPath;
+                    if (resourceBaseNode instanceof FolderReferenceNode) {
+                        newTargetPath = ((ItemReference)event.getNewDataObject()).getPath();
+                    } else {
+                        newTargetPath = ((ProjectDescriptor)event.getNewDataObject()).getPath();
+                    }
+                    final Unmarshallable<ItemReference> unmarshaller = unmarshallerFactory.newUnmarshaller(ItemReference.class);
+                    updateEditorPartsAfterRename(new LinkedList<EditorPartPresenter>(openedEditors.values()),
+                                                 oldTargetPath,
+                                                 newTargetPath,
+                                                 unmarshaller);
                 }
             }
         });
 
+    }
+
+    //todo Warning: this code should be reworked or deleted when folders and maven modules won't being closed after rename
+    /**
+     * Recursive update opened editor parts after renaming their parent folder or parent module
+     * @param editorParts list opened editor parts
+     */
+    private void updateEditorPartsAfterRename(final LinkedList<EditorPartPresenter> editorParts,
+                                              final String oldTargetPath,
+                                              final String newTargetPath,
+                                              final Unmarshallable<ItemReference> unmarshaller) {
+        if (editorParts.isEmpty()) {
+            return;
+        }
+        final EditorPartPresenter editorPart = editorParts.pop();
+        final String oldFilePath = editorPart.getEditorInput().getFile().getPath();
+
+        if (!oldFilePath.startsWith(oldTargetPath + "/")) {
+            updateEditorPartsAfterRename(editorParts, oldTargetPath, newTargetPath, unmarshaller);
+        }
+
+        final String newFilePath = oldFilePath.replaceFirst(oldTargetPath, newTargetPath);
+
+        projectService.getItem(newFilePath, new AsyncRequestCallback<ItemReference>(unmarshaller) {
+            @Override
+            protected void onSuccess(ItemReference result) {
+                FileReferenceNode fileReferenceNode = ((FileReferenceNode)editorPart.getEditorInput().getFile());
+                ProjectDescriptor projectDescriptor = fileReferenceNode.getProjectDescriptor();
+                final ItemReferenceBasedNode wrappedNode = nodeManager.wrap(result, projectDescriptor);
+
+                if (wrappedNode instanceof FileReferenceNode) {
+                    updateEditorNode(oldFilePath, (FileReferenceNode)wrappedNode);
+                }
+                updateEditorPartsAfterRename(editorParts, oldTargetPath, newTargetPath, unmarshaller);
+            }
+
+            @Override
+            protected void onFailure(Throwable exception) {
+                updateEditorPartsAfterRename(editorParts, oldTargetPath, newTargetPath, unmarshaller);
+            }
+        });
     }
 
     /** Used to notify {@link EditorAgentImpl} that editor has closed */
@@ -265,7 +334,7 @@ public class EditorAgentImpl implements EditorAgent {
     @Override
     public List<EditorPartPresenter> getDirtyEditors() {
         List<EditorPartPresenter> dirtyEditors = new ArrayList<>();
-        for (EditorPartPresenter partPresenter : getOpenedEditors().values()) {
+        for (EditorPartPresenter partPresenter : openedEditors.values()) {
             if (partPresenter.isDirty()) {
                 dirtyEditors.add(partPresenter);
             }
@@ -336,11 +405,8 @@ public class EditorAgentImpl implements EditorAgent {
     }
 
     //TODO highly recommend to refactor or remove this method
-
-    /** {@inheritDoc} */
-    @Override
-    public void updateEditorNode(@NotNull String path, @NotNull VirtualFile virtualFile) {
-        final EditorPartPresenter editor = getOpenedEditors().remove(path);
+    private void updateEditorNode(@NotNull String path, @NotNull VirtualFile virtualFile) {
+        final EditorPartPresenter editor = openedEditors.remove(path);
         if (editor != null) {
             editor.getEditorInput().setFile(virtualFile);
             getOpenedEditors().put(virtualFile.getPath(), editor);
