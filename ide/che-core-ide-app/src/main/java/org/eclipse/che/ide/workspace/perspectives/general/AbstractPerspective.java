@@ -80,6 +80,9 @@ public abstract class AbstractPerspective implements Presenter, Perspective {
         rightPartController = controllerFactory.createController(view.getSplitPanel(), view.getToolPanel());
         PartStack toolingPartStack = stackPresenterFactory.create(toolingView, rightPartController);
         partStacks.put(TOOLING, toolingPartStack);
+
+        /* Makes splitters much better */
+        view.tuneSplitters();
     }
 
     /**

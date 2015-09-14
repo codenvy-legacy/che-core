@@ -103,6 +103,11 @@ public class LightTheme implements Theme {
     }
 
     @Override
+    public String getTabUnderlineColor() {
+        return "rgb(70,102,149)";
+    }
+
+    @Override
     public String getPartBackground() {
         return "#ffffff";
     }
@@ -548,6 +553,11 @@ public class LightTheme implements Theme {
     }
 
     @Override
+    public String getMinimizeIconHoverColor() {
+        return "#333333";
+    }
+
+    @Override
     public String getOutputFontColor() {
         return "#e6e6e6";
     }
@@ -582,4 +592,15 @@ public class LightTheme implements Theme {
     public String getEditorSeparatorColor() {
         return "#888888";
     }
+
+    @Override
+    public String getSplitterSmallBorderColor() {
+        return "#8E8E8E";
+    }
+
+    @Override
+    public String getSplitterLargeBorderColor() {
+        return "#E1E1E1";
+    }
+
 }

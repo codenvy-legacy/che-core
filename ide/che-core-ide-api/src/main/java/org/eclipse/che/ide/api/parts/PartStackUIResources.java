@@ -100,6 +100,9 @@ public interface PartStackUIResources extends ClientBundle {
     @Source("minimize.svg")
     SVGResource minimize();
 
+    @Source("collapse-expand-icon.svg")
+    SVGResource collapseExpandIcon();
+
     @Source("arrow.svg")
     SVGResource arrow();
 }

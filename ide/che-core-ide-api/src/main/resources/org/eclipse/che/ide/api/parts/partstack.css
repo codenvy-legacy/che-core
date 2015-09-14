@@ -27,6 +27,13 @@
     box-sizing: border-box;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
+
+    -webkit-transition: color 0.1s ease-in-out,
+                fill 0.1s ease-in-out,
+                stroke 0.1s ease-in-out;
+    transition: color 0.1s ease-in-out,
+                fill 0.1s ease-in-out,
+                stroke 0.1s ease-in-out;
 }
 
 .ide-PartStack-Tab svg {
@@ -41,6 +48,13 @@
 .ide-PartStack-Tab svg path {
     fill: tabTextColor;
     stroke: tabTextColor;
+
+    -webkit-transition: color 0.1s ease-in-out,
+                fill 0.1s ease-in-out,
+                stroke 0.1s ease-in-out;
+    transition: color 0.1s ease-in-out,
+                fill 0.1s ease-in-out,
+                stroke 0.1s ease-in-out;
 }
 
 .ide-PartStack-Tab:hover {
@@ -81,7 +95,7 @@
 .leftTabs,
 .rightTabs,
 .bottomTabs {
-    /* A little hack is needed to tune bottom parts panel. Please ask Vitaliy Gulity for details. */
+    /* A little hack is needed to tune tab button border. */
     border-radius: 5px;
 }
 
@@ -145,13 +159,17 @@
     height: 100%;
 }
 
+.ide-PartStack-Content div[role="part"] div[role="toolbar"] div[role="toolbar-header"] {
+    border-bottom: 1px solid transparent;
+}
+
 .ide-PartStack-Content div[role="part"][active] div[role="toolbar"] div[role="toolbar-header"] {
-    background-color: rgb(77, 113, 145) ! important;
+    border-bottom-color: tabUnderlineColor;
 }
 
 .ide-Base-Part-Title-Label {
     display: inline-block;
-    line-height: 22px;
+    line-height: 23px;
     margin-left: 10px;
     vertical-align: middle;
     cursor: default;
@@ -165,9 +183,7 @@
 .ide-Base-Part-Toolbar {
     background-color: partToolbar;
     border-bottom: 1px solid tabBorder;
-    box-shadow: 0px 2px 5px 0px partToolbarShadow;
-    text-shadow: 0px 1px 0px rgba(0, 0, 0, 0.5);
-    font-size: secondaryTextFontSize;
+    font-size: 9.5px;
     color: mainFontColor;
 }
 
@@ -248,7 +264,6 @@
     -moz-transform: scale(0.9);
     transform: scale(0.9);
 }
-
 
 @sprite .ide-PartStack-Tab-Line-Error {
     gwt-image: "squiggle";

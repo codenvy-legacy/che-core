@@ -11,6 +11,11 @@
 package org.eclipse.che.ide.workspace.perspectives.general;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.DivElement;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Node;
+import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -22,6 +27,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 
 import org.eclipse.che.ide.api.parts.WorkBenchView;
+import org.eclipse.che.ide.api.theme.Style;
 import org.eclipse.che.ide.workspace.WorkBenchResources;
 
 /**
@@ -38,7 +44,7 @@ public class PerspectiveViewImpl extends LayoutPanel implements WorkBenchView<Wo
     private static final PerspectiveViewImplUiBinder UI_BINDER = GWT.create(PerspectiveViewImplUiBinder.class);
 
     @UiField(provided = true)
-    SplitLayoutPanel splitPanel = new SplitLayoutPanel(3);
+    SplitLayoutPanel splitPanel = new SplitLayoutPanel(1);
 
     @UiField
     ScrollPanel editorPanel;
@@ -99,6 +105,133 @@ public class PerspectiveViewImpl extends LayoutPanel implements WorkBenchView<Wo
     /** Returns split panel. */
     public SplitLayoutPanel getSplitPanel() {
         return splitPanel;
+    }
+
+    /**
+     * Makes splitter better.
+     */
+    public void tuneSplitters() {
+        NodeList<Node> nodes = splitPanel.getElement().getChildNodes();
+        boolean firstFound = false;
+        for(int i = 0; i < nodes.getLength(); i++) {
+            Node node = nodes.getItem(i);
+            if (node.hasChildNodes()) {
+                com.google.gwt.dom.client.Element el = node.getFirstChild().cast();
+                if ("gwt-SplitLayoutPanel-HDragger".equals(el.getClassName())) {
+                    if (!firstFound) {
+                        firstFound = true;
+                        tuneLeftSplitter(el);
+                    } else {
+                        tuneRightSplitter(el);
+                    }
+                } else if ("gwt-SplitLayoutPanel-VDragger".equals(el.getClassName())) {
+                    tuneBottomSplitter(el);
+                }
+            }
+        }
+    }
+
+    /**
+     * Tunes left splitter. Makes it wider and adds double border to seem rich.
+     *
+     * @param el element to tune
+     */
+    private void tuneLeftSplitter(Element el) {
+        /** Add Z-Index to move the splitter on the top and make content visible */
+        el.getParentElement().getStyle().setProperty("zIndex", "1000");
+        el.getParentElement().getStyle().setProperty("overflow", "visible");
+
+        /** Tune splitter catch panel */
+        el.getStyle().setProperty("boxSizing", "border-box");
+        el.getStyle().setProperty("width", "5px");
+        el.getStyle().setProperty("overflow", "hidden");
+        el.getStyle().setProperty("marginLeft", "-3px");
+        el.getStyle().setProperty("backgroundColor", "transparent");
+
+        /** Add small border */
+        DivElement smallBorder = Document.get().createDivElement();
+        smallBorder.getStyle().setProperty("position", "absolute");
+        smallBorder.getStyle().setProperty("width", "1px");
+        smallBorder.getStyle().setProperty("height", "100%");
+        smallBorder.getStyle().setProperty("left", "3px");
+        smallBorder.getStyle().setProperty("top", "0px");
+        smallBorder.getStyle().setProperty("backgroundColor", Style.getSplitterSmallBorderColor());
+        el.appendChild(smallBorder);
+
+        /** Add large border */
+        DivElement largeBorder = Document.get().createDivElement();
+        largeBorder.getStyle().setProperty("position", "absolute");
+        largeBorder.getStyle().setProperty("width", "2px");
+        largeBorder.getStyle().setProperty("height", "100%");
+        largeBorder.getStyle().setProperty("left", "1px");
+        largeBorder.getStyle().setProperty("top", "0px");
+        largeBorder.getStyle().setProperty("opacity", "0.4");
+        largeBorder.getStyle().setProperty("backgroundColor", Style.getSplitterLargeBorderColor());
+        el.appendChild(largeBorder);
+    }
+
+    /**
+     * Tunes left splitter. Makes it wider and adds double border to seem rich.
+     *
+     * @param el element to tune
+     */
+    private void tuneRightSplitter(Element el) {
+        /** Add Z-Index to move the splitter on the top and make content visible */
+        el.getParentElement().getStyle().setProperty("zIndex", "1000");
+        el.getParentElement().getStyle().setProperty("overflow", "visible");
+
+        /** Tune splitter catch panel */
+        el.getStyle().setProperty("boxSizing", "border-box");
+        el.getStyle().setProperty("width", "5px");
+        el.getStyle().setProperty("overflow", "hidden");
+        el.getStyle().setProperty("marginLeft", "-1px");
+        el.getStyle().setProperty("backgroundColor", "transparent");
+
+        /** Add small border */
+        DivElement smallBorder = Document.get().createDivElement();
+        smallBorder.getStyle().setProperty("position", "absolute");
+        smallBorder.getStyle().setProperty("width", "1px");
+        smallBorder.getStyle().setProperty("height", "100%");
+        smallBorder.getStyle().setProperty("left", "1px");
+        smallBorder.getStyle().setProperty("top", "0px");
+        smallBorder.getStyle().setProperty("backgroundColor", Style.getSplitterSmallBorderColor());
+        el.appendChild(smallBorder);
+
+        /** Add large border */
+        DivElement largeBorder = Document.get().createDivElement();
+        largeBorder.getStyle().setProperty("position", "absolute");
+        largeBorder.getStyle().setProperty("width", "2px");
+        largeBorder.getStyle().setProperty("height", "100%");
+        largeBorder.getStyle().setProperty("left", "2px");
+        largeBorder.getStyle().setProperty("top", "0px");
+        largeBorder.getStyle().setProperty("opacity", "0.4");
+        largeBorder.getStyle().setProperty("backgroundColor", Style.getSplitterLargeBorderColor());
+        el.appendChild(largeBorder);
+    }
+
+    /**
+     * Tunes bottom splitter. Makes it tiny but with a transparent area for easy resizing.
+     *
+     * @param el element to tune
+     */
+    private void tuneBottomSplitter(Element el) {
+        /** Add Z-Index to move the splitter on the top and make content visible */
+        el.getParentElement().getStyle().setProperty("zIndex", "1000");
+        el.getParentElement().getStyle().setProperty("overflow", "visible");
+
+        el.getStyle().setProperty("height", "5px");
+        el.getStyle().setProperty("marginTop", "-2px");
+        el.getStyle().setProperty("backgroundColor", "transparent");
+
+        /** Add small border */
+        DivElement delimiter = Document.get().createDivElement();
+        delimiter.getStyle().setProperty("position", "absolute");
+        delimiter.getStyle().setProperty("width", "100%");
+        delimiter.getStyle().setProperty("height", "1px");
+        delimiter.getStyle().setProperty("left", "0px");
+        delimiter.getStyle().setProperty("top", "2px");
+        delimiter.getStyle().setProperty("backgroundColor", Style.getSplitterSmallBorderColor());
+        el.appendChild(delimiter);
     }
 
     /** Returns right panel.Outline tab is located on this panel. */

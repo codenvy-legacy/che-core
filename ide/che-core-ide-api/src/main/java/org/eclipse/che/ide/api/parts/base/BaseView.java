@@ -16,8 +16,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
-import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -44,7 +42,6 @@ public abstract class BaseView<T extends BaseActionDelegate> extends Composite i
 
     protected T          delegate;
     protected ToolButton minimizeButton;
-    protected FlowPanel  menuPanel;
     protected Label      titleLabel;
 
     /** Indicates whether this view is focused */
@@ -60,7 +57,7 @@ public abstract class BaseView<T extends BaseActionDelegate> extends Composite i
         toolBar = new DockLayoutPanel(Style.Unit.PX);
         toolBar.addStyleName(resources.partStackCss().ideBasePartToolbar());
         toolBar.getElement().setAttribute("role", "toolbar");
-        container.addNorth(toolBar, 22);
+        container.addNorth(toolBar, 23);
 
         //this hack used for adding box shadow effect to toolbar
         toolBar.getElement().getParentElement().getStyle().setOverflow(Style.Overflow.VISIBLE);
@@ -71,10 +68,11 @@ public abstract class BaseView<T extends BaseActionDelegate> extends Composite i
         titleLabel = new Label();
         titleLabel.setStyleName(resources.partStackCss().ideBasePartTitleLabel());
 
-        SVGImage minimize = new SVGImage(resources.minimize());
+        SVGImage minimize = new SVGImage(resources.collapseExpandIcon());
         minimize.getElement().setAttribute("name", "workBenchIconMinimize");
         minimizeButton = new ToolButton(minimize);
         minimizeButton.setTitle("Hide");
+
         minimizeButton.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
@@ -82,17 +80,9 @@ public abstract class BaseView<T extends BaseActionDelegate> extends Composite i
             }
         });
         toolbarHeader.addWest(titleLabel, 200);
-        toolbarHeader.addEast(minimizeButton, 29);
+        toolbarHeader.addEast(minimizeButton, 22);
 
-        menuPanel = new FlowPanel();
-        menuPanel.addStyleName(resources.partStackCss().headerMenuButton());
-        toolbarHeader.addEast(menuPanel, 20);
-
-        toolBar.addNorth(toolbarHeader, 20);
-    }
-
-    public final void addMenuButton(@NotNull IsWidget button) {
-        menuPanel.add(button);
+        toolBar.addNorth(toolbarHeader, 22);
     }
 
     /** {@inheritDoc} */

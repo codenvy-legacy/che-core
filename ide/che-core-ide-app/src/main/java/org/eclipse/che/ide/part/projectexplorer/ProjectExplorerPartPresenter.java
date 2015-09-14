@@ -208,7 +208,6 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
             public void onProjectOpened(ProjectActionEvent event) {
                 final ProjectDescriptor project = event.getProject();
                 setTree(treeStructureProviderRegistry.getTreeStructureProvider(project.getType()).get());
-                view.setProjectHeader(event.getProject());
                 eventLogger.logEvent("project-opened", new HashMap<String, String>());
             }
 
@@ -221,7 +220,6 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
                 // this isn't case when some project going to open while previously opened project is closing
                 if (!event.isCloseBeforeOpening()) {
                     setTree(projectListStructureProvider.get());
-                    view.hideProjectHeader();
                 }
             }
         });
