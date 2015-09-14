@@ -19,7 +19,6 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.PromiseError;
-import org.eclipse.che.api.user.shared.dto.ProfileDescriptor;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
@@ -314,7 +313,7 @@ public class AppStateManagerTest {
 
         when(appContext.getCurrentProject()).thenReturn(null);
 
-        appStateManager.onProjectOpened(event);
+        appStateManager.onProjectReady(event);
 
         verify(appContext).getCurrentProject();
         verifyNoMoreInteractions(rootProject, event);
@@ -324,7 +323,7 @@ public class AppStateManagerTest {
     public void projectShouldBeOpenedAndRestored() {
         appStateManager.start(false);
 
-        appStateManager.onProjectOpened(event);
+        appStateManager.onProjectReady(event);
 
         verify(appContext).getCurrentProject();
         verify(currentProject).getRootProject();

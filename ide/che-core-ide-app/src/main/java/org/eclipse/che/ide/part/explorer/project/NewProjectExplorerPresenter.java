@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.part.explorer.project;
 
+import com.google.common.base.Strings;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
@@ -39,6 +40,7 @@ import org.eclipse.che.ide.project.event.ResourceNodeDeletedEvent.ResourceNodeDe
 import org.eclipse.che.ide.project.event.ResourceNodeRenamedEvent;
 import org.eclipse.che.ide.project.node.NodeManager;
 import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
+import org.eclipse.che.ide.ui.smartTree.event.GoIntoStateEvent;
 
 import javax.validation.constraints.NotNull;
 import org.eclipse.che.commons.annotation.Nullable;
@@ -106,10 +108,8 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
         eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
             /** {@inheritDoc} */
             @Override
-            public void onProjectOpened(ProjectActionEvent event) {
-                ProjectDescriptor projectDescriptor = event.getProject();
-                ProjectDescriptorNode projectDescriptorNode = nodeManager.wrap(projectDescriptor);
-                view.setRootNode(projectDescriptorNode);
+            public void onProjectReady(ProjectActionEvent event) {
+
             }
 
             /** {@inheritDoc} */
@@ -127,6 +127,27 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
                                .then(_showProjectsList());
                 }
 
+            }
+
+            @Override
+            public void onProjectOpened(ProjectActionEvent event) {
+                ProjectDescriptor projectDescriptor = event.getProject();
+
+                if(!Strings.isNullOrEmpty(projectDescriptor.getContentRoot())) {
+                    view.addGoIntoStateHandler(new GoIntoStateEvent.GoIntoStateHandler() {
+                        @Override
+                        public void onGoIntoStateChanged(GoIntoStateEvent event) {
+                            if (event.getState() == GoIntoStateEvent.State.ACTIVATED) {
+                                eventBus.fireEvent(ProjectActionEvent.createProjectOpenedEvent(((HasProjectDescriptor)event.getNode()).getProjectDescriptor()));
+                            }
+                        }
+                    });
+                } else {
+                    eventBus.fireEvent(ProjectActionEvent.createProjectOpenedEvent(projectDescriptor));
+                }
+
+                ProjectDescriptorNode projectDescriptorNode = nodeManager.wrap(projectDescriptor);
+                view.setRootNode(projectDescriptorNode);
             }
         });
 

@@ -42,6 +42,18 @@ public class ProjectActionEvent extends GwtEvent<ProjectActionHandler> {
         this.closingBeforeOpening = closingBeforeOpening;
     }
 
+
+    /**
+     * Creates a Project Before Open Event.
+     *
+     * @param project
+     *         opened project
+     */
+    public static ProjectActionEvent createBeforeOpenProjectEvent(ProjectDescriptor project) {
+        return new ProjectActionEvent(project, ProjectAction.OPENED, false);
+    }
+
+
     /**
      * Creates a Project Opened Event.
      *
@@ -49,7 +61,7 @@ public class ProjectActionEvent extends GwtEvent<ProjectActionHandler> {
      *         opened project
      */
     public static ProjectActionEvent createProjectOpenedEvent(ProjectDescriptor project) {
-        return new ProjectActionEvent(project, ProjectAction.OPENED, false);
+        return new ProjectActionEvent(project, ProjectAction.READY, false);
     }
 
     /**
@@ -98,6 +110,9 @@ public class ProjectActionEvent extends GwtEvent<ProjectActionHandler> {
             case OPENED:
                 handler.onProjectOpened(this);
                 break;
+            case READY:
+                handler.onProjectReady(this);
+                break;
             case CLOSING:
                 handler.onProjectClosing(this);
                 break;
@@ -110,7 +125,22 @@ public class ProjectActionEvent extends GwtEvent<ProjectActionHandler> {
     }
 
     /** Set of possible Project Actions */
-    public static enum ProjectAction {
-        OPENED, CLOSING, CLOSED
+    public enum ProjectAction {
+        /**
+         * Project opened in project explorer, but can be not fully initialized
+         */
+        OPENED,
+        /**
+         * Project ready to make any actions with it
+         */
+        READY,
+        /**
+         * Project goto close in project explorer
+         */
+        CLOSING,
+        /**
+         *Project closed
+         */
+        CLOSED
     }
 }

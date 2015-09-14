@@ -275,7 +275,7 @@ public class BootstrapController {
     private ProjectActionHandler getFactoryActionHandler() {
         return new ProjectActionHandler() {
             @Override
-            public void onProjectOpened(ProjectActionEvent event) {
+            public void onProjectReady(ProjectActionEvent event) {
                 if (handlerRegistration != null) {
                     handlerRegistration.removeHandler();
                 }
@@ -296,6 +296,11 @@ public class BootstrapController {
             public void onProjectClosed(ProjectActionEvent event) {
                 //do nothing
             }
+
+            @Override
+            public void onProjectOpened(ProjectActionEvent event) {
+
+            }
         };
     }
 
@@ -303,7 +308,7 @@ public class BootstrapController {
         return new ProjectActionHandler() {
             //process action only after opening project
             @Override
-            public void onProjectOpened(ProjectActionEvent event) {
+            public void onProjectReady(ProjectActionEvent event) {
                 processStartupAction();
             }
 
@@ -313,6 +318,11 @@ public class BootstrapController {
 
             @Override
             public void onProjectClosed(ProjectActionEvent event) {
+            }
+
+            @Override
+            public void onProjectOpened(ProjectActionEvent event) {
+
             }
         };
     }

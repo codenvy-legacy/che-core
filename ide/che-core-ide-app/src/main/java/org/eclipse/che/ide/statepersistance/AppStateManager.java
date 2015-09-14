@@ -145,7 +145,7 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
     }
 
     @Override
-    public void onProjectOpened(ProjectActionEvent event) {
+    public void onProjectReady(ProjectActionEvent event) {
         CurrentProject rootProject = appContext.getCurrentProject();
         if (rootProject == null) {
             return;
@@ -167,6 +167,11 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
 
     @Override
     public void onProjectClosed(ProjectActionEvent event) {
+    }
+
+    @Override
+    public void onProjectOpened(ProjectActionEvent event) {
+
     }
 
     /**

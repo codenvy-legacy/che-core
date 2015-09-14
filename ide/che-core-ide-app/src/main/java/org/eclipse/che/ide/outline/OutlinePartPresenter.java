@@ -53,7 +53,7 @@ public class OutlinePartPresenter extends BasePresenter implements ActivePartCha
         eventBus.addHandler(ActivePartChangedEvent.TYPE, this);
         eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
             @Override
-            public void onProjectOpened(ProjectActionEvent event) {
+            public void onProjectReady(ProjectActionEvent event) {
 
             }
 
@@ -65,6 +65,11 @@ public class OutlinePartPresenter extends BasePresenter implements ActivePartCha
             @Override
             public void onProjectClosed(ProjectActionEvent event) {
                 view.clear();
+            }
+
+            @Override
+            public void onProjectOpened(ProjectActionEvent event) {
+
             }
         });
     }

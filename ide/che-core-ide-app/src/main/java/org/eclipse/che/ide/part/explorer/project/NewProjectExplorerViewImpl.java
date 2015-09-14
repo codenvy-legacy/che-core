@@ -596,6 +596,11 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
     }
 
     @Override
+    public void addGoIntoStateHandler(GoIntoStateHandler handler) {
+        tree.getGoIntoMode().addGoIntoHandler(handler);
+    }
+
+    @Override
     public void resetGoIntoMode() {
         if (tree.getGoIntoMode().isActivated()) {
             tree.getGoIntoMode().reset();
