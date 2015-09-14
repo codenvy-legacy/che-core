@@ -34,8 +34,8 @@ import org.eclipse.che.ide.projecttype.wizard.categoriespage.CategoriesPagePrese
 import org.eclipse.che.ide.projecttype.wizard.recipespage.RecipesPagePresenter;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -145,7 +145,7 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
     }
 
     /** Open the project wizard for updating the given {@code project}. */
-    public void show(@Nonnull ProjectDescriptor project) {
+    public void show(@NotNull ProjectDescriptor project) {
         resetState();
         wizardMode = UPDATE;
         projectPath = project.getPath();
@@ -162,7 +162,7 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
     }
 
     /** Open the project wizard for creating module from the given {@code folder}. */
-    public void show(@Nonnull ItemReference folder) {
+    public void show(@NotNull ItemReference folder) {
         resetState();
         wizardMode = CREATE_MODULE;
         projectPath = folder.getPath();
@@ -234,7 +234,7 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
     }
 
     /** Creates or returns project wizard for the specified projectType with the given dataObject. */
-    private ProjectWizard getWizardForProjectType(@Nonnull ProjectTypeDefinition projectType) {
+    private ProjectWizard getWizardForProjectType(@NotNull ProjectTypeDefinition projectType) {
         if (wizardsCache.containsKey(projectType)) {
             return wizardsCache.get(projectType);
         }
@@ -256,7 +256,7 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
     }
 
     /** Creates and returns 'default' project wizard with pre-defined pages only. */
-    private ProjectWizard createDefaultWizard(@Nullable ImportProject dataObject, @Nonnull ProjectWizardMode mode) {
+    private ProjectWizard createDefaultWizard(@Nullable ImportProject dataObject, @NotNull ProjectWizardMode mode) {
         if (dataObject == null) {
             dataObject = dtoFactory.createDto(ImportProject.class)
                                    .withSource(dtoFactory.createDto(Source.class))
@@ -272,7 +272,7 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
         return projectWizard;
     }
 
-    private void showPage(@Nonnull WizardPage wizardPage) {
+    private void showPage(@NotNull WizardPage wizardPage) {
         currentPage = wizardPage;
         updateControls();
         view.showPage(currentPage);

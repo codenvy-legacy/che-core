@@ -36,7 +36,7 @@ import org.eclipse.che.ide.ui.list.CategoryRenderer;
 import org.eclipse.che.ide.ui.window.Window;
 import org.eclipse.che.ide.util.dom.Elements;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -107,7 +107,7 @@ public class SettingsViewImpl extends Window implements SettingsView {
         };
     }
 
-    private void createButtons(@Nonnull final org.eclipse.che.ide.Resources resources) {
+    private void createButtons(@NotNull final org.eclipse.che.ide.Resources resources) {
         btnSave = createButton(locale.save(), "window-settings-storeChanges", new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
@@ -142,7 +142,7 @@ public class SettingsViewImpl extends Window implements SettingsView {
 
     /** {@inheritDoc} */
     @Override
-    public void selectSettingGroup(@Nonnull SettingsPagePresenter presenter) {
+    public void selectSettingGroup(@NotNull SettingsPagePresenter presenter) {
         list.selectElement(presenter);
     }
 
@@ -153,7 +153,7 @@ public class SettingsViewImpl extends Window implements SettingsView {
     }
 
     /** {@inheritDoc} */
-    @Nonnull
+    @NotNull
     @Override
     public AcceptsOneWidget getContentPanel() {
         return contentPanel;
@@ -167,7 +167,7 @@ public class SettingsViewImpl extends Window implements SettingsView {
 
     /** {@inheritDoc} */
     @Override
-    public void setSettings(@Nonnull Map<String, Set<SettingsPagePresenter>> preferences) {
+    public void setSettings(@NotNull Map<String, Set<SettingsPagePresenter>> preferences) {
         List<Category<?>> categoriesList = new ArrayList<>();
         for (String name : preferences.keySet()) {
             Set<SettingsPagePresenter> data = preferences.get(name);
@@ -181,7 +181,7 @@ public class SettingsViewImpl extends Window implements SettingsView {
 
     /** {@inheritDoc} */
     @Override
-    public void setDelegate(@Nonnull ActionDelegate delegate) {
+    public void setDelegate(@NotNull ActionDelegate delegate) {
         this.delegate = delegate;
     }
 }

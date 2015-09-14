@@ -13,7 +13,7 @@ package org.eclipse.che.ide.ui.toolbar;
 import org.eclipse.che.ide.api.action.ActionGroup;
 import org.eclipse.che.ide.api.mvp.View;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 
 /**
@@ -26,11 +26,11 @@ public interface ToolbarView extends View<ToolbarView.ActionDelegate> {
     interface ActionDelegate {
     }
 
-    void setPlace(@Nonnull String place);
+    void setPlace(@NotNull String place);
 
-    void setLeftActionGroup(@Nonnull ActionGroup actionGroup);
+    void setLeftActionGroup(@NotNull ActionGroup actionGroup);
 
-    void setRightActionGroup(@Nonnull ActionGroup actionGroup);
+    void setRightActionGroup(@NotNull ActionGroup actionGroup);
 
     void setAddSeparatorFirst(boolean addSeparatorFirst);
 }

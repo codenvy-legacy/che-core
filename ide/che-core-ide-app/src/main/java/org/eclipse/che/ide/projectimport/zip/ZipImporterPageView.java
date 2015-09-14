@@ -13,7 +13,7 @@ package org.eclipse.che.ide.projectimport.zip;
 import org.eclipse.che.ide.api.mvp.View;
 import com.google.inject.ImplementedBy;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author Roman Nikitenko
@@ -22,13 +22,13 @@ import javax.annotation.Nonnull;
 public interface ZipImporterPageView extends View<ZipImporterPageView.ActionDelegate> {
     public interface ActionDelegate {
         /** Performs any actions appropriate in response to the user having changed the project's name. */
-        void projectNameChanged(@Nonnull String name);
+        void projectNameChanged(@NotNull String name);
 
         /** Performs any actions appropriate in response to the user having changed the project's URL. */
-        void projectUrlChanged(@Nonnull String url);
+        void projectUrlChanged(@NotNull String url);
 
         /** Performs any actions appropriate in response to the user having changed the project's description. */
-        void projectDescriptionChanged(@Nonnull String projectDescriptionValue);
+        void projectDescriptionChanged(@NotNull String projectDescriptionValue);
 
         /** Performs any actions appropriate in response to the user having changed the project's visibility. */
         void projectVisibilityChanged(boolean visible);
@@ -44,7 +44,7 @@ public interface ZipImporterPageView extends View<ZipImporterPageView.ActionDele
     void hideNameError();
 
     /** Show URL error. */
-    void showUrlError(@Nonnull String message);
+    void showUrlError(@NotNull String message);
 
     /** Hide URL error. */
     void hideUrlError();
@@ -55,14 +55,14 @@ public interface ZipImporterPageView extends View<ZipImporterPageView.ActionDele
      * @param url
      *         the project's URL to set
      */
-    void setProjectUrl(@Nonnull String url);
+    void setProjectUrl(@NotNull String url);
 
     /**
      * Get the project's name value.
      *
      * @return {@link String} project's name
      */
-    @Nonnull
+    @NotNull
     String getProjectName();
 
     /**
@@ -71,9 +71,9 @@ public interface ZipImporterPageView extends View<ZipImporterPageView.ActionDele
      * @param projectName
      *         project's name to set
      */
-    void setProjectName(@Nonnull String projectName);
+    void setProjectName(@NotNull String projectName);
 
-    void setProjectDescription(@Nonnull String projectDescription);
+    void setProjectDescription(@NotNull String projectDescription);
 
     /** Give focus to project's URL input. */
     void focusInUrlInput();

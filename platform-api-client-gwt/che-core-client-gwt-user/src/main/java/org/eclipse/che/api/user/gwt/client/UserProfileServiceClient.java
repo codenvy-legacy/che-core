@@ -13,7 +13,7 @@ package org.eclipse.che.api.user.gwt.client;
 import org.eclipse.che.api.user.shared.dto.ProfileDescriptor;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.Map;
 
 /**
@@ -37,7 +37,7 @@ public interface UserProfileServiceClient {
      *         attributes to update
      * @param callback
      */
-    void updateCurrentProfile(@Nonnull Map<String, String> updates, AsyncRequestCallback<ProfileDescriptor> callback);
+    void updateCurrentProfile(@NotNull Map<String, String> updates, AsyncRequestCallback<ProfileDescriptor> callback);
 
     /**
      * Get profile by id.
@@ -46,7 +46,7 @@ public interface UserProfileServiceClient {
      *         profile's id
      * @param callback
      */
-    void getProfileById(@Nonnull String id, AsyncRequestCallback<ProfileDescriptor> callback);
+    void getProfileById(@NotNull String id, AsyncRequestCallback<ProfileDescriptor> callback);
 
     void getPreferences(AsyncRequestCallback<Map<String, String>> callback);
 
@@ -59,7 +59,7 @@ public interface UserProfileServiceClient {
      *         attributes to update
      * @param callback
      */
-    void updateProfile(@Nonnull String id, Map<String, String> updates, AsyncRequestCallback<ProfileDescriptor> callback);
+    void updateProfile(@NotNull String id, Map<String, String> updates, AsyncRequestCallback<ProfileDescriptor> callback);
 
     /**
      * Update preferences.
@@ -68,5 +68,5 @@ public interface UserProfileServiceClient {
      *         preferences to update
      * @param callback
      */
-    void updatePreferences(@Nonnull Map<String, String> prefsToUpdate, AsyncRequestCallback<Map<String, String>> callback);
+    void updatePreferences(@NotNull Map<String, String> prefsToUpdate, AsyncRequestCallback<Map<String, String>> callback);
 }

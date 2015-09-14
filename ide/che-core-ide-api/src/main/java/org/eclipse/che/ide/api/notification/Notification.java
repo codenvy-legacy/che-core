@@ -12,8 +12,8 @@ package org.eclipse.che.ide.api.notification;
 
 import org.eclipse.che.ide.json.JsonHelper;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -95,7 +95,7 @@ public final class Notification {
      * @param type
      *         notification's type
      */
-    public Notification(@Nonnull String message, @Nonnull Type type) {
+    public Notification(@NotNull String message, @NotNull Type type) {
         this(message, type, FINISHED, null, null);
     }
 
@@ -111,7 +111,7 @@ public final class Notification {
      * @param status
      *         notification's status
      */
-    public Notification(@Nonnull String message, @Nonnull Type type, @Nonnull Status status) {
+    public Notification(@NotNull String message, @NotNull Type type, @NotNull Status status) {
         this(message, type, status, null, null);
     }
 
@@ -127,7 +127,7 @@ public final class Notification {
      * @param openHandler
      *         delegate that provides some actions when opening notification
      */
-    public Notification(@Nonnull String message, @Nonnull Type type, @Nonnull OpenNotificationHandler openHandler) {
+    public Notification(@NotNull String message, @NotNull Type type, @NotNull OpenNotificationHandler openHandler) {
         this(message, type, openHandler, null);
     }
 
@@ -143,7 +143,7 @@ public final class Notification {
      * @param closeHandler
      *         delegate that provides some actions when closing notification
      */
-    public Notification(@Nonnull String message, @Nonnull Type type, @Nonnull CloseNotificationHandler closeHandler) {
+    public Notification(@NotNull String message, @NotNull Type type, @NotNull CloseNotificationHandler closeHandler) {
         this(message, type, null, closeHandler);
     }
 
@@ -161,7 +161,7 @@ public final class Notification {
      * @param closeHandler
      *         delegate that provides some actions when closing notification
      */
-    public Notification(@Nonnull String message, @Nonnull Type type, @Nullable OpenNotificationHandler openHandler,
+    public Notification(@NotNull String message, @NotNull Type type, @Nullable OpenNotificationHandler openHandler,
                         @Nullable CloseNotificationHandler closeHandler) {
         this(message, type, false, openHandler, closeHandler);
     }
@@ -182,7 +182,7 @@ public final class Notification {
      * @param closeHandler
      *         delegate that provides some actions when closing notification
      */
-    public Notification(@Nonnull String message, @Nonnull Type type, @Nonnull Status status, @Nullable OpenNotificationHandler openHandler,
+    public Notification(@NotNull String message, @NotNull Type type, @NotNull Status status, @Nullable OpenNotificationHandler openHandler,
                         @Nullable CloseNotificationHandler closeHandler) {
         this(message, type, status, false, openHandler, closeHandler);
     }
@@ -199,7 +199,7 @@ public final class Notification {
      * @param important
      *         note about important this notification
      */
-    public Notification(@Nonnull String message, @Nonnull Type type, boolean important) {
+    public Notification(@NotNull String message, @NotNull Type type, boolean important) {
         this(message, type, important, null, null);
     }
 
@@ -217,8 +217,8 @@ public final class Notification {
      * @param openHandler
      *         delegate that provides some actions when opening notification
      */
-    public Notification(@Nonnull String message, @Nonnull Type type, boolean important,
-                        @Nonnull OpenNotificationHandler openHandler) {
+    public Notification(@NotNull String message, @NotNull Type type, boolean important,
+                        @NotNull OpenNotificationHandler openHandler) {
         this(message, type, important, openHandler, null);
     }
 
@@ -236,8 +236,8 @@ public final class Notification {
      * @param closeHandler
      *         delegate that provides some actions when closing notification
      */
-    public Notification(@Nonnull String message, @Nonnull Type type, boolean important,
-                        @Nonnull CloseNotificationHandler closeHandler) {
+    public Notification(@NotNull String message, @NotNull Type type, boolean important,
+                        @NotNull CloseNotificationHandler closeHandler) {
         this(message, type, important, null, closeHandler);
     }
 
@@ -257,7 +257,7 @@ public final class Notification {
      * @param closeHandler
      *         delegate that provides some actions when closing notification
      */
-    public Notification(@Nonnull String message, @Nonnull Type type, boolean important,
+    public Notification(@NotNull String message, @NotNull Type type, boolean important,
                         @Nullable OpenNotificationHandler openHandler, @Nullable CloseNotificationHandler closeHandler) {
         this(message, type, FINISHED, UNREAD, new Date(), important, openHandler, closeHandler);
     }
@@ -280,7 +280,7 @@ public final class Notification {
      * @param closeHandler
      *         delegate that provides some actions when closing notification
      */
-    public Notification(@Nonnull String message, @Nonnull Type type, @Nonnull Status status, boolean important,
+    public Notification(@NotNull String message, @NotNull Type type, @NotNull Status status, boolean important,
                         @Nullable OpenNotificationHandler openHandler, @Nullable CloseNotificationHandler closeHandler) {
         this(message, type, status, UNREAD, new Date(), important, openHandler, closeHandler);
     }
@@ -296,7 +296,7 @@ public final class Notification {
      * @param status
      *         notification's status
      */
-    public Notification(@Nonnull String message, @Nonnull Status status) {
+    public Notification(@NotNull String message, @NotNull Status status) {
         this(message, status, null, null);
     }
 
@@ -312,8 +312,8 @@ public final class Notification {
      * @param openHandler
      *         delegate that provides some actions when opening notification
      */
-    public Notification(@Nonnull String message, @Nonnull Status status,
-                        @Nonnull OpenNotificationHandler openHandler) {
+    public Notification(@NotNull String message, @NotNull Status status,
+                        @NotNull OpenNotificationHandler openHandler) {
         this(message, status, openHandler, null);
     }
 
@@ -329,8 +329,8 @@ public final class Notification {
      * @param closeHandler
      *         delegate that provides some actions when closing notification
      */
-    public Notification(@Nonnull String message, @Nonnull Status status,
-                        @Nonnull CloseNotificationHandler closeHandler) {
+    public Notification(@NotNull String message, @NotNull Status status,
+                        @NotNull CloseNotificationHandler closeHandler) {
         this(message, status, null, closeHandler);
     }
 
@@ -348,7 +348,7 @@ public final class Notification {
      * @param closeHandler
      *         delegate that provides some actions when closing notification
      */
-    public Notification(@Nonnull String message, @Nonnull Status status, @Nullable OpenNotificationHandler openHandler,
+    public Notification(@NotNull String message, @NotNull Status status, @Nullable OpenNotificationHandler openHandler,
                         @Nullable CloseNotificationHandler closeHandler) {
         this(message, status, false, openHandler, closeHandler);
     }
@@ -365,7 +365,7 @@ public final class Notification {
      * @param important
      *         note about important this notification
      */
-    public Notification(@Nonnull String message, @Nonnull Status status, boolean important) {
+    public Notification(@NotNull String message, @NotNull Status status, boolean important) {
         this(message, status, important, null, null);
     }
 
@@ -383,7 +383,7 @@ public final class Notification {
      * @param openHandler
      *         delegate that provides some actions when opening notification
      */
-    public Notification(@Nonnull String message, @Nonnull Status status, boolean important, @Nonnull OpenNotificationHandler openHandler) {
+    public Notification(@NotNull String message, @NotNull Status status, boolean important, @NotNull OpenNotificationHandler openHandler) {
         this(message, INFO, status, UNREAD, new Date(), important, openHandler, null);
     }
 
@@ -401,8 +401,8 @@ public final class Notification {
      * @param closeHandler
      *         delegate that provides some actions when closing notification
      */
-    public Notification(@Nonnull String message, @Nonnull Status status, boolean important,
-                        @Nonnull CloseNotificationHandler closeHandler) {
+    public Notification(@NotNull String message, @NotNull Status status, boolean important,
+                        @NotNull CloseNotificationHandler closeHandler) {
         this(message, INFO, status, UNREAD, new Date(), important, null, closeHandler);
     }
 
@@ -422,7 +422,7 @@ public final class Notification {
      * @param closeHandler
      *         delegate that provides some actions when closing notification
      */
-    public Notification(@Nonnull String message, @Nonnull Status status, boolean important, @Nullable OpenNotificationHandler openHandler,
+    public Notification(@NotNull String message, @NotNull Status status, boolean important, @Nullable OpenNotificationHandler openHandler,
                         @Nullable CloseNotificationHandler closeHandler) {
         this(message, INFO, status, UNREAD, new Date(), important, openHandler, closeHandler);
     }
@@ -447,7 +447,7 @@ public final class Notification {
      * @param closeHandler
      *         delegate that provides some actions when closing notification
      */
-    protected Notification(@Nonnull String message, @Nonnull Type type, @Nonnull Status status, @Nonnull State state, @Nonnull Date time,
+    protected Notification(@NotNull String message, @NotNull Type type, @NotNull Status status, @NotNull State state, @NotNull Date time,
                            boolean important, @Nullable OpenNotificationHandler openHandler,
                            @Nullable CloseNotificationHandler closeHandler) {
         this.message = message;
@@ -484,7 +484,7 @@ public final class Notification {
     }
 
     /** @return notification's message */
-    @Nonnull
+    @NotNull
     public String getMessage() {
         if (isError()) {
             return JsonHelper.parseJsonMessage(message);
@@ -497,7 +497,7 @@ public final class Notification {
      *
      * @param message
      */
-    public void setMessage(@Nonnull String message) {
+    public void setMessage(@NotNull String message) {
         this.message = message;
         this.time = new Date();
         setState(UNREAD);
@@ -531,7 +531,7 @@ public final class Notification {
     }
 
     /** @return notification's type */
-    @Nonnull
+    @NotNull
     public Type getType() {
         return type;
     }
@@ -541,7 +541,7 @@ public final class Notification {
      *
      * @param type
      */
-    public void setType(@Nonnull Type type) {
+    public void setType(@NotNull Type type) {
         this.type = type;
         this.time = new Date();
         if (ERROR.equals(type)) {
@@ -564,7 +564,7 @@ public final class Notification {
      *
      * @param status
      */
-    public void setStatus(@Nonnull Status status) {
+    public void setStatus(@NotNull Status status) {
         this.status = status;
         this.time = new Date();
         setState(UNREAD);
@@ -584,13 +584,13 @@ public final class Notification {
      *
      * @param state
      */
-    public void setState(@Nonnull State state) {
+    public void setState(@NotNull State state) {
         this.state = state;
         notifyObservers();
     }
 
     /** @return time when this notification was showed */
-    @Nonnull
+    @NotNull
     public Date getTime() {
         return time;
     }
@@ -628,7 +628,7 @@ public final class Notification {
     }
 
     /** @return a clone of this instance */
-    @Nonnull
+    @NotNull
     public Notification clone() {
         return new Notification(message, type, status, state, time, important, openHandler, closeHandler);
     }

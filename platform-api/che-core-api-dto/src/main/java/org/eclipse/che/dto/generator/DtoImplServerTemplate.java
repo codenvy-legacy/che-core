@@ -191,10 +191,10 @@ public class DtoImplServerTemplate extends DtoImpl {
 
     /** Emits a method to get a field. Getting a collection ensures that the collection is created. */
     private void emitGetter(Method getter, String fieldName, String returnType, StringBuilder builder) {
-        if (getter.isAnnotationPresent(javax.annotation.Nonnull.class)) {
-            builder.append("    @javax.annotation.Nonnull\n");
-        } else if (getter.isAnnotationPresent(javax.annotation.Nullable.class)) {
-            builder.append("    @javax.annotation.Nullable\n");
+        if (getter.isAnnotationPresent(javax.validation.constraints.NotNull.class)) {
+            builder.append("    @javax.validation.constraints.NotNull\n");
+        } else if (getter.isAnnotationPresent(org.eclipse.che.commons.annotation.Nullable.class)) {
+            builder.append("    @org.eclipse.che.commons.annotation.Nullable\n");
         }
         builder.append("    @Override\n    public ");
         builder.append(returnType);

@@ -46,11 +46,6 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>jsr305</artifactId>
-            <version>${javax.jcr350.version}</version>
-        </dependency>
-        <dependency>
             <!-- override to much IDE version -->
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
@@ -65,12 +60,23 @@
                     <artifactId>httpclient</artifactId>
                     <groupId>org.apache.httpcomponents</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>jsr305</artifactId>
+                    <groupId>com.google.code.findbugs</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
             <groupId>com.google.oauth-client</groupId>
             <artifactId>google-oauth-client</artifactId>
             <version>${com.google.oauth-client.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>jsr305</artifactId>
+                    <groupId>com.google.code.findbugs</groupId>
+                </exclusion>
+            </exclusions>
+
         </dependency>
         <dependency>
             <groupId>com.wordnik</groupId>

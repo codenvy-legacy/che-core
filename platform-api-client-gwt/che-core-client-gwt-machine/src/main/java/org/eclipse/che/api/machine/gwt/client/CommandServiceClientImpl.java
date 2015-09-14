@@ -27,7 +27,7 @@ import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.RestContext;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,9 +68,9 @@ public class CommandServiceClientImpl implements CommandServiceClient {
     }
 
     @Override
-    public Promise<CommandDescriptor> createCommand(@Nonnull final String name,
-                                                    @Nonnull final String commandLine,
-                                                    @Nonnull final String type) {
+    public Promise<CommandDescriptor> createCommand(@NotNull final String name,
+                                                    @NotNull final String commandLine,
+                                                    @NotNull final String type) {
         return newPromise(new RequestCall<CommandDescriptor>() {
             @Override
             public void makeCall(AsyncCallback<CommandDescriptor> callback) {
@@ -79,11 +79,11 @@ public class CommandServiceClientImpl implements CommandServiceClient {
         });
     }
 
-    private void createCommand(@Nonnull final String workspaceId,
-                               @Nonnull final String name,
-                               @Nonnull final String commandLine,
-                               @Nonnull final String type,
-                               @Nonnull AsyncCallback<CommandDescriptor> callback) {
+    private void createCommand(@NotNull final String workspaceId,
+                               @NotNull final String name,
+                               @NotNull final String commandLine,
+                               @NotNull final String type,
+                               @NotNull AsyncCallback<CommandDescriptor> callback) {
         final NewCommand request = dtoFactory.createDto(NewCommand.class)
                                              .withName(name)
                                              .withCommandLine(commandLine)
@@ -115,7 +115,7 @@ public class CommandServiceClientImpl implements CommandServiceClient {
         });
     }
 
-    private void getCommands(@Nonnull String workspaceId, @Nonnull AsyncCallback<List<CommandDescriptor>> callback) {
+    private void getCommands(@NotNull String workspaceId, @NotNull AsyncCallback<List<CommandDescriptor>> callback) {
         final String url = baseHttpUrl + '/' + workspaceId + "/all";
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
@@ -124,9 +124,9 @@ public class CommandServiceClientImpl implements CommandServiceClient {
     }
 
     @Override
-    public Promise<CommandDescriptor> updateCommand(@Nonnull final String id,
-                                                    @Nonnull final String name,
-                                                    @Nonnull final String commandLine) {
+    public Promise<CommandDescriptor> updateCommand(@NotNull final String id,
+                                                    @NotNull final String name,
+                                                    @NotNull final String commandLine) {
         return newPromise(new RequestCall<CommandDescriptor>() {
             @Override
             public void makeCall(AsyncCallback<CommandDescriptor> callback) {
@@ -135,10 +135,10 @@ public class CommandServiceClientImpl implements CommandServiceClient {
         });
     }
 
-    private void updateCommand(@Nonnull final String id,
-                               @Nonnull final String name,
-                               @Nonnull final String commandLine,
-                               @Nonnull AsyncCallback<CommandDescriptor> callback) {
+    private void updateCommand(@NotNull final String id,
+                               @NotNull final String name,
+                               @NotNull final String commandLine,
+                               @NotNull AsyncCallback<CommandDescriptor> callback) {
         final CommandUpdate request = dtoFactory.createDto(CommandUpdate.class)
                                                 .withId(id)
                                                 .withName(name)
@@ -152,7 +152,7 @@ public class CommandServiceClientImpl implements CommandServiceClient {
     }
 
     @Override
-    public Promise<Void> removeCommand(@Nonnull final String id) {
+    public Promise<Void> removeCommand(@NotNull final String id) {
         return newPromise(new RequestCall<Void>() {
             @Override
             public void makeCall(AsyncCallback<Void> callback) {
@@ -161,7 +161,7 @@ public class CommandServiceClientImpl implements CommandServiceClient {
         });
     }
 
-    private void removeCommand(@Nonnull String commandId, @Nonnull AsyncCallback<Void> callback) {
+    private void removeCommand(@NotNull String commandId, @NotNull AsyncCallback<Void> callback) {
         asyncRequestFactory.createRequest(DELETE, baseHttpUrl + '/' + commandId, null, false)
                            .loader(loader, "Deleting command...")
                            .send(newCallback(callback));

@@ -31,6 +31,7 @@ import org.eclipse.che.ide.ui.dialogs.CancelCallback;
 import org.eclipse.che.ide.ui.dialogs.ConfirmCallback;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.ui.dialogs.confirm.ConfirmDialog;
+import org.eclipse.che.ide.websocket.rest.RequestCallback;
 import org.eclipse.che.test.GwtReflectionUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -65,9 +66,9 @@ public class ProjectWizardTest {
     private ArgumentCaptor<AsyncRequestCallback<ProjectDescriptor>> callbackCaptor;
 
     @Captor
-    private ArgumentCaptor<AsyncRequestCallback<ImportResponse>> importCallbackCaptor;
+    private ArgumentCaptor<RequestCallback<ImportResponse>> importCallbackCaptor;
     @Captor
-    private ArgumentCaptor<AsyncRequestCallback<Void>>           callbackCaptorForVoid;
+    private ArgumentCaptor<AsyncRequestCallback<Void>>      callbackCaptorForVoid;
 
     @Mock
     private CoreLocalizationConstant coreLocalizationConstant;
@@ -99,7 +100,8 @@ public class ProjectWizardTest {
     public void setUp() {
         when(newProject.getName()).thenReturn(PROJECT_NAME);
         when(importProject.getProject()).thenReturn(newProject);
-        when(dialogFactory.createConfirmDialog(anyString(),anyString(),Matchers.<ConfirmCallback>anyObject(), Matchers.<CancelCallback>anyObject())).thenReturn(confirmDialog);
+        when(dialogFactory.createConfirmDialog(anyString(), anyString(), Matchers.<ConfirmCallback>anyObject(),
+                                               Matchers.<CancelCallback>anyObject())).thenReturn(confirmDialog);
     }
 
     @Test
@@ -142,7 +144,7 @@ public class ProjectWizardTest {
 
         ImportResponse importResponse = mock(ImportResponse.class);
         when(importResponse.getProjectDescriptor()).thenReturn(mock(ProjectDescriptor.class));
-        AsyncRequestCallback<ImportResponse> callback = importCallbackCaptor.getValue();
+        RequestCallback<ImportResponse> callback = importCallbackCaptor.getValue();
         GwtReflectionUtils.callOnSuccess(callback, importResponse);
 
         verify(eventBus).fireEvent(Matchers.<Event<Object>>anyObject());
@@ -158,7 +160,7 @@ public class ProjectWizardTest {
 
         verify(projectServiceClient).importProject(eq(PROJECT_NAME), eq(false), eq(importProject), importCallbackCaptor.capture());
 
-        AsyncRequestCallback<ImportResponse> callback = importCallbackCaptor.getValue();
+        RequestCallback<ImportResponse> callback = importCallbackCaptor.getValue();
         GwtReflectionUtils.callOnFailure(callback, mock(Throwable.class));
 
         verify(completeCallback).onFailure(Matchers.<Throwable>anyObject());

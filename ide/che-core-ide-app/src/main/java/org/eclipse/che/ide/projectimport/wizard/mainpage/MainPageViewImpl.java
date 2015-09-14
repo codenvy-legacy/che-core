@@ -29,7 +29,7 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -134,7 +134,7 @@ public class MainPageViewImpl implements MainPageView {
     }
 
     @Override
-    public void setImporterDescription(@Nonnull String text) {
+    public void setImporterDescription(@NotNull String text) {
         descriptionArea.getElement().setInnerText(text);
     }
 

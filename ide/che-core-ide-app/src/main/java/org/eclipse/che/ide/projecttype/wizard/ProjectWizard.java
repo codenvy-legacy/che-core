@@ -35,8 +35,9 @@ import org.eclipse.che.ide.rest.Unmarshallable;
 import org.eclipse.che.ide.ui.dialogs.CancelCallback;
 import org.eclipse.che.ide.ui.dialogs.ConfirmCallback;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
+import org.eclipse.che.ide.websocket.rest.RequestCallback;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode.CREATE;
 import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode.CREATE_MODULE;
@@ -115,7 +116,7 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
 
     /** {@inheritDoc} */
     @Override
-    public void complete(@Nonnull final CompleteCallback callback) {
+    public void complete(@NotNull final CompleteCallback callback) {
         if (mode == CREATE) {
             createProject(callback);
         } else if (mode == CREATE_MODULE) {
@@ -188,9 +189,10 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
 
     private void importProject(final CompleteCallback callback) {
         final NewProject project = dataObject.getProject();
-        final Unmarshallable<ImportResponse> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ImportResponse.class);
+        org.eclipse.che.ide.websocket.rest.Unmarshallable<ImportResponse> unmarshaller = dtoUnmarshallerFactory.newWSUnmarshaller(
+                ImportResponse.class);
         projectServiceClient.importProject(
-                project.getName(), false, dataObject, new AsyncRequestCallback<ImportResponse>(unmarshaller) {
+                project.getName(), false, dataObject, new RequestCallback<ImportResponse>(unmarshaller) {
                     @Override
                     protected void onSuccess(ImportResponse result) {
                         eventBus.fireEvent(new OpenProjectEvent(result.getProjectDescriptor().getName()));

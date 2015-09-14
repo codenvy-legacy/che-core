@@ -19,7 +19,7 @@ import org.eclipse.che.dto.server.DtoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import javax.annotation.PostConstruct;
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -99,7 +99,7 @@ public class ProjectTemplateDescriptionLoader {
         }
     }
 
-    private void load(@Nonnull Path dirPath, @Nonnull String projectTypeId) {
+    private void load(@NotNull Path dirPath, @NotNull String projectTypeId) {
         try {
             Path tmplConf = Paths.get(dirPath.toString() + "/" + projectTypeId + ".json");
             if (tmplConf != null && Files.exists(tmplConf)) {

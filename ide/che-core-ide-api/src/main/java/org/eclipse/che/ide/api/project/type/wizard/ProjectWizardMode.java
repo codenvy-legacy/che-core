@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.project.type.wizard;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Defines modes used to open a project wizard.
@@ -34,7 +34,7 @@ public enum ProjectWizardMode {
         this.value = value;
     }
 
-    public static ProjectWizardMode parse(@Nonnull String mode) {
+    public static ProjectWizardMode parse(@NotNull String mode) {
         for (ProjectWizardMode wizardMode : values()) {
             if (mode.equals(wizardMode.toString())) {
                 return wizardMode;

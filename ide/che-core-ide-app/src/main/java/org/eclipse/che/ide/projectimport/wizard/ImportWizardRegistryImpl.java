@@ -15,8 +15,8 @@ import org.eclipse.che.ide.api.project.wizard.ImportWizardRegistry;
 import org.eclipse.che.ide.util.loging.Log;
 import com.google.inject.Inject;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -47,7 +47,7 @@ public class ImportWizardRegistryImpl implements ImportWizardRegistry {
 
     @Nullable
     @Override
-    public ImportWizardRegistrar getWizardRegistrar(@Nonnull String importerId) {
+    public ImportWizardRegistrar getWizardRegistrar(@NotNull String importerId) {
         return registrars.get(importerId);
     }
 }

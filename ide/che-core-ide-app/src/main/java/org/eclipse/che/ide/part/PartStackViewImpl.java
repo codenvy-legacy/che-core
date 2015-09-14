@@ -27,7 +27,7 @@ import org.eclipse.che.ide.api.parts.PartPresenter;
 import org.eclipse.che.ide.api.parts.PartStackUIResources;
 import org.eclipse.che.ide.api.parts.PartStackView;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 
 import java.util.List;
@@ -55,8 +55,8 @@ public class PartStackViewImpl extends ResizeComposite implements PartStackView,
     public PartStackViewImpl(PartStackUIResources resources,
                              FlowPanel tabsRotationPanel,
                              final DeckLayoutPanel contentPanel,
-                             @Assisted @Nonnull TabPosition tabPosition,
-                             @Assisted @Nonnull FlowPanel tabsPanel) {
+                             @Assisted @NotNull TabPosition tabPosition,
+                             @Assisted @NotNull FlowPanel tabsPanel) {
         this.tabsPanel = tabsPanel;
         this.tabPosition = tabPosition;
         this.tabsRotationPanel = tabsRotationPanel;
@@ -82,13 +82,13 @@ public class PartStackViewImpl extends ResizeComposite implements PartStackView,
 
        /** {@inheritDoc} */
     @Override
-    public void onMouseDown(@Nonnull MouseDownEvent event) {
+    public void onMouseDown(@NotNull MouseDownEvent event) {
         delegate.onRequestFocus();
     }
 
     /** {@inheritDoc} */
     @Override
-    public void onContextMenu(@Nonnull ContextMenuEvent event) {
+    public void onContextMenu(@NotNull ContextMenuEvent event) {
         delegate.onRequestFocus();
     }
 
@@ -100,7 +100,7 @@ public class PartStackViewImpl extends ResizeComposite implements PartStackView,
 
     /** {@inheritDoc} */
     @Override
-    public void addTab(@Nonnull TabItem tabItem, @Nonnull PartPresenter presenter) {
+    public void addTab(@NotNull TabItem tabItem, @NotNull PartPresenter presenter) {
         tabsRotationPanel.add(tabItem.getView());
         presenter.go(partViewContainer);
 
@@ -110,7 +110,7 @@ public class PartStackViewImpl extends ResizeComposite implements PartStackView,
 
     /** {@inheritDoc} */
     @Override
-    public void removeTab(@Nonnull PartPresenter presenter) {
+    public void removeTab(@NotNull PartPresenter presenter) {
         TabItem tab = tabs.get(presenter);
 
         tabsPanel.remove(tab.getView());
@@ -133,7 +133,7 @@ public class PartStackViewImpl extends ResizeComposite implements PartStackView,
 
     /** {@inheritDoc} */
     @Override
-    public void selectTab(@Nonnull PartPresenter partPresenter) {
+    public void selectTab(@NotNull PartPresenter partPresenter) {
         IsWidget view = partPresenter.getView();
         int viewIndex = contentPanel.getWidgetIndex(view);
 
@@ -150,7 +150,7 @@ public class PartStackViewImpl extends ResizeComposite implements PartStackView,
         setActiveTab(partPresenter);
     }
 
-    private void setActiveTab(@Nonnull PartPresenter part) {
+    private void setActiveTab(@NotNull PartPresenter part) {
         for (TabItem tab : tabs.values()) {
             tab.unSelect();
         }
@@ -176,7 +176,7 @@ public class PartStackViewImpl extends ResizeComposite implements PartStackView,
 
     /** {@inheritDoc} */
     @Override
-    public void updateTabItem(@Nonnull PartPresenter partPresenter) {
+    public void updateTabItem(@NotNull PartPresenter partPresenter) {
         TabItem tabItem = tabs.get(partPresenter);
 
         tabItem.update(partPresenter);

@@ -10,34 +10,26 @@
  *******************************************************************************/
 package org.eclipse.che.git.impl;
 
-import org.eclipse.che.git.impl.nativegit.CredentialsLoader;
-import org.eclipse.che.git.impl.nativegit.CredentialsProvider;
+import org.eclipse.che.api.git.GitException;
+import org.eclipse.che.api.git.CredentialsLoader;
 import org.eclipse.che.git.impl.nativegit.NativeGitConnectionFactory;
 import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
-import org.eclipse.che.git.impl.nativegit.ssh.SshKeyProvider;
 import org.testng.annotations.DataProvider;
 
-import java.util.Collections;
+import static org.mockito.Mockito.mock;
 
 /**
  * @author Sergii Kabashniuk
  */
 public class GitConnectionFactoryProvider {
 
-
     @DataProvider(name = "GitConnectionFactory")
-    public static Object[][] createConnection() {
+    public static Object[][] createConnection() throws GitException {
         return new Object[][]{
-                new Object[]{new NativeGitConnectionFactory(
-                        new CredentialsLoader(Collections.<CredentialsProvider>emptySet()),
-                        new GitSshScriptProvider(
-                                new SshKeyProvider() {
-                                    @Override
-                                    public byte[] getPrivateKey(String host) {
-                                        return new byte[0];
-                                    }
-                                }),
-                        null)
+                new Object[]{
+                        new NativeGitConnectionFactory(
+                                mock(CredentialsLoader.class),
+                                new GitSshScriptProvider(host -> new byte[0]))
                 }
         };
     }

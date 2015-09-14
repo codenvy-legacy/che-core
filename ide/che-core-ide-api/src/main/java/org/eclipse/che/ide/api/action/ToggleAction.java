@@ -14,7 +14,7 @@ import com.google.gwt.resources.client.ImageResource;
 
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.annotation.Nullable;
+import org.eclipse.che.commons.annotation.Nullable;
 
 /**
  * An action which has a selected state, and which toggles its selected state when performed.

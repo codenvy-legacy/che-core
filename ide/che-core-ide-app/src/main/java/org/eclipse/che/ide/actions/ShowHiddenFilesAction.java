@@ -30,7 +30,7 @@ import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
 import org.eclipse.che.ide.api.project.tree.TreeSettings;
 import org.eclipse.che.ide.util.loging.Log;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.Arrays;
 
 import static org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper.createFromCallback;
@@ -67,7 +67,7 @@ public class ShowHiddenFilesAction extends AbstractPerspectiveAction implements 
 
     /** {@inheritDoc} */
     @Override
-    public void updateInPerspective(@Nonnull ActionEvent event) {
+    public void updateInPerspective(@NotNull ActionEvent event) {
         event.getPresentation().setVisible(appContext.getCurrentProject() != null);
     }
 

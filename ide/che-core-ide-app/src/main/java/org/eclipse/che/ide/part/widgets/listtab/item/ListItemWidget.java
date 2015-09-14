@@ -20,7 +20,7 @@ import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author Dmitry Shnurenko
@@ -38,11 +38,11 @@ public class ListItemWidget extends Composite implements ListItem {
 
     private ActionDelegate delegate;
 
-    public static ListItem create(@Nonnull String title) {
+    public static ListItem create(@NotNull String title) {
         return new ListItemWidget(title);
     }
 
-    public ListItemWidget(@Nonnull String title) {
+    public ListItemWidget(@NotNull String title) {
         initWidget(UI_BINDER.createAndBindUi(this));
 
         this.title.setText(title);

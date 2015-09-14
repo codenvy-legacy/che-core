@@ -15,8 +15,8 @@ import com.google.gwt.resources.client.ImageResource;
 import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -29,9 +29,9 @@ public abstract class AbstractPerspectiveAction extends Action {
 
     private final List<String> activePerspectives;
 
-    public AbstractPerspectiveAction(@Nonnull List<String> activePerspectives,
-                                     @Nonnull String tooltip,
-                                     @Nonnull String description,
+    public AbstractPerspectiveAction(@NotNull List<String> activePerspectives,
+                                     @NotNull String tooltip,
+                                     @NotNull String description,
                                      @Nullable ImageResource resource,
                                      @Nullable SVGResource icon) {
         super(tooltip, description, resource, icon);
@@ -40,7 +40,7 @@ public abstract class AbstractPerspectiveAction extends Action {
 
     /** {@inheritDoc} */
     @Override
-    public final void update(@Nonnull ActionEvent event) {
+    public final void update(@NotNull ActionEvent event) {
         PerspectiveManager manager = event.getPerspectiveManager();
 
         Presentation presentation = event.getPresentation();
@@ -60,5 +60,5 @@ public abstract class AbstractPerspectiveAction extends Action {
      * @param event
      *         update action
      */
-    public abstract void updateInPerspective(@Nonnull ActionEvent event);
+    public abstract void updateInPerspective(@NotNull ActionEvent event);
 }

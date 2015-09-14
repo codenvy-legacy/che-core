@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.texteditor;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.jseditor.client.editorconfig.TextEditorConfiguration;
@@ -27,8 +27,8 @@ public interface ConfigurableTextEditor extends TextEditor {
      *         the manager that provides showing notifications
      */
 
-    void initialize(@Nonnull TextEditorConfiguration configuration,
-                    @Nonnull NotificationManager notificationManager);
+    void initialize(@NotNull TextEditorConfiguration configuration,
+                    @NotNull NotificationManager notificationManager);
 
 
     /**

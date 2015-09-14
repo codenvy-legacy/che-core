@@ -27,7 +27,7 @@ import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * The implementation of {@link UploadFileView}.
@@ -119,13 +119,13 @@ public class UploadFileViewImpl extends Window implements UploadFileView {
 
     /** {@inheritDoc} */
     @Override
-    public void setEncoding(@Nonnull String encodingType) {
+    public void setEncoding(@NotNull String encodingType) {
         submitForm.setEncoding(encodingType);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void setAction(@Nonnull String url) {
+    public void setAction(@NotNull String url) {
         submitForm.setAction(url);
         submitForm.setMethod(FormPanel.METHOD_POST);
     }
@@ -140,7 +140,7 @@ public class UploadFileViewImpl extends Window implements UploadFileView {
 
     /** {@inheritDoc} */
     @Override
-    @Nonnull
+    @NotNull
     public String getFileName() {
         String fileName = file.getFilename();
         if (fileName.contains("/") || fileName.contains("\\")) {

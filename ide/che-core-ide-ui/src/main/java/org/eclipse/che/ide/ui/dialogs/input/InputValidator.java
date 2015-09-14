@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ui.dialogs.input;
 
-import javax.annotation.Nullable;
+import org.eclipse.che.commons.annotation.Nullable;
 
 /**
  * Validator for {@link InputDialog}.

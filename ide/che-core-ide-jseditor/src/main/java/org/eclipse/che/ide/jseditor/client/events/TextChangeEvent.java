@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.events;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 import org.eclipse.che.ide.jseditor.client.changeintercept.TextChange;
 import com.google.gwt.event.shared.GwtEvent;
@@ -29,7 +29,7 @@ public class TextChangeEvent extends GwtEvent<TextChangeHandler> {
     /** The updater. */
     private final ChangeUpdater updater;
 
-    public TextChangeEvent(@Nonnull final TextChange change, @Nonnull final ChangeUpdater updater) {
+    public TextChangeEvent(@NotNull final TextChange change, @NotNull final ChangeUpdater updater) {
         this.change = change;
         this.updater = updater;
     }

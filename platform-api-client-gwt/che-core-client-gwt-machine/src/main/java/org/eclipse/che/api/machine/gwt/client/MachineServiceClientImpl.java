@@ -31,8 +31,8 @@ import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.RestContext;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,9 +73,9 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     }
 
     @Override
-    public Promise<MachineDescriptor> createMachineFromRecipe(@Nonnull final String machineType,
-                                                              @Nonnull final String recipeType,
-                                                              @Nonnull final String recipeScript,
+    public Promise<MachineDescriptor> createMachineFromRecipe(@NotNull final String machineType,
+                                                              @NotNull final String recipeType,
+                                                              @NotNull final String recipeScript,
                                                               @Nullable final String displayName,
                                                               final boolean bindWorkspace,
                                                               @Nullable final String outputChannel) {
@@ -88,14 +88,14 @@ public class MachineServiceClientImpl implements MachineServiceClient {
         });
     }
 
-    private void createMachineFromRecipe(@Nonnull String workspaceId,
-                                         @Nonnull String machineType,
-                                         @Nonnull String recipeType,
-                                         @Nonnull String recipeScript,
+    private void createMachineFromRecipe(@NotNull String workspaceId,
+                                         @NotNull String machineType,
+                                         @NotNull String recipeType,
+                                         @NotNull String recipeScript,
                                          @Nullable final String displayName,
                                          boolean bindWorkspace,
                                          @Nullable String outputChannel,
-                                         @Nonnull AsyncCallback<MachineDescriptor> callback) {
+                                         @NotNull AsyncCallback<MachineDescriptor> callback) {
         final MachineRecipe machineRecipe = dtoFactory.createDto(MachineRecipe.class)
                                                       .withType(recipeType)
                                                       .withScript(recipeScript);
@@ -116,7 +116,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     }
 
     @Override
-    public Promise<MachineDescriptor> createMachineFromSnapshot(@Nonnull final String snapshotId,
+    public Promise<MachineDescriptor> createMachineFromSnapshot(@NotNull final String snapshotId,
                                                                 @Nullable final String displayName,
                                                                 @Nullable final String outputChannel) {
         return newPromise(new RequestCall<MachineDescriptor>() {
@@ -127,10 +127,10 @@ public class MachineServiceClientImpl implements MachineServiceClient {
         });
     }
 
-    private void createMachineFromSnapshot(@Nonnull String snapshotId,
+    private void createMachineFromSnapshot(@NotNull String snapshotId,
                                            @Nullable final String displayName,
                                            @Nullable String outputChannel,
-                                           @Nonnull AsyncCallback<MachineDescriptor> callback) {
+                                           @NotNull AsyncCallback<MachineDescriptor> callback) {
         final SnapshotMachineCreationMetadata request = dtoFactory.createDto(SnapshotMachineCreationMetadata.class)
                                                                   .withSnapshotId(snapshotId)
                                                                   .withDisplayName(displayName)
@@ -144,7 +144,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     }
 
     @Override
-    public Promise<MachineDescriptor> getMachine(@Nonnull final String machineId) {
+    public Promise<MachineDescriptor> getMachine(@NotNull final String machineId) {
         return newPromise(new RequestCall<MachineDescriptor>() {
             @Override
             public void makeCall(AsyncCallback<MachineDescriptor> callback) {
@@ -153,7 +153,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
         });
     }
 
-    private void getMachine(@Nonnull String machineId, @Nonnull AsyncCallback<MachineDescriptor> callback) {
+    private void getMachine(@NotNull String machineId, @NotNull AsyncCallback<MachineDescriptor> callback) {
         final String url = baseHttpUrl + '/' + machineId;
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
@@ -162,7 +162,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     }
 
     @Override
-    public Promise<MachineStateDescriptor> getMachineState(@Nonnull final String machineId) {
+    public Promise<MachineStateDescriptor> getMachineState(@NotNull final String machineId) {
         return newPromise(new RequestCall<MachineStateDescriptor>() {
             @Override
             public void makeCall(AsyncCallback<MachineStateDescriptor> callback) {
@@ -171,7 +171,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
         });
     }
 
-    private void getMachineState(@Nonnull String machineId, @Nonnull AsyncCallback<MachineStateDescriptor> callback) {
+    private void getMachineState(@NotNull String machineId, @NotNull AsyncCallback<MachineStateDescriptor> callback) {
         final String url = baseHttpUrl + '/' + machineId + "/state";
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
@@ -198,8 +198,8 @@ public class MachineServiceClientImpl implements MachineServiceClient {
         });
     }
 
-    private void getMachines(@Nonnull String workspaceId, @Nullable String projectPath,
-                             @Nonnull AsyncCallback<List<MachineDescriptor>> callback) {
+    private void getMachines(@NotNull String workspaceId, @Nullable String projectPath,
+                             @NotNull AsyncCallback<List<MachineDescriptor>> callback) {
         final String url = baseHttpUrl + "?workspace=" + workspaceId + (projectPath != null ? "&project=" + projectPath : "");
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
@@ -226,8 +226,8 @@ public class MachineServiceClientImpl implements MachineServiceClient {
         });
     }
 
-    private void getMachinesStates(@Nonnull String workspaceId, @Nullable String projectPath,
-                                   @Nonnull AsyncCallback<List<MachineStateDescriptor>> callback) {
+    private void getMachinesStates(@NotNull String workspaceId, @Nullable String projectPath,
+                                   @NotNull AsyncCallback<List<MachineStateDescriptor>> callback) {
         final String url = baseHttpUrl + "/state" + "?workspace=" + workspaceId + (projectPath != null ? "&project=" + projectPath : "");
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
@@ -236,7 +236,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     }
 
     @Override
-    public Promise<Void> destroyMachine(@Nonnull final String machineId) {
+    public Promise<Void> destroyMachine(@NotNull final String machineId) {
         return newPromise(new RequestCall<Void>() {
             @Override
             public void makeCall(AsyncCallback<Void> callback) {
@@ -245,15 +245,15 @@ public class MachineServiceClientImpl implements MachineServiceClient {
         });
     }
 
-    private void destroyMachine(@Nonnull String machineId, @Nonnull AsyncCallback<Void> callback) {
+    private void destroyMachine(@NotNull String machineId, @NotNull AsyncCallback<Void> callback) {
         asyncRequestFactory.createRequest(DELETE, baseHttpUrl + '/' + machineId, null, false)
                            .loader(loader, "Destroying machine...")
                            .send(newCallback(callback));
     }
 
     @Override
-    public Promise<ProcessDescriptor> executeCommand(@Nonnull final String machineId,
-                                                     @Nonnull final String commandLine,
+    public Promise<ProcessDescriptor> executeCommand(@NotNull final String machineId,
+                                                     @NotNull final String commandLine,
                                                      @Nullable final String outputChannel) {
         return newPromise(new RequestCall<ProcessDescriptor>() {
             @Override
@@ -263,10 +263,10 @@ public class MachineServiceClientImpl implements MachineServiceClient {
         });
     }
 
-    private void executeCommand(@Nonnull String machineId,
-                                @Nonnull String commandLine,
+    private void executeCommand(@NotNull String machineId,
+                                @NotNull String commandLine,
                                 @Nullable String outputChannel,
-                                @Nonnull AsyncCallback<ProcessDescriptor> callback) {
+                                @NotNull AsyncCallback<ProcessDescriptor> callback) {
         final CommandDescriptor request = dtoFactory.createDto(CommandDescriptor.class)
                                                     .withCommandLine(commandLine)
                                                     .withOutputChannel(outputChannel);
@@ -278,7 +278,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     }
 
     @Override
-    public Promise<List<ProcessDescriptor>> getProcesses(@Nonnull final String machineId) {
+    public Promise<List<ProcessDescriptor>> getProcesses(@NotNull final String machineId) {
         return newPromise(new RequestCall<List<ProcessDescriptor>>() {
             @Override
             public void makeCall(AsyncCallback<List<ProcessDescriptor>> callback) {
@@ -301,7 +301,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     }
 
     @Override
-    public Promise<Void> stopProcess(@Nonnull final String machineId, final int processId) {
+    public Promise<Void> stopProcess(@NotNull final String machineId, final int processId) {
         return newPromise(new RequestCall<Void>() {
             @Override
             public void makeCall(AsyncCallback<Void> callback) {
@@ -310,14 +310,14 @@ public class MachineServiceClientImpl implements MachineServiceClient {
         });
     }
 
-    private void stopProcess(@Nonnull String machineId, int processId, @Nonnull AsyncCallback<Void> callback) {
+    private void stopProcess(@NotNull String machineId, int processId, @NotNull AsyncCallback<Void> callback) {
         asyncRequestFactory.createDeleteRequest(baseHttpUrl + '/' + machineId + "/process/" + processId)
                            .loader(loader, "Stopping process...")
                            .send(newCallback(callback));
     }
 
     @Override
-    public Promise<Void> bindProject(@Nonnull final String machineId, @Nonnull final String projectPath) {
+    public Promise<Void> bindProject(@NotNull final String machineId, @NotNull final String projectPath) {
         return newPromise(new RequestCall<Void>() {
             @Override
             public void makeCall(AsyncCallback<Void> callback) {
@@ -326,14 +326,14 @@ public class MachineServiceClientImpl implements MachineServiceClient {
         });
     }
 
-    private void bindProject(@Nonnull String machineId, @Nonnull String projectPath, @Nonnull AsyncCallback<Void> callback) {
+    private void bindProject(@NotNull String machineId, @NotNull String projectPath, @NotNull AsyncCallback<Void> callback) {
         asyncRequestFactory.createPostRequest(baseHttpUrl + '/' + machineId + "/binding/" + projectPath, null)
                            .loader(loader, "Binding project to machine...")
                            .send(newCallback(callback));
     }
 
     @Override
-    public Promise<Void> unbindProject(@Nonnull final String machineId, @Nonnull final String projectPath) {
+    public Promise<Void> unbindProject(@NotNull final String machineId, @NotNull final String projectPath) {
         return newPromise(new RequestCall<Void>() {
             @Override
             public void makeCall(AsyncCallback<Void> callback) {
@@ -342,7 +342,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
         });
     }
 
-    private void unbindProject(@Nonnull String machineId, @Nonnull String projectPath, @Nonnull AsyncCallback<Void> callback) {
+    private void unbindProject(@NotNull String machineId, @NotNull String projectPath, @NotNull AsyncCallback<Void> callback) {
         asyncRequestFactory.createDeleteRequest(baseHttpUrl + '/' + machineId + "/binding/" + projectPath)
                            .loader(loader, "Unbinding project from machine...")
                            .send(newCallback(callback));

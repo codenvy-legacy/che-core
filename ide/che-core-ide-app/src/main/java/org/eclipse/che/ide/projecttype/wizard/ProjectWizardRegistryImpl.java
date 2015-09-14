@@ -15,8 +15,8 @@ import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistry;
 import org.eclipse.che.ide.util.loging.Log;
 import com.google.inject.Inject;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -48,13 +48,13 @@ public class ProjectWizardRegistryImpl implements ProjectWizardRegistry {
 
     @Nullable
     @Override
-    public ProjectWizardRegistrar getWizardRegistrar(@Nonnull String projectTypeId) {
+    public ProjectWizardRegistrar getWizardRegistrar(@NotNull String projectTypeId) {
         return registrars.get(projectTypeId);
     }
 
     @Nullable
     @Override
-    public String getWizardCategory(@Nonnull String projectTypeId) {
+    public String getWizardCategory(@NotNull String projectTypeId) {
         ProjectWizardRegistrar registrar = registrars.get(projectTypeId);
         if (registrar != null) {
             final String category = registrar.getCategory();

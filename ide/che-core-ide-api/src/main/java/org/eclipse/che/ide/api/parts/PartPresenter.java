@@ -19,8 +19,8 @@ import org.eclipse.che.ide.api.selection.Selection;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -36,10 +36,10 @@ public interface PartPresenter extends Presenter {
     int SELECTION_PROPERTY = 0x002;
 
     /** @return Title of the Part */
-    @Nonnull
+    @NotNull
     String getTitle();
 
-    void addRule(@Nonnull String perspectiveId);
+    void addRule(@NotNull String perspectiveId);
 
     List<String> getRules();
 
@@ -125,7 +125,7 @@ public interface PartPresenter extends Presenter {
      *
      * @param callback
      */
-    void onClose(@Nonnull AsyncCallback<Void> callback);
+    void onClose(@NotNull AsyncCallback<Void> callback);
 
     /**
      * Adds a listener for changes to properties of this part. Has no effect if an identical listener is already registered.
@@ -133,10 +133,10 @@ public interface PartPresenter extends Presenter {
      * @param listener
      *         a property listener
      */
-    void addPropertyListener(@Nonnull PropertyListener listener);
+    void addPropertyListener(@NotNull PropertyListener listener);
 
     /** @return The {@link org.eclipse.che.ide.api.selection.Selection} of this Part. */
-    @Nonnull
+    @NotNull
     Selection<?> getSelection();
 
     /**
@@ -145,5 +145,5 @@ public interface PartPresenter extends Presenter {
      * @param listener
      *         a property listener
      */
-    void removePropertyListener(@Nonnull PropertyListener listener);
+    void removePropertyListener(@NotNull PropertyListener listener);
 }

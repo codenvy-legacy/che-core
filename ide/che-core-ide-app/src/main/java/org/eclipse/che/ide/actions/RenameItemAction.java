@@ -44,8 +44,8 @@ import org.eclipse.che.ide.ui.dialogs.input.InputDialog;
 import org.eclipse.che.ide.ui.dialogs.input.InputValidator;
 import org.eclipse.che.ide.util.NameUtils;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 
 //import org.eclipse.che.api.runner.ApplicationStatus;
 
@@ -134,7 +134,7 @@ public class RenameItemAction extends AbstractPerspectiveAction {
 
     /** {@inheritDoc} */
     @Override
-    public void updateInPerspective(@Nonnull ActionEvent event) {
+    public void updateInPerspective(@NotNull ActionEvent event) {
         if ((appContext.getCurrentProject() == null && !appContext.getCurrentUser().isUserPermanent()) ||
             (appContext.getCurrentProject() != null && appContext.getCurrentProject().isReadOnly())) {
             event.getPresentation().setVisible(true);

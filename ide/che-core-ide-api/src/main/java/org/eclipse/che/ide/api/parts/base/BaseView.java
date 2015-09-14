@@ -24,7 +24,7 @@ import org.eclipse.che.ide.api.parts.Focusable;
 import org.eclipse.che.ide.api.parts.PartStackUIResources;
 import org.vectomatic.dom.svg.ui.SVGImage;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Base view for part. By default the view has toolbar containing part description and minimize button.
@@ -114,7 +114,7 @@ public abstract class BaseView<T extends BaseActionDelegate> extends Composite i
      * @param title
      *         part title
      */
-    public void setTitle(@Nonnull String title) {
+    public void setTitle(@NotNull String title) {
         titleLabel.setText(title);
     }
 

@@ -36,7 +36,6 @@ import static org.eclipse.che.dto.server.DtoFactory.newDto;
 import static org.eclipse.che.git.impl.GitTestUtil.addFile;
 import static org.eclipse.che.git.impl.GitTestUtil.cleanupTestRepo;
 import static org.eclipse.che.git.impl.GitTestUtil.connectToInitializedGitRepository;
-import static org.eclipse.che.git.impl.GitTestUtil.getTestGitUser;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
@@ -66,7 +65,7 @@ public class PullTest {
         //given
         //create new repository clone of default
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
-        GitConnection connection2 = connectionFactory.getConnection(remoteRepo.getAbsolutePath(), getTestGitUser());
+        GitConnection connection2 = connectionFactory.getConnection(remoteRepo.getAbsolutePath());
         connection2.clone(newDto(CloneRequest.class)
                                   .withRemoteUri(connection.getWorkingDir().getAbsolutePath()));
         addFile(connection, "newfile1", "new file1 content");
@@ -85,7 +84,7 @@ public class PullTest {
         //given
         //create new repository clone of default
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
-        GitConnection connection2 = connectionFactory.getConnection(remoteRepo.getAbsolutePath(), getTestGitUser());
+        GitConnection connection2 = connectionFactory.getConnection(remoteRepo.getAbsolutePath());
 
         connection2.clone(newDto(CloneRequest.class).withRemoteUri(connection.getWorkingDir().getAbsolutePath()));
         //add new branch
@@ -115,7 +114,7 @@ public class PullTest {
         connection.commit(newDto(CommitRequest.class).withMessage("remote test"));
 
         GitConnection connection2 = connectToInitializedGitRepository(connectionFactory, remoteRepo);
-        addFile(remoteRepo.toPath(), "EMPTY", "");
+        addFile(connection2, "EMPTY", "");
         connection2.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
         connection2.commit(newDto(CommitRequest.class).withMessage("init"));
 

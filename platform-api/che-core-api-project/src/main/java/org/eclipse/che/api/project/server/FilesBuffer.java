@@ -14,7 +14,7 @@ import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.vfs.server.LazyIterator;
 import org.eclipse.che.api.vfs.server.VirtualFile;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -51,7 +51,7 @@ public class FilesBuffer {
      * @param paths
      *         paths to changed files
      */
-    public synchronized void addToBuffer(@Nonnull String... paths) {
+    public synchronized void addToBuffer(@NotNull String... paths) {
         filesBuffer.clear();
 
         for (String path : paths) {
@@ -59,8 +59,8 @@ public class FilesBuffer {
         }
     }
 
-    @Nonnull
-    private String getValidPath(@Nonnull String path) {
+    @NotNull
+    private String getValidPath(@NotNull String path) {
         return path.startsWith("/") ? path.substring(1) : path;
     }
 
@@ -72,7 +72,7 @@ public class FilesBuffer {
      *         root file which contains inner files which will be added to temporary buffer
      * @throws ServerException
      */
-    public synchronized void addToBufferRecursive(@Nonnull VirtualFile root) throws ServerException {
+    public synchronized void addToBufferRecursive(@NotNull VirtualFile root) throws ServerException {
         filesBuffer.add(getValidPath(root.getPath()));
 
         LazyIterator<VirtualFile> children = root.getChildren(ALL);
@@ -89,7 +89,7 @@ public class FilesBuffer {
      *         path which need to check
      * @return <code>true</code> if file is in buffer, <code>false</code> if file is not in buffer
      */
-    public boolean isContainsPath(@Nonnull String filePath) {
+    public boolean isContainsPath(@NotNull String filePath) {
         return filesBuffer.contains(filePath);
     }
 }

@@ -12,7 +12,7 @@ package org.eclipse.che.ide.ui.dropdown;
 
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * The factory for creating drop down list.
@@ -27,8 +27,8 @@ public interface DropDownListFactory {
      *         list identifier
      * @return an instance of {@link DropDownHeaderWidget}
      */
-    @Nonnull
-    DropDownHeaderWidget createList(@Nonnull String listId);
+    @NotNull
+    DropDownHeaderWidget createList(@NotNull String listId);
 
     /**
      * Create an instance of {@link SimpleListElementAction} with given name amd icon for displaying it and header which is configured this
@@ -42,6 +42,6 @@ public interface DropDownListFactory {
      *         header widget of custom list
      * @return an instance of {@link SimpleListElementAction}
      */
-    @Nonnull
-    SimpleListElementAction createElement(@Nonnull String name, @Nonnull SVGResource image, @Nonnull DropDownHeaderWidget header);
+    @NotNull
+    SimpleListElementAction createElement(@NotNull String name, @NotNull SVGResource image, @NotNull DropDownHeaderWidget header);
 }

@@ -15,8 +15,8 @@ import org.eclipse.che.api.machine.shared.dto.recipe.RecipeDescriptor;
 import org.eclipse.che.api.machine.shared.dto.recipe.RecipeUpdate;
 import org.eclipse.che.api.promises.client.Promise;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -33,13 +33,13 @@ public interface RecipeServiceClient {
      * @param newRecipe
      *         describer of the recipe
      */
-    Promise<RecipeDescriptor> createRecipe(@Nonnull final NewRecipe newRecipe);
+    Promise<RecipeDescriptor> createRecipe(@NotNull final NewRecipe newRecipe);
 
     /** Get recipe script by recipe's ID. */
-    Promise<String> getRecipeScript(@Nonnull String id);
+    Promise<String> getRecipeScript(@NotNull String id);
 
     /** Get recipe by ID. */
-    Promise<RecipeDescriptor> getRecipe(@Nonnull String id);
+    Promise<RecipeDescriptor> getRecipe(@NotNull String id);
 
     /** Get all recipes. */
     Promise<List<RecipeDescriptor>> getAllRecipes();
@@ -67,7 +67,7 @@ public interface RecipeServiceClient {
      * @param maxItems
      *         max count of items to fetch
      */
-    Promise<List<RecipeDescriptor>> searchRecipes(@Nonnull List<String> tags, @Nullable String type, int skipCount, int maxItems);
+    Promise<List<RecipeDescriptor>> searchRecipes(@NotNull List<String> tags, @Nullable String type, int skipCount, int maxItems);
 
     /**
      * Update recipe.
@@ -75,8 +75,8 @@ public interface RecipeServiceClient {
      * @param recipeUpdate
      *         describer of the recipe updater
      */
-    Promise<RecipeDescriptor> updateRecipe(@Nonnull RecipeUpdate recipeUpdate);
+    Promise<RecipeDescriptor> updateRecipe(@NotNull RecipeUpdate recipeUpdate);
 
     /** Remove recipe with the given ID. */
-    Promise<Void> removeRecipe(@Nonnull String id);
+    Promise<Void> removeRecipe(@NotNull String id);
 }

@@ -15,7 +15,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import org.vectomatic.dom.svg.ui.SVGImage;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Simple clipboard button builder which adds to the widget "copy to clipboard" button.
@@ -31,7 +31,7 @@ public interface ClipboardButtonBuilder {
      *         data resource widget
      *
      */
-    ClipboardButtonBuilder withResourceWidget(@Nonnull Widget resourceWidget);
+    ClipboardButtonBuilder withResourceWidget(@NotNull Widget resourceWidget);
 
     /**
      * Return builder.
@@ -40,7 +40,7 @@ public interface ClipboardButtonBuilder {
      *         parent widget for clipboard button
      *
      */
-    ClipboardButtonBuilder withParentWidget(@Nonnull Widget parentWidget);
+    ClipboardButtonBuilder withParentWidget(@NotNull Widget parentWidget);
 
     /**
      * Return builder.
@@ -48,7 +48,7 @@ public interface ClipboardButtonBuilder {
      * @param svgImage
      *         image for copy to clipboard button
      */
-    ClipboardButtonBuilder withSvgImage(@Nonnull SVGImage svgImage);
+    ClipboardButtonBuilder withSvgImage(@NotNull SVGImage svgImage);
 
 
     /**
@@ -57,7 +57,7 @@ public interface ClipboardButtonBuilder {
      * @param mimeType
      *         mime type for copy to clipboard content
      */
-    ClipboardButtonBuilder withMimeType(@Nonnull String mimeType);
+    ClipboardButtonBuilder withMimeType(@NotNull String mimeType);
 
 
     /**
@@ -66,7 +66,7 @@ public interface ClipboardButtonBuilder {
      * @param promptReadyToCopy
      *         ready to copy prompt
      */
-    ClipboardButtonBuilder withPromptReadyToCopy(@Nonnull String promptReadyToCopy);
+    ClipboardButtonBuilder withPromptReadyToCopy(@NotNull String promptReadyToCopy);
 
 
     /**
@@ -75,7 +75,7 @@ public interface ClipboardButtonBuilder {
      * @param promptAfterCopy
      *         after copy prompt
      */
-    ClipboardButtonBuilder withPromptAfterCopy(@Nonnull String promptAfterCopy);
+    ClipboardButtonBuilder withPromptAfterCopy(@NotNull String promptAfterCopy);
 
 
     /**
@@ -84,7 +84,7 @@ public interface ClipboardButtonBuilder {
      * @param promptCopyError
      *         copy to clipboard error prompt
      */
-    ClipboardButtonBuilder withPromptCopyError(@Nonnull String promptCopyError);
+    ClipboardButtonBuilder withPromptCopyError(@NotNull String promptCopyError);
 
 
     /**
@@ -93,7 +93,7 @@ public interface ClipboardButtonBuilder {
      * @param promptReadyToSelect
      *          ready to select prompt
      */
-    ClipboardButtonBuilder  withPromptReadyToSelect(@Nonnull String promptReadyToSelect);
+    ClipboardButtonBuilder  withPromptReadyToSelect(@NotNull String promptReadyToSelect);
 
 
     /**

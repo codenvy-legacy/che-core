@@ -30,7 +30,7 @@ import com.google.inject.Inject;
 
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Is used for displaying images in editor area.
@@ -72,7 +72,7 @@ public class ImageViewer extends AbstractEditorPresenter {
     }
 
     /** {@inheritDoc} */
-    @Nonnull
+    @NotNull
     @Override
     public String getTitle() {
         return input.getName();
@@ -98,7 +98,7 @@ public class ImageViewer extends AbstractEditorPresenter {
 
     /** {@inheritDoc} */
     @Override
-    public void onClose(@Nonnull final AsyncCallback<Void> callback) {
+    public void onClose(@NotNull final AsyncCallback<Void> callback) {
         if (isDirty()) {
             dialogFactory.createConfirmDialog(
                     constant.askWindowCloseTitle(),

@@ -12,7 +12,7 @@ package org.eclipse.che.ide.upload.folder;
 
 import com.google.gwt.user.client.ui.IsWidget;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * The view of {@link UploadFolderFromZipPresenter}.
@@ -71,7 +71,7 @@ public interface UploadFolderFromZipView extends IsWidget {
      * @param encodingType
      *         the form's encoding
      */
-    void setEncoding(@Nonnull String encodingType);
+    void setEncoding(@NotNull String encodingType);
 
     /**
      * Sets the 'action' associated with form. This is the URL to which it will be submitted.
@@ -79,13 +79,13 @@ public interface UploadFolderFromZipView extends IsWidget {
      * @param url
      *         the form's action
      */
-    void setAction(@Nonnull String url);
+    void setAction(@NotNull String url);
 
     /** Submits the form. */
     void submit();
 
     /** @return file name */
-    @Nonnull
+    @NotNull
     String getFileName();
 
     /** Performs when user select 'overwrite if file exists'. */

@@ -12,7 +12,7 @@ package org.eclipse.che.ide.jseditor.client.debug;
 
 import static org.eclipse.che.ide.jseditor.client.gutter.Gutters.BREAKPOINTS_GUTTER;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 import org.eclipse.che.ide.debug.BreakpointRenderer;
 import org.eclipse.che.ide.jseditor.client.document.Document;
@@ -121,7 +121,7 @@ public class BreakpointRendererImpl implements BreakpointRenderer {
      * 
      * @return the breakpoint mark element
      */
-    @Nonnull
+    @NotNull
     private Element createBreakpointMark() {
         final Element mainElement = Elements.createDivElement();
 
@@ -140,7 +140,7 @@ public class BreakpointRendererImpl implements BreakpointRenderer {
      * @param markElement the element to change
      * @param active the new state
      */
-    private void setActiveMark(final @Nonnull Element markElement, final boolean active) {
+    private void setActiveMark(final @NotNull Element markElement, final boolean active) {
         if (active == isActive(markElement)) {
             return;
         }
@@ -158,7 +158,7 @@ public class BreakpointRendererImpl implements BreakpointRenderer {
      * @param active the state
      * @return the mark element
      */
-    @Nonnull
+    @NotNull
     private Element getMarkElement(final boolean active) {
         if (active) {
             final Image i = new Image(breakpointResources.currentBreakpoint());
@@ -175,7 +175,7 @@ public class BreakpointRendererImpl implements BreakpointRenderer {
      * @param mark the element
      * @return true iff the appearance of the element is 'active'
      */
-    private boolean isActive(final @Nonnull Element mark) {
+    private boolean isActive(final @NotNull Element mark) {
         final Object activeProp = mark.getDataset().at(BREAKPOINT_ACTIVE_PROPERTY_NAME);
         if (activeProp == null) {
             return false;

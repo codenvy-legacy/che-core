@@ -25,7 +25,7 @@ import org.eclipse.che.ide.workspace.WorkBenchControllerFactory;
 import org.eclipse.che.ide.workspace.perspectives.general.AbstractPerspective;
 import org.eclipse.che.ide.workspace.perspectives.general.PerspectiveViewImpl;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 import static org.eclipse.che.ide.api.parts.PartStackType.EDITING;
 import static org.eclipse.che.ide.api.parts.PartStackType.INFORMATION;
@@ -72,7 +72,7 @@ public class ProjectPerspective extends AbstractPerspective {
 
     /** {@inheritDoc} */
     @Override
-    public void go(@Nonnull AcceptsOneWidget container) {
+    public void go(@NotNull AcceptsOneWidget container) {
         PartStack navigatorPanel = getPartStack(NAVIGATION);
         PartStack editorPanel = getPartStack(EDITING);
         PartStack toolPanel = getPartStack(TOOLING);

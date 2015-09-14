@@ -36,8 +36,8 @@ import com.google.inject.assistedinject.AssistedInject;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 
 /**
  * Class provides general view representation for header of drop down list.
@@ -79,7 +79,7 @@ public class DropDownHeaderWidgetImpl extends Composite implements ClickHandler,
     private String selectedName;
 
     @AssistedInject
-    public DropDownHeaderWidgetImpl(DropDownListMenu dropDownListMenu, @Nonnull @Assisted String listId) {
+    public DropDownHeaderWidgetImpl(DropDownListMenu dropDownListMenu, @NotNull @Assisted String listId) {
         this.dropDownListMenu = dropDownListMenu;
         this.listId = listId;
 
@@ -101,13 +101,13 @@ public class DropDownHeaderWidgetImpl extends Composite implements ClickHandler,
 
     /** {@inheritDoc} */
     @Override
-    public void setDelegate(@Nonnull ActionDelegate delegate) {
+    public void setDelegate(@NotNull ActionDelegate delegate) {
         //do nothing
     }
 
     /** {@inheritDoc} */
     @Override
-    public void selectElement(@Nullable SVGResource icon, @Nonnull String title) {
+    public void selectElement(@Nullable SVGResource icon, @NotNull String title) {
         selectedName = title;
 
         selectedElement.setVisible(icon != null && !title.isEmpty());

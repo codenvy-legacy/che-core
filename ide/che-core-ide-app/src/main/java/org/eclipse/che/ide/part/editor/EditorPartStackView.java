@@ -30,7 +30,7 @@ import org.eclipse.che.ide.api.parts.PartStackUIResources;
 import org.eclipse.che.ide.api.parts.PartStackView;
 import org.eclipse.che.ide.part.widgets.listtab.ListButton;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -109,7 +109,7 @@ public class EditorPartStackView extends ResizeComposite implements PartStackVie
      * @param listButton
      *         button which will be added
      */
-    public void setListButton(@Nonnull ListButton listButton) {
+    public void setListButton(@NotNull ListButton listButton) {
         this.listButton = listButton;
 
         tabsPanel.add(listButton);
@@ -117,7 +117,7 @@ public class EditorPartStackView extends ResizeComposite implements PartStackVie
 
     /** {@inheritDoc} */
     @Override
-    public void onMouseDown(@Nonnull MouseDownEvent event) {
+    public void onMouseDown(@NotNull MouseDownEvent event) {
         delegate.onRequestFocus();
     }
 
@@ -129,7 +129,7 @@ public class EditorPartStackView extends ResizeComposite implements PartStackVie
 
     /** {@inheritDoc} */
     @Override
-    public void addTab(@Nonnull TabItem tabItem, @Nonnull PartPresenter presenter) {
+    public void addTab(@NotNull TabItem tabItem, @NotNull PartPresenter presenter) {
         if (contents.isEmpty()) {
             getElement().getParentElement().getStyle().setDisplay(BLOCK);
 
@@ -151,7 +151,7 @@ public class EditorPartStackView extends ResizeComposite implements PartStackVie
 
     }
 
-    private void checkVisibleTabAmount(@Nonnull TabItem tabItem, @Nonnull OperationType operationType) {
+    private void checkVisibleTabAmount(@NotNull TabItem tabItem, @NotNull OperationType operationType) {
         tabsPanelWidth = tabsPanel.getOffsetWidth() - LEFT_MARGIN;
         int itemWidth = tabItem.getView().asWidget().getOffsetWidth();
 
@@ -170,7 +170,7 @@ public class EditorPartStackView extends ResizeComposite implements PartStackVie
 
     /** {@inheritDoc} */
     @Override
-    public void removeTab(@Nonnull PartPresenter presenter) {
+    public void removeTab(@NotNull PartPresenter presenter) {
         TabItem tab = tabs.get(presenter);
 
         checkVisibleTabAmount(tab, OperationType.REMOVE);
@@ -192,7 +192,7 @@ public class EditorPartStackView extends ResizeComposite implements PartStackVie
 
     /** {@inheritDoc} */
     @Override
-    public void selectTab(@Nonnull PartPresenter partPresenter) {
+    public void selectTab(@NotNull PartPresenter partPresenter) {
         IsWidget view = partPresenter.getView();
         int viewIndex = contentPanel.getWidgetIndex(view);
 
@@ -209,7 +209,7 @@ public class EditorPartStackView extends ResizeComposite implements PartStackVie
         setActiveTab(partPresenter);
     }
 
-    private void setActiveTab(@Nonnull PartPresenter part) {
+    private void setActiveTab(@NotNull PartPresenter part) {
         for (TabItem tab : tabs.values()) {
             tab.unSelect();
         }
@@ -242,7 +242,7 @@ public class EditorPartStackView extends ResizeComposite implements PartStackVie
 
     /** {@inheritDoc} */
     @Override
-    public void updateTabItem(@Nonnull PartPresenter partPresenter) {
+    public void updateTabItem(@NotNull PartPresenter partPresenter) {
         TabItem tab = tabs.get(partPresenter);
 
         tab.update(partPresenter);

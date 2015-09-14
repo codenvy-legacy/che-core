@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.wizard;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.Map;
 
 /**
@@ -45,13 +45,13 @@ public abstract class AbstractWizardPage<T> implements WizardPage<T> {
 
     /** {@inheritDoc} */
     @Override
-    public void setContext(@Nonnull Map<String, String> context) {
+    public void setContext(@NotNull Map<String, String> context) {
         this.context = context;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void setUpdateDelegate(@Nonnull Wizard.UpdateDelegate delegate) {
+    public void setUpdateDelegate(@NotNull Wizard.UpdateDelegate delegate) {
         this.updateDelegate = delegate;
     }
 

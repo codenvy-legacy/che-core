@@ -14,7 +14,7 @@ package org.eclipse.che.ide.api.parts;
 import org.eclipse.che.ide.api.constraints.Constraints;
 import org.eclipse.che.ide.api.extension.SDK;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 
 /**
@@ -33,7 +33,7 @@ public interface WorkspaceAgent {
      */
     void setActivePart(PartPresenter part);
 
-    void setActivePart(@Nonnull PartPresenter part, PartStackType type);
+    void setActivePart(@NotNull PartPresenter part, PartStackType type);
 
     /**
      * Opens given Part

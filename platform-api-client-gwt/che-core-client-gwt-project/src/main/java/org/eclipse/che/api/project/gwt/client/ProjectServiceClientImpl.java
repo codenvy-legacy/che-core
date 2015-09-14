@@ -13,6 +13,7 @@ package org.eclipse.che.api.project.gwt.client;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
+import org.eclipse.che.api.machine.gwt.client.ExtServerStateController;
 import org.eclipse.che.api.project.shared.dto.CopyOptions;
 import org.eclipse.che.api.project.shared.dto.ImportProject;
 import org.eclipse.che.api.project.shared.dto.ImportResponse;
@@ -23,18 +24,29 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.api.project.shared.dto.ProjectUpdate;
 import org.eclipse.che.api.project.shared.dto.TreeElement;
+import org.eclipse.che.api.promises.client.Operation;
+import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.ide.MimeType;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
+import org.eclipse.che.ide.websocket.Message;
+import org.eclipse.che.ide.websocket.MessageBuilder;
+import org.eclipse.che.ide.websocket.MessageBus;
+import org.eclipse.che.ide.websocket.WebSocketException;
+import org.eclipse.che.ide.websocket.rest.RequestCallback;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
 
 import static com.google.gwt.http.client.RequestBuilder.DELETE;
+import static com.google.gwt.http.client.RequestBuilder.POST;
 import static com.google.gwt.http.client.RequestBuilder.PUT;
+import static org.eclipse.che.ide.MimeType.APPLICATION_JSON;
 import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
+import static org.eclipse.che.ide.rest.HTTPHeader.CONTENTTYPE;
 import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
 
 /**
@@ -42,27 +54,33 @@ import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
  *
  * @author Vitaly Parfonov
  * @author Artem Zatsarynnyy
+ * @author Valeriy Svydenko
  */
 public class ProjectServiceClientImpl implements ProjectServiceClient {
-    private final String              extPath;
-    private final String              workspaceId;
-    private final AsyncRequestLoader  loader;
-    private final AsyncRequestFactory asyncRequestFactory;
-    private final DtoFactory          dtoFactory;
-    private final String              baseHttpUrl;
+    private final String                   extPath;
+    private final String                   workspaceId;
+    private final String                   projectServicePath;
+    private       ExtServerStateController extServerStateController;
+    private final AsyncRequestLoader       loader;
+    private final AsyncRequestFactory      asyncRequestFactory;
+    private final DtoFactory               dtoFactory;
+    private final String                   baseHttpUrl;
 
     @Inject
     protected ProjectServiceClientImpl(@Named("cheExtensionPath") String extPath,
                                        @Named("workspaceId") String workspaceId,
+                                       ExtServerStateController extServerStateController,
                                        AsyncRequestLoader loader,
                                        AsyncRequestFactory asyncRequestFactory,
                                        DtoFactory dtoFactory) {
         this.extPath = extPath;
         this.workspaceId = workspaceId;
+        this.projectServicePath = "/project/" + workspaceId;
+        this.extServerStateController = extServerStateController;
         this.loader = loader;
         this.asyncRequestFactory = asyncRequestFactory;
         this.dtoFactory = dtoFactory;
-        baseHttpUrl = extPath + "/project/" + workspaceId;
+        baseHttpUrl = extPath + projectServicePath;
     }
 
     @Override
@@ -274,16 +292,32 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void importProject(String path, boolean force, ImportProject importProject, AsyncRequestCallback<ImportResponse> callback) {
-        final StringBuilder requestUrl = new StringBuilder(baseHttpUrl);
+    public void importProject(String path, boolean force, ImportProject importProject, RequestCallback<ImportResponse> callback) {
+        final StringBuilder requestUrl = new StringBuilder(projectServicePath);
         requestUrl.append("/import").append(normalizePath(path));
         if (force) {
             requestUrl.append("?force=true");
         }
-        asyncRequestFactory.createPostRequest(requestUrl.toString(), importProject, true)
-                           .header(ACCEPT, MimeType.APPLICATION_JSON)
-                           .loader(loader, "Importing sources into project...")
-                           .send(callback);
+
+        MessageBuilder builder = new MessageBuilder(POST, requestUrl.toString());
+        builder.data(dtoFactory.toJson(importProject)).header(CONTENTTYPE, APPLICATION_JSON);
+        Message message = builder.build();
+
+        sendMessageToWS(message, callback);
+    }
+
+
+    private void sendMessageToWS(final @NotNull Message message, final @NotNull RequestCallback<?> callback) {
+        extServerStateController.getMessageBus().then(new Operation<MessageBus>() {
+            @Override
+            public void apply(MessageBus arg) throws OperationException {
+                try {
+                    arg.send(message, callback);
+                } catch (WebSocketException e) {
+                    throw new OperationException(e.getMessage(), e);
+                }
+            }
+        });
     }
 
     @Override

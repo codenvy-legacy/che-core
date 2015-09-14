@@ -12,7 +12,7 @@ package org.eclipse.che.ide.api.project.tree;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -28,10 +28,10 @@ public interface TreeStructure {
      *         callback to return the root nodes
      */
     // TODO: should return one root node that may be visible/hidden in tree
-    void getRootNodes(@Nonnull AsyncCallback<List<TreeNode<?>>> callback);
+    void getRootNodes(@NotNull AsyncCallback<List<TreeNode<?>>> callback);
 
     /** Returns the settings for this tree structure. */
-    @Nonnull
+    @NotNull
     TreeSettings getSettings();
 
     /**
@@ -43,5 +43,5 @@ public interface TreeStructure {
      * @param callback
      *         callback to return node, may return {@code null} if node not found
      */
-    void getNodeByPath(@Nonnull String path, @Nonnull AsyncCallback<TreeNode<?>> callback);
+    void getNodeByPath(@NotNull String path, @NotNull AsyncCallback<TreeNode<?>> callback);
 }

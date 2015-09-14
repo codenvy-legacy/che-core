@@ -24,7 +24,7 @@ import org.eclipse.che.commons.json.JsonHelper;
 import org.eclipse.che.commons.json.JsonParseException;
 import org.eclipse.che.security.oauth1.shared.User;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -70,13 +70,13 @@ public abstract class OAuthAuthenticator {
     private final ReentrantLock                         credentialsStoreLock;
     private final Map<String, String>                   sharedTokenSecrets;
 
-    protected OAuthAuthenticator(@Nonnull final String clientId,
-                                 @Nonnull final String clientSecret,
-                                 @Nonnull final String authUri,
-                                 @Nonnull final String requestTokenUri,
-                                 @Nonnull final String requestAccessTokenUri,
-                                 @Nonnull final String verifyAccessTokenUri,
-                                 @Nonnull final String redirectUri) {
+    protected OAuthAuthenticator(@NotNull final String clientId,
+                                 @NotNull final String clientSecret,
+                                 @NotNull final String authUri,
+                                 @NotNull final String requestTokenUri,
+                                 @NotNull final String requestAccessTokenUri,
+                                 @NotNull final String verifyAccessTokenUri,
+                                 @NotNull final String redirectUri) {
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.authUri = authUri;
@@ -248,10 +248,10 @@ public abstract class OAuthAuthenticator {
      * @throws IOException
      *         if something wrong occurs.
      */
-    public String computeAuthorizationHeader(@Nonnull final String userId,
-                                             @Nonnull final String requestMethod,
-                                             @Nonnull final String requestUrl,
-                                             @Nonnull final Map<String, String> requestParameters) throws IOException {
+    public String computeAuthorizationHeader(@NotNull final String userId,
+                                             @NotNull final String requestMethod,
+                                             @NotNull final String requestUrl,
+                                             @NotNull final Map<String, String> requestParameters) throws IOException {
 
         final OAuthCredentialsResponse credentials = getToken(userId);
         if (credentials != null && credentials.token != null && credentials.tokenSecret != null) {
@@ -327,11 +327,11 @@ public abstract class OAuthAuthenticator {
      *         the secret token.
      * @return the authorization header value, or {@code null}.
      */
-    private String computeAuthorizationHeader(@Nonnull final String requestMethod,
-                                              @Nonnull final String requestUrl,
-                                              @Nonnull final Map<String, String> requestParameters,
-                                              @Nonnull final String token,
-                                              @Nonnull final String tokenSecret) {
+    private String computeAuthorizationHeader(@NotNull final String requestMethod,
+                                              @NotNull final String requestUrl,
+                                              @NotNull final Map<String, String> requestParameters,
+                                              @NotNull final String token,
+                                              @NotNull final String tokenSecret) {
 
         final OAuthHmacSigner signer = new OAuthHmacSigner();
         signer.clientSharedSecret = clientSecret;
@@ -375,10 +375,10 @@ public abstract class OAuthAuthenticator {
      * @throws OAuthAuthenticationException
      *         if something is wrong with authentication.
      */
-    protected <O> O getJson(@Nonnull final String requestUrl,
-                            @Nonnull final String token,
-                            @Nonnull final String tokenSecret,
-                            @Nonnull final Class<O> userClass) throws OAuthAuthenticationException {
+    protected <O> O getJson(@NotNull final String requestUrl,
+                            @NotNull final String token,
+                            @NotNull final String tokenSecret,
+                            @NotNull final Class<O> userClass) throws OAuthAuthenticationException {
 
         HttpURLConnection connection = null;
 

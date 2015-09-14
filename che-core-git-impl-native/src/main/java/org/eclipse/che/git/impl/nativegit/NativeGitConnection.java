@@ -14,10 +14,12 @@ package org.eclipse.che.git.impl.nativegit;
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.core.util.LineConsumerFactory;
 import org.eclipse.che.api.git.Config;
+import org.eclipse.che.api.git.CredentialsLoader;
 import org.eclipse.che.api.git.DiffPage;
 import org.eclipse.che.api.git.GitConnection;
 import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.api.git.LogPage;
+import org.eclipse.che.api.git.UserCredential;
 import org.eclipse.che.api.git.shared.AddRequest;
 import org.eclipse.che.api.git.shared.Branch;
 import org.eclipse.che.api.git.shared.BranchCheckoutRequest;
@@ -96,14 +98,11 @@ public class NativeGitConnection implements GitConnection {
                     "you have the correct access rights\\nand the repository exists\\.\\n.*",
                     Pattern.MULTILINE);
     private final NativeGit         nativeGit;
-    private final GitUser           user;
     private final CredentialsLoader credentialsLoader;
 
     /**
      * @param repository
      *         directory where commands will be invoked
-     * @param user
-     *         git user
      * @param gitSshScriptProvider
      *         manager for ssh keys. If it is null default ssh will be used;
      * @param credentialsLoader
@@ -111,26 +110,21 @@ public class NativeGitConnection implements GitConnection {
      * @throws GitException
      *         when some error occurs
      */
-    public NativeGitConnection(File repository, GitUser user, GitSshScriptProvider gitSshScriptProvider,
+    public NativeGitConnection(File repository, GitSshScriptProvider gitSshScriptProvider,
                                CredentialsLoader credentialsLoader) throws GitException {
-        this(new NativeGit(repository, gitSshScriptProvider, credentialsLoader, new GitAskPassScript()), user, credentialsLoader);
+        this(new NativeGit(repository, gitSshScriptProvider, credentialsLoader, new GitAskPassScript()), credentialsLoader);
     }
 
     /**
      * @param nativeGit
      *         native git client
-     * @param user
-     *         git user
      * @param credentialsLoader
      *         loader for credentials
      * @throws GitException
      *         when some error occurs
      */
-    public NativeGitConnection(NativeGit nativeGit,
-                               GitUser user,
-                               CredentialsLoader credentialsLoader)
+    public NativeGitConnection(NativeGit nativeGit, CredentialsLoader credentialsLoader)
             throws GitException {
-        this.user = user;
         this.credentialsLoader = credentialsLoader;
         this.nativeGit = nativeGit;
     }
@@ -371,7 +365,7 @@ public class NativeGitConnection implements GitConnection {
                          .setFilePattern(new ArrayList<>(Collections.singletonList(".")))
                          .execute();
                 nativeGit.createCommitCommand()
-                         .setCommitter(getUser())
+                         .setCommitter(getLocalCommitter())
                          .setMessage("init")
                          .execute();
             } catch (GitException ignored) {
@@ -552,11 +546,6 @@ public class NativeGitConnection implements GitConnection {
     }
 
     @Override
-    public GitUser getUser() {
-        return user;
-    }
-
-    @Override
     public List<GitUser> getCommiters() throws GitException {
         ensureExistenceRepoRootInWorkingDirectory();
         List<GitUser> users = new LinkedList<>();
@@ -578,12 +567,18 @@ public class NativeGitConnection implements GitConnection {
         //do not need to do anything
     }
 
+    /**
+     * Ensure existence repository root directory inside working directory
+     * @throws GitException if git root folder is not in working directory
+     */
     private void ensureExistenceRepoRootInWorkingDirectory() throws GitException {
         final EmptyGitCommand emptyGitCommand = nativeGit.createEmptyGitCommand();
-        emptyGitCommand.setNextParameter("rev-parse").setNextParameter("--show-toplevel").execute();
-        final String absolutePathToRepoRoot = emptyGitCommand.getText();
+        // command "rev-parse --show-cdup" returns relative path to repository root, f.e "../"
+        emptyGitCommand.setNextParameter("rev-parse").setNextParameter("--show-cdup").execute();
+        final String relativePathToRepositoryRoot = emptyGitCommand.getText();
 
-        if (!getWorkingDir().getAbsolutePath().equals(absolutePathToRepoRoot)) {
+        // fn. if root repository located in working directory then relative path equals to ""
+        if (!relativePathToRepositoryRoot.isEmpty()) {
             throw new GitException("Project is not a git repository.");
         }
     }
@@ -692,18 +687,15 @@ public class NativeGitConnection implements GitConnection {
         return branchRef.substring(remoteStartIndex, remoteEndIndex);
     }
 
-    private GitUser getLocalCommitter() {
-        GitUser committer = user;
+    private GitUser getLocalCommitter() throws GitException {
+        String credentialsProvider = "che";
         try {
-            String credentialsProvider = getConfig().get("codenvy.credentialsProvider");
-            GitUser providerUser = credentialsLoader.getUser(credentialsProvider);
-            if (providerUser != null) {
-                committer = providerUser;
-            }
+            credentialsProvider = getConfig().get("codenvy.credentialsProvider");
         } catch (GitException e) {
             //ignore property not found.
         }
-        return committer;
+
+        return credentialsLoader.getUser(credentialsProvider);
     }
 
     @Override

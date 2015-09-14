@@ -22,8 +22,8 @@ import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.Map;
 
 /**
@@ -62,7 +62,7 @@ public class ZipImporterPagePresenter extends AbstractWizardPage<ImportProject> 
     }
 
     @Override
-    public void projectNameChanged(@Nonnull String name) {
+    public void projectNameChanged(@NotNull String name) {
         dataObject.getProject().setName(name);
         updateDelegate.updateControls();
 
@@ -78,7 +78,7 @@ public class ZipImporterPagePresenter extends AbstractWizardPage<ImportProject> 
     }
 
     @Override
-    public void projectUrlChanged(@Nonnull String url) {
+    public void projectUrlChanged(@NotNull String url) {
         dataObject.getSource().getProject().setLocation(url);
         isUrlCorrect(url);
 
@@ -95,7 +95,7 @@ public class ZipImporterPagePresenter extends AbstractWizardPage<ImportProject> 
     }
 
     @Override
-    public void projectDescriptionChanged(@Nonnull String projectDescription) {
+    public void projectDescriptionChanged(@NotNull String projectDescription) {
         dataObject.getProject().setDescription(projectDescription);
         updateDelegate.updateControls();
     }
@@ -147,7 +147,7 @@ public class ZipImporterPagePresenter extends AbstractWizardPage<ImportProject> 
         parameters.put(name, value);
     }
 
-    private String extractProjectNameFromUri(@Nonnull String uri) {
+    private String extractProjectNameFromUri(@NotNull String uri) {
         final String result;
         int indexStartProjectName = uri.lastIndexOf("/") + 1;
         int indexFinishProjectName = uri.indexOf(".", indexStartProjectName);
@@ -168,7 +168,7 @@ public class ZipImporterPagePresenter extends AbstractWizardPage<ImportProject> 
      *         url for validate
      * @return <code>true</code> if url is correct
      */
-    private boolean isUrlCorrect(@Nonnull String url) {
+    private boolean isUrlCorrect(@NotNull String url) {
         if (!END_URL.test(url)) {
             view.showUrlError(locale.importProjectMessageUrlInvalid());
             return false;

@@ -28,8 +28,8 @@ import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.RestContext;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,9 +72,9 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
         });
     }
 
-    private void create(@Nonnull UsersWorkspaceDto newWorkspace,
+    private void create(@NotNull UsersWorkspaceDto newWorkspace,
                         String accountId,
-                        @Nonnull AsyncCallback<UsersWorkspaceDto> callback) {
+                        @NotNull AsyncCallback<UsersWorkspaceDto> callback) {
         String url = baseHttpUrl + "/config?account=" + accountId;
         asyncRequestFactory.createPostRequest(url, newWorkspace)
                            .header(ACCEPT, APPLICATION_JSON)
@@ -93,7 +93,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
         });
     }
 
-    private void getUsersWorkspace(@Nonnull String wsId, @Nonnull AsyncCallback<UsersWorkspaceDto> callback) {
+    private void getUsersWorkspace(@NotNull String wsId, @NotNull AsyncCallback<UsersWorkspaceDto> callback) {
         final String url = baseHttpUrl + '/' + wsId;
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
@@ -125,7 +125,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
         });
     }
 
-    private void getWorkspaces(@Nonnull AsyncCallback<List<UsersWorkspaceDto>> callback) {
+    private void getWorkspaces(@NotNull AsyncCallback<List<UsersWorkspaceDto>> callback) {
         final String url = baseHttpUrl;
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
@@ -158,9 +158,9 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
         });
     }
 
-    private void startTemporary(@Nonnull WorkspaceConfig cfg,
-                                @Nonnull String accountId,
-                                @Nonnull AsyncCallback<UsersWorkspaceDto> callback) {
+    private void startTemporary(@NotNull WorkspaceConfig cfg,
+                                @NotNull String accountId,
+                                @NotNull AsyncCallback<UsersWorkspaceDto> callback) {
         asyncRequestFactory.createPostRequest(baseHttpUrl + "/runtime", cfg)
                            .header(ACCEPT, APPLICATION_JSON)
                            .header(CONTENT_TYPE, APPLICATION_JSON)
@@ -169,7 +169,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
     }
 
     @Override
-    public Promise<UsersWorkspaceDto> startById(@Nonnull final String id, final String envName) {
+    public Promise<UsersWorkspaceDto> startById(@NotNull final String id, final String envName) {
         return newPromise(new RequestCall<UsersWorkspaceDto>() {
             @Override
             public void makeCall(AsyncCallback<UsersWorkspaceDto> callback) {
@@ -178,9 +178,9 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
         });
     }
 
-    private void startById(@Nonnull String workspaceId,
+    private void startById(@NotNull String workspaceId,
                            @Nullable String envName,
-                           @Nonnull AsyncCallback<UsersWorkspaceDto> callback) {
+                           @NotNull AsyncCallback<UsersWorkspaceDto> callback) {
         String url = baseHttpUrl + "/" + workspaceId + "/runtime?environment=" + envName;
         asyncRequestFactory.createPostRequest(url, null)
                            .header(ACCEPT, APPLICATION_JSON)

@@ -13,7 +13,7 @@ package org.eclipse.che.api.user.gwt.client;
 import org.eclipse.che.api.user.shared.dto.UserDescriptor;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * GWT Client for User Service.
@@ -31,7 +31,7 @@ public interface UserServiceClient {
      *         if <code>true</code> - is temporary user
      * @param callback
      */
-    public void createUser(@Nonnull String token, boolean isTemporary, AsyncRequestCallback<UserDescriptor> callback);
+    public void createUser(@NotNull String token, boolean isTemporary, AsyncRequestCallback<UserDescriptor> callback);
 
     /**
      * Get current user's information.
@@ -47,7 +47,7 @@ public interface UserServiceClient {
      *         new password
      * @param callback
      */
-    public void updatePassword(@Nonnull String password, AsyncRequestCallback<Void> callback);
+    public void updatePassword(@NotNull String password, AsyncRequestCallback<Void> callback);
 
     /**
      * Get user's information by its id.
@@ -56,7 +56,7 @@ public interface UserServiceClient {
      *         user's id
      * @param callback
      */
-    public void getUserById(@Nonnull String id, AsyncRequestCallback<UserDescriptor> callback);
+    public void getUserById(@NotNull String id, AsyncRequestCallback<UserDescriptor> callback);
 
     /**
      * Get user's information by its email.
@@ -65,7 +65,7 @@ public interface UserServiceClient {
      *         user's email
      * @param callback
      */
-    public void getUserByEmail(@Nonnull String email, AsyncRequestCallback<UserDescriptor> callback);
+    public void getUserByEmail(@NotNull String email, AsyncRequestCallback<UserDescriptor> callback);
 
     /**
      * Remove user.
@@ -74,5 +74,5 @@ public interface UserServiceClient {
      *         user's id to remove
      * @param callback
      */
-    public void removeUser(@Nonnull String id, AsyncRequestCallback<Void> callback);
+    public void removeUser(@NotNull String id, AsyncRequestCallback<Void> callback);
 }

@@ -16,8 +16,8 @@ import org.eclipse.che.ide.ui.dialogs.InputCallback;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 
 /**
  * {@link InputDialog} implementation.
@@ -41,9 +41,9 @@ public class InputDialogPresenter implements InputDialog, InputDialogView.Action
     private       InputValidator         inputValidator;
 
     @AssistedInject
-    public InputDialogPresenter(final @Nonnull InputDialogView view,
-                                final @Nonnull @Assisted("title") String title,
-                                final @Nonnull @Assisted("label") String label,
+    public InputDialogPresenter(final @NotNull InputDialogView view,
+                                final @NotNull @Assisted("title") String title,
+                                final @NotNull @Assisted("label") String label,
                                 final @Nullable @Assisted InputCallback inputCallback,
                                 final @Nullable @Assisted CancelCallback cancelCallback,
                                 final UILocalizationConstant localizationConstant) {
@@ -51,12 +51,12 @@ public class InputDialogPresenter implements InputDialog, InputDialogView.Action
     }
 
     @AssistedInject
-    public InputDialogPresenter(final @Nonnull InputDialogView view,
-                                final @Nonnull @Assisted("title") String title,
-                                final @Nonnull @Assisted("label") String label,
-                                final @Nonnull @Assisted("initialValue") String initialValue,
-                                final @Nonnull @Assisted("selectionStartIndex") Integer selectionStartIndex,
-                                final @Nonnull @Assisted("selectionLength") Integer selectionLength,
+    public InputDialogPresenter(final @NotNull InputDialogView view,
+                                final @NotNull @Assisted("title") String title,
+                                final @NotNull @Assisted("label") String label,
+                                final @NotNull @Assisted("initialValue") String initialValue,
+                                final @NotNull @Assisted("selectionStartIndex") Integer selectionStartIndex,
+                                final @NotNull @Assisted("selectionLength") Integer selectionLength,
                                 final @Nullable @Assisted InputCallback inputCallback,
                                 final @Nullable @Assisted CancelCallback cancelCallback,
                                 final UILocalizationConstant localizationConstant) {

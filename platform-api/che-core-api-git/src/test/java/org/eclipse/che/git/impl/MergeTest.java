@@ -73,7 +73,7 @@ public class MergeTest {
         //given
         GitConnection connection = connectToGitRepositoryWithContent(connectionFactory, repository);
         connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName(branchName).withCreateNew(true));
-        File file = addFile(connection.getWorkingDir().toPath(), "t-merge", "aaa\n");
+        File file = addFile(connection, "t-merge", "aaa\n");
 
         connection.add(newDto(AddRequest.class).withFilepattern(new ArrayList<>(Arrays.asList("."))));
         connection.commit(newDto(CommitRequest.class).withMessage("add file in new branch"));

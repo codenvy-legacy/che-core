@@ -16,7 +16,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -285,7 +285,7 @@ public class AbstractWizardTest {
         }
 
         @Override
-        public void complete(@Nonnull CompleteCallback callback) {
+        public void complete(@NotNull CompleteCallback callback) {
             // do nothing
         }
     }

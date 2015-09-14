@@ -29,7 +29,7 @@ import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.StringUtils;
 import org.eclipse.che.ide.util.UnicodeUtils;
 
-import javax.annotation.Nullable;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;

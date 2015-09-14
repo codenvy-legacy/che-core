@@ -23,7 +23,7 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Implementation of the input dialog view.
@@ -49,7 +49,7 @@ public class InputDialogViewImpl extends Window implements InputDialogView {
     private UILocalizationConstant localizationConstant;
 
     @Inject
-    public InputDialogViewImpl(final @Nonnull InputDialogFooter footer, UILocalizationConstant localizationConstant) {
+    public InputDialogViewImpl(final @NotNull InputDialogFooter footer, UILocalizationConstant localizationConstant) {
         this.localizationConstant = localizationConstant;
         Widget widget = uiBinder.createAndBindUi(this);
         setWidget(widget);

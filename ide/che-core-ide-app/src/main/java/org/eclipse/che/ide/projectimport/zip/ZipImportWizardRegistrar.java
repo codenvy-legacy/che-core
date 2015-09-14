@@ -17,7 +17,7 @@ import org.eclipse.che.ide.api.wizard.WizardPage;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,12 +36,12 @@ public class ZipImportWizardRegistrar implements ImportWizardRegistrar {
         wizardPages.add(provider);
     }
 
-    @Nonnull
+    @NotNull
     public String getImporterId() {
         return ZipProjectImporter.ID;
     }
 
-    @Nonnull
+    @NotNull
     public List<Provider<? extends WizardPage<ImportProject>>> getWizardPages() {
         return wizardPages;
     }

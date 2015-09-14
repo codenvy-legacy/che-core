@@ -23,7 +23,7 @@ import com.google.inject.Inject;
 
 import org.eclipse.che.ide.ui.window.Window;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 import static org.eclipse.che.ide.ui.dialogs.confirm.ConfirmDialogView.ActionDelegate;
 import static org.eclipse.che.ide.ui.window.Window.Resources;
@@ -50,7 +50,7 @@ public class ConfirmDialogFooter extends Composite {
     private ConfirmDialogView.ActionDelegate actionDelegate;
 
     @Inject
-    public ConfirmDialogFooter(final @Nonnull UILocalizationConstant messages) {
+    public ConfirmDialogFooter(final @NotNull UILocalizationConstant messages) {
         this.messages = messages;
         initWidget(uiBinder.createAndBindUi(this));
 

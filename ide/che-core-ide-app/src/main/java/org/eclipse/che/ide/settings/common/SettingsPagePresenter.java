@@ -14,8 +14,8 @@ import com.google.gwt.resources.client.ImageResource;
 
 import org.eclipse.che.ide.api.mvp.Presenter;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 
 /**
  * Provides methods which allow control and setup displaying of properties in settings dialog.
@@ -30,14 +30,14 @@ public interface SettingsPagePresenter extends Presenter {
      * @param delegate
      *         delegate which need set
      */
-    void setUpdateDelegate(@Nonnull DirtyStateListener delegate);
+    void setUpdateDelegate(@NotNull DirtyStateListener delegate);
 
     /** Returns string representation of category.Method can return null. */
     @Nullable
     String getCategory();
 
     /** Returns title of current category. */
-    @Nonnull
+    @NotNull
     String getTitle();
 
     /** Returns icon which set to category. Method can return null. */

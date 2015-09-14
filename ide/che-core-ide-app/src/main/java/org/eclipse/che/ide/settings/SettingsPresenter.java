@@ -18,7 +18,7 @@ import org.eclipse.che.ide.ui.dialogs.CancelCallback;
 import org.eclipse.che.ide.ui.dialogs.ConfirmCallback;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -126,7 +126,7 @@ public class SettingsPresenter implements SettingsView.ActionDelegate, SettingsP
 
     /** {@inheritDoc} */
     @Override
-    public void onSettingsGroupSelected(@Nonnull SettingsPagePresenter settings) {
+    public void onSettingsGroupSelected(@NotNull SettingsPagePresenter settings) {
         settings.go(view.getContentPanel());
     }
 

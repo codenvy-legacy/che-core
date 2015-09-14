@@ -27,8 +27,8 @@ import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.RestContext;
 import org.eclipse.che.ide.rest.StringUnmarshaller;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,7 +68,7 @@ public class RecipeServiceClientImpl implements RecipeServiceClient {
 
     /** {@inheritDoc} */
     @Override
-    public Promise<RecipeDescriptor> createRecipe(@Nonnull final NewRecipe newRecipe) {
+    public Promise<RecipeDescriptor> createRecipe(@NotNull final NewRecipe newRecipe) {
         return newPromise(new RequestCall<RecipeDescriptor>() {
             @Override
             public void makeCall(AsyncCallback<RecipeDescriptor> callback) {
@@ -77,7 +77,7 @@ public class RecipeServiceClientImpl implements RecipeServiceClient {
         });
     }
 
-    private void createRecipe(@Nonnull final NewRecipe newRecipe, @Nonnull AsyncCallback<RecipeDescriptor> callback) {
+    private void createRecipe(@NotNull final NewRecipe newRecipe, @NotNull AsyncCallback<RecipeDescriptor> callback) {
         asyncRequestFactory.createPostRequest(baseHttpUrl, newRecipe)
                            .header(ACCEPT, APPLICATION_JSON)
                            .header(CONTENT_TYPE, APPLICATION_JSON)
@@ -87,7 +87,7 @@ public class RecipeServiceClientImpl implements RecipeServiceClient {
 
     /** {@inheritDoc} */
     @Override
-    public Promise<String> getRecipeScript(@Nonnull final String id) {
+    public Promise<String> getRecipeScript(@NotNull final String id) {
         return newPromise(new RequestCall<String>() {
             @Override
             public void makeCall(AsyncCallback<String> callback) {
@@ -96,7 +96,7 @@ public class RecipeServiceClientImpl implements RecipeServiceClient {
         });
     }
 
-    private void getRecipeScript(@Nonnull String id, @Nonnull AsyncCallback<String> callback) {
+    private void getRecipeScript(@NotNull String id, @NotNull AsyncCallback<String> callback) {
         final String url = baseHttpUrl + '/' + id + "/script";
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
@@ -106,7 +106,7 @@ public class RecipeServiceClientImpl implements RecipeServiceClient {
 
     /** {@inheritDoc} */
     @Override
-    public Promise<RecipeDescriptor> getRecipe(@Nonnull final String id) {
+    public Promise<RecipeDescriptor> getRecipe(@NotNull final String id) {
         return newPromise(new RequestCall<RecipeDescriptor>() {
             @Override
             public void makeCall(AsyncCallback<RecipeDescriptor> callback) {
@@ -115,7 +115,7 @@ public class RecipeServiceClientImpl implements RecipeServiceClient {
         });
     }
 
-    private void getRecipe(@Nonnull String id, @Nonnull AsyncCallback<RecipeDescriptor> callback) {
+    private void getRecipe(@NotNull String id, @NotNull AsyncCallback<RecipeDescriptor> callback) {
         final String url = baseHttpUrl + '/' + id;
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
@@ -163,7 +163,7 @@ public class RecipeServiceClientImpl implements RecipeServiceClient {
         });
     }
 
-    private void getRecipes(int skipCount, int maxItems, @Nonnull AsyncCallback<List<RecipeDescriptor>> callback) {
+    private void getRecipes(int skipCount, int maxItems, @NotNull AsyncCallback<List<RecipeDescriptor>> callback) {
         String url = baseHttpUrl + "?skipCount=" + skipCount;
         if (maxItems > 0) {
             url += "&maxItems=" + maxItems;
@@ -177,7 +177,7 @@ public class RecipeServiceClientImpl implements RecipeServiceClient {
 
     /** {@inheritDoc} */
     @Override
-    public Promise<List<RecipeDescriptor>> searchRecipes(@Nonnull final List<String> tags,
+    public Promise<List<RecipeDescriptor>> searchRecipes(@NotNull final List<String> tags,
                                                          @Nullable final String type,
                                                          final int skipCount,
                                                          final int maxItems) {
@@ -198,11 +198,11 @@ public class RecipeServiceClientImpl implements RecipeServiceClient {
         });
     }
 
-    private void searchRecipes(@Nonnull List<String> tags,
+    private void searchRecipes(@NotNull List<String> tags,
                                @Nullable String type,
                                int skipCount,
                                int maxItems,
-                               @Nonnull AsyncCallback<List<RecipeDescriptor>> callback) {
+                               @NotNull AsyncCallback<List<RecipeDescriptor>> callback) {
         final StringBuilder tagsParam = new StringBuilder();
         for (String tag : tags) {
             tagsParam.append("tags=").append(tag).append("&");
@@ -223,7 +223,7 @@ public class RecipeServiceClientImpl implements RecipeServiceClient {
 
     /** {@inheritDoc} */
     @Override
-    public Promise<RecipeDescriptor> updateRecipe(@Nonnull final RecipeUpdate recipeUpdate) {
+    public Promise<RecipeDescriptor> updateRecipe(@NotNull final RecipeUpdate recipeUpdate) {
         return newPromise(new RequestCall<RecipeDescriptor>() {
             @Override
             public void makeCall(AsyncCallback<RecipeDescriptor> callback) {
@@ -232,7 +232,7 @@ public class RecipeServiceClientImpl implements RecipeServiceClient {
         });
     }
 
-    private void updateCommand(@Nonnull RecipeUpdate recipeUpdate, @Nonnull AsyncCallback<RecipeDescriptor> callback) {
+    private void updateCommand(@NotNull RecipeUpdate recipeUpdate, @NotNull AsyncCallback<RecipeDescriptor> callback) {
         final String url = baseHttpUrl;
         asyncRequestFactory.createRequest(PUT, url, recipeUpdate, false)
                            .header(ACCEPT, APPLICATION_JSON)
@@ -243,7 +243,7 @@ public class RecipeServiceClientImpl implements RecipeServiceClient {
 
     /** {@inheritDoc} */
     @Override
-    public Promise<Void> removeRecipe(@Nonnull final String id) {
+    public Promise<Void> removeRecipe(@NotNull final String id) {
         return newPromise(new RequestCall<Void>() {
             @Override
             public void makeCall(AsyncCallback<Void> callback) {
@@ -252,7 +252,7 @@ public class RecipeServiceClientImpl implements RecipeServiceClient {
         });
     }
 
-    private void removeRecipe(@Nonnull String id, @Nonnull AsyncCallback<Void> callback) {
+    private void removeRecipe(@NotNull String id, @NotNull AsyncCallback<Void> callback) {
         asyncRequestFactory.createRequest(DELETE, baseHttpUrl + '/' + id, null, false)
                            .loader(loader, "Deleting recipe...")
                            .send(newCallback(callback));

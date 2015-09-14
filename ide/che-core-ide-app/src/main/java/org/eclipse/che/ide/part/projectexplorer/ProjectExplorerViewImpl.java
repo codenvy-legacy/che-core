@@ -32,7 +32,7 @@ import com.google.inject.Singleton;
 
 import org.vectomatic.dom.svg.ui.SVGImage;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,13 +69,13 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
 
         // create special 'invisible' root node that will contain 'visible' root nodes
         rootNode = new AbstractTreeNode<Void>(null, null, null, null) {
-            @Nonnull
+            @NotNull
             @Override
             public String getId() {
                 return "ROOT";
             }
 
-            @Nonnull
+            @NotNull
             @Override
             public String getDisplayName() {
                 return "ROOT";
@@ -171,7 +171,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
 
     /** {@inheritDoc} */
     @Override
-    public void setRootNodes(@Nonnull final List<TreeNode<?>> rootNodes) {
+    public void setRootNodes(@NotNull final List<TreeNode<?>> rootNodes) {
         // provided rootNodes should be set as child nodes for rootNode
         rootNode.setChildren(rootNodes);
         for (TreeNode<?> treeNode : rootNodes) {
@@ -199,7 +199,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
 
     /** {@inheritDoc} */
     @Override
-    public void updateNode(@Nonnull TreeNode<?> oldNode, @Nonnull TreeNode<?> newNode) {
+    public void updateNode(@NotNull TreeNode<?> oldNode, @NotNull TreeNode<?> newNode) {
         // get currently selected node
         final List<TreeNode<?>> selectedNodes = tree.getSelectionModel().getSelectedNodes();
         TreeNode<?> selectedNode = null;
@@ -218,19 +218,19 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
 
     /** {@inheritDoc} */
     @Override
-    public void selectNode(@Nonnull TreeNode<?> node) {
+    public void selectNode(@NotNull TreeNode<?> node) {
         tree.getSelectionModel().selectSingleNode(node);
         delegate.onNodeSelected(node, tree.getSelectionModel());
     }
 
     /** {@inheritDoc} */
     @Override
-    public void expandAndSelectNode(@Nonnull TreeNode<?> node) {
+    public void expandAndSelectNode(@NotNull TreeNode<?> node) {
         tree.autoExpandAndSelectNode(node, true);
         delegate.onNodeSelected(node, tree.getSelectionModel());
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public TreeNode<?> getSelectedNode() {
         // Tree always must to have one selected node at least.
@@ -238,7 +238,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
         return tree.getSelectionModel().getSelectedNodes().get(0);
     }
 
-    @Nonnull
+    @NotNull
     public List<TreeNode<?>> getSelectedNodes() {
         return tree.getSelectionModel().getSelectedNodes();
     }

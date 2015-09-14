@@ -18,7 +18,7 @@ import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.RestContext;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 import static org.eclipse.che.api.promises.client.callback.PromiseHelper.newCallback;
 import static org.eclipse.che.api.promises.client.callback.PromiseHelper.newPromise;
@@ -43,7 +43,7 @@ final class WatcherServiceClientImpl implements WatcherServiceClient {
 
     /** {@inheritDoc} */
     @Override
-    public Promise<Void> registerRecursiveWatcher(@Nonnull final String workspaceId) {
+    public Promise<Void> registerRecursiveWatcher(@NotNull final String workspaceId) {
         return newPromise(new AsyncPromiseHelper.RequestCall<Void>() {
             @Override
             public void makeCall(AsyncCallback<Void> callback) {

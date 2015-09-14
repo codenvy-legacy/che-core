@@ -15,7 +15,7 @@ import com.google.common.base.Joiner;
 import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.api.git.shared.GitUser;
 import org.eclipse.che.api.git.shared.PullResponse;
-import org.eclipse.che.git.impl.nativegit.CredentialsLoader;
+import org.eclipse.che.api.git.CredentialsLoader;
 import org.eclipse.che.git.impl.nativegit.GitAskPassScript;
 import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
 

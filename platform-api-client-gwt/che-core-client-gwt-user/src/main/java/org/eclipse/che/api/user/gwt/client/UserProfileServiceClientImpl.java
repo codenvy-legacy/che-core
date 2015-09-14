@@ -19,7 +19,7 @@ import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.rest.RestContext;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.Map;
 
 import static org.eclipse.che.ide.MimeType.APPLICATION_JSON;
@@ -58,7 +58,7 @@ public class UserProfileServiceClientImpl implements UserProfileServiceClient {
 
     /** {@inheritDoc} */
     @Override
-    public void updateCurrentProfile(@Nonnull Map<String, String> updates, AsyncRequestCallback<ProfileDescriptor> callback) {
+    public void updateCurrentProfile(@NotNull Map<String, String> updates, AsyncRequestCallback<ProfileDescriptor> callback) {
         asyncRequestFactory.createPostRequest(PROFILE, null)
                            .header(ACCEPT, APPLICATION_JSON)
                            .header(CONTENT_TYPE, APPLICATION_JSON)
@@ -69,7 +69,7 @@ public class UserProfileServiceClientImpl implements UserProfileServiceClient {
 
     /** {@inheritDoc} */
     @Override
-    public void getProfileById(@Nonnull String id, AsyncRequestCallback<ProfileDescriptor> callback) {
+    public void getProfileById(@NotNull String id, AsyncRequestCallback<ProfileDescriptor> callback) {
         String requestUrl = PROFILE + id;
 
         asyncRequestFactory.createGetRequest(requestUrl)
@@ -89,7 +89,7 @@ public class UserProfileServiceClientImpl implements UserProfileServiceClient {
 
     /** {@inheritDoc} */
     @Override
-    public void updateProfile(@Nonnull String id, Map<String, String> updates, AsyncRequestCallback<ProfileDescriptor> callback) {
+    public void updateProfile(@NotNull String id, Map<String, String> updates, AsyncRequestCallback<ProfileDescriptor> callback) {
         String requestUrl = PROFILE + id;
 
         asyncRequestFactory.createPostRequest(requestUrl, null)
@@ -102,7 +102,7 @@ public class UserProfileServiceClientImpl implements UserProfileServiceClient {
 
     /** {@inheritDoc} */
     @Override
-    public void updatePreferences(@Nonnull Map<String, String> update, AsyncRequestCallback<Map<String, String>> callback) {
+    public void updatePreferences(@NotNull Map<String, String> update, AsyncRequestCallback<Map<String, String>> callback) {
         final String data = JsonHelper.toJson(update);
         asyncRequestFactory.createPostRequest(PREFS, null)
                            .header(ACCEPT, APPLICATION_JSON)

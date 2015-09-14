@@ -18,8 +18,8 @@ import com.google.web.bindery.event.shared.EventBus;
 
 import org.vectomatic.dom.svg.ui.SVGImage;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -86,14 +86,14 @@ public abstract class AbstractTreeNode<T> implements TreeNode<T> {
     }
 
     /** {@inheritDoc} */
-    @Nonnull
+    @NotNull
     @Override
     public TreeStructure getTreeStructure() {
         return treeStructure;
     }
 
     /** {@inheritDoc} */
-    @Nonnull
+    @NotNull
     @Override
     public ProjectNode getProject() {
         TreeNode<?> candidate = getParent();
@@ -120,7 +120,7 @@ public abstract class AbstractTreeNode<T> implements TreeNode<T> {
     }
 
     /** {@inheritDoc} */
-    @Nonnull
+    @NotNull
     @Override
     public List<TreeNode<?>> getChildren() {
         return cachedChildren;

@@ -14,8 +14,8 @@ import com.google.inject.Inject;
 
 import org.eclipse.che.ide.collections.ListHelper;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -65,7 +65,7 @@ public abstract class AbstractWizard<T> implements Wizard<T> {
      * @param page
      *         page to add
      */
-    public void addPage(@Nonnull WizardPage<T> page) {
+    public void addPage(@NotNull WizardPage<T> page) {
         page.setUpdateDelegate(delegate);
         page.setContext(context);
         page.init(dataObject);
@@ -83,7 +83,7 @@ public abstract class AbstractWizard<T> implements Wizard<T> {
      *         {@code true} if the existed page should be replaced by the given one,
      *         {@code false} if a page should be inserted at the specified position
      */
-    public void addPage(@Nonnull WizardPage<T> page, int index, boolean replace) {
+    public void addPage(@NotNull WizardPage<T> page, int index, boolean replace) {
         if (index >= wizardPages.size()) {
             addPage(page);
             return;
@@ -104,7 +104,7 @@ public abstract class AbstractWizard<T> implements Wizard<T> {
         }
     }
 
-    private void setPage(@Nonnull WizardPage<T> page, int index) {
+    private void setPage(@NotNull WizardPage<T> page, int index) {
         page.setUpdateDelegate(delegate);
         page.setContext(context);
         page.init(dataObject);
@@ -112,7 +112,7 @@ public abstract class AbstractWizard<T> implements Wizard<T> {
     }
 
     @Override
-    public void setUpdateDelegate(@Nonnull UpdateDelegate delegate) {
+    public void setUpdateDelegate(@NotNull UpdateDelegate delegate) {
         this.delegate = delegate;
         for (WizardPage<T> page : wizardPages) {
             page.setUpdateDelegate(delegate);

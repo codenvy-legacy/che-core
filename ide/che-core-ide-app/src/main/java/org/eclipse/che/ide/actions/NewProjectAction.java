@@ -20,7 +20,7 @@ import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.projecttype.wizard.presenter.ProjectWizardPresenter;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.Arrays;
 
 import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
@@ -51,7 +51,7 @@ public class NewProjectAction extends AbstractPerspectiveAction {
     }
 
     @Override
-    public void updateInPerspective(@Nonnull ActionEvent event) {
+    public void updateInPerspective(@NotNull ActionEvent event) {
         if (appContext.getCurrentProject() == null) {
             event.getPresentation().setEnabled(appContext.getCurrentUser().isUserPermanent());
         } else {

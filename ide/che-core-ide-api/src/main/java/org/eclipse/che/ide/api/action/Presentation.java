@@ -16,8 +16,8 @@ import com.google.gwt.resources.client.ImageResource;
 
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -247,7 +247,7 @@ public final class Presentation {
         setEnabled(presentation.isEnabled());
     }
 
-    public void putClientProperty(@Nonnull String key, @Nullable Object value) {
+    public void putClientProperty(@NotNull String key, @Nullable Object value) {
         if (userMap == null) {
             userMap = new HashMap<>();
         }
