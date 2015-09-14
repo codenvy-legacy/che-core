@@ -471,4 +471,13 @@ public class Style {
     public static String getEditorSeparatorColor() {
         return theme.getEditorSeparatorColor();
     }
+
+    public static String getSplitterSmallBorderColor() {
+        return theme.getSplitterSmallBorderColor();
+    }
+
+    public static String getSplitterLargeBorderColor() {
+        return theme.getSplitterLargeBorderColor();
+    }
+
 }

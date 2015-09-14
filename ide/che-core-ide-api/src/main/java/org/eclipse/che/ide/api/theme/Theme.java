@@ -739,4 +739,20 @@ public interface Theme {
      * @return the color of the separator line between the gutter and the editor.
      */
     String getEditorSeparatorColor();
+
+    /**
+     * Splitter small border color
+     *
+     * @return
+     */
+    String getSplitterSmallBorderColor();
+
+    /**
+     * Splitter large border color
+     *
+     * @return
+     */
+    String getSplitterLargeBorderColor();
+
+
 }

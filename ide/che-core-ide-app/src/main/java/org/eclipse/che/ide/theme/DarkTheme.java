@@ -95,7 +95,7 @@ public class DarkTheme implements Theme {
 
     @Override
     public String getTabsPanelBackground() {
-        return "#5a5c5c";
+        return "#33373B";
     }
 
     @Override
@@ -592,4 +592,15 @@ public class DarkTheme implements Theme {
     public String getEditorSeparatorColor() {
         return "#888888";
     }
+
+    @Override
+    public String getSplitterSmallBorderColor() {
+        return "#0D0F10";
+    }
+
+    @Override
+    public String getSplitterLargeBorderColor() {
+        return "#2D2D2D";
+    }
+
 }
