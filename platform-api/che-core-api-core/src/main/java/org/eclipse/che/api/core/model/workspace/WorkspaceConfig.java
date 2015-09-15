@@ -24,7 +24,6 @@ public interface WorkspaceConfig {
 
     /**
      * Returns workspace name.
-     * The name is unique and mandatory
      */
     String getName();
 

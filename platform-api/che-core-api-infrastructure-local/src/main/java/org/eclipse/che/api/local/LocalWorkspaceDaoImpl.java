@@ -63,7 +63,7 @@ public class LocalWorkspaceDaoImpl implements WorkspaceDao {
     }
 
     @Override
-    public synchronized void remove(String id) throws ConflictException, NotFoundException, ServerException {
+    public synchronized void remove(String id) throws ConflictException, ServerException {
         workspaces.remove(id);
     }
 
