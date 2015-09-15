@@ -15,7 +15,16 @@ import com.google.inject.Provides;
 
 import org.eclipse.che.api.account.server.dao.Account;
 import org.eclipse.che.api.account.server.dao.AccountDao;
-import org.eclipse.che.api.auth.AuthenticationDao;
+import org.eclipse.che.api.auth.CookiesTokenExtractor;
+import org.eclipse.che.api.auth.InMemoryTokenManager;
+import org.eclipse.che.api.auth.LocalSessionInvalidationHandler;
+import org.eclipse.che.api.auth.SecureRandomTokenGenerator;
+import org.eclipse.che.api.auth.TokenExtractor;
+import org.eclipse.che.api.auth.TokenGenerator;
+import org.eclipse.che.api.auth.TokenInvalidationHandler;
+import org.eclipse.che.api.auth.TokenManager;
+import org.eclipse.che.api.auth.UserProvider;
+
 import org.eclipse.che.api.factory.FactoryStore;
 import org.eclipse.che.api.local.storage.LocalStorageFactory;
 import org.eclipse.che.api.user.server.TokenValidator;
@@ -27,14 +36,13 @@ import org.eclipse.che.api.workspace.server.dao.Member;
 import org.eclipse.che.api.workspace.server.dao.MemberDao;
 import org.eclipse.che.api.workspace.server.dao.Workspace;
 import org.eclipse.che.api.workspace.server.dao.WorkspaceDao;
-import org.eclipse.che.inject.DynaModule;
 
 import javax.inject.Named;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-@DynaModule
+
 public class LocalInfrastructureModule extends AbstractModule {
     @Override
     protected void configure() {
@@ -44,10 +52,15 @@ public class LocalInfrastructureModule extends AbstractModule {
         bind(PreferenceDao.class).to(LocalPreferenceDaoImpl.class);
         bind(MemberDao.class).to(LocalMemberDaoImpl.class);
         bind(AccountDao.class).to(LocalAccountDaoImpl.class);
-        bind(AuthenticationDao.class).to(LocalAuthenticationDaoImpl.class);
+
         bind(FactoryStore.class).to(LocalFactoryDaoImpl.class);
-        bind(TokenValidator.class).to(DummyTokenValidator.class);
-        bind(LocalStorageFactory.class);
+        bind(TokenValidator.class).to(LocalTokenValidator.class);
+
+        bind(TokenInvalidationHandler.class).to(LocalSessionInvalidationHandler.class);
+        bind(TokenManager.class).to(InMemoryTokenManager.class);
+        bind(UserProvider.class).to(SessionUserProvider.class);
+        bind(TokenExtractor.class).to(CookiesTokenExtractor.class);
+        bind(TokenGenerator.class).to(SecureRandomTokenGenerator.class);
     }
 
 
