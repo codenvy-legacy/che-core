@@ -150,9 +150,9 @@ import org.eclipse.che.ide.rest.RestContext;
 import org.eclipse.che.ide.rest.RestContextProvider;
 import org.eclipse.che.ide.selection.SelectionAgentImpl;
 import org.eclipse.che.ide.statepersistance.ActiveFilePersistenceComponent;
-import org.eclipse.che.ide.statepersistance.ActiveNodePersistentComponent;
+import org.eclipse.che.ide.statepersistance.LastOpenedFilePersistentComponent;
 import org.eclipse.che.ide.statepersistance.OpenedFilesPersistenceComponent;
-import org.eclipse.che.ide.statepersistance.OpenedNodesPersistenceComponent;
+import org.eclipse.che.ide.statepersistance.ExpandedNodesPersistenceComponent;
 import org.eclipse.che.ide.statepersistance.PersistenceComponent;
 import org.eclipse.che.ide.statepersistance.ShowHiddenFilesPersistenceComponent;
 import org.eclipse.che.ide.texteditor.openedfiles.ListOpenedFilesView;
@@ -264,13 +264,13 @@ public class CoreGinModule extends AbstractGinModule {
         componentMultibinder.addBinding().to(ShowHiddenFilesPersistenceComponent.class);
         componentMultibinder.addBinding().to(OpenedFilesPersistenceComponent.class);
         componentMultibinder.addBinding().to(ActiveFilePersistenceComponent.class);
-        componentMultibinder.addBinding().to(OpenedNodesPersistenceComponent.class);
-        componentMultibinder.addBinding().to(ActiveNodePersistentComponent.class);
+        componentMultibinder.addBinding().to(ExpandedNodesPersistenceComponent.class);
+        componentMultibinder.addBinding().to(LastOpenedFilePersistentComponent.class);
 
         GinMapBinder<String, PersistenceComponent> projectTreeComponentBinder =
                 GinMapBinder.newMapBinder(binder(), String.class, PersistenceComponent.class);
-        projectTreeComponentBinder.addBinding("openedNodes").to(OpenedNodesPersistenceComponent.class);
-        projectTreeComponentBinder.addBinding("activeNode").to(ActiveNodePersistentComponent.class);
+        projectTreeComponentBinder.addBinding("openedNodes").to(ExpandedNodesPersistenceComponent.class);
+        projectTreeComponentBinder.addBinding("activeNode").to(LastOpenedFilePersistentComponent.class);
         projectTreeComponentBinder.addBinding("showHiddenFiles").to(ShowHiddenFilesPersistenceComponent.class);
     }
 

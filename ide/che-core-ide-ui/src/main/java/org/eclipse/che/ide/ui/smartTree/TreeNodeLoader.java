@@ -21,7 +21,6 @@ import com.google.gwt.event.shared.SimpleEventBus;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.PromiseError;
-import org.eclipse.che.ide.api.project.node.HasAction;
 import org.eclipse.che.ide.api.project.node.HasDataObject;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor;
@@ -30,6 +29,7 @@ import org.eclipse.che.ide.ui.smartTree.event.CancellableEvent;
 import org.eclipse.che.ide.ui.smartTree.event.LoadEvent;
 import org.eclipse.che.ide.ui.smartTree.event.LoadExceptionEvent;
 import org.eclipse.che.ide.ui.smartTree.event.LoaderHandler;
+import org.eclipse.che.ide.ui.smartTree.event.PostLoadEvent;
 import org.eclipse.che.ide.util.loging.Log;
 
 import javax.validation.constraints.NotNull;
@@ -53,7 +53,7 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
     /**
      * Temporary storage for current requested nodes. When children have been loaded requested node removes from temporary set.
      */
-    Map<Node, LoadParams> childRequested = new HashMap<>();
+    Map<Node, Boolean> childRequested = new HashMap<>();
 
     /**
      * Last processed node. Maybe used in general purpose.
@@ -121,37 +121,20 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
                 }
             }
 
-
-            LoadParams params = event.getParams();
-
-            if (params != null) {
-                List<Node> children = tree.getNodeStorage().getChildren(event.getRequestedNode());
-                for (Node node : children) {
-                    if (isNodeHasSameDataObject(node, params.getSelectAfter())) {
-                        tree.getSelectionModel().select(node, false);
-
-                        if (params.isCallAction() && node instanceof HasAction) {
-                            ((HasAction)node).actionPerformed();
-                        }
-
-                        if (params.isGoInto() && node.supportGoInto()) {
-                            tree.getGoIntoMode().goInto(node);
-                        }
+            if (event.isReloadExpandedChild()) {
+                Iterable<Node> filter = Iterables.filter(tree.getNodeStorage().getChildren(parent), new Predicate<Node>() {
+                    @Override
+                    public boolean apply(@Nullable Node input) {
+                        return tree.hasChildren(input) && tree.isExpanded(input);
                     }
+                });
+
+                for (Node node : filter) {
+                    loadChildren(node);
                 }
             }
 
-            Iterable<Node> filter = Iterables.filter(tree.getNodeStorage().getChildren(parent), new Predicate<Node>() {
-                @Override
-                public boolean apply(@Nullable Node input) {
-                    return tree.hasChildren(input) && tree.isExpanded(input);
-                }
-            });
-
-            for (Node node : filter) {
-                loadChildren(node);
-            }
-
+            fireEvent(new PostLoadEvent(event.getRequestedNode(), event.getReceivedNodes()));
         }
 
         @Override
@@ -260,15 +243,15 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
      * @return true if the load was requested, otherwise false
      */
     public boolean loadChildren(@NotNull Node parent) {
-        return loadChildren(parent, null);
+        return loadChildren(parent, false);
     }
 
-    public boolean loadChildren(Node parent, LoadParams params) {
+    public boolean loadChildren(Node parent, boolean reloadExpandedChild) {
         if (childRequested.containsKey(parent)) {
             return false;
         }
 
-        childRequested.put(parent, params);
+        childRequested.put(parent, reloadExpandedChild);
         return _load(parent);
     }
 
@@ -299,8 +282,8 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
      *         parent node, children which have been loaded
      */
     private void onLoadSuccess(@NotNull final Node parent, List<Node> children) {
-        LoadParams loadParams = childRequested.remove(parent);
-        fireEvent(new LoadEvent(parent, children, loadParams));
+        boolean reloadExpandedChild = childRequested.remove(parent);
+        fireEvent(new LoadEvent(parent, children, reloadExpandedChild));
     }
 
     /**
@@ -404,6 +387,11 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
         return addHandler(LoadExceptionEvent.getType(), handler);
     }
 
+    @Override
+    public HandlerRegistration addPostLoadHandler(PostLoadEvent.PostLoadHandler handler) {
+        return addHandler(PostLoadEvent.getType(), handler);
+    }
+
     /** {@inheritDoc} */
     @Override
     public HandlerRegistration addLoaderHandler(LoaderHandler handler) {
@@ -411,6 +399,7 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
         group.add(addHandler(BeforeLoadEvent.getType(), handler));
         group.add(addHandler(LoadEvent.getType(), handler));
         group.add(addHandler(LoadExceptionEvent.getType(), handler));
+        group.add(addHandler(PostLoadEvent.getType(), handler));
         return group;
     }
 

@@ -284,7 +284,12 @@ public class BootstrapController {
                     && appContext.getFactory().getIde().getOnProjectOpened() != null
                     && appContext.getFactory().getIde().getOnProjectOpened().getActions() != null) {
 
-                    performActions(appContext.getFactory().getIde().getOnProjectOpened().getActions());
+                    Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+                        @Override
+                        public void execute() {
+                            performActions(appContext.getFactory().getIde().getOnProjectOpened().getActions());
+                        }
+                    });
                 }
             }
 

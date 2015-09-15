@@ -18,13 +18,13 @@ import org.eclipse.che.ide.actions.OpenFileAction;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
+import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.NavigableMap;
 
 import static org.eclipse.che.ide.actions.OpenFileAction.FILE_PARAM_ID;
 
@@ -54,24 +54,22 @@ public class ActiveFilePersistenceComponent implements PersistenceComponent {
 
     @Override
     public List<ActionDescriptor> getActions(String projectPath) {
-        final EditorAgent editorAgent = editorAgentProvider.get();
+        EditorAgent editorAgent = editorAgentProvider.get();
+        EditorPartPresenter activeEditor = editorAgent.getActiveEditor();
+
         final List<ActionDescriptor> actions = new ArrayList<>();
-        final String openFileActionId = actionManager.getId(openFileAction);
-        final NavigableMap<String, EditorPartPresenter> openedEditors = editorAgent.getOpenedEditors();
-        final EditorPartPresenter activeEditor = editorAgent.getActiveEditor();
 
-        if (activeEditor != null) {
-            final String activeFilePath = activeEditor.getEditorInput().getFile().getPath();
-            // save active file only if it's not the last opened file
-            String lastOpenedFile = openedEditors.lastKey();
-            if (!activeFilePath.equals(lastOpenedFile)) {
-                final String activeFileRelPath = activeFilePath.replaceFirst(projectPath, "");
-
-                actions.add(dtoFactory.createDto(ActionDescriptor.class)
-                                      .withId(openFileActionId)
-                                      .withParameters(Collections.singletonMap(FILE_PARAM_ID, activeFileRelPath)));
-            }
+        if (activeEditor == null) {
+            return Collections.emptyList();
         }
+
+        VirtualFile virtualFile = activeEditor.getEditorInput().getFile();
+
+        String openNodeActionId = actionManager.getId(openFileAction);
+
+        actions.add(dtoFactory.createDto(ActionDescriptor.class)
+                              .withId(openNodeActionId)
+                              .withParameters(Collections.singletonMap(FILE_PARAM_ID, virtualFile.getPath())));
         return actions;
     }
 }

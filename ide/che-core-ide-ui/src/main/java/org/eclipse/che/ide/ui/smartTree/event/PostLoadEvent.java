@@ -19,23 +19,23 @@ import org.eclipse.che.ide.api.project.node.Node;
 import java.util.List;
 
 /**
- * Event fires when node's children has been loaded.
+ * Event fires when children has been loaded and processed.
  *
  * @author Vlad Zhukovskiy
  */
-public class LoadEvent extends GwtEvent<LoadEvent.LoadHandler> {
+public class PostLoadEvent extends GwtEvent<PostLoadEvent.PostLoadHandler> {
 
-    public interface LoadHandler extends EventHandler {
-        void onLoad(LoadEvent event);
+    public interface PostLoadHandler extends EventHandler {
+        void onPostLoad(PostLoadEvent event);
     }
 
-    public interface HasLoadHandlers {
-        public HandlerRegistration addLoadHandler(LoadHandler handler);
+    public interface HasPostLoadHandlers {
+        public HandlerRegistration addPostLoadHandler(PostLoadHandler handler);
     }
 
-    private static Type<LoadHandler> TYPE;
+    private static Type<PostLoadHandler> TYPE;
 
-    public static Type<LoadHandler> getType() {
+    public static Type<PostLoadHandler> getType() {
         if (TYPE == null) {
             TYPE = new Type<>();
         }
@@ -44,21 +44,15 @@ public class LoadEvent extends GwtEvent<LoadEvent.LoadHandler> {
 
     private Node       requestedNode;
     private List<Node> receivedNodes;
-    private boolean    reloadExpandedChild;
 
-    public LoadEvent(Node requestedNode, List<Node> receivedNodes) {
-        this(requestedNode, receivedNodes, false);
-    }
-
-    public LoadEvent(Node requestedNode, List<Node> receivedNodes, boolean reloadExpandedChild) {
+    public PostLoadEvent(Node requestedNode, List<Node> receivedNodes) {
         this.requestedNode = requestedNode;
         this.receivedNodes = receivedNodes;
-        this.reloadExpandedChild = reloadExpandedChild;
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
-    public Type<LoadHandler> getAssociatedType() {
+    public Type<PostLoadHandler> getAssociatedType() {
         return (Type)TYPE;
     }
 
@@ -70,12 +64,8 @@ public class LoadEvent extends GwtEvent<LoadEvent.LoadHandler> {
         return receivedNodes;
     }
 
-    public boolean isReloadExpandedChild() {
-        return reloadExpandedChild;
-    }
-
     @Override
-    protected void dispatch(LoadHandler handler) {
-        handler.onLoad(this);
+    protected void dispatch(PostLoadHandler handler) {
+        handler.onPostLoad(this);
     }
 }

@@ -18,21 +18,19 @@ import org.eclipse.che.ide.actions.SelectNodeAction;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
-import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
-import org.eclipse.che.ide.api.project.tree.generic.FileNode;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 
-import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * @author Andrienko Alexander
  */
 @Singleton
-public class ActiveNodePersistentComponent implements PersistenceComponent {
+public class LastOpenedFilePersistentComponent implements PersistenceComponent {
 
     private Provider<EditorAgent> editorAgentProvider;
     private DtoFactory            dtoFactory;
@@ -40,10 +38,10 @@ public class ActiveNodePersistentComponent implements PersistenceComponent {
     private SelectNodeAction      selectNodeAction;
 
     @Inject
-    public ActiveNodePersistentComponent(Provider<EditorAgent> editorAgentProvider,
-                                         DtoFactory dtoFactory,
-                                         ActionManager actionManager,
-                                         SelectNodeAction selectNodeAction) {
+    public LastOpenedFilePersistentComponent(Provider<EditorAgent> editorAgentProvider,
+                                             DtoFactory dtoFactory,
+                                             ActionManager actionManager,
+                                             SelectNodeAction selectNodeAction) {
         this.editorAgentProvider = editorAgentProvider;
         this.dtoFactory = dtoFactory;
         this.actionManager = actionManager;
@@ -58,39 +56,17 @@ public class ActiveNodePersistentComponent implements PersistenceComponent {
         final List<ActionDescriptor> actions = new ArrayList<>();
 
         if (activeEditor == null) {
-            return actions;
+            return Collections.emptyList();
         }
 
         VirtualFile virtualFile = activeEditor.getEditorInput().getFile();
-        TreeNode<?> parentNode = getParentNode(virtualFile);
 
-        if (parentNode == null) {
-            return actions;
-        }
+        String openNodeActionId = actionManager.getId(selectNodeAction);
 
-//        Array<TreeNode<?>> openedNodes = projectExplorerView.getOpenedTreeNodes();
-//
-//        if (openedNodes != null && openedNodes.contains(parentNode)) {
-//            String path = virtualFile.getPath();
-//            path = path.replaceFirst(projectPath, "");
-//
-//            String openNodeActionId = actionManager.getId(selectNodeAction);
-//
-//            actions.add(dtoFactory.createDto(ActionDescriptor.class)
-//                                  .withId(openNodeActionId)
-//                                  .withParameters(Collections.singletonMap(SELECT_NODE_PARAM_ID, path)));
-//        }
+        actions.add(dtoFactory.createDto(ActionDescriptor.class)
+                              .withId(openNodeActionId)
+                              .withParameters(Collections.singletonMap(SelectNodeAction.SELECT_NODE_PARAM_ID, virtualFile.getPath())));
 
         return actions;
-    }
-
-    private TreeNode<?> getParentNode(@NotNull VirtualFile virtualFile) {
-        TreeNode<?> parent = null;
-
-        if (virtualFile instanceof FileNode) {
-            parent = ((FileNode)virtualFile).getParent();
-        }
-
-        return parent;
     }
 }
