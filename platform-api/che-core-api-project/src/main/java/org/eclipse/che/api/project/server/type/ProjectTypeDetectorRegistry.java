@@ -31,15 +31,38 @@ public class ProjectTypeDetectorRegistry {
         }
     }
 
-    public Set<ProjectTypeDetector> getDetectors() {
+    /**
+     * Gets the set of registered {@link ProjectTypeDetector}
+     * <p/>
+     * It is thread-safe!
+     *
+     * @return the set of registered {@link ProjectTypeDetector}
+     */
+    public synchronized Set<ProjectTypeDetector> getDetectors() {
         return new HashSet<>(detectors);
     }
 
-    public void register(ProjectTypeDetector detector) {
+    /**
+     * Adds the specified detector to the set of registered detectors.
+     * <p/>
+     * It is thread-safe!
+     *
+     * @param detector
+     *         detector to be added to the set of registered detectors.
+     */
+    public synchronized void register(ProjectTypeDetector detector) {
         detectors.add(detector);
     }
 
-    public void unregister(ProjectTypeDetector detector) {
+    /**
+     * Removes the specified detector from the set of registered detectors.
+     * <p/>
+     * It is thread-safe!
+     *
+     * @param detector
+     *         detector to be removed from the set of registered detectors
+     */
+    public synchronized void unregister(ProjectTypeDetector detector) {
         detectors.remove(detector);
     }
 }
