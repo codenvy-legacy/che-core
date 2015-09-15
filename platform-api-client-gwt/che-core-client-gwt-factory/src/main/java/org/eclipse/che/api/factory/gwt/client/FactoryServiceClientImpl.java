@@ -18,7 +18,7 @@ import org.eclipse.che.ide.rest.HTTPHeader;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Implementation of {@link FactoryServiceClient} service.
@@ -36,7 +36,7 @@ public class FactoryServiceClientImpl implements FactoryServiceClient {
 
     /** {@inheritDoc} */
     @Override
-    public void getFactory(@Nonnull String raw, @Nonnull AsyncRequestCallback<Factory> callback) {
+    public void getFactory(@NotNull String raw, @NotNull AsyncRequestCallback<Factory> callback) {
         StringBuilder url = new StringBuilder("/api/factory");
         url.append("/").append(raw).append("?").append("legacy=true");
         asyncRequestFactory.createGetRequest(url.toString()).header(HTTPHeader.ACCEPT, MimeType.APPLICATION_JSON)

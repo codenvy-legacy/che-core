@@ -15,7 +15,7 @@ import com.google.gwt.event.dom.client.DoubleClickHandler;
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.parts.PartStackView.TabItem;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author Dmitry Shnurenko
@@ -27,8 +27,8 @@ public interface EditorTab extends View<EditorTab.ActionDelegate>, TabItem, Doub
     void setWarningMark(boolean isVisible);
 
     interface ActionDelegate {
-        void onTabClicked(@Nonnull TabItem tab);
+        void onTabClicked(@NotNull TabItem tab);
 
-        void onTabClose(@Nonnull TabItem tab);
+        void onTabClose(@NotNull TabItem tab);
     }
 }

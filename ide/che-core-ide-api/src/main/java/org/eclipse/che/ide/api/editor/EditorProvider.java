@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.editor;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Provider interface for creating new instance of {@link EditorPartPresenter}.
@@ -33,6 +33,6 @@ public interface EditorProvider {
      *
      * @return new instance of {@link EditorPartPresenter}
      */
-    @Nonnull
+    @NotNull
     EditorPartPresenter getEditor();
 }

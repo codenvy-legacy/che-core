@@ -12,7 +12,7 @@ package org.eclipse.che.ide.jseditor.client.annotation;
 
 import java.util.Map;
 
-import javax.annotation.Nullable;
+import org.eclipse.che.commons.annotation.Nullable;
 
 import org.eclipse.che.ide.api.text.Position;
 import org.eclipse.che.ide.api.text.annotation.Annotation;

@@ -25,7 +25,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.web.bindery.event.shared.EventBus;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,7 +48,7 @@ public class ProjectListStructure implements TreeStructure {
 
     /** {@inheritDoc} */
     @Override
-    public void getRootNodes(@Nonnull final AsyncCallback<List<TreeNode<?>>> callback) {
+    public void getRootNodes(@NotNull final AsyncCallback<List<TreeNode<?>>> callback) {
         Unmarshallable<List<ProjectReference>> unmarshaller = dtoUnmarshallerFactory.newListUnmarshaller(ProjectReference.class);
         projectServiceClient.getProjects(new AsyncRequestCallback<List<ProjectReference>>(unmarshaller) {
             @Override
@@ -67,14 +67,14 @@ public class ProjectListStructure implements TreeStructure {
         });
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public TreeSettings getSettings() {
         return TreeSettings.DEFAULT;
     }
 
     @Override
-    public void getNodeByPath(@Nonnull String path, @Nonnull AsyncCallback<TreeNode<?>> callback) {
+    public void getNodeByPath(@NotNull String path, @NotNull AsyncCallback<TreeNode<?>> callback) {
     }
 
     /** Node that represents project item. */
@@ -89,7 +89,7 @@ public class ProjectListStructure implements TreeStructure {
         }
 
         /** {@inheritDoc} */
-        @Nonnull
+        @NotNull
         @Override
         public String getDisplayName() {
             return getData().getName();
@@ -137,14 +137,14 @@ public class ProjectListStructure implements TreeStructure {
         }
 
         /** {@inheritDoc} */
-        @Nonnull
+        @NotNull
         @Override
         public String getId() {
             return getData().getName();
         }
 
         /** {@inheritDoc} */
-        @Nonnull
+        @NotNull
         @Override
         public org.eclipse.che.ide.api.project.tree.generic.ProjectNode getProject() {
             return null;

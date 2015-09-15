@@ -95,7 +95,7 @@ public class DarkTheme implements Theme {
 
     @Override
     public String getTabsPanelBackground() {
-        return "#5a5c5c";
+        return "#33373B";
     }
 
     @Override
@@ -104,13 +104,18 @@ public class DarkTheme implements Theme {
     }
 
     @Override
+    public String getTabUnderlineColor() {
+        return "rgb(70,102,149)";
+    }
+
+    @Override
     public String getPartBackground() {
-        return "#474747";
+        return "#292C2F";
     }
 
     @Override
     public String getPartToolbar() {
-        return "#656565";
+        return "#33373B";
     }
 
     @Override
@@ -135,7 +140,7 @@ public class DarkTheme implements Theme {
 
     @Override
     public String getMainFontColor() {
-        return "#dbdbdb";
+        return "#FFFFFF";
     }
 
     @Override
@@ -175,7 +180,7 @@ public class DarkTheme implements Theme {
 
     @Override
     public String getEditorBackgroundColor() {
-        return "#373737";
+        return "#272b33";
     }
 
     @Override
@@ -545,7 +550,12 @@ public class DarkTheme implements Theme {
 
     @Override
     public String getMinimizeIconColor() {
-        return "#dbdbdb";
+        return "#5D5D5D";
+    }
+
+    @Override
+    public String getMinimizeIconHoverColor() {
+        return "#D8D8D8";
     }
 
     @Override
@@ -582,4 +592,15 @@ public class DarkTheme implements Theme {
     public String getEditorSeparatorColor() {
         return "#888888";
     }
+
+    @Override
+    public String getSplitterSmallBorderColor() {
+        return "#0D0F10";
+    }
+
+    @Override
+    public String getSplitterLargeBorderColor() {
+        return "#2D2D2D";
+    }
+
 }

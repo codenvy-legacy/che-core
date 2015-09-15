@@ -13,82 +13,123 @@ package org.eclipse.che.api.workspace.server.spi;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
 
 import java.util.List;
 
-
 /**
- * DAO interface offers means to perform CRUD operations with {@link org.eclipse.che.api.workspace.server.dao.Workspace} data.
- * Workspace DAO should secure referential integrity for dependent objects (such as workspace {@link org.eclipse.che.api.workspace.server.dao.Member}).
- * It is up to implementation to define policy for that, either:
- *  - not to let remove the object or
- *  - perform cascade deletion of dependent objects
+ * Defines data access object contract for {@link UsersWorkspaceImpl}.
  *
- *  @author Eugene Voevodin
+ * @author Eugene Voevodin
  */
-
 public interface WorkspaceDao {
 
     /**
-     * Adds workspace to persistent layer.
+     * Creates workspace.
      *
      * @param workspace
-     *         POJO representation of workspace entity
-     * @throws ServerException if other error occurs
+     *         workspace to create
+     * @return created workspace
+     * @throws NullPointerException
+     *         when {@code workspace} is null
+     * @throws ConflictException
+     *         when workspace with given {@link UsersWorkspaceImpl#getName() name}
+     *         already exists for given {@link UsersWorkspaceImpl#getOwner() owner}
+     * @throws ServerException
+     *         when any other error occurs during workspace creation
      */
     UsersWorkspaceImpl create(UsersWorkspaceImpl workspace) throws ConflictException, ServerException;
 
     /**
-     * Updates already present in persistent layer workspace.
+     * Updates workspace with new entity, actually replaces(not merges) existing workspaces.
      *
-     * @param workspace
-     *         POJO representation of workspace entity
-     * @throws ServerException if other error occurs
+     * <p>Workspace will be fully updated(replaced), all data which was present before update will not be
+     * accessible with {@link WorkspaceDao this} class anymore. Expected update usage:
+     * <pre>
+     *     UsersWorkspaceImpl workspace = workspaceDao.get("workspace123");
+     *     ...
+     *     workspace.setName("new-workspace-name");
+     *     ...
+     *     workspaceDao.update(workspace);
+     * </pre>
+     *
+     * @param update
+     *         workspace update
+     * @return updated workspace
+     * @throws NullPointerException
+     *         when {@code update} is null
+     * @throws NotFoundException
+     *         when workspace with given {@link UsersWorkspaceImpl#getId() identifier} was not found
+     * @throws ConflictException
+     *         when workspace with given {@link UsersWorkspaceImpl#getName() name}
+     *         already exists for given {@link UsersWorkspaceImpl#getOwner() owner}
+     * @throws ServerException
+     *         when any other error occurs during workspace updating
      */
-    UsersWorkspaceImpl update(UsersWorkspaceImpl workspace) throws NotFoundException, ConflictException, ServerException;
+    UsersWorkspaceImpl update(UsersWorkspaceImpl update) throws NotFoundException, ConflictException, ServerException;
 
     /**
-     * Removes workspace from persistent layer.
+     * Removes workspace.
+     *
+     * <p>It is up to implementation to do cascade removing of related to workspace data or to
+     * forbid remove operation at all
+     *
+     * <p>Doesn't throw an exception when workspace with given {@code id} does not exist
      *
      * @param id
      *         workspace identifier
-     * @throws ServerException if other error occurs
+     * @throws NullPointerException
+     *         when {@code id} is null
+     * @throws ConflictException
+     *         when any conflict occurs during cascade removing of related to workspace data
+     * @throws ServerException
+     *         when any other error occurs during workspace removing
      */
-    void remove(String id) throws ConflictException, NotFoundException, ServerException;
+    void remove(String id) throws ConflictException, ServerException;
 
     /**
-     * Gets workspace from persistent layer by id.
+     * Gets workspace by identifier.
      *
      * @param id
      *         workspace identifier
-     * @return workspace POJO
-     * @throws org.eclipse.che.api.core.NotFoundException
-     *         when workspace doesn't exist
-     * @throws ServerException if other error occurs
+     * @return workspace instance, never null
+     * @throws NullPointerException
+     *         when {@code id} is null
+     * @throws NotFoundException
+     *         when workspace with given {@code id} was not found
+     * @throws ServerException
+     *         when any other error occurs during workspace fetching
      */
     UsersWorkspaceImpl get(String id) throws NotFoundException, ServerException;
 
     /**
-     * Gets workspace from persistent layer by name.
+     * Gets workspace by name and owner.
      *
-     * @param owner owner of workspace
+     * @param owner
+     *         owner of workspace
      * @param name
      *         workspace identifier
-     * @return workspace POJO
-     * @throws org.eclipse.che.api.core.NotFoundException
-     *         when workspace doesn't exist
-     * @throws ServerException if other error occurs
+     * @return workspace instance, never null
+     * @throws NullPointerException
+     *         when {@code name} or {@code owner} is null
+     * @throws NotFoundException
+     *         when workspace with given name & owner was not found
+     * @throws ServerException
+     *         when any other error occurs during workspace fetching
      */
     UsersWorkspaceImpl get(String name, String owner) throws NotFoundException, ServerException;
 
     /**
-     * Gets list of workspaces of specified user from persistent layer
+     * Gets list of workspaces owned by given {@code owner}.
      *
-     * @param owner owner of workspaces
-     * @return list of workspaces of the user
-     * @throws ServerException if any error occurs
+     * @param owner
+     *         workspace owner
+     * @return list of workspaces owned by given user.
+     * Always returns list(even when user is not owner of any workspace), never null
+     * @throws NullPointerException
+     *         when {@code owner} is null
+     * @throws ServerException
+     *         when any other error occurs during workspaces fetching
      */
     List<UsersWorkspaceImpl> getByOwner(String owner) throws ServerException;
 }

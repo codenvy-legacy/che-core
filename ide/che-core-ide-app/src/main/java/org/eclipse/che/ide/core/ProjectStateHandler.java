@@ -47,8 +47,8 @@ import org.eclipse.che.ide.rest.Unmarshallable;
 import org.eclipse.che.ide.util.Config;
 import org.eclipse.che.ide.util.loging.Log;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 
 /**
  * Component that does some preliminary operations before opening/closing projects.
@@ -127,7 +127,7 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
     }
 
     @Override
-    public void onConfigureProject(@Nonnull ConfigureProjectEvent event) {
+    public void onConfigureProject(@NotNull ConfigureProjectEvent event) {
         ProjectDescriptor toConfigure = event.getProject();
         if (toConfigure != null) {
             projectWizardPresenter.show(toConfigure);

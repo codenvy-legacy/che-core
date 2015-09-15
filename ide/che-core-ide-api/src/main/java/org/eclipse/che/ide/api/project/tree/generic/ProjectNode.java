@@ -28,8 +28,8 @@ import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import com.google.web.bindery.event.shared.EventBus;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -82,28 +82,28 @@ public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements 
     }
 
     /** {@inheritDoc} */
-    @Nonnull
+    @NotNull
     @Override
     public String getId() {
         return getData().getName();
     }
 
     /** {@inheritDoc} */
-    @Nonnull
+    @NotNull
     @Override
     public ProjectNode getProject() {
         return this;
     }
 
     /** {@inheritDoc} */
-    @Nonnull
+    @NotNull
     @Override
     public String getDisplayName() {
         return getData().getName();
     }
 
     /** Returns {@link org.eclipse.che.ide.api.project.tree.TreeStructure} which this node belongs. */
-    @Nonnull
+    @NotNull
     public GenericTreeStructure getTreeStructure() {
         return treeStructure;
     }

@@ -13,8 +13,8 @@ package org.eclipse.che.ide.api.parts;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +54,7 @@ public class PerspectiveManager {
      * @param perspectiveId
      *         type which need set
      */
-    public void setPerspectiveId(@Nonnull String perspectiveId) {
+    public void setPerspectiveId(@NotNull String perspectiveId) {
         currentPerspectiveId = perspectiveId;
 
         for (PerspectiveTypeListener container : listeners) {
@@ -63,7 +63,7 @@ public class PerspectiveManager {
     }
 
     /** Returns current perspective type. */
-    @Nonnull
+    @NotNull
     public String getPerspectiveId() {
         return currentPerspectiveId;
     }
@@ -74,7 +74,7 @@ public class PerspectiveManager {
      * @param listener
      *         listener which need add
      */
-    public void addListener(@Nonnull PerspectiveTypeListener listener) {
+    public void addListener(@NotNull PerspectiveTypeListener listener) {
         listeners.add(listener);
     }
 

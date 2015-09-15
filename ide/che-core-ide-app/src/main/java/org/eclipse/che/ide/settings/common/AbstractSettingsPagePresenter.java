@@ -12,7 +12,7 @@ package org.eclipse.che.ide.settings.common;
 
 import com.google.gwt.resources.client.ImageResource;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * The class which is common for all all page presenters which will be displayed in project settings window. To add properties view
@@ -42,12 +42,12 @@ public abstract class AbstractSettingsPagePresenter implements SettingsPagePrese
 
     /** {@inheritDoc} */
     @Override
-    public void setUpdateDelegate(@Nonnull DirtyStateListener delegate) {
+    public void setUpdateDelegate(@NotNull DirtyStateListener delegate) {
         this.delegate = delegate;
     }
 
     /** {@inheritDoc} */
-    @Nonnull
+    @NotNull
     @Override
     public String getTitle() {
         return title;

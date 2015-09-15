@@ -13,7 +13,7 @@ package org.eclipse.che.api.machine.gwt.client;
 import org.eclipse.che.api.machine.shared.dto.CommandDescriptor;
 import org.eclipse.che.api.promises.client.Promise;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -33,7 +33,7 @@ public interface CommandServiceClient {
      * @param type
      *         type of the command
      */
-    Promise<CommandDescriptor> createCommand(@Nonnull String name, @Nonnull String commandLine, @Nonnull String type);
+    Promise<CommandDescriptor> createCommand(@NotNull String name, @NotNull String commandLine, @NotNull String type);
 
     /** Get all commands. */
     Promise<List<CommandDescriptor>> getCommands();
@@ -48,8 +48,8 @@ public interface CommandServiceClient {
      * @param commandLine
      *         new command line
      */
-    Promise<CommandDescriptor> updateCommand(@Nonnull String id, @Nonnull String name, @Nonnull String commandLine);
+    Promise<CommandDescriptor> updateCommand(@NotNull String id, @NotNull String name, @NotNull String commandLine);
 
     /** Remove command with the specified ID. */
-    Promise<Void> removeCommand(@Nonnull String id);
+    Promise<Void> removeCommand(@NotNull String id);
 }

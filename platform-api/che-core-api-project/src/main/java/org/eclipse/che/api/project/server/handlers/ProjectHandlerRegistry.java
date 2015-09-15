@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.server.handlers;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.HashMap;
@@ -39,7 +39,7 @@ public class ProjectHandlerRegistry {
         }
     }
 
-    public void register(@Nonnull ProjectHandler handler) {
+    public void register(@NotNull ProjectHandler handler) {
         if (handler instanceof CreateProjectHandler) {
             createProjectHandlers.put(handler.getProjectType(), (CreateProjectHandler)handler);
         } else if (handler instanceof GetItemHandler) {
@@ -58,37 +58,37 @@ public class ProjectHandlerRegistry {
     }
 
     @Nullable
-    public CreateProjectHandler getCreateProjectHandler(@Nonnull String projectType) {
+    public CreateProjectHandler getCreateProjectHandler(@NotNull String projectType) {
         return createProjectHandlers.get(projectType);
     }
 
     @Nullable
-    public GetItemHandler getGetItemHandler(@Nonnull String projectType) {
+    public GetItemHandler getGetItemHandler(@NotNull String projectType) {
         return getItemHandlers.get(projectType);
     }
 
     @Nullable
-    public CreateModuleHandler getCreateModuleHandler(@Nonnull String projectType) {
+    public CreateModuleHandler getCreateModuleHandler(@NotNull String projectType) {
         return createModuleHandlers.get(projectType);
     }
 
     @Nullable
-    public PostImportProjectHandler getPostImportProjectHandler(@Nonnull String projectType) {
+    public PostImportProjectHandler getPostImportProjectHandler(@NotNull String projectType) {
         return postImportProjectHandlers.get(projectType);
     }
 
     @Nullable
-    public ProjectTypeChangedHandler getProjectTypeChangedHandler(@Nonnull String projectType) {
+    public ProjectTypeChangedHandler getProjectTypeChangedHandler(@NotNull String projectType) {
         return projectTypeChangedHandlers.get(projectType);
     }
 
     @Nullable
-    public GetModulesHandler getModulesHandler(@Nonnull String projectType) {
+    public GetModulesHandler getModulesHandler(@NotNull String projectType) {
         return getModulesHandlers.get(projectType);
     }
 
     @Nullable
-    public ProjectCreatedHandler getProjectCreatedHandler(@Nonnull String projectType) {
+    public ProjectCreatedHandler getProjectCreatedHandler(@NotNull String projectType) {
         return projectCreatedHandlers.get(projectType);
     }
 

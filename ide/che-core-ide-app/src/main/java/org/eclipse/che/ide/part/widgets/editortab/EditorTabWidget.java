@@ -31,8 +31,8 @@ import org.eclipse.che.ide.api.parts.PartStackView.TabPosition;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.annotation.Nonnegative;
-import javax.annotation.Nonnull;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author Dmitry Shnurenko
@@ -72,13 +72,13 @@ public class EditorTabWidget extends Composite implements EditorTab {
 
     /** {@inheritDoc} */
     @Override
-    @Nonnull
+    @NotNull
     public String getTitle() {
         return title.getText();
     }
 
     /** {@inheritDoc} */
-    @Nonnull
+    @NotNull
     @Override
     public IsWidget getView() {
         return this.asWidget();
@@ -86,7 +86,7 @@ public class EditorTabWidget extends Composite implements EditorTab {
 
     /** {@inheritDoc} */
     @Override
-    public void update(@Nonnull PartPresenter part) {
+    public void update(@NotNull PartPresenter part) {
         //to do nothing
     }
 
@@ -110,7 +110,7 @@ public class EditorTabWidget extends Composite implements EditorTab {
 
     /** {@inheritDoc} */
     @Override
-    public void setTabPosition(@Nonnull TabPosition tabPosition, @Nonnegative int countWidgets) {
+    public void setTabPosition(@NotNull TabPosition tabPosition, @Min(value=0) int countWidgets) {
         throw new UnsupportedOperationException("This method doesn't allow in this class " + getClass());
     }
 
@@ -136,13 +136,13 @@ public class EditorTabWidget extends Composite implements EditorTab {
 
     /** {@inheritDoc} */
     @Override
-    public void onClick(@Nonnull ClickEvent event) {
+    public void onClick(@NotNull ClickEvent event) {
         delegate.onTabClicked(this);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void onDoubleClick(@Nonnull DoubleClickEvent event) {
+    public void onDoubleClick(@NotNull DoubleClickEvent event) {
         expandEditor();
     }
 

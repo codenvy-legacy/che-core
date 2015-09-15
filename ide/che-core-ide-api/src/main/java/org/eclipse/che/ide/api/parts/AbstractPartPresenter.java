@@ -19,8 +19,8 @@ import org.eclipse.che.ide.util.ListenerManager.Dispatcher;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +46,7 @@ public abstract class AbstractPartPresenter implements PartPresenter {
 
     /** {@inheritDoc} */
     @Override
-    public void addRule(@Nonnull String perspectiveId) {
+    public void addRule(@NotNull String perspectiveId) {
         rules.add(perspectiveId);
     }
 
@@ -58,7 +58,7 @@ public abstract class AbstractPartPresenter implements PartPresenter {
 
     /** {@inheritDoc} */
     @Override
-    public void onClose(@Nonnull AsyncCallback<Void> callback) {
+    public void onClose(@NotNull AsyncCallback<Void> callback) {
         callback.onSuccess(null);
     }
 
@@ -69,13 +69,13 @@ public abstract class AbstractPartPresenter implements PartPresenter {
 
     /** {@inheritDoc} */
     @Override
-    public void addPropertyListener(@Nonnull PropertyListener listener) {
+    public void addPropertyListener(@NotNull PropertyListener listener) {
         manager.add(listener);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void removePropertyListener(@Nonnull PropertyListener listener) {
+    public void removePropertyListener(@NotNull PropertyListener listener) {
         manager.remove(listener);
     }
 
@@ -95,7 +95,7 @@ public abstract class AbstractPartPresenter implements PartPresenter {
     }
 
     /** {@inheritDoc} */
-    @Nonnull
+    @NotNull
     @Override
     public Selection<?> getSelection() {
         return this.selection;
@@ -107,7 +107,7 @@ public abstract class AbstractPartPresenter implements PartPresenter {
      * @param selection
      *         instance of Selection
      */
-    public void setSelection(@Nonnull Selection<?> selection) {
+    public void setSelection(@NotNull Selection<?> selection) {
         this.selection = selection;
         firePropertyChange(SELECTION_PROPERTY);
     }

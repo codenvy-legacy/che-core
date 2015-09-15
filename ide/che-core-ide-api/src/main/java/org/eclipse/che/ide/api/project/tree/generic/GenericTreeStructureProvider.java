@@ -17,7 +17,7 @@ import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import com.google.inject.Inject;
 import com.google.web.bindery.event.shared.EventBus;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /** @author Artem Zatsarynnyy */
 final public class GenericTreeStructureProvider implements TreeStructureProvider {
@@ -38,7 +38,7 @@ final public class GenericTreeStructureProvider implements TreeStructureProvider
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public String getId() {
         return ID;

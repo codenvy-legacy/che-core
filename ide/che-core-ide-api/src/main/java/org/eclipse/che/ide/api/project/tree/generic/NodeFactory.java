@@ -15,8 +15,8 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.api.project.tree.TreeStructure;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 
 /**
  * Factory that helps to create nodes for {@link GenericTreeStructure}.
@@ -36,9 +36,9 @@ public interface NodeFactory {
      *         the {@link org.eclipse.che.ide.api.project.tree.TreeStructure} to create the node for
      * @return a new {@link FileNode}
      */
-    FileNode newFileNode(@Nonnull TreeNode<?> parent,
-                         @Nonnull ItemReference data,
-                         @Nonnull TreeStructure treeStructure);
+    FileNode newFileNode(@NotNull TreeNode<?> parent,
+                         @NotNull ItemReference data,
+                         @NotNull TreeStructure treeStructure);
 
     /**
      * Creates a new {@link FolderNode} owned by the specified {@code treeStructure}
@@ -52,9 +52,9 @@ public interface NodeFactory {
      *         the {@link GenericTreeStructure} to create the node for
      * @return a new {@link FolderNode}
      */
-    FolderNode newFolderNode(@Nonnull TreeNode<?> parent,
-                             @Nonnull ItemReference data,
-                             @Nonnull GenericTreeStructure treeStructure);
+    FolderNode newFolderNode(@NotNull TreeNode<?> parent,
+                             @NotNull ItemReference data,
+                             @NotNull GenericTreeStructure treeStructure);
 
     /**
      * Creates a new {@link ProjectNode} owned by the specified {@code treeStructure}
@@ -69,8 +69,8 @@ public interface NodeFactory {
      * @return a new {@link ProjectNode}
      */
     ProjectNode newProjectNode(@Nullable TreeNode<?> parent,
-                               @Nonnull ProjectDescriptor data,
-                               @Nonnull GenericTreeStructure treeStructure);
+                               @NotNull ProjectDescriptor data,
+                               @NotNull GenericTreeStructure treeStructure);
 
     /**
      * Creates a new {@link ModuleNode} owned by the specified {@code treeStructure}

@@ -13,7 +13,7 @@ package org.eclipse.che.ide.api.parts.base;
 import org.eclipse.che.ide.api.parts.AbstractPartPresenter;
 import org.eclipse.che.ide.api.parts.PartStack;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Base presenter for parts that support minimizing by part toolbar button.
@@ -46,7 +46,7 @@ public abstract class BasePresenter extends AbstractPartPresenter implements Bas
      *
      * @param partStack
      */
-    public void setPartStack(@Nonnull PartStack partStack) {
+    public void setPartStack(@NotNull PartStack partStack) {
         this.partStack = partStack;
     }
 

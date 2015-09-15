@@ -29,7 +29,7 @@ import org.eclipse.che.ide.menu.StatusPanelGroupPresenter;
 import org.eclipse.che.ide.ui.toolbar.MainToolbar;
 import org.eclipse.che.ide.ui.toolbar.ToolbarPresenter;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Root Presenter that implements Workspace logic. Descendant Presenters are injected
@@ -92,7 +92,7 @@ public class WorkspacePresenter implements Presenter, WorkspaceView.ActionDelega
         activePerspective.go(view.getPerspectivePanel());
     }
 
-    public void setActivePart(@Nonnull PartPresenter part, @Nonnull PartStackType type) {
+    public void setActivePart(@NotNull PartPresenter part, @NotNull PartStackType type) {
         activePerspective.setActivePart(part, type);
     }
 

@@ -25,13 +25,13 @@ import java.io.IOException;
  * Implementation of script that provide ssh connection
  *
  * @author Anton Korneta
+ * @author Alexander Andrienko
  */
-public class GitSshScript {
+public abstract class GitSshScript {
 
-    private static final Logger LOG                 = LoggerFactory.getLogger(GitSshScriptProvider.class);
-    private static final String SSH_SCRIPT_TEMPLATE = "exec ssh -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $ssh_key $@";
-    private static final String SSH_SCRIPT          = "ssh_script";
-    private static final String DEFAULT_KEY_NAME    = "identity";
+    private static final Logger LOG = LoggerFactory.getLogger(GitSshScript.class);
+
+    private static final String DEFAULT_KEY_NAME = "identity";
 
     private byte[] sshKey;
     private String host;
@@ -58,25 +58,14 @@ public class GitSshScript {
             keyDirectory.mkdirs();
         }
 
-        final File keyFile = new File(rootFolder, host + File.separator + DEFAULT_KEY_NAME);
+        final File keyFile = new File(keyDirectory, DEFAULT_KEY_NAME);
         try (FileOutputStream fos = new FileOutputStream(keyFile)) {
             fos.write(sshKey);
         } catch (IOException e) {
-            LOG.error("Cant store key", e);
-            throw new GitException("Cant store ssh key. ");
+            LOG.error("Can't store ssh key. ", e);
+            throw new GitException("Can't store ssh key. ");
         }
-
-        boolean perms;
-        //set perm to -r--r--r--
-        perms = keyFile.setReadOnly();
-        //set perm to ----------
-        perms &= keyFile.setReadable(false, false);
-        //set perm to -r--------
-        perms &= keyFile.setReadable(true, true);
-        //set perm to -rw-------
-        perms &= keyFile.setWritable(true, true);
-        if (!perms) throw new GitException("Failed to set file permissions");
-        this.sshScriptFile = keyFile;
+        protectPrivateKeyFile(keyFile);
         return keyFile;
     }
 
@@ -90,20 +79,45 @@ public class GitSshScript {
      *         when any error with ssh script storing occurs
      */
     private File storeSshScript(String keyPath) throws GitException {
-        File sshScriptFile = new File(rootFolder, SSH_SCRIPT);
+        File sshScriptFile = new File(rootFolder, getSshKeyFileName());
         try (FileOutputStream fos = new FileOutputStream(sshScriptFile)) {
-            fos.write(SSH_SCRIPT_TEMPLATE.replace("$ssh_key", keyPath).getBytes());
+            fos.write(getSshScriptTemplate().replace("$ssh_key", keyPath).getBytes());
         } catch (IOException e) {
-            LOG.error("It is not possible to store " + keyPath + " ssh key");
+            LOG.error("It is not possible to store {} ssh key", keyPath);
             throw new GitException("Can't store SSH key");
         }
         if (!sshScriptFile.setExecutable(true)) {
-            LOG.error("Can't make " + sshScriptFile + " executable");
+            LOG.error("Can't make {} executable", sshScriptFile);
             throw new GitException("Can't set permissions to SSH key");
         }
         return sshScriptFile;
     }
 
+    /**
+     * Get ssh key file name
+     * @return ssh key file name
+     */
+    protected abstract String getSshKeyFileName();
+
+    /**
+     * Get ssh script template
+     * @return ssh script template for loading loading ssh key
+     */
+    protected abstract String getSshScriptTemplate();
+
+    /**
+     * Set file permission attributes for protection sshKey file
+     *
+     * @param sshKey ssh key file
+     * @throws GitException
+     */
+    protected abstract void protectPrivateKeyFile(File sshKey) throws GitException;
+
+    /**
+     * Get sshScript File
+     *
+     * @return sshScript file
+     */
     public File getSshScriptFile() {
         return sshScriptFile;
     }

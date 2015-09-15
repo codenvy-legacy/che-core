@@ -79,6 +79,10 @@ public class Style {
         return theme.getTabBorderColor();
     }
 
+    public static String getTabUnderlineColor() {
+        return theme.getTabUnderlineColor();
+    }
+
     public static String getPartBackground() {
         return theme.getPartBackground();
     }
@@ -436,6 +440,10 @@ public class Style {
         return theme.getMinimizeIconColor();
     }
 
+    public static String getMinimizeIconHoverColor() {
+        return theme.getMinimizeIconHoverColor();
+    }
+
     public static String getOutputFontColor() {
         return theme.getOutputFontColor();
     }
@@ -463,4 +471,13 @@ public class Style {
     public static String getEditorSeparatorColor() {
         return theme.getEditorSeparatorColor();
     }
+
+    public static String getSplitterSmallBorderColor() {
+        return theme.getSplitterSmallBorderColor();
+    }
+
+    public static String getSplitterLargeBorderColor() {
+        return theme.getSplitterLargeBorderColor();
+    }
+
 }

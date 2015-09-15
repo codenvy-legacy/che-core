@@ -19,7 +19,7 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Implementation of the confirmation dialog view.
@@ -39,7 +39,7 @@ public class ConfirmDialogViewImpl extends Window implements ConfirmDialogView {
     private ActionDelegate delegate;
 
     @Inject
-    public ConfirmDialogViewImpl(final @Nonnull ConfirmDialogFooter footer) {
+    public ConfirmDialogViewImpl(final @NotNull ConfirmDialogFooter footer) {
         Widget widget = uiBinder.createAndBindUi(this);
         setWidget(widget);
 

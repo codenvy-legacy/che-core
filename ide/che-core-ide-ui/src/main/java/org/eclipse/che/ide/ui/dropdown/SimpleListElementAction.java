@@ -19,7 +19,7 @@ import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * The action which describes simple element of the custom drop down list.
@@ -35,9 +35,9 @@ public class SimpleListElementAction extends ProjectAction {
 
     @AssistedInject
     public SimpleListElementAction(AppContext appContext,
-                                   @Nonnull @Assisted String name,
-                                   @Nonnull @Assisted SVGResource image,
-                                   @Nonnull @Assisted DropDownHeaderWidget header) {
+                                   @NotNull @Assisted String name,
+                                   @NotNull @Assisted SVGResource image,
+                                   @NotNull @Assisted DropDownHeaderWidget header) {
         super(name, name, image);
 
         this.name = name;
@@ -62,13 +62,13 @@ public class SimpleListElementAction extends ProjectAction {
 
 
     /** @return title of the element */
-    @Nonnull
+    @NotNull
     public String getName() {
         return name;
     }
 
     /** @return icon of the element */
-    @Nonnull
+    @NotNull
     public SVGResource getImage() {
         return image;
     }

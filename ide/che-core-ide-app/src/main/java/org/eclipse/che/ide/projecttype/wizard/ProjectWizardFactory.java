@@ -13,7 +13,7 @@ package org.eclipse.che.ide.projecttype.wizard;
 import org.eclipse.che.api.project.shared.dto.ImportProject;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Helps to create new instances of {@link ProjectWizard}.
@@ -21,7 +21,7 @@ import javax.annotation.Nonnull;
  * @author Artem Zatsarynnyy
  */
 public interface ProjectWizardFactory {
-    ProjectWizard newWizard(@Nonnull ImportProject dataObject,
-                            @Nonnull ProjectWizardMode mode,
-                            @Nonnull String projectPath);
+    ProjectWizard newWizard(@NotNull ImportProject dataObject,
+                            @NotNull ProjectWizardMode mode,
+                            @NotNull String projectPath);
 }

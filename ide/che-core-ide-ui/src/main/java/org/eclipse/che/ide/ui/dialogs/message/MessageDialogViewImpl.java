@@ -19,7 +19,7 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Implementation of the message dialog view.
@@ -39,7 +39,7 @@ public class MessageDialogViewImpl extends Window implements MessageDialogView {
     private ActionDelegate delegate;
 
     @Inject
-    public MessageDialogViewImpl(final @Nonnull MessageDialogFooter footer) {
+    public MessageDialogViewImpl(final @NotNull MessageDialogFooter footer) {
         Widget widget = uiBinder.createAndBindUi(this);
         setWidget(widget);
 
@@ -49,7 +49,7 @@ public class MessageDialogViewImpl extends Window implements MessageDialogView {
 
     /** {@inheritDoc} */
     @Override
-    public void setDelegate(@Nonnull ActionDelegate delegate) {
+    public void setDelegate(@NotNull ActionDelegate delegate) {
         this.delegate = delegate;
         this.footer.setDelegate(this.delegate);
     }
@@ -78,14 +78,14 @@ public class MessageDialogViewImpl extends Window implements MessageDialogView {
 
     /** {@inheritDoc} */
     @Override
-    public void setContent(@Nonnull IsWidget content) {
+    public void setContent(@NotNull IsWidget content) {
         this.content.clear();
         this.content.setWidget(content);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void setConfirmButtonText(@Nonnull String text) {
+    public void setConfirmButtonText(@NotNull String text) {
         footer.setConfirmButtonText(text);
     }
 

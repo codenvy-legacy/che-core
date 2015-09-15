@@ -43,8 +43,8 @@ import org.eclipse.che.ide.util.NameUtils;
 import org.eclipse.che.ide.util.loging.Log;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.Arrays;
 
 import static org.eclipse.che.ide.api.event.ItemEvent.ItemOperation.CREATED;
@@ -152,7 +152,7 @@ public abstract class AbstractNewResourceAction extends AbstractPerspectiveActio
     }
 
     @Override
-    public void updateInPerspective(@Nonnull ActionEvent event) {
+    public void updateInPerspective(@NotNull ActionEvent event) {
         event.getPresentation().setEnabled(getNewResourceParent() != null);
     }
 

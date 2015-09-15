@@ -32,7 +32,7 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 import static com.google.gwt.dom.client.Style.Unit.PX;
 
@@ -45,13 +45,13 @@ public class NotificationMessage extends PopupPanel implements Notification.Noti
     /** Required for delegating open and close functions in view. */
     public interface ActionDelegate {
         /** Performs some actions in response to a user's opening a notification */
-        void onOpenMessageClicked(@Nonnull Notification notification);
+        void onOpenMessageClicked(@NotNull Notification notification);
 
         /** Performs some actions in response to a user's closing a notification */
-        void onCloseMessageClicked(@Nonnull Notification notification);
+        void onCloseMessageClicked(@NotNull Notification notification);
 
         /** Performs some actions in response to a notification is closing */
-        void onClosingDialog(@Nonnull NotificationMessage message);
+        void onClosingDialog(@NotNull NotificationMessage message);
     }
 
     public static final int DEFAULT_TIME = 5000;
@@ -78,7 +78,7 @@ public class NotificationMessage extends PopupPanel implements Notification.Noti
      * @param notification
      * @param delegate
      */
-    public NotificationMessage(@Nonnull Resources resources, @Nonnull Notification notification, @Nonnull ActionDelegate delegate) {
+    public NotificationMessage(@NotNull Resources resources, @NotNull Notification notification, @NotNull ActionDelegate delegate) {
         super(false, false);
 
         this.notification = notification;
@@ -164,7 +164,7 @@ public class NotificationMessage extends PopupPanel implements Notification.Noti
      * @param icon
      *         icon that need to set
      */
-    private SVGImage changeImage(@Nonnull SVGResource icon) {
+    private SVGImage changeImage(@NotNull SVGResource icon) {
         SVGImage messageIcon = new SVGImage(icon);
         iconPanel.setWidget(messageIcon);
         return messageIcon;

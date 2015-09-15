@@ -15,7 +15,7 @@ import com.google.gwt.resources.client.ImageResource;
 
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * <code>EditorInput</code> is a light weight descriptor of editor input, like a file name but more abstract. It is not a model. It is a
@@ -40,7 +40,7 @@ public interface EditorInput {
      *
      * @return the image resource for this input.
      */
-    @Nonnull
+    @NotNull
     ImageResource getImageResource();
 
     /**
@@ -48,7 +48,7 @@ public interface EditorInput {
      *
      * @return the SVG image resource for this input.
      */
-    @Nonnull
+    @NotNull
     SVGResource getSVGResource();
 
     /**
@@ -58,7 +58,7 @@ public interface EditorInput {
      *
      * @return the name string; never <code>null</code>;
      */
-    @Nonnull
+    @NotNull
     String getName();
 
     /**
@@ -68,7 +68,7 @@ public interface EditorInput {
      *
      * @return the tool tip text; never <code>null</code>.
      */
-    @Nonnull
+    @NotNull
     String getToolTipText();
 
     /**
@@ -76,7 +76,7 @@ public interface EditorInput {
      *
      * @return the File; never <code>null</code>
      */
-    @Nonnull
+    @NotNull
     VirtualFile getFile();
 
     /**
@@ -84,5 +84,5 @@ public interface EditorInput {
      *
      * @param file
      */
-    void setFile(@Nonnull VirtualFile file);
+    void setFile(@NotNull VirtualFile file);
 }

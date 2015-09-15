@@ -16,7 +16,7 @@ import com.google.inject.ImplementedBy;
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.settings.common.SettingsPagePresenter;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,7 +34,7 @@ public interface SettingsView extends View<SettingsView.ActionDelegate> {
      * @param presenter
      *         page with properties which will be displayed
      */
-    void selectSettingGroup(@Nonnull SettingsPagePresenter presenter);
+    void selectSettingGroup(@NotNull SettingsPagePresenter presenter);
 
     /** Closes settings dialog window */
     void close();
@@ -47,7 +47,7 @@ public interface SettingsView extends View<SettingsView.ActionDelegate> {
      *
      * @return panel which associated with special group, when we click on group
      */
-    @Nonnull
+    @NotNull
     AcceptsOneWidget getContentPanel();
 
     /**
@@ -64,7 +64,7 @@ public interface SettingsView extends View<SettingsView.ActionDelegate> {
      * @param settings
      *         set of presenters which need set
      */
-    void setSettings(@Nonnull Map<String, Set<SettingsPagePresenter>> settings);
+    void setSettings(@NotNull Map<String, Set<SettingsPagePresenter>> settings);
 
     public interface ActionDelegate {
         /** Performs some actions when user click on save button. */
@@ -82,6 +82,6 @@ public interface SettingsView extends View<SettingsView.ActionDelegate> {
          * @param settings
          *         group which was selected
          */
-        void onSettingsGroupSelected(@Nonnull SettingsPagePresenter settings);
+        void onSettingsGroupSelected(@NotNull SettingsPagePresenter settings);
     }
 }

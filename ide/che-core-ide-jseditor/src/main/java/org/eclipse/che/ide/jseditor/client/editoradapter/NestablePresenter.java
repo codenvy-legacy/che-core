@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.editoradapter;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 import org.eclipse.che.ide.api.mvp.Presenter;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -24,5 +24,5 @@ public interface NestablePresenter extends Presenter, HasEditor {
      * Action to do when closing the component.
      * @param callback the callback
      */
-    void onClose(@Nonnull final AsyncCallback<Void> callback);
+    void onClose(@NotNull final AsyncCallback<Void> callback);
 }

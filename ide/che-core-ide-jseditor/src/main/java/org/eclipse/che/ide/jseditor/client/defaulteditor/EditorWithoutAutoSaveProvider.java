@@ -17,7 +17,7 @@ import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.editor.EditorProvider;
 import org.eclipse.che.ide.jseditor.client.JsEditorExtension;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import javax.inject.Named;
 
 /**
@@ -44,7 +44,7 @@ public class EditorWithoutAutoSaveProvider implements EditorProvider {
         return "Editor without auto save";
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public EditorPartPresenter getEditor() {
         return embeddedBuilder.buildEditor();

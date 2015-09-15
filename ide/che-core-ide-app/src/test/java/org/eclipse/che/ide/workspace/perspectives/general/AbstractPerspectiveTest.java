@@ -32,7 +32,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.NotSupportedException;
 import java.util.Arrays;
 
@@ -234,17 +234,17 @@ public class AbstractPerspectiveTest {
 
     private class DummyPerspective extends AbstractPerspective {
 
-        private DummyPerspective(@Nonnull PerspectiveViewImpl view,
-                                 @Nonnull PartStackPresenterFactory stackPresenterFactory,
-                                 @Nonnull PartStackViewFactory partViewFactory,
-                                 @Nonnull WorkBenchControllerFactory controllerFactory) {
+        private DummyPerspective(@NotNull PerspectiveViewImpl view,
+                                 @NotNull PartStackPresenterFactory stackPresenterFactory,
+                                 @NotNull PartStackViewFactory partViewFactory,
+                                 @NotNull WorkBenchControllerFactory controllerFactory) {
             super(SOME_TEXT, view, stackPresenterFactory, partViewFactory, controllerFactory);
 
             partStacks.put(EDITING, partStackPresenter);
         }
 
         @Override
-        public void go(@Nonnull AcceptsOneWidget container) {
+        public void go(@NotNull AcceptsOneWidget container) {
             throw new NotSupportedException("This method will be tested in the class which extends AbstractPerspective");
         }
     }

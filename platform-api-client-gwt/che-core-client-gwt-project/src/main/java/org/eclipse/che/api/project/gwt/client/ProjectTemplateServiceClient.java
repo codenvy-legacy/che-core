@@ -13,7 +13,7 @@ package org.eclipse.che.api.project.gwt.client;
 import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -28,7 +28,7 @@ public interface ProjectTemplateServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void getProjectTemplates(@Nonnull String projectTypeId, @Nonnull AsyncRequestCallback<List<ProjectTemplateDescriptor>> callback);
+    void getProjectTemplates(@NotNull String projectTypeId, @NotNull AsyncRequestCallback<List<ProjectTemplateDescriptor>> callback);
 
     /**
      * Get information about all registered project templates.
@@ -36,5 +36,5 @@ public interface ProjectTemplateServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void getProjectTemplates(@Nonnull AsyncRequestCallback<List<ProjectTemplateDescriptor>> callback);
+    void getProjectTemplates(@NotNull AsyncRequestCallback<List<ProjectTemplateDescriptor>> callback);
 }

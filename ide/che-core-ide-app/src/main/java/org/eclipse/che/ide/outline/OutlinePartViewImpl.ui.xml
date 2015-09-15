@@ -16,9 +16,6 @@
     <ui:with field='res' type='org.eclipse.che.ide.Resources'/>
 
     <ui:style type="org.eclipse.che.ide.outline.OutlinePartViewImpl.Style">
-        .container-style {
-            border: none !important;
-        }
 
         .icon-style > svg {
             display: block;
@@ -40,7 +37,7 @@
         }
     </ui:style>
 
-    <g:SimplePanel ui:field="outlineContainer" addStyleNames="{style.container-style}" debugId="outline-container">
+    <g:SimplePanel ui:field="outlineContainer" debugId="outline-container">
         <g:DockLayoutPanel ui:field="noOutline" unit="PX" height="100%">
             <g:north size="120.0">
                 <g:SimplePanel/>

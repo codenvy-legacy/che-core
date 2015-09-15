@@ -23,7 +23,7 @@ import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,7 +74,7 @@ public class ProjectTypeServiceClientImpl implements ProjectTypeServiceClient {
         });
     }
 
-    private void getProjectTypes(@Nonnull AsyncCallback<List<ProjectTypeDefinition>> callback) {
+    private void getProjectTypes(@NotNull AsyncCallback<List<ProjectTypeDefinition>> callback) {
         final String url = baseUrl;
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
@@ -92,7 +92,7 @@ public class ProjectTypeServiceClientImpl implements ProjectTypeServiceClient {
         });
     }
 
-    private void getProjectType(@Nonnull String id, @Nonnull AsyncCallback<ProjectTypeDefinition> callback) {
+    private void getProjectType(@NotNull String id, @NotNull AsyncCallback<ProjectTypeDefinition> callback) {
         final String url = baseUrl + '/' + id;
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)

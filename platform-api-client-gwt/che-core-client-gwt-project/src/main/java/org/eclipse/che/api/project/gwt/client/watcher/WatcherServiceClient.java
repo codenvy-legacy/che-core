@@ -14,7 +14,7 @@ import com.google.inject.ImplementedBy;
 
 import org.eclipse.che.api.promises.client.Promise;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Special client service which allows send requests to special {@link org.eclipse.che.api.project.server.watcher.WatcherService} to
@@ -32,5 +32,5 @@ public interface WatcherServiceClient {
      *         folder which will be registered  to handle file system changes
      * @return an instance of {@link Promise}
      */
-    public Promise<Void> registerRecursiveWatcher(@Nonnull String pathToFolder);
+    public Promise<Void> registerRecursiveWatcher(@NotNull String pathToFolder);
 }

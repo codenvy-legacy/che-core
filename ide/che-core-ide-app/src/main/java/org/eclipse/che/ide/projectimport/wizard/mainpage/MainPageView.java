@@ -15,7 +15,7 @@ import org.eclipse.che.ide.api.mvp.View;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.ImplementedBy;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.Map;
 import java.util.Set;
 
@@ -49,7 +49,7 @@ public interface MainPageView extends View<MainPageView.ActionDelegate> {
      */
     void selectImporter(ProjectImporterDescriptor importer);
 
-    void setImporterDescription(@Nonnull String text);
+    void setImporterDescription(@NotNull String text);
 
     public interface ActionDelegate {
         /** Performs any actions appropriate in response to the user having selected the importer. */

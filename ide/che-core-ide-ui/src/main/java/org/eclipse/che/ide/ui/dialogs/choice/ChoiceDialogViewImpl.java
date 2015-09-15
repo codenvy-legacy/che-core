@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ui.dialogs.choice;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 import org.eclipse.che.ide.ui.window.Window;
 import com.google.gwt.core.client.GWT;
@@ -39,7 +39,7 @@ public class ChoiceDialogViewImpl extends Window implements ChoiceDialogView {
     private ActionDelegate delegate;
 
     @Inject
-    public ChoiceDialogViewImpl(final @Nonnull ChoiceDialogFooter footer) {
+    public ChoiceDialogViewImpl(final @NotNull ChoiceDialogFooter footer) {
         Widget widget = uiBinder.createAndBindUi(this);
         setWidget(widget);
 

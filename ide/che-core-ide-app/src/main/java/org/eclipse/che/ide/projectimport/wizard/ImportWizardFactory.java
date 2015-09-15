@@ -12,7 +12,7 @@ package org.eclipse.che.ide.projectimport.wizard;
 
 import org.eclipse.che.api.project.shared.dto.ImportProject;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Helps to create new instances of {@link ImportWizard}.
@@ -20,5 +20,5 @@ import javax.annotation.Nonnull;
  * @author Artem Zatsarynnyy
  */
 public interface ImportWizardFactory {
-    ImportWizard newWizard(@Nonnull ImportProject dataObject);
+    ImportWizard newWizard(@NotNull ImportProject dataObject);
 }

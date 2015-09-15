@@ -32,8 +32,8 @@ import org.eclipse.che.ide.part.widgets.listtab.ListButton;
 import org.eclipse.che.ide.part.widgets.listtab.item.ListItem;
 import org.eclipse.che.ide.part.widgets.listtab.item.ListItemWidget;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -108,7 +108,7 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
         });
     }
 
-    private void removeItemFromList(@Nonnull TabItem tab) {
+    private void removeItemFromList(@NotNull TabItem tab) {
         ListItem listItem = getListItemByTab(tab);
 
         if (listItem != null) {
@@ -118,7 +118,7 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
     }
 
     @Nullable
-    private ListItem getListItemByTab(@Nonnull TabItem tabItem) {
+    private ListItem getListItemByTab(@NotNull TabItem tabItem) {
         for (Map.Entry<ListItem, TabItem> entry : items.entrySet()) {
             if (tabItem.equals(entry.getValue())) {
                 return entry.getKey();
@@ -136,13 +136,13 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
 
     /** {@inheritDoc} */
     @Override
-    public void addPart(@Nonnull PartPresenter part, Constraints constraint) {
+    public void addPart(@NotNull PartPresenter part, Constraints constraint) {
         addPart(part);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void addPart(@Nonnull PartPresenter part) {
+    public void addPart(@NotNull PartPresenter part) {
         if (!containsPart(part)) {
             part.addPropertyListener(propertyListener);
 
@@ -193,7 +193,7 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
 
     /** {@inheritDoc} */
     @Override
-    public void setActivePart(@Nonnull PartPresenter part) {
+    public void setActivePart(@NotNull PartPresenter part) {
         activePart = part;
 
         addPart(part);
@@ -201,7 +201,7 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
 
     /** {@inheritDoc} */
     @Override
-    public void onTabClicked(@Nonnull TabItem tab) {
+    public void onTabClicked(@NotNull TabItem tab) {
         activePart = parts.get(tab);
 
         view.selectTab(parts.get(tab));
@@ -209,7 +209,7 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
 
     /** {@inheritDoc} */
     @Override
-    public void onTabClose(@Nonnull TabItem tab) {
+    public void onTabClose(@NotNull TabItem tab) {
         final PartPresenter closedPart = parts.get(tab);
         view.removeTab(closedPart);
 
@@ -240,7 +240,7 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
 
     /** {@inheritDoc} */
     @Override
-    public void onCloseItemClicked(@Nonnull ListItem listItem) {
+    public void onCloseItemClicked(@NotNull ListItem listItem) {
         TabItem closedItem = items.get(listItem);
 
         removePart(parts.get(closedItem));

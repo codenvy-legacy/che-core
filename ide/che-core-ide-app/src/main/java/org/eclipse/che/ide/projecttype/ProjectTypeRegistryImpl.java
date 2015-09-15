@@ -13,8 +13,8 @@ package org.eclipse.che.ide.projecttype;
 import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
 import org.eclipse.che.ide.api.project.type.ProjectTypeRegistry;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +32,7 @@ public class ProjectTypeRegistryImpl implements ProjectTypeRegistry {
 
     @Nullable
     @Override
-    public ProjectTypeDefinition getProjectType(@Nonnull String id) {
+    public ProjectTypeDefinition getProjectType(@NotNull String id) {
         if (types.isEmpty()) {
             return null;
         }

@@ -30,9 +30,10 @@ import static org.testng.AssertJUnit.assertTrue;
  */
 @Listeners(MockitoTestNGListener.class)
 public class SshScriptProviderTest {
-    private static final String SSH_KEY     = "key";
-    private static final String SCRIPT_FILE = "ssh_script";
-    private static final String URL         = "git@github.com:codenvy/test.git";
+    private static final String SSH_KEY             = "key";
+    private static final String SCRIPT_FILE         = "ssh_script";
+    private static final String SCRIPT_FILE_WINDOWS = "ssh_script.bat";
+    private static final String URL                 = "git@github.com:codenvy/test.git";
 
     @Mock
     SshKeyProvider keyProvider;
@@ -52,8 +53,9 @@ public class SshScriptProviderTest {
         File scriptDirectory = gitSshScript.getSshScriptFile().getParentFile();
         if (scriptDirectory.exists() && scriptDirectory.isDirectory() && scriptDirectory.listFiles() != null) {
             for (File file : scriptDirectory.listFiles()) {
+                String fileName = file.getName();
                 b = file.isFile()
-                    && file.getName().equalsIgnoreCase(SCRIPT_FILE)
+                    && (fileName.equalsIgnoreCase(SCRIPT_FILE) || fileName.equalsIgnoreCase(SCRIPT_FILE_WINDOWS))
                     || b;
             }
         }

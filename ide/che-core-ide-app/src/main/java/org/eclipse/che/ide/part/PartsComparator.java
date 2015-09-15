@@ -14,7 +14,7 @@ import org.eclipse.che.ide.api.constraints.Anchor;
 import org.eclipse.che.ide.api.constraints.Constraints;
 import org.eclipse.che.ide.api.parts.PartPresenter;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.Comparator;
 import java.util.Map;
 
@@ -25,7 +25,7 @@ public class PartsComparator implements Comparator<PartPresenter> {
 
     private Map<PartPresenter, Constraints> constraints;
 
-    public void setConstraints(@Nonnull Map<PartPresenter, Constraints> constraints) {
+    public void setConstraints(@NotNull Map<PartPresenter, Constraints> constraints) {
         this.constraints = constraints;
     }
 

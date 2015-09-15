@@ -12,7 +12,7 @@ package org.eclipse.che.ide.api.wizard;
 
 import org.eclipse.che.ide.api.mvp.Presenter;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.Map;
 
 /**
@@ -27,10 +27,10 @@ public interface WizardPage<T> extends Presenter {
     /** Initializes page by the passed {@code dataObject}. */
     void init(T dataObject);
 
-    void setContext(@Nonnull Map<String, String> context);
+    void setContext(@NotNull Map<String, String> context);
 
     /** Sets update control delegate. */
-    void setUpdateDelegate(@Nonnull Wizard.UpdateDelegate delegate);
+    void setUpdateDelegate(@NotNull Wizard.UpdateDelegate delegate);
 
     /**
      * Returns whether this page is completed or not.

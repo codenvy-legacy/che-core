@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.core.recipe;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -123,7 +123,7 @@ public class RecipeId {
     }
 
     /** Gets scope of this recipe. Scope helps identify how recipe was delivered, e.g. "project", "system". */
-    @Nonnull
+    @NotNull
     public Scope getScope() {
         return scope;
     }
@@ -144,7 +144,7 @@ public class RecipeId {
      * Gets name of this recipe. Scope together with category and name gives fully-qualified name of recipe. FQN of
      * recipe has a following syntax: <i>&lt;scope&gt;:/&lt;category&gt;/&lt;name&gt;</i>.
      */
-    @Nonnull
+    @NotNull
     public String getName() {
         return name;
     }
@@ -153,7 +153,7 @@ public class RecipeId {
      * Gets path of this recipe. Path it is concatenation of Scope together with category and name gives fully-qualified name of recipe. FQN of
      * recipe has a following syntax: <i>&lt;scope&gt;:/&lt;category&gt;/&lt;name&gt;</i>.
      */
-    @Nonnull
+    @NotNull
     public String getPath() {
         return category+"/"+name;
     }

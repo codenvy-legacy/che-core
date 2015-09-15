@@ -29,7 +29,7 @@ import org.eclipse.che.ide.ui.dialogs.InputCallback;
 import org.eclipse.che.ide.ui.dialogs.input.InputDialog;
 import org.eclipse.che.ide.util.loging.Log;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 import static org.eclipse.che.ide.api.event.ItemEvent.ItemOperation.CREATED;
 
@@ -103,7 +103,7 @@ public class NewFolderAction extends AbstractNewResourceAction {
     }
 
     @Override
-    public void updateInPerspective(@Nonnull ActionEvent event) {
+    public void updateInPerspective(@NotNull ActionEvent event) {
         final StorableNode parent = getNewResourceParent();
         event.getPresentation().setEnabledAndVisible(parent != null && parent.canContainsFolder());
     }

@@ -17,7 +17,7 @@ import org.eclipse.che.ide.api.filetypes.FileType;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,7 +47,7 @@ public class EditorRegistryImpl implements EditorRegistry {
 
     /** {@inheritDoc} */
     @Override
-    public void register(@Nonnull FileType fileType, @Nonnull EditorProvider provider) {
+    public void register(@NotNull FileType fileType, @NotNull EditorProvider provider) {
         if (!registry.containsKey(fileType.getId())) {
             registry.put(fileType.getId(), new ArrayList<EditorProvider>());
         }
@@ -55,14 +55,14 @@ public class EditorRegistryImpl implements EditorRegistry {
     }
 
     @Override
-    public void registerDefaultEditor(@Nonnull FileType fileType, @Nonnull EditorProvider provider) {
+    public void registerDefaultEditor(@NotNull FileType fileType, @NotNull EditorProvider provider) {
         //todo store default editor, add checks to ensure that default editor sets only one time
         register(fileType, provider);
     }
 
     /** {@inheritDoc} */
     @Override
-    public EditorProvider getEditor(@Nonnull FileType fileType) {
+    public EditorProvider getEditor(@NotNull FileType fileType) {
         //todo add logic to receive default editor form user preferences
         if (registry.containsKey(fileType.getId()) && !registry.get(fileType.getId()).isEmpty()) {
             return registry.get(fileType.getId()).get(0);
@@ -71,7 +71,7 @@ public class EditorRegistryImpl implements EditorRegistry {
     }
 
     @Override
-    public List<EditorProvider> getAllEditorsForFileType(@Nonnull FileType fileType) {
+    public List<EditorProvider> getAllEditorsForFileType(@NotNull FileType fileType) {
         List<EditorProvider> result = new ArrayList<>();
         if (registry.containsKey(fileType.getId())) {
             result.addAll(registry.get(fileType.getId()));

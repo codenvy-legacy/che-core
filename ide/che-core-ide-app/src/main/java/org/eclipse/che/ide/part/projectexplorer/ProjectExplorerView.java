@@ -16,7 +16,7 @@ import org.eclipse.che.ide.api.parts.base.BaseActionDelegate;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.ui.tree.SelectionModel;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -32,7 +32,7 @@ public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDele
      * @param rootNodes
      *         root nodes to set
      */
-    void setRootNodes(@Nonnull List<TreeNode<?>> rootNodes);
+    void setRootNodes(@NotNull List<TreeNode<?>> rootNodes);
 
     /**
      * Updates the specified node.
@@ -42,7 +42,7 @@ public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDele
      * @param newNode
      *         the new node
      */
-    void updateNode(@Nonnull TreeNode<?> oldNode, @Nonnull TreeNode<?> newNode);
+    void updateNode(@NotNull TreeNode<?> oldNode, @NotNull TreeNode<?> newNode);
 
     /**
      * Select the specified node in the view.
@@ -50,7 +50,7 @@ public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDele
      * @param node
      *         node to select
      */
-    void selectNode(@Nonnull TreeNode<?> node);
+    void selectNode(@NotNull TreeNode<?> node);
 
     void setVisible(boolean visible);
 
@@ -60,7 +60,7 @@ public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDele
      * @param node
      *         node to expand and select
      */
-    void expandAndSelectNode(@Nonnull TreeNode<?> node);
+    void expandAndSelectNode(@NotNull TreeNode<?> node);
 
     /**
      * Sets title of part.
@@ -68,24 +68,14 @@ public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDele
      * @param title
      *         title of part
      */
-    void setTitle(@Nonnull String title);
-
-    /**
-     * Sets project's name and visibility icon.
-     *
-     * @param project
-     */
-    void setProjectHeader(@Nonnull ProjectDescriptor project);
-
-    /** Hide the project's header panel. */
-    void hideProjectHeader();
+    void setTitle(@NotNull String title);
 
     /** Returns the currently selected node. */
-    @Nonnull
+    @NotNull
     TreeNode<?> getSelectedNode();
 
     /** Returns the currently selected nodes. */
-    @Nonnull
+    @NotNull
     List<TreeNode<?>> getSelectedNodes();
 
     List<TreeNode<?>> getOpenedTreeNodes();
@@ -110,7 +100,7 @@ public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDele
          * @param node
          *         expanded node
          */
-        void onNodeExpanded(@Nonnull TreeNode<?> node);
+        void onNodeExpanded(@NotNull TreeNode<?> node);
 
         /**
          * Performs any actions in response to some node action.
@@ -118,7 +108,7 @@ public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDele
          * @param node
          *         node
          */
-        void onNodeAction(@Nonnull TreeNode<?> node);
+        void onNodeAction(@NotNull TreeNode<?> node);
 
         /**
          * Performs any actions appropriate in response to the user having clicked right button on mouse.

@@ -15,7 +15,7 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 //import org.eclipse.che.api.project.shared.dto.RunnersDescriptor;
 import org.eclipse.che.ide.api.project.tree.TreeStructure;
 
-import javax.annotation.Nullable;
+import org.eclipse.che.commons.annotation.Nullable;
 import java.util.List;
 
 /**

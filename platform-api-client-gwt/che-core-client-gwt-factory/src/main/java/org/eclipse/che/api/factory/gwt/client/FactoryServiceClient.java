@@ -13,7 +13,7 @@ package org.eclipse.che.api.factory.gwt.client;
 import org.eclipse.che.api.factory.dto.Factory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * Client for IDE3 Factory service.
@@ -30,14 +30,14 @@ public interface FactoryServiceClient {
      *         callback which return valid JSON object of factory or exception if occurred
      *
      */
-    void getFactory(@Nonnull String raw, @Nonnull AsyncRequestCallback<Factory> callback);
+    void getFactory(@NotNull String raw, @NotNull AsyncRequestCallback<Factory> callback);
     
     /**
      * @param factoryId Factory's id
      * @param type snippent's type (markdown, html, etc)
      * @param callback callback which returns snippet of the factory or exception if occurred
      */
-    void getFactorySnippet(@Nonnull String factoryId, @Nonnull String type, @Nonnull AsyncRequestCallback<String> callback);
+    void getFactorySnippet(@NotNull String factoryId, @NotNull String type, @NotNull AsyncRequestCallback<String> callback);
 
 
     /**
@@ -46,5 +46,5 @@ public interface FactoryServiceClient {
      * @param path project path
      * @param callback callback which returns snippet of the factory or exception if occurred
      */
-    void getFactoryJson(@Nonnull String workspaceId, @Nonnull String path, @Nonnull AsyncRequestCallback<Factory> callback);
+    void getFactoryJson(@NotNull String workspaceId, @NotNull String path, @NotNull AsyncRequestCallback<Factory> callback);
 }

@@ -29,7 +29,7 @@ import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -141,7 +141,7 @@ public class ImportProjectWizardPresenter implements Wizard.UpdateDelegate,
     }
 
     /** Creates or returns import wizard for the specified importer. */
-    private ImportWizard getWizardForImporter(@Nonnull ProjectImporterDescriptor importer) {
+    private ImportWizard getWizardForImporter(@NotNull ProjectImporterDescriptor importer) {
         if (wizardsCache.containsKey(importer)) {
             return wizardsCache.get(importer);
         }
@@ -177,7 +177,7 @@ public class ImportProjectWizardPresenter implements Wizard.UpdateDelegate,
         return importWizard;
     }
 
-    private void showPage(@Nonnull WizardPage wizardPage) {
+    private void showPage(@NotNull WizardPage wizardPage) {
         currentPage = wizardPage;
         updateControls();
         view.showPage(currentPage);

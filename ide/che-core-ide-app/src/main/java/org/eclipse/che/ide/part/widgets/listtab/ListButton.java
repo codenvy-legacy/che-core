@@ -16,7 +16,7 @@ import com.google.inject.ImplementedBy;
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.part.widgets.listtab.item.ListItem;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author Dmitry Shnurenko
@@ -26,9 +26,9 @@ public interface ListButton extends View<ListButton.ActionDelegate>, ClickHandle
 
     void showList();
 
-    void addListItem(@Nonnull ListItem listItem);
+    void addListItem(@NotNull ListItem listItem);
 
-    void removeListItem(@Nonnull ListItem listItem);
+    void removeListItem(@NotNull ListItem listItem);
 
     void hide();
 
