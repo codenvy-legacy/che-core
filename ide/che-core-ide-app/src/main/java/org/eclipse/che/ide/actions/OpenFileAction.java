@@ -129,8 +129,6 @@ public class OpenFileAction extends Action implements PromisableAction {
             return Promises.reject(JsPromiseError.create(localization.noOpenedProject()));
         }
 
-//        final String activeProjectPath = currentProject.getRootProject().getPath();
-
         if (actionEvent.getParameters() == null) {
             return Promises.reject(JsPromiseError.create(localization.canNotOpenFileWithoutParams()));
         }
@@ -140,11 +138,6 @@ public class OpenFileAction extends Action implements PromisableAction {
             return Promises.reject(JsPromiseError.create(localization.fileToOpenIsNotSpecified()));
         }
 
-//        if (!relPathToOpen.startsWith("/")) {
-//            relPathToOpen = "/" + relPathToOpen;
-//        }
-//        final String pathToOpen = activeProjectPath + relPathToOpen;
-
         final Call<Void, Throwable> call = new Call<Void, Throwable>() {
             HandlerRegistration handlerRegistration;
 
@@ -152,7 +145,6 @@ public class OpenFileAction extends Action implements PromisableAction {
             public void makeCall(final Callback<Void, Throwable> callback) {
 
                 actionCompletedCallBack = callback;
-//                callback.onSuccess(null);
                 handlerRegistration = eventBus.addHandler(ActivePartChangedEvent.TYPE, new ActivePartChangedHandler() {
                     @Override
                     public void onActivePartChanged(ActivePartChangedEvent event) {
@@ -166,24 +158,6 @@ public class OpenFileAction extends Action implements PromisableAction {
                     }
                 });
                 actionPerformed(actionEvent);
-
-
-
-//                projectServiceClient.getItem(pathToOpen, new AsyncRequestCallback<ItemReference>() {
-//                    @Override
-//                    protected void onSuccess(ItemReference result) {
-//                        actionCompletedCallBack = callback;
-//
-
-//
-//                        actionPerformed(actionEvent);
-//                    }
-//
-//                    @Override
-//                    protected void onFailure(Throwable exception) {
-//                        callback.onFailure(exception);
-//                    }
-//                });
             }
         };
 
