@@ -872,7 +872,7 @@ public class ProjectService extends Service {
         } catch (ConflictException | ForbiddenException | ServerException | NotFoundException e) {
 
             project = projectManager.getProject(workspace, baseProjectFolder.getPath());
-            if (project != null || (!resolveProjectType(baseProjectFolder))) {
+            if (project != null || !resolveProjectType(baseProjectFolder)) {
                 project = new NotValidProject(baseProjectFolder, projectManager);
             } else {
                 //get project after successful resolving project type
