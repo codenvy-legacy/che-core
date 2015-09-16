@@ -41,11 +41,9 @@ public final class StoreSortEvent extends GwtEvent<StoreSortHandler> {
         return TYPE;
     }
 
-    /** {@inheritDoc} */
-    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public Type<StoreSortHandler> getAssociatedType() {
-        return (Type)getType();
+        return getType();
     }
 
     /** {@inheritDoc} */

@@ -63,11 +63,9 @@ public class GoIntoStateEvent extends GwtEvent<GoIntoStateHandler> {
         return node;
     }
 
-    /** {@inheritDoc} */
-    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public Type<GoIntoStateHandler> getAssociatedType() {
-        return (Type)TYPE;
+        return TYPE;
     }
 
     /** {@inheritDoc} */

@@ -41,11 +41,9 @@ public class BlurEvent extends GwtEvent<BlurHandler> {
         return TYPE;
     }
 
-    /** {@inheritDoc} */
-    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public Type<BlurHandler> getAssociatedType() {
-        return (Type)TYPE;
+        return TYPE;
     }
 
     /** {@inheritDoc} */

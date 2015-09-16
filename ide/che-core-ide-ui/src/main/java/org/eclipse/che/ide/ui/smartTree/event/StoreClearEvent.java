@@ -41,11 +41,9 @@ public final class StoreClearEvent extends GwtEvent<StoreClearHandler> {
         return TYPE;
     }
 
-    /** {@inheritDoc} */
-    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public Type<StoreClearHandler> getAssociatedType() {
-        return (Type)getType();
+        return getType();
     }
 
     /** {@inheritDoc} */

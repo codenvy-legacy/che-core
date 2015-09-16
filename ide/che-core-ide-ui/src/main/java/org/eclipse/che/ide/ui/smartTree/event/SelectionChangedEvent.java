@@ -51,11 +51,9 @@ public class SelectionChangedEvent extends GwtEvent<SelectionChangedHandler> {
         this.selection = Collections.unmodifiableList(selection);
     }
 
-    /** {@inheritDoc} */
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public Type<SelectionChangedHandler> getAssociatedType() {
-        return (Type)TYPE;
+        return TYPE;
     }
 
     public List<Node> getSelection() {

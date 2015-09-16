@@ -50,10 +50,9 @@ public class PostLoadEvent extends GwtEvent<PostLoadEvent.PostLoadHandler> {
         this.receivedNodes = receivedNodes;
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public Type<PostLoadHandler> getAssociatedType() {
-        return (Type)TYPE;
+        return TYPE;
     }
 
     public Node getRequestedNode() {

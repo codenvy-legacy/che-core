@@ -50,11 +50,9 @@ public class LoadExceptionEvent extends GwtEvent<LoadExceptionHandler> {
         this.exception = exception;
     }
 
-    /** {@inheritDoc} */
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public Type<LoadExceptionHandler> getAssociatedType() {
-        return (Type)TYPE;
+        return TYPE;
     }
 
     public Throwable getException() {

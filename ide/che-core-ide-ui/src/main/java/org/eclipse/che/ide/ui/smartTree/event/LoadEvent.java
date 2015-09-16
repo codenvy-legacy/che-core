@@ -56,10 +56,9 @@ public class LoadEvent extends GwtEvent<LoadEvent.LoadHandler> {
         this.reloadExpandedChild = reloadExpandedChild;
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public Type<LoadHandler> getAssociatedType() {
-        return (Type)TYPE;
+        return TYPE;
     }
 
     public Node getRequestedNode() {

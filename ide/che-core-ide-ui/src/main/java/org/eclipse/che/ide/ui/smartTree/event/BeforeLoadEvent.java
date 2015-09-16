@@ -50,11 +50,9 @@ public class BeforeLoadEvent extends GwtEvent<BeforeLoadHandler> implements Canc
         this.requestedNode = requestedNode;
     }
 
-    /** {@inheritDoc} */
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public Type<BeforeLoadHandler> getAssociatedType() {
-        return (Type)TYPE;
+        return TYPE;
     }
 
     public Node getRequestedNode() {

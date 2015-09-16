@@ -58,11 +58,9 @@ public class StoreRemoveEvent extends GwtEvent<StoreRemoveHandler> {
         this.children = Collections.unmodifiableList(children);
     }
 
-    /** {@inheritDoc} */
-    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public Type<StoreRemoveHandler> getAssociatedType() {
-        return (Type)getType();
+        return getType();
     }
 
     public int getIndex() {

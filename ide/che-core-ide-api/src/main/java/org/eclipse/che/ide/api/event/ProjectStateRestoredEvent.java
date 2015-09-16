@@ -44,10 +44,9 @@ public class ProjectStateRestoredEvent extends GwtEvent<ProjectStateRestoredEven
         return descriptor;
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public Type<ProjectStateRestoredHandler> getAssociatedType() {
-        return (Type)TYPE;
+        return TYPE;
     }
 
     @Override

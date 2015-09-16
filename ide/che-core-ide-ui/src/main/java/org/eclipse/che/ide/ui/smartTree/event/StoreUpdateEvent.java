@@ -51,11 +51,9 @@ public final class StoreUpdateEvent extends GwtEvent<StoreUpdateHandler> {
         this.nodes = Collections.unmodifiableList(nodes);
     }
 
-    /** {@inheritDoc} */
-    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public Type<StoreUpdateHandler> getAssociatedType() {
-        return (Type)getType();
+        return getType();
     }
 
     public List<Node> getNodes() {

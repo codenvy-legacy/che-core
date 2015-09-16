@@ -53,11 +53,9 @@ public class BeforeCollapseNodeEvent extends GwtEvent<BeforeCollapseNodeHandler>
         return node;
     }
 
-    /** {@inheritDoc} */
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public Type<BeforeCollapseNodeHandler> getAssociatedType() {
-        return (Type)TYPE;
+        return TYPE;
     }
 
     /** {@inheritDoc} */
