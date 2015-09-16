@@ -52,6 +52,7 @@ import org.eclipse.che.api.project.shared.dto.RunnerEnvironment;
 import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentLeaf;
 import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentTree;
 import org.eclipse.che.api.project.shared.dto.RunnerSource;
+import org.eclipse.che.api.project.shared.dto.RunnersDescriptor;
 import org.eclipse.che.api.project.shared.dto.Source;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.project.shared.dto.TreeElement;
@@ -101,6 +102,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import static java.util.stream.Collectors.toMap;
 
 /**
  * @author andrew00x
@@ -821,13 +824,9 @@ public class ProjectService extends Service {
         try {
             if (newProject != null) {
                 visibility = newProject.getVisibility();
-                //TODO:
-                //this trick need for fixing problem for default runners in case
-                //scripts downloaded  from remote resources "docker" this is only marker not real path in file system
-                //see importRunnerEnvironment() method
-                if (newProject.getRunners() != null && newProject.getRunners().getDefault() != null && newProject.getRunners().getDefault().startsWith("project:/docker/")) {
-                    String replace = newProject.getRunners().getDefault().replace("project:/docker/", "project:/");
-                    newProject.getRunners().setDefault(replace);
+                RunnersDescriptor descriptor = newProject.getRunners();
+                if (descriptor != null) {
+                    replaceDefaultRunnerPath(descriptor);
                 }
                 projectConfig = DtoConverter.fromDto2(newProject, projectTypeRegistry);
             }
@@ -852,6 +851,15 @@ public class ProjectService extends Service {
                                              moduleConfig,
                                              null,
                                              visibility);
+                    RunnersDescriptor projectModuleRunners = projectModule.getRunners();
+                    if (projectModuleRunners != null
+                        && projectModuleRunners.getDefault() != null
+                        && projectModuleRunners.getDefault().startsWith("project:/")) {
+                        replaceDefaultRunnerPath(projectModuleRunners);
+                        importRunnerEnvironment(importProject,
+                                                (FolderEntry)baseProjectFolder.getChild(projectModule.getPath()),
+                                                projectModuleRunners.getDefault().substring(9));
+                    }
                 }
             }
 
@@ -985,6 +993,14 @@ public class ProjectService extends Service {
      */
     private void importRunnerEnvironment(ImportProject importProject, FolderEntry baseProjectFolder)
             throws ForbiddenException, ServerException, ConflictException, IOException {
+        importRunnerEnvironment(importProject, baseProjectFolder, null);
+    }
+
+    /**
+     * Imports runners into environments.
+     */
+    private void importRunnerEnvironment(ImportProject importProject, FolderEntry baseProjectFolder, String defaultRunnerName)
+            throws ForbiddenException, ServerException, ConflictException, IOException {
         VirtualFileEntry environmentsFolder = baseProjectFolder.getChild(Constants.CODENVY_RUNNER_ENVIRONMENTS_DIR);
         if (environmentsFolder != null && environmentsFolder.isFile()) {
             throw new ConflictException(String.format("Unable import runner environments. File with the name '%s' already exists.",
@@ -993,28 +1009,57 @@ public class ProjectService extends Service {
             environmentsFolder = baseProjectFolder.createFolder(Constants.CODENVY_RUNNER_ENVIRONMENTS_DIR);
         }
 
-        for (Map.Entry<String, RunnerSource> runnerSource : importProject.getSource().getRunners().entrySet()) {
-            final String runnerSourceKey = runnerSource.getKey();
-            if (runnerSourceKey.startsWith("/docker/")) {
-                final RunnerSource runnerSourceValue = runnerSource.getValue();
-                if (runnerSourceValue != null) {
-                    String name = runnerSourceKey.substring(8);
-                    String runnerSourceLocation = runnerSourceValue.getLocation();
-                    if (runnerSourceLocation.startsWith("https") || runnerSourceLocation.startsWith("http")) {
-                        try (InputStream in = new java.net.URL(runnerSourceLocation).openStream()) {
-                            // Add file without mediatype to avoid creation useless metadata files on virtual file system level.
-                            // Dockerfile add in list of known files, see ContentTypeGuesser
-                            // and content-types.attributes file.
-                            ((FolderEntry)environmentsFolder).createFolder(name).createFile("Dockerfile", in, null);
-                        }
-                    } else {
-                        LOG.warn(
-                                "ProjectService.importProject :: not valid runner source location available only http or https scheme but" +
-                                " we get :" +
-                                runnerSourceLocation);
-                    }
+        Map<String, RunnerSource> filteredRunners = importProject.getSource().getRunners()
+                                                                 .entrySet()
+                                                                 .stream()
+                                                                 .filter(this::isValidRunnerEntry)
+                                                                 .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        for (Map.Entry<String, RunnerSource> entry : filteredRunners.entrySet()) {
+            String name = entry.getKey().substring(8);
+            if (defaultRunnerName == null || name.equals(defaultRunnerName)) {
+                try (InputStream in = new java.net.URL(entry.getValue().getLocation()).openStream()) {
+                    // Add file without mediatype to avoid creation useless metadata files on virtual file system level.
+                    // Dockerfile add in list of known files, see ContentTypeGuesser
+                    // and content-types.attributes file.
+                    ((FolderEntry)environmentsFolder).createFolder(name).createFile("Dockerfile", in, null);
                 }
             }
+        }
+    }
+
+    /**
+     * Checks valid of runner location sources and runner type.
+     *
+     * @param entry
+     *         runner entry
+     * @return return false if runner location or runner type is not valid
+     */
+    private boolean isValidRunnerEntry(Map.Entry<String, RunnerSource> entry) {
+        final RunnerSource runnerSourceValue;
+        if (!entry.getKey().startsWith("/docker/")
+            || (runnerSourceValue = entry.getValue()) == null) {
+            return false;
+        }
+
+        if (!(runnerSourceValue.getLocation().startsWith("https") || runnerSourceValue.getLocation().startsWith("http"))) {
+            LOG.warn("ProjectService.importProject :: not valid runner source location available only http or https scheme but we get :" +
+                     runnerSourceValue);
+            return false;
+        }
+        return true;
+    }
+
+    private void replaceDefaultRunnerPath(RunnersDescriptor runnersDescriptor) {
+        //TODO:
+        //this trick need for fixing problem for default runners in case
+        //scripts downloaded  from remote resources "docker" this is only marker not real path in file system
+        //see importRunnerEnvironment() method
+        if (runnersDescriptor != null
+            && runnersDescriptor.getDefault() != null
+            && runnersDescriptor.getDefault().startsWith("project:/docker/")) {
+            String replace = runnersDescriptor.getDefault().replace("project:/docker/", "project:/");
+            runnersDescriptor.setDefault(replace);
         }
     }
 
