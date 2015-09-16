@@ -32,6 +32,7 @@ import org.eclipse.che.ide.api.project.node.settings.NodeSettings;
 import org.eclipse.che.ide.api.project.node.settings.SettingsProvider;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.dto.DtoFactory;
+import org.eclipse.che.ide.part.explorer.project.FoldersOnTopFilter;
 import org.eclipse.che.ide.project.node.factory.NodeFactory;
 import org.eclipse.che.ide.project.shared.NodesResources;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
@@ -40,6 +41,7 @@ import org.eclipse.che.ide.rest.Unmarshallable;
 import org.eclipse.che.ide.api.project.node.Node;
 
 import javax.validation.constraints.NotNull;
+
 import org.eclipse.che.commons.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -75,7 +77,7 @@ public class NodeManager {
         this.dtoFactory = dtoFactory;
     }
 
-    /** *************** Children operations ********************* */
+    /** ************* Children operations ********************* */
 
     @NotNull
     public Promise<List<Node>> getChildren(@NotNull ItemReference itemReference,
@@ -97,7 +99,18 @@ public class NodeManager {
         return AsyncPromiseHelper.createFromAsyncRequest(getItemReferenceRC(path))
                                  .thenPromise(filterItemReference())
                                  .thenPromise(createItemReferenceNodes(relProjectDescriptor, nodeSettings))
+                                 .thenPromise(sortNodes())
                                  .catchError(handleError());
+    }
+
+    protected Function<List<Node>, Promise<List<Node>>> sortNodes() {
+        return new Function<List<Node>, Promise<List<Node>>>() {
+            @Override
+            public Promise<List<Node>> apply(List<Node> nodes) throws FunctionException {
+                Collections.sort(nodes, new FoldersOnTopFilter());
+                return Promises.resolve(nodes);
+            }
+        };
     }
 
     @NotNull
@@ -233,7 +246,7 @@ public class NodeManager {
         };
     }
 
-    /** *************** Project Reference operations ********************* */
+    /** ************* Project Reference operations ********************* */
 
     @NotNull
     public Promise<List<Node>> getProjects() {
@@ -276,7 +289,7 @@ public class NodeManager {
         };
     }
 
-    /** *************** Content methods ********************* */
+    /** ************* Content methods ********************* */
 
     @NotNull
     public Promise<String> getContent(@NotNull final VirtualFile virtualFile) {
@@ -311,7 +324,7 @@ public class NodeManager {
         };
     }
 
-    /** *************** Common methods ********************* */
+    /** ************* Common methods ********************* */
 
     @NotNull
     protected <T> AsyncRequestCallback<T> _callback(@NotNull final AsyncCallback<T> callback, @NotNull Unmarshallable<T> u) {

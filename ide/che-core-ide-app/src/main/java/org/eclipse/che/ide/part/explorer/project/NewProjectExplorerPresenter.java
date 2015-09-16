@@ -21,9 +21,12 @@ import com.google.web.bindery.event.shared.EventBus;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
+import org.eclipse.che.api.promises.client.Function;
+import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.api.promises.client.PromiseError;
 import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
@@ -139,12 +142,13 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
             public void onProjectOpened(ProjectActionEvent event) {
                 ProjectDescriptor projectDescriptor = event.getProject();
 
-                if(!Strings.isNullOrEmpty(projectDescriptor.getContentRoot())) {
+                if (!Strings.isNullOrEmpty(projectDescriptor.getContentRoot())) {
                     handlerRegistration = view.addGoIntoStateHandler(new GoIntoStateEvent.GoIntoStateHandler() {
                         @Override
                         public void onGoIntoStateChanged(GoIntoStateEvent event) {
                             if (event.getState() == GoIntoStateEvent.State.ACTIVATED) {
-                                eventBus.fireEvent(ProjectActionEvent.createProjectOpenedEvent(((HasProjectDescriptor)event.getNode()).getProjectDescriptor()));
+                                eventBus.fireEvent(ProjectActionEvent.createProjectOpenedEvent(
+                                        ((HasProjectDescriptor)event.getNode()).getProjectDescriptor()));
                                 handlerRegistration.removeHandler();
                             }
                         }
@@ -162,8 +166,28 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
         eventBus.addHandler(ResourceNodeDeletedEvent.getType(), new ResourceNodeDeletedHandler() {
             /** {@inheritDoc} */
             @Override
-            public void onResourceEvent(ResourceNodeDeletedEvent evt) {
-                reloadChildren(evt.getNode().getParent());
+            public void onResourceEvent(final ResourceNodeDeletedEvent evt) {
+                if (evt.getNode().isLeaf()) {
+                    reloadChildren();
+                } else {
+                    Node parent = evt.getNode().getParent();
+
+                    if (!(parent instanceof HasStorablePath)) {
+                        reloadChildren();
+                        return;
+                    }
+
+                    getNodeByPath((HasStorablePath)parent, true)
+                            .then(new Function<Node, Node>() {
+                                @Override
+                                public Node apply(Node arg) throws FunctionException {
+                                    reloadChildren(arg);
+                                    return arg;
+                                }
+                            })
+                            .then(selectNode())
+                            .catchError(catchParentNotFound(parent));
+                }
             }
         });
 
@@ -172,6 +196,12 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
             public void onResourceRenamedEvent(final ResourceNodeRenamedEvent event) {
                 Object newDataObject = event.getNewDataObject();
                 String path = null;
+
+                //Here we have old node with old data object and new renamed data object
+                //so we need fetch storable path from it and call tree to find node by this
+                //storable path. When tree will find our node by path, the old node will be
+                //deleted automatically. Otherwise if we can't determine storable path from
+                //node, then we just take parent node and try navigate on it in the tree.
 
                 if (newDataObject instanceof ProjectReference) {
                     path = ((ProjectReference)newDataObject).getPath();
@@ -182,15 +212,46 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
                 }
 
                 if (!Strings.isNullOrEmpty(path)) {
-                    getNodeByPath(new HasStorablePath.StorablePath(path)).then(new Operation<Node>() {
-                        @Override
-                        public void apply(Node arg) throws OperationException {
-                            select(arg, false);
-                        }
-                    });
+                    getNodeByPath(new HasStorablePath.StorablePath(path)).then(selectNode());
                 }
             }
         });
+    }
+
+    private Function<Node, Node> selectNode() {
+        return new Function<Node, Node>() {
+            @Override
+            public Node apply(Node node) throws FunctionException {
+                select(node, false);
+
+                return node;
+            }
+        };
+    }
+
+    private Operation<PromiseError> catchParentNotFound(final Node node) {
+        return new Operation<PromiseError>() {
+            @Override
+            public void apply(PromiseError promiseError) throws OperationException {
+                Node parent = node.getParent();
+
+                if (!(parent instanceof HasStorablePath)) {
+                    reloadChildren();
+                    return;
+                }
+
+                getNodeByPath((HasStorablePath)parent, true).then(selectNode()).then(expandNodeIfNeed());
+            }
+        };
+    }
+
+    private Operation<Node> expandNodeIfNeed() {
+        return new Operation<Node>() {
+            @Override
+            public void apply(Node node) throws OperationException {
+                setExpanded(node, true);
+            }
+        };
     }
 
     /** {@inheritDoc} */
@@ -330,7 +391,11 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
     }
 
     public Promise<Node> getNodeByPath(HasStorablePath path) {
-        return view.getNodeByPath(path);
+        return view.getNodeByPath(path, false);
+    }
+
+    public Promise<Node> getNodeByPath(HasStorablePath path, boolean forceUpdate) {
+        return view.getNodeByPath(path, forceUpdate);
     }
 
     public void select(Node item, boolean keepExisting) {

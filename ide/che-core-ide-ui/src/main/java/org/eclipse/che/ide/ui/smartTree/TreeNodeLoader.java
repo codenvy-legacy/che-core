@@ -18,10 +18,13 @@ import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.event.shared.SimpleEventBus;
 
+import org.eclipse.che.api.promises.client.Function;
+import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
+import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.PromiseError;
-import org.eclipse.che.ide.api.project.node.HasDataObject;
+import org.eclipse.che.api.promises.client.js.Promises;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor;
 import org.eclipse.che.ide.ui.smartTree.event.BeforeLoadEvent;
@@ -33,13 +36,16 @@ import org.eclipse.che.ide.ui.smartTree.event.PostLoadEvent;
 import org.eclipse.che.ide.util.loging.Log;
 
 import javax.validation.constraints.NotNull;
+
 import org.eclipse.che.commons.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -98,8 +104,11 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
 
             if (requested == null) {
                 //smth happened, that requested node isn't registered in storage
-                Log.info(this.getClass(), "Requested node not found.");
+                Log.error(this.getClass(), "Requested node not found.");
+                return;
             }
+
+            requested.setLoading(false);
 
             //search node which has been removed from server to remove them from the tree
             List<NodeDescriptor> removedNodes = findRemovedNodes(requested, event.getReceivedNodes());
@@ -121,6 +130,12 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
                 }
             }
 
+            //Set joint element on the view
+            Promise<Void> promise = Promises.resolve(null);
+            List<Node> exist = tree.getNodeStorage().getChildren(event.getRequestedNode());
+            chainChildrenAndSetJointElement(promise, exist.listIterator());
+
+            //Iterate on nested descendants to make additional load request
             if (event.isReloadExpandedChild()) {
                 Iterable<Node> filter = Iterables.filter(tree.getNodeStorage().getChildren(parent), new Predicate<Node>() {
                     @Override
@@ -130,7 +145,7 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
                 });
 
                 for (Node node : filter) {
-                    loadChildren(node);
+                    loadChildren(node, event.isReloadExpandedChild());
                 }
             }
 
@@ -139,20 +154,56 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
 
         @Override
         public void onLoadException(LoadExceptionEvent event) {
-            //stub
+            NodeDescriptor requested = tree.findNode(event.getRequestedNode());
+
+            if (requested == null) {
+                return;
+            }
+
+            requested.setLoading(false);
         }
 
         @Override
         public void onBeforeLoad(BeforeLoadEvent event) {
-            //stub
+            NodeDescriptor requested = tree.findNode(event.getRequestedNode());
+
+            if (requested == null) {
+                return;
+            }
+
+            requested.setLoading(true);
+            requested.setLoading(true);
         }
     }
 
-    private boolean isNodeHasSameDataObject(Node node, HasDataObject<?> dataNode) {
-        return node != null
-               && dataNode != null
-               && node instanceof HasDataObject<?>
-               && ((HasDataObject)node).getData().equals(dataNode.getData());
+    private Promise<Void> chainChildrenAndSetJointElement(Promise<Void> promise, ListIterator<Node> iterator) {
+        if (!iterator.hasNext()) {
+            return promise;
+        }
+
+        final Node node = iterator.next();
+
+        if (node.isLeaf()) {
+            return chainChildrenAndSetJointElement(promise, iterator);
+        }
+
+        final Promise<Void> derivedPromise = promise.thenPromise(new Function<Void, Promise<Void>>() {
+            @Override
+            public Promise<Void> apply(Void arg) throws FunctionException {
+                return hasChildren(node).thenPromise(new Function<Boolean, Promise<Void>>() {
+                    @Override
+                    public Promise<Void> apply(Boolean hasChildren) throws FunctionException {
+                        if (!hasChildren) {
+                            tree.getView().onJointChange(tree.findNode(node), Tree.Joint.NONE);
+                        }
+
+                        return Promises.resolve(null);
+                    }
+                });
+            }
+        });
+
+        return chainChildrenAndSetJointElement(derivedPromise, iterator);
     }
 
     private List<Node> findNewNodes(NodeDescriptor parent, final List<Node> loadedChildren) {
@@ -233,6 +284,23 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
      */
     public boolean mayHaveChildren(@NotNull Node parent) {
         return !parent.isLeaf();
+    }
+
+    /**
+     * Check if node has children.
+     * This method make a request to server to read children count.
+     *
+     * @param node
+     *         node
+     * @return true if node has children, otherwise false
+     */
+    public Promise<Boolean> hasChildren(@NotNull Node node) {
+        return node.getChildren(false).thenPromise(new Function<List<Node>, Promise<Boolean>>() {
+            @Override
+            public Promise<Boolean> apply(List<Node> children) throws FunctionException {
+                return Promises.resolve(!children.isEmpty());
+            }
+        });
     }
 
     /**

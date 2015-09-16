@@ -14,12 +14,14 @@ import com.google.common.base.Strings;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.web.bindery.event.shared.EventBus;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
@@ -30,6 +32,9 @@ import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.app.AppContext;
+import org.eclipse.che.ide.api.editor.EditorAgent;
+import org.eclipse.che.ide.api.editor.EditorPartPresenter;
+import org.eclipse.che.ide.api.event.FileEvent;
 import org.eclipse.che.ide.api.parts.base.BaseView;
 import org.eclipse.che.ide.api.parts.base.ToolButton;
 import org.eclipse.che.ide.api.project.node.HasAction;
@@ -38,6 +43,7 @@ import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor;
 import org.eclipse.che.ide.api.project.node.settings.HasSettings;
+import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.menu.ContextMenu;
 import org.eclipse.che.ide.project.node.NodeManager;
 import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
@@ -60,6 +66,7 @@ import org.eclipse.che.ide.ui.smartTree.event.GoIntoStateEvent;
 import org.eclipse.che.ide.ui.smartTree.event.GoIntoStateEvent.GoIntoStateHandler;
 import org.eclipse.che.ide.ui.smartTree.event.SelectionChangedEvent;
 import org.eclipse.che.ide.ui.smartTree.event.SelectionChangedEvent.SelectionChangedHandler;
+import org.eclipse.che.ide.ui.smartTree.event.StoreRemoveEvent;
 import org.eclipse.che.ide.ui.smartTree.presentation.DefaultPresentationRenderer;
 import org.eclipse.che.ide.ui.smartTree.sorting.AlphabeticalFilter;
 import org.eclipse.che.ide.util.loging.Log;
@@ -69,8 +76,10 @@ import org.vectomatic.dom.svg.ui.SVGResource;
 import javax.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.List;
+import java.util.NavigableMap;
 import java.util.Set;
 
+import static org.eclipse.che.ide.api.event.FileEvent.FileOperation.CLOSE;
 import static org.eclipse.che.ide.ui.menu.PositionController.HorizontalAlign.MIDDLE;
 import static org.eclipse.che.ide.ui.menu.PositionController.VerticalAlign.BOTTOM;
 import static org.eclipse.che.ide.ui.smartTree.event.GoIntoStateEvent.State.ACTIVATED;
@@ -86,6 +95,8 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
     private       ProjectExplorerResources explorerResources;
     private       NodeManager              nodeManager;
     private       AppContext               appContext;
+    private final Provider<EditorAgent>    editorAgentProvider;
+    private final EventBus                 eventBus;
     private       Tree                     tree;
     private       FlowPanel                projectHeader;
     private       ToolButton               goIntoBackButton;
@@ -94,6 +105,8 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
 
     private SearchNodeHandler searchNodeHandler;
 
+    private HandlerRegistration closeEditorOnNodeRemovedHandler;
+
     @Inject
     public NewProjectExplorerViewImpl(Resources resources,
                                       ProjectExplorerResources explorerResources,
@@ -101,12 +114,16 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
                                       CoreLocalizationConstant coreLocalizationConstant,
                                       Set<NodeInterceptor> nodeInterceptorSet,
                                       NodeManager nodeManager,
-                                      AppContext appContext) {
+                                      AppContext appContext,
+                                      Provider<EditorAgent> editorAgentProvider,
+                                      final EventBus eventBus) {
         super(resources);
         this.resources = resources;
         this.explorerResources = explorerResources;
         this.nodeManager = nodeManager;
         this.appContext = appContext;
+        this.editorAgentProvider = editorAgentProvider;
+        this.eventBus = eventBus;
 
         setTitle(coreLocalizationConstant.projectExplorerTitleBarText());
 
@@ -167,6 +184,7 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
     @Override
     public void setRootNodes(List<Node> nodes) {
         hideProjectInfo();
+        removeCloseEditorHandler();
 
         if (nodes == null || nodes.isEmpty()) {
             tree.getNodeStorage().clear();
@@ -178,13 +196,45 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
         if (nodes.size() == 1) {
             final String contentRoot = getContentRootOrNull(nodes.get(0));
             if (!Strings.isNullOrEmpty(contentRoot)) {
-                getNodeByPath(new HasStorablePath.StorablePath(contentRoot)).then(waitRenderAndPerformGoInto());
+                getNodeByPath(new HasStorablePath.StorablePath(contentRoot), false).then(waitRenderAndPerformGoInto());
             } else {
                 tree.setExpanded(nodes.get(0), true);
             }
         }
 
+        registerCloseEditorHandler();
         showProjectInfo();
+    }
+
+    private void registerCloseEditorHandler() {
+        closeEditorOnNodeRemovedHandler = tree.getNodeStorage().addStoreRemoveHandler(new StoreRemoveEvent.StoreRemoveHandler() {
+            @Override
+            public void onRemove(StoreRemoveEvent event) {
+                Node removedNode = event.getNode();
+
+                if (!(removedNode instanceof HasStorablePath)) {
+                    return;
+                }
+
+                NavigableMap<String, EditorPartPresenter> openedEditors = editorAgentProvider.get().getOpenedEditors();
+                if (openedEditors == null || openedEditors.isEmpty()) {
+                    return;
+                }
+
+                for (EditorPartPresenter editorPartPresenter : openedEditors.values()) {
+                    VirtualFile openedFile = editorPartPresenter.getEditorInput().getFile();
+                    if (openedFile.getPath().equals(((HasStorablePath)removedNode).getStorablePath())) {
+                        eventBus.fireEvent(new FileEvent(openedFile, CLOSE));
+                    }
+                }
+            }
+        });
+    }
+
+    private void removeCloseEditorHandler() {
+        if (closeEditorOnNodeRemovedHandler != null) {
+            closeEditorOnNodeRemovedHandler.removeHandler();
+        }
     }
 
     private Operation<Node> waitRenderAndPerformGoInto() {
@@ -232,7 +282,7 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
 
     @Override
     public void scrollFromSource(HasStorablePath path) {
-        getNodeByPath(path).then(new Operation<Node>() {
+        getNodeByPath(path, false).then(new Operation<Node>() {
             @Override
             public void apply(Node node) throws OperationException {
                 tree.getSelectionModel().select(node, false);
@@ -310,7 +360,7 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
                 refreshButton.addDomHandler(new ClickHandler() {
                     @Override
                     public void onClick(ClickEvent event) {
-                        delegate.reloadSelectedNodes();
+                        reloadChildren(null, true);
                     }
                 }, ClickEvent.getType());
 
@@ -549,8 +599,8 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
     }
 
     @Override
-    public Promise<Node> getNodeByPath(HasStorablePath path) {
-        return searchNodeHandler.getNodeByPath(path);
+    public Promise<Node> getNodeByPath(HasStorablePath path, boolean forceUpdate) {
+        return searchNodeHandler.getNodeByPath(path, forceUpdate);
     }
 
     @Override

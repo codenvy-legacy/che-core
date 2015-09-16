@@ -67,7 +67,7 @@ public interface NewProjectExplorerView extends View<NewProjectExplorerView.Acti
 
     boolean isShowHiddenFiles();
 
-    Promise<Node> getNodeByPath(HasStorablePath path);
+    Promise<Node> getNodeByPath(HasStorablePath path, boolean forceUpdate);
 
     void select(Node item, boolean keepExisting);
 

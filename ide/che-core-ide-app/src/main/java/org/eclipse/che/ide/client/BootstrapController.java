@@ -112,9 +112,6 @@ public class BootstrapController {
     private void startComponent(final Iterator<Map.Entry<String, Provider<Component>>> iterator) {
         if (iterator.hasNext()) {
             final Map.Entry<String, Provider<Component>> componentEntry = iterator.next();
-//            Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-//                @Override
-//                public void execute() {
             componentEntry.getValue().get().start(new Callback<Component, Exception>() {
                 @Override
                 public void onFailure(Exception reason) {
@@ -127,9 +124,6 @@ public class BootstrapController {
                     startComponent(iterator);
                 }
             });
-
-//                }
-//            });
         } else {
             startExtensions();
         }
@@ -370,7 +364,8 @@ public class BootstrapController {
      * Handles any of initialization errors.
      * Tries to call predefined IDE.eventHandlers.ideInitializationFailed function.
      *
-     * @param reason failure encountered
+     * @param reason
+     *         failure encountered
      */
     private native void initializationFailed(Exception reason) /*-{
         try {

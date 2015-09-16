@@ -122,7 +122,7 @@ public abstract class AbstractNewResourceAction extends ProjectAction {
             protected void onSuccess(final ItemReference itemReference) {
                 HasStorablePath path = new StorablePath(itemReference.getPath());
 
-                projectExplorer.getNodeByPath(path)
+                projectExplorer.getNodeByPath(path, true)
                                .then(selectNode())
                                .then(openNode());
             }

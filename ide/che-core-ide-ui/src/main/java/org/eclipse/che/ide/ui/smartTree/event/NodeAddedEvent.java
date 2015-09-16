@@ -54,7 +54,6 @@ public class NodeAddedEvent extends GwtEvent<NodeAddedEvent.NodeAddedEventHandle
         nodes = Collections.singletonList(node);
     }
 
-    /** {@inheritDoc} */
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public Type<NodeAddedEventHandler> getAssociatedType() {
@@ -65,7 +64,6 @@ public class NodeAddedEvent extends GwtEvent<NodeAddedEvent.NodeAddedEventHandle
         return nodes;
     }
 
-    /** {@inheritDoc} */
     @Override
     protected void dispatch(NodeAddedEventHandler handler) {
         handler.onNodeAdded(this);

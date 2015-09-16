@@ -11,7 +11,6 @@
 package org.eclipse.che.ide.part.explorer.project;
 
 import com.google.common.base.Strings;
-import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import org.eclipse.che.api.promises.client.Promise;
@@ -35,6 +34,7 @@ import java.util.List;
  * For example if user passes "/project/path/to/file" then this node handler will check
  * opened root nodes and if it contains project node with path "/project" then it will
  * search children by path "path/to/file".
+ *
  * @author Vlad Zhukovskiy
  */
 public class SearchNodeHandler implements ExpandNodeHandler, BeforeExpandNodeHandler, NodeAddedEventHandler, PostLoadHandler {
@@ -47,21 +47,19 @@ public class SearchNodeHandler implements ExpandNodeHandler, BeforeExpandNodeHan
 
     private AsyncCallback<Node> callback;
 
-    HandlerRegistration expandHandlerRegistration;
-    HandlerRegistration beforeHandlerRegistration;
-    HandlerRegistration addNodeAddedHandlerRegistration;
-    HandlerRegistration addPostLoadHandlerRegistration;
+    private boolean forceUpdate = false;
 
     public SearchNodeHandler(Tree tree) {
         this.tree = tree;
 
-        expandHandlerRegistration = tree.addExpandHandler(this);
-        beforeHandlerRegistration = tree.addBeforeExpandHandler(this);
-        addNodeAddedHandlerRegistration = tree.addNodeAddedHandler(this);
-        addPostLoadHandlerRegistration = tree.getNodeLoader().addPostLoadHandler(this);
+        tree.addExpandHandler(this);
+        tree.addBeforeExpandHandler(this);
+        tree.addNodeAddedHandler(this);
+        tree.getNodeLoader().addPostLoadHandler(this);
     }
 
-    public Promise<Node> getNodeByPath(final HasStorablePath path) {
+    public Promise<Node> getNodeByPath(final HasStorablePath path, boolean forceUpdate) {
+        this.forceUpdate = forceUpdate;
         return AsyncPromiseHelper.createFromAsyncRequest(new AsyncPromiseHelper.RequestCall<Node>() {
             @Override
             public void makeCall(AsyncCallback<Node> callback) {
@@ -83,8 +81,6 @@ public class SearchNodeHandler implements ExpandNodeHandler, BeforeExpandNodeHan
         this.path = path;
         this.inSearchMode = true;
 
-        resetGoIntoMode();
-
         Node rootNode = getRootNode(path);
 
         if (rootNode == null) {
@@ -104,6 +100,12 @@ public class SearchNodeHandler implements ExpandNodeHandler, BeforeExpandNodeHan
         Node node = event.getNode();
 
         if (tree.isExpanded(node)) {
+
+            if (forceUpdate) {
+                tree.getNodeLoader().loadChildren(node);
+                return;
+            }
+
             List<Node> children = tree.getNodeStorage().getChildren(node);
 
             for (Node child : children) {
@@ -112,7 +114,6 @@ public class SearchNodeHandler implements ExpandNodeHandler, BeforeExpandNodeHan
                 }
 
                 String childPath = ((HasStorablePath)child).getStorablePath();
-
                 if (path.getStorablePath().equals(childPath)) {
                     callback.onSuccess(child);
                     inSearchMode = false;
@@ -143,7 +144,6 @@ public class SearchNodeHandler implements ExpandNodeHandler, BeforeExpandNodeHan
             }
 
             String childPath = ((HasStorablePath)child).getStorablePath();
-
             if (path.getStorablePath().equals(childPath)) {
                 callback.onSuccess(child);
                 inSearchMode = false;
@@ -192,38 +192,27 @@ public class SearchNodeHandler implements ExpandNodeHandler, BeforeExpandNodeHan
 
         List<Node> receivedNodes = event.getReceivedNodes();
 
-        boolean exist = false;
-
         for (Node receivedNode : receivedNodes) {
             if (!(receivedNode instanceof HasStorablePath)) {
                 continue;
             }
 
             String childPath = ((HasStorablePath)receivedNode).getStorablePath();
-
             if (path.getStorablePath().equals(childPath)) {
-                exist = true;
-                break;
+                callback.onSuccess(receivedNode);
+                return;
             } else if (path.getStorablePath().startsWith(childPath)) {
-                exist = true;
-                break;
+                tree.setExpanded(receivedNode, true);
+                return;
             }
         }
 
-        if (!exist) {
-            callback.onFailure(new IllegalStateException("Node '" + path.getStorablePath() + "' not found"));
-            inSearchMode = false;
-        }
+        callback.onFailure(new IllegalStateException("Node '" + path.getStorablePath() + "' not found"));
+        inSearchMode = false;
     }
 
     public boolean isInSearchMode() {
         return inSearchMode;
-    }
-
-    private void resetGoIntoMode() {
-        if (tree.getGoIntoMode().isActivated()) {
-            tree.getGoIntoMode().reset();
-        }
     }
 
     private Node getRootNode(HasStorablePath path) {

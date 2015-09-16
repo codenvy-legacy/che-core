@@ -80,13 +80,19 @@ public class OpenFileAction extends Action implements PromisableAction {
             return;
         }
 
-        final String path = event.getParameters().get(FILE_PARAM_ID);
+        String path = event.getParameters().get(FILE_PARAM_ID);
         if (path == null) {
             Log.error(getClass(), localization.fileToOpenIsNotSpecified());
             return;
         }
 
-        projectExplorer.getNodeByPath(new HasStorablePath.StorablePath(path))
+        String rootProjectPath = appContext.getCurrentProject().getRootProject().getPath();
+
+        if (!path.startsWith(rootProjectPath)) {
+            path = rootProjectPath + (path.startsWith("/") ? path : "/" + path);
+        }
+
+        projectExplorer.getNodeByPath(new HasStorablePath.StorablePath(path), true)
                        .then(selectNode())
                        .then(openNode()).then(new Operation<Node>() {
             @Override
