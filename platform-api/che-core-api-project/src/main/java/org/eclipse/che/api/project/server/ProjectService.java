@@ -28,12 +28,9 @@ import org.eclipse.che.api.core.rest.Service;
 import org.eclipse.che.api.core.rest.annotations.Description;
 import org.eclipse.che.api.core.rest.annotations.GenerateLink;
 import org.eclipse.che.api.core.rest.annotations.Required;
-import org.eclipse.che.api.core.util.LineConsumer;
 import org.eclipse.che.api.core.util.LineConsumerFactory;
-import org.eclipse.che.api.project.server.handlers.GetModulesHandler;
 import org.eclipse.che.api.project.server.handlers.PostImportProjectHandler;
 import org.eclipse.che.api.project.server.handlers.ProjectHandlerRegistry;
-import org.eclipse.che.api.project.server.handlers.ProjectTypeChangedHandler;
 import org.eclipse.che.api.project.server.notification.ProjectItemModifiedEvent;
 import org.eclipse.che.api.project.server.type.AttributeValue;
 import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
@@ -66,11 +63,11 @@ import org.eclipse.che.dto.server.DtoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.NotNull;
 import javax.annotation.PreDestroy;
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -99,8 +96,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import static com.google.common.base.MoreObjects.firstNonNull;
 
 /**
  * @author andrew00x
@@ -912,14 +907,9 @@ public class ProjectService extends Service {
         try {
             if (newProject != null) {
                 visibility = newProject.getVisibility();
-                //TODO:
-                //this trick need for fixing problem for default runners in case
-                //scripts downloaded  from remote resources "docker" this is only marker not real path in file system
-                //see importRunnerEnvironment() method
-//                if (newProject.getRunners() != null && newProject.getRunners().getDefault() != null && newProject.getRunners()
-// .getDefault().startsWith("project:/docker/")) {
-//                    String replace = newProject.getRunners().getDefault().replace("project:/docker/", "project:/");
-//                    newProject.getRunners().setDefault(replace);
+//                RunnersDescriptor descriptor = newProject.getRunners();
+//                if (descriptor != null) {
+//                    replaceDefaultRunnerPath(descriptor);
 //                }
                 projectConfig = DtoConverter.fromDto2(newProject, projectTypeRegistry);
             }
@@ -944,6 +934,15 @@ public class ProjectService extends Service {
                                              moduleConfig,
                                              null,
                                              visibility);
+//                    RunnersDescriptor projectModuleRunners = projectModule.getRunners();
+//                    if (projectModuleRunners != null
+//                        && projectModuleRunners.getDefault() != null
+//                        && projectModuleRunners.getDefault().startsWith("project:/")) {
+//                        replaceDefaultRunnerPath(projectModuleRunners);
+//                        importRunnerEnvironment(importProject,
+//                                                (FolderEntry)baseProjectFolder.getChild(projectModule.getPath()),
+//                                                projectModuleRunners.getDefault().substring(9));
+//                    }
                 }
             }
 
@@ -1063,17 +1062,25 @@ public class ProjectService extends Service {
         return configureProject(importProject, baseProjectFolder, workspace, creationDate);
     }
 
-//    /**
-//     * Import runner environment tha configure in ImportProject
-//     *
-//     * @param importProject
-//     * @param baseProjectFolder
-//     * @throws ForbiddenException
-//     * @throws ServerException
-//     * @throws ConflictException
-//     * @throws IOException
-//     */
+    /**
+     * Import runner environment tha configure in ImportProject
+     *
+     * @param importProject
+     * @param baseProjectFolder
+     * @throws ForbiddenException
+     * @throws ServerException
+     * @throws ConflictException
+     * @throws IOException
+     */
 //    private void importRunnerEnvironment(ImportProject importProject, FolderEntry baseProjectFolder)
+//            throws ForbiddenException, ServerException, ConflictException, IOException {
+//        importRunnerEnvironment(importProject, baseProjectFolder, null);
+//    }
+
+    /**
+     * Imports runners into environments.
+     */
+//    private void importRunnerEnvironment(ImportProject importProject, FolderEntry baseProjectFolder, String defaultRunnerName)
 //            throws ForbiddenException, ServerException, ConflictException, IOException {
 //        VirtualFileEntry environmentsFolder = baseProjectFolder.getChild(Constants.CODENVY_RUNNER_ENVIRONMENTS_DIR);
 //        if (environmentsFolder != null && environmentsFolder.isFile()) {
@@ -1083,29 +1090,57 @@ public class ProjectService extends Service {
 //            environmentsFolder = baseProjectFolder.createFolder(Constants.CODENVY_RUNNER_ENVIRONMENTS_DIR);
 //        }
 //
-//        for (Map.Entry<String, RunnerSource> runnerSource : importProject.getSource().getRunners().entrySet()) {
-//            final String runnerSourceKey = runnerSource.getKey();
-//            if (runnerSourceKey.startsWith("/docker/")) {
-//                final RunnerSource runnerSourceValue = runnerSource.getValue();
-//                if (runnerSourceValue != null) {
-//                    String name = runnerSourceKey.substring(8);
-//                    String runnerSourceLocation = runnerSourceValue.getLocation();
-//                    if (runnerSourceLocation.startsWith("https") || runnerSourceLocation.startsWith("http")) {
-//                        try (InputStream in = new java.net.URL(runnerSourceLocation).openStream()) {
-//                            // Add file without mediatype to avoid creation useless metadata files on virtual file system level.
-//                            // Dockerfile add in list of known files, see ContentTypeGuesser
-//                            // and content-types.attributes file.
-//                            ((FolderEntry)environmentsFolder).createFolder(name).createFile("Dockerfile", in, null);
-//                        }
-//                    } else {
-//                        LOG.warn(
-//                                "ProjectService.importProject :: not valid runner source location available only http or https scheme
-// but" +
-//                                " we get :" +
-//                                runnerSourceLocation);
-//                    }
+//        Map<String, RunnerSource> filteredRunners = importProject.getSource().getRunners()
+//                                                                 .entrySet()
+//                                                                 .stream()
+//                                                                 .filter(this::isValidRunnerEntry)
+//                                                                 .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+//
+//        for (Map.Entry<String, RunnerSource> entry : filteredRunners.entrySet()) {
+//            String name = entry.getKey().substring(8);
+//            if (defaultRunnerName == null || name.equals(defaultRunnerName)) {
+//                try (InputStream in = new java.net.URL(entry.getValue().getLocation()).openStream()) {
+//                    // Add file without mediatype to avoid creation useless metadata files on virtual file system level.
+//                    // Dockerfile add in list of known files, see ContentTypeGuesser
+//                    // and content-types.attributes file.
+//                    ((FolderEntry)environmentsFolder).createFolder(name).createFile("Dockerfile", in, null);
 //                }
 //            }
+//        }
+//    }
+
+    /**
+     * Checks valid of runner location sources and runner type.
+     *
+     * @param entry
+     *         runner entry
+     * @return return false if runner location or runner type is not valid
+     */
+//    private boolean isValidRunnerEntry(Map.Entry<String, RunnerSource> entry) {
+//        final RunnerSource runnerSourceValue;
+//        if (!entry.getKey().startsWith("/docker/")
+//            || (runnerSourceValue = entry.getValue()) == null) {
+//            return false;
+//        }
+//
+//        if (!(runnerSourceValue.getLocation().startsWith("https") || runnerSourceValue.getLocation().startsWith("http"))) {
+//            LOG.warn("ProjectService.importProject :: not valid runner source location available only http or https scheme but we get :" +
+//                     runnerSourceValue);
+//            return false;
+//        }
+//        return true;
+//    }
+
+//    private void replaceDefaultRunnerPath(RunnersDescriptor runnersDescriptor) {
+//        //TODO:
+//        //this trick need for fixing problem for default runners in case
+//        //scripts downloaded  from remote resources "docker" this is only marker not real path in file system
+//        //see importRunnerEnvironment() method
+//        if (runnersDescriptor != null
+//            && runnersDescriptor.getDefault() != null
+//            && runnersDescriptor.getDefault().startsWith("project:/docker/")) {
+//            String replace = runnersDescriptor.getDefault().replace("project:/docker/", "project:/");
+//            runnersDescriptor.setDefault(replace);
 //        }
 //    }
 
