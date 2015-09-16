@@ -15,11 +15,11 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.parts.base.BaseActionDelegate;
-import org.eclipse.che.ide.api.project.node.HasDataObject;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.ui.smartTree.TreeNodeStorage.StoreSortInfo;
-import org.eclipse.che.ide.ui.smartTree.event.BeforeExpandNodeEvent.BeforeExpandNodeHandler;
+import org.eclipse.che.ide.ui.smartTree.event.CollapseNodeEvent;
+import org.eclipse.che.ide.ui.smartTree.event.ExpandNodeEvent;
 import org.eclipse.che.ide.ui.smartTree.event.GoIntoStateEvent;
 
 import java.util.List;
@@ -37,11 +37,11 @@ public interface NewProjectExplorerView extends View<NewProjectExplorerView.Acti
 
     void onApplySort();
 
-    void scrollFromSource(Object object);
+    void scrollFromSource(HasStorablePath path);
 
     boolean setGoIntoModeOn(Node node);
 
-    void addGoIntoStateHandler(GoIntoStateEvent.GoIntoStateHandler handler);
+    HandlerRegistration addGoIntoStateHandler(GoIntoStateEvent.GoIntoStateHandler handler);
 
     void resetGoIntoMode();
 
@@ -51,13 +51,11 @@ public interface NewProjectExplorerView extends View<NewProjectExplorerView.Acti
 
     void setFoldersAlwaysOnTop(boolean foldersAlwaysOnTop);
 
-    void reloadChildren(Node parent, HasDataObject<?> selectAfter, boolean actionPerformed, boolean goInto);
+    void reloadChildren(Node parent);
+
+    void reloadChildren(Node parent, boolean deep);
 
     void reloadChildrenByType(Class<?> type);
-
-    void navigate(HasStorablePath node, boolean select, boolean callAction);
-
-    Promise<Node> navigate(HasStorablePath node, boolean select);
 
     void expandAll();
 
@@ -68,6 +66,20 @@ public interface NewProjectExplorerView extends View<NewProjectExplorerView.Acti
     void showHiddenFiles(boolean show);
 
     boolean isShowHiddenFiles();
+
+    Promise<Node> getNodeByPath(HasStorablePath path, boolean forceUpdate);
+
+    void select(Node item, boolean keepExisting);
+
+    void select(List<Node> items, boolean keepExisting);
+
+    boolean isExpanded(Node node);
+
+    void setExpanded(Node node, boolean expand);
+
+    HandlerRegistration addExpandHandler(ExpandNodeEvent.ExpandNodeHandler handler);
+
+    HandlerRegistration addCollapseHandler(CollapseNodeEvent.CollapseNodeHandler handler);
 
     public interface ActionDelegate extends BaseActionDelegate {
         void onSelectionChanged(List<Node> selection);

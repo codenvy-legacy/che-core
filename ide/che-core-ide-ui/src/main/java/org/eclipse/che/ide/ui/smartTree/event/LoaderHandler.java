@@ -24,9 +24,10 @@ import static org.eclipse.che.ide.ui.smartTree.event.BeforeLoadEvent.*;
  *
  * @author Vlad Zhukovskiy
  */
-public interface LoaderHandler extends BeforeLoadHandler, LoadExceptionHandler, LoadEvent.LoadHandler {
+public interface LoaderHandler extends BeforeLoadHandler, LoadExceptionHandler, LoadEvent.LoadHandler, PostLoadEvent.PostLoadHandler {
 
-    public interface HasLoaderHandlers extends HasLoadHandlers, HasLoadExceptionHandlers, HasBeforeLoadHandlers {
+    public interface HasLoaderHandlers extends HasLoadHandlers, HasLoadExceptionHandlers, HasBeforeLoadHandlers,
+                                               PostLoadEvent.HasPostLoadHandlers {
         public HandlerRegistration addLoaderHandler(LoaderHandler handler);
     }
 }

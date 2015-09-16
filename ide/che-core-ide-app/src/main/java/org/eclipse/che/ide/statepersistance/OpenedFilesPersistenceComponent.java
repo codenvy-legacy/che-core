@@ -59,12 +59,10 @@ public class OpenedFilesPersistenceComponent implements PersistenceComponent {
         final String openFileActionId = actionManager.getId(openFileAction);
         final Map<String, EditorPartPresenter> openedEditors = editorAgent.getOpenedEditors();
 
-        for (String filePath : openedEditors.keySet()) {
-            final String relFilePath = filePath.replaceFirst(projectPath, "");
-
+        for (EditorPartPresenter editor : openedEditors.values()) {
             actions.add(dtoFactory.createDto(ActionDescriptor.class)
                                   .withId(openFileActionId)
-                                  .withParameters(Collections.singletonMap(FILE_PARAM_ID, relFilePath)));
+                                  .withParameters(Collections.singletonMap(FILE_PARAM_ID, editor.getEditorInput().getFile().getPath())));
         }
         return actions;
     }

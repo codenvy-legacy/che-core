@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.statepersistance;
 
+import com.google.common.base.Strings;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -126,6 +127,11 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
 
         if (currentProject != null) {
             ProjectDescriptor descriptor = currentProject.getRootProject();
+
+            if (!Strings.isNullOrEmpty(descriptor.getContentRoot())) {
+                return;
+            }
+
             final String workspaceId = appContext.getWorkspace().getId();
             final String projectPath = "/" + descriptor.getWorkspaceName() + descriptor.getPath();
 
@@ -147,7 +153,7 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
     @Override
     public void onProjectReady(ProjectActionEvent event) {
         CurrentProject rootProject = appContext.getCurrentProject();
-        if (rootProject == null) {
+        if (rootProject == null || !Strings.isNullOrEmpty(rootProject.getRootProject().getContentRoot())) {
             return;
         }
         String workspaceName = rootProject.getRootProject().getWorkspaceName();
@@ -161,6 +167,10 @@ public class AppStateManager implements WindowActionHandler, ProjectActionHandle
 
     @Override
     public void onProjectClosing(ProjectActionEvent event) {
+        if (!Strings.isNullOrEmpty(event.getProject().getContentRoot())) {
+            return;
+        }
+
         persistCurrentProjectState(persistenceComponents);
         writeStateToPreferences();
     }

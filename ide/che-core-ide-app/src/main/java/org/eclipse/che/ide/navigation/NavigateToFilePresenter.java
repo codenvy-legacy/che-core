@@ -15,15 +15,16 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
-import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.project.shared.dto.ItemReference;
-import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.api.promises.client.Function;
+import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
+import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
+import org.eclipse.che.ide.project.node.FileReferenceNode;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
-import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.websocket.Message;
 import org.eclipse.che.ide.websocket.MessageBuilder;
 import org.eclipse.che.ide.websocket.MessageBus;
@@ -53,31 +54,22 @@ public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegat
     private final String                      SEARCH_URL;
     private       MessageBus                  wsMessageBus;
     private       DtoUnmarshallerFactory      dtoUnmarshallerFactory;
-    private       DialogFactory               dialogFactory;
-    private       CoreLocalizationConstant    localizationConstant;
     private final NewProjectExplorerPresenter projectExplorer;
     private       NavigateToFileView          view;
     private       AppContext                  appContext;
-    private       EventBus                    eventBus;
     private       Map<String, ItemReference>  resultMap;
 
     @Inject
     public NavigateToFilePresenter(NavigateToFileView view,
                                    AppContext appContext,
-                                   EventBus eventBus,
                                    MessageBus wsMessageBus,
                                    @Named("workspaceId") String workspaceId,
                                    DtoUnmarshallerFactory dtoUnmarshallerFactory,
-                                   DialogFactory dialogFactory,
-                                   CoreLocalizationConstant localizationConstant,
                                    NewProjectExplorerPresenter projectExplorer) {
         this.view = view;
         this.appContext = appContext;
-        this.eventBus = eventBus;
         this.wsMessageBus = wsMessageBus;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
-        this.dialogFactory = dialogFactory;
-        this.localizationConstant = localizationConstant;
         this.projectExplorer = projectExplorer;
 
         resultMap = new HashMap<>();
@@ -133,7 +125,33 @@ public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegat
             }
         };
 
-        projectExplorer.navigate(selectedPath, true, true);
+        projectExplorer.getNodeByPath(selectedPath)
+                       .then(selectNode())
+                       .then(openNode());
+    }
+
+    protected Function<Node, Node> selectNode() {
+        return new Function<Node, Node>() {
+            @Override
+            public Node apply(Node node) throws FunctionException {
+                projectExplorer.select(node, false);
+
+                return node;
+            }
+        };
+    }
+
+    protected Function<Node, Node> openNode() {
+        return new Function<Node, Node>() {
+            @Override
+            public Node apply(Node node) throws FunctionException {
+                if (node instanceof FileReferenceNode) {
+                    ((FileReferenceNode)node).actionPerformed();
+                }
+
+                return node;
+            }
+        };
     }
 
     private void search(String fileName, final AsyncCallback<List<ItemReference>> callback) {

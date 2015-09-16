@@ -15,16 +15,18 @@ import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
+import org.eclipse.che.api.promises.client.Function;
+import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ProjectAction;
 import org.eclipse.che.ide.api.event.ModuleCreatedEvent;
-import org.eclipse.che.ide.api.project.node.HasDataObject;
+import org.eclipse.che.ide.api.project.node.HasStorablePath;
+import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
 import org.eclipse.che.ide.project.node.FolderReferenceNode;
 import org.eclipse.che.ide.project.shared.NodesResources;
 import org.eclipse.che.ide.projecttype.wizard.presenter.ProjectWizardPresenter;
 
-import javax.validation.constraints.NotNull;
 import org.eclipse.che.commons.annotation.Nullable;
 import java.util.List;
 
@@ -91,19 +93,19 @@ public class CreateModuleAction extends ProjectAction implements ModuleCreatedEv
                 projectExplorer.resetGoIntoMode();
             }
 
-            HasDataObject dataObject = new HasDataObject() {
-                @NotNull
-                @Override
-                public Object getData() {
-                    return event.getModule();
-                }
-
-                @Override
-                public void setData(@NotNull Object data) {
-                }
-            };
-
-            projectExplorer.reloadChildren(folderNode.getParent(), dataObject, false, goIntoState);
+            projectExplorer.getNodeByPath(new HasStorablePath.StorablePath(event.getModule().getPath()))
+                           .then(selectNode());
         }
+    }
+
+    protected Function<Node, Node> selectNode() {
+        return new Function<Node, Node>() {
+            @Override
+            public Node apply(Node node) throws FunctionException {
+                projectExplorer.select(node, false);
+
+                return node;
+            }
+        };
     }
 }
