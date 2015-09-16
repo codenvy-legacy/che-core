@@ -105,7 +105,7 @@ public interface ProjectServiceClient {
     void estimateProject(String path, String projectType, AsyncRequestCallback<Map<String, List<String>>> callback);
 
     /**
-     * Resolves sources.
+     * Gets list of {@link SourceEstimation} for all supposed project types.
      *
      * @param path
      *         path of the project to resolve
