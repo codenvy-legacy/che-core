@@ -33,8 +33,6 @@ import org.eclipse.che.api.project.server.handlers.PostImportProjectHandler;
 import org.eclipse.che.api.project.server.handlers.ProjectHandlerRegistry;
 import org.eclipse.che.api.project.server.notification.ProjectItemModifiedEvent;
 import org.eclipse.che.api.project.server.type.AttributeValue;
-import org.eclipse.che.api.project.server.type.ProjectTypeDetector;
-import org.eclipse.che.api.project.server.type.ProjectTypeDetectorRegistry;
 import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
 import org.eclipse.che.api.project.shared.EnvironmentId;
 import org.eclipse.che.api.project.shared.dto.CopyOptions;
@@ -127,8 +125,6 @@ public class ProjectService extends Service {
     private EventService                eventService;
     @Inject
     private ProjectHandlerRegistry      projectHandlerRegistry;
-    @Inject
-    private ProjectTypeDetectorRegistry projectTypeDetectorRegistry;
 
     private final ExecutorService executor = Executors.newFixedThreadPool(1 + Runtime.getRuntime().availableProcessors(),
                                                                           new ThreadFactoryBuilder()
@@ -870,21 +866,7 @@ public class ProjectService extends Service {
                 postImportProjectHandler.onProjectImported(project.getBaseFolder());
             }
         } catch (ConflictException | ForbiddenException | ServerException | NotFoundException e) {
-
-            project = projectManager.getProject(workspace, baseProjectFolder.getPath());
-            if (project != null || !resolveProjectType(baseProjectFolder)) {
-                project = new NotValidProject(baseProjectFolder, projectManager);
-            } else {
-                //get project after successful resolving project type
-                project = projectManager.getProject(workspace, baseProjectFolder.getPath());
-
-                PostImportProjectHandler postImportProjectHandler =
-                        projectHandlerRegistry.getPostImportProjectHandler(project.getConfig().getTypeId());
-                if (postImportProjectHandler != null) {
-                    postImportProjectHandler.onProjectImported(project.getBaseFolder());
-                }
-            }
-
+            project = new NotValidProject(baseProjectFolder, projectManager);
             project.setVisibility(visibility);
 
             projectDescriptor = DtoConverter.toDescriptorDto2(project,
@@ -907,16 +889,6 @@ public class ProjectService extends Service {
         eventService.publish(new ProjectCreatedEvent(project.getWorkspace(), project.getPath()));
         logProjectCreatedEvent(projectDescriptor.getName(), projectDescriptor.getType());
         return importResponse;
-    }
-
-    private boolean resolveProjectType(FolderEntry projectFolder) {
-        Set<ProjectTypeDetector> detectors = projectTypeDetectorRegistry.getDetectors();
-        for (ProjectTypeDetector detector : detectors) {
-            if (detector.detect(projectFolder)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     @ApiOperation(value = "Upload zip project",
