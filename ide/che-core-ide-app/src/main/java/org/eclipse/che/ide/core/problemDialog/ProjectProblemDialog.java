@@ -33,14 +33,14 @@ public class ProjectProblemDialog extends Window {
      *
      * @param title
      *         the title for popup window
-     * @param keepButTitle
+     * @param keepButtonTitle
      *         the title for keep button
      * @param question
      *         the question that user must interact
      * @param handler
      *         the handler that call after user interact
      */
-    public ProjectProblemDialog(String title, String keepButTitle, String question, final AskHandler handler) {
+    public ProjectProblemDialog(String title, String keepButtonTitle, String question, final AskHandler handler) {
         this.handler = handler;
         setTitle(title);
         Widget widget = uiBinder.createAndBindUi(this);
@@ -55,7 +55,7 @@ public class ProjectProblemDialog extends Window {
                 onClose();
             }
         });
-        Button keepButton = createButton(keepButTitle, "problem-dialog-keepButton", new ClickHandler() {
+        Button keepButton = createButton(keepButtonTitle, "problem-dialog-keepButton", new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
                 handler.onKeepButton();
