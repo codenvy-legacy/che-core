@@ -44,11 +44,9 @@ public final class StoreRecordChangeEvent extends GwtEvent<StoreRecordChangeHand
 
     //TODO support providing for passing nodes into event
 
-    /** {@inheritDoc} */
-    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public Type<StoreRecordChangeHandler> getAssociatedType() {
-        return (Type)getType();
+        return getType();
     }
 
     /** {@inheritDoc} */

@@ -53,11 +53,9 @@ public class BeforeExpandNodeEvent extends GwtEvent<BeforeExpandNodeHandler> imp
         return node;
     }
 
-    /** {@inheritDoc} */
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public Type<BeforeExpandNodeHandler> getAssociatedType() {
-        return (Type)TYPE;
+        return TYPE;
     }
 
     /** {@inheritDoc} */

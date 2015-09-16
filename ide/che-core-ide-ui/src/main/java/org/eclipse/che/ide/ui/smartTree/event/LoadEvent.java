@@ -15,12 +15,11 @@ import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.event.shared.HandlerRegistration;
 
 import org.eclipse.che.ide.api.project.node.Node;
-import org.eclipse.che.ide.ui.smartTree.LoadParams;
 
 import java.util.List;
 
 /**
- * Event fires when node requestedNode for loading children.
+ * Event fires when node's children has been loaded.
  *
  * @author Vlad Zhukovskiy
  */
@@ -45,23 +44,21 @@ public class LoadEvent extends GwtEvent<LoadEvent.LoadHandler> {
 
     private Node       requestedNode;
     private List<Node> receivedNodes;
-    private LoadParams params;
+    private boolean    reloadExpandedChild;
 
     public LoadEvent(Node requestedNode, List<Node> receivedNodes) {
-        this.requestedNode = requestedNode;
-        this.receivedNodes = receivedNodes;
+        this(requestedNode, receivedNodes, false);
     }
 
-    public LoadEvent(Node requestedNode, List<Node> receivedNodes, LoadParams params) {
+    public LoadEvent(Node requestedNode, List<Node> receivedNodes, boolean reloadExpandedChild) {
         this.requestedNode = requestedNode;
         this.receivedNodes = receivedNodes;
-        this.params = params;
+        this.reloadExpandedChild = reloadExpandedChild;
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public Type<LoadHandler> getAssociatedType() {
-        return (Type)TYPE;
+        return TYPE;
     }
 
     public Node getRequestedNode() {
@@ -72,8 +69,8 @@ public class LoadEvent extends GwtEvent<LoadEvent.LoadHandler> {
         return receivedNodes;
     }
 
-    public LoadParams getParams() {
-        return params;
+    public boolean isReloadExpandedChild() {
+        return reloadExpandedChild;
     }
 
     @Override

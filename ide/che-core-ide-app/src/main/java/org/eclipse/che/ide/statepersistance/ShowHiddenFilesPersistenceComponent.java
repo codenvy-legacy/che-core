@@ -12,17 +12,19 @@ package org.eclipse.che.ide.statepersistance;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
 import org.eclipse.che.ide.actions.ShowHiddenFilesAction;
 import org.eclipse.che.ide.api.action.ActionManager;
-import org.eclipse.che.ide.api.app.CurrentProject;
-import org.eclipse.che.ide.api.project.tree.TreeSettings;
-import org.eclipse.che.ide.dto.DtoFactory;
-import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 import org.eclipse.che.ide.api.app.AppContext;
+import org.eclipse.che.ide.api.app.CurrentProject;
+import org.eclipse.che.ide.dto.DtoFactory;
+import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
+import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import static org.eclipse.che.ide.actions.ShowHiddenFilesAction.SHOW_HIDDEN_FILES_PARAM_ID;
 
 /**
@@ -31,20 +33,23 @@ import static org.eclipse.che.ide.actions.ShowHiddenFilesAction.SHOW_HIDDEN_FILE
 @Singleton
 public class ShowHiddenFilesPersistenceComponent implements PersistenceComponent {
 
-    private final AppContext appContext;
-    private final ActionManager actionManager;
-    private final ShowHiddenFilesAction showHiddenFilesAction;
-    private final DtoFactory dtoFactory;
+    private final AppContext                  appContext;
+    private final ActionManager               actionManager;
+    private final ShowHiddenFilesAction       showHiddenFilesAction;
+    private final DtoFactory                  dtoFactory;
+    private final NewProjectExplorerPresenter projectExplorer;
 
     @Inject
     public ShowHiddenFilesPersistenceComponent(AppContext appContext,
                                                ActionManager actionManager,
                                                ShowHiddenFilesAction showHiddenFilesAction,
-                                               DtoFactory dtoFactory) {
+                                               DtoFactory dtoFactory,
+                                               NewProjectExplorerPresenter projectExplorer) {
         this.appContext = appContext;
         this.actionManager = actionManager;
         this.showHiddenFilesAction = showHiddenFilesAction;
         this.dtoFactory = dtoFactory;
+        this.projectExplorer = projectExplorer;
     }
 
     @Override
@@ -53,18 +58,17 @@ public class ShowHiddenFilesPersistenceComponent implements PersistenceComponent
 
         CurrentProject currentProject = appContext.getCurrentProject();
 
-        if(currentProject == null) {
+        if (currentProject == null) {
             return actions;
         }
 
-//        TreeSettings treeSettings = currentProject.getCurrentTree().getSettings();
         String actionId = actionManager.getId(showHiddenFilesAction);
 
-        boolean isShowHiddenFiles = false;
+        boolean isShowHiddenFiles = projectExplorer.isShowHiddenFiles();
 
         actions.add(dtoFactory.createDto(ActionDescriptor.class)
-                .withId(actionId)
-                .withParameters(Collections.singletonMap(SHOW_HIDDEN_FILES_PARAM_ID, String.valueOf(isShowHiddenFiles))));
+                              .withId(actionId)
+                              .withParameters(Collections.singletonMap(SHOW_HIDDEN_FILES_PARAM_ID, String.valueOf(isShowHiddenFiles))));
 
         return actions;
     }

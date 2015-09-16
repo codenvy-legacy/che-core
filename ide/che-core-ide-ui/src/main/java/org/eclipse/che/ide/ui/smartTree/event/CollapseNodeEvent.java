@@ -42,11 +42,9 @@ public class CollapseNodeEvent extends GwtEvent<CollapseNodeHandler> {
         return TYPE;
     }
 
-    /** {@inheritDoc} */
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public Type<CollapseNodeHandler> getAssociatedType() {
-        return (Type)TYPE;
+        return TYPE;
     }
 
     private Node node;

@@ -49,11 +49,9 @@ public final class StoreDataChangeEvent extends GwtEvent<StoreDataChangeHandler>
         this.parent = parent;
     }
 
-    /** {@inheritDoc} */
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public Type<StoreDataChangeHandler> getAssociatedType() {
-        return (Type)getType();
+        return getType();
     }
 
     public Node getParent() {

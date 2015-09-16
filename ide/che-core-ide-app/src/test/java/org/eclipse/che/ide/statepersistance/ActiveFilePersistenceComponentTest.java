@@ -92,7 +92,7 @@ public class ActiveFilePersistenceComponentTest {
         List<ActionDescriptor> actionDescriptors = component.getActions(PROJECT_PATH);
 
         verify(action).withId(anyString());
-        verify(action).withParameters(eq(Collections.singletonMap(FILE_PARAM_ID, FILE2_PATH.replaceFirst(PROJECT_PATH, ""))));
+        verify(action).withParameters(eq(Collections.singletonMap(FILE_PARAM_ID, FILE2_PATH)));
         assertEquals(1, actionDescriptors.size());
         assertTrue(actionDescriptors.contains(action));
     }
@@ -100,7 +100,6 @@ public class ActiveFilePersistenceComponentTest {
     @Test
     public void shouldGetNoActionsWhenLastOpenedFileIsActive() {
         configureOpenedEditors();
-        configureActiveEditor(FILE1_PATH);
 
         List<ActionDescriptor> actionDescriptors = component.getActions(PROJECT_PATH);
 

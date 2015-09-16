@@ -11,23 +11,29 @@
 package org.eclipse.che.ide.part.explorer.project;
 
 import com.google.common.base.Strings;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.api.project.shared.dto.ProjectReference;
+import org.eclipse.che.api.promises.client.Function;
+import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.api.promises.client.PromiseError;
+import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.ProjectActionHandler;
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.parts.HasView;
 import org.eclipse.che.ide.api.parts.base.BasePresenter;
-import org.eclipse.che.ide.api.project.node.HasDataObject;
 import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
@@ -40,10 +46,11 @@ import org.eclipse.che.ide.project.event.ResourceNodeDeletedEvent.ResourceNodeDe
 import org.eclipse.che.ide.project.event.ResourceNodeRenamedEvent;
 import org.eclipse.che.ide.project.node.NodeManager;
 import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
+import org.eclipse.che.ide.ui.smartTree.event.CollapseNodeEvent;
+import org.eclipse.che.ide.ui.smartTree.event.ExpandNodeEvent;
 import org.eclipse.che.ide.ui.smartTree.event.GoIntoStateEvent;
 
 import javax.validation.constraints.NotNull;
-import org.eclipse.che.commons.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -106,6 +113,8 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
 
 
         eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
+            private HandlerRegistration handlerRegistration;
+
             /** {@inheritDoc} */
             @Override
             public void onProjectReady(ProjectActionEvent event) {
@@ -133,12 +142,14 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
             public void onProjectOpened(ProjectActionEvent event) {
                 ProjectDescriptor projectDescriptor = event.getProject();
 
-                if(!Strings.isNullOrEmpty(projectDescriptor.getContentRoot())) {
-                    view.addGoIntoStateHandler(new GoIntoStateEvent.GoIntoStateHandler() {
+                if (!Strings.isNullOrEmpty(projectDescriptor.getContentRoot())) {
+                    handlerRegistration = view.addGoIntoStateHandler(new GoIntoStateEvent.GoIntoStateHandler() {
                         @Override
                         public void onGoIntoStateChanged(GoIntoStateEvent event) {
                             if (event.getState() == GoIntoStateEvent.State.ACTIVATED) {
-                                eventBus.fireEvent(ProjectActionEvent.createProjectOpenedEvent(((HasProjectDescriptor)event.getNode()).getProjectDescriptor()));
+                                eventBus.fireEvent(ProjectActionEvent.createProjectOpenedEvent(
+                                        ((HasProjectDescriptor)event.getNode()).getProjectDescriptor()));
+                                handlerRegistration.removeHandler();
                             }
                         }
                     });
@@ -155,29 +166,92 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
         eventBus.addHandler(ResourceNodeDeletedEvent.getType(), new ResourceNodeDeletedHandler() {
             /** {@inheritDoc} */
             @Override
-            public void onResourceEvent(ResourceNodeDeletedEvent evt) {
-                reloadChildren(evt.getNode().getParent());
+            public void onResourceEvent(final ResourceNodeDeletedEvent evt) {
+                if (evt.getNode().isLeaf()) {
+                    reloadChildren();
+                } else {
+                    Node parent = evt.getNode().getParent();
+
+                    if (!(parent instanceof HasStorablePath)) {
+                        reloadChildren();
+                        return;
+                    }
+
+                    getNodeByPath((HasStorablePath)parent, true)
+                            .then(new Function<Node, Node>() {
+                                @Override
+                                public Node apply(Node arg) throws FunctionException {
+                                    reloadChildren(arg);
+                                    return arg;
+                                }
+                            })
+                            .then(selectNode())
+                            .catchError(catchParentNotFound(parent));
+                }
             }
         });
 
         eventBus.addHandler(ResourceNodeRenamedEvent.getType(), new ResourceNodeRenamedEvent.ResourceNodeRenamedHandler() {
             @Override
             public void onResourceRenamedEvent(final ResourceNodeRenamedEvent event) {
-                HasDataObject dataObject = new HasDataObject() {
-                    @NotNull
-                    @Override
-                    public Object getData() {
-                        return event.getNewDataObject();
-                    }
+                Object newDataObject = event.getNewDataObject();
+                String path = null;
 
-                    @Override
-                    public void setData(@NotNull Object data) {
+                //Here we have old node with old data object and new renamed data object
+                //so we need fetch storable path from it and call tree to find node by this
+                //storable path. When tree will find our node by path, the old node will be
+                //deleted automatically. Otherwise if we can't determine storable path from
+                //node, then we just take parent node and try navigate on it in the tree.
 
-                    }
-                };
-                reloadChildren(event.getNode().getParent(), dataObject);
+                if (newDataObject instanceof ProjectReference) {
+                    path = ((ProjectReference)newDataObject).getPath();
+                } else if (newDataObject instanceof ItemReference) {
+                    path = ((ItemReference)newDataObject).getPath();
+                } else if (event.getNode().getParent() != null && event.getNode().getParent() instanceof HasStorablePath) {
+                    path = ((HasStorablePath)event.getNode().getParent()).getStorablePath();
+                }
+
+                if (!Strings.isNullOrEmpty(path)) {
+                    getNodeByPath(new HasStorablePath.StorablePath(path)).then(selectNode());
+                }
             }
         });
+    }
+
+    private Function<Node, Node> selectNode() {
+        return new Function<Node, Node>() {
+            @Override
+            public Node apply(Node node) throws FunctionException {
+                select(node, false);
+
+                return node;
+            }
+        };
+    }
+
+    private Operation<PromiseError> catchParentNotFound(final Node node) {
+        return new Operation<PromiseError>() {
+            @Override
+            public void apply(PromiseError promiseError) throws OperationException {
+                Node parent = node.getParent();
+
+                if (!(parent instanceof HasStorablePath)) {
+                    reloadChildren();
+                    return;
+                }
+
+                getNodeByPath((HasStorablePath)parent, true).then(selectNode()).then(expandNodeIfNeed());
+            }
+        };
+    }
+
+    private Operation<Node> expandNodeIfNeed() {
+        return new Operation<Node>() {
+            @Override
+            public void apply(Node node) throws OperationException {
+                setExpanded(node, true);
+            }
+        };
     }
 
     /** {@inheritDoc} */
@@ -259,8 +333,8 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
         }
     }
 
-    public void expand(HasStorablePath node) {
-        //temporary stub
+    public void setExpanded(Node node, boolean expand) {
+        view.setExpanded(node, expand);
     }
 
     public void goInto(Node node) {
@@ -276,29 +350,12 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
         };
     }
 
-    public void navigate(HasStorablePath node, boolean select, boolean callAction) {
-        view.navigate(node, select, callAction);
-    }
-
-    public Promise<Node> navigate(HasStorablePath node, boolean select) {
-        return view.navigate(node, select);
-    }
-
-
     public void reloadChildren() {
-        reloadChildren(null, null, false, false);
+        view.reloadChildren(null, true);
     }
 
     public void reloadChildren(Node node) {
-        reloadChildren(node, null, false, false);
-    }
-
-    public void reloadChildren(Node parent, HasDataObject<?> selectAfter) {
-        reloadChildren(parent, selectAfter, false, false);
-    }
-
-    public void reloadChildren(Node parent, HasDataObject<?> selectAfter, boolean actionPerformed, boolean goInto) {
-        view.reloadChildren(parent, selectAfter, actionPerformed, goInto);
+        view.reloadChildren(node);
     }
 
     public void reloadChildrenByType(Class<?> type) {
@@ -331,5 +388,37 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
 
     public boolean isShowHiddenFiles() {
         return view.isShowHiddenFiles();
+    }
+
+    public Promise<Node> getNodeByPath(HasStorablePath path) {
+        return view.getNodeByPath(path, false);
+    }
+
+    public Promise<Node> getNodeByPath(HasStorablePath path, boolean forceUpdate) {
+        return view.getNodeByPath(path, forceUpdate);
+    }
+
+    public void select(Node item, boolean keepExisting) {
+        view.select(item, keepExisting);
+    }
+
+    public void select(List<Node> items, boolean keepExisting) {
+        view.select(items, keepExisting);
+    }
+
+    public boolean isExpanded(Node node) {
+        return view.isExpanded(node);
+    }
+
+    public void scrollFromSource(HasStorablePath path) {
+        view.scrollFromSource(path);
+    }
+
+    public HandlerRegistration addExpandHandler(ExpandNodeEvent.ExpandNodeHandler handler) {
+        return view.addExpandHandler(handler);
+    }
+
+    public HandlerRegistration addCollapseHandler(CollapseNodeEvent.CollapseNodeHandler handler) {
+        return view.addCollapseHandler(handler);
     }
 }

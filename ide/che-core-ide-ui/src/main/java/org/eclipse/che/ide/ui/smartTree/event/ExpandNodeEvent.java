@@ -46,11 +46,9 @@ public class ExpandNodeEvent extends GwtEvent<ExpandNodeEvent.ExpandNodeHandler>
         this.node = node;
     }
 
-    /** {@inheritDoc} */
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public Type<ExpandNodeHandler> getAssociatedType() {
-        return (Type)TYPE;
+        return TYPE;
     }
 
     public Node getNode() {

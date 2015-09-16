@@ -16,43 +16,46 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.event.shared.HasHandlers;
 
 import org.eclipse.che.ide.api.project.node.Node;
-import org.eclipse.che.ide.ui.smartTree.event.StoreUpdateEvent.StoreUpdateHandler;
 
 import java.util.Collections;
 import java.util.List;
 
 /**
- * Event fires when nodes have been changed.
+ * Indicates that an element has been added to the Store.
  *
  * @author Vlad Zhukovskiy
  */
-public final class StoreUpdateEvent extends GwtEvent<StoreUpdateHandler> {
+public class NodeAddedEvent extends GwtEvent<NodeAddedEvent.NodeAddedEventHandler> {
 
-    public interface HasStoreUpdateHandlers extends HasHandlers {
-        HandlerRegistration addStoreUpdateHandler(StoreUpdateHandler handler);
+    public interface HasNodeAddedEventHandlers extends HasHandlers {
+        HandlerRegistration addNodeAddedHandler(NodeAddedEventHandler handler);
     }
 
-    public interface StoreUpdateHandler extends EventHandler {
-        void onUpdate(StoreUpdateEvent event);
+    public interface NodeAddedEventHandler extends EventHandler {
+        void onNodeAdded(NodeAddedEvent event);
     }
 
-    private static Type<StoreUpdateHandler> TYPE;
+    private static Type<NodeAddedEventHandler> TYPE;
 
-    public static Type<StoreUpdateHandler> getType() {
+    public static Type<NodeAddedEventHandler> getType() {
         if (TYPE == null) {
             TYPE = new Type<>();
         }
         return TYPE;
     }
 
-    private List<Node> nodes;
+    private final List<Node> nodes;
 
-    public StoreUpdateEvent(List<Node> nodes) {
+    public NodeAddedEvent(List<Node> nodes) {
         this.nodes = Collections.unmodifiableList(nodes);
     }
 
+    public NodeAddedEvent(Node node) {
+        nodes = Collections.singletonList(node);
+    }
+
     @Override
-    public Type<StoreUpdateHandler> getAssociatedType() {
+    public Type<NodeAddedEventHandler> getAssociatedType() {
         return getType();
     }
 
@@ -60,9 +63,8 @@ public final class StoreUpdateEvent extends GwtEvent<StoreUpdateHandler> {
         return nodes;
     }
 
-    /** {@inheritDoc} */
     @Override
-    protected void dispatch(StoreUpdateHandler handler) {
-        handler.onUpdate(this);
+    protected void dispatch(NodeAddedEventHandler handler) {
+        handler.onNodeAdded(this);
     }
 }

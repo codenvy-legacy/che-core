@@ -32,6 +32,7 @@ import org.eclipse.che.ide.api.project.node.settings.NodeSettings;
 import org.eclipse.che.ide.api.project.node.settings.SettingsProvider;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.dto.DtoFactory;
+import org.eclipse.che.ide.part.explorer.project.FoldersOnTopFilter;
 import org.eclipse.che.ide.project.node.factory.NodeFactory;
 import org.eclipse.che.ide.project.shared.NodesResources;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
@@ -40,12 +41,16 @@ import org.eclipse.che.ide.rest.Unmarshallable;
 import org.eclipse.che.ide.api.project.node.Node;
 
 import javax.validation.constraints.NotNull;
+
 import org.eclipse.che.commons.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 /**
+ * Helper class to define various functionality related with nodes.
+ * Such as get node children. Wrapping nodes.
+ *
  * @author Vlad Zhukovskiy
  */
 @Singleton
@@ -72,32 +77,40 @@ public class NodeManager {
         this.dtoFactory = dtoFactory;
     }
 
-    /** ***************** Children operations ********************* */
+    /** ************* Children operations ********************* */
 
     @NotNull
     public Promise<List<Node>> getChildren(@NotNull ItemReference itemReference,
                                            @NotNull ProjectDescriptor relProjectDescriptor,
-                                           @NotNull NodeSettings nodeSettings,
-                                           @Nullable ItemReferenceChainFilter... filters) {
-        return getChildren(itemReference.getPath(), relProjectDescriptor, nodeSettings, filters);
+                                           @NotNull NodeSettings nodeSettings) {
+        return getChildren(itemReference.getPath(), relProjectDescriptor, nodeSettings);
     }
 
     @NotNull
     public Promise<List<Node>> getChildren(@NotNull ProjectDescriptor projectDescriptor,
-                                           @NotNull NodeSettings nodeSettings,
-                                           @Nullable ItemReferenceChainFilter... filters) {
-        return getChildren(projectDescriptor.getPath(), projectDescriptor, nodeSettings, filters);
+                                           @NotNull NodeSettings nodeSettings) {
+        return getChildren(projectDescriptor.getPath(), projectDescriptor, nodeSettings);
     }
 
     @NotNull
     public Promise<List<Node>> getChildren(@NotNull String path,
                                            @NotNull ProjectDescriptor relProjectDescriptor,
-                                           @NotNull NodeSettings nodeSettings,
-                                           final @Nullable ItemReferenceChainFilter... filters) {
+                                           @NotNull NodeSettings nodeSettings) {
         return AsyncPromiseHelper.createFromAsyncRequest(getItemReferenceRC(path))
-                .thenPromise(filterItemReference(filters))
-                .thenPromise(createItemReferenceNodes(relProjectDescriptor, nodeSettings))
-                .catchError(handleError());
+                                 .thenPromise(filterItemReference())
+                                 .thenPromise(createItemReferenceNodes(relProjectDescriptor, nodeSettings))
+                                 .thenPromise(sortNodes())
+                                 .catchError(handleError());
+    }
+
+    protected Function<List<Node>, Promise<List<Node>>> sortNodes() {
+        return new Function<List<Node>, Promise<List<Node>>>() {
+            @Override
+            public Promise<List<Node>> apply(List<Node> nodes) throws FunctionException {
+                Collections.sort(nodes, new FoldersOnTopFilter());
+                return Promises.resolve(nodes);
+            }
+        };
     }
 
     @NotNull
@@ -110,34 +123,9 @@ public class NodeManager {
         };
     }
 
-    private Function<List<ItemReference>, Promise<List<ItemReference>>> filterItemReference(
-            final @Nullable ItemReferenceChainFilter... filters) {
-        if (filters == null || filters.length == 0) {
-            return self();
-        }
-
-        return new Function<List<ItemReference>, Promise<List<ItemReference>>>() {
-            @Override
-            public Promise<List<ItemReference>> apply(List<ItemReference> itemReference) throws FunctionException {
-
-                Promise<List<ItemReference>> internalPromise = null;
-
-                for (final ItemReferenceChainFilter filter : filters) {
-                    if (internalPromise == null) {
-                        internalPromise = filter.process(itemReference);
-                    } else {
-                        internalPromise.thenPromise(new Function<List<ItemReference>, Promise<List<ItemReference>>>() {
-                            @Override
-                            public Promise<List<ItemReference>> apply(List<ItemReference> secondPass) throws FunctionException {
-                                return filter.process(secondPass);
-                            }
-                        });
-                    }
-                }
-
-                return internalPromise;
-            }
-        };
+    public Function<List<ItemReference>, Promise<List<ItemReference>>> filterItemReference() {
+        //filter item references before they will be transformed int nodes
+        return self();
     }
 
     @NotNull
@@ -258,7 +246,7 @@ public class NodeManager {
         };
     }
 
-    /** ***************** Project Reference operations ********************* */
+    /** ************* Project Reference operations ********************* */
 
     @NotNull
     public Promise<List<Node>> getProjects() {
@@ -301,7 +289,7 @@ public class NodeManager {
         };
     }
 
-    /** ***************** Content methods ********************* */
+    /** ************* Content methods ********************* */
 
     @NotNull
     public Promise<String> getContent(@NotNull final VirtualFile virtualFile) {
@@ -336,7 +324,7 @@ public class NodeManager {
         };
     }
 
-    /** ***************** Common methods ********************* */
+    /** ************* Common methods ********************* */
 
     @NotNull
     protected <T> AsyncRequestCallback<T> _callback(@NotNull final AsyncCallback<T> callback, @NotNull Unmarshallable<T> u) {

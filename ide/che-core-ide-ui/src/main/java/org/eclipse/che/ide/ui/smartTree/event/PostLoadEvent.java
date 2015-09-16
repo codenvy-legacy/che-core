@@ -16,42 +16,42 @@ import com.google.gwt.event.shared.HandlerRegistration;
 
 import org.eclipse.che.ide.api.project.node.Node;
 
-import org.eclipse.che.ide.ui.smartTree.event.BeforeLoadEvent.BeforeLoadHandler;
+import java.util.List;
 
 /**
- * Event fires before node children will be loaded.
+ * Event fires when children has been loaded and processed.
  *
  * @author Vlad Zhukovskiy
  */
-public class BeforeLoadEvent extends GwtEvent<BeforeLoadHandler> implements CancellableEvent {
+public class PostLoadEvent extends GwtEvent<PostLoadEvent.PostLoadHandler> {
 
-    public interface BeforeLoadHandler extends EventHandler {
-        void onBeforeLoad(BeforeLoadEvent event);
+    public interface PostLoadHandler extends EventHandler {
+        void onPostLoad(PostLoadEvent event);
     }
 
-    public interface HasBeforeLoadHandlers {
-        public HandlerRegistration addBeforeLoadHandler(BeforeLoadHandler handler);
-
+    public interface HasPostLoadHandlers {
+        public HandlerRegistration addPostLoadHandler(PostLoadHandler handler);
     }
 
-    private static Type<BeforeLoadHandler> TYPE;
+    private static Type<PostLoadHandler> TYPE;
 
-    public static Type<BeforeLoadHandler> getType() {
+    public static Type<PostLoadHandler> getType() {
         if (TYPE == null) {
             TYPE = new Type<>();
         }
         return TYPE;
     }
 
-    private Node    requestedNode;
-    private boolean cancelled;
+    private Node       requestedNode;
+    private List<Node> receivedNodes;
 
-    public BeforeLoadEvent(Node requestedNode) {
+    public PostLoadEvent(Node requestedNode, List<Node> receivedNodes) {
         this.requestedNode = requestedNode;
+        this.receivedNodes = receivedNodes;
     }
 
     @Override
-    public Type<BeforeLoadHandler> getAssociatedType() {
+    public Type<PostLoadHandler> getAssociatedType() {
         return TYPE;
     }
 
@@ -59,22 +59,12 @@ public class BeforeLoadEvent extends GwtEvent<BeforeLoadHandler> implements Canc
         return requestedNode;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public boolean isCancelled() {
-        return cancelled;
+    public List<Node> getReceivedNodes() {
+        return receivedNodes;
     }
 
-    /** {@inheritDoc} */
     @Override
-    public void setCancelled(boolean cancel) {
-        cancelled = cancel;
+    protected void dispatch(PostLoadHandler handler) {
+        handler.onPostLoad(this);
     }
-
-    /** {@inheritDoc} */
-    @Override
-    protected void dispatch(BeforeLoadHandler handler) {
-        handler.onBeforeLoad(this);
-    }
-
 }

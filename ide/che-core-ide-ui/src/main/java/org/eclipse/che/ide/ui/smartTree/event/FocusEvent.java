@@ -41,11 +41,9 @@ public class FocusEvent extends GwtEvent<FocusHandler> {
         return TYPE;
     }
 
-    /** {@inheritDoc} */
-    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public Type<FocusHandler> getAssociatedType() {
-        return (Type)TYPE;
+        return TYPE;
     }
 
     /** {@inheritDoc} */

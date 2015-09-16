@@ -59,11 +59,9 @@ public class StoreAddEvent extends GwtEvent<StoreAddHandler> {
         nodes = Collections.singletonList(node);
     }
 
-    /** {@inheritDoc} */
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public Type<StoreAddHandler> getAssociatedType() {
-        return (Type)getType();
+        return getType();
     }
 
     public int getIndex() {

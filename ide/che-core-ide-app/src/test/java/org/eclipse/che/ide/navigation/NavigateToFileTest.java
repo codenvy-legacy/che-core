@@ -54,13 +54,10 @@ public class NavigateToFileTest {
     private AppContext              appContext;
     @Mock
     private CurrentProject          project;
-    @Mock
-    private EventBus                eventBus;
+
     private NavigateToFilePresenter presenter;
     @Mock
     private MessageBus              messageBus;
-    @Mock
-    private DialogFactory           dialogFactory;
     @Mock
     private DtoUnmarshallerFactory  dtoUnmarshallerFactory;
     @Mock
@@ -68,15 +65,11 @@ public class NavigateToFileTest {
     @Mock
     private NewProjectExplorerPresenter projectExplorer;
 
-    @Mock
-    private CoreLocalizationConstant localizationConstant;
-
     @Before
     public void setUp() {
         when(appContext.getCurrentProject()).thenReturn(project);
 
-        presenter = new NavigateToFilePresenter(view, appContext, eventBus, messageBus, anyString(), dtoUnmarshallerFactory, dialogFactory,
-                                                localizationConstant, projectExplorer);
+        presenter = new NavigateToFilePresenter(view, appContext, messageBus, anyString(), dtoUnmarshallerFactory, projectExplorer);
     }
 
     @Test
@@ -98,6 +91,5 @@ public class NavigateToFileTest {
 
         verify(view).close();
         verify(view).getItemPath();
-        verify(eventBus).fireEvent((FileEvent)anyObject());
     }
 }
