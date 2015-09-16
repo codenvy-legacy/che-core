@@ -40,6 +40,8 @@ import org.eclipse.che.ide.ui.smartTree.event.CollapseNodeEvent.HasCollapseItemH
 import org.eclipse.che.ide.ui.smartTree.event.ExpandNodeEvent;
 import org.eclipse.che.ide.ui.smartTree.event.ExpandNodeEvent.HasExpandItemHandlers;
 import org.eclipse.che.ide.ui.smartTree.event.FocusEvent;
+import org.eclipse.che.ide.ui.smartTree.event.NodeAddedEvent;
+import org.eclipse.che.ide.ui.smartTree.event.NodeAddedEvent.HasNodeAddedEventHandlers;
 import org.eclipse.che.ide.ui.smartTree.event.StoreAddEvent;
 import org.eclipse.che.ide.ui.smartTree.event.StoreAddEvent.StoreAddHandler;
 import org.eclipse.che.ide.ui.smartTree.event.StoreClearEvent;
@@ -73,7 +75,8 @@ import java.util.Map;
  * @author Vlad Zhukovskiy
  */
 public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpandItemHandlers, HasBeforeCollapseItemHandlers,
-                                            HasCollapseItemHandlers, ComponentWithEmptyText, HasBlurHandlers {
+                                            HasCollapseItemHandlers, ComponentWithEmptyText, HasBlurHandlers,
+                                            HasNodeAddedEventHandlers {
 
 
     private Map<String, NodeDescriptor> nodesByDom = new HashMap<>();
@@ -183,6 +186,11 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
     @Override
     public HandlerRegistration addExpandHandler(ExpandNodeEvent.ExpandNodeHandler handler) {
         return addHandler(handler, ExpandNodeEvent.getType());
+    }
+
+    @Override
+    public HandlerRegistration addNodeAddedHandler(NodeAddedEvent.NodeAddedEventHandler handler) {
+        return addHandler(handler, NodeAddedEvent.getType());
     }
 
     @Override
@@ -395,10 +403,6 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
     }
 
     protected void renderChildren(Node parent) {
-        renderChildren(parent, false);
-    }
-
-    protected void renderChildren(Node parent, boolean resetCache) {
         int depth = nodeStorage.getDepth(parent);
         List<Node> children = parent == null ? nodeStorage.getRootItems() : nodeStorage.getChildren(parent);
         if (children.size() == 0) {
@@ -413,14 +417,9 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
             container.appendChild(element);
         }
 
-
         for (Node child : children) {
             NodeDescriptor nodeDescriptor = findNode(child);
-            if (resetCache) {
-                if (nodeLoader.mayHaveChildren(child)) {
-                    nodeLoader.loadChildren(child);
-                }
-            } else if (autoExpand) {
+            if (autoExpand) {
                 setExpanded(child, true);
             } else if (nodeDescriptor.isExpand() && !isLeaf(nodeDescriptor.getNode())) {
                 nodeDescriptor.setExpand(false);
@@ -1010,7 +1009,6 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
                 int index = event.getIndex();
                 int parentChildCount = parent == null ? nodeStorage.getRootCount() : nodeStorage.getChildCount(parent);
 
-
                 for (Node child : event.getNodes()) {
                     if (index == 0) {
                         container.insertFirst(renderChild(child, parentDepth));
@@ -1024,8 +1022,9 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
             } else {
                 redraw(parent);
             }
-//            refresh(parent);
             update();
+
+            fireEvent(new NodeAddedEvent(event.getNodes()));
         }
     }
 
@@ -1095,16 +1094,6 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
         return null;
     }
 
-    public void synchronize() {
-        //TODO need to improve this block of code to support refreshing dedicated folder
-        redraw(null, true);
-    }
-
-    protected void redraw(Node node) {
-        redraw(node, false);
-    }
-
-
     /**
      * Completely redraws the children of the given parent (or all items if parent is null), throwing away details like
      * currently expanded nodes, etc.
@@ -1112,14 +1101,14 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
      * @param parent
      *         the parent of the items to redraw
      */
-    protected void redraw(Node parent, boolean resetCache) {
+    protected void redraw(Node parent) {
         if (!isOrWasAttached()) {
             return;
         }
 
         if (parent == null) {
             clear();
-            renderChildren(null, resetCache);
+            renderChildren(null);
 
             if (autoSelect) {
                 Node child = nodeStorage.getChild(0);

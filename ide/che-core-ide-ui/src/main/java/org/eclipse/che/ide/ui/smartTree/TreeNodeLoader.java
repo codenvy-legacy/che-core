@@ -18,11 +18,13 @@ import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.event.shared.SimpleEventBus;
 
+import org.eclipse.che.api.promises.client.Function;
+import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
+import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.PromiseError;
-import org.eclipse.che.ide.api.project.node.HasAction;
-import org.eclipse.che.ide.api.project.node.HasDataObject;
+import org.eclipse.che.api.promises.client.js.Promises;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor;
 import org.eclipse.che.ide.ui.smartTree.event.BeforeLoadEvent;
@@ -30,16 +32,20 @@ import org.eclipse.che.ide.ui.smartTree.event.CancellableEvent;
 import org.eclipse.che.ide.ui.smartTree.event.LoadEvent;
 import org.eclipse.che.ide.ui.smartTree.event.LoadExceptionEvent;
 import org.eclipse.che.ide.ui.smartTree.event.LoaderHandler;
+import org.eclipse.che.ide.ui.smartTree.event.PostLoadEvent;
 import org.eclipse.che.ide.util.loging.Log;
 
 import javax.validation.constraints.NotNull;
+
 import org.eclipse.che.commons.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -53,7 +59,7 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
     /**
      * Temporary storage for current requested nodes. When children have been loaded requested node removes from temporary set.
      */
-    Map<Node, LoadParams> childRequested = new HashMap<>();
+    Map<Node, Boolean> childRequested = new HashMap<>();
 
     /**
      * Last processed node. Maybe used in general purpose.
@@ -98,8 +104,11 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
 
             if (requested == null) {
                 //smth happened, that requested node isn't registered in storage
-                Log.info(this.getClass(), "Requested node not found.");
+                Log.error(this.getClass(), "Requested node not found.");
+                return;
             }
+
+            requested.setLoading(false);
 
             //search node which has been removed from server to remove them from the tree
             List<NodeDescriptor> removedNodes = findRemovedNodes(requested, event.getReceivedNodes());
@@ -121,55 +130,80 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
                 }
             }
 
+            //Set joint element on the view
+            Promise<Void> promise = Promises.resolve(null);
+            List<Node> exist = tree.getNodeStorage().getChildren(event.getRequestedNode());
+            chainChildrenAndSetJointElement(promise, exist.listIterator());
 
-            LoadParams params = event.getParams();
-
-            if (params != null) {
-                List<Node> children = tree.getNodeStorage().getChildren(event.getRequestedNode());
-                for (Node node : children) {
-                    if (isNodeHasSameDataObject(node, params.getSelectAfter())) {
-                        tree.getSelectionModel().select(node, false);
-
-                        if (params.isCallAction() && node instanceof HasAction) {
-                            ((HasAction)node).actionPerformed();
-                        }
-
-                        if (params.isGoInto() && node.supportGoInto()) {
-                            tree.getGoIntoMode().goInto(node);
-                        }
+            //Iterate on nested descendants to make additional load request
+            if (event.isReloadExpandedChild()) {
+                Iterable<Node> filter = Iterables.filter(tree.getNodeStorage().getChildren(parent), new Predicate<Node>() {
+                    @Override
+                    public boolean apply(@Nullable Node input) {
+                        return tree.hasChildren(input) && tree.isExpanded(input);
                     }
+                });
+
+                for (Node node : filter) {
+                    loadChildren(node, event.isReloadExpandedChild());
                 }
             }
 
-            Iterable<Node> filter = Iterables.filter(tree.getNodeStorage().getChildren(parent), new Predicate<Node>() {
-                @Override
-                public boolean apply(@Nullable Node input) {
-                    return tree.hasChildren(input) && tree.isExpanded(input);
-                }
-            });
-
-            for (Node node : filter) {
-                loadChildren(node);
-            }
-
+            fireEvent(new PostLoadEvent(event.getRequestedNode(), event.getReceivedNodes()));
         }
 
         @Override
         public void onLoadException(LoadExceptionEvent event) {
-            //stub
+            NodeDescriptor requested = tree.findNode(event.getRequestedNode());
+
+            if (requested == null) {
+                return;
+            }
+
+            requested.setLoading(false);
         }
 
         @Override
         public void onBeforeLoad(BeforeLoadEvent event) {
-            //stub
+            NodeDescriptor requested = tree.findNode(event.getRequestedNode());
+
+            if (requested == null) {
+                return;
+            }
+
+            requested.setLoading(true);
+            requested.setLoading(true);
         }
     }
 
-    private boolean isNodeHasSameDataObject(Node node, HasDataObject<?> dataNode) {
-        return node != null
-               && dataNode != null
-               && node instanceof HasDataObject<?>
-               && ((HasDataObject)node).getData().equals(dataNode.getData());
+    private Promise<Void> chainChildrenAndSetJointElement(Promise<Void> promise, ListIterator<Node> iterator) {
+        if (!iterator.hasNext()) {
+            return promise;
+        }
+
+        final Node node = iterator.next();
+
+        if (node.isLeaf()) {
+            return chainChildrenAndSetJointElement(promise, iterator);
+        }
+
+        final Promise<Void> derivedPromise = promise.thenPromise(new Function<Void, Promise<Void>>() {
+            @Override
+            public Promise<Void> apply(Void arg) throws FunctionException {
+                return hasChildren(node).thenPromise(new Function<Boolean, Promise<Void>>() {
+                    @Override
+                    public Promise<Void> apply(Boolean hasChildren) throws FunctionException {
+                        if (!hasChildren) {
+                            tree.getView().onJointChange(tree.findNode(node), Tree.Joint.NONE);
+                        }
+
+                        return Promises.resolve(null);
+                    }
+                });
+            }
+        });
+
+        return chainChildrenAndSetJointElement(derivedPromise, iterator);
     }
 
     private List<Node> findNewNodes(NodeDescriptor parent, final List<Node> loadedChildren) {
@@ -253,6 +287,23 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
     }
 
     /**
+     * Check if node has children.
+     * This method make a request to server to read children count.
+     *
+     * @param node
+     *         node
+     * @return true if node has children, otherwise false
+     */
+    public Promise<Boolean> hasChildren(@NotNull Node node) {
+        return node.getChildren(false).thenPromise(new Function<List<Node>, Promise<Boolean>>() {
+            @Override
+            public Promise<Boolean> apply(List<Node> children) throws FunctionException {
+                return Promises.resolve(!children.isEmpty());
+            }
+        });
+    }
+
+    /**
      * Initiates a load request for the parent's children.
      *
      * @param parent
@@ -260,15 +311,15 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
      * @return true if the load was requested, otherwise false
      */
     public boolean loadChildren(@NotNull Node parent) {
-        return loadChildren(parent, null);
+        return loadChildren(parent, false);
     }
 
-    public boolean loadChildren(Node parent, LoadParams params) {
+    public boolean loadChildren(Node parent, boolean reloadExpandedChild) {
         if (childRequested.containsKey(parent)) {
             return false;
         }
 
-        childRequested.put(parent, params);
+        childRequested.put(parent, reloadExpandedChild);
         return _load(parent);
     }
 
@@ -299,8 +350,8 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
      *         parent node, children which have been loaded
      */
     private void onLoadSuccess(@NotNull final Node parent, List<Node> children) {
-        LoadParams loadParams = childRequested.remove(parent);
-        fireEvent(new LoadEvent(parent, children, loadParams));
+        boolean reloadExpandedChild = childRequested.remove(parent);
+        fireEvent(new LoadEvent(parent, children, reloadExpandedChild));
     }
 
     /**
@@ -404,6 +455,11 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
         return addHandler(LoadExceptionEvent.getType(), handler);
     }
 
+    @Override
+    public HandlerRegistration addPostLoadHandler(PostLoadEvent.PostLoadHandler handler) {
+        return addHandler(PostLoadEvent.getType(), handler);
+    }
+
     /** {@inheritDoc} */
     @Override
     public HandlerRegistration addLoaderHandler(LoaderHandler handler) {
@@ -411,6 +467,7 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
         group.add(addHandler(BeforeLoadEvent.getType(), handler));
         group.add(addHandler(LoadEvent.getType(), handler));
         group.add(addHandler(LoadExceptionEvent.getType(), handler));
+        group.add(addHandler(PostLoadEvent.getType(), handler));
         return group;
     }
 

@@ -37,7 +37,7 @@ import org.eclipse.che.ide.actions.NavigateToFileAction;
 import org.eclipse.che.ide.actions.NewProjectAction;
 import org.eclipse.che.ide.actions.OpenFileAction;
 import org.eclipse.che.ide.actions.OpenProjectAction;
-import org.eclipse.che.ide.actions.OpenNodeAction;
+import org.eclipse.che.ide.actions.ExpandNodeAction;
 import org.eclipse.che.ide.actions.OpenSelectedFileAction;
 import org.eclipse.che.ide.actions.PasteAction;
 import org.eclipse.che.ide.actions.ProjectConfigurationAction;
@@ -157,7 +157,7 @@ public class StandardComponentInitializer {
     private OpenFileAction openFileAction;
 
     @Inject
-    private OpenNodeAction openNodeAction;
+    private ExpandNodeAction expandNodeAction;
 
     @Inject
     private SelectNodeAction selectNodeAction;
@@ -453,7 +453,7 @@ public class StandardComponentInitializer {
 
         actionManager.registerAction("findReplace", findReplaceAction);
         actionManager.registerAction("openFile", openFileAction);
-        actionManager.registerAction("openNode", openNodeAction);
+        actionManager.registerAction("expandNode", expandNodeAction);
         actionManager.registerAction("selectNode", selectNodeAction);
 
         changeResourceGroup.add(closeProjectAction);

@@ -15,7 +15,9 @@ import com.google.inject.Provider;
 import org.eclipse.che.ide.actions.OpenFileAction;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.editor.EditorAgent;
+import org.eclipse.che.ide.api.editor.EditorInput;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
+import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 import org.junit.Before;
@@ -67,6 +69,15 @@ public class OpenedFilesPersistenceComponentTest {
     @Mock
     private DtoFactory dtoFactory;
 
+    @Mock
+    private EditorPartPresenter editorPartPresenter;
+
+    @Mock
+    private EditorInput editorInput;
+
+    @Mock
+    private VirtualFile virtualFile;
+
     @InjectMocks
     private OpenedFilesPersistenceComponent component;
 
@@ -84,11 +95,17 @@ public class OpenedFilesPersistenceComponentTest {
         when(action.withId(anyString())).thenReturn(action);
         when(action.withParameters(anyMapOf(String.class, String.class))).thenReturn(action);
         when(dtoFactory.createDto(eq(ActionDescriptor.class))).thenReturn(action);
+        NavigableMap<String, EditorPartPresenter> editors = new TreeMap<>();
+        editors.put("/foo", editorPartPresenter);
+        when(editorAgent.getOpenedEditors()).thenReturn(editors);
+        when(editorPartPresenter.getEditorInput()).thenReturn(editorInput);
+        when(editorInput.getFile()).thenReturn(virtualFile);
+        when(virtualFile.getPath()).thenReturn(FILE_PATH);
 
         List<ActionDescriptor> actionDescriptors = component.getActions(PROJECT_PATH);
 
         verify(action).withId(anyString());
-        verify(action).withParameters(eq(Collections.singletonMap(FILE_PARAM_ID, FILE_PATH.replaceFirst(PROJECT_PATH, ""))));
+        verify(action).withParameters(eq(Collections.singletonMap(FILE_PARAM_ID, FILE_PATH)));
         assertEquals(1, actionDescriptors.size());
         assertTrue(actionDescriptors.contains(action));
     }

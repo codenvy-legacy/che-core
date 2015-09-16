@@ -38,8 +38,8 @@ import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 import org.eclipse.che.ide.statepersistance.dto.AppState;
-import org.eclipse.che.ide.statepersistance.dto.RecentProject;
 import org.eclipse.che.ide.statepersistance.dto.ProjectState;
+import org.eclipse.che.ide.statepersistance.dto.RecentProject;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.Pair;
 import org.junit.Before;
@@ -58,6 +58,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.eclipse.che.ide.statepersistance.AppStateManager.PREFERENCE_PROPERTY_NAME;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
@@ -69,7 +70,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static org.eclipse.che.ide.statepersistance.AppStateManager.PREFERENCE_PROPERTY_NAME;
 
 /**
  * Test covers {@link AppStateManager} functionality.
@@ -326,7 +326,6 @@ public class AppStateManagerTest {
         appStateManager.onProjectReady(event);
 
         verify(appContext).getCurrentProject();
-        verify(currentProject).getRootProject();
         verify(rootProject).getWorkspaceName();
         verify(event).getProject();
         verify(rootProject).getPath();
@@ -414,6 +413,7 @@ public class AppStateManagerTest {
     @Test
     public void shouldPersistStateWhenProjectIsClosing() {
         ProjectActionEvent projectActionEvent = mock(ProjectActionEvent.class);
+        when(projectActionEvent.getProject()).thenReturn(rootProject);
         appStateManager.start(true);
 
         appStateManager.onProjectClosing(projectActionEvent);
