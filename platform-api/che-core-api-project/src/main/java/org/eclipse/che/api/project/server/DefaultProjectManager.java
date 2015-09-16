@@ -640,6 +640,7 @@ public final class DefaultProjectManager implements ProjectManager {
                     estimations.add(
                             DtoFactory.getInstance().createDto(SourceEstimation.class)
                                       .withType(type.getId())
+                                      .withPrimaryable(type.canBePrimary())
                                       .withAttributes(attributes));
 
                 }

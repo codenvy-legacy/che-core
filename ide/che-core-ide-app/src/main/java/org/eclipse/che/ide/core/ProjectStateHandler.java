@@ -15,6 +15,7 @@ import elemental.client.Browser;
 import com.google.gwt.core.client.Callback;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
@@ -23,6 +24,8 @@ import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.Constants;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
+import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.DocumentTitleDecorator;
 import org.eclipse.che.ide.api.app.AppContext;
@@ -35,6 +38,7 @@ import org.eclipse.che.ide.api.event.OpenProjectEvent;
 import org.eclipse.che.ide.api.event.OpenProjectHandler;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.notification.NotificationManager;
+import org.eclipse.che.ide.api.project.type.ProjectTypeRegistry;
 import org.eclipse.che.ide.core.problemDialog.ProjectProblemDialog;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.projecttype.wizard.presenter.ProjectWizardPresenter;
@@ -42,10 +46,14 @@ import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.Unmarshallable;
 import org.eclipse.che.ide.util.Config;
+import org.eclipse.che.ide.util.StringUtils;
 import org.eclipse.che.ide.util.loging.Log;
 
 import javax.validation.constraints.NotNull;
 import org.eclipse.che.commons.annotation.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Component that does some preliminary operations before opening/closing projects.
@@ -67,6 +75,7 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
     private final EventBus                 eventBus;
     private final AppContext               appContext;
     private final DtoFactory               dtoFactory;
+    private final ProjectTypeRegistry      projectTypeRegistry;
     private final ProjectServiceClient     projectServiceClient;
     private final ProjectWizardPresenter   projectWizardPresenter;
     private final DtoUnmarshallerFactory   dtoUnmarshallerFactory;
@@ -78,6 +87,7 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
     public ProjectStateHandler(AppContext appContext,
                                DtoFactory dtoFactory,
                                EventBus eventBus,
+                               ProjectTypeRegistry projectTypeRegistry,
                                ProjectServiceClient projectServiceClient,
                                ProjectWizardPresenter projectWizardPresenter,
                                CoreLocalizationConstant constant,
@@ -87,6 +97,7 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
         this.eventBus = eventBus;
         this.appContext = appContext;
         this.dtoFactory = dtoFactory;
+        this.projectTypeRegistry = projectTypeRegistry;
         this.projectServiceClient = projectServiceClient;
         this.projectWizardPresenter = projectWizardPresenter;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
@@ -115,10 +126,51 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
 
     @Override
     public void onConfigureProject(@NotNull ConfigureProjectEvent event) {
-        ProjectDescriptor toConfigure = event.getProject();
-        if (toConfigure != null) {
+        final ProjectDescriptor toConfigure = event.getProject();
+        if (toConfigure == null) {
+            return;
+        }
+
+        if (hasProblems(toConfigure)) {
+            resolveSources(toConfigure, new AsyncCallback<List<SourceEstimation>>() {
+                @Override
+                public void onFailure(Throwable caught) {
+                    projectWizardPresenter.show(toConfigure);
+                    Log.error(getClass(), caught.getCause());
+                }
+
+                @Override
+                public void onSuccess(List<SourceEstimation> result) {
+                    for (SourceEstimation sourceEstimation : result) {
+                        String estimateType = sourceEstimation.getType();
+                        ProjectTypeDefinition projectType = projectTypeRegistry.getProjectType(estimateType);
+
+                        if (sourceEstimation.isPrimaryable() && projectType != null) {
+                            toConfigure.setType(estimateType);
+                            projectWizardPresenter.show(toConfigure);
+                            break;
+                        }
+                    }
+                }
+            });
+        } else {
             projectWizardPresenter.show(toConfigure);
         }
+    }
+
+    private void resolveSources(final ProjectDescriptor projectDescriptor, final AsyncCallback<List<SourceEstimation>> callback) {
+        final Unmarshallable<List<SourceEstimation>> unmarshaller = dtoUnmarshallerFactory.newListUnmarshaller(SourceEstimation.class);
+        projectServiceClient.resolveSources(projectDescriptor.getPath(), new AsyncRequestCallback<List<SourceEstimation>>(unmarshaller) {
+            @Override
+            protected void onSuccess(List<SourceEstimation> result) {
+                callback.onSuccess(result);
+            }
+
+            @Override
+            protected void onFailure(Throwable exception) {
+                callback.onFailure(exception);
+            }
+        });
     }
 
     private void closeCurrentProject(CloseCallback closeCallback, boolean closingBeforeOpening) {
@@ -201,10 +253,49 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
     }
 
     private void openProblemProject(final ProjectDescriptor project) {
-        ProjectProblemDialog dialog = new ProjectProblemDialog(constant.projectProblemTitle(),
-                                                               constant.projectProblemMessage(),
-                                                               getAskHandler(project));
+        resolveSources(project, new AsyncCallback<List<SourceEstimation>>() {
+            @Override
+            public void onFailure(Throwable caught) {
+                showProblemDialog(project, null);
+            }
 
+            @Override
+            public void onSuccess(List<SourceEstimation> result) {
+                List<String> estimatedTypes = new ArrayList<>(result.size());
+                for (SourceEstimation sourceEstimation : result) {
+                    ProjectTypeDefinition projectType = projectTypeRegistry.getProjectType(sourceEstimation.getType());
+                    if (sourceEstimation.isPrimaryable() && projectType != null) {
+                        if (estimatedTypes.isEmpty()) {
+                            project.setType(sourceEstimation.getType());
+                            project.setAttributes(sourceEstimation.getAttributes());
+                        }
+                        estimatedTypes.add(projectType.getDisplayName());
+                    }
+                }
+                showProblemDialog(project, estimatedTypes);
+            }
+        });
+    }
+
+    private void showProblemDialog(final ProjectDescriptor project, final List<String> estimatedTypes) {
+        String message;
+        String keepButTitle;
+        if (estimatedTypes == null || estimatedTypes.isEmpty()) {
+            keepButTitle = constant.projectProblemKeepButTitle(Constants.BLANK_ID);
+            message = constant.projectProblemBlankMessage();
+            project.setType(Constants.BLANK_ID);
+        } else {
+            String displayTypes = StringUtils.join(estimatedTypes, ", ");
+            String keepType = estimatedTypes.get(0);
+
+            keepButTitle = constant.projectProblemKeepButTitle(keepType);
+            message = constant.projectProblemEstimateTypesMessage(displayTypes, keepType);
+        }
+
+        ProjectProblemDialog dialog = new ProjectProblemDialog(constant.projectProblemTitle(),
+                                                               keepButTitle,
+                                                               message,
+                                                               getAskHandler(project));
         dialog.show();
     }
 
@@ -216,8 +307,7 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
             }
 
             @Override
-            public void onKeepBlank() {
-                project.setType(Constants.BLANK_ID);
+            public void onKeepButton() {
                 updateProject(project);
 
             }

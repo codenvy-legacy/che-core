@@ -18,6 +18,7 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.api.project.shared.dto.ProjectUpdate;
 import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentTree;
+import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.project.shared.dto.TreeElement;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 
@@ -102,6 +103,16 @@ public interface ProjectServiceClient {
      *         the callback to use for the response
      */
     void estimateProject(String path, String projectType, AsyncRequestCallback<Map<String, List<String>>> callback);
+
+    /**
+     * Resolves sources.
+     *
+     * @param path
+     *         path of the project to resolve
+     * @param callback
+     *         the callback to use for the response
+     */
+    void resolveSources(String path, AsyncRequestCallback<List<SourceEstimation>> callback);
 
     /**
      * Get sub-project.

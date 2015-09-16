@@ -532,8 +532,14 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("projectProblem.title")
     String projectProblemTitle();
 
-    @Key("projectProblem.message")
-    String projectProblemMessage();
+    @Key("projectProblem.blank.message")
+    String projectProblemBlankMessage();
+
+    @Key("projectProblem.estimateTypes.message")
+    String projectProblemEstimateTypesMessage(String types, String keepType);
+
+    @Key("projectProblem.keepBut.title")
+    String projectProblemKeepButTitle(String projectType);
 
     @Key("action.expandEditor.title")
     String actionExpandEditorTitle();
