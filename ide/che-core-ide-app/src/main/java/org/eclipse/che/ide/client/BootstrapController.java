@@ -31,6 +31,10 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import org.eclipse.che.api.analytics.logger.EventLogger;
 import org.eclipse.che.api.factory.dto.Ide;
+import org.eclipse.che.api.promises.client.Operation;
+import org.eclipse.che.api.promises.client.OperationException;
+import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.api.promises.client.PromiseError;
 import org.eclipse.che.ide.api.DocumentTitleDecorator;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
@@ -46,9 +50,11 @@ import org.eclipse.che.ide.logger.AnalyticsEventLoggerExt;
 import org.eclipse.che.ide.statepersistance.AppStateManager;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.Config;
+import org.eclipse.che.ide.util.Pair;
 import org.eclipse.che.ide.util.loging.Log;
 import org.eclipse.che.ide.workspace.WorkspacePresenter;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -334,16 +340,29 @@ public class BootstrapController {
     }
 
     private void performActions(List<org.eclipse.che.api.factory.dto.Action> actions) {
+        final List<Pair<Action, ActionEvent>> actionsToPerform = new ArrayList<>(actions.size());
+
         for (org.eclipse.che.api.factory.dto.Action action : actions) {
-            performAction(action.getId(), action.getProperties());
+            final Action ideAction = actionManager.getAction(action.getId());
+            if (ideAction == null) {
+                continue;
+            }
+
+            final Presentation presentation = presentationFactory.getPresentation(ideAction);
+            final ActionEvent event = new ActionEvent("", presentation, actionManager, 0, action.getProperties());
+            actionsToPerform.add(new Pair<>(ideAction, event));
         }
+
+        final Promise<Void> promise = actionManager.performActions(actionsToPerform, false);
+        promise.catchError(new Operation<PromiseError>() {
+            @Override
+            public void apply(PromiseError arg) throws OperationException {
+                Log.info(AppStateManager.class, "Failed to perform project's action");
+            }
+        });
     }
 
     private void performAction(String actionId) {
-        performAction(actionId, null);
-    }
-
-    private void performAction(String actionId, Map<String, String> parameters) {
         Action action = actionManager.getAction(actionId);
 
         if (action == null) {
@@ -352,7 +371,7 @@ public class BootstrapController {
 
         final Presentation presentation = presentationFactory.getPresentation(action);
 
-        ActionEvent e = new ActionEvent("", presentation, actionManager, 0, parameters);
+        ActionEvent e = new ActionEvent("", presentation, actionManager, 0, null);
         action.update(e);
 
         if (presentation.isEnabled() && presentation.isVisible()) {
