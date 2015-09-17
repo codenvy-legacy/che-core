@@ -19,6 +19,7 @@ import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.api.promises.client.PromiseError;
 import org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper.Call;
 import org.eclipse.che.api.promises.client.js.JsPromiseError;
 import org.eclipse.che.api.promises.client.js.Promises;
@@ -31,6 +32,8 @@ import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.event.ActivePartChangedEvent;
 import org.eclipse.che.ide.api.event.ActivePartChangedHandler;
+import org.eclipse.che.ide.api.notification.Notification;
+import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
@@ -41,6 +44,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import static org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper.createFromCallback;
+import static org.eclipse.che.ide.api.notification.Notification.Type.WARNING;
 
 /**
  * @author Sergii Leschenko
@@ -51,10 +55,11 @@ public class OpenFileAction extends Action implements PromisableAction {
     /** ID of the parameter to specify file path to open. */
     public static String FILE_PARAM_ID = "file";
 
-    private final EventBus                 eventBus;
-    private final AppContext               appContext;
-    private final CoreLocalizationConstant localization;
+    private final EventBus                    eventBus;
+    private final AppContext                  appContext;
+    private final CoreLocalizationConstant    localization;
     private final NewProjectExplorerPresenter projectExplorer;
+    private final NotificationManager         notificationManager;
 
     private Callback<Void, Throwable> actionCompletedCallBack;
 
@@ -62,11 +67,13 @@ public class OpenFileAction extends Action implements PromisableAction {
     public OpenFileAction(EventBus eventBus,
                           AppContext appContext,
                           CoreLocalizationConstant localization,
-                          NewProjectExplorerPresenter projectExplorer) {
+                          NewProjectExplorerPresenter projectExplorer,
+                          NotificationManager notificationManager) {
         this.eventBus = eventBus;
         this.appContext = appContext;
         this.localization = localization;
         this.projectExplorer = projectExplorer;
+        this.notificationManager = notificationManager;
     }
 
     @Override
@@ -94,17 +101,36 @@ public class OpenFileAction extends Action implements PromisableAction {
 
         projectExplorer.getNodeByPath(new HasStorablePath.StorablePath(path), true)
                        .then(selectNode())
-                       .then(openNode()).then(new Operation<Node>() {
+                       .then(openNode())
+                       .then(actionComplete())
+                       .catchError(onFailedToLocate(path));
+    }
+
+    private Operation<PromiseError> onFailedToLocate(final String path) {
+        return new Operation<PromiseError>() {
+            @Override
+            public void apply(PromiseError arg) throws OperationException {
+                notificationManager.showNotification(new Notification(localization.unableOpenResource(path), WARNING));
+
+                if (actionCompletedCallBack != null) {
+                    actionCompletedCallBack.onSuccess(null);
+                }
+            }
+        };
+    }
+
+    private Operation<Node> actionComplete() {
+        return new Operation<Node>() {
             @Override
             public void apply(Node arg) throws OperationException {
                 if (actionCompletedCallBack != null) {
                     actionCompletedCallBack.onSuccess(null);
                 }
             }
-        });
+        };
     }
 
-    protected Function<Node, Node> selectNode() {
+    private Function<Node, Node> selectNode() {
         return new Function<Node, Node>() {
             @Override
             public Node apply(Node node) throws FunctionException {
@@ -115,7 +141,7 @@ public class OpenFileAction extends Action implements PromisableAction {
         };
     }
 
-    protected Function<Node, Node> openNode() {
+    private Function<Node, Node> openNode() {
         return new Function<Node, Node>() {
             @Override
             public Node apply(Node node) throws FunctionException {
