@@ -28,12 +28,10 @@ import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.SimpleLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
-import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.validation.constraints.NotNull;
@@ -64,8 +62,6 @@ public class DropDownHeaderWidgetImpl extends Composite implements ClickHandler,
     @UiField
     FlowPanel marker;
     @UiField
-    FlowPanel selectedElementImage;
-    @UiField
     Label             selectedElementName;
     @UiField
     FlowPanel         selectedElement;
@@ -90,8 +86,6 @@ public class DropDownHeaderWidgetImpl extends Composite implements ClickHandler,
         marker.getElement().appendChild(resources.expansionImage().getSvg().getElement());
         marker.addStyleName(resources.dropdownListCss().expandedImage());
 
-        selectedElement.setVisible(false);
-
         addDomHandler(this, ClickEvent.getType());
         addDomHandler(this, MouseDownEvent.getType());
         addDomHandler(this, MouseUpEvent.getType());
@@ -107,15 +101,8 @@ public class DropDownHeaderWidgetImpl extends Composite implements ClickHandler,
 
     /** {@inheritDoc} */
     @Override
-    public void selectElement(@Nullable SVGResource icon, @NotNull String title) {
+    public void selectElement(@NotNull String title) {
         selectedName = title;
-
-        selectedElement.setVisible(icon != null && !title.isEmpty());
-
-        selectedElementImage.clear();
-        if (icon != null) {
-            selectedElementImage.add(new SVGImage(icon));
-        }
         selectedElementName.setText(title);
     }
 
@@ -167,10 +154,12 @@ public class DropDownHeaderWidgetImpl extends Composite implements ClickHandler,
         String onMouseOut();
 
         String onClick();
+
+        String dropDownListMenu();
     }
 
     public interface Resources extends ClientBundle {
-        @Source("DropdownList.css")
+        @Source({"DropdownList.css", "org/eclipse/che/ide/api/ui/style.css"})
         DropdownCss dropdownListCss();
 
         @Source("expansionIcon.svg")

@@ -412,12 +412,28 @@ public class Style {
         return theme.getPerspectiveSwitcherBackgroundColor();
     }
 
-    public static String getProgressColor() {
-        return theme.getProgressColor();
+    public static String getSelectCommandActionIconColor() {
+        return theme.getSelectCommandActionIconColor();
     }
 
-    public static String getSvgUrlShadow() {
-        return theme.getSvgUrlShadow();
+    public static String getSelectCommandActionIconBackgroundColor() {
+        return theme.getSelectCommandActionIconBackgroundColor();
+    }
+
+    public static String getSelectCommandActionColor() {
+        return theme.getSelectCommandActionColor();
+    }
+
+    public static String getSelectCommandActionHoverColor() {
+        return theme.getSelectCommandActionHoverColor();
+    }
+
+    public static String getDropDownListSelectionBackground() {
+        return theme.getDropDownListSelectionBackground();
+    }
+
+    public static String getProgressColor() {
+        return theme.getProgressColor();
     }
 
     public static String getSuccessEventColor() {
@@ -470,6 +486,10 @@ public class Style {
 
     public static String getEditorSeparatorColor() {
         return theme.getEditorSeparatorColor();
+    }
+
+    public static String getBlueIconColor() {
+        return theme.getBlueIconColor();
     }
 
     public static String getSplitterSmallBorderColor() {

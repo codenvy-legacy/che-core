@@ -34,7 +34,7 @@ public class DarkTheme implements Theme {
 
     @Override
     public String getHoverBackgroundColor() {
-        return "#D4E8FF";
+        return "rgba(215, 215, 215, 0.12)";
     }
 
 
@@ -519,13 +519,33 @@ public class DarkTheme implements Theme {
     }
 
     @Override
-    public String getProgressColor() {
-        return "#ffffff";
+    public String getSelectCommandActionIconColor() {
+        return "#4a90e2";
     }
 
     @Override
-    public String getSvgUrlShadow() {
-        return "url(#shadowDarkTheme)";
+    public String getSelectCommandActionIconBackgroundColor() {
+        return "#1e1e1e";
+    }
+
+    @Override
+    public String getSelectCommandActionColor() {
+        return "#e3e3e3";
+    }
+
+    @Override
+    public String getSelectCommandActionHoverColor() {
+        return "#e0e0e0";
+    }
+
+    @Override
+    public String getDropDownListSelectionBackground() {
+        return "rgba(215, 215, 215, 0.12)";
+    }
+
+    @Override
+    public String getProgressColor() {
+        return "#ffffff";
     }
 
     @Override
@@ -591,6 +611,11 @@ public class DarkTheme implements Theme {
     @Override
     public String getEditorSeparatorColor() {
         return "#888888";
+    }
+
+    @Override
+    public String getBlueIconColor() {
+        return "#4eabff";
     }
 
     @Override

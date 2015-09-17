@@ -666,14 +666,44 @@ public interface Theme {
     String getPerspectiveSwitcherBackgroundColor();
 
     /**
+     * The icon color for the selectCommandAction.
+     *
+     * @return {@link String} color
+     */
+    String getSelectCommandActionIconColor();
+
+    /**
+     * The background color for selectCommandAction icon.
+     *
+     * @return {@link String} color
+     */
+    String getSelectCommandActionIconBackgroundColor();
+
+    /**
+     * The command action color.
+     *
+     * @return {@link String} color
+     */
+    String getSelectCommandActionColor();
+
+    /**
+     * The command action hover color.
+     *
+     * @return {@link String} color
+     */
+    String getSelectCommandActionHoverColor();
+
+    /**
+     * The Dropdown list selection color.
+     *
+     * @return {@link String} color
+     */
+    String getDropDownListSelectionBackground();
+
+    /**
      * @return the progress icon color
      */
     String getProgressColor();
-
-    /**
-     * @return the shadow property for *.svg
-     */
-    String getSvgUrlShadow();
 
     /**
      * @return the color of the success event
@@ -755,4 +785,9 @@ public interface Theme {
     String getSplitterLargeBorderColor();
 
 
+
+    /**
+     * @return the blue color for icon.
+     */
+    String getBlueIconColor();
 }

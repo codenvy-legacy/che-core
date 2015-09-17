@@ -14,7 +14,6 @@
 
 .mx-button {
     float: left;
-    margin-bottom: 1px;
 }
 
 .mx-button input {
@@ -25,6 +24,7 @@
     width: 18px;
     height: 16px;
     cursor: pointer;
+    margin-bottom: 2px;
     border-radius: 4px;
     text-align: center;
     background: inherit;
@@ -34,11 +34,12 @@
 
 .mx-button label svg {
     width: 12px;
-    height: 12px;
+    margin: auto;
+    height: 100%;
+    display: block;
     fill: toolbarIconColor;
-    -webkit-filter: drop-shadow( 0 0.5px 0 rgba(0, 0, 0, 0.3));
-    filter: drop-shadow( 0 0.5px 0 rgba(0, 0, 0, 0.3));
-    vertical-align: inherit;
+    -webkit-filter: drop-shadow(0 0.5px 0 rgba(0, 0, 0, 0.3));
+    filter: drop-shadow(0 0.5px 0 rgba(0, 0, 0, 0.3));
 }
 
 .mx-button label:hover svg {
@@ -50,7 +51,6 @@
 }
 
 .mx-button input:checked + label {
-    background: #4eabff;
     background: perspectiveSwitcherBackgroundColor;
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
