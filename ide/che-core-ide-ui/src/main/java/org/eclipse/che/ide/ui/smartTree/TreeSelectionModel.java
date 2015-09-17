@@ -27,6 +27,7 @@ import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.event.shared.HandlerManager;
 import com.google.gwt.event.shared.HandlerRegistration;
 
+import org.eclipse.che.ide.api.project.node.HasAction;
 import org.eclipse.che.ide.ui.smartTree.event.SelectionChangedEvent;
 import org.eclipse.che.ide.ui.smartTree.event.SelectionChangedEvent.HasSelectionChangedHandlers;
 import org.eclipse.che.ide.ui.smartTree.event.SelectionChangedEvent.SelectionChangedHandler;
@@ -156,6 +157,11 @@ public class TreeSelectionModel implements HasSelectionHandlers<Node>, HasBefore
         @Override
         public void onEsc(NativeEvent evt) {
             onKeyEsc(evt);
+        }
+
+        @Override
+        public void onEnter(NativeEvent evt) {
+            onKeyEnter(evt);
         }
     };
 
@@ -369,6 +375,18 @@ public class TreeSelectionModel implements HasSelectionHandlers<Node>, HasBefore
     private void onKeyEsc(NativeEvent evt) {
         evt.preventDefault();
         deselectAll();
+    }
+
+    private void onKeyEnter(NativeEvent evt) {
+        for (Node node : selectionStorage) {
+            if (node instanceof HasAction) {
+                ((HasAction)node).actionPerformed();
+            }
+
+            if (!node.isLeaf()) {
+                tree.toggle(node);
+            }
+        }
     }
 
     private void onKeyEnd(NativeEvent evt) {
