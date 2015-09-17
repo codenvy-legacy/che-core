@@ -453,6 +453,9 @@ public class StandardComponentInitializer {
         mainToolbarGroup.add(changeResourceGroup);
         toolbarPresenter.bindMainGroup(mainToolbarGroup);
 
+        DefaultActionGroup centerToolbarGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_CENTER_TOOLBAR);
+        toolbarPresenter.bindCenterGroup(centerToolbarGroup);
+
         DefaultActionGroup rightToolbarGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_RIGHT_TOOLBAR);
         toolbarPresenter.bindRightGroup(rightToolbarGroup);
 

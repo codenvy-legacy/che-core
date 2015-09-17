@@ -76,7 +76,6 @@
 @eval buttonColor org.eclipse.che.ide.api.theme.Style.getButtonColor();
 @eval buttonHoverTextColor org.eclipse.che.ide.api.theme.Style.getButtonHoverTextColor();
 @eval buttonHoverColor org.eclipse.che.ide.api.theme.Style.getButtonHoverColor();
-@eval svgUrlShadow org.eclipse.che.ide.api.theme.Style.getSvgUrlShadow();
 @eval socialButtonColor org.eclipse.che.ide.api.theme.Style.getSocialButtonColor();
 
 /* notable button */
@@ -161,6 +160,9 @@
 @eval radioButtonBackgroundColor org.eclipse.che.ide.api.theme.Style.getRadioButtonBackgroundColor();
 @eval disabledMenuItemColor org.eclipse.che.ide.api.theme.Style.getDeisabledMenuColor();
 
+/*Icons colors*/
+@eval blueIconColor org.eclipse.che.ide.api.theme.Style.getBlueIconColor();
+
 /*Toolbar*/
 @eval toolbarBackgroundImage org.eclipse.che.ide.api.theme.Style.getToolbarBackgroundImage();
 @eval toolbarActionGroupShadowColor org.eclipse.che.ide.api.theme.Style.getToolbarActionGroupShadowColor();
@@ -173,6 +175,13 @@
 
 /*PerspectiveSwitcher*/
 @eval perspectiveSwitcherBackgroundColor org.eclipse.che.ide.api.theme.Style.getPerspectiveSwitcherBackgroundColor();
+
+/*SelectCommandComboBox*/
+@eval selectCommandActionColor org.eclipse.che.ide.api.theme.Style.getSelectCommandActionColor();
+@eval selectCommandActionHoverColor org.eclipse.che.ide.api.theme.Style.getSelectCommandActionHoverColor();
+@eval selectCommandActionIconColor org.eclipse.che.ide.api.theme.Style.getSelectCommandActionIconColor();
+@eval selectCommandActionIconBackgroundColor org.eclipse.che.ide.api.theme.Style.getSelectCommandActionIconBackgroundColor();
+@eval dropDownListSelectionBackground org.eclipse.che.ide.api.theme.Style.getDropDownListSelectionBackground();
 
 /* DialogBox*/
 @eval dialogTopLeft org.eclipse.che.ide.api.theme.Style.getTabBorderColor();

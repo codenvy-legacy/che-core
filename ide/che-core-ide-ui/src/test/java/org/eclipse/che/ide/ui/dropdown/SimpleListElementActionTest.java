@@ -57,7 +57,7 @@ public class SimpleListElementActionTest {
     public void actionShouldBePerformed() throws Exception {
         action.actionPerformed(actionEvent);
 
-        verify(header).selectElement(image, TEXT);
+        verify(header).selectElement(TEXT);
     }
 
     @Test

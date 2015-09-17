@@ -9,34 +9,79 @@
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 .expandedImage {
-    transform: rotate(90deg);
-    -webkit-transform: rotate(90deg);
-    margin-top: 4px;
+    transform: scaleY(0.5) rotate(90deg);
+    margin-left: 3px;
+    margin-top: 1px;
+}
+
+.expandedImage svg {
+    width: 12px;
+    height: 12px;
+    fill: selectCommandActionColor;
+}
+
+.expandedImage:hover svg {
+    fill: selectCommandActionHoverColor;
 }
 
 .onMouseOver,
 .onMouseOut,
 .onClick {
-    display: flex;
-    height: 20px;
-    padding-right: 5px;
-    margin-right: 1px;
-    margin-left: 1px;
-    border-radius: 4px;
-    border-style: solid;
-    border-width: 1px;
-    border-color: #666666;
-}
-
-.onMouseOver {
-    border-color: #232323;
+    height: 100%;
 }
 
 .onMouseOut {
-    border-color: #666666;
+    color: selectCommandActionColor;
+}
+
+.onMouseOver {
+    color: selectCommandActionHoverColor;
 }
 
 .onClick {
-    border-color: #666666;
-    background-color: #D4E8FF;
+    color: selectCommandActionHoverColor;
+    background-color: hoverBackgroundColor;
+}
+
+.dropDownListMenu > table {
+    min-width: 148px;
+}
+
+.dropDownListMenu > table > tbody {
+    background-color: toolbarBackgroundColor;
+    border: 1px solid activeTabBorderColor;
+    box-shadow: activeTabTextShadow;
+}
+
+.dropDownListMenu > table > tbody > tr > td {
+    color: selectCommandActionColor;
+    text-shadow: 0 1px 0 buttonTextShadow;
+}
+
+.dropDownListMenu > table > tbody > tr > td {
+    max-height: 18px;
+    padding: 0;
+}
+
+.dropDownListMenu > table > tbody > tr > td hr {
+    margin: 0 4px 0 4px;
+    border-color: activeTabBorderColor;
+}
+
+.dropDownListMenu > table > tbody > tr > td:first-child {
+    text-align: center;
+    min-width: 16px;
+    height: inherit;
+}
+
+.dropDownListMenu > table > tbody > tr > td:last-child {
+    width: 0;
+}
+
+.dropDownListMenu > table > tbody > tr > td > svg {
+    display: inline;
+    max-width: 16px;
+    max-height: 16px;
+    fill: toolbarIconColor;
+    stroke: toolbarIconColor;
 }

@@ -513,13 +513,33 @@ public class LightTheme implements Theme {
     }
 
     @Override
-    public String getProgressColor() {
-        return "#000000";
+    public String getSelectCommandActionIconColor() {
+        return "#1a68af";
     }
 
     @Override
-    public String getSvgUrlShadow() {
-        return "url(#shadowLightTheme)";
+    public String getSelectCommandActionIconBackgroundColor() {
+        return "#e9e9e9";
+    }
+
+    @Override
+    public String getSelectCommandActionColor() {
+        return "#555555";
+    }
+
+    @Override
+    public String getSelectCommandActionHoverColor() {
+        return "#565656";
+    }
+
+    @Override
+    public String getDropDownListSelectionBackground() {
+        return "rgba(0, 0, 0, 0.12)";
+    }
+
+    @Override
+    public String getProgressColor() {
+        return "#000000";
     }
 
     @Override
@@ -591,6 +611,11 @@ public class LightTheme implements Theme {
     @Override
     public String getEditorSeparatorColor() {
         return "#888888";
+    }
+
+    @Override
+    public String getBlueIconColor() {
+        return "#1a68af";
     }
 
     @Override

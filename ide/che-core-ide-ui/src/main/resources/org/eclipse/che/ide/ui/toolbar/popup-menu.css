@@ -16,7 +16,6 @@
     /*background-color: mainMenuBkgColor;*/
     background-color: #545454;
     position: absolute;
-    box-shadow: 3px 3px 5px 0px rgba(50, 50, 50, 0.75);
 }
 
 .popupMenuTable {
@@ -136,7 +135,7 @@
 .popupMenuTitleFieldOver,
 .popupMenuHotKeyFieldOver,
 .popupMenuSubMenuFieldOver {
-    background-color: selectionBackground;
+    background-color: dropDownListSelectionBackground;
 }
 
 .popupMenuIconFieldDisabled,

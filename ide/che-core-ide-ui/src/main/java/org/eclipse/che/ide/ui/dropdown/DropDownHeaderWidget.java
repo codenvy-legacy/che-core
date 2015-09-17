@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ui.dropdown;
 
-import org.vectomatic.dom.svg.ui.SVGResource;
-
 import javax.validation.constraints.NotNull;
 import org.eclipse.che.commons.annotation.Nullable;
 
@@ -30,13 +28,10 @@ public interface DropDownHeaderWidget {
 
     /**
      * Sets title and image of selected element.
-     *
-     * @param icon
-     *         icon of the selected element
      * @param title
      *         title of the selected element
      */
-    void selectElement(@Nullable SVGResource icon, @NotNull String title);
+    void selectElement(@NotNull String title);
 
     interface ActionDelegate {
     }
