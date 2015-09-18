@@ -243,14 +243,14 @@ public class MachineManager {
                     @Override
                     public void run() {
                         try {
-                            instanceCreator.creteMachine(machineState, machineLogger);
+                            instanceCreator.createMachine(machineState, machineLogger);
                         } catch (MachineException e) {
                             LOG.error(e.getLocalizedMessage(), e);
                         }
                     }
                 }));
             } else {
-                instanceCreator.creteMachine(machineState, machineLogger);
+                instanceCreator.createMachine(machineState, machineLogger);
             }
 
             return machineState;
@@ -260,7 +260,7 @@ public class MachineManager {
     }
 
     private abstract class MachineInstanceCreator {
-        public Instance creteMachine(MachineImpl machine, LineConsumer machineLogger) throws MachineException {
+        public Instance createMachine(MachineImpl machine, LineConsumer machineLogger) throws MachineException {
             try {
                 eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
                                                .withEventType(MachineStatusEvent.EventType.CREATING)
