@@ -173,10 +173,8 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
 
         new SpeedSearch(tree, new NodeNameConverter());
 
-        ScrollPanel panel = new ScrollPanel(tree);
-        panel.ensureDebugId("projectExplorer");
-
-        setContentWidget(panel);
+        tree.ensureDebugId("projectExplorer");
+        setContentWidget(tree);
 
         searchNodeHandler = new SearchNodeHandler(tree);
     }
