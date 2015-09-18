@@ -14,6 +14,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.common.io.CharStreams;
 
+import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
@@ -86,7 +87,7 @@ public class MachineService {
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
     public MachineStateDescriptor createMachineFromRecipe(final RecipeMachineCreationMetadata machineFromRecipeMetadata)
-            throws ServerException, ForbiddenException, NotFoundException, ConflictException {
+            throws ServerException, ForbiddenException, NotFoundException, ConflictException, BadRequestException {
         requiredNotNull(machineFromRecipeMetadata, "Machine description");
         requiredNotNull(machineFromRecipeMetadata.getType(), "Machine type");
         requiredNotNull(machineFromRecipeMetadata.getWorkspaceId(), "Workspace id");
@@ -107,7 +108,7 @@ public class MachineService {
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
     public MachineStateDescriptor createMachineFromSnapshot(SnapshotMachineCreationMetadata machineFromSnapshotMetadata)
-            throws ForbiddenException, NotFoundException, ServerException, ConflictException {
+            throws ForbiddenException, NotFoundException, ServerException, ConflictException, BadRequestException {
         requiredNotNull(machineFromSnapshotMetadata, "Snapshot description");
         requiredNotNull(machineFromSnapshotMetadata.getSnapshotId(), "Snapshot id");
 
