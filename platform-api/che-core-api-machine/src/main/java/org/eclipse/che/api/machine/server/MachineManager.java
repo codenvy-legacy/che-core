@@ -12,6 +12,7 @@ package org.eclipse.che.api.machine.server;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
@@ -67,6 +68,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 /**
  * Facade for Machine level operations.
@@ -76,7 +78,9 @@ import java.util.concurrent.TimeUnit;
  */
 @Singleton
 public class MachineManager {
-    private static final Logger LOG = LoggerFactory.getLogger(MachineManager.class);
+    private static final Logger  LOG                          = LoggerFactory.getLogger(MachineManager.class);
+    /* machine name must contain only {a-zA-Z0-9_-} characters and it's needed for validation machine names */
+    private static final Pattern MACHINE_DISPLAY_NAME_PATTERN = Pattern.compile("^/?[a-zA-Z0-9_-]+$");
 
     private final SnapshotDao              snapshotDao;
     private final File                     machineLogsDir;
@@ -121,9 +125,11 @@ public class MachineManager {
      *         if machine with given name already exists
      * @throws MachineException
      *         if any other exception occurs during starting
+     * @throws BadRequestException
+     *         if machine display name is invalid
      */
     public MachineImpl create(final RecipeMachineCreationMetadata machineCreationMetadata, boolean async)
-            throws MachineException, NotFoundException, UnsupportedRecipeException, ConflictException {
+            throws MachineException, NotFoundException, UnsupportedRecipeException, ConflictException, BadRequestException {
         final MachineRecipe machineRecipe = machineCreationMetadata.getRecipe();
         final InstanceProvider instanceProvider = machineInstanceProviders.getProvider(machineCreationMetadata.getType());
         final String recipeType = machineRecipe.getType();
@@ -170,9 +176,11 @@ public class MachineManager {
      *         if error occurs on retrieving snapshot information
      * @throws MachineException
      *         if any other exception occurs during starting
+     * @throws BadRequestException
+     *         if machine display name is invalid
      */
     public MachineImpl create(final SnapshotMachineCreationMetadata machineCreationMetadata, boolean async)
-            throws NotFoundException, SnapshotException, MachineException, ConflictException {
+            throws NotFoundException, SnapshotException, MachineException, ConflictException, BadRequestException {
         final SnapshotImpl snapshot = getSnapshot(machineCreationMetadata.getSnapshotId());
         final InstanceProvider instanceProvider = machineInstanceProviders.getProvider(snapshot.getType());
 
@@ -210,9 +218,14 @@ public class MachineManager {
                                       final MachineCreationMetadata creationMetadata,
                                       boolean async,
                                       final MachineInstanceCreator instanceCreator)
-            throws MachineException, NotFoundException, ConflictException {
+            throws MachineException, NotFoundException, ConflictException, BadRequestException {
+        String machineDisplayName = creationMetadata.getDisplayName();
+        if (!MACHINE_DISPLAY_NAME_PATTERN.matcher(machineDisplayName).matches()) {
+            throw new BadRequestException("Invalid machine name " + machineDisplayName);
+        }
+
         for (MachineImpl machine : machineRegistry.getStates()) {
-            if (machine.getWorkspaceId().equals(workspaceId) && machine.getDisplayName().equals(creationMetadata.getDisplayName())) {
+            if (machine.getWorkspaceId().equals(workspaceId) && machine.getDisplayName().equals(machineDisplayName)) {
                 throw new ConflictException("Machine with name " + creationMetadata.getDisplayName() + " already exists");
             }
         }
