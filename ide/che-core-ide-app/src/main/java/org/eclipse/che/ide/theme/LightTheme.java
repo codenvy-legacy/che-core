@@ -374,12 +374,32 @@ public class LightTheme implements Theme {
 
     @Override
     public String getMainMenuBkgColor() {
-        return "#f6f6f6";
+        return "#cacacc";
+    }
+
+    @Override
+    public String getMainMenuSelectedBkgColor() {
+        return "#ffffff";
+    }
+
+    @Override
+    public String getMainMenuSelectedBorderColor() {
+        return "#a4a4a4";
     }
 
     @Override
     public String getMainMenuFontColor() {
-        return "#222222";
+        return "#555555";
+    }
+
+    @Override
+    public String getMainMenuFontHoverColor() {
+        return "#333333";
+    }
+
+    @Override
+    public String getMainMenuFontSelectedColor() {
+        return "#1a68af";
     }
 
     @Override
@@ -533,11 +553,6 @@ public class LightTheme implements Theme {
     }
 
     @Override
-    public String getDropDownListSelectionBackground() {
-        return "rgba(0, 0, 0, 0.12)";
-    }
-
-    @Override
     public String getProgressColor() {
         return "#000000";
     }
@@ -638,4 +653,27 @@ public class LightTheme implements Theme {
         return "white";
     }
 
+    public String getPopupBkgColor() {
+        return "#ececec";
+    }
+
+    @Override
+    public String getPopupBorderColor() {
+        return "#a4a4a4";
+    }
+
+    @Override
+    public String getPopupShadowColor() {
+        return "rgba(0, 0, 0, 0.30)";
+    }
+
+    @Override
+    public String getPopupHoverColor() {
+        return "rgba(0, 0, 0, 0.12)";
+    }
+
+    @Override
+    public String getPopupHotKeyColor() {
+        return "#A2A2A2";
+    }
 }

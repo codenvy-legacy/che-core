@@ -232,7 +232,6 @@ public class PopupMenu extends Composite {
             if (menuItem instanceof Separator) {
                 if (i > 0 && i < list.size() - 1) {
                     table.getFlexCellFormatter().setColSpan(i, 0, hasCheckedItems ? 5 : 4);
-                    table.setHTML(i, 0, "<nobr><hr noshade=\"noshade\" size=\"1\"></nobr>");
                     table.getCellFormatter().setStyleName(i, 0, POPUP_RESOURCES.popup().popupMenuDelimiter());
                 }
             } else {
@@ -240,7 +239,6 @@ public class PopupMenu extends Composite {
 
                 if (presentation.getSVGIcon() != null) {
                     SVGImage image = new SVGImage(presentation.getSVGIcon());
-                    image.getElement().getStyle().setMarginTop(2, Unit.PX);
                     table.setWidget(i, 0, image);
                 } else {
                     Image image = null;
@@ -354,59 +352,13 @@ public class PopupMenu extends Composite {
      *         - element to be processed.
      */
     protected void setStyleNormal(Element row) {
-        if (row == null) {
-            return;
-        }
-
-        if (hasCheckedItems) {
-            Element iconTD = DOM.getChild(row, 0);
-            Element checkTD = DOM.getChild(row, 1);
-            Element titleTD = DOM.getChild(row, 2);
-            Element hotKeyTD = DOM.getChild(row, 3);
-            Element submenuTD = DOM.getChild(row, 4);
-
-            iconTD.setClassName(POPUP_RESOURCES.popup().popupMenuIconField());
-            checkTD.setClassName(POPUP_RESOURCES.popup().popupMenuCheckField());
-            titleTD.setClassName(POPUP_RESOURCES.popup().popupMenuTitleField());
-            hotKeyTD.setClassName(POPUP_RESOURCES.popup().popupMenuHotKeyField());
-            submenuTD.setClassName(POPUP_RESOURCES.popup().popupMenuSubMenuField());
-        } else {
-            Element iconTD = DOM.getChild(row, 0);
-            Element titleTD = DOM.getChild(row, 1);
-            Element hotKeyTD = DOM.getChild(row, 2);
-            Element submenuTD = DOM.getChild(row, 3);
-
-            iconTD.setClassName(POPUP_RESOURCES.popup().popupMenuIconField());
-            titleTD.setClassName(POPUP_RESOURCES.popup().popupMenuTitleField());
-            hotKeyTD.setClassName(POPUP_RESOURCES.popup().popupMenuHotKeyField());
-            submenuTD.setClassName(POPUP_RESOURCES.popup().popupMenuSubMenuField());
+        if (row != null) {
+            row.removeClassName(POPUP_RESOURCES.popup().popupMenuItemOver());
         }
     }
 
     private void setStyleHovered(Element tr) {
-        if (hasCheckedItems) {
-            Element iconTD = DOM.getChild(tr, 0);
-            Element checkTD = DOM.getChild(tr, 1);
-            Element titleTD = DOM.getChild(tr, 2);
-            Element hotKeyTD = DOM.getChild(tr, 3);
-            Element submenuTD = DOM.getChild(tr, 4);
-
-            iconTD.setClassName(POPUP_RESOURCES.popup().popupMenuIconFieldOver());
-            checkTD.setClassName(POPUP_RESOURCES.popup().popupMenuCheckFieldOver());
-            titleTD.setClassName(POPUP_RESOURCES.popup().popupMenuTitleFieldOver());
-            hotKeyTD.setClassName(POPUP_RESOURCES.popup().popupMenuHotKeyFieldOver());
-            submenuTD.setClassName(POPUP_RESOURCES.popup().popupMenuSubMenuFieldOver());
-        } else {
-            Element iconTD = DOM.getChild(tr, 0);
-            Element titleTD = DOM.getChild(tr, 1);
-            Element hotKeyTD = DOM.getChild(tr, 2);
-            Element submenuTD = DOM.getChild(tr, 3);
-
-            iconTD.setClassName(POPUP_RESOURCES.popup().popupMenuIconFieldOver());
-            titleTD.setClassName(POPUP_RESOURCES.popup().popupMenuTitleFieldOver());
-            hotKeyTD.setClassName(POPUP_RESOURCES.popup().popupMenuHotKeyFieldOver());
-            submenuTD.setClassName(POPUP_RESOURCES.popup().popupMenuSubMenuFieldOver());
-        }
+        tr.setClassName(POPUP_RESOURCES.popup().popupMenuItemOver());
     }
 
     /**
@@ -580,10 +532,6 @@ public class PopupMenu extends Composite {
 
         String popupMenuIconFieldDisabled();
 
-        String popupMenuIconFieldOver();
-
-        String popupMenuCheckFieldOver();
-
         String popupMenuCheckField();
 
         String popupMenuTable();
@@ -592,17 +540,13 @@ public class PopupMenu extends Composite {
 
         String popupMenuMain();
 
-        String popupMenuTitleFieldOver();
-
         String popupMenuTitleFieldDisabled();
 
         String popupMenuCheckFieldDisabled();
 
-        String popupMenuHotKeyFieldOver();
-
-        String popupMenuSubMenuFieldOver();
-
         String popupMenuHotKeyField();
+
+        String popupMenuItemOver();
     }
 
     /** This table uses for handling mouse events. */

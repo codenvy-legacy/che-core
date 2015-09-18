@@ -521,11 +521,39 @@ public interface Theme {
     String getMainMenuBkgColor();
 
     /**
+     * Background color of selected menu items
+     *
+     * @return the color
+     */
+    String getMainMenuSelectedBkgColor();
+
+    /**
+     * Border color of selected menu items
+     *
+     * @return the color
+     */
+    String getMainMenuSelectedBorderColor();
+
+    /**
      * Font color for menu item text
      *
      * @return the color
      */
     String getMainMenuFontColor();
+
+    /**
+     * Font color for menu item hover text
+     *
+     * @return the color
+     */
+    String getMainMenuFontHoverColor();
+
+    /**
+     * Font color for menu item selected text
+     *
+     * @return the color
+     */
+    String getMainMenuFontSelectedColor();
 
     String getNotableButtonTopColor();
 
@@ -694,13 +722,6 @@ public interface Theme {
     String getSelectCommandActionHoverColor();
 
     /**
-     * The Dropdown list selection color.
-     *
-     * @return {@link String} color
-     */
-    String getDropDownListSelectionBackground();
-
-    /**
      * @return the progress icon color
      */
     String getProgressColor();
@@ -803,4 +824,29 @@ public interface Theme {
      * @return the blue color for icon.
      */
     String getBlueIconColor();
+
+    /**
+    * @return the color of the popup background.
+    */
+    String getPopupBkgColor();
+
+    /**
+     * @return the color of the popup border.
+     */
+    String getPopupBorderColor();
+
+    /**
+     * @return the color of the popup shadow.
+     */
+    String getPopupShadowColor();
+
+    /**
+     * @return the color of the popup hover.
+     */
+    String getPopupHoverColor();
+
+    /**
+     * @return the font color of the popup hot key.
+     */
+    String getPopupHotKeyColor();
 }
