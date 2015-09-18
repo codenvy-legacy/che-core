@@ -21,13 +21,7 @@ abstract class ProcessManager {
 
     abstract void kill(Process process);
 
-    abstract void kill(int pid);
-
     abstract boolean isAlive(Process process);
-
-    abstract boolean isAlive(int pid);
-
-    abstract int getPid(Process process);
 
     abstract int system(String command);
 }

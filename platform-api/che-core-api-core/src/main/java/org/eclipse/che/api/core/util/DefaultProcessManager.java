@@ -33,11 +33,6 @@ class DefaultProcessManager extends ProcessManager {
     }
 
     @Override
-    public void kill(int pid) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public boolean isAlive(Process process) {
         try {
             process.exitValue();
@@ -47,15 +42,6 @@ class DefaultProcessManager extends ProcessManager {
         }
     }
 
-    @Override
-    public boolean isAlive(int pid) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public int getPid(Process process) {
-        throw new UnsupportedOperationException();
-    }
 
     @Override
     int system(String command) {
