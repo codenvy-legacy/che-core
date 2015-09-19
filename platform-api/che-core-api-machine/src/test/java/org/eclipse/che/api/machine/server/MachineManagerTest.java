@@ -12,6 +12,7 @@ package org.eclipse.che.api.machine.server;
 
 
 import org.eclipse.che.api.core.BadRequestException;
+import org.eclipse.che.api.core.model.machine.Recipe;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.util.LineConsumer;
 import org.eclipse.che.api.machine.server.dao.SnapshotDao;
@@ -19,7 +20,6 @@ import org.eclipse.che.api.machine.server.impl.MachineImpl;
 import org.eclipse.che.api.machine.server.spi.Instance;
 import org.eclipse.che.api.machine.server.spi.InstanceProvider;
 import org.eclipse.che.api.machine.shared.MachineStatus;
-import org.eclipse.che.api.machine.shared.Recipe;
 import org.eclipse.che.api.machine.shared.dto.RecipeMachineCreationMetadata;
 import org.eclipse.che.api.machine.shared.dto.recipe.MachineRecipe;
 import org.eclipse.che.commons.env.EnvironmentContext;
