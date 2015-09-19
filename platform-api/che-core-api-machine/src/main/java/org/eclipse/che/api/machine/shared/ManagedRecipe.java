@@ -11,6 +11,8 @@
 package org.eclipse.che.api.machine.shared;
 
 
+import org.eclipse.che.api.core.model.machine.Recipe;
+
 import java.util.List;
 
 /**

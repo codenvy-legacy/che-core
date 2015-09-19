@@ -10,9 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.server.impl;
 
+import org.eclipse.che.api.core.model.machine.Recipe;
 import org.eclipse.che.api.machine.server.spi.InstanceKey;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
-import org.eclipse.che.api.machine.shared.Recipe;
 import org.eclipse.che.api.machine.shared.Snapshot;
 
 import java.util.Collections;
