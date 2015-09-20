@@ -38,13 +38,8 @@ public final class ProcessUtil {
     public static void process(Process p, LineConsumer stdout, LineConsumer stderr) throws IOException {
         try (BufferedReader inputReader = new BufferedReader(new InputStreamReader(p.getInputStream()));
              BufferedReader errorReader = new BufferedReader(new InputStreamReader(p.getErrorStream()))) {
-            String line;
-            while ((line = inputReader.readLine()) != null) {
-                stdout.writeLine(line);
-            }
-            while ((line = errorReader.readLine()) != null) {
-                stderr.writeLine(line);
-            }
+            inputReader.lines().forEach(line -> stdout.writeLine(line));
+            errorReader.lines().forEach(line -> stderr.writeLine(line)));    
         }
     }
 
@@ -60,10 +55,7 @@ public final class ProcessUtil {
      */
     public static void process(Process p, LineConsumer stdout) throws IOException {
         try (BufferedReader inputReader = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
-            String line;
-            while ((line = inputReader.readLine()) != null) {
-                stdout.writeLine(line);
-            }
+            inputReader.lines().forEach(line -> stdout.writeLine(line));
         }
     }
 
