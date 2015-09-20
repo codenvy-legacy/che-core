@@ -13,7 +13,6 @@ package org.eclipse.che.api.core.util;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.stream.Collectors;
 
 /**
  * Helpers to manage system processes.
