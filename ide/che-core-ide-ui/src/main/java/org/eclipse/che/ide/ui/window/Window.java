@@ -28,9 +28,9 @@ import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
-import org.vectomatic.dom.svg.ui.SVGImage;
 
 import org.eclipse.che.commons.annotation.Nullable;
+import org.vectomatic.dom.svg.ui.SVGImage;
 
 /**
  * A popup that automatically centers its content, even if the dimensions of the content change. The
@@ -76,6 +76,9 @@ public abstract class Window implements IsWidget {
         view.headerLabel.ensureDebugId(id + "-headerLabel");
     }
 
+    public void hideCrossButton() {
+        view.crossButton.setVisible(false);
+    }
 
     /**
      * Hides the {@link Window} popup. The popup will animate out of view.
@@ -149,7 +152,7 @@ public abstract class Window implements IsWidget {
         button.addClickHandler(clickHandler);
         return button;
     }
-    
+
     protected void onEnterClicked() {
     }
 
@@ -296,11 +299,11 @@ public abstract class Window implements IsWidget {
         String alignBtn();
 
         String crossButton();
-        
+
         String blueButton();
-        
+
         String button();
-        
+
         String label();
 
         String image();
@@ -315,7 +318,7 @@ public abstract class Window implements IsWidget {
         void onEscapeKey();
 
         void onClose();
-        
+
         void onEnterKey();
     }
 

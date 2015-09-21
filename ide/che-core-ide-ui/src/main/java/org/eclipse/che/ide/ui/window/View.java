@@ -42,7 +42,7 @@ import com.google.gwt.user.client.ui.Widget;
  * panel that fades out the background, and a DOM structure that positions the
  * contents in the exact center of the screen.
  */
-public class View extends Composite {
+class View extends Composite {
 
     private static MyBinder uiBinder = GWT.create(MyBinder.class);
     final Window.Resources res;

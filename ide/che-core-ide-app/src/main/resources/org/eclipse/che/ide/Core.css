@@ -591,6 +591,7 @@ class for the document-level scrollbars. */
     vertical-align: middle;
     margin-right: 10px;
 }
+
 .privacyTooltip div:first-child span {
     vertical-align: middle;
 }
@@ -606,4 +607,16 @@ class for the document-level scrollbars. */
 
 .publicProjectSvg {
     fill: #4C9AFF;
+}
+
+.createWsTagsPopup {
+    /*the same index as in Window*/
+    z-index: 20000;
+    border: 1px solid #121416;
+    border-radius: 3px;
+    background-color: #292C2F;
+}
+
+.tagsPanel {
+    width: 410px;
 }
