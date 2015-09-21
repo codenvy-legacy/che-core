@@ -24,6 +24,8 @@ import com.google.inject.Singleton;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Collections;
+import java.util.Comparator;
 
 /** @author Evgen Vidolob */
 @Singleton
@@ -65,6 +67,10 @@ public class ExtensionManagerPresenter extends AbstractPreferencePagePresenter i
         for (ExtensionDescription ed : extensionRegistry.getExtensionDescriptions().values()) {
             extensions.add(ed);
         }
+
+        // Sort the list of plug-ins alphabetically
+        Collections.sort(extensions, (ed1, ed2) -> ed1.getTitle().compareTo(ed2.getTitle()));
+
         view.setExtensions(extensions);
     }
 
