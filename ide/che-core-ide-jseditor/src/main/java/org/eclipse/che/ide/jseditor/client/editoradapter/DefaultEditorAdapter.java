@@ -220,6 +220,11 @@ public class DefaultEditorAdapter extends Composite implements EditorAdapter, Fi
     }
 
     @Override
+    public int getUnreadNotificationsCount() {
+        return 0;
+    }
+
+    @Override
     public String getTitleToolTip() {
         return this.textEditor.getTitleToolTip();
     }

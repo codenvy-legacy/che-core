@@ -17,8 +17,6 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.IsWidget;
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
@@ -27,7 +25,7 @@ import com.google.inject.Singleton;
 /**
  * The implementation of {@link NotificationManagerView}.
  *
- * @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a>
+ * @author Andrey Plotnikov
  */
 @Singleton
 public class NotificationManagerViewImpl extends BaseView<NotificationManagerView.ActionDelegate> implements NotificationManagerView {
@@ -40,8 +38,6 @@ public class NotificationManagerViewImpl extends BaseView<NotificationManagerVie
 
     @UiField
     ScrollPanel scrollPanel;
-
-    Label count = new Label();
 
     /** scroll events to the bottom if view is visible */
     private boolean scrollBottomRequired = false;
@@ -58,31 +54,14 @@ public class NotificationManagerViewImpl extends BaseView<NotificationManagerVie
         super(partStackUIResources);
         setContentWidget(uiBinder.createAndBindUi(this));
 
-        count.setStyleName(resources.notificationCss().countLabel());
-        count.setVisible(false);
-
         minimizeButton.ensureDebugId("notification-minimizeBut");
 
         scrollPanel.getElement().setTabIndex(0);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public void setNotificationCount(int count) {
-        String text = count > 0 ? String.valueOf(count) : "";
-        this.count.setText(text);
-        this.count.setVisible(count > 0);
-    }
-
     @Override
     public void setContainer(NotificationContainer container) {
         mainPanel.add(container);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public IsWidget getCountLabel() {
-        return count;
     }
 
     /** {@inheritDoc} */

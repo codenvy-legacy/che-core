@@ -27,7 +27,8 @@ import javax.validation.constraints.NotNull;
  * @author Evgen Vidolob
  */
 public interface EditorPartPresenter extends PartPresenter {
-    public interface EditorPartCloseHandler {
+
+    interface EditorPartCloseHandler {
         void onClose(EditorPartPresenter editor);
     }
 

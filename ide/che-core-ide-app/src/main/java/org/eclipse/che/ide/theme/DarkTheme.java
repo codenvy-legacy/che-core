@@ -628,4 +628,14 @@ public class DarkTheme implements Theme {
         return "#2D2D2D";
     }
 
+    @Override
+    public String getBadgeBackgroundColor() {
+        return "#4EABFF";
+    }
+
+    @Override
+    public String getBadgeFontColor() {
+        return "white";
+    }
+
 }

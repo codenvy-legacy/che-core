@@ -12,9 +12,7 @@ package org.eclipse.che.ide.notification;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
-import com.google.gwt.user.client.ui.IsWidget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
@@ -64,6 +62,9 @@ public class NotificationManagerImpl extends BasePresenter implements Notificati
 
     private Resources                resources;
 
+    /** Count of unread messages */
+    private int unread;
+
     @Inject
     public NotificationManagerImpl(EventBus eventBus,
                                    NotificationManagerView view,
@@ -110,16 +111,20 @@ public class NotificationManagerImpl extends BasePresenter implements Notificati
     /** {@inheritDoc} */
     @Override
     public void onValueChanged() {
-        int countUnread = 0;
+        unread = 0;
 
         for (Notification notification : notifications) {
             if (!notification.isRead()) {
-                countUnread++;
+                unread++;
             }
         }
 
-        view.setNotificationCount(countUnread);
         firePropertyChange(TITLE_PROPERTY);
+    }
+
+    @Override
+    public int getUnreadNotificationsCount() {
+        return unread;
     }
 
     /** {@inheritDoc} */
@@ -241,20 +246,8 @@ public class NotificationManagerImpl extends BasePresenter implements Notificati
 
     @Nullable
     @Override
-    public ImageResource getTitleImage() {
-        return null;
-    }
-
-    @Nullable
-    @Override
     public SVGResource getTitleSVGImage() {
         return resources.eventsPartIcon();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public IsWidget getTitleWidget() {
-        return view.getCountLabel();
     }
 
     @Nullable

@@ -141,8 +141,8 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
         part.addPropertyListener(propertyListener);
 
         PartButton partButton = tabItemFactory.createPartButton(part.getTitle())
-                                              .addTooltip(part.getTitleToolTip())
-                                              .addIcon(part.getTitleSVGImage());
+                                              .setTooltip(part.getTitleToolTip())
+                                              .setIcon(part.getTitleSVGImage());
         partButton.setDelegate(this);
 
         parts.put(partButton, part);
@@ -288,4 +288,5 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
         /** PartStack is being clicked and requests Focus */
         void onRequestFocus(PartStack partStack);
     }
+
 }

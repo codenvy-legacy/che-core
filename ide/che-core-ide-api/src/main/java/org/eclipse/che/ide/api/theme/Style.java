@@ -500,4 +500,12 @@ public class Style {
         return theme.getSplitterLargeBorderColor();
     }
 
+    public static String getBadgeBackgroundColor() {
+        return theme.getBadgeBackgroundColor();
+    }
+
+    public static String getBadgeFontColor() {
+        return theme.getBadgeFontColor();
+    }
+
 }

@@ -784,6 +784,19 @@ public interface Theme {
      */
     String getSplitterLargeBorderColor();
 
+    /**
+     * Color of badge background.
+     *
+     * @return badge background color
+     */
+    String getBadgeBackgroundColor();
+
+    /**
+     * Color of badge font.
+     *
+     * @return badge font color
+     */
+    String getBadgeFontColor();
 
 
     /**

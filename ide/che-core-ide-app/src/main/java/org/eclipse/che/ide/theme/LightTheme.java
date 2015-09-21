@@ -628,4 +628,14 @@ public class LightTheme implements Theme {
         return "#E1E1E1";
     }
 
+    @Override
+    public String getBadgeBackgroundColor() {
+        return "rgb(78, 171, 255)";
+    }
+
+    @Override
+    public String getBadgeFontColor() {
+        return "white";
+    }
+
 }
