@@ -14,6 +14,9 @@ import com.google.common.base.Strings;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.ContextMenuEvent;
+import com.google.gwt.event.dom.client.ContextMenuHandler;
+import com.google.gwt.user.client.Event;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.resources.client.ClientBundle;
@@ -173,8 +176,17 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
 
         new SpeedSearch(tree, new NodeNameConverter());
 
-        tree.ensureDebugId("projectExplorer");
-        setContentWidget(tree);
+        ScrollPanel treePanel = new ScrollPanel(tree);
+        treePanel.ensureDebugId("projectExplorer");
+        setContentWidget(treePanel);
+
+        treePanel.addDomHandler(new ContextMenuHandler() {
+            @Override
+            public void onContextMenu(ContextMenuEvent event) {
+                event.preventDefault();
+                tree.onBrowserEvent((Event) event.getNativeEvent());
+            }
+        }, ContextMenuEvent.getType());
 
         searchNodeHandler = new SearchNodeHandler(tree);
     }
