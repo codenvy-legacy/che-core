@@ -82,4 +82,9 @@ public interface PartStack extends Presenter {
     void removePart(PartPresenter part);
 
     void openPreviousActivePart();
+
+    /**
+     * Update part stack reference
+     */
+    void updateStack();
 }

@@ -238,6 +238,15 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
         }
     }
 
+    @Override
+    public void updateStack() {
+        for (PartPresenter partPresenter: parts.values()) {
+            if (partPresenter instanceof BasePresenter) {
+                ((BasePresenter)partPresenter).setPartStack(this);
+            }
+        }
+    }
+
     /** {@inheritDoc} */
     @Override
     public void onRequestFocus() {
