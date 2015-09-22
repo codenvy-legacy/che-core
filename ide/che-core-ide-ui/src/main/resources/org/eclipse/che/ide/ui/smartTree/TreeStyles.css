@@ -95,8 +95,6 @@
     min-width: 100%;
     font-size: 0.85em;
     font-weight: bold;
-    overflow-x: scroll;
-    overflow-y: scroll;
 }
 
 .loading {
