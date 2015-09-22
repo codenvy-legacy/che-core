@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.server;
 
+import com.google.common.base.Strings;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import org.eclipse.che.api.core.BadRequestException;
@@ -20,6 +21,7 @@ import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.machine.Command;
 import org.eclipse.che.api.core.model.machine.Recipe;
 import org.eclipse.che.api.core.notification.EventService;
+import org.eclipse.che.api.core.notification.EventSubscriber;
 import org.eclipse.che.api.core.util.CompositeLineConsumer;
 import org.eclipse.che.api.core.util.FileLineConsumer;
 import org.eclipse.che.api.core.util.LineConsumer;
@@ -70,6 +72,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
+import static org.eclipse.che.api.machine.server.InstanceStateEvent.Type.DIE;
+import static org.eclipse.che.api.machine.server.InstanceStateEvent.Type.OOM;
+
 /**
  * Facade for Machine level operations.
  *
@@ -89,6 +94,7 @@ public class MachineManager {
     private final MachineRegistry          machineRegistry;
     private final EventService             eventService;
     private final int                      defaultMachineMemorySizeMB;
+    private final MachineCleaner           machineCleaner;
 
     @Inject
     public MachineManager(SnapshotDao snapshotDao,
@@ -105,6 +111,7 @@ public class MachineManager {
         this.defaultMachineMemorySizeMB = defaultMachineMemorySizeMB;
 
         executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("MachineManager-%d").setDaemon(true).build());
+        this.machineCleaner = new MachineCleaner();
     }
 
     /**
@@ -802,7 +809,14 @@ public class MachineManager {
     private void doDestroy(Instance machine) throws MachineException, NotFoundException {
         machine.destroy();
 
+        cleanupOnDestroy(machine, null);
+    }
+
+    private void cleanupOnDestroy(Instance machine, String message) throws NotFoundException, MachineException {
         try {
+            if (! Strings.isNullOrEmpty(message)) {
+                machine.getLogger().writeLine(message);
+            }
             machine.getLogger().close();
         } catch (IOException ignore) {
         }
@@ -872,8 +886,32 @@ public class MachineManager {
         return fileLogger;
     }
 
+    // cleanup machine if event about instance failure comes
+    private class MachineCleaner implements EventSubscriber<InstanceStateEvent> {
+        @Override
+        public void onEvent(InstanceStateEvent event) {
+            if ((event.getType() == OOM) || (event.getType() == DIE)) {
+                try {
+                    final Instance machine = getMachine(event.getMachineId());
+                    String message = "Machine is destroyed.";
+                    if (event.getType() == OOM) {
+                        message = message +
+                                  "The processes in this machine need more RAM. This machine started with " + machine.getMemorySize() +
+                                  "MB. Create a new machine configuration that allocates additional RAM or increase " +
+                                  "the workspace RAM limit in the user dashboard.";
+                    }
+
+                    cleanupOnDestroy(machine, message);
+                } catch (NotFoundException | MachineException ignore) {
+                }
+            }
+        }
+    }
+
     @PostConstruct
     private void createLogsDir() {
+        eventService.subscribe(machineCleaner);
+
         if (!(machineLogsDir.exists() || machineLogsDir.mkdirs())) {
             throw new IllegalStateException(String.format("Unable create directory %s", machineLogsDir.getAbsolutePath()));
         }
@@ -881,6 +919,8 @@ public class MachineManager {
 
     @PreDestroy
     private void cleanup() {
+        eventService.unsubscribe(machineCleaner);
+
         boolean interrupted = false;
         executor.shutdown();
         try {
