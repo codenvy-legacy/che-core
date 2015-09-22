@@ -163,9 +163,9 @@
 @def textFieldFontFamily "Lucida Grande", Verdana, Arial;
 @def textFieldFontSize 9px;
 @def wrongBorderBottomColor #d0021b;
-@def validBorderBottomColor #50C602;
+@def validBorderBottomColor #50c602;
 
-    /*Main Menu*/
+/*Main Menu*/
 @eval mainMenuBkgColor org.eclipse.che.ide.api.theme.Style.getMainMenuBkgColor();
 @eval mainMenuSelectedBkgColor org.eclipse.che.ide.api.theme.Style.getMainMenuSelectedBkgColor();
 @eval mainMenuSelectedBorderColor org.eclipse.che.ide.api.theme.Style.getMainMenuSelectedBorderColor();

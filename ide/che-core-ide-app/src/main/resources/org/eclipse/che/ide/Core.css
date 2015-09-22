@@ -27,12 +27,10 @@ body, td {
 
 /* We must override the user agent stylesheet which sets textarea font to monospace. */
 textarea {
-
     font-family: mainFontFamily;
     color: mainFontColor;
     background-color: inputBackground;
     border: 1px solid tabBorder;
-    border-radius: 2px;
     font-size: fontSize;
 }
 
@@ -84,7 +82,6 @@ textarea {
 .gwt-RadioButton label:before {
     content: "";
     display: inline-block;
-
     width: 13px;
     height: 13px;
     top: 2px;
@@ -123,6 +120,11 @@ textarea {
 .gwt-TextBox {
     min-height: 20px;
     padding: 0 5px 0 5px;
+}
+
+.gwt-TextArea {
+    min-height: 40px;
+    padding: 5px;
 }
 
 .gwt-TextBox:invalid,
