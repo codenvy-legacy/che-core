@@ -29,6 +29,7 @@ import org.eclipse.che.api.user.shared.dto.ProfileDescriptor;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.dto.server.DtoFactory;
 
+import com.google.common.util.concurrent.Striped;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -69,6 +70,8 @@ import static org.eclipse.che.api.user.server.Constants.LINK_REL_UPDATE_USER_PRO
 import static com.google.common.base.Strings.nullToEmpty;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
+import java.util.concurrent.locks.Lock;
+
 /**
  * User Profile API
  *
@@ -81,6 +84,10 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 public class UserProfileService extends Service {
 
     private static final Logger LOG = LoggerFactory.getLogger(UserProfileService.class);
+    
+    // Assuming 1000 concurrent users at most trying to update their preferences (if more they will wait for another user to finish).
+    // Using the lazy weak version of Striped so the locks will be created on demand and not eagerly, and garbage collected when not needed anymore.
+    private static final Striped<Lock> preferencesUpdateLocksByUser = Striped.lazyWeakLock(1000);
 
     private final UserProfileDao profileDao;
     private final UserDao        userDao;
@@ -268,10 +275,19 @@ public class UserProfileService extends Service {
         if (update == null || update.isEmpty()) {
             throw new ConflictException("Preferences to update required");
         }
-        final Map<String, String> preferences = preferenceDao.getPreferences(currentUser().getId());
-        preferences.putAll(update);
-        preferenceDao.setPreferences(currentUser().getId(), preferences);
-        return preferences;
+        
+        String userId = currentUser().getId();
+        // Keep the lock in a variable so it isn't garbage collected while in use
+        Lock lock = preferencesUpdateLocksByUser.get(userId);
+        lock.lock();
+        try {
+            final Map<String, String> preferences = preferenceDao.getPreferences(userId);
+            preferences.putAll(update);
+            preferenceDao.setPreferences(currentUser().getId(), preferences);
+            return preferences;
+        } finally {
+            lock.unlock();
+        }
     }
 
     /**
@@ -340,14 +356,22 @@ public class UserProfileService extends Service {
     public void removePreferences(@ApiParam(value = "Preferences to remove", required = true)
                                   @Required
                                   List<String> names) throws ServerException, NotFoundException {
+        String userId = currentUser().getId();
         if (names == null) {
-            preferenceDao.remove(currentUser().getId());
+            preferenceDao.remove(userId);
         } else {
-            final Map<String, String> preferences = preferenceDao.getPreferences(currentUser().getId());
-            for (String name : names) {
-                preferences.remove(name);
+            // Keep the lock in a variable so it isn't garbage collected while in use
+            Lock lock = preferencesUpdateLocksByUser.get(userId);
+            lock.lock();
+            try {
+                final Map<String, String> preferences = preferenceDao.getPreferences(userId);
+                for (String name : names) {
+                    preferences.remove(name);
+                }
+                preferenceDao.setPreferences(userId, preferences);
+            } finally {
+                lock.unlock();
             }
-            preferenceDao.setPreferences(currentUser().getId(), preferences);
         }
     }
 
