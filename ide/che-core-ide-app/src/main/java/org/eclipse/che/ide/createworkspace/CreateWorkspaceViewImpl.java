@@ -49,9 +49,7 @@ class CreateWorkspaceViewImpl extends Window implements CreateWorkSpaceView, Tag
 
     private static final int BORDER_WIDTH = 1;
 
-    static final String RECIPE_URL =
-            "https://gist.githubusercontent.com/vparfonov/5c633534bfb0c127854f/raw/f176ee3428c2d39d08c7b4762aee6855dc5c8f75" +
-            "/jdk8_maven3_tomcat8";
+    static final String RECIPE_URL = "https://raw.githubusercontent.com/codenvy/dockerfiles/master/base/jdk8_maven3_tomcat8/Dockerfile";
 
     private final TagEntryFactory   tagFactory;
     private final PopupPanel        popupPanel;
