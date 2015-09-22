@@ -379,8 +379,28 @@ public class DarkTheme implements Theme {
     }
 
     @Override
+    public String getMainMenuSelectedBkgColor() {
+        return "#2e3a45";
+    }
+
+    @Override
+    public String getMainMenuSelectedBorderColor() {
+        return "#121416";
+    }
+
+    @Override
     public String getMainMenuFontColor() {
-        return "#dbdbdb";
+        return "#e4e4e4";
+    }
+
+    @Override
+    public String getMainMenuFontHoverColor() {
+        return "#ffffff";
+    }
+
+    @Override
+    public String getMainMenuFontSelectedColor() {
+        return "#4a90e2";
     }
 
     @Override
@@ -539,11 +559,6 @@ public class DarkTheme implements Theme {
     }
 
     @Override
-    public String getDropDownListSelectionBackground() {
-        return "rgba(215, 215, 215, 0.12)";
-    }
-
-    @Override
     public String getProgressColor() {
         return "#ffffff";
     }
@@ -638,4 +653,27 @@ public class DarkTheme implements Theme {
         return "white";
     }
 
+    public String getPopupBkgColor() {
+        return "#292c2f";
+    }
+
+    @Override
+    public String getPopupBorderColor() {
+        return "#121416";
+    }
+
+    @Override
+    public String getPopupShadowColor() {
+        return "rgba(0, 0, 0, 0.50)";
+    }
+
+    @Override
+    public String getPopupHoverColor() {
+        return "rgba(215, 215, 215, 0.12)";
+    }
+
+    @Override
+    public String getPopupHotKeyColor() {
+        return "#727272";
+    }
 }

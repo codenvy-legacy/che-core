@@ -312,8 +312,24 @@ public class Style {
         return theme.getMainMenuBkgColor();
     }
 
+    public static String getMainMenuSelectedBkgColor() {
+        return theme.getMainMenuSelectedBkgColor();
+    }
+
+    public static String getMainMenuSelectedBorderColor() {
+        return theme.getMainMenuSelectedBorderColor();
+    }
+
     public static String getMainMenuFontColor() {
         return theme.getMainMenuFontColor();
+    }
+
+    public static String getMainMenuFontHoverColor() {
+        return theme.getMainMenuFontHoverColor();
+    }
+
+    public static String getMainMenuFontSelectedColor() {
+        return theme.getMainMenuFontSelectedColor();
     }
 
     public static String getTabBorderShadow() {
@@ -428,10 +444,6 @@ public class Style {
         return theme.getSelectCommandActionHoverColor();
     }
 
-    public static String getDropDownListSelectionBackground() {
-        return theme.getDropDownListSelectionBackground();
-    }
-
     public static String getProgressColor() {
         return theme.getProgressColor();
     }
@@ -508,4 +520,23 @@ public class Style {
         return theme.getBadgeFontColor();
     }
 
+    public static String getPopupBkgColor() {
+        return theme.getPopupBkgColor();
+    }
+
+    public static String getPopupBorderColor() {
+        return theme.getPopupBorderColor();
+    }
+
+    public static String getPopupShadowColor() {
+        return theme.getPopupShadowColor();
+    }
+
+    public static String getPopupHoverColor() {
+        return theme.getPopupHoverColor();
+    }
+
+    public static String getPopupHotKeyColor() {
+        return theme.getPopupHotKeyColor();
+    }
 }
