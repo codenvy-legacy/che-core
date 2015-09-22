@@ -305,7 +305,7 @@ public class DarkTheme implements Theme {
 
     @Override
     public String getWindowContentBackground() {
-        return "#373737";
+        return "#2E2E2E";
     }
 
     @Override
@@ -675,5 +675,44 @@ public class DarkTheme implements Theme {
     @Override
     public String getPopupHotKeyColor() {
         return "#727272";
+    }
+    @Override
+    public String getTextFieldTitleColor() {
+        return "#aaaaaa";
+    }
+
+    @Override
+    public String getTextFieldColor() {
+        return "#e4e4e4";
+    }
+
+    @Override
+    public String getTextFieldBackgroundColor() {
+        return "#212325";
+    }
+
+    @Override
+    public String getTextFieldFocusedColor() {
+        return "#e4e4e4";
+    }
+
+    @Override
+    public String getTextFieldFocusedBackgroundColor() {
+        return "#2d2f31";
+    }
+
+    @Override
+    public String getTextFieldDisabledColor() {
+        return "#727272";
+    }
+
+    @Override
+    public String getTextFieldDisabledBackgroundColor() {
+        return "#2d2f31";
+    }
+
+    @Override
+    public String getTextFieldBorderColor() {
+        return "#161819";
     }
 }

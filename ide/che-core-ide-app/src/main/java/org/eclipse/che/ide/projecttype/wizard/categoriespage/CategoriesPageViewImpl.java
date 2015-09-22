@@ -150,6 +150,8 @@ public class CategoriesPageViewImpl implements CategoriesPageView {
         projectDescription.getElement().setAttribute("placeholder", "Add a description to your project...");
         projectDescription.getElement().setAttribute("maxlength", "256");
         setConfigOptions(null);
+
+
     }
 
     @UiHandler("projectName")

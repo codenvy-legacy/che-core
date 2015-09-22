@@ -539,4 +539,35 @@ public class Style {
     public static String getPopupHotKeyColor() {
         return theme.getPopupHotKeyColor();
     }
+    public static String getTextFieldTitleColor() {
+        return theme.getTextFieldTitleColor();
+    }
+
+    public static String getTextFieldColor() {
+        return theme.getTextFieldColor();
+    }
+
+    public static String getTextFieldBackgroundColor() {
+        return theme.getTextFieldBackgroundColor();
+    }
+
+    public static String getTextFieldFocusedColor() {
+        return theme.getTextFieldFocusedColor();
+    }
+
+    public static String getTextFieldFocusedBackgroundColor() {
+        return theme.getTextFieldFocusedBackgroundColor();
+    }
+
+    public static String getTextFieldDisabledColor() {
+        return theme.getTextFieldDisabledColor();
+    }
+
+    public static String getTextFieldDisabledBackgroundColor() {
+        return theme.getTextFieldDisabledBackgroundColor();
+    }
+
+    public static String getTextFieldBorderColor() {
+        return theme.getTextFieldBorderColor();
+    }
 }

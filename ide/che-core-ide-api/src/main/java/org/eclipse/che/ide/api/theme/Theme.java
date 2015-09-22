@@ -849,4 +849,44 @@ public interface Theme {
      * @return the font color of the popup hot key.
      */
     String getPopupHotKeyColor();
+
+    /**
+     * @return the text field title color.
+     */
+    String getTextFieldTitleColor();
+
+    /**
+     * @return the text field color.
+     */
+    String getTextFieldColor();
+
+    /**
+     * @return the text field background color.
+     */
+    String getTextFieldBackgroundColor();
+
+    /**
+     * @return the text field focused color.
+     */
+    String getTextFieldFocusedColor();
+
+    /**
+     * @return the text field focused background color.
+     */
+    String getTextFieldFocusedBackgroundColor();
+
+    /**
+     * @return the text field disabled color.
+     */
+    String getTextFieldDisabledColor();
+
+    /**
+     * @return the text field disabled background color.
+     */
+    String getTextFieldDisabledBackgroundColor();
+
+    /**
+     * @return the text field border color.
+     */
+    String getTextFieldBorderColor();
 }

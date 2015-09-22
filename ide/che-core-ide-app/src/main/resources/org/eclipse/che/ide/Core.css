@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-@external .gwt-SplitLayoutPanel-HDragger, .gwt-SplitLayoutPanel-VDragger, .hsplitter, .hsplitter, .gwt-DialogBox, gwt-Button, gwt-PushButton, gwt-PushButton-up, gwt-PushButton-up-hovering, gwt-PushButton-up-disabled, gwt-PushButton-down,.gwt-PushButton-down-hovering,.gwt-PushButton-down-disabled, gwt-ToggleButton, gwt-ToggleButton-up, gwt-ToggleButton-up-hovering, gwt-ToggleButton-up-disabled, gwt-ToggleButton-down, .gwt-ToggleButton-down-hovering, .gwt-ToggleButton-down-disabled, gwt-TextBox, gwt-ListBox, gwt-PopupPanel;
+@external .gwt-SplitLayoutPanel-HDragger, .gwt-SplitLayoutPanel-VDragger, .hsplitter, .hsplitter, .gwt-DialogBox, gwt-Button, gwt-PushButton, gwt-PushButton-up, gwt-PushButton-up-hovering, gwt-PushButton-up-disabled, gwt-PushButton-down,.gwt-PushButton-down-hovering,.gwt-PushButton-down-disabled, gwt-ToggleButton, gwt-ToggleButton-up, gwt-ToggleButton-up-hovering, gwt-ToggleButton-up-disabled, gwt-ToggleButton-down, .gwt-ToggleButton-down-hovering, .gwt-ToggleButton-down-disabled, gwt-TextBox, gwt-TextArea, gwt-ListBox, gwt-PopupPanel;
 
 /* Global styles and external GWT styles. */
 
@@ -27,6 +27,7 @@ body, td {
 
 /* We must override the user agent stylesheet which sets textarea font to monospace. */
 textarea {
+
     font-family: mainFontFamily;
     color: mainFontColor;
     background-color: inputBackground;
@@ -104,19 +105,68 @@ textarea {
     background: radial-gradient(ellipse at center, windowContentBackground 35%, radioButtonBackgroundColor 40%); /* W3C*/
 }
 
-.gwt-TextBox, .gwt-PasswordTextBox, .gwt-SuggestBox {
-    background-color: boxBackgroundColor;
-    color: boxTextColor;
-    border: 1px solid boxBorderColor;
-    border-radius: 1px;
-    box-shadow: boxInnerShadow, boxOuterShadow;
-    font-family: mainFontFamily;
-    font-size: boxFontSize;
-    text-shadow: boxTextShadow;
+.gwt-TextBox,
+.gwt-TextArea,
+.gwt-SuggestBox,
+.gwt-PasswordTextBox {
+    outline: none;
+    border-radius: 0;
+    box-shadow: none;
+    text-align: start;
+    color: textFieldColor;
+    background-color: textFieldBackgroundColor;
+    border: 1px solid textFieldBorderColor;
+    font-size: textFieldFontSize;
+    font-family: textFieldFontFamily;
 }
 
-.gwt-TextBox[disabled], .gwt-PasswordTextBox[disabled], .gwt-SuggestBox[disabled] {
-    background-color: boxBackgroundColorDisabled;
+.gwt-TextBox {
+    min-height: 20px;
+    padding: 0 5px 0 5px;
+}
+
+.gwt-TextBox:invalid,
+.gwt-TextBox:required {
+    border-bottom: 1px solid wrongBorderBottomColor !important;
+}
+
+.gwt-TextBox:focus,
+.gwt-TextArea:focus,
+.gwt-SuggestBox:focus,
+.gwt-PasswordTextBox:focus {
+    color: textFieldFocusedColor;
+    background-color: textFieldFocusedBackgroundColor;
+    -webkit-text-fill-color: textFieldFocusedColor;
+    -webkit-animation: textFieldFocus 0.2s infinite;
+}
+
+.gwt-TextBox:focus {
+    border-bottom: 1px solid validBorderBottomColor;
+    transition: border-bottom 0.2s linear;
+}
+
+.gwt-TextBox:focus::-webkit-input-placeholder,
+.gwt-TextArea:focus::-webkit-input-placeholder,
+.gwt-SuggestBox:focus::-webkit-input-placeholder,
+.gwt-PasswordTextBox:focus::-webkit-input-placeholder {
+    -webkit-text-fill-color: textFieldDisabledColor;
+}
+
+@-webkit-keyframes textFieldFocus {
+    from {
+        color: #4eabff;
+    }
+    to {
+        color: #4eabff;
+    }
+}
+
+.gwt-TextBox[disabled],
+.gwt-TextArea[disabled],
+.gwt-SuggestBox[disabled],
+.gwt-PasswordTextBox[disabled] {
+    color: textFieldDisabledColor;
+    background-color: textFieldDisabledBackgroundColor;
 }
 
 .gwt-Button, button {

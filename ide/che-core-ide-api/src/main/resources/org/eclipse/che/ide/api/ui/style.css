@@ -113,6 +113,16 @@
 @eval boxInnerShadow org.eclipse.che.ide.api.theme.Style.getBoxInnerShadow();
 @eval boxOuterShadow org.eclipse.che.ide.api.theme.Style.getBoxOuterShadow();
 
+/* Text fields */
+@eval textFieldTitleColor org.eclipse.che.ide.api.theme.Style.getTextFieldTitleColor();
+@eval textFieldColor org.eclipse.che.ide.api.theme.Style.getTextFieldColor();
+@eval textFieldBackgroundColor org.eclipse.che.ide.api.theme.Style.getTextFieldBackgroundColor();
+@eval textFieldFocusedColor org.eclipse.che.ide.api.theme.Style.getTextFieldFocusedColor();
+@eval textFieldFocusedBackgroundColor org.eclipse.che.ide.api.theme.Style.getTextFieldFocusedBackgroundColor();
+@eval textFieldDisabledColor org.eclipse.che.ide.api.theme.Style.getTextFieldDisabledColor();
+@eval textFieldDisabledBackgroundColor org.eclipse.che.ide.api.theme.Style.getTextFieldDisabledBackgroundColor();
+@eval textFieldBorderColor org.eclipse.che.ide.api.theme.Style.getTextFieldBorderColor();
+
 /* Sizes */
 @def dividerThickness 1px;
 @def popupPadding 24px;
@@ -149,7 +159,13 @@
 @def editorFontFamily 'Andale Mono', monospace;
 @def outputFontFamily 'Droid Sans Mono', monospace;
 
-/*Main Menu*/
+/* Text fields */
+@def textFieldFontFamily "Lucida Grande", Verdana, Arial;
+@def textFieldFontSize 9px;
+@def wrongBorderBottomColor #d0021b;
+@def validBorderBottomColor #50C602;
+
+    /*Main Menu*/
 @eval mainMenuBkgColor org.eclipse.che.ide.api.theme.Style.getMainMenuBkgColor();
 @eval mainMenuSelectedBkgColor org.eclipse.che.ide.api.theme.Style.getMainMenuSelectedBkgColor();
 @eval mainMenuSelectedBorderColor org.eclipse.che.ide.api.theme.Style.getMainMenuSelectedBorderColor();

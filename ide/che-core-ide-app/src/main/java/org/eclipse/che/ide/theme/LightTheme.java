@@ -676,4 +676,43 @@ public class LightTheme implements Theme {
     public String getPopupHotKeyColor() {
         return "#A2A2A2";
     }
+    @Override
+    public String getTextFieldTitleColor() {
+        return "#555555";
+    }
+
+    @Override
+    public String getTextFieldColor() {
+        return "#909090";
+    }
+
+    @Override
+    public String getTextFieldBackgroundColor() {
+        return "#ffffff";
+    }
+
+    @Override
+    public String getTextFieldFocusedColor() {
+        return "#727272";
+    }
+
+    @Override
+    public String getTextFieldFocusedBackgroundColor() {
+        return "#ffffff";
+    }
+
+    @Override
+    public String getTextFieldDisabledColor() {
+        return "#b9b9b9";
+    }
+
+    @Override
+    public String getTextFieldDisabledBackgroundColor() {
+        return "#ffffff";
+    }
+
+    @Override
+    public String getTextFieldBorderColor() {
+        return "#e1e1e1";
+    }
 }

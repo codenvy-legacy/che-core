@@ -26,7 +26,7 @@
                         <g:FlowPanel height="25px" addStyleNames="{style.namePanel}">
                             <g:Label text="{locale.createProjectFromTemplateName}"
                                      addStyleNames="{style.labelPosition}"/>
-                            <g:TextBox width="290px" height="14px" ui:field="projectName"
+                            <g:TextBox width="290px" ui:field="projectName"
                                        addStyleNames="{style.inputField} {style.inputFieldPosition}" tabIndex="1"
                                        debugId="file-newProject-projectName"/>
                         </g:FlowPanel>

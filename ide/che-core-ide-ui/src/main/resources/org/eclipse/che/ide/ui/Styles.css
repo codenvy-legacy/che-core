@@ -9,19 +9,9 @@
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 input.inputError {
-    border-color: #ffe400;
-    box-shadow: 0 0 5px #ffe400;
-    outline-color: #ffe400;
+    border-bottom: 1px solid #D0021B !important;
 }
 
 .inputField {
-    background-color: inputBackground;
-    color: #dbdbdb;
-    border: 1px solid #191c1e;
-    border-radius: 1px;
-    box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.19) inset, 0px 1px 0px 0px rgba(223, 223, 223, 0.4);
-    font-size: 12px;
-    padding-left: 8px;
-    height: 20px;
     resize: none;
 }
