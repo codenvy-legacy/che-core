@@ -275,7 +275,7 @@ public class CreateWorkspacePresenterTest {
         verify(machineConfigDto).withType("docker");
         verify(machineConfigDto).withSource(machineSourceDto);
         verify(machineConfigDto).withDev(true);
-        verify(machineConfigDto).withMemorySize(512);
+        verify(machineConfigDto).withMemorySize(2048);
 
         verify(dtoFactory).createDto(MachineSourceDto.class);
         verify(machineSourceDto).withType("recipe");
