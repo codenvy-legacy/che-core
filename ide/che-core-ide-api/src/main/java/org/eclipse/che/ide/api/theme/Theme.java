@@ -227,13 +227,6 @@ public interface Theme {
     String getSocialButtonColor();
 
     /**
-     * Background color for all input widgets
-     *
-     * @return the color
-     */
-    String getInputBackground();
-
-    /**
      * Background for editor panel ( place where the editor will be placed )
      *
      * @return color for editor panel
@@ -599,37 +592,6 @@ public interface Theme {
      */
     String getButtonHoverColor();
 
-    /* Boxes (listbox, textbox) properties */
-
-    /**
-     * Return the color for box borders.
-     *
-     * @return the color for box borders
-     */
-    String getBoxBorderColor();
-
-    /**
-     * Return the interior shadow property for boxes.
-     *
-     * @return the interior shadow
-     */
-    String getBoxInnerShadow();
-
-    /**
-     * Return the exterior shadow property for boxes.
-     *
-     * @return the exterior shadow
-     */
-    String getBoxOuterShadow();
-
-    String getBoxBackgroundColor();
-
-    String getBoxTextColor();
-
-    String getBoxTextShadow();
-
-    String getBoxBackgroundColorDisabled();
-
     /**
      * The color of the action group shadow.
      *
@@ -849,4 +811,44 @@ public interface Theme {
      * @return the font color of the popup hot key.
      */
     String getPopupHotKeyColor();
+
+    /**
+     * @return the text field title color.
+     */
+    String getTextFieldTitleColor();
+
+    /**
+     * @return the text field color.
+     */
+    String getTextFieldColor();
+
+    /**
+     * @return the text field background color.
+     */
+    String getTextFieldBackgroundColor();
+
+    /**
+     * @return the text field focused color.
+     */
+    String getTextFieldFocusedColor();
+
+    /**
+     * @return the text field focused background color.
+     */
+    String getTextFieldFocusedBackgroundColor();
+
+    /**
+     * @return the text field disabled color.
+     */
+    String getTextFieldDisabledColor();
+
+    /**
+     * @return the text field disabled background color.
+     */
+    String getTextFieldDisabledBackgroundColor();
+
+    /**
+     * @return the text field border color.
+     */
+    String getTextFieldBorderColor();
 }

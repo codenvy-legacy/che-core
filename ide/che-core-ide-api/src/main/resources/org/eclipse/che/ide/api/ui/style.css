@@ -82,9 +82,6 @@
 @eval notableButtonTopColor org.eclipse.che.ide.api.theme.Style.getNotableButtonTopColor();
 @eval notableButtonColor org.eclipse.che.ide.api.theme.Style.getNotableButtonColor();
 
-/*input*/
-@eval inputBackground org.eclipse.che.ide.api.theme.Style.getInputBackground();
-
 /*Editor*/
 @eval editorPanelBackgroundColor org.eclipse.che.ide.api.theme.Style.getEditorPanelBackgroundColor();
 @eval editorBackgroundColor org.eclipse.che.ide.api.theme.Style.getEditorBackgroundColor();
@@ -104,14 +101,15 @@
 @eval editorInfoBorderShadowColor org.eclipse.che.ide.api.theme.Style.getEditorInfoBorderShadowColor();
 @eval editorInfoBackgroundColor org.eclipse.che.ide.api.theme.Style.getEditorInfoBackgroundColor();
 
-/* Listbox, TextBox... */
-@eval boxBorderColor org.eclipse.che.ide.api.theme.Style.getBoxBorderColor();
-@eval boxBackgroundColor org.eclipse.che.ide.api.theme.Style.getBoxBackgroundColor();
-@eval boxBackgroundColorDisabled org.eclipse.che.ide.api.theme.Style.getBoxBackgroundColorDisabled();
-@eval boxTextColor org.eclipse.che.ide.api.theme.Style.getBoxTextColor();
-@eval boxTextShadow org.eclipse.che.ide.api.theme.Style.getBoxTextShadow();
-@eval boxInnerShadow org.eclipse.che.ide.api.theme.Style.getBoxInnerShadow();
-@eval boxOuterShadow org.eclipse.che.ide.api.theme.Style.getBoxOuterShadow();
+/* Text fields */
+@eval textFieldTitleColor org.eclipse.che.ide.api.theme.Style.getTextFieldTitleColor();
+@eval textFieldColor org.eclipse.che.ide.api.theme.Style.getTextFieldColor();
+@eval textFieldBackgroundColor org.eclipse.che.ide.api.theme.Style.getTextFieldBackgroundColor();
+@eval textFieldFocusedColor org.eclipse.che.ide.api.theme.Style.getTextFieldFocusedColor();
+@eval textFieldFocusedBackgroundColor org.eclipse.che.ide.api.theme.Style.getTextFieldFocusedBackgroundColor();
+@eval textFieldDisabledColor org.eclipse.che.ide.api.theme.Style.getTextFieldDisabledColor();
+@eval textFieldDisabledBackgroundColor org.eclipse.che.ide.api.theme.Style.getTextFieldDisabledBackgroundColor();
+@eval textFieldBorderColor org.eclipse.che.ide.api.theme.Style.getTextFieldBorderColor();
 
 /* Sizes */
 @def dividerThickness 1px;
@@ -137,17 +135,22 @@
 @def smallFontSize 10px;
 @def largeLabel 14px;
 @def largeDropdownLabel 12px;
-@def boxFontSize 12px;
 @def buttonFontSize 12px;
 
 /* Fonts */
 @def alternativeFontFamily "Helvetica Neue", "Myriad Pro","open sans", arial, sans-serif;
 @def fileTreeFontFamily "Helvetica Neue", "Myriad Pro","Lucida Grande", Verdana, Arial;
 @def fileTreeFontFamilyFile "Helvetica Neue Regular", "Myriad Pro","Lucida Grande", Verdana, Arial;
-@def mainFontFamily "Lucida Grande", "Myriad Pro", arial, Verdana, Verdana, sans-serif;
+@def mainFontFamily "Open Sans", sans-serif;
 @def editorLineHeight 15px;
 @def editorFontFamily 'Andale Mono', monospace;
 @def outputFontFamily 'Droid Sans Mono', monospace;
+
+/* Text fields */
+@def textFieldFontFamily "Lucida Grande", Verdana, Arial;
+@def textFieldFontSize 9px;
+@def wrongBorderBottomColor #d0021b;
+@def validBorderBottomColor #50c602;
 
 /*Main Menu*/
 @eval mainMenuBkgColor org.eclipse.che.ide.api.theme.Style.getMainMenuBkgColor();

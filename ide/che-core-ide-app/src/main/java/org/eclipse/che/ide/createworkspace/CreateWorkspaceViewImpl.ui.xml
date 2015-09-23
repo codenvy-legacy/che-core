@@ -15,8 +15,7 @@
 
     <ui:with field="locale" type="org.eclipse.che.ide.CoreLocalizationConstant"/>
 
-    <ui:style>
-        @eval inputBackgroundColor org.eclipse.che.ide.api.theme.Style.getInputBackground();
+    <ui:style>        
         .emptyBorder {
             margin: 6px;
         }

@@ -138,6 +138,7 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
     private EditorState errorState;
 
     private boolean delayedFocus = false;
+    private boolean isFocused    = false;
 
     private BreakpointRendererFactory breakpointRendererFactory;
     private BreakpointRenderer        breakpointRenderer;
@@ -724,10 +725,12 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
     @Override
     public void editorLostFocus() {
         this.editorView.updateInfoPanelUnfocused(this.document.getLineCount());
+        this.isFocused = false;
     }
 
     @Override
     public void editorGotFocus() {
+        this.isFocused = true;
         this.editorView.updateInfoPanelPosition(this.document.getCursorPosition());
     }
 
@@ -783,6 +786,10 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
 
     protected EditorWidget getEditorWidget() {
         return this.editorWidget;
+    }
+
+    public boolean isFocused() {
+        return this.isFocused;
     }
 
     @Override

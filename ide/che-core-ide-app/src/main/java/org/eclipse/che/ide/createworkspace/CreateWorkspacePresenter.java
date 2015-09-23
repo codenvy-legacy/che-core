@@ -206,7 +206,7 @@ public class CreateWorkspacePresenter implements CreateWorkSpaceView.ActionDeleg
                                                            .withType("recipe")
                                                            .withLocation(view.getRecipeUrl()))
                                      .withDev(true)
-                                     .withMemorySize(512));
+                                     .withMemorySize(2048));
 
         Map<String, EnvironmentDto> environments = new HashMap<>();
         environments.put(wsName, dtoFactory.createDto(EnvironmentDto.class)

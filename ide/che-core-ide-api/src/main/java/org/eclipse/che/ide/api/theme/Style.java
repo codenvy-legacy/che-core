@@ -143,10 +143,6 @@ public class Style {
         return theme.getSocialButtonColor();
     }
 
-    public static String getInputBackground() {
-        return theme.getInputBackground();
-    }
-
     public static String getEditorPanelBackgroundColor() {
         return theme.getEditorPanelBackgroundColor();
     }
@@ -356,33 +352,6 @@ public class Style {
         return theme.getTreeIconFileColor();
     }
 
-    public static String getBoxBorderColor() {
-        return theme.getBoxBorderColor();
-    }
-
-    public static String getBoxTextColor() {
-        return theme.getBoxTextColor();
-    }
-
-    public static String getBoxInnerShadow() {
-        return theme.getBoxInnerShadow();
-    }
-
-    public static String getBoxOuterShadow() {
-        return theme.getBoxOuterShadow();
-    }
-
-    public static String getBoxBackgroundColor() {
-        return theme.getBoxBackgroundColor();
-    }
-
-    public static String getBoxBackgroundColorDisabled() {
-        return theme.getBoxBackgroundColorDisabled();
-    }
-
-    public static String getBoxTextShadow() {
-        return theme.getBoxTextShadow();
-    }
 
     public static String getButtonHoverTextColor() {
         return theme.getButtonHoverTextColor();
@@ -538,5 +507,36 @@ public class Style {
 
     public static String getPopupHotKeyColor() {
         return theme.getPopupHotKeyColor();
+    }
+    public static String getTextFieldTitleColor() {
+        return theme.getTextFieldTitleColor();
+    }
+
+    public static String getTextFieldColor() {
+        return theme.getTextFieldColor();
+    }
+
+    public static String getTextFieldBackgroundColor() {
+        return theme.getTextFieldBackgroundColor();
+    }
+
+    public static String getTextFieldFocusedColor() {
+        return theme.getTextFieldFocusedColor();
+    }
+
+    public static String getTextFieldFocusedBackgroundColor() {
+        return theme.getTextFieldFocusedBackgroundColor();
+    }
+
+    public static String getTextFieldDisabledColor() {
+        return theme.getTextFieldDisabledColor();
+    }
+
+    public static String getTextFieldDisabledBackgroundColor() {
+        return theme.getTextFieldDisabledBackgroundColor();
+    }
+
+    public static String getTextFieldBorderColor() {
+        return theme.getTextFieldBorderColor();
     }
 }

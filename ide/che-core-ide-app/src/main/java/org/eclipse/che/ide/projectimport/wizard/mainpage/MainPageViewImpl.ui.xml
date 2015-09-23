@@ -15,7 +15,6 @@
     <ui:with field='locale' type='org.eclipse.che.ide.CoreLocalizationConstant'/>
 	<ui:with field='resources' type='org.eclipse.che.ide.Resources'/>
     <ui:style src="org/eclipse/che/ide/api/ui/style.css" type="org.eclipse.che.ide.projectimport.wizard.mainpage.MainPageViewImpl.Style">
-        @eval InputBackgroundColor org.eclipse.che.ide.api.theme.Style.getInputBackground();
         @eval borderColor org.eclipse.che.ide.api.theme.Style.getTabBorderColor();
 
         .mainPanel {
