@@ -144,7 +144,7 @@
 @def alternativeFontFamily "Helvetica Neue", "Myriad Pro","open sans", arial, sans-serif;
 @def fileTreeFontFamily "Helvetica Neue", "Myriad Pro","Lucida Grande", Verdana, Arial;
 @def fileTreeFontFamilyFile "Helvetica Neue Regular", "Myriad Pro","Lucida Grande", Verdana, Arial;
-@def mainFontFamily "Lucida Grande", "Myriad Pro", arial, Verdana, Verdana, sans-serif;
+@def mainFontFamily "Open Sans", sans-serif;
 @def editorLineHeight 15px;
 @def editorFontFamily 'Andale Mono', monospace;
 @def outputFontFamily 'Droid Sans Mono', monospace;
