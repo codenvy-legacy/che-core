@@ -84,4 +84,10 @@ public interface TextEditor extends EditorPartPresenter {
      * @param message message
      */
     void showMessage(String message);
+
+    /**
+     * Returns focus state of the text editor
+     * @return <code>true</code> if the text editor is focused or <code>false</code> otherwise
+     */
+    boolean isFocused();
 }
