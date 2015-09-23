@@ -93,6 +93,12 @@
     margin-right: 1px;
 }
 
+.expandControl svg {
+    fill: wizardIconColor;
+    transform: scaleX(0.5);
+    -webkit-transform: scaleX(0.5));
+}
+
 .categoryHeader {
     height: 22px;
     background-color: partBackground;

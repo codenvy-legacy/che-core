@@ -227,13 +227,6 @@ public interface Theme {
     String getSocialButtonColor();
 
     /**
-     * Background color for all input widgets
-     *
-     * @return the color
-     */
-    String getInputBackground();
-
-    /**
      * Background for editor panel ( place where the editor will be placed )
      *
      * @return color for editor panel
@@ -598,37 +591,6 @@ public interface Theme {
      * @return the color of button if hover
      */
     String getButtonHoverColor();
-
-    /* Boxes (listbox, textbox) properties */
-
-    /**
-     * Return the color for box borders.
-     *
-     * @return the color for box borders
-     */
-    String getBoxBorderColor();
-
-    /**
-     * Return the interior shadow property for boxes.
-     *
-     * @return the interior shadow
-     */
-    String getBoxInnerShadow();
-
-    /**
-     * Return the exterior shadow property for boxes.
-     *
-     * @return the exterior shadow
-     */
-    String getBoxOuterShadow();
-
-    String getBoxBackgroundColor();
-
-    String getBoxTextColor();
-
-    String getBoxTextShadow();
-
-    String getBoxBackgroundColorDisabled();
 
     /**
      * The color of the action group shadow.

@@ -173,11 +173,6 @@ public class LightTheme implements Theme {
     }
 
     @Override
-    public String getInputBackground() {
-        return "#FFFFFF";
-    }
-
-    @Override
     public String getEditorPanelBackgroundColor() {
         return "#D6D6D9";
     }
@@ -443,41 +438,6 @@ public class LightTheme implements Theme {
     }
 
     @Override
-    public String getBoxBorderColor() {
-        return "#aaaaaa";
-    }
-
-    @Override
-    public String getBoxTextColor() {
-        return "#606060";
-    }
-
-
-    @Override
-    public String getBoxInnerShadow() {
-        return "0px 1px 2px 0px #777777 inset";
-    }
-
-    @Override
-    public String getBoxOuterShadow() {
-        return "0px 1px 0px 0px #7a7a7a";
-    }
-
-    @Override
-    public String getBoxBackgroundColor() {
-        return "#e2e2e2";
-    }
-
-    @Override
-    public String getBoxBackgroundColorDisabled() {
-        return getTabsPanelBackground();
-    }
-
-    @Override
-    public String getBoxTextShadow() {
-        return "0px 1px 0px #ffffff";
-    }
-
     public String getButtonHoverTextColor() {
         return "#000000";
     }

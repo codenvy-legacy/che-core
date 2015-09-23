@@ -20,13 +20,9 @@
         }
 
         .selectedElementName {
-        }
-
-        .selectedElementImage svg {
-            margin-top: 1px;
-            width: 19px;
-            height: 19px;
-            fill: #dbdbdb;
+            margin-height: none;
+            color: inherit;
+            font-size: inherit;
         }
 
         .imagePanel {

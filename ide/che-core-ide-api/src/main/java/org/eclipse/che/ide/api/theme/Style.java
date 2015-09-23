@@ -143,10 +143,6 @@ public class Style {
         return theme.getSocialButtonColor();
     }
 
-    public static String getInputBackground() {
-        return theme.getInputBackground();
-    }
-
     public static String getEditorPanelBackgroundColor() {
         return theme.getEditorPanelBackgroundColor();
     }
@@ -356,33 +352,6 @@ public class Style {
         return theme.getTreeIconFileColor();
     }
 
-    public static String getBoxBorderColor() {
-        return theme.getBoxBorderColor();
-    }
-
-    public static String getBoxTextColor() {
-        return theme.getBoxTextColor();
-    }
-
-    public static String getBoxInnerShadow() {
-        return theme.getBoxInnerShadow();
-    }
-
-    public static String getBoxOuterShadow() {
-        return theme.getBoxOuterShadow();
-    }
-
-    public static String getBoxBackgroundColor() {
-        return theme.getBoxBackgroundColor();
-    }
-
-    public static String getBoxBackgroundColorDisabled() {
-        return theme.getBoxBackgroundColorDisabled();
-    }
-
-    public static String getBoxTextShadow() {
-        return theme.getBoxTextShadow();
-    }
 
     public static String getButtonHoverTextColor() {
         return theme.getButtonHoverTextColor();

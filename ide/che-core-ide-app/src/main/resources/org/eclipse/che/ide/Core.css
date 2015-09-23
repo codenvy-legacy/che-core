@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-@external .gwt-SplitLayoutPanel-HDragger, .gwt-SplitLayoutPanel-VDragger, .hsplitter, .hsplitter, .gwt-DialogBox, gwt-Button, gwt-PushButton, gwt-PushButton-up, gwt-PushButton-up-hovering, gwt-PushButton-up-disabled, gwt-PushButton-down,.gwt-PushButton-down-hovering,.gwt-PushButton-down-disabled, gwt-ToggleButton, gwt-ToggleButton-up, gwt-ToggleButton-up-hovering, gwt-ToggleButton-up-disabled, gwt-ToggleButton-down, .gwt-ToggleButton-down-hovering, .gwt-ToggleButton-down-disabled, gwt-TextBox, gwt-TextArea, gwt-ListBox, gwt-PopupPanel;
+@external .gwt-SplitLayoutPanel-HDragger, .gwt-SplitLayoutPanel-VDragger, .hsplitter, .hsplitter, .gwt-DialogBox, gwt-Button, gwt-PushButton, gwt-PushButton-up, gwt-PushButton-up-hovering, gwt-PushButton-up-disabled, gwt-PushButton-down,.gwt-PushButton-down-hovering,.gwt-PushButton-down-disabled, gwt-ToggleButton, gwt-ToggleButton-up, gwt-ToggleButton-up-hovering, gwt-ToggleButton-up-disabled, gwt-ToggleButton-down, .gwt-ToggleButton-down-hovering, .gwt-ToggleButton-down-disabled, gwt-TextBox, gwt-TextArea, gwt-ListBox, gwt-PopupPanel, gwt-Label;
 
 /* Global styles and external GWT styles. */
 
@@ -26,28 +26,25 @@ body, td {
 }
 
 /* We must override the user agent stylesheet which sets textarea font to monospace. */
-textarea {
-    font-family: mainFontFamily;
-    color: mainFontColor;
-    background-color: inputBackground;
-    border: 1px solid tabBorder;
-    font-size: fontSize;
+
+.gwt-Label {
+    margin-bottom: 6px;
+    color: textFieldTitleColor;
+    font-size: textFieldFontSize;
+    font-family: textFieldFontFamily;
 }
 
 .gwt-ListBox {
-    background-color: boxBackgroundColor;
-    color: boxTextColor;
-    border: 1px solid boxBorderColor;
+    background-color: textFieldBackgroundColor;
+    color: textFieldColor;
+    border: 1px solid textFieldBorderColor;
     border-radius: 1px;
-    box-shadow: boxInnerShadow, boxOuterShadow;
     font-family: mainFontFamily;
-    font-size: boxFontSize;
     font-weight: bold;
-    text-shadow: boxTextShadow;
 }
 
 .gwt-ListBox[disabled] {
-    background-color: boxBackgroundColorDisabled;
+    background-color:textFieldDisabledBackgroundColor;
 }
 
 .gwt-CheckBox {
@@ -521,7 +518,7 @@ class for the document-level scrollbars. */
 }
 
 .gwt-SuggestBoxPopup .item {
-    color: boxTextColor;
+    color: textFieldColor;
 }
 
 .gwt-SuggestBoxPopup .item-selected {
@@ -661,7 +658,6 @@ class for the document-level scrollbars. */
     fill: #4C9AFF;
 }
 
-
 /******************************************************************************
  *
  * Badge bounce animation
@@ -709,8 +705,8 @@ class for the document-level scrollbars. */
     animation-duration: 0.5s;
     -webkit-animation-fill-mode: both;
     animation-fill-mode: both;
-    -webkit-animation-iteration-count:2;
-    animation-iteration-count:2;
+    -webkit-animation-iteration-count: 2;
+    animation-iteration-count: 2;
 }
 
 }

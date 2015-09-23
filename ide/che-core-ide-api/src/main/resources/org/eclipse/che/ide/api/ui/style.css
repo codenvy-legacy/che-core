@@ -82,9 +82,6 @@
 @eval notableButtonTopColor org.eclipse.che.ide.api.theme.Style.getNotableButtonTopColor();
 @eval notableButtonColor org.eclipse.che.ide.api.theme.Style.getNotableButtonColor();
 
-/*input*/
-@eval inputBackground org.eclipse.che.ide.api.theme.Style.getInputBackground();
-
 /*Editor*/
 @eval editorPanelBackgroundColor org.eclipse.che.ide.api.theme.Style.getEditorPanelBackgroundColor();
 @eval editorBackgroundColor org.eclipse.che.ide.api.theme.Style.getEditorBackgroundColor();
@@ -103,15 +100,6 @@
 @eval editorInfoBorderColor org.eclipse.che.ide.api.theme.Style.getEditorInfoBorderColor();
 @eval editorInfoBorderShadowColor org.eclipse.che.ide.api.theme.Style.getEditorInfoBorderShadowColor();
 @eval editorInfoBackgroundColor org.eclipse.che.ide.api.theme.Style.getEditorInfoBackgroundColor();
-
-/* Listbox, TextBox... */
-@eval boxBorderColor org.eclipse.che.ide.api.theme.Style.getBoxBorderColor();
-@eval boxBackgroundColor org.eclipse.che.ide.api.theme.Style.getBoxBackgroundColor();
-@eval boxBackgroundColorDisabled org.eclipse.che.ide.api.theme.Style.getBoxBackgroundColorDisabled();
-@eval boxTextColor org.eclipse.che.ide.api.theme.Style.getBoxTextColor();
-@eval boxTextShadow org.eclipse.che.ide.api.theme.Style.getBoxTextShadow();
-@eval boxInnerShadow org.eclipse.che.ide.api.theme.Style.getBoxInnerShadow();
-@eval boxOuterShadow org.eclipse.che.ide.api.theme.Style.getBoxOuterShadow();
 
 /* Text fields */
 @eval textFieldTitleColor org.eclipse.che.ide.api.theme.Style.getTextFieldTitleColor();
@@ -147,7 +135,6 @@
 @def smallFontSize 10px;
 @def largeLabel 14px;
 @def largeDropdownLabel 12px;
-@def boxFontSize 12px;
 @def buttonFontSize 12px;
 
 /* Fonts */

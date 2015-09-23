@@ -169,11 +169,6 @@ public class DarkTheme implements Theme {
     }
 
     @Override
-    public String getInputBackground() {
-        return "#272727";
-    }
-
-    @Override
     public String getEditorPanelBackgroundColor() {
         return "#21252b";
     }
@@ -441,41 +436,6 @@ public class DarkTheme implements Theme {
     @Override
     public String getTreeIconFileColor() {
         return "#b4b4b4";
-    }
-
-    @Override
-    public String getBoxBorderColor() {
-        return "#191c1e";
-    }
-
-    @Override
-    public String getBoxTextColor() {
-        return "#dbdbdb"; // same as main editor color ATM for dark
-    }
-
-    @Override
-    public String getBoxInnerShadow() {
-        return "0px 1px 2px 0px rgba(0, 0, 0, 0.19) inset";
-    }
-
-    @Override
-    public String getBoxOuterShadow() {
-        return "0px 1px 0px 0px rgba(223, 223, 223, 0.4)";
-    }
-
-    @Override
-    public String getBoxBackgroundColor() {
-        return getPartBackground();
-    }
-
-    @Override
-    public String getBoxBackgroundColorDisabled() {
-        return getTabsPanelBackground();
-    }
-
-    @Override
-    public String getBoxTextShadow() {
-        return "0px 1px 0px rgba(46, 46, 46, 0.5)";
     }
 
     @Override
