@@ -10,14 +10,14 @@
  *******************************************************************************/
 package org.eclipse.che.ide.rest;
 
-import org.eclipse.che.ide.commons.exception.ServerDisconnectedException;
-import org.eclipse.che.ide.commons.exception.ServerException;
-import org.eclipse.che.ide.commons.exception.UnauthorizedException;
-
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.Window;
+
+import org.eclipse.che.ide.commons.exception.ServerDisconnectedException;
+import org.eclipse.che.ide.commons.exception.ServerException;
+import org.eclipse.che.ide.commons.exception.UnauthorizedException;
 
 import static org.eclipse.che.ide.MimeType.APPLICATION_JSON;
 import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
@@ -28,6 +28,8 @@ import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
  * @param <T>
  *         the return type of the response the callback expects.
  *         Use {@link Void} for methods returning {@code void}.
+ *
+ * @author Valeriy Svydenko
  */
 public abstract class AsyncRequestCallback<T> implements RequestCallback {
 
@@ -119,29 +121,41 @@ public abstract class AsyncRequestCallback<T> implements RequestCallback {
         }
 
         if (isSuccessful(response)) {
-            try {
-                if (unmarshaller != null) {
-                    unmarshaller.unmarshal(response);
-                    payload = unmarshaller.getPayload();
-                }
-
-                onSuccess(payload);
-            } catch (Exception e) {
-                onFailure(e);
-            }
+            handleSuccess(response);
         } else {
-            Exception exception;
-            String contentType = response.getHeader(CONTENT_TYPE);
-
-            if (contentType != null && !contentType.contains(APPLICATION_JSON)) {
-                String message = generateErrorMessage(response);
-                exception = new Exception(message);
-            } else {
-                exception = new ServerException(response);
-            }
-            onFailure(exception);
+            handleFailure(response);
         }
     }
+
+    private void handleFailure(Response response) {
+        Exception exception;
+        String contentType = response.getHeader(CONTENT_TYPE);
+
+        if (contentType != null && !contentType.contains(APPLICATION_JSON)) {
+            String message = generateErrorMessage(response);
+            exception = new Exception(message);
+        } else {
+            exception = new ServerException(response);
+        }
+        onFailure(exception);
+    }
+
+    private void handleSuccess(Response response) {
+        try {
+            if (unmarshaller != null) {
+                //It's needed for handling a situation when response DTO object is NULL
+                if (response.getStatusCode() != Response.SC_NO_CONTENT) {
+                    unmarshaller.unmarshal(response);
+                }
+                payload = unmarshaller.getPayload();
+            }
+
+            onSuccess(payload);
+        } catch (Exception e) {
+            onFailure(e);
+        }
+    }
+
 
     private String generateErrorMessage(Response response) {
         StringBuilder message = new StringBuilder();

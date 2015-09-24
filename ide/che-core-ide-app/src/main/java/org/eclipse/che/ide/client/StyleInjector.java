@@ -34,6 +34,7 @@ public class StyleInjector {
         resources.notificationCss().ensureInjected();
         resources.dataGridStyle().ensureInjected();
         resources.cellTableStyle().ensureInjected();
+        resources.cellTreeStyle().ensureInjected();
         resources.defaultCategoriesListCss().ensureInjected();
         resources.Css().ensureInjected();
         resources.menuCss().ensureInjected();
