@@ -508,6 +508,7 @@ public class Style {
     public static String getPopupHotKeyColor() {
         return theme.getPopupHotKeyColor();
     }
+
     public static String getTextFieldTitleColor() {
         return theme.getTextFieldTitleColor();
     }
@@ -538,5 +539,37 @@ public class Style {
 
     public static String getTextFieldBorderColor() {
         return theme.getTextFieldBorderColor();
+    }
+
+    public static String getMenuBackgroundColor() {
+        return theme.getMenuBackgroundColor();
+    }
+
+    public static String getMenuBackgroundImage() {
+        return theme.getMenuBackgroundImage();
+    }
+
+    public static String getPanelBackgroundColor() {
+        return theme.getPanelBackgroundColor();
+    }
+
+    public static String getPrimaryHighlightsColor() {
+        return theme.getPrimaryHighlightColor();
+    }
+
+    public static String getIconColor() {
+        return theme.getIconColor();
+    }
+
+    public static String getSeparatorColor() {
+        return theme.getSeparatorColor();
+    }
+
+    public static String getErrorColor() {
+        return theme.getErrorColor();
+    }
+
+    public static String getSuccessColor() {
+        return theme.getSuccessColor();
     }
 }

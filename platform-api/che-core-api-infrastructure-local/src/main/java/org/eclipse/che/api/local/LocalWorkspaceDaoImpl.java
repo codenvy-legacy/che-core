@@ -10,14 +10,24 @@
  *******************************************************************************/
 package org.eclipse.che.api.local;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.reflect.TypeToken;
 
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.model.machine.Recipe;
+import org.eclipse.che.api.local.storage.LocalStorage;
+import org.eclipse.che.api.local.storage.LocalStorageFactory;
+import org.eclipse.che.api.local.storage.deserialize.RecipeTypeAdapter;
 import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
 import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,14 +37,38 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
 /**
- * TODO add local storage
+ * In memory based implementation of {@link WorkspaceDao}.
+ *
+ * <p>{@link #loadWorkspaces() Loads} & {@link #saveWorkspaces() stores} in memory workspaces
+ * to/from filesystem, when component starts/stops.
+ *
+ *
+ * @implNote it is thread-safe, guarded by <i>this</i> instance
  *
  * @author Eugene Voevodin
  */
 @Singleton
 public class LocalWorkspaceDaoImpl implements WorkspaceDao {
 
-    private final Map<String, UsersWorkspaceImpl> workspaces = new HashMap<>();
+    private final Map<String, UsersWorkspaceImpl> workspaces;
+    private final LocalStorage                    localStorage;
+
+    @Inject
+    public LocalWorkspaceDaoImpl(LocalStorageFactory factory) throws IOException {
+        final Map<Class<?>, Object> adapters = ImmutableMap.of(Recipe.class, new RecipeTypeAdapter());
+        this.localStorage = factory.create("workspaces.json", adapters);
+        this.workspaces = new HashMap<>();
+    }
+
+    @PostConstruct
+    public synchronized void loadWorkspaces() {
+        workspaces.putAll(localStorage.loadMap(new TypeToken<Map<String, UsersWorkspaceImpl>>() {}));
+    }
+
+    @PreDestroy
+    public synchronized void saveWorkspaces() throws IOException {
+        localStorage.store(workspaces);
+    }
 
     @Override
     public synchronized UsersWorkspaceImpl create(UsersWorkspaceImpl workspace) throws ConflictException, ServerException {

@@ -370,7 +370,7 @@ public class DarkTheme implements Theme {
 
     @Override
     public String getMainMenuBkgColor() {
-        return "#292c2f";
+        return this.getMenuBackgroundColor();
     }
 
     @Override
@@ -475,12 +475,12 @@ public class DarkTheme implements Theme {
 
     @Override
     public String getToolbarBackgroundImage() {
-        return "none";
+        return this.getMenuBackgroundImage();
     }
 
     @Override
     public String getToolbarIconColor() {
-        return "#aaaaaa";
+        return this.getIconColor();
     }
 
     @Override
@@ -674,5 +674,45 @@ public class DarkTheme implements Theme {
     @Override
     public String getTextFieldBorderColor() {
         return "#161819";
+    }
+
+    @Override
+    public String getMenuBackgroundColor() {
+        return "#292c2f";
+    }
+
+    @Override
+    public String getMenuBackgroundImage() {
+        return "inherit";
+    }
+
+    @Override
+    public String getPanelBackgroundColor() {
+        return "#33373b";
+    }
+
+    @Override
+    public String getPrimaryHighlightColor() {
+        return "#4a90e2";
+    }
+
+    @Override
+    public String getIconColor() {
+        return "#aaaaaa";
+    }
+
+    @Override
+    public String getSeparatorColor() {
+        return "#121416";
+    }
+
+    @Override
+    public String getErrorColor() {
+        return "#C34d4d";
+    }
+
+    @Override
+    public String getSuccessColor() {
+        return "#31b993";
     }
 }

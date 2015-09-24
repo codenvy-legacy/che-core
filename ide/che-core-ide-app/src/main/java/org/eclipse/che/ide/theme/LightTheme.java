@@ -464,7 +464,7 @@ public class LightTheme implements Theme {
 
     @Override
     public String getToolbarBackgroundImage() {
-        return "linear-gradient(-180deg, #d3d3d4   0%, #bdbec0   100%)";
+        return this.getMenuBackgroundImage();
     }
 
     @Override
@@ -474,7 +474,7 @@ public class LightTheme implements Theme {
 
     @Override
     public String getToolbarIconColor() {
-        return "#7c7c7c";
+        return this.getIconColor();
     }
 
     @Override
@@ -674,5 +674,45 @@ public class LightTheme implements Theme {
     @Override
     public String getTextFieldBorderColor() {
         return "#e1e1e1";
+    }
+
+    @Override
+    public String getMenuBackgroundColor() {
+        return "inherit";
+    }
+
+    @Override
+    public String getMenuBackgroundImage() {
+        return "linear-gradient( -180deg, #d3d3d4 0%, #bdbec0 100%)";
+    }
+
+    @Override
+    public String getPanelBackgroundColor() {
+        return "#d6d6d9";
+    }
+
+    @Override
+    public String getPrimaryHighlightColor() {
+        return "#1a68af";
+    }
+
+    @Override
+    public String getIconColor() {
+        return "#7c7c7c";
+    }
+
+    @Override
+    public String getSeparatorColor() {
+        return "#8e8e8e";
+    }
+
+    @Override
+    public String getErrorColor() {
+        return "#C34d4d";
+    }
+
+    @Override
+    public String getSuccessColor() {
+        return "#31b993";
     }
 }

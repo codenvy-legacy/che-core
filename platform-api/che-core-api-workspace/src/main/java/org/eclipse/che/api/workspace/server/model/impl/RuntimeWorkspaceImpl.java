@@ -146,21 +146,11 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
      *
      * @see RuntimeWorkspaceImpl#builder()
      */
-    public static class RuntimeWorkspaceBuilder {
+    public static class RuntimeWorkspaceBuilder extends UsersWorkspaceImplBuilder {
 
-        private String                             id;
-        private String                             name;
-        private String                             owner;
-        private String                             description;
-        private String                             defaultEnvName;
         private String                             rootFolder;
         private String                             activeEnvName;
-        private WorkspaceStatus                    status;
         private Machine                            devMachine;
-        private Map<String, String>                attributes;
-        private List<? extends Command>            commands;
-        private List<? extends ProjectConfig>      projects;
-        private Map<String, ? extends Environment> environments;
         private List<? extends Machine>            machines;
 
         public RuntimeWorkspaceImpl build() {

@@ -44,4 +44,8 @@ public interface NewRecipe extends ManagedRecipe {
     void setPermissions(PermissionsDescriptor permissions);
 
     NewRecipe withPermissions(PermissionsDescriptor permissions);
+
+    void setDescription(String description);
+
+    NewRecipe withDescription(String description);
 }

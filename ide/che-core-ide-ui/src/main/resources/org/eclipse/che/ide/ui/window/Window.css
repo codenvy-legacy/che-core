@@ -148,6 +148,8 @@
     vertical-align: middle;
     display: table-cell;
     cursor: default;
+    color: inherit;
+    font-size: inherit;
 }
 
 @if (org.eclipse.che.ide.api.theme.Style.theme.getId().equals(org.eclipse.che.ide.theme.DarkTheme.DARK_THEME_ID)) {
