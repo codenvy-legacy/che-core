@@ -10,11 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.editor;
 
-import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-import javax.validation.constraints.NotNull;
 import org.eclipse.che.commons.annotation.Nullable;
+import org.eclipse.che.ide.api.project.tree.VirtualFile;
+
+import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.NavigableMap;
 
@@ -31,6 +32,13 @@ public interface EditorAgent {
      * @param file the file to open
      */
     void openEditor(@NotNull final VirtualFile file);
+
+    /**
+     * Close editor with given file
+     *
+     * @param file the file to close
+     */
+    void closeEditor(@NotNull final VirtualFile file);
 
     /**
      * Open editor with given file, call callback when editor fully loaded and initialized.

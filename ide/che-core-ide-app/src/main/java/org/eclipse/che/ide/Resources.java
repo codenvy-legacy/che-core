@@ -19,6 +19,7 @@ import com.google.gwt.resources.client.CssResource.NotStrict;
 import com.google.gwt.resources.client.ImageResource;
 
 import org.eclipse.che.ide.api.parts.PartStackUIResources;
+import org.eclipse.che.ide.ui.cellview.CellTreeResources;
 import org.eclipse.che.ide.menu.MenuResources;
 import org.eclipse.che.ide.notification.NotificationResources;
 import org.eclipse.che.ide.part.projectexplorer.ProjectTreeNodeRenderer;
@@ -54,6 +55,7 @@ public interface Resources extends Tree.Resources,
                                    NotificationResources,
                                    DataGridResources,
                                    CellTableResources,
+                                   CellTreeResources,
                                    CategoriesList.Resources,
                                    DropDownHeaderWidgetImpl.Resources,
                                    ButtonLoaderResources,
