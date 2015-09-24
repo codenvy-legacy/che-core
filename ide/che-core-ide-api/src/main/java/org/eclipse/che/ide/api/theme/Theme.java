@@ -851,4 +851,44 @@ public interface Theme {
      * @return the text field border color.
      */
     String getTextFieldBorderColor();
+
+    /**
+     * @return the menu background color.
+     */
+    String getMenuBackgroundColor();
+
+    /**
+     * @return the menu background image.
+     */
+    String getMenuBackgroundImage();
+
+    /**
+     * @return the panel background color.
+     */
+    String getPanelBackgroundColor();
+
+    /**
+     * @return the primary highlights color.
+     */
+    String getPrimaryHighlightColor();
+
+    /**
+     * @return the icon color.
+     */
+    String getIconColor();
+
+    /**
+     * @return the separator color.
+     */
+    String getSeparatorColor();
+
+    /**
+     * @return the error state color.
+     */
+    String getErrorColor();
+
+    /**
+     * @return the success state color.
+     */
+    String getSuccessColor();
 }

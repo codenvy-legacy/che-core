@@ -126,7 +126,7 @@ body, td {
 
 .gwt-TextBox:invalid,
 .gwt-TextBox:required {
-    border-bottom: 1px solid wrongBorderBottomColor !important;
+    border-bottom: 1px solid errorColor !important;
 }
 
 .gwt-TextBox:focus,
@@ -140,7 +140,7 @@ body, td {
 }
 
 .gwt-TextBox:focus {
-    border-bottom: 1px solid validBorderBottomColor;
+    border-bottom: 1px solid successColor;
     transition: border-bottom 0.2s linear;
 }
 
