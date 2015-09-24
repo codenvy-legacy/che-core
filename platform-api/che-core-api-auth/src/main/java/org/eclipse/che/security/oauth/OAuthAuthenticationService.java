@@ -14,9 +14,12 @@ import org.eclipse.che.api.auth.shared.dto.OAuthToken;
 import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.rest.annotations.Required;
+import com.google.common.base.Strings;
+
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.core.rest.shared.dto.LinkParameter;
 import org.eclipse.che.api.core.util.LinksHelper;
+import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.security.oauth.shared.dto.OAuthAuthenticatorDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,6 +100,10 @@ public class OAuthAuthenticationService {
         final URL requestUrl = getRequestUrl(uriInfo);
         final List<String> scopes = uriInfo.getQueryParameters().get("scope");
         String userId = uriInfo.getQueryParameters().getFirst("userId");
+        if (!Strings.isNullOrEmpty(userId) && !EnvironmentContext.getCurrent().getUser().getId().equals(userId)) {
+            throw new OAuthAuthenticationException(
+                    "Provided userId " + userId + " is not related to current user " + EnvironmentContext.getCurrent().getUser().getName());
+        }
 
         final String authUrl = oauth.getAuthenticateUrl(requestUrl, userId,
                                                         scopes == null ? Collections.<String>emptyList() : scopes);
