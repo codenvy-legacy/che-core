@@ -46,4 +46,9 @@ public interface ManagedRecipe extends Recipe {
      * Returns recipe permissions.
      */
     Permissions getPermissions();
+
+    /**
+     * Returns recipe description.
+     */
+    String getDescription();
 }
