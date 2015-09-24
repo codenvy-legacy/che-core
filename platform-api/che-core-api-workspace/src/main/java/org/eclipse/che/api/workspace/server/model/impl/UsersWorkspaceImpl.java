@@ -35,6 +35,10 @@ import static java.util.stream.Collectors.toMap;
  */
 public class UsersWorkspaceImpl implements UsersWorkspace {
 
+    public static UsersWorkspaceImplBuilder builder() {
+        return new UsersWorkspaceImplBuilder();
+    }
+
     private String                       id;
     private String                       name;
     private String                       owner;
@@ -231,5 +235,98 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
         hash = 31 * hash + getProjects().hashCode();
         hash = 31 * hash + getAttributes().hashCode();
         return hash;
+    }
+
+    /**
+     * Helps to build complex {@link UsersWorkspaceImpl users workspace instance}.
+     *
+     * @see UsersWorkspaceImpl#builder()
+     */
+    public static class UsersWorkspaceImplBuilder {
+
+        protected String                             id;
+        protected String                             name;
+        protected String                             owner;
+        protected String                             defaultEnvName;
+        protected List<? extends Command>            commands;
+        protected List<? extends ProjectConfig>      projects;
+        protected Map<String, String>                attributes;
+        protected Map<String, ? extends Environment> environments;
+        protected String                             description;
+        protected boolean                            isTemporary;
+        protected WorkspaceStatus                    status;
+
+        UsersWorkspaceImplBuilder() {
+        }
+
+        public UsersWorkspaceImpl build() {
+            final UsersWorkspaceImpl workspace = new UsersWorkspaceImpl(id,
+                                                                        name,
+                                                                        owner,
+                                                                        attributes,
+                                                                        commands,
+                                                                        projects,
+                                                                        environments,
+                                                                        defaultEnvName,
+                                                                        description);
+            workspace.setStatus(status);
+            workspace.setTemporary(isTemporary);
+            return workspace;
+        }
+
+        public UsersWorkspaceImplBuilder setId(String id) {
+            this.id = id;
+            return this;
+        }
+
+        public UsersWorkspaceImplBuilder setName(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public UsersWorkspaceImplBuilder setOwner(String owner) {
+            this.owner = owner;
+            return this;
+        }
+
+        public UsersWorkspaceImplBuilder setDefaultEnvName(String defaultEnvName) {
+            this.defaultEnvName = defaultEnvName;
+            return this;
+        }
+
+        public UsersWorkspaceImplBuilder setCommands(List<? extends Command> commands) {
+            this.commands = commands;
+            return this;
+        }
+
+        public UsersWorkspaceImplBuilder setProjects(List<? extends ProjectConfig> projects) {
+            this.projects = projects;
+            return this;
+        }
+
+        public UsersWorkspaceImplBuilder setAttributes(Map<String, String> attributes) {
+            this.attributes = attributes;
+            return this;
+        }
+
+        public UsersWorkspaceImplBuilder setEnvironments(Map<String, ? extends Environment> environments) {
+            this.environments = environments;
+            return this;
+        }
+
+        public UsersWorkspaceImplBuilder setDescription(String description) {
+            this.description = description;
+            return this;
+        }
+
+        public UsersWorkspaceImplBuilder setTemporary(boolean isTemporary) {
+            this.isTemporary = isTemporary;
+            return this;
+        }
+
+        public UsersWorkspaceImplBuilder setStatus(WorkspaceStatus status) {
+            this.status = status;
+            return this;
+        }
     }
 }

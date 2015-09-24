@@ -45,7 +45,9 @@ public class MachineConfigImpl implements MachineConfig {
         this.isDev = isDev;
         this.name = name;
         this.type = type;
-        this.source = new MachineSourceImpl(source.getType(), source.getLocation());
+        if (source != null) {
+            this.source = new MachineSourceImpl(source.getType(), source.getLocation());
+        }
         this.memorySize = memorySize;
         this.outputChannel = outputChannel;
         this.statusChannel = statusChannel;
