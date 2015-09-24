@@ -48,4 +48,8 @@ public interface RecipeUpdate extends ManagedRecipe {
     void setPermissions(PermissionsDescriptor permissions);
 
     RecipeUpdate withPermissions(PermissionsDescriptor permissions);
+
+    void setDescription(String description);
+
+    RecipeUpdate withDescription(String description);
 }

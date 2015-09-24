@@ -31,17 +31,17 @@ import org.eclipse.che.api.machine.shared.Permissions;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.inject.Named;
 import javax.inject.Singleton;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static java.lang.String.format;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * @author Eugene Voevodin
@@ -63,26 +63,19 @@ public class LocalRecipeDaoImpl implements RecipeDao {
         lock = new ReentrantReadWriteLock();
     }
 
-    @Inject
     @PostConstruct
-    public void start(@Named("codenvy.local.infrastructure.recipes") Set<ManagedRecipe> defaultRecipes) {
+    public void start() {
         recipes.putAll(recipeStorage.loadMap(new TypeToken<Map<String, RecipeImpl>>() {}));
-
-        if (recipes.isEmpty()) {
-            try {
-                for (ManagedRecipe recipe : defaultRecipes) {
-                    create(recipe);
-                }
-            } catch (Exception ex) {
-                // fail if can't validate this instance properly
-                throw new RuntimeException(ex);
-            }
-        }
     }
 
     @PreDestroy
     public void stop() throws IOException {
-        recipeStorage.store(recipes);
+        Map<String, ManagedRecipe> recipesToStore = recipes.values()
+                                                           .stream()
+                                                           .filter(recipe -> !"codenvy".equals(recipe.getCreator()))
+                                                           .collect(toMap(ManagedRecipe::getId, identity()));
+
+        recipeStorage.store(recipesToStore);
     }
 
     @Override

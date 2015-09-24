@@ -138,28 +138,6 @@ public class LocalInfrastructureModule extends AbstractModule {
     // UserDao ~~~
 
     @Provides
-    @Named("codenvy.local.infrastructure.recipes")
-    Set<ManagedRecipe> recipes() {
-        final Group group = new GroupImpl("public", null, asList("read", "search"));
-        final ManagedRecipe recipe1 = new RecipeImpl().withId("recipe1234567890")
-                                                      .withName("UBUNTU")
-                                                      .withCreator("codenvy")
-                                                      .withType("docker")
-                                                      .withScript("FROM ubuntu\nCMD tail -f /dev/null")
-                                                      .withTags(singletonList("ubuntu"))
-                                                      .withPermissions(new PermissionsImpl(null, singletonList(group)));
-        final ManagedRecipe recipe2 = new RecipeImpl().withId("recipe2345678901")
-                                                      .withName("BUSYBOX")
-                                                      .withCreator("codenvy")
-                                                      .withType("docker")
-                                                      .withScript("FROM busybox\nCMD tail -f /dev/null")
-                                                      .withTags(asList("java", "busybox"))
-                                                      .withPermissions(new PermissionsImpl(null, singletonList(group)));
-
-        return unmodifiableSet(new HashSet<>(asList(recipe1, recipe2)));
-    }
-
-    @Provides
     @Named("codenvy.local.infrastructure.commands")
     Set<ManagedCommand> commands() {
         final ManagedCommand command1 = new CommandImpl().withId("command123")
