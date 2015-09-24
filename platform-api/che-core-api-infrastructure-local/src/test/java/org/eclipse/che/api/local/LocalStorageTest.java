@@ -73,7 +73,10 @@ public class LocalStorageTest {
         String content = Files.toString(storedFile, Charset.forName("UTF-8"));
         System.out.println(content);
 
-        assertEquals(content, "[\"first element\",\"second element\"]");
+        assertEquals(content, "[\n" +
+                              "  \"first element\",\n" +
+                              "  \"second element\"\n" +
+                              "]");
     }
 
     @Test

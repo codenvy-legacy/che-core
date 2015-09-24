@@ -25,9 +25,13 @@ import java.util.Map;
 @Singleton
 public class LocalStorageFactory {
 
+    /** Path to storage root folder. */
+    private final String pathToStorage;
+
     @Inject
-    @Named("local.storage.path")
-    private String pathToStorage;
+    public LocalStorageFactory(@Named("local.storage.path") String pathToStorage) {
+        this.pathToStorage = pathToStorage;
+    }
 
     /**
      * @param fileName
