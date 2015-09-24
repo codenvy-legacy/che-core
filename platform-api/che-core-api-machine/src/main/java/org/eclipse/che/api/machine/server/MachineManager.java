@@ -902,7 +902,8 @@ public class MachineManager {
                     }
 
                     cleanupOnDestroy(machine, message);
-                } catch (NotFoundException | MachineException ignore) {
+                } catch (NotFoundException | MachineException e) {
+                    LOG.debug(e.getLocalizedMessage(), e);
                 }
             }
         }
