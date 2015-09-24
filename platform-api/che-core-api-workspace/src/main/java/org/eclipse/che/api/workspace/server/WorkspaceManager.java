@@ -190,7 +190,7 @@ public class WorkspaceManager {
         stopWorkspaceAsync(workspaceId);
     }
 
-    public UsersWorkspaceImpl createWorkspace(final WorkspaceConfig workspaceConfig, final String accountId)
+    public UsersWorkspaceImpl createWorkspace(WorkspaceConfig workspaceConfig, String owner, String accountId)
             throws NotFoundException, ForbiddenException, ServerException, BadRequestException, ConflictException {
 
         final UsersWorkspaceImpl workspace = fromConfig(workspaceConfig);
