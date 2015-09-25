@@ -412,11 +412,16 @@ public class NativeGitConnection implements GitConnection {
         ensureExistenceRepoRootInWorkingDirectory();
         String remoteUri;
         try {
-            remoteUri = nativeGit.createRemoteListCommand()
-                                 .setRemoteName(request.getRemote())
-                                 .execute()
-                                 .get(0)
-                                 .getUrl();
+            List<Remote> remotes = nativeGit.createRemoteListCommand()
+                    .setRemoteName(request.getRemote())
+                    .execute();
+
+            if (remotes.isEmpty()) {
+                throw new IllegalArgumentException("No remote repository specified.  " +
+                        "Please, specify either a URL or a remote name from which new revisions should be fetched in request.");
+            }
+
+            remoteUri = remotes.get(0).getUrl();
         } catch (GitException ignored) {
             remoteUri = request.getRemote();
         }

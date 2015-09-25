@@ -126,4 +126,17 @@ public class PullTest {
         //then
         assertTrue(new File(remoteRepo.getAbsolutePath(), "remoteFile").exists());
     }
+
+    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = GitConnectionFactoryProvider.class,
+            expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "No remote repository specified.  " +
+            "Please, specify either a URL or a remote name from which new revisions should be fetched in request.")
+    public void testPullWhenThereAreNoAnyRemotes(GitConnectionFactory connectionFactory)
+            throws GitException, IOException, URISyntaxException, UnauthorizedException {
+        //given
+        GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
+
+        //when
+        PullRequest request = newDto(PullRequest.class);
+        connection.pull(request);
+    }
 }
