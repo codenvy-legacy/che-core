@@ -10,20 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.part;
 
-import org.eclipse.che.ide.api.constraints.Anchor;
-import org.eclipse.che.ide.api.constraints.Constraints;
-import org.eclipse.che.ide.api.editor.EditorPartPresenter;
-import org.eclipse.che.ide.api.event.EditorDirtyStateChangedEvent;
-import org.eclipse.che.ide.api.mvp.Presenter;
-import org.eclipse.che.ide.api.parts.PartPresenter;
-import org.eclipse.che.ide.api.parts.PartStack;
-import org.eclipse.che.ide.api.parts.PartStackView;
-import org.eclipse.che.ide.api.parts.PartStackView.TabItem;
-import org.eclipse.che.ide.api.parts.PropertyListener;
-import org.eclipse.che.ide.api.parts.base.BasePresenter;
-
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
-import org.eclipse.che.ide.workspace.WorkBenchPartController;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
@@ -37,6 +23,19 @@ import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.ide.api.constraints.Anchor;
+import org.eclipse.che.ide.api.constraints.Constraints;
+import org.eclipse.che.ide.api.editor.EditorPartPresenter;
+import org.eclipse.che.ide.api.event.EditorDirtyStateChangedEvent;
+import org.eclipse.che.ide.api.mvp.Presenter;
+import org.eclipse.che.ide.api.parts.PartPresenter;
+import org.eclipse.che.ide.api.parts.PartStack;
+import org.eclipse.che.ide.api.parts.PartStackView;
+import org.eclipse.che.ide.api.parts.PartStackView.TabItem;
+import org.eclipse.che.ide.api.parts.PropertyListener;
+import org.eclipse.che.ide.api.parts.base.BasePresenter;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
+import org.eclipse.che.ide.workspace.WorkBenchPartController;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
@@ -337,7 +336,7 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
                 if (activePart == part) {
                     PartPresenter newActivePart = null;
                     for (PartPresenter tmpPart : parts) {
-                        if (tmpPart instanceof NewProjectExplorerPresenter) {
+                        if (tmpPart instanceof ProjectExplorerPresenter) {
                             newActivePart = tmpPart;
                             break;
                         }

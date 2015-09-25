@@ -10,6 +10,10 @@
  *******************************************************************************/
 package org.eclipse.che.ide.workspace;
 
+import com.google.gwt.user.client.ui.AcceptsOneWidget;
+import com.google.gwt.user.client.ui.SplitLayoutPanel;
+import com.google.gwtmockito.GwtMockitoTestRunner;
+
 import org.eclipse.che.ide.api.constraints.Constraints;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.parts.EditorPartStack;
@@ -17,12 +21,7 @@ import org.eclipse.che.ide.api.parts.OutlinePart;
 import org.eclipse.che.ide.api.parts.PartPresenter;
 import org.eclipse.che.ide.api.parts.PartStack;
 import org.eclipse.che.ide.api.parts.PartStackType;
-
-import com.google.gwt.user.client.ui.AcceptsOneWidget;
-import com.google.gwt.user.client.ui.SplitLayoutPanel;
-import com.google.gwtmockito.GwtMockitoTestRunner;
-
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPart;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPart;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,7 +53,7 @@ public class TestWorkBenchPresenter {
     @Mock
     private OutlinePart               outlinePart;
     @Mock
-    private NewProjectExplorerPart    projectExplorerPart;
+    private ProjectExplorerPart       projectExplorerPart;
     @Mock
     private NotificationManager       notificationManager;
     @Mock

@@ -457,8 +457,6 @@ public class TreeSelectionModel implements HasSelectionHandlers<Node>, HasBefore
             return;
         }
 
-        mouseDown = true;
-
         boolean isSelected = isSelected(sel);
         boolean isMeta = e.getCtrlOrMetaKey();
         boolean isShift = e.getShiftKey();
@@ -633,7 +631,7 @@ public class TreeSelectionModel implements HasSelectionHandlers<Node>, HasBefore
         boolean change = false;
         if (!keepExisting && selectionStorage.size() > 0) {
             change = true;
-            doDeselect(new ArrayList<>(selectionStorage), true);
+            doDeselect(new ArrayList<>(selectionStorage), false);
         }
 
         for (Node node : nodes) {

@@ -25,7 +25,7 @@ import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.PromisableAction;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.util.loging.Log;
 
 import static org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper.createFromCallback;
@@ -34,22 +34,22 @@ import static org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper
 @Singleton
 public class ShowHiddenFilesAction extends Action implements PromisableAction {
 
-    public static final String                SHOW_HIDDEN_FILES_PARAM_ID = "showHiddenFiles";
-    private final AppContext                  appContext;
-    private final AnalyticsEventLogger        eventLogger;
-    private final CoreLocalizationConstant    localizationConstant;
-    private final NewProjectExplorerPresenter newProjectExplorerPresenter;
+    public static final String SHOW_HIDDEN_FILES_PARAM_ID = "showHiddenFiles";
+    private final AppContext               appContext;
+    private final AnalyticsEventLogger     eventLogger;
+    private final CoreLocalizationConstant localizationConstant;
+    private final ProjectExplorerPresenter projectExplorerPresenter;
 
     @Inject
     public ShowHiddenFilesAction(AppContext appContext,
                                  AnalyticsEventLogger eventLogger,
                                  CoreLocalizationConstant localizationConstant,
-                                 NewProjectExplorerPresenter newProjectExplorerPresenter) {
+                                 ProjectExplorerPresenter projectExplorerPresenter) {
         super(localizationConstant.actionShowHiddenFilesTitle(), localizationConstant.actionShowHiddenFilesDescription(), null, null);
         this.appContext = appContext;
         this.eventLogger = eventLogger;
         this.localizationConstant = localizationConstant;
-        this.newProjectExplorerPresenter = newProjectExplorerPresenter;
+        this.projectExplorerPresenter = projectExplorerPresenter;
     }
 
     /** {@inheritDoc} */
@@ -63,8 +63,8 @@ public class ShowHiddenFilesAction extends Action implements PromisableAction {
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
 
-        boolean isShow = newProjectExplorerPresenter.isShowHiddenFiles();
-        newProjectExplorerPresenter.showHiddenFiles(!isShow);
+        boolean isShow = projectExplorerPresenter.isShowHiddenFiles();
+        projectExplorerPresenter.showHiddenFiles(!isShow);
     }
 
     @Override
@@ -86,7 +86,7 @@ public class ShowHiddenFilesAction extends Action implements PromisableAction {
 
             @Override
             public void makeCall(final Callback<Void, Throwable> callback) {
-                newProjectExplorerPresenter.showHiddenFiles(isShowHiddenFiles);
+                projectExplorerPresenter.showHiddenFiles(isShowHiddenFiles);
 
                 callback.onSuccess(null);
             }

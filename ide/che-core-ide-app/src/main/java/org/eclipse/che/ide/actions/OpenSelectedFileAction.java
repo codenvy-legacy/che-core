@@ -10,6 +10,10 @@
  *******************************************************************************/
 package org.eclipse.che.ide.actions;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.web.bindery.event.shared.EventBus;
+
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.Action;
@@ -18,11 +22,7 @@ import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.FileEvent;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.api.selection.Selection;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
-
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.google.web.bindery.event.shared.EventBus;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 
 /**
  * @author Vitaliy Guliy
@@ -30,14 +30,14 @@ import com.google.web.bindery.event.shared.EventBus;
 @Singleton
 public class OpenSelectedFileAction extends Action {
 
-    private final AppContext                  appContext;
-    private final NewProjectExplorerPresenter projectExplorer;
-    private final EventBus                    eventBus;
-    private final AnalyticsEventLogger        eventLogger;
+    private final AppContext               appContext;
+    private final ProjectExplorerPresenter projectExplorer;
+    private final EventBus                 eventBus;
+    private final AnalyticsEventLogger     eventLogger;
 
     @Inject
     public OpenSelectedFileAction(AppContext appContext,
-                                  NewProjectExplorerPresenter projectExplorer,
+                                  ProjectExplorerPresenter projectExplorer,
                                   EventBus eventBus,
                                   AnalyticsEventLogger eventLogger,
                                   Resources resources) {

@@ -22,7 +22,7 @@ import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.project.node.FileReferenceNode;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.websocket.Message;
@@ -51,13 +51,13 @@ import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
 @Singleton
 public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegate {
 
-    private final String                      SEARCH_URL;
-    private       MessageBus                  wsMessageBus;
-    private       DtoUnmarshallerFactory      dtoUnmarshallerFactory;
-    private final NewProjectExplorerPresenter projectExplorer;
-    private       NavigateToFileView          view;
-    private       AppContext                  appContext;
-    private       Map<String, ItemReference>  resultMap;
+    private final String                     SEARCH_URL;
+    private       MessageBus                 wsMessageBus;
+    private       DtoUnmarshallerFactory     dtoUnmarshallerFactory;
+    private final ProjectExplorerPresenter   projectExplorer;
+    private       NavigateToFileView         view;
+    private       AppContext                 appContext;
+    private       Map<String, ItemReference> resultMap;
 
     @Inject
     public NavigateToFilePresenter(NavigateToFileView view,
@@ -65,7 +65,7 @@ public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegat
                                    MessageBus wsMessageBus,
                                    @Named("workspaceId") String workspaceId,
                                    DtoUnmarshallerFactory dtoUnmarshallerFactory,
-                                   NewProjectExplorerPresenter projectExplorer) {
+                                   ProjectExplorerPresenter projectExplorer) {
         this.view = view;
         this.appContext = appContext;
         this.wsMessageBus = wsMessageBus;

@@ -17,6 +17,7 @@ import com.google.inject.Singleton;
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.api.runner.dto.ApplicationProcessDescriptor;
 import org.eclipse.che.api.runner.gwt.client.RunnerServiceClient;
+import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.Action;
@@ -25,7 +26,7 @@ import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
 import org.eclipse.che.ide.api.project.node.resource.SupportRename;
 import org.eclipse.che.ide.api.selection.Selection;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
+import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.project.node.FileReferenceNode;
 import org.eclipse.che.ide.project.node.FolderReferenceNode;
 import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
@@ -41,8 +42,6 @@ import org.eclipse.che.ide.ui.dialogs.input.InputDialog;
 import org.eclipse.che.ide.ui.dialogs.input.InputValidator;
 import org.eclipse.che.ide.util.NameUtils;
 
-import org.eclipse.che.commons.annotation.Nullable;
-
 import java.util.List;
 
 import static org.eclipse.che.api.runner.ApplicationStatus.NEW;
@@ -55,37 +54,31 @@ import static org.eclipse.che.api.runner.ApplicationStatus.RUNNING;
  */
 @Singleton
 public class RenameItemAction extends Action {
-    private final AnalyticsEventLogger        eventLogger;
-    private final CoreLocalizationConstant    localization;
-    private final RunnerServiceClient         runnerServiceClient;
-    private final DtoUnmarshallerFactory      dtoUnmarshallerFactory;
-    private final DialogFactory               dialogFactory;
-    private final AppContext                  appContext;
-    private final NewProjectExplorerPresenter projectExplorer;
-    private final InputValidator              fileNameValidator;
-    private final InputValidator              folderNameValidator;
-    private final InputValidator              projectNameValidator;
+    private final AnalyticsEventLogger     eventLogger;
+    private final CoreLocalizationConstant localization;
+    private final RunnerServiceClient      runnerServiceClient;
+    private final DtoUnmarshallerFactory   dtoUnmarshallerFactory;
+    private final DialogFactory            dialogFactory;
+    private final AppContext               appContext;
+    private final SelectionAgent           selectionAgent;
 
     @Inject
-    public RenameItemAction(Resources resources,
-                            AnalyticsEventLogger eventLogger,
-                            NewProjectExplorerPresenter projectExplorer,
-                            CoreLocalizationConstant localization,
-                            RunnerServiceClient runnerServiceClient,
-                            DtoUnmarshallerFactory dtoUnmarshallerFactory,
-                            DialogFactory dialogFactory,
-                            AppContext appContext) {
+    public RenameItemAction(final Resources resources,
+                            final AnalyticsEventLogger eventLogger,
+                            final SelectionAgent selectionAgent,
+                            final CoreLocalizationConstant localization,
+                            final RunnerServiceClient runnerServiceClient,
+                            final DtoUnmarshallerFactory dtoUnmarshallerFactory,
+                            final DialogFactory dialogFactory,
+                            final AppContext appContext) {
         super(localization.renameItemActionText(), localization.renameItemActionDescription(), null, resources.rename());
-        this.projectExplorer = projectExplorer;
+        this.selectionAgent = selectionAgent;
         this.eventLogger = eventLogger;
         this.localization = localization;
         this.runnerServiceClient = runnerServiceClient;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.dialogFactory = dialogFactory;
         this.appContext = appContext;
-        this.fileNameValidator = new FileNameValidator();
-        this.folderNameValidator = new FolderNameValidator();
-        this.projectNameValidator = new ProjectNameValidator();
     }
 
     /** {@inheritDoc} */
@@ -93,8 +86,8 @@ public class RenameItemAction extends Action {
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
 
-        Selection<?> selection = projectExplorer.getSelection();
-        if (selection.isEmpty()) {
+        final Selection<?> selection = selectionAgent.getSelection();
+        if (selection == null || selection.isEmpty()) {
             return;
         }
 
@@ -135,7 +128,7 @@ public class RenameItemAction extends Action {
             return;
         }
 
-        Selection<?> selection = projectExplorer.getSelection();
+        final Selection<?> selection = selectionAgent.getSelection();
 
         if (selection == null || selection.isEmpty()) {
             e.getPresentation().setEnabled(false);
@@ -148,20 +141,29 @@ public class RenameItemAction extends Action {
             return;
         }
 
-        e.getPresentation().setEnabled(selection.getHeadElement() instanceof ResourceBasedNode<?>
-                                       && !(selection.getHeadElement() instanceof ProjectDescriptorNode));
+        final Object possibleNode = selection.getHeadElement();
+
+        boolean enable = !(possibleNode instanceof ProjectDescriptorNode)
+                         && possibleNode instanceof SupportRename
+                         && ((SupportRename)possibleNode).getRenameProcessor() != null;
+
+        e.getPresentation().setEnabled(enable);
     }
 
     /**
      * Asks the user for new name and renames the node.
      *
-     * @param node node to rename
+     * @param node
+     *         node to rename
      */
     private void renameNode(final ResourceBasedNode<?> node) {
         final InputCallback inputCallback = new InputCallback() {
             @Override
             public void accepted(final String value) {
-                node.rename(value);
+                //we shouldn't perform renaming file with the same name
+                if (!value.trim().equals(node.getName())) {
+                    node.rename(value);
+                }
             }
         };
 
@@ -177,18 +179,18 @@ public class RenameItemAction extends Action {
      */
     public void askForNewName(final ResourceBasedNode<?> node, final InputCallback inputCallback, final CancelCallback cancelCallback) {
         final int selectionLength = node.getName().indexOf('.') >= 0
-                ? node.getName().lastIndexOf('.')
-                : node.getName().length();
+                                    ? node.getName().lastIndexOf('.')
+                                    : node.getName().length();
 
         InputDialog inputDialog = dialogFactory.createInputDialog(getDialogTitle(node),
-                localization.renameDialogNewNameLabel(),
-                node.getName(), 0, selectionLength, inputCallback, null);
+                                                                  localization.renameDialogNewNameLabel(),
+                                                                  node.getName(), 0, selectionLength, inputCallback, null);
         if (node instanceof FileReferenceNode) {
-            inputDialog.withValidator(fileNameValidator);
+            inputDialog.withValidator(new FileNameValidator(node.getName()));
         } else if (node instanceof FolderReferenceNode) {
-            inputDialog.withValidator(folderNameValidator);
+            inputDialog.withValidator(new FolderNameValidator(node.getName()));
         } else if (node instanceof ProjectDescriptorNode || node instanceof ProjectReferenceNode) {
-            inputDialog.withValidator(projectNameValidator);
+            inputDialog.withValidator(new ProjectNameValidator(node.getName()));
         }
         inputDialog.show();
     }
@@ -236,10 +238,43 @@ public class RenameItemAction extends Action {
         return localization.renameNodeDialogTitle();
     }
 
-    private class FileNameValidator implements InputValidator {
-        @Nullable
+    private abstract class AbstractNameValidator implements InputValidator {
+        private final String selfName;
+
+        public AbstractNameValidator(final String selfName) {
+            this.selfName = selfName;
+        }
+
         @Override
         public Violation validate(String value) {
+            if (value.trim().equals(selfName)) {
+                return new Violation() {
+                    @Override
+                    public String getMessage() {
+                        return localization.invalidName();
+                    }
+
+                    @Override
+                    public String getCorrectedValue() {
+                        return null;
+                    }
+                };
+            }
+
+            return isValidName(value);
+        }
+
+        public abstract Violation isValidName(String value);
+    }
+
+    private class FileNameValidator extends AbstractNameValidator {
+
+        public FileNameValidator(String selfName) {
+            super(selfName);
+        }
+
+        @Override
+        public Violation isValidName(String value) {
             if (!NameUtils.checkFileName(value)) {
                 return new Violation() {
                     @Override
@@ -258,10 +293,14 @@ public class RenameItemAction extends Action {
         }
     }
 
-    private class FolderNameValidator implements InputValidator {
-        @Nullable
+    private class FolderNameValidator extends AbstractNameValidator {
+
+        public FolderNameValidator(String selfName) {
+            super(selfName);
+        }
+
         @Override
-        public Violation validate(String value) {
+        public Violation isValidName(String value) {
             if (!NameUtils.checkFolderName(value)) {
                 return new Violation() {
                     @Override
@@ -280,10 +319,14 @@ public class RenameItemAction extends Action {
         }
     }
 
-    private class ProjectNameValidator implements InputValidator {
-        @Nullable
+    private class ProjectNameValidator extends AbstractNameValidator {
+
+        public ProjectNameValidator(String selfName) {
+            super(selfName);
+        }
+
         @Override
-        public Violation validate(String value) {
+        public Violation isValidName(String value) {
             final String correctValue = value.contains(" ") ? value.replaceAll(" ", "-") : null;
             final String errormessage = !NameUtils.checkFileName(value) ? localization.invalidName() : null;
             if (correctValue != null || errormessage != null) {

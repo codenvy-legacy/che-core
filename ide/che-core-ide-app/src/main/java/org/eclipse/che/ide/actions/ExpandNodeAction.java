@@ -30,7 +30,7 @@ import org.eclipse.che.ide.api.action.PromisableAction;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.project.node.Node;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.ui.smartTree.event.ExpandNodeEvent;
 import org.eclipse.che.ide.util.loging.Log;
@@ -46,16 +46,16 @@ public class ExpandNodeAction extends Action implements PromisableAction {
     /** ID of the parameter to specify node path to open. */
     public static String NODE_PARAM_ID = "node";
 
-    private final AppContext                  appContext;
-    private final CoreLocalizationConstant    localization;
-    private final NewProjectExplorerPresenter projectExplorer;
+    private final AppContext               appContext;
+    private final CoreLocalizationConstant localization;
+    private final ProjectExplorerPresenter projectExplorer;
 
     private Callback<Void, Throwable> actionCompletedCallBack;
 
     @Inject
     public ExpandNodeAction(AppContext appContext,
                             CoreLocalizationConstant localization,
-                            NewProjectExplorerPresenter projectExplorer) {
+                            ProjectExplorerPresenter projectExplorer) {
         this.appContext = appContext;
         this.localization = localization;
         this.projectExplorer = projectExplorer;

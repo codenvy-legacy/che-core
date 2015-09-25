@@ -15,5 +15,5 @@ import org.eclipse.che.ide.api.parts.PartPresenter;
 /**
  * @author Vlad Zhukovskiy
  */
-public interface NewProjectExplorerPart extends PartPresenter {
+public interface ProjectExplorerPart extends PartPresenter {
 }

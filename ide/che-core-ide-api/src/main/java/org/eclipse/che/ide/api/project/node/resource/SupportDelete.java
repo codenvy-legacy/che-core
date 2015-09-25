@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.project.node.resource;
 
+import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.commons.annotation.Nullable;
 
 /**
@@ -28,6 +29,8 @@ public interface SupportDelete<DataObject> {
 
     /**
      * Perform delete operation.
+     *
+     * @return promise object which will be resolved when delete operation will be successful
      */
-    void delete();
+    Promise<Void> delete();
 }
