@@ -19,8 +19,11 @@ import org.eclipse.che.ide.jseditor.client.reconciler.ReconcilerWithAutoSave;
  */
 public class AutoSaveTextEditorConfiguration extends DefaultTextEditorConfiguration{
 
+    private ReconcilerWithAutoSave reconcilerWithAutoSave =
+            new ReconcilerWithAutoSave(DocumentPartitioner.DEFAULT_CONTENT_TYPE, getPartitioner());
+
     @Override
     public Reconciler getReconciler() {
-        return new ReconcilerWithAutoSave(DocumentPartitioner.DEFAULT_CONTENT_TYPE, getPartitioner());
+        return reconcilerWithAutoSave;
     }
 }

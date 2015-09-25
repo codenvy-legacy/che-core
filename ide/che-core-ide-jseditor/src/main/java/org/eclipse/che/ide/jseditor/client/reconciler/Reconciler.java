@@ -19,8 +19,7 @@ import org.eclipse.che.ide.jseditor.client.texteditor.TextEditor;
  * this document. Reconciler have a list of {@link ReconcilingStrategy} objects each of which is registered for a particular document
  * content type. The reconciler uses the strategy objects to react on the changes applied to the text view document.
  * 
- * @author <a href="mailto:evidolob@exoplatform.com">Evgen Vidolob</a>
- * @version $Id:
+ * @author Evgen Vidolob
  */
 public interface Reconciler extends UseDocumentHandle, DocumentChangeHandler {
 

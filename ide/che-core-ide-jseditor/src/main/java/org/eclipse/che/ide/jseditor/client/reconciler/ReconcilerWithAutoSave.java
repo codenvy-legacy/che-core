@@ -52,17 +52,16 @@ public class ReconcilerWithAutoSave implements Reconciler {
     private final DocumentPartitioner partitioner;
 
     private DirtyRegionQueue dirtyRegionQueue;
-
-    private final Timer timer = new Timer() {
+    private DocumentHandle documentHandle;
+    private TextEditor     editor;
+    private boolean autoSaveEnabled = true;
+    private final Timer autoSaveTimer = new Timer() {
 
         @Override
         public void run() {
             save();
         }
     };
-
-    private DocumentHandle documentHandle;
-    private TextEditor     editor;
 
     @AssistedInject
     public ReconcilerWithAutoSave(@Assisted final String partition,
@@ -78,8 +77,8 @@ public class ReconcilerWithAutoSave implements Reconciler {
             reconcilingStrategy.setDocument(documentHandle.getDocument());
         }
 
-        timer.cancel();
-        timer.schedule(DELAY);
+        autoSaveTimer.cancel();
+        autoSaveTimer.schedule(DELAY);
     }
 
     @Override
@@ -91,23 +90,31 @@ public class ReconcilerWithAutoSave implements Reconciler {
 
     @Override
     public void uninstall() {
-        timer.cancel();
+        autoSaveTimer.cancel();
     }
 
     private void save() {
-        editor.doSave(new AsyncCallback<EditorInput>() {
-            @Override
-            public void onFailure(Throwable throwable) {
-                Log.error(ReconcilerWithAutoSave.class, throwable);
-            }
+        if (autoSaveEnabled) {
+            editor.doSave(new AsyncCallback<EditorInput>() {
+                @Override
+                public void onFailure(Throwable throwable) {
+                    Log.error(ReconcilerWithAutoSave.class, throwable);
+                }
 
-            @Override
-            public void onSuccess(EditorInput editorInput) {
-                final DirtyRegion region = dirtyRegionQueue.removeNextDirtyRegion();
-                process(region);
+                @Override
+                public void onSuccess(EditorInput editorInput) {
+                    processNextRegion();
 
-            }
-        });
+                }
+            });
+        } else {
+            processNextRegion();
+        }
+    }
+
+    private void processNextRegion() {
+        final DirtyRegion region = dirtyRegionQueue.removeNextDirtyRegion();
+        process(region);
     }
 
     /**
@@ -143,7 +150,7 @@ public class ReconcilerWithAutoSave implements Reconciler {
 
     /**
      * Computes and returns the partitioning for the given region of the input document of the reconciler's connected text viewer.
-     * 
+     *
      * @param offset the region offset
      * @param length the region length
      * @return the computed partitioning
@@ -154,7 +161,7 @@ public class ReconcilerWithAutoSave implements Reconciler {
 
     /**
      * Returns the input document of the text view this reconciler is installed on.
-     * 
+     *
      * @return the reconciler document
      */
     protected Document getDocument() {
@@ -163,7 +170,7 @@ public class ReconcilerWithAutoSave implements Reconciler {
 
     /**
      * Creates a dirty region for a document event and adds it to the queue.
-     * 
+     *
      * @param event the document event for which to create a dirty region
      */
     private void createDirtyRegion(final DocumentChangeEvent event) {
@@ -214,13 +221,8 @@ public class ReconcilerWithAutoSave implements Reconciler {
             return;
         }
         createDirtyRegion(event);
-        timer.cancel();
-        timer.schedule(DELAY);
-    }
-
-    @Override
-    public void setDocumentHandle(final DocumentHandle handle) {
-        this.documentHandle = handle;
+        autoSaveTimer.cancel();
+        autoSaveTimer.schedule(DELAY);
     }
 
     @Override
@@ -228,4 +230,22 @@ public class ReconcilerWithAutoSave implements Reconciler {
         return this.documentHandle;
     }
 
+    @Override
+    public void setDocumentHandle(final DocumentHandle handle) {
+        this.documentHandle = handle;
+    }
+
+    public boolean isAutoSaveEnabled() {
+        return autoSaveEnabled;
+    }
+
+    public void disableAutoSave() {
+        autoSaveEnabled = false;
+        autoSaveTimer.cancel();
+    }
+
+    public void enableAutoSave() {
+        autoSaveEnabled = true;
+        autoSaveTimer.schedule(DELAY);
+    }
 }
