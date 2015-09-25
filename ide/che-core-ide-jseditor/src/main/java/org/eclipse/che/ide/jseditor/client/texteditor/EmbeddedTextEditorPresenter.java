@@ -26,6 +26,7 @@ import com.google.web.bindery.event.shared.EventBus;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.editor.AbstractEditorPresenter;
 import org.eclipse.che.ide.api.editor.EditorInput;
+import org.eclipse.che.ide.api.editor.EditorWithAutoSave;
 import org.eclipse.che.ide.api.editor.EditorWithErrors;
 import org.eclipse.che.ide.api.event.FileContentUpdateEvent;
 import org.eclipse.che.ide.api.event.FileContentUpdateHandler;
@@ -65,7 +66,6 @@ import org.eclipse.che.ide.jseditor.client.gutter.HasGutter;
 import org.eclipse.che.ide.jseditor.client.keymap.Keybinding;
 import org.eclipse.che.ide.jseditor.client.position.PositionConverter;
 import org.eclipse.che.ide.jseditor.client.quickfix.QuickAssistantFactory;
-import org.eclipse.che.ide.api.editor.EditorWithAutoSave;
 import org.eclipse.che.ide.jseditor.client.reconciler.Reconciler;
 import org.eclipse.che.ide.jseditor.client.reconciler.ReconcilerWithAutoSave;
 import org.eclipse.che.ide.jseditor.client.text.LinearRange;
@@ -80,8 +80,8 @@ import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.ui.dialogs.choice.ChoiceDialog;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.validation.constraints.NotNull;
 import javax.inject.Inject;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -93,15 +93,15 @@ import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
  * Presenter part for the embedded variety of editor implementations.
  */
 public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends AbstractEditorPresenter
-                                                                         implements EmbeddedTextEditor,
-                                                                                    FileEventHandler,
-                                                                                    UndoableEditor,
-                                                                                    HasBreakpointRenderer,
-                                                                                    HasReadOnlyProperty,
-                                                                                    HandlesTextOperations,
-                                                                                    EditorWithAutoSave,
-                                                                                    EditorWithErrors,
-                                                                                    Delegate {
+        implements EmbeddedTextEditor,
+                   FileEventHandler,
+                   UndoableEditor,
+                   HasBreakpointRenderer,
+                   HasReadOnlyProperty,
+                   HandlesTextOperations,
+                   EditorWithAutoSave,
+                   EditorWithErrors,
+                   Delegate {
 
     /** File type used when we have no idea of the actual content type. */
     public final static String DEFAULT_CONTENT_TYPE = "text/plain";
@@ -112,43 +112,33 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
     private final EditorModule<T>        editorModule;
     private final JsEditorConstants      constant;
 
-    private final DocumentStorage       documentStorage;
-    private final EventBus              generalEventBus;
-    private final FileTypeIdentifier    fileTypeIdentifier;
-    private final DialogFactory         dialogFactory;
-    private final CodeAssistantFactory  codeAssistantFactory;
-    private final QuickAssistantFactory quickAssistantFactory;
-    private final BreakpointManager     breakpointManager;
-
-    private List<EditorUpdateAction> updateActions;
-
-    private TextEditorConfiguration configuration;
-
-    private EditorWidget           editorWidget;
-    private EmbeddedDocument       document;
-    private CursorModelWithHandler cursorModel;
-    private HasKeybindings keyBindingsManager = new TemporaryKeybindingsManager();
-
-    private       AsyncRequestLoader         loader;
-    private       NotificationManager        notificationManager;
+    private final DocumentStorage            documentStorage;
+    private final EventBus                   generalEventBus;
+    private final FileTypeIdentifier         fileTypeIdentifier;
+    private final DialogFactory              dialogFactory;
+    private final CodeAssistantFactory       codeAssistantFactory;
+    private final QuickAssistantFactory      quickAssistantFactory;
+    private final BreakpointManager          breakpointManager;
     private final EmbeddedTextEditorPartView editorView;
-    private       OutlineImpl                outline;
-
-    /** The editor's error state. */
-    private EditorState errorState;
-
-    private boolean delayedFocus = false;
-    private boolean isFocused    = false;
-
-    private BreakpointRendererFactory breakpointRendererFactory;
-    private BreakpointRenderer        breakpointRenderer;
-
-
     /** The editor handle for this editor. */
     private final EditorHandle handle = new EditorHandle() {
     };
-
-    private List<String> fileTypes;
+    private List<EditorUpdateAction> updateActions;
+    private TextEditorConfiguration  configuration;
+    private EditorWidget             editorWidget;
+    private EmbeddedDocument         document;
+    private CursorModelWithHandler   cursorModel;
+    private HasKeybindings keyBindingsManager = new TemporaryKeybindingsManager();
+    private AsyncRequestLoader  loader;
+    private NotificationManager notificationManager;
+    private OutlineImpl         outline;
+    /** The editor's error state. */
+    private EditorState         errorState;
+    private boolean delayedFocus = false;
+    private boolean isFocused    = false;
+    private BreakpointRendererFactory breakpointRendererFactory;
+    private BreakpointRenderer        breakpointRenderer;
+    private List<String>              fileTypes;
 
     @AssistedInject
     public EmbeddedTextEditorPresenter(final CodeAssistantFactory codeAssistantFactory,
@@ -632,7 +622,7 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
             this.updateActions = new ArrayList<>();
         }
         this.updateActions.add(action);
-	}
+    }
 
     @Override
     public void addKeybinding(final Keybinding keybinding) {
@@ -649,13 +639,13 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
                 result.addAll(types);
             }
             // use the registered media type if there is one
-                final String storedContentType = file.getMediaType();
-                if (storedContentType != null
-                    && ! storedContentType.isEmpty()
-                    // give another chance at detection
-                    && ! DEFAULT_CONTENT_TYPE.equals(storedContentType)) {
-                    result.add(storedContentType);
-                }
+            final String storedContentType = file.getMediaType();
+            if (storedContentType != null
+                && !storedContentType.isEmpty()
+                // give another chance at detection
+                && !DEFAULT_CONTENT_TYPE.equals(storedContentType)) {
+                result.add(storedContentType);
+            }
         }
 
         // ultimate fallback - can't make more generic for text
@@ -690,7 +680,7 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
         this.editorView.showCompletionProposals(this.editorWidget, source);
     }
 
-    public boolean isCompletionProposalsShowing(){
+    public boolean isCompletionProposalsShowing() {
         return editorWidget.isCompletionProposalsShowing();
     }
 
@@ -704,7 +694,7 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
 
     private void switchHasKeybinding() {
         final HasKeybindings current = getHasKeybindings();
-        if (! (current instanceof TemporaryKeybindingsManager)) {
+        if (!(current instanceof TemporaryKeybindingsManager)) {
             return;
         }
         // change the key binding instance and add all bindings to the new one
@@ -775,13 +765,13 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
     }
 
     @Override
-    public void setReadOnly(final boolean readOnly) {
-        this.editorWidget.setReadOnly(readOnly);
+    public boolean isReadOnly() {
+        return this.editorWidget.isReadOnly();
     }
 
     @Override
-    public boolean isReadOnly() {
-        return this.editorWidget.isReadOnly();
+    public void setReadOnly(final boolean readOnly) {
+        this.editorWidget.setReadOnly(readOnly);
     }
 
     protected EditorWidget getEditorWidget() {
@@ -794,7 +784,32 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
 
     @Override
     public boolean isAutoSaveEnabled() {
+        ReconcilerWithAutoSave autoSave = getAutoSave();
+        return autoSave != null && autoSave.isAutoSaveEnabled();
+    }
+
+    private ReconcilerWithAutoSave getAutoSave() {
         Reconciler reconciler = getConfiguration().getReconciler();
-         return reconciler != null && reconciler instanceof ReconcilerWithAutoSave;
+
+        if (reconciler != null && reconciler instanceof ReconcilerWithAutoSave) {
+            return ((ReconcilerWithAutoSave)reconciler);
+        }
+        return null;
+    }
+
+    @Override
+    public void enableAutoSave() {
+        ReconcilerWithAutoSave autoSave = getAutoSave();
+        if (autoSave != null) {
+            autoSave.enableAutoSave();
+        }
+    }
+
+    @Override
+    public void disableAutoSave() {
+        ReconcilerWithAutoSave autoSave = getAutoSave();
+        if (autoSave != null) {
+            autoSave.disableAutoSave();
+        }
     }
 }

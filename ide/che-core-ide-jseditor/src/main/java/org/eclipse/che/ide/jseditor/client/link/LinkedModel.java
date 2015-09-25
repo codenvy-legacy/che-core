@@ -14,6 +14,10 @@ package org.eclipse.che.ide.jseditor.client.link;
 import java.util.List;
 
 /**
+ * The model for linked mode, umbrellas several
+ * {@link LinkedModelGroup}s. Once installed, the model
+ * propagates any changes to a position to all its siblings in the same position
+ * group.
  * @author Evgen Vidolob
  */
 public interface LinkedModel {
