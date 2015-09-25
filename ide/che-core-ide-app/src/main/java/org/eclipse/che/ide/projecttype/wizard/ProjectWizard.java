@@ -29,7 +29,7 @@ import org.eclipse.che.ide.api.event.OpenProjectEvent;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode;
 import org.eclipse.che.ide.api.wizard.AbstractWizard;
 import org.eclipse.che.ide.dto.DtoFactory;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.Unmarshallable;
@@ -62,7 +62,7 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
     private final DialogFactory            dialogFactory;
     private final EventBus                 eventBus;
     private final AppContext               appContext;
-    private final NewProjectExplorerPresenter projectExplorer;
+    private final ProjectExplorerPresenter projectExplorer;
 
     /**
      * Creates project wizard.
@@ -98,7 +98,7 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
                          DialogFactory dialogFactory,
                          EventBus eventBus,
                          AppContext appContext,
-                         NewProjectExplorerPresenter projectExplorer) {
+                         ProjectExplorerPresenter projectExplorer) {
         super(dataObject);
         this.mode = mode;
         this.localizationConstants = localizationConstants;

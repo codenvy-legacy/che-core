@@ -25,7 +25,7 @@ import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode;
 import org.eclipse.che.ide.api.wizard.Wizard;
 import org.eclipse.che.ide.dto.DtoFactory;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.ui.dialogs.CancelCallback;
@@ -93,7 +93,7 @@ public class ProjectWizardTest {
     @Mock
     private ConfirmDialog            confirmDialog;
     @Mock
-    private NewProjectExplorerPresenter projectExplorer;
+    private ProjectExplorerPresenter projectExplorer;
 
 
     private ProjectWizard wizard;
@@ -102,7 +102,8 @@ public class ProjectWizardTest {
     public void setUp() {
         when(newProject.getName()).thenReturn(PROJECT_NAME);
         when(importProject.getProject()).thenReturn(newProject);
-        when(dialogFactory.createConfirmDialog(anyString(),anyString(),Matchers.<ConfirmCallback>anyObject(), Matchers.<CancelCallback>anyObject())).thenReturn(confirmDialog);
+        when(dialogFactory.createConfirmDialog(anyString(), anyString(), Matchers.<ConfirmCallback>anyObject(),
+                                               Matchers.<CancelCallback>anyObject())).thenReturn(confirmDialog);
     }
 
     @Test

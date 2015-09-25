@@ -10,9 +10,10 @@
  *******************************************************************************/
 package org.eclipse.che.ide.bootstrap;
 
-import org.eclipse.che.ide.Resources;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
+import org.eclipse.che.ide.Resources;
 
 /** @author Evgen Vidolob */
 @Singleton
@@ -28,7 +29,6 @@ public class StyleInjector {
         resources.coreCss().ensureInjected();
         resources.treeCss().ensureInjected();
         resources.defaultSimpleListCss().ensureInjected();
-        resources.workspaceNavigationFileTreeNodeRendererCss().ensureInjected();
         resources.partStackCss().ensureInjected();
         resources.dialogBox().ensureInjected();
         resources.clipboardCss().ensureInjected();

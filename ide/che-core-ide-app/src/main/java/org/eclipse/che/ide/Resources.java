@@ -22,7 +22,6 @@ import org.eclipse.che.ide.api.parts.PartStackUIResources;
 import org.eclipse.che.ide.ui.dropdown.DropDownHeaderWidgetImpl;
 import org.eclipse.che.ide.menu.MenuResources;
 import org.eclipse.che.ide.notification.NotificationResources;
-import org.eclipse.che.ide.part.projectexplorer.ProjectTreeNodeRenderer;
 import org.eclipse.che.ide.projecttype.wizard.ProjectWizardResources;
 import org.eclipse.che.ide.ui.DialogBoxResources;
 import org.eclipse.che.ide.ui.buttonLoader.ButtonLoaderResources;
@@ -38,14 +37,12 @@ import org.vectomatic.dom.svg.ui.SVGResource;
  * Interface for resources, e.g., css, images, text files, etc.
  * <p/>
  * Tree.Resources,
- * ProjectTreeNodeRenderer.Resources,
  * Editor.Resources,
  * LineNumberRenderer.Resources,
  * EditableContentArea.Resources,
  * PartStackUIResources,
  */
 public interface Resources extends Tree.Resources,
-                                   ProjectTreeNodeRenderer.Resources,
                                    PartStackUIResources,
                                    SimpleList.Resources,
                                    MenuResources,

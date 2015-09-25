@@ -10,50 +10,65 @@
  *******************************************************************************/
 package org.eclipse.che.ide.actions;
 
-import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.gwt.core.client.Callback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
+import org.eclipse.che.api.promises.client.Operation;
+import org.eclipse.che.api.promises.client.OperationException;
+import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper;
+import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
+import org.eclipse.che.ide.api.action.PromisableAction;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.selection.Selection;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
-import org.eclipse.che.ide.part.projectexplorer.DeleteNodeHandler;
+import org.eclipse.che.ide.api.selection.SelectionAgent;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
+import org.eclipse.che.ide.project.node.remove.DeleteNodeHandler;
 
-import org.eclipse.che.commons.annotation.Nullable;
 import java.util.List;
 
-import static com.google.common.collect.Lists.transform;
+import static org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper.createFromCallback;
 
 /**
  * Action for deleting an item which is selected in 'Project Explorer'.
  *
  * @author Artem Zatsarynnyy
+ * @author Vlad Zhukovskyi
  */
 @Singleton
-public class DeleteItemAction extends Action {
-    private final AnalyticsEventLogger        eventLogger;
-    private       NewProjectExplorerPresenter projectExplorer;
-    private       DeleteNodeHandler           deleteNodeHandler;
-    private       AppContext                  appContext;
+public class DeleteItemAction extends Action implements PromisableAction {
+    private final AnalyticsEventLogger     eventLogger;
+    private final SelectionAgent           selectionAgent;
+    private final DeleteNodeHandler        deleteNodeHandler;
+    private final AppContext               appContext;
+    private final ProjectExplorerPresenter projectExplorer;
+
+    private Callback<Void, Throwable> actionCompletedCallBack;
 
     @Inject
-    public DeleteItemAction(Resources resources,
-                            AnalyticsEventLogger eventLogger,
-                            NewProjectExplorerPresenter projectExplorer,
-                            DeleteNodeHandler deleteNodeHandler, CoreLocalizationConstant localization, AppContext appContext) {
+    public DeleteItemAction(final Resources resources,
+                            final AnalyticsEventLogger eventLogger,
+                            final SelectionAgent selectionAgent,
+                            final DeleteNodeHandler deleteNodeHandler,
+                            final CoreLocalizationConstant localization,
+                            final AppContext appContext,
+                            final ProjectExplorerPresenter projectExplorer) {
         super(localization.deleteItemActionText(), localization.deleteItemActionDescription(), null, resources.delete());
-        this.projectExplorer = projectExplorer;
+        this.selectionAgent = selectionAgent;
         this.eventLogger = eventLogger;
         this.deleteNodeHandler = deleteNodeHandler;
         this.appContext = appContext;
+        this.projectExplorer = projectExplorer;
     }
 
     /** {@inheritDoc} */
@@ -61,23 +76,49 @@ public class DeleteItemAction extends Action {
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
 
-        List<?> selection = projectExplorer.getSelection().getAllElements();
+        final Selection<?> selection = selectionAgent.getSelection();
 
-        if (selection.size() == 1) {
-            Object o = selection.get(0);
-            if (o instanceof ResourceBasedNode<?>) {
-                deleteNodeHandler.delete((ResourceBasedNode<?>)o);
-            } else {
-                throw new IllegalArgumentException("Node isn't resource based.");
-            }
-        } else {
-            List<ResourceBasedNode<?>> nodes = transform(selection, castNode());
-            deleteNodeHandler.deleteNodes(nodes);
+        if (selection == null || selection.isEmpty()) {
+            throw new IllegalStateException("Nodes weren't found in the selection agent");
+        }
+
+        if (Iterables.all(selection.getAllElements(), isResourceBasedNode())) {
+            final List<ResourceBasedNode<?>> nodes = Lists.newArrayList(Iterables.transform(selection.getAllElements(), castNode()));
+            deleteNodeHandler.deleteAll(nodes, true).then(synchronizeProjectView()).then(actionComplete());
         }
     }
 
-    private Function<Object, ResourceBasedNode<?>> castNode() {
-        return new Function<Object, ResourceBasedNode<?>>() {
+    private Operation<Void> synchronizeProjectView() {
+        return new Operation<Void>() {
+            @Override
+            public void apply(Void arg) throws OperationException {
+                projectExplorer.reloadChildren();
+            }
+        };
+    }
+
+    private Operation<Void> actionComplete() {
+        return new Operation<Void>() {
+            @Override
+            public void apply(Void arg) throws OperationException {
+                if (actionCompletedCallBack != null) {
+                    actionCompletedCallBack.onSuccess(null);
+                }
+            }
+        };
+    }
+
+    private Predicate<Object> isResourceBasedNode() {
+        return new Predicate<Object>() {
+            @Override
+            public boolean apply(@Nullable Object node) {
+                return node instanceof ResourceBasedNode;
+            }
+        };
+    }
+
+    private com.google.common.base.Function<Object, ResourceBasedNode<?>> castNode() {
+        return new com.google.common.base.Function<Object, ResourceBasedNode<?>>() {
             @Nullable
             @Override
             public ResourceBasedNode<?> apply(Object o) {
@@ -100,20 +141,28 @@ public class DeleteItemAction extends Action {
             return;
         }
 
-        Selection<?> selection = projectExplorer.getSelection();
+        final Selection<?> selection = selectionAgent.getSelection();
 
-        if (selection == null) {
+        if (selection == null || selection.isEmpty()) {
             e.getPresentation().setEnabled(false);
             return;
         }
 
-        boolean enable = Iterables.all(selection.getAllElements(), new Predicate<Object>() {
-            @Override
-            public boolean apply(@Nullable Object o) {
-                return o instanceof ResourceBasedNode<?>;
-            }
-        });
+        boolean enable = Iterables.all(selection.getAllElements(), isResourceBasedNode());
 
         e.getPresentation().setEnabled(enable);
+    }
+
+    @Override
+    public Promise<Void> promise(final ActionEvent event) {
+        final CallbackPromiseHelper.Call<Void, Throwable> call = new CallbackPromiseHelper.Call<Void, Throwable>() {
+            @Override
+            public void makeCall(Callback<Void, Throwable> callback) {
+                actionCompletedCallBack = callback;
+                actionPerformed(event);
+            }
+        };
+
+        return createFromCallback(call);
     }
 }

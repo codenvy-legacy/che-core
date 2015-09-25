@@ -124,10 +124,10 @@ import org.eclipse.che.ide.part.console.ConsolePartView;
 import org.eclipse.che.ide.part.console.ConsolePartViewImpl;
 import org.eclipse.che.ide.part.editor.EditorPartStackPresenter;
 import org.eclipse.che.ide.part.editor.EditorPartStackView;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPart;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerView;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerViewImpl;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPart;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerView;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerViewImpl;
 import org.eclipse.che.ide.preferences.PreferencesManagerImpl;
 import org.eclipse.che.ide.preferences.PreferencesView;
 import org.eclipse.che.ide.preferences.PreferencesViewImpl;
@@ -150,7 +150,6 @@ import org.eclipse.che.ide.rest.RestContext;
 import org.eclipse.che.ide.rest.RestContextProvider;
 import org.eclipse.che.ide.selection.SelectionAgentImpl;
 import org.eclipse.che.ide.statepersistance.ActiveFilePersistenceComponent;
-import org.eclipse.che.ide.statepersistance.LastOpenedFilePersistentComponent;
 import org.eclipse.che.ide.statepersistance.OpenedFilesPersistenceComponent;
 import org.eclipse.che.ide.statepersistance.ExpandedNodesPersistenceComponent;
 import org.eclipse.che.ide.statepersistance.PersistenceComponent;
@@ -265,12 +264,10 @@ public class CoreGinModule extends AbstractGinModule {
         componentMultibinder.addBinding().to(OpenedFilesPersistenceComponent.class);
         componentMultibinder.addBinding().to(ActiveFilePersistenceComponent.class);
         componentMultibinder.addBinding().to(ExpandedNodesPersistenceComponent.class);
-        componentMultibinder.addBinding().to(LastOpenedFilePersistentComponent.class);
 
         GinMapBinder<String, PersistenceComponent> projectTreeComponentBinder =
                 GinMapBinder.newMapBinder(binder(), String.class, PersistenceComponent.class);
         projectTreeComponentBinder.addBinding("openedNodes").to(ExpandedNodesPersistenceComponent.class);
-        projectTreeComponentBinder.addBinding("activeNode").to(LastOpenedFilePersistentComponent.class);
         projectTreeComponentBinder.addBinding("showHiddenFiles").to(ShowHiddenFilesPersistenceComponent.class);
     }
 
@@ -339,7 +336,7 @@ public class CoreGinModule extends AbstractGinModule {
         GinMultibinder<NodeInterceptor> nodeInterceptors = GinMultibinder.newSetBinder(binder(), NodeInterceptor.class);
         nodeInterceptors.addBinding().to(DefaultNodeInterceptor.class);
 
-        bind(NewProjectExplorerPart.class).to(NewProjectExplorerPresenter.class).in(Singleton.class);
+        bind(ProjectExplorerPart.class).to(ProjectExplorerPresenter.class).in(Singleton.class);
 
         install(new GinFactoryModuleBuilder().build(NodeFactory.class));
         bind(NodeManager.class);
@@ -374,7 +371,7 @@ public class CoreGinModule extends AbstractGinModule {
         bind(NotificationManagerView.class).to(NotificationManagerViewImpl.class).in(Singleton.class);
 
         bind(EditorPartStackView.class);
-        bind(NewProjectExplorerView.class).to(NewProjectExplorerViewImpl.class).in(Singleton.class);
+        bind(ProjectExplorerView.class).to(ProjectExplorerViewImpl.class).in(Singleton.class);
         bind(SettingsProvider.class).to(DummySettingsProvider.class).in(Singleton.class);
         bind(ConsolePartView.class).to(ConsolePartViewImpl.class).in(Singleton.class);
 

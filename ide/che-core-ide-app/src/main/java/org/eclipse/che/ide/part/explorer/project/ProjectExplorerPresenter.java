@@ -26,8 +26,12 @@ import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.Promise;
-import org.eclipse.che.api.promises.client.PromiseError;
 import org.eclipse.che.commons.annotation.Nullable;
+import org.eclipse.che.ide.api.action.Action;
+import org.eclipse.che.ide.api.action.ActionEvent;
+import org.eclipse.che.ide.api.action.ActionManager;
+import org.eclipse.che.ide.api.action.Presentation;
+import org.eclipse.che.ide.api.action.PromisableAction;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.ProjectActionHandler;
@@ -40,46 +44,49 @@ import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.project.node.event.ProjectPartLoadEvent;
 import org.eclipse.che.ide.api.project.node.event.ProjectPartLoadEvent.ProjectPartLoadHandler;
 import org.eclipse.che.ide.api.selection.Selection;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerView.ActionDelegate;
-import org.eclipse.che.ide.project.event.ResourceNodeDeletedEvent;
-import org.eclipse.che.ide.project.event.ResourceNodeDeletedEvent.ResourceNodeDeletedHandler;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerView.ActionDelegate;
 import org.eclipse.che.ide.project.event.ResourceNodeRenamedEvent;
+import org.eclipse.che.ide.project.event.SynchronizeProjectViewEvent;
+import org.eclipse.che.ide.project.node.ModuleDescriptorNode;
 import org.eclipse.che.ide.project.node.NodeManager;
 import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
 import org.eclipse.che.ide.ui.smartTree.event.CollapseNodeEvent;
 import org.eclipse.che.ide.ui.smartTree.event.ExpandNodeEvent;
 import org.eclipse.che.ide.ui.smartTree.event.GoIntoStateEvent;
+import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Vlad Zhukovskiy
  */
 @Singleton
-public class NewProjectExplorerPresenter extends BasePresenter implements ActionDelegate,
-                                                                          NewProjectExplorerPart,
-                                                                          HasView {
+public class ProjectExplorerPresenter extends BasePresenter implements ActionDelegate,
+                                                                       ProjectExplorerPart,
+                                                                       HasView {
 
-    private final NewProjectExplorerView view;
-    private final EventBus               eventBus;
-    private final NodeManager            nodeManager;
-    private final AppContext             appContext;
+    private final ProjectExplorerView view;
+    private final EventBus            eventBus;
+    private final NodeManager         nodeManager;
+    private final AppContext          appContext;
+    private final ActionManager       actionManager;
 
     @Inject
-    public NewProjectExplorerPresenter(final NewProjectExplorerView view,
-                                       final EventBus eventBus,
-                                       final NodeManager nodeManager,
-                                       final AppContext appContext) {
+    public ProjectExplorerPresenter(final ProjectExplorerView view,
+                                    final EventBus eventBus,
+                                    final NodeManager nodeManager,
+                                    final AppContext appContext,
+                                    final ActionManager actionManager) {
         this.view = view;
         this.eventBus = eventBus;
         this.nodeManager = nodeManager;
         this.appContext = appContext;
+        this.actionManager = actionManager;
 
         view.setDelegate(this);
 
-        initHandlers();
+        initEventHandlers();
     }
 
     @Override
@@ -95,7 +102,7 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
         }
     }
 
-    private void initHandlers() {
+    private void initEventHandlers() {
         eventBus.addHandler(ProjectPartLoadEvent.getType(), new ProjectPartLoadHandler() {
             /** {@inheritDoc} */
             @Override
@@ -162,35 +169,6 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
             }
         });
 
-
-        eventBus.addHandler(ResourceNodeDeletedEvent.getType(), new ResourceNodeDeletedHandler() {
-            /** {@inheritDoc} */
-            @Override
-            public void onResourceEvent(final ResourceNodeDeletedEvent evt) {
-                if (evt.getNode().isLeaf()) {
-                    reloadChildren();
-                } else {
-                    Node parent = evt.getNode().getParent();
-
-                    if (!(parent instanceof HasStorablePath)) {
-                        reloadChildren();
-                        return;
-                    }
-
-                    getNodeByPath((HasStorablePath)parent, true)
-                            .then(new Function<Node, Node>() {
-                                @Override
-                                public Node apply(Node arg) throws FunctionException {
-                                    reloadChildren(arg);
-                                    return arg;
-                                }
-                            })
-                            .then(selectNode())
-                            .catchError(catchParentNotFound(parent));
-                }
-            }
-        });
-
         eventBus.addHandler(ResourceNodeRenamedEvent.getType(), new ResourceNodeRenamedEvent.ResourceNodeRenamedHandler() {
             @Override
             public void onResourceRenamedEvent(final ResourceNodeRenamedEvent event) {
@@ -204,15 +182,30 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
                 //node, then we just take parent node and try navigate on it in the tree.
 
                 if (newDataObject instanceof ProjectReference) {
-                    path = ((ProjectReference)newDataObject).getPath();
+                    reloadChildren(); //we should simple reload project list
                 } else if (newDataObject instanceof ItemReference) {
                     path = ((ItemReference)newDataObject).getPath();
+                } else if (event.getNode() instanceof ModuleDescriptorNode) {
+                    path = ((ProjectDescriptor)newDataObject).getPath();
                 } else if (event.getNode().getParent() != null && event.getNode().getParent() instanceof HasStorablePath) {
                     path = ((HasStorablePath)event.getNode().getParent()).getStorablePath();
                 }
 
                 if (!Strings.isNullOrEmpty(path)) {
-                    getNodeByPath(new HasStorablePath.StorablePath(path)).then(selectNode());
+                    getNodeByPath(new HasStorablePath.StorablePath(path), true).then(selectNode());
+                }
+            }
+        });
+
+        eventBus.addHandler(SynchronizeProjectViewEvent.getType(), new SynchronizeProjectViewEvent.SynchronizeProjectViewHandler() {
+            @Override
+            public void onProjectViewSynchronizeEvent(SynchronizeProjectViewEvent event) {
+                if (event.getNode() != null) {
+                    reloadChildren(event.getNode());
+                } else if (event.getByClass() != null) {
+                    reloadChildrenByType(event.getByClass());
+                } else {
+                    reloadChildren();
                 }
             }
         });
@@ -225,31 +218,6 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
                 select(node, false);
 
                 return node;
-            }
-        };
-    }
-
-    private Operation<PromiseError> catchParentNotFound(final Node node) {
-        return new Operation<PromiseError>() {
-            @Override
-            public void apply(PromiseError promiseError) throws OperationException {
-                Node parent = node.getParent();
-
-                if (!(parent instanceof HasStorablePath)) {
-                    reloadChildren();
-                    return;
-                }
-
-                getNodeByPath((HasStorablePath)parent, true).then(selectNode()).then(expandNodeIfNeed());
-            }
-        };
-    }
-
-    private Operation<Node> expandNodeIfNeed() {
-        return new Operation<Node>() {
-            @Override
-            public void apply(Node node) throws OperationException {
-                setExpanded(node, true);
             }
         };
     }
@@ -301,23 +269,17 @@ public class NewProjectExplorerPresenter extends BasePresenter implements Action
     }
 
     @Override
-    public void reloadSelectedNodes() {
-        Selection<?> selection = getSelection();
-        if (selection.isEmpty()) {
-            return;
-        }
+    public void onDeleteKeyPressed() {
+        final Action deleteItemAction = actionManager.getAction("deleteItem");
 
-        List<?> nodes = selection.getAllElements();
-        List<Node> nodesToReload = new ArrayList<>();
+        final Presentation presentation = new PresentationFactory().getPresentation(deleteItemAction);
+        final ActionEvent event = new ActionEvent("", presentation, actionManager, 0, null);
 
-        for (Object o : nodes) {
-            if (o instanceof Node && !((Node)o).isLeaf()) {
-                nodesToReload.add((Node)o);
-            }
-        }
 
-        if (!nodesToReload.isEmpty()) {
-            reloadChildren();
+        if (deleteItemAction instanceof PromisableAction) {
+            ((PromisableAction)deleteItemAction).promise(event);
+        } else {
+            deleteItemAction.actionPerformed(event);
         }
     }
 

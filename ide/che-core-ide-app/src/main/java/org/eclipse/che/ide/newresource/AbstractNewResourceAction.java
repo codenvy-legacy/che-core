@@ -28,7 +28,7 @@ import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.HasStorablePath.StorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.json.JsonHelper;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.project.node.FileReferenceNode;
 import org.eclipse.che.ide.project.node.NodeManager;
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
@@ -52,19 +52,19 @@ import java.util.List;
  * @author Artem Zatsarynnyy
  */
 public abstract class AbstractNewResourceAction extends ProjectAction {
-    protected final InputValidator              fileNameValidator;
-    protected final InputValidator              folderNameValidator;
-    protected final String                      title;
-    protected       NewProjectExplorerPresenter projectExplorer;
-    protected       EditorAgent                 editorAgent;
-    protected       ProjectServiceClient        projectServiceClient;
-    protected       EventBus                    eventBus;
-    protected       AppContext                  appContext;
-    protected       AnalyticsEventLogger        eventLogger;
-    protected       DtoUnmarshallerFactory      dtoUnmarshallerFactory;
-    protected       DialogFactory               dialogFactory;
-    protected       CoreLocalizationConstant    coreLocalizationConstant;
-    protected       NodeManager                 nodeManager;
+    protected final InputValidator           fileNameValidator;
+    protected final InputValidator           folderNameValidator;
+    protected final String                   title;
+    protected       ProjectExplorerPresenter projectExplorer;
+    protected       EditorAgent              editorAgent;
+    protected       ProjectServiceClient     projectServiceClient;
+    protected       EventBus                 eventBus;
+    protected       AppContext               appContext;
+    protected       AnalyticsEventLogger     eventLogger;
+    protected       DtoUnmarshallerFactory   dtoUnmarshallerFactory;
+    protected       DialogFactory            dialogFactory;
+    protected       CoreLocalizationConstant coreLocalizationConstant;
+    protected       NodeManager              nodeManager;
 
     /**
      * Creates new action.
@@ -217,7 +217,7 @@ public abstract class AbstractNewResourceAction extends ProjectAction {
     }
 
     @Inject
-    private void init(NewProjectExplorerPresenter projectExplorer,
+    private void init(ProjectExplorerPresenter projectExplorer,
                       EditorAgent editorAgent,
                       ProjectServiceClient projectServiceClient,
                       EventBus eventBus,

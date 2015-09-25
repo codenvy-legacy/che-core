@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * @author Vlad Zhukovskiy
  */
-public interface NewProjectExplorerView extends View<NewProjectExplorerView.ActionDelegate> {
+public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDelegate> {
 
     void setRootNodes(List<Node> nodes);
 
@@ -84,6 +84,6 @@ public interface NewProjectExplorerView extends View<NewProjectExplorerView.Acti
     public interface ActionDelegate extends BaseActionDelegate {
         void onSelectionChanged(List<Node> selection);
 
-        void reloadSelectedNodes();
+        void onDeleteKeyPressed();
     }
 }

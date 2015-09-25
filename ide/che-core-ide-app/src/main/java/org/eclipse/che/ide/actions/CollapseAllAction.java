@@ -15,7 +15,7 @@ import com.google.inject.Singleton;
 
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ProjectAction;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 
 /**
  * @author Vlad Zhukovskiy
@@ -23,10 +23,10 @@ import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
 @Singleton
 public class CollapseAllAction extends ProjectAction {
 
-    private NewProjectExplorerPresenter projectExplorer;
+    private ProjectExplorerPresenter projectExplorer;
 
     @Inject
-    public CollapseAllAction(NewProjectExplorerPresenter projectExplorer) {
+    public CollapseAllAction(ProjectExplorerPresenter projectExplorer) {
         super("Collapse All");
         this.projectExplorer = projectExplorer;
     }

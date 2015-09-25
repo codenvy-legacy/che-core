@@ -10,6 +10,10 @@
  *******************************************************************************/
 package org.eclipse.che.ide.workspace;
 
+import com.google.gwt.user.client.ui.AcceptsOneWidget;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import org.eclipse.che.ide.api.constraints.Constraints;
 import org.eclipse.che.ide.api.mvp.Presenter;
 import org.eclipse.che.ide.api.notification.NotificationManager;
@@ -19,11 +23,7 @@ import org.eclipse.che.ide.api.parts.PartPresenter;
 import org.eclipse.che.ide.api.parts.PartStack;
 import org.eclipse.che.ide.api.parts.PartStackType;
 import org.eclipse.che.ide.api.parts.PartStackView;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPart;
-
-import com.google.gwt.user.client.ui.AcceptsOneWidget;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPart;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -62,7 +62,7 @@ public class WorkBenchPresenter implements Presenter {
                               PartStackPresenterFactory stackPresenterFactory,
                               PartStackViewFactory partViewFactory,
                               OutlinePart outlinePart,
-                              NewProjectExplorerPart newProjectExplorerPart,
+                              ProjectExplorerPart projectExplorerPart,
                               NotificationManager notificationManager,
                               HideWidgetCallback hideWidgetCallback) {
         this.view = view;
@@ -90,10 +90,10 @@ public class WorkBenchPresenter implements Presenter {
         partStacks.put(PartStackType.TOOLING.toString(), toolingPartStack);
 
         openPart(outlinePart, PartStackType.TOOLING);
-        openPart(newProjectExplorerPart, PartStackType.NAVIGATION);
+        openPart(projectExplorerPart, PartStackType.NAVIGATION);
         openPart(notificationManager, PartStackType.INFORMATION, Constraints.FIRST);
 
-        setActivePart(newProjectExplorerPart);
+        setActivePart(projectExplorerPart);
     }
 
     public void removePart(PartPresenter part) {
