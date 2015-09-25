@@ -176,16 +176,7 @@ public class NativeGitConnection implements GitConnection {
 
         if (branchName.startsWith("refs/remotes/")) {
             remoteName = parseRemoteName(branchName);
-
-            try {
-                remoteUri = nativeGit.createRemoteListCommand()
-                                     .setRemoteName(remoteName)
-                                     .execute()
-                                     .get(0)
-                                     .getUrl();
-            } catch (GitException ignored) {
-                remoteUri = remoteName;
-            }
+            remoteUri = getRemoteUri(remoteName);
         }
         branchName = parseBranchName(branchName);
 
@@ -208,16 +199,7 @@ public class NativeGitConnection implements GitConnection {
 
         if (branchName.startsWith("refs/remotes/")) {
             remoteName = parseRemoteName(branchName);
-
-            try {
-                remoteUri = nativeGit.createRemoteListCommand()
-                                     .setRemoteName(remoteName)
-                                     .execute()
-                                     .get(0)
-                                     .getUrl();
-            } catch (GitException ignored) {
-                remoteUri = remoteName;
-            }
+            remoteUri = getRemoteUri(remoteName);
         }
 
         branchName = remoteName != null ? parseBranchName(branchName) : oldName;
@@ -322,7 +304,6 @@ public class NativeGitConnection implements GitConnection {
             revision.setFake(true);
             return revision;
         }
-
     }
 
     @Override
@@ -334,16 +315,7 @@ public class NativeGitConnection implements GitConnection {
     @Override
     public void fetch(FetchRequest request) throws GitException, UnauthorizedException {
         ensureExistenceRepoRootInWorkingDirectory();
-        String remoteUri;
-        try {
-            remoteUri = nativeGit.createRemoteListCommand()
-                                 .setRemoteName(request.getRemote())
-                                 .execute()
-                                 .get(0)
-                                 .getUrl();
-        } catch (GitException ignored) {
-            remoteUri = request.getRemote();
-        }
+        String remoteUri = getRemoteUri(request.getRemote());
         FetchCommand fetchCommand = nativeGit.createFetchCommand();
         fetchCommand.setRemote(request.getRemote())
                     .setPrune(request.isRemoveDeletedRefs())
@@ -410,21 +382,8 @@ public class NativeGitConnection implements GitConnection {
     @Override
     public PullResponse pull(PullRequest request) throws GitException, UnauthorizedException {
         ensureExistenceRepoRootInWorkingDirectory();
-        String remoteUri;
-        try {
-            List<Remote> remotes = nativeGit.createRemoteListCommand()
-                    .setRemoteName(request.getRemote())
-                    .execute();
+        String remoteUri = getRemoteUri(request.getRemote());
 
-            if (remotes.isEmpty()) {
-                throw new IllegalArgumentException("No remote repository specified.  " +
-                        "Please, specify either a URL or a remote name from which new revisions should be fetched in request.");
-            }
-
-            remoteUri = remotes.get(0).getUrl();
-        } catch (GitException ignored) {
-            remoteUri = request.getRemote();
-        }
         PullCommand pullCommand = nativeGit.createPullCommand();
         pullCommand.setRemote(request.getRemote())
                    .setRefSpec(request.getRefSpec())
@@ -437,19 +396,28 @@ public class NativeGitConnection implements GitConnection {
         return pullCommand.getPullResponse();
     }
 
+    private String getRemoteUri(String remoteName) throws GitException {
+        List<Remote> remotes;
+        try {
+            remotes = nativeGit.createRemoteListCommand()
+                    .setRemoteName(remoteName)
+                    .execute();
+        } catch (GitException ignored) {
+            return remoteName;
+        }
+
+        if (remotes.isEmpty()) {
+            throw new GitException("No remote repository specified.  " +
+                    "Please, specify either a URL or a remote name from which new revisions should be fetched in request.");
+        }
+
+        return remotes.get(0).getUrl();
+    }
+
     @Override
     public PushResponse push(PushRequest request) throws GitException, UnauthorizedException {
         ensureExistenceRepoRootInWorkingDirectory();
-        String remoteUri;
-        try {
-            remoteUri = nativeGit.createRemoteListCommand()
-                                 .setRemoteName(request.getRemote())
-                                 .execute()
-                                 .get(0)
-                                 .getUrl();
-        } catch (GitException ignored) {
-            remoteUri = request.getRemote();
-        }
+        String remoteUri = getRemoteUri(request.getRemote());
 
         PushCommand pushCommand = nativeGit.createPushCommand();
 
@@ -627,7 +595,7 @@ public class NativeGitConnection implements GitConnection {
             if (!isOperationNeedAuth(gitEx.getMessage())) {
                 throw gitEx;
             }
-            throw new UnauthorizedException("Not authorized");
+            throw new UnauthorizedException(gitEx.getMessage());
         }
     }
 

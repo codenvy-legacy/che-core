@@ -44,6 +44,7 @@ import static org.testng.Assert.assertTrue;
  */
 public class PullTest {
 
+    public static final String UNKNOWN = "UNKNOWN";
     private File repository;
     private File remoteRepo;
 
@@ -128,15 +129,34 @@ public class PullTest {
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = GitConnectionFactoryProvider.class,
-            expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "No remote repository specified.  " +
+            expectedExceptions = GitException.class, expectedExceptionsMessageRegExp = "No remote repository specified.  " +
             "Please, specify either a URL or a remote name from which new revisions should be fetched in request.")
-    public void testPullWhenThereAreNoAnyRemotes(GitConnectionFactory connectionFactory)
-            throws GitException, IOException, URISyntaxException, UnauthorizedException {
+    public void testWhenThereAreNoAnyRemotes(GitConnectionFactory connectionFactory) throws Exception {
         //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
 
         //when
         PullRequest request = newDto(PullRequest.class);
         connection.pull(request);
+    }
+
+    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = GitConnectionFactoryProvider.class,
+            expectedExceptions = UnauthorizedException.class, expectedExceptionsMessageRegExp = "fatal: '" + UNKNOWN + "' does not appear to be a git repository\n" +
+            "fatal: Could not read from remote repository.\n" +
+            "\n" +
+            "Please make sure you have the correct access rights\n" +
+            "and the repository exists.\n")
+    public void testWithUnknownRemote(GitConnectionFactory connectionFactory) throws Exception {
+        //given
+        //create new repository clone of default
+        GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
+        GitConnection connection2 = connectionFactory.getConnection(remoteRepo.getAbsolutePath());
+        connection2.clone(newDto(CloneRequest.class)
+                .withRemoteUri(connection.getWorkingDir().getAbsolutePath()));
+        addFile(connection, "newfile1", "new file1 content");
+        connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
+        connection.commit(newDto(CommitRequest.class).withMessage("Test commit"));
+        //when
+        connection2.pull(newDto(PullRequest.class).withRemote(UNKNOWN).withTimeout(-1));
     }
 }

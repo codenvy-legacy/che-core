@@ -11,11 +11,11 @@
 package org.eclipse.che.git.impl;
 
 import com.google.common.io.Files;
-
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.git.GitConnection;
 import org.eclipse.che.api.git.GitConnectionFactory;
+import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.api.git.shared.AddRequest;
 import org.eclipse.che.api.git.shared.BranchCheckoutRequest;
 import org.eclipse.che.api.git.shared.CloneRequest;
@@ -124,5 +124,17 @@ public class FetchTest {
         assertTrue(new File(fetchTestRepo, "otherfile1").exists());
         assertTrue(new File(fetchTestRepo, "otherfile2").exists());
         assertEquals(fetchConnection.log(newDto(LogRequest.class)).getCommits().get(0).getMessage(), "fetch branch test");
+    }
+
+    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = GitConnectionFactoryProvider.class,
+            expectedExceptions = GitException.class, expectedExceptionsMessageRegExp = "No remote repository specified.  " +
+            "Please, specify either a URL or a remote name from which new revisions should be fetched in request.")
+    public void testWhenThereAreNoAnyRemotes(GitConnectionFactory connectionFactory) throws Exception {
+        //given
+        GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
+
+        //when
+        FetchRequest request = newDto(FetchRequest.class);
+        connection.fetch(request);
     }
 }
