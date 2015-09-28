@@ -24,10 +24,10 @@ import org.eclipse.che.commons.annotation.Nullable;
 public interface PartButton extends View<PartButton.ActionDelegate>, TabItem {
 
     @NotNull
-    PartButton addTooltip(@Nullable String tooltip);
+    PartButton setTooltip(@Nullable String tooltip);
 
     @NotNull
-    PartButton addIcon(@Nullable SVGResource resource);
+    PartButton setIcon(@Nullable SVGResource resource);
 
     interface ActionDelegate {
         void onTabClicked(@NotNull TabItem selectedTab);

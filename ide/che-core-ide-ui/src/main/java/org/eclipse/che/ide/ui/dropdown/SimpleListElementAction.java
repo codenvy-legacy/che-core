@@ -49,7 +49,7 @@ public class SimpleListElementAction extends ProjectAction {
     /** {@inheritDoc} */
     @Override
     public void actionPerformed(ActionEvent e) {
-        header.selectElement(image, name);
+        header.selectElement(name);
     }
 
     /** {@inheritDoc} */

@@ -134,6 +134,11 @@ public class DefaultEditorAdapter extends Composite implements EditorAdapter, Fi
     }
 
     @Override
+    public boolean isFocused() {
+        return this.textEditor.isFocused();
+    }
+
+    @Override
     public void init(final EditorInput input) throws EditorInitException {
         this.textEditor.init(input);
         this.input = input;
@@ -217,6 +222,11 @@ public class DefaultEditorAdapter extends Composite implements EditorAdapter, Fi
     @Override
     public IsWidget getTitleWidget() {
         return this.textEditor.getTitleWidget();
+    }
+
+    @Override
+    public int getUnreadNotificationsCount() {
+        return 0;
     }
 
     @Override

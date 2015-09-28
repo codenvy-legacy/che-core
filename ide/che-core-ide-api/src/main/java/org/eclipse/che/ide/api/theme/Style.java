@@ -143,10 +143,6 @@ public class Style {
         return theme.getSocialButtonColor();
     }
 
-    public static String getInputBackground() {
-        return theme.getInputBackground();
-    }
-
     public static String getEditorPanelBackgroundColor() {
         return theme.getEditorPanelBackgroundColor();
     }
@@ -312,8 +308,24 @@ public class Style {
         return theme.getMainMenuBkgColor();
     }
 
+    public static String getMainMenuSelectedBkgColor() {
+        return theme.getMainMenuSelectedBkgColor();
+    }
+
+    public static String getMainMenuSelectedBorderColor() {
+        return theme.getMainMenuSelectedBorderColor();
+    }
+
     public static String getMainMenuFontColor() {
         return theme.getMainMenuFontColor();
+    }
+
+    public static String getMainMenuFontHoverColor() {
+        return theme.getMainMenuFontHoverColor();
+    }
+
+    public static String getMainMenuFontSelectedColor() {
+        return theme.getMainMenuFontSelectedColor();
     }
 
     public static String getTabBorderShadow() {
@@ -340,33 +352,6 @@ public class Style {
         return theme.getTreeIconFileColor();
     }
 
-    public static String getBoxBorderColor() {
-        return theme.getBoxBorderColor();
-    }
-
-    public static String getBoxTextColor() {
-        return theme.getBoxTextColor();
-    }
-
-    public static String getBoxInnerShadow() {
-        return theme.getBoxInnerShadow();
-    }
-
-    public static String getBoxOuterShadow() {
-        return theme.getBoxOuterShadow();
-    }
-
-    public static String getBoxBackgroundColor() {
-        return theme.getBoxBackgroundColor();
-    }
-
-    public static String getBoxBackgroundColorDisabled() {
-        return theme.getBoxBackgroundColorDisabled();
-    }
-
-    public static String getBoxTextShadow() {
-        return theme.getBoxTextShadow();
-    }
 
     public static String getButtonHoverTextColor() {
         return theme.getButtonHoverTextColor();
@@ -412,12 +397,24 @@ public class Style {
         return theme.getPerspectiveSwitcherBackgroundColor();
     }
 
-    public static String getProgressColor() {
-        return theme.getProgressColor();
+    public static String getSelectCommandActionIconColor() {
+        return theme.getSelectCommandActionIconColor();
     }
 
-    public static String getSvgUrlShadow() {
-        return theme.getSvgUrlShadow();
+    public static String getSelectCommandActionIconBackgroundColor() {
+        return theme.getSelectCommandActionIconBackgroundColor();
+    }
+
+    public static String getSelectCommandActionColor() {
+        return theme.getSelectCommandActionColor();
+    }
+
+    public static String getSelectCommandActionHoverColor() {
+        return theme.getSelectCommandActionHoverColor();
+    }
+
+    public static String getProgressColor() {
+        return theme.getProgressColor();
     }
 
     public static String getSuccessEventColor() {
@@ -472,6 +469,10 @@ public class Style {
         return theme.getEditorSeparatorColor();
     }
 
+    public static String getBlueIconColor() {
+        return theme.getBlueIconColor();
+    }
+
     public static String getSplitterSmallBorderColor() {
         return theme.getSplitterSmallBorderColor();
     }
@@ -480,4 +481,95 @@ public class Style {
         return theme.getSplitterLargeBorderColor();
     }
 
+    public static String getBadgeBackgroundColor() {
+        return theme.getBadgeBackgroundColor();
+    }
+
+    public static String getBadgeFontColor() {
+        return theme.getBadgeFontColor();
+    }
+
+    public static String getPopupBkgColor() {
+        return theme.getPopupBkgColor();
+    }
+
+    public static String getPopupBorderColor() {
+        return theme.getPopupBorderColor();
+    }
+
+    public static String getPopupShadowColor() {
+        return theme.getPopupShadowColor();
+    }
+
+    public static String getPopupHoverColor() {
+        return theme.getPopupHoverColor();
+    }
+
+    public static String getPopupHotKeyColor() {
+        return theme.getPopupHotKeyColor();
+    }
+
+    public static String getTextFieldTitleColor() {
+        return theme.getTextFieldTitleColor();
+    }
+
+    public static String getTextFieldColor() {
+        return theme.getTextFieldColor();
+    }
+
+    public static String getTextFieldBackgroundColor() {
+        return theme.getTextFieldBackgroundColor();
+    }
+
+    public static String getTextFieldFocusedColor() {
+        return theme.getTextFieldFocusedColor();
+    }
+
+    public static String getTextFieldFocusedBackgroundColor() {
+        return theme.getTextFieldFocusedBackgroundColor();
+    }
+
+    public static String getTextFieldDisabledColor() {
+        return theme.getTextFieldDisabledColor();
+    }
+
+    public static String getTextFieldDisabledBackgroundColor() {
+        return theme.getTextFieldDisabledBackgroundColor();
+    }
+
+    public static String getTextFieldBorderColor() {
+        return theme.getTextFieldBorderColor();
+    }
+
+    public static String getMenuBackgroundColor() {
+        return theme.getMenuBackgroundColor();
+    }
+
+    public static String getMenuBackgroundImage() {
+        return theme.getMenuBackgroundImage();
+    }
+
+    public static String getPanelBackgroundColor() {
+        return theme.getPanelBackgroundColor();
+    }
+
+    public static String getPrimaryHighlightsColor() {
+        return theme.getPrimaryHighlightColor();
+    }
+
+    public static String getIconColor() {
+        return theme.getIconColor();
+    }
+
+    public static String getSeparatorColor() {
+        return theme.getSeparatorColor();
+    }
+
+    public static String getErrorColor() {
+        return theme.getErrorColor();
+    }
+
+    public static String getSuccessColor() {
+        return theme.getSuccessColor();
+    }
 }

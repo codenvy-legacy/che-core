@@ -11,11 +11,11 @@
 package org.eclipse.che.api.machine.server.impl;
 
 import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.core.model.machine.Recipe;
 import org.eclipse.che.api.machine.server.exception.MachineException;
 import org.eclipse.che.api.machine.server.spi.Instance;
 import org.eclipse.che.api.machine.shared.MachineStatus;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
-import org.eclipse.che.api.machine.shared.Recipe;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;

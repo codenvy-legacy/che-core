@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-@external .gwt-SplitLayoutPanel-HDragger, .gwt-SplitLayoutPanel-VDragger, .hsplitter, .hsplitter, .gwt-DialogBox, gwt-Button, gwt-PushButton, gwt-PushButton-up, gwt-PushButton-up-hovering, gwt-PushButton-up-disabled, gwt-PushButton-down,.gwt-PushButton-down-hovering,.gwt-PushButton-down-disabled, gwt-ToggleButton, gwt-ToggleButton-up, gwt-ToggleButton-up-hovering, gwt-ToggleButton-up-disabled, gwt-ToggleButton-down, .gwt-ToggleButton-down-hovering, .gwt-ToggleButton-down-disabled, gwt-TextBox, gwt-ListBox, gwt-PopupPanel;
+@external .gwt-SplitLayoutPanel-HDragger, .gwt-SplitLayoutPanel-VDragger, .hsplitter, .hsplitter, .gwt-DialogBox, gwt-Button, gwt-PushButton, gwt-PushButton-up, gwt-PushButton-up-hovering, gwt-PushButton-up-disabled, gwt-PushButton-down,.gwt-PushButton-down-hovering,.gwt-PushButton-down-disabled, gwt-ToggleButton, gwt-ToggleButton-up, gwt-ToggleButton-up-hovering, gwt-ToggleButton-up-disabled, gwt-ToggleButton-down, .gwt-ToggleButton-down-hovering, .gwt-ToggleButton-down-disabled, gwt-TextBox, gwt-TextArea, gwt-ListBox, gwt-PopupPanel, gwt-Label;
 
 /* Global styles and external GWT styles. */
 
@@ -26,29 +26,25 @@ body, td {
 }
 
 /* We must override the user agent stylesheet which sets textarea font to monospace. */
-textarea {
-    font-family: mainFontFamily;
-    color: mainFontColor;
-    background-color: inputBackground;
-    border: 1px solid tabBorder;
-    border-radius: 2px;
-    font-size: fontSize;
+
+.gwt-Label {
+    margin-bottom: 6px;
+    color: textFieldTitleColor;
+    font-size: textFieldFontSize;
+    font-family: textFieldFontFamily;
 }
 
 .gwt-ListBox {
-    background-color: boxBackgroundColor;
-    color: boxTextColor;
-    border: 1px solid boxBorderColor;
+    background-color: textFieldBackgroundColor;
+    color: textFieldColor;
+    border: 1px solid textFieldBorderColor;
     border-radius: 1px;
-    box-shadow: boxInnerShadow, boxOuterShadow;
     font-family: mainFontFamily;
-    font-size: boxFontSize;
     font-weight: bold;
-    text-shadow: boxTextShadow;
 }
 
 .gwt-ListBox[disabled] {
-    background-color: boxBackgroundColorDisabled;
+    background-color:textFieldDisabledBackgroundColor;
 }
 
 .gwt-CheckBox {
@@ -83,7 +79,6 @@ textarea {
 .gwt-RadioButton label:before {
     content: "";
     display: inline-block;
-
     width: 13px;
     height: 13px;
     top: 2px;
@@ -104,19 +99,73 @@ textarea {
     background: radial-gradient(ellipse at center, windowContentBackground 35%, radioButtonBackgroundColor 40%); /* W3C*/
 }
 
-.gwt-TextBox, .gwt-PasswordTextBox, .gwt-SuggestBox {
-    background-color: boxBackgroundColor;
-    color: boxTextColor;
-    border: 1px solid boxBorderColor;
-    border-radius: 1px;
-    box-shadow: boxInnerShadow, boxOuterShadow;
-    font-family: mainFontFamily;
-    font-size: boxFontSize;
-    text-shadow: boxTextShadow;
+.gwt-TextBox,
+.gwt-TextArea,
+.gwt-SuggestBox,
+.gwt-PasswordTextBox {
+    outline: none;
+    border-radius: 0;
+    box-shadow: none;
+    text-align: start;
+    color: textFieldColor;
+    background-color: textFieldBackgroundColor;
+    border: 1px solid textFieldBorderColor;
+    font-size: textFieldFontSize;
+    font-family: textFieldFontFamily;
 }
 
-.gwt-TextBox[disabled], .gwt-PasswordTextBox[disabled], .gwt-SuggestBox[disabled] {
-    background-color: boxBackgroundColorDisabled;
+.gwt-TextBox {
+    min-height: 20px;
+    padding: 0 5px 0 5px;
+}
+
+.gwt-TextArea {
+    min-height: 40px;
+    padding: 5px;
+}
+
+.gwt-TextBox:invalid,
+.gwt-TextBox:required {
+    border-bottom: 1px solid errorColor !important;
+}
+
+.gwt-TextBox:focus,
+.gwt-TextArea:focus,
+.gwt-SuggestBox:focus,
+.gwt-PasswordTextBox:focus {
+    color: textFieldFocusedColor;
+    background-color: textFieldFocusedBackgroundColor;
+    -webkit-text-fill-color: textFieldFocusedColor;
+    -webkit-animation: textFieldFocus 0.2s infinite;
+}
+
+.gwt-TextBox:focus {
+    border-bottom: 1px solid successColor;
+    transition: border-bottom 0.2s linear;
+}
+
+.gwt-TextBox:focus::-webkit-input-placeholder,
+.gwt-TextArea:focus::-webkit-input-placeholder,
+.gwt-SuggestBox:focus::-webkit-input-placeholder,
+.gwt-PasswordTextBox:focus::-webkit-input-placeholder {
+    -webkit-text-fill-color: textFieldDisabledColor;
+}
+
+@-webkit-keyframes textFieldFocus {
+    from {
+        color: #4eabff;
+    }
+    to {
+        color: #4eabff;
+    }
+}
+
+.gwt-TextBox[disabled],
+.gwt-TextArea[disabled],
+.gwt-SuggestBox[disabled],
+.gwt-PasswordTextBox[disabled] {
+    color: textFieldDisabledColor;
+    background-color: textFieldDisabledBackgroundColor;
 }
 
 .gwt-Button, button {
@@ -469,7 +518,7 @@ class for the document-level scrollbars. */
 }
 
 .gwt-SuggestBoxPopup .item {
-    color: boxTextColor;
+    color: textFieldColor;
 }
 
 .gwt-SuggestBoxPopup .item-selected {
@@ -591,6 +640,7 @@ class for the document-level scrollbars. */
     vertical-align: middle;
     margin-right: 10px;
 }
+
 .privacyTooltip div:first-child span {
     vertical-align: middle;
 }
@@ -606,4 +656,69 @@ class for the document-level scrollbars. */
 
 .publicProjectSvg {
     fill: #4C9AFF;
+}
+
+/******************************************************************************
+ *
+ * Badge bounce animation
+ *
+ ******************************************************************************/
+
+@-webkit-keyframes bounceOutUp {
+    0% {
+        -webkit-transform: translateY(0);
+        transform: translateY(0);
+    }
+
+    50% {
+        -webkit-transform: translateY(-4px);
+        transform: translateY(-4px);
+    }
+
+    100% {
+        -webkit-transform: translateY(0px);
+        transform: translateY(0px);
+    }
+}
+
+@keyframes bounceOutUp {
+    0% {
+        -webkit-transform: translateY(0);
+        transform: translateY(0);
+    }
+
+    50% {
+        -webkit-transform: translateY(-4px);
+        transform: translateY(-4px);
+    }
+
+    100% {
+        -webkit-transform: translateY(0px);
+        transform: translateY(0px);
+    }
+}
+
+.bounceOutUp {
+    -webkit-animation-name: bounceOutUp;
+    animation-name: bounceOutUp;
+    -webkit-animation-duration: 0.5s;
+    animation-duration: 0.5s;
+    -webkit-animation-fill-mode: both;
+    animation-fill-mode: both;
+    -webkit-animation-iteration-count: 2;
+    animation-iteration-count: 2;
+}
+
+}
+
+.createWsTagsPopup {
+    /*the same index as in Window*/
+    z-index: 20000;
+    border: 1px solid #121416;
+    border-radius: 3px;
+    background-color: #292C2F;
+}
+
+.tagsPanel {
+    width: 410px;
 }

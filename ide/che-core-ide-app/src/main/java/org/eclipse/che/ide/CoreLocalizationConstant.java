@@ -541,4 +541,31 @@ public interface CoreLocalizationConstant extends Messages {
 
     @Key("project.settings.title")
     String projectSettingsTitle();
+
+    @Key("create.ws.title")
+    String createWsTitle();
+
+    @Key("create.ws.recipe.url")
+    String createWsRecipeUrl();
+
+    @Key("create.ws.find.by.tags")
+    String createWsFindByTags();
+
+    @Key("create.ws.name")
+    String createWsName();
+
+    @Key("create.ws.url.not.valid")
+    String createWsUrlNotValid();
+
+    @Key("create.ws.recipe.not.found")
+    String createWsRecipeNotFound();
+
+    @Key("create.ws.button")
+    String createWsButton();
+
+    @Key("create.ws.default.name")
+    String createWsDefaultName();
+
+    @Key("create.ws.name.is.not.correct")
+    String createWsNameIsNotCorrect();
 }

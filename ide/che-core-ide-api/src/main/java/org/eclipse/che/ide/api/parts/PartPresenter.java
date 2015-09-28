@@ -93,6 +93,14 @@ public interface PartPresenter extends Presenter {
     IsWidget getTitleWidget();
 
     /**
+     * Returns count of unread notifications.
+     * Is used to display a badge on part button.
+     *
+     * @return count of unread notifications
+     */
+    int getUnreadNotificationsCount();
+
+    /**
      * Returns the title tool tip text of this part.
      * An empty string result indicates no tool tip.
      * If this value changes the part must fire a property listener event with <code>PROP_TITLE</code>.

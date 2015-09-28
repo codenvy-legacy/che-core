@@ -8,22 +8,19 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.machine.shared;
+package org.eclipse.che.ide.ui.cellview;
+
+import com.google.gwt.resources.client.ClientBundle;
+import com.google.gwt.user.cellview.client.CellTree;
 
 /**
- * Recipe to create new {@link org.eclipse.che.api.machine.server.spi.Instance}.
- *
- * @author Eugene Voevodin
+ * @author Valeriy Svydenko
  */
-public interface Recipe {
+public interface CellTreeResources extends CellTree.Resources{
+    interface CellTreeStyle extends CellTree.Style {
+    }
 
-    /**
-     * Returns recipe type (i.e. 'Dockerfile')
-     */
-    String getType();
-
-    /**
-     * Returns recipe script, which is used to instantiate new {@link org.eclipse.che.api.machine.server.spi.Instance}
-     */
-    String getScript();
+    @Override
+    @ClientBundle.Source({"cellTree.css", "org/eclipse/che/ide/api/ui/style.css"})
+    CellTreeStyle cellTreeStyle();
 }

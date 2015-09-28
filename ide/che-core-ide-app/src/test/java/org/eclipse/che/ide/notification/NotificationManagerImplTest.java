@@ -85,15 +85,11 @@ public class NotificationManagerImplTest {
 
         manager.onValueChanged();
 
-        verify(view).setNotificationCount(eq(1));
-
         reset(view);
         notification.setStatus(FINISHED);
 
         reset(view);
         notification.setState(READ);
-
-        verify(view).setNotificationCount(eq(0));
     }
 
     @Test
@@ -103,7 +99,6 @@ public class NotificationManagerImplTest {
 
         verify(notificationContainer).addNotification(eq(notification));
         verify(notificationMessageStack).addNotification(eq(notification));
-        verify(view).setNotificationCount(anyInt());
     }
 
     @Test
@@ -112,7 +107,6 @@ public class NotificationManagerImplTest {
 
         verify(notificationContainer).addNotification(Matchers.<Notification>anyObject());
         verify(notificationMessageStack).addNotification(Matchers.<Notification>anyObject());
-        verify(view).setNotificationCount(anyInt());
     }
 
     @Test
@@ -121,7 +115,6 @@ public class NotificationManagerImplTest {
 
         verify(notificationContainer).addNotification(Matchers.<Notification>anyObject());
         verify(notificationMessageStack).addNotification(Matchers.<Notification>anyObject());
-        verify(view).setNotificationCount(anyInt());
     }
 
     @Test
@@ -130,7 +123,6 @@ public class NotificationManagerImplTest {
 
         verify(notificationContainer).addNotification(Matchers.<Notification>anyObject());
         verify(notificationMessageStack).addNotification(Matchers.<Notification>anyObject());
-        verify(view).setNotificationCount(anyInt());
     }
 
     @Test
@@ -140,7 +132,6 @@ public class NotificationManagerImplTest {
 
         verify(notificationContainer).removeNotification(eq(notification));
         verify(notificationMessageStack).removeNotification(eq(notification));
-        verify(view).setNotificationCount(anyInt());
     }
 
     @Test
@@ -179,7 +170,6 @@ public class NotificationManagerImplTest {
         manager.onCloseMessageClicked(notification);
 
         verify(closeNotificationHandler).onCloseClicked();
-        verify(view).setNotificationCount(eq(0));
     }
 
     @Test
@@ -194,18 +184,7 @@ public class NotificationManagerImplTest {
         verify(closeNotificationHandler).onCloseClicked();
         verify(notificationContainer).removeNotification(eq(notification));
         verify(notificationMessageStack).removeNotification(eq(notification));
-        verify(view).setNotificationCount(eq(0));
     }
-
-//    @Test
-//    public void testOnClicked() throws Exception {
-//        int left = 200;
-//        int top = 100;
-//
-//        manager.onClicked(left, top);
-//
-//        verify(notificationContainer).show(eq(left - WIDTH), eq(top - HEIGHT - 50));
-//    }
 
     @Test
     public void testGo() throws Exception {

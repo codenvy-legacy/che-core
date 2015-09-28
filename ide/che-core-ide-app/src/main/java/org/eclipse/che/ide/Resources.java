@@ -19,7 +19,7 @@ import com.google.gwt.resources.client.CssResource.NotStrict;
 import com.google.gwt.resources.client.ImageResource;
 
 import org.eclipse.che.ide.api.parts.PartStackUIResources;
-import org.eclipse.che.ide.ui.dropdown.DropDownHeaderWidgetImpl;
+import org.eclipse.che.ide.ui.cellview.CellTreeResources;
 import org.eclipse.che.ide.menu.MenuResources;
 import org.eclipse.che.ide.notification.NotificationResources;
 import org.eclipse.che.ide.part.projectexplorer.ProjectTreeNodeRenderer;
@@ -28,6 +28,7 @@ import org.eclipse.che.ide.ui.DialogBoxResources;
 import org.eclipse.che.ide.ui.buttonLoader.ButtonLoaderResources;
 import org.eclipse.che.ide.ui.cellview.CellTableResources;
 import org.eclipse.che.ide.ui.cellview.DataGridResources;
+import org.eclipse.che.ide.ui.dropdown.DropDownHeaderWidgetImpl;
 import org.eclipse.che.ide.ui.list.CategoriesList;
 import org.eclipse.che.ide.ui.list.SimpleList;
 import org.eclipse.che.ide.ui.tree.Tree;
@@ -54,6 +55,7 @@ public interface Resources extends Tree.Resources,
                                    NotificationResources,
                                    DataGridResources,
                                    CellTableResources,
+                                   CellTreeResources,
                                    CategoriesList.Resources,
                                    DropDownHeaderWidgetImpl.Resources,
                                    ButtonLoaderResources,
@@ -93,11 +95,18 @@ public interface Resources extends Tree.Resources,
         String privateProjectSvg();
 
         String publicProjectSvg();
+
+        String createWsTagsPopup();
+
+        String tagsPanel();
     }
 
     @Source({"Core.css", "org/eclipse/che/ide/ui/constants.css", "org/eclipse/che/ide/api/ui/style.css"})
     @NotStrict
     CoreCss coreCss();
+
+    @Source("workspace/recipe.svg")
+    SVGResource recipe();
 
     @Source("part/projectexplorer/project_explorer.png")
     ImageResource projectExplorer();
@@ -230,7 +239,6 @@ public interface Resources extends Tree.Resources,
 
     @Source("part/outline/no-outline.svg")
     SVGResource noOutline();
-
 
     @Source("part/project-explorer-part-icon.svg")
     SVGResource projectExplorerPartIcon();

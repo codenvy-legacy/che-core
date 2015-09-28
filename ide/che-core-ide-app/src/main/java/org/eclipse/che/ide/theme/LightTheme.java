@@ -173,11 +173,6 @@ public class LightTheme implements Theme {
     }
 
     @Override
-    public String getInputBackground() {
-        return "#FFFFFF";
-    }
-
-    @Override
     public String getEditorPanelBackgroundColor() {
         return "#D6D6D9";
     }
@@ -374,12 +369,32 @@ public class LightTheme implements Theme {
 
     @Override
     public String getMainMenuBkgColor() {
-        return "#f6f6f6";
+        return "#cacacc";
+    }
+
+    @Override
+    public String getMainMenuSelectedBkgColor() {
+        return "#ffffff";
+    }
+
+    @Override
+    public String getMainMenuSelectedBorderColor() {
+        return "#a4a4a4";
     }
 
     @Override
     public String getMainMenuFontColor() {
-        return "#222222";
+        return "#555555";
+    }
+
+    @Override
+    public String getMainMenuFontHoverColor() {
+        return "#333333";
+    }
+
+    @Override
+    public String getMainMenuFontSelectedColor() {
+        return "#1a68af";
     }
 
     @Override
@@ -423,41 +438,6 @@ public class LightTheme implements Theme {
     }
 
     @Override
-    public String getBoxBorderColor() {
-        return "#aaaaaa";
-    }
-
-    @Override
-    public String getBoxTextColor() {
-        return "#606060";
-    }
-
-
-    @Override
-    public String getBoxInnerShadow() {
-        return "0px 1px 2px 0px #777777 inset";
-    }
-
-    @Override
-    public String getBoxOuterShadow() {
-        return "0px 1px 0px 0px #7a7a7a";
-    }
-
-    @Override
-    public String getBoxBackgroundColor() {
-        return "#e2e2e2";
-    }
-
-    @Override
-    public String getBoxBackgroundColorDisabled() {
-        return getTabsPanelBackground();
-    }
-
-    @Override
-    public String getBoxTextShadow() {
-        return "0px 1px 0px #ffffff";
-    }
-
     public String getButtonHoverTextColor() {
         return "#000000";
     }
@@ -484,7 +464,7 @@ public class LightTheme implements Theme {
 
     @Override
     public String getToolbarBackgroundImage() {
-        return "linear-gradient(-180deg, #d3d3d4   0%, #bdbec0   100%)";
+        return this.getMenuBackgroundImage();
     }
 
     @Override
@@ -494,7 +474,7 @@ public class LightTheme implements Theme {
 
     @Override
     public String getToolbarIconColor() {
-        return "#7c7c7c";
+        return this.getIconColor();
     }
 
     @Override
@@ -513,13 +493,28 @@ public class LightTheme implements Theme {
     }
 
     @Override
-    public String getProgressColor() {
-        return "#000000";
+    public String getSelectCommandActionIconColor() {
+        return "#1a68af";
     }
 
     @Override
-    public String getSvgUrlShadow() {
-        return "url(#shadowLightTheme)";
+    public String getSelectCommandActionIconBackgroundColor() {
+        return "#e9e9e9";
+    }
+
+    @Override
+    public String getSelectCommandActionColor() {
+        return "#555555";
+    }
+
+    @Override
+    public String getSelectCommandActionHoverColor() {
+        return "#565656";
+    }
+
+    @Override
+    public String getProgressColor() {
+        return "#000000";
     }
 
     @Override
@@ -594,6 +589,11 @@ public class LightTheme implements Theme {
     }
 
     @Override
+    public String getBlueIconColor() {
+        return "#1a68af";
+    }
+
+    @Override
     public String getSplitterSmallBorderColor() {
         return "#8E8E8E";
     }
@@ -603,4 +603,116 @@ public class LightTheme implements Theme {
         return "#E1E1E1";
     }
 
+    @Override
+    public String getBadgeBackgroundColor() {
+        return "rgb(78, 171, 255)";
+    }
+
+    @Override
+    public String getBadgeFontColor() {
+        return "white";
+    }
+
+    public String getPopupBkgColor() {
+        return "#ececec";
+    }
+
+    @Override
+    public String getPopupBorderColor() {
+        return "#a4a4a4";
+    }
+
+    @Override
+    public String getPopupShadowColor() {
+        return "rgba(0, 0, 0, 0.30)";
+    }
+
+    @Override
+    public String getPopupHoverColor() {
+        return "rgba(0, 0, 0, 0.12)";
+    }
+
+    @Override
+    public String getPopupHotKeyColor() {
+        return "#A2A2A2";
+    }
+    @Override
+    public String getTextFieldTitleColor() {
+        return "#555555";
+    }
+
+    @Override
+    public String getTextFieldColor() {
+        return "#909090";
+    }
+
+    @Override
+    public String getTextFieldBackgroundColor() {
+        return "#ffffff";
+    }
+
+    @Override
+    public String getTextFieldFocusedColor() {
+        return "#727272";
+    }
+
+    @Override
+    public String getTextFieldFocusedBackgroundColor() {
+        return "#ffffff";
+    }
+
+    @Override
+    public String getTextFieldDisabledColor() {
+        return "#b9b9b9";
+    }
+
+    @Override
+    public String getTextFieldDisabledBackgroundColor() {
+        return "#ffffff";
+    }
+
+    @Override
+    public String getTextFieldBorderColor() {
+        return "#e1e1e1";
+    }
+
+    @Override
+    public String getMenuBackgroundColor() {
+        return "inherit";
+    }
+
+    @Override
+    public String getMenuBackgroundImage() {
+        return "linear-gradient( -180deg, #d3d3d4 0%, #bdbec0 100%)";
+    }
+
+    @Override
+    public String getPanelBackgroundColor() {
+        return "#d6d6d9";
+    }
+
+    @Override
+    public String getPrimaryHighlightColor() {
+        return "#1a68af";
+    }
+
+    @Override
+    public String getIconColor() {
+        return "#7c7c7c";
+    }
+
+    @Override
+    public String getSeparatorColor() {
+        return "#8e8e8e";
+    }
+
+    @Override
+    public String getErrorColor() {
+        return "#C34d4d";
+    }
+
+    @Override
+    public String getSuccessColor() {
+        return "#31b993";
+    }
 }

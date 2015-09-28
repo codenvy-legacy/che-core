@@ -103,8 +103,8 @@ public class PartStackPresenterTest {
         when(partPresenter.getTitleSVGImage()).thenReturn(resource);
 
         when(tabItemFactory.createPartButton(SOME_TEXT)).thenReturn(partButton);
-        when(partButton.addTooltip(SOME_TEXT)).thenReturn(partButton);
-        when(partButton.addIcon(resource)).thenReturn(partButton);
+        when(partButton.setTooltip(SOME_TEXT)).thenReturn(partButton);
+        when(partButton.setIcon(resource)).thenReturn(partButton);
 
         presenter = new PartStackPresenter(eventBus, partStackHandler, tabItemFactory, partsComparator, view, workBenchPartController);
     }
@@ -143,8 +143,8 @@ public class PartStackPresenterTest {
         verify(basePresenter).setPartStack(presenter);
         verify(tabItemFactory).createPartButton(SOME_TEXT);
 
-        verify(partButton).addTooltip(SOME_TEXT);
-        verify(partButton).addIcon(resource);
+        verify(partButton).setTooltip(SOME_TEXT);
+        verify(partButton).setIcon(resource);
 
         verify(partButton).setDelegate(presenter);
 

@@ -193,28 +193,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>update-manifest</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <jar file="${project.build.directory}/${project.build.finalName}.jar" update="true">
-                                    <manifest>
-                                        <attribute name="IDE-Version" value="${codenvy.cloud-ide.version}" />
-                                    </manifest>
-                                </jar>
-                            </target>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
     <profiles>

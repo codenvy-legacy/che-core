@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.parts;
 
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.IsWidget;
 
@@ -118,10 +119,21 @@ public abstract class AbstractPartPresenter implements PartPresenter {
         return 285;
     }
 
+    @Override
+    public ImageResource getTitleImage() {
+        return null;
+    }
+
     /** {@inheritDoc} */
     @Override
     public IsWidget getTitleWidget() {
         return null;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int getUnreadNotificationsCount() {
+        return 0;
     }
 
     @Nullable

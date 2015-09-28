@@ -11,9 +11,25 @@
 package org.eclipse.che.ide.api.editor;
 
 /**
+ * Editor auto save functionality.
+ * It's supports enable/disable auto save.
+ *
  * @author Evgen Vidolob
  */
 public interface EditorWithAutoSave {
 
+    /**
+     * Return true if auto save is enabled, false otherwise.
+     */
     boolean isAutoSaveEnabled();
+
+    /**
+     * Enable auto save. If editor doesn't support auto save do nothing.
+     */
+    void enableAutoSave();
+
+    /**
+     * Disable auto save. If editor doesn't support auto save do nothing.
+     */
+    void disableAutoSave();
 }

@@ -27,6 +27,7 @@ import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.eclipse.che.ide.ui.toolbar.MenuLockLayer;
 import org.eclipse.che.ide.ui.toolbar.PopupMenu;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
+import org.eclipse.che.ide.ui.dropdown.DropDownHeaderWidgetImpl.Resources;
 
 import javax.validation.constraints.NotNull;
 
@@ -41,6 +42,7 @@ import static com.google.gwt.dom.client.Style.Unit.PX;
 public class DropDownListMenu implements ActionSelectedHandler {
     private static final String place = ActionPlaces.DROPDOWN_MENU;
 
+    private final Resources                    resources;
     private final ActionManager                actionManager;
     private final KeyBindingAgent              keyBindingAgent;
     private final PresentationFactory          presentationFactory;
@@ -51,7 +53,9 @@ public class DropDownListMenu implements ActionSelectedHandler {
     private MenuLockLayer lockLayer;
 
     @Inject
-    public DropDownListMenu(ActionManager actionManager, KeyBindingAgent keyBindingAgent, Provider<PerspectiveManager> managerProvider) {
+    public DropDownListMenu(Resources resources, ActionManager actionManager, KeyBindingAgent keyBindingAgent,
+                            Provider<PerspectiveManager> managerProvider) {
+        this.resources = resources;
         this.actionManager = actionManager;
         this.keyBindingAgent = keyBindingAgent;
         this.managerProvider = managerProvider;
@@ -90,6 +94,7 @@ public class DropDownListMenu implements ActionSelectedHandler {
                                   this,
                                   keyBindingAgent,
                                   itemIdPrefix);
+        popupMenu.addStyleName(resources.dropdownListCss().dropDownListMenu());
         popupMenu.getElement().getStyle().setOpacity(0);
         lockLayer.add(popupMenu);
 

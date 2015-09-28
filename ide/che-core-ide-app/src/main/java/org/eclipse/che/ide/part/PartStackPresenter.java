@@ -15,6 +15,7 @@ import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.api.constraints.Constraints;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.event.EditorDirtyStateChangedEvent;
@@ -30,7 +31,6 @@ import org.eclipse.che.ide.part.widgets.partbutton.PartButton;
 import org.eclipse.che.ide.workspace.WorkBenchPartController;
 
 import javax.validation.constraints.NotNull;
-import org.eclipse.che.commons.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -101,7 +101,7 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
 
     private void updatePartTab(@NotNull PartPresenter part) {
         if (!containsPart(part)) {
-            throw new IllegalArgumentException("This part stack not contains: " + part.getTitle());
+            return;
         }
 
         view.updateTabItem(part);
@@ -141,8 +141,8 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
         part.addPropertyListener(propertyListener);
 
         PartButton partButton = tabItemFactory.createPartButton(part.getTitle())
-                                              .addTooltip(part.getTitleToolTip())
-                                              .addIcon(part.getTitleSVGImage());
+                                              .setTooltip(part.getTitleToolTip())
+                                              .setIcon(part.getTitleSVGImage());
         partButton.setDelegate(this);
 
         parts.put(partButton, part);
@@ -238,6 +238,15 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
         }
     }
 
+    @Override
+    public void updateStack() {
+        for (PartPresenter partPresenter: parts.values()) {
+            if (partPresenter instanceof BasePresenter) {
+                ((BasePresenter)partPresenter).setPartStack(this);
+            }
+        }
+    }
+
     /** {@inheritDoc} */
     @Override
     public void onRequestFocus() {
@@ -288,4 +297,5 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
         /** PartStack is being clicked and requests Focus */
         void onRequestFocus(PartStack partStack);
     }
+
 }

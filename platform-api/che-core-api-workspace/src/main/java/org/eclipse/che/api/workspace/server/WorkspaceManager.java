@@ -66,7 +66,7 @@ import static org.eclipse.che.dto.server.DtoFactory.newDto;
  */
 @Singleton
 public class WorkspaceManager {
-    private static final Logger LOG = LoggerFactory.getLogger(WorkspaceService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(WorkspaceManager.class);
 
     /* should contain [3, 20] characters, first and last character is letter or digit, available characters {A-Za-z0-9.-_}*/
     private static final Pattern WS_NAME = Pattern.compile("[\\w][\\w\\.\\-]{1,18}[\\w]");
@@ -190,7 +190,7 @@ public class WorkspaceManager {
         stopWorkspaceAsync(workspaceId);
     }
 
-    public UsersWorkspaceImpl createWorkspace(final WorkspaceConfig workspaceConfig, final String accountId)
+    public UsersWorkspaceImpl createWorkspace(WorkspaceConfig workspaceConfig, String owner, String accountId)
             throws NotFoundException, ForbiddenException, ServerException, BadRequestException, ConflictException {
 
         final UsersWorkspaceImpl workspace = fromConfig(workspaceConfig);

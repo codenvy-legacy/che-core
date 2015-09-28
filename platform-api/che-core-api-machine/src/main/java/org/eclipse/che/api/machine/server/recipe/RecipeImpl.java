@@ -45,6 +45,7 @@ public class RecipeImpl implements ManagedRecipe {
     private String       script;
     private List<String> tags;
     private Permissions  permissions;
+    private String       description;
 
     @Override
     public String getId() {
@@ -148,6 +149,20 @@ public class RecipeImpl implements ManagedRecipe {
     }
 
     @Override
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public RecipeImpl withDescription(String description) {
+        this.description = description;
+        return this;
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
@@ -162,6 +177,7 @@ public class RecipeImpl implements ManagedRecipe {
                Objects.equals(type, other.type) &&
                Objects.equals(script, other.script) &&
                Objects.equals(permissions, other.permissions) &&
+               Objects.equals(description, other.description) &&
                getTags().equals(other.getTags());
     }
 
@@ -174,6 +190,7 @@ public class RecipeImpl implements ManagedRecipe {
         hash = 31 * hash + Objects.hashCode(type);
         hash = 31 * hash + Objects.hashCode(script);
         hash = 31 * hash + Objects.hashCode(permissions);
+        hash = 31 * hash + Objects.hashCode(description);
         hash = 31 * hash + getTags().hashCode();
         return hash;
     }

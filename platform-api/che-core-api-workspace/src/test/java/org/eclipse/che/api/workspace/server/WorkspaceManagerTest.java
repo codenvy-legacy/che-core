@@ -93,7 +93,7 @@ public class WorkspaceManagerTest {
     public void shouldBeAbleToCreateWorkspace() throws Exception {
         final WorkspaceConfig cfg = createConfig();
 
-        final UsersWorkspaceImpl workspace = manager.createWorkspace(cfg, "account");
+        final UsersWorkspaceImpl workspace = manager.createWorkspace(cfg, "user123", "account");
 
         assertNotNull(workspace);
         assertFalse(isNullOrEmpty(workspace.getId()));
@@ -107,7 +107,7 @@ public class WorkspaceManagerTest {
 
     @Test
     public void shouldBeAbleToUpdateWorkspace() throws Exception {
-        final UsersWorkspaceImpl workspace = manager.createWorkspace(createConfig(), "account");
+        final UsersWorkspaceImpl workspace = manager.createWorkspace(createConfig(), "user123", "account");
         when(workspaceDao.get(workspace.getId())).thenReturn(workspace);
         final WorkspaceConfig update = createConfig();
 
@@ -126,7 +126,7 @@ public class WorkspaceManagerTest {
 
     @Test
     public void shouldBeAbleToStartWorkspace() throws Exception {
-        final UsersWorkspaceImpl workspace = manager.createWorkspace(createConfig(), "account");
+        final UsersWorkspaceImpl workspace = manager.createWorkspace(createConfig(), "user123", "account");
         when(workspaceDao.get(workspace.getId())).thenReturn(workspace);
         doNothing().when(manager).startWorkspaceAsync(workspace, null);
 
@@ -139,7 +139,7 @@ public class WorkspaceManagerTest {
     @Test
     public void shouldBeAbleToStartTemporaryWorkspace() throws Exception {
         final WorkspaceConfig config = createConfig();
-        final UsersWorkspace workspace = manager.createWorkspace(config, "account");
+        final UsersWorkspace workspace = manager.createWorkspace(config, "user123", "account");
         doReturn(workspace).when(manager).fromConfig(config);
 
         final UsersWorkspaceImpl workspace2 = manager.startTemporaryWorkspace(config, "account");

@@ -71,15 +71,6 @@ public class ActionManagerImpl implements ActionManager {
         registerAction(IdeActions.GROUP_REFACTORING, refactorGroup);
         Constraints afterCode = new Constraints(Anchor.AFTER, IdeActions.GROUP_CODE);
         mainMenu.add(refactorGroup, afterCode);
-//        DefaultActionGroup buildGroup = new DefaultActionGroup("Build", true, this);
-//        registerAction(IdeActions.GROUP_BUILD, buildGroup);
-//        Constraints afterCode = new Constraints(Anchor.AFTER, IdeActions.GROUP_CODE);
-//        mainMenu.add(buildGroup, afterCode);
-
-//        DefaultActionGroup runGroup = new DefaultActionGroup("Run", true, this);
-//        registerAction(IdeActions.GROUP_RUN, runGroup);
-//        Constraints afterBuild = new Constraints(Anchor.AFTER, IdeActions.GROUP_BUILD);
-//        mainMenu.add(runGroup, afterBuild);
 
         DefaultActionGroup windowGroup = new DefaultActionGroup("Window", true, this);
         registerAction(IdeActions.GROUP_WINDOW, windowGroup);
@@ -111,11 +102,14 @@ public class ActionManagerImpl implements ActionManager {
         // register default action groups for main toolbar
         DefaultActionGroup mainToolbarGroup = new DefaultActionGroup(this);
         registerAction(IdeActions.GROUP_MAIN_TOOLBAR, mainToolbarGroup);
-        // register default action groups for right toolbar
+        // register default action groups for center part of toolbar
+        DefaultActionGroup centerToolbarGroup = new DefaultActionGroup(this);
+        registerAction(IdeActions.GROUP_CENTER_TOOLBAR, centerToolbarGroup);
+        // register default action groups for right part of  toolbar
         DefaultActionGroup rightToolbarGroup = new DefaultActionGroup(this);
         registerAction(IdeActions.GROUP_RIGHT_TOOLBAR, rightToolbarGroup);
 
-        // register default action groups for down toolbar
+        // register default action groups for status panel
         DefaultActionGroup leftStatusPanelGroup = new DefaultActionGroup(this);
         registerAction(IdeActions.GROUP_LEFT_STATUS_PANEL, leftStatusPanelGroup);
 

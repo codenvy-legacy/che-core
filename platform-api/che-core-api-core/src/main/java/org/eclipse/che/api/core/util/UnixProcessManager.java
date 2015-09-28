@@ -81,11 +81,6 @@ class UnixProcessManager extends ProcessManager {
         }
     }
 
-    @Override
-    public void kill(int pid) {
-        killTree(pid);
-    }
-
     private void killTree(int pid) {
         final int[] children = getChildProcesses(pid);
         LOG.debug("PID: {}, child PIDs: {}", pid, children);
@@ -166,28 +161,10 @@ class UnixProcessManager extends ProcessManager {
 
     @Override
     public boolean isAlive(Process process) {
-        return isAlive(getPid(process));
+        return process.isAlive();
     }
 
-    @Override
-    public boolean isAlive(int pid) {
-        if (pid <= 0) {
-            return false;
-        }
-        if (SystemInfo.isMacOS()) {
-            final String cmd = "kill -0 " + pid;
-            final int i = system(cmd);
-            if (i != 0) {
-                final String msg = C_LIBRARY.strerror(i);
-                return msg != null && !msg.contains("No such process");
-            }
-            return true;
-        }
-        return new java.io.File("/proc/" + pid).exists();
-    }
-
-    @Override
-    public int getPid(Process process) {
+    int getPid(Process process) {
         if (PID_FIELD != null) {
             try {
                 return ((Number)PID_FIELD.get(process)).intValue();

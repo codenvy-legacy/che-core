@@ -90,20 +90,9 @@ public final class ProcessUtil {
         return PROCESS_MANAGER.isAlive(process);
     }
 
-    public static boolean isAlive(int pid) {
-        return PROCESS_MANAGER.isAlive(pid);
-    }
 
     public static void kill(Process process) {
         PROCESS_MANAGER.kill(process);
-    }
-
-    public static void kill(int pid) {
-        PROCESS_MANAGER.kill(pid);
-    }
-
-    public static int getPid(Process process) {
-        return PROCESS_MANAGER.getPid(process);
     }
 
     public static int system(String command) {

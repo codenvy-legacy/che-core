@@ -37,8 +37,14 @@ public interface PartStackView extends View<PartStackView.ActionDelegate> {
 
         void update(@NotNull PartPresenter part);
 
+        /**
+         * Selects part button.
+         */
         void select();
 
+        /**
+         * Removes selection for the button.
+         */
         void unSelect();
 
         /**

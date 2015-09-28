@@ -16,16 +16,28 @@ import org.eclipse.che.dto.shared.DelegateTo;
 
 /**
  * @author andrew00x
+ * @author Alexander Garagatyi
  */
 @DTO
-public interface DtoWithDelegate {
-    String getName();
+public interface DtoWithDelegate extends TestInterface {
+    String getFirstName();
 
-    void setName(String name);
+    void setFirstName(String firstName);
 
-    DtoWithDelegate withName(String name);
+    DtoWithDelegate withFirstName(String firstName);
+
+    String getLastName();
+
+    void setLastName(String lastName);
+
+    DtoWithDelegate withLastName(String lastName);
 
     @DelegateTo(client = @DelegateRule(type = Util.class, method = "addPrefix"),
                 server = @DelegateRule(type = Util.class, method = "addPrefix"))
     String nameWithPrefix(String prefix);
+
+//    @Override
+//    @DelegateTo(client = @DelegateRule(type = Util.class, method = "getFullName"),
+//                server = @DelegateRule(type = Util.class, method = "getFullName"))
+//    String getFullName();
 }

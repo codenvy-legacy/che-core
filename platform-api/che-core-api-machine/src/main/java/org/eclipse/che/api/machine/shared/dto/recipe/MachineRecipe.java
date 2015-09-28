@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.shared.dto.recipe;
 
+import org.eclipse.che.api.core.model.machine.Recipe;
 import org.eclipse.che.dto.shared.DTO;
-import org.eclipse.che.api.machine.shared.Recipe;
 
 /**
  * Describes machine recipe.

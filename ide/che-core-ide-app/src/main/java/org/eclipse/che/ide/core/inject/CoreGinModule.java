@@ -25,6 +25,8 @@ import com.google.web.bindery.event.shared.SimpleEventBus;
 import org.eclipse.che.api.account.gwt.client.AccountServiceClient;
 import org.eclipse.che.api.account.gwt.client.AccountServiceClientImpl;
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
+import org.eclipse.che.api.git.gwt.client.GitServiceClient;
+import org.eclipse.che.api.git.gwt.client.GitServiceClientImpl;
 import org.eclipse.che.api.machine.gwt.client.CommandServiceClient;
 import org.eclipse.che.api.machine.gwt.client.CommandServiceClientImpl;
 import org.eclipse.che.api.machine.gwt.client.MachineServiceClient;
@@ -97,14 +99,15 @@ import org.eclipse.che.ide.core.ProjectStateHandler;
 import org.eclipse.che.ide.core.StandardComponentInitializer;
 import org.eclipse.che.ide.core.editor.EditorAgentImpl;
 import org.eclipse.che.ide.core.editor.EditorRegistryImpl;
+import org.eclipse.che.ide.createworkspace.TagEntryFactory;
+import org.eclipse.che.ide.createworkspace.tagentry.TagEntry;
+import org.eclipse.che.ide.createworkspace.tagentry.TagEntryImpl;
 import org.eclipse.che.ide.extension.ExtensionManagerPresenter;
 import org.eclipse.che.ide.extension.ExtensionManagerView;
 import org.eclipse.che.ide.extension.ExtensionManagerViewImpl;
 import org.eclipse.che.ide.filetypes.FileTypeRegistryImpl;
 import org.eclipse.che.ide.icon.IconRegistryImpl;
 import org.eclipse.che.ide.keybinding.KeyBindingManager;
-import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderView;
-import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderViewImpl;
 import org.eclipse.che.ide.logger.AnalyticsEventLoggerExt;
 import org.eclipse.che.ide.logger.AnalyticsEventLoggerImpl;
 import org.eclipse.che.ide.menu.MainMenuView;
@@ -189,6 +192,8 @@ import org.eclipse.che.ide.ui.dialogs.message.MessageDialogViewImpl;
 import org.eclipse.che.ide.ui.dropdown.DropDownHeaderWidget;
 import org.eclipse.che.ide.ui.dropdown.DropDownHeaderWidgetImpl;
 import org.eclipse.che.ide.ui.dropdown.DropDownListFactory;
+import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderView;
+import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderViewImpl;
 import org.eclipse.che.ide.ui.loaders.requestLoader.IdeLoader;
 import org.eclipse.che.ide.ui.toolbar.MainToolbar;
 import org.eclipse.che.ide.ui.toolbar.ToolbarPresenter;
@@ -216,8 +221,6 @@ import org.eclipse.che.ide.workspace.WorkspaceView;
 import org.eclipse.che.ide.workspace.WorkspaceViewImpl;
 import org.eclipse.che.ide.workspace.perspectives.general.PerspectiveViewImpl;
 import org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective;
-import org.eclipse.che.api.git.gwt.client.GitServiceClient;
-import org.eclipse.che.api.git.gwt.client.GitServiceClientImpl;
 
 import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
 
@@ -280,6 +283,8 @@ public class CoreGinModule extends AbstractGinModule {
         projectTreeComponentBinder.addBinding("openedNodes").to(OpenedNodesPersistenceComponent.class);
         projectTreeComponentBinder.addBinding("activeNode").to(ActiveNodePersistentComponent.class);
         projectTreeComponentBinder.addBinding("showHiddenFiles").to(ShowHiddenFilesPersistenceComponent.class);
+
+        install(new GinFactoryModuleBuilder().implement(TagEntry.class, TagEntryImpl.class).build(TagEntryFactory.class));
     }
 
     private void configureComponents() {

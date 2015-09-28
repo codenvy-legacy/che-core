@@ -227,13 +227,6 @@ public interface Theme {
     String getSocialButtonColor();
 
     /**
-     * Background color for all input widgets
-     *
-     * @return the color
-     */
-    String getInputBackground();
-
-    /**
      * Background for editor panel ( place where the editor will be placed )
      *
      * @return color for editor panel
@@ -521,11 +514,39 @@ public interface Theme {
     String getMainMenuBkgColor();
 
     /**
+     * Background color of selected menu items
+     *
+     * @return the color
+     */
+    String getMainMenuSelectedBkgColor();
+
+    /**
+     * Border color of selected menu items
+     *
+     * @return the color
+     */
+    String getMainMenuSelectedBorderColor();
+
+    /**
      * Font color for menu item text
      *
      * @return the color
      */
     String getMainMenuFontColor();
+
+    /**
+     * Font color for menu item hover text
+     *
+     * @return the color
+     */
+    String getMainMenuFontHoverColor();
+
+    /**
+     * Font color for menu item selected text
+     *
+     * @return the color
+     */
+    String getMainMenuFontSelectedColor();
 
     String getNotableButtonTopColor();
 
@@ -570,37 +591,6 @@ public interface Theme {
      * @return the color of button if hover
      */
     String getButtonHoverColor();
-
-    /* Boxes (listbox, textbox) properties */
-
-    /**
-     * Return the color for box borders.
-     *
-     * @return the color for box borders
-     */
-    String getBoxBorderColor();
-
-    /**
-     * Return the interior shadow property for boxes.
-     *
-     * @return the interior shadow
-     */
-    String getBoxInnerShadow();
-
-    /**
-     * Return the exterior shadow property for boxes.
-     *
-     * @return the exterior shadow
-     */
-    String getBoxOuterShadow();
-
-    String getBoxBackgroundColor();
-
-    String getBoxTextColor();
-
-    String getBoxTextShadow();
-
-    String getBoxBackgroundColorDisabled();
 
     /**
      * The color of the action group shadow.
@@ -666,14 +656,37 @@ public interface Theme {
     String getPerspectiveSwitcherBackgroundColor();
 
     /**
+     * The icon color for the selectCommandAction.
+     *
+     * @return {@link String} color
+     */
+    String getSelectCommandActionIconColor();
+
+    /**
+     * The background color for selectCommandAction icon.
+     *
+     * @return {@link String} color
+     */
+    String getSelectCommandActionIconBackgroundColor();
+
+    /**
+     * The command action color.
+     *
+     * @return {@link String} color
+     */
+    String getSelectCommandActionColor();
+
+    /**
+     * The command action hover color.
+     *
+     * @return {@link String} color
+     */
+    String getSelectCommandActionHoverColor();
+
+    /**
      * @return the progress icon color
      */
     String getProgressColor();
-
-    /**
-     * @return the shadow property for *.svg
-     */
-    String getSvgUrlShadow();
 
     /**
      * @return the color of the success event
@@ -754,5 +767,128 @@ public interface Theme {
      */
     String getSplitterLargeBorderColor();
 
+    /**
+     * Color of badge background.
+     *
+     * @return badge background color
+     */
+    String getBadgeBackgroundColor();
 
+    /**
+     * Color of badge font.
+     *
+     * @return badge font color
+     */
+    String getBadgeFontColor();
+
+
+    /**
+     * @return the blue color for icon.
+     */
+    String getBlueIconColor();
+
+    /**
+    * @return the color of the popup background.
+    */
+    String getPopupBkgColor();
+
+    /**
+     * @return the color of the popup border.
+     */
+    String getPopupBorderColor();
+
+    /**
+     * @return the color of the popup shadow.
+     */
+    String getPopupShadowColor();
+
+    /**
+     * @return the color of the popup hover.
+     */
+    String getPopupHoverColor();
+
+    /**
+     * @return the font color of the popup hot key.
+     */
+    String getPopupHotKeyColor();
+
+    /**
+     * @return the text field title color.
+     */
+    String getTextFieldTitleColor();
+
+    /**
+     * @return the text field color.
+     */
+    String getTextFieldColor();
+
+    /**
+     * @return the text field background color.
+     */
+    String getTextFieldBackgroundColor();
+
+    /**
+     * @return the text field focused color.
+     */
+    String getTextFieldFocusedColor();
+
+    /**
+     * @return the text field focused background color.
+     */
+    String getTextFieldFocusedBackgroundColor();
+
+    /**
+     * @return the text field disabled color.
+     */
+    String getTextFieldDisabledColor();
+
+    /**
+     * @return the text field disabled background color.
+     */
+    String getTextFieldDisabledBackgroundColor();
+
+    /**
+     * @return the text field border color.
+     */
+    String getTextFieldBorderColor();
+
+    /**
+     * @return the menu background color.
+     */
+    String getMenuBackgroundColor();
+
+    /**
+     * @return the menu background image.
+     */
+    String getMenuBackgroundImage();
+
+    /**
+     * @return the panel background color.
+     */
+    String getPanelBackgroundColor();
+
+    /**
+     * @return the primary highlights color.
+     */
+    String getPrimaryHighlightColor();
+
+    /**
+     * @return the icon color.
+     */
+    String getIconColor();
+
+    /**
+     * @return the separator color.
+     */
+    String getSeparatorColor();
+
+    /**
+     * @return the error state color.
+     */
+    String getErrorColor();
+
+    /**
+     * @return the success state color.
+     */
+    String getSuccessColor();
 }

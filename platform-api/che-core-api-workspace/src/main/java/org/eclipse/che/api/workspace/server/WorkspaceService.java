@@ -49,6 +49,7 @@ import org.eclipse.che.api.workspace.shared.dto.ServerDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
+import org.eclipse.che.commons.env.EnvironmentContext;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -121,12 +122,12 @@ public class WorkspaceService extends Service {
                                     @ApiParam("account id") @QueryParam("account") String accountId)
             throws ConflictException, ServerException, BadRequestException, ForbiddenException, NotFoundException {
         if (securityContext.isUserInRole("user")) {
-            newWorkspace.withOwner(securityContext.getUserPrincipal().getName());
+            newWorkspace.withOwner(getCurrentUserId());
         }
         if (newWorkspace.getOwner() == null) {
             throw new BadRequestException("New workspace owner required");
         }
-        return asUsersWorkspaceDto(workspaceManager.createWorkspace(newWorkspace, accountId));
+        return asUsersWorkspaceDto(workspaceManager.createWorkspace(newWorkspace, newWorkspace.getOwner(), accountId));
     }
 
     @DELETE
@@ -161,7 +162,7 @@ public class WorkspaceService extends Service {
     @Path("/name/{name}")
     @Produces(APPLICATION_JSON)
     public UsersWorkspaceDto getByName(@PathParam("name") String name) throws ServerException, BadRequestException, NotFoundException {
-        return asUsersWorkspaceDto(workspaceManager.getWorkspace(name, securityContext.getUserPrincipal().getName()));
+        return asUsersWorkspaceDto(workspaceManager.getWorkspace(name, getCurrentUserId()));
     }
 
     @GET
@@ -170,7 +171,7 @@ public class WorkspaceService extends Service {
                                                  @DefaultValue("30") @QueryParam("maxItems") Integer maxItems)
             throws ServerException, BadRequestException {
         //TODO add maxItems & skipCount to manager
-        return workspaceManager.getWorkspaces(securityContext.getUserPrincipal().getName())
+        return workspaceManager.getWorkspaces(getCurrentUserId())
                                .stream()
                                .map(this::asUsersWorkspaceDto)
                                .collect(toList());
@@ -184,7 +185,7 @@ public class WorkspaceService extends Service {
                                                           @DefaultValue("30") @QueryParam("maxItems") Integer maxItems)
             throws BadRequestException {
         //TODO add maxItems & skipCount to manager
-        return workspaceManager.getRuntimeWorkspaces(securityContext.getUserPrincipal().getName())
+        return workspaceManager.getRuntimeWorkspaces(getCurrentUserId())
                                .stream()
                                .map(this::asDto)
                                .collect(toList());
@@ -202,7 +203,7 @@ public class WorkspaceService extends Service {
     @Path("/name/{name}/runtime")
     @Produces(APPLICATION_JSON)
     public RuntimeWorkspace getRuntimeWorkspaceByName(@PathParam("name") String name) {
-        return asDto(workspaceManager.getRuntimeWorkspace(name, securityContext.getUserPrincipal().getName()));
+        return asDto(workspaceManager.getRuntimeWorkspace(name, getCurrentUserId()));
     }
 
     @POST
@@ -227,7 +228,7 @@ public class WorkspaceService extends Service {
     @Produces(APPLICATION_JSON)
     public UsersWorkspaceDto startByName(@QueryParam("name") String name, @QueryParam("environment") String envName)
             throws ServerException, BadRequestException, NotFoundException {
-        return asUsersWorkspaceDto(workspaceManager.startWorkspaceByName(name, envName, securityContext.getUserPrincipal().getName()));
+        return asUsersWorkspaceDto(workspaceManager.startWorkspaceByName(name, envName, getCurrentUserId()));
     }
 
     @DELETE
@@ -538,5 +539,9 @@ public class WorkspaceService extends Service {
                                              .withOutputChannel(config.getOutputChannel())
                                              .withStatusChannel(config.getStatusChannel())
                                              .withSource(asDto(config.getSource()));
+    }
+
+    private static String getCurrentUserId() {
+        return EnvironmentContext.getCurrent().getUser().getId();
     }
 }

@@ -42,20 +42,21 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
     public static final int DELAY_MILLIS = 1000;
 
     private FlowPanel leftToolbar;
+    private FlowPanel centerToolbar;
     private FlowPanel rightToolbar;
 
     private String          place;
     private ActionGroup     leftActionGroup;
+    private ActionGroup     centerActionGroup;
     private ActionGroup     rightActionGroup;
     private ActionManager   actionManager;
     private KeyBindingAgent keyBindingAgent;
 
     private List<Utils.VisibleActionGroup> leftVisibleGroupActions;
-    private Provider<PerspectiveManager>   managerProvider;
-
+    private List<Utils.VisibleActionGroup> centerVisibleGroupActions;
     private List<Utils.VisibleActionGroup> rightVisibleGroupActions;
 
-
+    private Provider<PerspectiveManager>   managerProvider;
     private PresentationFactory presentationFactory;
     private boolean             addSeparatorFirst;
 
@@ -81,9 +82,11 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
         setStyleName(toolbarResources.toolbar().toolbarPanel());
 
         leftVisibleGroupActions = new ArrayList<>();
+        centerVisibleGroupActions = new ArrayList<>();
         rightVisibleGroupActions = new ArrayList<>();
         presentationFactory = new PresentationFactory();
         leftToolbar = new FlowPanel();
+        centerToolbar = new FlowPanel();
         rightToolbar = new FlowPanel();
         timer = new Timer() {
             @Override
@@ -93,9 +96,13 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
             }
         };
 
+        leftToolbar.addStyleName(toolbarResources.toolbar().leftToolbarPart());
         add(leftToolbar);
 
-        rightToolbar.addStyleName(toolbarResources.toolbar().rightPanel());
+        centerToolbar.addStyleName(toolbarResources.toolbar().centerToolbarPart());
+        add(centerToolbar);
+
+        rightToolbar.addStyleName(toolbarResources.toolbar().rightToolbarPart());
         add(rightToolbar);
 
         if (!timer.isRunning()) {
@@ -119,6 +126,11 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
     }
 
     @Override
+    public void setCenterActionGroup(@NotNull ActionGroup centerActionGroup) {
+        this.centerActionGroup = centerActionGroup;
+    }
+
+    @Override
     public void setRightActionGroup(@NotNull ActionGroup rightActionGroup) {
         this.rightActionGroup = rightActionGroup;
     }
@@ -133,7 +145,16 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
             if (newLeftVisibleGroupActions != null && !leftVisibleGroupActions.equals(newLeftVisibleGroupActions)) {
                 leftVisibleGroupActions = newLeftVisibleGroupActions;
                 leftToolbar.clear();
-                leftToolbar.add(createLeftToolbar(leftVisibleGroupActions));
+                leftToolbar.add(createToolbarPart(leftVisibleGroupActions));
+            }
+        }
+        if (centerActionGroup != null) {
+            List<Utils.VisibleActionGroup> newCenterVisibleGroupActions =
+                    Utils.renderActionGroup(centerActionGroup, presentationFactory, place, actionManager, managerProvider.get());
+            if (newCenterVisibleGroupActions != null && !centerVisibleGroupActions.equals(newCenterVisibleGroupActions)) {
+                centerVisibleGroupActions = newCenterVisibleGroupActions;
+                centerToolbar.clear();
+                centerToolbar.add(createToolbarPart(centerVisibleGroupActions));
             }
         }
         if (rightActionGroup != null) {
@@ -142,32 +163,32 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
             if (newRightVisibleGroupActions != null && !rightVisibleGroupActions.equals(newRightVisibleGroupActions)) {
                 rightVisibleGroupActions = newRightVisibleGroupActions;
                 rightToolbar.clear();
-                rightToolbar.add(createRightToolbar(rightVisibleGroupActions));
+                rightToolbar.add(createToolbarPart(rightVisibleGroupActions));
             }
         }
     }
 
     /**
-     * Creates a left toolbar widget.
+     * Creates a toolbar part widget.
      *
      * @return widget
      */
-    private Widget createLeftToolbar(List<Utils.VisibleActionGroup> leftVisibleActionGroupList) {
-        FlowPanel leftToolbar = new FlowPanel();
+    private Widget createToolbarPart(List<Utils.VisibleActionGroup> visibleActionGroupList) {
+        FlowPanel toolbarPart = new FlowPanel();
 
         if (addSeparatorFirst) {
             final Widget firstDelimiter = createDelimiter();
-            leftToolbar.add(firstDelimiter);
+            toolbarPart.add(firstDelimiter);
         }
 
-        for (Utils.VisibleActionGroup visibleActionGroup : leftVisibleActionGroupList) {
+        for (Utils.VisibleActionGroup visibleActionGroup : visibleActionGroupList) {
             List<Action> actions = visibleActionGroup.getActionList();
             if (actions == null || actions.size() == 0) {
                 continue;
             }
             FlowPanel actionGroupPanel = new FlowPanel();
             actionGroupPanel.setStyleName(toolbarResources.toolbar().toolbarActionGroupPanel());
-            leftToolbar.add(actionGroupPanel);
+            toolbarPart.add(actionGroupPanel);
             for (Action action : actions) {
                 if (action instanceof Separator) {
                     int actionIndex = actions.indexOf(action);
@@ -194,57 +215,7 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
                 }
             }
         }
-        return leftToolbar;
-    }
-
-    /**
-     * Creates a right toolbar widget.
-     *
-     * @return widget
-     */
-    private Widget createRightToolbar(List<Utils.VisibleActionGroup> rightVisibleActionGroupList) {
-        FlowPanel rightToolbar = new FlowPanel();
-
-        if (addSeparatorFirst) {
-            final Widget firstDelimiter = createDelimiter();
-            rightToolbar.add(firstDelimiter);
-        }
-
-        for (Utils.VisibleActionGroup visibleActionGroup : rightVisibleActionGroupList) {
-            List<Action> actions = visibleActionGroup.getActionList();
-            if (actions == null || actions.size() == 0) {
-                continue;
-            }
-            FlowPanel actionGroupPanel = new FlowPanel();
-            actionGroupPanel.setStyleName(toolbarResources.toolbar().toolbarActionGroupPanel());
-            rightToolbar.add(actionGroupPanel);
-            for (Action action : actions) {
-                if (action instanceof Separator) {
-                    int actionIndex = actions.indexOf(action);
-                    if (actionIndex > 0 && actionIndex < actions.size() - 1) {
-                        final Widget delimiter = createDelimiter();
-                        actionGroupPanel.add(delimiter);
-                    }
-                } else if (action instanceof CustomComponentAction) {
-                    Presentation presentation = presentationFactory.getPresentation(action);
-                    Widget customComponent = ((CustomComponentAction)action).createCustomComponent(presentation);
-                    actionGroupPanel.add(customComponent);
-                } else if (action instanceof ActionGroup && ((ActionGroup)action).isPopup()) {
-                    ActionPopupButton button = new ActionPopupButton((ActionGroup)action,
-                                                                     actionManager,
-                                                                     keyBindingAgent,
-                                                                     presentationFactory,
-                                                                     place,
-                                                                     managerProvider,
-                                                                     toolbarResources);
-                    actionGroupPanel.add(button);
-                } else {
-                    final ActionButton button = createToolbarButton(action);
-                    actionGroupPanel.add(button);
-                }
-            }
-        }
-        return rightToolbar;
+        return toolbarPart;
     }
 
     /**

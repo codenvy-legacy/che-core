@@ -80,7 +80,7 @@ public class PartStackViewImpl extends ResizeComposite implements PartStackView,
         addDomHandler(this, ContextMenuEvent.getType());
     }
 
-       /** {@inheritDoc} */
+    /** {@inheritDoc} */
     @Override
     public void onMouseDown(@NotNull MouseDownEvent event) {
         delegate.onRequestFocus();
@@ -181,4 +181,5 @@ public class PartStackViewImpl extends ResizeComposite implements PartStackView,
 
         tabItem.update(partPresenter);
     }
+
 }

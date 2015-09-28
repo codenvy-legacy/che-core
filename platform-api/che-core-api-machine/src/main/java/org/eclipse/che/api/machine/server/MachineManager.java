@@ -10,14 +10,18 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.server;
 
+import com.google.common.base.Strings;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.machine.Command;
+import org.eclipse.che.api.core.model.machine.Recipe;
 import org.eclipse.che.api.core.notification.EventService;
+import org.eclipse.che.api.core.notification.EventSubscriber;
 import org.eclipse.che.api.core.util.CompositeLineConsumer;
 import org.eclipse.che.api.core.util.FileLineConsumer;
 import org.eclipse.che.api.core.util.LineConsumer;
@@ -36,7 +40,6 @@ import org.eclipse.che.api.machine.server.spi.InstanceProvider;
 import org.eclipse.che.api.machine.shared.Machine;
 import org.eclipse.che.api.machine.shared.MachineStatus;
 import org.eclipse.che.api.machine.shared.ProjectBinding;
-import org.eclipse.che.api.machine.shared.Recipe;
 import org.eclipse.che.api.machine.shared.dto.MachineCreationMetadata;
 import org.eclipse.che.api.machine.shared.dto.RecipeMachineCreationMetadata;
 import org.eclipse.che.api.machine.shared.dto.SnapshotMachineCreationMetadata;
@@ -67,6 +70,10 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
+
+import static org.eclipse.che.api.machine.server.InstanceStateEvent.Type.DIE;
+import static org.eclipse.che.api.machine.server.InstanceStateEvent.Type.OOM;
 
 /**
  * Facade for Machine level operations.
@@ -76,7 +83,9 @@ import java.util.concurrent.TimeUnit;
  */
 @Singleton
 public class MachineManager {
-    private static final Logger LOG = LoggerFactory.getLogger(MachineManager.class);
+    private static final Logger  LOG                          = LoggerFactory.getLogger(MachineManager.class);
+    /* machine name must contain only {a-zA-Z0-9_-} characters and it's needed for validation machine names */
+    private static final Pattern MACHINE_DISPLAY_NAME_PATTERN = Pattern.compile("^/?[a-zA-Z0-9_-]+$");
 
     private final SnapshotDao              snapshotDao;
     private final File                     machineLogsDir;
@@ -85,6 +94,7 @@ public class MachineManager {
     private final MachineRegistry          machineRegistry;
     private final EventService             eventService;
     private final int                      defaultMachineMemorySizeMB;
+    private final MachineCleaner           machineCleaner;
 
     @Inject
     public MachineManager(SnapshotDao snapshotDao,
@@ -101,6 +111,7 @@ public class MachineManager {
         this.defaultMachineMemorySizeMB = defaultMachineMemorySizeMB;
 
         executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("MachineManager-%d").setDaemon(true).build());
+        this.machineCleaner = new MachineCleaner();
     }
 
     /**
@@ -121,9 +132,11 @@ public class MachineManager {
      *         if machine with given name already exists
      * @throws MachineException
      *         if any other exception occurs during starting
+     * @throws BadRequestException
+     *         if machine display name is invalid
      */
     public MachineImpl create(final RecipeMachineCreationMetadata machineCreationMetadata, boolean async)
-            throws MachineException, NotFoundException, UnsupportedRecipeException, ConflictException {
+            throws MachineException, NotFoundException, UnsupportedRecipeException, ConflictException, BadRequestException {
         final MachineRecipe machineRecipe = machineCreationMetadata.getRecipe();
         final InstanceProvider instanceProvider = machineInstanceProviders.getProvider(machineCreationMetadata.getType());
         final String recipeType = machineRecipe.getType();
@@ -170,9 +183,11 @@ public class MachineManager {
      *         if error occurs on retrieving snapshot information
      * @throws MachineException
      *         if any other exception occurs during starting
+     * @throws BadRequestException
+     *         if machine display name is invalid
      */
     public MachineImpl create(final SnapshotMachineCreationMetadata machineCreationMetadata, boolean async)
-            throws NotFoundException, SnapshotException, MachineException, ConflictException {
+            throws NotFoundException, SnapshotException, MachineException, ConflictException, BadRequestException {
         final SnapshotImpl snapshot = getSnapshot(machineCreationMetadata.getSnapshotId());
         final InstanceProvider instanceProvider = machineInstanceProviders.getProvider(snapshot.getType());
 
@@ -210,9 +225,14 @@ public class MachineManager {
                                       final MachineCreationMetadata creationMetadata,
                                       boolean async,
                                       final MachineInstanceCreator instanceCreator)
-            throws MachineException, NotFoundException, ConflictException {
+            throws MachineException, NotFoundException, ConflictException, BadRequestException {
+        String machineDisplayName = creationMetadata.getDisplayName();
+        if (!MACHINE_DISPLAY_NAME_PATTERN.matcher(machineDisplayName).matches()) {
+            throw new BadRequestException("Invalid machine name " + machineDisplayName);
+        }
+
         for (MachineImpl machine : machineRegistry.getStates()) {
-            if (machine.getWorkspaceId().equals(workspaceId) && machine.getDisplayName().equals(creationMetadata.getDisplayName())) {
+            if (machine.getWorkspaceId().equals(workspaceId) && machine.getDisplayName().equals(machineDisplayName)) {
                 throw new ConflictException("Machine with name " + creationMetadata.getDisplayName() + " already exists");
             }
         }
@@ -243,14 +263,14 @@ public class MachineManager {
                     @Override
                     public void run() {
                         try {
-                            instanceCreator.creteMachine(machineState, machineLogger);
+                            instanceCreator.createMachine(machineState, machineLogger);
                         } catch (MachineException e) {
                             LOG.error(e.getLocalizedMessage(), e);
                         }
                     }
                 }));
             } else {
-                instanceCreator.creteMachine(machineState, machineLogger);
+                instanceCreator.createMachine(machineState, machineLogger);
             }
 
             return machineState;
@@ -260,7 +280,7 @@ public class MachineManager {
     }
 
     private abstract class MachineInstanceCreator {
-        public Instance creteMachine(MachineImpl machine, LineConsumer machineLogger) throws MachineException {
+        public Instance createMachine(MachineImpl machine, LineConsumer machineLogger) throws MachineException {
             try {
                 eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
                                                .withEventType(MachineStatusEvent.EventType.CREATING)
@@ -789,7 +809,14 @@ public class MachineManager {
     private void doDestroy(Instance machine) throws MachineException, NotFoundException {
         machine.destroy();
 
+        cleanupOnDestroy(machine, null);
+    }
+
+    private void cleanupOnDestroy(Instance machine, String message) throws NotFoundException, MachineException {
         try {
+            if (! Strings.isNullOrEmpty(message)) {
+                machine.getLogger().writeLine(message);
+            }
             machine.getLogger().close();
         } catch (IOException ignore) {
         }
@@ -859,8 +886,33 @@ public class MachineManager {
         return fileLogger;
     }
 
+    // cleanup machine if event about instance failure comes
+    private class MachineCleaner implements EventSubscriber<InstanceStateEvent> {
+        @Override
+        public void onEvent(InstanceStateEvent event) {
+            if ((event.getType() == OOM) || (event.getType() == DIE)) {
+                try {
+                    final Instance machine = getMachine(event.getMachineId());
+                    String message = "Machine is destroyed.";
+                    if (event.getType() == OOM) {
+                        message = message +
+                                  "The processes in this machine need more RAM. This machine started with " + machine.getMemorySize() +
+                                  "MB. Create a new machine configuration that allocates additional RAM or increase " +
+                                  "the workspace RAM limit in the user dashboard.";
+                    }
+
+                    cleanupOnDestroy(machine, message);
+                } catch (NotFoundException | MachineException e) {
+                    LOG.debug(e.getLocalizedMessage(), e);
+                }
+            }
+        }
+    }
+
     @PostConstruct
     private void createLogsDir() {
+        eventService.subscribe(machineCleaner);
+
         if (!(machineLogsDir.exists() || machineLogsDir.mkdirs())) {
             throw new IllegalStateException(String.format("Unable create directory %s", machineLogsDir.getAbsolutePath()));
         }
@@ -868,6 +920,8 @@ public class MachineManager {
 
     @PreDestroy
     private void cleanup() {
+        eventService.unsubscribe(machineCleaner);
+
         boolean interrupted = false;
         executor.shutdown();
         try {

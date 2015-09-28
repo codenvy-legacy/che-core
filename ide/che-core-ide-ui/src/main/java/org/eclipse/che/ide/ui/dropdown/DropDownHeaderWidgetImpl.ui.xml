@@ -16,52 +16,30 @@
     <ui:style>
 
         .widget {
-            display: flex;
+            display: inline-block;
         }
 
         .selectedElementName {
-            margin-top: 3px;
-        }
-
-        .selectedElementImage svg {
-            margin-top: 1px;
-            width: 19px;
-            height: 19px;
-            fill: #dbdbdb;
-        }
-
-        .svgMarker {
+            margin-height: none;
+            color: inherit;
+            font-size: inherit;
         }
 
         .imagePanel {
-            width: 16px;
-            height: 16px;
+            float: right;
         }
 
         .container {
-            display:flex;
-            margin-left: 1px;
-        }
-
-        .imageContainer {
-            width: 19px;
-            height: 19px;
-            margin-right: 1px;
-            margin-left: 1px;
+            float: left;
         }
     </ui:style>
 
     <g:FlowPanel ui:field="listHeader" debugId="dropDownHeader" styleName="{style.widget}">
-
         <g:FlowPanel ui:field="selectedElement" addStyleNames="{style.container}">
-            <g:FlowPanel addStyleNames="{style.imageContainer}">
-                <g:FlowPanel ui:field="selectedElementImage" addStyleNames="{style.selectedElementImage}"/>
-            </g:FlowPanel>
             <g:Label ui:field="selectedElementName" addStyleNames="{style.selectedElementName}"/>
         </g:FlowPanel>
-
         <g:FlowPanel addStyleNames="{style.imagePanel}">
-            <g:FlowPanel ui:field="marker" addStyleNames="{style.svgMarker}"/>
+            <g:FlowPanel ui:field="marker"/>
         </g:FlowPanel>
     </g:FlowPanel>
 </ui:UiBinder>

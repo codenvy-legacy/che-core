@@ -44,6 +44,10 @@ public class ToolbarPresenter implements Presenter, ToolbarView.ActionDelegate {
         view.setLeftActionGroup(group);
     }
 
+    public void bindCenterGroup(ActionGroup group) {
+        view.setCenterActionGroup(group);
+    }
+
     public void bindRightGroup(ActionGroup group) {
         view.setRightActionGroup(group);
     }

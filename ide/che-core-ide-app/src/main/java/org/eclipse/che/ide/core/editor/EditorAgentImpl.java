@@ -79,7 +79,7 @@ public class EditorAgentImpl implements EditorAgent {
             if (event.getOperationType() == FileOperation.OPEN) {
                 openEditor(event.getFile());
             } else if (event.getOperationType() == CLOSE) {
-                // close associated editor. OR it can be closed itself TODO
+                closeEditor(event.getFile());
             }
         }
     };
@@ -179,6 +179,14 @@ public class EditorAgentImpl implements EditorAgent {
     @Override
     public void openEditor(@NotNull final VirtualFile file) {
         doOpen(file, null);
+    }
+
+    /** {@inheritDoc} */
+    public void closeEditor(VirtualFile file) {
+        EditorPartPresenter closedEditor = openedEditors.get(file.getPath());
+        if (closedEditor != null) {
+            editorClosed(closedEditor);
+        }
     }
 
     @Override

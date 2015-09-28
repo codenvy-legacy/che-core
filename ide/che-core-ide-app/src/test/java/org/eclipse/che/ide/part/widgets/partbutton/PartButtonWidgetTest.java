@@ -67,25 +67,6 @@ public class PartButtonWidgetTest {
     }
 
     @Test
-    public void iconShouldBeAdded() {
-        when(svgResource.getSvg()).thenReturn(svg);
-
-        partButton.addIcon(svgResource);
-
-        verify(partButton.icon).getElement();
-    }
-
-    @Test
-    public void partButtonShouldBeUpdated() {
-        when(partPresenter.getTitleWidget()).thenReturn(isWidget);
-
-        partButton.update(partPresenter);
-
-        verify(partPresenter).getTitleWidget();
-        verify(partButton.icon).add(isWidget);
-    }
-
-    @Test
     public void onPartButtonShouldBeClicked() {
         ClickEvent event = mock(ClickEvent.class);
 
