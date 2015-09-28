@@ -18,7 +18,7 @@ import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.dto.DtoFactory;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 
 import java.util.ArrayList;
@@ -33,18 +33,18 @@ import static org.eclipse.che.ide.actions.ShowHiddenFilesAction.SHOW_HIDDEN_FILE
 @Singleton
 public class ShowHiddenFilesPersistenceComponent implements PersistenceComponent {
 
-    private final AppContext                  appContext;
-    private final ActionManager               actionManager;
-    private final ShowHiddenFilesAction       showHiddenFilesAction;
-    private final DtoFactory                  dtoFactory;
-    private final NewProjectExplorerPresenter projectExplorer;
+    private final AppContext               appContext;
+    private final ActionManager            actionManager;
+    private final ShowHiddenFilesAction    showHiddenFilesAction;
+    private final DtoFactory               dtoFactory;
+    private final ProjectExplorerPresenter projectExplorer;
 
     @Inject
     public ShowHiddenFilesPersistenceComponent(AppContext appContext,
                                                ActionManager actionManager,
                                                ShowHiddenFilesAction showHiddenFilesAction,
                                                DtoFactory dtoFactory,
-                                               NewProjectExplorerPresenter projectExplorer) {
+                                               ProjectExplorerPresenter projectExplorer) {
         this.appContext = appContext;
         this.actionManager = actionManager;
         this.showHiddenFilesAction = showHiddenFilesAction;

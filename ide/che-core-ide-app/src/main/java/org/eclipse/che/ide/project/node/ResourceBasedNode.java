@@ -14,9 +14,14 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.api.promises.client.Function;
+import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
+import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.PromiseError;
+import org.eclipse.che.api.promises.client.js.JsPromiseError;
+import org.eclipse.che.api.promises.client.js.Promises;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.resource.DeleteProcessor;
 import org.eclipse.che.ide.api.project.node.resource.RenameProcessor;
@@ -30,6 +35,8 @@ import org.eclipse.che.ide.util.loging.Log;
 import javax.validation.constraints.NotNull;
 
 /**
+ * Based node which allow perform operations with data object, e.g. renaming and deletion.
+ *
  * @author Vlad Zhukovskiy
  */
 public abstract class ResourceBasedNode<DataObject> extends AbstractProjectBasedNode<DataObject> implements SupportRename<DataObject>,
@@ -49,28 +56,25 @@ public abstract class ResourceBasedNode<DataObject> extends AbstractProjectBased
     }
 
     @Override
-    public void delete() {
+    public Promise<Void> delete() {
         DeleteProcessor<DataObject> deleteProcessor = getDeleteProcessor();
         if (deleteProcessor == null) {
-            return;
+            return Promises.reject(JsPromiseError.create("Delete processor wasn't provided for this type of node"));
         }
 
-        deleteProcessor.delete(this)
-                       .then(onDelete())
-                       .catchError(onFailed());
+        return deleteProcessor.delete(this)
+                              .thenPromise(onDelete())
+                              .catchError(onFailed());
     }
 
     @NotNull
-    private Operation<DataObject> onDelete() {
-        return new Operation<DataObject>() {
+    private Function<DataObject, Promise<Void>> onDelete() {
+        return new Function<DataObject, Promise<Void>>() {
             @Override
-            public void apply(DataObject deletedObject) throws OperationException {
-                Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-                    @Override
-                    public void execute() {
-                        eventBus.fireEvent(new ResourceNodeDeletedEvent(ResourceBasedNode.this));
-                    }
-                });
+            public Promise<Void> apply(DataObject deletedObject) throws FunctionException {
+                eventBus.fireEvent(new ResourceNodeDeletedEvent(ResourceBasedNode.this));
+
+                return Promises.resolve(null);
             }
         };
     }

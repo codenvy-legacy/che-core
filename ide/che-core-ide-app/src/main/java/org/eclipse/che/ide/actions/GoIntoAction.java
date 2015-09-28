@@ -16,7 +16,7 @@ import com.google.inject.Singleton;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ProjectAction;
 import org.eclipse.che.ide.api.project.node.Node;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 
 import java.util.List;
 
@@ -26,10 +26,10 @@ import java.util.List;
 @Singleton
 public class GoIntoAction extends ProjectAction {
 
-    private final NewProjectExplorerPresenter projectExplorer;
+    private final ProjectExplorerPresenter projectExplorer;
 
     @Inject
-    public GoIntoAction(NewProjectExplorerPresenter projectExplorer) {
+    public GoIntoAction(ProjectExplorerPresenter projectExplorer) {
         super("Go into");
         this.projectExplorer = projectExplorer;
     }

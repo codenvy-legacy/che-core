@@ -21,7 +21,7 @@ import org.eclipse.che.ide.api.event.FileContentUpdateEvent;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
 import org.eclipse.che.ide.rest.RestContext;
 
@@ -35,13 +35,13 @@ import java.util.List;
  */
 public class UploadFolderFromZipPresenter implements UploadFolderFromZipView.ActionDelegate {
 
-    private UploadFolderFromZipView view;
-    private final NewProjectExplorerPresenter projectExplorer;
-    private EditorAgent         editorAgent;
-    private String              restContext;
-    private String              workspaceId;
-    private EventBus            eventBus;
-    private NotificationManager notificationManager;
+    private       UploadFolderFromZipView  view;
+    private final ProjectExplorerPresenter projectExplorer;
+    private       EditorAgent              editorAgent;
+    private       String                   restContext;
+    private       String                   workspaceId;
+    private       EventBus                 eventBus;
+    private       NotificationManager      notificationManager;
 
     @Inject
     public UploadFolderFromZipPresenter(UploadFolderFromZipView view,
@@ -50,7 +50,7 @@ public class UploadFolderFromZipPresenter implements UploadFolderFromZipView.Act
                                         EditorAgent editorAgent,
                                         EventBus eventBus,
                                         NotificationManager notificationManager,
-                                        NewProjectExplorerPresenter projectExplorer) {
+                                        ProjectExplorerPresenter projectExplorer) {
         this.restContext = restContext;
         this.workspaceId = workspaceId;
         this.editorAgent = editorAgent;

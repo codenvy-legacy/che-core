@@ -19,7 +19,7 @@ import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.dto.DtoFactory;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 
 import java.util.ArrayList;
@@ -32,16 +32,16 @@ import java.util.List;
 @Singleton
 public class ExpandedNodesPersistenceComponent implements PersistenceComponent {
 
-    private final ExpandNodeAction            expandNodeAction;
-    private final ActionManager               actionManager;
-    private final DtoFactory                  dtoFactory;
-    private final NewProjectExplorerPresenter projectExplorer;
+    private final ExpandNodeAction         expandNodeAction;
+    private final ActionManager            actionManager;
+    private final DtoFactory               dtoFactory;
+    private final ProjectExplorerPresenter projectExplorer;
 
     @Inject
     public ExpandedNodesPersistenceComponent(ActionManager actionManager,
                                              ExpandNodeAction expandNodeAction,
                                              DtoFactory dtoFactory,
-                                             NewProjectExplorerPresenter projectExplorer) {
+                                             ProjectExplorerPresenter projectExplorer) {
         this.actionManager = actionManager;
         this.expandNodeAction = expandNodeAction;
         this.dtoFactory = dtoFactory;

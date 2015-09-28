@@ -88,6 +88,13 @@ public class SearchNodeHandler implements ExpandNodeHandler, BeforeExpandNodeHan
             return;
         }
 
+        if (rootNode instanceof HasStorablePath && ((HasStorablePath)rootNode).getStorablePath().equals(path.getStorablePath())) {
+            //maybe we searched root node, so just return it back
+            inSearchMode = false;
+            callback.onSuccess(rootNode);
+            return;
+        }
+
         tree.setExpanded(rootNode, true);
     }
 

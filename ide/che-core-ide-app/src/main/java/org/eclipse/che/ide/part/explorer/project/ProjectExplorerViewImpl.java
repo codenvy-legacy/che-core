@@ -12,16 +12,17 @@ package org.eclipse.che.ide.part.explorer.project;
 
 import com.google.common.base.Strings;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ContextMenuEvent;
 import com.google.gwt.event.dom.client.ContextMenuHandler;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -37,6 +38,8 @@ import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
+import org.eclipse.che.ide.api.event.ActivePartChangedEvent;
+import org.eclipse.che.ide.api.event.ActivePartChangedHandler;
 import org.eclipse.che.ide.api.event.FileEvent;
 import org.eclipse.che.ide.api.parts.base.BaseView;
 import org.eclipse.che.ide.api.parts.base.ToolButton;
@@ -53,6 +56,7 @@ import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
 import org.eclipse.che.ide.project.node.SyntheticBasedNode;
 import org.eclipse.che.ide.ui.Tooltip;
 import org.eclipse.che.ide.ui.smartTree.DelayedTask;
+import org.eclipse.che.ide.ui.smartTree.KeyboardNavigationHandler;
 import org.eclipse.che.ide.ui.smartTree.NodeDescriptor;
 import org.eclipse.che.ide.ui.smartTree.NodeNameConverter;
 import org.eclipse.che.ide.ui.smartTree.NodeUniqueKeyProvider;
@@ -92,34 +96,34 @@ import static org.eclipse.che.ide.ui.smartTree.event.GoIntoStateEvent.State.DEAC
  * @author Vlad Zhukovskiy
  */
 @Singleton
-public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.ActionDelegate> implements NewProjectExplorerView,
-                                                                                                           GoIntoStateHandler {
-    private       Resources                resources;
-    private       ProjectExplorerResources explorerResources;
-    private       NodeManager              nodeManager;
-    private       AppContext               appContext;
+public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.ActionDelegate> implements ProjectExplorerView,
+                                                                                                     GoIntoStateHandler {
+    private final Resources                resources;
+    private final ProjectExplorerResources explorerResources;
+    private final NodeManager              nodeManager;
+    private final AppContext               appContext;
     private final Provider<EditorAgent>    editorAgentProvider;
     private final EventBus                 eventBus;
-    private       Tree                     tree;
-    private       FlowPanel                projectHeader;
+    private final Tree                     tree;
+    private final FlowPanel                projectHeader;
     private       ToolButton               goIntoBackButton;
+    private       ToolButton               scrollFromSourceButton;
 
     private StoreSortInfo foldersOnTopSort = new StoreSortInfo(new FoldersOnTopFilter(), SortDir.ASC);
 
     private SearchNodeHandler searchNodeHandler;
-
     private HandlerRegistration closeEditorOnNodeRemovedHandler;
 
     @Inject
-    public NewProjectExplorerViewImpl(Resources resources,
-                                      ProjectExplorerResources explorerResources,
-                                      final ContextMenu contextMenu,
-                                      CoreLocalizationConstant coreLocalizationConstant,
-                                      Set<NodeInterceptor> nodeInterceptorSet,
-                                      NodeManager nodeManager,
-                                      AppContext appContext,
-                                      Provider<EditorAgent> editorAgentProvider,
-                                      final EventBus eventBus) {
+    public ProjectExplorerViewImpl(final Resources resources,
+                                   final ProjectExplorerResources explorerResources,
+                                   final ContextMenu contextMenu,
+                                   final CoreLocalizationConstant coreLocalizationConstant,
+                                   final Set<NodeInterceptor> nodeInterceptorSet,
+                                   final NodeManager nodeManager,
+                                   final AppContext appContext,
+                                   final Provider<EditorAgent> editorAgentProvider,
+                                   final EventBus eventBus) {
         super(resources);
         this.resources = resources;
         this.explorerResources = explorerResources;
@@ -180,15 +184,58 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
         treePanel.ensureDebugId("projectExplorer");
         setContentWidget(treePanel);
 
+        //hook that allow pass right click outer the widget
         treePanel.addDomHandler(new ContextMenuHandler() {
             @Override
             public void onContextMenu(ContextMenuEvent event) {
                 event.preventDefault();
-                tree.onBrowserEvent((Event) event.getNativeEvent());
+                tree.onBrowserEvent((Event)event.getNativeEvent());
             }
         }, ContextMenuEvent.getType());
 
+        bindExternalNavigationHandler();
+        bindScrollFromSourceButtonHandlers();
+
         searchNodeHandler = new SearchNodeHandler(tree);
+    }
+
+    private void bindExternalNavigationHandler() {
+        KeyboardNavigationHandler extHandler = new KeyboardNavigationHandler() {
+            @Override
+            public void onDelete(NativeEvent evt) {
+                delegate.onDeleteKeyPressed();
+            }
+        };
+
+        extHandler.bind(tree);
+    }
+
+    private void bindScrollFromSourceButtonHandlers() {
+        eventBus.addHandler(ActivePartChangedEvent.TYPE, new ActivePartChangedHandler() {
+            @Override
+            public void onActivePartChanged(ActivePartChangedEvent event) {
+                if (event.getActivePart() instanceof EditorPartPresenter) {
+                    if (scrollFromSourceButton == null) {
+                        initScrollFromSourceButton();
+                    }
+
+                    scrollFromSourceButton.setVisible(true);
+
+                    EditorPartPresenter activeEditor = editorAgentProvider.get().getActiveEditor();
+
+                    if (activeEditor == null) {
+                        return;
+                    }
+
+                    activeEditor.addCloseHandler(new EditorPartPresenter.EditorPartCloseHandler() {
+                        @Override
+                        public void onClose(EditorPartPresenter editor) {
+                            scrollFromSourceButton.setVisible(false);
+                        }
+                    });
+                }
+            }
+        });
     }
 
     @Override
@@ -295,6 +342,7 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
         getNodeByPath(path, false).then(new Operation<Node>() {
             @Override
             public void apply(Node node) throws OperationException {
+                tree.scrollIntoView(node);
                 tree.getSelectionModel().select(node, false);
             }
         });
@@ -402,7 +450,7 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
         if (appContext.getCurrentProject() == null) {
             //project doesn't opened, so reload project list
             if (parent != null) {
-                Log.info(this.getClass(), "Project isn't opened, so node to reload will be ignored.");
+                Log.warn(this.getClass(), "Project isn't opened, so node to reload will be ignored.");
             }
 
             nodeManager.getProjects().then(new Operation<List<Node>>() {
@@ -419,13 +467,13 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
 
         if (parent != null) {
             if (!loader.loadChildren(parent, deep)) {
-                Log.info(this.getClass(), "Node has been already requested for loading children");
+                Log.warn(this.getClass(), "Node has been already requested for loading children");
             }
         } else {
             List<Node> rootNodes = tree.getRootNodes();
             for (Node root : rootNodes) {
                 if (!loader.loadChildren(root, deep)) {
-                    Log.info(this.getClass(), "Node has been already requested for loading children");
+                    Log.warn(this.getClass(), "Node has been already requested for loading children");
                 }
             }
         }
@@ -534,6 +582,23 @@ public class NewProjectExplorerViewImpl extends BaseView<NewProjectExplorerView.
                        MIDDLE,
                        "Go Back");
         addMenuButton(goIntoBackButton);
+    }
+
+    private void initScrollFromSourceButton() {
+        scrollFromSourceButton = new ToolButton(new SVGImage(explorerResources.source()));
+        scrollFromSourceButton.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                final String sourcePath = editorAgentProvider.get().getActiveEditor().getEditorInput().getFile().getPath();
+                scrollFromSource(new HasStorablePath.StorablePath(sourcePath));
+            }
+        });
+        scrollFromSourceButton.ensureDebugId("scrollFromSourceButton");
+        Tooltip.create((elemental.dom.Element)scrollFromSourceButton.getElement(),
+                       BOTTOM,
+                       MIDDLE,
+                       "Scroll From Source");
+        addMenuButton(scrollFromSourceButton);
     }
 
     @Override

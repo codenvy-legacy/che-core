@@ -24,7 +24,7 @@ import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.download.DownloadContainer;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.project.node.ProjectReferenceNode;
 import org.eclipse.che.ide.rest.RestContext;
 
@@ -40,17 +40,17 @@ public class DownloadProjectAsZipAction extends Action {
 
     private final String BASE_URL;
 
-    private final AnalyticsEventLogger        eventLogger;
-    private final AppContext                  appContext;
-    private final NewProjectExplorerPresenter projectExplorer;
-    private       DownloadContainer           downloadContainer;
+    private final AnalyticsEventLogger     eventLogger;
+    private final AppContext               appContext;
+    private final ProjectExplorerPresenter projectExplorer;
+    private       DownloadContainer        downloadContainer;
 
     @Inject
     public DownloadProjectAsZipAction(@RestContext String restContext,
                                       @Named("workspaceId") String workspaceId,
                                       AppContext appContext,
                                       CoreLocalizationConstant locale,
-                                      NewProjectExplorerPresenter projectExplorer,
+                                      ProjectExplorerPresenter projectExplorer,
                                       AnalyticsEventLogger eventLogger,
                                       Resources resources,
                                       DownloadContainer downloadContainer) {
@@ -77,7 +77,8 @@ public class DownloadProjectAsZipAction extends Action {
     public void update(ActionEvent event) {
         Selection<?> selection = projectExplorer.getSelection();
         boolean enabled = appContext.getCurrentProject() != null || (selection != null &&
-                          (!selection.isEmpty() && selection.getHeadElement() instanceof ProjectReferenceNode));
+                                                                     (!selection.isEmpty() &&
+                                                                      selection.getHeadElement() instanceof ProjectReferenceNode));
 
         event.getPresentation().setVisible(true);
         event.getPresentation().setEnabled(enabled);

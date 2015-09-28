@@ -26,7 +26,7 @@ import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.commons.exception.ServerException;
 import org.eclipse.che.ide.json.JsonHelper;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.ui.dialogs.CancelCallback;
@@ -47,14 +47,14 @@ import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
 @Singleton
 public class PasteAction extends Action {
 
-    private final AnalyticsEventLogger        eventLogger;
+    private final AnalyticsEventLogger     eventLogger;
     //    private       SelectionAgent              selectionAgent;
-    private       AppContext                  appContext;
-    private       DialogFactory               dialogFactory;
-    private       ProjectServiceClient        projectServiceClient;
-    private       NotificationManager         notificationManager;
-    private       NewProjectExplorerPresenter projectExplorer;
-    private       RenameItemAction            renameItemAction;
+    private       AppContext               appContext;
+    private       DialogFactory            dialogFactory;
+    private       ProjectServiceClient     projectServiceClient;
+    private       NotificationManager      notificationManager;
+    private       ProjectExplorerPresenter projectExplorer;
+    private       RenameItemAction         renameItemAction;
 
     /** List of items to do. */
     private List<ResourceBasedNode<?>> items;
@@ -83,7 +83,7 @@ public class PasteAction extends Action {
                        DialogFactory dialogFactory,
                        ProjectServiceClient projectServiceClient,
                        NotificationManager notificationManager,
-                       NewProjectExplorerPresenter projectExplorer,
+                       ProjectExplorerPresenter projectExplorer,
                        RenameItemAction renameItemAction) {
         super(localization.pasteItemsActionText(), localization.pasteItemsActionDescription(), null, resources.paste());
 //        this.selectionAgent = selectionAgent;

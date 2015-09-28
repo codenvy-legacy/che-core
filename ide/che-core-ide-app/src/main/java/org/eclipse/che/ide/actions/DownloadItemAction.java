@@ -21,7 +21,7 @@ import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.download.DownloadContainer;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPart;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPart;
 import org.eclipse.che.ide.project.node.FileReferenceNode;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.rest.RestContext;
@@ -37,9 +37,9 @@ public class DownloadItemAction extends Action {
 
     private final String BASE_URL;
 
-    private final AnalyticsEventLogger   eventLogger;
-    private       DownloadContainer      downloadContainer;
-    private final NewProjectExplorerPart projectExplorer;
+    private final AnalyticsEventLogger eventLogger;
+    private       DownloadContainer    downloadContainer;
+    private final ProjectExplorerPart  projectExplorer;
 
     @Inject
     public DownloadItemAction(@RestContext String restContext,
@@ -48,7 +48,7 @@ public class DownloadItemAction extends Action {
                               AnalyticsEventLogger eventLogger,
                               Resources resources,
                               DownloadContainer downloadContainer,
-                              NewProjectExplorerPart projectExplorer) {
+                              ProjectExplorerPart projectExplorer) {
         super(locale.downloadItemName(), locale.downloadItemDescription(), null);
         this.eventLogger = eventLogger;
         this.downloadContainer = downloadContainer;

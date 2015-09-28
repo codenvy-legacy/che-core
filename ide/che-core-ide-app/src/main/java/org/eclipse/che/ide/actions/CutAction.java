@@ -22,7 +22,7 @@ import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
 
 import java.util.ArrayList;
@@ -35,17 +35,17 @@ import java.util.List;
  */
 @Singleton
 public class CutAction extends Action {
-    private final AnalyticsEventLogger        eventLogger;
-    private       NewProjectExplorerPresenter projectExplorer;
-    private       AppContext                  appContext;
+    private final AnalyticsEventLogger     eventLogger;
+    private       ProjectExplorerPresenter projectExplorer;
+    private       AppContext               appContext;
 
-    private PasteAction pasteAction;
+    private PasteAction    pasteAction;
     private SelectionAgent agent;
 
     @Inject
     public CutAction(Resources resources,
                      AnalyticsEventLogger eventLogger,
-                     NewProjectExplorerPresenter projectExplorer, CoreLocalizationConstant localization, AppContext appContext,
+                     ProjectExplorerPresenter projectExplorer, CoreLocalizationConstant localization, AppContext appContext,
                      PasteAction pasteAction, SelectionAgent agent) {
         super(localization.cutItemsActionText(), localization.cutItemsActionDescription(), null, resources.cut());
         this.projectExplorer = projectExplorer;

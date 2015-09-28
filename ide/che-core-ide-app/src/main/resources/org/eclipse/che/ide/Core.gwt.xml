@@ -28,6 +28,7 @@
     <inherits name="com.google.gwt.user.Debug"/>
     <inherits name="org.eclipse.che.api.Runner"/>
     <inherits name="org.eclipse.che.api.Analytics"/>
+    <inherits name="com.google.common.base.Base"/>
 
     <source path="" excludes="dto"/>
     <source path="" excludes="server"/>

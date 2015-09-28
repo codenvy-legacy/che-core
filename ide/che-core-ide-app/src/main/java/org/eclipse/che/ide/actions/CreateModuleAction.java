@@ -22,7 +22,7 @@ import org.eclipse.che.ide.api.action.ProjectAction;
 import org.eclipse.che.ide.api.event.ModuleCreatedEvent;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.project.node.FolderReferenceNode;
 import org.eclipse.che.ide.project.shared.NodesResources;
 import org.eclipse.che.ide.projecttype.wizard.presenter.ProjectWizardPresenter;
@@ -34,16 +34,16 @@ import java.util.List;
 @Singleton
 public class CreateModuleAction extends ProjectAction implements ModuleCreatedEvent.ModuleCreatedHandler {
 
-    private final ProjectWizardPresenter      wizard;
-    private final AnalyticsEventLogger        eventLogger;
-    private final NewProjectExplorerPresenter projectExplorer;
-    private       FolderReferenceNode         folderNode;
+    private final ProjectWizardPresenter   wizard;
+    private final AnalyticsEventLogger     eventLogger;
+    private final ProjectExplorerPresenter projectExplorer;
+    private       FolderReferenceNode      folderNode;
 
     @Inject
     public CreateModuleAction(NodesResources resources,
                               ProjectWizardPresenter wizard,
                               AnalyticsEventLogger eventLogger,
-                              NewProjectExplorerPresenter projectExplorer,
+                              ProjectExplorerPresenter projectExplorer,
                               EventBus eventBus) {
         super("Create Module...", "Create module from existing folder", resources.moduleRoot());
         this.wizard = wizard;
@@ -93,7 +93,7 @@ public class CreateModuleAction extends ProjectAction implements ModuleCreatedEv
                 projectExplorer.resetGoIntoMode();
             }
 
-            projectExplorer.getNodeByPath(new HasStorablePath.StorablePath(event.getModule().getPath()))
+            projectExplorer.getNodeByPath(new HasStorablePath.StorablePath(event.getModule().getPath()), true)
                            .then(selectNode());
         }
     }

@@ -17,7 +17,7 @@ import com.google.inject.Singleton;
 
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ToggleAction;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerViewImpl;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerViewImpl;
 import org.eclipse.che.ide.ui.smartTree.TreeNodeStorage.StoreSortInfo;
 import org.eclipse.che.ide.ui.smartTree.sorting.AlphabeticalFilter;
 import org.eclipse.che.ide.part.explorer.project.FoldersOnTopFilter;
@@ -29,12 +29,12 @@ import static org.eclipse.che.ide.ui.smartTree.SortDir.ASC;
  */
 @Singleton
 public class FoldersAlwaysOnTopAction extends ToggleAction {
-    private final NewProjectExplorerViewImpl view;
+    private final ProjectExplorerViewImpl view;
     private static StoreSortInfo DEFAULT      = new StoreSortInfo(new FoldersOnTopFilter(), ASC);
     private static StoreSortInfo ALPHABETICAL = new StoreSortInfo(new AlphabeticalFilter(), ASC);
 
     @Inject
-    public FoldersAlwaysOnTopAction(NewProjectExplorerViewImpl view) {
+    public FoldersAlwaysOnTopAction(ProjectExplorerViewImpl view) {
         super("Folders Always on Top");
         this.view = view;
     }

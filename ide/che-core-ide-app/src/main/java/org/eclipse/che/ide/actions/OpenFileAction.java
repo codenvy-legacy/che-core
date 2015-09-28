@@ -36,7 +36,7 @@ import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.project.node.FileReferenceNode;
 import org.eclipse.che.ide.util.loging.Log;
 
@@ -55,11 +55,11 @@ public class OpenFileAction extends Action implements PromisableAction {
     /** ID of the parameter to specify file path to open. */
     public static String FILE_PARAM_ID = "file";
 
-    private final EventBus                    eventBus;
-    private final AppContext                  appContext;
-    private final CoreLocalizationConstant    localization;
-    private final NewProjectExplorerPresenter projectExplorer;
-    private final NotificationManager         notificationManager;
+    private final EventBus                 eventBus;
+    private final AppContext               appContext;
+    private final CoreLocalizationConstant localization;
+    private final ProjectExplorerPresenter projectExplorer;
+    private final NotificationManager      notificationManager;
 
     private Callback<Void, Throwable> actionCompletedCallBack;
 
@@ -67,7 +67,7 @@ public class OpenFileAction extends Action implements PromisableAction {
     public OpenFileAction(EventBus eventBus,
                           AppContext appContext,
                           CoreLocalizationConstant localization,
-                          NewProjectExplorerPresenter projectExplorer,
+                          ProjectExplorerPresenter projectExplorer,
                           NotificationManager notificationManager) {
         this.eventBus = eventBus;
         this.appContext = appContext;

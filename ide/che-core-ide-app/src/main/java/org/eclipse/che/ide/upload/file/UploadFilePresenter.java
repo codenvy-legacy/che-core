@@ -19,7 +19,7 @@ import org.eclipse.che.ide.api.event.FileContentUpdateEvent;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
-import org.eclipse.che.ide.part.explorer.project.NewProjectExplorerPresenter;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
 import org.eclipse.che.ide.rest.RestContext;
 
@@ -33,12 +33,12 @@ import java.util.List;
  */
 public class UploadFilePresenter implements UploadFileView.ActionDelegate {
 
-    private UploadFileView              view;
-    private String                      restContext;
-    private String                      workspaceId;
-    private EventBus                    eventBus;
-    private NotificationManager         notificationManager;
-    private NewProjectExplorerPresenter projectExplorer;
+    private UploadFileView           view;
+    private String                   restContext;
+    private String                   workspaceId;
+    private EventBus                 eventBus;
+    private NotificationManager      notificationManager;
+    private ProjectExplorerPresenter projectExplorer;
 
     @Inject
     public UploadFilePresenter(UploadFileView view,
@@ -46,7 +46,7 @@ public class UploadFilePresenter implements UploadFileView.ActionDelegate {
                                @Named("workspaceId") String workspaceId,
                                EventBus eventBus,
                                NotificationManager notificationManager,
-                               NewProjectExplorerPresenter projectExplorer) {
+                               ProjectExplorerPresenter projectExplorer) {
 
         this.restContext = restContext;
         this.workspaceId = workspaceId;
