@@ -208,7 +208,6 @@ public class BreakpointManagerImpl implements BreakpointManager, LineChangeActio
 
     @Override
     public void markCurrentBreakpoint(int lineNumber) {
-        unmarkCurrentBreakpoint();
         LOG.fine("Mark current breakpoint on line " + lineNumber);
 
         final VirtualFile activeFile = editorAgent.getActiveEditor().getEditorInput().getFile();
