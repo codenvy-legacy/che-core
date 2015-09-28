@@ -314,7 +314,7 @@ public class ServerDtoTest {
 
     @Test
     public void testDelegate() {
-        assertEquals(DtoFactory.getInstance().createDto(DtoWithDelegate.class).withName("TEST").nameWithPrefix("### "), "### TEST");
+        assertEquals(DtoFactory.getInstance().createDto(DtoWithDelegate.class).withFirstName("TEST").nameWithPrefix("### "), "### TEST");
     }
 
     @Test
