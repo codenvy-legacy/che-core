@@ -13,11 +13,13 @@ package org.eclipse.che.ide.part.explorer.project;
 import com.google.common.base.Strings;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ContextMenuEvent;
 import com.google.gwt.event.dom.client.ContextMenuHandler;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -105,13 +107,13 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
     private final Provider<EditorAgent>    editorAgentProvider;
     private final EventBus                 eventBus;
     private final Tree                     tree;
-    private final FlowPanel                projectHeader;
+    private final DockLayoutPanel          projectHeader;
     private       ToolButton               goIntoBackButton;
     private       ToolButton               scrollFromSourceButton;
 
     private StoreSortInfo foldersOnTopSort = new StoreSortInfo(new FoldersOnTopFilter(), SortDir.ASC);
 
-    private SearchNodeHandler searchNodeHandler;
+    private SearchNodeHandler   searchNodeHandler;
     private HandlerRegistration closeEditorOnNodeRemovedHandler;
 
     @Inject
@@ -134,7 +136,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
 
         setTitle(coreLocalizationConstant.projectExplorerTitleBarText());
 
-        projectHeader = new FlowPanel();
+        projectHeader = new DockLayoutPanel(Style.Unit.PX);
         projectHeader.setStyleName(resources.partStackCss().idePartStackToolbarBottom());
 
         TreeNodeStorage nodeStorage = new TreeNodeStorage(new NodeUniqueKeyProvider() {
@@ -376,16 +378,38 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
 
                 FlowPanel delimiter = new FlowPanel();
                 delimiter.setStyleName(resources.partStackCss().idePartStackToolbarSeparator());
-                projectHeader.add(delimiter);
+                projectHeader.addNorth(delimiter, 1);
 
                 SVGImage projectVisibilityImage = new SVGImage("private".equals(descriptor.getVisibility()) ? resources.privateProject()
                                                                                                             : resources.publicProject());
                 projectVisibilityImage.getElement().setAttribute("class", resources.partStackCss().idePartStackToolbarBottomIcon());
 
-                projectHeader.add(projectVisibilityImage);
+                projectHeader.ensureDebugId("project-visibility-image");
+                projectHeader.addWest(projectVisibilityImage, 34);
+
+                FlowPanel refreshButton = new FlowPanel();
+                refreshButton.add(new SVGImage(resources.refresh()));
+                refreshButton.setStyleName(resources.partStackCss().idePartStackToolbarBottomButton());
+                refreshButton.addStyleName(resources.partStackCss().idePartStackToolbarBottomButtonRight());
+                refreshButton.ensureDebugId("refreshSelectedFolder");
+                projectHeader.addEast(refreshButton, 21);
+
+                refreshButton.addDomHandler(new ClickHandler() {
+                    @Override
+                    public void onClick(ClickEvent event) {
+                        reloadChildren(null, true);
+                    }
+                }, ClickEvent.getType());
+
+                Tooltip.create((elemental.dom.Element)refreshButton.getElement(),
+                               BOTTOM,
+                               MIDDLE,
+                               "Refresh selected folder");
 
                 InlineLabel projectTitle = new InlineLabel(descriptor.getName());
+                projectTitle.setStyleName(resources.partStackCss().idePartStackToolbarProjectTitle());
                 projectHeader.add(projectTitle);
+                projectTitle.getParent().addStyleName(resources.partStackCss().idePartStackToolbarCenterPanelProjectTitle());
 
                 SVGImage collapseAllIcon = new SVGImage(explorerResources.collapse());
                 ToolButton collapseAll = new ToolButton(collapseAllIcon);
@@ -407,26 +431,6 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
                                "Collapse All");
                 collapseAll.ensureDebugId("collapseAllButton");
                 addMenuButton(collapseAll);
-
-                FlowPanel refreshButton = new FlowPanel();
-                refreshButton.add(new SVGImage(resources.refresh()));
-                refreshButton.setStyleName(resources.partStackCss().idePartStackToolbarBottomButton());
-                refreshButton.addStyleName(resources.partStackCss().idePartStackToolbarBottomButtonRight());
-                refreshButton.ensureDebugId("refreshSelectedFolder");
-                projectHeader.add(refreshButton);
-
-                refreshButton.addDomHandler(new ClickHandler() {
-                    @Override
-                    public void onClick(ClickEvent event) {
-                        reloadChildren(null, true);
-                    }
-                }, ClickEvent.getType());
-
-                Tooltip.create((elemental.dom.Element)refreshButton.getElement(),
-                               BOTTOM,
-                               MIDDLE,
-                               "Refresh selected folder");
-
                 return;
             }
         }
