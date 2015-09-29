@@ -68,7 +68,7 @@ public class LsRemoteTest {
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class,
           expectedExceptions = UnauthorizedException.class,
-          expectedExceptionsMessageRegExp = "Not authorized")
+          expectedExceptionsMessageRegExp = "fatal: Authentication failed for 'https://bitbucket.org/exoinvitemain/privater.git/'\n")
     public void testShouldThrowUnauthorizedExceptionIfUserTryGetInfoAboutPrivateRepoAndUserIsUnauthorized(GitConnectionFactory connectionFactory)
             throws GitException, UnauthorizedException, IOException {
 
