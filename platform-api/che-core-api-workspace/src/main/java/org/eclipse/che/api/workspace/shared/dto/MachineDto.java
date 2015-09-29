@@ -11,8 +11,12 @@
 package org.eclipse.che.api.workspace.shared.dto;
 
 import org.eclipse.che.api.core.model.workspace.Machine;
-import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
+import org.eclipse.che.api.core.model.workspace.MachineMetadata;
+import org.eclipse.che.api.core.rest.shared.Links;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
+import org.eclipse.che.dto.shared.DTO;
+import org.eclipse.che.dto.shared.DelegateRule;
+import org.eclipse.che.dto.shared.DelegateTo;
 
 import java.util.List;
 import java.util.Map;
@@ -20,6 +24,7 @@ import java.util.Map;
 /**
  * @author Alexander Garagatyi
  */
+@DTO
 public interface MachineDto extends MachineConfigDto, Machine {
     @Override
     String getId();
@@ -57,6 +62,11 @@ public interface MachineDto extends MachineConfigDto, Machine {
     Map<String, ServerDto> getServers();
 
     MachineDto withServers(Map<String, ServerDto> servers);
+
+    @Override
+    MachineMetadataDto getMetadata();
+
+    MachineDto withMetadata(MachineMetadataDto metadata);
 
     @Override
     MachineDto withMemorySize(int memorySize);

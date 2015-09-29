@@ -15,7 +15,10 @@ import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.machine.shared.Machine;
 import org.eclipse.che.api.machine.shared.MachineStatus;
 import org.eclipse.che.api.machine.shared.dto.recipe.MachineRecipe;
+import org.eclipse.che.api.workspace.shared.dto.MachineMetadataDto;
 import org.eclipse.che.dto.shared.DTO;
+import org.eclipse.che.dto.shared.DelegateRule;
+import org.eclipse.che.dto.shared.DelegateTo;
 
 import java.util.List;
 import java.util.Map;
@@ -58,11 +61,21 @@ public interface MachineDescriptor extends Machine, Hyperlinks {
     /**
      * Implementation specific information about machine
      */
-    Map<String, String> getMetadata();
+    Map<String, String> getProperties();
 
-    void setMetadata(Map<String, String> metadata);
+    void setProperties(Map<String, String> metadata);
 
-    MachineDescriptor withMetadata(Map<String, String> metadata);
+    MachineDescriptor withProperties(Map<String, String> metadata);
+
+    MachineMetadataDto getMetadata();
+
+    void setMetadata(MachineMetadataDto metadataDto);
+
+    MachineDescriptor withMetadata(MachineMetadataDto metadataDto);
+
+    @DelegateTo(client = @DelegateRule(type = ProjectsRootResolver.class, method = "getProjectsRoot"),
+                server = @DelegateRule(type = ProjectsRootResolver.class, method = "getProjectsRoot"))
+    String projectsRoot();
 
     Map<String, ServerDescriptor> getServers();
 
@@ -91,4 +104,10 @@ public interface MachineDescriptor extends Machine, Hyperlinks {
 
     @Override
     MachineDescriptor withLinks(List<Link> links);
+
+    class ProjectsRootResolver {
+        public static String getProjectsRoot(MachineDescriptor machineDescriptor) {
+            return machineDescriptor.getMetadata().getEnvVariables().get("CHE_PROJECTS_ROOT");
+        }
+    }
 }
