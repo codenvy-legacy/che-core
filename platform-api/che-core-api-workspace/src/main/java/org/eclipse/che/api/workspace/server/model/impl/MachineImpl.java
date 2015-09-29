@@ -13,6 +13,7 @@ package org.eclipse.che.api.workspace.server.model.impl;
 import org.eclipse.che.api.core.model.machine.MachineSource;
 import org.eclipse.che.api.core.model.machine.Server;
 import org.eclipse.che.api.core.model.workspace.Machine;
+import org.eclipse.che.api.core.model.workspace.MachineMetadata;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +35,7 @@ public class MachineImpl extends MachineConfigImpl implements Machine {
     private String                  id;
     private Map<String, String>     properties;
     private Map<String, ServerImpl> servers;
+    private MachineMetadataImpl     metadata;
 
     public MachineImpl(boolean isDev,
                        String name,
@@ -44,7 +46,8 @@ public class MachineImpl extends MachineConfigImpl implements Machine {
                        String statusChannel,
                        String id,
                        Map<String, String> properties,
-                       Map<String, ? extends Server> servers) {
+                       Map<String, ? extends Server> servers,
+                       MachineMetadata metadata) {
         super(isDev, name, type, source, memorySize, outputChannel, statusChannel);
         this.id = id;
         this.properties = properties;
@@ -53,6 +56,7 @@ public class MachineImpl extends MachineConfigImpl implements Machine {
                                   .stream()
                                   .collect(toMap(Server::getUrl, ServerImpl::new));
         }
+        this.metadata = new MachineMetadataImpl(metadata);
     }
 
     public MachineImpl(Machine machine) {
@@ -65,7 +69,8 @@ public class MachineImpl extends MachineConfigImpl implements Machine {
              machine.getStatusChannel(),
              machine.getId(),
              machine.getProperties(),
-             machine.getServers());
+             machine.getServers(),
+             machine.getMetadata());
     }
 
     @Override
@@ -90,14 +95,23 @@ public class MachineImpl extends MachineConfigImpl implements Machine {
     }
 
     @Override
+    public MachineMetadataImpl getMetadata() {
+        if (metadata == null) {
+            metadata = new MachineMetadataImpl();
+        }
+        return metadata;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof MachineImpl)) return false;
         if (!super.equals(o)) return false;
         final MachineImpl other = (MachineImpl)o;
         return Objects.equals(id, other.id) &&
-               Objects.equals(properties, other.properties) &&
-               Objects.equals(servers, other.servers);
+               Objects.equals(getProperties(), other.getProperties()) &&
+               Objects.equals(getServers(), other.getServers()) &&
+               Objects.equals(getMetadata(), other.getMetadata());
     }
 
     @Override
@@ -106,6 +120,7 @@ public class MachineImpl extends MachineConfigImpl implements Machine {
         hash = hash * 31 + Objects.hashCode(id);
         hash = hash * 31 + getProperties().hashCode();
         hash = hash * 31 + getServers().hashCode();
+        hash = hash * 31 + getMetadata().hashCode();
         return hash;
     }
 
@@ -126,6 +141,7 @@ public class MachineImpl extends MachineConfigImpl implements Machine {
         private MachineSource                 source;
         private Map<String, String>           properties;
         private Map<String, ? extends Server> servers;
+        private MachineMetadata               metadata;
 
         public MachineImpl build() {
             return new MachineImpl(isDev,
@@ -137,7 +153,8 @@ public class MachineImpl extends MachineConfigImpl implements Machine {
                                    statusChannel,
                                    id,
                                    properties,
-                                   servers);
+                                   servers,
+                                   metadata);
         }
 
         public MachineImplBuilder setDev(boolean isDev) {
@@ -187,6 +204,11 @@ public class MachineImpl extends MachineConfigImpl implements Machine {
 
         public MachineImplBuilder setStatusChannel(String statusChannel) {
             this.statusChannel = statusChannel;
+            return this;
+        }
+
+        public MachineImplBuilder setMetadata(MachineMetadata metadata) {
+            this.metadata = metadata;
             return this;
         }
     }

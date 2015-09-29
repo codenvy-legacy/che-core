@@ -27,6 +27,7 @@ import org.eclipse.che.api.core.model.machine.MachineSource;
 import org.eclipse.che.api.core.model.machine.Server;
 import org.eclipse.che.api.core.model.workspace.Environment;
 import org.eclipse.che.api.core.model.workspace.Machine;
+import org.eclipse.che.api.core.model.workspace.MachineMetadata;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.model.workspace.RuntimeWorkspace;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
@@ -42,6 +43,7 @@ import org.eclipse.che.api.workspace.shared.dto.CommandDto;
 import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
 import org.eclipse.che.api.workspace.shared.dto.MachineConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.MachineDto;
+import org.eclipse.che.api.workspace.shared.dto.MachineMetadataDto;
 import org.eclipse.che.api.workspace.shared.dto.MachineSourceDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.RuntimeWorkspaceDto;
@@ -488,6 +490,7 @@ public class WorkspaceService extends Service {
                                        .withProperties(machine.getProperties())
                                        .withSource(asDto(machine.getSource()))
                                        .withServers(servers)
+                                       .withMetadata(asDto(machine.getMetadata()))
                                        .withLinks(singletonList(machineLink));
     }
 
@@ -539,6 +542,10 @@ public class WorkspaceService extends Service {
                                              .withOutputChannel(config.getOutputChannel())
                                              .withStatusChannel(config.getStatusChannel())
                                              .withSource(asDto(config.getSource()));
+    }
+
+    private MachineMetadataDto asDto(MachineMetadata metadata) {
+        return newDto(MachineMetadataDto.class).withEnvVariables(metadata.getEnvVariables());
     }
 
     private static String getCurrentUserId() {
