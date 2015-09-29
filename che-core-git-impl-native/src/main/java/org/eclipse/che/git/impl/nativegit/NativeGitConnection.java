@@ -396,24 +396,6 @@ public class NativeGitConnection implements GitConnection {
         return pullCommand.getPullResponse();
     }
 
-    private String getRemoteUri(String remoteName) throws GitException {
-        List<Remote> remotes;
-        try {
-            remotes = nativeGit.createRemoteListCommand()
-                    .setRemoteName(remoteName)
-                    .execute();
-        } catch (GitException ignored) {
-            return remoteName;
-        }
-
-        if (remotes.isEmpty()) {
-            throw new GitException("No remote repository specified.  " +
-                    "Please, specify either a URL or a remote name from which new revisions should be fetched in request.");
-        }
-
-        return remotes.get(0).getUrl();
-    }
-
     @Override
     public PushResponse push(PushRequest request) throws GitException, UnauthorizedException {
         ensureExistenceRepoRootInWorkingDirectory();
@@ -556,6 +538,11 @@ public class NativeGitConnection implements GitConnection {
         }
     }
 
+    @Override
+    public void setOutputLineConsumerFactory(LineConsumerFactory gitOutputPublisherFactory) {
+        nativeGit.setOutputLineConsumerFactory(gitOutputPublisherFactory);
+    }
+
     /**
      * Gets current branch name.
      *
@@ -671,8 +658,23 @@ public class NativeGitConnection implements GitConnection {
         return credentialsLoader.getUser(credentialsProvider);
     }
 
-    @Override
-    public void setOutputLineConsumerFactory(LineConsumerFactory gitOutputPublisherFactory) {
-        nativeGit.setOutputLineConsumerFactory(gitOutputPublisherFactory);
+
+    private String getRemoteUri(String remoteName) throws GitException {
+        List<Remote> remotes;
+        try {
+            remotes = nativeGit.createRemoteListCommand()
+                    .setRemoteName(remoteName)
+                    .execute();
+        } catch (GitException ignored) {
+            return remoteName;
+        }
+
+        if (remotes.isEmpty()) {
+            throw new GitException("No remote repository specified.  " +
+                    "Please, specify either a URL or a remote name from which new revisions should be fetched in request.");
+        }
+
+        return remotes.get(0).getUrl();
     }
+
 }
