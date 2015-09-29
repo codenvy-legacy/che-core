@@ -158,18 +158,128 @@ public class LightTheme implements Theme {
     }
 
     @Override
-    public String getButtonTopColor() {
-        return "#D6D6D6";
+    public String getButtonBackground() {
+        return "#5A5A5A";
+    }
+
+    @Override
+    public String getButtonBorderColor() {
+        return "#161819";
+    }
+
+    @Override
+    public String getButtonFontColor() {
+        return "#E4E4E4";
+    }
+
+    @Override
+    public String getButtonHoverBackground() {
+        return "rgba(0,0,0,0.7)";
+    }
+
+    @Override
+    public String getButtonHoverBorderColor() {
+        return "#161819";
+    }
+
+    @Override
+    public String  getButtonHoverFontColor() {
+        return "#FFFFFF";
+    }
+
+    @Override
+    public String getButtonClickedBackground() {
+        return "rgba(0,0,0,0.8)";
+    }
+
+    @Override
+    public String getButtonClickedBorderColor() {
+        return "#161819";
+    }
+
+    @Override
+    public String getButtonClickedFontColor() {
+        return "#FFFFFF";
+    }
+
+    @Override
+    public String getButtonDisabledBackground() {
+        return "#818181";
+    }
+
+    @Override
+    public String getButtonDisabledBorderColor() {
+        return "#A4A4A4";
+    }
+
+    @Override
+    public String getButtonDisabledFontColor() {
+        return "#646464";
+    }
+
+    @Override
+    public String getPrimaryButtonBackground() {
+        return "#4A90E2";
+    }
+
+    @Override
+    public String getPrimaryButtonBorderColor() {
+        return "#161819";
+    }
+
+    @Override
+    public String getPrimaryButtonFontColor() {
+        return "#E4E4E4";
+    }
+
+    @Override
+    public String getPrimaryButtonHoverBackground() {
+        return "#4484D0";
+    }
+
+    @Override
+    public String getPrimaryButtonHoverBorderColor() {
+        return "#161819";
+    }
+
+    @Override
+    public String  getPrimaryButtonHoverFontColor() {
+        return "#FFFFFF";
+    }
+
+    @Override
+    public String getPrimaryButtonClickedBackground() {
+        return "#3b73b4";
+    }
+
+    @Override
+    public String getPrimaryButtonClickedBorderColor() {
+        return "#14354C";
+    }
+
+    @Override
+    public String getPrimaryButtonClickedFontColor() {
+        return "#FFFFFF";
+    }
+
+    @Override
+    public String getPrimaryButtonDisabledBackground() {
+        return "#80b1ea";
+    }
+
+    @Override
+    public String getPrimaryButtonDisabledBorderColor() {
+        return "#A4A4A4";
+    }
+
+    @Override
+    public String getPrimaryButtonDisabledFontColor() {
+        return "#E4E4E4";
     }
 
     @Override
     public String getSocialButtonColor() {
         return "#ffffff";
-    }
-
-    @Override
-    public String getButtonColor() {
-        return "#D6D6D6";
     }
 
     @Override
@@ -304,17 +414,47 @@ public class LightTheme implements Theme {
 
     @Override
     public String getWindowContentBackground() {
-        return getDialogContentBackground();
+        return "#ECECEC";
+    }
+
+    @Override
+    public String getWindowContentFontColor() {
+        return "#333333";
+    }
+
+    @Override
+    public String getWindowShadowColor() {
+        return "rgba(0, 0, 0, 0.50)";
     }
 
     @Override
     public String getWindowHeaderBackground() {
-        return "#bdbdbd";
+        return "#F5F5F5";
+    }
+
+    @Override
+    public String getWindowHeaderBorderColor() {
+        return "#1A68AF";
+    }
+
+    @Override
+    public String getWindowFooterBackground() {
+        return "#ECECEC";
+    }
+
+    @Override
+    public String getWindowFooterBorderColor() {
+        return "#A4A4A4";
     }
 
     @Override
     public String getWindowSeparatorColor() {
-        return "#818181";
+        return "#A4A4A4";
+    }
+
+    @Override
+    public String getWindowTitleFontColor() {
+        return "#555555";
     }
 
     @Override
@@ -413,11 +553,6 @@ public class LightTheme implements Theme {
     }
 
     @Override
-    public String getButtonTextShadow() {
-        return "rgba(188, 195, 199, 0.5)";
-    }
-
-    @Override
     public String getTreeTextFileColor() {
         return "#7b7b7b";
     }
@@ -435,16 +570,6 @@ public class LightTheme implements Theme {
     @Override
     public String getTreeIconFileColor() {
         return "#606060";
-    }
-
-    @Override
-    public String getButtonHoverTextColor() {
-        return "#000000";
-    }
-
-    @Override
-    public String getButtonHoverColor() {
-        return "#ffffff";
     }
 
     @Override
@@ -566,7 +691,6 @@ public class LightTheme implements Theme {
     public String getEditorInfoBackgroundColor() {
         return "#ddd";
     }
-
 
     @Override
     public String getEditorInfoBorderColor() {

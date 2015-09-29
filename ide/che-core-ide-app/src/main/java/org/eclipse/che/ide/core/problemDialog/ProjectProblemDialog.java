@@ -43,7 +43,7 @@ public class ProjectProblemDialog extends Window {
         setTitle(title);
         Widget widget = uiBinder.createAndBindUi(this);
         setWidget(widget);
-        message.addStyleName(resources.centerPanelCss().label());
+        message.addStyleName(resources.windowCss().label());
         message.getElement().setInnerHTML(question);
 
         Button configureButton = createButton("Configure...", "problem-dialog-configure", new ClickHandler() {
@@ -53,16 +53,15 @@ public class ProjectProblemDialog extends Window {
                 onClose();
             }
         });
-        Button keepBlankButton = createButton("Keep Blank", "problem-dialog-keepBlank", new ClickHandler() {
+        Button keepBlankButton = createPrimaryButton("Keep Blank", "problem-dialog-keepBlank", new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
                 handler.onKeepBlank();
                 onClose();
             }
         });
-        configureButton.addStyleName(resources.centerPanelCss().blueButton());
-        getFooter().add(configureButton);
-        getFooter().add(keepBlankButton);
+        addButtonToFooter(configureButton);
+        addButtonToFooter(keepBlankButton);
     }
 
     /** {@inheritDoc} */

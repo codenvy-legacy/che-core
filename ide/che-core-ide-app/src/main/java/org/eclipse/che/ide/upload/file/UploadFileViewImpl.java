@@ -67,7 +67,7 @@ public class UploadFileViewImpl extends Window implements UploadFileView {
                 delegate.onCancelClicked();
             }
         });
-        getFooter().add(btnCancel);
+        addButtonToFooter(btnCancel);
 
         btnUpload = createButton(locale.uploadButton(), "file-uploadFile-upload", new ClickHandler() {
 
@@ -76,7 +76,7 @@ public class UploadFileViewImpl extends Window implements UploadFileView {
                 delegate.onUploadClicked();
             }
         });
-        getFooter().add(btnUpload);
+        addButtonToFooter(btnUpload);
     }
 
     /** Bind handlers. */

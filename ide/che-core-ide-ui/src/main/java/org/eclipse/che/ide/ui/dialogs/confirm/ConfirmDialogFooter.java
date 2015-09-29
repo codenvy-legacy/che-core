@@ -25,9 +25,6 @@ import org.eclipse.che.ide.ui.window.Window;
 
 import javax.validation.constraints.NotNull;
 
-import static org.eclipse.che.ide.ui.dialogs.confirm.ConfirmDialogView.ActionDelegate;
-import static org.eclipse.che.ide.ui.window.Window.Resources;
-
 /**
  * The footer show on confirmation dialogs.
  *
@@ -54,9 +51,9 @@ public class ConfirmDialogFooter extends Composite {
         this.messages = messages;
         initWidget(uiBinder.createAndBindUi(this));
 
-        okButton.addStyleName(resources.centerPanelCss().blueButton());
+        okButton.addStyleName(resources.windowCss().primaryButton());
         okButton.getElement().setId("ask-dialog-ok");
-        cancelButton.addStyleName(resources.centerPanelCss().button());
+        cancelButton.addStyleName(resources.windowCss().button());
         cancelButton.getElement().setId("ask-dialog-cancel");
     }
 

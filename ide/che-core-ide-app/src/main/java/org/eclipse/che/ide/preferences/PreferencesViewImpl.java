@@ -122,7 +122,7 @@ public class PreferencesViewImpl extends Window implements PreferencesView {
         /*
             Save
          */
-        btnSave = createButton(locale.save(), "window-preferences-storeChanges", new ClickHandler() {
+        btnSave = createPrimaryButton(locale.save(), "window-preferences-storeChanges", new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
                 Log.debug(this.getClass(), "< SAVE");
@@ -130,24 +130,19 @@ public class PreferencesViewImpl extends Window implements PreferencesView {
             }
         });
 
-        btnSave.addStyleName(resources.wizardCss().button());
-        btnSave.addStyleName(resources.wizardCss().rightButton());
-        btnSave.addStyleName(resources.wizardCss().buttonPrimary());
-        getFooter().add(btnSave);
+        addButtonToFooter(btnSave);
 
         /*
             Refresh
          */
-        btnRefresh = createButton(locale.refresh(), "window-preferences-refresh", new ClickHandler() {
+        btnRefresh = createSuccessButton(locale.refresh(), "window-preferences-refresh", new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
                 Log.debug(this.getClass(), "< REFRESH");
                 delegate.onRefreshClicked();
             }
         });
-        btnRefresh.addStyleName(resources.wizardCss().button());
-        btnRefresh.addStyleName(resources.wizardCss().buttonSuccess());
-        getFooter().add(btnRefresh);
+        addButtonToFooter(btnRefresh);
 
         /*
             Close
@@ -159,8 +154,7 @@ public class PreferencesViewImpl extends Window implements PreferencesView {
                 delegate.onCloseClicked();
             }
         });
-        btnClose.addStyleName(resources.wizardCss().button());
-        getFooter().add(btnClose);
+        addButtonToFooter(btnClose);
     }
 
     /** {@inheritDoc} */

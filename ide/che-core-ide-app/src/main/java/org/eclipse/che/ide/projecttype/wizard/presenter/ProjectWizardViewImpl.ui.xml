@@ -12,9 +12,6 @@
 -->
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
              xmlns:g='urn:import:com.google.gwt.user.client.ui'>
-    <ui:with field='res' type='org.eclipse.che.ide.Resources'/>
-    <ui:with field='locale' type='org.eclipse.che.ide.CoreLocalizationConstant'/>
-    <ui:with field='resources' type='org.eclipse.che.ide.Resources'/>
     <ui:style>
         @eval bgTopPanel org.eclipse.che.ide.api.theme.Style.getConsolePanelColor();
 
@@ -34,26 +31,11 @@
             position: absolute !important;
         }
 
-        .centerPanel {
-            position: relative;
-            box-shadow: 0 -1px 0 0 tabBorder;
-        }
-
         .labelPanel > div {
             margin-top: 4px;
         }
     </ui:style>
-    <g:FlowPanel width="774px" height="510px" addStyleNames="{style.rootPanel}">
-        <g:FlowPanel width="774px" height="470px" addStyleNames="{style.centerPanel}">
-            <g:SimplePanel ui:field="wizardPanel" addStyleNames="{style.tab}"/>
-        </g:FlowPanel>
-        <g:FlowPanel addStyleNames="{resources.wizardCss.buttonPanel}">
-            <g:Button ui:field="saveButton" addStyleNames="{resources.wizardCss.blueButton}" tabIndex="5"
-                      debugId="projectWizard-saveButton"/>
-            <g:Button ui:field="nextStepButton" text="Next" addStyleNames="{resources.wizardCss.button}" tabIndex="6"
-                      debugId="projectWizard-nextStepButton"/>
-            <g:Button ui:field="previousStepButton" text="Previous" addStyleNames="{resources.wizardCss.button}" tabIndex="7"
-                      debugId="projectWizard-previousStepButton"/>
-        </g:FlowPanel>
+    <g:FlowPanel width="774px" height="470px" addStyleNames="{style.rootPanel}">
+        <g:SimplePanel ui:field="wizardPanel" addStyleNames="{style.tab}"/>
     </g:FlowPanel>
 </ui:UiBinder>

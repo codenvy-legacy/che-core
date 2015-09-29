@@ -16,6 +16,7 @@ import org.eclipse.che.ide.api.mvp.Presenter;
 import org.eclipse.che.ide.ui.window.Window;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
@@ -36,46 +37,53 @@ public class ImportProjectWizardViewImpl extends Window implements ImportProject
 
     @UiField
     SimplePanel wizardPanel;
-    @UiField
     Button      nextStepButton;
-    @UiField
     Button      previousStepButton;
-    @UiField
     Button      importButton;
+
     @UiField(provided = true)
-    final org.eclipse.che.ide.Resources resources;
-    @UiField(provided = true)
+    final org.eclipse.che.ide.ui.window.Window.Resources resources;
+
     final CoreLocalizationConstant      locale;
 
     private ActionDelegate delegate;
 
     @Inject
-    public ImportProjectWizardViewImpl(org.eclipse.che.ide.Resources resources, CoreLocalizationConstant locale) {
-        super(false);
+    public ImportProjectWizardViewImpl(org.eclipse.che.ide.Resources ideResources, org.eclipse.che.ide.ui.window.Window.Resources resources,
+                                       CoreLocalizationConstant locale) {
         this.ensureDebugId("importProjectWizard-window");
         this.resources = resources;
         this.locale = locale;
-        resources.wizardCss().ensureInjected();
         setTitle(locale.importProjectViewTitle());
         setWidget(uiBinder.createAndBindUi(this));
-        importButton.addStyleName(resources.Css().buttonLoader());
-        nextStepButton.sinkEvents(Event.ONCLICK);
-        previousStepButton.sinkEvents(Event.ONCLICK);
-    }
 
-    @UiHandler("importButton")
-    void saveClick(ClickEvent event) {
-        delegate.onImportClicked();
-    }
+        importButton = createPrimaryButton(locale.importProjectButton(), "importProjectWizard-importButton", new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                delegate.onImportClicked();
+            }
+        });
+        importButton.addStyleName(ideResources.Css().buttonLoader());
 
-    @UiHandler("nextStepButton")
-    void nextStepClick(ClickEvent event) {
-        delegate.onNextClicked();
-    }
+        addButtonToFooter(importButton);
 
-    @UiHandler("previousStepButton")
-    void previousStepClick(ClickEvent event) {
-        delegate.onBackClicked();
+        nextStepButton = createButton(locale.next(), "importProjectWizard-nextStepButton", new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                delegate.onNextClicked();
+            }
+        });
+
+        addButtonToFooter(nextStepButton);
+
+        previousStepButton = createButton(locale.back(), "importProjectWizard-previousStepButton", new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                delegate.onBackClicked();
+            }
+        });
+
+        addButtonToFooter(previousStepButton);
     }
 
     @Override

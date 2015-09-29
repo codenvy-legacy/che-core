@@ -71,7 +71,7 @@ public class UploadFolderFromZipViewImpl extends Window implements UploadFolderF
                 delegate.onCancelClicked();
             }
         });
-        getFooter().add(btnCancel);
+        addButtonToFooter(btnCancel);
 
         btnUpload = createButton(locale.uploadButton(), "file-uploadFolder-upload", new ClickHandler() {
 
@@ -81,7 +81,7 @@ public class UploadFolderFromZipViewImpl extends Window implements UploadFolderF
             }
         });
         btnUpload.addStyleName(resources.Css().buttonLoader());
-        getFooter().add(btnUpload);
+        addButtonToFooter(btnUpload);
     }
 
     /** Bind handlers. */
