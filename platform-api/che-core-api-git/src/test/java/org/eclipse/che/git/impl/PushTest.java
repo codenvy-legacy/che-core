@@ -102,4 +102,17 @@ public class PushTest {
         int branchesAfter = remoteConnection.branchList(newDto(BranchListRequest.class)).size();
         assertEquals(branchesAfter - 1, branchesBefore);
     }
+
+
+    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = GitConnectionFactoryProvider.class,
+            expectedExceptions = GitException.class, expectedExceptionsMessageRegExp = "No remote repository specified.  " +
+            "Please, specify either a URL or a remote name from which new revisions should be fetched in request.")
+    public void testWhenThereAreNoAnyRemotes(GitConnectionFactory connectionFactory) throws Exception {
+        //given
+        GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
+
+        //when
+        PushRequest request = newDto(PushRequest.class);
+        connection.push(request);
+    }
 }
