@@ -568,4 +568,10 @@ public interface CoreLocalizationConstant extends Messages {
 
     @Key("create.ws.name.is.not.correct")
     String createWsNameIsNotCorrect();
+
+    @Key("messages.workspaceStarted")
+    String workspaceStarted(String workspace);
+
+    @Key("messages.workspaceStartingFailed")
+    String workspaceStartingFailed();
 }

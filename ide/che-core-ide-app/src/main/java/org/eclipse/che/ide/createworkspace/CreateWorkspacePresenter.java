@@ -196,7 +196,7 @@ public class CreateWorkspacePresenter implements CreateWorkSpaceView.ActionDeleg
     }
 
     private WorkspaceConfigDto getWorkspaceConfig() {
-        String wsName = view.getWorkspaceName();
+        String defaultEnvName = view.getDefaultEnvName();
 
         List<MachineConfigDto> machineConfigs = new ArrayList<>();
         machineConfigs.add(dtoFactory.createDto(MachineConfigDto.class)
@@ -209,8 +209,8 @@ public class CreateWorkspacePresenter implements CreateWorkSpaceView.ActionDeleg
                                      .withMemorySize(2048));
 
         Map<String, EnvironmentDto> environments = new HashMap<>();
-        environments.put(wsName, dtoFactory.createDto(EnvironmentDto.class)
-                                           .withName(wsName)
+        environments.put(defaultEnvName, dtoFactory.createDto(EnvironmentDto.class)
+                                           .withName(defaultEnvName)
                                            .withMachineConfigs(machineConfigs));
 
         List<CommandDto> commands = new ArrayList<>();
@@ -222,8 +222,8 @@ public class CreateWorkspacePresenter implements CreateWorkSpaceView.ActionDeleg
         attrs.put("fake_attr", "attr_value");
 
         return dtoFactory.createDto(WorkspaceConfigDto.class)
-                         .withName("dev-cfg")
-                         .withDefaultEnvName(wsName)
+                         .withName("default")
+                         .withDefaultEnvName(defaultEnvName)
                          .withEnvironments(environments)
                          .withCommands(commands)
                          .withAttributes(attrs);

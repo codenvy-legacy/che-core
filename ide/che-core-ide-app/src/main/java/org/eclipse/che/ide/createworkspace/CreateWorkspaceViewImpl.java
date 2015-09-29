@@ -125,7 +125,7 @@ class CreateWorkspaceViewImpl extends Window implements CreateWorkSpaceView, Tag
 
     /** {@inheritDoc} */
     @Override
-    public void setWorkspaceName(String name) {
+    public void setDefaultEnvName(String name) {
         wsName.setText(name);
     }
 
@@ -151,7 +151,7 @@ class CreateWorkspaceViewImpl extends Window implements CreateWorkSpaceView, Tag
 
     /** {@inheritDoc} */
     @Override
-    public String getWorkspaceName() {
+    public String getDefaultEnvName() {
         return wsName.getText();
     }
 

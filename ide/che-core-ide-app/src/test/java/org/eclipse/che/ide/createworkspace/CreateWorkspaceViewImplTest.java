@@ -97,7 +97,7 @@ public class CreateWorkspaceViewImplTest {
 
     @Test
     public void workspaceNameShouldBeSet() {
-        view.setWorkspaceName("test");
+        view.setDefaultEnvName("test");
 
         verify(view.wsName).setText("test");
     }
@@ -120,7 +120,7 @@ public class CreateWorkspaceViewImplTest {
 
     @Test
     public void workspaceNameShouldBeReturned() {
-        view.getWorkspaceName();
+        view.getDefaultEnvName();
 
         verify(view.wsName).getText();
     }
