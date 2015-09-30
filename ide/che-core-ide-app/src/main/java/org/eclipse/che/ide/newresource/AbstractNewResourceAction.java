@@ -68,7 +68,7 @@ public abstract class AbstractNewResourceAction extends AbstractPerspectiveActio
     protected       DtoUnmarshallerFactory   dtoUnmarshallerFactory;
     protected       DialogFactory            dialogFactory;
     protected       CoreLocalizationConstant coreLocalizationConstant;
-    private         ProjectExplorerPresenter projectExplorer;
+    protected       ProjectExplorerPresenter projectExplorer;
 
     /**
      * Creates new action.
