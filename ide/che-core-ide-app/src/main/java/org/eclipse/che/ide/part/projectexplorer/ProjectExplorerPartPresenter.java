@@ -18,6 +18,8 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateEvent;
+import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateHandler;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 
@@ -202,6 +204,17 @@ public class ProjectExplorerPartPresenter extends BasePresenter implements Proje
     /** Adds behavior to view's components. */
     protected void bind() {
         view.setDelegate(this);
+
+        eventBus.addHandler(ExtServerStateEvent.TYPE, new ExtServerStateHandler() {
+            @Override
+            public void onExtServerStarted(ExtServerStateEvent event) {
+                onOpen();
+            }
+
+            @Override
+            public void onExtServerStopped(ExtServerStateEvent event) {
+            }
+        });
 
         eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
             @Override

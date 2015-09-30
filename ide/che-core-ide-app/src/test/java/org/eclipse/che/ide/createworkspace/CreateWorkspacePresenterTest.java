@@ -264,12 +264,12 @@ public class CreateWorkspacePresenterTest {
 
     @Test
     public void workspaceConfigShouldBeGot() {
-        when(view.getWorkspaceName()).thenReturn("name");
+        when(view.getDefaultEnvName()).thenReturn("name");
         when(view.getRecipeUrl()).thenReturn("test");
 
         clickOnCreateButton();
 
-        verify(view).getWorkspaceName();
+        verify(view).getDefaultEnvName();
         verify(dtoFactory).createDto(MachineConfigDto.class);
         verify(machineConfigDto).withName("dev-machine");
         verify(machineConfigDto).withType("docker");

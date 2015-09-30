@@ -8,32 +8,23 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.machine.server.spi;
+package org.eclipse.che.api.core.model.workspace;
 
 import java.util.Map;
 
 /**
- * Describe implementation specific properties of machine instance
+ * Describe metadata of machine.
  *
- * @author andrew00x
  * @author Alexander Garagatyi
  */
-public interface InstanceMetadata {
-
-    // TODO add more generic info
-
+public interface MachineMetadata {
     /**
-     * Returns instance specific properties
+     * Returns environment variables of machine.
      */
-    Map<String, String> getProperties();
-
     Map<String, String> getEnvVariables();
 
     /**
      * It is supposed that this methods returns the same as {@code getEnvVariables().get("CHE_PROJECTS_ROOT")}.
      */
-    String getProjectsRoot();
-
-    /** Serializes this {@code InstanceMetadata} to JSON format. */
-    String toJson();
+    String projectsRoot();
 }

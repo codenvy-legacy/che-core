@@ -37,7 +37,7 @@ interface CreateWorkSpaceView extends View<CreateWorkSpaceView.ActionDelegate> {
      * @param name
      *         name which will be set
      */
-    void setWorkspaceName(String name);
+    void setDefaultEnvName(String name);
 
     /** Returns special recipe url to get docker image. */
     String getRecipeUrl();
@@ -46,7 +46,7 @@ interface CreateWorkSpaceView extends View<CreateWorkSpaceView.ActionDelegate> {
     List<String> getTags();
 
     /** Returns name of workspace from special place on view. */
-    String getWorkspaceName();
+    String getDefaultEnvName();
 
     /**
      * Sets list of recipes to special place on view.

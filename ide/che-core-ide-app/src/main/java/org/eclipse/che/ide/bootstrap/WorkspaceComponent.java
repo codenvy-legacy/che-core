@@ -12,10 +12,12 @@
 package org.eclipse.che.ide.bootstrap;
 
 import com.google.gwt.core.client.Callback;
+import com.google.gwt.user.client.Window;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 import org.eclipse.che.api.machine.gwt.client.OutputMessageUnmarshaller;
 import org.eclipse.che.api.machine.gwt.client.events.DevMachineStateEvent;
 import org.eclipse.che.api.machine.shared.dto.event.MachineStatusEvent;
@@ -23,9 +25,13 @@ import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.PromiseError;
 import org.eclipse.che.api.workspace.gwt.client.WorkspaceServiceClient;
+import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
+import org.eclipse.che.api.workspace.shared.dto.MachineConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
+import org.eclipse.che.ide.api.notification.Notification;
+import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.createworkspace.CreateWorkspacePresenter;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
@@ -41,6 +47,10 @@ import org.eclipse.che.ide.websocket.rest.Unmarshallable;
 
 import java.util.List;
 
+import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.STARTING;
+import static org.eclipse.che.ide.api.notification.Notification.Status.FINISHED;
+import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
+
 /**
  * @author Evgen Vidolob
  */
@@ -55,6 +65,8 @@ public class WorkspaceComponent implements Component {
     private final EventBus                 eventBus;
     private final LoaderPresenter          loader;
     private final AppContext               appContext;
+    private final NotificationManager      notificationManager;
+    private       Notification             notification;//TODO:
 
     private OperationInfo startMachineOperation;
 
@@ -66,7 +78,8 @@ public class WorkspaceComponent implements Component {
                               MessageBus messageBus,
                               EventBus eventBus,
                               LoaderPresenter loader,
-                              AppContext appContext) {
+                              AppContext appContext,
+                              NotificationManager notificationManager) {
         this.workspaceServiceClient = workspaceServiceClient;
         this.createWorkspacePresenter = createWorkspacePresenter;
         this.locale = locale;
@@ -75,6 +88,8 @@ public class WorkspaceComponent implements Component {
         this.eventBus = eventBus;
         this.loader = loader;
         this.appContext = appContext;
+        this.notificationManager = notificationManager;
+
     }
 
     @Override
@@ -83,12 +98,29 @@ public class WorkspaceComponent implements Component {
 
         workspaceServiceClient.getWorkspaces(0, 1).then(new Operation<List<UsersWorkspaceDto>>() {
             @Override
-            public void apply(List<UsersWorkspaceDto> arg) throws OperationException {
-                if (!arg.isEmpty()) {
+            public void apply(List<UsersWorkspaceDto> workspaces) throws OperationException {
+                if (!workspaces.isEmpty()) {
                     operationInfo.setStatus(Status.FINISHED);
-                    Config.setCurrentWorkspace(arg.get(0));
-                    appContext.setWorkspace(arg.get(0));
+                    final UsersWorkspaceDto workspace = workspaces.get(0);//For now will work only in SDK bundle in case we have only one WS
+                    Config.setCurrentWorkspace(workspace);
+                    appContext.setWorkspace(workspace);
                     callback.onSuccess(WorkspaceComponent.this);
+
+                    if (!WorkspaceStatus.RUNNING.equals(workspace.getStatus())) {
+                        notification =
+                                new Notification(locale.startingOperation("workspace"), Notification.Type.INFO, Notification.Status.PROGRESS);
+                        notification.setImportant(true);
+                        notificationManager.showNotification(notification);
+                        final String defaultEnvName = workspace.getDefaultEnvName();
+                        final EnvironmentDto environment = workspace.getEnvironments().get(defaultEnvName);
+                        for (MachineConfigDto machineConfig : environment.getMachineConfigs()) {
+                            if (machineConfig.isDev()) {
+                                subscribeToOutput(machineConfig.getOutputChannel());
+                                subscribeToMachineStatus(machineConfig.getStatusChannel());
+                            }
+                        }
+                        startWorkspace(workspace.getId(), defaultEnvName, callback);
+                    }
                 } else {
                     createWorkspacePresenter.show(operationInfo, callback);
                 }
@@ -113,11 +145,22 @@ public class WorkspaceComponent implements Component {
                 Config.setCurrentWorkspace(arg);
                 appContext.setWorkspace(arg);
                 callback.onSuccess(WorkspaceComponent.this);
+                if (notification != null) {
+                    notification.setStatus(FINISHED);
+                    notification.setImportant(false);
+                    notification.setMessage(locale.workspaceStarted(arg.getName()));
+                }
             }
         }).catchError(new Operation<PromiseError>() {
             @Override
             public void apply(PromiseError arg) throws OperationException {
                 startWsOperation.setStatus(Status.ERROR);
+                if (notification != null) {
+                    notification.setStatus(FINISHED);
+                    notification.setType(ERROR);
+                    notification.setImportant(false);
+                    notification.setMessage(locale.workspaceStartingFailed());
+                }
                 callback.onFailure(new Exception(arg.getCause()));
             }
         });

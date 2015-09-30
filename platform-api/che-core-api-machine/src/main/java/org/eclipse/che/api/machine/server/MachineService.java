@@ -38,6 +38,7 @@ import org.eclipse.che.api.machine.shared.dto.ServerDescriptor;
 import org.eclipse.che.api.machine.shared.dto.SnapshotDescriptor;
 import org.eclipse.che.api.machine.shared.dto.SnapshotMachineCreationMetadata;
 import org.eclipse.che.api.machine.shared.dto.recipe.MachineRecipe;
+import org.eclipse.che.api.workspace.shared.dto.MachineMetadataDto;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.dto.server.DtoFactory;
 
@@ -511,7 +512,8 @@ public class MachineService {
                                             .withRef(serverEntry.getValue().getRef())
                                             .withUrl(serverEntry.getValue().getUrl()));
         }
-        machineDescriptor.withMetadata(machine.getMetadata().getProperties())
+        machineDescriptor.withProperties(machine.getMetadata().getProperties())
+                         .withMetadata(newDto(MachineMetadataDto.class).withEnvVariables(machine.getMetadata().getEnvVariables()))
                          .withServers(serverDescriptors);
         machineDescriptor.setLinks(null); // TODO
 

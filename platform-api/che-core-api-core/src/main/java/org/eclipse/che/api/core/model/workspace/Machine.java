@@ -33,6 +33,11 @@ public interface Machine extends MachineConfig {
     Map<String, String> getProperties();
 
     /**
+     * Returns machine specific metadata
+     */
+    MachineMetadata getMetadata();
+
+    /**
      * Returns mapping of exposed ports to {@link Server}
      */
     Map<String, ? extends Server> getServers();
