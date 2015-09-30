@@ -24,8 +24,8 @@ import org.eclipse.che.api.project.shared.dto.NewProject;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
+import org.eclipse.che.ide.api.event.ModuleCreatedEvent;
 import org.eclipse.che.ide.api.event.OpenProjectEvent;
-import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode;
 import org.eclipse.che.ide.api.wizard.AbstractWizard;
 import org.eclipse.che.ide.dto.DtoFactory;
@@ -176,7 +176,7 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
                 parentPath, modulePath, project, new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
                     @Override
                     protected void onSuccess(ProjectDescriptor result) {
-                        eventBus.fireEvent(new RefreshProjectTreeEvent());
+                        eventBus.fireEvent(new ModuleCreatedEvent(result));
                         callback.onCompleted();
                     }
 

@@ -250,9 +250,14 @@ public class BootstrapController {
     private ProjectActionHandler getStartupActionHandler() {
         return new ProjectActionHandler() {
             //process action only after opening project
+
+            @Override
+            public void onProjectReady(ProjectActionEvent event) {
+                processStartupAction();
+            }
+
             @Override
             public void onProjectOpened(ProjectActionEvent event) {
-                processStartupAction();
             }
 
             @Override
@@ -281,9 +286,9 @@ public class BootstrapController {
 
         final Presentation presentation = presentationFactory.getPresentation(action);
 
-        PerspectiveManager manager = managerProvider.get();
+        final PerspectiveManager manager = managerProvider.get();
 
-        ActionEvent e = new ActionEvent("", presentation, actionManager, manager, parameters);
+        final ActionEvent e = new ActionEvent("", presentation, actionManager, manager, parameters);
         action.update(e);
 
         if (presentation.isEnabled() && presentation.isVisible()) {

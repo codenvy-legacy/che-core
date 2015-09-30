@@ -108,38 +108,14 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("action.paste.description")
     String pasteItemsActionDescription();
 
-    @Key("deleteNodeDialogTitle")
-    String deleteNodeDialogTitle();
+    @Key("deleteDialogTitle")
+    String deleteDialogTitle();
 
-    @Key("deleteFileDialogTitle")
-    String deleteFileDialogTitle();
+    @Key("deleteAllFilesAndSubdirectories")
+    String deleteAllFilesAndSubdirectories(String name);
 
-    @Key("deleteFolderDialogTitle")
-    String deleteFolderDialogTitle();
-
-    @Key("deleteProjectDialogTitle")
-    String deleteProjectDialogTitle();
-
-    @Key("deleteMultipleDialogTitle")
-    String deleteMultipleDialogTitle();
-
-    @Key("deleteNodeDialogQuestion")
-    String deleteNodeDialogQuestion(String name);
-
-    @Key("deleteFileDialogQuestion")
-    String deleteFileDialogQuestion(String name);
-
-    @Key("deleteFolderDialogQuestion")
-    String deleteFolderDialogQuestion(String name);
-
-    @Key("deleteProjectDialogQuestion")
-    String deleteProjectDialogQuestion(String name);
-
-    @Key("deleteModuleDialogQuestion")
-    String deleteModuleDialogQuestion(String name);
-
-    @Key("deleteMultipleDialogMessage")
-    String deleteMultipleDialogMessage();
+    @Key("deleteFilesAndSubdirectoriesInTheSelectedDirectory")
+    String deleteFilesAndSubdirectoriesInTheSelectedDirectory();
 
     @Key("stopProcessesBeforeDeletingProject")
     String stopProcessesBeforeDeletingProject();

@@ -71,4 +71,10 @@ public interface NewProject extends ProjectUpdate {
     NewProject withVisibility(String visibility);
 
     NewProject withRecipe(String recipe);
+
+    String getContentRoot();
+
+    void setContentRoot(String contentRoot);
+
+    NewProject withContentRoot(String contentRoot);
 }

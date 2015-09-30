@@ -34,9 +34,6 @@ import org.eclipse.che.ide.api.event.ConfigureProjectHandler;
 import org.eclipse.che.ide.api.event.OpenProjectEvent;
 import org.eclipse.che.ide.api.event.OpenProjectHandler;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
-import org.eclipse.che.ide.api.event.ProjectDescriptorChangedEvent;
-import org.eclipse.che.ide.api.event.ProjectDescriptorChangedHandler;
-import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.core.problemDialog.ProjectProblemDialog;
 import org.eclipse.che.ide.dto.DtoFactory;
@@ -65,8 +62,7 @@ import org.eclipse.che.commons.annotation.Nullable;
  * @author Artem Zatsarynnyy
  */
 @Singleton
-public class ProjectStateHandler implements Component, OpenProjectHandler, CloseCurrentProjectHandler, ProjectDescriptorChangedHandler,
-                                            ConfigureProjectHandler {
+public class ProjectStateHandler implements Component, OpenProjectHandler, CloseCurrentProjectHandler, ConfigureProjectHandler {
     private final EventBus                 eventBus;
     private final AppContext               appContext;
     private final DtoFactory               dtoFactory;
@@ -102,7 +98,6 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
     public void start(Callback<Component, Exception> callback) {
         eventBus.addHandler(OpenProjectEvent.TYPE, this);
         eventBus.addHandler(CloseCurrentProjectEvent.TYPE, this);
-        eventBus.addHandler(ProjectDescriptorChangedEvent.TYPE, this);
         eventBus.addHandler(ConfigureProjectEvent.TYPE, this);
         callback.onSuccess(this);
     }
@@ -115,15 +110,6 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
     @Override
     public void onCloseCurrentProject(CloseCurrentProjectEvent event) {
         closeCurrentProject(null, false);
-    }
-
-    @Override
-    public void onProjectDescriptorChanged(ProjectDescriptorChangedEvent event) {
-        final String path = event.getProjectDescriptor().getPath();
-        final CurrentProject currentProject = appContext.getCurrentProject();
-        if (currentProject != null && currentProject.getProjectDescription().getPath().equals(path)) {
-            currentProject.setProjectDescription(event.getProjectDescriptor());
-        }
     }
 
     @Override
@@ -162,7 +148,6 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
                             }
                         }, false);
                     } else {
-                        eventBus.fireEvent(new RefreshProjectTreeEvent());
                         openProblemProject(project);
                     }
                 } else {
@@ -211,7 +196,7 @@ public class ProjectStateHandler implements Component, OpenProjectHandler, Close
         rewriteBrowserHistory(project.getName());
 
         // notify all listeners about opening project
-        eventBus.fireEvent(ProjectActionEvent.createProjectOpenedEvent(project));
+        eventBus.fireEvent(ProjectActionEvent.createBeforeOpenProjectEvent(project));
     }
 
     private void openProblemProject(final ProjectDescriptor project) {

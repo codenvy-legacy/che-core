@@ -27,7 +27,6 @@ public class StyleInjector {
         resources.coreCss().ensureInjected();
         resources.treeCss().ensureInjected();
         resources.defaultSimpleListCss().ensureInjected();
-        resources.workspaceNavigationFileTreeNodeRendererCss().ensureInjected();
         resources.partStackCss().ensureInjected();
         resources.dialogBox().ensureInjected();
         resources.clipboardCss().ensureInjected();

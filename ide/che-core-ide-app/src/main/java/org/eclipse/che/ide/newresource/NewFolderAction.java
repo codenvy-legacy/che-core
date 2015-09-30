@@ -10,28 +10,16 @@
  *******************************************************************************/
 package org.eclipse.che.ide.newresource;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.ActionEvent;
-import org.eclipse.che.ide.api.app.CurrentProject;
-import org.eclipse.che.ide.api.event.ItemEvent;
-import org.eclipse.che.ide.api.project.tree.TreeNode;
-import org.eclipse.che.ide.api.project.tree.generic.ItemNode;
-import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
-import org.eclipse.che.ide.json.JsonHelper;
-import org.eclipse.che.ide.rest.AsyncRequestCallback;
+import org.eclipse.che.ide.api.project.node.HasStorablePath;
+import org.eclipse.che.ide.project.node.ResourceBasedNode;
 import org.eclipse.che.ide.ui.dialogs.InputCallback;
 import org.eclipse.che.ide.ui.dialogs.input.InputDialog;
-import org.eclipse.che.ide.util.loging.Log;
-
-import javax.validation.constraints.NotNull;
-
-import static org.eclipse.che.ide.api.event.ItemEvent.ItemOperation.CREATED;
 
 /**
  * Action to create new folder.
@@ -67,44 +55,14 @@ public class NewFolderAction extends AbstractNewResourceAction {
     }
 
     private void onAccepted(String value) {
-        final StorableNode parent = getNewResourceParent();
+        final ResourceBasedNode<?> parent = getResourceBasedNode();
+
         if (parent == null) {
             throw new IllegalStateException("No selected parent.");
         }
-        final CurrentProject currentProject = appContext.getCurrentProject();
-        if (currentProject == null) {
-            throw new IllegalStateException("No opened project.");
-        }
 
-        final String folderPath = parent.getPath() + '/' + value;
-        projectServiceClient.createFolder(folderPath, new AsyncRequestCallback<ItemReference>() {
-            @Override
-            protected void onSuccess(ItemReference result) {
-                currentProject.getCurrentTree().getNodeByPath(
-                        folderPath,
-                        new AsyncCallback<TreeNode<?>>() {
-                            @Override
-                            public void onSuccess(TreeNode<?> treeNode) {
-                                eventBus.fireEvent(new ItemEvent((ItemNode)treeNode, CREATED));
-                            }
+        final String folderPath = ((HasStorablePath)parent).getStorablePath() + '/' + value;
 
-                            @Override
-                            public void onFailure(Throwable throwable) {
-                                Log.error(NewFolderAction.class, throwable);
-                            }
-                        });
-            }
-
-            @Override
-            protected void onFailure(Throwable exception) {
-                dialogFactory.createMessageDialog("", JsonHelper.parseJsonMessage(exception.getMessage()), null).show();
-            }
-        });
-    }
-
-    @Override
-    public void updateInPerspective(@NotNull ActionEvent event) {
-        final StorableNode parent = getNewResourceParent();
-        event.getPresentation().setEnabledAndVisible(parent != null && parent.canContainsFolder());
+        projectServiceClient.createFolder(folderPath, createCallback(parent));
     }
 }

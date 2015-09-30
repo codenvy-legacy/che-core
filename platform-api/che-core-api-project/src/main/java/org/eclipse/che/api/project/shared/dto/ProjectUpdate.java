@@ -116,4 +116,10 @@ public interface ProjectUpdate {
     void setRecipe(String recipe);
 
     ProjectUpdate withRecipe(String recipe);
+
+    String getContentRoot();
+
+    void setContentRoot(String contentRoot);
+
+    ProjectUpdate withContentRoot(String contentRoot);
 }

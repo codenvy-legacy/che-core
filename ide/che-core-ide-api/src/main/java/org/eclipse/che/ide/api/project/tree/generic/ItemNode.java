@@ -12,7 +12,6 @@ package org.eclipse.che.ide.api.project.tree.generic;
 
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
-import org.eclipse.che.ide.api.event.ItemEvent;
 import org.eclipse.che.ide.api.event.RenameNodeEvent;
 import org.eclipse.che.ide.api.project.tree.AbstractTreeNode;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
@@ -33,6 +32,7 @@ import javax.validation.constraints.NotNull;
  * @see FileNode
  * @see FolderNode
  */
+@Deprecated
 public abstract class ItemNode extends AbstractTreeNode<ItemReference> implements StorableNode<ItemReference>, UpdateTreeNodeDataIterable {
     protected ProjectServiceClient    projectServiceClient;
     protected DtoUnmarshallerFactory  dtoUnmarshallerFactory;
@@ -161,7 +161,7 @@ public abstract class ItemNode extends AbstractTreeNode<ItemReference> implement
                         callback.onFailure(exception);
                     }
                 });
-                eventBus.fireEvent(new ItemEvent(ItemNode.this, ItemEvent.ItemOperation.DELETED));
+//                fire event that node has been deleted
             }
 
             @Override
