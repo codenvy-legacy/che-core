@@ -142,7 +142,7 @@ public class WorkspaceService extends Service {
     @Path("/{id}/config")
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
-    public UsersWorkspaceDto update(@PathParam("id") String id, WorkspaceConfig workspaceCfg)
+    public UsersWorkspaceDto update(@PathParam("id") String id, WorkspaceConfigDto workspaceCfg)
             throws BadRequestException, ServerException, ForbiddenException, NotFoundException, ConflictException {
         return asUsersWorkspaceDto(workspaceManager.updateWorkspace(id, workspaceCfg));
     }
