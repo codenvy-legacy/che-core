@@ -17,8 +17,6 @@ import org.eclipse.che.api.machine.shared.MachineStatus;
 import org.eclipse.che.api.machine.shared.dto.recipe.MachineRecipe;
 import org.eclipse.che.api.workspace.shared.dto.MachineMetadataDto;
 import org.eclipse.che.dto.shared.DTO;
-import org.eclipse.che.dto.shared.DelegateRule;
-import org.eclipse.che.dto.shared.DelegateTo;
 
 import java.util.List;
 import java.util.Map;
@@ -73,10 +71,6 @@ public interface MachineDescriptor extends Machine, Hyperlinks {
 
     MachineDescriptor withMetadata(MachineMetadataDto metadataDto);
 
-    @DelegateTo(client = @DelegateRule(type = ProjectsRootResolver.class, method = "getProjectsRoot"),
-                server = @DelegateRule(type = ProjectsRootResolver.class, method = "getProjectsRoot"))
-    String projectsRoot();
-
     Map<String, ServerDescriptor> getServers();
 
     void setServers(Map<String, ServerDescriptor> exposedPorts);
@@ -104,10 +98,4 @@ public interface MachineDescriptor extends Machine, Hyperlinks {
 
     @Override
     MachineDescriptor withLinks(List<Link> links);
-
-    class ProjectsRootResolver {
-        public static String getProjectsRoot(MachineDescriptor machineDescriptor) {
-            return machineDescriptor.getMetadata().getEnvVariables().get("CHE_PROJECTS_ROOT");
-        }
-    }
 }
