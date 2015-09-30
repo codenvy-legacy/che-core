@@ -16,5 +16,6 @@
     <inherits name='com.google.gwt.user.User'/>
     <inherits name="com.google.gwt.json.JSON"/>
     <source path='auth/shared'/>
+    <source path='auth/client'/>
     <source path='auth/gwt'/>
 </module>
