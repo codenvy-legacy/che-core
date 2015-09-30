@@ -32,6 +32,10 @@
     display: -moz-box;
 }
 
+.toolbarPanel > div div {
+    float: inherit;
+}
+
 .toolbarPanel a {
     color: outputLinkColor;
 }
