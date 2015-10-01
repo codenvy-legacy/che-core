@@ -31,14 +31,14 @@ public interface UserServiceClient {
      *         if <code>true</code> - is temporary user
      * @param callback
      */
-    public void createUser(@NotNull String token, boolean isTemporary, AsyncRequestCallback<UserDescriptor> callback);
+    void createUser(@NotNull String token, boolean isTemporary, AsyncRequestCallback<UserDescriptor> callback);
 
     /**
      * Get current user's information.
      *
      * @param callback
      */
-    public void getCurrentUser(AsyncRequestCallback<UserDescriptor> callback);
+    void getCurrentUser(AsyncRequestCallback<UserDescriptor> callback);
 
     /**
      * Update user's password.
@@ -47,7 +47,7 @@ public interface UserServiceClient {
      *         new password
      * @param callback
      */
-    public void updatePassword(@NotNull String password, AsyncRequestCallback<Void> callback);
+    void updatePassword(@NotNull String password, AsyncRequestCallback<Void> callback);
 
     /**
      * Get user's information by its id.
@@ -56,7 +56,7 @@ public interface UserServiceClient {
      *         user's id
      * @param callback
      */
-    public void getUserById(@NotNull String id, AsyncRequestCallback<UserDescriptor> callback);
+    void getUserById(@NotNull String id, AsyncRequestCallback<UserDescriptor> callback);
 
     /**
      * Get user's information by its email.
@@ -65,7 +65,7 @@ public interface UserServiceClient {
      *         user's email
      * @param callback
      */
-    public void getUserByEmail(@NotNull String email, AsyncRequestCallback<UserDescriptor> callback);
+    void getUserByEmail(@NotNull String email, AsyncRequestCallback<UserDescriptor> callback);
 
     /**
      * Remove user.
@@ -74,5 +74,5 @@ public interface UserServiceClient {
      *         user's id to remove
      * @param callback
      */
-    public void removeUser(@NotNull String id, AsyncRequestCallback<Void> callback);
+    void removeUser(@NotNull String id, AsyncRequestCallback<Void> callback);
 }
