@@ -24,7 +24,6 @@
     position: relative;
     left: 0px;
     top: 0px;
-    font-family: mainFontFamily;
     border-radius: 0px 0px 3px 3px;
 }
 
@@ -43,6 +42,7 @@
     font-weight: normal;
     font-style: normal;
     font-size:  fontPopupSize;
+    font-family: mainFontFamily;
     vertical-align: middle;
 }
 

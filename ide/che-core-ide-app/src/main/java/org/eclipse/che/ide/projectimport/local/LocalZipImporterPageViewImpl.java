@@ -82,7 +82,6 @@ public class LocalZipImporterPageViewImpl extends Window implements LocalZipImpo
         projectName.getElement().setAttribute("maxlength", "32");
         projectDescription.getElement().setAttribute("maxlength", "256");
         importButton.addStyleName(ideResources.Css().buttonLoader());
-        importButton.addStyleName(ideResources.wizardCss().buttonPrimary());
         importButton.setEnabled(false);
         skipFirstLevel.setValue(true);
     }
@@ -103,16 +102,16 @@ public class LocalZipImporterPageViewImpl extends Window implements LocalZipImpo
                 delegate.onCancelClicked();
             }
         });
-        getFooter().add(cancelButton);
+        addButtonToFooter(cancelButton);
 
-        importButton = createButton(locale.importProjectButton(), "file-importLocalProject-import", new ClickHandler() {
+        importButton = createPrimaryButton(locale.importProjectButton(), "file-importLocalProject-import", new ClickHandler() {
 
             @Override
             public void onClick(ClickEvent event) {
                 delegate.onImportClicked();
             }
         });
-        getFooter().add(importButton);
+        addButtonToFooter(importButton);
     }
 
     @UiHandler("projectName")

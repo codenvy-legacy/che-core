@@ -27,11 +27,7 @@
 }
 
 .glass {
-    background: #373737;
     opacity: 0.0;
-    /*-moz-transition: all animationDuration;*/
-    /*-webkit-transition: all animationDuration;*/
-    /*transition: all animationDuration;*/
 }
 
 .glassVisible {
@@ -66,22 +62,11 @@
 .content {
     display: inline-block;
     background: windowContentBackground;
-    border: 1px solid tabBorder;
-    -moz-box-shadow: 0 0px 4px 0px tabBorder;
-    -webkit-box-shadow: 0 0px 4px 0px tabBorder;
-    box-shadow: 0 0px 4px 0px tabBorder;
-
-    -moz-transform: scale(1.1);
-    -webkit-transform: scale(1.1);
-    transform: scale(1.1);
-    /*-moz-transition: all animationDuration;*/
-    /*-webkit-transition: all animationDuration;*/
+    border: 1px solid windowSeparatorColor;
+    -moz-box-shadow: 0 2px 4px 0px windowShadowColor;
+    -webkit-box-shadow: 0 2px 4px 0px windowShadowColor;
+    box-shadow: 0 2px 4px 0px windowShadowColor;
     transition: all animationDuration;
-
-    -webkit-user-select: none; /* Chrome all / Safari all */
-    -moz-user-select: none; /* Firefox all */
-    -ms-user-select: none; /* IE 10+ */
-    user-select: none;
     opacity: 0.0;
 }
 
@@ -96,25 +81,33 @@
     opacity: 1.0;
 }
 
+.center {
+    padding: 8px;
+}
+
 .header {
     background: windowHeaderBackground;
-    border-bottom: 1px solid tabBorder;
-    height: 26px;
-    padding-left: 12px;
-    text-shadow: 0px 1px 0px rgba(0, 0, 0, 0.5);
+    border-bottom: 1px solid windowHeaderBorderColor;
+    height: 22px;
+    padding: 0px 16px 0px 12px;
     user-select: none;
     cursor: default;
 }
 
 .footer {
-    background: windowHeaderBackground;
-    border-top: 1px solid tabBorder;
+    background: windowFooterBackground;
+    border-top: 1px solid windowFooterBorderColor;
     display: inline-block;
-    padding: 0;
+    box-sizing: border-box;
+    padding: 0 16px;
     width: 100%;
     user-select: none;
     float: left;
-    height: 42px;
+    height: 33px;
+}
+
+.footer > button {
+    margin-top: 6px
 }
 
 .separator {
@@ -125,8 +118,7 @@
 
 .alignBtn {
     float: right;
-    margin-right: 10px;
-    margin-top: 9px;
+    margin-left: buttonSpacing;
 }
 
 .iconButton {
@@ -148,91 +140,88 @@
     vertical-align: middle;
     display: table-cell;
     cursor: default;
-    color: inherit;
-    font-size: inherit;
+    font-family: mainFontFamily;
+    font-size: windowTitleFontSize;
+    color: windowTitleFontColor;
 }
 
-@if (org.eclipse.che.ide.api.theme.Style.theme.getId().equals(org.eclipse.che.ide.theme.DarkTheme.DARK_THEME_ID)) {
-    @sprite .crossButton {
-        gwt-image: "closeDark";
-        position: absolute;
-        right: 10px;
-        top: 8px;
-        cursor: pointer;
-    }
-    @sprite .crossButton:hover {
-        gwt-image: "closeDarkHover";
-    }
-} @else {
-    @sprite .crossButton {
-        gwt-image: "closeWhite";
-        position: absolute;
-        right: 10px;
-        top: 8px;
-        cursor: pointer;
-    }
-    @sprite .crossButton:hover {
-        gwt-image: "closeWhiteHover";
-    }
+.closeButton {
+    position: absolute;
+    right: 16px;
+    top: 0px;
+    padding: 4px 0px 4px 5px;
+    cursor: pointer;
 }
 
-.button, .blueButton {
+.closeButton svg {
+   fill: windowTitleFontColor;
+}
+
+.closeButton:hover svg {
+    opacity: 0.6;
+}
+
+.button, .primaryButton {
     float: right;
-    border-radius: 1px;
-    height: 28px;
-    min-width: 65px;
-    color: rgba(255, 255, 255, 1);
+    height: buttonHeight;
+    padding: 0px buttonPadding;
     outline: none;
+    font-size: buttonFontSize;
+    font-family: mainFontFamily;
 }
 
 /* button styles */
 .button {
-    background: #515151;
-    border-width: 1px;
-    border-style: solid;
-    margin: 5px;
-    color: rgba(255, 255, 255, 1);
-    box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.29), inset 0px 1px 0px 0px rgba(110, 110, 110, 1);
-    border-color: rgba(12, 12, 13, 0.7);
+    background: buttonBackground;
+    border: 1px solid buttonBorderColor;
+    color: buttonFontColor;
 }
 
 .button:HOVER {
-    background: #414141;
+    background: buttonHoverBackground;
+    border: 1px solid buttonHoverBorderColor;
+    color: buttonHoverFontColor;
 }
 
 .button:ACTIVE {
-    background: #414141;
-    box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.29), inset 0px 1px 1px 0px rgba(0, 0, 0, 0.75);
+    background: buttonClickedBackground;
+    border: 1px solid buttonClickedBorderColor;
+    color: buttonClickedFontColor;
 }
 
 .button[disabled], .button[disabled]:HOVER {
-    background: rgba(81, 81, 81, 0.35);
-    color: rgba(255, 255, 255, 0.35);
+    background: buttonDisabledBackground;
+    border: 1px solid buttonDisabledBorderColor;
+    color: buttonDisabledFontColor;
 }
 
-.button[disabled] svg, .button[disabled]:HOVER svg{
+.button[disabled] svg, .button[disabled]:HOVER svg {
     opacity : 0.5;
 }
 
 /* Blue button styles */
-.blueButton {
-    background: #256c9f;
-    box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.29), inset 0px 1px 0px 0px rgba(55, 126, 172, 1);
-    border-color: #2f3237;
+.primaryButton {
+    background: primaryButtonBackground;
+    border: 1px solid primaryButtonBorderColor;
+    color: primaryButtonFontColor;
 }
 
-.blueButton:HOVER {
-    background: #18537e;
+.primaryButton:HOVER {
+    background-color: primaryButtonHoverBackground;
+    border: 1px solid primaryButtonHoverBorderColor;
+    color: primaryButtonHoverFontColor;
 }
 
-.blueButton:ACTIVE {
-    background: #18537e;
-    box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.29), inset 0px 1px 1px 0px rgba(0, 0, 0, 0.75);
+.primaryButton:ACTIVE {
+    background-color: primaryButtonClickedBackground;
+    border: 1px solid primaryButtonClickedBorderColor;
+    color: primaryButtonFontClickedColor;
 }
 
-.blueButton[disabled], .blueButton[disabled]:HOVER {
-    background: rgba(37, 108, 159, 0.35);
-    color: rgba(255, 255, 255, 0.35);
+.primaryButton[disabled], .primaryButton[disabled]:HOVER {
+    background: primaryButtonDisabledBackground;
+    border: 1px solid primaryButtonDisabledBorderColor;
+    color: primaryButtonDisabledFontColor;
 }
 
 .label {

@@ -20,31 +20,7 @@ import org.eclipse.che.ide.projecttype.wizard.categoriespage.CategoriesPageViewI
  */
 public interface ProjectWizardResources extends ClientBundle {
 
-    @Source({"Wizard.css", "org/eclipse/che/ide/api/ui/style.css"})
-    Css wizardCss();
-
     @Source({"categoriespage/MainPage.css", "org/eclipse/che/ide/api/ui/style.css", "org/eclipse/che/ide/ui/Styles.css"})
     CategoriesPageViewImpl.Style mainPageStyle();
 
-    interface Css extends CssResource {
-        String buttonPanel();
-
-        String button();
-
-        String rightButton();
-
-        /**
-         * @deprecated use {@link #buttonPrimary()} instead
-         */
-        @Deprecated
-        String blueButton();
-
-        // Primary
-        String buttonPrimary();
-
-        // Success
-        String buttonSuccess();
-
-        String inputError();
-    }
 }

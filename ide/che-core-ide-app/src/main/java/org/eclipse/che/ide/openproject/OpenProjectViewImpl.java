@@ -120,8 +120,8 @@ public class OpenProjectViewImpl extends Window implements OpenProjectView {
             }
         });
 
-        getFooter().add(btnCancel);
-        getFooter().add(btnOpen);
+        addButtonToFooter(btnCancel);
+        addButtonToFooter(btnOpen);
     }
 
     @Override

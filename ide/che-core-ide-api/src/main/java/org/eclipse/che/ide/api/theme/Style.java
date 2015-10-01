@@ -123,12 +123,100 @@ public class Style {
         return theme.getDialogContentBackground();
     }
 
-    public static String getButtonTopColor() {
-        return theme.getButtonTopColor();
+    public static String getButtonBackground() {
+        return theme.getButtonBackground();
     }
 
-    public static String getButtonColor() {
-        return theme.getButtonColor();
+    public static String getButtonBorderColor() {
+        return theme.getButtonBorderColor();
+    }
+
+    public static String getButtonFontColor() {
+        return theme.getButtonFontColor();
+    }
+
+    public static String getButtonHoverBackground() {
+        return theme.getButtonHoverBackground();
+    }
+
+    public static String getButtonHoverBorderColor() {
+        return theme.getButtonHoverBorderColor();
+    }
+
+    public static String getButtonHoverFontColor() {
+        return theme.getButtonHoverFontColor();
+    }
+
+    public static String getButtonClickedBackground() {
+        return theme.getButtonClickedBackground();
+    }
+
+    public static String getButtonClickedBorderColor() {
+        return theme.getButtonClickedBorderColor();
+    }
+
+    public static String getButtonClickedFontColor() {
+        return theme.getButtonClickedFontColor();
+    }
+
+    public static String getButtonDisabledBackground() {
+        return theme.getButtonDisabledBackground();
+    }
+
+    public static String getButtonDisabledBorderColor() {
+        return theme.getButtonDisabledBorderColor();
+    }
+
+    public static String getButtonDisabledFontColor() {
+        return theme.getButtonDisabledFontColor();
+    }
+
+    public static String getPrimaryButtonBackground() {
+        return theme.getPrimaryButtonBackground();
+    }
+
+    public static String getPrimaryButtonBorderColor() {
+        return theme.getPrimaryButtonBorderColor();
+    }
+
+    public static String getPrimaryButtonFontColor() {
+        return theme.getPrimaryButtonFontColor();
+    }
+
+    public static String getPrimaryButtonHoverBackground() {
+        return theme.getPrimaryButtonHoverBackground();
+    }
+
+    public static String getPrimaryButtonHoverBorderColor() {
+        return theme.getPrimaryButtonHoverBorderColor();
+    }
+
+    public static String getPrimaryButtonHoverFontColor() {
+        return theme.getPrimaryButtonHoverFontColor();
+    }
+
+    public static String getPrimaryButtonClickedBackground() {
+        return theme.getPrimaryButtonClickedBackground();
+    }
+
+    public static String getPrimaryButtonClickedBorderColor() {
+        return theme.getPrimaryButtonClickedBorderColor();
+    }
+
+    public static String getPrimaryButtonClickedFontColor() {
+        return theme.getPrimaryButtonClickedFontColor();
+    }
+
+    public static String getPrimaryButtonDisabledBackground() {
+        return theme.getPrimaryButtonDisabledBackground();
+    }
+
+    public static String getPrimaryButtonDisabledBorderColor() {
+        return theme.getPrimaryButtonDisabledBorderColor();
+    }
+
+    public static String getPrimaryButtonDisabledFontColor() {
+        return theme.getPrimaryButtonDisabledFontColor();
     }
 
     public static String getNotableButtonTopColor() {
@@ -252,12 +340,36 @@ public class Style {
         return theme.getWindowContentBackground();
     }
 
+    public static String getWindowContentFontColor() {
+        return theme.getWindowContentFontColor();
+    }
+
+    public static String getWindowShadowColor() {
+        return theme.getWindowShadowColor();
+    }
+
     public static String getWindowHeaderBackground() {
         return theme.getWindowHeaderBackground();
     }
 
+    public static String getWindowHeaderBorderColor() {
+        return theme.getWindowHeaderBorderColor();
+    }
+
+    public static String getWindowFooterBackground() {
+        return theme.getWindowFooterBackground();
+    }
+
+    public static String getWindowFooterBorderColor() {
+        return theme.getWindowFooterBorderColor();
+    }
+
     public static String getWindowSeparatorColor() {
         return theme.getWindowSeparatorColor();
+    }
+
+    public static String getWindowTitleFontColor() {
+        return theme.getWindowTitleFontColor();
     }
 
     public static String getWizardStepsColor() {
@@ -332,10 +444,6 @@ public class Style {
         return theme.getTabBorderShadow();
     }
 
-    public static String getButtonTextShadow() {
-        return theme.getButtonTextShadow();
-    }
-
     public static String getTreeTextFileColor() {
         return theme.getTreeTextFileColor();
     }
@@ -350,15 +458,6 @@ public class Style {
 
     public static String getTreeIconFileColor() {
         return theme.getTreeIconFileColor();
-    }
-
-
-    public static String getButtonHoverTextColor() {
-        return theme.getButtonHoverTextColor();
-    }
-
-    public static String getButtonHoverColor() {
-        return theme.getButtonHoverColor();
     }
 
     public static String getToolbarBackgroundImage() {

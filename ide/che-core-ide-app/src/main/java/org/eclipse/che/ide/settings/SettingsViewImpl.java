@@ -108,27 +108,22 @@ public class SettingsViewImpl extends Window implements SettingsView {
     }
 
     private void createButtons(@NotNull final org.eclipse.che.ide.Resources resources) {
-        btnSave = createButton(locale.save(), "window-settings-storeChanges", new ClickHandler() {
+        btnSave = createPrimaryButton(locale.save(), "window-settings-storeChanges", new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
                 delegate.onSaveClicked();
             }
         });
 
-        btnSave.addStyleName(resources.wizardCss().button());
-        btnSave.addStyleName(resources.wizardCss().rightButton());
-        btnSave.addStyleName(resources.wizardCss().buttonPrimary());
-        getFooter().add(btnSave);
+        addButtonToFooter(btnSave);
 
-        Button btnRefresh = createButton(locale.refresh(), "window-settings-refresh", new ClickHandler() {
+        Button btnRefresh = createSuccessButton(locale.refresh(), "window-settings-refresh", new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
                 delegate.onRefreshClicked();
             }
         });
-        btnRefresh.addStyleName(resources.wizardCss().button());
-        btnRefresh.addStyleName(resources.wizardCss().buttonSuccess());
-        getFooter().add(btnRefresh);
+        addButtonToFooter(btnRefresh);
 
         Button btnClose = createButton(locale.close(), "window-settings-close", new ClickHandler() {
             @Override
@@ -136,8 +131,7 @@ public class SettingsViewImpl extends Window implements SettingsView {
                 delegate.onCloseClicked();
             }
         });
-        btnClose.addStyleName(resources.wizardCss().button());
-        getFooter().add(btnClose);
+        addButtonToFooter(btnClose);
     }
 
     /** {@inheritDoc} */

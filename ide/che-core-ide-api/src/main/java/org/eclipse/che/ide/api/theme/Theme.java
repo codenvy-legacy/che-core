@@ -205,19 +205,172 @@ public interface Theme {
     String getDialogContentBackground();
 
     /**
-     * Background color of the top line of {@link com.google.gwt.user.client.ui.Button} <br />
-     * Button has gradient in background, so this color is star color
+     * Background color of default button.
      *
      * @return the color
      */
-    String getButtonTopColor();
+    String getButtonBackground();
 
     /**
-     * Background color of the {@link com.google.gwt.user.client.ui.Button} Button has gradient in background, so this color is main color
+     * Border color of default button.
      *
      * @return the color
      */
-    String getButtonColor();
+    String getButtonBorderColor();
+
+    /**
+     * Font color of default button.
+     *
+     * @return the color
+     */
+    String getButtonFontColor();
+
+    /**
+     * Background color of default button hover state.
+     *
+     * @return the color
+     */
+    String getButtonHoverBackground();
+
+    /**
+     * Border color of default button hover state.
+     *
+     * @return the color
+     */
+    String getButtonHoverBorderColor();
+
+    /**
+     * Font color of default button hover state.
+     *
+     * @return the color
+     */
+    String getButtonHoverFontColor();
+
+    /**
+     * Background color of default button clicked state.
+     *
+     * @return the color
+     */
+    String getButtonClickedBackground();
+
+    /**
+     * Border color of default button clicked state.
+     *
+     * @return the color
+     */
+    String getButtonClickedBorderColor();
+
+    /**
+     * Font color of default button clicked state.
+     *
+     * @return the color
+     */
+    String getButtonClickedFontColor();
+
+    /**
+     * Background color of default button disabled state.
+     *
+     * @return the color
+     */
+    String getButtonDisabledBackground();
+
+    /**
+     * Border color of default button disabled state.
+     *
+     * @return the color
+     */
+    String getButtonDisabledBorderColor();
+
+    /**
+     * Font color of default button disabled state.
+     *
+     * @return the color
+     */
+    String getButtonDisabledFontColor();
+
+    /**
+     * Background color of primary button normal state.
+     *
+     * @return the color
+     */
+    String getPrimaryButtonBackground();
+
+    /**
+     * Border color of primary button normal state.
+     *
+     * @return the color
+     */
+    String getPrimaryButtonBorderColor();
+
+    /**
+     * Font color of primary button normal state.
+     *
+     * @return the color
+     */
+    String getPrimaryButtonFontColor();
+
+    /**
+     * Background color of primary button hover state.
+     *
+     * @return the color
+     */
+    String getPrimaryButtonHoverBackground();
+
+    /**
+     * Border color of primary button hover state.
+     *
+     * @return the color
+     */
+    String getPrimaryButtonHoverBorderColor();
+
+    /**
+     * Font color of primary button hover state.
+     *
+     * @return the color
+     */
+    String getPrimaryButtonHoverFontColor();
+
+    /**
+     * Background color of primary button clicked state.
+     *
+     * @return the color
+     */
+    String getPrimaryButtonClickedBackground();
+
+    /**
+     * Border color of primary button clicked state.
+     *
+     * @return the color
+     */
+    String getPrimaryButtonClickedBorderColor();
+
+    /**
+     * Font color of primary button clicked state.
+     *
+     * @return the color
+     */
+    String getPrimaryButtonClickedFontColor();
+
+    /**
+     * Background color of primary button disabled state.
+     *
+     * @return the color
+     */
+    String getPrimaryButtonDisabledBackground();
+
+    /**
+     * Border color of primary button disabled state.
+     *
+     * @return the color
+     */
+    String getPrimaryButtonDisabledBorderColor();
+
+    /**
+     * Font color of primary button disabled state.
+     *
+     * @return the color
+     */
+    String getPrimaryButtonDisabledFontColor();
 
     /**
      * Color of the social button for sharing factory.
@@ -409,18 +562,53 @@ public interface Theme {
     String getCompletionPopupBorderColor();
 
     /**
-     * Background color of the window widget(used in new project wizard)
+     * Background color of the window widget.
      *
      * @return the color
      */
     String getWindowContentBackground();
 
     /**
-     * Background color of the window header (used in new project wizard)
+     * Font color of the window widget.
+     *
+     * @return the color
+     */
+    String getWindowContentFontColor();
+
+    /**
+     * Shadow color of the window widget.
+     *
+     * @return the color
+     */
+    String getWindowShadowColor();
+
+    /**
+     * Background color of the window header
      *
      * @return the color
      */
     String getWindowHeaderBackground();
+
+    /**
+     * Font color of the window header.
+     *
+     * @return the color
+     */
+    String getWindowHeaderBorderColor();
+
+    /**
+     * Background color of the window footer.
+     *
+     * @return the color
+     */
+    String getWindowFooterBackground();
+
+    /**
+     * Font color of the window footer.
+     *
+     * @return the color
+     */
+    String getWindowFooterBorderColor();
 
     /**
      * Color of the line separating elements in Window (for footer).
@@ -428,6 +616,14 @@ public interface Theme {
      * @return the color
      */
     String getWindowSeparatorColor();
+
+    /**
+     * Font color of window's title.
+     *
+     * @return the color
+     */
+    String getWindowTitleFontColor();
+
 
     /**
      * New Project wizard steps background color(used in new project wizard, left vertical panel)
@@ -558,11 +754,6 @@ public interface Theme {
     String getTabBorderShadow();
 
     /**
-     * @return the color of button text-shadow
-     */
-    String getButtonTextShadow();
-
-    /**
      * @return the color of tree file text
      */
     String getTreeTextFileColor();
@@ -582,17 +773,7 @@ public interface Theme {
      */
     String getTreeIconFileColor();
 
-    /**
-     * @return the color of button text if hover
-     */
-    String getButtonHoverTextColor();
-
-    /**
-     * @return the color of button if hover
-     */
-    String getButtonHoverColor();
-
-    /**
+       /**
      * The color of the action group shadow.
      *
      * @return {@link String} color

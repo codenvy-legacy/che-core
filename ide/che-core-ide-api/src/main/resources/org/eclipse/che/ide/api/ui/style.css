@@ -52,7 +52,6 @@
 @eval consolePanelColor org.eclipse.che.ide.api.theme.Style.getConsolePanelColor();
 
 @eval tabBorderShadow org.eclipse.che.ide.api.theme.Style.getTabBorderShadow();
-@eval buttonTextShadow org.eclipse.che.ide.api.theme.Style.getButtonTextShadow();
 @eval minimizeIconColor org.eclipse.che.ide.api.theme.Style.getMinimizeIconColor();
 @eval minimizeIconHoverColor org.eclipse.che.ide.api.theme.Style.getMinimizeIconHoverColor();
 
@@ -71,11 +70,38 @@
 @eval treeTextShadow org.eclipse.che.ide.api.theme.Style.getTreeTextShadow();
 @eval treeIconFileColor org.eclipse.che.ide.api.theme.Style.getTreeIconFileColor();
 
-/* Button */
-@eval buttonTopColor org.eclipse.che.ide.api.theme.Style.getButtonTopColor();
-@eval buttonColor org.eclipse.che.ide.api.theme.Style.getButtonColor();
-@eval buttonHoverTextColor org.eclipse.che.ide.api.theme.Style.getButtonHoverTextColor();
-@eval buttonHoverColor org.eclipse.che.ide.api.theme.Style.getButtonHoverColor();
+/*Button */
+@def buttonHeight 20px;
+@def buttonPadding 16px;
+
+/* Default Button */
+@eval buttonBackground org.eclipse.che.ide.api.theme.Style.getButtonBackground();
+@eval buttonBorderColor org.eclipse.che.ide.api.theme.Style.getButtonBorderColor();
+@eval buttonFontColor org.eclipse.che.ide.api.theme.Style.getButtonFontColor();
+@eval buttonHoverBackground org.eclipse.che.ide.api.theme.Style.getButtonHoverBackground();
+@eval buttonHoverBorderColor org.eclipse.che.ide.api.theme.Style.getButtonHoverBorderColor();
+@eval buttonHoverFontColor org.eclipse.che.ide.api.theme.Style.getButtonHoverFontColor();
+@eval buttonClickedBackground org.eclipse.che.ide.api.theme.Style.getButtonClickedBackground();
+@eval buttonClickedBorderColor org.eclipse.che.ide.api.theme.Style.getButtonClickedBorderColor();
+@eval buttonClickedFontColor org.eclipse.che.ide.api.theme.Style.getButtonClickedFontColor();
+@eval buttonDisabledBackground org.eclipse.che.ide.api.theme.Style.getButtonDisabledBackground();
+@eval buttonDisabledBorderColor org.eclipse.che.ide.api.theme.Style.getButtonDisabledBorderColor();
+@eval buttonDisabledFontColor org.eclipse.che.ide.api.theme.Style.getButtonDisabledFontColor();
+
+/* Primary Button */
+@eval primaryButtonBackground org.eclipse.che.ide.api.theme.Style.getPrimaryButtonBackground();
+@eval primaryButtonBorderColor org.eclipse.che.ide.api.theme.Style.getPrimaryButtonBorderColor();
+@eval primaryButtonFontColor org.eclipse.che.ide.api.theme.Style.getPrimaryButtonFontColor();
+@eval primaryButtonHoverBackground org.eclipse.che.ide.api.theme.Style.getPrimaryButtonHoverBackground();
+@eval primaryButtonHoverBorderColor org.eclipse.che.ide.api.theme.Style.getPrimaryButtonHoverBorderColor();
+@eval primaryButtonHoverFontColor org.eclipse.che.ide.api.theme.Style.getPrimaryButtonHoverFontColor();
+@eval primaryButtonClickedBackground org.eclipse.che.ide.api.theme.Style.getPrimaryButtonClickedBackground();
+@eval primaryButtonClickedBorderColor org.eclipse.che.ide.api.theme.Style.getPrimaryButtonClickedBorderColor();
+@eval primaryButtonClickedFontColor org.eclipse.che.ide.api.theme.Style.getPrimaryButtonClickedFontColor();
+@eval primaryButtonDisabledBackground org.eclipse.che.ide.api.theme.Style.getPrimaryButtonDisabledBackground();
+@eval primaryButtonDisabledBorderColor org.eclipse.che.ide.api.theme.Style.getPrimaryButtonDisabledBorderColor();
+@eval primaryButtonDisabledFontColor org.eclipse.che.ide.api.theme.Style.getPrimaryButtonDisabledFontColor();
+
 @eval socialButtonColor org.eclipse.che.ide.api.theme.Style.getSocialButtonColor();
 
 /* notable button */
@@ -115,7 +141,7 @@
 @def dividerThickness 1px;
 @def popupPadding 24px;
 @def titlePaddingBottom 16px;
-@def buttonSpacing 10px;
+@def buttonSpacing 18px;
 @def labelPaddingBottom 6px;
 @def examplePaddingTop 4px;
 @def formButtonPaddingTop 18px;
@@ -126,7 +152,7 @@
 @def menuIconSize 12px;
 
 /* Font Sizes */
-@def fontSize 13px;
+@def fontSize 11px;
 @def largeFontSize 16px;
 @def productFontSize 20px;
 @def landingTitleFontSize 20px;
@@ -135,7 +161,7 @@
 @def smallFontSize 10px;
 @def largeLabel 14px;
 @def largeDropdownLabel 12px;
-@def buttonFontSize 12px;
+@def buttonFontSize 10px;
 
 /* Fonts */
 @def alternativeFontFamily "Helvetica Neue", "Myriad Pro","open sans", arial, sans-serif;
@@ -212,8 +238,15 @@
 
 /*Window*/
 @eval windowContentBackground org.eclipse.che.ide.api.theme.Style.getWindowContentBackground();
+@eval windowContentFontColor org.eclipse.che.ide.api.theme.Style.getWindowContentFontColor();
+@eval windowShadowColor org.eclipse.che.ide.api.theme.Style.getWindowShadowColor();
 @eval windowHeaderBackground org.eclipse.che.ide.api.theme.Style.getWindowHeaderBackground();
+@eval windowHeaderBorderColor org.eclipse.che.ide.api.theme.Style.getWindowHeaderBorderColor();
+@eval windowFooterBackground org.eclipse.che.ide.api.theme.Style.getWindowFooterBackground();
+@eval windowFooterBorderColor org.eclipse.che.ide.api.theme.Style.getWindowFooterBorderColor();
 @eval windowSeparatorColor org.eclipse.che.ide.api.theme.Style.getWindowSeparatorColor();
+@eval windowTitleFontColor org.eclipse.che.ide.api.theme.Style.getWindowTitleFontColor();
+@def windowTitleFontSize 11px;
 
 /*syntax highlight*/
 @eval keyword org.eclipse.che.ide.api.theme.Style.getEditorKeyWord();

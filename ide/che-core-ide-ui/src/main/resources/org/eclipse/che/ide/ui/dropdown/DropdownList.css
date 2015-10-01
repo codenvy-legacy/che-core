@@ -55,7 +55,6 @@
 
 .dropDownListMenu > table > tbody > tr > td {
     color: selectCommandActionColor;
-    text-shadow: 0 1px 0 buttonTextShadow;
 }
 
 .dropDownListMenu > table > tbody > tr > td {

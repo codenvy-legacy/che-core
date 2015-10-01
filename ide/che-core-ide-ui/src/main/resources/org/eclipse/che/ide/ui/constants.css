@@ -31,11 +31,6 @@
 @def dividerColorDark #c0c0c0;
 
 @eval scrollbarSize org.eclipse.che.ide.ui.Constants.SCROLLBAR_SIZE+"px";
-/* Buttons */
-@def buttonBorderRadius 2px;
-@def buttonFontSize 11px;
-@def buttonFontWeight bold;
-@def buttonHeight 27px;
 
 /* zIndex */
 @def popupZIndex 20000;
