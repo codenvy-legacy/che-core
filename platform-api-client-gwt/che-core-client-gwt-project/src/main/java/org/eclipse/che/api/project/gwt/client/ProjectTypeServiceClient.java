@@ -15,8 +15,6 @@ import org.eclipse.che.api.promises.client.Promise;
 
 import java.util.List;
 
-import java.util.List;
-
 /**
  * Client for Project Type API.
  *

@@ -20,6 +20,5 @@ import java.util.List;
  */
 public interface ProjectImportersServiceClient {
 
-
     void getProjectImporters(AsyncRequestCallback<List<ProjectImporterDescriptor>> callback);
 }

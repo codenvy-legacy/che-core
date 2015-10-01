@@ -15,7 +15,6 @@ import org.eclipse.che.ide.MimeType;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.HTTPHeader;
-import org.eclipse.che.ide.rest.RestContext;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -25,7 +24,6 @@ import java.util.List;
  * @author Vitaly Parfonov
  */
 public class ProjectImportersServiceClientImpl implements ProjectImportersServiceClient {
-
 
     private String extPath;
     private String workspaceId;
@@ -45,6 +43,5 @@ public class ProjectImportersServiceClientImpl implements ProjectImportersServic
         asyncRequestFactory.createGetRequest(extPath + "/project-importers/" + workspaceId)
                            .header(HTTPHeader.CONTENT_TYPE, MimeType.APPLICATION_JSON)
                            .send(callback);
-
     }
 }

@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.gwt.client;
 
-import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.workspace.server.WorkspaceService;
 import org.eclipse.che.api.workspace.shared.dto.CommandDto;
@@ -67,9 +66,9 @@ public interface WorkspaceServiceClient {
     /**
      * Updates workspace.
      *
-     * @see WorkspaceService#update(String, WorkspaceConfig)
+     * @see WorkspaceService#update(String, WorkspaceConfigDto)
      */
-    Promise<UsersWorkspaceDto> update(String wsId, WorkspaceConfig newCfg);
+    Promise<UsersWorkspaceDto> update(String wsId, WorkspaceConfigDto newCfg);
 
     /**
      * Removes workspace.
@@ -83,7 +82,7 @@ public interface WorkspaceServiceClient {
      *
      * @see WorkspaceService#startTemporary(WorkspaceConfigDto, String)
      */
-    Promise<UsersWorkspaceDto> startTemporary(WorkspaceConfig cfg, String accountId);
+    Promise<UsersWorkspaceDto> startTemporary(WorkspaceConfigDto cfg, String accountId);
 
     /**
      * Starts workspace based on workspace id and environment.
@@ -146,7 +145,7 @@ public interface WorkspaceServiceClient {
      *
      * @see WorkspaceService#deleteEnvironment(String, String)
      */
-    Promise<UsersWorkspaceDto> addEnvironment(String wsId, String envName);
+    Promise<UsersWorkspaceDto> deleteEnvironment(String wsId, String envName);
 
     /**
      * Adds project configuration to workspace.

@@ -41,14 +41,11 @@ import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode.UPDA
 public class ProjectWizardViewImpl extends Window implements ProjectWizardView {
     private static ProjectWizardViewImplUiBinder ourUiBinder = GWT.create(ProjectWizardViewImplUiBinder.class);
 
-    private final CoreLocalizationConstant coreLocalizationConstant;
+    private final CoreLocalizationConstant locale;
     @UiField
     SimplePanel wizardPanel;
-    @UiField
     Button      nextStepButton;
-    @UiField
     Button      previousStepButton;
-    @UiField
     Button      saveButton;
 
     private HandlerRegistration nativePreviewHandlerRegistration = null;
@@ -57,32 +54,36 @@ public class ProjectWizardViewImpl extends Window implements ProjectWizardView {
 
     @Inject
     public ProjectWizardViewImpl(org.eclipse.che.ide.Resources resources, CoreLocalizationConstant coreLocalizationConstant) {
-        super(false);
-        this.coreLocalizationConstant = coreLocalizationConstant;
+        this.locale = coreLocalizationConstant;
         setTitle(coreLocalizationConstant.projectWizardDefaultTitleText());
         setWidget(ourUiBinder.createAndBindUi(this));
-        nextStepButton.sinkEvents(Event.ONCLICK);
-        previousStepButton.sinkEvents(Event.ONCLICK);
-        nextStepButton.addHandler(new ClickHandler() {
+
+        saveButton = createPrimaryButton(locale.projectWizardDefaultSaveButtonText(), "projectWizard-saveButton", new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                delegate.onSaveClicked();
+            }
+        });
+        saveButton.addStyleName(resources.Css().buttonLoader());
+        addButtonToFooter(saveButton);
+
+        nextStepButton = createButton(locale.next(), "projectWizard-nextStepButton", new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
                 delegate.onNextClicked();
             }
-        }, ClickEvent.getType());
-        previousStepButton.addHandler(new ClickHandler() {
+        });
+        addButtonToFooter(nextStepButton);
+
+        previousStepButton = createButton(locale.back(), "projectWizard-previousStepButton", new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
                 delegate.onBackClicked();
             }
-        }, ClickEvent.getType());
-        saveButton.addStyleName(resources.Css().buttonLoader());
-        saveButton.setText(coreLocalizationConstant.projectWizardDefaultSaveButtonText());
-        this.ensureDebugId("projectWizard-window");
-    }
+        });
+        addButtonToFooter(previousStepButton);
 
-    @UiHandler("saveButton")
-    void saveClick(ClickEvent event) {
-        delegate.onSaveClicked();
+        this.ensureDebugId("projectWizard-window");
     }
 
     @Override
@@ -92,9 +93,9 @@ public class ProjectWizardViewImpl extends Window implements ProjectWizardView {
             saveButton.setEnabled(false);
         } else {
             if (isCreatingNewProject) {
-                saveButton.setText(coreLocalizationConstant.projectWizardDefaultSaveButtonText());
+                saveButton.setText(locale.projectWizardDefaultSaveButtonText());
             } else {
-                saveButton.setText(coreLocalizationConstant.projectWizardSaveButtonText());
+                saveButton.setText(locale.projectWizardSaveButtonText());
             }
             saveButton.setEnabled(true);
         }
@@ -110,14 +111,14 @@ public class ProjectWizardViewImpl extends Window implements ProjectWizardView {
         this.isCreatingNewProject = wizardMode == CREATE;
 
         if (wizardMode == CREATE) {
-            setTitle(coreLocalizationConstant.projectWizardDefaultTitleText());
-            saveButton.setText(coreLocalizationConstant.projectWizardDefaultSaveButtonText());
+            setTitle(locale.projectWizardDefaultTitleText());
+            saveButton.setText(locale.projectWizardDefaultSaveButtonText());
         } else if (wizardMode == UPDATE) {
-            setTitle(coreLocalizationConstant.projectWizardTitleText());
-            saveButton.setText(coreLocalizationConstant.projectWizardSaveButtonText());
+            setTitle(locale.projectWizardTitleText());
+            saveButton.setText(locale.projectWizardSaveButtonText());
         } else if (wizardMode == CREATE_MODULE) {
-            setTitle(coreLocalizationConstant.projectWizardCreateModuleTitleText());
-            saveButton.setText(coreLocalizationConstant.projectWizardDefaultSaveButtonText());
+            setTitle(locale.projectWizardCreateModuleTitleText());
+            saveButton.setText(locale.projectWizardDefaultSaveButtonText());
         }
 
         show();

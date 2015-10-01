@@ -13,7 +13,6 @@ package org.eclipse.che.api.workspace.gwt.client;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 
-import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Promise;
@@ -23,13 +22,14 @@ import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.RuntimeWorkspaceDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
+import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
+import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.RestContext;
 
 import javax.validation.constraints.NotNull;
-import org.eclipse.che.commons.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -139,7 +139,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
     }
 
     @Override
-    public Promise<UsersWorkspaceDto> update(String wsId, WorkspaceConfig newCfg) {
+    public Promise<UsersWorkspaceDto> update(String wsId, WorkspaceConfigDto newCfg) {
         return null;
     }
 
@@ -149,7 +149,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
     }
 
     @Override
-    public Promise<UsersWorkspaceDto> startTemporary(final WorkspaceConfig cfg, final String accountId) {
+    public Promise<UsersWorkspaceDto> startTemporary(final WorkspaceConfigDto cfg, final String accountId) {
         return newPromise(new RequestCall<UsersWorkspaceDto>() {
             @Override
             public void makeCall(AsyncCallback<UsersWorkspaceDto> callback) {
@@ -158,7 +158,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
         });
     }
 
-    private void startTemporary(@NotNull WorkspaceConfig cfg,
+    private void startTemporary(@NotNull WorkspaceConfigDto cfg,
                                 @NotNull String accountId,
                                 @NotNull AsyncCallback<UsersWorkspaceDto> callback) {
         asyncRequestFactory.createPostRequest(baseHttpUrl + "/runtime", cfg)
@@ -225,7 +225,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
     }
 
     @Override
-    public Promise<UsersWorkspaceDto> addEnvironment(String wsId, String envName) {
+    public Promise<UsersWorkspaceDto> deleteEnvironment(String wsId, String envName) {
         return null;
     }
 

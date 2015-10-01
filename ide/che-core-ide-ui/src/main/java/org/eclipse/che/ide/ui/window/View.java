@@ -65,7 +65,7 @@ class View extends Composite {
 
     HTMLPanel footer;
     @UiField
-    FlowPanel crossButton;
+    FlowPanel closeButton;
 
     // the left style attribute in pixels
     private int leftPosition = -1;
@@ -82,14 +82,14 @@ class View extends Composite {
 
     View(Window.Resources res, boolean showBottomPanel) {
         this.res = res;
-        this.css = res.centerPanelCss();
+        this.css = res.windowCss();
         windowWidth = com.google.gwt.user.client.Window.getClientWidth();
         clientLeft = Document.get().getBodyOffsetLeft();
         clientTop = Document.get().getBodyOffsetTop();
         initWidget(uiBinder.createAndBindUi(this));
         footer = new HTMLPanel("");
         if (showBottomPanel) {
-            footer.setStyleName(res.centerPanelCss().footer());
+            footer.setStyleName(res.windowCss().footer());
             contentContainer.add(footer);
         }
         handleEvents();
@@ -140,7 +140,7 @@ class View extends Composite {
 
         focusPanel.addDomHandler(handler, KeyDownEvent.getType());
 
-        crossButton.addDomHandler(new ClickHandler() {
+        closeButton.addDomHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
                 if (delegate != null) {
@@ -151,7 +151,7 @@ class View extends Composite {
         }, ClickEvent.getType());
 
         /* Don't start moving the window when clicking close button */
-        crossButton.addDomHandler(new MouseDownHandler() {
+        closeButton.addDomHandler(new MouseDownHandler() {
             @Override
             public void onMouseDown(MouseDownEvent event) {
                 event.preventDefault();

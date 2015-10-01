@@ -20,7 +20,6 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
-import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HTMLPanel;
@@ -31,6 +30,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import org.eclipse.che.commons.annotation.Nullable;
 import org.vectomatic.dom.svg.ui.SVGImage;
+import org.vectomatic.dom.svg.ui.SVGResource;
 
 /**
  * A popup that automatically centers its content, even if the dimensions of the content change. The
@@ -46,7 +46,7 @@ public abstract class Window implements IsWidget {
     protected static final Resources resources = GWT.create(Resources.class);
 
     static {
-        resources.centerPanelCss().ensureInjected();
+        resources.windowCss().ensureInjected();
     }
 
     private boolean hideOnEscapeEnabled = true;
@@ -77,7 +77,7 @@ public abstract class Window implements IsWidget {
     }
 
     public void hideCrossButton() {
-        view.crossButton.setVisible(false);
+        view.closeButton.setVisible(false);
     }
 
     /**
@@ -133,8 +133,7 @@ public abstract class Window implements IsWidget {
         button.setText(title);
         button.ensureDebugId(debugId);
         button.getElement().setId(debugId);
-        button.addStyleName(resources.centerPanelCss().alignBtn());
-        button.addStyleName(resources.centerPanelCss().button());
+        button.addStyleName(resources.windowCss().button());
         button.addClickHandler(clickHandler);
         return button;
     }
@@ -147,10 +146,27 @@ public abstract class Window implements IsWidget {
         if (image != null) {
             button.getElement().appendChild(image.getElement());
         }
-        button.addStyleName(resources.centerPanelCss().iconButton());
-        button.addStyleName(resources.centerPanelCss().button());
+        button.addStyleName(resources.windowCss().iconButton());
+        button.addStyleName(resources.windowCss().button());
         button.addClickHandler(clickHandler);
         return button;
+    }
+
+    protected Button createPrimaryButton(String title, String debugId, ClickHandler clickHandler) {
+        Button button = createButton(title, debugId, clickHandler);
+        button.addStyleName(resources.windowCss().primaryButton());
+        return button;
+    }
+
+    protected Button createSuccessButton(String title, String debugId, ClickHandler clickHandler) {
+        Button button = createButton(title, debugId, clickHandler);
+        button.addStyleName(resources.windowCss().primaryButton());
+        return button;
+    }
+
+    protected void addButtonToFooter(Button button) {
+        button.addStyleName(resources.windowCss().alignBtn());
+        getFooter().add(button);
     }
 
     protected void onEnterClicked() {
@@ -250,19 +266,10 @@ public abstract class Window implements IsWidget {
      */
     public interface Resources extends ClientBundle {
         @Source({"org/eclipse/che/ide/ui/constants.css", "Window.css", "org/eclipse/che/ide/api/ui/style.css"})
-        Css centerPanelCss();
+        Css windowCss();
 
-        @Source("close-dark-normal.png")
-        ImageResource closeDark();
-
-        @Source("close-dark-hover.png")
-        ImageResource closeDarkHover();
-
-        @Source("close-white-hover.png")
-        ImageResource closeWhiteHover();
-
-        @Source("close-white-normal.png")
-        ImageResource closeWhite();
+        @Source("close-icon.svg")
+        SVGResource closeButton();
     }
 
     /**
@@ -277,6 +284,8 @@ public abstract class Window implements IsWidget {
         String content();
 
         String contentVisible();
+
+        String center();
 
         String glass();
 
@@ -298,9 +307,9 @@ public abstract class Window implements IsWidget {
 
         String alignBtn();
 
-        String crossButton();
+        String closeButton();
 
-        String blueButton();
+        String primaryButton();
 
         String button();
 
