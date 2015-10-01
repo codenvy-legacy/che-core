@@ -32,8 +32,8 @@
     display: -moz-box;
 }
 
-.toolbarPanel > div div {
-    float: inherit;
+.toolbarPanel > div > div {
+    float: left;
 }
 
 .toolbarPanel a {
