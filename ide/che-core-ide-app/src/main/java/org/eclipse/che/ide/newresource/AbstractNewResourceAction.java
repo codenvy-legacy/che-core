@@ -27,6 +27,7 @@ import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
+import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.json.JsonHelper;
 import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
@@ -43,7 +44,6 @@ import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.validation.constraints.NotNull;
 import java.util.Arrays;
-import java.util.List;
 
 import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
 
@@ -195,13 +195,14 @@ public abstract class AbstractNewResourceAction extends AbstractPerspectiveActio
     /** Returns parent for creating new item or {@code null} if resource can not be created. */
     @Nullable
     protected ResourceBasedNode<?> getResourceBasedNode() {
-        List<?> selection = projectExplorer.getSelection().getAllElements();
+        Selection<?> selection = projectExplorer.getSelection();
+
         //we should be sure that user selected single element to work with it
-        if (selection != null && selection.isEmpty() || selection.size() > 1) {
+        if (selection == null || selection.isEmpty()) {
             return null;
         }
 
-        Object o = selection.get(0);
+        Object o = selection.getHeadElement();
 
         if (o instanceof ResourceBasedNode<?>) {
             ResourceBasedNode<?> node = (ResourceBasedNode<?>)o;

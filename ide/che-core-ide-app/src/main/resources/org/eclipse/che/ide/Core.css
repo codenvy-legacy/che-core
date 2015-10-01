@@ -709,8 +709,6 @@ class for the document-level scrollbars. */
     animation-iteration-count: 2;
 }
 
-}
-
 .createWsTagsPopup {
     /*the same index as in Window*/
     z-index: 20000;

@@ -41,6 +41,7 @@ import org.eclipse.che.ide.api.event.ProjectActionHandler;
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.parts.HasView;
 import org.eclipse.che.ide.api.parts.PerspectiveManager;
+import org.eclipse.che.ide.api.parts.ProjectExplorerPart;
 import org.eclipse.che.ide.api.parts.base.BasePresenter;
 import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
