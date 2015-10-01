@@ -225,7 +225,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
     }
 
     @Override
-    public Promise<UsersWorkspaceDto> addEnvironment(String wsId, String envName) {
+    public Promise<UsersWorkspaceDto> deleteEnvironment(String wsId, String envName) {
         return null;
     }
 

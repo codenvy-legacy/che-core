@@ -145,7 +145,7 @@ public interface WorkspaceServiceClient {
      *
      * @see WorkspaceService#deleteEnvironment(String, String)
      */
-    Promise<UsersWorkspaceDto> addEnvironment(String wsId, String envName);
+    Promise<UsersWorkspaceDto> deleteEnvironment(String wsId, String envName);
 
     /**
      * Adds project configuration to workspace.
