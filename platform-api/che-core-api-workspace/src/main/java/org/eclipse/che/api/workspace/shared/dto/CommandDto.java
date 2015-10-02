@@ -27,10 +27,6 @@ public interface CommandDto extends Command {
 
     CommandDto withCommandLine(String commandLine);
 
-    void setVisibility(String visibility);
-
-    CommandDto withVisibility(String visibility);
-
     void setType(String type);
 
     CommandDto withType(String type);

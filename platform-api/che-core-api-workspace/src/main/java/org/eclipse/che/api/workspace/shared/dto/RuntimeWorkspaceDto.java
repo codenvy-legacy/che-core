@@ -66,6 +66,9 @@ public interface RuntimeWorkspaceDto extends UsersWorkspaceDto, RuntimeWorkspace
     RuntimeWorkspaceDto withDefaultEnvName(String defaultEnvironment);
 
     @Override
+    RuntimeWorkspaceDto withDescription(String description);
+
+    @Override
     List<CommandDto> getCommands();
 
     @Override

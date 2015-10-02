@@ -34,11 +34,6 @@ public interface Command {
     String getCommandLine();
 
     /**
-     * Returns command visibility (i.e. 'private')
-     */
-    String getVisibility();
-
-    /**
      * Returns command type (i.e. 'maven')
      */
     String getType();

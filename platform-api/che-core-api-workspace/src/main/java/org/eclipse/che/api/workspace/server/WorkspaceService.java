@@ -31,7 +31,6 @@ import org.eclipse.che.api.core.model.workspace.MachineMetadata;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.model.workspace.RuntimeWorkspace;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
-import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.core.rest.Service;
 import org.eclipse.che.api.core.rest.annotations.GenerateLink;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
@@ -106,6 +105,8 @@ public class WorkspaceService extends Service {
     public WorkspaceService(WorkspaceManager workspaceManager) {
         this.workspaceManager = workspaceManager;
     }
+
+    // fixme methods don't have roles verification
 
     @ApiOperation(value = "Create a new workspace",
                   notes = "For 'system/admin' it is required to set new workspace owner, " +
@@ -246,6 +247,9 @@ public class WorkspaceService extends Service {
     @Produces(APPLICATION_JSON)
     public UsersWorkspaceDto addCommand(@PathParam("id") String id, CommandDto newCommand)
             throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
+        if (newCommand == null) {
+            throw new BadRequestException("Command required");
+        }
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
         workspace.getCommands().add(new CommandImpl(newCommand));
         return asUsersWorkspaceDto(workspaceManager.updateWorkspace(workspace.getId(), workspace));
@@ -257,6 +261,9 @@ public class WorkspaceService extends Service {
     @Produces(APPLICATION_JSON)
     public UsersWorkspaceDto updateCommand(@PathParam("id") String id, CommandDto update)
             throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
+        if (update == null) {
+            throw new BadRequestException("Command update required");
+        }
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
         if (!workspace.getCommands().removeIf(cmd -> cmd.getName().equals(update.getName()))) {
             throw new NotFoundException("Workspace " + id + " doesn't contain command " + update.getName());
@@ -508,7 +515,6 @@ public class WorkspaceService extends Service {
         return newDto(CommandDto.class).withName(command.getName())
                                        .withCommandLine(command.getCommandLine())
                                        .withType(command.getType())
-                                       .withVisibility(command.getVisibility())
                                        .withWorkingDir(command.getWorkingDir());
     }
 
