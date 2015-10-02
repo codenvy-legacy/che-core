@@ -14,10 +14,10 @@ import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.project.shared.dto.ItemReference;
+import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.FileEvent;
@@ -28,9 +28,12 @@ import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.websocket.Message;
 import org.eclipse.che.ide.websocket.MessageBuilder;
 import org.eclipse.che.ide.websocket.MessageBus;
+import org.eclipse.che.ide.websocket.MessageBusProvider;
 import org.eclipse.che.ide.websocket.WebSocketException;
 import org.eclipse.che.ide.websocket.rest.RequestCallback;
 import org.eclipse.che.ide.websocket.rest.Unmarshallable;
+import org.eclipse.che.ide.workspace.start.StartWorkspaceEvent;
+import org.eclipse.che.ide.workspace.start.StartWorkspaceHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,37 +53,43 @@ import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
 @Singleton
 public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegate {
 
-    private final String                     SEARCH_URL;
-    private       MessageBus                 wsMessageBus;
-    private       DtoUnmarshallerFactory     dtoUnmarshallerFactory;
-    private       DialogFactory              dialogFactory;
-    private       CoreLocalizationConstant   localizationConstant;
-    private       NavigateToFileView         view;
-    private       AppContext                 appContext;
-    private       EventBus                   eventBus;
-    private       Map<String, ItemReference> resultMap;
+    private String                     SEARCH_URL;
+    private MessageBus                 wsMessageBus;
+    private DtoUnmarshallerFactory     dtoUnmarshallerFactory;
+    private DialogFactory              dialogFactory;
+    private CoreLocalizationConstant   localizationConstant;
+    private NavigateToFileView         view;
+    private AppContext                 appContext;
+    private EventBus                   eventBus;
+    private Map<String, ItemReference> resultMap;
 
     @Inject
     public NavigateToFilePresenter(NavigateToFileView view,
                                    AppContext appContext,
                                    EventBus eventBus,
-                                   MessageBus wsMessageBus,
-                                   @Named("workspaceId") String workspaceId,
+                                   final MessageBusProvider messageBusProvider,
                                    DtoUnmarshallerFactory dtoUnmarshallerFactory,
                                    DialogFactory dialogFactory,
                                    CoreLocalizationConstant localizationConstant) {
         this.view = view;
+        this.view.setDelegate(this);
+
         this.appContext = appContext;
         this.eventBus = eventBus;
-        this.wsMessageBus = wsMessageBus;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.dialogFactory = dialogFactory;
         this.localizationConstant = localizationConstant;
 
         resultMap = new HashMap<>();
 
-        SEARCH_URL = "/project/" + workspaceId + "/search";
-        view.setDelegate(this);
+        eventBus.addHandler(StartWorkspaceEvent.TYPE, new StartWorkspaceHandler() {
+            @Override
+            public void onWorkspaceStarted(UsersWorkspaceDto workspace) {
+                wsMessageBus = messageBusProvider.getMessageBus();
+
+                SEARCH_URL = "/project/" + workspace.getId() + "/search";
+            }
+        });
     }
 
     /** Show dialog with view for navigation. */

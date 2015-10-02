@@ -8,14 +8,15 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.createworkspace.tagentry;
+package org.eclipse.che.ide.workspace.create.recipewidget;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.user.client.Element;
 import com.google.gwtmockito.GwtMockitoTestRunner;
 
+import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.machine.shared.dto.recipe.RecipeDescriptor;
-import org.eclipse.che.ide.createworkspace.tagentry.TagEntry.ActionDelegate;
+import org.eclipse.che.ide.workspace.create.recipewidget.RecipeWidget.ActionDelegate;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,7 +24,6 @@ import org.mockito.Mock;
 import org.vectomatic.dom.svg.OMSVGSVGElement;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import static junit.framework.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -33,7 +33,7 @@ import static org.mockito.Mockito.when;
  * @author Dmitry Shnurenko
  */
 @RunWith(GwtMockitoTestRunner.class)
-public class TagEntryImplTest {
+public class RecipeWidgetImplTest {
 
     @Mock
     private RecipeDescriptor              descriptor;
@@ -49,14 +49,14 @@ public class TagEntryImplTest {
     @Mock
     private ActionDelegate  delegate;
 
-    private TagEntryImpl tag;
+    private RecipeWidgetImpl tag;
 
     @Before
     public void setUp() {
         when(resources.recipe()).thenReturn(svgResource);
         when(svgResource.getSvg()).thenReturn(svg);
 
-        tag = new TagEntryImpl(resources, descriptor);
+        tag = new RecipeWidgetImpl(resources, descriptor);
 
         when(tag.icon.getElement()).thenReturn(element);
     }
@@ -74,10 +74,14 @@ public class TagEntryImplTest {
     }
 
     @Test
-    public void descriptorShouldBeReturned() {
-        RecipeDescriptor recipeDescriptor = tag.getDescriptor();
+    public void recipeURLShouldBeReturned() {
+        Link link = mock(Link.class);
+        when(descriptor.getLink(anyString())).thenReturn(link);
 
-        assertTrue(recipeDescriptor == descriptor);
+        tag.getRecipeUrl();
+
+        verify(descriptor).getLink("get recipe script");
+        verify(link).getHref();
     }
 
     @Test

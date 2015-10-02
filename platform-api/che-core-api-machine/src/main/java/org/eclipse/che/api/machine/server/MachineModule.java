@@ -15,19 +15,19 @@ import com.google.inject.name.Names;
 
 import org.eclipse.che.api.machine.server.event.MachineProcessMessenger;
 import org.eclipse.che.api.machine.server.event.MachineStateMessenger;
-import org.eclipse.che.inject.DynaModule;
+import org.eclipse.che.api.machine.server.event.MachineStateListener;
 
 /**
  * Guice container configuration file. Replaces old REST application composers and servlet context listeners.
  *
  * @author Alexander Garagatyi
  */
-@DynaModule
 public class MachineModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(MachineStateMessenger.class).asEagerSingleton();
         bind(MachineProcessMessenger.class).asEagerSingleton();
+        bind(MachineStateListener.class).asEagerSingleton();
 
         bindConstant().annotatedWith(Names.named("machine.extension.api_port")).to(4401);
     }

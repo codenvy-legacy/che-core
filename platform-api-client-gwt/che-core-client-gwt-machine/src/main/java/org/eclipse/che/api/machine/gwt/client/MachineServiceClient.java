@@ -14,9 +14,9 @@ import org.eclipse.che.api.machine.shared.dto.MachineDescriptor;
 import org.eclipse.che.api.machine.shared.dto.MachineStateDescriptor;
 import org.eclipse.che.api.machine.shared.dto.ProcessDescriptor;
 import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.commons.annotation.Nullable;
 
 import javax.validation.constraints.NotNull;
-import org.eclipse.che.commons.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -88,6 +88,15 @@ public interface MachineServiceClient {
      *         if {@code projectPath} is not {@code null} - returns machines which bound to the specified project
      */
     Promise<List<MachineDescriptor>> getMachines(@Nullable String projectPath);
+
+    /**
+     * Returns list of machines which are bounded to current workspace.
+     *
+     * @param workspaceId
+     *         workspace id
+     * @return list of machines
+     */
+    Promise<List<MachineDescriptor>> getWorkspaceMachines(String workspaceId);
 
     /**
      * Find machines states bound to the workspace/project.

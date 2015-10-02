@@ -12,24 +12,29 @@ package org.eclipse.che.ide.logger;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.analytics.shared.dto.EventParameters;
 import org.eclipse.che.api.user.gwt.client.UserServiceClient;
 import org.eclipse.che.api.user.shared.dto.UserDescriptor;
+import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
+import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
+import org.eclipse.che.ide.util.Config;
 import org.eclipse.che.ide.util.loging.Log;
 import org.eclipse.che.ide.websocket.Message;
 import org.eclipse.che.ide.websocket.MessageBuilder;
 import org.eclipse.che.ide.websocket.MessageBus;
+import org.eclipse.che.ide.websocket.MessageBusProvider;
 import org.eclipse.che.ide.websocket.events.ConnectionOpenedHandler;
 import org.eclipse.che.ide.websocket.rest.RequestCallback;
-import org.eclipse.che.ide.util.Config;
+import org.eclipse.che.ide.workspace.start.StartWorkspaceEvent;
+import org.eclipse.che.ide.workspace.start.StartWorkspaceHandler;
 
-import org.eclipse.che.commons.annotation.Nullable;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -62,24 +67,24 @@ public class AnalyticsEventLoggerImpl implements AnalyticsEventLoggerExt {
     private final DtoFactory             dtoFactory;
     private final UserServiceClient      user;
     private final AppContext             appContext;
-    private final MessageBus             messageBus;
     private final DtoUnmarshallerFactory dtoUnmarshallerFactory;
-
-    private final Queue<Message> pendingMessages;
+    private final Queue<Message>         pendingMessages;
 
     private volatile boolean isOpenedMessageBus;
-    private          String  currentUser;
+
+    private MessageBus messageBus;
+    private String     currentUser;
 
     @Inject
     public AnalyticsEventLoggerImpl(DtoFactory dtoFactory,
                                     UserServiceClient user,
                                     AppContext appContext,
-                                    MessageBus messageBus,
+                                    EventBus eventBus,
+                                    final MessageBusProvider messageBusProvider,
                                     DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         this.dtoFactory = dtoFactory;
         this.user = user;
         this.appContext = appContext;
-        this.messageBus = messageBus;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
 
         saveCurrentUser();
@@ -91,15 +96,22 @@ public class AnalyticsEventLoggerImpl implements AnalyticsEventLoggerExt {
             }
         };
 
-        this.messageBus.addOnOpenHandler(new ConnectionOpenedHandler() {
+        eventBus.addHandler(StartWorkspaceEvent.TYPE, new StartWorkspaceHandler() {
             @Override
-            public void onOpen() {
-                isOpenedMessageBus = true;
+            public void onWorkspaceStarted(UsersWorkspaceDto workspace) {
+                messageBus = messageBusProvider.getMessageBus();
 
-                Message message;
-                while ((message = pendingMessages.poll()) != null) {
-                    doSend(message);
-                }
+                messageBus.addOnOpenHandler(new ConnectionOpenedHandler() {
+                    @Override
+                    public void onOpen() {
+                        isOpenedMessageBus = true;
+
+                        Message message;
+                        while ((message = pendingMessages.poll()) != null) {
+                            doSend(message);
+                        }
+                    }
+                });
             }
         });
     }

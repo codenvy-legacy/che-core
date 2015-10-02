@@ -10,18 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.ide.websocket;
 
-import com.google.inject.BindingAnnotation;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 /**
- * @author Vitaly Parfonov
+ * @author Dmitry Shnurenko
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.PARAMETER})
-@BindingAnnotation
-public @interface WebSocketUrl {
+public class MachineMessageBus extends AbstractMessageBus {
+
+    public MachineMessageBus(String workspaceUrl) {
+        super(workspaceUrl);
+    }
 }

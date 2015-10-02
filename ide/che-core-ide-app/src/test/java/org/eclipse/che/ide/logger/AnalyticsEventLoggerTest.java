@@ -10,23 +10,25 @@
  *******************************************************************************/
 package org.eclipse.che.ide.logger;
 
-import org.eclipse.che.ide.logger.AnalyticsEventLoggerImpl;
+import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.user.gwt.client.UserServiceClient;
+import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.websocket.MessageBus;
-
+import org.eclipse.che.ide.websocket.MessageBusProvider;
+import org.eclipse.che.ide.workspace.start.StartWorkspaceEvent;
+import org.eclipse.che.ide.workspace.start.StartWorkspaceHandler;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
+import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.HashMap;
@@ -35,31 +37,52 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /** @author Anatoliy Bazko */
 @RunWith(MockitoJUnitRunner.class)
 public class AnalyticsEventLoggerTest {
 
     @Mock
-    private DtoFactory               dtoFactory;
+    private DtoFactory             dtoFactory;
     @Mock
-    private UserServiceClient        user;
+    private UserServiceClient      user;
     @Mock
-    private AppContext               appContext;
+    private AppContext             appContext;
     @Mock
-    private MessageBus               messageBus;
+    private MessageBusProvider     messageBusProvider;
     @Mock
-    private DtoUnmarshallerFactory   dtoUnmarshallerFactory;
-    @Spy
-    @InjectMocks
+    private DtoUnmarshallerFactory dtoUnmarshallerFactory;
+    @Mock
+    private MessageBus             messageBus;
+    @Mock
+    private UsersWorkspaceDto      workspace;
+    @Mock
+    private EventBus               eventBus;
+
+    @Captor
+    private ArgumentCaptor<StartWorkspaceHandler> startWorkspaceCaptor;
+
     private AnalyticsEventLoggerImpl eventLogger;
 
     @Before
     public void setUp() throws Exception {
+        when(messageBusProvider.getMessageBus()).thenReturn(messageBus);
+
+        eventLogger = spy(new AnalyticsEventLoggerImpl(dtoFactory, user, appContext, eventBus, messageBusProvider, dtoUnmarshallerFactory));
+
         doReturn("workspaceId").when(eventLogger).getWorkspace();
+
+        verify(eventBus).addHandler(eq(StartWorkspaceEvent.TYPE), startWorkspaceCaptor.capture());
+        startWorkspaceCaptor.getValue().onWorkspaceStarted(workspace);
+
+        when(appContext.getWorkspace()).thenReturn(workspace);
+        when(workspace.getId()).thenReturn("workspaceId");
     }
 
     @Test

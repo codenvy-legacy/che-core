@@ -285,6 +285,7 @@ public class MachineManager {
                 eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
                                                .withEventType(MachineStatusEvent.EventType.CREATING)
                                                .withMachineId(machine.getId())
+                                               .withDev(machine.isDev())
                                                .withWorkspaceId(machine.getWorkspaceId())
                                                .withMachineName(machine.getDisplayName()));
 
@@ -296,6 +297,7 @@ public class MachineManager {
 
                 eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
                                                .withEventType(MachineStatusEvent.EventType.RUNNING)
+                                               .withDev(machine.isDev())
                                                .withMachineId(machine.getId())
                                                .withWorkspaceId(machine.getWorkspaceId())
                                                .withMachineName(machine.getDisplayName()));
@@ -305,6 +307,7 @@ public class MachineManager {
                 eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
                                                .withEventType(MachineStatusEvent.EventType.ERROR)
                                                .withMachineId(machine.getId())
+                                               .withDev(machine.isDev())
                                                .withWorkspaceId(machine.getWorkspaceId())
                                                .withMachineName(machine.getDisplayName())
                                                .withError(e.getLocalizedMessage()));
@@ -712,6 +715,7 @@ public class MachineManager {
         eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
                                        .withEventType(MachineStatusEvent.EventType.DESTROYING)
                                        .withMachineId(machineId)
+                                       .withDev(machine.isDev())
                                        .withWorkspaceId(machineState.getWorkspaceId())
                                        .withMachineName(machineState.getDisplayName()));
 
@@ -827,6 +831,7 @@ public class MachineManager {
 
         eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
                                        .withEventType(MachineStatusEvent.EventType.DESTROYED)
+                                       .withDev(machine.isDev())
                                        .withMachineId(machine.getId())
                                        .withWorkspaceId(machineState.getWorkspaceId())
                                        .withMachineName(machineState.getDisplayName()));

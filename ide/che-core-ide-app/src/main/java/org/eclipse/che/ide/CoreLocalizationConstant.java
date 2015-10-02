@@ -569,9 +569,48 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("create.ws.name.is.not.correct")
     String createWsNameIsNotCorrect();
 
-    @Key("messages.workspaceStarted")
-    String workspaceStarted(String workspace);
+    @Key("create.ws.predefined.recipe")
+    String createWsPredefinedRecipe();
 
-    @Key("messages.workspaceStartingFailed")
-    String workspaceStartingFailed();
+    @Key("placeholder.input.recipe.url")
+    String placeholderInputRecipeUrl();
+
+    @Key("placeholder.choose.predefined")
+    String placeholderChoosePredefined();
+
+    @Key("placeholder.find.by.tags")
+    String placeholderFindByTags();
+
+    @Key("start.ws.button")
+    String startWsButton();
+
+    @Key("placeholder.select.ws.to.start")
+    String placeholderSelectWsToStart();
+
+    @Key("start.ws.title")
+    String startWsTitle();
+
+    @Key("start.ws.select.to.start")
+    String startWsSelectToStart();
+
+    @Key("stop.ws.title")
+    String stopWsTitle();
+
+    @Key("stop.ws.description")
+    String stopWsDescription();
+
+    @Key("stop.ws.notification")
+    String stopWsNotification(String wsName);
+
+    @Key("started.ws")
+    String startedWs(String wsName);
+
+    @Key("starting.ext.server")
+    String startingExtServer();
+
+    @Key("ext.server.started")
+    String extServerStarted();
+
+    @Key("ext.server.stopped")
+    String extServerStopped();
 }

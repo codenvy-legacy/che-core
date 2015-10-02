@@ -30,6 +30,12 @@ public interface MachineStatusEvent {
         ERROR
     }
 
+    boolean isDev();
+
+    MachineStatusEvent withDev(boolean isDev);
+
+    void setDev(boolean isDev);
+
     EventType getEventType();
 
     void setEventType(EventType eventType);
