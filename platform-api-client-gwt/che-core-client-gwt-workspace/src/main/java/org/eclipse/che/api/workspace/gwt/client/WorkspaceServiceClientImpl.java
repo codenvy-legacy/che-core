@@ -22,7 +22,6 @@ import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.RuntimeWorkspaceDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
-import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
 import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
@@ -34,6 +33,7 @@ import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.google.gwt.http.client.RequestBuilder.PUT;
 import static org.eclipse.che.api.promises.client.callback.PromiseHelper.newCallback;
 import static org.eclipse.che.api.promises.client.callback.PromiseHelper.newPromise;
 import static org.eclipse.che.ide.MimeType.APPLICATION_JSON;
@@ -211,18 +211,75 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
     }
 
     @Override
-    public Promise<UsersWorkspaceDto> addCommand(String wsId, CommandDto newCommand) {
-        return null;
+    public Promise<List<CommandDto>> getCommands(String wsId) {
+        return getUsersWorkspace(wsId).then(new Function<UsersWorkspaceDto, List<CommandDto>>() {
+            @Override
+            public List<CommandDto> apply(UsersWorkspaceDto arg) throws FunctionException {
+                return arg.getCommands();
+            }
+        });
     }
 
     @Override
-    public Promise<UsersWorkspaceDto> updateCommand(String wsId, CommandDto commandUpdate) {
-        return null;
+    public Promise<UsersWorkspaceDto> addCommand(final String wsId, final CommandDto newCommand) {
+        return newPromise(new RequestCall<UsersWorkspaceDto>() {
+            @Override
+            public void makeCall(AsyncCallback<UsersWorkspaceDto> callback) {
+                addCommand(wsId, newCommand, callback);
+            }
+        });
+    }
+
+    private void addCommand(@NotNull final String wsId,
+                            @NotNull final CommandDto newCommand,
+                            @NotNull AsyncCallback<UsersWorkspaceDto> callback) {
+        final String url = baseHttpUrl + '/' + wsId + "/command";
+        asyncRequestFactory.createPostRequest(url, newCommand)
+                           .header(ACCEPT, APPLICATION_JSON)
+                           .header(CONTENT_TYPE, APPLICATION_JSON)
+                           .loader(loader, "Adding command...")
+                           .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(UsersWorkspaceDto.class)));
     }
 
     @Override
-    public Promise<UsersWorkspaceDto> deleteCommand(String wsId, String commandName) {
-        return null;
+    public Promise<UsersWorkspaceDto> updateCommand(final String wsId, final CommandDto commandUpdate) {
+        return newPromise(new RequestCall<UsersWorkspaceDto>() {
+            @Override
+            public void makeCall(AsyncCallback<UsersWorkspaceDto> callback) {
+                updateCommand(wsId, commandUpdate, callback);
+            }
+        });
+    }
+
+    private void updateCommand(@NotNull final String wsId,
+                               @NotNull final CommandDto commandUpdate,
+                               @NotNull AsyncCallback<UsersWorkspaceDto> callback) {
+        final String url = baseHttpUrl + '/' + wsId + "/command";
+        asyncRequestFactory.createRequest(PUT, url, commandUpdate, false)
+                           .header(ACCEPT, APPLICATION_JSON)
+                           .header(CONTENT_TYPE, APPLICATION_JSON)
+                           .loader(loader, "Updating command...")
+                           .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(UsersWorkspaceDto.class)));
+    }
+
+    @Override
+    public Promise<UsersWorkspaceDto> deleteCommand(final String wsId, final String commandName) {
+        return newPromise(new RequestCall<UsersWorkspaceDto>() {
+            @Override
+            public void makeCall(AsyncCallback<UsersWorkspaceDto> callback) {
+                deleteCommand(wsId, commandName, callback);
+            }
+        });
+    }
+
+    private void deleteCommand(@NotNull final String wsId,
+                               @NotNull final String commandName,
+                               @NotNull AsyncCallback<UsersWorkspaceDto> callback) {
+        final String url = baseHttpUrl + '/' + wsId + "/command/" + commandName;
+        asyncRequestFactory.createDeleteRequest(url)
+                           .header(ACCEPT, APPLICATION_JSON)
+                           .loader(loader, "Deleting command...")
+                           .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(UsersWorkspaceDto.class)));
     }
 
     @Override

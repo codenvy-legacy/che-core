@@ -105,6 +105,9 @@ public interface WorkspaceServiceClient {
      */
     Promise<Void> stop(String wsId);
 
+    /** Get all commands from the specified workspace. */
+    Promise<List<CommandDto>> getCommands(String wsId);
+
     /**
      * Adds command to workspace
      *
