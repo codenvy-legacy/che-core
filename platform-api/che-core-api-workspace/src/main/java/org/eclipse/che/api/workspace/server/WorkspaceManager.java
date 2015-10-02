@@ -219,6 +219,11 @@ public class WorkspaceManager {
         final UsersWorkspaceImpl updated = workspaceDao.update(new UsersWorkspaceImpl(update,
                                                                                       oldWorkspace.getId(),
                                                                                       oldWorkspace.getOwner()));
+        try {
+            updated.setStatus(workspaceRegistry.get(workspaceId).getStatus());
+        } catch (NotFoundException ignored) {
+            updated.setStatus(STOPPED);
+        }
 
         LOG.info("EVENT#workspace-updated# WS#{}# WS-ID#{}#", updated.getName(), updated.getId());
 

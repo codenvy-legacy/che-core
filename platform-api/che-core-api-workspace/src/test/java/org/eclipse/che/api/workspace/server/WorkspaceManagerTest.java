@@ -11,6 +11,7 @@
 package org.eclipse.che.api.workspace.server;
 
 
+import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.core.notification.EventService;
@@ -109,11 +110,13 @@ public class WorkspaceManagerTest {
     public void shouldBeAbleToUpdateWorkspace() throws Exception {
         final UsersWorkspaceImpl workspace = manager.createWorkspace(createConfig(), "user123", "account");
         when(workspaceDao.get(workspace.getId())).thenReturn(workspace);
+        when(registry.get(any())).thenThrow(new NotFoundException(""));
         final WorkspaceConfig update = createConfig();
 
-        manager.updateWorkspace(workspace.getId(), update);
+        UsersWorkspace updated = manager.updateWorkspace(workspace.getId(), update);
 
         verify(workspaceDao).update(any(UsersWorkspaceImpl.class));
+        assertNotNull(updated.getStatus());
     }
 
     @Test
