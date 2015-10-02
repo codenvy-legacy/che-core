@@ -130,6 +130,8 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
 
                 for (UsersWorkspaceDto workspace : workspaces) {
                     if (RUNNING.equals(workspace.getStatus())) {
+                        messageBus = messageBusProvider.createMessageBus(workspace.getId());
+
                         setCurrentWorkspace(operationInfo, workspace);
 
                         return;
