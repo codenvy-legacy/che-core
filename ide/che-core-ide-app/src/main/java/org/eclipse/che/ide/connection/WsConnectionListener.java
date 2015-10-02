@@ -10,35 +10,46 @@
  *******************************************************************************/
 package org.eclipse.che.ide.connection;
 
+import com.google.inject.Inject;
+import com.google.web.bindery.event.shared.EventBus;
+
+import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.api.ConnectionClosedInformer;
 import org.eclipse.che.ide.api.event.HttpSessionDestroyedEvent;
 import org.eclipse.che.ide.util.loging.Log;
 import org.eclipse.che.ide.websocket.MessageBus;
+import org.eclipse.che.ide.websocket.MessageBusProvider;
 import org.eclipse.che.ide.websocket.events.ConnectionClosedHandler;
 import org.eclipse.che.ide.websocket.events.ConnectionOpenedHandler;
 import org.eclipse.che.ide.websocket.events.WebSocketClosedEvent;
-
-import com.google.inject.Inject;
-import com.google.web.bindery.event.shared.EventBus;
+import org.eclipse.che.ide.workspace.start.StartWorkspaceEvent;
+import org.eclipse.che.ide.workspace.start.StartWorkspaceHandler;
 
 /**
  * @author Evgen Vidolob
  */
 public class WsConnectionListener implements ConnectionClosedHandler, ConnectionOpenedHandler {
 
+    private final EventBus                 eventBus;
+    private final ConnectionClosedInformer connectionClosedInformer;
 
-    private EventBus                 eventBus;
-    private MessageBus               messageBus;
-    private ConnectionClosedInformer connectionClosedInformer;
+    private MessageBus messageBus;
 
     @Inject
-    public WsConnectionListener(MessageBus messageBus,
-                                EventBus eventBus,
+    public WsConnectionListener(EventBus eventBus,
+                                final MessageBusProvider messageBusProvider,
                                 ConnectionClosedInformer connectionClosedInformer) {
         this.eventBus = eventBus;
-        this.messageBus = messageBus;
         this.connectionClosedInformer = connectionClosedInformer;
-        messageBus.addOnCloseHandler(this);
+
+        eventBus.addHandler(StartWorkspaceEvent.TYPE, new StartWorkspaceHandler() {
+            @Override
+            public void onWorkspaceStarted(UsersWorkspaceDto workspace) {
+                messageBus = messageBusProvider.getMessageBus();
+
+                messageBus.addOnCloseHandler(WsConnectionListener.this);
+            }
+        });
     }
 
     @Override

@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.createworkspace;
+package org.eclipse.che.ide.workspace.create;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -28,8 +28,9 @@ import com.google.inject.Singleton;
 
 import org.eclipse.che.api.machine.shared.dto.recipe.RecipeDescriptor;
 import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.createworkspace.tagentry.TagEntry;
 import org.eclipse.che.ide.ui.window.Window;
+import org.eclipse.che.ide.workspace.WorkspaceWidgetFactory;
+import org.eclipse.che.ide.workspace.create.recipewidget.RecipeWidget;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +41,7 @@ import java.util.List;
  * @author Dmitry Shnurenko
  */
 @Singleton
-class CreateWorkspaceViewImpl extends Window implements CreateWorkSpaceView, TagEntry.ActionDelegate {
+class CreateWorkspaceViewImpl extends Window implements CreateWorkspaceView, RecipeWidget.ActionDelegate {
 
     interface CreateWorkspaceViewImplUiBinder extends UiBinder<Widget, CreateWorkspaceViewImpl> {
     }
@@ -49,12 +50,14 @@ class CreateWorkspaceViewImpl extends Window implements CreateWorkSpaceView, Tag
 
     private static final int BORDER_WIDTH = 1;
 
-    static final String RECIPE_URL = "https://raw.githubusercontent.com/codenvy/dockerfiles/master/base/jdk8_maven3_tomcat8/Dockerfile";
+    private final WorkspaceWidgetFactory tagFactory;
+    private final PopupPanel             popupPanel;
+    private final FlowPanel              tagsPanel;
+    private final HidePopupCallBack      hidePopupCallBack;
 
-    private final TagEntryFactory   tagFactory;
-    private final PopupPanel        popupPanel;
-    private final FlowPanel         tagsPanel;
-    private final HidePopupCallBack hidePopupCallBack;
+    private ActionDelegate delegate;
+    private Button         createButton;
+    private boolean        isPredefinedRecipe;
 
     @UiField(provided = true)
     final CoreLocalizationConstant locale;
@@ -71,23 +74,21 @@ class CreateWorkspaceViewImpl extends Window implements CreateWorkSpaceView, Tag
     Label   tagsError;
     @UiField
     Label   nameError;
-
-    private ActionDelegate delegate;
-    private Button         createButton;
+    @UiField
+    TextBox predefinedRecipes;
 
     @Inject
     public CreateWorkspaceViewImpl(CoreLocalizationConstant locale,
                                    org.eclipse.che.ide.Resources resources,
-                                   TagEntryFactory tagFactory,
-                                   FlowPanel tagsPanel,
-                                   final PopupPanel popupPanel) {
+                                   WorkspaceWidgetFactory tagFactory,
+                                   FlowPanel tagsPanel) {
         this.locale = locale;
         this.tagFactory = tagFactory;
 
         this.tagsPanel = tagsPanel;
         this.tagsPanel.setStyleName(resources.coreCss().tagsPanel());
 
-        this.popupPanel = popupPanel;
+        this.popupPanel = new PopupPanel(true);
         this.popupPanel.setStyleName(resources.coreCss().createWsTagsPopup());
         this.popupPanel.addDomHandler(new ClickHandler() {
             @Override
@@ -110,8 +111,11 @@ class CreateWorkspaceViewImpl extends Window implements CreateWorkSpaceView, Tag
         hideCrossButton();
         setHideOnEscapeEnabled(false);
 
-        recipeURL.setText(RECIPE_URL);
         wsName.setText(locale.createWsDefaultName());
+
+        predefinedRecipes.getElement().setPropertyString("placeholder", locale.placeholderChoosePredefined());
+        recipeURL.getElement().setPropertyString("placeholder", locale.placeholderInputRecipeUrl());
+        tags.getElement().setPropertyString("placeholder", locale.placeholderFindByTags());
 
         createButton = createButton(locale.createWsButton(), "create-workspace-button", new ClickHandler() {
             @Override
@@ -120,12 +124,12 @@ class CreateWorkspaceViewImpl extends Window implements CreateWorkSpaceView, Tag
             }
         });
 
-        addButtonToFooter(createButton);
+        getFooter().add(createButton);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void setDefaultEnvName(String name) {
+    public void setWorkspaceName(String name) {
         wsName.setText(name);
     }
 
@@ -151,25 +155,24 @@ class CreateWorkspaceViewImpl extends Window implements CreateWorkSpaceView, Tag
 
     /** {@inheritDoc} */
     @Override
-    public String getDefaultEnvName() {
+    public void show() {
+        super.show();
+
+        boolean isCreateButtonEnable = !recipeURL.getText().isEmpty();
+
+        createButton.setEnabled(isCreateButtonEnable);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getWorkspaceName() {
         return wsName.getText();
     }
 
     /** {@inheritDoc} */
     @Override
-    public void showRecipes(List<RecipeDescriptor> recipes) {
-        tagsPanel.clear();
-
-        for (RecipeDescriptor descriptor : recipes) {
-            TagEntry tag = tagFactory.create(descriptor);
-            tag.setDelegate(this);
-
-            tag.setStyles();
-
-            tagsPanel.add(tag);
-        }
-
-        popupPanel.setWidget(tagsPanel);
+    public void showFoundByTagRecipes(List<RecipeDescriptor> recipes) {
+        addRecipesToPanel(recipes);
 
         int xPanelCoordinate = tags.getAbsoluteLeft() + BORDER_WIDTH;
         int yPanelCoordinate = tags.getAbsoluteTop() + tags.getOffsetHeight();
@@ -178,15 +181,41 @@ class CreateWorkspaceViewImpl extends Window implements CreateWorkSpaceView, Tag
         popupPanel.show();
     }
 
+    private void addRecipesToPanel(List<RecipeDescriptor> recipes) {
+        tagsPanel.clear();
+
+        for (RecipeDescriptor descriptor : recipes) {
+            RecipeWidget tag = tagFactory.create(descriptor);
+            tag.setDelegate(this);
+
+            tag.setStyles();
+
+            tagsPanel.add(tag);
+        }
+
+        popupPanel.setWidget(tagsPanel);
+    }
+
     /** {@inheritDoc} */
     @Override
-    public void onTagClicked(TagEntry tag) {
-        RecipeDescriptor descriptor = tag.getDescriptor();
+    public void showPredefinedRecipes(List<RecipeDescriptor> recipes) {
+        addRecipesToPanel(recipes);
 
-        String recipeUrl = descriptor.getLink("get recipe script").getHref();
+        int xPanelCoordinate = predefinedRecipes.getAbsoluteLeft() + BORDER_WIDTH;
+        int yPanelCoordinate = predefinedRecipes.getAbsoluteTop() + predefinedRecipes.getOffsetHeight();
 
-        recipeURL.setValue(recipeUrl);
-        recipeURL.setTitle(recipeUrl);
+        popupPanel.setPopupPosition(xPanelCoordinate, yPanelCoordinate);
+        popupPanel.show();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void onTagClicked(RecipeWidget tag) {
+        recipeURL.setText(tag.getRecipeUrl());
+
+        predefinedRecipes.setText(isPredefinedRecipe ? tag.getTagName() : "");
+
+        tags.setText("");
 
         delegate.onRecipeUrlChanged();
     }
@@ -217,11 +246,22 @@ class CreateWorkspaceViewImpl extends Window implements CreateWorkSpaceView, Tag
 
     @UiHandler("tags")
     public void onTagsChanged(@SuppressWarnings("UnusedParameters") KeyUpEvent event) {
+        tagsChangedAction();
+    }
+
+    private void tagsChangedAction() {
         String tag = tags.getText();
 
         tagsError.setVisible(!tag.isEmpty());
 
         delegate.onTagsChanged(hidePopupCallBack);
+
+        isPredefinedRecipe = false;
+    }
+
+    @UiHandler("tags")
+    public void onTagsClicked(@SuppressWarnings("UnusedParameters") ClickEvent event) {
+        tagsChangedAction();
     }
 
     @UiHandler("recipeURL")
@@ -232,6 +272,13 @@ class CreateWorkspaceViewImpl extends Window implements CreateWorkSpaceView, Tag
     @UiHandler("wsName")
     public void onWorkspaceNameChanged(@SuppressWarnings("UnusedParameters") KeyUpEvent event) {
         delegate.onNameChanged(wsName.getText());
+    }
+
+    @UiHandler("predefinedRecipes")
+    public void onPredefineRecipesClicked(@SuppressWarnings("UnusedParameters") ClickEvent event) {
+        delegate.onPredefinedRecipesClicked();
+
+        isPredefinedRecipe = true;
     }
 
     /** {@inheritDoc} */

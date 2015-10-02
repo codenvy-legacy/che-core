@@ -14,11 +14,10 @@
              xmlns:g='urn:import:com.google.gwt.user.client.ui'>
 
     <ui:style>
-        .main {
-        }
+        @eval hoverColor org.eclipse.che.ide.api.theme.Style.getPrimaryHighlightColor();
 
-        .main:hover {
-            background-color: #4EABFF !important;
+        .main > div > div > div:hover {
+            /*background-color: hoverColor;*/
         }
 
         .main:active {

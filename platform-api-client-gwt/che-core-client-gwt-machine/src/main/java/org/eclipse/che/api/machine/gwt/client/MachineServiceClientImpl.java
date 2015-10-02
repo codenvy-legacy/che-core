@@ -25,6 +25,7 @@ import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper.RequestCall;
+import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
@@ -32,7 +33,6 @@ import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.RestContext;
 
 import javax.validation.constraints.NotNull;
-import org.eclipse.che.commons.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -185,6 +185,25 @@ public class MachineServiceClientImpl implements MachineServiceClient {
             @Override
             public void makeCall(AsyncCallback<List<MachineDescriptor>> callback) {
                 getMachines(workspaceId, projectPath, callback);
+            }
+        }).then(new Function<List<MachineDescriptor>, List<MachineDescriptor>>() {
+            @Override
+            public List<MachineDescriptor> apply(List<MachineDescriptor> arg) throws FunctionException {
+                final List<MachineDescriptor> descriptors = new ArrayList<>();
+                for (MachineDescriptor descriptor : arg) {
+                    descriptors.add(descriptor);
+                }
+                return descriptors;
+            }
+        });
+    }
+
+    @Override
+    public Promise<List<MachineDescriptor>> getWorkspaceMachines(final String workspaceId) {
+        return newPromise(new RequestCall<List<MachineDescriptor>>() {
+            @Override
+            public void makeCall(AsyncCallback<List<MachineDescriptor>> callback) {
+                getMachines(workspaceId, null, callback);
             }
         }).then(new Function<List<MachineDescriptor>, List<MachineDescriptor>>() {
             @Override

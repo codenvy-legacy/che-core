@@ -96,25 +96,29 @@ public class BootstrapController {
     }
 
     @Inject
-    void startComponents(Map<String, Provider<Component>> startableMap) {
-        Iterator<Map.Entry<String, Provider<Component>>> iterator = startableMap.entrySet().iterator();
-        startComponent(iterator);
+    void startComponents(final Map<String, Provider<Component>> components) {
+        startComponents(components.values().iterator());
     }
 
-    private void startComponent(final Iterator<Map.Entry<String, Provider<Component>>> iterator) {
-        if (iterator.hasNext()) {
-            final Map.Entry<String, Provider<Component>> componentEntry = iterator.next();
-            componentEntry.getValue().get().start(new Callback<Component, Exception>() {
-                @Override
-                public void onFailure(Exception reason) {
-                    Log.error(BootstrapController.class, reason);
-                    initializationFailed(reason);
-                }
+    private void componentStartFail(Exception reason) {
+        Log.error(BootstrapController.class, reason);
+        initializationFailed(reason);
+    }
 
+    private void startComponents(final Iterator<Provider<Component>> componentProviderIterator) {
+        if (componentProviderIterator.hasNext()) {
+            Provider<Component> componentProvider = componentProviderIterator.next();
+
+            componentProvider.get().start(new Callback<Component, Exception>() {
                 @Override
                 public void onSuccess(Component result) {
                     Log.info(getClass(), result.getClass());
-                    startComponent(iterator);
+                    startComponents(componentProviderIterator);
+                }
+
+                @Override
+                public void onFailure(Exception reason) {
+                    componentStartFail(reason);
                 }
             });
         } else {

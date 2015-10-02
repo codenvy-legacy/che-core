@@ -15,8 +15,11 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.project.shared.dto.ItemReference;
+import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
+import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.ide.api.app.AppContext;
@@ -28,9 +31,12 @@ import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.websocket.Message;
 import org.eclipse.che.ide.websocket.MessageBuilder;
 import org.eclipse.che.ide.websocket.MessageBus;
+import org.eclipse.che.ide.websocket.MessageBusProvider;
 import org.eclipse.che.ide.websocket.WebSocketException;
 import org.eclipse.che.ide.websocket.rest.RequestCallback;
 import org.eclipse.che.ide.websocket.rest.Unmarshallable;
+import org.eclipse.che.ide.workspace.start.StartWorkspaceEvent;
+import org.eclipse.che.ide.workspace.start.StartWorkspaceHandler;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
@@ -62,20 +68,30 @@ public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegat
     @Inject
     public NavigateToFilePresenter(NavigateToFileView view,
                                    AppContext appContext,
+                                   EventBus eventBus,
                                    MessageBus wsMessageBus,
                                    @Named("workspaceId") String workspaceId,
                                    DtoUnmarshallerFactory dtoUnmarshallerFactory,
                                    ProjectExplorerPresenter projectExplorer) {
         this.view = view;
+        this.view.setDelegate(this);
+
         this.appContext = appContext;
+        this.eventBus = eventBus;
         this.wsMessageBus = wsMessageBus;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.projectExplorer = projectExplorer;
 
         resultMap = new HashMap<>();
 
-        SEARCH_URL = "/project/" + workspaceId + "/search";
-        view.setDelegate(this);
+        eventBus.addHandler(StartWorkspaceEvent.TYPE, new StartWorkspaceHandler() {
+            @Override
+            public void onWorkspaceStarted(UsersWorkspaceDto workspace) {
+                wsMessageBus = messageBusProvider.getMessageBus();
+
+                SEARCH_URL = "/project/" + workspace.getId() + "/search";
+            }
+        });
     }
 
     /** Show dialog with view for navigation. */

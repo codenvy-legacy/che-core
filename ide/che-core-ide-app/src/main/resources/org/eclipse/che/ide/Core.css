@@ -44,7 +44,7 @@ body, td {
 }
 
 .gwt-ListBox[disabled] {
-    background-color:textFieldDisabledBackgroundColor;
+    background-color: textFieldDisabledBackgroundColor;
 }
 
 .gwt-CheckBox {
@@ -714,7 +714,6 @@ class for the document-level scrollbars. */
     z-index: 20000;
     border: 1px solid #121416;
     border-radius: 3px;
-    background-color: #292C2F;
 }
 
 .tagsPanel {

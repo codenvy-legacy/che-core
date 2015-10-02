@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.createworkspace;
+package org.eclipse.che.ide.workspace.create;
 
 import com.google.inject.ImplementedBy;
 
@@ -23,7 +23,7 @@ import java.util.List;
  * @author Dmitry Shnurenko
  */
 @ImplementedBy(CreateWorkspaceViewImpl.class)
-interface CreateWorkSpaceView extends View<CreateWorkSpaceView.ActionDelegate> {
+interface CreateWorkspaceView extends View<CreateWorkspaceView.ActionDelegate> {
 
     /** Shows dialog window to set up creating workspace. */
     void show();
@@ -37,7 +37,7 @@ interface CreateWorkSpaceView extends View<CreateWorkSpaceView.ActionDelegate> {
      * @param name
      *         name which will be set
      */
-    void setDefaultEnvName(String name);
+    void setWorkspaceName(String name);
 
     /** Returns special recipe url to get docker image. */
     String getRecipeUrl();
@@ -46,15 +46,23 @@ interface CreateWorkSpaceView extends View<CreateWorkSpaceView.ActionDelegate> {
     List<String> getTags();
 
     /** Returns name of workspace from special place on view. */
-    String getDefaultEnvName();
+    String getWorkspaceName();
 
     /**
-     * Sets list of recipes to special place on view.
+     * Sets list of recipes found by tag to special place on view.
      *
      * @param recipes
-     *         recipes which will be set
+     *         recipes which will be shown
      */
-    void showRecipes(List<RecipeDescriptor> recipes);
+    void showFoundByTagRecipes(List<RecipeDescriptor> recipes);
+
+    /**
+     * Sets list of predefined recipes to special place on view.
+     *
+     * @param recipes
+     *         recipes which will be shown
+     */
+    void showPredefinedRecipes(List<RecipeDescriptor> recipes);
 
     /**
      * Changes visibility of error message for recipe url.
@@ -100,6 +108,9 @@ interface CreateWorkSpaceView extends View<CreateWorkSpaceView.ActionDelegate> {
 
         /** Performs some actions when user change tags. */
         void onTagsChanged(HidePopupCallBack hidePopupCallBack);
+
+        /** Performs some actions when user clicks on predefined recipes field. */
+        void onPredefinedRecipesClicked();
     }
 
     interface HidePopupCallBack {

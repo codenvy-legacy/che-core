@@ -101,9 +101,6 @@ import org.eclipse.che.ide.core.ProjectStateHandler;
 import org.eclipse.che.ide.core.StandardComponentInitializer;
 import org.eclipse.che.ide.core.editor.EditorAgentImpl;
 import org.eclipse.che.ide.core.editor.EditorRegistryImpl;
-import org.eclipse.che.ide.createworkspace.TagEntryFactory;
-import org.eclipse.che.ide.createworkspace.tagentry.TagEntry;
-import org.eclipse.che.ide.createworkspace.tagentry.TagEntryImpl;
 import org.eclipse.che.ide.extension.ExtensionManagerPresenter;
 import org.eclipse.che.ide.extension.ExtensionManagerView;
 import org.eclipse.che.ide.extension.ExtensionManagerViewImpl;
@@ -211,10 +208,6 @@ import org.eclipse.che.ide.upload.folder.UploadFolderFromZipView;
 import org.eclipse.che.ide.upload.folder.UploadFolderFromZipViewImpl;
 import org.eclipse.che.ide.util.Config;
 import org.eclipse.che.ide.util.executor.UserActivityManager;
-import org.eclipse.che.ide.websocket.MessageBus;
-import org.eclipse.che.ide.websocket.MessageBusImpl;
-import org.eclipse.che.ide.websocket.WebSocketUrl;
-import org.eclipse.che.ide.websocket.WebSocketUrlProvider;
 import org.eclipse.che.ide.workspace.PartStackPresenterFactory;
 import org.eclipse.che.ide.workspace.PartStackViewFactory;
 import org.eclipse.che.ide.workspace.WorkBenchControllerFactory;
@@ -223,8 +216,13 @@ import org.eclipse.che.ide.workspace.WorkBenchPartControllerImpl;
 import org.eclipse.che.ide.workspace.WorkspacePresenter;
 import org.eclipse.che.ide.workspace.WorkspaceView;
 import org.eclipse.che.ide.workspace.WorkspaceViewImpl;
+import org.eclipse.che.ide.workspace.WorkspaceWidgetFactory;
+import org.eclipse.che.ide.workspace.create.recipewidget.RecipeWidget;
+import org.eclipse.che.ide.workspace.create.recipewidget.RecipeWidgetImpl;
 import org.eclipse.che.ide.workspace.perspectives.general.PerspectiveViewImpl;
 import org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective;
+import org.eclipse.che.ide.workspace.start.workspacewidget.WorkspaceWidget;
+import org.eclipse.che.ide.workspace.start.workspacewidget.WorkspaceWidgetImpl;
 
 import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
 
@@ -248,7 +246,6 @@ public class CoreGinModule extends AbstractGinModule {
         bind(AsyncRequestLoader.class).to(IdeLoader.class).in(Singleton.class);
         bind(Resources.class).in(Singleton.class);
         bind(String.class).annotatedWith(RestContext.class).toProvider(RestContextProvider.class).in(Singleton.class);
-        bind(String.class).annotatedWith(WebSocketUrl.class).toProvider(WebSocketUrlProvider.class).in(Singleton.class);
         bind(ExtensionRegistry.class).in(Singleton.class);
         bind(StandardComponentInitializer.class).in(Singleton.class);
 //        bind(BuildContext.class).to(BuildContextImpl.class).in(Singleton.class);
@@ -260,7 +257,6 @@ public class CoreGinModule extends AbstractGinModule {
         bind(PreferencesManager.class).to(PreferencesManagerImpl.class).in(Singleton.class);
         bind(NotificationManager.class).to(NotificationManagerImpl.class).in(Singleton.class);
         bind(ThemeAgent.class).to(ThemeAgentImpl.class).in(Singleton.class);
-        bind(MessageBus.class).to(MessageBusImpl.class).in(Singleton.class);
         bind(FileTypeRegistry.class).to(FileTypeRegistryImpl.class).in(Singleton.class);
 
         bind(AnalyticsEventLogger.class).to(AnalyticsEventLoggerImpl.class).in(Singleton.class);
@@ -286,12 +282,13 @@ public class CoreGinModule extends AbstractGinModule {
         projectTreeComponentBinder.addBinding("openedNodes").to(ExpandedNodesPersistenceComponent.class);
         projectTreeComponentBinder.addBinding("showHiddenFiles").to(ShowHiddenFilesPersistenceComponent.class);
 
-        install(new GinFactoryModuleBuilder().implement(TagEntry.class, TagEntryImpl.class).build(TagEntryFactory.class));
+        install(new GinFactoryModuleBuilder().implement(RecipeWidget.class, RecipeWidgetImpl.class)
+                                             .implement(WorkspaceWidget.class, WorkspaceWidgetImpl.class)
+                                             .build(WorkspaceWidgetFactory.class));
     }
 
     private void configureComponents() {
-        GinMapBinder<String, Component> mapBinder =
-                GinMapBinder.newMapBinder(binder(), String.class, Component.class);
+        GinMapBinder<String, Component> mapBinder = GinMapBinder.newMapBinder(binder(), String.class, Component.class);
         mapBinder.addBinding("Default Icons").to(DefaultIconsComponent.class);
         mapBinder.addBinding("ZeroClipboard").to(ZeroClipboardInjector.class);
         mapBinder.addBinding("Preferences").to(PreferencesComponent.class);
