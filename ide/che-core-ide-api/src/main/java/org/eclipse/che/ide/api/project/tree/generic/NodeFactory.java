@@ -71,20 +71,4 @@ public interface NodeFactory {
     ProjectNode newProjectNode(@Nullable TreeNode<?> parent,
                                @NotNull ProjectDescriptor data,
                                @NotNull GenericTreeStructure treeStructure);
-
-    /**
-     * Creates a new {@link ModuleNode} owned by the specified {@code treeStructure}
-     * with the specified {@code parent} and associated {@code data}.
-     *
-     * @param parent
-     *         the parent node
-     * @param data
-     *         the associated {@link ProjectDescriptor}
-     * @param treeStructure
-     *         the {@link GenericTreeStructure} to create the node for
-     * @return a new {@link ModuleNode}
-     */
-    ModuleNode newModuleNode(@Nullable TreeNode<?> parent,
-                             ProjectDescriptor data,
-                             GenericTreeStructure treeStructure);
 }

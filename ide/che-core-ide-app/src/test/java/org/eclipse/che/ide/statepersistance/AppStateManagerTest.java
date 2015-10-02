@@ -322,7 +322,7 @@ public class AppStateManagerTest {
 
         when(appContext.getCurrentProject()).thenReturn(null);
 
-        appStateManager.onProjectOpened(event);
+        appStateManager.onProjectReady(event);
 
         verify(appContext).getCurrentProject();
         verifyNoMoreInteractions(rootProject, event);
@@ -332,10 +332,9 @@ public class AppStateManagerTest {
     public void projectShouldBeOpenedAndRestored() {
         appStateManager.start(false);
 
-        appStateManager.onProjectOpened(event);
+        appStateManager.onProjectReady(event);
 
         verify(appContext).getCurrentProject();
-        verify(currentProject).getRootProject();
         verify(rootProject).getWorkspaceName();
         verify(event).getProject();
         verify(rootProject).getPath();
@@ -423,6 +422,7 @@ public class AppStateManagerTest {
     @Test
     public void shouldPersistStateWhenProjectIsClosing() {
         ProjectActionEvent projectActionEvent = mock(ProjectActionEvent.class);
+        when(projectActionEvent.getProject()).thenReturn(rootProject);
         appStateManager.start(true);
 
         appStateManager.onProjectClosing(projectActionEvent);
@@ -439,6 +439,6 @@ public class AppStateManagerTest {
 
         verify(dtoFactory).toJson(appState);
         verify(preferencesManager).setValue(eq(PREFERENCE_PROPERTY_NAME), anyString());
-        verify(preferencesManager).flushPreferences(Matchers.<AsyncCallback<Map<String, String>>>anyObject());
+        verify( preferencesManager).flushPreferences(Matchers.<AsyncCallback<Map<String, String>>>anyObject());
     }
 }

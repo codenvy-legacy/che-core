@@ -1,0 +1,115 @@
+/*******************************************************************************
+ * Copyright (c) 2012-2015 Codenvy, S.A.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Codenvy, S.A. - initial API and implementation
+ *******************************************************************************/
+.noFocusOutline {
+    outline: none;
+}
+
+.noFocusOutline:focus {
+    outline: none;
+}
+
+.rootContainer {
+    cursor: default;
+}
+
+.jointContainer {
+    width: 16px;
+    height: 16px;
+    padding-top: 2px;
+    fill: #dbdbdb;
+    -webkit-filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.4));
+}
+
+.iconContainer {
+}
+
+.presentableTextContainer {
+    white-space: nowrap;
+    vertical-align: middle;
+    display: inline-block;
+    margin-top: -10px;
+    font-size: 1em;
+    padding-left: 2px;
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.4);
+}
+
+.infoTextContainer {
+    white-space: nowrap;
+    vertical-align: middle;
+    display: inline-block;
+    margin-top: -9px;
+    margin-left: 5px;
+    padding-right: 10px;
+    font-size: 0.8em;
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.4);
+}
+
+.nodeContainer {
+    white-space: nowrap;
+    height: 20px;
+}
+
+.descendantsContainer {
+    display: block;
+}
+
+.selected {
+    background-color: #256c9f;
+}
+
+.hover {
+    background-color: #555;
+}
+
+.joint {
+
+}
+
+.dragOver {
+    background-image: none !important;
+    background-color: #defadc !important;
+}
+
+/*.loadIconContainer {*/
+    /*display: inline-block;*/
+/*}*/
+
+/*.loadIconContainer > svg {*/
+    /*float: right;*/
+    /*-webkit-filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.4));*/
+    /*padding-top: 2px;*/
+    /*padding-right: 2px;*/
+    /*fill: #dbdbdb;*/
+/*}*/
+
+.tree {
+    display: inline-block;
+    min-width: 100%;
+    font-size: 0.85em;
+    font-weight: bold;
+}
+
+.loading {
+    background-size: 30px 30px;
+    background-image: linear-gradient(135deg,
+    rgba(255, 255, 255, .05) 25%, transparent 25%, transparent 50%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, .05) 75%, transparent 75%, transparent);
+    -webkit-animation: animate-stripes 1s linear infinite;
+}
+
+@-webkit-keyframes animate-stripes {
+    0% {background-position: 0 0;} 100% {background-position: 60px 0;}
+}
+
+@-moz-keyframes animate-stripes {
+    0% {background-position: 0 0;} 100% {background-position: 60px 0;}
+}

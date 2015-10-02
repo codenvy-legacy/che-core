@@ -15,11 +15,16 @@ import com.google.web.bindery.event.shared.EventBus;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
-import org.eclipse.che.ide.api.event.FileEvent;
 import org.eclipse.che.ide.api.notification.NotificationManager;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
+
+import org.eclipse.che.ide.navigation.NavigateToFilePresenter;
+import org.eclipse.che.ide.navigation.NavigateToFileView;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.websocket.MessageBus;
+import com.google.web.bindery.event.shared.EventBus;
+
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -28,6 +33,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -44,25 +50,21 @@ public class NavigateToFileTest {
     public static final String FILE_IN_ROOT_NAME = "pom.xml";
 
     @Mock
-    private NavigateToFileView      view;
+    private NavigateToFileView view;
     @Mock
-    private AppContext              appContext;
+    private AppContext         appContext;
     @Mock
-    private CurrentProject          project;
-    @Mock
-    private EventBus                eventBus;
-    private NavigateToFilePresenter presenter;
-    @Mock
-    private MessageBus              messageBus;
-    @Mock
-    private DialogFactory           dialogFactory;
-    @Mock
-    private DtoUnmarshallerFactory  dtoUnmarshallerFactory;
-    @Mock
-    private NotificationManager     notificationManager;
+    private CurrentProject     project;
 
+    private NavigateToFilePresenter  presenter;
     @Mock
-    private CoreLocalizationConstant localizationConstant;
+    private MessageBus               messageBus;
+    @Mock
+    private DtoUnmarshallerFactory   dtoUnmarshallerFactory;
+    @Mock
+    private NotificationManager      notificationManager;
+    @Mock
+    private ProjectExplorerPresenter projectExplorer;
 
     @Before
     public void setUp() {
@@ -98,6 +100,5 @@ public class NavigateToFileTest {
 
         verify(view).close();
         verify(view).getItemPath();
-        verify(eventBus).fireEvent((FileEvent)anyObject());
     }
 }

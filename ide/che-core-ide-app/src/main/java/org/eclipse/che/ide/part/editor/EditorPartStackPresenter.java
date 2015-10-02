@@ -84,6 +84,10 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
 
         eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
             @Override
+            public void onProjectReady(ProjectActionEvent event) {
+            }
+
+            @Override
             public void onProjectOpened(ProjectActionEvent event) {
             }
 

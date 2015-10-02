@@ -73,8 +73,10 @@ import org.eclipse.che.ide.api.parts.WorkBenchView;
 import org.eclipse.che.ide.api.parts.WorkspaceAgent;
 import org.eclipse.che.ide.api.preferences.PreferencePagePresenter;
 import org.eclipse.che.ide.api.preferences.PreferencesManager;
+import org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor;
+import org.eclipse.che.ide.api.project.node.settings.SettingsProvider;
+import org.eclipse.che.ide.api.project.node.settings.impl.DummySettingsProvider;
 import org.eclipse.che.ide.api.project.tree.TreeStructureProviderRegistry;
-import org.eclipse.che.ide.api.project.tree.generic.NodeFactory;
 import org.eclipse.che.ide.api.project.type.ProjectTemplateRegistry;
 import org.eclipse.che.ide.api.project.type.ProjectTypeRegistry;
 import org.eclipse.che.ide.api.project.type.wizard.PreSelectedProjectTypeManager;
@@ -128,13 +130,16 @@ import org.eclipse.che.ide.part.console.ConsolePartView;
 import org.eclipse.che.ide.part.console.ConsolePartViewImpl;
 import org.eclipse.che.ide.part.editor.EditorPartStackPresenter;
 import org.eclipse.che.ide.part.editor.EditorPartStackView;
-import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerPartPresenter;
-import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerView;
-import org.eclipse.che.ide.part.projectexplorer.ProjectExplorerViewImpl;
+import org.eclipse.che.ide.part.explorer.project.DefaultNodeInterceptor;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerView;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerViewImpl;
 import org.eclipse.che.ide.preferences.PreferencesManagerImpl;
 import org.eclipse.che.ide.preferences.PreferencesView;
 import org.eclipse.che.ide.preferences.PreferencesViewImpl;
 import org.eclipse.che.ide.privacy.PrivacyPresenter;
+import org.eclipse.che.ide.project.node.NodeManager;
+import org.eclipse.che.ide.project.node.factory.NodeFactory;
 import org.eclipse.che.ide.projectimport.wizard.ImportProjectNotificationSubscriberImpl;
 import org.eclipse.che.ide.projectimport.wizard.ImportWizardFactory;
 import org.eclipse.che.ide.projectimport.wizard.ImportWizardRegistryImpl;
@@ -152,9 +157,8 @@ import org.eclipse.che.ide.rest.RestContextProvider;
 import org.eclipse.che.ide.selection.SelectionAgentImpl;
 import org.eclipse.che.ide.settings.common.SettingsPagePresenter;
 import org.eclipse.che.ide.statepersistance.ActiveFilePersistenceComponent;
-import org.eclipse.che.ide.statepersistance.ActiveNodePersistentComponent;
+import org.eclipse.che.ide.statepersistance.ExpandedNodesPersistenceComponent;
 import org.eclipse.che.ide.statepersistance.OpenedFilesPersistenceComponent;
-import org.eclipse.che.ide.statepersistance.OpenedNodesPersistenceComponent;
 import org.eclipse.che.ide.statepersistance.PersistenceComponent;
 import org.eclipse.che.ide.statepersistance.ShowHiddenFilesPersistenceComponent;
 import org.eclipse.che.ide.theme.AppearancePresenter;
@@ -269,13 +273,11 @@ public class CoreGinModule extends AbstractGinModule {
         componentMultibinder.addBinding().to(ShowHiddenFilesPersistenceComponent.class);
         componentMultibinder.addBinding().to(OpenedFilesPersistenceComponent.class);
         componentMultibinder.addBinding().to(ActiveFilePersistenceComponent.class);
-        componentMultibinder.addBinding().to(OpenedNodesPersistenceComponent.class);
-        componentMultibinder.addBinding().to(ActiveNodePersistentComponent.class);
+        componentMultibinder.addBinding().to(ExpandedNodesPersistenceComponent.class);
 
         GinMapBinder<String, PersistenceComponent> projectTreeComponentBinder =
                 GinMapBinder.newMapBinder(binder(), String.class, PersistenceComponent.class);
-        projectTreeComponentBinder.addBinding("openedNodes").to(OpenedNodesPersistenceComponent.class);
-        projectTreeComponentBinder.addBinding("activeNode").to(ActiveNodePersistentComponent.class);
+        projectTreeComponentBinder.addBinding("openedNodes").to(ExpandedNodesPersistenceComponent.class);
         projectTreeComponentBinder.addBinding("showHiddenFiles").to(ShowHiddenFilesPersistenceComponent.class);
 
         install(new GinFactoryModuleBuilder().implement(RecipeWidget.class, RecipeWidgetImpl.class)
@@ -342,8 +344,10 @@ public class CoreGinModule extends AbstractGinModule {
         // Parts
         bind(ConsolePart.class).to(ConsolePartPresenter.class).in(Singleton.class);
         bind(OutlinePart.class).to(OutlinePartPresenter.class).in(Singleton.class);
-        bind(ProjectExplorerPart.class).to(ProjectExplorerPartPresenter.class).in(Singleton.class);
         bind(ActionManager.class).to(ActionManagerImpl.class).in(Singleton.class);
+
+        GinMultibinder<NodeInterceptor> nodeInterceptors = GinMultibinder.newSetBinder(binder(), NodeInterceptor.class);
+        nodeInterceptors.addBinding().to(DefaultNodeInterceptor.class);
     }
 
     /** Configure Core UI components, resources and views */
@@ -374,7 +378,6 @@ public class CoreGinModule extends AbstractGinModule {
         bind(NotificationManagerView.class).to(NotificationManagerViewImpl.class).in(Singleton.class);
 
         bind(EditorPartStackView.class);
-        bind(ProjectExplorerView.class).to(ProjectExplorerViewImpl.class).in(Singleton.class);
         bind(ConsolePartView.class).to(ConsolePartViewImpl.class).in(Singleton.class);
 
         bind(MessageDialogFooter.class);
@@ -419,8 +422,15 @@ public class CoreGinModule extends AbstractGinModule {
 
     /** Configure bindings for project's tree. */
     private void configureProjectTree() {
-        bind(TreeStructureProviderRegistry.class).to(TreeStructureProviderRegistryImpl.class).in(Singleton.class);
         install(new GinFactoryModuleBuilder().build(NodeFactory.class));
+        bind(SettingsProvider.class).to(DummySettingsProvider.class).in(Singleton.class);
+        bind(NodeManager.class);
+        bind(ProjectExplorerView.class).to(ProjectExplorerViewImpl.class).in(Singleton.class);
+        bind(ProjectExplorerPart.class).to(ProjectExplorerPresenter.class).in(Singleton.class);
+
+        //support old tree
+        bind(TreeStructureProviderRegistry.class).to(TreeStructureProviderRegistryImpl.class).in(Singleton.class);
+        install(new GinFactoryModuleBuilder().build(org.eclipse.che.ide.api.project.tree.generic.NodeFactory.class));
     }
 
     @Provides

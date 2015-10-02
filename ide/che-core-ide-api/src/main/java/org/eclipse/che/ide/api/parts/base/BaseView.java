@@ -16,6 +16,8 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -42,6 +44,7 @@ public abstract class BaseView<T extends BaseActionDelegate> extends Composite i
 
     protected T          delegate;
     protected ToolButton minimizeButton;
+    protected FlowPanel  menuPanel;
     protected Label      titleLabel;
 
     /** Indicates whether this view is focused */
@@ -82,7 +85,15 @@ public abstract class BaseView<T extends BaseActionDelegate> extends Composite i
         toolbarHeader.addWest(titleLabel, 200);
         toolbarHeader.addEast(minimizeButton, 22);
 
+        menuPanel = new FlowPanel();
+        menuPanel.addStyleName(resources.partStackCss().headerMenuButton());
+        toolbarHeader.addEast(menuPanel, 75);
+
         toolBar.addNorth(toolbarHeader, 22);
+    }
+
+    public final void addMenuButton(@NotNull IsWidget button) {
+        menuPanel.add(button);
     }
 
     /** {@inheritDoc} */

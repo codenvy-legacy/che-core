@@ -10,7 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.ide.privacy;
 
-import org.eclipse.che.ide.actions.PrivacyAction;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.ide.actions.PrivacyAction;
 import org.eclipse.che.ide.api.action.Action;
@@ -21,10 +23,6 @@ import org.eclipse.che.ide.api.action.Separator;
 import org.eclipse.che.ide.api.constraints.Constraints;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.ProjectActionHandler;
-
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.google.web.bindery.event.shared.EventBus;
 
 import static org.eclipse.che.ide.api.constraints.Anchor.AFTER;
 import static org.eclipse.che.ide.api.constraints.Anchor.BEFORE;
@@ -54,12 +52,16 @@ public class PrivacyPresenter implements ProjectActionHandler {
     }
 
     @Override
-    public void onProjectOpened(ProjectActionEvent event) {
+    public void onProjectReady(ProjectActionEvent event) {
         actionManager.registerAction(PRIVACY_ACTION_ID, privacyAction);
 
         rightMainMenuGroup.add(privacyAction, LAST);
         rightMainMenuGroup.add(Separator.getInstance(), new Constraints(BEFORE, PRIVACY_ACTION_ID));
         rightMainMenuGroup.add(Separator.getInstance(), new Constraints(AFTER, PRIVACY_ACTION_ID));
+    }
+
+    @Override
+    public void onProjectOpened(ProjectActionEvent event) {
     }
 
     @Override

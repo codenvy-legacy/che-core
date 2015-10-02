@@ -10,29 +10,29 @@
  *******************************************************************************/
 package org.eclipse.che.ide.newresource;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
+import org.eclipse.che.api.promises.client.Function;
+import org.eclipse.che.api.promises.client.FunctionException;
+import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.editor.EditorAgent;
-import org.eclipse.che.ide.api.event.ItemEvent;
-import org.eclipse.che.ide.api.project.tree.TreeNode;
-import org.eclipse.che.ide.api.project.tree.VirtualFile;
-import org.eclipse.che.ide.api.project.tree.generic.FileNode;
-import org.eclipse.che.ide.api.project.tree.generic.ItemNode;
-import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
+import org.eclipse.che.ide.api.project.node.HasStorablePath;
+import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.json.JsonHelper;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
+import org.eclipse.che.ide.project.node.FileReferenceNode;
+import org.eclipse.che.ide.project.node.ResourceBasedNode;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
@@ -40,14 +40,11 @@ import org.eclipse.che.ide.ui.dialogs.InputCallback;
 import org.eclipse.che.ide.ui.dialogs.input.InputDialog;
 import org.eclipse.che.ide.ui.dialogs.input.InputValidator;
 import org.eclipse.che.ide.util.NameUtils;
-import org.eclipse.che.ide.util.loging.Log;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.validation.constraints.NotNull;
-import org.eclipse.che.commons.annotation.Nullable;
 import java.util.Arrays;
 
-import static org.eclipse.che.ide.api.event.ItemEvent.ItemOperation.CREATED;
 import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
 
 /**
@@ -71,6 +68,7 @@ public abstract class AbstractNewResourceAction extends AbstractPerspectiveActio
     protected       DtoUnmarshallerFactory   dtoUnmarshallerFactory;
     protected       DialogFactory            dialogFactory;
     protected       CoreLocalizationConstant coreLocalizationConstant;
+    protected       ProjectExplorerPresenter projectExplorer;
 
     /**
      * Creates new action.
@@ -109,51 +107,65 @@ public abstract class AbstractNewResourceAction extends AbstractPerspectiveActio
 
     private void onAccepted(String value) {
         final String name = getExtension().isEmpty() ? value : value + '.' + getExtension();
-        final StorableNode parent = getNewResourceParent();
+        final ResourceBasedNode<?> parent = getResourceBasedNode();
+
         if (parent == null) {
-            throw new IllegalStateException("No selected parent.");
+            throw new IllegalStateException("Invalid parent node.");
         }
 
-        projectServiceClient.createFile(
-                parent.getPath(), name, getDefaultContent(), getMimeType(),
-                new AsyncRequestCallback<ItemReference>(dtoUnmarshallerFactory.newUnmarshaller(ItemReference.class)) {
-                    @Override
-                    protected void onSuccess(final ItemReference result) {
-                        onFileCreated(result);
-                    }
-
-                    @Override
-                    protected void onFailure(Throwable exception) {
-                        dialogFactory.createMessageDialog("", JsonHelper.parseJsonMessage(exception.getMessage()), null).show();
-                    }
-                });
+        projectServiceClient.createFile(((HasStorablePath)parent).getStorablePath(),
+                                        name,
+                                        getDefaultContent(),
+                                        getMimeType(),
+                                        createCallback(parent));
     }
 
-    private void onFileCreated(final ItemReference result) {
-        final CurrentProject currentProject = appContext.getCurrentProject();
-        if (currentProject == null) {
-            throw new IllegalStateException("No opened project.");
-        }
 
-        currentProject.getCurrentTree().getNodeByPath(result.getPath(), new AsyncCallback<TreeNode<?>>() {
+    protected AsyncRequestCallback<ItemReference> createCallback(final ResourceBasedNode<?> parent) {
+        return new AsyncRequestCallback<ItemReference>(dtoUnmarshallerFactory.newUnmarshaller(ItemReference.class)) {
             @Override
-            public void onSuccess(TreeNode<?> treeNode) {
-                eventBus.fireEvent(new ItemEvent((ItemNode)treeNode, CREATED));
-                if ("file".equals(result.getType())) {
-                    editorAgent.openEditor((VirtualFile)treeNode);
+            protected void onSuccess(final ItemReference itemReference) {
+                HasStorablePath path = new HasStorablePath.StorablePath(itemReference.getPath());
+
+                projectExplorer.getNodeByPath(path, true)
+                               .then(selectNode())
+                               .then(openNode());
+            }
+
+            @Override
+            protected void onFailure(Throwable exception) {
+                dialogFactory.createMessageDialog("", JsonHelper.parseJsonMessage(exception.getMessage()), null).show();
+            }
+        };
+    }
+
+    protected Function<Node, Node> selectNode() {
+        return new Function<Node, Node>() {
+            @Override
+            public Node apply(Node node) throws FunctionException {
+                projectExplorer.select(node, false);
+
+                return node;
+            }
+        };
+    }
+
+    protected Function<Node, Node> openNode() {
+        return new Function<Node, Node>() {
+            @Override
+            public Node apply(Node node) throws FunctionException {
+                if (node instanceof FileReferenceNode) {
+                    ((FileReferenceNode)node).actionPerformed();
                 }
-            }
 
-            @Override
-            public void onFailure(Throwable throwable) {
-                Log.error(AbstractNewResourceAction.class, throwable);
+                return node;
             }
-        });
+        };
     }
 
     @Override
-    public void updateInPerspective(@NotNull ActionEvent event) {
-        event.getPresentation().setEnabled(getNewResourceParent() != null);
+    public void updateInPerspective(@NotNull ActionEvent e) {
+        e.getPresentation().setEnabled(getResourceBasedNode() != null);
     }
 
     /**
@@ -182,18 +194,31 @@ public abstract class AbstractNewResourceAction extends AbstractPerspectiveActio
 
     /** Returns parent for creating new item or {@code null} if resource can not be created. */
     @Nullable
-    protected StorableNode getNewResourceParent() {
-        Selection<?> selection = selectionAgent.getSelection();
-        if (selection != null && selection.getFirstElement() != null) {
-            if (selection.getFirstElement() instanceof StorableNode) {
-                final StorableNode selectedNode = (StorableNode)selection.getFirstElement();
-                if (selectedNode instanceof FileNode) {
-                    return (StorableNode)selectedNode.getParent();
-                }
-                return selectedNode;
-            }
+    protected ResourceBasedNode<?> getResourceBasedNode() {
+        Selection<?> selection = projectExplorer.getSelection();
+
+        //we should be sure that user selected single element to work with it
+        if (selection == null || selection.isEmpty()) {
+            return null;
         }
+
+        Object o = selection.getHeadElement();
+
+        if (o instanceof ResourceBasedNode<?>) {
+            ResourceBasedNode<?> node = (ResourceBasedNode<?>)o;
+            //it may be file node, so we should take parent node
+            if (node.isLeaf() && isResourceAndStorableNode(node.getParent())) {
+                return (ResourceBasedNode<?>)node.getParent();
+            }
+
+            return isResourceAndStorableNode(node) ? node : null;
+        }
+
         return null;
+    }
+
+    protected boolean isResourceAndStorableNode(@Nullable Node node) {
+        return node != null && node instanceof ResourceBasedNode<?> && node instanceof HasStorablePath;
     }
 
     @Inject
@@ -205,7 +230,8 @@ public abstract class AbstractNewResourceAction extends AbstractPerspectiveActio
                       AnalyticsEventLogger eventLogger,
                       DtoUnmarshallerFactory dtoUnmarshallerFactory,
                       DialogFactory dialogFactory,
-                      CoreLocalizationConstant coreLocalizationConstant) {
+                      CoreLocalizationConstant coreLocalizationConstant,
+                      ProjectExplorerPresenter projectExplorer) {
         this.selectionAgent = selectionAgent;
         this.editorAgent = editorAgent;
         this.projectServiceClient = projectServiceClient;
@@ -215,6 +241,7 @@ public abstract class AbstractNewResourceAction extends AbstractPerspectiveActio
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.dialogFactory = dialogFactory;
         this.coreLocalizationConstant = coreLocalizationConstant;
+        this.projectExplorer = projectExplorer;
     }
 
     private class FileNameValidator implements InputValidator {

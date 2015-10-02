@@ -14,6 +14,6 @@
 <module>
 
     <inherits name='com.google.gwt.user.User'/>
-    <inherits name="org.eclipse.che.ide.Commons"/>
+    <inherits name="org.eclipse.che.ide.Api"/>
     <source path=""/>
 </module>

@@ -10,66 +10,102 @@
  *******************************************************************************/
 package org.eclipse.che.ide.actions;
 
-import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
-
-import org.eclipse.che.ide.projecttype.wizard.presenter.ProjectWizardPresenter;
-import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.api.action.Action;
-import org.eclipse.che.ide.api.action.ActionEvent;
-import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.project.tree.generic.FolderNode;
-import org.eclipse.che.ide.api.selection.Selection;
-import org.eclipse.che.ide.api.selection.SelectionAgent;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.web.bindery.event.shared.EventBus;
+
+import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
+import org.eclipse.che.api.promises.client.Function;
+import org.eclipse.che.api.promises.client.FunctionException;
+import org.eclipse.che.ide.api.action.ActionEvent;
+import org.eclipse.che.ide.api.action.ProjectAction;
+import org.eclipse.che.ide.api.event.ModuleCreatedEvent;
+import org.eclipse.che.ide.api.project.node.HasStorablePath;
+import org.eclipse.che.ide.api.project.node.Node;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
+import org.eclipse.che.ide.project.node.FolderReferenceNode;
+import org.eclipse.che.ide.project.shared.NodesResources;
+import org.eclipse.che.ide.projecttype.wizard.presenter.ProjectWizardPresenter;
 
 import org.eclipse.che.commons.annotation.Nullable;
+import java.util.List;
 
 /** @author Artem Zatsarynnyy */
 @Singleton
-public class CreateModuleAction extends Action {
+public class CreateModuleAction extends ProjectAction implements ModuleCreatedEvent.ModuleCreatedHandler {
 
-    private final ProjectWizardPresenter wizard;
-    private final AnalyticsEventLogger   eventLogger;
-    private final AppContext             appContext;
-    private final SelectionAgent         selectionAgent;
+    private final ProjectWizardPresenter   wizard;
+    private final AnalyticsEventLogger     eventLogger;
+    private final ProjectExplorerPresenter projectExplorer;
+    private       FolderReferenceNode      folderNode;
 
     @Inject
-    public CreateModuleAction(Resources resources,
+    public CreateModuleAction(NodesResources resources,
                               ProjectWizardPresenter wizard,
                               AnalyticsEventLogger eventLogger,
-                              AppContext appContext,
-                              SelectionAgent selectionAgent) {
-        super("Create Module...", "Create module from existing folder", resources.project());
+                              ProjectExplorerPresenter projectExplorer,
+                              EventBus eventBus) {
+        super("Create Module...", "Create module from existing folder", resources.moduleRoot());
         this.wizard = wizard;
         this.eventLogger = eventLogger;
-        this.appContext = appContext;
-        this.selectionAgent = selectionAgent;
+        this.projectExplorer = projectExplorer;
+        eventBus.addHandler(ModuleCreatedEvent.getType(), this);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
-        FolderNode selectedFolder = getSelectedFolder();
-        if (selectedFolder != null) {
-            wizard.show(selectedFolder.getData());
+        folderNode = getResourceBasedNode();
+        if (folderNode != null) {
+            wizard.show(folderNode.getData());
         }
     }
 
     @Override
-    public void update(ActionEvent e) {
-        e.getPresentation().setEnabledAndVisible(appContext.getCurrentProject() != null && getSelectedFolder() != null);
+    protected void updateProjectAction(ActionEvent e) {
+        e.getPresentation().setEnabledAndVisible(getResourceBasedNode() != null);
     }
 
     @Nullable
-    private FolderNode getSelectedFolder() {
-        Selection<?> selection = selectionAgent.getSelection();
-        if (selection != null && selection.getFirstElement() != null) {
-            if (selection.getFirstElement() instanceof FolderNode) {
-                return (FolderNode)selection.getFirstElement();
-            }
+    protected FolderReferenceNode getResourceBasedNode() {
+        List<?> selection = projectExplorer.getSelection().getAllElements();
+        //we should be sure that user selected single element to work with it
+        if (selection.isEmpty() || selection.size() > 1) {
+            return null;
         }
+
+        Object o = selection.get(0);
+
+        if (o instanceof FolderReferenceNode) {
+            return (FolderReferenceNode)o;
+        }
+
         return null;
+    }
+
+    @Override
+    public void onModuleCreated(final ModuleCreatedEvent event) {
+        if (folderNode != null && folderNode.getParent() != null) {
+
+            boolean goIntoState = projectExplorer.isGoIntoActivated();
+
+            if (goIntoState) {
+                projectExplorer.resetGoIntoMode();
+            }
+
+            projectExplorer.getNodeByPath(new HasStorablePath.StorablePath(event.getModule().getPath()), true)
+                           .then(selectNode());
+        }
+    }
+
+    protected Function<Node, Node> selectNode() {
+        return new Function<Node, Node>() {
+            @Override
+            public Node apply(Node node) throws FunctionException {
+                projectExplorer.select(node, false);
+
+                return node;
+            }
+        };
     }
 }

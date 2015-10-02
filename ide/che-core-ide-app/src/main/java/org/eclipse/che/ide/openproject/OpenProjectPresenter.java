@@ -12,6 +12,8 @@ package org.eclipse.che.ide.openproject;
 
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
+import org.eclipse.che.ide.api.app.AppContext;
+import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.event.OpenProjectEvent;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
@@ -32,19 +34,22 @@ public class OpenProjectPresenter implements OpenProjectView.ActionDelegate {
     private DtoUnmarshallerFactory dtoUnmarshallerFactory;
     private ProjectServiceClient   projectServiceClient;
     private EventBus               eventBus;
-    private OpenProjectView        view;
-    private ProjectReference       selectedProject;
+    private final AppContext appContext;
+    private OpenProjectView  view;
+    private ProjectReference selectedProject;
 
     /** Create presenter. */
     @Inject
     protected OpenProjectPresenter(OpenProjectView view,
                                    DtoUnmarshallerFactory dtoUnmarshallerFactory,
                                    ProjectServiceClient projectServiceClient,
-                                   EventBus eventBus) {
+                                   EventBus eventBus,
+                                   AppContext appContext) {
         this.view = view;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.projectServiceClient = projectServiceClient;
         this.eventBus = eventBus;
+        this.appContext = appContext;
         this.view.setDelegate(this);
 
         updateComponents();
@@ -58,7 +63,12 @@ public class OpenProjectPresenter implements OpenProjectView.ActionDelegate {
     /** {@inheritDoc} */
     @Override
     public void onOpenClicked() {
-        eventBus.fireEvent(new OpenProjectEvent(selectedProject.getName()));
+        //if user select already opened project, we just hide dialog
+        CurrentProject currentProject = appContext.getCurrentProject();
+        if (currentProject == null || !selectedProject.getName().equals(currentProject.getRootProject().getName())) {
+            eventBus.fireEvent(new OpenProjectEvent(selectedProject.getName()));
+        }
+
         view.close();
     }
 
