@@ -15,7 +15,6 @@ import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.machine.MachineConfig;
-import org.eclipse.che.api.core.model.workspace.Machine;
 import org.eclipse.che.api.workspace.server.model.impl.MachineImpl;
 
 /**

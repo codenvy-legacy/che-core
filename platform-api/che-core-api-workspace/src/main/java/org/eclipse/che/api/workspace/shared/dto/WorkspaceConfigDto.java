@@ -37,6 +37,11 @@ public interface WorkspaceConfigDto extends WorkspaceConfig, Hyperlinks {
     WorkspaceConfigDto withDefaultEnvName(String defaultEnvironment);
 
     @Override
+    String getDescription();
+
+    WorkspaceConfigDto withDescription(String description);
+
+    @Override
     List<CommandDto> getCommands();
 
     WorkspaceConfigDto withCommands(List<CommandDto> commands);

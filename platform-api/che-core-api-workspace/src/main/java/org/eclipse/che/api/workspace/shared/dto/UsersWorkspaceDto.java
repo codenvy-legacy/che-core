@@ -40,6 +40,9 @@ public interface UsersWorkspaceDto extends UsersWorkspace, WorkspaceConfigDto, H
     UsersWorkspaceDto withDefaultEnvName(String defaultEnvironment);
 
     @Override
+    UsersWorkspaceDto withDescription(String description);
+
+    @Override
     List<CommandDto> getCommands();
 
     @Override

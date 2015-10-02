@@ -17,8 +17,6 @@ import org.eclipse.che.api.account.server.dao.Account;
 import org.eclipse.che.api.account.server.dao.AccountDao;
 import org.eclipse.che.api.auth.AuthenticationDao;
 import org.eclipse.che.api.local.storage.LocalStorageFactory;
-import org.eclipse.che.api.machine.server.command.CommandImpl;
-import org.eclipse.che.api.machine.server.dao.CommandDao;
 import org.eclipse.che.api.machine.server.dao.RecipeDao;
 import org.eclipse.che.api.machine.server.recipe.GroupImpl;
 import org.eclipse.che.api.machine.server.recipe.PermissionsImpl;
@@ -62,7 +60,6 @@ public class LocalInfrastructureModule extends AbstractModule {
 //        bind(FactoryStore.class).to(InMemoryFactoryStore.class);
         bind(TokenValidator.class).to(DummyTokenValidator.class);
         bind(RecipeDao.class).to(LocalRecipeDaoImpl.class);
-        bind(CommandDao.class).to(LocalCommandDaoImpl.class);
         bind(LocalStorageFactory.class);
     }
 
@@ -136,24 +133,4 @@ public class LocalInfrastructureModule extends AbstractModule {
     }
 
     // UserDao ~~~
-
-    @Provides
-    @Named("codenvy.local.infrastructure.commands")
-    Set<ManagedCommand> commands() {
-        final ManagedCommand command1 = new CommandImpl().withId("command123")
-                                                         .withName("mci")
-                                                         .withCreator("codenvy")
-                                                         .withWorkspaceId("workspace123")
-                                                         .withCommandLine("mvn clean install")
-                                                         .withVisibility("private")
-                                                         .withType("maven");
-        final ManagedCommand command2 = new CommandImpl().withId("command234")
-                                                         .withName("ab")
-                                                         .withCreator("codenvy")
-                                                         .withWorkspaceId("workspace123")
-                                                         .withCommandLine("ant build")
-                                                         .withVisibility("public")
-                                                         .withType("ant");
-        return unmodifiableSet(new HashSet<>(asList(command1, command2)));
-    }
 }
