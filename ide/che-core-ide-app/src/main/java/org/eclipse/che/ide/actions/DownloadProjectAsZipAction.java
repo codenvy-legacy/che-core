@@ -54,7 +54,7 @@ public class DownloadProjectAsZipAction extends Action {
                                       AnalyticsEventLogger eventLogger,
                                       Resources resources,
                                       DownloadContainer downloadContainer) {
-        super(locale.downloadProjectAsZipName(), locale.downloadProjectAsZipDescription(), null);
+        super(locale.downloadProjectAsZipName(), locale.downloadProjectAsZipDescription(), null, resources.downloadZip());
         this.appContext = appContext;
         this.eventLogger = eventLogger;
         this.projectExplorer = projectExplorer;
