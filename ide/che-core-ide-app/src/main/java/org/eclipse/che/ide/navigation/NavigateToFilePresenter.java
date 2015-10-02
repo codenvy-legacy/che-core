@@ -57,7 +57,7 @@ import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
 @Singleton
 public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegate {
 
-    private final String                     SEARCH_URL;
+    private       String                     SEARCH_URL;
     private       MessageBus                 wsMessageBus;
     private       DtoUnmarshallerFactory     dtoUnmarshallerFactory;
     private final ProjectExplorerPresenter   projectExplorer;
@@ -69,16 +69,14 @@ public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegat
     public NavigateToFilePresenter(NavigateToFileView view,
                                    AppContext appContext,
                                    EventBus eventBus,
-                                   MessageBus wsMessageBus,
                                    @Named("workspaceId") String workspaceId,
                                    DtoUnmarshallerFactory dtoUnmarshallerFactory,
-                                   ProjectExplorerPresenter projectExplorer) {
+                                   ProjectExplorerPresenter projectExplorer,
+                                   final MessageBusProvider messageBusProvider) {
         this.view = view;
         this.view.setDelegate(this);
 
         this.appContext = appContext;
-        this.eventBus = eventBus;
-        this.wsMessageBus = wsMessageBus;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.projectExplorer = projectExplorer;
 

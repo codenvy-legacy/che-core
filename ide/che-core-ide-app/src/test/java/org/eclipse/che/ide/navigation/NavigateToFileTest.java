@@ -78,7 +78,6 @@ public class NavigateToFileTest {
 //                                                dtoUnmarshallerFactory,
 //                                                dialogFactory,
 //                                                localizationConstant);
-        presenter = new NavigateToFilePresenter(view, appContext, messageBus, anyString(), dtoUnmarshallerFactory, projectExplorer);
     }
 
     @Test
