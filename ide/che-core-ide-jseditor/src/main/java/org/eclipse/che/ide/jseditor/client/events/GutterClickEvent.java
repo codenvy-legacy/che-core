@@ -12,6 +12,8 @@ package org.eclipse.che.ide.jseditor.client.events;
 
 import com.google.gwt.event.shared.GwtEvent;
 
+import elemental.events.MouseEvent;
+
 /**
  * Events for clicks on the gutter element of the editor.
  *
@@ -26,14 +28,20 @@ public class GutterClickEvent extends GwtEvent<GutterClickHandler> {
     /** the gutter. */
     private final String gutterId;
 
+    private final MouseEvent event;
+
     /**
+     *
      * @param lineNumber
      * @param gutterId
+     * @param clickLocationX
+     * @param clickLocationY
      */
-    public GutterClickEvent(final int lineNumber,
-                            final String gutterId) {
+    public GutterClickEvent(final int lineNumber, final String gutterId,
+                            final MouseEvent event) {
         this.lineNumber = lineNumber;
         this.gutterId = gutterId;
+        this.event = event;
     }
 
     @Override
@@ -61,4 +69,13 @@ public class GutterClickEvent extends GwtEvent<GutterClickHandler> {
     public String getGutterId() {
         return gutterId;
     }
+
+    /**
+     * Returns the mouse event that generated the gutter event.
+     * @return the mouse event
+     */
+    public MouseEvent getEvent() {
+        return event;
+    }
+
 }
