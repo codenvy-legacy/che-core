@@ -89,11 +89,6 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
     }
 
     @Override
-    public String getDescription() {
-        return null;// TODO
-    }
-
-    @Override
     public Machine getDevMachine() {
         return devMachine;
     }
@@ -183,26 +178,31 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
             return this;
         }
 
+        @Override
         public RuntimeWorkspaceBuilder setId(String id) {
             this.id = id;
             return this;
         }
 
+        @Override
         public RuntimeWorkspaceBuilder setName(String name) {
             this.name = name;
             return this;
         }
 
+        @Override
         public RuntimeWorkspaceBuilder setOwner(String owner) {
             this.owner = owner;
             return this;
         }
 
+        @Override
         public RuntimeWorkspaceBuilder setDescription(String description) {
             this.description = description;
             return this;
         }
 
+        @Override
         public RuntimeWorkspaceBuilder setDefaultEnvName(String defaultEnvName) {
             this.defaultEnvName = defaultEnvName;
             return this;
@@ -223,26 +223,31 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
             return this;
         }
 
+        @Override
         public RuntimeWorkspaceBuilder setStatus(WorkspaceStatus status) {
             this.status = status;
             return this;
         }
 
+        @Override
         public RuntimeWorkspaceBuilder setAttributes(Map<String, String> attributes) {
             this.attributes = attributes;
             return this;
         }
 
+        @Override
         public RuntimeWorkspaceBuilder setCommands(List<? extends Command> commands) {
             this.commands = commands;
             return this;
         }
 
+        @Override
         public RuntimeWorkspaceBuilder setProjects(List<? extends ProjectConfig> projects) {
             this.projects = projects;
             return this;
         }
 
+        @Override
         public RuntimeWorkspaceBuilder setEnvironments(Map<String, ? extends Environment> environments) {
             this.environments = environments;
             return this;

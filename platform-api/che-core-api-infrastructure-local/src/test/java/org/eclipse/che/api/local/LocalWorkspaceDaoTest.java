@@ -25,7 +25,6 @@ import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -135,9 +134,9 @@ public class LocalWorkspaceDaoTest {
 
         // commands
         final List<CommandImpl> commands = new ArrayList<>(3);
-        commands.add(new CommandImpl("MCI", "mvn clean install", "public", "maven", "/path/to/workingDir"));
-        commands.add(new CommandImpl("bower install", "bower install", "public", "bower", "/path/to/workingDir"));
-        commands.add(new CommandImpl("build without tests", "mvn clean install -Dmaven.test.skip", "public", "maven", "/path"));
+        commands.add(new CommandImpl("MCI", "mvn clean install", "maven", "/path/to/workingDir"));
+        commands.add(new CommandImpl("bower install", "bower install", "bower", "/path/to/workingDir"));
+        commands.add(new CommandImpl("build without tests", "mvn clean install -Dmaven.test.skip", "maven", "/path"));
 
         // attributes
         final Map<String, String> attributes = new HashMap<>(8);

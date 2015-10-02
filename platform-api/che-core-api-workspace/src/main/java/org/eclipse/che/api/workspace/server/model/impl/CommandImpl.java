@@ -25,7 +25,6 @@ public class CommandImpl implements Command {
 
     private String name;
     private String commandLine;
-    private String visibility;
     private String type;
     private String workingDir;
 
@@ -34,10 +33,9 @@ public class CommandImpl implements Command {
         this.commandLine = commandLine;
     }
 
-    public CommandImpl(String name, String commandLine, String visibility, String type, String workingDir) {
+    public CommandImpl(String name, String commandLine, String type, String workingDir) {
         this.name = name;
         this.commandLine = commandLine;
-        this.visibility = visibility;
         this.type = type;
         this.workingDir = workingDir;
     }
@@ -45,7 +43,6 @@ public class CommandImpl implements Command {
     public CommandImpl(Command command) {
         this.name = command.getName();
         this.commandLine = command.getCommandLine();
-        this.visibility = command.getVisibility();
         this.type = command.getType();
         this.workingDir = command.getWorkingDir();
     }
@@ -66,15 +63,6 @@ public class CommandImpl implements Command {
 
     public void setCommandLine(String commandLine) {
         this.commandLine = commandLine;
-    }
-
-    @Override
-    public String getVisibility() {
-        return visibility;
-    }
-
-    public void setVisibility(String visibility) {
-        this.visibility = visibility;
     }
 
     @Override
@@ -106,7 +94,6 @@ public class CommandImpl implements Command {
         final CommandImpl command = (CommandImpl)obj;
         return Objects.equals(name, command.name) &&
                Objects.equals(commandLine, command.commandLine) &&
-               Objects.equals(visibility, command.visibility) &&
                Objects.equals(type, command.type) &&
                Objects.equals(workingDir, command.workingDir);
     }
@@ -116,7 +103,6 @@ public class CommandImpl implements Command {
         int hash = 7;
         hash = 31 * hash + Objects.hashCode(name);
         hash = 31 * hash + Objects.hashCode(commandLine);
-        hash = 31 * hash + Objects.hashCode(visibility);
         hash = 31 * hash + Objects.hashCode(type);
         hash = 31 * hash + Objects.hashCode(workingDir);
         return hash;
@@ -127,7 +113,6 @@ public class CommandImpl implements Command {
         return "CommandImpl{" +
                "name='" + name + '\'' +
                ", commandLine='" + commandLine + '\'' +
-               ", visibility='" + visibility + '\'' +
                ", type='" + type + '\'' +
                ", workingDir='" + workingDir + '\'' +
                '}';
