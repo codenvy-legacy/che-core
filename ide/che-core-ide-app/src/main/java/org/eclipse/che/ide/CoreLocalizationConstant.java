@@ -502,11 +502,29 @@ public interface CoreLocalizationConstant extends Messages {
     @DefaultMessage("Delete")
     String delete();
 
-    @Key("projectProblem.title")
-    String projectProblemTitle();
+    @Key("projectProblemDialog.title")
+    String projectProblemDialogTitle();
 
-    @Key("projectProblem.message")
-    String projectProblemMessage();
+    @Key("projectProblem.openAsIsButton.title")
+    String projectProblemOpenAsIsButtonTitle();
+
+    @Key("projectProblem.openAsButton.title")
+    String projectProblemOpenAsButtonTitle(String projectType);
+
+    @Key("projectProblem.configureButton.title")
+    String projectProblemConfigureButtonTitle();
+
+    @Key("projectProblem.notDetermineProjectType.message")
+    String projectProblemNotDetermineProjectTypeMessage();
+
+    @Key("projectProblem.openAs.message")
+    String projectProblemOpenAsMessage(String projectType);
+
+    @Key("projectProblem.estimatedTypes.message")
+    String projectProblemEstimatedTypesMessage();
+
+    @Key("projectProblem.pressingButtons.message")
+    String projectProblemPressingButtonsMessage(String projectType);
 
     @Key("action.expandEditor.title")
     String actionExpandEditorTitle();

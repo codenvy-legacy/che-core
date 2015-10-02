@@ -36,6 +36,14 @@ public interface SourceEstimation extends Hyperlinks {
 
     SourceEstimation withType(String type);
 
+    /** Returns is type can be primary. */
+    boolean isPrimaryable();
+
+    /** Sets is type can be primary. */
+    void setPrimaryable(boolean Primaryable);
+
+    SourceEstimation withPrimaryable(boolean Primaryable);
+
     //
 
     /** Gets attributes of this project. */

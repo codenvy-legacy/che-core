@@ -24,7 +24,6 @@ import org.eclipse.che.api.core.util.ValueHolder;
 import org.eclipse.che.api.project.server.handlers.CreateProjectHandler;
 import org.eclipse.che.api.project.server.handlers.GetItemHandler;
 import org.eclipse.che.api.project.server.handlers.GetModulesHandler;
-import org.eclipse.che.api.project.server.handlers.PostImportProjectHandler;
 import org.eclipse.che.api.project.server.handlers.ProjectHandler;
 import org.eclipse.che.api.project.server.handlers.ProjectHandlerRegistry;
 import org.eclipse.che.api.project.server.type.AttributeValue;
@@ -37,12 +36,12 @@ import org.eclipse.che.api.project.shared.dto.ImportSourceDescriptor;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.NewProject;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.api.project.shared.dto.ProjectModule;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.api.project.shared.dto.ProjectUpdate;
 import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentLeaf;
 import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentTree;
 import org.eclipse.che.api.project.shared.dto.Source;
+import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.project.shared.dto.TreeElement;
 import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.api.vfs.server.ContentStream;
@@ -167,11 +166,58 @@ public class ProjectServiceTest {
             }
 
         };
+        ProjectType php = new ProjectType("php", "php_project_type", true, false) {
+            {
+                ValueProvider phpValueProvider = new ValueProvider() {
+                    @Override
+                    public List<String> getValues(String attributeName) throws ValueStorageException {
+                        return Arrays.asList("true");
+                    }
+
+                    @Override
+                    public void setValues(String attributeName, List<String> value) throws ValueStorageException, InvalidValueException {
+
+                    }
+                };
+                addConstantDefinition("x", "attr description", new AttributeValue(Arrays.asList("a")));
+                addVariableDefinition("y", "descr", false, new ValueProviderFactory() {
+                    @Override
+                    public ValueProvider newInstance(FolderEntry projectFolder) {
+                        return phpValueProvider;
+                    }
+                });
+            }
+
+        };
+        ProjectType ruby = new ProjectType("ruby", "ruby_project_type", true, false) {
+            {
+                ValueProvider rubyValueProvider = new ValueProvider() {
+                    @Override
+                    public List<String> getValues(String attributeName) throws ValueStorageException {
+                        return Collections.<String>emptyList();
+                    }
+
+                    @Override
+                    public void setValues(String attributeName, List<String> value) throws ValueStorageException, InvalidValueException {
+
+                    }
+                };
+                addConstantDefinition("x", "attr description", new AttributeValue(Arrays.asList("a")));
+                addVariableDefinition("y", "descr", false, new ValueProviderFactory() {
+                    @Override
+                    public ValueProvider newInstance(FolderEntry projectFolder) {
+                        return rubyValueProvider;
+                    }
+                });
+            }
+        };
 
         Set<ProjectType> projTypes = new HashSet<>();
         projTypes.add(new MyProjType("my_project_type", "my project type"));
         projTypes.add(new MyProjType("module_type", "module type"));
         projTypes.add(chuck);
+        projTypes.add(php);
+        projTypes.add(ruby);
 
         ProjectTypeRegistry ptRegistry = new ProjectTypeRegistry(projTypes);
 
@@ -2944,6 +2990,23 @@ public class ProjectServiceTest {
         assertEquals(response.getStatus(), 409, "Error: " + response.getEntity());
 
 
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testResolveSources() throws Exception {
+        Project phpProject = pm.createProject(workspace, "phpProject",
+                                              new ProjectConfig("test project", "php", new HashMap<>(), null, null, null), null, null);
+        FolderEntry baseFolder = phpProject.getBaseFolder();
+        baseFolder.createFile("test.php", "test".getBytes(), MediaType.TEXT_PLAIN);
+        ContainerResponse response = launcher.service(HttpMethod.GET,
+                                                      String.format("http://localhost:8080/api/project/%s/resolve/phpProject",
+                                                                    workspace),
+                                                      "http://localhost:8080/api", null, null, null);
+        assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
+        List<SourceEstimation> result = (List<SourceEstimation>)response.getEntity();
+        assertEquals(result.size(), 1);
+        Assert.assertTrue(result.get(0).getType().equals("php"));
     }
 
 

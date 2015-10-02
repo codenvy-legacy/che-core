@@ -62,6 +62,8 @@ import org.eclipse.che.ide.api.parts.WorkBenchView;
 import org.eclipse.che.ide.api.parts.WorkspaceAgent;
 import org.eclipse.che.ide.api.preferences.PreferencePagePresenter;
 import org.eclipse.che.ide.api.preferences.PreferencesManager;
+import org.eclipse.che.ide.core.problemDialog.ProjectProblemDialogView;
+import org.eclipse.che.ide.core.problemDialog.ProjectProblemDialogViewImpl;
 import org.eclipse.che.ide.part.explorer.project.DefaultNodeInterceptor;
 import org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor;
 import org.eclipse.che.ide.api.project.node.settings.SettingsProvider;
@@ -388,6 +390,7 @@ public class CoreGinModule extends AbstractGinModule {
                                              .implement(InputDialog.class, InputDialogPresenter.class)
                                              .implement(ChoiceDialog.class, ChoiceDialogPresenter.class)
                                              .build(DialogFactory.class));
+        bind(ProjectProblemDialogView.class).to(ProjectProblemDialogViewImpl.class);
 
         bind(OpenProjectView.class).to(OpenProjectViewImpl.class);
         bind(UploadFileView.class).to(UploadFileViewImpl.class);

@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.logger;
 
-import org.eclipse.che.ide.logger.AnalyticsEventLoggerImpl;
-
 import org.eclipse.che.api.user.gwt.client.UserServiceClient;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
