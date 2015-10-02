@@ -20,14 +20,16 @@ import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
-import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
+import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.download.DownloadContainer;
-import org.eclipse.che.ide.part.projectexplorer.ProjectListStructure;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
+import org.eclipse.che.ide.project.node.ProjectReferenceNode;
 
 import javax.validation.constraints.NotNull;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
 
@@ -42,10 +44,11 @@ public class DownloadProjectAsZipAction extends AbstractPerspectiveAction {
 
     private final String BASE_URL;
 
-    private final AnalyticsEventLogger eventLogger;
-    private final AppContext           appContext;
-    private final SelectionAgent       selectionAgent;
-    private       DownloadContainer    downloadContainer;
+    private final AnalyticsEventLogger     eventLogger;
+    private final AppContext               appContext;
+    private final SelectionAgent           selectionAgent;
+    private       DownloadContainer        downloadContainer;
+    private final ProjectExplorerPresenter projectExplorer;
 
     @Inject
     public DownloadProjectAsZipAction(@Named("workspaceId") String workspaceId,
@@ -54,7 +57,8 @@ public class DownloadProjectAsZipAction extends AbstractPerspectiveAction {
                                       CoreLocalizationConstant locale,
                                       SelectionAgent selectionAgent,
                                       AnalyticsEventLogger eventLogger,
-                                      DownloadContainer downloadContainer) {
+                                      DownloadContainer downloadContainer,
+                                      ProjectExplorerPresenter projectExplorer) {
         super(Arrays.asList(PROJECT_PERSPECTIVE_ID),
               locale.downloadProjectAsZipName(),
               locale.downloadProjectAsZipDescription(),
@@ -64,6 +68,7 @@ public class DownloadProjectAsZipAction extends AbstractPerspectiveAction {
         this.eventLogger = eventLogger;
         this.selectionAgent = selectionAgent;
         this.downloadContainer = downloadContainer;
+        this.projectExplorer = projectExplorer;
 
         BASE_URL = extPath + "/project/" + workspaceId + "/export/";
     }
@@ -80,11 +85,10 @@ public class DownloadProjectAsZipAction extends AbstractPerspectiveAction {
     /** {@inheritDoc} */
     @Override
     public void updateInPerspective(@NotNull ActionEvent event) {
-        Selection<?> selection = selectionAgent.getSelection();
-
-        boolean enabled = appContext.getCurrentProject() != null ||
-                          (selection != null && selection.getHeadElement() != null &&
-                           selection.getHeadElement() instanceof ProjectListStructure.ProjectNode);
+        Selection<?> selection = projectExplorer.getSelection();
+        boolean enabled = appContext.getCurrentProject() != null || (selection != null &&
+                                                                     (!selection.isEmpty() &&
+                                                                      selection.getHeadElement() instanceof ProjectReferenceNode));
 
         event.getPresentation().setVisible(true);
         event.getPresentation().setEnabled(enabled);
@@ -92,17 +96,17 @@ public class DownloadProjectAsZipAction extends AbstractPerspectiveAction {
 
     private String getPath() {
         String path = "";
-        StorableNode selectedNode = null;
+        HasStorablePath selectedNode = null;
 
-        Selection<?> selection = selectionAgent.getSelection();
+        List<?> selection = projectExplorer.getSelection().getAllElements();
         CurrentProject currentProject = appContext.getCurrentProject();
 
-        if (selection != null) {
-            selectedNode = (StorableNode)selection.getHeadElement();
+        if (!selection.isEmpty() && selection.get(0) instanceof HasStorablePath) {
+            selectedNode = (HasStorablePath)selection.get(0);
         }
 
-        if (selectedNode != null && selectedNode instanceof ProjectListStructure.ProjectNode) {
-            path = selectedNode.getPath();
+        if (selectedNode != null && selectedNode instanceof ProjectReferenceNode) {
+            path = selectedNode.getStorablePath();
         } else if (currentProject != null) {
             path = currentProject.getProjectDescription().getPath();
         }

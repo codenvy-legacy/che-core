@@ -10,18 +10,19 @@
  *******************************************************************************/
 package org.eclipse.che.ide.actions;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.web.bindery.event.shared.EventBus;
+
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.FileEvent;
-import org.eclipse.che.ide.api.project.tree.generic.FileNode;
+import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.api.selection.Selection;
-import org.eclipse.che.ide.api.selection.SelectionAgent;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.google.web.bindery.event.shared.EventBus;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 
 /**
  * @author Vitaliy Guliy
@@ -29,20 +30,20 @@ import com.google.web.bindery.event.shared.EventBus;
 @Singleton
 public class OpenSelectedFileAction extends Action {
 
-    private final AppContext           appContext;
-    private final SelectionAgent       selectionAgent;
-    private final EventBus             eventBus;
-    private final AnalyticsEventLogger eventLogger;
+    private final AppContext               appContext;
+    private final ProjectExplorerPresenter projectExplorer;
+    private final EventBus                 eventBus;
+    private final AnalyticsEventLogger     eventLogger;
 
     @Inject
     public OpenSelectedFileAction(AppContext appContext,
-                                  SelectionAgent selectionAgent,
+                                  ProjectExplorerPresenter projectExplorer,
                                   EventBus eventBus,
                                   AnalyticsEventLogger eventLogger,
                                   Resources resources) {
         super("Open", null, null, resources.defaultFile());
         this.appContext = appContext;
-        this.selectionAgent = selectionAgent;
+        this.projectExplorer = projectExplorer;
         this.eventBus = eventBus;
         this.eventLogger = eventLogger;
     }
@@ -51,10 +52,11 @@ public class OpenSelectedFileAction extends Action {
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
 
-        Selection<?> selection = selectionAgent.getSelection();
-        if (selection != null && selection.getFirstElement() instanceof FileNode) {
-            FileNode fileNode = (FileNode)selection.getFirstElement();
-            eventBus.fireEvent(new FileEvent(fileNode, FileEvent.FileOperation.OPEN));
+        Selection<?> selection = projectExplorer.getSelection();
+        Object headElement = selection.getHeadElement();
+
+        if (headElement instanceof VirtualFile) {
+            eventBus.fireEvent(new FileEvent((VirtualFile)headElement, FileEvent.FileOperation.OPEN));
         }
     }
 
@@ -65,8 +67,7 @@ public class OpenSelectedFileAction extends Action {
             return;
         }
 
-        Selection<?> selection = selectionAgent.getSelection();
-        final boolean isFileSelected = selection != null && selection.getFirstElement() instanceof FileNode;
-        e.getPresentation().setVisible(isFileSelected);
+        Selection<?> selection = projectExplorer.getSelection();
+        e.getPresentation().setVisible(selection.getAllElements().size() == 1 && selection.getHeadElement() instanceof VirtualFile);
     }
 }

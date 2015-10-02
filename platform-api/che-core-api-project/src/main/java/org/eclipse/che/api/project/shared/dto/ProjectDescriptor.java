@@ -233,4 +233,10 @@ public interface ProjectDescriptor extends Hyperlinks {
     //
 
     ProjectDescriptor withLinks(List<Link> links);
+
+    String getContentRoot();
+
+    void setContentRoot(String contentRoot);
+
+    ProjectDescriptor withContentRoot(String contentRoot);
 }

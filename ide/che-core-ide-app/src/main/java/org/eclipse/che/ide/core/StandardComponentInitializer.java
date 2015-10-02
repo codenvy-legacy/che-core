@@ -24,24 +24,27 @@ import org.eclipse.che.ide.actions.CutAction;
 import org.eclipse.che.ide.actions.DeleteItemAction;
 import org.eclipse.che.ide.actions.DownloadItemAction;
 import org.eclipse.che.ide.actions.DownloadProjectAsZipAction;
+import org.eclipse.che.ide.actions.ExpandAllAction;
 import org.eclipse.che.ide.actions.ExpandEditorAction;
+import org.eclipse.che.ide.actions.ExpandNodeAction;
 import org.eclipse.che.ide.actions.FindReplaceAction;
+import org.eclipse.che.ide.actions.FoldersAlwaysOnTopAction;
 import org.eclipse.che.ide.actions.FormatterAction;
+import org.eclipse.che.ide.actions.GoIntoAction;
 import org.eclipse.che.ide.actions.ImportLocalProjectAction;
 import org.eclipse.che.ide.actions.ImportProjectFromLocationAction;
 import org.eclipse.che.ide.actions.NavigateToFileAction;
 import org.eclipse.che.ide.actions.NewProjectAction;
 import org.eclipse.che.ide.actions.OpenFileAction;
-import org.eclipse.che.ide.actions.OpenNodeAction;
 import org.eclipse.che.ide.actions.OpenProjectAction;
 import org.eclipse.che.ide.actions.OpenSelectedFileAction;
 import org.eclipse.che.ide.actions.PasteAction;
 import org.eclipse.che.ide.actions.ProjectConfigurationAction;
 import org.eclipse.che.ide.actions.RedoAction;
+import org.eclipse.che.ide.actions.CollapseAllAction;
 import org.eclipse.che.ide.actions.RenameItemAction;
 import org.eclipse.che.ide.actions.SaveAction;
 import org.eclipse.che.ide.actions.SaveAllAction;
-import org.eclipse.che.ide.actions.SelectNodeAction;
 import org.eclipse.che.ide.actions.SettingsAction;
 import org.eclipse.che.ide.actions.ShowHiddenFilesAction;
 import org.eclipse.che.ide.actions.ShowPreferencesAction;
@@ -140,22 +143,31 @@ public class StandardComponentInitializer {
     private RenameItemAction renameItemAction;
 
     @Inject
+    private CollapseAllAction collapseAllAction;
+
+    @Inject
+    private ExpandAllAction expandAllAction;
+
+    @Inject
+    private FoldersAlwaysOnTopAction foldersAlwaysOnTopAction;
+
+    @Inject
+    private GoIntoAction goIntoAction;
+
+    @Inject
     private OpenProjectAction openProjectAction;
 
     @Inject
     private CloseProjectAction closeProjectAction;
 
     @Inject
+    private ExpandNodeAction expandNodeAction;
+
+    @Inject
     private OpenSelectedFileAction openSelectedFileAction;
 
     @Inject
     private OpenFileAction openFileAction;
-
-    @Inject
-    private OpenNodeAction openNodeAction;
-
-    @Inject
-    private SelectNodeAction selectNodeAction;
 
     @Inject
     private ShowHiddenFilesAction showHiddenFilesAction;
@@ -364,6 +376,8 @@ public class StandardComponentInitializer {
         fileGroup.add(renameItemAction);
         fileGroup.add(deleteItemAction);
         fileGroup.addSeparator();
+        fileGroup.add(collapseAllAction);
+        fileGroup.addSeparator();
         fileGroup.add(saveGroup);
 
         // Compose Code menu
@@ -395,6 +409,7 @@ public class StandardComponentInitializer {
         DefaultActionGroup resourceOperation = new DefaultActionGroup(actionManager);
         actionManager.registerAction("resourceOperation", resourceOperation);
         resourceOperation.addSeparator();
+        resourceOperation.add(goIntoAction);
         resourceOperation.add(openSelectedFileAction);
 
         resourceOperation.add(cutAction);
@@ -437,10 +452,12 @@ public class StandardComponentInitializer {
         actionManager.registerAction("renameResource", renameItemAction);
         actionManager.registerAction("deleteItem", deleteItemAction);
 
+        actionManager.registerAction("collapseAll", collapseAllAction);
+        actionManager.registerAction("expandAll", expandAllAction);
+
         actionManager.registerAction("findReplace", findReplaceAction);
         actionManager.registerAction("openFile", openFileAction);
-        actionManager.registerAction("openNode", openNodeAction);
-        actionManager.registerAction("selectNode", selectNodeAction);
+        actionManager.registerAction("expandNode", expandNodeAction);
 
         changeResourceGroup.add(closeProjectAction);
         changeResourceGroup.add(cutAction);
@@ -458,6 +475,10 @@ public class StandardComponentInitializer {
 
         DefaultActionGroup rightToolbarGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_RIGHT_TOOLBAR);
         toolbarPresenter.bindRightGroup(rightToolbarGroup);
+
+        DefaultActionGroup projectExplorerContextMenu = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_PROJECT_EXPLORER_CONTEXT_MENU);
+        projectExplorerContextMenu.add(foldersAlwaysOnTopAction);
+        actionManager.registerAction("foldersAlwaysOnTop", foldersAlwaysOnTopAction);
 
         // Define hot-keys
         keyBinding.getGlobal().addKey(new KeyBuilder().action().alt().charCode('n').build(), "navigateToFile");

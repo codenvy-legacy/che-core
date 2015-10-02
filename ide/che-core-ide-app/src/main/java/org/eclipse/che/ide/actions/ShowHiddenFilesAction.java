@@ -26,8 +26,7 @@ import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.PromisableAction;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
-import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
-import org.eclipse.che.ide.api.project.tree.TreeSettings;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.util.loging.Log;
 
 import javax.validation.constraints.NotNull;
@@ -48,12 +47,14 @@ public class ShowHiddenFilesAction extends AbstractPerspectiveAction implements 
     private final AnalyticsEventLogger     eventLogger;
     private final EventBus                 eventBus;
     private final CoreLocalizationConstant localizationConstant;
+    private final ProjectExplorerPresenter projectExplorerPresenter;
 
     @Inject
     public ShowHiddenFilesAction(AppContext appContext,
                                  AnalyticsEventLogger eventLogger,
                                  EventBus eventBus,
-                                 CoreLocalizationConstant localizationConstant) {
+                                 CoreLocalizationConstant localizationConstant,
+                                 ProjectExplorerPresenter projectExplorerPresenter) {
         super(Arrays.asList(PROJECT_PERSPECTIVE_ID),
               localizationConstant.actionShowHiddenFilesTitle(),
               localizationConstant.actionShowHiddenFilesDescription(),
@@ -63,6 +64,7 @@ public class ShowHiddenFilesAction extends AbstractPerspectiveAction implements 
         this.eventLogger = eventLogger;
         this.eventBus = eventBus;
         this.localizationConstant = localizationConstant;
+        this.projectExplorerPresenter = projectExplorerPresenter;
     }
 
     /** {@inheritDoc} */
@@ -75,12 +77,9 @@ public class ShowHiddenFilesAction extends AbstractPerspectiveAction implements 
     @Override
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
-        CurrentProject currentProject = appContext.getCurrentProject();
-        if (currentProject != null) {
-            TreeSettings treeSettings = currentProject.getCurrentTree().getSettings();
-            treeSettings.setShowHiddenItems(!treeSettings.isShowHiddenItems());
-            eventBus.fireEvent(new RefreshProjectTreeEvent());
-        }
+
+        boolean isShow = projectExplorerPresenter.isShowHiddenFiles();
+        projectExplorerPresenter.showHiddenFiles(!isShow);
     }
 
     @Override
@@ -102,7 +101,7 @@ public class ShowHiddenFilesAction extends AbstractPerspectiveAction implements 
 
             @Override
             public void makeCall(final Callback<Void, Throwable> callback) {
-                currentProject.getCurrentTree().getSettings().setShowHiddenItems(isShowHiddenFiles);
+                projectExplorerPresenter.showHiddenFiles(isShowHiddenFiles);
 
                 callback.onSuccess(null);
             }

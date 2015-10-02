@@ -12,11 +12,13 @@ package org.eclipse.che.api.project.server;
 
 import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.core.rest.HttpJsonHelper;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.core.util.LinksHelper;
+import org.eclipse.che.api.project.server.type.Attribute;
 import org.eclipse.che.api.project.server.type.AttributeValue;
+import org.eclipse.che.api.project.server.type.BaseProjectType;
 import org.eclipse.che.api.project.server.type.ProjectType;
+import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
 import org.eclipse.che.api.project.shared.dto.AttributeDescriptor;
 import org.eclipse.che.api.project.shared.dto.ImportSourceDescriptor;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
@@ -28,12 +30,8 @@ import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
 import org.eclipse.che.api.project.shared.dto.ProjectUpdate;
-import org.eclipse.che.api.project.server.type.Attribute;
-import org.eclipse.che.api.project.server.type.BaseProjectType;
-import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
 import org.eclipse.che.api.vfs.shared.dto.AccessControlEntry;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
-import org.eclipse.che.api.workspace.server.WorkspaceService;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.ws.rs.ExtMediaType;
 import org.eclipse.che.commons.user.User;
@@ -42,8 +40,6 @@ import org.eclipse.che.dto.server.DtoFactory;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -435,6 +431,12 @@ public class DtoConverter {
 
         try {
             dto.withVisibility(project.getVisibility());
+        } catch (ServerException e) {
+            dto.getProblems().add(createProjectProblem(dtoFactory, e));
+        }
+
+        try {
+            dto.withContentRoot(project.getContentRoot());
         } catch (ServerException e) {
             dto.getProblems().add(createProjectProblem(dtoFactory, e));
         }

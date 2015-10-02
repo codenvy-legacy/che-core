@@ -10,12 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.project.tree;
 
-import org.eclipse.che.ide.api.project.tree.generic.ProjectNode;
-
-import com.google.gwt.user.client.rpc.AsyncCallback;
+import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.commons.annotation.Nullable;
+import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
 
 import javax.validation.constraints.NotNull;
-import org.eclipse.che.commons.annotation.Nullable;
 
 /**
  * File that may be opened in editor.
@@ -41,8 +40,8 @@ public interface VirtualFile {
     /** if user doesn't have wright rights, or file comes from external sources thad doesn't support modifying file content*/
     boolean isReadOnly();
 
-    @NotNull
-    ProjectNode getProject();
+    @Nullable
+    HasProjectDescriptor getProject();
 
     /**
      * Some file type can't represent their content as string.
@@ -54,7 +53,7 @@ public interface VirtualFile {
     String getContentUrl();
 
     /** * Get content of the file which this node represents. */
-    void getContent(AsyncCallback<String> callback);
+    Promise<String> getContent();
 
     /**
      * Update content of the file.
@@ -64,6 +63,6 @@ public interface VirtualFile {
      * @param callback
      *         callback to return retrieved content
      */
-     void updateContent(String content, AsyncCallback<Void> callback);
+    Promise<Void> updateContent(String content);
 
 }
