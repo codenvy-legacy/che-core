@@ -55,9 +55,6 @@ public interface LoaderView extends IsWidget {
      */
     void printToDetails(OperationInfo info);
 
-    /** Clear operation panel and details area. */
-    void clear();
-
     /** Scrolls details area to bottom. */
     void scrollBottom();
 

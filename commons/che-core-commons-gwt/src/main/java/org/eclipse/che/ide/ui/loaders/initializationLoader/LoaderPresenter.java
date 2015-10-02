@@ -22,7 +22,7 @@ import com.google.inject.Singleton;
 public class LoaderPresenter implements OperationInfo.StatusListener, LoaderView.ActionDelegate {
 
     private final LoaderView view;
-    private boolean expandPanelState;
+    private       boolean    expandPanelState;
 
     @Inject
     public LoaderPresenter(LoaderView view) {
@@ -50,7 +50,6 @@ public class LoaderPresenter implements OperationInfo.StatusListener, LoaderView
         view.setEnabledCloseButton(true);
         if (!expandPanelState) {
             view.hide();
-            view.clear();
         }
     }
 
@@ -75,11 +74,6 @@ public class LoaderPresenter implements OperationInfo.StatusListener, LoaderView
     public void printToDetails(OperationInfo info) {
         view.printToDetails(info);
         view.scrollBottom();
-    }
-
-    /** Clear operation panel and details area. */
-    public void clear() {
-        view.clear();
     }
 
     @Override

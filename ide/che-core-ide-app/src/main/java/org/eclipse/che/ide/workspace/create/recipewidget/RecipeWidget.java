@@ -8,9 +8,8 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.createworkspace.tagentry;
+package org.eclipse.che.ide.workspace.create.recipewidget;
 
-import org.eclipse.che.api.machine.shared.dto.recipe.RecipeDescriptor;
 import org.eclipse.che.ide.api.mvp.View;
 
 /**
@@ -18,10 +17,13 @@ import org.eclipse.che.ide.api.mvp.View;
  *
  * @author Dmitry Shnurenko
  */
-public interface TagEntry extends View<TagEntry.ActionDelegate> {
+public interface RecipeWidget extends View<RecipeWidget.ActionDelegate> {
 
-    /** Returns descriptor which contains information about recipe. */
-    RecipeDescriptor getDescriptor();
+    /** Returns special url via which we can get recipe script. */
+    String getRecipeUrl();
+
+    /** Returns tag name associated to recipe. */
+    String getTagName();
 
     /**
      * This method need to set necessary styles to tag component. This styles don't set via ui binder because it doesn't load yet
@@ -36,6 +38,6 @@ public interface TagEntry extends View<TagEntry.ActionDelegate> {
          * @param tag
          *         tag which was selected
          */
-        void onTagClicked(TagEntry tag);
+        void onTagClicked(RecipeWidget tag);
     }
 }

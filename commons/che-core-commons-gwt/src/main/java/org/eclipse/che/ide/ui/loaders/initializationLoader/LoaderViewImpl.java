@@ -166,13 +166,6 @@ public class LoaderViewImpl extends PopupPanel implements LoaderView, ResizeHand
 
     /** {@inheritDoc} */
     @Override
-    public void clear() {
-        operationPanel.clear();
-        operationData.clear();
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public void scrollBottom() {
         scroll.getElement().setScrollTop(scroll.getElement().getScrollHeight());
     }
@@ -180,6 +173,7 @@ public class LoaderViewImpl extends PopupPanel implements LoaderView, ResizeHand
     /** {@inheritDoc} */
     @Override
     public void show(OperationInfo info) {
+        closeButton.setEnabled(false);
         center();
         print(info);
 
@@ -196,6 +190,13 @@ public class LoaderViewImpl extends PopupPanel implements LoaderView, ResizeHand
         }
         resizeHandler = null;
         super.hide();
+
+        clearContent();
+    }
+
+    private void clearContent() {
+        operationPanel.clear();
+        operationData.clear();
     }
 
     @Override

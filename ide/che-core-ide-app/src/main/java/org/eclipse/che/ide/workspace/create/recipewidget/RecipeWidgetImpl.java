@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.createworkspace.tagentry;
+package org.eclipse.che.ide.workspace.create.recipewidget;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -31,8 +31,8 @@ import org.vectomatic.dom.svg.ui.SVGImage;
  *
  * @author Dmitry Shnurenko
  */
-public class TagEntryImpl extends Composite implements TagEntry, ClickHandler {
-    interface TagEntryUiBinder extends UiBinder<Widget, TagEntryImpl> {
+public class RecipeWidgetImpl extends Composite implements RecipeWidget, ClickHandler {
+    interface TagEntryUiBinder extends UiBinder<Widget, RecipeWidgetImpl> {
     }
 
     private static final TagEntryUiBinder UI_BINDER = GWT.create(TagEntryUiBinder.class);
@@ -51,7 +51,7 @@ public class TagEntryImpl extends Composite implements TagEntry, ClickHandler {
     FlowPanel   main;
 
     @Inject
-    public TagEntryImpl(org.eclipse.che.ide.Resources resources, @Assisted RecipeDescriptor descriptor) {
+    public RecipeWidgetImpl(org.eclipse.che.ide.Resources resources, @Assisted RecipeDescriptor descriptor) {
         this.descriptor = descriptor;
 
         initWidget(UI_BINDER.createAndBindUi(this));
@@ -67,8 +67,14 @@ public class TagEntryImpl extends Composite implements TagEntry, ClickHandler {
 
     /** {@inheritDoc} */
     @Override
-    public RecipeDescriptor getDescriptor() {
-        return descriptor;
+    public String getRecipeUrl() {
+        return descriptor.getLink("get recipe script").getHref();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getTagName() {
+        return tagName.getText();
     }
 
     /** {@inheritDoc} */
@@ -78,8 +84,8 @@ public class TagEntryImpl extends Composite implements TagEntry, ClickHandler {
                                                 "background-color: #272727; cursor: pointer;");
 
         icon.getElement().setAttribute("style", "float: left;  width: 20px; height: 20px;");
-        tagName.getElement().setAttribute("style", "float: left;");
-        type.getElement().setAttribute("style", "float: right; margin-right: 6px;");
+        tagName.getElement().setAttribute("style", "float: left; margin-top: 2px;");
+        type.getElement().setAttribute("style", "float: right; margin-right: 6px; margin-top: 3px;");
     }
 
     /** {@inheritDoc} */

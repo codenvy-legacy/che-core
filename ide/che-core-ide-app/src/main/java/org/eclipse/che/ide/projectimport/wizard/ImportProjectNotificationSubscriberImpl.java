@@ -10,21 +10,27 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projectimport.wizard;
 
+import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONParser;
+import com.google.inject.Inject;
+import com.google.web.bindery.event.shared.EventBus;
+
+import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.notification.NotificationManager;
+import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
 import org.eclipse.che.ide.commons.exception.UnmarshallerException;
 import org.eclipse.che.ide.projectimport.wizard.presenter.ImportProjectWizardPresenter;
 import org.eclipse.che.ide.util.loging.Log;
 import org.eclipse.che.ide.websocket.Message;
 import org.eclipse.che.ide.websocket.MessageBus;
+import org.eclipse.che.ide.websocket.MessageBusProvider;
 import org.eclipse.che.ide.websocket.WebSocketException;
 import org.eclipse.che.ide.websocket.rest.SubscriptionHandler;
-import com.google.gwt.json.client.JSONObject;
-import com.google.gwt.json.client.JSONParser;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
+import org.eclipse.che.ide.workspace.start.StartWorkspaceEvent;
+import org.eclipse.che.ide.workspace.start.StartWorkspaceHandler;
 
 public class ImportProjectNotificationSubscriberImpl implements ImportProjectNotificationSubscriber {
     private CoreLocalizationConstant    locale;
@@ -37,14 +43,20 @@ public class ImportProjectNotificationSubscriberImpl implements ImportProjectNot
 
     @Inject
     public ImportProjectNotificationSubscriberImpl(CoreLocalizationConstant locale,
-                                                   NotificationManager notificationManager,
-                                                   @Named("workspaceId") String workspaceId,
-                                                   MessageBus messageBus) {
+                                                   final MessageBusProvider messageBusProvider,
+                                                   EventBus eventBus,
+                                                   AppContext appContext,
+                                                   NotificationManager notificationManager) {
         this.locale = locale;
         this.notificationManager = notificationManager;
-        this.workspaceId = workspaceId;
-        this.messageBus = messageBus;
+        this.workspaceId = appContext.getWorkspace().getId();
 
+        eventBus.addHandler(StartWorkspaceEvent.TYPE, new StartWorkspaceHandler() {
+            @Override
+            public void onWorkspaceStarted(UsersWorkspaceDto workspace) {
+                messageBus = messageBusProvider.getMessageBus();
+            }
+        });
     }
 
     @Override

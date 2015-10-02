@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.createworkspace;
+package org.eclipse.che.ide.workspace.create;
 
 import com.google.gwt.core.client.Callback;
 import com.google.inject.Provider;
@@ -28,10 +28,10 @@ import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.bootstrap.WorkspaceComponent;
 import org.eclipse.che.ide.core.Component;
-import org.eclipse.che.ide.createworkspace.CreateWorkSpaceView.HidePopupCallBack;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo;
+import org.eclipse.che.ide.workspace.create.CreateWorkspaceView.HidePopupCallBack;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,13 +48,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.eclipse.che.ide.createworkspace.CreateWorkspacePresenter.MAX_COUNT;
-import static org.eclipse.che.ide.createworkspace.CreateWorkspacePresenter.RECIPE_TYPE;
-import static org.eclipse.che.ide.createworkspace.CreateWorkspacePresenter.SKIP_COUNT;
+import static org.eclipse.che.ide.workspace.create.CreateWorkspacePresenter.MAX_COUNT;
+import static org.eclipse.che.ide.workspace.create.CreateWorkspacePresenter.RECIPE_TYPE;
+import static org.eclipse.che.ide.workspace.create.CreateWorkspacePresenter.SKIP_COUNT;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -68,7 +67,7 @@ public class CreateWorkspacePresenterTest {
 
     //constructor mocks
     @Mock
-    private CreateWorkSpaceView          view;
+    private CreateWorkspaceView          view;
     @Mock
     private LoaderPresenter              loader;
     @Mock
@@ -168,6 +167,8 @@ public class CreateWorkspacePresenterTest {
 
     @Test
     public void dialogShouldBeShown() {
+        when(recipeServiceClient.getRecipes(anyInt(), anyInt())).thenReturn(recipesPromise);
+
         presenter.show(operationInfo, componentCallback);
 
         verify(view).show();
@@ -214,7 +215,7 @@ public class CreateWorkspacePresenterTest {
         callSearchRecipesApplyMethod(recipes);
 
         verify(popupCallBack, never()).hidePopup();
-        verify(view).showRecipes(recipes);
+        verify(view).showFoundByTagRecipes(recipes);
         verify(view).setVisibleTagsError(false);
     }
 
@@ -238,11 +239,20 @@ public class CreateWorkspacePresenterTest {
 
     @Test
     public void errorLabelShouldBeShowWhenRecipesNotFound() throws Exception {
-        callSearchRecipesApplyMethod(new ArrayList<>());
+        List<RecipeDescriptor> recipes = new ArrayList<>();
+
+        callSearchRecipesApplyMethod(recipes);
 
         verify(view).setVisibleTagsError(true);
         verify(popupCallBack).hidePopup();
-        verify(view, never()).showRecipes(Matchers.<List<RecipeDescriptor>>anyObject());
+        verify(view, never()).showFoundByTagRecipes(Matchers.<List<RecipeDescriptor>>anyObject());
+    }
+
+    @Test
+    public void predefinedRecipesShouldBeFound() {
+        presenter.onPredefinedRecipesClicked();
+
+        verify(view).showPredefinedRecipes(Matchers.<List<RecipeDescriptor>>anyObject());
     }
 
     @Test
@@ -257,19 +267,26 @@ public class CreateWorkspacePresenterTest {
         when(workspaceClient.create(Matchers.<UsersWorkspaceDto>anyObject(), anyString())).thenReturn(userWsPromise);
         when(userWsPromise.then(Matchers.<Operation<UsersWorkspaceDto>>anyObject())).thenReturn(userWsPromise);
         when(userWsPromise.catchError(Matchers.<Operation<PromiseError>>anyObject())).thenReturn(userWsPromise);
+        when(recipeServiceClient.getRecipes(anyInt(), anyInt())).thenReturn(recipesPromise);
+
         presenter.show(operationInfo, componentCallback);
 
         presenter.onCreateButtonClicked();
+
+        verify(recipeServiceClient).getRecipes(anyInt(), anyInt());
+        verify(recipesPromise).then(Matchers.<Operation<List<RecipeDescriptor>>>anyObject());
+
+        verify(view).show();
     }
 
     @Test
     public void workspaceConfigShouldBeGot() {
-        when(view.getDefaultEnvName()).thenReturn("name");
+        when(view.getWorkspaceName()).thenReturn("name");
         when(view.getRecipeUrl()).thenReturn("test");
 
         clickOnCreateButton();
 
-        verify(view).getDefaultEnvName();
+        verify(view).getWorkspaceName();
         verify(dtoFactory).createDto(MachineConfigDto.class);
         verify(machineConfigDto).withName("dev-machine");
         verify(machineConfigDto).withType("docker");
@@ -304,13 +321,10 @@ public class CreateWorkspacePresenterTest {
 
         callApplyCreateWorkspaceMethod();
 
-        verify(machineConfigDto).getOutputChannel();
-        verify(machineConfigDto).getStatusChannel();
-
-        verify(workspaceComponent).subscribeToOutput(anyString());
-        verify(workspaceComponent).subscribeToMachineStatus(anyString());
-
-        verify(workspaceComponent).startWorkspace(anyString(), anyString(), eq(componentCallback));
+        verify(wsComponentProvider).get();
+        verify(usersWorkspaceDto).getId();
+        verify(usersWorkspaceDto).getDefaultEnvName();
+        verify(workspaceComponent).startWorkspace(anyString(), anyString());
     }
 
     private void callApplyCreateWorkspaceMethod() throws Exception {
@@ -337,10 +351,7 @@ public class CreateWorkspacePresenterTest {
         verify(machineConfigDto, never()).getOutputChannel();
         verify(machineConfigDto, never()).getStatusChannel();
 
-        verify(workspaceComponent, never()).subscribeToOutput(anyString());
-        verify(workspaceComponent, never()).subscribeToMachineStatus(anyString());
-
-        verify(workspaceComponent).startWorkspace(anyString(), anyString(), eq(componentCallback));
+        verify(workspaceComponent).startWorkspace(anyString(), anyString());
     }
 
     @Test

@@ -22,6 +22,7 @@ import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.RuntimeWorkspaceDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
+import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
 import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
@@ -43,6 +44,7 @@ import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
  * Implementation for {@link WorkspaceServiceClient}.
  *
  * @author Artem Zatsarynnyy
+ * @author Dmitry Shnurenko
  */
 public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
 
@@ -196,7 +198,16 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
 
     @Override
     public Promise<Void> stop(String wsId) {
-        return null;
+        final String url = baseHttpUrl + "/" + wsId + "/runtime";
+
+        return newPromise(new RequestCall<Void>() {
+            @Override
+            public void makeCall(AsyncCallback<Void> callback) {
+                asyncRequestFactory.createDeleteRequest(url)
+                                   .loader(loader, "Stopping workspace...")
+                                   .send(newCallback(callback));
+            }
+        });
     }
 
     @Override

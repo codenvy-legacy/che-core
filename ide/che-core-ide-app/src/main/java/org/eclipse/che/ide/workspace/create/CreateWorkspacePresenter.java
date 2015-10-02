@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.createworkspace;
+package org.eclipse.che.ide.workspace.create;
 
 import com.google.gwt.core.client.Callback;
 import com.google.gwt.regexp.shared.RegExp;
@@ -20,6 +20,7 @@ import org.eclipse.che.api.machine.gwt.client.RecipeServiceClient;
 import org.eclipse.che.api.machine.shared.dto.recipe.RecipeDescriptor;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
+import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.PromiseError;
 import org.eclipse.che.api.workspace.gwt.client.WorkspaceServiceClient;
 import org.eclipse.che.api.workspace.shared.dto.CommandDto;
@@ -31,10 +32,10 @@ import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.bootstrap.WorkspaceComponent;
 import org.eclipse.che.ide.core.Component;
-import org.eclipse.che.ide.createworkspace.CreateWorkSpaceView.HidePopupCallBack;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo;
+import org.eclipse.che.ide.workspace.create.CreateWorkspaceView.HidePopupCallBack;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,7 +48,7 @@ import java.util.Map;
  * @author Dmitry Shnurenko
  */
 @Singleton
-public class CreateWorkspacePresenter implements CreateWorkSpaceView.ActionDelegate {
+public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDelegate {
 
     private static final RegExp FILE_NAME   = RegExp.compile("^[A-Za-z0-9_\\s-\\.]+$");
     private static final String URL_PATTERN =
@@ -60,25 +61,26 @@ public class CreateWorkspacePresenter implements CreateWorkSpaceView.ActionDeleg
     static final int    SKIP_COUNT  = 0;
     static final int    MAX_COUNT   = 100;
 
-    private final CreateWorkSpaceView          view;
+    private final CreateWorkspaceView          view;
     private final LoaderPresenter              loader;
     private final DtoFactory                   dtoFactory;
     private final WorkspaceServiceClient       workspaceClient;
     private final CoreLocalizationConstant     locale;
     private final Provider<WorkspaceComponent> wsComponentProvider;
-    private final RecipeServiceClient          recipeServiceClient;
+    private final RecipeServiceClient          recipeService;
 
     private OperationInfo                  operationInfo;
     private Callback<Component, Exception> callback;
+    private List<RecipeDescriptor>         recipes;
 
     @Inject
-    public CreateWorkspacePresenter(CreateWorkSpaceView view,
+    public CreateWorkspacePresenter(CreateWorkspaceView view,
                                     LoaderPresenter loader,
                                     DtoFactory dtoFactory,
                                     WorkspaceServiceClient workspaceClient,
                                     CoreLocalizationConstant locale,
                                     Provider<WorkspaceComponent> wsComponentProvider,
-                                    RecipeServiceClient recipeServiceClient) {
+                                    RecipeServiceClient recipeService) {
         this.view = view;
         this.view.setDelegate(this);
 
@@ -87,7 +89,7 @@ public class CreateWorkspacePresenter implements CreateWorkSpaceView.ActionDeleg
         this.workspaceClient = workspaceClient;
         this.locale = locale;
         this.wsComponentProvider = wsComponentProvider;
-        this.recipeServiceClient = recipeServiceClient;
+        this.recipeService = recipeService;
     }
 
     /**
@@ -96,9 +98,18 @@ public class CreateWorkspacePresenter implements CreateWorkSpaceView.ActionDeleg
      * @param operationInfo
      *         info which needs for dispaying information about creating workspace
      */
-    public void show(OperationInfo operationInfo, Callback<Component, Exception> callback) {
+    public void show(OperationInfo operationInfo, final Callback<Component, Exception> callback) {
         this.operationInfo = operationInfo;
         this.callback = callback;
+
+        Promise<List<RecipeDescriptor>> recipes = recipeService.getRecipes(SKIP_COUNT, MAX_COUNT);
+
+        recipes.then(new Operation<List<RecipeDescriptor>>() {
+            @Override
+            public void apply(List<RecipeDescriptor> recipeDescriptors) throws OperationException {
+                CreateWorkspacePresenter.this.recipes = recipeDescriptors;
+            }
+        });
 
         view.show();
     }
@@ -123,7 +134,7 @@ public class CreateWorkspacePresenter implements CreateWorkSpaceView.ActionDeleg
     /** {@inheritDoc} */
     @Override
     public void onTagsChanged(final HidePopupCallBack callBack) {
-        recipeServiceClient.searchRecipes(view.getTags(), RECIPE_TYPE, SKIP_COUNT, MAX_COUNT).then(new Operation<List<RecipeDescriptor>>() {
+        recipeService.searchRecipes(view.getTags(), RECIPE_TYPE, SKIP_COUNT, MAX_COUNT).then(new Operation<List<RecipeDescriptor>>() {
             @Override
             public void apply(List<RecipeDescriptor> recipes) throws OperationException {
                 boolean isRecipesEmpty = recipes.isEmpty();
@@ -131,12 +142,18 @@ public class CreateWorkspacePresenter implements CreateWorkSpaceView.ActionDeleg
                 if (isRecipesEmpty) {
                     callBack.hidePopup();
                 } else {
-                    view.showRecipes(recipes);
+                    view.showFoundByTagRecipes(recipes);
                 }
 
                 view.setVisibleTagsError(isRecipesEmpty);
             }
         });
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void onPredefinedRecipesClicked() {
+        view.showPredefinedRecipes(recipes);
     }
 
     /** {@inheritDoc} */
@@ -170,20 +187,9 @@ public class CreateWorkspacePresenter implements CreateWorkSpaceView.ActionDeleg
                 getWsOperation.setStatus(OperationInfo.Status.FINISHED);
                 createWsOperation.setStatus(OperationInfo.Status.FINISHED);
 
-                String defaultEnvName = workspace.getDefaultEnvName();
-
-                List<MachineConfigDto> machineConfigs = workspace.getEnvironments().get(defaultEnvName).getMachineConfigs();
-
                 WorkspaceComponent component = wsComponentProvider.get();
 
-                for (MachineConfigDto machineConfig : machineConfigs) {
-                    if (machineConfig.isDev()) {
-                        component.subscribeToOutput(machineConfig.getOutputChannel());
-                        component.subscribeToMachineStatus(machineConfig.getStatusChannel());
-                    }
-                }
-
-                component.startWorkspace(workspace.getId(), defaultEnvName, callback);
+                component.startWorkspace(workspace.getId(), workspace.getDefaultEnvName());
             }
         }).catchError(new Operation<PromiseError>() {
             @Override
@@ -196,7 +202,7 @@ public class CreateWorkspacePresenter implements CreateWorkSpaceView.ActionDeleg
     }
 
     private WorkspaceConfigDto getWorkspaceConfig() {
-        String defaultEnvName = view.getDefaultEnvName();
+        String wsName = view.getWorkspaceName();
 
         List<MachineConfigDto> machineConfigs = new ArrayList<>();
         machineConfigs.add(dtoFactory.createDto(MachineConfigDto.class)
@@ -209,8 +215,8 @@ public class CreateWorkspacePresenter implements CreateWorkSpaceView.ActionDeleg
                                      .withMemorySize(2048));
 
         Map<String, EnvironmentDto> environments = new HashMap<>();
-        environments.put(defaultEnvName, dtoFactory.createDto(EnvironmentDto.class)
-                                           .withName(defaultEnvName)
+        environments.put(wsName, dtoFactory.createDto(EnvironmentDto.class)
+                                           .withName(wsName)
                                            .withMachineConfigs(machineConfigs));
 
         List<CommandDto> commands = new ArrayList<>();
@@ -222,8 +228,8 @@ public class CreateWorkspacePresenter implements CreateWorkSpaceView.ActionDeleg
         attrs.put("fake_attr", "attr_value");
 
         return dtoFactory.createDto(WorkspaceConfigDto.class)
-                         .withName("default")
-                         .withDefaultEnvName(defaultEnvName)
+                         .withName(wsName)
+                         .withDefaultEnvName(wsName)
                          .withEnvironments(environments)
                          .withCommands(commands)
                          .withAttributes(attrs);
