@@ -10,12 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.api.core.rest;
 
+import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.dto.server.DtoFactory;
+import org.eclipse.che.dto.server.JsonSerializable;
 import org.eclipse.che.dto.shared.DTO;
-
 import org.everrest.core.impl.provider.JsonEntityProvider;
 
-import org.eclipse.che.commons.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -79,10 +79,10 @@ public class CodenvyJsonProvider<T> implements MessageBodyReader<T>, MessageBody
                         MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
         // Add Cache-Control before start write body.
         httpHeaders.putSingle(HttpHeaders.CACHE_CONTROL, "public, no-cache, no-store, no-transform");
-        if (type.isAnnotationPresent(DTO.class)) {
+        if (t instanceof JsonSerializable) {
             Writer w = new OutputStreamWriter(entityStream, Charset.forName("UTF-8"));
             try {
-                w.write(DtoFactory.getInstance().toJson(t));
+                w.write(((JsonSerializable)t).toJson());
             } finally {
                 w.flush();
             }
