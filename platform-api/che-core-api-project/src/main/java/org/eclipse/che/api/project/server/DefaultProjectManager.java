@@ -607,8 +607,13 @@ public final class DefaultProjectManager implements ProjectManager {
             if (attr.isVariable() && ((Variable)attr).getValueProviderFactory() != null) {
 
                 Variable var = (Variable)attr;
+
                 // getValue throws ValueStorageException if not valid
-                attributes.put(attr.getName(), var.getValue((FolderEntry)baseFolder));
+                AttributeValue value = var.getValue((FolderEntry)baseFolder);
+                if (var.isRequired() && value.getList().isEmpty()) {
+                    throw new ValueStorageException("Can't get required value for " + attr.getName());
+                }
+                attributes.put(attr.getName(), value);
             }
 
         }
@@ -633,13 +638,17 @@ public final class DefaultProjectManager implements ProjectManager {
 
             try {
                 for (Map.Entry<String, AttributeValue> attr : estimateProject(workspace, path, type.getId()).entrySet()) {
-                    attributes.put(attr.getKey(), attr.getValue().getList());
+                    List<String> values = attr.getValue().getList();
+                    if (values != null && !values.isEmpty()) {
+                        attributes.put(attr.getKey(), values);
+                    }
                 }
 
                 if (!attributes.isEmpty()) {
                     estimations.add(
                             DtoFactory.getInstance().createDto(SourceEstimation.class)
                                       .withType(type.getId())
+                                      .withPrimaryable(type.canBePrimary())
                                       .withAttributes(attributes));
 
                 }

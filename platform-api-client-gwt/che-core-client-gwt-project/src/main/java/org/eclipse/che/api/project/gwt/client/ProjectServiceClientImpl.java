@@ -23,6 +23,7 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.api.project.shared.dto.ProjectUpdate;
 import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentTree;
+import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.project.shared.dto.TreeElement;
 import org.eclipse.che.ide.MimeType;
 import org.eclipse.che.ide.dto.DtoFactory;
@@ -62,6 +63,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     private final String              SEARCH;
     private final String              SWITCH_VISIBILITY;
     private final String              ENVIRONMENTS;
+    private final String              RESOLVE_SOURCES;
     private final String              ESTIMATE;
     private final AsyncRequestLoader  loader;
     private final AsyncRequestFactory asyncRequestFactory;
@@ -94,6 +96,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         SWITCH_VISIBILITY = restContext + "/project/" + workspaceId + "/switch_visibility";
         ENVIRONMENTS = restContext + "/project/" + workspaceId + "/runner_environments";
         ESTIMATE = restContext + "/project/" + workspaceId + "/estimate";
+        RESOLVE_SOURCES = restContext + "/project/" + workspaceId + "/resolve";
     }
 
     @Override
@@ -161,6 +164,15 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loader, "Estimating project...")
+                           .send(callback);
+    }
+
+    @Override
+    public void resolveSources(String path, AsyncRequestCallback<List<SourceEstimation>> callback) {
+        final String requestUrl = RESOLVE_SOURCES + normalizePath(path);
+        asyncRequestFactory.createGetRequest(requestUrl)
+                           .header(ACCEPT, MimeType.APPLICATION_JSON)
+                           .loader(loader, "Resolving sources...")
                            .send(callback);
     }
 
