@@ -384,7 +384,7 @@ public class DtoImplClientTemplate extends DtoImpl {
                 builder.append(i).append("JSONValue ").append(outVar).append(" = new JSONNumber(")
                        .append(depth == 0 ? "this." + inVar : inVar).append(");\n");
             } else {
-                builder.append(i).append("JSONValue ").append(outVar).append(depth == 0 ? " = this." + inVar : inVar).append(
+                builder.append(i).append("JSONValue ").append(outVar).append(" = ").append(depth == 0 ? " this." + inVar : inVar).append(
                         " == null ? JSONNull.getInstance() : new JSONNumber(").append(depth == 0 ? "this." + inVar : inVar).append(");\n");
             }
         } else if (isBoolean(rawClass)) {
@@ -392,14 +392,14 @@ public class DtoImplClientTemplate extends DtoImpl {
                 builder.append(i).append("JSONValue ").append(outVar).append(" = JSONBoolean.getInstance(")
                        .append(depth == 0 ? "this." + inVar : inVar).append(");\n");
             } else {
-                builder.append(i).append("JSONValue ").append(outVar).append(depth == 0 ? " = this." + inVar : inVar).append(
+                builder.append(i).append("JSONValue ").append(outVar).append(" = ").append(depth == 0 ? " this." + inVar : inVar).append(
                         " == null ? JSONNull.getInstance() : JSONBoolean.getInstance(").append(depth == 0 ? "this." + inVar : inVar)
                        .append(");\n");
             }
         } else if (isAny(rawClass)) {
             // TODO a better method to clone instances of 
             // outVar = inVar == null ? JsonNull.INSTNACE : (copyJsons ? new JsonParser().parse(inVar) : inVar);
-            builder.append(i).append("JSONValue ").append(outVar).append(depth == 0 ? " = this." + inVar : inVar)
+            builder.append(i).append("JSONValue ").append(outVar).append(" = ").append(depth == 0 ? " this." + inVar : inVar)
                     .append(" == null ? JSONNull.getInstance() : (");
             appendCopyJsonExpression(inVar, builder).append(");\n");
         } else {
