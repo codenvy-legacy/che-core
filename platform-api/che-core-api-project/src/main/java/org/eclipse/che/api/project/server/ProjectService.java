@@ -18,6 +18,7 @@ import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 
 import org.apache.commons.fileupload.FileItem;
+import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
@@ -69,11 +70,11 @@ import org.eclipse.che.dto.server.DtoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.NotNull;
 import javax.annotation.PreDestroy;
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -92,7 +93,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -770,7 +770,8 @@ public class ProjectService extends Service {
                                         @ApiParam(value = "Force rewrite existing project", allowableValues = "true,false")
                                         @QueryParam("force") boolean force,
                                         ImportProject importProject)
-            throws ConflictException, ForbiddenException, UnauthorizedException, IOException, ServerException, NotFoundException {
+            throws ConflictException, ForbiddenException, UnauthorizedException, IOException, ServerException, NotFoundException,
+                   BadRequestException {
 
         final ImportSourceDescriptor projectSource = importProject.getSource().getProject();
         final ProjectImporter importer = importers.getImporter(projectSource.getType());
@@ -811,55 +812,52 @@ public class ProjectService extends Service {
     }
 
     private ImportResponse configureProject(ImportProject importProject, FolderEntry baseProjectFolder, String workspace, long creationDate)
-            throws IOException, ForbiddenException, ConflictException, NotFoundException,
-                   ServerException {
+            throws IOException, ForbiddenException, ConflictException, NotFoundException, ServerException, BadRequestException {
+        NewProject newProject = importProject.getProject();
+        if (newProject == null) {
+            throw new BadRequestException("A project being imported cannot be null");
+        }
         ImportResponse importResponse = DtoFactory.getInstance().createDto(ImportResponse.class);
         ProjectTypeRegistry projectTypeRegistry = projectManager.getProjectTypeRegistry();
         Project project;
         ProjectDescriptor projectDescriptor;
-        ProjectConfig projectConfig = null;
+        ProjectConfig projectConfig;
         String visibility = null;
-        NewProject newProject = importProject.getProject();
+
         //try convert folder to project with giving config
         try {
-            if (newProject != null) {
-                visibility = newProject.getVisibility();
-                RunnersDescriptor descriptor = newProject.getRunners();
-                if (descriptor != null) {
-                    replaceDefaultRunnerPath(descriptor);
-                }
-                projectConfig = DtoConverter.fromDto2(newProject, projectTypeRegistry);
-            }
+            visibility = newProject.getVisibility();
+            RunnersDescriptor descriptor = newProject.getRunners();
+            replaceDefaultRunnerPath(descriptor);
+            projectConfig = DtoConverter.fromDto2(newProject, projectTypeRegistry);
             project = projectManager.convertFolderToProject(workspace,
                                                             baseProjectFolder.getPath(),
                                                             projectConfig,
                                                             visibility);
 
-            if (newProject != null) {
-                for (ProjectModule projectModule : newProject.getModules()) {
-                    ProjectConfig moduleConfig = DtoConverter.toProjectConfig(projectModule, projectManager.getProjectTypeRegistry());
-                    projectManager.convertFolderToProject(workspace,
-                                                          baseProjectFolder.getPath() +
-                                                          projectModule.getPath(),
-                                                          moduleConfig,
-                                                          visibility);
+            for (ProjectModule projectModule : newProject.getModules()) {
+                ProjectConfig moduleConfig = DtoConverter.toProjectConfig(projectModule, projectManager.getProjectTypeRegistry());
+                projectManager.convertFolderToProject(workspace,
+                                                      baseProjectFolder.getPath() +
+                                                      projectModule.getPath(),
+                                                      moduleConfig,
+                                                      visibility);
 
-                    projectManager.addModule(workspace,
-                                             baseProjectFolder.getPath(),
-                                             baseProjectFolder.getPath() +
-                                             projectModule.getPath(),
-                                             moduleConfig,
-                                             null,
-                                             visibility);
-                    RunnersDescriptor projectModuleRunners = projectModule.getRunners();
-                    if (projectModuleRunners != null
-                        && projectModuleRunners.getDefault() != null
-                        && projectModuleRunners.getDefault().startsWith("project:/")) {
-                        replaceDefaultRunnerPath(projectModuleRunners);
-                        importRunnerEnvironment(importProject,
-                                                (FolderEntry)baseProjectFolder.getChild(projectModule.getPath()),
-                                                projectModuleRunners.getDefault().substring(9));
-                    }
+                projectManager.addModule(workspace,
+                                         baseProjectFolder.getPath(),
+                                         baseProjectFolder.getPath() +
+                                         projectModule.getPath(),
+                                         moduleConfig,
+                                         null,
+                                         visibility);
+                RunnersDescriptor projectModuleRunners = projectModule.getRunners();
+                if (projectModuleRunners != null
+                    && projectModuleRunners.getDefault() != null
+                    && projectModuleRunners.getDefault().startsWith("project:/")) {
+                    replaceDefaultRunnerPath(projectModuleRunners);
+                    importRunnerEnvironment(importProject,
+                                            (FolderEntry)baseProjectFolder.getChild(projectModule.getPath()),
+                                            projectModuleRunners.getDefault().substring(9));
                 }
             }
 
@@ -874,6 +872,12 @@ public class ProjectService extends Service {
                 postImportProjectHandler.onProjectImported(project.getBaseFolder());
             }
         } catch (ConflictException | ForbiddenException | ServerException | NotFoundException e) {
+            if (newProject.getType() == null
+                && newProject.getDescription() != null
+                || newProject.getRunners() != null
+                || newProject.getBuilders() != null ) {
+                throw new BadRequestException("Impossible to save configurations for the project without type");
+            }
             project = new NotValidProject(baseProjectFolder, projectManager);
             project.setVisibility(visibility);
 
@@ -883,7 +887,7 @@ public class ProjectService extends Service {
                                                               projectManager.getProjectTypeRegistry(),
                                                               workspace);
             ProjectProblem problem = DtoFactory.getInstance().createDto(ProjectProblem.class).withCode(1).withMessage(e.getMessage());
-            projectDescriptor.setProblems(Arrays.asList(problem));
+            projectDescriptor.setProblems(Collections.singletonList(problem));
         }
         project.getMisc().setContentRoot(newProject.getContentRoot());
         project.getMisc().save();
@@ -920,7 +924,7 @@ public class ProjectService extends Service {
                                                @ApiParam(value = "Force rewrite existing project", allowableValues = "true,false")
                                                @QueryParam("force") boolean force,
                                                Iterator<FileItem> formData)
-            throws ServerException, IOException, ConflictException, ForbiddenException, NotFoundException {
+            throws ServerException, IOException, ConflictException, ForbiddenException, NotFoundException, BadRequestException {
 
         // Not all importers uses virtual file system API. In this case virtual file system API doesn't get events and isn't able to set
         // correct creation time. Need do it manually.
