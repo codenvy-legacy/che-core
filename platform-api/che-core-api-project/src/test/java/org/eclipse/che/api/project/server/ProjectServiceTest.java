@@ -1620,13 +1620,28 @@ public class ProjectServiceTest {
 
         Map<String, List<String>> headers = new HashMap<>();
         headers.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
-        byte[] b = String.format("{\"source\":{\"project\":{\"location\":null,\"type\":\"%s\",\"parameters\":{}},\"runners\":{}}}", importType).getBytes();
+
+        String json = "{\n" +
+                      "    \"source\": {\n" +
+                      "        \"project\": {\n" +
+                      "            \"location\": null,\n" +
+                      "            \"type\": \"%s\",\n" +
+                      "            \"parameters\": {}\n" +
+                      "        },\n" +
+                      "        \"runners\": {}\n" +
+                      "    },\n" +
+                      "    \"project\": {\n" +
+                      "        \"name\": \"name\",\n" +
+                      "        \"type\": \"chuck_project_type\"\n" +
+                      "    }\n" +
+                      "}";
+
+        byte[] b = String.format(json, importType).getBytes();
         ContainerResponse response = launcher.service(HttpMethod.POST,
                                                       String.format("http://localhost:8080/api/project/%s/import/new_project", workspace),
                                                       "http://localhost:8080/api", headers, b, null);
         assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
         ImportResponse importResponse = (ImportResponse)response.getEntity();
-        assertEquals(importResponse.getProjectDescriptor().getDescription(), "import test");
         assertEquals(importResponse.getProjectDescriptor().getType(), "chuck_project_type");
         assertEquals(importResponse.getProjectDescriptor().getAttributes().get("x"), Arrays.asList("a", "b"));
 
