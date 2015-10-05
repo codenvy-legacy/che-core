@@ -55,37 +55,12 @@ public class LocalInfrastructureModule extends AbstractModule {
         bind(UserProfileDao.class).to(LocalProfileDaoImpl.class);
         bind(PreferenceDao.class).to(LocalPreferenceDaoImpl.class);
 //        bind(MemberDao.class).to(LocalMemberDaoImpl.class);
-        bind(AccountDao.class).to(LocalAccountDaoImpl.class);
         bind(AuthenticationDao.class).to(LocalAuthenticationDaoImpl.class);
 //        bind(FactoryStore.class).to(InMemoryFactoryStore.class);
         bind(TokenValidator.class).to(DummyTokenValidator.class);
         bind(RecipeDao.class).to(LocalRecipeDaoImpl.class);
         bind(LocalStorageFactory.class);
     }
-
-
-    //~~~ AccountDao
-
-    @Provides
-    @Named("codenvy.local.infrastructure.accounts")
-    Set<Account> accounts() {
-        final Set<Account> accounts = new HashSet<>(1);
-        accounts.add(new Account().withName("codenvy_account").withId("account1234567890"));
-        return accounts;
-    }
-
-    @Provides
-    @Named("codenvy.local.infrastructure.account.members")
-    Set<org.eclipse.che.api.account.server.dao.Member> accountMembers() {
-        final Set<org.eclipse.che.api.account.server.dao.Member> members = new HashSet<>(1);
-        final org.eclipse.che.api.account.server.dao.Member member =
-                new org.eclipse.che.api.account.server.dao.Member().withUserId("codenvy").withAccountId("account1234567890");
-        Collections.addAll(member.getRoles(), "account/owner", "account/member");
-        members.add(member);
-        return members;
-    }
-
-    // AccountDao ~~~
 
 
     // ~~~ WorkspaceDao

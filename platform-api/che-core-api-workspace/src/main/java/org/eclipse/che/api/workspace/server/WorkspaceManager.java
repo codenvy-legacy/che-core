@@ -95,13 +95,15 @@ public class WorkspaceManager {
     }
 
     /**
-     * Get all user workspaces of specific user
+     * Gets all workspaces belonging to given user.
      *
      * @param owner
-     *         id of the owner of workspace
-     * @return list of {@link UsersWorkspace}
+     *         workspace owner identifier
+     * @return list of workspaces which are owned by given {@code owner}
+     * @throws BadRequestException
+     *         when workspace owner is null
      * @throws ServerException
-     *         if any error occurs
+     *         when any error occurs
      */
     public List<UsersWorkspaceImpl> getWorkspaces(String owner) throws ServerException, BadRequestException {
         requiredNotNull(owner, "Workspace owner required");
@@ -138,24 +140,83 @@ public class WorkspaceManager {
         return workspaceRegistry.getByOwner(owner);
     }
 
-    public UsersWorkspaceImpl startWorkspaceById(String workspaceId, String envName)
-            throws NotFoundException, ServerException, BadRequestException {
+    /**
+     * Starts certain workspace with specified environment and account.
+     *
+     * <p>Workspace start is asynchronous
+     *
+     * @param workspaceId
+     *         identifier of workspace which should be started
+     * @param envName
+     *         name of environment or null, when default environment should be used
+     * @param accountId
+     *         account which should be used for this runtime workspace or null when
+     *         it should be automatically detected
+     * @return starting workspace
+     * @throws BadRequestException
+     *         when {@code workspaceId} is null
+     * @throws NotFoundException
+     *         when workspace with given {@code workspaceId} doesn't exist, or
+     *         {@link WorkspaceHooks#beforeStart(UsersWorkspace, String)} throws this exception
+     * @throws ForbiddenException
+     *         when user doesn't have access to start workspace in certain account
+     * @throws ServerException
+     *         when any other error occurs during workspace start
+     * @see WorkspaceHooks#beforeStart(UsersWorkspace, String)
+     * @see RuntimeWorkspaceRegistry#start(UsersWorkspace, String)
+     */
+    public UsersWorkspaceImpl startWorkspaceById(String workspaceId,
+                                                 String envName,
+                                                 String accountId)
+            throws NotFoundException, ServerException, BadRequestException, ForbiddenException {
         requiredNotNull(workspaceId, "Workspace id required");
 
         final UsersWorkspaceImpl workspace = workspaceDao.get(workspaceId);
         workspace.setTemporary(false);
+        hooks.beforeStart(workspace, accountId);
         startWorkspaceAsync(workspace, envName);
         workspace.setStatus(WorkspaceStatus.STARTING);
         return workspace;
     }
 
-    public UsersWorkspaceImpl startWorkspaceByName(String workspaceName, String envName, String owner)
-            throws NotFoundException, ServerException, BadRequestException {
+    /**
+     * Starts certain workspace with specified environment and account.
+     *
+     * <p>Workspace start is asynchronous
+     *
+     * @param workspaceName
+     *         name of workspace which should be started
+     * @param envName
+     *         name of environment or null, when default environment should be used
+     * @param owner
+     *         owner of the workspace which should be started
+     * @param accountId
+     *         account which should be used for this runtime workspace or null when
+     *         it should be automatically detected
+     * @return starting workspace
+     * @throws BadRequestException
+     *         when given {@code workspaceName} or {@code owner} is null
+     * @throws NotFoundException
+     *         when workspace with given {@code workspaceName & owner} doesn't exist, or
+     *         {@link WorkspaceHooks#beforeStart(UsersWorkspace, String)} throws this exception
+     * @throws ForbiddenException
+     *         when user doesn't have access to start workspace in certain account
+     * @throws ServerException
+     *         when any other error occurs during workspace start
+     * @see WorkspaceHooks#beforeStart(UsersWorkspace, String)
+     * @see RuntimeWorkspaceRegistry#start(UsersWorkspace, String)
+     */
+    public UsersWorkspaceImpl startWorkspaceByName(String workspaceName,
+                                                   String envName,
+                                                   String owner,
+                                                   String accountId)
+            throws NotFoundException, ServerException, BadRequestException, ForbiddenException {
         requiredNotNull(workspaceName, "Workspace name required");
         requiredNotNull(owner, "Workspace owner required");
 
         final UsersWorkspaceImpl workspace = workspaceDao.get(workspaceName, owner);
         workspace.setTemporary(false);
+        hooks.beforeStart(workspace, accountId);
         startWorkspaceAsync(workspace, envName);
         workspace.setStatus(WorkspaceStatus.STARTING);
         return workspace;
@@ -163,12 +224,38 @@ public class WorkspaceManager {
 
     // TODO should we store temp workspaces and where?
     // should it be sync or async?
-    public UsersWorkspaceImpl startTemporaryWorkspace(WorkspaceConfig workspaceConfig, final String accountId)
+
+    /**
+     * Starts temporary workspace based on config and account.
+     *
+     * <p>Workspace start is synchronous
+     *
+     * @param workspaceConfig
+     *         workspace configuration
+     * @param accountId
+     *         account which should be used for this runtime workspace or null when
+     *         it should be automatically detected
+     * @return running workspace
+     * @throws BadRequestException
+     *         when {@code workspaceConfig} is null or not valid
+     * @throws ForbiddenException
+     *         when user doesn't have access to start workspace in certain account
+     * @throws NotFoundException
+     *         when {@link WorkspaceHooks#beforeCreate(UsersWorkspace, String)}
+     *         or {@link WorkspaceHooks#beforeStart(UsersWorkspace, String)} throws this exception
+     * @throws ServerException
+     *         when any other error occurs during workspace start
+     * @see WorkspaceHooks#beforeStart(UsersWorkspace, String)
+     * @see WorkspaceHooks#beforeCreate(UsersWorkspace, String)
+     * @see RuntimeWorkspaceRegistry#start(UsersWorkspace, String)
+     */
+    public UsersWorkspaceImpl startTemporaryWorkspace(WorkspaceConfig workspaceConfig, String accountId)
             throws ServerException, BadRequestException, ForbiddenException, NotFoundException {
         final UsersWorkspaceImpl workspace = fromConfig(workspaceConfig);
         workspace.setTemporary(true);
 
         hooks.beforeCreate(workspace, accountId);
+        hooks.beforeStart(workspace, accountId);
 
         startWorkspaceSync(workspace, null);
 

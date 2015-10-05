@@ -13,6 +13,7 @@ package org.eclipse.che.api.account.server.dao;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 
 import java.util.List;
 
@@ -118,4 +119,36 @@ public interface AccountDao {
      * @return list of accounts, or empty list if no accounts found
      */
     List<Member> getByMember(String userId) throws NotFoundException, ServerException;
+
+    /**
+     * Gets account which contains {@link UsersWorkspace workspace} with given identifier.
+     *
+     * @param workspaceId
+     *         workspace identifier
+     * @return account which contains specified workspace
+     * @throws NotFoundException
+     *         when account which contains specified workspace doesn't exist
+     * @throws ServerException
+     *         when any other error occurs
+     */
+    Account getByWorkspace(String workspaceId) throws NotFoundException, ServerException;
+
+    /**
+     * Checks that workspace is already registered in the any account.
+     *
+     * @param workspaceId
+     *         workspace identifier
+     * @return true if workspace is already registered in the any account, returns false otherwise
+     * @throws ServerException
+     *         when any error occurs
+     * @see #getByWorkspace(String)
+     */
+    default boolean isWorkspaceRegistered(String workspaceId) throws ServerException {
+        try {
+            getByWorkspace(workspaceId);
+            return true;
+        } catch (NotFoundException ignored) {
+            return false;
+        }
+    }
 }
