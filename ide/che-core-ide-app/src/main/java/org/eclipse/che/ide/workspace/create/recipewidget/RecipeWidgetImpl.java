@@ -80,12 +80,11 @@ public class RecipeWidgetImpl extends Composite implements RecipeWidget, ClickHa
     /** {@inheritDoc} */
     @Override
     public void setStyles() {
-        main.getElement().setAttribute("style", "height: 20px; padding-top: 4px; padding-left: 5px; " +
-                                                "background-color: #272727; cursor: pointer;");
-
-        icon.getElement().setAttribute("style", "float: left;  width: 20px; height: 20px;");
-        tagName.getElement().setAttribute("style", "float: left; margin-top: 2px;");
-        type.getElement().setAttribute("style", "float: right; margin-right: 6px; margin-top: 3px;");
+//        main.getElement().setAttribute("style", "");
+//
+//        icon.getElement().setAttribute("style", "");
+//        tagName.getElement().setAttribute("style", "");
+//        type.getElement().setAttribute("style", "");
     }
 
     /** {@inheritDoc} */

@@ -20,11 +20,14 @@ import org.eclipse.che.ide.bootstrap.WorkspaceComponent;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo;
+import org.eclipse.che.ide.workspace.BrowserWsNameProvider;
 import org.eclipse.che.ide.workspace.WorkspaceWidgetFactory;
 import org.eclipse.che.ide.workspace.create.CreateWorkspacePresenter;
 import org.eclipse.che.ide.workspace.start.workspacewidget.WorkspaceWidget;
 
 import java.util.List;
+
+import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.RUNNING;
 
 /**
  * The class contains business logic which allows start existing workspace which was stopped before.
@@ -39,6 +42,7 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
     private final WorkspaceWidgetFactory       widgetFactory;
     private final LoaderPresenter              loader;
     private final CreateWorkspacePresenter     createWorkspacePresenter;
+    private final BrowserWsNameProvider        browserWsNameProvider;
 
     private UsersWorkspaceDto              selectedWorkspace;
     private Callback<Component, Exception> callback;
@@ -49,7 +53,8 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
                                    Provider<WorkspaceComponent> wsComponentProvider,
                                    WorkspaceWidgetFactory widgetFactory,
                                    LoaderPresenter loader,
-                                   CreateWorkspacePresenter createWorkspacePresenter) {
+                                   CreateWorkspacePresenter createWorkspacePresenter,
+                                   BrowserWsNameProvider browserWsNameProvider) {
         this.view = view;
         this.view.setDelegate(this);
 
@@ -57,13 +62,18 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
         this.widgetFactory = widgetFactory;
         this.loader = loader;
         this.createWorkspacePresenter = createWorkspacePresenter;
+        this.browserWsNameProvider = browserWsNameProvider;
     }
 
     /**
      * Shows special dialog which contains workspaces which can be started at this time.
      *
+     * @param operationInfo
+     *         info which needs for displaying information about creating workspace
+     * @param callback
+     *         callback which is necessary to notify that workspace component started or failed
      * @param workspaces
-     *         workspaces which will be displayed
+     *         available workspaces which will be displayed
      */
     public void show(List<UsersWorkspaceDto> workspaces, Callback<Component, Exception> callback, OperationInfo operationInfo) {
         this.callback = callback;
@@ -71,14 +81,30 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
 
         view.clearWorkspacesPanel();
 
+        String workspaceName = browserWsNameProvider.getWorkspaceName();
+
+        createWsWidgets(workspaces);
+
+        for (UsersWorkspaceDto workspace : workspaces) {
+            if (workspaceName.equals(workspace.getName())) {
+                selectedWorkspace = workspace;
+
+                break;
+            }
+        }
+
+        view.setWsName(workspaceName);
+
+        view.show();
+    }
+
+    private void createWsWidgets(List<UsersWorkspaceDto> workspaces) {
         for (UsersWorkspaceDto workspace : workspaces) {
             WorkspaceWidget widget = widgetFactory.create(workspace);
             widget.setDelegate(this);
 
             view.addWorkspace(widget);
         }
-
-        view.show();
     }
 
     /** {@inheritDoc} */
@@ -91,6 +117,14 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
         view.setWsName(wsName);
 
         view.setEnableStartButton(!wsName.isEmpty());
+
+        if (RUNNING.equals(workspace.getStatus())) {
+            WorkspaceComponent workspaceComponent = wsComponentProvider.get();
+
+            workspaceComponent.setCurrentWorkspace(operationInfo, workspace);
+
+            view.hide();
+        }
     }
 
     /** {@inheritDoc} */
