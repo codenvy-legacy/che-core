@@ -51,10 +51,11 @@ public class RemoteOAuthTokenProvider implements OAuthTokenProvider {
         }
         try {
             UriBuilder ub = UriBuilder.fromUri(apiEndpoint)
+                                      .path(OAuthAuthenticationService.class)
                                       .path(OAuthAuthenticationService.class, "token")
                                       .queryParam("oauth_provider", oauthProviderName);
-            Link getTokenLink  = DtoFactory.newDto(Link.class).withHref(ub.build().toString()).withMethod("GET");
-            OAuthToken token =  HttpJsonHelper.request(OAuthToken.class, getTokenLink);
+            Link getTokenLink = DtoFactory.newDto(Link.class).withHref(ub.build().toString()).withMethod("GET");
+            OAuthToken token = HttpJsonHelper.request(OAuthToken.class, getTokenLink);
             if (token == null) {
                 LOG.warn("Token not found for user {}", userId);
                 return null;
