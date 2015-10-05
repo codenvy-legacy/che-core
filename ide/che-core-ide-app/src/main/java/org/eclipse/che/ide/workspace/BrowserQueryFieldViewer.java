@@ -19,7 +19,7 @@ import com.google.inject.Singleton;
  * @author Dmitry Shnurenko
  */
 @Singleton
-public class BrowserWsNameProvider {
+public class BrowserQueryFieldViewer {
 
     private static final int WORKSPACE_ORDER_IN_URL = 2;
 
@@ -50,12 +50,41 @@ public class BrowserWsNameProvider {
         }
     }-*/;
 
+    /**
+     * Sets project name to query field in browser.
+     *
+     * @param projectName
+     *         name which will be set
+     */
+    public native void setProjectName(String projectName) /*-{
+        try {
+            var window = $wnd;
+            var document = $doc;
+
+            if (!window["_history_relocation_id"]) {
+                window["_history_relocation_id"] = 0;
+            }
+
+            var browserUrl = window.location.pathname;
+
+            var lastIndex = browserUrl.lastIndexOf("/");
+
+            var url = browserUrl.substring(lastIndex);
+
+            document.title = "Codenvy Developer Environment";
+            window.history.pushState(window["_history_relocation_id"], document.title, url + "/" + projectName);
+            window["_history_relocation_id"]++;
+        } catch (e) {
+            console.log(e.message);
+        }
+    }-*/;
+
     /** Returns workspace name from browser query fiels */
     public String getWorkspaceName() {
         String browserUrl = Window.Location.getPath();
 
         String[] urlParts = browserUrl.split("/");
 
-        return urlParts[WORKSPACE_ORDER_IN_URL];
+        return urlParts.length < 3 ? "" : urlParts[WORKSPACE_ORDER_IN_URL];
     }
 }

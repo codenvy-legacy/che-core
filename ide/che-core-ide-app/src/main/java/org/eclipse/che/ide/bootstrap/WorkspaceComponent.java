@@ -43,7 +43,7 @@ import org.eclipse.che.ide.websocket.WebSocketException;
 import org.eclipse.che.ide.websocket.events.ConnectionOpenedHandler;
 import org.eclipse.che.ide.websocket.rest.SubscriptionHandler;
 import org.eclipse.che.ide.websocket.rest.Unmarshallable;
-import org.eclipse.che.ide.workspace.BrowserWsNameProvider;
+import org.eclipse.che.ide.workspace.BrowserQueryFieldViewer;
 import org.eclipse.che.ide.workspace.create.CreateWorkspacePresenter;
 import org.eclipse.che.ide.workspace.start.StartWorkspaceEvent;
 import org.eclipse.che.ide.workspace.start.StartWorkspacePresenter;
@@ -69,7 +69,7 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
     private final AppContext               appContext;
     private final NotificationManager      notificationManager;
     private final MessageBusProvider       messageBusProvider;
-    private final BrowserWsNameProvider    browserWsNameProvider;
+    private final BrowserQueryFieldViewer  browserQueryFieldViewer;
 
     private OperationInfo                  startMachineOperation;
     private Callback<Component, Exception> callback;
@@ -86,7 +86,7 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
                               AppContext appContext,
                               NotificationManager notificationManager,
                               MessageBusProvider messageBusProvider,
-                              BrowserWsNameProvider browserWsNameProvider) {
+                              BrowserQueryFieldViewer browserQueryFieldViewer) {
         this.workspaceServiceClient = workspaceServiceClient;
         this.createWorkspacePresenter = createWorkspacePresenter;
         this.startWorkspacePresenter = startWorkspacePresenter;
@@ -97,7 +97,7 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
         this.appContext = appContext;
         this.notificationManager = notificationManager;
         this.messageBusProvider = messageBusProvider;
-        this.browserWsNameProvider = browserWsNameProvider;
+        this.browserQueryFieldViewer = browserQueryFieldViewer;
 
         eventBus.addHandler(ExtServerStateEvent.TYPE, this);
     }
@@ -126,7 +126,7 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
             public void apply(List<UsersWorkspaceDto> workspaces) throws OperationException {
                 operationInfo.setStatus(Status.FINISHED);
 
-                String wsNameFromBrowser = browserWsNameProvider.getWorkspaceName();
+                String wsNameFromBrowser = browserQueryFieldViewer.getWorkspaceName();
 
                 for (UsersWorkspaceDto workspace : workspaces) {
                     boolean isWorkspaceExist = wsNameFromBrowser.equals(workspace.getName());
@@ -139,7 +139,7 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
                         return;
                     }
 
-                    if (isWorkspaceExist) {
+                    if (isWorkspaceExist || wsNameFromBrowser.isEmpty()) {
                         startWorkspacePresenter.show(workspaces, callback, operationInfo);
 
                         return;
@@ -165,7 +165,7 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
         appContext.setWorkspace(workspace);
         callback.onSuccess(WorkspaceComponent.this);
 
-        browserWsNameProvider.setWorkspaceName(workspace.getName());
+        browserQueryFieldViewer.setWorkspaceName(workspace.getName());
     }
 
     public void startWorkspace(String id, final String envName) {

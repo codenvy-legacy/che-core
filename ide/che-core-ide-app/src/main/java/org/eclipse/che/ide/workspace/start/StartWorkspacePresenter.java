@@ -20,7 +20,7 @@ import org.eclipse.che.ide.bootstrap.WorkspaceComponent;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo;
-import org.eclipse.che.ide.workspace.BrowserWsNameProvider;
+import org.eclipse.che.ide.workspace.BrowserQueryFieldViewer;
 import org.eclipse.che.ide.workspace.WorkspaceWidgetFactory;
 import org.eclipse.che.ide.workspace.create.CreateWorkspacePresenter;
 import org.eclipse.che.ide.workspace.start.workspacewidget.WorkspaceWidget;
@@ -42,7 +42,7 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
     private final WorkspaceWidgetFactory       widgetFactory;
     private final LoaderPresenter              loader;
     private final CreateWorkspacePresenter     createWorkspacePresenter;
-    private final BrowserWsNameProvider        browserWsNameProvider;
+    private final BrowserQueryFieldViewer      browserQueryFieldViewer;
 
     private UsersWorkspaceDto              selectedWorkspace;
     private Callback<Component, Exception> callback;
@@ -54,7 +54,7 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
                                    WorkspaceWidgetFactory widgetFactory,
                                    LoaderPresenter loader,
                                    CreateWorkspacePresenter createWorkspacePresenter,
-                                   BrowserWsNameProvider browserWsNameProvider) {
+                                   BrowserQueryFieldViewer browserQueryFieldViewer) {
         this.view = view;
         this.view.setDelegate(this);
 
@@ -62,7 +62,7 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
         this.widgetFactory = widgetFactory;
         this.loader = loader;
         this.createWorkspacePresenter = createWorkspacePresenter;
-        this.browserWsNameProvider = browserWsNameProvider;
+        this.browserQueryFieldViewer = browserQueryFieldViewer;
     }
 
     /**
@@ -81,7 +81,7 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
 
         view.clearWorkspacesPanel();
 
-        String workspaceName = browserWsNameProvider.getWorkspaceName();
+        String workspaceName = browserQueryFieldViewer.getWorkspaceName();
 
         createWsWidgets(workspaces);
 

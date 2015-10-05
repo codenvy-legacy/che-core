@@ -35,7 +35,7 @@ import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo;
-import org.eclipse.che.ide.workspace.BrowserWsNameProvider;
+import org.eclipse.che.ide.workspace.BrowserQueryFieldViewer;
 import org.eclipse.che.ide.workspace.create.CreateWorkspaceView.HidePopupCallBack;
 
 import java.util.ArrayList;
@@ -69,7 +69,7 @@ public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDeleg
     private final CoreLocalizationConstant     locale;
     private final Provider<WorkspaceComponent> wsComponentProvider;
     private final RecipeServiceClient          recipeService;
-    private final BrowserWsNameProvider        browserWsNameProvider;
+    private final BrowserQueryFieldViewer      browserQueryFieldViewer;
 
     private OperationInfo                  operationInfo;
     private Callback<Component, Exception> callback;
@@ -83,7 +83,7 @@ public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDeleg
                                     CoreLocalizationConstant locale,
                                     Provider<WorkspaceComponent> wsComponentProvider,
                                     RecipeServiceClient recipeService,
-                                    BrowserWsNameProvider browserWsNameProvider) {
+                                    BrowserQueryFieldViewer browserQueryFieldViewer) {
         this.view = view;
         this.view.setDelegate(this);
 
@@ -93,7 +93,7 @@ public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDeleg
         this.locale = locale;
         this.wsComponentProvider = wsComponentProvider;
         this.recipeService = recipeService;
-        this.browserWsNameProvider = browserWsNameProvider;
+        this.browserQueryFieldViewer = browserQueryFieldViewer;
     }
 
     /**
@@ -117,7 +117,7 @@ public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDeleg
             }
         });
 
-        view.setWorkspaceName(browserWsNameProvider.getWorkspaceName());
+        view.setWorkspaceName(browserQueryFieldViewer.getWorkspaceName());
 
         view.show();
     }

@@ -31,7 +31,7 @@ import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo;
-import org.eclipse.che.ide.workspace.BrowserWsNameProvider;
+import org.eclipse.che.ide.workspace.BrowserQueryFieldViewer;
 import org.eclipse.che.ide.workspace.create.CreateWorkspaceView.HidePopupCallBack;
 import org.junit.Before;
 import org.junit.Test;
@@ -82,7 +82,7 @@ public class CreateWorkspacePresenterTest {
     @Mock
     private RecipeServiceClient          recipeServiceClient;
     @Mock
-    private BrowserWsNameProvider        browserWsNameProvider;
+    private BrowserQueryFieldViewer      browserQueryFieldViewer;
 
     //additional mocks
     @Mock
@@ -174,7 +174,7 @@ public class CreateWorkspacePresenterTest {
 
         presenter.show(operationInfo, componentCallback);
 
-        verify(browserWsNameProvider).getWorkspaceName();
+        verify(browserQueryFieldViewer).getWorkspaceName();
         verify(view).setWorkspaceName(anyString());
 
         verify(view).show();
