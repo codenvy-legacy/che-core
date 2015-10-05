@@ -17,9 +17,6 @@
 
     <ui:style>
         @eval errorColor org.eclipse.che.ide.api.theme.Style.getErrorColor();
-        @eval fontColor org.eclipse.che.ide.api.theme.Style.getMainFontColor();
-        @eval textFieldBorderColor org.eclipse.che.ide.api.theme.Style.getTextFieldBorderColor();
-        /*@eval contentBackgroundColor org.eclipse.che.ide.api.theme.Style.getWindowContentBackground();*/
 
         .emptyBorder {
             margin: 6px;
@@ -27,12 +24,6 @@
 
         .inputField {
             width: 397px;
-            background-color: black;
-            color: fontColor;
-            border: 1px solid textFieldBorderColor;
-            border-radius: 1px;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.19) inset, 0 1px 0 0 rgba(223, 223, 223, 0.4);
-            font-size: 12px;
             padding-left: 8px;
             height: 20px;
         }

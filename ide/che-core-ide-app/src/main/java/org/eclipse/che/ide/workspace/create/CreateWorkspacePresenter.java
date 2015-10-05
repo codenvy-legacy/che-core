@@ -35,6 +35,7 @@ import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo;
+import org.eclipse.che.ide.workspace.BrowserWsNameProvider;
 import org.eclipse.che.ide.workspace.create.CreateWorkspaceView.HidePopupCallBack;
 
 import java.util.ArrayList;
@@ -68,6 +69,7 @@ public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDeleg
     private final CoreLocalizationConstant     locale;
     private final Provider<WorkspaceComponent> wsComponentProvider;
     private final RecipeServiceClient          recipeService;
+    private final BrowserWsNameProvider        browserWsNameProvider;
 
     private OperationInfo                  operationInfo;
     private Callback<Component, Exception> callback;
@@ -80,7 +82,8 @@ public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDeleg
                                     WorkspaceServiceClient workspaceClient,
                                     CoreLocalizationConstant locale,
                                     Provider<WorkspaceComponent> wsComponentProvider,
-                                    RecipeServiceClient recipeService) {
+                                    RecipeServiceClient recipeService,
+                                    BrowserWsNameProvider browserWsNameProvider) {
         this.view = view;
         this.view.setDelegate(this);
 
@@ -90,13 +93,16 @@ public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDeleg
         this.locale = locale;
         this.wsComponentProvider = wsComponentProvider;
         this.recipeService = recipeService;
+        this.browserWsNameProvider = browserWsNameProvider;
     }
 
     /**
      * Shows special dialog window which allows set up workspace which will be created.
      *
      * @param operationInfo
-     *         info which needs for dispaying information about creating workspace
+     *         info which needs for displaying information about creating workspace
+     * @param callback
+     *         callback which is necessary to notify that workspace component started or failed
      */
     public void show(OperationInfo operationInfo, final Callback<Component, Exception> callback) {
         this.operationInfo = operationInfo;
@@ -110,6 +116,8 @@ public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDeleg
                 CreateWorkspacePresenter.this.recipes = recipeDescriptors;
             }
         });
+
+        view.setWorkspaceName(browserWsNameProvider.getWorkspaceName());
 
         view.show();
     }

@@ -25,12 +25,6 @@ public interface RecipeWidget extends View<RecipeWidget.ActionDelegate> {
     /** Returns tag name associated to recipe. */
     String getTagName();
 
-    /**
-     * This method need to set necessary styles to tag component. This styles don't set via ui binder because it doesn't load yet
-     * when styles are necessary.
-     */
-    void setStyles();
-
     interface ActionDelegate {
         /**
          * Performs some actions when user clicks on tag.
