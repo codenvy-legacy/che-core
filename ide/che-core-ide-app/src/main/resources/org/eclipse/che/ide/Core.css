@@ -34,17 +34,24 @@ body, td {
     font-family: textFieldFontFamily;
 }
 
+div.gwt-Label {
+    font-size: textFieldFontSize;
+}
+
 .gwt-ListBox {
     background-color: textFieldBackgroundColor;
-    color: textFieldColor;
     border: 1px solid textFieldBorderColor;
-    border-radius: 1px;
-    font-family: mainFontFamily;
-    font-weight: bold;
+    font-size: textFieldFontSize;
+    color: listBoxColor;
+    padding-left: 5px;
+    border-radius: 0;
+    height: 20px;
+    outline: none;
 }
 
 .gwt-ListBox[disabled] {
-    background-color: textFieldDisabledBackgroundColor;
+    background-color: listBoxDisabledBackgroundColor;
+    color: listBoxDisabledColor;
 }
 
 .gwt-CheckBox {
@@ -709,11 +716,14 @@ class for the document-level scrollbars. */
     animation-iteration-count: 2;
 }
 
+}
+
 .createWsTagsPopup {
     /*the same index as in Window*/
     z-index: 20000;
     border: 1px solid #121416;
     border-radius: 3px;
+    background-color: #292C2F;
 }
 
 .tagsPanel {

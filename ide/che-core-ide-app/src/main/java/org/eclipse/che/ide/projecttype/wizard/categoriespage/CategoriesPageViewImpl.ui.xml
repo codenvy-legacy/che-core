@@ -30,14 +30,14 @@
                                        addStyleNames="{style.inputField} {style.inputFieldPosition}" tabIndex="1"
                                        debugId="file-newProject-projectName"/>
                         </g:FlowPanel>
-                        <g:FlowPanel height="80px" addStyleNames="{style.namePanel}">
+                        <g:FlowPanel height="85px" addStyleNames="{style.namePanel}">
                             <g:Label text="{locale.createProjectFromTemplateDescription}"
                                      addStyleNames="{style.labelPosition}"/>
                             <g:TextArea height="42px" ui:field="projectDescription"
                                         addStyleNames="{style.inputField} {style.inputFieldPosition}"
                                         debugId="file-newProject-projectDescription" tabIndex="2"/>
                         </g:FlowPanel>
-                        <g:FlowPanel height="80px" addStyleNames="{style.namePanel}">
+                        <g:FlowPanel height="75px" addStyleNames="{style.namePanel}">
                             <g:Label text="{locale.createProjectFromTemplateProjectPrivacy}" addStyleNames="{style.labelPosition}"/>
                             <g:RadioButton name="privacy" text="{locale.createProjectFromTemplatePublic}"
                                            addStyleNames="{style.radioButtonPosition}" checked="true"

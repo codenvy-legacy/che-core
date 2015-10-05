@@ -173,8 +173,8 @@
 @def outputFontFamily 'Droid Sans Mono', monospace;
 
 /* Text fields */
-@def textFieldFontFamily "Lucida Grande", Verdana, Arial;
-@def textFieldFontSize 9px;
+@def textFieldFontFamily "Open Sans", sans-serif;
+@def textFieldFontSize 10px;
 
 /*Menu*/
 @eval menuBackgroundColor org.eclipse.che.ide.api.theme.Style.getMenuBackgroundColor();
@@ -214,6 +214,7 @@
 @eval toolbarBackgroundColor org.eclipse.che.ide.api.theme.Style.getToolbarBackgroundColor();
 @eval toolbarIconColor org.eclipse.che.ide.api.theme.Style.getToolbarIconColor();
 @eval toolbarHoverIconColor org.eclipse.che.ide.api.theme.Style.getToolbarHoverIconColor();
+@eval toolbarSelectedIconFilter org.eclipse.che.ide.api.theme.Style.getToolbarSelectedIconFilter();
 @eval tooltipBackgroundColor org.eclipse.che.ide.api.theme.Style.getTooltipBackgroundColor();
 
 /*PerspectiveSwitcher*/
@@ -294,3 +295,10 @@
 @eval separatorColor org.eclipse.che.ide.api.theme.Style.getSeparatorColor();
 @eval errorColor org.eclipse.che.ide.api.theme.Style.getErrorColor();
 @eval successColor org.eclipse.che.ide.api.theme.Style.getSuccessColor();
+
+/*ListBox*/
+@eval listBoxHoverBackgroundColor org.eclipse.che.ide.api.theme.Style.getListBoxHoverBackgroundColor();
+@eval listBoxColor org.eclipse.che.ide.api.theme.Style.getListBoxColor();
+@eval listBoxDisabledColor org.eclipse.che.ide.api.theme.Style.getListBoxDisabledColor();
+@eval listBoxDisabledBackgroundColor org.eclipse.che.ide.api.theme.Style.getListBoxDisabledBackgroundColor();
+@eval listBoxDropdownBackgroundColor org.eclipse.che.ide.api.theme.Style.getListBoxDropdownBackgroundColor();

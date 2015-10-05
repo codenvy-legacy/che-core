@@ -488,6 +488,10 @@ public class Style {
         return theme.getToolbarHoverIconColor();
     }
 
+    public static String getToolbarSelectedIconFilter() {
+        return theme.getToolbarSelectedIconFilter();
+    }
+
     public static String getTooltipBackgroundColor() {
         return theme.getTooltipBackgroundColor();
     }
@@ -670,5 +674,25 @@ public class Style {
 
     public static String getSuccessColor() {
         return theme.getSuccessColor();
+    }
+
+    public static String getListBoxHoverBackgroundColor() {
+        return theme.getListBoxHoverBackgroundColor();
+    }
+
+    public static String getListBoxColor() {
+        return theme.getListBoxColor();
+    }
+
+    public static String getListBoxDisabledColor() {
+        return theme.getListBoxDisabledColor();
+    }
+
+    public static String getListBoxDisabledBackgroundColor() {
+        return theme.getListBoxDisabledBackgroundColor();
+    }
+
+    public static String getListBoxDropdownBackgroundColor() {
+        return theme.getListBoxDropdownBackgroundColor();
     }
 }

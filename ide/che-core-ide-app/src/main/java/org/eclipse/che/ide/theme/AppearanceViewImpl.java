@@ -11,13 +11,16 @@
 package org.eclipse.che.ide.theme;
 
 import org.eclipse.che.ide.api.theme.Theme;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.ListBox;
+
+import org.eclipse.che.ide.ui.customListBox.CustomListBox;
+
 import com.google.gwt.user.client.ui.Widget;
 
 import java.util.List;
@@ -30,7 +33,7 @@ public class AppearanceViewImpl implements AppearanceView {
     private static AppearanceViewImplUiBinder ourUiBinder = GWT.create(AppearanceViewImplUiBinder.class);
     private final FlowPanel rootElement;
     @UiField
-    ListBox themeBox;
+    CustomListBox themeBox;
     private ActionDelegate delegate;
 
     public AppearanceViewImpl() {

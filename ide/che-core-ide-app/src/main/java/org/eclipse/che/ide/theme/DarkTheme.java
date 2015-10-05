@@ -179,7 +179,7 @@ public class DarkTheme implements Theme {
     }
 
     @Override
-    public String  getButtonHoverFontColor() {
+    public String getButtonHoverFontColor() {
         return "#FFFFFF";
     }
 
@@ -239,7 +239,7 @@ public class DarkTheme implements Theme {
     }
 
     @Override
-    public String  getPrimaryButtonHoverFontColor() {
+    public String getPrimaryButtonHoverFontColor() {
         return "#EEEEEE";
     }
 
@@ -614,6 +614,11 @@ public class DarkTheme implements Theme {
     }
 
     @Override
+    public String getToolbarSelectedIconFilter() {
+        return "brightness(90%)";
+    }
+
+    @Override
     public String getTooltipBackgroundColor() {
         return "#202020";
     }
@@ -761,6 +766,7 @@ public class DarkTheme implements Theme {
     public String getPopupHotKeyColor() {
         return "#727272";
     }
+
     @Override
     public String getTextFieldTitleColor() {
         return "#aaaaaa";
@@ -840,4 +846,31 @@ public class DarkTheme implements Theme {
     public String getSuccessColor() {
         return "#31b993";
     }
+
+    @Override
+    public String getListBoxHoverBackgroundColor() {
+        return this.getPopupHoverColor();
+    }
+
+    @Override
+    public String getListBoxColor() {
+        return this.getTextFieldColor();
+    }
+
+    @Override
+    public String getListBoxDisabledColor() {
+        return this.getTextFieldDisabledColor();
+    }
+
+    @Override
+    public String getListBoxDisabledBackgroundColor() {
+        return this.getTextFieldDisabledBackgroundColor();
+    }
+
+    @Override
+    public String getListBoxDropdownBackgroundColor() {
+        return this.getMenuBackgroundColor();
+    }
+
+
 }

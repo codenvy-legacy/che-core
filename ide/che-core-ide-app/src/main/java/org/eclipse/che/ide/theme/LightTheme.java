@@ -608,6 +608,11 @@ public class LightTheme implements Theme {
     }
 
     @Override
+    public String getToolbarSelectedIconFilter() {
+        return "brightness(80%)";
+    }
+
+    @Override
     public String getTooltipBackgroundColor() {
         return "#FFFFFF";
     }
@@ -760,6 +765,7 @@ public class LightTheme implements Theme {
     public String getPopupHotKeyColor() {
         return "#A2A2A2";
     }
+
     @Override
     public String getTextFieldTitleColor() {
         return "#555555";
@@ -838,5 +844,30 @@ public class LightTheme implements Theme {
     @Override
     public String getSuccessColor() {
         return "#31b993";
+    }
+
+    @Override
+    public String getListBoxHoverBackgroundColor() {
+        return this.getPopupHoverColor();
+    }
+
+    @Override
+    public String getListBoxColor() {
+        return this.getTextFieldColor();
+    }
+
+    @Override
+    public String getListBoxDisabledColor() {
+        return this.getTextFieldDisabledColor();
+    }
+
+    @Override
+    public String getListBoxDisabledBackgroundColor() {
+        return this.getTextFieldDisabledBackgroundColor();
+    }
+
+    @Override
+    public String getListBoxDropdownBackgroundColor() {
+        return "#ECECEC";
     }
 }

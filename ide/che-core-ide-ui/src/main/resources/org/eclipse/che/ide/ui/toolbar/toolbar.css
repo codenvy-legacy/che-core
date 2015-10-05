@@ -121,7 +121,7 @@
 }
 
 .iconButtonPanel {
-    border: 1px solid transparent;
+    border: none;
 }
 
 .tooltip {
@@ -170,9 +170,14 @@
 .iconButtonPanelDown,
 .iconButtonPanelSelected,
 .iconButtonPanelSelectedDown {
-    border-radius: 4px;
-    border: 1px solid tabBorder;
-    background-color: hoverBackgroundColor;
+}
+
+.iconButtonPanelDown svg,
+.iconButtonPanelSelected svg,
+.iconButtonPanelSelectedDown svg {
+    -moz-filter: toolbarSelectedIconFilter;
+    -webkit-filter: toolbarSelectedIconFilter;
+    filter: toolbarSelectedIconFilter;
 }
 
 .iconButtonIcon {
@@ -204,9 +209,12 @@ svg.iconButtonIcon {
 }
 
 .popupButtonPanelDown {
-    border-radius: 4px;
-    border: 1px solid tabBorder;
-    background-color: hoverBackgroundColor;
+}
+
+.popupButtonPanelDown svg {
+    -moz-filter: toolbarSelectedIconFilter;
+    -webkit-filter: toolbarSelectedIconFilter;
+    filter: toolbarSelectedIconFilter;
 }
 
 .popupButtonIcon {

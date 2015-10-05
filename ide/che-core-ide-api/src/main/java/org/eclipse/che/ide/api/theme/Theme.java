@@ -773,7 +773,7 @@ public interface Theme {
      */
     String getTreeIconFileColor();
 
-       /**
+    /**
      * The color of the action group shadow.
      *
      * @return {@link String} color
@@ -821,6 +821,14 @@ public interface Theme {
      * @return {@link String} hover color
      */
     String getToolbarHoverIconColor();
+
+
+    /**
+     * The filter of the toolbar icons if select.
+     *
+     * @return {@link String} select filter
+     */
+    String getToolbarSelectedIconFilter();
 
     /**
      * The color of the tooltip background.
@@ -969,8 +977,8 @@ public interface Theme {
     String getBlueIconColor();
 
     /**
-    * @return the color of the popup background.
-    */
+     * @return the color of the popup background.
+     */
     String getPopupBkgColor();
 
     /**
@@ -1072,4 +1080,29 @@ public interface Theme {
      * @return the success state color.
      */
     String getSuccessColor();
+
+    /**
+     * @return the list box background color if hover.
+     */
+    String getListBoxHoverBackgroundColor();
+
+    /**
+     * @return the list box color.
+     */
+    String getListBoxColor();
+
+    /**
+     * @return the list box disabled color.
+     */
+    String getListBoxDisabledColor();
+
+    /**
+     * @return the list box disabled background color.
+     */
+    String getListBoxDisabledBackgroundColor();
+
+    /**
+     * @return the list box dropdown background color.
+     */
+    String getListBoxDropdownBackgroundColor();
 }

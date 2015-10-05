@@ -13,8 +13,8 @@
 .buttonLoader > i {
     background-image: loader;
     display: block;
-    width: 21px;
-    height: 21px;
+    width: 16px;
+    height: 16px;
     margin: auto;
     background-size: cover;
     -webkit-animation: barrelRoll 1s infinite linear;

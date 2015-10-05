@@ -11,7 +11,8 @@
 
 -->
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
-             xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'
+             xmlns:che='urn:import:org.eclipse.che.ide.ui.customListBox'>
 
     <ui:style>
         .main {
@@ -20,6 +21,6 @@
     </ui:style>
     <g:FlowPanel styleName="{style.main}">
         <g:Label>Theme:</g:Label>
-        <g:ListBox ui:field="themeBox" visibleItemCount="1" debugId="window-preferences-appearance-themeBox"></g:ListBox>
+        <che:CustomListBox ui:field="themeBox" debugId="window-preferences-appearance-themeBox"/>
     </g:FlowPanel>
 </ui:UiBinder>

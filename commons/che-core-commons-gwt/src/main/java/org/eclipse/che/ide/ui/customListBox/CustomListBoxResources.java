@@ -8,10 +8,24 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-input.inputError {
-    border-bottom: 1px solid errorColor !important;
-}
+package org.eclipse.che.ide.ui.customListBox;
 
-.inputField {
-    resize: none;
+import com.google.gwt.resources.client.ClientBundle;
+import com.google.gwt.resources.client.CssResource;
+
+import org.vectomatic.dom.svg.ui.SVGResource;
+
+/**
+ * @author Oleksii Orel
+ */
+public interface CustomListBoxResources extends ClientBundle {
+    @Source("arrow.svg")
+    SVGResource arrow();
+
+    @Source({"ListBox.css", "org/eclipse/che/ide/api/ui/style.css"})
+    CSS getCSS();
+
+    interface CSS extends CssResource {
+        String listBox();
+    }
 }
