@@ -10,7 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.api.account.server.dao;
 
+import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
+import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -19,9 +24,10 @@ import java.util.Objects;
  */
 public class Account {
 
-    private String              id;
-    private String              name;
-    private Map<String, String> attributes;
+    private String               id;
+    private String               name;
+    private List<UsersWorkspace> workspaces;
+    private Map<String, String>  attributes;
 
     public String getId() {
         return id;
@@ -56,6 +62,22 @@ public class Account {
         return attributes;
     }
 
+    public void setWorkspaces(List<UsersWorkspace> workspaces) {
+        this.workspaces = workspaces;
+    }
+
+    public Account withWorkspaces(List<UsersWorkspace> workspaces) {
+        this.workspaces = workspaces;
+        return this;
+    }
+
+    public List<UsersWorkspace> getWorkspaces() {
+        if (workspaces == null) {
+            workspaces = new ArrayList<>();
+        }
+        return workspaces;
+    }
+
     public void setAttributes(Map<String, String> attributes) {
         this.attributes = attributes;
     }
@@ -74,9 +96,10 @@ public class Account {
             return false;
         }
         final Account other = (Account)obj;
-        return Objects.equals(id, other.id) &&
-               Objects.equals(name, other.name) &&
-               Objects.equals(getAttributes(), other.getAttributes());
+        return Objects.equals(id, other.id)
+               && Objects.equals(name, other.name)
+               && getAttributes().equals(other.getAttributes())
+               && getWorkspaces().equals(other.getWorkspaces());
     }
 
     @Override
@@ -84,7 +107,18 @@ public class Account {
         int hash = 7;
         hash = 31 * hash + Objects.hashCode(id);
         hash = 31 * hash + Objects.hashCode(name);
-        hash = 31 * hash + Objects.hashCode(getAttributes());
+        hash = 31 * hash + getAttributes().hashCode();
+        hash = 31 * hash + getWorkspaces().hashCode();
         return hash;
+    }
+
+    @Override
+    public String toString() {
+        return "Account{" +
+               "id='" + id + '\'' +
+               ", name='" + name + '\'' +
+               ", workspaces=" + workspaces +
+               ", attributes=" + attributes +
+               '}';
     }
 }

@@ -11,54 +11,91 @@
 package org.eclipse.che.api.workspace.server;
 
 import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
+import org.eclipse.che.commons.annotation.Nullable;
+
+import javax.validation.constraints.NotNull;
 
 /**
- * Generic interface for methods called on particular workspace events if we some additional actions needed
- * The most common usecase - to register/unregister workspace in the Account
+ * Generic interface for methods called on particular workspace events if some additional actions needed.
+ *
+ * <p>The most common use-case - to register/unregister workspace in the account
  *
  * @author gazarenkov
+ * @author Eugene Voevodin
  */
 public interface WorkspaceHooks {
+
+    /**
+     * No-operations workspace hooks. Each method does nothing
+     */
     WorkspaceHooks NOOP_WORKSPACE_HOOKS = new WorkspaceHooks() {
         @Override
-        public void beforeCreate(UsersWorkspace workspace, String accountId) throws NotFoundException, ServerException {
-        }
+        public void beforeStart(UsersWorkspace workspace, String accountId) throws NotFoundException, ServerException {}
 
         @Override
-        public void afterCreate(UsersWorkspace workspace, String accountId) throws ServerException {
-        }
+        public void beforeCreate(UsersWorkspace workspace, String accountId) throws NotFoundException, ServerException {}
 
         @Override
-        public void afterRemove(String workspaceId) {
-        }
+        public void afterCreate(UsersWorkspace workspace, String accountId) throws ServerException {}
+
+        @Override
+        public void afterRemove(String workspaceId) {}
     };
 
     /**
-     * Called before creating Workspace
+     * Called before workspace starting.
+     *
      * @param workspace
+     *         workspace which is going to be started
      * @param accountId
+     *         account identifier indicates the account which should be used for runtime workspace
      * @throws NotFoundException
+     *         when any not found error occurs
+     * @throws ForbiddenException
+     *         when user doesn't have access to start workspace in certain account
      * @throws ServerException
+     *         when any other error occurs
      */
-    void beforeCreate(UsersWorkspace workspace, String accountId) throws NotFoundException, ServerException;
+    void beforeStart(@NotNull UsersWorkspace workspace, @Nullable String accountId) throws NotFoundException,
+                                                                                           ForbiddenException,
+                                                                                           ServerException;
 
     /**
-     * Called after creating Workspace
+     * Called before creating workspace.
+     *
      * @param workspace
+     *         workspace instance
      * @param accountId
+     *         related to workspace account identifier, it is optional and may be null
      * @throws NotFoundException
+     *         when any not found error occurs
      * @throws ServerException
+     *         when any other error occurs
      */
-    void afterCreate(UsersWorkspace workspace, String accountId) throws ServerException;
+    void beforeCreate(@NotNull UsersWorkspace workspace, @Nullable String accountId) throws NotFoundException, ServerException;
 
     /**
-     * Called after removing Workspace
+     * Called after workspace is created.
+     *
      * @param workspace
+     *         workspace which was created
      * @param accountId
-     * @throws NotFoundException
+     *         related to workspace account identifier, it is optional and may be null
      * @throws ServerException
+     *         when any other error occurs
      */
-    void afterRemove(String workspaceId);
+    void afterCreate(@NotNull UsersWorkspace workspace, @Nullable String accountId) throws ServerException;
+
+    /**
+     * Called after workspace is removed.
+     *
+     * @param workspaceId
+     *         identifier of workspace which was removed
+     * @throws ServerException
+     *         when any error occurs
+     */
+    void afterRemove(@NotNull String workspaceId) throws ServerException;
 }

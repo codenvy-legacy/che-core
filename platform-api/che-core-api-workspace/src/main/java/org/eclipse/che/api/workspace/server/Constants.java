@@ -34,8 +34,8 @@ public final class Constants {
     public static final String LINK_REL_REMOVE_ATTRIBUTE             = "remove attribute";
     public static final int    ID_LENGTH                             = 16;
     public static final String RESOURCES_USAGE_LIMIT_PROPERTY        = "codenvy:resources_usage_limit";
-    public static final String START_WORKSPACE                       = "start workspace";
-    public static final String GET_RUNTIME_WORKSPACE                 = "get runtime workspace";
+    public static final String LINK_REL_START_WORKSPACE              = "start workspace";
+    public static final String LINK_REL_GET_RUNTIMEWORKSPACE         = "get runtime workspace";
     public static final String STOP_WORKSPACE                        = "stop workspace";
     public static final String GET_USERS_WORKSPACE                   = "get users workspace";
     public static final String GET_ALL_USER_WORKSPACES               = "get all user workspaces";

@@ -41,6 +41,8 @@ import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.STARTING;
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.STOPPED;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
@@ -133,10 +135,11 @@ public class WorkspaceManagerTest {
         when(workspaceDao.get(workspace.getId())).thenReturn(workspace);
         doNothing().when(manager).startWorkspaceAsync(workspace, null);
 
-        final UsersWorkspace workspace2 = manager.startWorkspaceById(workspace.getId(), null);
+        final UsersWorkspace workspace2 = manager.startWorkspaceById(workspace.getId(), null, null);
 
         assertEquals(workspace2.getStatus(), STARTING);
         verify(manager).startWorkspaceAsync(workspace, null);
+        verify(workspaceHooks).beforeStart(workspace, null);
     }
 
     @Test
@@ -149,6 +152,7 @@ public class WorkspaceManagerTest {
 
         assertEquals(workspace2.getStatus(), RUNNING);
         verify(manager).startWorkspaceSync(workspace2, null);
+        verify(workspaceHooks).beforeStart(workspace, "account");
     }
 
     @Test

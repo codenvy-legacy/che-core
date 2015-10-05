@@ -24,6 +24,8 @@ import org.eclipse.che.api.core.rest.Service;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.user.server.dao.User;
 import org.eclipse.che.api.user.server.dao.UserDao;
+import org.eclipse.che.api.workspace.server.WorkspaceManager;
+import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
 import org.eclipse.che.commons.json.JsonHelper;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.everrest.core.impl.ApplicationContextImpl;
@@ -62,14 +64,21 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.Collections.singletonList;
+import static javax.ws.rs.HttpMethod.DELETE;
+import static javax.ws.rs.HttpMethod.POST;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyCollection;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.RETURNS_MOCKS;
+import static org.mockito.Mockito.RETURNS_SMART_NULLS;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
 /**
@@ -96,6 +105,8 @@ public class AccountServiceTest {
     @Mock
     private UserDao userDao;
 
+    @Mock
+    private WorkspaceManager workspaceManager;
 
     @Mock
     private SecurityContext securityContext;
@@ -117,6 +128,7 @@ public class AccountServiceTest {
         DependencySupplierImpl dependencies = new DependencySupplierImpl();
         dependencies.addComponent(UserDao.class, userDao);
         dependencies.addComponent(AccountDao.class, accountDao);
+        dependencies.addComponent(WorkspaceManager.class, workspaceManager);
         resources.addResource(AccountService.class, null);
         EverrestProcessor processor = new EverrestProcessor(resources, providers, dependencies, new EverrestConfiguration(), null);
         launcher = new ResourceLauncher(processor);
@@ -178,7 +190,7 @@ public class AccountServiceTest {
         String role = "user";
         prepareSecurityContext(role);
 
-        ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH, MediaType.APPLICATION_JSON, account);
+        ContainerResponse response = makeRequest(POST, SERVICE_PATH, MediaType.APPLICATION_JSON, account);
 
         assertEquals(response.getStatus(), Response.Status.CREATED.getStatusCode());
         AccountDescriptor created = (AccountDescriptor)response.getEntity();
@@ -194,7 +206,7 @@ public class AccountServiceTest {
     public void shouldNotBeAbleToCreateAccountWithNotValidAttributes() throws Exception {
         account.getAttributes().put("codenvy:god_mode", "true");
 
-        ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH, MediaType.APPLICATION_JSON, account);
+        ContainerResponse response = makeRequest(POST, SERVICE_PATH, MediaType.APPLICATION_JSON, account);
         assertEquals(response.getEntity().toString(), "Attribute name 'codenvy:god_mode' is not valid");
     }
 
@@ -204,7 +216,7 @@ public class AccountServiceTest {
         when(userDao.getByAlias(USER_EMAIL)).thenReturn(user);
         when(accountDao.getByOwner(USER_ID)).thenReturn(Arrays.asList(account));
 
-        ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH, MediaType.APPLICATION_JSON, account);
+        ContainerResponse response = makeRequest(POST, SERVICE_PATH, MediaType.APPLICATION_JSON, account);
         assertEquals(response.getEntity().toString(), "Account which owner is " + USER_ID + " already exists");
     }
 
@@ -217,7 +229,7 @@ public class AccountServiceTest {
         String role = "user";
         prepareSecurityContext(role);
 
-        ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH, MediaType.APPLICATION_JSON, account);
+        ContainerResponse response = makeRequest(POST, SERVICE_PATH, MediaType.APPLICATION_JSON, account);
 
         assertEquals(response.getEntity().toString(), "Account name required");
     }
@@ -283,7 +295,7 @@ public class AccountServiceTest {
                                            .withAttributes(Collections.singletonMap("newAttribute", "someValue"));
         prepareSecurityContext("account/owner");
 
-        ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/" + ACCOUNT_ID, MediaType.APPLICATION_JSON, toUpdate);
+        ContainerResponse response = makeRequest(POST, SERVICE_PATH + "/" + ACCOUNT_ID, MediaType.APPLICATION_JSON, toUpdate);
 
         assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
         AccountDescriptor actual = (AccountDescriptor)response.getEntity();
@@ -305,7 +317,7 @@ public class AccountServiceTest {
         AccountDescriptor toUpdate = DtoFactory.getInstance().createDto(AccountDescriptor.class).withAttributes(updates);
 
         prepareSecurityContext("account/owner");
-        ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/" + ACCOUNT_ID, MediaType.APPLICATION_JSON, toUpdate);
+        ContainerResponse response = makeRequest(POST, SERVICE_PATH + "/" + ACCOUNT_ID, MediaType.APPLICATION_JSON, toUpdate);
 
         assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
         AccountDescriptor actual = (AccountDescriptor)response.getEntity();
@@ -334,7 +346,7 @@ public class AccountServiceTest {
         AccountDescriptor toUpdate = DtoFactory.getInstance().createDto(AccountDescriptor.class).withName("TO_UPDATE");
         prepareSecurityContext("account/owner");
 
-        ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/" + ACCOUNT_ID, MediaType.APPLICATION_JSON, toUpdate);
+        ContainerResponse response = makeRequest(POST, SERVICE_PATH + "/" + ACCOUNT_ID, MediaType.APPLICATION_JSON, toUpdate);
         assertNotEquals(response.getStatus(), Response.Status.OK);
         assertEquals(response.getEntity().toString(), "Account with name TO_UPDATE already exists");
     }
@@ -388,7 +400,7 @@ public class AccountServiceTest {
                                                       .withUserId(USER_ID)
                                                       .withRoles(singletonList("account/member"));
 
-        final ContainerResponse response = makeRequest(HttpMethod.POST,
+        final ContainerResponse response = makeRequest(POST,
                                                        SERVICE_PATH + "/" + account.getId() + "/members",
                                                        MediaType.APPLICATION_JSON,
                                                        newMembership);
@@ -446,6 +458,80 @@ public class AccountServiceTest {
 
         assertEquals(response.getStatus(), Response.Status.NO_CONTENT.getStatusCode());
         verify(accountDao).removeMember(accountOwner);
+    }
+
+    @Test
+    public void workspaceShouldBeRegistered() throws Exception {
+        UsersWorkspaceImpl workspace = mock(UsersWorkspaceImpl.class);
+        Account account = new Account().withId("account123");
+        when(workspace.getId()).thenReturn("workspace123");
+        when(workspaceManager.getWorkspace(any())).thenReturn(workspace);
+        when(accountDao.getById(account.getId())).thenReturn(account);
+        when(accountDao.getByWorkspace(workspace.getId())).thenThrow(new NotFoundException(""));
+
+        ContainerResponse response = makeRequest(POST, SERVICE_PATH + '/' + account.getId() + '/' + workspace.getId(), null, null);
+
+        assertEquals(response.getStatus(), 200);
+        AccountDescriptor descriptor = (AccountDescriptor)response.getEntity();
+        assertEquals(descriptor.getWorkspaces().size(), 1);
+        assertEquals(descriptor.getWorkspaces().get(0).getId(), workspace.getId());
+        verify(accountDao).update(account);
+    }
+
+    @Test
+    public void shouldFailWorkspaceRegistrationWhenWorkspaceIsAlreadyRegistered() throws Exception {
+        UsersWorkspaceImpl workspace = mock(UsersWorkspaceImpl.class);
+        Account account = new Account().withId("account123");
+        when(workspace.getId()).thenReturn("workspace123");
+        when(workspaceManager.getWorkspace(any())).thenReturn(workspace);
+        when(accountDao.getById(account.getId())).thenReturn(account);
+        when(accountDao.isWorkspaceRegistered(workspace.getId())).thenReturn(true);
+
+        ContainerResponse response = makeRequest(POST, SERVICE_PATH + '/' + account.getId() + '/' + workspace.getId(), null, null);
+
+        assertEquals(response.getEntity().toString(), "Workspace 'workspace123' already registered in another account");
+    }
+
+    @Test
+    public void shouldFailWorkspaceRegistrationWhenAccountAlreadyContainsGivenWorkspace() throws Exception {
+        UsersWorkspaceImpl workspace = mock(UsersWorkspaceImpl.class);
+        Account account = new Account().withId("account123").withWorkspaces(singletonList(workspace));
+        when(workspace.getId()).thenReturn("workspace123");
+        when(workspaceManager.getWorkspace(any())).thenReturn(workspace);
+        when(accountDao.getById(account.getId())).thenReturn(account);
+
+        ContainerResponse response = makeRequest(POST, SERVICE_PATH + '/' + account.getId() + '/' + workspace.getId(), null, null);
+
+        assertEquals(response.getEntity().toString(), "Workspace 'workspace123' is already registered in this account");
+    }
+
+    @Test
+    public void workspaceShouldBeUnregistered() throws Exception {
+        UsersWorkspaceImpl workspace = mock(UsersWorkspaceImpl.class);
+        Account account = new Account().withId("account123").withWorkspaces(new ArrayList<>(singletonList(workspace)));
+        when(workspace.getId()).thenReturn("workspace123");
+        when(workspaceManager.getWorkspace(any())).thenReturn(workspace);
+        when(accountDao.getById(account.getId())).thenReturn(account);
+
+        ContainerResponse response = makeRequest(DELETE, SERVICE_PATH + '/' + account.getId() + '/' + workspace.getId(), null, null);
+
+        assertEquals(response.getStatus(), 200);
+        AccountDescriptor descriptor = (AccountDescriptor)response.getEntity();
+        assertTrue(descriptor.getWorkspaces().isEmpty());
+        verify(accountDao).update(account);
+    }
+
+    @Test
+    public void shouldFailWorkspaceUnRegistrationWhenWorkspaceIsNotRegistered() throws Exception {
+        UsersWorkspaceImpl workspace = mock(UsersWorkspaceImpl.class);
+        Account account = new Account().withId("account123");
+        when(workspace.getId()).thenReturn("workspace123");
+        when(workspaceManager.getWorkspace(any())).thenReturn(workspace);
+        when(accountDao.getById(account.getId())).thenReturn(account);
+
+        ContainerResponse response = makeRequest(DELETE, SERVICE_PATH + '/' + account.getId() + '/' + workspace.getId(), null, null);
+
+        assertEquals(response.getEntity().toString(), "Workspace 'workspace123' is not registered in account 'account123'");
     }
 
     protected void verifyLinksRel(List<Link> links, List<String> rels) {

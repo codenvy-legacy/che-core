@@ -25,9 +25,11 @@ import org.eclipse.che.api.account.shared.dto.AccountUpdate;
 import org.eclipse.che.api.account.shared.dto.MemberDescriptor;
 import org.eclipse.che.api.account.shared.dto.NewAccount;
 import org.eclipse.che.api.account.shared.dto.NewMembership;
+import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.rest.Service;
 import org.eclipse.che.api.core.rest.annotations.GenerateLink;
 import org.eclipse.che.api.core.rest.annotations.Required;
@@ -35,6 +37,10 @@ import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.core.util.LinksHelper;
 import org.eclipse.che.api.user.server.dao.User;
 import org.eclipse.che.api.user.server.dao.UserDao;
+import org.eclipse.che.api.workspace.server.DtoConverter;
+import org.eclipse.che.api.workspace.server.WorkspaceManager;
+import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
+import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.eclipse.che.dto.server.DtoFactory;
 
@@ -53,7 +59,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilder;
@@ -65,6 +70,8 @@ import java.util.List;
 
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 /**
  * Account API
@@ -78,14 +85,18 @@ import static java.util.Collections.singletonList;
 public class AccountService extends Service {
     private static final Logger LOG = LoggerFactory.getLogger(AccountService.class);
 
-    private final AccountDao accountDao;
-    private final UserDao    userDao;
+    @Context
+    private SecurityContext securityContext;
+
+    private final AccountDao       accountDao;
+    private final UserDao          userDao;
+    private final WorkspaceManager workspaceManager;
 
     @Inject
-    public AccountService(AccountDao accountDao,
-                          UserDao userDao) {
+    public AccountService(AccountDao accountDao, UserDao userDao, WorkspaceManager workspaceManager) {
         this.accountDao = accountDao;
         this.userDao = userDao;
+        this.workspaceManager = workspaceManager;
     }
 
     /**
@@ -106,7 +117,6 @@ public class AccountService extends Service {
      * @throws ServerException
      * @see AccountDescriptor
      * @see #getById(String, SecurityContext)
-     * @see #getByName(String, SecurityContext)
      */
     @ApiOperation(value = "Create a new account",
                   notes = "Create a new account",
@@ -120,8 +130,8 @@ public class AccountService extends Service {
     @POST
     @GenerateLink(rel = Constants.LINK_REL_CREATE_ACCOUNT)
     @RolesAllowed({"user", "system/admin"})
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
     public Response create(@Context SecurityContext securityContext,
                            @Required NewAccount newAccount) throws NotFoundException,
                                                                    ConflictException,
@@ -164,7 +174,7 @@ public class AccountService extends Service {
                      Arrays.asList("account/owner").toString());
         }
         return Response.status(Response.Status.CREATED)
-                       .entity(toDescriptor(account, securityContext))
+                       .entity(toDescriptor(account))
                        .build();
     }
 
@@ -190,7 +200,7 @@ public class AccountService extends Service {
     @GET
     @GenerateLink(rel = Constants.LINK_REL_GET_ACCOUNTS)
     @RolesAllowed("user")
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
     public List<MemberDescriptor> getMemberships(@Context SecurityContext securityContext) throws NotFoundException, ServerException {
         final Principal principal = securityContext.getUserPrincipal();
         final User current = userDao.getByAlias(principal.getName());
@@ -230,7 +240,7 @@ public class AccountService extends Service {
     @Path("/memberships")
     @GenerateLink(rel = Constants.LINK_REL_GET_ACCOUNTS)
     @RolesAllowed({"system/admin", "system/manager"})
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
     public List<MemberDescriptor> getMembershipsOfSpecificUser(@ApiParam(value = "User ID", required = true)
                                                                @Required @QueryParam("userid") String userId,
                                                                @Context SecurityContext securityContext) throws NotFoundException,
@@ -292,7 +302,6 @@ public class AccountService extends Service {
      * @throws ServerException
      *         when some error occurred while retrieving account
      * @see AccountDescriptor
-     * @see #getByName(String, SecurityContext)
      */
     @ApiOperation(value = "Get account by ID",
                   notes = "Get account information by its ID. JSON with account details is returned. This API call requires account/owner, system/admin or system/manager role.",
@@ -305,12 +314,12 @@ public class AccountService extends Service {
     @GET
     @Path("/{id}")
     @RolesAllowed({"account/owner", "system/admin", "system/manager"})
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
     public AccountDescriptor getById(@ApiParam(value = "Account ID", required = true)
                                      @PathParam("id") String id,
                                      @Context SecurityContext securityContext) throws NotFoundException, ServerException {
         final Account account = accountDao.getById(id);
-        return toDescriptor(account, securityContext);
+        return toDescriptor(account);
     }
 
     /**
@@ -341,15 +350,14 @@ public class AccountService extends Service {
     @Path("/find")
     @GenerateLink(rel = Constants.LINK_REL_GET_ACCOUNT_BY_NAME)
     @RolesAllowed({"system/admin", "system/manager"})
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
     public AccountDescriptor getByName(@ApiParam(value = "Account name", required = true)
-                                       @Required @QueryParam("name") String name,
-                                       @Context SecurityContext securityContext) throws NotFoundException,
-                                                                                        ServerException,
-                                                                                        ConflictException {
+                                       @Required @QueryParam("name") String name) throws NotFoundException,
+                                                                                         ServerException,
+                                                                                         ConflictException {
         requiredNotNull(name, "Account name");
         final Account account = accountDao.getByName(name);
-        return toDescriptor(account, securityContext);
+        return toDescriptor(account);
     }
 
     /**
@@ -382,8 +390,8 @@ public class AccountService extends Service {
     @POST
     @Path("/{id}/members")
     @RolesAllowed({"account/owner", "system/admin"})
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
     public Response addMember(@ApiParam(value = "Account ID")
                               @PathParam("id")
                               String accountId,
@@ -439,7 +447,7 @@ public class AccountService extends Service {
     @GET
     @Path("/{id}/members")
     @RolesAllowed({"account/owner", "system/admin", "system/manager"})
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
     public List<MemberDescriptor> getMembers(@ApiParam(value = "Account ID")
                                              @PathParam("id") String id,
                                              @Context SecurityContext securityContext) throws NotFoundException, ServerException {
@@ -535,8 +543,8 @@ public class AccountService extends Service {
     @POST
     @Path("/{id}")
     @RolesAllowed({"account/owner"})
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    @Consumes(APPLICATION_JSON)
     public AccountDescriptor update(@ApiParam(value = "Account ID", required = true)
                                     @PathParam("id") String accountId,
                                     AccountUpdate update,
@@ -560,7 +568,7 @@ public class AccountService extends Service {
             account.getAttributes().putAll(update.getAttributes());
         }
         accountDao.update(account);
-        return toDescriptor(account, securityContext);
+        return toDescriptor(account);
     }
 
     @ApiOperation(value = "Remove account",
@@ -580,14 +588,49 @@ public class AccountService extends Service {
         accountDao.remove(id);
     }
 
+    @POST
+    @Path("/{accountId}/{workspaceId}")
+    @Produces(APPLICATION_JSON)
+    @RolesAllowed("account/owner")
+    public AccountDescriptor registerWorkspace(@PathParam("accountId") String accountId, @PathParam("workspaceId") String workspaceId)
+            throws NotFoundException, ServerException, BadRequestException, ConflictException {
+        Account account = accountDao.getById(accountId);
+        UsersWorkspace workspace = workspaceManager.getWorkspace(workspaceId);
+        if (accountDao.isWorkspaceRegistered(workspaceId)) {
+            throw new ConflictException("Workspace '" + workspaceId + "' already registered in another account");
+        }
+        if (account.getWorkspaces().contains(workspace)) {
+            throw new ConflictException(format("Workspace '%s' is already registered in this account", workspaceId));
+        }
+        account.getWorkspaces().add(workspace);
+        accountDao.update(account);
+        return toDescriptor(account);
+    }
+
+    @DELETE
+    @Path("/{accountId}/{workspaceId}")
+    @Produces(APPLICATION_JSON)
+    public AccountDescriptor unregisterWorkspace(@PathParam("accountId") String accountId, @PathParam("workspaceId") String workspaceId)
+            throws NotFoundException, ServerException, BadRequestException, ConflictException {
+        Account account = accountDao.getById(accountId);
+        UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(workspaceId);
+        if (!account.getWorkspaces().remove(workspace)) {
+            throw new ConflictException(format("Workspace '%s' is not registered in account '%s'", workspaceId, accountId));
+        }
+        accountDao.update(account);
+        return toDescriptor(account);
+    }
+
     private void validateAttributeName(String attributeName) throws ConflictException {
         if (attributeName == null || attributeName.isEmpty() || attributeName.toLowerCase().startsWith("codenvy")) {
             throw new ConflictException(format("Attribute name '%s' is not valid", attributeName));
         }
     }
 
-    /** Converts {@link Account} to {@link AccountDescriptor} */
-    private AccountDescriptor toDescriptor(Account account, SecurityContext securityContext) {
+    /**
+     * Converts {@link Account} to {@link AccountDescriptor}
+     */
+    private AccountDescriptor toDescriptor(Account account) {
         final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
         final List<Link> links = new LinkedList<>();
         links.add(LinksHelper.createLink(HttpMethod.GET,
@@ -596,7 +639,7 @@ public class AccountService extends Service {
                                                    .build()
                                                    .toString(),
                                          null,
-                                         MediaType.APPLICATION_JSON,
+                                         APPLICATION_JSON,
                                          Constants.LINK_REL_GET_ACCOUNTS));
 
         links.add(LinksHelper.createLink(HttpMethod.GET,
@@ -605,7 +648,7 @@ public class AccountService extends Service {
                                                    .build(account.getId())
                                                    .toString(),
                                          null,
-                                         MediaType.APPLICATION_JSON,
+                                         APPLICATION_JSON,
                                          Constants.LINK_REL_GET_MEMBERS));
         links.add(LinksHelper.createLink(HttpMethod.GET,
                                          uriBuilder.clone()
@@ -613,7 +656,7 @@ public class AccountService extends Service {
                                                    .build(account.getId())
                                                    .toString(),
                                          null,
-                                         MediaType.APPLICATION_JSON,
+                                         APPLICATION_JSON,
                                          Constants.LINK_REL_GET_ACCOUNT_BY_ID));
         if (securityContext.isUserInRole("system/admin") || securityContext.isUserInRole("system/manager")) {
             links.add(LinksHelper.createLink(HttpMethod.GET,
@@ -623,7 +666,7 @@ public class AccountService extends Service {
                                                        .build()
                                                        .toString(),
                                              null,
-                                             MediaType.APPLICATION_JSON,
+                                             APPLICATION_JSON,
                                              Constants.LINK_REL_GET_ACCOUNT_BY_NAME));
         }
         if (securityContext.isUserInRole("system/admin")) {
@@ -644,10 +687,16 @@ public class AccountService extends Service {
         }
         account.getAttributes().remove("codenvy:creditCardToken");
         account.getAttributes().remove("codenvy:billing.date");
+
+        List<UsersWorkspaceDto> workspaces = account.getWorkspaces()
+                                                    .stream()
+                                                    .map(DtoConverter::asDto)
+                                                    .collect(toList());
         return DtoFactory.getInstance().createDto(AccountDescriptor.class)
                          .withId(account.getId())
                          .withName(account.getName())
                          .withAttributes(account.getAttributes())
+                         .withWorkspaces(workspaces)
                          .withLinks(links);
     }
 
@@ -670,7 +719,7 @@ public class AccountService extends Service {
                                                                  .build(account.getId())
                                                                  .toString(),
                                                        null,
-                                                       MediaType.APPLICATION_JSON,
+                                                       APPLICATION_JSON,
                                                        Constants.LINK_REL_GET_MEMBERS);
         final AccountReference accountRef = DtoFactory.getInstance().createDto(AccountReference.class)
                                                       .withId(account.getId())
@@ -684,7 +733,7 @@ public class AccountService extends Service {
                                                                                .build(account.getId())
                                                                                .toString(),
                                                                      null,
-                                                                     MediaType.APPLICATION_JSON,
+                                                                     APPLICATION_JSON,
                                                                      Constants.LINK_REL_GET_ACCOUNT_BY_ID)));
         }
         return DtoFactory.getInstance().createDto(MemberDescriptor.class)
