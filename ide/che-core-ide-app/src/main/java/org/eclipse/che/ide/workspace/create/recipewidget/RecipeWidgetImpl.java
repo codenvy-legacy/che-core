@@ -79,16 +79,6 @@ public class RecipeWidgetImpl extends Composite implements RecipeWidget, ClickHa
 
     /** {@inheritDoc} */
     @Override
-    public void setStyles() {
-//        main.getElement().setAttribute("style", "");
-//
-//        icon.getElement().setAttribute("style", "");
-//        tagName.getElement().setAttribute("style", "");
-//        type.getElement().setAttribute("style", "");
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public void onClick(ClickEvent event) {
         delegate.onTagClicked(this);
     }
