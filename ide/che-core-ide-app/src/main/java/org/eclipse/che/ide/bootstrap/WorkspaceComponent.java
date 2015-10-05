@@ -43,6 +43,7 @@ import org.eclipse.che.ide.websocket.WebSocketException;
 import org.eclipse.che.ide.websocket.events.ConnectionOpenedHandler;
 import org.eclipse.che.ide.websocket.rest.SubscriptionHandler;
 import org.eclipse.che.ide.websocket.rest.Unmarshallable;
+import org.eclipse.che.ide.workspace.BrowserWsNameProvider;
 import org.eclipse.che.ide.workspace.create.CreateWorkspacePresenter;
 import org.eclipse.che.ide.workspace.start.StartWorkspaceEvent;
 import org.eclipse.che.ide.workspace.start.StartWorkspacePresenter;
@@ -68,6 +69,7 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
     private final AppContext               appContext;
     private final NotificationManager      notificationManager;
     private final MessageBusProvider       messageBusProvider;
+    private final BrowserWsNameProvider    browserWsNameProvider;
 
     private OperationInfo                  startMachineOperation;
     private Callback<Component, Exception> callback;
@@ -83,7 +85,8 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
                               LoaderPresenter loader,
                               AppContext appContext,
                               NotificationManager notificationManager,
-                              final MessageBusProvider messageBusProvider) {
+                              MessageBusProvider messageBusProvider,
+                              BrowserWsNameProvider browserWsNameProvider) {
         this.workspaceServiceClient = workspaceServiceClient;
         this.createWorkspacePresenter = createWorkspacePresenter;
         this.startWorkspacePresenter = startWorkspacePresenter;
@@ -94,6 +97,7 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
         this.appContext = appContext;
         this.notificationManager = notificationManager;
         this.messageBusProvider = messageBusProvider;
+        this.browserWsNameProvider = browserWsNameProvider;
 
         eventBus.addHandler(ExtServerStateEvent.TYPE, this);
     }
@@ -122,23 +126,27 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
             public void apply(List<UsersWorkspaceDto> workspaces) throws OperationException {
                 operationInfo.setStatus(Status.FINISHED);
 
-                if (workspaces.isEmpty()) {
-                    createWorkspacePresenter.show(operationInfo, callback);
-
-                    return;
-                }
+                String wsNameFromBrowser = browserWsNameProvider.getWorkspaceName();
 
                 for (UsersWorkspaceDto workspace : workspaces) {
-                    if (RUNNING.equals(workspace.getStatus())) {
+                    boolean isWorkspaceExist = wsNameFromBrowser.equals(workspace.getName());
+
+                    if (isWorkspaceExist && RUNNING.equals(workspace.getStatus())) {
                         messageBus = messageBusProvider.createMessageBus(workspace.getId());
 
                         setCurrentWorkspace(operationInfo, workspace);
 
                         return;
                     }
+
+                    if (isWorkspaceExist) {
+                        startWorkspacePresenter.show(workspaces, callback, operationInfo);
+
+                        return;
+                    }
                 }
 
-                startWorkspacePresenter.show(workspaces, callback, operationInfo);
+                createWorkspacePresenter.show(operationInfo, callback);
             }
         }).catchError(new Operation<PromiseError>() {
             @Override
@@ -151,11 +159,13 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
         });
     }
 
-    private void setCurrentWorkspace(OperationInfo operationInfo, UsersWorkspaceDto workspace) {
+    public void setCurrentWorkspace(OperationInfo operationInfo, UsersWorkspaceDto workspace) {
         operationInfo.setStatus(Status.FINISHED);
         Config.setCurrentWorkspace(workspace);
         appContext.setWorkspace(workspace);
         callback.onSuccess(WorkspaceComponent.this);
+
+        browserWsNameProvider.setWorkspaceName(workspace.getName());
     }
 
     public void startWorkspace(String id, final String envName) {

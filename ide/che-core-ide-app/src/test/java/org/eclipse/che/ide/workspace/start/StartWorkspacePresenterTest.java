@@ -13,23 +13,28 @@ package org.eclipse.che.ide.workspace.start;
 import com.google.gwt.core.client.Callback;
 import com.google.inject.Provider;
 
+import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.bootstrap.WorkspaceComponent;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo;
+import org.eclipse.che.ide.workspace.BrowserWsNameProvider;
 import org.eclipse.che.ide.workspace.WorkspaceWidgetFactory;
 import org.eclipse.che.ide.workspace.create.CreateWorkspacePresenter;
 import org.eclipse.che.ide.workspace.start.workspacewidget.WorkspaceWidget;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Arrays;
 
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -51,6 +56,8 @@ public class StartWorkspacePresenterTest {
     private CreateWorkspacePresenter     createWorkspacePresenter;
     @Mock
     private LoaderPresenter              loaderPresenter;
+    @Mock
+    private BrowserWsNameProvider        browserWsNameProvider;
 
     //additional mocks
     @Mock
@@ -74,19 +81,38 @@ public class StartWorkspacePresenterTest {
 
     @Test
     public void dialogStartWorkspaceShouldBeShown() {
+        when(browserWsNameProvider.getWorkspaceName()).thenReturn("test");
         when(widgetFactory.create(workspaceDto)).thenReturn(widget);
 
         presenter.show(Arrays.asList(workspaceDto), callback, operationInfo);
 
+        verify(browserWsNameProvider).getWorkspaceName();
         verify(widgetFactory).create(workspaceDto);
         verify(widget).setDelegate(presenter);
         verify(view).addWorkspace(widget);
+        verify(view).setWsName(anyString());
 
         verify(view).show();
     }
 
     @Test
+    public void workspaceWithExistingNameShouldBeSelected() {
+        when(browserWsNameProvider.getWorkspaceName()).thenReturn("test");
+        when(wsComponentProvider.get()).thenReturn(workspaceComponent);
+        when(widgetFactory.create(workspaceDto)).thenReturn(widget);
+        when(workspaceDto.getName()).thenReturn("test");
+
+        presenter.show(Arrays.asList(workspaceDto), callback, operationInfo);
+
+        presenter.onStartWorkspaceClicked();
+
+        verify(workspaceDto).getId();
+        verify(workspaceDto).getDefaultEnvName();
+    }
+
+    @Test
     public void onCreateWorkspaceButtonShouldBeClicked() {
+        when(browserWsNameProvider.getWorkspaceName()).thenReturn("test");
         when(widgetFactory.create(workspaceDto)).thenReturn(widget);
         presenter.show(Arrays.asList(workspaceDto), callback, operationInfo);
 
@@ -105,12 +131,28 @@ public class StartWorkspacePresenterTest {
         verify(workspaceDto).getDefaultEnvName();
         verify(view).setWsName("text");
         verify(view).setEnableStartButton(true);
+
+        verify(view, never()).hide();
+    }
+
+    @Test
+    public void workspaceShouldBeStartedWhenRunningWsWasSelected() {
+        when(workspaceDto.getStatus()).thenReturn(WorkspaceStatus.RUNNING);
+        when(workspaceDto.getDefaultEnvName()).thenReturn("test");
+        when(wsComponentProvider.get()).thenReturn(workspaceComponent);
+
+        presenter.onWorkspaceSelected(workspaceDto);
+
+        verify(wsComponentProvider).get();
+        verify(workspaceComponent).setCurrentWorkspace(Matchers.<OperationInfo>anyObject(), eq(workspaceDto));
+        verify(view).hide();
     }
 
     @Test
     public void selectedWorkspaceShouldBeStarted() {
         when(widgetFactory.create(workspaceDto)).thenReturn(widget);
         when(workspaceDto.getDefaultEnvName()).thenReturn("text");
+        when(browserWsNameProvider.getWorkspaceName()).thenReturn("test");
         when(wsComponentProvider.get()).thenReturn(workspaceComponent);
 
         presenter.show(Arrays.asList(workspaceDto), callback, operationInfo);

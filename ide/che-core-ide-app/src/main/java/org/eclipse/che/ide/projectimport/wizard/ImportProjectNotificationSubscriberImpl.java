@@ -51,6 +51,8 @@ public class ImportProjectNotificationSubscriberImpl implements ImportProjectNot
         this.notificationManager = notificationManager;
         this.workspaceId = appContext.getWorkspace().getId();
 
+        this.messageBus = messageBusProvider.getMessageBus();
+
         eventBus.addHandler(StartWorkspaceEvent.TYPE, new StartWorkspaceHandler() {
             @Override
             public void onWorkspaceStarted(UsersWorkspaceDto workspace) {

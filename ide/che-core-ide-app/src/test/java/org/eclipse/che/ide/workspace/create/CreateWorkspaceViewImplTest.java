@@ -121,16 +121,6 @@ public class CreateWorkspaceViewImplTest {
     }
 
     @Test
-    @Ignore
-    public void dialogShouldBeShown() {
-        when(view.recipeURL.getText()).thenReturn("text");
-
-        view.show();
-
-        verify(view.recipeURL).getText();
-    }
-
-    @Test
     public void workspaceNameShouldBeReturned() {
         view.getWorkspaceName();
 
@@ -148,7 +138,6 @@ public class CreateWorkspaceViewImplTest {
         verify(tagFactory).create(descriptor);
 
         verify(tag).setDelegate(view);
-        verify(tag).setStyles();
 
         verify(view.tags).getAbsoluteLeft();
         verify(view.tags).getAbsoluteTop();

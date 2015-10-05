@@ -66,7 +66,7 @@ public class ExtServerStateController implements ConnectionOpenedHandler, Connec
 
     public void initialize(String wsUrl) {
         this.wsUrl = wsUrl;
-        this.countRetry = 30;
+        this.countRetry = 50;
         this.state = ExtServerState.STOPPED;
 
         connect();

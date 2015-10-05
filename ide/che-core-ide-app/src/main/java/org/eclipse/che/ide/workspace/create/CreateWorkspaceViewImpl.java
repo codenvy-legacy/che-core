@@ -188,8 +188,6 @@ class CreateWorkspaceViewImpl extends Window implements CreateWorkspaceView, Rec
             RecipeWidget tag = tagFactory.create(descriptor);
             tag.setDelegate(this);
 
-            tag.setStyles();
-
             tagsPanel.add(tag);
         }
 
