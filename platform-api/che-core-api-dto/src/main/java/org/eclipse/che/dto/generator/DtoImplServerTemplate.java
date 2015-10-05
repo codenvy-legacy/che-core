@@ -416,12 +416,12 @@ public class DtoImplServerTemplate extends DtoImpl {
                    || rawClass == Float.class
                    || rawClass == Short.class
                    || rawClass == Byte.class) {
-            builder.append(i).append("JsonElement ").append(outVar).append(depth == 0 ? " = this." + inVar : inVar).append(
+            builder.append(i).append("JsonElement ").append(outVar).append(" = ").append(depth == 0 ? " this." + inVar : inVar).append(
                     " == null ? JsonNull.INSTANCE : new JsonPrimitive(").append(depth == 0 ? "this." + inVar : inVar).append(");\n");
         } else if (isAny(rawClass)) {
             // TODO JsonElement.deepCopy() is package-protected, JSONs are serialized to strings then parsed for copying them
             // outVar = inVar == null ? JsonNull.INSTNACE : (copyJsons ? new JsonParser().parse(inVar) : inVar);
-            builder.append(i).append("JsonElement ").append(outVar).append(depth == 0 ? " = this." + inVar : inVar)
+            builder.append(i).append("JsonElement ").append(outVar).append(" = ").append(depth == 0 ? " this." + inVar : inVar)
                     .append(" == null || !(").append(inVar).append(" instanceof JsonElement) ? JsonNull.INSTANCE : (");
             appendCopyJsonExpression(inVar, builder).append(");\n");
         } else {

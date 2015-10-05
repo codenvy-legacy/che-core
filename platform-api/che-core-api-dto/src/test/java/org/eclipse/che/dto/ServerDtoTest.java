@@ -10,17 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.dto;
 
-import org.eclipse.che.dto.definitions.ComplicatedDto;
-import org.eclipse.che.dto.definitions.DTOHierarchy;
-import org.eclipse.che.dto.definitions.DtoWithAny;
-import org.eclipse.che.dto.definitions.DtoWithDelegate;
-import org.eclipse.che.dto.definitions.DtoWithFieldNames;
-import org.eclipse.che.dto.definitions.model.Model;
-import org.eclipse.che.dto.definitions.model.ModelComponentDto;
-import org.eclipse.che.dto.definitions.model.ModelDto;
-import org.eclipse.che.dto.definitions.SimpleDto;
-import org.eclipse.che.dto.server.DtoFactory;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
@@ -28,6 +17,16 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
+import org.eclipse.che.dto.definitions.ComplicatedDto;
+import org.eclipse.che.dto.definitions.DTOHierarchy;
+import org.eclipse.che.dto.definitions.DtoWithAny;
+import org.eclipse.che.dto.definitions.DtoWithDelegate;
+import org.eclipse.che.dto.definitions.DtoWithFieldNames;
+import org.eclipse.che.dto.definitions.SimpleDto;
+import org.eclipse.che.dto.definitions.model.Model;
+import org.eclipse.che.dto.definitions.model.ModelComponentDto;
+import org.eclipse.che.dto.definitions.model.ModelDto;
+import org.eclipse.che.dto.server.DtoFactory;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -124,23 +123,36 @@ public class ServerDtoTest {
 
     @Test
     public void testSerializerWithAny() throws Exception {
-        DtoWithAny dto = dtoFactory.createDto(DtoWithAny.class).withStuff(createTestValueForAny());
+        final List<Object> objects = createListTestValueForAny();
+        DtoWithAny dto = dtoFactory.createDto(DtoWithAny.class).withStuff(createTestValueForAny())
+                                   .withObjects(objects);
         final String json = dtoFactory.toJson(dto);
 
         JsonObject jsonObject = new JsonParser().parse(json).getAsJsonObject();
         Assert.assertEquals(jsonObject.get("stuff"), createTestValueForAny());
+
+        Assert.assertTrue(jsonObject.has("objects"));
+        JsonArray jsonArray = jsonObject.get("objects").getAsJsonArray();
+        assertEquals(jsonArray.size(), objects.size());
+        for (int i = 0; i < jsonArray.size(); i++) {
+            assertEquals(jsonArray.get(i), objects.get(i));
+        }
     }
 
     @Test
-    public void testDeerializerWithAny() throws Exception {
-        final JsonElement stuff = createTestValueForAny();
-
+    public void testDeserializerWithAny() throws Exception {
         JsonObject json = new JsonObject();
-        json.add("stuff", stuff);
+        json.add("stuff", createTestValueForAny());
+        JsonArray jsonArray = new JsonArray();
+        for (Object object : createListTestValueForAny()) {
+            jsonArray.add((JsonElement)object);
+        }
+        json.add("objects", jsonArray);
 
         DtoWithAny dto = dtoFactory.createDtoFromJson(json.toString(), DtoWithAny.class);
 
         Assert.assertEquals(dto.getStuff(), createTestValueForAny());
+        Assert.assertEquals(dto.getObjects(), createListTestValueForAny());
     }
 
     @Test
@@ -152,12 +164,21 @@ public class ServerDtoTest {
         JsonObject expJson = new JsonObject();
         expJson.addProperty("id", 0);
         expJson.add("stuff", JsonNull.INSTANCE);
+        expJson.add("objects", new JsonArray());
         assertEquals(expJson, json);
     }
 
     /** Intentionally call several times to ensure non-reference equality */
     private static JsonElement createTestValueForAny() {
         return new JsonParser().parse("{a:100,b:{c:'blah',d:null}}");
+    }
+
+    /** Intentionally call several times to ensure non-reference equality */
+    private static List<Object> createListTestValueForAny() {
+        final ArrayList<Object> objects = new ArrayList<>();
+        objects.add(new JsonParser().parse("{x:1}"));
+        objects.add(new JsonParser().parse("{b:120}"));
+        return objects;
     }
 
     @Test
