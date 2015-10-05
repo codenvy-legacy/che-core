@@ -21,7 +21,6 @@
 
 
     <g:HTMLPanel styleName="{style.main}">
-        <g:SimplePanel ui:field="editorSelectionSection"/>
         <g:SimplePanel ui:field="keymapsSection"/>
     </g:HTMLPanel>
 </ui:UiBinder>

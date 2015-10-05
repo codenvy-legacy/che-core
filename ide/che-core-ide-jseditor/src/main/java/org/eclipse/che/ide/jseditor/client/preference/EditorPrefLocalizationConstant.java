@@ -25,18 +25,6 @@ public interface EditorPrefLocalizationConstant extends Messages {
     @Key("editortype.category")
     String editorTypeCategory();
 
-    @DefaultMessage("Editor preferences could not be saved.")
-    String flushError();
-
-    @DefaultMessage("Editor preferences saved.")
-    String flushSuccess();
-
-    @DefaultMessage("Editors")
-    String editorsMappingSectionLabel();
-
     @DefaultMessage("Key Bindings")
     String keybindingsSectionLabel();
-
-    @DefaultMessage("Default Editor")
-    String defaultEditorLabel();
 }

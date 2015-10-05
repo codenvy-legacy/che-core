@@ -10,9 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.preference;
 
-
-import javax.inject.Inject;
-
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
@@ -21,14 +18,13 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 
+import javax.inject.Inject;
+
 /** Implementation of the {@link EditorPreferenceView}. */
 public class EditorPreferenceViewImpl extends Composite implements EditorPreferenceView {
 
     /** The UI binder instance. */
-    private static final EditorTypePreferenceViewImplUiBinder UIBINDER    = GWT.create(EditorTypePreferenceViewImplUiBinder.class);
-
-    @UiField
-    SimplePanel editorSelectionSection;
+    private static final EditorTypePreferenceViewImplUiBinder UIBINDER = GWT.create(EditorTypePreferenceViewImplUiBinder.class);
 
     @UiField
     SimplePanel keymapsSection;
@@ -38,17 +34,12 @@ public class EditorPreferenceViewImpl extends Composite implements EditorPrefere
         initWidget(UIBINDER.createAndBindUi(this));
     }
 
-    /** UI binder interface for the {@link EditorPreferenceViewImpl} component. */
-    interface EditorTypePreferenceViewImplUiBinder extends UiBinder<HTMLPanel, EditorPreferenceViewImpl> {
-    }
-
-    @Override
-    public AcceptsOneWidget getEditorTypeContainer() {
-        return this.editorSelectionSection;
-    }
-
     @Override
     public AcceptsOneWidget getKeymapsContainer() {
         return this.keymapsSection;
+    }
+
+    /** UI binder interface for the {@link EditorPreferenceViewImpl} component. */
+    interface EditorTypePreferenceViewImplUiBinder extends UiBinder<HTMLPanel, EditorPreferenceViewImpl> {
     }
 }

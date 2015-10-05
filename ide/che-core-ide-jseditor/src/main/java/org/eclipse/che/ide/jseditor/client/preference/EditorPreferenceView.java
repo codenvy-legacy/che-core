@@ -16,9 +16,5 @@ import com.google.gwt.user.client.ui.IsWidget;
 /** View interface for the preference page for the editor preferences. */
 public interface EditorPreferenceView extends IsWidget {
 
-
-    AcceptsOneWidget getEditorTypeContainer();
-
     AcceptsOneWidget getKeymapsContainer();
-
 }

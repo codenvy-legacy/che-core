@@ -10,15 +10,16 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.prefmodel;
 
-import javax.inject.Inject;
-import javax.validation.constraints.NotNull;
-
-import org.eclipse.che.ide.api.preferences.PreferencesManager;
-import org.eclipse.che.ide.util.loging.Log;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONValue;
+
+import org.eclipse.che.ide.api.preferences.PreferencesManager;
+import org.eclipse.che.ide.util.loging.Log;
+
+import javax.inject.Inject;
+import javax.validation.constraints.NotNull;
 
 /**
  * Utility to read {@link EditorPreferences} from the preferences.

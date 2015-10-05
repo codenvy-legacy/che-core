@@ -11,19 +11,17 @@
 package org.eclipse.che.ide.jseditor.client.preference.inject;
 
 
+import com.google.gwt.inject.client.AbstractGinModule;
+import com.google.gwt.inject.client.multibindings.GinMultibinder;
+
 import org.eclipse.che.ide.api.extension.ExtensionGinModule;
 import org.eclipse.che.ide.api.preferences.PreferencePagePresenter;
 import org.eclipse.che.ide.jseditor.client.preference.EditorPreferencePresenter;
 import org.eclipse.che.ide.jseditor.client.preference.EditorPreferenceView;
 import org.eclipse.che.ide.jseditor.client.preference.EditorPreferenceViewImpl;
-import org.eclipse.che.ide.jseditor.client.preference.editorselection.EditorSelectionPreferenceView;
-import org.eclipse.che.ide.jseditor.client.preference.editorselection.EditorSelectionPreferenceViewImpl;
-import org.eclipse.che.ide.jseditor.client.preference.keymaps.KeymapsPreferenceView;
-import org.eclipse.che.ide.jseditor.client.preference.editorselection.EditorSelectionPreferencePresenter;
 import org.eclipse.che.ide.jseditor.client.preference.keymaps.KeyMapsPreferencePresenter;
+import org.eclipse.che.ide.jseditor.client.preference.keymaps.KeymapsPreferenceView;
 import org.eclipse.che.ide.jseditor.client.preference.keymaps.KeymapsPreferenceViewImpl;
-import com.google.gwt.inject.client.AbstractGinModule;
-import com.google.gwt.inject.client.multibindings.GinMultibinder;
 
 /** Gin module for the editor preferences. */
 @ExtensionGinModule
@@ -36,10 +34,7 @@ public class EditorPreferencesGinModule extends AbstractGinModule {
         prefBinder.addBinding().to(EditorPreferencePresenter.class);
 
         bind(EditorPreferenceView.class).to(EditorPreferenceViewImpl.class);
-        bind(EditorSelectionPreferenceView.class).to(EditorSelectionPreferenceViewImpl.class);
         bind(KeymapsPreferenceView.class).to(KeymapsPreferenceViewImpl.class);
-        bind(EditorSelectionPreferencePresenter.class);
         bind(KeyMapsPreferencePresenter.class);
-
     }
 }

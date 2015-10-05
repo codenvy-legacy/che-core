@@ -10,35 +10,30 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.preference;
 
-import org.vectomatic.dom.svg.ui.SVGResource;
-
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.cellview.client.CellTable;
 
 public interface EditorPreferenceResource extends CellTable.Resources {
 
-    @Source("editor-icon.svg")
-    SVGResource editorPrefIcon();
-
     // use until SVG is supported as pref dialog icon
     @Source("editor-icon-temporary.png")
     ImageResource editorPrefIconTemporary();
 
-    interface CellTableStyle extends CellTable.Style {
-    }
-
     @Source({"CellTable-properties.css", "org/eclipse/che/ide/api/ui/style.css"})
     CellTableStyle cellTableStyle();
 
-    public interface CellStyle extends CssResource {
+    @Source("CellStyle.css")
+    CellStyle cellStyle();
+
+    interface CellTableStyle extends CellTable.Style {
+    }
+
+    interface CellStyle extends CssResource {
         String prefCell();
 
         String selectWidth();
 
         String firstColumn();
     }
-
-    @Source("CellStyle.css")
-    CellStyle cellStyle();
 }
