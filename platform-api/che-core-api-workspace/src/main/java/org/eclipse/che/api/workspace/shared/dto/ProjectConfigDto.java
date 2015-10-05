@@ -64,9 +64,9 @@ public interface ProjectConfigDto extends ProjectConfig {
     ProjectConfigDto withAttributes(Map<String, List<String>> attributes);
 
     @Override
-    SourceStorageDto getSourceStorage();
+    SourceStorageDto getStorage();
 
-    void setSourceStorage(SourceStorageDto sourceStorage);
+    void setStorage(SourceStorageDto sourceStorage);
 
-    ProjectConfigDto withSourceStorage(SourceStorageDto sourceStorage);
+    ProjectConfigDto withStorage(SourceStorageDto sourceStorage);
 }

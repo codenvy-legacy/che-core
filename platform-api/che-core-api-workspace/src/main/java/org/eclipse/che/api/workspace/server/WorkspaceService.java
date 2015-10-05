@@ -526,10 +526,10 @@ public class WorkspaceService extends Service {
                 .withType(projectCfg.getType())
                 .withAttributes(projectCfg.getAttributes())
                 .withMixinTypes(projectCfg.getMixinTypes())
-                .withSourceStorage(newDto(SourceStorageDto.class)
-                                           .withLocation(projectCfg.getSourceStorage().getLocation())
-                                           .withType(projectCfg.getSourceStorage().getType())
-                                           .withParameters(projectCfg.getSourceStorage().getParameters()));
+                .withStorage(newDto(SourceStorageDto.class)
+                                           .withLocation(projectCfg.getStorage().getLocation())
+                                           .withType(projectCfg.getStorage().getType())
+                                           .withParameters(projectCfg.getStorage().getParameters()));
     }
 
     //TODO add recipe

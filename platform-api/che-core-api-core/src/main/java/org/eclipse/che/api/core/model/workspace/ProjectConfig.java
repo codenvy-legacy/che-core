@@ -34,5 +34,5 @@ public interface ProjectConfig {
 
     Map<String, List<String>> getAttributes();
 
-    SourceStorage getSourceStorage();
+    SourceStorage getStorage();
 }

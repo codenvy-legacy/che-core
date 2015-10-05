@@ -35,7 +35,7 @@ public class ProjectConfigImpl implements ProjectConfig {
     private String                    type;
     private List<String>              mixinTypes;
     private Map<String, List<String>> attributes;
-    private SourceStorageImpl         sourceStorage;
+    private SourceStorageImpl         storage;
 
     public ProjectConfigImpl() {
     }
@@ -47,10 +47,13 @@ public class ProjectConfigImpl implements ProjectConfig {
         type = projectCfg.getType();
         mixinTypes = projectCfg.getMixinTypes();
         attributes = projectCfg.getAttributes();
-        if (projectCfg.getSourceStorage() != null) {
-            sourceStorage = new SourceStorageImpl(projectCfg.getSourceStorage().getType(),
-                                                  projectCfg.getSourceStorage().getLocation(),
-                                                  projectCfg.getSourceStorage().getParameters());
+        if (projectCfg.getStorage() != null) {
+            storage = new SourceStorageImpl(projectCfg.getStorage()
+                                                      .getType(),
+                                            projectCfg.getStorage()
+                                                      .getLocation(),
+                                            projectCfg.getStorage()
+                                                      .getParameters());
         }
     }
 
@@ -115,12 +118,12 @@ public class ProjectConfigImpl implements ProjectConfig {
     }
 
     @Override
-    public SourceStorage getSourceStorage() {
-        return sourceStorage;
+    public SourceStorage getStorage() {
+        return storage;
     }
 
-    public void setSourceStorage(SourceStorageImpl sourceStorage) {
-        this.sourceStorage = sourceStorage;
+    public void setStorage(SourceStorageImpl sourceStorage) {
+        this.storage = sourceStorage;
     }
 
     @Override
@@ -132,7 +135,7 @@ public class ProjectConfigImpl implements ProjectConfig {
                Objects.equals(path, other.path) &&
                Objects.equals(description, other.description) &&
                Objects.equals(type, other.type) &&
-               Objects.equals(sourceStorage, other.sourceStorage) &&
+               Objects.equals(storage, other.storage) &&
                getMixinTypes().equals(other.getMixinTypes()) &&
                getAttributes().equals(other.getAttributes());
     }
@@ -144,7 +147,7 @@ public class ProjectConfigImpl implements ProjectConfig {
         hash = hash * 31 + Objects.hashCode(path);
         hash = hash * 31 + Objects.hashCode(description);
         hash = hash * 31 + Objects.hashCode(type);
-        hash = hash * 31 + Objects.hashCode(sourceStorage);
+        hash = hash * 31 + Objects.hashCode(storage);
         hash = hash * 31 + getMixinTypes().hashCode();
         hash = hash * 31 + getAttributes().hashCode();
         return hash;
@@ -159,7 +162,7 @@ public class ProjectConfigImpl implements ProjectConfig {
                ", type='" + type + '\'' +
                ", mixinTypes=" + mixinTypes +
                ", attributes=" + attributes +
-               ", sourceStorage=" + sourceStorage +
+               ", storage=" + storage +
                '}';
     }
 }
