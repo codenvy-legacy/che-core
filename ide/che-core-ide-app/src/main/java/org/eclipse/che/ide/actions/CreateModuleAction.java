@@ -45,7 +45,7 @@ public class CreateModuleAction extends ProjectAction implements ModuleCreatedEv
                               AnalyticsEventLogger eventLogger,
                               ProjectExplorerPresenter projectExplorer,
                               EventBus eventBus) {
-        super("Create Module...", "Create module from existing folder", resources.moduleRoot());
+        super("Create Module...", "Create module from existing folder", resources.moduleFolder());
         this.wizard = wizard;
         this.eventLogger = eventLogger;
         this.projectExplorer = projectExplorer;

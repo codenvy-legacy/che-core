@@ -8,31 +8,35 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.project.shared;
+package org.eclipse.che.ide.project.node.icon;
 
 import com.google.gwt.resources.client.ClientBundle;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 /**
+ * Icon provider for Docker file
  * @author Vlad Zhukovskiy
  */
-public interface NodesResources extends ClientBundle {
-    @Source("file.svg")
-    SVGResource file();
+@Singleton
+public class DockerfileIconProvider implements NodeIconProvider {
 
-    @Source("hiddenSimpleFolder.svg")
-    SVGResource hiddenSimpleFolder();
+    private Icons icons;
 
-    @Source("notValidProjectFolder.svg")
-    SVGResource notValidProjectFolder();
+    @Inject
+    public DockerfileIconProvider(Icons icons) {
+        this.icons = icons;
+    }
 
-    @Source("moduleFolder.svg")
-    SVGResource moduleFolder();
+    @Override
+    public SVGResource getIcon(String fileName) {
+        return "Dockerfile".equals(fileName) ? icons.dockerfile() : null;
+    }
 
-    @Source("projectFolder.svg")
-    SVGResource projectFolder();
-
-    @Source("simpleFolder.svg")
-    SVGResource simpleFolder();
+    protected interface Icons extends ClientBundle {
+        @Source("dockerfile.svg")
+        SVGResource dockerfile();
+    }
 }

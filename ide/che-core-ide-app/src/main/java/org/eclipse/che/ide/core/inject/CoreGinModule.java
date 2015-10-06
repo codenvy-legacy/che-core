@@ -140,6 +140,9 @@ import org.eclipse.che.ide.preferences.PreferencesViewImpl;
 import org.eclipse.che.ide.privacy.PrivacyPresenter;
 import org.eclipse.che.ide.project.node.NodeManager;
 import org.eclipse.che.ide.project.node.factory.NodeFactory;
+import org.eclipse.che.ide.project.node.icon.DockerfileIconProvider;
+import org.eclipse.che.ide.project.node.icon.FileIconProvider;
+import org.eclipse.che.ide.project.node.icon.NodeIconProvider;
 import org.eclipse.che.ide.projectimport.wizard.ImportProjectNotificationSubscriberImpl;
 import org.eclipse.che.ide.projectimport.wizard.ImportWizardFactory;
 import org.eclipse.che.ide.projectimport.wizard.ImportWizardRegistryImpl;
@@ -431,6 +434,10 @@ public class CoreGinModule extends AbstractGinModule {
         //support old tree
         bind(TreeStructureProviderRegistry.class).to(TreeStructureProviderRegistryImpl.class).in(Singleton.class);
         install(new GinFactoryModuleBuilder().build(org.eclipse.che.ide.api.project.tree.generic.NodeFactory.class));
+
+        GinMultibinder<NodeIconProvider> themeBinder = GinMultibinder.newSetBinder(binder(), NodeIconProvider.class);
+        themeBinder.addBinding().to(FileIconProvider.class);
+        themeBinder.addBinding().to(DockerfileIconProvider.class);
     }
 
     @Provides

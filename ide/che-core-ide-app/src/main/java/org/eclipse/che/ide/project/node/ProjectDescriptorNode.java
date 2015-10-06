@@ -54,7 +54,7 @@ public class ProjectDescriptorNode extends ResourceBasedNode<ProjectDescriptor> 
     @Override
     public void updatePresentation(@NotNull NodePresentation presentation) {
         presentation.setPresentableText(getData().getName());
-        presentation.setPresentableIcon(nodeManager.getNodesResources().projectRoot());
+        presentation.setPresentableIcon(nodeManager.getNodesResources().projectFolder());
     }
 
     @NotNull

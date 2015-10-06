@@ -61,8 +61,8 @@ public class ProjectReferenceNode extends ResourceBasedNode<ProjectReference> im
     @Override
     public void updatePresentation(@NotNull NodePresentation presentation) {
         presentation.setPresentableText(getData().getName());
-        presentation.setPresentableIcon(isValid(getData()) ? nodeManager.getNodesResources().projectRoot()
-                                                           : nodeManager.getNodesResources().invalidProjectRoot());
+        presentation.setPresentableIcon(isValid(getData()) ? nodeManager.getNodesResources().projectFolder()
+                                                           : nodeManager.getNodesResources().notValidProjectFolder());
         if ("private".equals(getData().getVisibility())) {
             presentation.setInfoText("private");
             presentation.setInfoTextWrapper(Pair.of("[", "]"));

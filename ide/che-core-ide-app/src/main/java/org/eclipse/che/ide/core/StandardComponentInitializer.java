@@ -235,6 +235,10 @@ public class StandardComponentInitializer {
     private FileType txtFile;
 
     @Inject
+    @Named("JsonFileType")
+    private FileType jsonFile;
+
+    @Inject
     @Named("MDFileType")
     private FileType mdFile;
 
@@ -283,6 +287,8 @@ public class StandardComponentInitializer {
         fileTypeRegistry.registerFileType(xmlFile);
 
         fileTypeRegistry.registerFileType(txtFile);
+
+        fileTypeRegistry.registerFileType(jsonFile);
 
         fileTypeRegistry.registerFileType(mdFile);
 
