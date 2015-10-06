@@ -198,6 +198,9 @@ public interface Resources extends Tree.Resources,
     @Source("actions/upload-file.svg")
     SVGResource uploadFile();
 
+    @Source("actions/zip-folder.svg")
+    SVGResource downloadZip();
+
     @Source("actions/resize-icon.svg")
     SVGResource fullscreen();
 

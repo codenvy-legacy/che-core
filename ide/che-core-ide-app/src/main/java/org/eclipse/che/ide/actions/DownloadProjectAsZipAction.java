@@ -22,10 +22,10 @@ import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.selection.Selection;
-import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.download.DownloadContainer;
 import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.project.node.ProjectReferenceNode;
+import org.eclipse.che.ide.Resources;
 
 import javax.validation.constraints.NotNull;
 import java.util.Arrays;
@@ -46,7 +46,6 @@ public class DownloadProjectAsZipAction extends AbstractPerspectiveAction {
 
     private final AnalyticsEventLogger     eventLogger;
     private final AppContext               appContext;
-    private final SelectionAgent           selectionAgent;
     private       DownloadContainer        downloadContainer;
     private final ProjectExplorerPresenter projectExplorer;
 
@@ -55,7 +54,7 @@ public class DownloadProjectAsZipAction extends AbstractPerspectiveAction {
                                       @Named("cheExtensionPath") String extPath,
                                       AppContext appContext,
                                       CoreLocalizationConstant locale,
-                                      SelectionAgent selectionAgent,
+                                      Resources resources,
                                       AnalyticsEventLogger eventLogger,
                                       DownloadContainer downloadContainer,
                                       ProjectExplorerPresenter projectExplorer) {
@@ -63,10 +62,9 @@ public class DownloadProjectAsZipAction extends AbstractPerspectiveAction {
               locale.downloadProjectAsZipName(),
               locale.downloadProjectAsZipDescription(),
               null,
-              null);
+              resources.downloadZip());
         this.appContext = appContext;
         this.eventLogger = eventLogger;
-        this.selectionAgent = selectionAgent;
         this.downloadContainer = downloadContainer;
         this.projectExplorer = projectExplorer;
 
