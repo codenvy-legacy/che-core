@@ -36,6 +36,7 @@ import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.part.explorer.project.FoldersOnTopFilter;
 import org.eclipse.che.ide.project.node.factory.NodeFactory;
+import org.eclipse.che.ide.project.node.icon.NodeIconProvider;
 import org.eclipse.che.ide.project.shared.NodesResources;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
@@ -45,6 +46,7 @@ import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Helper class to define various functionality related with nodes.
@@ -60,6 +62,7 @@ public class NodeManager {
     protected final NodesResources         nodesResources;
     protected final SettingsProvider       nodeSettingsProvider;
     protected final DtoFactory             dtoFactory;
+    protected final Set<NodeIconProvider>  nodeIconProvider;
 
     @Inject
     public NodeManager(NodeFactory nodeFactory,
@@ -67,16 +70,18 @@ public class NodeManager {
                        DtoUnmarshallerFactory dtoUnmarshaller,
                        NodesResources nodesResources,
                        SettingsProvider nodeSettingsProvider,
-                       DtoFactory dtoFactory) {
+                       DtoFactory dtoFactory,
+                       Set<NodeIconProvider> nodeIconProvider) {
         this.nodeFactory = nodeFactory;
         this.projectService = projectService;
         this.dtoUnmarshaller = dtoUnmarshaller;
         this.nodesResources = nodesResources;
         this.nodeSettingsProvider = nodeSettingsProvider;
         this.dtoFactory = dtoFactory;
+        this.nodeIconProvider = nodeIconProvider;
     }
 
-    /** ************* Children operations ********************* */
+    /** *********** Children operations ********************* */
 
     @NotNull
     public Promise<List<Node>> getChildren(@NotNull ItemReference itemReference,
@@ -245,7 +250,7 @@ public class NodeManager {
         };
     }
 
-    /** ************* Project Reference operations ********************* */
+    /** *********** Project Reference operations ********************* */
 
     @NotNull
     public Promise<List<Node>> getProjects() {
@@ -288,7 +293,7 @@ public class NodeManager {
         };
     }
 
-    /** ************* Content methods ********************* */
+    /** *********** Content methods ********************* */
 
     @NotNull
     public Promise<String> getContent(@NotNull final VirtualFile virtualFile) {
@@ -323,7 +328,7 @@ public class NodeManager {
         };
     }
 
-    /** ************* Common methods ********************* */
+    /** *********** Common methods ********************* */
 
     @NotNull
     protected <T> AsyncRequestCallback<T> _callback(@NotNull final AsyncCallback<T> callback, @NotNull Unmarshallable<T> u) {
@@ -405,5 +410,9 @@ public class NodeManager {
 
     public NodeFactory getNodeFactory() {
         return nodeFactory;
+    }
+
+    public Set<NodeIconProvider> getNodeIconProvider() {
+        return nodeIconProvider;
     }
 }

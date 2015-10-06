@@ -8,31 +8,22 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.project.shared;
-
-import com.google.gwt.resources.client.ClientBundle;
+package org.eclipse.che.ide.project.node.icon;
 
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 /**
+ * Provides mechanism for resolving icon, based on file extension.
+ *
  * @author Vlad Zhukovskiy
  */
-public interface NodesResources extends ClientBundle {
-    @Source("file.svg")
-    SVGResource file();
-
-    @Source("hiddenSimpleFolder.svg")
-    SVGResource hiddenSimpleFolder();
-
-    @Source("notValidProjectFolder.svg")
-    SVGResource notValidProjectFolder();
-
-    @Source("moduleFolder.svg")
-    SVGResource moduleFolder();
-
-    @Source("projectFolder.svg")
-    SVGResource projectFolder();
-
-    @Source("simpleFolder.svg")
-    SVGResource simpleFolder();
+public interface NodeIconProvider {
+    /**
+     * Resolve icon based on file extension.
+     *
+     * @param fileName
+     *         file name
+     * @return icon or null if icons for this extension doesn't exist
+     */
+    SVGResource getIcon(String fileName);
 }

@@ -39,7 +39,8 @@ public class FolderReferenceNode extends ItemReferenceBasedNode {
     @Override
     public void updatePresentation(@NotNull NodePresentation presentation) {
         presentation.setPresentableText(getData().getName());
-        presentation.setPresentableIcon(nodeManager.getNodesResources().simpleRoot());
+        presentation.setPresentableIcon(getData().getName().startsWith(".") ? nodeManager.getNodesResources().hiddenSimpleFolder()
+                                                                            : nodeManager.getNodesResources().simpleFolder());
     }
 
     @Override

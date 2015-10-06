@@ -26,10 +26,12 @@ import org.eclipse.che.ide.api.project.node.HasAction;
 import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
 import org.eclipse.che.ide.api.project.node.settings.NodeSettings;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
+import org.eclipse.che.ide.project.node.icon.NodeIconProvider;
 import org.eclipse.che.ide.project.node.resource.ItemReferenceProcessor;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.StringUnmarshaller;
 import org.eclipse.che.ide.ui.smartTree.presentation.NodePresentation;
+import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.validation.constraints.NotNull;
 
@@ -53,7 +55,18 @@ public class FileReferenceNode extends ItemReferenceBasedNode implements Virtual
     @Override
     public void updatePresentation(@NotNull NodePresentation presentation) {
         presentation.setPresentableText(getData().getName());
-        presentation.setPresentableIcon(nodeManager.getNodesResources().file());
+
+        SVGResource icon = null;
+
+        for (NodeIconProvider iconProvider : nodeManager.getNodeIconProvider()) {
+            icon = iconProvider.getIcon(getData().getName());
+
+            if (icon != null) {
+                break;
+            }
+        }
+
+        presentation.setPresentableIcon(icon != null ? icon : nodeManager.getNodesResources().file());
     }
 
     @NotNull
