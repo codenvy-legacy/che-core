@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.server;
 
+import com.google.common.base.Strings;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -873,7 +874,7 @@ public class ProjectService extends Service {
             }
         } catch (ConflictException | ForbiddenException | ServerException | NotFoundException e) {
             if (newProject.getType() == null
-                && newProject.getDescription() != null
+                && !Strings.isNullOrEmpty(newProject.getDescription())
                 || newProject.getRunners() != null
                 || newProject.getBuilders() != null ) {
                 throw new BadRequestException("Impossible to save configurations for the project without type");
