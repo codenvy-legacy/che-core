@@ -176,48 +176,37 @@ div.gwt-Label {
 }
 
 .gwt-Button, button {
-    padding: 0px 10px;
-    color: mainFontColor;
-    border: 1px solid tabBorder;
-    font-weight: 700;
+    height: buttonHeight;
+    padding: 0px buttonPadding;
+    outline: none;
     font-size: buttonFontSize;
-    height: 22px;
-    background: linear-gradient(to bottom, buttonTopColor 0%, buttonTopColor 3%, buttonColor 4%, buttonColor 100%);
-    border-radius: 1px;
     font-family: mainFontFamily;
-    font-weight: bold;
-}
-
-.gwt-Button:hover, .gwt-Button[disabled]:hover, button:hover, button[disabled]:hover {
-    /*border-top: 1px solid #646464;*/
-    border: 1px solid tabBorder;
+    background: buttonBackground;
+    border: 1px solid buttonBorderColor;
+    color: buttonFontColor;
 }
 
 .gwt-Button:hover, button:hover {
-    /*border-top: 1px solid #646464;*/
-    color: buttonHoverTextColor;
-    background: linear-gradient(to bottom, buttonColor 0%, buttonColor 3%, buttonHoverColor 4%, buttonHoverColor 100%);
+    background: buttonHoverBackground;
+    border: 1px solid buttonHoverBorderColor;
+    color: buttonHoverFontColor;
 }
 
-.gwt-Button[disabled]:hover, button[disabled]:hover {
-    color: #888888;
-    background: linear-gradient(to bottom, buttonTopColor 0%, buttonTopColor 3%, buttonColor 4%, buttonColor 100%);
+.gwt-Button[disabled], button[disabled], .gwt-Button[disabled]:hover, button[disabled]:hover, .gwt-Button[disabled]:active, button[disabled]:active {
+    background: buttonDisabledBackground;
+    border: 1px solid buttonDisabledBorderColor;
+    color: buttonDisabledFontColor;
 }
 
 .gwt-Button:active, button:active {
-    box-shadow: 0 0 4px 2px selectionBackground;
-    border-radius: 1px;
+    background: buttonClickedBackground;
+    border: 1px solid buttonClickedBorderColor;
+    color: buttonClickedFontColor;
     outline: none;
 }
 
 *::-moz-focus-inner {
     border: 0;
-}
-
-.gwt-Button[disabled]:active, button[disabled]:active {
-    box-shadow: 0 0 0px 0px selectionBackground;
-    border-radius: 1px;
-    outline: none;
 }
 
 .gwt-PushButton, .gwt-ToggleButton {

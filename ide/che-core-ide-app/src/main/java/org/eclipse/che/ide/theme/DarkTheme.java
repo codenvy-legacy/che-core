@@ -165,7 +165,7 @@ public class DarkTheme implements Theme {
 
     @Override
     public String getButtonFontColor() {
-        return "#E4E4E4";
+        return "#E9E9E9";
     }
 
     @Override
@@ -200,12 +200,12 @@ public class DarkTheme implements Theme {
 
     @Override
     public String getButtonDisabledBackground() {
-        return "rgba(255, 255, 255, 0.4)";
+        return "rgba(40, 40, 40, 0.4)";
     }
 
     @Override
     public String getButtonDisabledBorderColor() {
-        return "#5A5A5A";
+        return "#161819";
     }
 
     @Override
@@ -225,7 +225,7 @@ public class DarkTheme implements Theme {
 
     @Override
     public String getPrimaryButtonFontColor() {
-        return "#E4E4E4";
+        return "#E9E9E9";
     }
 
     @Override
@@ -260,7 +260,7 @@ public class DarkTheme implements Theme {
 
     @Override
     public String getPrimaryButtonDisabledBackground() {
-        return "#80b1ea";
+        return "rgba(26, 104, 175, 0.4)";
     }
 
     @Override
@@ -270,7 +270,7 @@ public class DarkTheme implements Theme {
 
     @Override
     public String getPrimaryButtonDisabledFontColor() {
-        return "#E4E4E4";
+        return "rgba(165, 165, 165, 0.4)";
     }
 
     @Override

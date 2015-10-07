@@ -149,7 +149,8 @@
     position: absolute;
     right: 16px;
     top: 0px;
-    padding: 4px 0px 4px 5px;
+    line-height: 22px;
+    padding: 0px 0px 0px 5px;
     cursor: pointer;
 }
 
@@ -158,7 +159,8 @@
 }
 
 .closeButton:hover svg {
-    opacity: 0.6;
+    filter: brightness(130%);
+    -webkit-filter: brightness(130%);
 }
 
 .button, .primaryButton {
@@ -187,6 +189,7 @@
     background: buttonClickedBackground;
     border: 1px solid buttonClickedBorderColor;
     color: buttonClickedFontColor;
+    outline: none;
 }
 
 .button[disabled], .button[disabled]:HOVER {
@@ -216,6 +219,7 @@
     background-color: primaryButtonClickedBackground;
     border: 1px solid primaryButtonClickedBorderColor;
     color: primaryButtonFontClickedColor;
+    outline: none;
 }
 
 .primaryButton[disabled], .primaryButton[disabled]:HOVER {
