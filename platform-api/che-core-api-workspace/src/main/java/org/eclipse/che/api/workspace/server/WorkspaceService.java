@@ -449,6 +449,9 @@ public class WorkspaceService extends Service {
     }
 
     private MachineDto asDto(Machine machine) {
+        if (machine == null) {
+            return null;
+        }
         final Link machineLink = createLink("GET",
                                             getServiceContext().getBaseUriBuilder()
                                                                .path("/machine/{id}")
