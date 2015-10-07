@@ -21,13 +21,12 @@ import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateEvent;
 import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateHandler;
+import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.FunctionException;
-import org.eclipse.che.api.promises.client.Operation;
-import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.api.action.Action;
@@ -36,6 +35,7 @@ import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.action.PromisableAction;
 import org.eclipse.che.ide.api.app.AppContext;
+import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.ProjectActionHandler;
 import org.eclipse.che.ide.api.mvp.View;
@@ -46,188 +46,226 @@ import org.eclipse.che.ide.api.parts.base.BasePresenter;
 import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
-import org.eclipse.che.ide.api.project.node.event.ProjectPartLoadEvent;
-import org.eclipse.che.ide.api.project.node.event.ProjectPartLoadEvent.ProjectPartLoadHandler;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.part.explorer.project.ProjectExplorerView.ActionDelegate;
 import org.eclipse.che.ide.project.event.ResourceNodeRenamedEvent;
 import org.eclipse.che.ide.project.event.SynchronizeProjectViewEvent;
 import org.eclipse.che.ide.project.node.ModuleDescriptorNode;
 import org.eclipse.che.ide.project.node.NodeManager;
-import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
+import org.eclipse.che.ide.rest.AsyncRequestCallback;
+import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
+import org.eclipse.che.ide.rest.Unmarshallable;
+import org.eclipse.che.ide.statepersistance.AppStateManager;
 import org.eclipse.che.ide.ui.smartTree.event.CollapseNodeEvent;
 import org.eclipse.che.ide.ui.smartTree.event.ExpandNodeEvent;
-import org.eclipse.che.ide.ui.smartTree.event.GoIntoStateEvent;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
+import org.eclipse.che.ide.util.loging.Log;
+import org.eclipse.che.ide.workspace.BrowserQueryFieldViewer;
 
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Vlad Zhukovskiy
+ * @author Dmitry Shnurenko
  */
 @Singleton
 public class ProjectExplorerPresenter extends BasePresenter implements ActionDelegate,
                                                                        ProjectExplorerPart,
-                                                                       HasView {
-
+                                                                       HasView,
+                                                                       ExtServerStateHandler,
+                                                                       ProjectActionHandler,
+                                                                       SynchronizeProjectViewEvent.SynchronizeProjectViewHandler,
+                                                                       ResourceNodeRenamedEvent.ResourceNodeRenamedHandler {
     private final ProjectExplorerView          view;
-    private final EventBus                     eventBus;
     private final NodeManager                  nodeManager;
     private final AppContext                   appContext;
     private final ActionManager                actionManager;
     private final Provider<PerspectiveManager> managerProvider;
+    private final ProjectServiceClient         projectService;
+    private final DtoUnmarshallerFactory       dtoUnmarshallerFactory;
+    private final List<ProjectDescriptor>      existingProjects;
+    private final BrowserQueryFieldViewer      queryFieldViewer;
+    private final Provider<AppStateManager>    appStateManagerProvider;
+
+    private int             countOfExistingProjects;
+    private AppStateManager appStateManager;
 
     @Inject
-    public ProjectExplorerPresenter(final ProjectExplorerView view,
-                                    final EventBus eventBus,
-                                    final NodeManager nodeManager,
-                                    final AppContext appContext,
-                                    final ActionManager actionManager,
-                                    final Provider<PerspectiveManager> managerProvider) {
+    public ProjectExplorerPresenter(ProjectExplorerView view,
+                                    EventBus eventBus,
+                                    NodeManager nodeManager,
+                                    AppContext appContext,
+                                    ActionManager actionManager,
+                                    Provider<PerspectiveManager> managerProvider,
+                                    ProjectServiceClient projectService,
+                                    DtoUnmarshallerFactory dtoUnmarshallerFactory,
+                                    BrowserQueryFieldViewer queryFieldViewer,
+                                    Provider<AppStateManager> appStateManagerProvider) {
         this.view = view;
-        this.eventBus = eventBus;
+        this.view.setDelegate(this);
+
         this.nodeManager = nodeManager;
         this.appContext = appContext;
         this.actionManager = actionManager;
         this.managerProvider = managerProvider;
+        this.projectService = projectService;
+        this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
+        this.queryFieldViewer = queryFieldViewer;
+        this.appStateManagerProvider = appStateManagerProvider;
 
-        view.setDelegate(this);
+        this.existingProjects = new ArrayList<>();
 
-        initEventHandlers();
+        eventBus.addHandler(ExtServerStateEvent.TYPE, this);
+        eventBus.addHandler(ProjectActionEvent.TYPE, this);
+        eventBus.addHandler(SynchronizeProjectViewEvent.getType(), this);
+        eventBus.addHandler(ResourceNodeRenamedEvent.getType(), this);
     }
 
+    /** {@inheritDoc} */
     @Override
-    public void onOpen() {
-        super.onOpen();
-        if (appContext.getCurrentProject() == null) {
-            nodeManager.getProjects()
-                       .then(_showProjectsList());
-        } else {
-            ProjectDescriptor rootProject = appContext.getCurrentProject().getRootProject();
-            ProjectDescriptorNode projectDescriptorNode = nodeManager.wrap(rootProject);
-            view.setRootNode(projectDescriptorNode);
+    public void onExtServerStarted(ExtServerStateEvent event) {
+        takeAllProjects();
+    }
+
+    private void takeAllProjects() {
+        Unmarshallable<List<ProjectReference>> unmarshaller = dtoUnmarshallerFactory.newListUnmarshaller(ProjectReference.class);
+
+        projectService.getProjects(new AsyncRequestCallback<List<ProjectReference>>(unmarshaller) {
+            @Override
+            protected void onSuccess(List<ProjectReference> references) {
+                countOfExistingProjects = references.size();
+
+                appStateManager = appStateManagerProvider.get();
+
+                for (ProjectReference reference : references) {
+                    takeCertainProject(reference);
+                }
+            }
+
+            @Override
+            protected void onFailure(Throwable exception) {
+                Log.error(ProjectExplorerPresenter.class, exception);
+            }
+        });
+    }
+
+    private void takeCertainProject(ProjectReference reference) {
+        Unmarshallable<ProjectDescriptor> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class);
+
+        projectService.getProject(reference.getName(), new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
+            @Override
+            protected void onSuccess(ProjectDescriptor project) {
+                existingProjects.add(project);
+
+                if (countOfExistingProjects == existingProjects.size()) {
+                    showProjects(existingProjects);
+                }
+            }
+
+            @Override
+            protected void onFailure(Throwable throwable) {
+                Log.error(ProjectExplorerPresenter.class, throwable);
+            }
+        });
+    }
+
+    private void showProjects(List<ProjectDescriptor> projects) {
+        List<Node> projectNodes = new ArrayList<>();
+
+        for (ProjectDescriptor projectDescriptor : projects) {
+            projectNodes.add(nodeManager.wrap(projectDescriptor));
+
+            CurrentProject currentProject = new CurrentProject(projectDescriptor);
+
+            appContext.addProject(currentProject);
+
+            appContext.setCurrentProject(currentProject);
+        }
+
+        view.setRootNodes(projectNodes);
+
+        for (final ProjectDescriptor projectDescriptor : projects) {
+            appStateManager.restoreProjectState(projectDescriptor);
         }
     }
 
-    private void initEventHandlers() {
-        eventBus.addHandler(ProjectPartLoadEvent.getType(), new ProjectPartLoadHandler() {
-            /** {@inheritDoc} */
-            @Override
-            public void onProjectPartLoad(ProjectPartLoadEvent event) {
-                if (appContext.getCurrentProject() == null) {
-                    nodeManager.getProjects()
-                               .then(_showProjectsList());
-                } else {
-                    ProjectDescriptor rootProject = appContext.getCurrentProject().getRootProject();
-                    ProjectDescriptorNode projectDescriptorNode = nodeManager.wrap(rootProject);
-                    view.setRootNode(projectDescriptorNode);
-                }
-            }
-        });
+    /** {@inheritDoc} */
+    @Override
+    public void onExtServerStopped(ExtServerStateEvent event) {
+        view.setVisible(false);
+    }
 
+    /** {@inheritDoc} */
+    @Override
+    public void onProjectDeleted(ProjectActionEvent event) {
+        ProjectDescriptor deletedProject = event.getProject();
 
-        eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
-            private HandlerRegistration handlerRegistration;
+        existingProjects.remove(deletedProject);
 
-            /** {@inheritDoc} */
-            @Override
-            public void onProjectReady(ProjectActionEvent event) {
+        showProjects(existingProjects);
 
-            }
+        appContext.removeProject(deletedProject);
+    }
 
-            /** {@inheritDoc} */
-            @Override
-            public void onProjectClosing(ProjectActionEvent event) {
-                //nothing to do
-            }
+    /** {@inheritDoc} */
+    @Override
+    public void onProjectCreated(ProjectActionEvent event) {
+        ProjectDescriptor createdProject = event.getProject();
 
-            /** {@inheritDoc} */
-            @Override
-            public void onProjectClosed(ProjectActionEvent event) {
-                view.resetGoIntoMode();
-                if (!event.isCloseBeforeOpening()) {
-                    nodeManager.getProjects()
-                               .then(_showProjectsList());
-                }
+        if (existingProjects.contains(createdProject)) {
+            return;
+        }
 
-            }
+        existingProjects.add(createdProject);
 
-            @Override
-            public void onProjectOpened(ProjectActionEvent event) {
-                ProjectDescriptor projectDescriptor = event.getProject();
+        showProjects(existingProjects);
 
-                if (!Strings.isNullOrEmpty(projectDescriptor.getContentRoot())) {
-                    handlerRegistration = view.addGoIntoStateHandler(new GoIntoStateEvent.GoIntoStateHandler() {
-                        @Override
-                        public void onGoIntoStateChanged(GoIntoStateEvent event) {
-                            if (event.getState() == GoIntoStateEvent.State.ACTIVATED) {
-                                eventBus.fireEvent(ProjectActionEvent.createProjectOpenedEvent(
-                                        ((HasProjectDescriptor)event.getNode()).getProjectDescriptor()));
-                                handlerRegistration.removeHandler();
-                            }
-                        }
-                    });
-                } else {
-                    eventBus.fireEvent(ProjectActionEvent.createProjectOpenedEvent(projectDescriptor));
-                }
+        CurrentProject currentProject = new CurrentProject(createdProject);
 
-                ProjectDescriptorNode projectDescriptorNode = nodeManager.wrap(projectDescriptor);
-                view.setRootNode(projectDescriptorNode);
-            }
-        });
+        appContext.addProject(currentProject);
 
-        eventBus.addHandler(ResourceNodeRenamedEvent.getType(), new ResourceNodeRenamedEvent.ResourceNodeRenamedHandler() {
-            @Override
-            public void onResourceRenamedEvent(final ResourceNodeRenamedEvent event) {
-                Object newDataObject = event.getNewDataObject();
-                String path = null;
+        appContext.setCurrentProject(currentProject);
+    }
 
-                //Here we have old node with old data object and new renamed data object
-                //so we need fetch storable path from it and call tree to find node by this
-                //storable path. When tree will find our node by path, the old node will be
-                //deleted automatically. Otherwise if we can't determine storable path from
-                //node, then we just take parent node and try navigate on it in the tree.
+    /** {@inheritDoc} */
+    @Override
+    public void onProjectViewSynchronizeEvent(SynchronizeProjectViewEvent event) {
+        if (event.getNode() != null) {
+            reloadChildren(event.getNode());
+        } else if (event.getByClass() != null) {
+            reloadChildrenByType(event.getByClass());
+        } else {
+            reloadChildren();
+        }
+    }
 
-                if (newDataObject instanceof ProjectReference) {
-                    reloadChildren(); //we should simple reload project list
-                } else if (newDataObject instanceof ItemReference) {
-                    path = ((ItemReference)newDataObject).getPath();
-                } else if (event.getNode() instanceof ModuleDescriptorNode) {
-                    path = ((ProjectDescriptor)newDataObject).getPath();
-                } else if (event.getNode().getParent() != null && event.getNode().getParent() instanceof HasStorablePath) {
-                    path = ((HasStorablePath)event.getNode().getParent()).getStorablePath();
-                }
+    /** {@inheritDoc} */
+    @Override
+    public void onResourceRenamedEvent(final ResourceNodeRenamedEvent event) {
+        Object newDataObject = event.getNewDataObject();
+        String path = null;
 
-                if (!Strings.isNullOrEmpty(path)) {
-                    getNodeByPath(new HasStorablePath.StorablePath(path), true).then(selectNode());
-                }
-            }
-        });
+        //Here we have old node with old data object and new renamed data object
+        //so we need fetch storable path from it and call tree to find node by this
+        //storable path. When tree will find our node by path, the old node will be
+        //deleted automatically. Otherwise if we can't determine storable path from
+        //node, then we just take parent node and try navigate on it in the tree.
 
-        eventBus.addHandler(SynchronizeProjectViewEvent.getType(), new SynchronizeProjectViewEvent.SynchronizeProjectViewHandler() {
-            @Override
-            public void onProjectViewSynchronizeEvent(SynchronizeProjectViewEvent event) {
-                if (event.getNode() != null) {
-                    reloadChildren(event.getNode());
-                } else if (event.getByClass() != null) {
-                    reloadChildrenByType(event.getByClass());
-                } else {
-                    reloadChildren();
-                }
-            }
-        });
+        if (newDataObject instanceof ProjectReference) {
+            reloadChildren(); //we should simple reload project list
+        } else if (newDataObject instanceof ItemReference) {
+            path = ((ItemReference)newDataObject).getPath();
+        } else if (event.getNode() instanceof ModuleDescriptorNode) {
+            path = ((ProjectDescriptor)newDataObject).getPath();
+        } else if (event.getNode().getParent() != null && event.getNode().getParent() instanceof HasStorablePath) {
+            path = ((HasStorablePath)event.getNode().getParent()).getStorablePath();
+        }
 
-        eventBus.addHandler(ExtServerStateEvent.TYPE, new ExtServerStateHandler() {
-            @Override
-            public void onExtServerStarted(ExtServerStateEvent event) {
-                onOpen();
-            }
-
-            @Override
-            public void onExtServerStopped(ExtServerStateEvent event) {
-            }
-        });
+        if (!Strings.isNullOrEmpty(path)) {
+            getNodeByPath(new HasStorablePath.StorablePath(path), true).then(selectNode());
+        }
     }
 
     private Function<Node, Node> selectNode() {
@@ -292,6 +330,22 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         updateAppContext(selection);
     }
 
+    private void updateAppContext(List<Node> nodes) {
+        for (Node node : nodes) {
+            if (node instanceof HasProjectDescriptor) {
+                ProjectDescriptor descriptor = ((HasProjectDescriptor)node).getProjectDescriptor();
+                appContext.getCurrentProject().setProjectDescription(descriptor);
+
+                String projectName = descriptor.getName();
+
+                queryFieldViewer.setProjectName(projectName);
+
+                return;
+            }
+        }
+    }
+
+    /** {@inheritDoc} */
     @Override
     public void onDeleteKeyPressed() {
         final Action deleteItemAction = actionManager.getAction("deleteItem");
@@ -308,33 +362,12 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         }
     }
 
-    private void updateAppContext(List<Node> nodes) {
-        for (Node node : nodes) {
-            if (node instanceof HasProjectDescriptor) {
-                ProjectDescriptor descriptor = ((HasProjectDescriptor)node).getProjectDescriptor();
-                if (appContext.getCurrentProject() != null) {
-                    appContext.getCurrentProject().setProjectDescription(descriptor);
-                    return;
-                }
-            }
-        }
-    }
-
     public void setExpanded(Node node, boolean expand) {
         view.setExpanded(node, expand);
     }
 
     public void goInto(Node node) {
         view.setGoIntoModeOn(node);
-    }
-
-    private Operation<List<Node>> _showProjectsList() {
-        return new Operation<List<Node>>() {
-            @Override
-            public void apply(List<Node> nodes) throws OperationException {
-                view.setRootNodes(nodes);
-            }
-        };
     }
 
     public void reloadChildren() {

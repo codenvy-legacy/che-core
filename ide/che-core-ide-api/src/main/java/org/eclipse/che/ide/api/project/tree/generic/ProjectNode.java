@@ -10,10 +10,15 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.project.tree.generic;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
+import com.google.web.bindery.event.shared.EventBus;
+
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.ide.api.event.CloseCurrentProjectEvent;
+import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.api.event.RenameNodeEvent;
 import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
 import org.eclipse.che.ide.api.project.tree.AbstractTreeNode;
@@ -21,13 +26,8 @@ import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.Unmarshallable;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.inject.Inject;
-import com.google.inject.assistedinject.Assisted;
-import com.google.web.bindery.event.shared.EventBus;
 
 import javax.validation.constraints.NotNull;
-import org.eclipse.che.commons.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -251,7 +251,7 @@ public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements 
             @Override
             protected void onSuccess(Void result) {
                 if (isRootProject()) {
-                    eventBus.fireEvent(new CloseCurrentProjectEvent());
+//                    eventBus.fireEvent(new CloseCurrentProjectEvent());
                 } else {
                     //fire module delete event
                 }
@@ -267,7 +267,7 @@ public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements 
 
     /**
      * Method helps to retrieve child {@link ItemReference}s by the specified path using Codenvy Project API.
-     * <p/>
+     * <p>
      * It takes into account state of the 'show hidden items' setting.
      *
      * @param path
@@ -306,7 +306,7 @@ public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements 
 
     /**
      * Creates node for the specified item. Method called for every child item in {@link #refreshChildren(AsyncCallback)} method.
-     * <p/>
+     * <p>
      * May be overridden in order to provide a way to create a node for the specified by.
      *
      * @param item

@@ -10,12 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.app;
 
-//import org.eclipse.che.api.project.shared.dto.BuildersDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-//import org.eclipse.che.api.project.shared.dto.RunnersDescriptor;
-import org.eclipse.che.ide.api.project.tree.TreeStructure;
 
-import org.eclipse.che.commons.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -23,74 +19,24 @@ import java.util.List;
  *
  * @author Vitaly Parfonov
  * @author Valeriy Svydenko
+ * @author Dmitry Shnurenko
  */
 public class CurrentProject {
 
     private ProjectDescriptor projectDescription;
-    private boolean isRunningEnabled = true;
     private ProjectDescriptor rootProject;
-    private TreeStructure     tree;
 
-    /**
-     * By default:
-     * isProjectRunning = false
-     * isRunningEnabled = true
-     *
-     * @param projectDescription
-     */
     public CurrentProject(ProjectDescriptor projectDescription) {
         this.projectDescription = projectDescription;
         this.rootProject = projectDescription;
     }
 
-    /**
-     * @return ProjectDescriptor of opened project
-     */
     public ProjectDescriptor getProjectDescription() {
         return projectDescription;
     }
 
-    /**
-     * @param projectDescription
-     */
     public void setProjectDescription(ProjectDescriptor projectDescription) {
         this.projectDescription = projectDescription;
-    }
-
-    /**
-     * @return true if current project available to run otherwise false
-     */
-    public boolean getIsRunningEnabled() {
-        return isRunningEnabled;
-    }
-
-    /**
-     * @param isRunningEnabled
-     *         set true if current available to run
-     */
-    public void setIsRunningEnabled(boolean isRunningEnabled) {
-        this.isRunningEnabled = isRunningEnabled;
-    }
-
-    public String getRunner() {
-//        final RunnersDescriptor runners = projectDescription.getRunners();
-//        if (runners == null) {
-            return null;
-//        }
-//        return runners.getDefault();
-    }
-
-    @Deprecated
-    public String getRunnerEnvId() {
-        return null;
-    }
-
-    public String getBuilder() {
-//        final BuildersDescriptor builders = projectDescription.getBuilders();
-//        if (builders == null) {
-            return null;
-//        }
-//        return builders.getDefault();
     }
 
     public ProjectDescriptor getRootProject() {
@@ -108,7 +54,6 @@ public class CurrentProject {
      *         attribute name
      * @return value of attribute with specified name or <code>null</code> if attribute does not exists
      */
-    @Nullable
     public String getAttributeValue(String attributeName) {
         List<String> attributeValues = getAttributeValues(attributeName);
         if (attributeValues != null && !attributeValues.isEmpty()) {
@@ -118,7 +63,7 @@ public class CurrentProject {
     }
 
     /**
-     * Get attribute values.
+     * Get all attributes which exists in project descriptor.
      *
      * @param attributeName
      *         attribute name
@@ -137,14 +82,5 @@ public class CurrentProject {
     public boolean isReadOnly() {
         return projectDescription.getPermissions() != null && projectDescription.getPermissions().size() == 1
                && "read".equalsIgnoreCase(projectDescription.getPermissions().get(0));
-    }
-
-    /** Returns project's tree. */
-    public TreeStructure getCurrentTree() {
-        return tree;
-    }
-
-    public void setCurrentTree(TreeStructure tree) {
-        this.tree = tree;
     }
 }

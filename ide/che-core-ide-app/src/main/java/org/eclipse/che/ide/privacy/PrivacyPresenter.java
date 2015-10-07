@@ -52,7 +52,7 @@ public class PrivacyPresenter implements ProjectActionHandler {
     }
 
     @Override
-    public void onProjectReady(ProjectActionEvent event) {
+    public void onProjectCreated(ProjectActionEvent event) {
         actionManager.registerAction(PRIVACY_ACTION_ID, privacyAction);
 
         rightMainMenuGroup.add(privacyAction, LAST);
@@ -61,15 +61,7 @@ public class PrivacyPresenter implements ProjectActionHandler {
     }
 
     @Override
-    public void onProjectOpened(ProjectActionEvent event) {
-    }
-
-    @Override
-    public void onProjectClosing(ProjectActionEvent event) {
-    }
-
-    @Override
-    public void onProjectClosed(ProjectActionEvent event) {
+    public void onProjectDeleted(ProjectActionEvent event) {
         int index = 0;
         boolean found = false;
 

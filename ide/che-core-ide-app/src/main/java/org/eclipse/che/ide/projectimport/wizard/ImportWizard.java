@@ -18,11 +18,9 @@ import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ImportProject;
 import org.eclipse.che.api.project.shared.dto.ImportResponse;
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.vfs.gwt.client.VfsServiceClient;
 import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.api.event.OpenProjectEvent;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
 import org.eclipse.che.ide.api.wizard.AbstractWizard;
 import org.eclipse.che.ide.commons.exception.JobNotFoundException;
@@ -35,6 +33,8 @@ import org.eclipse.che.ide.websocket.rest.RequestCallback;
 import org.eclipse.che.ide.websocket.rest.Unmarshallable;
 
 import javax.validation.constraints.NotNull;
+
+import static org.eclipse.che.ide.api.event.ProjectActionEvent.projectCreatedEvent;
 
 /**
  * Project import wizard used for importing a project.
@@ -120,7 +120,7 @@ public class ImportWizard extends AbstractWizard<ImportProject> {
             protected void onSuccess(final ImportResponse result) {
                 importProjectNotificationSubscriber.onSuccess();
                 callback.onCompleted();
-                openProject(result.getProjectDescriptor());
+                eventBus.fireEvent(projectCreatedEvent(result.getProjectDescriptor()));
             }
 
             @Override
@@ -136,13 +136,6 @@ public class ImportWizard extends AbstractWizard<ImportProject> {
                 callback.onFailure(new Exception(errorMessage));
             }
         });
-    }
-
-    private void openProject(ProjectDescriptor project) {
-        eventBus.fireEvent(new OpenProjectEvent(project.getName()));
-        //if (!project.getProblems().isEmpty()) {
-        //    eventBus.fireEvent(new ConfigureProjectEvent(project));
-        //}
     }
 
     private String getImportErrorMessage(Throwable exception) {

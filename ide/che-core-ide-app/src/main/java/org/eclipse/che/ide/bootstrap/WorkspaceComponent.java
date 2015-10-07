@@ -165,6 +165,8 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
         appContext.setWorkspace(workspace);
         callback.onSuccess(WorkspaceComponent.this);
 
+        eventBus.fireEvent(new StartWorkspaceEvent(workspace));
+
         browserQueryFieldViewer.setWorkspaceName(workspace.getName());
     }
 
@@ -196,8 +198,6 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
                 setCurrentWorkspace(startWsOperation, workspace);
 
                 notificationManager.showInfo(locale.startedWs(workspace.getDefaultEnvName()));
-
-                eventBus.fireEvent(new StartWorkspaceEvent(workspace));
 
                 List<MachineConfigDto> machineConfigs = workspace.getEnvironments().get(workspace.getDefaultEnvName()).getMachineConfigs();
 

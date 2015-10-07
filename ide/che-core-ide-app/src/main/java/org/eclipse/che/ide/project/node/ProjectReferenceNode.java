@@ -19,7 +19,7 @@ import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.js.Promises;
 import org.eclipse.che.commons.annotation.Nullable;
-import org.eclipse.che.ide.api.event.OpenProjectEvent;
+import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.project.node.HasAction;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
@@ -94,7 +94,7 @@ public class ProjectReferenceNode extends ResourceBasedNode<ProjectReference> im
 
     @Override
     public void actionPerformed() {
-        eventBus.fireEvent(new OpenProjectEvent(getData().getName()));
+        eventBus.fireEvent(ProjectActionEvent.projectCreatedEvent(getProjectDescriptor()));
     }
 
     @NotNull

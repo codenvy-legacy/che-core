@@ -16,8 +16,8 @@ import com.google.inject.Inject;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
-import org.eclipse.che.ide.rest.RestContext;
 
+import javax.inject.Named;
 import javax.validation.constraints.NotNull;
 
 import static org.eclipse.che.api.promises.client.callback.PromiseHelper.newCallback;
@@ -35,10 +35,10 @@ final class WatcherServiceClientImpl implements WatcherServiceClient {
     private final String              baseUrl;
 
     @Inject
-    public WatcherServiceClientImpl(@RestContext String restContext, AsyncRequestFactory asyncRequestFactory) {
+    public WatcherServiceClientImpl(@Named("cheExtensionPath") String cheExtensionPath, AsyncRequestFactory asyncRequestFactory) {
         this.asyncRequestFactory = asyncRequestFactory;
 
-        this.baseUrl = restContext + "/watcher/";
+        this.baseUrl = cheExtensionPath + "/watcher/";
     }
 
     /** {@inheritDoc} */
@@ -47,7 +47,7 @@ final class WatcherServiceClientImpl implements WatcherServiceClient {
         return newPromise(new AsyncPromiseHelper.RequestCall<Void>() {
             @Override
             public void makeCall(AsyncCallback<Void> callback) {
-                String url = baseUrl + "register/" + workspaceId;
+                String url = baseUrl + workspaceId;
 
                 asyncRequestFactory.createGetRequest(url).send(newCallback(callback));
             }

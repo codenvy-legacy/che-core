@@ -23,7 +23,7 @@
         }
 
         .inputField {
-            width: 397px;
+            width: 380px;
             padding-left: 8px;
             height: 20px;
         }

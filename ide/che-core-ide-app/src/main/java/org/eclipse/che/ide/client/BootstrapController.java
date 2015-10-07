@@ -34,14 +34,12 @@ import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.Presentation;
-import org.eclipse.che.ide.api.event.OpenProjectEvent;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.ProjectActionHandler;
 import org.eclipse.che.ide.api.event.WindowActionEvent;
 import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.logger.AnalyticsEventLoggerExt;
-import org.eclipse.che.ide.statepersistance.AppStateManager;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.Config;
 import org.eclipse.che.ide.util.loging.Log;
@@ -67,7 +65,6 @@ public class BootstrapController {
     private final ActionManager                actionManager;
     private final PresentationFactory          presentationFactory;
     private final DocumentTitleDecorator       documentTitleDecorator;
-    private final Provider<AppStateManager>    appStateManagerProvider;
     private final Provider<PerspectiveManager> managerProvider;
 
     @Inject
@@ -77,7 +74,6 @@ public class BootstrapController {
                                AnalyticsEventLoggerExt analyticsEventLoggerExt,
                                EventBus eventBus,
                                ActionManager actionManager,
-                               Provider<AppStateManager> appStateManagerProvider,
                                DocumentTitleDecorator documentTitleDecorator,
                                Provider<PerspectiveManager> managerProvider) {
         this.workspaceProvider = workspaceProvider;
@@ -86,7 +82,6 @@ public class BootstrapController {
         this.actionManager = actionManager;
         this.analyticsEventLoggerExt = analyticsEventLoggerExt;
         this.documentTitleDecorator = documentTitleDecorator;
-        this.appStateManagerProvider = appStateManagerProvider;
         this.managerProvider = managerProvider;
 
         presentationFactory = new PresentationFactory();
@@ -138,11 +133,6 @@ public class BootstrapController {
                     @Override
                     public void execute() {
                         displayIDE();
-                        boolean openLastProject = Config.getProjectName() == null && Config.getStartupParam("action") == null &&
-                                                  Config.getStartupParam("id") == null;
-
-                        final AppStateManager appStateManager = appStateManagerProvider.get();
-                        appStateManager.start(openLastProject);
                     }
                 });
             }
@@ -245,7 +235,6 @@ public class BootstrapController {
         final String projectNameToOpen = Config.getProjectName();
         if (projectNameToOpen != null) {
             eventBus.addHandler(ProjectActionEvent.TYPE, getStartupActionHandler());
-            eventBus.fireEvent(new OpenProjectEvent(projectNameToOpen));
         } else {
             processStartupAction();
         }
@@ -253,23 +242,13 @@ public class BootstrapController {
 
     private ProjectActionHandler getStartupActionHandler() {
         return new ProjectActionHandler() {
-            //process action only after opening project
-
             @Override
-            public void onProjectReady(ProjectActionEvent event) {
+            public void onProjectCreated(ProjectActionEvent event) {
                 processStartupAction();
             }
 
             @Override
-            public void onProjectOpened(ProjectActionEvent event) {
-            }
-
-            @Override
-            public void onProjectClosing(ProjectActionEvent event) {
-            }
-
-            @Override
-            public void onProjectClosed(ProjectActionEvent event) {
+            public void onProjectDeleted(ProjectActionEvent event) {
             }
         };
     }

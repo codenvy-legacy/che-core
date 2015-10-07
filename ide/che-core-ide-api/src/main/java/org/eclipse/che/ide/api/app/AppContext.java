@@ -10,11 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.app;
 
-//import org.eclipse.che.api.factory.dto.Factory;
+import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 
-import org.eclipse.che.commons.annotation.Nullable;
 import javax.inject.Singleton;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Describes current state of application.
@@ -28,8 +29,13 @@ public class AppContext {
     private UsersWorkspaceDto workspace;
     private CurrentProject    currentProject;
     private CurrentUser       currentUser;
-    //    private Factory             factory;
     private String            devMachineId;
+
+    private final List<CurrentProject> existingProjects;
+
+    public AppContext() {
+        existingProjects = new ArrayList<>();
+    }
 
     public UsersWorkspaceDto getWorkspace() {
         return workspace;
@@ -42,19 +48,18 @@ public class AppContext {
     /**
      * Returns {@link CurrentProject} instance that describes the project
      * that is currently opened or <code>null</code> if none opened.
-     * <p/>
+     * <p>
      * Note that current project may also represent a project's module.
      *
      * @return opened project or <code>null</code> if none opened
      */
-    @Nullable
     public CurrentProject getCurrentProject() {
         return currentProject;
     }
 
     /**
      * Set the current project instance.
-     * <p/>
+     * <p>
      * Should not be called directly as the current
      * project is managed by the core.
      */
@@ -75,33 +80,37 @@ public class AppContext {
         this.currentUser = currentUser;
     }
 
-    /**
-     * Returns {@link Factory} instance that loaded for query parameters
-     * or {@code null} if parameters don't contains information about factory
-     *
-     * @return loaded factory or {@code null}
-     */
-//    @Nullable
-//    public Factory getFactory() {
-//        return factory;
-//    }
-
-    /**
-     * Set the factory instance.
-     * <p/>
-     * Should not be called directly as the factory is managed by the core.
-     */
-//    public void setFactory(Factory factory) {
-//        this.factory = factory;
-//    }
-
     /** Returns ID of the developer machine (where workspace is bound). */
-    @Nullable
     public String getDevMachineId() {
         return devMachineId;
     }
 
     public void setDevMachineId(String id) {
         this.devMachineId = id;
+    }
+
+    /**
+     * Add opened project to list of projects which are opened.
+     *
+     * @param createdProject
+     *         project which will be created
+     */
+    public void addProject(CurrentProject createdProject) {
+        if (!existingProjects.contains(createdProject)) {
+            existingProjects.add(createdProject);
+        }
+    }
+
+    /** Removes all existing projects. */
+    public void removeProject(ProjectDescriptor removedProject) {
+        for (CurrentProject currentProject : existingProjects) {
+            if (currentProject.getProjectDescription().equals(removedProject)) {
+                existingProjects.remove(currentProject);
+            }
+        }
+    }
+
+    public List<CurrentProject> getProjects() {
+        return existingProjects;
     }
 }

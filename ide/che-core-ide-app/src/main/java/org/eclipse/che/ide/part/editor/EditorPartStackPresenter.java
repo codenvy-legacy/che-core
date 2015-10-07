@@ -15,6 +15,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.api.constraints.Constraints;
 import org.eclipse.che.ide.api.editor.EditorWithErrors;
 import org.eclipse.che.ide.api.editor.EditorWithErrors.EditorState;
@@ -31,9 +32,9 @@ import org.eclipse.che.ide.part.widgets.editortab.EditorTab;
 import org.eclipse.che.ide.part.widgets.listtab.ListButton;
 import org.eclipse.che.ide.part.widgets.listtab.item.ListItem;
 import org.eclipse.che.ide.part.widgets.listtab.item.ListItemWidget;
+import org.eclipse.che.ide.util.loging.Log;
 
 import javax.validation.constraints.NotNull;
-import org.eclipse.che.commons.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -41,7 +42,6 @@ import java.util.Map;
 
 import static org.eclipse.che.ide.api.editor.EditorWithErrors.EditorState.ERROR;
 import static org.eclipse.che.ide.api.editor.EditorWithErrors.EditorState.WARNING;
-import org.eclipse.che.ide.util.loging.Log;
 
 /**
  * EditorPartStackPresenter is a special PartStackPresenter that is shared among all
@@ -84,19 +84,11 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
 
         eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
             @Override
-            public void onProjectReady(ProjectActionEvent event) {
+            public void onProjectCreated(ProjectActionEvent event) {
             }
 
             @Override
-            public void onProjectOpened(ProjectActionEvent event) {
-            }
-
-            @Override
-            public void onProjectClosing(ProjectActionEvent event) {
-            }
-
-            @Override
-            public void onProjectClosed(ProjectActionEvent event) {
+            public void onProjectDeleted(ProjectActionEvent event) {
                 Iterator<TabItem> itemIterator = parts.keySet().iterator();
 
                 while (itemIterator.hasNext()) {

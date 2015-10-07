@@ -21,7 +21,6 @@ import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
 import org.eclipse.che.api.promises.client.js.JsPromiseError;
 import org.eclipse.che.api.promises.client.js.Promises;
 import org.eclipse.che.commons.annotation.Nullable;
-import org.eclipse.che.ide.api.event.CloseCurrentProjectEvent;
 import org.eclipse.che.ide.api.project.node.HasDataObject;
 import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
@@ -32,6 +31,8 @@ import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 
 import javax.validation.constraints.NotNull;
+
+import static org.eclipse.che.ide.api.event.ProjectActionEvent.projectDeletedEvent;
 
 /**
  * @author Vlad Zhukovskiy
@@ -52,7 +53,7 @@ public class ProjectDescriptorProcessor extends AbstractResourceProcessor<Projec
                     projectService.delete(node.getData().getPath(), new AsyncRequestCallback<Void>() {
                         @Override
                         protected void onSuccess(Void result) {
-                            eventBus.fireEvent(new CloseCurrentProjectEvent());
+                            eventBus.fireEvent(projectDeletedEvent(((ProjectDescriptorNode)node).getProjectDescriptor()));
                         }
 
                         @Override
@@ -96,7 +97,8 @@ public class ProjectDescriptorProcessor extends AbstractResourceProcessor<Projec
     }
 
     @Override
-    public Promise<ProjectDescriptor> rename(@Nullable final HasStorablePath parent, @NotNull final HasDataObject<ProjectDescriptor> node, @NotNull final String newName) {
+    public Promise<ProjectDescriptor> rename(@Nullable final HasStorablePath parent, @NotNull final HasDataObject<ProjectDescriptor> node,
+                                             @NotNull final String newName) {
         if (node instanceof ModuleDescriptorNode) {
             return AsyncPromiseHelper.createFromAsyncRequest(new AsyncPromiseHelper.RequestCall<ProjectDescriptor>() {
                 @Override

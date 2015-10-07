@@ -20,7 +20,6 @@ import org.eclipse.che.api.project.shared.dto.ImportResponse;
 import org.eclipse.che.api.project.shared.dto.NewProject;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectUpdate;
-import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode;
 import org.eclipse.che.ide.api.wizard.Wizard;
@@ -71,8 +70,6 @@ public class ProjectWizardTest {
     @Captor
     private ArgumentCaptor<AsyncRequestCallback<Void>>      callbackCaptorForVoid;
 
-    @Mock
-    private CoreLocalizationConstant coreLocalizationConstant;
     @Mock
     private ProjectServiceClient     projectServiceClient;
     @Mock
@@ -211,7 +208,7 @@ public class ProjectWizardTest {
         verify(projectServiceClient).rename(eq(PROJECT_NAME), eq(changedName), anyString(), callbackCaptorForVoid.capture());
 
         AsyncRequestCallback<Void> voidCallback = callbackCaptorForVoid.getValue();
-        GwtReflectionUtils.callOnSuccess(voidCallback,(Void)null);
+        GwtReflectionUtils.callOnSuccess(voidCallback, (Void)null);
 
         // should update
         verify(projectServiceClient).updateProject(eq(changedName), eq(newProject), callbackCaptor.capture());
@@ -247,7 +244,6 @@ public class ProjectWizardTest {
         wizard = new ProjectWizard(importProject,
                                    mode,
                                    PROJECT_NAME,
-                                   coreLocalizationConstant,
                                    projectServiceClient,
                                    dtoUnmarshallerFactory,
                                    dtoFactory,

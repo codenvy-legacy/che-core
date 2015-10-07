@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static org.eclipse.che.ide.actions.ExpandNodeAction.NODE_PARAM_ID;
+
 /**
  * @author Vlad Zhukovskiy
  */
@@ -68,11 +70,12 @@ public class ExpandedNodesPersistenceComponent implements PersistenceComponent {
                     continue;
                 }
 
-                ActionDescriptor actionDescriptor = dtoFactory.createDto(ActionDescriptor.class)
-                                                              .withId(actionId)
-                                                              .withParameters(
-                                                                      Collections.singletonMap(ExpandNodeAction.NODE_PARAM_ID, nodePath));
-                actions.add(actionDescriptor);
+                if (nodePath.startsWith(projectPath)) {
+                    ActionDescriptor actionDescriptor = dtoFactory.createDto(ActionDescriptor.class)
+                                                                  .withId(actionId)
+                                                                  .withParameters(Collections.singletonMap(NODE_PARAM_ID, nodePath));
+                    actions.add(actionDescriptor);
+                }
             }
         }
         return actions;

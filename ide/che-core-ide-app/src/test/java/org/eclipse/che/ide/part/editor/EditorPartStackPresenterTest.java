@@ -120,7 +120,7 @@ public class EditorPartStackPresenterTest {
         presenter.addPart(partPresenter1);
 
         verify(eventBus).addHandler(eq(ProjectActionEvent.TYPE), projectActionHandlerCaptor.capture());
-        projectActionHandlerCaptor.getValue().onProjectClosed(actionEvent);
+        projectActionHandlerCaptor.getValue().onProjectDeleted(actionEvent);
 
         verify(listButton).addListItem(itemCaptor.capture());
         ListItem item = itemCaptor.getValue();

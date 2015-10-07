@@ -18,21 +18,6 @@ import com.google.gwt.event.shared.EventHandler;
  * @author Nikolay Zamosenchuk
  */
 public interface ProjectActionHandler extends EventHandler {
-    /**
-     * Called on project open and fully initialize.
-     *
-     * @param event
-     *         the fired {@link ProjectActionEvent}
-     */
-    void onProjectReady(ProjectActionEvent event);
-
-    /**
-     * Called on project close before any closing activities.
-     *
-     * @param event
-     *         the fired {@link ProjectActionEvent}
-     */
-    void onProjectClosing(ProjectActionEvent event);
 
     /**
      * Called on project close after performing all closing activities.
@@ -40,7 +25,7 @@ public interface ProjectActionHandler extends EventHandler {
      * @param event
      *         the fired {@link ProjectActionEvent}
      */
-    void onProjectClosed(ProjectActionEvent event);
+    void onProjectDeleted(ProjectActionEvent event);
 
     /**
      * Called on then project opened in project explorer can be not fully initialized
@@ -48,5 +33,5 @@ public interface ProjectActionHandler extends EventHandler {
      * @param event
      *         the fired {@link ProjectActionEvent}
      */
-    void onProjectOpened(ProjectActionEvent event);
+    void onProjectCreated(ProjectActionEvent event);
 }

@@ -14,12 +14,12 @@ import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.api.machine.gwt.client.ExtServerStateController;
+import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateEvent;
+import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateHandler;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
-import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
-import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.ide.api.app.AppContext;
@@ -35,8 +35,6 @@ import org.eclipse.che.ide.websocket.MessageBusProvider;
 import org.eclipse.che.ide.websocket.WebSocketException;
 import org.eclipse.che.ide.websocket.rest.RequestCallback;
 import org.eclipse.che.ide.websocket.rest.Unmarshallable;
-import org.eclipse.che.ide.workspace.start.StartWorkspaceEvent;
-import org.eclipse.che.ide.workspace.start.StartWorkspaceHandler;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
@@ -55,41 +53,51 @@ import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
  * @author Artem Zatsarynnyy
  */
 @Singleton
-public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegate {
+public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegate, ExtServerStateHandler {
 
-    private       String                     SEARCH_URL;
-    private       MessageBus                 wsMessageBus;
-    private       DtoUnmarshallerFactory     dtoUnmarshallerFactory;
-    private final ProjectExplorerPresenter   projectExplorer;
-    private       NavigateToFileView         view;
-    private       AppContext                 appContext;
-    private       Map<String, ItemReference> resultMap;
+    private final ProjectExplorerPresenter projectExplorer;
+    private final ExtServerStateController serverStateController;
+    private final MessageBusProvider       messageBusProvider;
+
+    private String                     SEARCH_URL;
+    private MessageBus                 wsMessageBus;
+    private DtoUnmarshallerFactory     dtoUnmarshallerFactory;
+    private NavigateToFileView         view;
+    private AppContext                 appContext;
+    private Map<String, ItemReference> resultMap;
 
     @Inject
     public NavigateToFilePresenter(NavigateToFileView view,
                                    AppContext appContext,
                                    EventBus eventBus,
-                                   @Named("workspaceId") String workspaceId,
                                    DtoUnmarshallerFactory dtoUnmarshallerFactory,
                                    ProjectExplorerPresenter projectExplorer,
-                                   final MessageBusProvider messageBusProvider) {
+                                   ExtServerStateController serverStateController,
+                                   MessageBusProvider messageBusProvider) {
         this.view = view;
         this.view.setDelegate(this);
 
         this.appContext = appContext;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.projectExplorer = projectExplorer;
+        this.serverStateController = serverStateController;
+        this.messageBusProvider = messageBusProvider;
 
         resultMap = new HashMap<>();
 
-        eventBus.addHandler(StartWorkspaceEvent.TYPE, new StartWorkspaceHandler() {
-            @Override
-            public void onWorkspaceStarted(UsersWorkspaceDto workspace) {
-                wsMessageBus = messageBusProvider.getMessageBus();
+        eventBus.addHandler(ExtServerStateEvent.TYPE, this);
+    }
 
-                SEARCH_URL = "/project/" + workspace.getId() + "/search";
-            }
-        });
+    @Override
+    public void onExtServerStarted(ExtServerStateEvent event) {
+        wsMessageBus = messageBusProvider.getMachineMessageBus();
+
+        SEARCH_URL = "/project/" + appContext.getWorkspace().getId() + "/search";
+    }
+
+    @Override
+    public void onExtServerStopped(ExtServerStateEvent event) {
+
     }
 
     /** Show dialog with view for navigation. */
