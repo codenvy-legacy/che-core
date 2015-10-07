@@ -169,7 +169,7 @@ public class LightTheme implements Theme {
 
     @Override
     public String getButtonFontColor() {
-        return "#E4E4E4";
+        return "#ECECEC";
     }
 
     @Override
@@ -204,17 +204,17 @@ public class LightTheme implements Theme {
 
     @Override
     public String getButtonDisabledBackground() {
-        return "#818181";
+        return "rgba(129, 129, 129, 0.2)";
     }
 
     @Override
     public String getButtonDisabledBorderColor() {
-        return "#A4A4A4";
+        return "#CECBCB";
     }
 
     @Override
     public String getButtonDisabledFontColor() {
-        return "#646464";
+        return "#999595";
     }
 
     @Override
@@ -229,7 +229,7 @@ public class LightTheme implements Theme {
 
     @Override
     public String getPrimaryButtonFontColor() {
-        return "#E4E4E4";
+        return "#ECECEC";
     }
 
     @Override
@@ -264,17 +264,17 @@ public class LightTheme implements Theme {
 
     @Override
     public String getPrimaryButtonDisabledBackground() {
-        return "#80b1ea";
+        return "rgba(128, 177, 234, 0.62)";
     }
 
     @Override
     public String getPrimaryButtonDisabledBorderColor() {
-        return "#A4A4A4";
+        return "#A8C6EA";
     }
 
     @Override
     public String getPrimaryButtonDisabledFontColor() {
-        return "#E4E4E4";
+        return "rgba(120, 120, 119, 0.6)";
     }
 
     @Override
