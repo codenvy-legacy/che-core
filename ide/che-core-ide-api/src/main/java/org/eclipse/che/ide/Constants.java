@@ -13,9 +13,9 @@ package org.eclipse.che.ide;
 /** @author Artem Zatsarynnyy */
 public interface Constants {
 
-    String CODENVY_PLUGIN_ID       = "codenvy_extension";
+    String CHE_PLUGIN_ID           = "codenvy_extension";
     // project type names
-    String EXLIPSE_CHE_PLUGIN_NAME = "Eclipse Che Extension";
+    String EXLIPSE_CHE_PLUGIN_NAME = "Extension (maven)";
     String ECLIPSE_CHE_CATEGORY    = "Eclipse Che";
     // project attribute names
     String LANGUAGE                = "language";

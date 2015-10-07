@@ -28,10 +28,6 @@ public interface ProjectWizardView extends View<ProjectWizardView.ActionDelegate
 
     void showDialog(ProjectWizardMode wizardMode);
 
-    void setBuilderEnvironmentConfig(@Nullable String text);
-
-    void setRunnerEnvironmentConfig(String text);
-
     void setLoaderVisibility(boolean visible);
 
     void close();
