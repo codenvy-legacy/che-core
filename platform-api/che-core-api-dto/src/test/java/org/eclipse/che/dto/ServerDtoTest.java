@@ -12,7 +12,6 @@ package org.eclipse.che.dto;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
@@ -163,14 +162,13 @@ public class ServerDtoTest {
         JsonElement json = new JsonParser().parse(dtoFactory.toJson(dto1));
         JsonObject expJson = new JsonObject();
         expJson.addProperty("id", 0);
-        expJson.add("stuff", JsonNull.INSTANCE);
         expJson.add("objects", new JsonArray());
         assertEquals(expJson, json);
     }
 
     /** Intentionally call several times to ensure non-reference equality */
     private static JsonElement createTestValueForAny() {
-        return new JsonParser().parse("{a:100,b:{c:'blah',d:null}}");
+        return new JsonParser().parse("{a:100,b:{c:'blah'}}");
     }
 
     /** Intentionally call several times to ensure non-reference equality */
