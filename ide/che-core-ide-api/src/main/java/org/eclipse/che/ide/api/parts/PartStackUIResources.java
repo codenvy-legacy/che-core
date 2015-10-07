@@ -140,4 +140,13 @@ public interface PartStackUIResources extends ClientBundle {
 
     @Source("arrow.svg")
     SVGResource arrow();
+
+    @Source("wrap-text.svg")
+    SVGResource wrapText();
+
+    @Source("arrow-bottom.svg")
+    SVGResource arrowBottom();
+
+    @Source("erase.svg")
+    SVGResource erase();
 }
