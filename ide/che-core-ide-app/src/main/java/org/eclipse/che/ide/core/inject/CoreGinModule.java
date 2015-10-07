@@ -170,6 +170,9 @@ import org.eclipse.che.ide.theme.AppearanceViewImpl;
 import org.eclipse.che.ide.theme.DarkTheme;
 import org.eclipse.che.ide.theme.LightTheme;
 import org.eclipse.che.ide.theme.ThemeAgentImpl;
+import org.eclipse.che.ide.ui.button.ConsoleButton;
+import org.eclipse.che.ide.ui.button.ConsoleButtonFactory;
+import org.eclipse.che.ide.ui.button.ConsoleButtonImpl;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.ui.dialogs.choice.ChoiceDialog;
 import org.eclipse.che.ide.ui.dialogs.choice.ChoiceDialogFooter;
@@ -396,6 +399,8 @@ public class CoreGinModule extends AbstractGinModule {
                                              .implement(InputDialog.class, InputDialogPresenter.class)
                                              .implement(ChoiceDialog.class, ChoiceDialogPresenter.class)
                                              .build(DialogFactory.class));
+        install(new GinFactoryModuleBuilder().implement(ConsoleButton.class, ConsoleButtonImpl.class)
+                                             .build(ConsoleButtonFactory.class));
 
         bind(OpenProjectView.class).to(OpenProjectViewImpl.class);
         bind(UploadFileView.class).to(UploadFileViewImpl.class);
