@@ -74,11 +74,9 @@ public abstract class OAuthAuthenticator {
                              clientSecret),
                      clientId,
                      authUri
-             )
-                     .setDataStoreFactory(dataStoreFactory).build(),
+             ).setDataStoreFactory(dataStoreFactory).build(),
              Arrays.asList(redirectUris)
             );
-
 
         LOG.debug("clientId={}, clientSecret={}, redirectUris={} , authUri={}, tokenUri={}, dataStoreFactory={}",
                   clientId,
@@ -109,7 +107,6 @@ public abstract class OAuthAuthenticator {
         AuthorizationCodeRequestUrl url = flow.newAuthorizationUrl().setRedirectUri(findRedirectUrl(requestUrl))
                                               .setScopes(scopes);
         StringBuilder state = new StringBuilder();
-        addState(state);
         String query = requestUrl.getQuery();
         if (query != null) {
             if (state.length() > 0) {
@@ -197,9 +194,6 @@ public abstract class OAuthAuthenticator {
      */
     public abstract String getOAuthProvider();
 
-    protected void addState(StringBuilder state) {
-    }
-
     private String getUserFromUrl(AuthorizationCodeResponseUrl authorizationCodeResponseUrl) throws IOException {
         String state = authorizationCodeResponseUrl.getState();
         if (!(state == null || state.isEmpty())) {
@@ -222,9 +216,7 @@ public abstract class OAuthAuthenticator {
             urlConnection = (HttpURLConnection)new URL(getUserUrl).openConnection();
             urlInputStream = urlConnection.getInputStream();
             return JsonHelper.fromJson(urlInputStream, userClass, null);
-        } catch (JsonParseException e) {
-            throw new OAuthAuthenticationException(e.getMessage(), e);
-        } catch (IOException e) {
+        } catch (JsonParseException | IOException e) {
             throw new OAuthAuthenticationException(e.getMessage(), e);
         } finally {
             if (urlInputStream != null) {
