@@ -107,19 +107,25 @@ public class RuntimeWorkspaceRegistry {
                                                                                             BadRequestException,
                                                                                             NotFoundException {
         final String activeEnvName = firstNonNull(envName, usersWorkspace.getDefaultEnvName());
-        final RuntimeWorkspaceImpl runtimeWorkspace = RuntimeWorkspaceImpl.builder()
-                                                                          .fromWorkspace(usersWorkspace)
-                                                                          .setActiveEnvName(activeEnvName)
-                                                                          .setStatus(STARTING)
-                                                                          .build();
+        RuntimeWorkspaceImpl runtimeWorkspace = RuntimeWorkspaceImpl.builder()
+                                                                    .fromWorkspace(usersWorkspace)
+                                                                    .setActiveEnvName(activeEnvName)
+                                                                    .setStatus(STARTING)
+                                                                    .build();
+        final Environment environment = runtimeWorkspace.getEnvironments().get(activeEnvName);
         save(runtimeWorkspace);
 
-        final Environment environment = runtimeWorkspace.getEnvironments().get(activeEnvName);
-
         final List<MachineImpl> machines = startEnvironment(environment, runtimeWorkspace.getId());
-        runtimeWorkspace.setDevMachine(findDev(machines));
-        runtimeWorkspace.setMachines(machines);
-        runtimeWorkspace.setStatus(RUNNING);
+
+        lock.writeLock().lock();
+        try {
+            runtimeWorkspace = get(runtimeWorkspace.getId());
+            runtimeWorkspace.setDevMachine(findDev(machines));
+            runtimeWorkspace.setMachines(machines);
+            runtimeWorkspace.setStatus(RUNNING);
+        } finally {
+            lock.writeLock().unlock();
+        }
         return runtimeWorkspace;
     }
 
