@@ -27,8 +27,6 @@ import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 import org.eclipse.che.api.core.notification.EventService;
-import org.eclipse.che.api.workspace.server.model.impl.EnvironmentImpl;
-import org.eclipse.che.api.workspace.server.model.impl.MachineConfigImpl;
 import org.eclipse.che.api.workspace.server.model.impl.RuntimeWorkspaceImpl;
 import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
 import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
@@ -95,13 +93,11 @@ public class WorkspaceManager {
     }
 
     /**
-     * Gets all workspaces belonging to given user.
+     * Get all user workspaces of specific user
      *
      * @param owner
-     *         workspace owner identifier
-     * @return list of workspaces which are owned by given {@code owner}
-     * @throws BadRequestException
-     *         when workspace owner is null
+     *         id of the owner of workspace
+     * @return list of {@link UsersWorkspace}
      * @throws ServerException
      *         when any error occurs
      */
@@ -142,7 +138,7 @@ public class WorkspaceManager {
 
     /**
      * Starts certain workspace with specified environment and account.
-     *
+     * <p/>
      * <p>Workspace start is asynchronous
      *
      * @param workspaceId
@@ -172,16 +168,12 @@ public class WorkspaceManager {
         requiredNotNull(workspaceId, "Workspace id required");
 
         final UsersWorkspaceImpl workspace = workspaceDao.get(workspaceId);
-        workspace.setTemporary(false);
-        hooks.beforeStart(workspace, accountId);
-        startWorkspaceAsync(workspace, envName);
-        workspace.setStatus(WorkspaceStatus.STARTING);
-        return workspace;
+        return startWorkspace(workspace, envName, accountId);
     }
 
     /**
      * Starts certain workspace with specified environment and account.
-     *
+     * <p/>
      * <p>Workspace start is asynchronous
      *
      * @param workspaceName
@@ -215,11 +207,7 @@ public class WorkspaceManager {
         requiredNotNull(owner, "Workspace owner required");
 
         final UsersWorkspaceImpl workspace = workspaceDao.get(workspaceName, owner);
-        workspace.setTemporary(false);
-        hooks.beforeStart(workspace, accountId);
-        startWorkspaceAsync(workspace, envName);
-        workspace.setStatus(WorkspaceStatus.STARTING);
-        return workspace;
+        return startWorkspace(workspace, envName, accountId);
     }
 
     // TODO should we store temp workspaces and where?
@@ -227,7 +215,7 @@ public class WorkspaceManager {
 
     /**
      * Starts temporary workspace based on config and account.
-     *
+     * <p/>
      * <p>Workspace start is synchronous
      *
      * @param workspaceConfig
@@ -249,26 +237,25 @@ public class WorkspaceManager {
      * @see WorkspaceHooks#beforeCreate(UsersWorkspace, String)
      * @see RuntimeWorkspaceRegistry#start(UsersWorkspace, String)
      */
-    public UsersWorkspaceImpl startTemporaryWorkspace(WorkspaceConfig workspaceConfig, String accountId)
-            throws ServerException, BadRequestException, ForbiddenException, NotFoundException {
+    public RuntimeWorkspaceImpl startTemporaryWorkspace(WorkspaceConfig workspaceConfig, String accountId)
+            throws ServerException, BadRequestException, ForbiddenException, NotFoundException, ConflictException {
         final UsersWorkspaceImpl workspace = fromConfig(workspaceConfig);
         workspace.setTemporary(true);
 
         hooks.beforeCreate(workspace, accountId);
         hooks.beforeStart(workspace, accountId);
 
-        startWorkspaceSync(workspace, null);
+        final RuntimeWorkspaceImpl runtimeWorkspace = startWorkspaceSync(workspace, null);
 
         // TODO when this code should be called for temp workspaces
-        hooks.afterCreate(workspace, accountId);
+        hooks.afterCreate(runtimeWorkspace, accountId);
 
         LOG.info("EVENT#workspace-created# WS#{}# WS-ID#{}# USER#{}# TEMP#true#",
-                 workspace.getName(),
-                 workspace.getId(),
+                 runtimeWorkspace.getName(),
+                 runtimeWorkspace.getId(),
                  EnvironmentContext.getCurrent().getUser().getId());
 
-        workspace.setStatus(WorkspaceStatus.RUNNING);
-        return workspace;
+        return runtimeWorkspace;
     }
 
     public void stopWorkspace(String workspaceId) throws ServerException, NotFoundException, ForbiddenException, BadRequestException {
@@ -281,6 +268,7 @@ public class WorkspaceManager {
             throws NotFoundException, ForbiddenException, ServerException, BadRequestException, ConflictException {
 
         final UsersWorkspaceImpl workspace = fromConfig(workspaceConfig);
+        workspace.setOwner(owner);
 
         hooks.beforeCreate(workspace, accountId);
 
@@ -297,7 +285,7 @@ public class WorkspaceManager {
         return newWorkspace;
     }
 
-    public UsersWorkspace updateWorkspace(String workspaceId, WorkspaceConfig update)
+    public UsersWorkspaceImpl updateWorkspace(String workspaceId, WorkspaceConfig update)
             throws ConflictException, ServerException, BadRequestException, NotFoundException {
         validateName(update.getName());
         validateConfig(update);
@@ -365,26 +353,42 @@ public class WorkspaceManager {
 
     /*******************************/
 
+    private UsersWorkspaceImpl startWorkspace(UsersWorkspaceImpl workspace,
+                                              String envName,
+                                              String accountId)
+            throws ServerException, NotFoundException, ForbiddenException {
+
+        workspace.setTemporary(false);
+        hooks.beforeStart(workspace, accountId);
+        startWorkspaceAsync(workspace, envName);
+        workspace.setStatus(WorkspaceStatus.STARTING);
+        return workspace;
+    }
+
     void startWorkspaceAsync(final UsersWorkspaceImpl usersWorkspace, final String envName) {
-        executor.execute(ThreadLocalPropagateContext.wrap(new Runnable() {
-            @Override
-            public void run() {
+        executor.execute(ThreadLocalPropagateContext.wrap(() -> {
+            try {
                 startWorkspaceSync(usersWorkspace, envName);
+            } catch (BadRequestException | ServerException | NotFoundException | ConflictException e) {
+                LOG.error(e.getLocalizedMessage(), e);
             }
         }));
     }
 
-    void startWorkspaceSync(final UsersWorkspaceImpl usersWorkspace, final String envName) {
+    RuntimeWorkspaceImpl startWorkspaceSync(final UsersWorkspaceImpl usersWorkspace, final String envName)
+            throws BadRequestException, ServerException, NotFoundException, ConflictException {
         eventService.publish(newDto(WorkspaceStatusEvent.class)
                                      .withEventType(STARTING)
                                      .withWorkspaceId(usersWorkspace.getId()));
 
         try {
-            workspaceRegistry.start(usersWorkspace, envName);
+            final RuntimeWorkspaceImpl runtimeWorkspace = workspaceRegistry.start(usersWorkspace, envName);
 
             eventService.publish(newDto(WorkspaceStatusEvent.class)
                                          .withEventType(RUNNING)
-                                         .withWorkspaceId(usersWorkspace.getId()));
+                                         .withWorkspaceId(runtimeWorkspace.getId()));
+
+            return runtimeWorkspace;
 
         } catch (ServerException | ConflictException | BadRequestException | NotFoundException e) {
             eventService.publish(newDto(WorkspaceStatusEvent.class)
@@ -392,7 +396,7 @@ public class WorkspaceManager {
                                          .withWorkspaceId(usersWorkspace.getId())
                                          .withError(e.getLocalizedMessage()));
 
-            LOG.error(e.getLocalizedMessage(), e);
+            throw e;
         }
     }
 
@@ -425,20 +429,12 @@ public class WorkspaceManager {
             validateName(cfg.getName());
         }
 
-        //set websocket output channels
-        for (EnvironmentImpl environment : workspace.getEnvironments().values()) {
-            for (MachineConfigImpl machineConfig : environment.getMachineConfigs()) {
-                machineConfig.setOutputChannel(workspace.getId() + ':' + environment.getName() + ':' + machineConfig.getName());
-                machineConfig.setStatusChannel("machine:status:" + workspace.getId() + ':' + machineConfig.getName());
-            }
-        }
-
         return workspace;
     }
 
     /**
      * Checks that {@link WorkspaceConfig cfg} contains valid values, if it is not throws {@link BadRequestException}.
-     *
+     * <p/>
      * Validation rules:
      * <ul>
      * <li>{@link WorkspaceConfig#getDefaultEnvName()} must not be empty or null</li>

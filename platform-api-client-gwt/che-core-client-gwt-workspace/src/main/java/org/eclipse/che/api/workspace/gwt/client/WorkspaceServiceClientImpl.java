@@ -13,11 +13,13 @@ package org.eclipse.che.api.workspace.gwt.client;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 
+import org.eclipse.che.api.machine.shared.dto.MachineConfigDto;
+import org.eclipse.che.api.machine.shared.dto.MachineStateDto;
 import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper.RequestCall;
-import org.eclipse.che.api.workspace.shared.dto.CommandDto;
+import org.eclipse.che.api.machine.shared.dto.CommandDto;
 import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.RuntimeWorkspaceDto;
@@ -45,6 +47,7 @@ import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
  *
  * @author Artem Zatsarynnyy
  * @author Dmitry Shnurenko
+ * @author Alexander Garagatyi
  */
 public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
 
@@ -65,7 +68,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
     }
 
     @Override
-    public Promise<UsersWorkspaceDto> create(final UsersWorkspaceDto newWorkspace, final String accountId) {
+    public Promise<UsersWorkspaceDto> create(final WorkspaceConfigDto newWorkspace, final String accountId) {
         return newPromise(new RequestCall<UsersWorkspaceDto>() {
             @Override
             public void makeCall(AsyncCallback<UsersWorkspaceDto> callback) {
@@ -74,7 +77,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
         });
     }
 
-    private void create(@NotNull UsersWorkspaceDto newWorkspace,
+    private void create(@NotNull WorkspaceConfigDto newWorkspace,
                         String accountId,
                         @NotNull AsyncCallback<UsersWorkspaceDto> callback) {
         String url = baseHttpUrl + "/config?account=" + accountId;
@@ -310,5 +313,26 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
     @Override
     public Promise<UsersWorkspaceDto> deleteProject(String wsId, String projectName) {
         return null;
+    }
+
+    @Override
+    public Promise<MachineStateDto> createMachine(String wsId, MachineConfigDto machineConfig) {
+        return newPromise(new RequestCall<MachineStateDto>() {
+            @Override
+            public void makeCall(AsyncCallback<MachineStateDto> callback) {
+                createMachine(wsId, machineConfig, callback);
+            }
+        });
+    }
+
+    private void createMachine(@NotNull String wsId,
+                               @NotNull MachineConfigDto newMachine,
+                               @NotNull AsyncCallback<MachineStateDto> callback) {
+        String url = baseHttpUrl + '/' + wsId + "/machine";
+        asyncRequestFactory.createPostRequest(url, newMachine)
+                           .header(ACCEPT, APPLICATION_JSON)
+                           .header(CONTENT_TYPE, APPLICATION_JSON)
+                           .loader(loader, "Creating machine...")
+                           .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(MachineStateDto.class)));
     }
 }

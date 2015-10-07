@@ -477,7 +477,7 @@ public class FactoryBaseValidatorTest {
         return factory.withWorkspace(dto.createDto(WorkspaceConfigDto.class)
                                         .withProjects(Collections.singletonList(dto.createDto(
                                                 ProjectConfigDto.class)
-                                                                                   .withStorage(dto.createDto(SourceStorageDto.class)
+                                                                                   .withSource(dto.createDto(SourceStorageDto.class)
                                                                                                    .withType(type)
                                                                                                    .withLocation(location)))));
     }

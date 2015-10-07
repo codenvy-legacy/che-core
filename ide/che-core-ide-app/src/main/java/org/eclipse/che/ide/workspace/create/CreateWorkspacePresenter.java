@@ -17,16 +17,17 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 import org.eclipse.che.api.machine.gwt.client.RecipeServiceClient;
+import org.eclipse.che.api.machine.shared.dto.CommandDto;
+import org.eclipse.che.api.machine.shared.dto.LimitsDto;
+import org.eclipse.che.api.machine.shared.dto.MachineConfigDto;
+import org.eclipse.che.api.machine.shared.dto.MachineSourceDto;
 import org.eclipse.che.api.machine.shared.dto.recipe.RecipeDescriptor;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.PromiseError;
 import org.eclipse.che.api.workspace.gwt.client.WorkspaceServiceClient;
-import org.eclipse.che.api.workspace.shared.dto.CommandDto;
 import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
-import org.eclipse.che.api.workspace.shared.dto.MachineConfigDto;
-import org.eclipse.che.api.workspace.shared.dto.MachineSourceDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
@@ -177,19 +178,11 @@ public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDeleg
     private void createWorkspace(final OperationInfo getWsOperation) {
         WorkspaceConfigDto workspaceConfig = getWorkspaceConfig();
 
-        UsersWorkspaceDto usersWorkspaceDto = dtoFactory.createDto(UsersWorkspaceDto.class)
-                                                        .withName(workspaceConfig.getName())
-                                                        .withAttributes(workspaceConfig.getAttributes())
-                                                        .withCommands(workspaceConfig.getCommands())
-                                                        .withEnvironments(workspaceConfig.getEnvironments())
-                                                        .withDefaultEnvName(workspaceConfig.getDefaultEnvName())
-                                                        .withTemporary(true);
-
         final OperationInfo createWsOperation = new OperationInfo(locale.creatingWorkspace(), OperationInfo.Status.IN_PROGRESS, loader);
 
         loader.print(createWsOperation);
 
-        workspaceClient.create(usersWorkspaceDto, null).then(new Operation<UsersWorkspaceDto>() {
+        workspaceClient.create(workspaceConfig, null).then(new Operation<UsersWorkspaceDto>() {
             @Override
             public void apply(UsersWorkspaceDto workspace) throws OperationException {
                 getWsOperation.setStatus(OperationInfo.Status.FINISHED);
@@ -220,7 +213,7 @@ public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDeleg
                                                            .withType("recipe")
                                                            .withLocation(view.getRecipeUrl()))
                                      .withDev(true)
-                                     .withMemorySize(2048));
+                                     .withLimits(dtoFactory.createDto(LimitsDto.class).withMemory(2048)));
 
         Map<String, EnvironmentDto> environments = new HashMap<>();
         environments.put(wsName, dtoFactory.createDto(EnvironmentDto.class)

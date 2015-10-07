@@ -11,7 +11,7 @@
 package org.eclipse.che.api.core.model.machine;
 
 /**
- * Recipe to create new {@link org.eclipse.che.api.machine.server.spi.Instance}.
+ * Recipe to create new machine.
  *
  * @author Eugene Voevodin
  */
@@ -23,7 +23,7 @@ public interface Recipe {
     String getType();
 
     /**
-     * Returns recipe script, which is used to instantiate new {@link org.eclipse.che.api.machine.server.spi.Instance}
+     * Returns recipe script, which is used to instantiate new machine
      */
     String getScript();
 

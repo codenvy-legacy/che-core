@@ -107,6 +107,7 @@
                 <configuration>
                     <dtoPackages>
                         <package>org.eclipse.che.api.account.shared.dto</package>
+                        <package>org.eclipse.che.api.machine.shared.dto</package>
                         <package>org.eclipse.che.api.workspace.shared.dto</package>
                     </dtoPackages>
                     <outputDirectory>${dto-generator-out-directory}</outputDirectory>

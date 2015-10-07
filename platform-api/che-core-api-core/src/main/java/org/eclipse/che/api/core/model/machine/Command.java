@@ -37,9 +37,4 @@ public interface Command {
      * Returns command type (i.e. 'maven')
      */
     String getType();
-
-    /**
-     * Returns absolute path to directory where the command should be executed
-     */
-    String getWorkingDir();
 }

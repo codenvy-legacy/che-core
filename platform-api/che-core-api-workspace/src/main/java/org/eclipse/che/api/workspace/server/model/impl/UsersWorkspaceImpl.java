@@ -17,6 +17,7 @@ import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
+import org.eclipse.che.api.machine.server.model.impl.CommandImpl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,17 +40,17 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
         return new UsersWorkspaceImplBuilder();
     }
 
-    private String                       id;
-    private String                       name;
-    private String                       owner;
-    private String                       defaultEnvName;
-    private List<CommandImpl>            commands;
-    private List<ProjectConfigImpl>      projects;
-    private Map<String, String>          attributes;
-    private Map<String, EnvironmentImpl> environments;
-    private String                       description;
-    private boolean                      isTemporary;
-    private WorkspaceStatus              status;
+    private String                            id;
+    private String                            name;
+    private String                            owner;
+    private String                            defaultEnvName;
+    private List<CommandImpl>                 commands;
+    private List<ProjectConfigImpl>           projects;
+    private Map<String, String>               attributes;
+    private Map<String, EnvironmentStateImpl> environments;
+    private String                            description;
+    private boolean                           isTemporary;
+    private WorkspaceStatus                   status;
 
     public UsersWorkspaceImpl(String id,
                               String name,
@@ -67,7 +68,7 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
         if (environments != null) {
             this.environments = environments.values()
                                             .stream()
-                                            .collect(toMap(Environment::getName, EnvironmentImpl::new));
+                                            .collect(toMap(Environment::getName, EnvironmentStateImpl::new));
         }
         if (commands != null) {
             this.commands = commands.stream()
@@ -112,6 +113,10 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
     @Override
     public String getOwner() {
         return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
     }
 
     @Override
@@ -193,14 +198,14 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
     }
 
     @Override
-    public Map<String, EnvironmentImpl> getEnvironments() {
+    public Map<String, EnvironmentStateImpl> getEnvironments() {
         if (environments == null) {
             environments = new HashMap<>();
         }
         return environments;
     }
 
-    public void setEnvironments(Map<String, EnvironmentImpl> environments) {
+    public void setEnvironments(Map<String, EnvironmentStateImpl> environments) {
         this.environments = environments;
     }
 
@@ -215,10 +220,11 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
                Objects.equals(defaultEnvName, other.defaultEnvName) &&
                Objects.equals(status, other.status) &&
                isTemporary == other.isTemporary &&
-               commands.equals(other.commands) &&
-               environments.equals(other.environments) &&
-               projects.equals(other.projects) &&
-               attributes.equals(other.attributes);
+               getCommands().equals(other.getCommands()) &&
+               getEnvironments().equals(other.getEnvironments()) &&
+               getProjects().equals(other.getProjects()) &&
+               getAttributes().equals(other.getAttributes()) &&
+               Objects.equals(description, other.description);
     }
 
     @Override
@@ -234,6 +240,7 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
         hash = 31 * hash + getEnvironments().hashCode();
         hash = 31 * hash + getProjects().hashCode();
         hash = 31 * hash + getAttributes().hashCode();
+        hash = 31 * hash + Objects.hashCode(description);
         return hash;
     }
 

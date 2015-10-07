@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server;
 
-
+import org.eclipse.che.api.machine.server.MachineManager;
 import org.mockito.Mock;
 import org.mockito.testng.MockitoTestNGListener;
 import org.testng.annotations.BeforeMethod;
@@ -27,12 +27,12 @@ import org.testng.annotations.Listeners;
 public class RuntimeWorkspaceRegistryTest {
 
     @Mock
-    MachineClient machineClient;
+    MachineManager machineManager;
 
     RuntimeWorkspaceRegistry registry;
 
     @BeforeMethod
     public void setUpRegistry() {
-        registry = new RuntimeWorkspaceRegistry(machineClient);
+        registry = new RuntimeWorkspaceRegistry(machineManager);
     }
 }

@@ -13,7 +13,6 @@ package org.eclipse.che.api.machine.server.dao;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.machine.server.exception.SnapshotException;
 import org.eclipse.che.api.machine.server.impl.SnapshotImpl;
-import org.eclipse.che.api.machine.shared.ProjectBinding;
 
 import java.util.List;
 
@@ -53,13 +52,11 @@ public interface SnapshotDao {
      *         id of the owner of desired snapshot
      * @param workspaceId
      *         workspace specified in desired snapshot, optional
-     * @param project
-     *         project specified in desired snapshot, optional
      * @return list of snapshot that satisfy provided queries, or empty list if no desired snapshots found
      * @throws SnapshotException
      *         if error occurs
      */
-    List<SnapshotImpl> findSnapshots(String owner, String workspaceId, ProjectBinding project) throws SnapshotException ;
+    List<SnapshotImpl> findSnapshots(String owner, String workspaceId) throws SnapshotException ;
 
     /**
      * Remove snapshot by id

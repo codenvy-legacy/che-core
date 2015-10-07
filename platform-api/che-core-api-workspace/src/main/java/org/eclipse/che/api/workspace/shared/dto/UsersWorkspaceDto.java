@@ -14,6 +14,7 @@ import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
+import org.eclipse.che.api.machine.shared.dto.CommandDto;
 import org.eclipse.che.dto.shared.DTO;
 
 import java.util.List;
@@ -23,7 +24,42 @@ import java.util.Map;
  * @author andrew00x
  */
 @DTO
-public interface UsersWorkspaceDto extends UsersWorkspace, WorkspaceConfigDto, Hyperlinks {
+public interface UsersWorkspaceDto extends UsersWorkspace, Hyperlinks {
+
+    @Override
+    String getName();
+
+    UsersWorkspaceDto withName(String name);
+
+    @Override
+    String getDefaultEnvName();
+
+    UsersWorkspaceDto withDefaultEnvName(String defaultEnvironment);
+
+    @Override
+    String getDescription();
+
+    UsersWorkspaceDto withDescription(String description);
+
+    @Override
+    List<CommandDto> getCommands();
+
+    UsersWorkspaceDto withCommands(List<CommandDto> commands);
+
+    @Override
+    List<ProjectConfigDto> getProjects();
+
+    UsersWorkspaceDto withProjects(List<ProjectConfigDto> projects);
+
+    @Override
+    Map<String, EnvironmentStateDto> getEnvironments();
+
+    UsersWorkspaceDto withEnvironments(Map<String, EnvironmentStateDto> environments);
+
+    @Override
+    Map<String, String> getAttributes();
+
+    UsersWorkspaceDto withAttributes(Map<String, String> attributes);
 
     UsersWorkspaceDto withId(String id);
 
@@ -32,36 +68,6 @@ public interface UsersWorkspaceDto extends UsersWorkspace, WorkspaceConfigDto, H
     UsersWorkspaceDto withStatus(WorkspaceStatus status);
 
     UsersWorkspaceDto withTemporary(boolean isTemporary);
-
-    @Override
-    UsersWorkspaceDto withName(String name);
-
-    @Override
-    UsersWorkspaceDto withDefaultEnvName(String defaultEnvironment);
-
-    @Override
-    UsersWorkspaceDto withDescription(String description);
-
-    @Override
-    List<CommandDto> getCommands();
-
-    @Override
-    UsersWorkspaceDto  withCommands(List<CommandDto> commands);
-
-    @Override
-    List<ProjectConfigDto> getProjects();
-
-    @Override
-    UsersWorkspaceDto  withProjects(List<ProjectConfigDto> projects);
-
-    @Override
-    Map<String, EnvironmentDto> getEnvironments();
-
-    @Override
-    UsersWorkspaceDto withEnvironments(Map<String, EnvironmentDto> environments);
-
-    @Override
-    UsersWorkspaceDto withAttributes(Map<String, String> attributes);
 
     @Override
     UsersWorkspaceDto withLinks(List<Link> links);

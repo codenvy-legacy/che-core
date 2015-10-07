@@ -10,37 +10,22 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.server;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
 import com.google.common.io.CharStreams;
 
-import org.eclipse.che.api.core.BadRequestException;
-import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.machine.server.exception.MachineException;
-import org.eclipse.che.api.machine.server.impl.MachineImpl;
-import org.eclipse.che.api.machine.server.impl.ProjectBindingImpl;
 import org.eclipse.che.api.machine.server.impl.SnapshotImpl;
+import org.eclipse.che.api.machine.server.model.impl.MachineStateImpl;
 import org.eclipse.che.api.machine.server.spi.Instance;
-import org.eclipse.che.api.machine.server.spi.InstanceProcess;
-import org.eclipse.che.api.machine.shared.ProjectBinding;
-import org.eclipse.che.api.machine.shared.Server;
-import org.eclipse.che.api.machine.shared.dto.CommandDescriptor;
-import org.eclipse.che.api.machine.shared.dto.MachineDescriptor;
-import org.eclipse.che.api.machine.shared.dto.MachineStateDescriptor;
+import org.eclipse.che.api.machine.shared.dto.CommandDto;
+import org.eclipse.che.api.machine.shared.dto.MachineDto;
+import org.eclipse.che.api.machine.shared.dto.MachineProcessDto;
+import org.eclipse.che.api.machine.shared.dto.MachineStateDto;
 import org.eclipse.che.api.machine.shared.dto.NewSnapshotDescriptor;
-import org.eclipse.che.api.machine.shared.dto.ProcessDescriptor;
-import org.eclipse.che.api.machine.shared.dto.ProjectBindingDescriptor;
-import org.eclipse.che.api.machine.shared.dto.RecipeMachineCreationMetadata;
-import org.eclipse.che.api.machine.shared.dto.ServerDescriptor;
-import org.eclipse.che.api.machine.shared.dto.SnapshotDescriptor;
-import org.eclipse.che.api.machine.shared.dto.SnapshotMachineCreationMetadata;
-import org.eclipse.che.api.machine.shared.dto.recipe.MachineRecipe;
-import org.eclipse.che.api.workspace.shared.dto.MachineMetadataDto;
+import org.eclipse.che.api.machine.shared.dto.SnapshotDto;
 import org.eclipse.che.commons.env.EnvironmentContext;
-import org.eclipse.che.dto.server.DtoFactory;
 
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
@@ -58,12 +43,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-
-import static org.eclipse.che.dto.server.DtoFactory.newDto;
+import java.util.stream.Collectors;
 
 /**
  * Machine API
@@ -74,122 +55,69 @@ import static org.eclipse.che.dto.server.DtoFactory.newDto;
 @Path("/machine")
 public class MachineService {
     private MachineManager machineManager;
-    private DtoFactory     dtoFactory;
 
     @Inject
     public MachineService(MachineManager machineManager) {
         this.machineManager = machineManager;
-        this.dtoFactory = DtoFactory.getInstance();
-    }
-
-    @Path("/recipe")
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @RolesAllowed("user")
-    public MachineStateDescriptor createMachineFromRecipe(final RecipeMachineCreationMetadata machineFromRecipeMetadata)
-            throws ServerException, ForbiddenException, NotFoundException, ConflictException, BadRequestException {
-        requiredNotNull(machineFromRecipeMetadata, "Machine description");
-        requiredNotNull(machineFromRecipeMetadata.getType(), "Machine type");
-        requiredNotNull(machineFromRecipeMetadata.getWorkspaceId(), "Workspace id");
-        requiredNotNull(machineFromRecipeMetadata.getRecipe(), "Recipe");
-        requiredNotNull(machineFromRecipeMetadata.getRecipe().getScript(), "Recipe script");
-        requiredNotNull(machineFromRecipeMetadata.getRecipe().getType(), "Recipe type");
-
-        checkCurrentUserPermissions(machineFromRecipeMetadata.getWorkspaceId());
-
-        final MachineImpl machine = machineManager.create(machineFromRecipeMetadata, true);
-
-        return toDescriptor(machine);
-    }
-
-    @Path("/snapshot")
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @RolesAllowed("user")
-    public MachineStateDescriptor createMachineFromSnapshot(SnapshotMachineCreationMetadata machineFromSnapshotMetadata)
-            throws ForbiddenException, NotFoundException, ServerException, ConflictException, BadRequestException {
-        requiredNotNull(machineFromSnapshotMetadata, "Snapshot description");
-        requiredNotNull(machineFromSnapshotMetadata.getSnapshotId(), "Snapshot id");
-
-        final SnapshotImpl snapshot = machineManager.getSnapshot(machineFromSnapshotMetadata.getSnapshotId());
-        checkCurrentUserPermissions(snapshot);
-        checkCurrentUserPermissions(snapshot.getWorkspaceId());
-
-        final MachineImpl machine = machineManager.create(machineFromSnapshotMetadata, true);
-
-        return toDescriptor(machine);
     }
 
     @Path("/{machineId}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
-    public MachineDescriptor getMachineById(@PathParam("machineId") String machineId)
+    public MachineDto getMachineById(@PathParam("machineId") String machineId)
             throws ServerException, ForbiddenException, NotFoundException {
         final Instance machine = machineManager.getMachine(machineId);
 
         checkCurrentUserPermissions(machine);
 
-        return toDescriptor(machine);
+        return DtoConverter.asDto(machine);
     }
 
     @Path("/{machineId}/state")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
-    public MachineStateDescriptor getMachineStateById(@PathParam("machineId") String machineId)
+    public MachineStateDto getMachineStateById(@PathParam("machineId") String machineId)
             throws ServerException, ForbiddenException, NotFoundException {
-        final MachineImpl machineState = machineManager.getMachineState(machineId);
+        final MachineStateImpl machineState = machineManager.getMachineState(machineId);
 
         checkCurrentUserPermissions(machineState);
 
-        return toDescriptor(machineState);
+        return DtoConverter.asDto(machineState);
     }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
-    public List<MachineDescriptor> getMachines(@QueryParam("workspace") String workspaceId,
-                                               @QueryParam("project") String path)
+    public List<MachineDto> getMachines(@QueryParam("workspace") String workspaceId,
+                                        @QueryParam("project") String path)
             throws ServerException, ForbiddenException {
         requiredNotNull(workspaceId, "Parameter workspace");
 
         final String userId = EnvironmentContext.getCurrent().getUser().getId();
-        final List<Instance> machines = machineManager.getMachines(userId,
-                                                                   workspaceId,
-                                                                   Strings.isNullOrEmpty(path) ? null : new ProjectBindingImpl(path));
 
-        final List<MachineDescriptor> machinesDescriptors = new LinkedList<>();
-        for (Instance machine : machines) {
-            machinesDescriptors.add(toDescriptor(machine));
-        }
-
-        return machinesDescriptors;
+        return machineManager.getMachines(userId, workspaceId)
+                             .stream()
+                             .map(DtoConverter::asDto)
+                             .collect(Collectors.toList());
     }
 
     @GET
     @Path("/state")
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
-    public List<MachineStateDescriptor> getMachinesStates(@QueryParam("workspace") String workspaceId,
-                                                          @QueryParam("project") String path)
+    public List<MachineStateDto> getMachinesStates(@QueryParam("workspace") String workspaceId,
+                                                   @QueryParam("project") String path)
             throws ServerException, ForbiddenException {
         requiredNotNull(workspaceId, "Parameter workspace");
 
         final String userId = EnvironmentContext.getCurrent().getUser().getId();
-        final List<MachineImpl> machines = machineManager.getMachinesStates(userId,
-                                                                            workspaceId,
-                                                                            Strings.isNullOrEmpty(path) ? null
-                                                                                                        : new ProjectBindingImpl(path));
+        final List<MachineStateImpl> machines = machineManager.getMachinesStates(userId, workspaceId);
 
-        final List<MachineStateDescriptor> machinesDescriptors = new LinkedList<>();
-        for (MachineImpl machine : machines) {
-            machinesDescriptors.add(toDescriptor(machine));
-        }
-
-        return machinesDescriptors;
+        return machines.stream()
+                       .map(DtoConverter::asDto)
+                       .collect(Collectors.toList());
     }
 
     @Path("/{machineId}")
@@ -207,21 +135,16 @@ public class MachineService {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
-    public List<SnapshotDescriptor> getSnapshots(@QueryParam("workspace") String workspaceId,
-                                                 @QueryParam("project") String path) throws ServerException, ForbiddenException {
+    public List<SnapshotDto> getSnapshots(@QueryParam("workspace") String workspaceId,
+                                          @QueryParam("project") String path) throws ServerException, ForbiddenException {
 
         requiredNotNull(workspaceId, "Parameter workspace");
 
-        final List<SnapshotImpl> snapshots = machineManager.getSnapshots(EnvironmentContext.getCurrent().getUser().getId(),
-                                                                         workspaceId,
-                                                                         Strings.isNullOrEmpty(path) ? null : new ProjectBindingImpl(path));
+        final List<SnapshotImpl> snapshots = machineManager.getSnapshots(EnvironmentContext.getCurrent().getUser().getId(), workspaceId);
 
-        final List<SnapshotDescriptor> snapshotDescriptors = new LinkedList<>();
-        for (SnapshotImpl snapshot : snapshots) {
-            snapshotDescriptors.add(toDescriptor(snapshot));
-        }
-
-        return snapshotDescriptors;
+        return snapshots.stream()
+                        .map(DtoConverter::asDto)
+                        .collect(Collectors.toList());
     }
 
     @Path("/{machineId}/snapshot")
@@ -229,15 +152,15 @@ public class MachineService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
-    public SnapshotDescriptor saveSnapshot(@PathParam("machineId") String machineId, NewSnapshotDescriptor newSnapshotDescriptor)
+    public SnapshotDto saveSnapshot(@PathParam("machineId") String machineId, NewSnapshotDescriptor newSnapshotDescriptor)
             throws NotFoundException, ServerException, ForbiddenException {
 
         requiredNotNull(newSnapshotDescriptor, "Snapshot description");
         checkCurrentUserPermissions(machineManager.getMachine(machineId));
 
-        return toDescriptor(machineManager.save(machineId,
-                                                EnvironmentContext.getCurrent().getUser().getId(),
-                                                newSnapshotDescriptor.getDescription()));
+        return DtoConverter.asDto(machineManager.save(machineId,
+                                                      EnvironmentContext.getCurrent().getUser().getId(),
+                                                      newSnapshotDescriptor.getDescription()));
     }
 
     @Path("/snapshot/{snapshotId}")
@@ -254,30 +177,31 @@ public class MachineService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
-    public ProcessDescriptor executeCommandInMachine(@PathParam("machineId") String machineId, final CommandDescriptor command)
+    public MachineProcessDto executeCommandInMachine(@PathParam("machineId") String machineId,
+                                                     final CommandDto command,
+                                                     @QueryParam("outputChannel") String outputChannel)
             throws NotFoundException, ServerException, ForbiddenException {
 
         requiredNotNull(command, "Command description");
+        requiredNotNull(command.getCommandLine(), "Commandline");
         checkCurrentUserPermissions(machineManager.getMachine(machineId));
 
-        return toDescriptor(machineManager.exec(machineId, command, command.getOutputChannel()));
+        return DtoConverter.asDto(machineManager.exec(machineId, command, outputChannel));
     }
 
     @Path("/{machineId}/process")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
-    public List<ProcessDescriptor> getProcesses(@PathParam("machineId") String machineId)
+    public List<MachineProcessDto> getProcesses(@PathParam("machineId") String machineId)
             throws NotFoundException, ServerException, ForbiddenException {
 
         checkCurrentUserPermissions(machineManager.getMachine(machineId));
 
-        final List<ProcessDescriptor> processesDescriptors = new LinkedList<>();
-        for (InstanceProcess process : machineManager.getProcesses(machineId)) {
-            processesDescriptors.add(toDescriptor(process));
-        }
-
-        return processesDescriptors;
+        return machineManager.getProcesses(machineId)
+                             .stream()
+                             .map(DtoConverter::asDto)
+                             .collect(Collectors.toList());
     }
 
     @Path("/{machineId}/process/{processId}")
@@ -289,28 +213,6 @@ public class MachineService {
         checkCurrentUserPermissions(machineManager.getMachine(machineId));
 
         machineManager.stopProcess(machineId, processId);
-    }
-
-    @Path("/{machineId}/binding/{path:.*}")
-    @POST
-    @RolesAllowed("user")
-    public void bindProject(@PathParam("machineId") String machineId,
-                            @PathParam("path") String path)
-            throws NotFoundException, ServerException, ForbiddenException {
-        checkCurrentUserPermissions(machineManager.getMachine(machineId));
-
-        machineManager.bindProject(machineId, new ProjectBindingImpl().withPath(path));
-    }
-
-    @Path("/{machineId}/binding/{path:.*}")
-    @DELETE
-    @RolesAllowed("user")
-    public void unbindProject(@PathParam("machineId") String machineId,
-                              @PathParam("path") String path)
-            throws NotFoundException, ServerException, ForbiddenException {
-        checkCurrentUserPermissions(machineManager.getMachine(machineId));
-
-        machineManager.unbindProject(machineId, new ProjectBindingImpl().withPath(path));
     }
 
     @GET
@@ -419,11 +321,12 @@ public class MachineService {
         checkCurrentUserPermissions(machine.getWorkspaceId());
     }
 
-    private void checkCurrentUserPermissions(MachineImpl machineState) throws ForbiddenException, ServerException {
+    private void checkCurrentUserPermissions(MachineStateImpl machineState) throws ForbiddenException, ServerException {
         checkCurrentUserPermissions(machineState.getWorkspaceId());
     }
 
     private void checkCurrentUserPermissions(String workspaceId) throws ForbiddenException, ServerException {
+        // TODO
 //        try {
 //            final Member member = memberDao.getWorkspaceMember(workspaceId, EnvironmentContext.getCurrent().getUser().getId());
 //            if (member.getRoles().contains("workspace/admin") || member.getRoles().contains("workspace/developer")) {
@@ -448,108 +351,5 @@ public class MachineService {
         if (object == null) {
             throw new ForbiddenException(subject + " required");
         }
-    }
-
-    private MachineStateDescriptor toDescriptor(MachineImpl machineState) throws ServerException {
-        final List<ProjectBindingDescriptor> projectDescriptors = new ArrayList<>();
-        for (ProjectBinding project : machineState.getProjects()) {
-            projectDescriptors.add(dtoFactory.createDto(ProjectBindingDescriptor.class)
-                                             .withPath(project.getPath())
-                                             .withLinks(null)); // TODO
-        }
-
-        MachineRecipe machineRecipe = newDto(MachineRecipe.class)
-                .withType(machineState.getRecipe().getType())
-                .withScript(machineState.getRecipe().getScript());
-
-        final MachineStateDescriptor machineDescriptor = dtoFactory.createDto(MachineStateDescriptor.class)
-                                                                   .withId(machineState.getId())
-                                                                   .withType(machineState.getType())
-                                                                   .withRecipe(machineRecipe)
-                                                                   .withStatus(machineState.getStatus())
-                                                                   .withOwner(machineState.getOwner())
-                                                                   .withWorkspaceId(machineState.getWorkspaceId())
-                                                                   .withDev(machineState.isDev())
-                                                                   .withProjects(projectDescriptors)
-                                                                   .withDisplayName(machineState.getDisplayName())
-                                                                   .withMemorySize(machineState.getMemorySize());
-
-        machineDescriptor.setLinks(null); // TODO
-
-        return machineDescriptor;
-    }
-
-    private MachineDescriptor toDescriptor(Instance machine) throws ServerException {
-        final List<ProjectBindingDescriptor> projectDescriptors = new ArrayList<>();
-        for (ProjectBinding project : machine.getProjects()) {
-            projectDescriptors.add(dtoFactory.createDto(ProjectBindingDescriptor.class)
-                                             .withPath(project.getPath())
-                                             .withLinks(null)); // TODO
-        }
-
-        MachineRecipe machineRecipe = newDto(MachineRecipe.class)
-                .withType(machine.getRecipe().getType())
-                .withScript(machine.getRecipe().getScript());
-
-        final MachineDescriptor machineDescriptor = dtoFactory.createDto(MachineDescriptor.class)
-                                                              .withId(machine.getId())
-                                                              .withType(machine.getType())
-                                                              .withRecipe(machineRecipe)
-                                                              .withStatus(machine.getStatus())
-                                                              .withOwner(machine.getOwner())
-                                                              .withWorkspaceId(machine.getWorkspaceId())
-                                                              .withDev(machine.isDev())
-                                                              .withProjects(projectDescriptors)
-                                                              .withDisplayName(machine.getDisplayName())
-                                                              .withMemorySize(machine.getMemorySize());
-
-        Map<String, Server> servers = machine.getServers();
-        final Map<String, ServerDescriptor> serverDescriptors = Maps.newHashMapWithExpectedSize(servers.size());
-        for (Map.Entry<String, Server> serverEntry : servers.entrySet()) {
-            serverDescriptors.put(serverEntry.getKey(),
-                                  dtoFactory.createDto(ServerDescriptor.class)
-                                            .withAddress(serverEntry.getValue().getAddress())
-                                            .withRef(serverEntry.getValue().getRef())
-                                            .withUrl(serverEntry.getValue().getUrl()));
-        }
-        machineDescriptor.withProperties(machine.getMetadata().getProperties())
-                         .withMetadata(newDto(MachineMetadataDto.class).withEnvVariables(machine.getMetadata().getEnvVariables()))
-                         .withServers(serverDescriptors);
-        machineDescriptor.setLinks(null); // TODO
-
-        return machineDescriptor;
-    }
-
-    private ProcessDescriptor toDescriptor(InstanceProcess process) throws ServerException {
-        return dtoFactory.createDto(ProcessDescriptor.class)
-                         .withPid(process.getPid())
-                         .withCommandLine(process.getCommandLine())
-                         .withAlive(process.isAlive())
-                         .withLinks(null); // TODO
-    }
-
-    private SnapshotDescriptor toDescriptor(SnapshotImpl snapshot) {
-        final List<ProjectBindingDescriptor> projectDescriptors = new ArrayList<>(snapshot.getProjects().size());
-        for (ProjectBinding projectBinding : snapshot.getProjects()) {
-            projectDescriptors.add(dtoFactory.createDto(ProjectBindingDescriptor.class)
-                                             .withPath(projectBinding.getPath())
-                                             .withLinks(null));
-        }
-
-        MachineRecipe machineRecipe = newDto(MachineRecipe.class)
-                .withType(snapshot.getRecipe().getType())
-                .withScript(snapshot.getRecipe().getScript());
-
-        return dtoFactory.createDto(SnapshotDescriptor.class)
-                         .withId(snapshot.getId())
-                         .withOwner(snapshot.getOwner())
-                         .withType(snapshot.getType())
-                         .withRecipe(machineRecipe)
-                         .withDescription(snapshot.getDescription())
-                         .withCreationDate(snapshot.getCreationDate())
-                         .withWorkspaceId(snapshot.getWorkspaceId())
-                         .withProjects(projectDescriptors)
-                         .withWorkspaceBound(snapshot.isWorkspaceBound())
-                         .withLinks(null);// TODO
     }
 }

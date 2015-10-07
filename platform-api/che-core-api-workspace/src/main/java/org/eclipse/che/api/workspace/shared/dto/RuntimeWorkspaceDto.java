@@ -14,6 +14,8 @@ import org.eclipse.che.api.core.model.workspace.RuntimeWorkspace;
 import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
+import org.eclipse.che.api.machine.shared.dto.CommandDto;
+import org.eclipse.che.api.machine.shared.dto.MachineDto;
 import org.eclipse.che.dto.shared.DTO;
 
 import java.util.List;
@@ -81,10 +83,10 @@ public interface RuntimeWorkspaceDto extends UsersWorkspaceDto, RuntimeWorkspace
     RuntimeWorkspaceDto withProjects(List<ProjectConfigDto> projects);
 
     @Override
-    Map<String, EnvironmentDto> getEnvironments();
+    Map<String, EnvironmentStateDto> getEnvironments();
 
     @Override
-    RuntimeWorkspaceDto withEnvironments(Map<String, EnvironmentDto> environments);
+    RuntimeWorkspaceDto withEnvironments(Map<String, EnvironmentStateDto> environments);
 
     @Override
     RuntimeWorkspaceDto withAttributes(Map<String, String> attributes);

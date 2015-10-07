@@ -25,10 +25,10 @@ import org.eclipse.che.api.factory.shared.dto.OnAppClosed;
 import org.eclipse.che.api.factory.shared.dto.OnAppLoaded;
 import org.eclipse.che.api.factory.shared.dto.OnProjectOpened;
 import org.eclipse.che.api.factory.shared.dto.Policies;
-import org.eclipse.che.api.workspace.shared.dto.CommandDto;
+import org.eclipse.che.api.machine.shared.dto.CommandDto;
+import org.eclipse.che.api.machine.shared.dto.MachineConfigDto;
+import org.eclipse.che.api.machine.shared.dto.MachineSourceDto;
 import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
-import org.eclipse.che.api.workspace.shared.dto.MachineConfigDto;
-import org.eclipse.che.api.workspace.shared.dto.MachineSourceDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.RecipeDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
@@ -41,11 +41,9 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -149,7 +147,7 @@ public class FactoryBuilderTest {
                   .withWorkspace(dto.createDto(WorkspaceConfigDto.class)
                                     .withProjects(Collections.singletonList(dto.createDto(
                                             ProjectConfigDto.class)
-                                                                               .withStorage(
+                                                                               .withSource(
                                                                                        dto.createDto(
                                                                                                SourceStorageDto.class)
                                                                                           .withType("git")

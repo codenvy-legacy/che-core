@@ -20,12 +20,12 @@ import org.eclipse.che.api.machine.gwt.client.OutputMessageUnmarshaller;
 import org.eclipse.che.api.machine.gwt.client.events.DevMachineStateEvent;
 import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateEvent;
 import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateHandler;
+import org.eclipse.che.api.machine.shared.dto.MachineStateDto;
 import org.eclipse.che.api.machine.shared.dto.event.MachineStatusEvent;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.PromiseError;
 import org.eclipse.che.api.workspace.gwt.client.WorkspaceServiceClient;
-import org.eclipse.che.api.workspace.shared.dto.MachineConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
@@ -199,12 +199,12 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
 
                 eventBus.fireEvent(new StartWorkspaceEvent(workspace));
 
-                List<MachineConfigDto> machineConfigs = workspace.getEnvironments().get(workspace.getDefaultEnvName()).getMachineConfigs();
+                List<MachineStateDto> machineStates = workspace.getEnvironments().get(workspace.getDefaultEnvName()).getMachineConfigs();
 
-                for (MachineConfigDto machineConfig : machineConfigs) {
-                    if (machineConfig.isDev()) {
-                        subscribeToOutput(machineConfig.getOutputChannel());
-                        subscribeToMachineStatus(machineConfig.getStatusChannel());
+                for (MachineStateDto machineState : machineStates) {
+                    if (machineState.isDev()) {
+                        subscribeToOutput(machineState.getChannels().getOutput());
+                        subscribeToMachineStatus(machineState.getChannels().getStatus());
                     }
                 }
             }

@@ -12,11 +12,12 @@ package org.eclipse.che.api.workspace.server.model.impl;
 
 import org.eclipse.che.api.core.model.machine.Command;
 import org.eclipse.che.api.core.model.workspace.Environment;
-import org.eclipse.che.api.core.model.workspace.Machine;
+import org.eclipse.che.api.core.model.machine.Machine;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.model.workspace.RuntimeWorkspace;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
+import org.eclipse.che.api.machine.server.model.impl.MachineImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -89,7 +90,7 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
     }
 
     @Override
-    public Machine getDevMachine() {
+    public MachineImpl getDevMachine() {
         return devMachine;
     }
 
@@ -119,6 +120,10 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
         this.machines = machines;
     }
 
+    public void setActiveEnvName(String activeEnvName) {
+        this.activeEnvName = activeEnvName;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -143,10 +148,10 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
      */
     public static class RuntimeWorkspaceBuilder extends UsersWorkspaceImplBuilder {
 
-        private String                             rootFolder;
-        private String                             activeEnvName;
-        private Machine                            devMachine;
-        private List<? extends Machine>            machines;
+        private String                  rootFolder;
+        private String                  activeEnvName;
+        private Machine                 devMachine;
+        private List<? extends Machine> machines;
 
         public RuntimeWorkspaceImpl build() {
             return new RuntimeWorkspaceImpl(id,

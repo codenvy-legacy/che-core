@@ -75,9 +75,9 @@ public interface ProjectConfigDto extends ProjectConfig {
 
     @Override
     @FactoryParameter(obligation = MANDATORY)
-    SourceStorageDto getStorage();
+    SourceStorageDto getSource();
 
-    void setStorage(SourceStorageDto sourceStorage);
+    void setSource(SourceStorageDto source);
 
-    ProjectConfigDto withStorage(SourceStorageDto sourceStorage);
+    ProjectConfigDto withSource(SourceStorageDto source);
 }

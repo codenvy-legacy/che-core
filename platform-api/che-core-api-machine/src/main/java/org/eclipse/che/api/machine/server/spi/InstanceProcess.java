@@ -13,6 +13,7 @@ package org.eclipse.che.api.machine.server.spi;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.util.LineConsumer;
 import org.eclipse.che.api.machine.server.exception.MachineException;
+import org.eclipse.che.api.machine.shared.MachineProcess;
 
 /**
  * Represents process in the machine created by command.
@@ -20,24 +21,7 @@ import org.eclipse.che.api.machine.server.exception.MachineException;
  * @author andrew00x
  * @author Alexander Garagatyi
  */
-public interface InstanceProcess extends org.eclipse.che.api.machine.shared.Process {
-    /**
-     * Returns pid of the process.
-     * To be able to control from the clients pid should be valid even if process isn't started yet.
-     *
-     * @return pid of the process
-     */
-    @Override
-    int getPid();
-
-    /**
-     * Returns command with all its arguments
-     *
-     * @return command
-     */
-    @Override
-    String getCommandLine();
-
+public interface InstanceProcess extends MachineProcess {
     /**
      * Starts process in the background.
      *
@@ -62,14 +46,6 @@ public interface InstanceProcess extends org.eclipse.che.api.machine.shared.Proc
      *         if internal error occurs
      */
     void start(LineConsumer output) throws ConflictException, MachineException;
-
-    /**
-     * Checks is process is running or not.
-     *
-     * @return {@code true} if process running and {@code false} otherwise
-     */
-    @Override
-    boolean isAlive();
 
     /**
      * Kills this process.

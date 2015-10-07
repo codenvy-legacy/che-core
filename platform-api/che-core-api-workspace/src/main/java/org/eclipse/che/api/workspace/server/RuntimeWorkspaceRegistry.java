@@ -18,13 +18,14 @@ import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.model.machine.Machine;
 import org.eclipse.che.api.core.model.machine.MachineConfig;
 import org.eclipse.che.api.core.model.workspace.Environment;
-import org.eclipse.che.api.core.model.workspace.Machine;
 import org.eclipse.che.api.core.model.workspace.RuntimeWorkspace;
-import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
-import org.eclipse.che.api.workspace.server.model.impl.MachineImpl;
+import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
+import org.eclipse.che.api.machine.server.MachineManager;
+import org.eclipse.che.api.machine.server.model.impl.MachineImpl;
 import org.eclipse.che.api.workspace.server.model.impl.RuntimeWorkspaceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,15 +48,13 @@ import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.STOPPING;
 /**
  * Defines {@link RuntimeWorkspace} internal API.
  *
- * @implNote
- * Workspaces are stored in memory - in 2 Maps.
- * First for <i>identifier -> workspace</i> mapping, second for <i>owner -> list of workspaces</i> mapping.
- * Maps are guarded by {@link ReentrantReadWriteLock}.
- *
- * <p>It is thread-safe!
- *
  * @author Eugene Voevodin
  * @author Alexander Garagatyi
+ * @implNote Workspaces are stored in memory - in 2 Maps.
+ * First for <i>identifier -> workspace</i> mapping, second for <i>owner -> list of workspaces</i> mapping.
+ * Maps are guarded by {@link ReentrantReadWriteLock}.
+ * <p/>
+ * <p>It is thread-safe!
  */
 @Singleton
 public class RuntimeWorkspaceRegistry {
@@ -65,13 +64,13 @@ public class RuntimeWorkspaceRegistry {
     private final Map<String, RuntimeWorkspaceImpl>          idToWorkspaces;
     private final ListMultimap<String, RuntimeWorkspaceImpl> ownerToWorkspaces;
     private final ReadWriteLock                              lock;
-    private final MachineClient                              machineClient;
+    private final MachineManager                             machineManager;
 
     private volatile boolean isStopped;
 
     @Inject
-    public RuntimeWorkspaceRegistry(MachineClient machineClient) {
-        this.machineClient = machineClient;
+    public RuntimeWorkspaceRegistry(MachineManager machineManager) {
+        this.machineManager = machineManager;
         this.idToWorkspaces = new HashMap<>();
         this.ownerToWorkspaces = ArrayListMultimap.create();
         this.lock = new ReentrantReadWriteLock();
@@ -79,12 +78,12 @@ public class RuntimeWorkspaceRegistry {
 
     /**
      * Starts {@link UsersWorkspace workspace} with specified environment.
-     *
+     * <p/>
      * <p>Actually starts all machines in certain environment starting from dev-machine.
      * When environment is not specified - default one is going to be used.
      * During workspace starting workspace is visible with {@link WorkspaceStatus#STARTING starting} status,
      * until all machines in workspace is not started, after that status will be changed to {@link WorkspaceStatus#RUNNING running}.
-     *
+     * <p/>
      * <p>Note that it doesn't provide any events for machines start, Machine API is responsible for it.
      *
      * @param usersWorkspace
@@ -100,7 +99,7 @@ public class RuntimeWorkspaceRegistry {
      *         whe any not found exception occurs during environment start
      * @throws ServerException
      *         when registry {@link #isStopped is stopped} other error occurs during environment start
-     * @see MachineClient#start(MachineConfig, String, String)
+     * @see MachineManager#createMachineSync(MachineConfig, String, String)
      */
     public RuntimeWorkspaceImpl start(UsersWorkspace usersWorkspace, String envName) throws ConflictException,
                                                                                             ServerException,
@@ -131,11 +130,11 @@ public class RuntimeWorkspaceRegistry {
 
     /**
      * Stops running workspace.
-     *
+     * <p/>
      * <p>Actually stops all machines related to certain workspace one by one (order is not specified).
      * During workspace stopping workspace still will be accessible with {@link WorkspaceStatus#STOPPING stopping} status,
      * and invoking {@link #start(UsersWorkspace, String)} for the same workspace {@code workspaceId} will throw {@link ConflictException}.
-     *
+     * <p/>
      * <p>Note that it doesn't provide any events for machines stop, Machine API is responsible for it.
      *
      * @param workspaceId
@@ -144,7 +143,7 @@ public class RuntimeWorkspaceRegistry {
      *         when workspace with specified identifier is not running
      * @throws ServerException
      *         when any error occurs during workspace stopping
-     * @see MachineClient#destroy(String)
+     * @see MachineManager#destroy(String, boolean)
      */
     public void stop(String workspaceId) throws NotFoundException, ServerException, ConflictException {
         lock.writeLock().lock();
@@ -164,7 +163,7 @@ public class RuntimeWorkspaceRegistry {
     /**
      * Returns true if workspace was started and it's status is {@link WorkspaceStatus#RUNNING running},
      * {@link WorkspaceStatus#STARTING starting} or {@link WorkspaceStatus#STOPPING stopping} - otherwise returns false.
-     *
+     * <p/>
      * <p> Using of this method is equivalent to {@link #get(String)} + {@code try catch}, see example:
      * <pre>
      *
@@ -260,18 +259,20 @@ public class RuntimeWorkspaceRegistry {
         if (devMachine == null) {
             throw new BadRequestException("Dev machine was not found in workspace environment " + environment.getName());
         }
-        machines.add(machineClient.start(devMachine, workspaceId, environment.getName()));
+        machines.add(machineManager.createMachineSync(devMachine, workspaceId, environment.getName()));
 
-        for (MachineConfig machineConfig : environment.getMachineConfigs()) {
-            if (!machineConfig.isDev()) {
-                try {
-                    machines.add(machineClient.start(machineConfig, workspaceId, environment.getName()));
-                } catch (ApiException apiEx) {
-                    //TODO should it be error?
-                    LOG.error(apiEx.getMessage(), apiEx);
-                }
-            }
-        }
+        //TODO should it be error?
+        environment.getMachineConfigs()
+                   .stream()
+                   .filter(machineConfig -> !machineConfig.isDev())
+                   .forEach(machineConfig -> {
+                       try {
+                           machines.add(machineManager.createMachineSync(machineConfig, workspaceId, environment.getName()));
+                       } catch (ApiException apiEx) {
+                           //TODO should it be error?
+                           LOG.error(apiEx.getMessage(), apiEx);
+                       }
+                   });
 
         return machines;
     }
@@ -309,7 +310,7 @@ public class RuntimeWorkspaceRegistry {
     private void doStop(RuntimeWorkspaceImpl workspace) throws NotFoundException, ServerException {
         //destroy all machines
         for (Machine machine : workspace.getMachines()) {
-            machineClient.destroy(machine.getId());
+            machineManager.destroy(machine.getId(), true);
         }
 
         lock.writeLock().lock();
@@ -321,6 +322,7 @@ public class RuntimeWorkspaceRegistry {
         }
     }
 
+    @SuppressWarnings("unused")
     @PreDestroy
     private void stopWorkspaces() {
         lock.writeLock().lock();

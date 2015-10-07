@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.core.model.workspace;
 
+import org.eclipse.che.api.core.model.machine.Machine;
 
 import java.util.List;
 

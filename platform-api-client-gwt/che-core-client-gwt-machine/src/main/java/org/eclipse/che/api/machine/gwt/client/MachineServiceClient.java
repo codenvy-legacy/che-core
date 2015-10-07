@@ -10,9 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.gwt.client;
 
-import org.eclipse.che.api.machine.shared.dto.MachineDescriptor;
-import org.eclipse.che.api.machine.shared.dto.MachineStateDescriptor;
-import org.eclipse.che.api.machine.shared.dto.ProcessDescriptor;
+import org.eclipse.che.api.machine.shared.dto.MachineDto;
+import org.eclipse.che.api.machine.shared.dto.MachineProcessDto;
+import org.eclipse.che.api.machine.shared.dto.MachineStateDto;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.commons.annotation.Nullable;
 
@@ -26,51 +26,13 @@ import java.util.List;
  * @author Dmitry Shnurenko
  */
 public interface MachineServiceClient {
-
-    /**
-     * Create and start machine from scratch using recipe.
-     *
-     * @param machineType
-     *         type of machine (e.g., docker)
-     * @param recipeType
-     *         type of recipe (e.g., Dockerfile)
-     * @param recipeScript
-     *         recipe script
-     * @param displayName
-     *         machine's display name
-     * @param bindWorkspace
-     *         {@code true} if workspace should be bound, {@code false} - otherwise
-     * @param outputChannel
-     *         websocket chanel where machine logs should be put
-     */
-    Promise<MachineDescriptor> createMachineFromRecipe(@NotNull String machineType,
-                                                       @NotNull String recipeType,
-                                                       @NotNull String recipeScript,
-                                                       @Nullable String displayName,
-                                                       boolean bindWorkspace,
-                                                       @Nullable String outputChannel);
-
-    /**
-     * Restore and start machine from snapshot.
-     *
-     * @param snapshotId
-     *         ID of snapshot machine should be restored from
-     * @param displayName
-     *         machine's display name
-     * @param outputChannel
-     *         websocket chanel where machine logs should be put
-     */
-    Promise<MachineDescriptor> createMachineFromSnapshot(@NotNull String snapshotId,
-                                                         @Nullable String displayName,
-                                                         @Nullable String outputChannel);
-
     /**
      * Get machine information by it's id.
      *
      * @param machineId
      *         ID of the machine
      */
-    Promise<MachineDescriptor> getMachine(@NotNull String machineId);
+    Promise<MachineDto> getMachine(@NotNull String machineId);
 
     /**
      * Get machine state information by it's id.
@@ -78,7 +40,7 @@ public interface MachineServiceClient {
      * @param machineId
      *         ID of the machine
      */
-    Promise<MachineStateDescriptor> getMachineState(@NotNull String machineId);
+    Promise<MachineStateDto> getMachineState(@NotNull String machineId);
 
     /**
      * Find machines bound to the workspace/project.
@@ -87,7 +49,7 @@ public interface MachineServiceClient {
      *         project binding. If {@code projectPath} is {@code null} returns machines which bound to the current workspace,
      *         if {@code projectPath} is not {@code null} - returns machines which bound to the specified project
      */
-    Promise<List<MachineDescriptor>> getMachines(@Nullable String projectPath);
+    Promise<List<MachineDto>> getMachines(@Nullable String projectPath);
 
     /**
      * Returns list of machines which are bounded to current workspace.
@@ -96,7 +58,7 @@ public interface MachineServiceClient {
      *         workspace id
      * @return list of machines
      */
-    Promise<List<MachineDescriptor>> getWorkspaceMachines(String workspaceId);
+    Promise<List<MachineDto>> getWorkspaceMachines(String workspaceId);
 
     /**
      * Find machines states bound to the workspace/project.
@@ -105,7 +67,7 @@ public interface MachineServiceClient {
      *         project binding. If {@code projectPath} is {@code null} returns machines which bound to the current workspace,
      *         if {@code projectPath} is not {@code null} - returns machines which bound to the specified project
      */
-    Promise<List<MachineStateDescriptor>> getMachinesStates(@Nullable String projectPath);
+    Promise<List<MachineStateDto>> getMachinesStates(@Nullable String projectPath);
 
     /**
      * Destroy machine with the specified ID.
@@ -125,7 +87,7 @@ public interface MachineServiceClient {
      * @param outputChannel
      *         websocket chanel for execution logs
      */
-    Promise<ProcessDescriptor> executeCommand(@NotNull String machineId, @NotNull String commandLine, @Nullable String outputChannel);
+    Promise<MachineProcessDto> executeCommand(@NotNull String machineId, @NotNull String commandLine, @Nullable String outputChannel);
 
     /**
      * Get processes from the specified machine.
@@ -133,7 +95,7 @@ public interface MachineServiceClient {
      * @param machineId
      *         ID of machine to get processes information from
      */
-    Promise<List<ProcessDescriptor>> getProcesses(@NotNull String machineId);
+    Promise<List<MachineProcessDto>> getProcesses(@NotNull String machineId);
 
     /**
      * Stop process in machine.

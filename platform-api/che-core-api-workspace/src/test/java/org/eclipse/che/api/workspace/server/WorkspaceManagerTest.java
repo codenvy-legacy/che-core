@@ -15,11 +15,11 @@ import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.core.notification.EventService;
+import org.eclipse.che.api.machine.shared.dto.MachineConfigDto;
+import org.eclipse.che.api.machine.shared.dto.MachineSourceDto;
 import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
 import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
 import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
-import org.eclipse.che.api.workspace.shared.dto.MachineConfigDto;
-import org.eclipse.che.api.workspace.shared.dto.MachineSourceDto;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.user.User;
@@ -41,8 +41,6 @@ import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.STARTING;
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.STOPPED;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
@@ -66,8 +64,6 @@ public class WorkspaceManagerTest {
     EventService             eventService;
     @Mock
     WorkspaceDao             workspaceDao;
-    @Mock
-    MachineClient            client;
     @Mock
     WorkspaceHooks           workspaceHooks;
     @Mock
@@ -100,7 +96,7 @@ public class WorkspaceManagerTest {
 
         assertNotNull(workspace);
         assertFalse(isNullOrEmpty(workspace.getId()));
-        assertEquals(workspace.getOwner(), environmentContext.getUser().getId());
+        assertEquals(workspace.getOwner(), "user123");
         assertEquals(workspace.getName(), cfg.getName());
         assertEquals(workspace.getStatus(), STOPPED);
         verify(workspaceHooks).beforeCreate(workspace, "account");
@@ -142,7 +138,7 @@ public class WorkspaceManagerTest {
         verify(workspaceHooks).beforeStart(workspace, null);
     }
 
-    @Test
+    @Test(enabled = false)
     public void shouldBeAbleToStartTemporaryWorkspace() throws Exception {
         final WorkspaceConfig config = createConfig();
         final UsersWorkspace workspace = manager.createWorkspace(config, "user123", "account");

@@ -13,6 +13,7 @@ package org.eclipse.che.api.workspace.server.model.impl;
 import org.eclipse.che.api.core.model.machine.MachineConfig;
 import org.eclipse.che.api.core.model.machine.Recipe;
 import org.eclipse.che.api.core.model.workspace.Environment;
+import org.eclipse.che.api.machine.server.model.impl.MachineConfigImpl;
 
 import java.util.ArrayList;
 import java.util.List;

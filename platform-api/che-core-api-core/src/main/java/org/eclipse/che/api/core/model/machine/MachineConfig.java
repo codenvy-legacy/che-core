@@ -35,16 +35,8 @@ public interface MachineConfig {
      */
     String getType();
 
-    /** Get memory size (in megabytes) that is allocated for starting machine. */
-    int getMemorySize();
-
     /**
-     * Returns channel of websocket where machine logs should be put.
+     * Machine limits such as RAM size.
      */
-    String getOutputChannel();
-
-    /**
-     * Returns channel of websocket where machine status events should be put.
-     */
-    String getStatusChannel();
+    Limits getLimits();
 }

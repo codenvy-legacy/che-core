@@ -11,8 +11,6 @@
 package org.eclipse.che.api.core.model.workspace;
 
 import org.eclipse.che.api.core.model.project.SourceStorage;
-import org.eclipse.che.api.core.model.project.type.Attribute;
-import org.eclipse.che.api.core.model.project.type.ProjectType;
 
 import java.util.List;
 import java.util.Map;
@@ -34,5 +32,5 @@ public interface ProjectConfig {
 
     Map<String, List<String>> getAttributes();
 
-    SourceStorage getStorage();
+    SourceStorage getSource();
 }
