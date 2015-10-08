@@ -30,7 +30,7 @@ import java.io.IOException;
 /**
  * @author Dmitry Shnurenko
  */
-@Path("/watcher/")
+@Path("/watcher")
 @Singleton
 public class WatcherService {
 
@@ -38,7 +38,7 @@ public class WatcherService {
     private VirtualFileSystemRegistry virtualFileSystemRegistry;
 
     @GET
-    @Path("register/{workspaceId}")
+    @Path("/{workspaceId}/register")
     public void registerWatcher(@PathParam("workspaceId") String workspaceId) throws ServerException, NotFoundException, IOException {
         VirtualFileSystem virtualFileSystem = virtualFileSystemRegistry.getProvider(workspaceId).newInstance(null);
 
