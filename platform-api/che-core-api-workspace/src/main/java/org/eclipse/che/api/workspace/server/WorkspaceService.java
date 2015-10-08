@@ -100,7 +100,8 @@ public class WorkspaceService extends Service {
     private SecurityContext securityContext;
 
     @Inject
-    public WorkspaceService(WorkspaceManager workspaceManager, @Named("workspace") PermissionManager permissionManager) {
+    public WorkspaceService(WorkspaceManager workspaceManager,
+                            @Named("service.workspace.permission_manager") PermissionManager permissionManager) {
         this.workspaceManager = workspaceManager;
         this.permissionManager = permissionManager;
     }
