@@ -14,6 +14,7 @@
 
 package org.eclipse.che.ide;
 
+import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.CssResource.NotStrict;
 import com.google.gwt.resources.client.ImageResource;
@@ -111,6 +112,12 @@ public interface Resources extends Tree.Resources,
     @Source("part/projectexplorer/project-closed.png")
     ImageResource projectClosed();
 
+    @Source("actions/newProject.svg")
+    SVGResource newProject();
+
+    @Source("actions/showHiddenFiles.svg")
+    SVGResource showHiddenFiles();
+
     @Source("wizard/arrow.svg")
     SVGResource wizardArrow();
 
@@ -195,8 +202,20 @@ public interface Resources extends Tree.Resources,
     @Source("actions/import.svg")
     SVGResource importProject();
 
+    @Source("actions/importProjectFromLocation.svg")
+    SVGResource importProjectFromLocation();
+
+    @Source("actions/importGroup.svg")
+    SVGResource importProjectGroup();
+
+    @Source("actions/settings.svg")
+    SVGResource settings();
+
     @Source("actions/upload-file.svg")
     SVGResource uploadFile();
+
+    @Source("actions/upload-folder.svg")
+    SVGResource uploadFolder();
 
     @Source("actions/zip-folder.svg")
     SVGResource downloadZip();

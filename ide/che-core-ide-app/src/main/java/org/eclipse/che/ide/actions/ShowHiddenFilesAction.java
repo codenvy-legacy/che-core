@@ -21,6 +21,7 @@ import org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper;
 import org.eclipse.che.api.promises.client.js.JsPromiseError;
 import org.eclipse.che.api.promises.client.js.Promises;
 import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.PromisableAction;
@@ -54,12 +55,13 @@ public class ShowHiddenFilesAction extends AbstractPerspectiveAction implements 
                                  AnalyticsEventLogger eventLogger,
                                  EventBus eventBus,
                                  CoreLocalizationConstant localizationConstant,
-                                 ProjectExplorerPresenter projectExplorerPresenter) {
+                                 ProjectExplorerPresenter projectExplorerPresenter,
+                                 Resources resources) {
         super(Arrays.asList(PROJECT_PERSPECTIVE_ID),
               localizationConstant.actionShowHiddenFilesTitle(),
               localizationConstant.actionShowHiddenFilesDescription(),
               null,
-              null);
+              resources.showHiddenFiles());
         this.appContext = appContext;
         this.eventLogger = eventLogger;
         this.eventBus = eventBus;

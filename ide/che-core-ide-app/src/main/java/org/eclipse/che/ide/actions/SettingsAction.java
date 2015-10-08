@@ -13,6 +13,7 @@ package org.eclipse.che.ide.actions;
 import com.google.inject.Inject;
 
 import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.settings.SettingsPresenter;
@@ -27,8 +28,8 @@ public class SettingsAction extends Action {
     private final SettingsPresenter presenter;
 
     @Inject
-    public SettingsAction(CoreLocalizationConstant locale, SettingsPresenter presenter) {
-        super(locale.projectSettingsTitle());
+    public SettingsAction(CoreLocalizationConstant locale, SettingsPresenter presenter, Resources resources) {
+        super(locale.projectSettingsTitle(), null, null, resources.settings());
 
         this.presenter = presenter;
     }

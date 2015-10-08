@@ -1,14 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<!-- The icon can be used freely in both personal and commercial projects with no attribution required, but always appreciated. 
-You may NOT sub-license, resell, rent, redistribute or otherwise transfer the icon without express written permission from iconmonstr.com -->
-
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-     width="512px" height="512px" viewBox="0 0 512 512" enable-background="new 0 0 512 512">
-    <path d="M298.932,327.465v69.354L462,234.028L298.932,71.24c0,0,0,31.929,0,69.355
-	C57.409,169.973-24.639,408.587,125.424,440.76C78,404.143,131,358.143,196,340.143
-	C253.894,324.111,298.932,327.465,298.932,327.465z"/>
+<svg version="1.1" id="redo" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+     width="16px" height="16px" viewBox="7 7 18 18" enable-background="new 0 0 32 32" xml:space="preserve">
+    <g>
+        <path fill-rule="evenodd" clip-rule="evenodd" fill="#4D4D4D" d="M11.835,10.343c-3.124,3.125-3.124,8.189,0,11.314
+        		c3.124,3.124,8.189,3.124,11.313,0l-1.414-1.414c-2.344,2.344-6.142,2.344-8.485,0s-2.344-6.142,0-8.486s6.142-2.344,8.485,0
+        		L21,12.492h3V9.491l-0.852,0.852C20.024,7.219,14.959,7.219,11.835,10.343z"/>
+    </g>
 </svg>
-

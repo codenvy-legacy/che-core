@@ -318,7 +318,7 @@ public class StandardComponentInitializer {
 
         // Compose Import Project group
         DefaultActionGroup importProjectGroup = new DefaultActionGroup("Import Project", true, actionManager);
-        importProjectGroup.getTemplatePresentation().setSVGIcon(resources.importProject());
+        importProjectGroup.getTemplatePresentation().setSVGIcon(resources.importProjectGroup());
         actionManager.registerAction(IdeActions.GROUP_IMPORT_PROJECT, importProjectGroup);
         actionManager.registerAction("importProjectFromLocation", importProjectFromLocationAction);
         actionManager.registerAction("importLocalProjectAction", importLocalProjectAction);

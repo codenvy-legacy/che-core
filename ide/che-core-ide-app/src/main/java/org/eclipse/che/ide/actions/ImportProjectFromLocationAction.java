@@ -48,7 +48,7 @@ public class ImportProjectFromLocationAction extends AbstractPerspectiveAction {
         super(Arrays.asList(PROJECT_PERSPECTIVE_ID), locale.importProjectFromLocationName(),
               locale.importProjectFromLocationDescription(),
               null,
-              resources.importProject());
+              resources.importProjectFromLocation());
         this.presenter = presenter;
         this.eventLogger = eventLogger;
         this.appContext = appContext;
