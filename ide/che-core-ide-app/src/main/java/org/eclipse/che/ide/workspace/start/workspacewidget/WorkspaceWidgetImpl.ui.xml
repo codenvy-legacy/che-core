@@ -29,14 +29,14 @@
         }
 
         .name {
-            margin-top: 6px;
+            margin-top: 4px;
             margin-left: 6px;
             float: left;
         }
 
         .status {
             float: right;
-            margin-top: 8px;
+            margin-top: 4px;
             margin-right: 6px;
         }
     </ui:style>
