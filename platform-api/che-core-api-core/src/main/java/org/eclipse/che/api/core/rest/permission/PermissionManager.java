@@ -10,57 +10,115 @@
  *******************************************************************************/
 package org.eclipse.che.api.core.rest.permission;
 
-import com.google.inject.Inject;
-import org.eclipse.che.api.core.ApiException;
-import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.commons.annotation.Nullable;
 
-import javax.inject.Singleton;
-import javax.ws.rs.core.SecurityContext;
-import java.util.HashMap;
+import javax.validation.constraints.NotNull;
+import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 
 /**
+ * Manages access to named operations.
  *
- * @author gazarenkov
+ * @author Eugene Voevodin
  */
-@Singleton
-public class PermissionManager {
+public interface PermissionManager {
 
-    private final Map<String, PermissionChecker> pcheckers;
+    /**
+     * Checks that user with given id has access to perform the operation.
+     *
+     * @param operation
+     *         operation for which access should be allowed or rejected
+     * @param params
+     *         additional parameters for access check
+     * @param userId
+     *         id of the user who requests access to the operation
+     * @throws NullPointerException
+     *         when either operation, or params, or user identifier is null
+     * @throws ForbiddenException
+     *         when user doesn't have access to operation
+     * @throws ServerException
+     *         when any other error occurs
+     */
+    void checkPermission(@NotNull Operation operation,
+                         @NotNull String userId,
+                         @NotNull Map<String, String> params) throws ForbiddenException, ServerException;
 
-    public PermissionManager() {
-        pcheckers = new HashMap<>();
-    }
-
-    @Inject(optional = true)
-    public void init(Set<PermissionChecker> checkers) {
-        for(PermissionChecker checker:checkers) {
-            pcheckers.put(checker.getMethod(), checker);
-        }
+    /**
+     * Checks that user with given id has access to perform the operation.
+     *
+     * <p>Checks permission without additional parameters
+     *
+     * @param operation
+     *         operation for which access should be allowed or rejected
+     * @param userId
+     *         id of the user who requests access to the operation
+     * @throws NullPointerException
+     *         when either operation or user identifier is null
+     * @throws ForbiddenException
+     *         when user doesn't have access to operation
+     * @throws ServerException
+     *         when any other error occurs
+     */
+    default void checkPermission(@NotNull Operation operation, @NotNull String userId) throws ForbiddenException, ServerException {
+        checkPermission(operation, userId, Collections.emptyMap());
     }
 
     /**
-     * TODO do we need to change the parameters like in EventService or so to make it nicer?
-     * @param method
-     * @param params
-     * @param context
-     * @throws BadRequestException
+     * Checks that user with given id has access to perform the operation.
+     *
+     * <p>This method is the same to {@link #checkPermission(Operation, String, Map)},
+     * the only difference is that it provides more convenient way to check permission
+     * when single parameter appears.
+     *
+     * <p>For instance:
+     * <pre>{@code
+     *     manager.checkPermission(new Operation("start-workspace"), "user123", "workspaceId", workspaceId)
+     * }</pre>
+     *
+     * @param operation
+     *         operation for which access should be allowed or rejected
+     * @param userId
+     *         id of the user who requests access to the operation
+     * @param paramKey
+     *         single parameter key
+     * @param paramValue
+     *         single parameter value
+     * @throws NullPointerException
+     *         when either operation or user identifier is null
      * @throws ForbiddenException
+     *         when user doesn't have access to operation
      * @throws ServerException
+     *         when any other error occurs
      */
-    public void checkPermission(String method, Map<String, String> params, SecurityContext context)
-            throws BadRequestException, ForbiddenException, ServerException {
+    default void checkPermission(@NotNull Operation operation,
+                                 @NotNull String userId,
+                                 @Nullable String paramKey,
+                                 @Nullable String paramValue) throws ForbiddenException, ServerException {
+        checkPermission(operation, userId, Collections.singletonMap(paramKey, paramValue));
+    }
 
-        // no PermissionChecker configured means we need no checks
-        if(pcheckers.isEmpty())
-            return;
-
-        if(!pcheckers.containsKey(method)) {
-            throw new BadRequestException("Permission checker not found for method '" + method + "'");
+    /**
+     * Returns true when user has permission to perform given operation, otherwise returns false.
+     *
+     * @param operation
+     *         operation for which access should be allowed or rejected
+     * @param params
+     *         additional parameters for access check
+     * @param userId
+     *         id of the user who requests access to the operation
+     * @throws NullPointerException
+     *         when either operation, or params, or user identifier is null
+     * @throws ServerException
+     *         when any other error occurs
+     */
+    default boolean hasPermission(Operation operation, String userId, Map<String, String> params) throws ServerException {
+        try {
+            checkPermission(operation, userId, params);
+            return true;
+        } catch (ForbiddenException ignored) {
+            return false;
         }
-        pcheckers.get(method).checkPermissions(method, params, context);
     }
 }
