@@ -38,7 +38,7 @@ public class NewProjectAction extends AbstractPerspectiveAction {
 
     @Inject
     public NewProjectAction(Resources resources, ProjectWizardPresenter wizard, AnalyticsEventLogger eventLogger, AppContext appContext) {
-        super(Arrays.asList(PROJECT_PERSPECTIVE_ID), "Project...", "Create new project", null, null);
+        super(Arrays.asList(PROJECT_PERSPECTIVE_ID), "Project...", "Create new project", null, resources.newProject());
         this.wizard = wizard;
         this.eventLogger = eventLogger;
         this.appContext = appContext;
