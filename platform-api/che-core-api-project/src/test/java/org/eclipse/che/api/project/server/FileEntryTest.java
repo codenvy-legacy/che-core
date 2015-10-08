@@ -10,25 +10,23 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.server;
 
+import com.google.common.io.ByteStreams;
+
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemUser;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemUserContext;
 import org.eclipse.che.api.vfs.server.impl.memory.MemoryMountPoint;
-
-import com.google.common.io.ByteStreams;
-
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import javax.ws.rs.core.MediaType;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
-
-import javax.ws.rs.core.MediaType;
 
 /**
  * @author andrew00x
@@ -53,7 +51,6 @@ public class FileEntryTest {
         });
         VirtualFile myVfRoot = mmp.getRoot();
         myVfProject = myVfRoot.createFolder("my_project");
-        myVfProject.createFolder(".codenvy").createFile("project", null, null);
         myVfFile = myVfProject.createFile("test", MediaType.TEXT_PLAIN, new ByteArrayInputStream("to be or not to be".getBytes()));
         myFile = new FileEntry(workspace, myVfFile);
         Assert.assertTrue(myFile.isFile());
@@ -177,12 +174,4 @@ public class FileEntryTest {
         Assert.assertFalse(myVfFile.exists());
         Assert.assertNull(myVfProject.getChild(name));
     }
-
-//    @Test
-//    public void testGetItem() throws Exception {
-//        String name = myFile.getName();
-//        myFile.getAttributes();
-//        Assert.assertFalse(myVfFile.exists());
-//        Assert.assertNull(myVfProject.getChild(name));
-//    }
 }

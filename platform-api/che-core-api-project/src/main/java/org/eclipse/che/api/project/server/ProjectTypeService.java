@@ -25,7 +25,7 @@ import javax.ws.rs.core.MediaType;
 import java.util.LinkedList;
 import java.util.List;
 
-import static org.eclipse.che.api.project.server.DtoConverter.toTypeDescriptor2;
+import static org.eclipse.che.api.project.server.DtoConverter.toTypeDefinition;
 
 /**
  * ProjectTypeService
@@ -48,7 +48,7 @@ public class ProjectTypeService extends Service {
     public List<ProjectTypeDefinition> getProjectTypes() {
         final List<ProjectTypeDefinition> types = new LinkedList<>();
         for (ProjectType type : registry.getProjectTypes()) {
-            types.add(toTypeDescriptor2(type));
+            types.add(toTypeDefinition(type));
         }
         return types;
     }
@@ -58,6 +58,6 @@ public class ProjectTypeService extends Service {
     @Produces(MediaType.APPLICATION_JSON)
     public ProjectTypeDefinition getProjectType(@PathParam("id") String id) {
         final ProjectType projectType = registry.getProjectType(id);
-        return toTypeDescriptor2(projectType);
+        return toTypeDefinition(projectType);
     }
 }

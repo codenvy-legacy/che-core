@@ -44,14 +44,12 @@ import static org.mockito.Mockito.mock;
  */
 public class ProjectTemplateServiceTest {
 
-
     ProjectTemplateRegistry templateRegistry = new ProjectTemplateRegistry();
 
     private ResourceLauncher launcher;
 
     @BeforeTest
     public void setUp() {
-
         ProjectTemplateDescriptor template = mock(ProjectTemplateDescriptor.class);
 
         templateRegistry.register("test", template);
@@ -81,7 +79,6 @@ public class ProjectTemplateServiceTest {
         ApplicationContextImpl.setCurrent(new ApplicationContextImpl(null, null, ProviderBinder.getInstance()));
     }
 
-
     @Test
     public void getTemplates() throws Exception {
         ContainerResponse response =
@@ -93,6 +90,4 @@ public class ProjectTemplateServiceTest {
         Assert.assertEquals(1, result.size());
         Assert.assertNotNull(result.get(0));
     }
-
-
 }

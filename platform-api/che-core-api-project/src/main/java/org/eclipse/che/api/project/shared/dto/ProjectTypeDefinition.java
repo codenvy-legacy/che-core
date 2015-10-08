@@ -15,9 +15,7 @@ import org.eclipse.che.dto.shared.DTO;
 import java.util.List;
 
 /**
- *
  * @author gazarenkov
- *
  */
 @DTO
 public interface ProjectTypeDefinition {
@@ -70,27 +68,4 @@ public interface ProjectTypeDefinition {
     void setDefaultRecipe(String defaultRecipe);
 
     ProjectTypeDefinition withDefaultRecipe(String defaultRecipe);
-
-
-//    /** builder / runner configurations. */
-//    List<String> getRunnerCategories();
-
-//    void setRunnerCategories(List<String> runnerCategories);
-
-//    ProjectTypeDefinition withRunnerCategories(List<String> runnerCategories);
-
-
-//    String getDefaultBuilder();
-
-//    void setDefaultBuilder(String builder);
-
-//    ProjectTypeDefinition withDefaultBuilder(String builder);
-
-
-//    String getDefaultRunner();
-
-//    void setDefaultRunner(String runner);
-
-//    ProjectTypeDefinition withDefaultRunner(String runner);
-
 }

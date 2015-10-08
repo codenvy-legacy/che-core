@@ -23,32 +23,27 @@ import java.util.Map;
  */
 public class ProjectConfig {
 
-    private String description;
-    private String typeId;
+    private String                      description;
+    private String                      typeId;
     private Map<String, AttributeValue> attributes;
-    private String recipe;
-//    private Runners runners;
-//    private Builders builders;
-    private List <String> mixinTypes;
+    private String                      recipe;
+    private List<String>                mixinTypes;
 
-    public ProjectConfig(String description, String typeId, Map<String, AttributeValue> attributes, String recipe, /*Runners runners,
-                         Builders builders,*/ List <String> mixinTypes) {
-
+    public ProjectConfig(String description, String typeId, Map<String, AttributeValue> attributes, String recipe,
+                         List<String> mixinTypes) {
         this.description = description;
         this.typeId = typeId;
-        this.attributes = (attributes == null)?new HashMap<String, AttributeValue>():attributes;
+        this.attributes = (attributes == null) ? new HashMap<>() : attributes;
         this.recipe = recipe;
-//        this.builders = (builders == null)?new Builders():builders;
-//        this.runners = (runners == null)?new Runners():runners;
-        this.mixinTypes = (mixinTypes == null)?new ArrayList<String>():mixinTypes;
+        this.mixinTypes = (mixinTypes == null) ? new ArrayList<>() : mixinTypes;
     }
 
     public ProjectConfig(String description, String typeId) {
-        this(description, typeId, new HashMap<String, AttributeValue>(), null, new ArrayList<String>());
+        this(description, typeId, new HashMap<>(), null, new ArrayList<>());
     }
 
     public ProjectConfig() {
-        this("", BaseProjectType.ID, new HashMap<String, AttributeValue>(), null, new ArrayList<String>());
+        this("", BaseProjectType.ID, new HashMap<>(), null, new ArrayList<>());
     }
 
     public String getDescription() {
@@ -62,14 +57,6 @@ public class ProjectConfig {
     public Map<String, AttributeValue> getAttributes() {
         return attributes;
     }
-
-//    public Runners getRunners() {
-//        return runners;
-//    }
-//
-//    public Builders getBuilders() {
-//        return builders;
-//    }
 
     public String getRecipe() {
         return recipe;
