@@ -83,11 +83,23 @@
     fill: toolbarHoverIconColor;
 }
 
+.toolbarActionGroupPanel > div:hover path {
+    fill: toolbarHoverIconColor;
+}
+
 .toolbarActionGroupPanel > div > svg .blueColored {
+     fill: blueIconColor;
+ }
+
+.toolbarActionGroupPanel > div .blueColored path {
     fill: blueIconColor;
 }
 
 .toolbarActionGroupPanel > div:hover > svg .changeOnHover.greenColored {
+    fill: greenIconColor;
+}
+
+.toolbarActionGroupPanel > div:hover .changeOnHover.greenColored path {
     fill: greenIconColor;
 }
 
@@ -192,9 +204,18 @@ svg.iconButtonIcon {
     fill: toolbarIconColor;
 }
 
+.iconButtonIcon path {
+    fill: toolbarIconColor;
+}
+
 .disabled svg {
     opacity: 0.6;
     fill: toolbarIconColor !important;
+}
+
+.disabled path {
+    opacity: 0.6;
+    fill: toolbarIconColor;
 }
 
 .popupButtonPanel,
@@ -229,6 +250,10 @@ svg.popupButtonIcon {
     height: toolbarIconSize;
     fill: toolbarIconColor;
     margin-right: 2px;
+}
+
+.popupButtonIcon path {
+    fill: toolbarIconColor;
 }
 
 .caret {

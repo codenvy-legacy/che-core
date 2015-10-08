@@ -77,6 +77,11 @@
     margin-top: 2px;
 }
 
+.popupMenuIconField path,
+.popupMenuIconFieldDisabled path {
+    fill: toolbarIconColor;
+}
+
 .popupMenuSubMenuField,
 .popupMenuSubMenuFieldDisabled {
     width: 10px;
@@ -87,6 +92,11 @@
     fill: toolbarIconColor;
     width: 7px;
     height: 7px;
+}
+
+.popupMenuSubMenuField path,
+.popupMenuSubMenuFieldDisabled path {
+    fill: toolbarIconColor;
 }
 
 .popupMenuIconFieldDisabled {
@@ -118,5 +128,9 @@
 .popupMenuSubMenuFieldDisabled,
 .popupMenuSubMenuFieldDisabled svg {
     color: disabledMenuItemColor;
+    fill: disabledMenuItemColor;
+}
+
+.popupMenuSubMenuFieldDisabled path {
     fill: disabledMenuItemColor;
 }
