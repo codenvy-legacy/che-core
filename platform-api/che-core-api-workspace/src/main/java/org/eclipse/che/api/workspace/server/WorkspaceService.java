@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server;
 
+import com.google.common.collect.ImmutableMap;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -26,8 +27,10 @@ import org.eclipse.che.api.core.model.machine.Server;
 import org.eclipse.che.api.core.model.workspace.Machine;
 import org.eclipse.che.api.core.model.workspace.MachineMetadata;
 import org.eclipse.che.api.core.model.workspace.RuntimeWorkspace;
+import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.rest.Service;
 import org.eclipse.che.api.core.rest.annotations.GenerateLink;
+import org.eclipse.che.api.core.rest.permission.PermissionManager;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.workspace.server.model.impl.CommandImpl;
 import org.eclipse.che.api.workspace.server.model.impl.EnvironmentImpl;
@@ -45,7 +48,9 @@ import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
 import org.eclipse.che.commons.env.EnvironmentContext;
 
+import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -75,10 +80,9 @@ import static org.eclipse.che.api.workspace.server.Constants.GET_USERS_WORKSPACE
 import static org.eclipse.che.api.workspace.server.Constants.LINK_REL_CREATE_WORKSPACE;
 import static org.eclipse.che.api.workspace.server.Constants.LINK_REL_REMOVE_WORKSPACE;
 import static org.eclipse.che.api.workspace.server.Constants.LINK_REL_START_WORKSPACE;
+import static org.eclipse.che.api.workspace.server.Constants.START_WORKSPACE;
 import static org.eclipse.che.api.workspace.server.Constants.STOP_WORKSPACE;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
-
-//TODO add permissions check
 
 /**
  * Workspace API
@@ -89,17 +93,17 @@ import static org.eclipse.che.dto.server.DtoFactory.newDto;
 @Path("/workspace")
 public class WorkspaceService extends Service {
 
-    private final WorkspaceManager workspaceManager;
+    private final WorkspaceManager  workspaceManager;
+    private final PermissionManager permissionManager;
 
     @Context
     private SecurityContext securityContext;
 
     @Inject
-    public WorkspaceService(WorkspaceManager workspaceManager) {
+    public WorkspaceService(WorkspaceManager workspaceManager, @Named("workspace") PermissionManager permissionManager) {
         this.workspaceManager = workspaceManager;
+        this.permissionManager = permissionManager;
     }
-
-    // fixme methods don't have roles verification
 
     @ApiOperation(value = "Create a new workspace",
                   notes = "For 'system/admin' it is required to set new workspace owner, " +
@@ -113,6 +117,7 @@ public class WorkspaceService extends Service {
     @Path("/config")
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
+    @RolesAllowed("user")
     @GenerateLink(rel = LINK_REL_CREATE_WORKSPACE)
     public UsersWorkspaceDto create(@ApiParam(value = "new workspace", required = true) UsersWorkspaceDto newWorkspace,
                                     @ApiParam("account id") @QueryParam("account") String accountId)
@@ -128,7 +133,10 @@ public class WorkspaceService extends Service {
 
     @DELETE
     @Path("/{id}/config")
-    public void delete(@PathParam("id") String id) throws BadRequestException, ServerException, NotFoundException, ConflictException {
+    @RolesAllowed("user")
+    public void delete(@PathParam("id") String id)
+            throws BadRequestException, ServerException, NotFoundException, ConflictException, ForbiddenException {
+        ensureUserIsWorkspaceOwner(id);
         workspaceManager.removeWorkspace(id);
     }
 
@@ -136,8 +144,10 @@ public class WorkspaceService extends Service {
     @Path("/{id}/config")
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
+    @RolesAllowed("user")
     public UsersWorkspaceDto update(@PathParam("id") String id, WorkspaceConfigDto workspaceCfg)
             throws BadRequestException, ServerException, ForbiddenException, NotFoundException, ConflictException {
+        ensureUserIsWorkspaceOwner(id);
         return injectLinks(DtoConverter.asDto(workspaceManager.updateWorkspace(id, workspaceCfg)));
     }
 
@@ -149,20 +159,27 @@ public class WorkspaceService extends Service {
     @GET
     @Path("/{id}")
     @Produces(APPLICATION_JSON)
+    @RolesAllowed("user")
     public UsersWorkspaceDto getById(@ApiParam("Workspace ID") @PathParam("id") String id)
             throws NotFoundException, ServerException, ForbiddenException, BadRequestException {
+        ensureUserIsWorkspaceOwner(id);
         return injectLinks(DtoConverter.asDto(workspaceManager.getWorkspace(id)));
     }
 
     @GET
     @Path("/name/{name}")
+    @RolesAllowed("user")
     @Produces(APPLICATION_JSON)
-    public UsersWorkspaceDto getByName(@PathParam("name") String name) throws ServerException, BadRequestException, NotFoundException {
-        return injectLinks(DtoConverter.asDto(workspaceManager.getWorkspace(name, getCurrentUserId())));
+    public UsersWorkspaceDto getByName(@PathParam("name") String name)
+            throws ServerException, BadRequestException, NotFoundException, ForbiddenException {
+        final UsersWorkspace workspace = workspaceManager.getWorkspace(name, getCurrentUserId());
+        ensureUserIsWorkspaceOwner(workspace.getId());
+        return injectLinks(DtoConverter.asDto(workspace));
     }
 
     @GET
     @Produces(APPLICATION_JSON)
+    @RolesAllowed("user")
     public List<UsersWorkspaceDto> getWorkspaces(@DefaultValue("0") @QueryParam("skipCount") Integer skipCount,
                                                  @DefaultValue("30") @QueryParam("maxItems") Integer maxItems)
             throws ServerException, BadRequestException {
@@ -176,6 +193,7 @@ public class WorkspaceService extends Service {
     @GET
     @Path("/runtime")
     @Produces(APPLICATION_JSON)
+    @RolesAllowed("user")
     public List<RuntimeWorkspaceDto> getRuntimeWorkspaces(@DefaultValue("0") @QueryParam("skipCount") Integer skipCount,
                                                           @DefaultValue("30") @QueryParam("maxItems") Integer maxItems)
             throws BadRequestException {
@@ -189,17 +207,25 @@ public class WorkspaceService extends Service {
     @GET
     @Path("/{id}/runtime")
     @Produces(APPLICATION_JSON)
+    @RolesAllowed("user")
     public RuntimeWorkspaceDto getRuntimeWorkspaceById(@PathParam("id") String id)
-            throws ServerException, BadRequestException, NotFoundException {
+            throws ServerException, BadRequestException, NotFoundException, ForbiddenException {
+        ensureUserIsWorkspaceOwner(id);
         return asDto(workspaceManager.getRuntimeWorkspace(id));
     }
 
     @GET
     @Path("/name/{name}/runtime")
     @Produces(APPLICATION_JSON)
-    public RuntimeWorkspace getRuntimeWorkspaceByName(@PathParam("name") String name) {
-        return asDto(workspaceManager.getRuntimeWorkspace(name, getCurrentUserId()));
+    @RolesAllowed("user")
+    public RuntimeWorkspace getRuntimeWorkspaceByName(@PathParam("name") String name)
+            throws ServerException, BadRequestException, ForbiddenException {
+        final RuntimeWorkspace workspace = workspaceManager.getRuntimeWorkspace(name, getCurrentUserId());
+        ensureUserIsWorkspaceOwner(workspace.getId());
+        return asDto(workspace);
     }
+
+    //TODO who can perform this method?
 
     @POST
     @Path("/runtime")
@@ -213,27 +239,42 @@ public class WorkspaceService extends Service {
     @POST
     @Path("/{id}/runtime")
     @Produces(APPLICATION_JSON)
+    @RolesAllowed("user")
     public UsersWorkspaceDto startById(@PathParam("id") String workspaceId,
                                        @QueryParam("environment") String envName,
                                        @QueryParam("accountId") String accountId)
             throws ServerException, BadRequestException, NotFoundException, ForbiddenException {
+        ensureUserIsWorkspaceOwner(workspaceId);
+
+        final Map<String, String> params = ImmutableMap.of("accountId", accountId, "workspaceId", workspaceId);
+        permissionManager.checkPermission(START_WORKSPACE, getCurrentUserId(), params);
+
         return injectLinks(DtoConverter.asDto(workspaceManager.startWorkspaceById(workspaceId, envName, accountId)));
     }
 
     @POST
     @Path("/name/{name}/runtime")
     @Produces(APPLICATION_JSON)
+    @RolesAllowed("user")
     public UsersWorkspaceDto startByName(@QueryParam("name") String name,
                                          @QueryParam("environment") String envName,
                                          @QueryParam("accountId") String accountId)
             throws ServerException, BadRequestException, NotFoundException, ForbiddenException {
+        final UsersWorkspace workspace = workspaceManager.getWorkspace(name, getCurrentUserId());
+        ensureUserIsWorkspaceOwner(workspace.getId());
+
+        final ImmutableMap<String, String> params = ImmutableMap.of("accountId", accountId, "workspaceId", workspace.getId());
+        permissionManager.checkPermission(START_WORKSPACE, getCurrentUserId(), params);
+
         return injectLinks(DtoConverter.asDto(workspaceManager.startWorkspaceByName(name, envName, getCurrentUserId(), accountId)));
     }
 
     @DELETE
     @Path("/{id}/runtime")
+    @RolesAllowed("user")
     public void stop(@PathParam("id") String id)
             throws BadRequestException, ForbiddenException, NotFoundException, ServerException {
+        ensureUserIsWorkspaceOwner(id);
         workspaceManager.stopWorkspace(id);
     }
 
@@ -241,8 +282,10 @@ public class WorkspaceService extends Service {
     @Path("/{id}/command")
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
+    @RolesAllowed("user")
     public UsersWorkspaceDto addCommand(@PathParam("id") String id, CommandDto newCommand)
             throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
+        ensureUserIsWorkspaceOwner(id);
         if (newCommand == null) {
             throw new BadRequestException("Command required");
         }
@@ -255,8 +298,10 @@ public class WorkspaceService extends Service {
     @Path("/{id}/command")
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
+    @RolesAllowed("user")
     public UsersWorkspaceDto updateCommand(@PathParam("id") String id, CommandDto update)
             throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
+        ensureUserIsWorkspaceOwner(id);
         if (update == null) {
             throw new BadRequestException("Command update required");
         }
@@ -270,8 +315,10 @@ public class WorkspaceService extends Service {
 
     @DELETE
     @Path("/{id}/command/{name}")
+    @RolesAllowed("user")
     public void deleteCommand(@PathParam("id") String id, @PathParam("name") String commandName)
             throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
+        ensureUserIsWorkspaceOwner(id);
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
         if (workspace.getCommands().removeIf(command -> command.getName().equals(commandName))) {
             workspaceManager.updateWorkspace(id, workspace);
@@ -282,8 +329,10 @@ public class WorkspaceService extends Service {
     @Path("/{id}/environment")
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
+    @RolesAllowed("user")
     public UsersWorkspaceDto addEnvironment(@PathParam("id") String id, EnvironmentDto newEnvironment)
             throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
+        ensureUserIsWorkspaceOwner(id);
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
         workspace.getEnvironments().put(newEnvironment.getName(), new EnvironmentImpl(newEnvironment));
         return injectLinks(DtoConverter.asDto(workspaceManager.updateWorkspace(id, workspace)));
@@ -293,8 +342,10 @@ public class WorkspaceService extends Service {
     @Path("/{id}/environment")
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
+    @RolesAllowed("user")
     public UsersWorkspaceDto updateEnvironment(@PathParam("id") String id, EnvironmentDto update)
             throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
+        ensureUserIsWorkspaceOwner(id);
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
         if (!workspace.getEnvironments().containsKey(update.getName())) {
             throw new NotFoundException("Workspace " + id + " doesn't contain environment " + update.getName());
@@ -305,8 +356,10 @@ public class WorkspaceService extends Service {
 
     @DELETE
     @Path("/{id}/environment/{name}")
+    @RolesAllowed("user")
     public void deleteEnvironment(@PathParam("id") String id, @PathParam("name") String envName)
             throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
+        ensureUserIsWorkspaceOwner(id);
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
         if (workspace.getEnvironments().containsKey(envName)) {
             workspace.getEnvironments().remove(envName);
@@ -318,8 +371,10 @@ public class WorkspaceService extends Service {
     @Path("/{id}/project")
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
+    @RolesAllowed("user")
     public UsersWorkspaceDto addProject(@PathParam("id") String id, ProjectConfigDto newProject)
             throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
+        ensureUserIsWorkspaceOwner(id);
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
         workspace.getProjects().add(new ProjectConfigImpl(newProject));
         return injectLinks(DtoConverter.asDto(workspaceManager.updateWorkspace(id, workspace)));
@@ -329,8 +384,10 @@ public class WorkspaceService extends Service {
     @Path("/{id}/project")
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
+    @RolesAllowed("user")
     public UsersWorkspaceDto updateProject(@PathParam("id") String id, ProjectConfigDto update)
             throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
+        ensureUserIsWorkspaceOwner(id);
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
         if (!workspace.getProjects().removeIf(project -> project.getName().equals(update.getName()))) {
             throw new NotFoundException("Workspace " + id + " doesn't contain project " + update.getName());
@@ -341,11 +398,28 @@ public class WorkspaceService extends Service {
 
     @DELETE
     @Path("/{id}/project/{name}")
+    @RolesAllowed("user")
     public void deleteProject(@PathParam("id") String id, @PathParam("name") String projectName)
             throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
+        ensureUserIsWorkspaceOwner(id);
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
         if (workspace.getProjects().removeIf(project -> project.getName().equals(projectName))) {
             workspaceManager.updateWorkspace(id, workspace);
+        }
+    }
+
+    /**
+     * Checks that principal from current {@link EnvironmentContext#getUser() context} is in 'workspace/owner' role
+     * if he is not throws {@link ForbiddenException}.
+     *
+     * <p>{@link SecurityContext#isUserInRole(String)} is not the case,
+     * as it works only for 'user', 'tmp-user', 'system/admin', 'system/manager.
+     */
+    private void ensureUserIsWorkspaceOwner(String workspaceId) throws ServerException, BadRequestException, ForbiddenException {
+        final String userId = getCurrentUserId();
+        final List<UsersWorkspaceImpl> workspaces = workspaceManager.getWorkspaces(userId);
+        if (workspaces.stream().noneMatch(workspace -> workspace.getId().equals(workspaceId))) {
+            throw new ForbiddenException("User '" + userId + "' doesn't have access to '" + workspaceId + "' workspace");
         }
     }
 
