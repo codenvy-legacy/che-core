@@ -8,23 +8,25 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.core.rest.permission;
+package org.eclipse.che.api.local;
 
-import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.rest.permission.Operation;
+import org.eclipse.che.api.core.rest.permission.PermissionManager;
 
-import javax.ws.rs.core.SecurityContext;
-import java.util.List;
+import javax.inject.Named;
+import javax.inject.Singleton;
+import javax.validation.constraints.NotNull;
 import java.util.Map;
 
 /**
- * @author gazarenkov
+ * @author Eugene Voevodin
  */
-public interface PermissionChecker {
-
-    String getMethod();
-
-    void checkPermissions(String method, Map<String, String> params, SecurityContext context) throws ForbiddenException, ServerException;
-
+@Singleton
+public class LocalWorkspacePermissionManager implements PermissionManager {
+    @Override
+    public void checkPermission(@NotNull Operation operation,
+                                @NotNull String userId,
+                                @NotNull Map<String, String> params) throws ForbiddenException, ServerException {}
 }

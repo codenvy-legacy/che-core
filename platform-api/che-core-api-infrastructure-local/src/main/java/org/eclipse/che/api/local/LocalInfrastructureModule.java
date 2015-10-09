@@ -12,18 +12,12 @@ package org.eclipse.che.api.local;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
+import com.google.inject.name.Names;
 
-import org.eclipse.che.api.account.server.dao.Account;
-import org.eclipse.che.api.account.server.dao.AccountDao;
 import org.eclipse.che.api.auth.AuthenticationDao;
+import org.eclipse.che.api.core.rest.permission.PermissionManager;
 import org.eclipse.che.api.local.storage.LocalStorageFactory;
 import org.eclipse.che.api.machine.server.dao.RecipeDao;
-import org.eclipse.che.api.machine.server.recipe.GroupImpl;
-import org.eclipse.che.api.machine.server.recipe.PermissionsImpl;
-import org.eclipse.che.api.machine.server.recipe.RecipeImpl;
-import org.eclipse.che.api.machine.shared.Group;
-import org.eclipse.che.api.machine.shared.ManagedCommand;
-import org.eclipse.che.api.machine.shared.ManagedRecipe;
 import org.eclipse.che.api.user.server.TokenValidator;
 import org.eclipse.che.api.user.server.dao.PreferenceDao;
 import org.eclipse.che.api.user.server.dao.User;
@@ -38,13 +32,8 @@ import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
 import org.eclipse.che.inject.DynaModule;
 
 import javax.inject.Named;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
-import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
-import static java.util.Collections.unmodifiableSet;
 
 @DynaModule
 public class LocalInfrastructureModule extends AbstractModule {
@@ -60,6 +49,8 @@ public class LocalInfrastructureModule extends AbstractModule {
         bind(TokenValidator.class).to(DummyTokenValidator.class);
         bind(RecipeDao.class).to(LocalRecipeDaoImpl.class);
         bind(LocalStorageFactory.class);
+        bind(PermissionManager.class).annotatedWith(Names.named("service.workspace.permission_manager"))
+                                     .to(LocalWorkspacePermissionManager.class);
     }
 
 
