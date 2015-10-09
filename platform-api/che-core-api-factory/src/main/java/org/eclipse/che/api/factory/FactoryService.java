@@ -24,7 +24,6 @@ import org.eclipse.che.api.factory.dto.Author;
 import org.eclipse.che.api.factory.dto.Factory;
 import org.eclipse.che.api.factory.dto.FactoryV2_1;
 import org.eclipse.che.api.project.server.ProjectConfig;
-import org.eclipse.che.api.project.server.ProjectJson;
 import org.eclipse.che.api.project.server.type.AttributeValue;
 import org.eclipse.che.api.project.shared.dto.ProjectModule;
 import org.eclipse.che.api.project.shared.dto.Source;
@@ -75,6 +74,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -594,40 +594,36 @@ public class FactoryService extends Service {
             } else {
                 throw new ConflictException("Not able to generate project configuration, project has to be under version control system");
             }
-            // Read again project.json file even we already have all information about project in 'projectDescription' variable.
-            // We do so because 'projectDescription' variable contains all attributes of project including 'calculated' attributes but we
-            // don't need 'calculated' attributes in this case. Such attributes exists only in runtime and may be restored from the project.
-            // TODO: improve this once we will be able to detect different type of attributes. In this case just need get attributes from
-            // 'projectDescription' variable and skip all attributes that aren't defined in project.json file.
-            final ProjectJson projectJson = ProjectJson.load(project);
+
+            Map<String, List<String>> projectAttributes = new HashMap<>();
+            for (Map.Entry<String, AttributeValue> entry : projectDescription.getAttributes().entrySet()) {
+                projectAttributes.put(entry.getKey(), entry.getValue().getList());
+            }
+
             newProject = dtoFactory.createDto(NewProject.class)
                                    .withName(project.getName())
-                                   .withType(projectJson.getType())
-                                   .withAttributes(projectJson.getAttributes())
+                                   .withType(projectDescription.getTypeId())
+                                   .withAttributes(projectAttributes)
                                    .withVisibility(project.getVisibility())
-                                   .withDescription(projectJson.getDescription());
-            newProject.setMixinTypes(projectJson.getMixinTypes());
-            newProject.setRecipe(projectJson.getRecipe());
-
-//            final Builders builders = projectJson.getBuilders();
-//            if (builders != null) {
-//                newProject.withBuilders(DtoConverter.toDto(builders));
-//            }
-//            final Runners runners = projectJson.getRunners();
-//            if (runners != null) {
-//                newProject.withRunners(DtoConverter.toDto(runners));
-//            }
+                                   .withDescription(projectDescription.getDescription());
+            newProject.setMixinTypes(projectDescription.getMixinTypes());
+            newProject.setRecipe(projectDescription.getRecipe());
 
             for (Project module : projectManager.getProjectModules(project)) {
                 ProjectConfig moduleConfig = module.getConfig();
                 String moduleRelativePath = module.getPath().substring(project.getPath().length());
-                final ProjectJson moduleJson = ProjectJson.load(module);
+
+                Map<String, List<String>> moduleAttributes = new HashMap<>();
+                for (Map.Entry<String, AttributeValue> entry : moduleConfig.getAttributes().entrySet()) {
+                    projectAttributes.put(entry.getKey(), entry.getValue().getList());
+                }
+
                 newProject.getModules().add(DtoFactory.newDto(ProjectModule.class).withType(moduleConfig.getTypeId())
                                                       .withPath(moduleRelativePath)
                                                       .withRecipe(moduleConfig.getRecipe())
-                                                      .withAttributes(moduleJson.getAttributes())
+                                                      .withAttributes(moduleAttributes)
                                                       .withMixins(moduleConfig.getMixinTypes())
-                                                      .withDescription(moduleJson.getDescription()));
+                                                      .withDescription(moduleConfig.getDescription()));
             }
         } catch (IOException e) {
             throw new ServerException(e.getLocalizedMessage());

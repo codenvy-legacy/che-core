@@ -19,12 +19,11 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import javax.ws.rs.core.MediaType;
 import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
-
-import javax.ws.rs.core.MediaType;
 
 /**
  * @author andrew00x
@@ -49,7 +48,6 @@ public class FolderEntryTest {
         });
         VirtualFile myVfRoot = mmp.getRoot();
         myVfProject = myVfRoot.createFolder("my_project");
-        myVfProject.createFolder(".codenvy").createFile("project", null, null);
         myVfFolder = myVfProject.createFolder("test_folder");
         myVfFolder.createFile("child_file", MediaType.TEXT_PLAIN, new ByteArrayInputStream("to be or not to be".getBytes()));
         myVfFolder.createFolder("child_folder");

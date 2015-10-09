@@ -19,10 +19,10 @@ import org.eclipse.che.dto.server.DtoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.NotNull;
 import javax.annotation.PostConstruct;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -51,7 +51,6 @@ public class ProjectTemplateDescriptionLoader {
     @Named("project.template_descriptions_dir")
     private String templateDescriptionsDir;
 
-
     /**
      * Describe value to the dir where templates sources are located.
      * If in ImportSourceDescriptor.location is set in the path ${project.template_location_dir}
@@ -66,7 +65,6 @@ public class ProjectTemplateDescriptionLoader {
 
     @Inject
     private ProjectTemplateRegistry templateRegistry;
-
 
     @Inject
     public ProjectTemplateDescriptionLoader() {
@@ -110,8 +108,6 @@ public class ProjectTemplateDescriptionLoader {
         } catch (IOException e) {
             LOG.debug(String.format("Can't load information about project templates for %s project type", projectTypeId), e);
         }
-
-
     }
 
     /**
@@ -146,6 +142,4 @@ public class ProjectTemplateDescriptionLoader {
         }
         templateRegistry.register(projectTypeId, templates);
     }
-
-
 }

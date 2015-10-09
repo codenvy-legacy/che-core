@@ -18,6 +18,7 @@ import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.CssResource.NotStrict;
 import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.resources.client.TextResource;
 
 import org.eclipse.che.ide.api.parts.PartStackUIResources;
 import org.eclipse.che.ide.menu.MenuResources;
@@ -271,4 +272,6 @@ public interface Resources extends Tree.Resources,
     @Source("part/outline-part-icon.svg")
     SVGResource outlinePartIcon();
 
+    @Source("bootstrap/WsConfig.json")
+    TextResource wsConfig();
 }

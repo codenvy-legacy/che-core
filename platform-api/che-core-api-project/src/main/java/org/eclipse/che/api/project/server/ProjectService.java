@@ -100,7 +100,7 @@ import java.util.concurrent.Executors;
 /**
  * @author andrew00x
  * @author Eugene Voevodin
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  * @author Valeriy Svydenko
  */
 @Api(value = "/project",
@@ -108,8 +108,14 @@ import java.util.concurrent.Executors;
 @Path("/project/{ws-id}")
 @Singleton // important to have singleton
 public class ProjectService extends Service {
+
     private static final Logger LOG = LoggerFactory.getLogger(ProjectService.class);
 
+    private final FilesBuffer     filesBuffer = FilesBuffer.get();
+    private final ExecutorService executor    = Executors.newFixedThreadPool(1 + Runtime.getRuntime().availableProcessors(),
+                                                                             new ThreadFactoryBuilder()
+                                                                                     .setNameFormat("ProjectService-IndexingThread-")
+                                                                                     .setDaemon(true).build());
     @Inject
     private ProjectManager          projectManager;
     @Inject
@@ -121,33 +127,9 @@ public class ProjectService extends Service {
     @Inject
     private ProjectHandlerRegistry  projectHandlerRegistry;
 
-    private final FilesBuffer filesBuffer = FilesBuffer.get();
-
-    private final ExecutorService executor = Executors.newFixedThreadPool(1 + Runtime.getRuntime().availableProcessors(),
-                                                                          new ThreadFactoryBuilder()
-                                                                                  .setNameFormat("ProjectService-IndexingThread-")
-                                                                                  .setDaemon(true).build());
-
     @PreDestroy
     void stop() {
         executor.shutdownNow();
-    }
-
-
-    /**
-     * Class for internal use. Need for marking not valid project.
-     * This need for giving possibility to end user to fix problems in project settings.
-     * Will be useful then we will migrate IDE2 project to the IDE3 file system.
-     */
-    private class NotValidProject extends Project {
-        public NotValidProject(FolderEntry baseFolder, ProjectManager manager) {
-            super(baseFolder, manager);
-        }
-
-        @Override
-        public ProjectConfig getConfig() throws ServerException, ValueStorageException {
-            throw new ServerException("Looks like this is not valid project. We will mark it as broken");
-        }
     }
 
     @ApiOperation(value = "Gets list of projects in root folder",
@@ -167,32 +149,25 @@ public class ProjectService extends Service {
         final List<ProjectReference> projectReferences = new ArrayList<>(projects.size());
 
         for (Project project : projects) {
-
             try {
-                projectReferences.add(DtoConverter.toReferenceDto2(project,
-//                                                                   getServiceContext().getServiceUriBuilder(),
-                                                                   getServiceContext().getServiceUriBuilder()));
+                projectReferences.add(DtoConverter.toProjectReference(project, getServiceContext().getServiceUriBuilder()));
             } catch (RuntimeException e) {
                 // Ignore known error for single project.
                 // In result we won't have them in explorer tree but at least 'bad' projects won't prevent to show 'good' projects.
                 LOG.warn(e.getMessage(), e);
                 NotValidProject notValidProject = new NotValidProject(project.getBaseFolder(), projectManager);
-                projectReferences.add(DtoConverter.toReferenceDto2(notValidProject,
-//                                                                   getServiceContext().getServiceUriBuilder(),
-                                                                   getServiceContext().getServiceUriBuilder()));
+                projectReferences.add(DtoConverter.toProjectReference(notValidProject, getServiceContext().getServiceUriBuilder()));
             }
         }
+
         FolderEntry projectsRoot = projectManager.getProjectsRoot(workspace);
         List<VirtualFileEntry> children = projectsRoot.getChildren();
         for (VirtualFileEntry child : children) {
             if (child.isFolder()) {
-                FolderEntry folderEntry = (FolderEntry)child;
-                if (!folderEntry.isProjectFolder()) {
+                final FolderEntry folderEntry = (FolderEntry)child;
+                if (!projectManager.isProjectFolder(folderEntry)) {
                     NotValidProject notValidProject = new NotValidProject(folderEntry, projectManager);
-
-                    projectReferences.add(DtoConverter.toReferenceDto2(notValidProject,
-//                                                                       getServiceContext().getServiceUriBuilder(),
-                                                                       getServiceContext().getServiceUriBuilder()));
+                    projectReferences.add(DtoConverter.toProjectReference(notValidProject, getServiceContext().getServiceUriBuilder()));
                 }
             }
         }
@@ -227,18 +202,16 @@ public class ProjectService extends Service {
         }
 
         try {
-            return DtoConverter.toDescriptorDto2(project,
-                                                 getServiceContext().getServiceUriBuilder(),
-                                                 getServiceContext().getBaseUriBuilder(),
-                                                 projectManager.getProjectTypeRegistry(),
-                                                 workspace);
+            return DtoConverter.toProjectDescriptor(project,
+                                                    getServiceContext().getServiceUriBuilder(),
+                                                    projectManager.getProjectTypeRegistry(),
+                                                    workspace);
         } catch (InvalidValueException e) {
             NotValidProject notValidProject = new NotValidProject(project.getBaseFolder(), projectManager);
-            return DtoConverter.toDescriptorDto2(notValidProject,
-                                                 getServiceContext().getServiceUriBuilder(),
-                                                 getServiceContext().getBaseUriBuilder(),
-                                                 projectManager.getProjectTypeRegistry(),
-                                                 workspace);
+            return DtoConverter.toProjectDescriptor(notValidProject,
+                                                    getServiceContext().getServiceUriBuilder(),
+                                                    projectManager.getProjectTypeRegistry(),
+                                                    workspace);
         }
     }
 
@@ -273,15 +246,15 @@ public class ProjectService extends Service {
         }
 
         final Project project = projectManager.createProject(workspace, name,
-                                                             DtoConverter.fromDto2(newProject, projectManager.getProjectTypeRegistry()),
+                                                             DtoConverter.fromProjectUpdate(newProject,
+                                                                                            projectManager.getProjectTypeRegistry()),
                                                              options,
                                                              newProject.getVisibility());
 
-        final ProjectDescriptor descriptor = DtoConverter.toDescriptorDto2(project,
-                                                                           getServiceContext().getServiceUriBuilder(),
-                                                                           getServiceContext().getBaseUriBuilder(),
-                                                                           projectManager.getProjectTypeRegistry(),
-                                                                           workspace);
+        final ProjectDescriptor descriptor = DtoConverter.toProjectDescriptor(project,
+                                                                              getServiceContext().getServiceUriBuilder(),
+                                                                              projectManager.getProjectTypeRegistry(),
+                                                                              workspace);
 
         eventService.publish(new ProjectCreatedEvent(project.getWorkspace(), project.getPath()));
 
@@ -315,11 +288,10 @@ public class ProjectService extends Service {
         }
         final List<ProjectDescriptor> modules = new LinkedList<>();
         for (Project module : projectManager.getProjectModules(parent)) {
-                modules.add(DtoConverter.toDescriptorDto2(module,
-                                                          getServiceContext().getServiceUriBuilder(),
-                                                          getServiceContext().getBaseUriBuilder(),
-                                                          projectManager.getProjectTypeRegistry(),
-                                                          workspace));
+            modules.add(DtoConverter.toProjectDescriptor(module,
+                                                         getServiceContext().getServiceUriBuilder(),
+                                                         projectManager.getProjectTypeRegistry(),
+                                                         workspace));
         }
         return modules;
     }
@@ -351,16 +323,14 @@ public class ProjectService extends Service {
 
         Project module = projectManager.addModule(workspace, parentPath, path,
                                                   (newProject == null) ? null : DtoConverter
-                                                          .fromDto2(newProject, projectManager.getProjectTypeRegistry()),
+                                                          .fromProjectUpdate(newProject, projectManager.getProjectTypeRegistry()),
                                                   (newProject == null) ? null : newProject.getGeneratorDescription().getOptions(),
                                                   (newProject == null) ? null : newProject.getVisibility());
 
-
-        final ProjectDescriptor descriptor = DtoConverter.toDescriptorDto2(module,
-                                                                           getServiceContext().getServiceUriBuilder(),
-                                                                           getServiceContext().getBaseUriBuilder(),
-                                                                           projectManager.getProjectTypeRegistry(),
-                                                                           workspace);
+        final ProjectDescriptor descriptor = DtoConverter.toProjectDescriptor(module,
+                                                                              getServiceContext().getServiceUriBuilder(),
+                                                                              projectManager.getProjectTypeRegistry(),
+                                                                              workspace);
 
         eventService.publish(new ProjectCreatedEvent(module.getWorkspace(), module.getPath()));
 
@@ -388,14 +358,13 @@ public class ProjectService extends Service {
                                            @PathParam("path") String path,
                                            ProjectUpdate update)
             throws NotFoundException, ConflictException, ForbiddenException, ServerException, IOException {
-        ProjectConfig newConfig = DtoConverter.fromDto2(update, projectManager.getProjectTypeRegistry());
+        ProjectConfig newConfig = DtoConverter.fromProjectUpdate(update, projectManager.getProjectTypeRegistry());
         String newVisibility = update.getVisibility();
         Project project = projectManager.updateProject(workspace, path, newConfig, newVisibility);
-        return DtoConverter.toDescriptorDto2(project,
-                                             getServiceContext().getServiceUriBuilder(),
-                                             getServiceContext().getBaseUriBuilder(),
-                                             projectManager.getProjectTypeRegistry(),
-                                             workspace);
+        return DtoConverter.toProjectDescriptor(project,
+                                                getServiceContext().getServiceUriBuilder(),
+                                                projectManager.getProjectTypeRegistry(),
+                                                workspace);
     }
 
     @ApiOperation(value = "Estimates if the folder supposed to be project of certain type",
@@ -474,7 +443,7 @@ public class ProjectService extends Service {
             newFile = parent.createFile(fileName, content, (contentType.getType() + '/' + contentType.getSubtype()));
         }
         final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
-        final ItemReference fileReference = DtoConverter.toItemReferenceDto(newFile, uriBuilder.clone());
+        final ItemReference fileReference = DtoConverter.toItemReference(newFile, uriBuilder.clone());
         final URI location = uriBuilder.clone().path(getClass(), "getFile").build(workspace, newFile.getPath().substring(1));
 
         eventService.publish(new ProjectItemModifiedEvent(ProjectItemModifiedEvent.EventType.CREATED,
@@ -504,7 +473,7 @@ public class ProjectService extends Service {
 
         final FolderEntry newFolder = projectManager.getProjectsRoot(workspace).createFolder(path);
         final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
-        final ItemReference folderReference = DtoConverter.toItemReferenceDto(newFolder, uriBuilder.clone());
+        final ItemReference folderReference = DtoConverter.toItemReference(newFolder, uriBuilder.clone(), projectManager);
         final URI location = uriBuilder.clone().path(getClass(), "getChildren").build(workspace, newFolder.getPath().substring(1));
 
         eventService.publish(new ProjectItemModifiedEvent(ProjectItemModifiedEvent.EventType.CREATED,
@@ -634,43 +603,10 @@ public class ProjectService extends Service {
                        @PathParam("path") String path,
                        @QueryParam("module") String modulePath)
             throws NotFoundException, ForbiddenException, ConflictException, ServerException {
-        filesBuffer.addToBuffer(path);
+        filesBuffer.addToBufferRecursive(getVirtualFileEntry(workspace, path).getVirtualFile());
 
-        VirtualFileEntry entry = getVirtualFileEntry(workspace, path);
-
-        filesBuffer.addToBufferRecursive(entry.getVirtualFile());
-
-        if (entry.isFolder() && ((FolderEntry)entry).isProjectFolder()) {
-            // In case of folder extract some information about project for logger before delete project.
-            Project project = new Project((FolderEntry)entry, projectManager);
-            // remove module only
-            if (modulePath != null) {
-                project.getModules().remove(modulePath);
-                return;
-            }
-
-            final String name = project.getName();
-            String projectType = null;
-            try {
-                projectType = project.getConfig().getTypeId();
-            } catch (ServerException | ValueStorageException | ProjectTypeConstraintException e) {
-                // Let delete even project in invalid state.
-                entry.remove();
-                LOG.info("EVENT#project-destroyed# PROJECT#{}# TYPE#{}# WS#{}# USER#{}#", name, "unknown",
-                         EnvironmentContext.getCurrent().getWorkspaceName(), EnvironmentContext.getCurrent().getUser().getName());
-                LOG.warn(String.format("Removing not valid project ws : %s, project path: %s ", workspace, path) + e.getMessage(), e);
-            }
-            eventService.publish(new ProjectItemModifiedEvent(ProjectItemModifiedEvent.EventType.DELETED,
-                                                              workspace, projectPath(entry.getPath()), entry.getPath(), entry.isFolder()));
-            entry.remove();
-            LOG.info("EVENT#project-destroyed# PROJECT#{}# TYPE#{}# WS#{}# USER#{}#", name, projectType,
-                     EnvironmentContext.getCurrent().getWorkspaceName(), EnvironmentContext.getCurrent().getUser().getName());
-        } else {
-
-            eventService.publish(new ProjectItemModifiedEvent(ProjectItemModifiedEvent.EventType.DELETED,
-                                                              workspace, projectPath(entry.getPath()), entry.getPath(), entry.isFolder()));
-
-            entry.remove();
+        if (!projectManager.delete(workspace, path, modulePath)) {
+            throw new NotFoundException(String.format("Path '%s' doesn't exist.", path));
         }
     }
 
@@ -711,12 +647,14 @@ public class ProjectService extends Service {
         final URI location = getServiceContext().getServiceUriBuilder()
                                                 .path(getClass(), copy.isFile() ? "getFile" : "getChildren")
                                                 .build(workspace, copy.getPath().substring(1));
-        if (copy.isFolder() && ((FolderEntry)copy).isProjectFolder()) {
-            Project project = new Project((FolderEntry)copy, projectManager);
-            final String name = project.getName();
-            final String projectType = project.getConfig().getTypeId();
+        if (copy.isFolder()) {
+            final Project project = projectManager.getProject(copy.getWorkspace(), copy.getPath());
+            if (project != null) {
+                final String name = project.getName();
+                final String projectType = project.getConfig().getTypeId();
 
-            logProjectCreatedEvent(name, projectType);
+                logProjectCreatedEvent(name, projectType);
+            }
         }
         return Response.created(location).build();
     }
@@ -737,11 +675,10 @@ public class ProjectService extends Service {
                          @ApiParam("Path to a new location") @QueryParam("to") String newParent,
                          MoveOptions moveOptions)
             throws NotFoundException, ForbiddenException, ConflictException, ServerException {
-
         final VirtualFileEntry entry = getVirtualFileEntry(workspace, path);
         filesBuffer.addToBuffer(newParent + '/' + entry.getName(), path);
 
-// used to indicate over write of destination
+        // used to indicate over write of destination
         boolean isOverWrite = false;
         // used to hold new name set in request body
         String newName = entry.getName();
@@ -758,14 +695,16 @@ public class ProjectService extends Service {
         final URI location = getServiceContext().getServiceUriBuilder()
                                                 .path(getClass(), entry.isFile() ? "getFile" : "getChildren")
                                                 .build(workspace, entry.getPath().substring(1));
-        if (entry.isFolder() && ((FolderEntry)entry).isProjectFolder()) {
-            Project project = new Project((FolderEntry)entry, projectManager);
-            final String name = project.getName();
-            final String projectType = project.getConfig().getTypeId();
-            LOG.info("EVENT#project-destroyed# PROJECT#{}# TYPE#{}# WS#{}# USER#{}#", name, projectType,
-                     EnvironmentContext.getCurrent().getWorkspaceName(), EnvironmentContext.getCurrent().getUser().getName());
+        if (entry.isFolder()) {
+            final Project project = projectManager.getProject(entry.getWorkspace(), entry.getPath());
+            if (project != null) {
+                final String name = project.getName();
+                final String projectType = project.getConfig().getTypeId();
+                LOG.info("EVENT#project-destroyed# PROJECT#{}# TYPE#{}# WS#{}# USER#{}#", name, projectType,
+                         EnvironmentContext.getCurrent().getWorkspaceName(), EnvironmentContext.getCurrent().getUser().getName());
 
-            logProjectCreatedEvent(name, projectType);
+                logProjectCreatedEvent(name, projectType);
+            }
         }
         eventService.publish(new ProjectItemModifiedEvent(ProjectItemModifiedEvent.EventType.MOVED,
                                                           workspace, projectPath(entry.getPath()), entry.getPath(), entry.isFolder(),
@@ -793,39 +732,24 @@ public class ProjectService extends Service {
                            @ApiParam(value = "New media type")
                            @QueryParam("mediaType") String newMediaType)
             throws NotFoundException, ConflictException, ForbiddenException, ServerException, IOException {
-        final VirtualFileEntry entry = getVirtualFileEntry(workspace, path);
+        final VirtualFileEntry entry = projectManager.rename(workspace, path, newName, newMediaType);
+        if (entry == null) {
+            throw new NotFoundException(String.format("Path '%s' doesn't exist.", path));
+        }
 
-        int startOldName = path.lastIndexOf("/") + 1;
-        String pathToFile = path.substring(0, startOldName);
-
+        final int startOldName = path.lastIndexOf("/") + 1;
+        final String pathToFile = path.substring(0, startOldName);
         filesBuffer.addToBuffer(pathToFile + newName, path);
         filesBuffer.addToBufferRecursive(entry.getVirtualFile());
 
-        if (entry.isFile() && newMediaType != null) {
-            // Use the same rules as in method createFile to make client side simpler.
-            ((FileEntry)entry).rename(newName, newMediaType);
-        } else {
-            entry.rename(newName);
-
-            String projectName = projectPath(path);
-
-            /* We should not edit Modules if resource to rename is project */
-            if (!projectName.equals(path) && entry.isFolder() && ((FolderEntry)entry).isProjectFolder()) {
-                Project project = projectManager.getProject(workspace, projectName);
-
-                /* We need module path without projectName, f.e projectName/module1/oldModuleName -> module1/oldModuleName */
-                String oldModulePath = path.replaceFirst(projectName + "/", "");
-                /* Calculates new module path, f.e module1/oldModuleName -> module1/newModuleName */
-                String newModulePath = oldModulePath.substring(0, oldModulePath.lastIndexOf("/") + 1) + newName;
-
-                project.getModules().update(oldModulePath, newModulePath);
-            }
-        }
         final URI location = getServiceContext().getServiceUriBuilder()
                                                 .path(getClass(), entry.isFile() ? "getFile" : "getChildren")
                                                 .build(workspace, entry.getPath().substring(1));
         eventService.publish(new ProjectItemModifiedEvent(ProjectItemModifiedEvent.EventType.RENAMED,
-                                                          workspace, projectPath(entry.getPath()), entry.getPath(), entry.isFolder(),
+                                                          workspace,
+                                                          projectPath(entry.getPath()),
+                                                          entry.getPath(),
+                                                          entry.isFolder(),
                                                           path));
         return Response.created(location).build();
     }
@@ -912,9 +836,7 @@ public class ProjectService extends Service {
         //try convert folder to project with giving config
         try {
             visibility = newProject.getVisibility();
-//            RunnersDescriptor descriptor = newProject.getRunners();
-//            replaceDefaultRunnerPath(descriptor);
-            projectConfig = DtoConverter.fromDto2(newProject, projectTypeRegistry);
+            projectConfig = DtoConverter.fromProjectUpdate(newProject, projectTypeRegistry);
             project = projectManager.convertFolderToProject(workspace,
                                                             baseProjectFolder.getPath(),
                                                             projectConfig,
@@ -935,42 +857,25 @@ public class ProjectService extends Service {
                                          moduleConfig,
                                          null,
                                          visibility);
-//                RunnersDescriptor projectModuleRunners = projectModule.getRunners();
-//                if (projectModuleRunners != null
-//                    && projectModuleRunners.getDefault() != null
-//                    && projectModuleRunners.getDefault().startsWith("project:/")) {
-//                    replaceDefaultRunnerPath(projectModuleRunners);
-//                    importRunnerEnvironment(importProject,
-//                                            (FolderEntry)baseProjectFolder.getChild(projectModule.getPath()),
-//                                            projectModuleRunners.getDefault().substring(9));
-//                }
             }
 
-            projectDescriptor = DtoConverter.toDescriptorDto2(project,
-                                                              getServiceContext().getServiceUriBuilder(),
-                                                              getServiceContext().getBaseUriBuilder(),
-                                                              projectManager.getProjectTypeRegistry(),
-                                                              workspace);
+            projectDescriptor = DtoConverter.toProjectDescriptor(project,
+                                                                 getServiceContext().getServiceUriBuilder(),
+                                                                 projectManager.getProjectTypeRegistry(),
+                                                                 workspace);
             PostImportProjectHandler postImportProjectHandler =
                     projectHandlerRegistry.getPostImportProjectHandler(projectDescriptor.getType());
             if (postImportProjectHandler != null) {
                 postImportProjectHandler.onProjectImported(project.getBaseFolder());
             }
         } catch (ConflictException | ForbiddenException | ServerException | NotFoundException e) {
-//            if (newProject.getType() == null
-//                || newProject.getRunners() != null
-//                || newProject.getBuilders() != null
-//                && newProject.getDescription() != null) {
-//                throw new BadRequestException("Impossible to save configurations for the project without type");
-//            }
             project = new NotValidProject(baseProjectFolder, projectManager);
             project.setVisibility(visibility);
 
-            projectDescriptor = DtoConverter.toDescriptorDto2(project,
-                                                              getServiceContext().getServiceUriBuilder(),
-                                                              getServiceContext().getBaseUriBuilder(),
-                                                              projectManager.getProjectTypeRegistry(),
-                                                              workspace);
+            projectDescriptor = DtoConverter.toProjectDescriptor(project,
+                                                                 getServiceContext().getServiceUriBuilder(),
+                                                                 projectManager.getProjectTypeRegistry(),
+                                                                 workspace);
             ProjectProblem problem = DtoFactory.getInstance().createDto(ProjectProblem.class).withCode(1).withMessage(e.getMessage());
             projectDescriptor.setProblems(Collections.singletonList(problem));
         }
@@ -984,10 +889,36 @@ public class ProjectService extends Service {
         List<SourceEstimation> sourceEstimations = projectManager.resolveSources(workspace, baseProjectFolder.getPath(), false);
         importResponse.setSourceEstimations(sourceEstimations);
         reindexProject(creationDate, baseProjectFolder, project);
-//        importRunnerEnvironment(importProject, baseProjectFolder);
         eventService.publish(new ProjectCreatedEvent(project.getWorkspace(), project.getPath()));
         logProjectCreatedEvent(projectDescriptor.getName(), projectDescriptor.getType());
         return importResponse;
+    }
+
+    /**
+     * Some importers don't use virtual file system API and changes are not indexed.
+     * Force searcher to reindex project to fix such issues.
+     *
+     * @param creationDate
+     * @param baseProjectFolder
+     * @param project
+     * @throws ServerException
+     */
+    private void reindexProject(long creationDate, FolderEntry baseProjectFolder, final Project project) throws ServerException {
+        final VirtualFile file = baseProjectFolder.getVirtualFile();
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    searcherProvider.getSearcher(file.getMountPoint(), true).add(file);
+                } catch (Exception e) {
+                    LOG.warn(String.format("Workspace: %s, project: %s", project.getWorkspace(), project.getPath()), e.getMessage());
+                }
+            }
+        });
+        if (creationDate > 0) {
+            final ProjectMisc misc = project.getMisc();
+            misc.setCreationDate(creationDate);
+        }
     }
 
     @ApiOperation(value = "Upload zip project",
@@ -1064,122 +995,12 @@ public class ProjectService extends Service {
                                           .withDescription(projectDescription)
                                           .withVisibility(privacy);
         Source source = dtoFactory.createDto(Source.class);
-//                                  .withRunners(new HashMap<String, RunnerSource>());
         ImportProject importProject = dtoFactory.createDto(ImportProject.class)
                                                 .withProject(newProject)
                                                 .withSource(source);
 
         //project source already imported going to configure project
         return configureProject(importProject, baseProjectFolder, workspace, creationDate);
-    }
-
-    /**
-     * Import runner environment tha configure in ImportProject
-     *
-     * @param importProject
-     * @param baseProjectFolder
-     * @throws ForbiddenException
-     * @throws ServerException
-     * @throws ConflictException
-     * @throws IOException
-     */
-//    private void importRunnerEnvironment(ImportProject importProject, FolderEntry baseProjectFolder)
-//            throws ForbiddenException, ServerException, ConflictException, IOException {
-//        importRunnerEnvironment(importProject, baseProjectFolder, null);
-//    }
-
-    /**
-     * Imports runners into environments.
-     */
-//    private void importRunnerEnvironment(ImportProject importProject, FolderEntry baseProjectFolder, String defaultRunnerName)
-//            throws ForbiddenException, ServerException, ConflictException, IOException {
-//        VirtualFileEntry environmentsFolder = baseProjectFolder.getChild(Constants.CODENVY_RUNNER_ENVIRONMENTS_DIR);
-//        if (environmentsFolder != null && environmentsFolder.isFile()) {
-//            throw new ConflictException(String.format("Unable import runner environments. File with the name '%s' already exists.",
-//                                                      Constants.CODENVY_RUNNER_ENVIRONMENTS_DIR));
-//        } else if (environmentsFolder == null) {
-//            environmentsFolder = baseProjectFolder.createFolder(Constants.CODENVY_RUNNER_ENVIRONMENTS_DIR);
-//        }
-//
-//        Map<String, RunnerSource> filteredRunners = importProject.getSource().getRunners()
-//                                                                 .entrySet()
-//                                                                 .stream()
-//                                                                 .filter(this::isValidRunnerEntry)
-//                                                                 .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
-//
-//        for (Map.Entry<String, RunnerSource> entry : filteredRunners.entrySet()) {
-//            String name = entry.getKey().substring(8);
-//            if (defaultRunnerName == null || name.equals(defaultRunnerName)) {
-//                try (InputStream in = new java.net.URL(entry.getValue().getLocation()).openStream()) {
-//                    // Add file without mediatype to avoid creation useless metadata files on virtual file system level.
-//                    // Dockerfile add in list of known files, see ContentTypeGuesser
-//                    // and content-types.attributes file.
-//                    ((FolderEntry)environmentsFolder).createFolder(name).createFile("Dockerfile", in, null);
-//                }
-//            }
-//        }
-//    }
-
-    /**
-     * Checks valid of runner location sources and runner type.
-     *
-     * @param entry
-     *         runner entry
-     * @return return false if runner location or runner type is not valid
-     */
-//    private boolean isValidRunnerEntry(Map.Entry<String, RunnerSource> entry) {
-//        final RunnerSource runnerSourceValue;
-//        if (!entry.getKey().startsWith("/docker/")
-//            || (runnerSourceValue = entry.getValue()) == null) {
-//            return false;
-//        }
-//
-//        if (!(runnerSourceValue.getLocation().startsWith("https") || runnerSourceValue.getLocation().startsWith("http"))) {
-//            LOG.warn("ProjectService.importProject :: not valid runner source location available only http or https scheme but we get :" +
-//                     runnerSourceValue);
-//            return false;
-//        }
-//        return true;
-//    }
-
-//    private void replaceDefaultRunnerPath(RunnersDescriptor runnersDescriptor) {
-//        //TODO:
-//        //this trick need for fixing problem for default runners in case
-//        //scripts downloaded  from remote resources "docker" this is only marker not real path in file system
-//        //see importRunnerEnvironment() method
-//        if (runnersDescriptor != null
-//            && runnersDescriptor.getDefault() != null
-//            && runnersDescriptor.getDefault().startsWith("project:/docker/")) {
-//            String replace = runnersDescriptor.getDefault().replace("project:/docker/", "project:/");
-//            runnersDescriptor.setDefault(replace);
-//        }
-//    }
-
-    /**
-     * Some importers don't use virtual file system API and changes are not indexed.
-     * Force searcher to reindex project to fix such issues.
-     *
-     * @param creationDate
-     * @param baseProjectFolder
-     * @param project
-     * @throws ServerException
-     */
-    private void reindexProject(long creationDate, FolderEntry baseProjectFolder, final Project project) throws ServerException {
-        final VirtualFile file = baseProjectFolder.getVirtualFile();
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    searcherProvider.getSearcher(file.getMountPoint(), true).add(file);
-                } catch (Exception e) {
-                    LOG.warn(String.format("Workspace: %s, project: %s", project.getWorkspace(), project.getPath()), e.getMessage());
-                }
-            }
-        });
-        if (creationDate > 0) {
-            final ProjectMisc misc = project.getMisc();
-            misc.setCreationDate(creationDate);
-        }
     }
 
     @ApiOperation(value = "Import zip",
@@ -1203,8 +1024,8 @@ public class ProjectService extends Service {
             throws NotFoundException, ConflictException, ForbiddenException, ServerException {
         final FolderEntry parent = asFolder(workspace, path);
         VirtualFileSystemImpl.importZip(parent.getVirtualFile(), zip, true, skipFirstLevel);
-        if (parent.isProjectFolder()) {
-            Project project = new Project(parent, projectManager);
+        final Project project = projectManager.getProject(workspace, path);
+        if (project != null) {
             eventService.publish(new ProjectCreatedEvent(project.getWorkspace(), project.getPath()));
             final String projectType = project.getConfig().getTypeId();
             logProjectCreatedEvent(path, projectType);
@@ -1291,9 +1112,9 @@ public class ProjectService extends Service {
         final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
         for (VirtualFileEntry child : children) {
             if (child.isFile()) {
-                result.add(DtoConverter.toItemReferenceDto((FileEntry)child, uriBuilder.clone()));
+                result.add(DtoConverter.toItemReference((FileEntry)child, uriBuilder.clone()));
             } else {
-                result.add(DtoConverter.toItemReferenceDto((FolderEntry)child, uriBuilder.clone()));
+                result.add(DtoConverter.toItemReference((FolderEntry)child, uriBuilder.clone(), projectManager));
             }
         }
 
@@ -1326,7 +1147,7 @@ public class ProjectService extends Service {
         final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
         final DtoFactory dtoFactory = DtoFactory.getInstance();
         return dtoFactory.createDto(TreeElement.class)
-                         .withNode(DtoConverter.toItemReferenceDto(folder, uriBuilder.clone()))
+                         .withNode(DtoConverter.toItemReference(folder, uriBuilder.clone(), projectManager))
                          .withChildren(getTree(folder, depth, includeFiles, uriBuilder, dtoFactory));
     }
 
@@ -1355,9 +1176,9 @@ public class ProjectService extends Service {
 
         ItemReference item;
         if (entry.isFile()) {
-            item = DtoConverter.toItemReferenceDto((FileEntry)entry, uriBuilder.clone());
+            item = DtoConverter.toItemReference((FileEntry)entry, uriBuilder.clone());
         } else {
-            item = DtoConverter.toItemReferenceDto((FolderEntry)entry, uriBuilder.clone());
+            item = DtoConverter.toItemReference((FolderEntry)entry, uriBuilder.clone(), projectManager);
         }
 
         return item;
@@ -1380,11 +1201,11 @@ public class ProjectService extends Service {
         for (VirtualFileEntry child : children) {
             if (child.isFolder()) {
                 nodes.add(dtoFactory.createDto(TreeElement.class)
-                                    .withNode(DtoConverter.toItemReferenceDto((FolderEntry)child, uriBuilder.clone()))
+                                    .withNode(DtoConverter.toItemReference((FolderEntry)child, uriBuilder.clone(), projectManager))
                                     .withChildren(getTree((FolderEntry)child, depth - 1, includeFiles, uriBuilder, dtoFactory)));
             } else { // child.isFile()
                 nodes.add(dtoFactory.createDto(TreeElement.class)
-                                    .withNode(DtoConverter.toItemReferenceDto((FileEntry)child, uriBuilder.clone())));
+                                    .withNode(DtoConverter.toItemReference((FileEntry)child, uriBuilder.clone())));
             }
         }
         return nodes;
@@ -1453,7 +1274,7 @@ public class ProjectService extends Service {
                     // Ignore item that user can't access
                 }
                 if (child != null && child.isFile()) {
-                    items.add(DtoConverter.toItemReferenceDto((FileEntry)child, uriBuilder.clone()));
+                    items.add(DtoConverter.toItemReference((FileEntry)child, uriBuilder.clone()));
                 }
             }
             return items;
@@ -1557,43 +1378,6 @@ public class ProjectService extends Service {
         return project.getPermissions();
     }
 
-//    @ApiOperation(value = "Get available project-scoped runner environments",
-//                  notes = "Get available project-scoped runner environments.",
-//                  response = RunnerEnvironmentTree.class,
-//                  position = 27)
-//    @ApiResponses(value = {
-//            @ApiResponse(code = 200, message = "OK"),
-//            @ApiResponse(code = 403, message = "User not authorized to call this operation"),
-//            @ApiResponse(code = 404, message = "Not found"),
-//            @ApiResponse(code = 500, message = "Internal Server Error")})
-//    @GET
-//    @Path("/runner_environments/{path:.*}")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public RunnerEnvironmentTree getRunnerEnvironments(@ApiParam(value = "Workspace ID", required = true)
-//                                                       @PathParam("ws-id") String workspace,
-//                                                       @ApiParam(value = "Path to a project", required = true)
-//                                                       @PathParam("path") String path)
-//            throws NotFoundException, ForbiddenException, ServerException {
-//        final Project project = projectManager.getProject(workspace, path);
-//        final DtoFactory dtoFactory = DtoFactory.getInstance();
-//        final RunnerEnvironmentTree root = dtoFactory.createDto(RunnerEnvironmentTree.class).withDisplayName("project");
-//        if (project != null) {
-//            final List<RunnerEnvironmentLeaf> environments = new LinkedList<>();
-//            final VirtualFileEntry environmentsFolder = project.getBaseFolder().getChild(Constants.CODENVY_RUNNER_ENVIRONMENTS_DIR);
-//            if (environmentsFolder != null && environmentsFolder.isFolder()) {
-//                for (FolderEntry childFolder : ((FolderEntry)environmentsFolder).getChildFolders()) {
-//                    final String id = new EnvironmentId(EnvironmentId.Scope.project, childFolder.getName()).toString();
-//                    environments.add(dtoFactory.createDto(RunnerEnvironmentLeaf.class)
-//                                               .withEnvironment(dtoFactory.createDto(RunnerEnvironment.class).withId(id))
-//                                               .withDisplayName(childFolder.getName()));
-//                }
-//            }
-//            return root.withLeaves(environments);
-//        } else {
-//            return root.withLeaves(Collections.<RunnerEnvironmentLeaf>emptyList());
-//        }
-//    }
-
     private FileEntry asFile(String workspace, String path) throws ForbiddenException, NotFoundException, ServerException {
         final VirtualFileEntry entry = getVirtualFileEntry(workspace, path);
         if (!entry.isFile()) {
@@ -1634,5 +1418,21 @@ public class ProjectService extends Service {
             return path;
         }
         return path.substring(0, end);
+    }
+
+    /**
+     * Class for internal use. Need for marking not valid project.
+     * This need for giving possibility to end user to fix problems in project settings.
+     * Will be useful then we will migrate IDE2 project to the IDE3 file system.
+     */
+    private class NotValidProject extends Project {
+        public NotValidProject(FolderEntry baseFolder, ProjectManager manager) {
+            super(baseFolder, manager);
+        }
+
+        @Override
+        public ProjectConfig getConfig() throws ServerException, ValueStorageException {
+            throw new ServerException("Looks like this is not valid project. We will mark it as broken");
+        }
     }
 }

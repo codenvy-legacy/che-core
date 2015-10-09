@@ -22,9 +22,7 @@ public class ProjectApiModule extends AbstractModule {
 
     @Override
     protected void configure() {
-
         Multibinder<ProjectType> projectTypesMultibinder = Multibinder.newSetBinder(binder(), ProjectType.class);
         projectTypesMultibinder.addBinding().to(BaseProjectType.class);
-
     }
 }

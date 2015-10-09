@@ -40,32 +40,6 @@ public interface ProjectUpdate {
 
     //
 
-
-//    /** Gets builder configurations. */
-//    @ApiModelProperty(value = "Builders configuration for the project", position = 5)
-//    @FactoryParameter(obligation = OPTIONAL)
-//    BuildersDescriptor getBuilders();
-//
-//    /** Sets builder configurations. */
-//    void setBuilders(BuildersDescriptor builders);
-//
-//    ProjectUpdate withBuilders(BuildersDescriptor builders);
-//
-//    //
-//
-//    /** Gets runner configurations. */
-//    @ApiModelProperty(value = "Runners configuration for the project", position = 6)
-//    @FactoryParameter(obligation = OPTIONAL)
-//    RunnersDescriptor getRunners();
-//
-//    /** Sets runner configurations. */
-//    void setRunners(RunnersDescriptor runners);
-//
-//    ProjectUpdate withRunners(RunnersDescriptor runners);
-
-
-    //
-
     /** Get optional description of project. */
     @ApiModelProperty(value = "Optional description for new project")
     @FactoryParameter(obligation = OPTIONAL)

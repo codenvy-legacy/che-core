@@ -17,7 +17,10 @@ package org.eclipse.che.api.project.server;
  */
 public interface ValueProviderFactory {
 
-    /** Create new instance of ValueProvider2. Project is used for access to low-level information about project.
-     * @param projectFolder*/
+    /**
+     * Create new instance of ValueProvider2. Project is used for access to low-level information about project.
+     *
+     * @param projectFolder
+     */
     ValueProvider newInstance(FolderEntry projectFolder);
 }

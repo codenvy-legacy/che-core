@@ -61,10 +61,11 @@ public class FolderEntry extends VirtualFileEntry {
     }
 
     @Override
-    public FolderEntry copyTo(String newParent, String name, boolean overWrite) throws NotFoundException, ForbiddenException, ConflictException, ServerException {
+    public FolderEntry copyTo(String newParent, String name, boolean overWrite)
+            throws NotFoundException, ForbiddenException, ConflictException, ServerException {
         final VirtualFile vf = getVirtualFile();
         final MountPoint mp = vf.getMountPoint();
-        return new FolderEntry(getWorkspace(), vf.copyTo(mp.getVirtualFile(newParent),name,overWrite));
+        return new FolderEntry(getWorkspace(), vf.copyTo(mp.getVirtualFile(newParent), name, overWrite));
     }
 
     /**
@@ -130,7 +131,8 @@ public class FolderEntry extends VirtualFileEntry {
     }
 
     /**
-     * Gets child folders and files of this folder. If current user doesn't have read access to some child they aren't added in result list.
+     * Gets child folders and files of this folder. If current user doesn't have read access to some child they aren't added in result
+     * list.
      *
      * @throws ServerException
      *         if an error occurs
@@ -222,26 +224,7 @@ public class FolderEntry extends VirtualFileEntry {
         return new FolderEntry(getWorkspace(), getVirtualFile().createFolder(name));
     }
 
-    /**
-     * Tests whether this FolderEntry contains project structure.
-     *
-     * @throws ServerException
-     *         if an error occurs
-     */
-    public boolean isProjectFolder() throws ServerException {
-        final VirtualFileEntry projectFile;
-        try {
-            projectFile = getChild(Constants.CODENVY_PROJECT_FILE_RELATIVE_PATH);
-        } catch (ForbiddenException e) {
-            // If have access to the project then must have access to its meta-information. If don't have access then treat that as server error.
-            throw new ServerException(e.getServiceError());
-        }
-        return projectFile != null && projectFile.isFile();
-    }
-
-    /**
-     * Tests whether this FolderEntry is a root folder.
-     */
+    /** Tests whether this FolderEntry is a root folder. */
     public boolean isRoot() {
         return isRoot(getVirtualFile());
     }

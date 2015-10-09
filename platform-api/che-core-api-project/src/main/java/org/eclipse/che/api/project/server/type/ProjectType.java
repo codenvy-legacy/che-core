@@ -12,7 +12,10 @@ package org.eclipse.che.api.project.server.type;
 
 import org.eclipse.che.api.project.server.ValueProviderFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -20,28 +23,20 @@ import java.util.*;
  */
 public abstract class ProjectType {
 
-
-    private final   String                  id;
-    private final   String                  displayName;
+    protected final boolean                persisted;
+    protected final String                 defaultRecipe;
+    private final   String                 id;
+    private final   String                 displayName;
     private final   Map<String, Attribute> attributes;
     private final   List<ProjectType>      parents;
-//    protected final List<String>            runnerCategories;
-//    protected final List<String>            builderCategories;
-//    private String defaultBuilder = null;
-//    private String defaultRunner  = null;
-    private final boolean mixable;
-    private final boolean primaryable;
-    protected final boolean persisted;
-    protected final String defaultRecipe;
+    private final   boolean                mixable;
+    private final   boolean                primaryable;
 
-    protected ProjectType(String id, String displayName, boolean primaryable, boolean mixable, boolean persisted,
-                          String defaultRecipe) {
+    protected ProjectType(String id, String displayName, boolean primaryable, boolean mixable, boolean persisted, String defaultRecipe) {
         this.id = id;
         this.displayName = displayName;
         this.attributes = new HashMap<>();
-        this.parents = new ArrayList<ProjectType>();
-//        this.runnerCategories = new ArrayList<String>();
-//        this.builderCategories = new ArrayList<String>();
+        this.parents = new ArrayList<>();
         this.mixable = mixable;
         this.primaryable = primaryable;
         this.persisted = persisted;
@@ -49,18 +44,16 @@ public abstract class ProjectType {
     }
 
     /**
-     *
      * @param id
      * @param displayName
-     * @param primaryable - whether the ProjectType can be used as Primary
-     * @param mixable - whether the projectType can be used as Mixin
+     * @param primaryable
+     *         - whether the ProjectType can be used as Primary
+     * @param mixable
+     *         - whether the projectType can be used as Mixin
      */
     protected ProjectType(String id, String displayName, boolean primaryable, boolean mixable) {
-
         this(id, displayName, primaryable, mixable, true, null);
-
     }
-
 
     public boolean isPersisted() {
         return persisted;
@@ -87,31 +80,16 @@ public abstract class ProjectType {
     }
 
     public boolean isTypeOf(String typeId) {
-        if (this.id.equals(typeId))
+        if (this.id.equals(typeId)) {
             return true;
+        }
 
         return recurseParents(this, typeId);
-
     }
-
-//    public String getDefaultBuilder() {
-//
-//        return defaultBuilder;
-//    }
-//
-//    public String getDefaultRunner() {
-//
-//        return defaultRunner;
-//    }
 
     public Attribute getAttribute(String name) {
         return attributes.get(name);
     }
-
-
-//    public List<String> getRunnerCategories() {
-//        return runnerCategories;
-//    }
 
     public boolean canBeMixin() {
         return mixable;
@@ -154,31 +132,17 @@ public abstract class ProjectType {
         parents.add(parent);
     }
 
-//    protected void setDefaultBuilder(String builder) {
-//        this.defaultBuilder = builder;
-//    }
-//
-//    protected void setDefaultRunner(String runner) {
-//        this.defaultRunner = runner;
-//    }
-//
-//    protected void addRunnerCategories(List<String> categories) {
-//        this.runnerCategories.addAll(categories);
-//    }
-
     private boolean recurseParents(ProjectType child, String parent) {
 
         for (ProjectType p : child.getParents()) {
-            if(p.getId().equals(parent)) {
+            if (p.getId().equals(parent)) {
                 return true;
             }
-            if(recurseParents(p, parent))
+            if (recurseParents(p, parent)) {
                 return true;
+            }
         }
 
         return false;
-
     }
-
 }
-

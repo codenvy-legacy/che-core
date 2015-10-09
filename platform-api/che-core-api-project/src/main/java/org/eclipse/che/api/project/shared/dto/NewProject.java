@@ -10,10 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.shared.dto;
 
-import org.eclipse.che.api.core.factory.FactoryParameter;
-import org.eclipse.che.dto.shared.DTO;
 import com.wordnik.swagger.annotations.ApiModel;
 import com.wordnik.swagger.annotations.ApiModelProperty;
+
+import org.eclipse.che.api.core.factory.FactoryParameter;
+import org.eclipse.che.dto.shared.DTO;
 
 import java.util.List;
 import java.util.Map;
@@ -37,7 +38,7 @@ public interface NewProject extends ProjectUpdate {
     void setName(String name);
 
     /** Gets generator description. */
-    @ApiModelProperty(value = "Project generator descriptior provides details on the project being created", position = 2)
+    @ApiModelProperty(value = "Project generator description provides details on the project being created", position = 2)
     GeneratorDescription getGeneratorDescription();
 
     /** Sets generator description. */
@@ -59,10 +60,6 @@ public interface NewProject extends ProjectUpdate {
     NewProject withModules(List<ProjectModule> modules);
 
     NewProject withType(String type);
-
-//    NewProject withBuilders(BuildersDescriptor builders);
-//
-//    NewProject withRunners(RunnersDescriptor runners);
 
     NewProject withDescription(String description);
 

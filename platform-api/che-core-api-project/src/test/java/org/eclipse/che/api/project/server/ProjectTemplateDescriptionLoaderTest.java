@@ -74,7 +74,6 @@ public class ProjectTemplateDescriptionLoaderTest {
         verify(templateRegistry, never()).register(eq(projectType2), anyListOf(ProjectTemplateDescriptor.class));
     }
 
-
     @Test
     //load templates from given dir
     public void testWithConfig() {
@@ -127,6 +126,4 @@ public class ProjectTemplateDescriptionLoaderTest {
         Assert.assertNotNull(source.getLocation());
         Assert.assertTrue(source.getLocation().contains(location));
     }
-
-
 }
