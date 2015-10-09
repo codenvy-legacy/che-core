@@ -226,14 +226,14 @@ public class WorkspaceService extends Service {
         return asDto(workspace);
     }
 
-    //TODO who can perform this method?
-
     @POST
     @Path("/runtime")
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
+    @RolesAllowed({"user", "temp-user"})
     public UsersWorkspaceDto startTemporary(WorkspaceConfigDto cfg, @QueryParam("account") String accountId)
             throws BadRequestException, ForbiddenException, NotFoundException, ServerException {
+        permissionManager.checkPermission(START_WORKSPACE, getCurrentUserId(), "accountId", accountId);
         return injectLinks(DtoConverter.asDto(workspaceManager.startTemporaryWorkspace(cfg, accountId)));
     }
 

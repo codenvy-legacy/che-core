@@ -37,7 +37,7 @@ public class Operation {
     }
 
     /**
-     * Returns name of this operation, never null
+     * Returns name of this operation.
      */
     @NotNull
     public String getName() {
