@@ -6,7 +6,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- * Codenvy, S.A. - initial API and implementation
+ *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 package org.eclipse.che.api.machine.server.recipe;
 
@@ -66,15 +66,17 @@ public class RecipeLoader {
     @PostConstruct
     public void start() throws ServerException {
         for (String recipesPath : recipesPaths) {
-            for (ManagedRecipe recipe : loadRecipes(recipesPath)) {
-                try {
+            if (recipesPath != null && !recipesPath.isEmpty()) {
+                for (ManagedRecipe recipe : loadRecipes(recipesPath)) {
                     try {
-                        recipeDao.update(recipe);
-                    } catch (NotFoundException e) {
-                        recipeDao.create(recipe);
+                        try {
+                            recipeDao.update(recipe);
+                        } catch (NotFoundException e) {
+                            recipeDao.create(recipe);
+                        }
+                    } catch (ConflictException e) {
+                        throw new ServerException("Failed to store recipe " + recipe, e);
                     }
-                } catch (ConflictException e) {
-                    throw new ServerException("Failed to store recipe " + recipe, e);
                 }
             }
         }
