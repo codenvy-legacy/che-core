@@ -12,14 +12,15 @@ package org.eclipse.che.security.oauth;
 
 import org.eclipse.che.api.auth.shared.dto.OAuthToken;
 import org.eclipse.che.api.core.BadRequestException;
+import org.eclipse.che.api.core.ForbiddenException;
+import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.rest.annotations.Required;
-import com.google.common.base.Strings;
-
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.core.rest.shared.dto.LinkParameter;
 import org.eclipse.che.api.core.util.LinksHelper;
 import org.eclipse.che.commons.env.EnvironmentContext;
+import org.eclipse.che.commons.user.User;
 import org.eclipse.che.security.oauth.shared.dto.OAuthAuthenticatorDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.Path;
@@ -44,7 +46,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -54,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 /** RESTful wrapper for OAuthAuthenticator. */
@@ -95,30 +97,30 @@ public class OAuthAuthenticationService {
      */
     @GET
     @Path("authenticate")
-    public Response authenticate() throws OAuthAuthenticationException, BadRequestException {
-        OAuthAuthenticator oauth = getAuthenticator(uriInfo.getQueryParameters().getFirst("oauth_provider"));
-        final URL requestUrl = getRequestUrl(uriInfo);
-        final List<String> scopes = uriInfo.getQueryParameters().get("scope");
-        String userId = uriInfo.getQueryParameters().getFirst("userId");
-        if (!Strings.isNullOrEmpty(userId) && !EnvironmentContext.getCurrent().getUser().getId().equals(userId)) {
-            throw new OAuthAuthenticationException(
-                    "Provided userId " + userId + " is not related to current user " + EnvironmentContext.getCurrent().getUser().getName());
+    public Response authenticate(@Required @QueryParam("oauth_provider") String oauthProvider,
+                                 @QueryParam("userId") String userId,
+                                 @QueryParam("scope") List<String> scopes)
+            throws ForbiddenException, BadRequestException, OAuthAuthenticationException {
+
+        OAuthAuthenticator oauth = getAuthenticator(oauthProvider);
+        if (!isNullOrEmpty(userId) && !userId.equals(EnvironmentContext.getCurrent().getUser().getId())) {
+            throw new ForbiddenException(
+                    "Provided userId " + userId + " is not related to current user " + EnvironmentContext.getCurrent().getUser().getId());
         }
 
-        final String authUrl = oauth.getAuthenticateUrl(requestUrl, userId,
+        final String authUrl = oauth.getAuthenticateUrl(getRequestUrl(uriInfo),
+                                                        userId,
                                                         scopes == null ? Collections.<String>emptyList() : scopes);
         return Response.temporaryRedirect(URI.create(authUrl)).build();
     }
 
     @GET
     @Path("callback")
-    public Response callback() throws OAuthAuthenticationException, BadRequestException {
+    public Response callback(@QueryParam("errorValues") List<String> errorValues) throws OAuthAuthenticationException, BadRequestException {
         URL requestUrl = getRequestUrl(uriInfo);
         Map<String, List<String>> params = getRequestParameters(getState(requestUrl));
-        List<String> errorValues = uriInfo.getQueryParameters().get("error");
         if (errorValues != null && errorValues.contains("access_denied")) {
-            return Response.temporaryRedirect(
-                    uriInfo.getRequestUriBuilder().replacePath(errorPage).replaceQuery(null).build()).build();
+            return Response.temporaryRedirect(uriInfo.getRequestUriBuilder().replacePath(errorPage).replaceQuery(null).build()).build();
         }
         final String providerName = getParameter(params, "oauth_provider");
         OAuthAuthenticator oauth = getAuthenticator(providerName);
@@ -131,7 +133,7 @@ public class OAuthAuthenticationService {
     /**
      * Gets list of installed OAuth authenticators.
      *
-     * @return  list of installed OAuth authenticators
+     * @return list of installed OAuth authenticators
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -152,10 +154,54 @@ public class OAuthAuthenticationService {
                                                                         .withDefaultValue(name),
                                              newDto(LinkParameter.class).withName("mode").withRequired(true)
                                                                         .withDefaultValue("federated_login")
-                                             ));
+                                            ));
             result.add(newDto(OAuthAuthenticatorDescriptor.class).withName(name).withLinks(links));
         }
         return result;
+    }
+
+    /**
+     * Gets OAuth token for user.
+     *
+     * @param oauthProvider
+     *         OAuth provider name
+     * @return OAuthToken
+     * @throws ServerException
+     */
+    @GET
+    @Path("token")
+    @Produces(MediaType.APPLICATION_JSON)
+    @RolesAllowed({"user", "temp_user"})
+    public OAuthToken token(@Required @QueryParam("oauth_provider") String oauthProvider)
+            throws ServerException, BadRequestException, NotFoundException, ForbiddenException {
+        OAuthAuthenticator provider = getAuthenticator(oauthProvider);
+        final User user = EnvironmentContext.getCurrent().getUser();
+        try {
+            final OAuthToken token = provider.getToken(user.getId());
+            if (token != null) {
+                return token;
+            }
+            throw new NotFoundException("OAuth token for user " + user.getId() + " was not found");
+        } catch (IOException e) {
+            throw new ServerException(e.getLocalizedMessage(), e);
+        }
+    }
+
+    @DELETE
+    @Path("token")
+    @RolesAllowed({"user", "temp_user"})
+    public void invalidate(@Required @QueryParam("oauth_provider") String oauthProvider)
+            throws BadRequestException, NotFoundException, ServerException, ForbiddenException {
+
+        OAuthAuthenticator oauth = getAuthenticator(oauthProvider);
+        final User user = EnvironmentContext.getCurrent().getUser();
+        try {
+            if (!oauth.invalidateToken(user.getId())) {
+                throw new NotFoundException("OAuth token for user " + user.getId() + " was not found");
+            }
+        } catch (IOException e) {
+            throw new ServerException(e.getMessage());
+        }
     }
 
     protected URL getRequestUrl(UriInfo uriInfo) {
@@ -234,39 +280,6 @@ public class OAuthAuthenticationService {
             return l.get(0);
         }
         return null;
-    }
-
-    @GET
-    @Path("invalidate")
-    public Response invalidate() throws IOException, BadRequestException {
-        final Principal principal = security.getUserPrincipal();
-        OAuthAuthenticator oauth = getAuthenticator(uriInfo.getQueryParameters().getFirst("oauth_provider"));
-        if (principal != null && oauth.invalidateToken(principal.getName())) {
-            return Response.ok().build();
-        }
-        return Response.status(404).entity("Not found OAuth token for " + (principal != null ? principal.getName() :
-                                                                           null)).type(MediaType.TEXT_PLAIN).build();
-    }
-
-    /**
-     * Gets OAuth token for user.
-     *
-     * @param oauthProvider OAuth provider name
-     * @return OAuthToken
-     * @throws ServerException
-     */
-    @GET
-    @Path("token")
-    @Produces(MediaType.APPLICATION_JSON)
-    @RolesAllowed({"user", "temp_user"})
-    public OAuthToken token(@Required @QueryParam("oauth_provider") String oauthProvider) throws ServerException, BadRequestException {
-        OAuthAuthenticator provider = getAuthenticator(oauthProvider);
-        try {
-            return provider.getToken(security.getUserPrincipal()
-                                             .getName());
-        } catch (IOException e) {
-            throw new ServerException(e.getLocalizedMessage(), e);
-        }
     }
 
     protected OAuthAuthenticator getAuthenticator(String oauthProviderName) throws BadRequestException {
