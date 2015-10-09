@@ -18,8 +18,6 @@ import com.google.api.client.auth.oauth2.ClientParametersAuthentication;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.http.GenericUrl;
-import com.google.api.client.http.HttpRequest;
-import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.MemoryDataStoreFactory;
@@ -27,7 +25,6 @@ import com.google.api.client.util.store.MemoryDataStoreFactory;
 import org.eclipse.che.api.auth.shared.dto.OAuthToken;
 import org.eclipse.che.commons.json.JsonHelper;
 import org.eclipse.che.commons.json.JsonParseException;
-import org.eclipse.che.dto.server.DtoFactory;
 import org.eclipse.che.security.oauth.shared.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +41,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+
+import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 /** Authentication service which allow get access token from OAuth provider site. */
 public abstract class OAuthAuthenticator {
@@ -152,8 +151,7 @@ public abstract class OAuthAuthenticator {
      *         if authentication failed or <code>requestUrl</code> does not contain required parameters, e.g. 'code'
      */
     public String callback(URL requestUrl, List<String> scopes) throws OAuthAuthenticationException {
-        AuthorizationCodeResponseUrl authorizationCodeResponseUrl = new AuthorizationCodeResponseUrl(requestUrl
-                                                                                                             .toString());
+        AuthorizationCodeResponseUrl authorizationCodeResponseUrl = new AuthorizationCodeResponseUrl(requestUrl.toString());
         final String error = authorizationCodeResponseUrl.getError();
         if (error != null) {
             throw new OAuthAuthenticationException("Authentication failed: " + error);
@@ -164,19 +162,15 @@ public abstract class OAuthAuthenticator {
         }
 
         try {
-            TokenResponse tokenResponse = flow.newTokenRequest(code).setRequestInitializer(new HttpRequestInitializer() {
-                @Override
-                public void initialize(HttpRequest request) throws IOException {
-                    if (request.getParser() == null) {
-                        request.setParser(flow.getJsonFactory().createJsonObjectParser());
-                    }
-                    request.getHeaders().setAccept(MediaType.APPLICATION_JSON);
+            TokenResponse tokenResponse = flow.newTokenRequest(code).setRequestInitializer(request -> {
+                if (request.getParser() == null) {
+                    request.setParser(flow.getJsonFactory().createJsonObjectParser());
                 }
+                request.getHeaders().setAccept(MediaType.APPLICATION_JSON);
             }).setRedirectUri(findRedirectUrl(requestUrl)).setScopes(scopes).execute();
             String userId = getUserFromUrl(authorizationCodeResponseUrl);
             if (userId == null) {
-                userId = getUser(
-                        DtoFactory.getInstance().createDto(OAuthToken.class).withToken(tokenResponse.getAccessToken())).getId();
+                userId = getUser(newDto(OAuthToken.class).withToken(tokenResponse.getAccessToken())).getId();
             }
             flow.createAndStoreCredential(tokenResponse, userId);
             return userId;
@@ -264,7 +258,7 @@ public abstract class OAuthAuthenticator {
                 credential.refreshToken();
             }
 
-            return DtoFactory.getInstance().createDto(OAuthToken.class).withToken(credential.getAccessToken());
+            return newDto(OAuthToken.class).withToken(credential.getAccessToken());
         }
         return null;
     }
@@ -280,10 +274,9 @@ public abstract class OAuthAuthenticator {
     public boolean invalidateToken(String userId) throws IOException {
         Credential credential = flow.loadCredential(userId);
         if (credential != null) {
-            flow.getCredentialStore().delete(userId, credential);
+            flow.getCredentialDataStore().delete(userId);
             return true;
         }
         return false;
     }
-
 }
