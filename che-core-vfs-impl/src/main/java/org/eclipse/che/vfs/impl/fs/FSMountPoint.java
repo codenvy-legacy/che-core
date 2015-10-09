@@ -10,6 +10,13 @@
  *******************************************************************************/
 package org.eclipse.che.vfs.impl.fs;
 
+import com.google.common.annotations.Beta;
+import com.google.common.collect.Sets;
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hashing;
+import com.google.common.io.ByteSource;
+
+import org.apache.commons.codec.binary.Base64;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
@@ -23,7 +30,6 @@ import org.eclipse.che.api.vfs.server.Path;
 import org.eclipse.che.api.vfs.server.PathLockFactory;
 import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.server.VirtualFileFilter;
-import org.eclipse.che.api.vfs.server.VirtualFileSystemUser;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemUserContext;
 import org.eclipse.che.api.vfs.server.VirtualFileVisitor;
 import org.eclipse.che.api.vfs.server.observation.CreateEvent;
@@ -45,20 +51,11 @@ import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo;
 import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.eclipse.che.commons.lang.Pair;
-import org.eclipse.che.commons.lang.Strings;
 import org.eclipse.che.commons.lang.cache.Cache;
 import org.eclipse.che.commons.lang.cache.LoadingValueSLRUCache;
 import org.eclipse.che.commons.lang.cache.SynchronizedCache;
 import org.eclipse.che.commons.lang.ws.rs.ExtMediaType;
 import org.eclipse.che.dto.server.DtoFactory;
-
-import com.google.common.annotations.Beta;
-import com.google.common.collect.Sets;
-import com.google.common.hash.HashFunction;
-import com.google.common.hash.Hashing;
-import com.google.common.io.ByteSource;
-
-import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,7 +72,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -1443,41 +1439,6 @@ public class FSMountPoint implements MountPoint {
 
 
     private boolean hasPermission(VirtualFileImpl virtualFile, String p, boolean checkParent) {
-        final VirtualFileSystemUser user = userContext.getVirtualFileSystemUser();
-        Path path = virtualFile.getVirtualFilePath();
-        while (path != null) {
-            final AccessControlList accessControlList = aclCache[path.hashCode() & MASK].get(path);
-            if (!accessControlList.isEmpty()) {
-                final Principal userPrincipal = DtoFactory.getInstance().createDto(Principal.class)
-                                                          .withName(user.getUserId()).withType(Principal.Type.USER);
-                Set<String> userPermissions = accessControlList.getPermissions(userPrincipal);
-                if (userPermissions != null) {
-                    return userPermissions.contains(p) || userPermissions.contains(BasicPermissions.ALL.value());
-                }
-                Collection<String> groups = user.getGroups();
-                if (!groups.isEmpty()) {
-                    for (String group : groups) {
-                        final Principal groupPrincipal = DtoFactory.getInstance().createDto(Principal.class)
-                                                                   .withName(group)
-                                                                   .withType(Principal.Type.GROUP);
-                        userPermissions = accessControlList.getPermissions(groupPrincipal);
-                        if (userPermissions != null) {
-                            return userPermissions.contains(p) || userPermissions.contains(BasicPermissions.ALL.value());
-                        }
-                    }
-                }
-                final Principal anyPrincipal = DtoFactory.getInstance().createDto(Principal.class)
-                                                         .withName(VirtualFileSystemInfo.ANY_PRINCIPAL)
-                                                         .withType(Principal.Type.USER);
-                userPermissions = accessControlList.getPermissions(anyPrincipal);
-                return userPermissions != null && (userPermissions.contains(p) || userPermissions.contains(BasicPermissions.ALL.value()));
-            }
-            if (checkParent) {
-                path = path.getParent();
-            } else {
-                break;
-            }
-        }
         return true;
     }
 

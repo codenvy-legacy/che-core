@@ -10,6 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.api.vfs.server.impl.memory;
 
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hashing;
+import com.google.common.io.ByteSource;
+import com.google.common.io.ByteStreams;
+
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.ServerException;
@@ -21,7 +26,6 @@ import org.eclipse.che.api.vfs.server.MountPoint;
 import org.eclipse.che.api.vfs.server.Path;
 import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.server.VirtualFileFilter;
-import org.eclipse.che.api.vfs.server.VirtualFileSystemUser;
 import org.eclipse.che.api.vfs.server.VirtualFileVisitor;
 import org.eclipse.che.api.vfs.server.observation.CreateEvent;
 import org.eclipse.che.api.vfs.server.observation.DeleteEvent;
@@ -44,12 +48,6 @@ import org.eclipse.che.commons.lang.NameGenerator;
 import org.eclipse.che.commons.lang.Pair;
 import org.eclipse.che.commons.lang.ws.rs.ExtMediaType;
 import org.eclipse.che.dto.server.DtoFactory;
-
-import com.google.common.hash.HashFunction;
-import com.google.common.hash.Hashing;
-import com.google.common.io.ByteSource;
-import com.google.common.io.ByteStreams;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +58,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -1300,40 +1297,6 @@ public class MemoryVirtualFile implements VirtualFile {
 
     boolean hasPermission(String permission, boolean checkParent) {
         checkExist();
-        final VirtualFileSystemUser user = mountPoint.getUserContext().getVirtualFileSystemUser();
-        MemoryVirtualFile current = this;
-        while (current != null) {
-            final Map<Principal, Set<String>> objectPermissions = current.getPermissions();
-            if (!objectPermissions.isEmpty()) {
-                final Principal userPrincipal =
-                        DtoFactory.getInstance().createDto(Principal.class).withName(user.getUserId()).withType(Principal.Type.USER);
-                Set<String> userPermissions = objectPermissions.get(userPrincipal);
-                if (userPermissions != null) {
-                    return userPermissions.contains(permission) || userPermissions.contains(BasicPermissions.ALL.value());
-                }
-                Collection<String> groups = user.getGroups();
-                if (!groups.isEmpty()) {
-                    for (String group : groups) {
-                        final Principal groupPrincipal =
-                                DtoFactory.getInstance().createDto(Principal.class).withName(group).withType(Principal.Type.GROUP);
-                        userPermissions = objectPermissions.get(groupPrincipal);
-                        if (userPermissions != null) {
-                            return userPermissions.contains(permission) || userPermissions.contains(BasicPermissions.ALL.value());
-                        }
-                    }
-                }
-                final Principal anyPrincipal = DtoFactory.getInstance().createDto(Principal.class)
-                                                         .withName(VirtualFileSystemInfo.ANY_PRINCIPAL).withType(Principal.Type.USER);
-                userPermissions = objectPermissions.get(anyPrincipal);
-                return userPermissions != null
-                       && (userPermissions.contains(permission) || userPermissions.contains(BasicPermissions.ALL.value()));
-            }
-            if (checkParent) {
-                current = (MemoryVirtualFile)current.getParent();
-            } else {
-                break;
-            }
-        }
         return true;
     }
 
