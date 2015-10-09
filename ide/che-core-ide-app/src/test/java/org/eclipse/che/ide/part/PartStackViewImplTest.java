@@ -220,7 +220,7 @@ public class PartStackViewImplTest {
 
         verify(contentPanel).getVisibleWidget();
 
-        verify(element).setAttribute("active", "");
+        verify(element).setAttribute("focused", "");
     }
 
     @Test

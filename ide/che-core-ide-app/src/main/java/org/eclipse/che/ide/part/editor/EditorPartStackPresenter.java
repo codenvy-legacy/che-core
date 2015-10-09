@@ -29,8 +29,8 @@ import org.eclipse.che.ide.part.PartStackPresenter;
 import org.eclipse.che.ide.part.PartsComparator;
 import org.eclipse.che.ide.part.widgets.editortab.EditorTab;
 import org.eclipse.che.ide.part.widgets.listtab.ListButton;
-import org.eclipse.che.ide.part.widgets.listtab.item.ListItem;
-import org.eclipse.che.ide.part.widgets.listtab.item.ListItemWidget;
+import org.eclipse.che.ide.part.widgets.listtab.ListItem;
+import org.eclipse.che.ide.part.widgets.listtab.ListItemWidget;
 
 import javax.validation.constraints.NotNull;
 import org.eclipse.che.commons.annotation.Nullable;
@@ -54,10 +54,12 @@ import org.eclipse.che.ide.util.loging.Log;
 @Singleton
 public class EditorPartStackPresenter extends PartStackPresenter implements EditorPartStack,
                                                                             EditorTab.ActionDelegate,
-                                                                            ListButton.ActionDelegate,
-                                                                            ListItem.ActionDelegate {
+                                                                            ListButton.ActionDelegate {
+
     private final ListButton                listButton;
+
     private final Map<ListItem, TabItem>    items;
+
     //this list need to save order of added parts
     private final LinkedList<PartPresenter> partsOrder;
 
@@ -101,11 +103,8 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
 
                 while (itemIterator.hasNext()) {
                     TabItem tabItem = itemIterator.next();
-
                     view.removeTab(parts.get(tabItem));
-
                     itemIterator.remove();
-
                     removeItemFromList(tabItem);
                 }
             }
@@ -162,12 +161,8 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
             TabItem tabItem = getTabByPart(part);
 
             if (tabItem != null) {
-                ListItem item = ListItemWidget.create(tabItem.getTitle());
-
-                item.setDelegate(this);
-
+                ListItem item = new ListItemWidget(tabItem);
                 listButton.addListItem(item);
-
                 items.put(item, tabItem);
             }
 
@@ -199,15 +194,13 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
     @Override
     public void setActivePart(@NotNull PartPresenter part) {
         activePart = part;
-
-        addPart(part);
+        view.selectTab(part);
     }
 
     /** {@inheritDoc} */
     @Override
     public void onTabClicked(@NotNull TabItem tab) {
         activePart = parts.get(tab);
-
         view.selectTab(parts.get(tab));
     }
 
@@ -236,20 +229,4 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
         });
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public void onListButtonClicked() {
-        listButton.showList();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void onCloseItemClicked(@NotNull ListItem listItem) {
-        TabItem closedItem = items.get(listItem);
-
-        removePart(parts.get(closedItem));
-
-        listButton.removeListItem(listItem);
-        listButton.hide();
-    }
 }

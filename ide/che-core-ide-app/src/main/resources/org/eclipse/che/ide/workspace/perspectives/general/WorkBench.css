@@ -29,19 +29,19 @@
 
 .ide-work-bench-tool-panel-left {
     width: 24px;
-    border-right: 1px solid tabBorder;
+    border-right: 1px solid tabBorderColor;
     padding-top: 26px;
 }
 
 .ide-work-bench-tool-panel-right {
     width: 24px;
-    border-left: 1px solid tabBorder;
+    border-left: 1px solid tabBorderColor;
     padding-top: 31px;
 }
 
 .ide-work-bench-tool-panel-bottom {
     height: 24px;
-    border-top: 1px solid tabBorder;
+    border-top: 1px solid tabBorderColor;
 }
 
 .ide-work-bench-parent-panel {

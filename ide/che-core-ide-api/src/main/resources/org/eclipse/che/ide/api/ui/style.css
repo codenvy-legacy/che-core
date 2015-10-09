@@ -15,7 +15,7 @@
 @eval tabsPanelBackground org.eclipse.che.ide.api.theme.Style.getTabsPanelBackground();
 
 /** Tab button border color */
-@eval tabBorder org.eclipse.che.ide.api.theme.Style.getTabBorderColor();
+@eval tabBorderColor org.eclipse.che.ide.api.theme.Style.getTabBorderColor();
 
 /** Color used for underlining active tab */
 @eval tabUnderlineColor org.eclipse.che.ide.api.theme.Style.getTabUnderlineColor();
@@ -23,17 +23,36 @@
 /** Tab button text color */
 @eval tabTextColor org.eclipse.che.ide.api.theme.Style.getTabTextColor();
 
+
 /** Hovered tab button text color */
 @eval hoveredTabTextColor org.eclipse.che.ide.api.theme.Style.getHoveredTabTextColor();
 
+
+/** Background color for active tab */
 @eval activeTabBackground org.eclipse.che.ide.api.theme.Style.getActiveTabBackground();
+
+/** Border color for active tab */
 @eval activeTabBorderColor org.eclipse.che.ide.api.theme.Style.getActiveTabBorderColor();
+
+/** Text color for active tab */
 @eval activeTabTextColor org.eclipse.che.ide.api.theme.Style.getActiveTabTextColor();
-@eval activeTabIconColor org.eclipse.che.ide.api.theme.Style.getActiveTabIconColor();
+
+/** Text shadow for active tab */
 @eval activeTabTextShadow org.eclipse.che.ide.api.theme.Style.getActiveTabTextShadow();
+
+/** Icon stroke color for active tab */
+@eval activeTabIconColor org.eclipse.che.ide.api.theme.Style.getActiveTabIconColor();
+
+@eval activeEditorTabBackgroundColor org.eclipse.che.ide.api.theme.Style.getActiveEditorTabBackgroundColor();
+@eval focusedEditorTabBackgroundColor org.eclipse.che.ide.api.theme.Style.getFocusedEditorTabBackgroundColor();
+@eval focusedEditorTabBorderBottomColor org.eclipse.che.ide.api.theme.Style.getFocusedEditorTabBorderBottomColor();
 
 @eval inactiveTabBackground org.eclipse.che.ide.api.theme.Style.getInactiveTabBackground();
 @eval inactiveTabBorderColor org.eclipse.che.ide.api.theme.Style.getInactiveTabBorderColor();
+
+@eval openedFilesDropdownListBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.openedFilesDropdownListBackgroundColor();
+@eval openedFilesDropdownListBorderColor org.eclipse.che.ide.api.theme.Style.theme.openedFilesDropdownListBorderColor();
+@eval openedFilesDropdownListShadowColor org.eclipse.che.ide.api.theme.Style.theme.openedFilesDropdownListShadowColor();
 
 @eval highlightFocus org.eclipse.che.ide.api.theme.Style.getHighlightFocus();
 

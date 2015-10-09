@@ -8,21 +8,40 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.part.widgets.listtab.item;
+package org.eclipse.che.ide.part.widgets.listtab;
 
 import org.eclipse.che.ide.api.mvp.View;
+import org.eclipse.che.ide.api.parts.PartStackView;
 
 import javax.validation.constraints.NotNull;
 
 /**
  * @author Dmitry Shnurenko
+ * @author Vitaliy Guliy
  */
 public interface ListItem extends View<ListItem.ActionDelegate> {
 
+    /**
+     * Returns associated tab item.
+     * @return tab item
+     */
     @NotNull
-    String getTitle();
+    PartStackView.TabItem getTabItem();
 
     interface ActionDelegate {
-        void onCloseItemClicked(@NotNull ListItem listItem);
+
+        /**
+         * Handle clicking on list item
+         * @param listItem
+         */
+        void onItemClicked(@NotNull ListItem listItem);
+
+        /**
+         * Handle clicking on close icon
+         * @param listItem
+         */
+        void onCloseButtonClicked(@NotNull ListItem listItem);
+
     }
+
 }

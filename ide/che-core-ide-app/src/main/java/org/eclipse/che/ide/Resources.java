@@ -129,6 +129,9 @@ public interface Resources extends Tree.Resources,
     @Source("texteditor/open-list.png")
     ImageResource listOpenedEditors();
 
+    @Source("texteditor/multi-file-icon.svg")
+    SVGResource multiFileIcon();
+
     @Source("xml/xml.svg")
     SVGResource xmlFile();
 

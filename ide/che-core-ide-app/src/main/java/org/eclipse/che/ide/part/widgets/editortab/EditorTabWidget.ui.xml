@@ -11,91 +11,125 @@
 
 -->
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
-             xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'
+             xmlns:svg="urn:import:org.vectomatic.dom.svg.ui">
 
     <ui:with field="resources" type="org.eclipse.che.ide.api.parts.PartStackUIResources"/>
 
     <ui:style>
-        .main {
-            margin-left: 3px;
+
+        @eval editorPanelBackgroundColor org.eclipse.che.ide.api.theme.Style.getEditorPanelBackgroundColor();
+        @eval tabBorderColor org.eclipse.che.ide.api.theme.Style.getTabBorderColor();
+        @eval tabTextColor org.eclipse.che.ide.api.theme.Style.getTabTextColor();
+        @eval hoveredTabTextColor org.eclipse.che.ide.api.theme.Style.getHoveredTabTextColor();
+        @eval activeTabTextColor org.eclipse.che.ide.api.theme.Style.getActiveTabTextColor();
+        @eval editorTabIconColor org.eclipse.che.ide.api.theme.Style.getEditorTabIconColor();
+        @eval activeEditorTabBackgroundColor org.eclipse.che.ide.api.theme.Style.getActiveEditorTabBackgroundColor();
+        @eval focusedEditorTabBackgroundColor org.eclipse.che.ide.api.theme.Style.getFocusedEditorTabBackgroundColor();
+        @eval focusedEditorTabBorderBottomColor org.eclipse.che.ide.api.theme.Style.getFocusedEditorTabBorderBottomColor();
+
+        .mainPanel {
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
             float: left;
-            cursor: pointer;
-            border: 1px solid #232323;
-            height: 25px;
-            background: #484848;
-            color: #dbdbdb;
+            border-bottom: 1px solid transparent;
+            height: 22px;
+            background: transparent;
+            color: tabTextColor;
+            cursor: default;
+            margin-bottom: 1px;
         }
 
         .iconPanel {
             float: left;
-            width: 25px;
-            height: 15px;
-            margin-top: 2px;
+            width: 26px;
+            height: 22px;
+            overflow: hidden;
         }
 
-        .icon {
-            margin-left: 6px;
-            margin-top: 1px;
-        }
-
-        .icon svg {
-            width: 16px;
-            height: 16px;
-        }
-
-        .closeIconPanel {
-            float: left;
-            width: 25px;
-            margin-top: 3px;
-        }
-
-        .closeIconPanel:not(:hover) img {
-            opacity: 0.4;
-        }
-
-        .closeIconPanel:active {
-            opacity: 0.7;
-        }
-
-        .closeIcon {
-            opacity: 0.4;
-            cursor: default;
-            color: #989898;
+        .iconPanel svg {
+            transform-origin: 0px 0px 0px;
+            position: absolute;
             margin-left: 8px;
+            margin-top: 4px;
+            width: 14px;
+            height: 14px;
         }
 
-        .closeIcon:hover {
-            opacity: 1;
-        }
-
-        .title {
-            padding: 2px;
+        .titlePanel {
             float: left;
-            margin-top: 3px;
-            margin-left: 3px;
-            color: #989898;
+            height: 22px;
             font-size: 11px;
-            text-shadow: 0 0 1px #000000;
             font-family: "Helvetica Neue", "Myriad Pro", arial, Verdana, Verdana, sans-serif;
+            line-height: 22px;
         }
 
-        .title:hover {
-            color: #dbdbdb;
+        .closeTabPanel {
+            float: left;
+            width: 22px;
+            height: 22px;
+            overflow: hidden;
+            border-right: 1px solid tabBorderColor;
         }
 
+        .closeTabPanel svg {
+            transform-origin: 0px 0px 0px;
+            position: absolute;
+            margin-left: 7px;
+            margin-top: 8px;
+            width: 6px;
+            height: 6px;
+            opacity: 0.8;
+            display: none;
+        }
+
+        .closeTabPanel svg g,
+        .closeTabPanel svg path {
+            fill: editorTabIconColor;
+        }
+
+        .mainPanel:HOVER {
+            background-color: editorPanelBackgroundColor;
+            color: hoveredTabTextColor;
+        }
+
+        .mainPanel:HOVER .closeTabPanel svg {
+            display: block;
+        }
+
+        /**
+         * Please note that 'active' attribute is NOT the same as 'focused' attribute.
+         * The 'active' attribute indicates tab currently selected in editor area.
+         */
+        .mainPanel[active] {
+            background-color: activeEditorTabBackgroundColor;
+        }
+
+        .mainPanel[active] .closeTabPanel svg {
+            display: block;
+        }
+
+        /**
+         * The 'focused' attribute indicates the editor having focus.
+         */
+        .mainPanel[focused] {
+            background-color: focusedEditorTabBackgroundColor;
+            border-bottom-color: focusedEditorTabBorderBottomColor;
+            color: activeTabTextColor;
+        }
+
+        .mainPanel[focused] .closeTabPanel svg {
+            display: block;
+        }
     </ui:style>
 
-    <g:FlowPanel addStyleNames="{style.main}">
-        <g:FlowPanel addStyleNames="{style.iconPanel}">
-            <g:SimplePanel ui:field="icon" addStyleNames="{style.icon}"/>
-        </g:FlowPanel>
-
-        <g:FlowPanel addStyleNames="{style.title}">
-            <g:Label ui:field="title"/>
-        </g:FlowPanel>
-
-        <g:FlowPanel addStyleNames="{style.closeIconPanel}">
-            <g:Image ui:field="closeIcon" resource="{resources.close}" addStyleNames="{style.closeIcon}"/>
+    <g:FlowPanel addStyleNames="{style.mainPanel}">
+        <g:SimplePanel ui:field="iconPanel" styleName="{style.iconPanel}" />
+        <g:Label ui:field="title" styleName="{style.titlePanel}" />
+        <g:FlowPanel addStyleNames="{style.closeTabPanel}">
+            <svg:SVGImage ui:field="closeIcon" resource="{resources.closeIcon}"></svg:SVGImage>
         </g:FlowPanel>
     </g:FlowPanel>
+
 </ui:UiBinder>

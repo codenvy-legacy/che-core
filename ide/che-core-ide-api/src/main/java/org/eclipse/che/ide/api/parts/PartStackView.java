@@ -13,6 +13,7 @@ package org.eclipse.che.ide.api.parts;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.IsWidget;
 
+import com.google.gwt.user.client.ui.Widget;
 import org.eclipse.che.ide.api.mvp.View;
 
 import javax.validation.constraints.Min;
@@ -35,6 +36,18 @@ public interface PartStackView extends View<PartStackView.ActionDelegate> {
         @NotNull
         String getTitle();
 
+        /**
+         * Returns part tab icon
+         *
+         * @return part tab icon
+         */
+        Widget getIcon();
+
+        /**
+         * Updates part tab button.
+         *
+         * @param part part
+         */
         void update(@NotNull PartPresenter part);
 
         /**

@@ -14,7 +14,6 @@
              xmlns:g='urn:import:com.google.gwt.user.client.ui'>
 
     <ui:style>
-
         .icon {
             float: left;
             margin-left: 5px;
@@ -24,7 +23,6 @@
             margin-top: 3px;
             float: left;
         }
-
     </ui:style>
 
     <g:DockLayoutPanel>
@@ -32,7 +30,8 @@
             <g:SimplePanel ui:field="icon" addStyleNames="{style.icon}"/>
         </g:west>
         <g:center>
-            <g:Label ui:field="buttonName" addStyleNames="{style.label}"/>
+            <g:Label ui:field="buttonName" styleName="{style.label}"/>
         </g:center>
     </g:DockLayoutPanel>
+
 </ui:UiBinder>

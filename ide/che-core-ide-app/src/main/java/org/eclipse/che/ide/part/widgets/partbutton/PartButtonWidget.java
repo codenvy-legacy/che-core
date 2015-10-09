@@ -69,6 +69,8 @@ public class PartButtonWidget extends Composite implements PartButton {
 
     private boolean selected;
 
+    private SVGResource iconResource;
+
     @Inject
     public PartButtonWidget(Resources resources, @Assisted String title) {
         this.resources = resources;
@@ -88,6 +90,15 @@ public class PartButtonWidget extends Composite implements PartButton {
         return this.asWidget();
     }
 
+    @Override
+    public Widget getIcon() {
+        if (iconResource != null) {
+            return new SVGImage(iconResource);
+        }
+
+        return null;
+    }
+
     /** {@inheritDoc} */
     @NotNull
     public PartButton setTooltip(@Nullable String tooltip) {
@@ -98,11 +109,12 @@ public class PartButtonWidget extends Composite implements PartButton {
     /** {@inheritDoc} */
     @NotNull
     @Override
-    public PartButton setIcon(@Nullable SVGResource resource) {
+    public PartButton setIcon(@Nullable SVGResource iconResource) {
+        this.iconResource = iconResource;
         icon.clear();
 
-        if (resource != null) {
-            icon.setWidget(new SVGImage(resource));
+        if (iconResource != null) {
+            icon.setWidget(new SVGImage(iconResource));
         }
 
         return this;
@@ -146,7 +158,6 @@ public class PartButtonWidget extends Composite implements PartButton {
         s.setProperty("borderRadius", "8px");
         s.setProperty("textAlign", "center");
 
-        //s.setProperty("color", "white");
         s.setProperty("color", org.eclipse.che.ide.api.theme.Style.getBadgeFontColor());
 
         s.setProperty("left", "13px");
@@ -154,15 +165,11 @@ public class PartButtonWidget extends Composite implements PartButton {
         s.setProperty("borderWidth", "1.5px");
         s.setProperty("borderStyle", "solid");
 
-        //s.setProperty("borderColor", "#1E3246");
-        // currently border color is set by the code
-
         s.setProperty("fontFamily", "'Helvetica Neue', 'Myriad Pro', arial, Verdana, Verdana, sans-serif");
         s.setProperty("fontSize", "9.5px");
         s.setProperty("fontWeight", "bold");
         s.setProperty("textShadow", "none");
 
-        //s.setProperty("backgroundColor", "#4EABFF");
         s.setProperty("backgroundColor", org.eclipse.che.ide.api.theme.Style.getBadgeBackgroundColor());
 
         w.setStyleName("bounceOutUp");
@@ -248,4 +255,5 @@ public class PartButtonWidget extends Composite implements PartButton {
     public void setDelegate(@NotNull ActionDelegate delegate) {
         this.delegate = delegate;
     }
+
 }

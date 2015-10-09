@@ -17,7 +17,6 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SimplePanel;
@@ -37,37 +36,49 @@ import javax.validation.constraints.NotNull;
 /**
  * @author Dmitry Shnurenko
  * @author Valeriy Svydenko
+ * @author Vitaliy Guliy
  */
 public class EditorTabWidget extends Composite implements EditorTab {
+
     interface EditorTabWidgetUiBinder extends UiBinder<Widget, EditorTabWidget> {
     }
 
     private static final EditorTabWidgetUiBinder UI_BINDER = GWT.create(EditorTabWidgetUiBinder.class);
 
     @UiField
-    SimplePanel icon;
+    SimplePanel iconPanel;
+
     @UiField
-    Label       title;
+    Label title;
+
     @UiField
-    Image       closeIcon;
+    SVGImage closeIcon;
 
     @UiField(provided = true)
     final PartStackUIResources resources;
 
     private ActionDelegate delegate;
 
+    private SVGResource icon;
+
     @Inject
     public EditorTabWidget(PartStackUIResources resources, @Assisted SVGResource icon, @Assisted String title) {
         this.resources = resources;
         initWidget(UI_BINDER.createAndBindUi(this));
 
+        this.icon = icon;
         this.title.setText(title);
 
-        SVGImage image = new SVGImage(icon);
-        this.icon.getElement().setInnerHTML(image.toString());
+        iconPanel.add(getIcon());
 
         addDomHandler(this, ClickEvent.getType());
         addDomHandler(this, DoubleClickEvent.getType());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Widget getIcon() {
+        return new SVGImage(icon);
     }
 
     /** {@inheritDoc} */
@@ -93,19 +104,15 @@ public class EditorTabWidget extends Composite implements EditorTab {
     /** {@inheritDoc} */
     @Override
     public void select() {
-        closeIcon.addStyleName(resources.partStackCss().opacity());
-        title.addStyleName(resources.partStackCss().activeTabTextColor());
-
-        addStyleName(resources.partStackCss().selectEditorTab());
+        /** Marks tab is focused */
+        getElement().setAttribute("focused", "");
     }
 
     /** {@inheritDoc} */
     @Override
     public void unSelect() {
-        closeIcon.removeStyleName(resources.partStackCss().opacity());
-        title.removeStyleName(resources.partStackCss().activeTabTextColor());
-
-        removeStyleName(resources.partStackCss().selectEditorTab());
+        /** Marks tab is not focused */
+        getElement().removeAttribute("focused");
     }
 
     /** {@inheritDoc} */
