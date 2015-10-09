@@ -37,7 +37,6 @@ public class DarkTheme implements Theme {
         return "rgba(215, 215, 215, 0.12)";
     }
 
-
     @Override
     public String getKeyboardSelectionBackgroundColor() {
         return "#2f65ca";
@@ -49,14 +48,51 @@ public class DarkTheme implements Theme {
     }
 
     @Override
+    public String getTabsPanelBackground() {
+        return "#33373B";
+    }
+
+    /************************************************************************************************
+     *
+     * Inactive tab button
+     *
+     ************************************************************************************************/
+
+    @Override
     public String getInactiveTabBackground() {
         return "#484848";
+    }
+
+    @Override
+    public String getTabBorderColor() {
+        return "#121416";
     }
 
     @Override
     public String getInactiveTabBorderColor() {
         return "#353535";
     }
+
+    @Override
+    public String getTabUnderlineColor() {
+        return "rgb(70,102,149)";
+    }
+
+    @Override
+    public String getTabTextColor() {
+        return "#AAAAAA";
+    }
+
+    @Override
+    public String getHoveredTabTextColor() {
+        return "#FFFFFF";
+    }
+
+    /************************************************************************************************
+     *
+     * Active tab button
+     *
+     ************************************************************************************************/
 
     @Override
     public String getActiveTabBackground() {
@@ -83,30 +119,37 @@ public class DarkTheme implements Theme {
         return "#FFFFFF";
     }
 
-    @Override
-    public String getTabTextColor() {
-        return "#AAAAAA";
-    }
+    /************************************************************************************************
+     *
+     * Active editor tab button
+     *
+     ************************************************************************************************/
 
     @Override
-    public String getHoveredTabTextColor() {
+    public String getEditorTabIconColor() {
         return "#FFFFFF";
     }
 
     @Override
-    public String getTabsPanelBackground() {
-        return "#33373B";
+    public String getActiveEditorTabBackgroundColor() {
+        return "rgba(53, 62, 80, 0.5)";
     }
 
     @Override
-    public String getTabBorderColor() {
-        return "#121416";
+    public String getFocusedEditorTabBackgroundColor() {
+        return "#353E50";
     }
 
     @Override
-    public String getTabUnderlineColor() {
-        return "rgb(70,102,149)";
+    public String getFocusedEditorTabBorderBottomColor() {
+        return "#4EABFF";
     }
+
+    /************************************************************************************************
+     *
+     * Part toolbar
+     *
+     ************************************************************************************************/
 
     @Override
     public String getPartBackground() {
@@ -872,5 +915,74 @@ public class DarkTheme implements Theme {
         return this.getMenuBackgroundColor();
     }
 
+    @Override
+    public String openedFilesDropdownButtonBackground() {
+        return "rgba(51,55,59,0.50)";
+    }
+
+    @Override
+    public String openedFilesDropdownButtonBorderColor() {
+        return "#24272C";
+    }
+
+    @Override
+    public String openedFilesDropdownButtonShadowColor() {
+        return "#3C3C3C";
+    }
+
+    @Override
+    public String openedFilesDropdownButtonIconColor() {
+        return "#AAAAAA";
+    }
+
+    @Override
+    public String openedFilesDropdownButtonHoverIconColor() {
+        return "#FFFFFF";
+    }
+
+    @Override
+    public String openedFilesDropdownButtonActiveBackground() {
+        return "#292C2F";
+    }
+
+    @Override
+    public String openedFilesDropdownButtonActiveBorderColor() {
+        return "#121416";
+    }
+
+    @Override
+    public String openedFilesDropdownListBackgroundColor() {
+        return "#292C2f";
+    }
+
+    @Override
+    public String openedFilesDropdownListBorderColor() {
+        return "#121416";
+    }
+
+    @Override
+    public String openedFilesDropdownListShadowColor() {
+        return "rgba(0, 0, 0, 0.50)";
+    }
+
+    @Override
+    public String openedFilesDropdownListTextColor() {
+        return "#AAAAAA";
+    }
+
+    @Override
+    public String openedFilesDropdownListCloseButtonColor() {
+        return "#FFFFFF";
+    }
+
+    @Override
+    public String openedFilesDropdownListHoverBackgroundColor() {
+        return "rgba(215, 215, 215, 0.12)";
+    }
+
+    @Override
+    public String openedFilesDropdownListHoverTextColor() {
+        return "#FFFFFF";
+    }
 
 }

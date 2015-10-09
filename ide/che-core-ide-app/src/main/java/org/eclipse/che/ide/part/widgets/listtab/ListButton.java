@@ -10,11 +10,10 @@
  *******************************************************************************/
 package org.eclipse.che.ide.part.widgets.listtab;
 
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.inject.ImplementedBy;
 
 import org.eclipse.che.ide.api.mvp.View;
-import org.eclipse.che.ide.part.widgets.listtab.item.ListItem;
+import org.eclipse.che.ide.api.parts.PartStackView;
 
 import javax.validation.constraints.NotNull;
 
@@ -22,19 +21,28 @@ import javax.validation.constraints.NotNull;
  * @author Dmitry Shnurenko
  */
 @ImplementedBy(ListButtonWidget.class)
-public interface ListButton extends View<ListButton.ActionDelegate>, ClickHandler {
-
-    void showList();
+public interface ListButton extends View<ListButton.ActionDelegate> {
 
     void addListItem(@NotNull ListItem listItem);
 
     void removeListItem(@NotNull ListItem listItem);
 
-    void hide();
-
     void setVisible(boolean visible);
 
     interface ActionDelegate {
-        void onListButtonClicked();
+
+        /**
+         * Handle clicking on list item
+         * @param tab
+         */
+        void onTabClicked(@NotNull PartStackView.TabItem tab);
+
+        /**
+         * Handle clicking on close icon
+         * @param tab
+         */
+        void onTabClose(@NotNull PartStackView.TabItem tab);
+
     }
+
 }

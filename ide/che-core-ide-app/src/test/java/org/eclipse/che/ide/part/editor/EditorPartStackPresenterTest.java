@@ -23,7 +23,7 @@ import org.eclipse.che.ide.part.PartStackPresenter.PartStackEventHandler;
 import org.eclipse.che.ide.part.PartsComparator;
 import org.eclipse.che.ide.part.widgets.editortab.EditorTab;
 import org.eclipse.che.ide.part.widgets.listtab.ListButton;
-import org.eclipse.che.ide.part.widgets.listtab.item.ListItem;
+import org.eclipse.che.ide.part.widgets.listtab.ListItem;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -192,26 +192,6 @@ public class EditorPartStackPresenterTest {
         presenter.onTabClose(editorTab1);
 
         verify(view).removeTab(partPresenter1);
-    }
-
-    @Test
-    public void onListButtonShouldBeClicked() {
-        presenter.onListButtonClicked();
-
-        verify(listButton).showList();
-    }
-
-    @Test
-    public void onCloseItemShouldBeClicked() {
-        presenter.addPart(partPresenter1);
-
-        verify(listButton).addListItem(itemCaptor.capture());
-        ListItem item = itemCaptor.getValue();
-
-        presenter.onCloseItemClicked(item);
-
-        verify(listButton).removeListItem(item);
-        verify(listButton).hide();
     }
 
     @Test

@@ -22,6 +22,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.vectomatic.dom.svg.OMSVGSVGElement;
+import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.BELOW;
@@ -42,6 +43,9 @@ public class EditorTabWidgetTest {
     @Mock
     private SVGResource          icon;
 
+    @Mock
+    private SVGImage             iconImage;
+
     //additional mocks
     @Mock
     private Element         element;
@@ -58,18 +62,8 @@ public class EditorTabWidgetTest {
     public void setUp() {
         when(icon.getSvg()).thenReturn(svg);
 
-        when(resources.partStackCss().opacity()).thenReturn(SOME_TEXT);
-        when(resources.partStackCss().activeTabTextColor()).thenReturn(SOME_TEXT);
-        when(resources.partStackCss().selectEditorTab()).thenReturn(SOME_TEXT);
-
         tab = new EditorTabWidget(resources, icon, SOME_TEXT);
         tab.setDelegate(delegate);
-    }
-
-    @Test
-    public void constructorShouldBeVerified() {
-        verify(tab.title).setText(SOME_TEXT);
-        verify(tab.icon).getElement();
     }
 
     @Test
@@ -77,32 +71,6 @@ public class EditorTabWidgetTest {
         tab.getTitle();
 
         verify(tab.title).getText();
-    }
-
-    @Test
-    public void tabShouldBeSelected() {
-        tab.select();
-
-        verify(resources.partStackCss()).opacity();
-        verify(tab.closeIcon).addStyleName(SOME_TEXT);
-
-        verify(resources.partStackCss()).activeTabTextColor();
-        verify(tab.title).addStyleName(SOME_TEXT);
-
-        verify(resources.partStackCss()).selectEditorTab();
-    }
-
-    @Test
-    public void tabShouldBeUnSelected() {
-        tab.unSelect();
-
-        verify(resources.partStackCss()).opacity();
-        verify(tab.closeIcon).removeStyleName(SOME_TEXT);
-
-        verify(resources.partStackCss()).activeTabTextColor();
-        verify(tab.title).removeStyleName(SOME_TEXT);
-
-        verify(resources.partStackCss()).selectEditorTab();
     }
 
     @Test(expected = UnsupportedOperationException.class)

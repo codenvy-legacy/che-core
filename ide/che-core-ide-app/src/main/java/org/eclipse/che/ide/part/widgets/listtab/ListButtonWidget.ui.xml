@@ -11,30 +11,76 @@
 
 -->
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
-             xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'
+             xmlns:svg="urn:import:org.vectomatic.dom.svg.ui">
 
     <ui:with field="resources" type="org.eclipse.che.ide.Resources"/>
 
     <ui:style>
-        .main {
-            width: 32px;
-            height: 23px;
-            margin-top: 2px;
-            margin-right: 7px;
-            background: #484848;
-            border: 1px solid #353535;
-            cursor: pointer;
+
+        @eval openedFilesDropdownButtonBackground org.eclipse.che.ide.api.theme.Style.theme.openedFilesDropdownButtonBackground();
+        @eval openedFilesDropdownButtonBorderColor org.eclipse.che.ide.api.theme.Style.theme.openedFilesDropdownButtonBorderColor();
+        @eval openedFilesDropdownButtonShadowColor org.eclipse.che.ide.api.theme.Style.theme.openedFilesDropdownButtonShadowColor();
+        @eval openedFilesDropdownButtonIconColor org.eclipse.che.ide.api.theme.Style.theme.openedFilesDropdownButtonIconColor();
+        @eval openedFilesDropdownButtonHoverIconColor org.eclipse.che.ide.api.theme.Style.theme.openedFilesDropdownButtonHoverIconColor();
+        @eval openedFilesDropdownButtonActiveBackground org.eclipse.che.ide.api.theme.Style.theme.openedFilesDropdownButtonActiveBackground();
+        @eval openedFilesDropdownButtonActiveBorderColor org.eclipse.che.ide.api.theme.Style.theme.openedFilesDropdownButtonActiveBorderColor();
+
+        .listButton {
             float: right;
+            position: relative;
+            width: 33px;
+            height: 23px;
+            overflow: hidden;
         }
 
-        .icon {
+        .main {
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+            position: relative;
+            width: 26px;
+            height: 14px;
             margin-top: 4px;
-            margin-left: 4px;
+            margin-right: 7px;
+
+            background-color: openedFilesDropdownButtonBackground;
+            border: 1px solid openedFilesDropdownButtonBorderColor;
+            box-shadow: 0px 1px 0px 0px openedFilesDropdownButtonShadowColor;
         }
+
+        .main svg {
+            transform-origin: 0px 0px 0px;
+            position: absolute;
+
+            left: 5px;
+            top: 2px;
+
+            width: 15px;
+            height: 8px;
+        }
+
+        .main svg g,
+        .main svg path {
+            fill: openedFilesDropdownButtonIconColor;
+        }
+
+        .main:HOVER svg g,
+        .main:HOVER svg path {
+            fill: openedFilesDropdownButtonHoverIconColor;
+        }
+
+        .main:ACTIVE {
+            background-color: openedFilesDropdownButtonActiveBackground;
+            border-color: openedFilesDropdownButtonActiveBorderColor;
+        }
+
     </ui:style>
 
-
-    <g:FlowPanel ui:field="button" visible="false" addStyleNames="{style.main}">
-        <g:Image resource="{resources.listOpenedEditors}" addStyleNames="{style.icon}"/>
+    <g:FlowPanel styleName="{style.listButton}">
+        <g:FlowPanel styleName="{style.main}">
+            <svg:SVGImage ui:field="closeIcon" resource="{resources.multiFileIcon}"></svg:SVGImage>
+        </g:FlowPanel>
     </g:FlowPanel>
+
 </ui:UiBinder>

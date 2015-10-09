@@ -44,22 +44,21 @@ import static com.google.gwt.dom.client.Style.Unit.PCT;
 /**
  * @author Evgen Vidolob
  * @author Dmitry Shnurenko
+ * @author Vitaliy Guliy
  */
 public class EditorPartStackView extends ResizeComposite implements PartStackView, MouseDownHandler {
+
     interface PartStackUiBinder extends UiBinder<Widget, EditorPartStackView> {
     }
 
     private static final PartStackUiBinder UI_BINDER = GWT.create(PartStackUiBinder.class);
 
-    //this margin need to stay distance for not visible component. The component is list button which appears when
-    //common length of editor's tabs is more than width of panel, on which these tabs are added.
-    private static final int LEFT_MARGIN = 250;
-    private static final int THE_FIRST   = 1;
-
     @UiField
     DockLayoutPanel parent;
+
     @UiField
     FlowPanel       tabsPanel;
+
     @UiField
     DeckLayoutPanel contentPanel;
 
@@ -72,17 +71,13 @@ public class EditorPartStackView extends ResizeComposite implements PartStackVie
     private ListButton     listButton;
     private TabItem        activeTab;
 
-    private int addedTabsWidth;
-    private int tabsPanelWidth;
-
     @Inject
     public EditorPartStackView(PartStackUIResources resources) {
         this.resources = resources;
-
-        initWidget(UI_BINDER.createAndBindUi(this));
-
         this.tabs = new HashMap<>();
         this.contents = new LinkedList<>();
+
+        initWidget(UI_BINDER.createAndBindUi(this));
 
         partViewContainer = new AcceptsOneWidget() {
             @Override
@@ -98,6 +93,7 @@ public class EditorPartStackView extends ResizeComposite implements PartStackVie
     @Override
     protected void onAttach() {
         super.onAttach();
+
         Style style = getElement().getParentElement().getStyle();
         style.setHeight(100, PCT);
         style.setWidth(100, PCT);
@@ -111,8 +107,8 @@ public class EditorPartStackView extends ResizeComposite implements PartStackVie
      */
     public void setListButton(@NotNull ListButton listButton) {
         this.listButton = listButton;
-
         tabsPanel.add(listButton);
+        listButton.setVisible(true);
     }
 
     /** {@inheritDoc} */
@@ -129,52 +125,52 @@ public class EditorPartStackView extends ResizeComposite implements PartStackVie
 
     /** {@inheritDoc} */
     @Override
-    public void addTab(@NotNull TabItem tabItem, @NotNull PartPresenter presenter) {
+    public void addTab(@NotNull TabItem tabItem, @NotNull PartPresenter partPresenter) {
+        /** Show editor area if it is empty and hidden */
         if (contents.isEmpty()) {
             getElement().getParentElement().getStyle().setDisplay(BLOCK);
-
-            addedTabsWidth = 0;
         }
 
-        if (addedTabsWidth > tabsPanelWidth) {
-            tabsPanel.insert(tabItem.getView(), THE_FIRST);
-        } else {
-            tabsPanel.add(tabItem.getView());
-        }
+        /** Add editor tab to tab panel */
+        tabsPanel.add(tabItem.getView());
 
-        checkVisibleTabAmount(tabItem, OperationType.ADD);
-
-        tabs.put(presenter, tabItem);
-        contents.add(presenter);
-
-        presenter.go(partViewContainer);
-
+        /** Process added editor tab */
+        tabs.put(partPresenter, tabItem);
+        contents.add(partPresenter);
+        partPresenter.go(partViewContainer);
     }
 
-    private void checkVisibleTabAmount(@NotNull TabItem tabItem, @NotNull OperationType operationType) {
-        tabsPanelWidth = tabsPanel.getOffsetWidth() - LEFT_MARGIN;
-        int itemWidth = tabItem.getView().asWidget().getOffsetWidth();
+    /**
+     * Updates visibility of file list button.
+     */
+    private void updateDropdownVisibility() {
+        int width = 0;
+        for (int i = 0; i < tabsPanel.getWidgetCount(); i++) {
+            if (listButton != null && listButton != tabsPanel.getWidget(i)) {
+                width += tabsPanel.getWidget(i).getOffsetWidth();
+            }
+        }
 
-        if (tabsPanelWidth == itemWidth - LEFT_MARGIN) {
+        listButton.setVisible(width >= tabsPanel.getOffsetWidth());
+    }
+
+    /**
+     * Makes active tab visible.
+     */
+    private void ensureActiveTabVisible() {
+        if (activeTab == null) {
             return;
         }
 
-        if (OperationType.REMOVE.equals(operationType)) {
-            addedTabsWidth -= itemWidth;
-        } else {
-            addedTabsWidth += itemWidth;
+        if (activeTab.getView().asWidget().getAbsoluteTop() > tabsPanel.getAbsoluteTop()) {
+            tabsPanel.insert(activeTab.getView(), 1);
         }
-
-        listButton.setVisible(addedTabsWidth > tabsPanelWidth);
     }
 
     /** {@inheritDoc} */
     @Override
     public void removeTab(@NotNull PartPresenter presenter) {
         TabItem tab = tabs.get(presenter);
-
-        checkVisibleTabAmount(tab, OperationType.REMOVE);
-
         tabsPanel.remove(tab.getView());
         contentPanel.remove(presenter.getView());
 
@@ -183,7 +179,6 @@ public class EditorPartStackView extends ResizeComposite implements PartStackVie
 
         try {
             PartPresenter activePart = contents.getLast();
-
             selectTab(activePart);
         } catch (NoSuchElementException exception) {
             getElement().getParentElement().getStyle().setDisplay(NONE);
@@ -194,30 +189,37 @@ public class EditorPartStackView extends ResizeComposite implements PartStackVie
     @Override
     public void selectTab(@NotNull PartPresenter partPresenter) {
         IsWidget view = partPresenter.getView();
+
         int viewIndex = contentPanel.getWidgetIndex(view);
-
-        boolean isWidgetExist = viewIndex != -1;
-
-        if (!isWidgetExist) {
+        if (viewIndex < 0) {
             partPresenter.go(partViewContainer);
-
             viewIndex = contentPanel.getWidgetIndex(view);
         }
 
         contentPanel.showWidget(viewIndex);
-
         setActiveTab(partPresenter);
     }
 
+    /**
+     * Switches to specified tab.
+     *
+     * @param part tab part
+     */
     private void setActiveTab(@NotNull PartPresenter part) {
         for (TabItem tab : tabs.values()) {
             tab.unSelect();
+            tab.getView().asWidget().getElement().removeAttribute("active");
         }
 
         activeTab = tabs.get(part);
         activeTab.select();
 
+        activeTab.getView().asWidget().getElement().setAttribute("active", "");
+
         delegate.onRequestFocus();
+
+        updateDropdownVisibility();
+        ensureActiveTabVisible();
     }
 
     /** {@inheritDoc} */
@@ -230,12 +232,8 @@ public class EditorPartStackView extends ResizeComposite implements PartStackVie
     @Override
     public void setFocus(boolean focused) {
         if (focused) {
-            contentPanel.removeStyleName(resources.partStackCss().unSelectEditorBorder());
-
             activeTab.select();
         } else {
-            contentPanel.addStyleName(resources.partStackCss().unSelectEditorBorder());
-
             activeTab.unSelect();
         }
     }
@@ -244,11 +242,14 @@ public class EditorPartStackView extends ResizeComposite implements PartStackVie
     @Override
     public void updateTabItem(@NotNull PartPresenter partPresenter) {
         TabItem tab = tabs.get(partPresenter);
-
         tab.update(partPresenter);
     }
 
-    private enum OperationType {
-        ADD, REMOVE
+    @Override
+    public void onResize() {
+        super.onResize();
+        updateDropdownVisibility();
+        ensureActiveTabVisible();
     }
+
 }

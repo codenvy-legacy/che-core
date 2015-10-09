@@ -14,7 +14,6 @@
 <ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder" xmlns:g="urn:import:com.google.gwt.user.client.ui">
     <ui:style>
         @eval bgColor org.eclipse.che.ide.api.theme.Style.getMainMenuBkgColor();
-        @eval tabBorder org.eclipse.che.ide.api.theme.Style.getTabBorderColor();
         @eval conColor org.eclipse.che.ide.api.theme.Style.getConsolePanelColor();
         @eval statusPanelColor org.eclipse.che.ide.api.theme.Style.getStatusPanelColor();
         .buttonsPanel {
@@ -31,14 +30,13 @@
         }
 
         .noToolbarPanel {
-            background-color: tabBorder;
+            background-color: tabBorderColor;
         }
 
         .actionsPanel {
             box-sizing: border-box;
             background-color: conColor;
             border-top: #2f2f2f 1px solid;
-            /*border-right: 1px solid tabBorder;*/
             overflow: hidden;
         }
 

@@ -114,6 +114,34 @@ public interface Theme {
     String getHoveredTabTextColor();
 
     /**
+     * Icon color for editor tab.
+     *
+     * @return color
+     */
+    String getEditorTabIconColor();
+
+    /**
+     * Background color for active (selected) editor tab.
+     *
+     * @return color
+     */
+    String getActiveEditorTabBackgroundColor();
+
+    /**
+     * Background color for focused editor tab.
+     *
+     * @return color
+     */
+    String getFocusedEditorTabBackgroundColor();
+
+    /**
+     * Bottom border (underline) color for focused editor tab.
+     *
+     * @return color
+     */
+    String getFocusedEditorTabBorderBottomColor();
+
+    /**
      * Background color of part stack panel(where placed part button)
      *
      * @return the color
@@ -1105,4 +1133,25 @@ public interface Theme {
      * @return the list box dropdown background color.
      */
     String getListBoxDropdownBackgroundColor();
+
+    /********************************************************************************************
+     *
+     * Dropdown menu with a list of opened files
+     *
+     ********************************************************************************************/
+    String openedFilesDropdownButtonBackground();
+    String openedFilesDropdownButtonBorderColor();
+    String openedFilesDropdownButtonShadowColor();
+    String openedFilesDropdownButtonIconColor();
+    String openedFilesDropdownButtonHoverIconColor();
+    String openedFilesDropdownButtonActiveBackground();
+    String openedFilesDropdownButtonActiveBorderColor();
+    String openedFilesDropdownListBackgroundColor();
+    String openedFilesDropdownListBorderColor();
+    String openedFilesDropdownListShadowColor();
+    String openedFilesDropdownListTextColor();
+    String openedFilesDropdownListCloseButtonColor();
+    String openedFilesDropdownListHoverBackgroundColor();
+    String openedFilesDropdownListHoverTextColor();
+
 }

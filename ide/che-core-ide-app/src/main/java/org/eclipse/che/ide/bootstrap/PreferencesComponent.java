@@ -84,7 +84,7 @@ public class PreferencesComponent implements Component {
         String storedThemeId = preferencesManager.getValue(PREF_IDE_THEME);
         storedThemeId = storedThemeId != null ? storedThemeId : themeAgent.getCurrentThemeId();
         Theme themeToSet = storedThemeId != null ? themeAgent.getTheme(storedThemeId) : themeAgent.getDefault();
-        Style.setTheme(themeToSet);
+        Style.theme = themeToSet;
         themeAgent.setCurrentThemeId(themeToSet.getId());
     }
 }

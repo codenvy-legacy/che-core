@@ -19,10 +19,6 @@ public class Style {
 
     public static Theme theme;
 
-    public static void setTheme(Theme theme) {
-        Style.theme = theme;
-    }
-
     public static String getHoverBackgroundColor() {
         return theme.getHoverBackgroundColor();
     }
@@ -85,6 +81,22 @@ public class Style {
 
     public static String getPartBackground() {
         return theme.getPartBackground();
+    }
+
+    public static String getEditorTabIconColor() {
+        return theme.getEditorTabIconColor();
+    }
+
+    public static String getActiveEditorTabBackgroundColor() {
+        return theme.getActiveEditorTabBackgroundColor();
+    }
+
+    public static String getFocusedEditorTabBackgroundColor() {
+        return theme.getFocusedEditorTabBackgroundColor();
+    }
+
+    public static String getFocusedEditorTabBorderBottomColor() {
+        return theme.getFocusedEditorTabBorderBottomColor();
     }
 
     public static String getPartToolbar() {

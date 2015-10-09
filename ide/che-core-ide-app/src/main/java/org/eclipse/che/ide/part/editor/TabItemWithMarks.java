@@ -24,6 +24,5 @@ public interface TabItemWithMarks extends PartStackView.TabItem {
 
     /** Add warning mark for Tab title */
     void setWarningMark(boolean isVisible);
+
 }
-
-

@@ -18,8 +18,8 @@
     overflow: hidden;
     text-align: center;
     box-sizing: border-box;
-    border-top: 1px solid tabBorder;
-    border-bottom: 1px solid tabBorder;
+    border-top: 1px solid tabBorderColor;
+    border-bottom: 1px solid tabBorderColor;
     background-color: toolbarBackgroundColor;
     background-image: toolbarBackgroundImage;
 }
@@ -58,7 +58,7 @@
     margin: 2px;
     height: 18px;
     padding: 0 !important;
-    border-left: 1px solid tabBorder;
+    border-left: 1px solid tabBorderColor;
     border-right: 1px solid tabBorderShadow;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;

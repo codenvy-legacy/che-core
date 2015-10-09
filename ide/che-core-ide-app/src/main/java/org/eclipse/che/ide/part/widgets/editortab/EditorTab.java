@@ -27,8 +27,10 @@ public interface EditorTab extends View<EditorTab.ActionDelegate>, TabItem, Doub
     void setWarningMark(boolean isVisible);
 
     interface ActionDelegate {
+
         void onTabClicked(@NotNull TabItem tab);
 
         void onTabClose(@NotNull TabItem tab);
     }
+
 }

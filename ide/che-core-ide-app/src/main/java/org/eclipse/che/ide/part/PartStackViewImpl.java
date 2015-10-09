@@ -164,13 +164,13 @@ public class PartStackViewImpl extends ResizeComposite implements PartStackView,
     @Override
     public void setFocus(boolean focused) {
         if (focusedWidget != null) {
-            focusedWidget.getElement().removeAttribute("active");
+            focusedWidget.getElement().removeAttribute("focused");
         }
 
         focusedWidget = contentPanel.getVisibleWidget();
 
         if (focused && focusedWidget != null) {
-            focusedWidget.getElement().setAttribute("active", "");
+            focusedWidget.getElement().setAttribute("focused", "");
         }
     }
 

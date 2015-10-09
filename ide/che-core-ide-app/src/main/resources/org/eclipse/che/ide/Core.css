@@ -216,13 +216,13 @@ div.gwt-Label {
 .gwt-PushButton-up, .gwt-ToggleButton-up {
     color: mainFontColor;
     border-radius: 1px;
-    border: 1px solid tabBorder;
+    border: 1px solid tabBorderColor;
     font-weight: 700;
     background: linear-gradient(to bottom, buttonTopColor 0%, buttonTopColor 3%, buttonColor 4%, buttonColor 100%);
 }
 
 .gwt-PushButton-up-hovering, .gwt-ToggleButton-up-hovering {
-    border: 1px solid tabBorder;
+    border: 1px solid tabBorderColor;
     background: linear-gradient(to bottom, buttonTopColor 0%, buttonTopColor 3%, buttonColor 4%, buttonColor 100%);
     font-weight: 700;
     color: buttonHoverTextColor;
@@ -236,7 +236,7 @@ div.gwt-Label {
 .gwt-PushButton-down, .gwt-ToggleButton-down {
     color: mainFontColor;
     border-radius: 1px;
-    border: 1px solid tabBorder;
+    border: 1px solid tabBorderColor;
     font-weight: 700;
     background: linear-gradient(to bottom, buttonTopColor 0%, buttonTopColor 3%, buttonColor 4%, buttonColor 100%);
     box-shadow: 0 0 4px 2px selectionBackground;
@@ -248,7 +248,7 @@ div.gwt-Label {
     color: buttonHoverTextColor;
     background: linear-gradient(to bottom, buttonColor 0%, buttonColor 3%, buttonHoverColor 4%, buttonHoverColor 100%);
     border-radius: 1px;
-    border: 1px solid tabBorder;
+    border: 1px solid tabBorderColor;
     font-weight: 700;
     box-shadow: 0 0 4px 2px selectionBackground;
     border-radius: 1px;
@@ -279,25 +279,25 @@ div.gwt-Label {
 
 /* Style for splitter */
 .gwt-SplitLayoutPanel-HDragger {
-    /*background: tabBorder;*/
+    /*background: tabBorderColor;*/
     cursor: col-resize;
 }
 
 .gwt-SplitLayoutPanel-VDragger {
-    /*background: tabBorder;*/
+    /*background: tabBorderColor;*/
     cursor: row-resize;
 }
 
 .gwt-DialogBox {
-    box-shadow: 0 0 6px 1px tabBorder;
+    box-shadow: 0 0 6px 1px tabBorderColor;
 }
 
 .hsplitter, .gwt-SplitLayoutPanel-HDragger {
-    background: tabBorder; /*Old browsers */
+    background: tabBorderColor; /*Old browsers */
 }
 
 .vsplitter, .gwt-SplitLayoutPanel-VDragger {
-    background: tabBorder; /*Old browsers */
+    background: tabBorderColor; /*Old browsers */
 }
 
 #talk_roster {
@@ -446,7 +446,7 @@ class for the document-level scrollbars. */
 
 .gwt-PopupPanel {
     color: mainFontColor;
-    border: 1px solid tabBorder;
+    border: 1px solid tabBorderColor;
     border-radius: 3px;
     background-color: partBackground;
     z-index: 7;

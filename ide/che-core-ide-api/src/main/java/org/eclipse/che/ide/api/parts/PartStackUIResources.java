@@ -78,17 +78,7 @@ public interface PartStackUIResources extends ClientBundle {
         @ClassName("selectedBottomTab")
         String selectedBottomTab();
 
-        String selectEditorTab();
-
-        String opacity();
-
-        String activeTabTextColor();
-
         String listItemPanel();
-
-        String listShownButtonBackground();
-
-        String unSelectEditorBorder();
 
     }
 
@@ -120,4 +110,8 @@ public interface PartStackUIResources extends ClientBundle {
 
     @Source("erase.svg")
     SVGResource erase();
+
+    @Source("close-icon.svg")
+    SVGResource closeIcon();
+
 }

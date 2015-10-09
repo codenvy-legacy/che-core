@@ -477,11 +477,7 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
     @NotNull
     @Override
     public String getTitle() {
-        if (isDirty()) {
-            return "*" + input.getName();
-        } else {
-            return input.getName();
-        }
+        return input.getName();
     }
 
     @Override

@@ -108,6 +108,26 @@ public class LightTheme implements Theme {
     }
 
     @Override
+    public String getActiveEditorTabBackgroundColor() {
+        return "rgb(197, 197, 197)";
+    }
+
+    @Override
+    public String getEditorTabIconColor() {
+        return "#555555";
+    }
+
+    @Override
+    public String getFocusedEditorTabBackgroundColor() {
+        return "#FFFFFF";
+    }
+
+    @Override
+    public String getFocusedEditorTabBorderBottomColor() {
+        return "#4EABFF";
+    }
+
+    @Override
     public String getPartBackground() {
         return "#ffffff";
     }
@@ -870,4 +890,75 @@ public class LightTheme implements Theme {
     public String getListBoxDropdownBackgroundColor() {
         return "#ECECEC";
     }
+
+    @Override
+    public String openedFilesDropdownButtonBackground() {
+        return "#e4e4e4";
+    }
+
+    @Override
+    public String openedFilesDropdownButtonBorderColor() {
+        return "#8e8e8e";
+    }
+
+    @Override
+    public String openedFilesDropdownButtonShadowColor() {
+        return "rgba(0, 0, 0, 0.15)";
+    }
+
+    @Override
+    public String openedFilesDropdownButtonIconColor() {
+        return "#8E8E8E";
+    }
+
+    @Override
+    public String openedFilesDropdownButtonHoverIconColor() {
+        return "#5A5A5A";
+    }
+
+    @Override
+    public String openedFilesDropdownButtonActiveBackground() {
+        return "#FFFFFF";
+    }
+
+    @Override
+    public String openedFilesDropdownButtonActiveBorderColor() {
+        return "#8E8E8E";
+    }
+
+    @Override
+    public String openedFilesDropdownListBackgroundColor() {
+        return "#ECECEC";
+    }
+
+    @Override
+    public String openedFilesDropdownListBorderColor() {
+        return "#A4A4A4";
+    }
+
+    @Override
+    public String openedFilesDropdownListShadowColor() {
+        return "rgba(0, 0, 0, 0.30)";
+    }
+
+    @Override
+    public String openedFilesDropdownListTextColor() {
+        return "#555555";
+    }
+
+    @Override
+    public String openedFilesDropdownListCloseButtonColor() {
+        return "#8E8E8E";
+    }
+
+    @Override
+    public String openedFilesDropdownListHoverBackgroundColor() {
+        return "rgba(0, 0, 0, 0.12)";
+    }
+
+    @Override
+    public String openedFilesDropdownListHoverTextColor() {
+        return "#8E8E8E";
+    }
+
 }
