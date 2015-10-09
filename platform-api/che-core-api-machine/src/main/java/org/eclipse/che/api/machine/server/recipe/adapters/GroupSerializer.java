@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.local.storage.deserialize;
+package org.eclipse.che.api.machine.server.recipe.adapters;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.JsonDeserializationContext;

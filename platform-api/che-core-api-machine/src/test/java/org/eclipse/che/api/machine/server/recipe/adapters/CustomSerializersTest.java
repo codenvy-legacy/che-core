@@ -8,15 +8,13 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.local;
+package org.eclipse.che.api.machine.server.recipe.adapters;
 
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 
-import org.eclipse.che.api.local.storage.deserialize.GroupSerializer;
-import org.eclipse.che.api.local.storage.deserialize.PermissionsSerializer;
 import org.eclipse.che.api.machine.server.recipe.GroupImpl;
 import org.eclipse.che.api.machine.server.recipe.PermissionsImpl;
 import org.eclipse.che.api.machine.shared.Group;
