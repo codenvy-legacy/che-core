@@ -80,7 +80,7 @@ public class CustomListBox extends FocusWidget implements HasChangeHandlers {
 
         listBoxElement.appendChild(currentItemLabel);
         listBoxElement.appendChild(optionsPanel.getElement());
-        listBoxElement.appendChild(new SVGImage(RESOURCES.arrow()).getElement());
+        listBoxElement.appendChild(RESOURCES.arrow().getSvg().getElement());
 
         optionsPanel.setVisible(false);
 
@@ -445,6 +445,6 @@ public class CustomListBox extends FocusWidget implements HasChangeHandlers {
      */
     private native boolean isActive(Element element) /*-{
         var activeElement = $doc.activeElement;
-        return activeElement.isSameNode(element);
+        return activeElement.isEqualNode(element);
     }-*/;
 }

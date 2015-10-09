@@ -77,7 +77,7 @@
 
 .listBox div {
     background-color: listBoxDropdownBackgroundColor;
-    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.30);
+    box-shadow: listBoxDropdownShadowColor;
     border: 1px solid textFieldBorderColor;
     border-bottom-right-radius: 3px;
     border-bottom-left-radius: 3px;
@@ -104,4 +104,8 @@
 
 .listBox[disabled] svg {
     fill: listBoxDisabledColor;
+}
+
+.listBox[disabled] div {
+    display: none !important;
 }
