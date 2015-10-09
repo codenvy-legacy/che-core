@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -68,6 +68,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -246,8 +247,12 @@ public class WorkspaceService extends Service {
                                        @QueryParam("accountId") String accountId)
             throws ServerException, BadRequestException, NotFoundException, ForbiddenException {
         ensureUserIsWorkspaceOwner(workspaceId);
-        permissionManager.checkPermission(START_WORKSPACE, getCurrentUserId(), ImmutableMap.of("accountId", accountId,
-                                                                                               "workspaceId", workspaceId));
+
+        final Map<String, String> params = Maps.newHashMapWithExpectedSize(2);
+        params.put("accountId", accountId);
+        params.put("workspaceId", workspaceId);
+        permissionManager.checkPermission(START_WORKSPACE, getCurrentUserId(), params);
+
         return injectLinks(DtoConverter.asDto(workspaceManager.startWorkspaceById(workspaceId, envName, accountId)));
     }
 
@@ -261,8 +266,12 @@ public class WorkspaceService extends Service {
             throws ServerException, BadRequestException, NotFoundException, ForbiddenException {
         final UsersWorkspace workspace = workspaceManager.getWorkspace(name, getCurrentUserId());
         ensureUserIsWorkspaceOwner(workspace.getId());
-        permissionManager.checkPermission(START_WORKSPACE, getCurrentUserId(), ImmutableMap.of("accountId", accountId,
-                                                                                               "workspaceId", workspace.getId()));
+
+        final Map<String, String> params = Maps.newHashMapWithExpectedSize(2);
+        params.put("accountId", accountId);
+        params.put("workspaceId", workspace.getId());
+        permissionManager.checkPermission(START_WORKSPACE, getCurrentUserId(), params);
+
         return injectLinks(DtoConverter.asDto(workspaceManager.startWorkspaceByName(name, envName, getCurrentUserId(), accountId)));
     }
 
