@@ -125,44 +125,6 @@ public class ChildrenTest extends LocalFileSystemTest {
         assertEquals(0, children.getNumItems());
     }
 
-    public void testGetChildrenNoPermissions() throws Exception {
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String requestPath = SERVICE_URI + "children/" + protectedFolderId;
-        ContainerResponse response = launcher.service(HttpMethod.GET, requestPath, BASE_URI, null, null, writer, null);
-        assertEquals(403, response.getStatus());
-        log.info(new String(writer.getBody()));
-    }
-
-    public void testGetChildrenNoPermissions2() throws Exception {
-        // Have permission for read folder but have not permission to read one of its child.
-        String protectedItemName = childrenNames.iterator().next();
-        String protectedItemPath = folderPath + '/' + protectedItemName;
-        Map<Principal, Set<String>> permissions = new HashMap<>(1);
-        Principal principal = DtoFactory.getInstance().createDto(Principal.class).withName("andrew").withType(Principal.Type.USER);
-        permissions.put(principal, Sets.newHashSet(BasicPermissions.ALL.value()));
-        writePermissions(protectedItemPath, permissions);
-        childrenNames.remove(protectedItemName); // this should not appears in result
-
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String requestPath = SERVICE_URI + "children/" + folderId;
-        ContainerResponse response = launcher.service(HttpMethod.GET, requestPath, BASE_URI, null, null, writer, null);
-        assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
-        log.info(new String(writer.getBody()));
-        @SuppressWarnings("unchecked")
-        ItemList children = (ItemList)response.getEntity();
-        List<String> list = new ArrayList<>(3);
-        for (Item i : children.getItems()) {
-            validateLinks(i);
-            list.add(i.getName());
-        }
-
-        assertEquals(3, list.size());
-        childrenNames.removeAll(list);
-        if (!childrenNames.isEmpty()) {
-            fail("Expected items " + childrenNames + " missed in response. ");
-        }
-    }
-
     public void testGetChildrenPagingSkipCount() throws Exception {
         // Get all children.
         String requestPath = SERVICE_URI + "children/" + folderId;

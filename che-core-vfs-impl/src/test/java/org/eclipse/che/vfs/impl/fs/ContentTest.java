@@ -98,14 +98,6 @@ public class ContentTest extends LocalFileSystemTest {
         assertEquals(403, response.getStatus());
     }
 
-    public void testGetContentNoPermissions() throws Exception {
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String requestPath = SERVICE_URI + "content/" + protectedFileId;
-        ContainerResponse response = launcher.service(HttpMethod.GET, requestPath, BASE_URI, null, null, writer, null);
-        log.info(new String(writer.getBody()));
-        assertEquals(403, response.getStatus());
-    }
-
     public void testGetContentByPath() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "contentbypath" + filePath;
@@ -115,15 +107,6 @@ public class ContentTest extends LocalFileSystemTest {
         assertTrue(Arrays.equals(content, writer.getBody()));
         assertEquals(MediaType.TEXT_PLAIN, writer.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
     }
-
-    public void testGetContentByPathNoPermissions() throws Exception {
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String requestPath = SERVICE_URI + "contentbypath" + protectedFilePath;
-        ContainerResponse response = launcher.service(HttpMethod.GET, requestPath, BASE_URI, null, null, writer, null);
-        log.info(new String(writer.getBody()));
-        assertEquals(403, response.getStatus());
-    }
-
 
     public void testUpdateContent() throws Exception {
         String requestPath = SERVICE_URI + "content/" + fileId;
@@ -143,25 +126,6 @@ public class ContentTest extends LocalFileSystemTest {
         ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, updateContent, writer, null);
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));
-    }
-
-    public void testUpdateContentNoPermissions() throws Exception {
-        // Restore 'read' permission for 'admin'.
-        // All requests in test use this principal by default.
-        Map<Principal, Set<String>> permissions = new HashMap<>(1);
-        Principal principal = DtoFactory.getInstance().createDto(Principal.class).withName("admin").withType(Principal.Type.USER);
-        permissions.put(principal, Sets.newHashSet(BasicPermissions.READ.value()));
-        writePermissions(protectedFilePath, permissions);
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String requestPath = SERVICE_URI + "content/" + protectedFileId;
-        Map<String, List<String>> headers = new HashMap<>(1);
-        headers.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.TEXT_PLAIN));
-        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, headers, updateContent, writer, null);
-        // Request must fail since 'admin' has not 'write' permission (only 'read').
-        assertEquals(403, response.getStatus());
-        log.info(new String(writer.getBody()));
-        assertTrue("Content must not be updated", Arrays.equals(content, readFile(protectedFilePath)));
-        assertNull("Properties must not be updated", readProperties(filePath));
     }
 
     public void testUpdateContentLocked() throws Exception {

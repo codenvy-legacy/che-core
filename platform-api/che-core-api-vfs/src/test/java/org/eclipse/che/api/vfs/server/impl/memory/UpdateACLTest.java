@@ -133,25 +133,6 @@ public class UpdateACLTest extends MemoryFileSystemTest {
         log.info(new String(writer.getBody()));
     }
 
-    public void testUpdateAclNoPermissions() throws Exception {
-        Principal adminPrincipal = createPrincipal("admin", Principal.Type.USER);
-        Principal userPrincipal = createPrincipal("john", Principal.Type.USER);
-        Map<Principal, Set<String>> permissions = new HashMap<>(2);
-        permissions.put(adminPrincipal, Sets.newHashSet(BasicPermissions.ALL.value()));
-        permissions.put(userPrincipal, Sets.newHashSet(BasicPermissions.READ.value()));
-        mountPoint.getVirtualFileById(objectId).updateACL(createAcl(permissions), true, null);
-
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String path = SERVICE_URI + "acl/" + objectId;
-        String body = "[{\"principal\":{\"name\":\"admin\",\"type\":\"USER\"},\"permissions\":[\"all\"]}," + //
-                      "{\"principal\":{\"name\":\"john\",\"type\":\"USER\"},\"permissions\":[\"read\"]}]";
-        Map<String, List<String>> h = new HashMap<>(1);
-        h.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
-        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, h, body.getBytes(), writer, null);
-        assertEquals(403, response.getStatus());
-        log.info(new String(writer.getBody()));
-    }
-
     private Map<String, List<String>> toMap(List<AccessControlEntry> acl) {
         Map<String, List<String>> m = new HashMap<>();
         for (AccessControlEntry e : acl) {

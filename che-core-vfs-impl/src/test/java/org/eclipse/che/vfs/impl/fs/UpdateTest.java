@@ -174,21 +174,4 @@ public class UpdateTest extends LocalFileSystemTest {
         Item item = getItem(protectedFileId);
         assertEquals("MyValue", getPropertyValue(item, "MyProperty"));
     }
-
-    public void testUpdateFileNoPermissions() throws Exception {
-        String properties = "[{\"name\":\"MyProperty\", \"value\":[\"MyValue\"]}]";
-
-        String requestPath = SERVICE_URI + "item/" + protectedFileId;
-        Map<String, List<String>> h = new HashMap<>(1);
-        h.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, h, properties.getBytes(), writer, null);
-        assertEquals(403, response.getStatus());
-        log.info(new String(writer.getBody()));
-
-        assertNull("Properties must not be updated.", readProperties(protectedFilePath));
-
-        Item item = getItem(protectedFileId);
-        assertNull(getPropertyValue(item, "MyProperty"));
-    }
 }

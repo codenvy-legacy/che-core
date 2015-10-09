@@ -120,33 +120,6 @@ public class RenameTest extends MemoryFileSystemTest {
         }
     }
 
-    public void testRenameFileNoPermissions() throws Exception {
-        Principal adminPrincipal = createPrincipal("admin", Principal.Type.USER);
-        Principal userPrincipal = createPrincipal("john", Principal.Type.USER);
-        Map<Principal, Set<String>> permissions = new HashMap<>(2);
-        permissions.put(adminPrincipal, Sets.newHashSet(BasicPermissions.ALL.value()));
-        permissions.put(userPrincipal, Sets.newHashSet(BasicPermissions.READ.value()));
-        file.updateACL(createAcl(permissions), true, null);
-
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String path = SERVICE_URI + "rename/" + fileId + '?' + "newname=" + "_FILE_NEW_NAME_";
-        String originPath = file.getPath();
-        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, writer, null);
-        assertEquals(403, response.getStatus());
-        log.info(new String(writer.getBody()));
-        String expectedPath = renameTestFolder.getPath() + '/' + "_FILE_NEW_NAME_";
-        try {
-            mountPoint.getVirtualFile(originPath);
-        } catch (NotFoundException e) {
-            fail("Source file not found. ");
-        }
-        try {
-            mountPoint.getVirtualFile(expectedPath);
-            fail("File must not be renamed since permissions restriction. ");
-        } catch (NotFoundException e) {
-        }
-    }
-
     public void testRenameFolder() throws Exception {
         String path = SERVICE_URI + "rename/" + folderId + '?' + "newname=" + "_FOLDER_NEW_NAME_";
         String originPath = folder.getPath();
@@ -180,32 +153,6 @@ public class RenameTest extends MemoryFileSystemTest {
         try {
             mountPoint.getVirtualFile(expectedPath);
             fail("Folder must not be renamed since it contains locked file. ");
-        } catch (NotFoundException e) {
-        }
-    }
-
-    public void testRenameFolderNoPermissionForChild() throws Exception {
-        VirtualFile myFile = folder.createFile("file", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
-        Principal adminPrincipal = createPrincipal("admin", Principal.Type.USER);
-        Principal userPrincipal = createPrincipal("john", Principal.Type.USER);
-        Map<Principal, Set<String>> permissions = new HashMap<>(2);
-        permissions.put(adminPrincipal, Sets.newHashSet(BasicPermissions.ALL.value()));
-        permissions.put(userPrincipal, Sets.newHashSet(BasicPermissions.READ.value()));
-        myFile.updateACL(createAcl(permissions), true, null);
-
-        String path = SERVICE_URI + "rename/" + folderId + '?' + "newname=" + "_FOLDER_NEW_NAME_";
-        String originPath = folder.getPath();
-        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
-        assertEquals(403, response.getStatus());
-        String expectedPath = renameTestFolder.getPath() + '/' + "_FOLDER_NEW_NAME_";
-        try {
-            mountPoint.getVirtualFile(originPath);
-        } catch (NotFoundException e) {
-            fail("Source file not found. ");
-        }
-        try {
-            mountPoint.getVirtualFile(expectedPath);
-            fail("Folder must not be renamed since permissions restriction. ");
         } catch (NotFoundException e) {
         }
     }

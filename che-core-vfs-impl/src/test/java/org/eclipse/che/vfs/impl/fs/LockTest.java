@@ -89,16 +89,6 @@ public class LockTest extends LocalFileSystemTest {
         assertEquals("Lock file not found or lock token invalid. ", lockToken, readLock(lockedFilePath).getLockToken());
     }
 
-    public void testLockFileNoPermissions() throws Exception {
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String requestPath = SERVICE_URI + "lock/" + protectedFileId;
-        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
-        log.info(new String(writer.getBody()));
-        assertEquals(403, response.getStatus());
-        assertNull("Lock file must not be created. ", readLock(protectedFilePath));
-        assertFalse("File must not be locked. ", ((File)getItem(protectedFileId)).isLocked());
-    }
-
     public void testLockFolder() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "lock/" + folderId;

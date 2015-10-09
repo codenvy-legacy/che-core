@@ -82,19 +82,6 @@ public class GetContentTest extends MemoryFileSystemTest {
         log.info(new String(writer.getBody()));
     }
 
-    public void testGetContentNoPermissions() throws Exception {
-        Principal adminPrincipal = createPrincipal("admin", Principal.Type.USER);
-        Map<Principal, Set<String>> permissions = new HashMap<>(1);
-        permissions.put(adminPrincipal, Sets.newHashSet(BasicPermissions.ALL.value()));
-        mountPoint.getVirtualFileById(fileId).updateACL(createAcl(permissions), true, null);
-
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String path = SERVICE_URI + "content/" + fileId;
-        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
-        assertEquals(403, response.getStatus());
-        log.info(new String(writer.getBody()));
-    }
-
     public void testGetContentByPath() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "contentbypath" + filePath;

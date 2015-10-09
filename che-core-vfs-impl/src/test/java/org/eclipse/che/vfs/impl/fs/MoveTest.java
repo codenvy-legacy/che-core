@@ -172,28 +172,6 @@ public class MoveTest extends LocalFileSystemTest {
         assertFalse("File must not be moved. ", exists(expectedPath));
     }
 
-    public void testMoveFileNoPermissions() throws Exception {
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String requestPath = SERVICE_URI + "move/" + protectedFileId + '?' + "parentId=" + destinationId;
-        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
-        assertEquals(403, response.getStatus());
-        log.info(new String(writer.getBody()));
-        assertTrue("Source file not found. ", exists(protectedFilePath));
-        String expectedPath = destinationPath + '/' + protectedFileName;
-        assertFalse("File must not be moved. ", exists(expectedPath));
-    }
-
-    public void testMoveFileNoPermissions_Destination() throws Exception {
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String requestPath = SERVICE_URI + "move/" + fileId + '?' + "parentId=" + protectedDestinationId;
-        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
-        assertEquals(403, response.getStatus());
-        log.info(new String(writer.getBody()));
-        assertTrue("Source file not found. ", exists(protectedFilePath));
-        String expectedPath = protectedDestinationPath + '/' + protectedFileName;
-        assertFalse("File must not be moved. ", exists(expectedPath));
-    }
-
     public void testMoveFolder() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "move/" + folderId + '?' + "parentId=" + destinationId;
@@ -208,22 +186,6 @@ public class MoveTest extends LocalFileSystemTest {
         assertFalse("Folder must be moved. ", exists(folderPath));
         assertTrue("Not found file in destination location. ", exists(expectedPath));
         List<String> after = flattenDirectory(expectedPath);
-        before.removeAll(after);
-        assertTrue(String.format("Missed items: %s", before), before.isEmpty());
-    }
-
-    public void testMoveFolderNoPermissions() throws Exception {
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String requestPath = SERVICE_URI + "move/" + protectedFolderId + '?' + "parentId=" + destinationId;
-        List<String> before = flattenDirectory(protectedFolderPath);
-        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
-        assertEquals(403, response.getStatus());
-        log.info(new String(writer.getBody()));
-        String expectedPath = destinationPath + '/' + protectedFolderName;
-        assertTrue("Source folder not found. ", exists(protectedFolderPath));
-        assertFalse("Folder must not be moved. ", exists(expectedPath));
-        List<String> after = flattenDirectory(protectedFolderPath);
-        // Be sure there are no missed files.
         before.removeAll(after);
         assertTrue(String.format("Missed items: %s", before), before.isEmpty());
     }
@@ -252,25 +214,6 @@ public class MoveTest extends LocalFileSystemTest {
         // Be sure source folder is untouched.
         assertTrue("Folder must not be removed. ", exists(lockedChildFolderPath));
         List<String> sourceAfter = flattenDirectory(lockedChildFolderPath);
-        sourceBefore.removeAll(sourceAfter);
-        assertTrue(String.format("Missed items: %s", sourceBefore), sourceBefore.isEmpty());
-    }
-
-    public void testMoveFolderChildNoPermissions() throws Exception {
-        List<String> sourceBefore = flattenDirectory(protectedChildFolderPath);
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String requestPath = SERVICE_URI + "move/" + protectedChildFolderId + '?' + "parentId=" + destinationId;
-        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
-        assertEquals(403, response.getStatus());
-        log.info(new String(writer.getBody()));
-        // Items copied but we are fail when try delete source tree.
-        List<String> destination = flattenDirectory(destinationPath + '/' + protectedChildFolderName);
-        List<String> sourceBeforeCopy = new ArrayList<>(sourceBefore);
-        sourceBeforeCopy.removeAll(destination);
-        assertTrue(String.format("Missed items: %s", sourceBeforeCopy), sourceBeforeCopy.isEmpty());
-        // Be sure source folder is untouched.
-        assertTrue("Folder must not be removed. ", exists(protectedChildFolderPath));
-        List<String> sourceAfter = flattenDirectory(protectedChildFolderPath);
         sourceBefore.removeAll(sourceAfter);
         assertTrue(String.format("Missed items: %s", sourceBefore), sourceBefore.isEmpty());
     }

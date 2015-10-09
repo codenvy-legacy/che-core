@@ -129,30 +129,6 @@ public class GetItemTest extends MemoryFileSystemTest {
         log.info(new String(writer.getBody()));
     }
 
-    public void testGetFileNoPermissions() throws Exception {
-        Principal adminPrincipal = createPrincipal("admin", Principal.Type.USER);
-        Map<Principal, Set<String>> permissions = new HashMap<>(1);
-        permissions.put(adminPrincipal, Sets.newHashSet(BasicPermissions.ALL.value()));
-        mountPoint.getVirtualFileById(fileId).updateACL(createAcl(permissions), true, null);
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String path = SERVICE_URI + "item/" + fileId;
-        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
-        assertEquals(403, response.getStatus());
-        log.info(new String(writer.getBody()));
-    }
-
-    public void testGetFileByPathNoPermissions() throws Exception {
-        Principal adminPrincipal = createPrincipal("admin", Principal.Type.USER);
-        Map<Principal, Set<String>> permissions = new HashMap<>(1);
-        permissions.put(adminPrincipal, Sets.newHashSet(BasicPermissions.ALL.value()));
-        mountPoint.getVirtualFileById(fileId).updateACL(createAcl(permissions), true, null);
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String path = SERVICE_URI + "itembypath" + filePath;
-        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
-        assertEquals(403, response.getStatus());
-        log.info(new String(writer.getBody()));
-    }
-
     public void testGetFolder() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "item/" + folderId;

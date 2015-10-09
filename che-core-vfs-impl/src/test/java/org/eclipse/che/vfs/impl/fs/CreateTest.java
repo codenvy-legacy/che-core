@@ -162,17 +162,6 @@ public class CreateTest extends LocalFileSystemTest {
         assertEquals(content, new String(readFile(expectedPath)));
     }
 
-    public void testCreateFileNoPermissions() throws Exception {
-        String name = "testCreateFileNoPermissions";
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String requestPath = SERVICE_URI + "file/" + protectedFolderId + '?' + "name=" + name;
-        ContainerResponse response =
-                launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, DEFAULT_CONTENT_BYTES, writer, null);
-        log.info(new String(writer.getBody()));
-        assertEquals(403, response.getStatus());
-        assertFalse(exists(protectedFolderPath + '/' + name));
-    }
-
     public void testCreateFileWrongParent() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String name = "testCreateFileWrongParent";
@@ -222,17 +211,6 @@ public class CreateTest extends LocalFileSystemTest {
         ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
         log.info(new String(writer.getBody()));
         assertEquals(500, response.getStatus());
-    }
-
-    public void testCreateFolderNoPermissions() throws Exception {
-        String name = "testCreateFolderNoPermissions";
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String requestPath = SERVICE_URI + "folder/" + protectedFolderId + '?' + "name=" + name;
-        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
-        log.info(new String(writer.getBody()));
-        assertEquals(403, response.getStatus());
-        String expectedPath = protectedFolderPath + '/' + name;
-        assertFalse(exists(expectedPath));
     }
 
     public void testCreateFolderWrongParentId() throws Exception {

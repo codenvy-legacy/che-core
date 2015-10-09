@@ -76,17 +76,6 @@ public class UploadFileTest extends LocalFileSystemTest {
         validateProperties(expectedPath, expectedProperties);
     }
 
-    public void testUploadNewFileNoPermissions() throws Exception {
-        final String fileName = "testUploadNewFileNoPermissions";
-        final String fileContent = "test upload file";
-        final String fileMediaType = MediaType.TEXT_PLAIN;
-        ContainerResponse response = doUploadFile(protectedFolderId, fileName, fileMediaType, fileContent, "", "", false);
-        assertEquals("Error: " + response.getEntity(), 200, response.getStatus()); // always 200 even for errors
-        assertTrue(((String)response.getEntity()).startsWith("<pre>message: "));
-        String expectedPath = protectedFolderPath + '/' + fileName;
-        assertFalse("File must not be created. ", exists(expectedPath));
-    }
-
     public void testUploadNewFileInRootFolder() throws Exception {
         final String fileName = "testUploadNewFile";
         final String fileContent = "test upload file";
@@ -145,24 +134,6 @@ public class UploadFileTest extends LocalFileSystemTest {
         final String fileContent = "existed file";
         createFile(folderPath, fileName, fileContent.getBytes());
         ContainerResponse response = doUploadFile(folderId, fileName, fileMediaType, DEFAULT_CONTENT, "", "", false);
-        assertEquals("Error: " + response.getEntity(), 200, response.getStatus()); // always 200 even for errors
-        assertTrue(((String)response.getEntity()).startsWith("<pre>message: "));
-        assertEquals(fileContent, new String(readFile(folderPath + '/' + fileName)));
-    }
-
-    public void testUploadFileAlreadyExistsAndProtected() throws Exception {
-        final String fileName = "existedProtectedFile";
-        final String fileMediaType = MediaType.APPLICATION_OCTET_STREAM;
-        final String fileContent = "existed protected file";
-        String path = createFile(folderPath, fileName, fileContent.getBytes());
-        Map<Principal, Set<String>> permissions = new HashMap<>(2);
-        Principal user = DtoFactory.getInstance().createDto(Principal.class).withName("andrew").withType(Principal.Type.USER);
-        Principal admin = DtoFactory.getInstance().createDto(Principal.class).withName("admin").withType(Principal.Type.USER);
-        permissions.put(admin, Sets.newHashSet(BasicPermissions.READ.value()));
-        permissions.put(user, Sets.newHashSet(BasicPermissions.READ.value(), BasicPermissions.WRITE.value()));
-        writePermissions(path, permissions);
-        // File is protected by ACL and may not be overwritten even if 'overwrite' parameter is 'true'
-        ContainerResponse response = doUploadFile(folderId, fileName, fileMediaType, DEFAULT_CONTENT, "", "", true);
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus()); // always 200 even for errors
         assertTrue(((String)response.getEntity()).startsWith("<pre>message: "));
         assertEquals(fileContent, new String(readFile(folderPath + '/' + fileName)));

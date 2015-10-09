@@ -78,62 +78,6 @@ public class ChildrenTest extends MemoryFileSystemTest {
         assertTrue(list.contains("ChildrenTest_FILE01"));
     }
 
-    public void testGetChildrenNoPermissions() throws Exception {
-        Principal adminPrincipal = createPrincipal("admin", Principal.Type.USER);
-        Map<Principal, Set<String>> permissions = new HashMap<>(1);
-        permissions.put(adminPrincipal, Sets.newHashSet(BasicPermissions.ALL.value()));
-        mountPoint.getVirtualFileById(folderId).updateACL(createAcl(permissions), true, null);
-
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String path = SERVICE_URI + "children/" + folderId;
-        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
-        assertEquals(403, response.getStatus());
-        log.info(new String(writer.getBody()));
-    }
-
-    public void testGetRootChildrenNoPermissions() throws Exception {
-        // Special behaviour for root folder.
-        // Never check permission when read root folder but hide content of it.
-        Principal adminPrincipal = createPrincipal("admin", Principal.Type.USER);
-        Map<Principal, Set<String>> permissions = new HashMap<>(1);
-        permissions.put(adminPrincipal, Sets.newHashSet(BasicPermissions.ALL.value()));
-        mountPoint.getRoot().updateACL(createAcl(permissions), true, null);
-
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String path = SERVICE_URI + "children/" + mountPoint.getRoot().getId();
-        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
-        assertEquals(200, response.getStatus());
-        ItemList children = (ItemList)response.getEntity();
-        assertEquals(0, children.getItems().size());
-    }
-
-    public void testGetChildrenNoPermissionsFiltering() throws Exception {
-        VirtualFile folder = mountPoint.getVirtualFileById(folderId);
-        VirtualFile protectedItem = folder.getChild("ChildrenTest_FILE01");
-        Principal adminPrincipal = createPrincipal("admin", Principal.Type.USER);
-        Map<Principal, Set<String>> permissions = new HashMap<>(1);
-        permissions.put(adminPrincipal, Sets.newHashSet(BasicPermissions.ALL.value()));
-        // after that item must not appear in response
-        protectedItem.updateACL(createAcl(permissions), true, null);
-
-        // Have permission for read folder but have not permission to read one of its child.
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String path = SERVICE_URI + "children/" + folderId;
-        ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);
-        assertEquals(200, response.getStatus());
-        //log.info(new String(writer.getBody()));
-        @SuppressWarnings("unchecked")
-        ItemList children = (ItemList)response.getEntity();
-        List<String> list = new ArrayList<>(2);
-        for (Item i : children.getItems()) {
-            validateLinks(i);
-            list.add(i.getName());
-        }
-        assertEquals(2, list.size());
-        assertTrue(list.contains("ChildrenTest_FOLDER01"));
-        assertTrue(list.contains("ChildrenTest_FOLDER02"));
-    }
-
     @SuppressWarnings("unchecked")
     public void testGetChildrenPagingSkipCount() throws Exception {
         // Get all children.

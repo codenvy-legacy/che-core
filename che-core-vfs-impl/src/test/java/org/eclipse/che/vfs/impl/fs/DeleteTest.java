@@ -152,15 +152,6 @@ public class DeleteTest extends LocalFileSystemTest {
         assertNull("ACL file must be removed. ", readPermissions(protectedFilePath)); // file which stored ACL must be removed
     }
 
-    public void testDeleteFileNoPermissions() throws Exception {
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String requestPath = SERVICE_URI + "delete/" + protectedFileId;
-        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
-        log.info(new String(writer.getBody()));
-        assertEquals(403, response.getStatus());
-        assertTrue("File must not be removed. ", exists(protectedFilePath));
-    }
-
     public void testDeleteFileWrongId() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String requestPath = SERVICE_URI + "delete/" + fileId + "_WRONG_ID";
@@ -182,32 +173,6 @@ public class DeleteTest extends LocalFileSystemTest {
         ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, null);
         assertEquals(403, response.getStatus()); // must not be able delete root folder
         assertTrue("Folder must not be removed. ", exists("/"));
-    }
-
-    public void testDeleteFolderNoPermissions() throws Exception {
-        List<String> before = flattenDirectory(protectedFolderPath);
-        String requestPath = SERVICE_URI + "delete/" + protectedFolderId;
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
-        assertEquals(403, response.getStatus());
-        log.info(new String(writer.getBody()));
-        assertTrue("Folder must not be removed. ", exists(protectedFolderPath));
-        List<String> after = flattenDirectory(protectedFolderPath);
-        before.removeAll(after);
-        assertTrue(String.format("Missed items: %s", before), before.isEmpty());
-    }
-
-    public void testDeleteFolderChildNoPermissions() throws Exception {
-        List<String> before = flattenDirectory(protectedChildFolderPath);
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String requestPath = SERVICE_URI + "delete/" + protectedChildFolderId;
-        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
-        assertEquals(403, response.getStatus());
-        log.info(new String(writer.getBody()));
-        assertTrue("Folder must not be removed. ", exists(protectedChildFolderPath));
-        List<String> after = flattenDirectory(protectedChildFolderPath);
-        before.removeAll(after);
-        assertTrue(String.format("Missed items: %s", before), before.isEmpty());
     }
 
     public void testDeleteFolderChildLocked() throws Exception {

@@ -76,24 +76,6 @@ public class UpdateTest extends MemoryFileSystemTest {
         assertEquals(null, file.getPropertyValue("MyProperty"));
     }
 
-    public void testUpdatePropertiesNoPermissions() throws Exception {
-        VirtualFile file = mountPoint.getVirtualFileById(fileId);
-        Principal adminPrincipal = createPrincipal("admin", Principal.Type.USER);
-        Principal userPrincipal = createPrincipal("john", Principal.Type.USER);
-        Map<Principal, Set<String>> permissions = new HashMap<>(2);
-        permissions.put(adminPrincipal, Sets.newHashSet(BasicPermissions.ALL.value()));
-        permissions.put(userPrincipal, Sets.newHashSet(BasicPermissions.READ.value()));
-        file.updateACL(createAcl(permissions), true, null);
-        String properties = "[{\"name\":\"MyProperty\", \"value\":[\"MyValue\"]}]";
-        String path = SERVICE_URI + "item/" + fileId;
-        Map<String, List<String>> h = new HashMap<>(1);
-        h.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
-        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, h, properties.getBytes(), null);
-        assertEquals(403, response.getStatus());
-        file = mountPoint.getVirtualFileById(fileId);
-        assertEquals(null, file.getPropertyValue("MyProperty"));
-    }
-
     public void doUpdate(String id, String rawData) throws Exception {
         String path = SERVICE_URI + "item/" + id;
         Map<String, List<String>> h = new HashMap<>(1);

@@ -71,22 +71,6 @@ public class UpdateContentTest extends MemoryFileSystemTest {
         log.info(new String(writer.getBody()));
     }
 
-    public void testUpdateContentNoPermissions() throws Exception {
-        Principal adminPrincipal = createPrincipal("admin", Principal.Type.USER);
-        Principal userPrincipal = createPrincipal("john", Principal.Type.USER);
-        Map<Principal, Set<String>> permissions = new HashMap<>(2);
-        permissions.put(adminPrincipal, Sets.newHashSet(BasicPermissions.ALL.value()));
-        permissions.put(userPrincipal, Sets.newHashSet(BasicPermissions.READ.value()));
-        VirtualFile file = mountPoint.getVirtualFileById(fileId);
-        file.updateACL(createAcl(permissions), true, null);
-
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String path = SERVICE_URI + "content/" + fileId;
-        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, writer, null);
-        assertEquals(403, response.getStatus());
-        log.info(new String(writer.getBody()));
-    }
-
     public void testUpdateContentLocked() throws Exception {
         VirtualFile file = mountPoint.getVirtualFileById(fileId);
         String lockToken = file.lock(0);

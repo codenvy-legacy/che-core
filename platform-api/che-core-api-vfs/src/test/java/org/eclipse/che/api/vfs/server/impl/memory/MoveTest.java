@@ -134,60 +134,6 @@ public class MoveTest extends MemoryFileSystemTest {
         }
     }
 
-    public void testMoveFileNoPermissions() throws Exception {
-        Principal adminPrincipal = createPrincipal("admin", Principal.Type.USER);
-        Principal userPrincipal = createPrincipal("john", Principal.Type.USER);
-        Map<Principal, Set<String>> permissions = new HashMap<>(2);
-        permissions.put(adminPrincipal, Sets.newHashSet(BasicPermissions.ALL.value()));
-        permissions.put(userPrincipal, Sets.newHashSet(BasicPermissions.READ.value()));
-        fileForMove.updateACL(createAcl(permissions), true, null);
-
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String path = SERVICE_URI + "move/" + fileForMove.getId() + '?' + "parentId=" + moveTestDestinationFolder.getId();
-        String originPath = fileForMove.getPath();
-        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, writer, null);
-        log.info(new String(writer.getBody()));
-        assertEquals(403, response.getStatus());
-        String expectedPath = moveTestDestinationFolder.getPath() + '/' + fileForMove.getName();
-        try {
-            mountPoint.getVirtualFile(originPath);
-        } catch (NotFoundException e) {
-            fail("Source file not found. ");
-        }
-        try {
-            mountPoint.getVirtualFile(expectedPath);
-            fail("File must not be moved since permissions restriction.");
-        } catch (NotFoundException e) {
-        }
-    }
-
-    public void testMoveFileDestinationNoPermissions() throws Exception {
-        Principal adminPrincipal = createPrincipal("admin", Principal.Type.USER);
-        Principal userPrincipal = createPrincipal("john", Principal.Type.USER);
-        Map<Principal, Set<String>> permissions = new HashMap<>(2);
-        permissions.put(adminPrincipal, Sets.newHashSet(BasicPermissions.ALL.value()));
-        permissions.put(userPrincipal, Sets.newHashSet(BasicPermissions.READ.value()));
-        moveTestDestinationFolder.updateACL(createAcl(permissions), true, null);
-
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String path = SERVICE_URI + "move/" + fileForMove.getId() + '?' + "parentId=" + moveTestDestinationFolder.getId();
-        String originPath = fileForMove.getPath();
-        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, writer, null);
-        log.info(new String(writer.getBody()));
-        assertEquals(403, response.getStatus());
-        String expectedPath = moveTestDestinationFolder.getPath() + '/' + fileForMove.getName();
-        try {
-            mountPoint.getVirtualFile(originPath);
-        } catch (NotFoundException e) {
-            fail("Source file not found. ");
-        }
-        try {
-            mountPoint.getVirtualFile(expectedPath);
-            fail("File must not be moved since permissions restriction on destination folder. ");
-        } catch (NotFoundException e) {
-        }
-    }
-
     public void testMoveFolder() throws Exception {
         String path = SERVICE_URI + "move/" + folderForMove.getId() + '?' + "parentId=" + moveTestDestinationFolder.getId();
         String originPath = folderForMove.getPath();
@@ -226,32 +172,6 @@ public class MoveTest extends MemoryFileSystemTest {
         try {
             mountPoint.getVirtualFile(expectedPath);
             fail("Folder must not be moved since it contains locked file. ");
-        } catch (NotFoundException e) {
-        }
-    }
-
-    public void testMoveFolderNoPermissionForChild() throws Exception {
-        VirtualFile myFile = folderForMove.getChild("file");
-        Principal adminPrincipal = createPrincipal("admin", Principal.Type.USER);
-        Principal userPrincipal = createPrincipal("john", Principal.Type.USER);
-        Map<Principal, Set<String>> permissions = new HashMap<>(2);
-        permissions.put(adminPrincipal, Sets.newHashSet(BasicPermissions.ALL.value()));
-        permissions.put(userPrincipal, Sets.newHashSet(BasicPermissions.READ.value()));
-        myFile.updateACL(createAcl(permissions), true, null);
-
-        String path = SERVICE_URI + "move/" + folderForMove.getId() + '?' + "parentId=" + moveTestDestinationFolder.getId();
-        String originPath = folderForMove.getPath();
-        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
-        assertEquals(403, response.getStatus());
-        String expectedPath = moveTestDestinationFolder.getPath() + '/' + folderForMove.getName();
-        try {
-            mountPoint.getVirtualFile(originPath);
-        } catch (NotFoundException e) {
-            fail("Source file not found. ");
-        }
-        try {
-            mountPoint.getVirtualFile(expectedPath);
-            fail("Folder must not be moved since permissions restriction. ");
         } catch (NotFoundException e) {
         }
     }

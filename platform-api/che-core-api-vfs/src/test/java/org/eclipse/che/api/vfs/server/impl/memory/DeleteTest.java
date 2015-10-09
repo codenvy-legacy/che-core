@@ -105,26 +105,6 @@ public class DeleteTest extends MemoryFileSystemTest {
         }
     }
 
-    public void testDeleteFileNoPermissions() throws Exception {
-        Principal adminPrincipal = createPrincipal("admin", Principal.Type.USER);
-        Principal userPrincipal = createPrincipal("john", Principal.Type.USER);
-        Map<Principal, Set<String>> permissions = new HashMap<>(2);
-        permissions.put(adminPrincipal, Sets.newHashSet(BasicPermissions.ALL.value()));
-        permissions.put(userPrincipal, Sets.newHashSet(BasicPermissions.READ.value()));
-        file.updateACL(createAcl(permissions), true, null);
-
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String path = SERVICE_URI + "delete/" + fileId;
-        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, writer, null);
-        assertEquals(403, response.getStatus());
-        log.info(new String(writer.getBody()));
-        try {
-            mountPoint.getVirtualFileById(fileId);
-        } catch (NotFoundException e) {
-            fail("File must not be removed since permissions restriction. ");
-        }
-    }
-
     public void testDeleteFileWrongId() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "delete/" + fileId + "_WRONG_ID";
@@ -164,24 +144,6 @@ public class DeleteTest extends MemoryFileSystemTest {
             mountPoint.getVirtualFile(folderChildPath);
             fail("Child file must be removed. ");
         } catch (NotFoundException e) {
-        }
-    }
-
-    public void testDeleteFolderNoPermissionForChild() throws Exception {
-        Principal adminPrincipal = createPrincipal("admin", Principal.Type.USER);
-        Principal userPrincipal = createPrincipal("john", Principal.Type.USER);
-        Map<Principal, Set<String>> permissions = new HashMap<>(2);
-        permissions.put(adminPrincipal, Sets.newHashSet(BasicPermissions.ALL.value()));
-        permissions.put(userPrincipal, Sets.newHashSet(BasicPermissions.READ.value()));
-        mountPoint.getVirtualFileById(folderChildId).updateACL(createAcl(permissions), true, null);
-
-        String path = SERVICE_URI + "delete/" + folderId;
-        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
-        assertEquals(403, response.getStatus());
-        try {
-            mountPoint.getVirtualFileById(folderId);
-        } catch (NotFoundException e) {
-            fail("Folder must not be removed since permissions restriction. ");
         }
     }
 

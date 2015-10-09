@@ -153,19 +153,6 @@ public class RenameTest extends LocalFileSystemTest {
         assertTrue(Arrays.equals(DEFAULT_CONTENT_BYTES, readFile(lockedFilePath)));
     }
 
-    public void testRenameFileNoPermissions() throws Exception {
-        final String newName = "_FILE_NEW_NAME_";
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String requestPath = SERVICE_URI + "rename/" + protectedFileId + '?' + "newname=" + newName;
-        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
-        assertEquals(403, response.getStatus());
-        log.info(new String(writer.getBody()));
-        assertTrue("File must not be removed. ", exists(protectedFilePath));
-        String expectedPath = testRootPath + '/' + newName;
-        assertFalse("File must not be created. ", exists(expectedPath));
-        assertTrue(Arrays.equals(DEFAULT_CONTENT_BYTES, readFile(protectedFilePath)));
-    }
-
     public void testRenameFolder() throws Exception {
         List<String> before = flattenDirectory(folderPath);
 
@@ -184,23 +171,6 @@ public class RenameTest extends LocalFileSystemTest {
         assertTrue(String.format("Missed items: %s", before), before.isEmpty());
 
         validateProperties(expectedPath, properties, true);
-    }
-
-    public void testRenameFolderNoPermissions() throws Exception {
-        final String newName = "_FOLDER_NEW_NAME_";
-        List<String> before = flattenDirectory(protectedFolderPath);
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String requestPath = SERVICE_URI + "rename/" + protectedFolderId + '?' + "newname=" + newName;
-        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
-        assertEquals(403, response.getStatus());
-        log.info(new String(writer.getBody()));
-        assertTrue("Folder must not be removed. ", exists(protectedFolderPath));
-        String expectedPath = testRootPath + '/' + newName;
-        assertFalse("Folder must not be created. ", exists(expectedPath));
-        List<String> after = flattenDirectory(protectedFolderPath);
-        // Be sure there are no missed files.
-        before.removeAll(after);
-        assertTrue(String.format("Missed items: %s", before), before.isEmpty());
     }
 
     public void testRenameFolderUpdateMimeType() throws Exception {

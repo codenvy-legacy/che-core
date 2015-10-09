@@ -98,32 +98,6 @@ public class CopyTest extends MemoryFileSystemTest {
         }
     }
 
-    public void testCopyFileDestinationNoPermissions() throws Exception {
-        final String originPath = fileForCopy.getPath();
-        Principal adminPrincipal = createPrincipal("admin", Principal.Type.USER);
-        Principal userPrincipal = createPrincipal("john", Principal.Type.USER);
-        Map<Principal, Set<String>> permissions = new HashMap<>(2);
-        permissions.put(adminPrincipal, Sets.newHashSet(BasicPermissions.ALL.value()));
-        permissions.put(userPrincipal, Sets.newHashSet(BasicPermissions.READ.value()));
-        copyTestDestinationFolder.updateACL(createAcl(permissions), true, null);
-
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String path = SERVICE_URI + "copy/" + fileForCopy.getId() + '?' + "parentId=" + copyTestDestinationFolder.getId();
-        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, writer, null);
-        log.info(new String(writer.getBody()));
-        assertEquals(403, response.getStatus());
-        try {
-            mountPoint.getVirtualFile(originPath);
-        } catch (NotFoundException e) {
-            fail("Source file not found. ");
-        }
-        try {
-            mountPoint.getVirtualFile(copyTestDestinationFolder.getPath() + "/CopyTest_FILE");
-            fail("File must not be copied since destination accessible for reading only. ");
-        } catch (NotFoundException e) {
-        }
-    }
-
     public void testCopyFolder() throws Exception {
         String path = SERVICE_URI + "copy/" + folderForCopy.getId() + '?' + "parentId=" + copyTestDestinationFolder.getId();
         ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
@@ -156,21 +130,6 @@ public class CopyTest extends MemoryFileSystemTest {
         } catch (NotFoundException e) {
             fail("Child of copied folder not accessible by id. ");
         }
-    }
-
-    public void testCopyFolderNoPermissionForChild() throws Exception {
-        VirtualFile myFile = folderForCopy.createFile("file", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
-        Principal adminPrincipal = createPrincipal("admin", Principal.Type.USER);
-        Map<Principal, Set<String>> permissions = new HashMap<>(1);
-        permissions.put(adminPrincipal, Sets.newHashSet(BasicPermissions.ALL.value()));
-        myFile.updateACL(createAcl(permissions), true, null);
-
-        String path = SERVICE_URI + "copy/" + folderForCopy.getId() + '?' + "parentId=" + copyTestDestinationFolder.getId();
-        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
-        assertEquals(200, response.getStatus());
-        String expectedPath = copyTestDestinationFolder.getPath() + "/" + folderForCopy.getName();
-        // one file must not be copied since permission restriction
-        assertNull(mountPoint.getVirtualFile(expectedPath).getChild("file"));
     }
 
     public void testCopyFolderAlreadyExist() throws Exception {
