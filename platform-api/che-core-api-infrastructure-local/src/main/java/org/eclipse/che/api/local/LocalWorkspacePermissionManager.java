@@ -24,7 +24,6 @@ import java.util.Map;
  * @author Eugene Voevodin
  */
 @Singleton
-@Named("service.workspace.permission_manager")
 public class LocalWorkspacePermissionManager implements PermissionManager {
     @Override
     public void checkPermission(@NotNull Operation operation,
