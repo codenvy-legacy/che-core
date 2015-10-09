@@ -246,10 +246,8 @@ public class WorkspaceService extends Service {
                                        @QueryParam("accountId") String accountId)
             throws ServerException, BadRequestException, NotFoundException, ForbiddenException {
         ensureUserIsWorkspaceOwner(workspaceId);
-
-        final Map<String, String> params = ImmutableMap.of("accountId", accountId, "workspaceId", workspaceId);
-        permissionManager.checkPermission(START_WORKSPACE, getCurrentUserId(), params);
-
+        permissionManager.checkPermission(START_WORKSPACE, getCurrentUserId(), ImmutableMap.of("accountId", accountId,
+                                                                                               "workspaceId", workspaceId));
         return injectLinks(DtoConverter.asDto(workspaceManager.startWorkspaceById(workspaceId, envName, accountId)));
     }
 
@@ -263,10 +261,8 @@ public class WorkspaceService extends Service {
             throws ServerException, BadRequestException, NotFoundException, ForbiddenException {
         final UsersWorkspace workspace = workspaceManager.getWorkspace(name, getCurrentUserId());
         ensureUserIsWorkspaceOwner(workspace.getId());
-
-        final ImmutableMap<String, String> params = ImmutableMap.of("accountId", accountId, "workspaceId", workspace.getId());
-        permissionManager.checkPermission(START_WORKSPACE, getCurrentUserId(), params);
-
+        permissionManager.checkPermission(START_WORKSPACE, getCurrentUserId(), ImmutableMap.of("accountId", accountId,
+                                                                                               "workspaceId", workspace.getId()));
         return injectLinks(DtoConverter.asDto(workspaceManager.startWorkspaceByName(name, envName, getCurrentUserId(), accountId)));
     }
 
