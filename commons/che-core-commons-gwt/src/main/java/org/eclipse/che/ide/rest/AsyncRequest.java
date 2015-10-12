@@ -273,6 +273,7 @@ public class AsyncRequest {
         this.callback = callback;
         try {
             if (async) {
+                this.callback.setRequest(this);
                 sendRequest(initCallback);
             } else {
                 sendRequest(callback);
