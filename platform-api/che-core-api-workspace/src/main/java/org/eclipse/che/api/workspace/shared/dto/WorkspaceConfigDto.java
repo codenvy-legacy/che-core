@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.shared.dto;
 
+import org.eclipse.che.api.core.factory.FactoryParameter;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
@@ -18,6 +19,9 @@ import org.eclipse.che.dto.shared.DTO;
 import java.util.List;
 import java.util.Map;
 
+import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.MANDATORY;
+import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.OPTIONAL;
+
 /**
  * @author andrew00x
  */
@@ -25,6 +29,7 @@ import java.util.Map;
 public interface WorkspaceConfigDto extends WorkspaceConfig, Hyperlinks {
 
     @Override
+    @FactoryParameter(obligation = OPTIONAL)
     String getName();
 
     void setName(String name);
@@ -32,32 +37,50 @@ public interface WorkspaceConfigDto extends WorkspaceConfig, Hyperlinks {
     WorkspaceConfigDto withName(String name);
 
     @Override
+    @FactoryParameter(obligation = MANDATORY)
     String getDefaultEnvName();
+
+    void setDefaultEnvName(String defaultEnvironment);
 
     WorkspaceConfigDto withDefaultEnvName(String defaultEnvironment);
 
     @Override
+    @FactoryParameter(obligation = OPTIONAL)
     String getDescription();
+
+    void setDescription(String description);
 
     WorkspaceConfigDto withDescription(String description);
 
     @Override
+    @FactoryParameter(obligation = OPTIONAL)
     List<CommandDto> getCommands();
+
+    void setCommands(List<CommandDto> commands);
 
     WorkspaceConfigDto withCommands(List<CommandDto> commands);
 
     @Override
+    @FactoryParameter(obligation = MANDATORY)
     List<ProjectConfigDto> getProjects();
+
+    void setProjects(List<ProjectConfigDto> projects);
 
     WorkspaceConfigDto withProjects(List<ProjectConfigDto> projects);
 
     @Override
+    @FactoryParameter(obligation = MANDATORY)
     Map<String, EnvironmentDto> getEnvironments();
+
+    void setEnvironments(Map<String, EnvironmentDto> environments);
 
     WorkspaceConfigDto withEnvironments(Map<String, EnvironmentDto> environments);
 
     @Override
+    @FactoryParameter(obligation = OPTIONAL)
     Map<String, String> getAttributes();
+
+    void setAttributes(Map<String, String> attributes);
 
     WorkspaceConfigDto withAttributes(Map<String, String> attributes);
 

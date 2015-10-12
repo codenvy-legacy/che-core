@@ -210,10 +210,10 @@
                         </goals>
                         <configuration>
                             <dtoPackages>
-                                <package>org.eclipse.che.api.factory.dto</package>
+                                <package>org.eclipse.che.api.factory.shared.dto</package>
                             </dtoPackages>
                             <outputDirectory>${dto-generator-out-directory}</outputDirectory>
-                            <genClassName>org.eclipse.che.api.factory.dto.server.DtoServerImpls</genClassName>
+                            <genClassName>org.eclipse.che.api.factory.shared.dto.server.DtoServerImpls</genClassName>
                             <impl>server</impl>
                         </configuration>
                     </execution>

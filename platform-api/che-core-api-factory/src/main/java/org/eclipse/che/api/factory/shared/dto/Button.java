@@ -8,33 +8,37 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.workspace.shared.dto;
+package org.eclipse.che.api.factory.shared.dto;
 
 import org.eclipse.che.api.core.factory.FactoryParameter;
-import org.eclipse.che.api.core.model.workspace.Environment;
 import org.eclipse.che.dto.shared.DTO;
 
-import java.util.List;
-
-import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.MANDATORY;
+import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.OPTIONAL;
 
 /**
+ * Describes factory button
+ *
  * @author Alexander Garagatyi
  */
 @DTO
-public interface EnvironmentDto extends Environment {
+public interface Button {
+    public enum ButtonType {
+        logo, nologo
+    }
 
-    EnvironmentDto withName(String name);
+    /** Type of the button */
+    @FactoryParameter(obligation = OPTIONAL)
+    ButtonType getType();
 
-    @Override
-    @FactoryParameter(obligation = MANDATORY)
-    RecipeDto getRecipe();
+    void setType(ButtonType type);
 
-    EnvironmentDto withRecipe(RecipeDto recipe);
+    Button withType(ButtonType type);
 
-    @Override
-    @FactoryParameter(obligation = MANDATORY)
-    List<MachineConfigDto> getMachineConfigs();
+    /** Button attributes */
+    @FactoryParameter(obligation = OPTIONAL)
+    ButtonAttributes getAttributes();
 
-    EnvironmentDto withMachineConfigs(List<MachineConfigDto> machineConfigs);
+    void setAttributes(ButtonAttributes attributes);
+
+    Button withAttributes(ButtonAttributes attributes);
 }

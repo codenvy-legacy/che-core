@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.factory.gwt.client;
 
-import org.eclipse.che.api.factory.dto.Factory;
+import org.eclipse.che.api.factory.shared.dto.Factory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 
 import javax.validation.constraints.NotNull;

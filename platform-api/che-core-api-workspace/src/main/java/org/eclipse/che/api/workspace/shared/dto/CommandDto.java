@@ -10,8 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.shared.dto;
 
+import org.eclipse.che.api.core.factory.FactoryParameter;
 import org.eclipse.che.api.core.model.machine.Command;
 import org.eclipse.che.dto.shared.DTO;
+
+import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.MANDATORY;
 
 /**
  * @author Alexander Garagatyi
@@ -19,13 +22,25 @@ import org.eclipse.che.dto.shared.DTO;
 @DTO
 public interface CommandDto extends Command {
 
+    @Override
+    @FactoryParameter(obligation = MANDATORY)
+    String getName();
+
     void setName(String name);
 
     CommandDto withName(String name);
 
+    @Override
+    @FactoryParameter(obligation = MANDATORY)
+    String getCommandLine();
+
     void setCommandLine(String commandLine);
 
     CommandDto withCommandLine(String commandLine);
+
+    @Override
+    @FactoryParameter(obligation = MANDATORY)
+    String getType();
 
     void setType(String type);
 

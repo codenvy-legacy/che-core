@@ -29,16 +29,13 @@ public @interface FactoryParameter {
 
     enum Version {
         // NEVER must be the last defined constant
-        V2_0, V2_1, NEVER;
+        V4_0, NEVER;
 
         public static Version fromString(String v) {
             if (null != v) {
                 switch (v) {
-                    case "2.0":
-                        return V2_0;
-                    case "2.1":
-                        return V2_1;
-
+                    case "4.0":
+                        return V4_0;
                 }
             }
 

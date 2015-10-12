@@ -10,8 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.shared.dto;
 
+import org.eclipse.che.api.core.factory.FactoryParameter;
 import org.eclipse.che.api.core.model.machine.MachineConfig;
 import org.eclipse.che.dto.shared.DTO;
+
+import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.MANDATORY;
+import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.OPTIONAL;
 
 /**
  * @author Alexander Garagatyi
@@ -19,6 +23,7 @@ import org.eclipse.che.dto.shared.DTO;
 @DTO
 public interface MachineConfigDto extends MachineConfig {
     @Override
+    @FactoryParameter(obligation = OPTIONAL)
     String getName();
 
     void setName(String name);
@@ -26,6 +31,7 @@ public interface MachineConfigDto extends MachineConfig {
     MachineConfigDto withName(String name);
 
     @Override
+    @FactoryParameter(obligation = MANDATORY)
     MachineSourceDto getSource();
 
     void setSource(MachineSourceDto source);
@@ -33,6 +39,7 @@ public interface MachineConfigDto extends MachineConfig {
     MachineConfigDto withSource(MachineSourceDto source);
 
     @Override
+    @FactoryParameter(obligation = MANDATORY)
     boolean isDev();
 
     void setDev(boolean dev);
@@ -40,6 +47,7 @@ public interface MachineConfigDto extends MachineConfig {
     MachineConfigDto withDev(boolean dev);
 
     @Override
+    @FactoryParameter(obligation = MANDATORY)
     String getType();
 
     void setType(String type);
@@ -47,6 +55,7 @@ public interface MachineConfigDto extends MachineConfig {
     MachineConfigDto withType(String type);
 
     @Override
+    @FactoryParameter(obligation = OPTIONAL)
     int getMemorySize();
 
     void setMemorySize(int memorySize);

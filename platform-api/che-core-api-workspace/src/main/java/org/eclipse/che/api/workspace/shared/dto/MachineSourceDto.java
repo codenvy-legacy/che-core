@@ -10,8 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.shared.dto;
 
+import org.eclipse.che.api.core.factory.FactoryParameter;
 import org.eclipse.che.api.core.model.machine.MachineSource;
 import org.eclipse.che.dto.shared.DTO;
+
+import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.MANDATORY;
 
 /**
  * @author Alexander Garagatyi
@@ -19,6 +22,7 @@ import org.eclipse.che.dto.shared.DTO;
 @DTO
 public interface MachineSourceDto extends MachineSource {
     @Override
+    @FactoryParameter(obligation = MANDATORY)
     String getType();
 
     void setType(String type);
@@ -26,6 +30,7 @@ public interface MachineSourceDto extends MachineSource {
     MachineSourceDto withType(String type);
 
     @Override
+    @FactoryParameter(obligation = MANDATORY)
     String getLocation();
 
     void setLocation(String location);
