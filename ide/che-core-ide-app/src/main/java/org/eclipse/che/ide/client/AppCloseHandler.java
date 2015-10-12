@@ -12,7 +12,7 @@ package org.eclipse.che.ide.client;
 
 import com.google.web.bindery.event.shared.EventBus;
 
-//import org.eclipse.che.api.factory.dto.Action;
+//import org.eclipse.che.api.factory.shared.dto.Action;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.AppCloseActionEvent;
 import org.eclipse.che.ide.api.action.Presentation;

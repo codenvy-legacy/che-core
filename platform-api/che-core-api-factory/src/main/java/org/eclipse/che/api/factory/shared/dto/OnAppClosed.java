@@ -8,33 +8,30 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.workspace.shared.dto;
+package org.eclipse.che.api.factory.shared.dto;
 
 import org.eclipse.che.api.core.factory.FactoryParameter;
-import org.eclipse.che.api.core.model.workspace.Environment;
 import org.eclipse.che.dto.shared.DTO;
 
 import java.util.List;
 
-import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.MANDATORY;
+import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.OPTIONAL;
 
 /**
- * @author Alexander Garagatyi
+ * Describe IDE look and feel on application closed event.
+ *
+ * @author Sergii Kabashniuk
  */
 @DTO
-public interface EnvironmentDto extends Environment {
+public interface OnAppClosed {
 
-    EnvironmentDto withName(String name);
+    /**
+     * @return actions for current event.
+     */
+    @FactoryParameter(obligation = OPTIONAL)
+    List<Action> getActions();
 
-    @Override
-    @FactoryParameter(obligation = MANDATORY)
-    RecipeDto getRecipe();
+    void setActions(List<Action> actions);
 
-    EnvironmentDto withRecipe(RecipeDto recipe);
-
-    @Override
-    @FactoryParameter(obligation = MANDATORY)
-    List<MachineConfigDto> getMachineConfigs();
-
-    EnvironmentDto withMachineConfigs(List<MachineConfigDto> machineConfigs);
+    OnAppClosed withActions(List<Action> actions);
 }

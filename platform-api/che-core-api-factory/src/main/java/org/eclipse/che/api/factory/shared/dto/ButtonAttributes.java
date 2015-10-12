@@ -8,28 +8,43 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.project.shared.dto;
+package org.eclipse.che.api.factory.shared.dto;
 
 import org.eclipse.che.api.core.factory.FactoryParameter;
 import org.eclipse.che.dto.shared.DTO;
 
-import java.util.Map;
-
 import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.OPTIONAL;
-import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.MANDATORY;
 
 /**
- * Describes project source with additional sources such as runner's
- *
  * @author Alexander Garagatyi
  */
 @DTO
-public interface Source {
+public interface ButtonAttributes {
+    @FactoryParameter(obligation = OPTIONAL)
+    String getColor();
 
-    ImportSourceDescriptor getProject();
+    void setColor(String color);
 
-    void setProject(ImportSourceDescriptor project);
+    ButtonAttributes withColor(String color);
 
-    Source withProject(ImportSourceDescriptor project);
+    @FactoryParameter(obligation = OPTIONAL)
+    Boolean getCounter();
+
+    void setCounter(Boolean counter);
+
+    ButtonAttributes withCounter(Boolean counter);
+
+    @FactoryParameter(obligation = OPTIONAL)
+    String getLogo();
+
+    void setLogo(String logo);
+
+    ButtonAttributes withLogo(String logo);
+
+    @FactoryParameter(obligation = OPTIONAL)
+    String getStyle();
+
+    void setStyle(String style);
+
+    ButtonAttributes withStyle(String style);
 }
-

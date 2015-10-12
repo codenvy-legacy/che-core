@@ -11,7 +11,6 @@
 
 package org.eclipse.che.ide.bootstrap;
 
-//import org.eclipse.che.api.factory.dto.Factory;
 //import org.eclipse.che.api.factory.gwt.client.FactoryServiceClient;
 //import org.eclipse.che.ide.api.app.AppContext;
 //import org.eclipse.che.ide.core.Component;
