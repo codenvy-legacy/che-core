@@ -1134,6 +1134,51 @@ public interface Theme {
      */
     String getListBoxDropdownBackgroundColor();
 
+    /**
+     * @return the list box dropdown shadow color.
+     */
+    String listBoxDropdownShadowColor();
+
+    /**
+     * @return the categories list header text color.
+     */
+    String categoriesListHeaderTextColor();
+
+    /**
+     * @return the categories list header icon color.
+     */
+    String categoriesListHeaderIconColor();
+
+    /**
+     * @return the categories list header background color.
+     */
+    String categoriesListHeaderBackgroundColor();
+
+    /**
+     * @return the categories list item color.
+     */
+    String categoriesListItemTextColor();
+
+    /**
+     * @return the categories list item background color.
+     */
+    String categoriesListItemBackgroundColor();
+
+    /**
+     * @return the scrollbar border color.
+     */
+    String scrollbarBorderColor();
+
+    /**
+     * @return the scrollbar background color if hover.
+     */
+    String scrollbarHoverBackgroundColor();
+
+    /**
+     * @return the scrollbar background color if active.
+     */
+    String scrollbarActiveBackgroundColor();
+
     /********************************************************************************************
      *
      * Dropdown menu with a list of opened files

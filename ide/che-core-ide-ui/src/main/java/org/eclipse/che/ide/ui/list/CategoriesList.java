@@ -27,9 +27,9 @@ import java.util.List;
 public class CategoriesList extends Composite {
     /** Defines the attribute used to indicate selection. */
     private static final String SELECTED_ATTRIBUTE = "SELECTED";
-    private final Resources                  resources;
-    private final SelectionManager           selectionManager;
-    private       FlowPanel                  root;
+    private final Resources                 resources;
+    private final SelectionManager          selectionManager;
+    private       FlowPanel                 root;
     private       List<CategoryNodeElement> categoryNodeElements;
 
     public CategoriesList(Resources resources) {
@@ -126,7 +126,7 @@ public class CategoriesList extends Composite {
         @Source({"CategoriesList.css", "org/eclipse/che/ide/ui/constants.css", "org/eclipse/che/ide/api/ui/style.css"})
         Css defaultCategoriesListCss();
 
-        @Source("expansionIcon.svg")
-        SVGResource expansionImage();
+        @Source("arrowExpansionIcon.svg")
+        SVGResource arrowExpansionImage();
     }
 }

@@ -11,6 +11,7 @@
 package org.eclipse.che.ide.ui.list;
 
 import org.eclipse.che.ide.util.AnimationController;
+
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -82,7 +83,7 @@ public class CategoryNodeElement extends FlowPanel {
         header.ensureDebugId("projectWizard-" + category.getTitle());
 
         expandControl = Document.get().createDivElement();
-        expandControl.appendChild(resources.expansionImage().getSvg().getElement());
+        expandControl.appendChild(resources.arrowExpansionImage().getSvg().getElement());
         expandControl.setClassName(resources.defaultCategoriesListCss().expandControl());
         header.getElement().appendChild(expandControl);
         container = new FocusPanel();

@@ -916,6 +916,51 @@ public class DarkTheme implements Theme {
     }
 
     @Override
+    public String listBoxDropdownShadowColor() {
+        return "0 2px 2px 0 rgba(0, 0, 0, 0.3)";
+    }
+
+    @Override
+    public String categoriesListHeaderTextColor() {
+        return this.getTextFieldTitleColor();
+    }
+
+    @Override
+    public String categoriesListHeaderIconColor() {
+        return this.getTextFieldTitleColor();
+    }
+
+    @Override
+    public String categoriesListHeaderBackgroundColor() {
+        return this.getPopupBkgColor();
+    }
+
+    @Override
+    public String categoriesListItemTextColor() {
+        return this.getTextFieldColor();
+    }
+
+    @Override
+    public String categoriesListItemBackgroundColor() {
+        return this.getTextFieldFocusedBackgroundColor();
+    }
+
+    @Override
+    public String scrollbarBorderColor() {
+        return "rgba(235, 235, 235, 0.15)";
+    }
+
+    @Override
+    public String scrollbarHoverBackgroundColor() {
+        return "rgba(215, 215, 215, 0.10)";
+    }
+
+    @Override
+    public String scrollbarActiveBackgroundColor() {
+        return "rgba(215, 215, 215, 0.15)";
+    }
+    
+    @Override
     public String openedFilesDropdownButtonBackground() {
         return "rgba(51,55,59,0.50)";
     }
@@ -984,5 +1029,4 @@ public class DarkTheme implements Theme {
     public String openedFilesDropdownListHoverTextColor() {
         return "#FFFFFF";
     }
-
 }

@@ -386,6 +386,11 @@ class for the document-level scrollbars. */
     display: none;
 }
 
+::-webkit-scrollbar-track {
+    border-radius: 2px;
+    border: 1px solid scrollbarBorderColor;
+}
+
 ::-webkit-scrollbar-track:vertical {
     border-right: 1px solid transparent;
     background-clip: padding-box;
@@ -399,14 +404,11 @@ class for the document-level scrollbars. */
 }
 
 ::-webkit-scrollbar-track:hover {
-    background-color: rgba(178, 178, 178, 0.05);
-    -webkit-box-shadow: inset 1px 0px 0px rgba(178, 178, 178, 0.10);
+    background-color: scrollbarHoverBackgroundColor;
 }
 
 ::-webkit-scrollbar-track:active {
-    background-color: rgba(178, 178, 178, 0.05);
-    -webkit-box-shadow: inset 1px 0px 0px rgba(178, 178, 178, 0.14),
-    inset -1px -1px 0px rgba(178, 178, 178, 0.07);
+    background-color: scrollbarActiveBackgroundColor;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -705,14 +707,11 @@ class for the document-level scrollbars. */
     animation-iteration-count: 2;
 }
 
-}
-
 .createWsTagsPopup {
     /*the same index as in Window*/
     z-index: 20000;
     border: 1px solid #121416;
     border-radius: 3px;
-    background-color: #292C2F;
 }
 
 .tagsPanel {

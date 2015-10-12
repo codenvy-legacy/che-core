@@ -289,7 +289,6 @@
 /*wizard*/
 @eval stepsPanelColor org.eclipse.che.ide.api.theme.Style.getWizardStepsColor();
 @eval stepsPanelBorerColor org.eclipse.che.ide.api.theme.Style.getWizardStepsBorderColor();
-@eval wizardIconColor org.eclipse.che.ide.api.theme.Style.getToolbarIconColor();
 
 /*Cell widgets*/
 @eval cellOddRow org.eclipse.che.ide.api.theme.Style.getCellOddRow();
@@ -321,3 +320,16 @@
 @eval listBoxDisabledColor org.eclipse.che.ide.api.theme.Style.getListBoxDisabledColor();
 @eval listBoxDisabledBackgroundColor org.eclipse.che.ide.api.theme.Style.getListBoxDisabledBackgroundColor();
 @eval listBoxDropdownBackgroundColor org.eclipse.che.ide.api.theme.Style.getListBoxDropdownBackgroundColor();
+@eval listBoxDropdownShadowColor org.eclipse.che.ide.api.theme.Style.theme.listBoxDropdownShadowColor();
+
+/*CategoriesList*/
+@eval categoriesListHeaderTextColor org.eclipse.che.ide.api.theme.Style.theme.categoriesListHeaderTextColor();
+@eval categoriesListHeaderIconColor org.eclipse.che.ide.api.theme.Style.theme.categoriesListHeaderIconColor();
+@eval categoriesListHeaderBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.categoriesListHeaderBackgroundColor();
+@eval categoriesListItemTextColor org.eclipse.che.ide.api.theme.Style.theme.categoriesListItemTextColor();
+@eval categoriesListItemBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.categoriesListItemBackgroundColor();
+
+/*Scrollbar*/
+@eval scrollbarBorderColor org.eclipse.che.ide.api.theme.Style.theme.scrollbarBorderColor();
+@eval scrollbarHoverBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.scrollbarHoverBackgroundColor();
+@eval scrollbarActiveBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.scrollbarActiveBackgroundColor();

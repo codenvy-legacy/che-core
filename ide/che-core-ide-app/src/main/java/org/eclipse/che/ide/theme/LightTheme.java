@@ -203,7 +203,7 @@ public class LightTheme implements Theme {
     }
 
     @Override
-    public String  getButtonHoverFontColor() {
+    public String getButtonHoverFontColor() {
         return "#FFFFFF";
     }
 
@@ -263,7 +263,7 @@ public class LightTheme implements Theme {
     }
 
     @Override
-    public String  getPrimaryButtonHoverFontColor() {
+    public String getPrimaryButtonHoverFontColor() {
         return "#FFFFFF";
     }
 
@@ -762,6 +762,7 @@ public class LightTheme implements Theme {
         return "white";
     }
 
+    @Override
     public String getPopupBkgColor() {
         return "#ececec";
     }
@@ -892,6 +893,51 @@ public class LightTheme implements Theme {
     }
 
     @Override
+    public String listBoxDropdownShadowColor() {
+        return "0 1px 1px 0 rgba(0, 0, 0, 0.1)";
+    }
+
+    @Override
+    public String categoriesListHeaderTextColor() {
+        return this.getTextFieldTitleColor();
+    }
+
+    @Override
+    public String categoriesListHeaderIconColor() {
+        return this.getTextFieldTitleColor();
+    }
+
+    @Override
+    public String categoriesListHeaderBackgroundColor() {
+        return this.getPopupBkgColor();
+    }
+
+    @Override
+    public String categoriesListItemTextColor() {
+        return this.getTextFieldColor();
+    }
+
+    @Override
+    public String categoriesListItemBackgroundColor() {
+        return this.getTextFieldFocusedBackgroundColor();
+    }
+
+    @Override
+    public String scrollbarBorderColor() {
+        return "rgba(59, 59, 59, 0.15)";
+    }
+
+    @Override
+    public String scrollbarHoverBackgroundColor() {
+        return "rgba(27, 27, 27, 0.10)";
+    }
+
+    @Override
+    public String scrollbarActiveBackgroundColor() {
+        return "rgba(27, 27, 27, 0.15)";
+    }
+
+    @Override
     public String openedFilesDropdownButtonBackground() {
         return "#e4e4e4";
     }
@@ -960,5 +1006,4 @@ public class LightTheme implements Theme {
     public String openedFilesDropdownListHoverTextColor() {
         return "#8E8E8E";
     }
-
 }
