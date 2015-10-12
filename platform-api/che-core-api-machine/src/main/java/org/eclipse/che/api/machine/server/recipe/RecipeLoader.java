@@ -44,7 +44,10 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Collections.emptyList;
 
 /**
- * Loads predefined recipes into dao.
+ * Loads predefined recipes.
+ *
+ * <p>It's used for machine template selection during
+ * creation of workspace or creation any machine in workspace.
  *
  * @author Anton Korneta
  */
@@ -82,6 +85,15 @@ public class RecipeLoader {
         }
     }
 
+    /**
+     * Loads recipes by specified path.
+     *
+     * @param recipesPath
+     *         path to recipe file
+     * @return list of predefined recipes
+     * @throws ServerException
+     *         when problems occurs with getting or parsing recipe file
+     */
     private List<ManagedRecipe> loadRecipes(String recipesPath) throws ServerException {
         try (InputStream is = getResource(recipesPath)) {
             return firstNonNull(GSON.fromJson(new InputStreamReader(is), new TypeToken<List<RecipeImpl>>() {}.getType()), emptyList());
@@ -90,6 +102,15 @@ public class RecipeLoader {
         }
     }
 
+    /**
+     * Searches for resource by given path.
+     *
+     * @param resource
+     *         path to resource
+     * @return resource InputStream
+     * @throws IOException
+     *         when problem occurs during resource getting
+     */
     private InputStream getResource(String resource) throws IOException {
         File resourceFile = new File(resource);
         if (resourceFile.exists() && !resourceFile.isFile()) {
