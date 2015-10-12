@@ -25,6 +25,7 @@ import org.eclipse.che.api.project.server.handlers.GetModulesHandler;
 import org.eclipse.che.api.project.server.handlers.ProjectCreatedHandler;
 import org.eclipse.che.api.project.server.handlers.ProjectHandlerRegistry;
 import org.eclipse.che.api.project.server.handlers.ProjectTypeChangedHandler;
+import org.eclipse.che.api.project.server.handlers.RemoveModuleHandler;
 import org.eclipse.che.api.project.server.notification.ProjectItemModifiedEvent;
 import org.eclipse.che.api.project.server.type.Attribute;
 import org.eclipse.che.api.project.server.type.AttributeValue;
@@ -873,6 +874,16 @@ public final class DefaultProjectManager implements ProjectManager {
             // In case of project extract some information about project for logger before delete project.
             // remove module only
             if (modulePath != null) {
+                RemoveModuleHandler removeModuleHandler = this.getHandlers().getRemoveModuleHandler(project.getConfig().getTypeId());
+                if (removeModuleHandler != null) {
+                    removeModuleHandler.onRemoveModule(project.getBaseFolder(), modulePath, project.getConfig());
+                }
+                Set<String> modules = project.getModules().get();
+                if (modules == null || modules.isEmpty()) {
+                    return false;
+                }
+
+                modulePath = modules.contains(modulePath) ? modulePath : project.getPath() + "/" + modulePath;
                 return project.getModules().remove(modulePath);
             }
 
