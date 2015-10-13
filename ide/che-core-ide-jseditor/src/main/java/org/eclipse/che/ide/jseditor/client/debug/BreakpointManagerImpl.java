@@ -8,7 +8,10 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
+
 package org.eclipse.che.ide.jseditor.client.debug;
+
+import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
@@ -22,10 +25,9 @@ import org.eclipse.che.ide.debug.BreakpointRenderer.LineChangeAction;
 import org.eclipse.che.ide.debug.Debugger;
 import org.eclipse.che.ide.debug.DebuggerManager;
 import org.eclipse.che.ide.debug.HasBreakpointRenderer;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.web.bindery.event.shared.EventBus;
 
 import javax.inject.Inject;
+import javax.validation.constraints.Null;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +35,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
 
-/** Implementation of {@link BreakpointManager} for jseditor. */
+/**
+ * Implementation of {@link BreakpointManager} for jseditor.
+ */
 public class BreakpointManagerImpl implements BreakpointManager, LineChangeAction {
 
     /** The logger. */
@@ -44,13 +48,12 @@ public class BreakpointManagerImpl implements BreakpointManager, LineChangeActio
     private final DebuggerManager               debuggerManager;
     private final ConsolePart                   console;
 
-    private Breakpoint                          currentBreakpoint;
+    private Breakpoint currentBreakpoint;
 
     @Inject
     public BreakpointManagerImpl(final EditorAgent editorAgent,
                                  final DebuggerManager debuggerManager,
-                                 final ConsolePart console,
-                                 final EventBus eventBus) {
+                                 final ConsolePart console) {
         this.editorAgent = editorAgent;
         this.breakpoints = new HashMap<>();
         this.debuggerManager = debuggerManager;
@@ -72,7 +75,7 @@ public class BreakpointManagerImpl implements BreakpointManager, LineChangeActio
 
         final List<Breakpoint> breakpointsForPath = this.breakpoints.get(activeFile.getPath());
         if (breakpointsForPath != null) {
-            for (final Breakpoint breakpoint: breakpointsForPath) {
+            for (final Breakpoint breakpoint : breakpointsForPath) {
 
                 if (breakpoint.getLineNumber() == lineNumber) {
                     LOG.fine("Attempt to remove breakpoint on line " + lineNumber);
@@ -134,10 +137,10 @@ public class BreakpointManagerImpl implements BreakpointManager, LineChangeActio
     @Override
     public void removeAllBreakpoints() {
         LOG.fine("Remove all breakpoints");
-        for (final Entry<String, List<Breakpoint>> entry: this.breakpoints.entrySet()) {
+        for (final Entry<String, List<Breakpoint>> entry : this.breakpoints.entrySet()) {
             final String path = entry.getKey();
             final List<Breakpoint> pathBreakpoints = entry.getValue();
-            
+
             removeBreakpointsForPath(path, pathBreakpoints);
         }
         this.breakpoints.clear();
@@ -146,7 +149,7 @@ public class BreakpointManagerImpl implements BreakpointManager, LineChangeActio
     private void removeBreakpointsForPath(final String path, final List<Breakpoint> pathBreakpoints) {
         LOG.fine("\tRemove all breakpoints for path " + path);
         EditorPartPresenter editor = null;
-        for (final Breakpoint breakpoint: pathBreakpoints) {
+        for (final Breakpoint breakpoint : pathBreakpoints) {
             EditorPartPresenter editorForBreakpoint;
             if (editor == null) {
                 editorForBreakpoint = getEditorForFile(breakpoint.getFile());
@@ -165,12 +168,6 @@ public class BreakpointManagerImpl implements BreakpointManager, LineChangeActio
             }
             breakpointRenderer.removeBreakpointMark(breakpoint.getLineNumber());
         }
-    }
-
-    @Override
-    @Deprecated
-    public boolean isBreakPointExist(int lineNumber) {
-        return breakpointExists(lineNumber);
     }
 
     @Override
@@ -194,16 +191,10 @@ public class BreakpointManagerImpl implements BreakpointManager, LineChangeActio
     @Override
     public List<Breakpoint> getBreakpointList() {
         final List<Breakpoint> result = new ArrayList<>();
-        for (final List<Breakpoint> fileBreakpoints: this.breakpoints.values()) {
+        for (final List<Breakpoint> fileBreakpoints : this.breakpoints.values()) {
             result.addAll(fileBreakpoints);
         }
         return result;
-    }
-
-    @Override
-    @Deprecated
-    public List<Breakpoint> getBreakpoints() {
-        return getBreakpointList();
     }
 
     @Override
@@ -239,6 +230,12 @@ public class BreakpointManagerImpl implements BreakpointManager, LineChangeActio
         }
     }
 
+    @Null
+    @Override
+    public Breakpoint getCurrentBreakpoint() {
+        return currentBreakpoint;
+    }
+
     @Override
     public boolean isCurrentBreakpoint(int lineNumber) {
         if (this.currentBreakpoint != null) {
@@ -248,12 +245,6 @@ public class BreakpointManagerImpl implements BreakpointManager, LineChangeActio
             return isFileWithMarkBreakPoint && isCurrentLine;
         }
         return false;
-    }
-
-    @Override
-    @Deprecated
-    public boolean isMarkedLine(int lineNumber) {
-        return isCurrentBreakpoint(lineNumber);
     }
 
     private EditorPartPresenter getEditorForFile(VirtualFile fileNode) {
@@ -301,7 +292,7 @@ public class BreakpointManagerImpl implements BreakpointManager, LineChangeActio
             final List<Breakpoint> toRemove = new ArrayList<>();
             final List<Breakpoint> toAdd = new ArrayList<>();
 
-            for (final Breakpoint breakpoint: fileBreakpoints) {
+            for (final Breakpoint breakpoint : fileBreakpoints) {
                 final int lineNumber = breakpoint.getLineNumber();
                 if (lineNumber < firstLine) {
                     // we're before any change
@@ -319,10 +310,10 @@ public class BreakpointManagerImpl implements BreakpointManager, LineChangeActio
                                              breakpoint.getPath(), breakpoint.getFile(), breakpoint.getMessage()));
                 }
             }
-            for (final Breakpoint breakpoint: toRemove) {
+            for (final Breakpoint breakpoint : toRemove) {
                 changeBreakPointState(breakpoint.getLineNumber());
             }
-            for (final Breakpoint breakpoint: toAdd) {
+            for (final Breakpoint breakpoint : toAdd) {
                 changeBreakPointState(breakpoint.getLineNumber());
             }
         }

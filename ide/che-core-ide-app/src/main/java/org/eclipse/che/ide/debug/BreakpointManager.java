@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.debug;
 
+import javax.validation.constraints.Null;
 import java.util.List;
 
 /** interface for breakpoints managers. */
@@ -32,31 +33,20 @@ public interface BreakpointManager {
     boolean breakpointExists(int lineNumber);
 
     /**
-     * Tells if there is a breakpoint on the given line of the active editor.
-     * @param lineNumber the line number
-     * @return true iff there is a breakpoint on this line
-     * @deprecated use {@link #breakpointExists(int)}
-     */
-    @Deprecated
-    boolean isBreakPointExist(int lineNumber);
-
-    /**
      * Returns all breakpoints.
      * @return all breakpoints
      */
     List<Breakpoint> getBreakpointList();
 
-    /**
-     * Returns all breakpoints.
-     * @return all breakpoints
-     * @deprecated use {@link #getBreakpointList()}
-     */
-    @Deprecated
-    List<Breakpoint> getBreakpoints();
-
     void markCurrentBreakpoint(int lineNumber);
 
     void unmarkCurrentBreakpoint();
+
+    /**
+     * @return current breakpoint or null
+     */
+    @Null
+    Breakpoint getCurrentBreakpoint();
 
     /**
      * Check whether line has the current breakpoint.
@@ -65,10 +55,4 @@ public interface BreakpointManager {
      * @return <code>true</code> if the line is marked, and <code>false</code> otherwise
      */
     boolean isCurrentBreakpoint(int lineNumber);
-
-    /**
-     * @see #isCurrentBreakpoint(int)
-     */
-    @Deprecated
-    boolean isMarkedLine(int lineNumber);
 }

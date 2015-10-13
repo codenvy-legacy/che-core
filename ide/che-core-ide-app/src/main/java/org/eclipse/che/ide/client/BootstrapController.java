@@ -28,7 +28,6 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
-import org.eclipse.che.api.analytics.logger.EventLogger;
 import org.eclipse.che.ide.api.DocumentTitleDecorator;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
@@ -230,10 +229,10 @@ public class BootstrapController {
             Map<String, String> parameters = new HashMap<>();
             parameters.put("SESSION-ID", analyticsSessions.getId());
 
-            analyticsEventLoggerExt.logEvent(EventLogger.SESSION_USAGE, parameters);
+            analyticsEventLoggerExt.logEvent("session-usage", parameters);
 
             if (Config.getCurrentWorkspace() != null && Config.getCurrentWorkspace().isTemporary()) {
-                analyticsEventLoggerExt.logEvent(EventLogger.SESSION_FACTORY_USAGE, parameters);
+                analyticsEventLoggerExt.logEvent("session-usage", parameters);
             }
 
             analyticsSessions.updateLogTime();

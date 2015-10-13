@@ -24,6 +24,7 @@ public interface Gutter {
      * @param element the (DOM) element to add
      */
     void addGutterItem(int line, String gutterId, Element element);
+
     /**
      * Adds a gutter item.
      *
@@ -56,8 +57,20 @@ public interface Gutter {
      */
     void clearGutter(String gutterId);
 
+    /**
+     * Sets a gutter item. If any item exists then it has to be replaced.
+     *
+     * @param line
+     *         the line for the item
+     * @param gutterId
+     *         the gutter
+     * @param element
+     *         the (DOM) element to add
+     */
+    void setGutterItem(int line, String gutterId, Element element);
+
     /** Callback to be warned when line numbering changes (lines are removed or inserted). */
-    public interface LineNumberingChangeCallback {
+    interface LineNumberingChangeCallback {
         /** Method called when the line numbering changes. */
         void onLineNumberingChange(int fromLine, int linesRemoved, int linesAdded);
     }

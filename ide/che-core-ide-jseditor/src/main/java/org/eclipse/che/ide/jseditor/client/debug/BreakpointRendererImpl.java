@@ -10,9 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.debug;
 
-import static org.eclipse.che.ide.jseditor.client.gutter.Gutters.BREAKPOINTS_GUTTER;
+import elemental.css.CSSStyleDeclaration;
+import elemental.dom.Element;
 
-import javax.validation.constraints.NotNull;
+import com.google.gwt.user.client.ui.Image;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 
 import org.eclipse.che.ide.debug.BreakpointRenderer;
 import org.eclipse.che.ide.jseditor.client.document.Document;
@@ -21,12 +24,10 @@ import org.eclipse.che.ide.jseditor.client.gutter.Gutter.LineNumberingChangeCall
 import org.eclipse.che.ide.jseditor.client.texteditor.EditorResources;
 import org.eclipse.che.ide.jseditor.client.texteditor.LineStyler;
 import org.eclipse.che.ide.util.dom.Elements;
-import com.google.gwt.user.client.ui.Image;
-import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
 
-import elemental.css.CSSStyleDeclaration;
-import elemental.dom.Element;
+import javax.validation.constraints.NotNull;
+
+import static org.eclipse.che.ide.jseditor.client.gutter.Gutters.BREAKPOINTS_GUTTER;
 
 /**
  * Renderer for breakpoint marks in gutter (on the left margin of the text).
@@ -45,10 +46,13 @@ public class BreakpointRendererImpl implements BreakpointRenderer {
     private final Gutter hasGutter;
 
     /** The component responsible for line style handling. */
-    private final LineStyler lineStyler ;
+    private final LineStyler lineStyler;
 
-    /** The documentt. */
+    /** The document. */
     private Document document;
+
+    private Element activeBreakpointMark;
+    private Element inactiveBreakpointMark;
 
     @AssistedInject
     public BreakpointRendererImpl(final BreakpointResources breakpointResources,
@@ -61,6 +65,8 @@ public class BreakpointRendererImpl implements BreakpointRenderer {
         this.hasGutter = hasGutter;
         this.lineStyler = lineStyler;
         this.document = document;
+
+        initBreakpointMarks();
     }
 
     @Override
@@ -98,12 +104,12 @@ public class BreakpointRendererImpl implements BreakpointRenderer {
 
     @Override
     public void setBreakpointActive(final int lineNumber, final boolean active) {
-        if (hasGutter == null) {
-            return;
-        }
-        final Element mark = this.hasGutter.getGutterItem(lineNumber, BREAKPOINTS_GUTTER);
-        if (mark != null) {
-            setActiveMark(mark, active);
+        if (hasGutter != null) {
+            final Element mark = this.hasGutter.getGutterItem(lineNumber, BREAKPOINTS_GUTTER);
+            if (mark != null) {
+                Element element = active ? activeBreakpointMark : inactiveBreakpointMark;
+                this.hasGutter.setGutterItem(lineNumber, BREAKPOINTS_GUTTER, element);
+            }
         }
     }
 
@@ -114,6 +120,14 @@ public class BreakpointRendererImpl implements BreakpointRenderer {
         } else {
             this.lineStyler.removeLineStyles(lineNumber, this.editorResources.editorCss().debugLine());
         }
+    }
+
+    private void initBreakpointMarks() {
+        activeBreakpointMark = createBreakpointMark();
+        setActiveMark(activeBreakpointMark, true);
+
+        inactiveBreakpointMark = createBreakpointMark();
+        setActiveMark(inactiveBreakpointMark, false);
     }
 
     /**
