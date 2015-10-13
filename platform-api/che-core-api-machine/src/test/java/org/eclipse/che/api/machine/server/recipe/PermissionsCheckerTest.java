@@ -30,6 +30,8 @@ import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
+// TODO fix after workspace memberships refactoring
+
 /**
  * @author Eugene Voevodin
  */
@@ -48,7 +50,7 @@ public class PermissionsCheckerTest {
         assertTrue(permissionsChecker.hasAccess(recipe, "user-id", "write"));
     }
 
-    @Test(enabled = false)
+    @Test
     public void userShouldHaveAccessToRecipeWhenHeIsListedInRecipeUsersPermissions() throws ServerException {
         final Map<String, List<String>> users = singletonMap("user-id", asList("read", "write"));
         final ManagedRecipe recipe = new RecipeImpl().withCreator("someone")
@@ -87,7 +89,7 @@ public class PermissionsCheckerTest {
 //        assertFalse(permissionsChecker.hasAccess(recipe, "user-id", "update_acl"), "should not have update_acl permission");
 //    }
 
-    @Test(enabled = false)
+    @Test
     public void userShouldHaveAccessToRecipeWhenRecipePermissionsContainsPublicGroup() throws ServerException {
         final Group group = new GroupImpl("public", null, asList("read"));
         final ManagedRecipe recipe = new RecipeImpl().withCreator("someone")

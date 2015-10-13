@@ -17,9 +17,10 @@ import org.eclipse.che.api.machine.shared.Permissions;
 //import org.eclipse.che.api.workspace.server.dao.Member;
 //import org.eclipse.che.api.workspace.server.dao.MemberDao;
 
-import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.List;
+
+// TODO fix after workspace memberships refactoring
 
 /**
  * TODO add doc
@@ -57,23 +58,20 @@ public class PermissionsCheckerImpl implements PermissionsChecker {
         }
 
         //check group permissions
-//        final List<Member> relationships = memberDao.getUserRelationships(userId);
-//        for (Group group : permissions.getGroups()) {
-//            //skip group if it doesn't contain target permission
-//            if (!group.getAcl().contains(permission)) {
-//                continue;
-//            }
-//            //check public access
-//            if (group.getName().equals("public")) {
-//                return true;
-//            }
+        for (Group group : permissions.getGroups()) {
+            if (!group.getAcl().contains(permission)) {
+                continue;
+            }
+            if (group.getName().equals("public")) {
+                return true;
+            }
 //            //check user relationships for this group
 //            for (Member member : relationships) {
 //                if (group.getUnit().equals(member.getWorkspaceId()) && member.getRoles().contains(group.getName())) {
 //                    return true;
 //                }
 //            }
-//        }
+        }
         return false;
     }
 }
