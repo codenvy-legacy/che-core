@@ -32,7 +32,6 @@ import org.eclipse.che.ide.project.node.FileReferenceNode;
 import org.eclipse.che.ide.project.node.FolderReferenceNode;
 import org.eclipse.che.ide.project.node.ModuleDescriptorNode;
 import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
-import org.eclipse.che.ide.project.node.ProjectReferenceNode;
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.ui.dialogs.CancelCallback;
@@ -210,7 +209,7 @@ public class DeleteNodeHandler {
 
     @NotNull
     private String getDisplayType(@NotNull ResourceBasedNode<?> node) {
-        if (node instanceof ProjectReferenceNode || node instanceof ProjectDescriptorNode) {
+        if (node instanceof ProjectDescriptorNode) {
             return "project";
         } else if (node instanceof ModuleDescriptorNode) {
             return "module";
@@ -281,7 +280,7 @@ public class DeleteNodeHandler {
         final Promise<Void> derivedPromise = promise.thenPromise(new Function<Void, Promise<Void>>() {
             @Override
             public Promise<Void> apply(Void empty) throws FunctionException {
-                    return node.delete();
+                return node.delete();
             }
         });
 

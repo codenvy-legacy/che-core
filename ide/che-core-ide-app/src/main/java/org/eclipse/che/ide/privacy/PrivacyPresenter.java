@@ -21,8 +21,10 @@ import org.eclipse.che.ide.api.action.DefaultActionGroup;
 import org.eclipse.che.ide.api.action.IdeActions;
 import org.eclipse.che.ide.api.action.Separator;
 import org.eclipse.che.ide.api.constraints.Constraints;
-import org.eclipse.che.ide.api.event.ProjectActionEvent;
-import org.eclipse.che.ide.api.event.ProjectActionHandler;
+import org.eclipse.che.ide.api.event.project.CloseCurrentProjectEvent;
+import org.eclipse.che.ide.api.event.project.CloseCurrentProjectHandler;
+import org.eclipse.che.ide.api.event.project.ProjectReadyEvent;
+import org.eclipse.che.ide.api.event.project.ProjectReadyHandler;
 
 import static org.eclipse.che.ide.api.constraints.Anchor.AFTER;
 import static org.eclipse.che.ide.api.constraints.Anchor.BEFORE;
@@ -35,7 +37,7 @@ import static org.eclipse.che.ide.api.constraints.Constraints.LAST;
  * @author Kevin Pollet
  */
 @Singleton
-public class PrivacyPresenter implements ProjectActionHandler {
+public class PrivacyPresenter implements ProjectReadyHandler, CloseCurrentProjectHandler {
     private static final String PRIVACY_ACTION_ID = "privacy";
 
     private final ActionManager      actionManager;
@@ -48,11 +50,12 @@ public class PrivacyPresenter implements ProjectActionHandler {
         this.privacyAction = privacyAction;
         this.rightMainMenuGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_RIGHT_MAIN_MENU);
 
-        eventBus.addHandler(ProjectActionEvent.TYPE, this);
+        eventBus.addHandler(ProjectReadyEvent.TYPE, this);
+        eventBus.addHandler(CloseCurrentProjectEvent.TYPE, this);
     }
 
     @Override
-    public void onProjectReady(ProjectActionEvent event) {
+    public void onProjectReady(ProjectReadyEvent event) {
         actionManager.registerAction(PRIVACY_ACTION_ID, privacyAction);
 
         rightMainMenuGroup.add(privacyAction, LAST);
@@ -61,15 +64,7 @@ public class PrivacyPresenter implements ProjectActionHandler {
     }
 
     @Override
-    public void onProjectOpened(ProjectActionEvent event) {
-    }
-
-    @Override
-    public void onProjectClosing(ProjectActionEvent event) {
-    }
-
-    @Override
-    public void onProjectClosed(ProjectActionEvent event) {
+    public void onCloseCurrentProject(CloseCurrentProjectEvent event) {
         int index = 0;
         boolean found = false;
 

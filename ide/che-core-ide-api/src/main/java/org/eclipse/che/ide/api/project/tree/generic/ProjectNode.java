@@ -13,7 +13,7 @@ package org.eclipse.che.ide.api.project.tree.generic;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.ide.api.event.CloseCurrentProjectEvent;
+import org.eclipse.che.ide.api.event.project.CloseCurrentProjectEvent;
 import org.eclipse.che.ide.api.event.RenameNodeEvent;
 import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
 import org.eclipse.che.ide.api.project.tree.AbstractTreeNode;
@@ -251,7 +251,7 @@ public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements 
             @Override
             protected void onSuccess(Void result) {
                 if (isRootProject()) {
-                    eventBus.fireEvent(new CloseCurrentProjectEvent());
+                    eventBus.fireEvent(new CloseCurrentProjectEvent(getData()));
                 } else {
                     //fire module delete event
                 }

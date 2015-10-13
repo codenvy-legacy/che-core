@@ -22,10 +22,10 @@ import org.eclipse.che.api.project.shared.dto.ImportProject;
 import org.eclipse.che.api.project.shared.dto.ImportResponse;
 import org.eclipse.che.api.project.shared.dto.NewProject;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.ModuleCreatedEvent;
-import org.eclipse.che.ide.api.event.OpenProjectEvent;
+import org.eclipse.che.ide.api.event.project.CreateProjectEvent;
+import org.eclipse.che.ide.api.event.project.OpenProjectEvent;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode;
 import org.eclipse.che.ide.api.wizard.AbstractWizard;
 import org.eclipse.che.ide.dto.DtoFactory;
@@ -54,14 +54,13 @@ import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistrar
  */
 public class ProjectWizard extends AbstractWizard<ImportProject> {
 
-    private final ProjectWizardMode        mode;
-    private final CoreLocalizationConstant localizationConstants;
-    private final ProjectServiceClient     projectServiceClient;
-    private final DtoUnmarshallerFactory   dtoUnmarshallerFactory;
-    private final DtoFactory               dtoFactory;
-    private final DialogFactory            dialogFactory;
-    private final EventBus                 eventBus;
-    private final AppContext               appContext;
+    private final ProjectWizardMode      mode;
+    private final ProjectServiceClient   projectServiceClient;
+    private final DtoUnmarshallerFactory dtoUnmarshallerFactory;
+    private final DtoFactory             dtoFactory;
+    private final DialogFactory          dialogFactory;
+    private final EventBus               eventBus;
+    private final AppContext             appContext;
 
     /**
      * Creates project wizard.
@@ -73,8 +72,6 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
      * @param projectPath
      *         path to the project to update if wizard created in {@link ProjectWizardMode#UPDATE} mode
      *         or path to the folder to convert it to module if wizard created in {@link ProjectWizardMode#CREATE_MODULE} mode
-     * @param localizationConstants
-     *         localization constants
      * @param projectServiceClient
      *         GWT-client for Project service
      * @param dtoUnmarshallerFactory
@@ -90,7 +87,6 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
     public ProjectWizard(@Assisted ImportProject dataObject,
                          @Assisted ProjectWizardMode mode,
                          @Assisted String projectPath,
-                         CoreLocalizationConstant localizationConstants,
                          ProjectServiceClient projectServiceClient,
                          DtoUnmarshallerFactory dtoUnmarshallerFactory,
                          DtoFactory dtoFactory,
@@ -99,7 +95,6 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
                          AppContext appContext) {
         super(dataObject);
         this.mode = mode;
-        this.localizationConstants = localizationConstants;
         this.projectServiceClient = projectServiceClient;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.dtoFactory = dtoFactory;
@@ -136,7 +131,7 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
             @Override
             protected void onSuccess(ProjectDescriptor result) {
                 // just re-open project if it's already opened
-                ProjectWizard.this.eventBus.fireEvent(new OpenProjectEvent(result.getName()));
+                ProjectWizard.this.eventBus.fireEvent(new OpenProjectEvent(result));
                 callback.onCompleted();
             }
 
@@ -155,7 +150,8 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
         projectServiceClient.createProject(project.getName(), project, new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
             @Override
             protected void onSuccess(ProjectDescriptor result) {
-                eventBus.fireEvent(new OpenProjectEvent(result.getName()));
+                eventBus.fireEvent(new CreateProjectEvent(result));
+
                 callback.onCompleted();
             }
 
@@ -195,7 +191,7 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
                 project.getName(), false, dataObject, new RequestCallback<ImportResponse>(unmarshaller) {
                     @Override
                     protected void onSuccess(ImportResponse result) {
-                        eventBus.fireEvent(new OpenProjectEvent(result.getProjectDescriptor().getName()));
+                        eventBus.fireEvent(new CreateProjectEvent(result.getProjectDescriptor()));
                         callback.onCompleted();
                     }
 
@@ -235,7 +231,7 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
             @Override
             protected void onSuccess(ProjectDescriptor result) {
                 // just re-open project if it's already opened
-                eventBus.fireEvent(new OpenProjectEvent(result.getName()));
+                eventBus.fireEvent(new OpenProjectEvent(result));
                 callback.onCompleted();
             }
 

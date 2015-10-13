@@ -11,11 +11,15 @@
 package org.eclipse.che.ide.part.editor;
 
 import com.google.gwtmockito.GwtMockitoTestRunner;
+import com.google.inject.Provider;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.ide.api.editor.EditorAgent;
+import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.editor.EditorWithErrors;
-import org.eclipse.che.ide.api.event.ProjectActionEvent;
-import org.eclipse.che.ide.api.event.ProjectActionHandler;
+import org.eclipse.che.ide.api.event.project.CloseCurrentProjectEvent;
+import org.eclipse.che.ide.api.event.project.CloseCurrentProjectHandler;
 import org.eclipse.che.ide.api.parts.PartPresenter;
 import org.eclipse.che.ide.api.parts.PropertyListener;
 import org.eclipse.che.ide.client.inject.factories.TabItemFactory;
@@ -32,6 +36,9 @@ import org.mockito.Captor;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.vectomatic.dom.svg.ui.SVGResource;
+
+import java.util.NavigableMap;
+import java.util.TreeMap;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -66,29 +73,37 @@ public class EditorPartStackPresenterTest {
     private PartStackEventHandler partStackEventHandler;
     @Mock
     private ListButton            listButton;
+    @Mock
+    private Provider<EditorAgent> editorAgentProvider;
 
     //additional mocks
     @Mock
-    private EditorTab          editorTab1;
+    private EditorTab                editorTab1;
     @Mock
-    private EditorTab          editorTab2;
+    private EditorTab                editorTab2;
     @Mock
-    private EditorWithErrors   withErrorsPart;
+    private EditorWithErrors         withErrorsPart;
     @Mock
-    private PartPresenter      partPresenter1;
+    private PartPresenter            partPresenter1;
     @Mock
-    private SVGResource        resource1;
+    private SVGResource              resource1;
     @Mock
-    private PartPresenter      partPresenter2;
+    private PartPresenter            partPresenter2;
     @Mock
-    private SVGResource        resource2;
+    private SVGResource              resource2;
     @Mock
-    private ProjectActionEvent actionEvent;
+    private CloseCurrentProjectEvent closeProjectEvent;
+    @Mock
+    private EditorAgent              editorAgent;
+    @Mock
+    private ProjectDescriptor        descriptor;
+    @Mock
+    private EditorPartPresenter      editorPartPresenter;
 
     @Captor
-    private ArgumentCaptor<ListItem>             itemCaptor;
+    private ArgumentCaptor<ListItem>                   itemCaptor;
     @Captor
-    private ArgumentCaptor<ProjectActionHandler> projectActionHandlerCaptor;
+    private ArgumentCaptor<CloseCurrentProjectHandler> closeProjectHandlerCaptor;
 
     private EditorPartStackPresenter presenter;
 
@@ -103,7 +118,13 @@ public class EditorPartStackPresenterTest {
         when(tabItemFactory.createEditorPartButton(resource1, SOME_TEXT)).thenReturn(editorTab1);
         when(tabItemFactory.createEditorPartButton(resource2, SOME_TEXT)).thenReturn(editorTab2);
 
-        presenter = new EditorPartStackPresenter(view, partsComparator, eventBus, tabItemFactory, partStackEventHandler, listButton);
+        presenter = new EditorPartStackPresenter(view,
+                                                 partsComparator,
+                                                 eventBus,
+                                                 tabItemFactory,
+                                                 partStackEventHandler,
+                                                 listButton,
+                                                 editorAgentProvider);
     }
 
     @Test
@@ -112,15 +133,27 @@ public class EditorPartStackPresenterTest {
         verify(view, times(2)).setDelegate(presenter);
         verify(view).setListButton(listButton);
 
-        verify(eventBus).addHandler(eq(ProjectActionEvent.TYPE), Matchers.<ProjectActionHandler>anyObject());
+        verify(eventBus).addHandler(eq(CloseCurrentProjectEvent.TYPE), Matchers.<CloseCurrentProjectHandler>anyObject());
     }
 
     @Test
-    public void allTabsShouldBeClosed() {
+    public void allTabsShouldBeClosedForParticularProject() {
+        when(editorAgentProvider.get()).thenReturn(editorAgent);
+        when(closeProjectEvent.getDescriptor()).thenReturn(descriptor);
+        when(descriptor.getPath()).thenReturn("/test");
+
+        NavigableMap<String, EditorPartPresenter> openedEditors = new TreeMap<>();
+        openedEditors.put("/test/test2", editorPartPresenter);
+
+        when(editorAgent.getOpenedEditors()).thenReturn(openedEditors);
+
+        when(editorPartPresenter.getTitle()).thenReturn("title");
+
+        when(editorTab1.getTitle()).thenReturn("title");
+
         presenter.addPart(partPresenter1);
 
-        verify(eventBus).addHandler(eq(ProjectActionEvent.TYPE), projectActionHandlerCaptor.capture());
-        projectActionHandlerCaptor.getValue().onProjectClosed(actionEvent);
+        presenter.onCloseCurrentProject(closeProjectEvent);
 
         verify(listButton).addListItem(itemCaptor.capture());
         ListItem item = itemCaptor.getValue();

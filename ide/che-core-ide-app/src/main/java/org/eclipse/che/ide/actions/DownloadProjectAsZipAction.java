@@ -16,6 +16,7 @@ import com.google.inject.name.Named;
 
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
@@ -24,8 +25,7 @@ import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.download.DownloadContainer;
 import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
-import org.eclipse.che.ide.project.node.ProjectReferenceNode;
-import org.eclipse.che.ide.Resources;
+import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
 
 import javax.validation.constraints.NotNull;
 import java.util.Arrays;
@@ -86,7 +86,7 @@ public class DownloadProjectAsZipAction extends AbstractPerspectiveAction {
         Selection<?> selection = projectExplorer.getSelection();
         boolean enabled = appContext.getCurrentProject() != null || (selection != null &&
                                                                      (!selection.isEmpty() &&
-                                                                      selection.getHeadElement() instanceof ProjectReferenceNode));
+                                                                      selection.getHeadElement() instanceof ProjectDescriptorNode));
 
         event.getPresentation().setVisible(true);
         event.getPresentation().setEnabled(enabled);
@@ -103,7 +103,7 @@ public class DownloadProjectAsZipAction extends AbstractPerspectiveAction {
             selectedNode = (HasStorablePath)selection.get(0);
         }
 
-        if (selectedNode != null && selectedNode instanceof ProjectReferenceNode) {
+        if (selectedNode != null && selectedNode instanceof ProjectDescriptorNode) {
             path = selectedNode.getStorablePath();
         } else if (currentProject != null) {
             path = currentProject.getProjectDescription().getPath();

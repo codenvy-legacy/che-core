@@ -24,7 +24,10 @@ import javax.validation.constraints.NotNull;
 public abstract class StatusText {
 
     public static final String DEFAULT_EMPTY_TEXT = "Nothing to show";
-    private             String myText             = "";
+
+    private final VerticalPanel verticalPanel;
+
+    private String myText = "";
     private Widget widget;
 
     protected StatusText(Widget widget) {
@@ -34,6 +37,14 @@ public abstract class StatusText {
 
     public StatusText() {
         setText(DEFAULT_EMPTY_TEXT);
+
+        verticalPanel = new VerticalPanel();
+
+        verticalPanel.setHeight("50px");
+        verticalPanel.setWidth("100%");
+
+        verticalPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+        verticalPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
     }
 
     public void bind(Widget widget) {
@@ -62,17 +73,11 @@ public abstract class StatusText {
     protected abstract boolean isStatusVisible();
 
     public void paint() {
+        verticalPanel.clear();
+
         if (!isStatusVisible()) {
             return;
         }
-
-        VerticalPanel verticalPanel = new VerticalPanel();
-
-        verticalPanel.setHeight("50px");
-        verticalPanel.setWidth("100%");
-
-        verticalPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-        verticalPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 
         verticalPanel.add(new Label(getText()));
 

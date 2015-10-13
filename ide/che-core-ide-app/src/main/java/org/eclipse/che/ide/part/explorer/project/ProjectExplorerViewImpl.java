@@ -18,17 +18,17 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ContextMenuEvent;
 import com.google.gwt.event.dom.client.ContextMenuHandler;
-import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.DockLayoutPanel;
-import com.google.gwt.user.client.ui.InlineLabel;
-import com.google.web.bindery.event.shared.EventBus;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.resources.client.ClientBundle;
+import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
+import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.promises.client.Operation;
@@ -108,11 +108,11 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
     private final EventBus                 eventBus;
     private final Tree                     tree;
     private final DockLayoutPanel          projectHeader;
-    private       ToolButton               goIntoBackButton;
-    private       ToolButton               scrollFromSourceButton;
-
     private StoreSortInfo foldersOnTopSort = new StoreSortInfo(new FoldersOnTopFilter(), SortDir.ASC);
 
+    private InlineLabel         projectTitle;
+    private ToolButton          goIntoBackButton;
+    private ToolButton          scrollFromSourceButton;
     private SearchNodeHandler   searchNodeHandler;
     private HandlerRegistration closeEditorOnNodeRemovedHandler;
 
@@ -265,6 +265,24 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
         showProjectInfo();
     }
 
+    @Override
+    public void addNode(Node node) {
+        tree.getNodeStorage().add(node);
+
+        if (tree.getRootNodes().size() == 1) {
+            showProjectInfo();
+        }
+    }
+
+    @Override
+    public void removeNode(Node node) {
+        tree.getNodeStorage().remove(node);
+
+        if (tree.getRootNodes().isEmpty()) {
+            hideProjectInfo();
+        }
+    }
+
     private void registerCloseEditorHandler() {
         closeEditorOnNodeRemovedHandler = tree.getNodeStorage().addStoreRemoveHandler(new StoreRemoveEvent.StoreRemoveHandler() {
             @Override
@@ -359,6 +377,29 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
         setRootNodes(Collections.singletonList(node));
     }
 
+    @Override
+    public void setProjectTitle(String title) {
+        setTitleToHeader(title);
+    }
+
+    private void setTitleToHeader(String title) {
+        if (projectHeader.getWidgetIndex(projectTitle) > 0) {
+            projectHeader.remove(projectTitle);
+        }
+
+        projectTitle = new InlineLabel(title);
+        projectTitle.setStyleName(resources.partStackCss().idePartStackToolbarProjectTitle());
+        projectHeader.add(projectTitle);
+        projectTitle.getParent().addStyleName(resources.partStackCss().idePartStackToolbarCenterPanelProjectTitle());
+    }
+
+    @Override
+    public void replaceParentNode(ProjectDescriptorNode descriptorNode) {
+        tree.getNodeStorage().remove(descriptorNode);
+
+        tree.getNodeStorage().add(descriptorNode);
+    }
+
     private void showProjectInfo() {
         if (toolBar.getWidgetIndex(projectHeader) < 0) {
             toolBar.addSouth(projectHeader, 28);
@@ -406,10 +447,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
                                MIDDLE,
                                "Refresh selected folder");
 
-                InlineLabel projectTitle = new InlineLabel(descriptor.getName());
-                projectTitle.setStyleName(resources.partStackCss().idePartStackToolbarProjectTitle());
-                projectHeader.add(projectTitle);
-                projectTitle.getParent().addStyleName(resources.partStackCss().idePartStackToolbarCenterPanelProjectTitle());
+                setTitleToHeader(descriptor.getName());
 
                 SVGImage collapseAllIcon = new SVGImage(explorerResources.collapse());
                 ToolButton collapseAll = new ToolButton(collapseAllIcon);
@@ -521,7 +559,13 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
             }
         }
 
-        reloadChildren(null, true);
+        ProjectDescriptor openedProjectDescriptor = appContext.getCurrentProject().getProjectDescription();
+
+        for (Node node : tree.getRootNodes()) {
+            if (node instanceof ProjectDescriptorNode && openedProjectDescriptor.equals(((ProjectDescriptorNode)node).getData())) {
+                reloadChildren(node);
+            }
+        }
     }
 
     @Override

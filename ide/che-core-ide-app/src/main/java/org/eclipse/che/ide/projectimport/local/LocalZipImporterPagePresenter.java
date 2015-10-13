@@ -20,7 +20,7 @@ import org.eclipse.che.api.project.shared.dto.ImportResponse;
 import org.eclipse.che.api.vfs.gwt.client.VfsServiceClient;
 import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.api.event.OpenProjectEvent;
+import org.eclipse.che.ide.api.event.project.CreateProjectEvent;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.json.JsonHelper;
@@ -150,8 +150,7 @@ public class LocalZipImporterPagePresenter implements LocalZipImporterPageView.A
         view.closeDialog();
         importProjectNotificationSubscriber.onSuccess();
 
-        String projectName = importResponse.getProjectDescriptor().getName();
-        eventBus.fireEvent(new OpenProjectEvent(projectName));
+        eventBus.fireEvent(new CreateProjectEvent(importResponse.getProjectDescriptor()));
     }
 
     private void importFailure(String error) {

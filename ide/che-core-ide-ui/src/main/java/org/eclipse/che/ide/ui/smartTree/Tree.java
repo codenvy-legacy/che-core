@@ -71,7 +71,6 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
  * @author Vlad Zhukovskiy
  */
 public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpandItemHandlers, HasBeforeCollapseItemHandlers,
@@ -1024,6 +1023,10 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
 
             fireEvent(new NodeAddedEvent(event.getNodes()));
         }
+
+        if (!getRootNodes().isEmpty()) {
+            emptyText.paint();
+        }
     }
 
     protected void onClear(StoreClearEvent event) {
@@ -1054,6 +1057,10 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
                 refresh(parent);
             }
             moveFocus(nodeDescriptor.getRootContainer());
+        }
+
+        if (getRootNodes().isEmpty()) {
+            emptyText.paint();
         }
     }
 

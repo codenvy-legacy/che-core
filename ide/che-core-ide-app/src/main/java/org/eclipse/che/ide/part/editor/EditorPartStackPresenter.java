@@ -12,14 +12,18 @@ package org.eclipse.che.ide.part.editor;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.api.constraints.Constraints;
+import org.eclipse.che.ide.api.editor.EditorAgent;
+import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.editor.EditorWithErrors;
 import org.eclipse.che.ide.api.editor.EditorWithErrors.EditorState;
-import org.eclipse.che.ide.api.event.ProjectActionEvent;
-import org.eclipse.che.ide.api.event.ProjectActionHandler;
+import org.eclipse.che.ide.api.event.project.CloseCurrentProjectEvent;
+import org.eclipse.che.ide.api.event.project.CloseCurrentProjectHandler;
 import org.eclipse.che.ide.api.parts.EditorPartStack;
 import org.eclipse.che.ide.api.parts.PartPresenter;
 import org.eclipse.che.ide.api.parts.PartStackView.TabItem;
@@ -31,17 +35,17 @@ import org.eclipse.che.ide.part.widgets.editortab.EditorTab;
 import org.eclipse.che.ide.part.widgets.listtab.ListButton;
 import org.eclipse.che.ide.part.widgets.listtab.ListItem;
 import org.eclipse.che.ide.part.widgets.listtab.ListItemWidget;
+import org.eclipse.che.ide.util.loging.Log;
 
 import javax.validation.constraints.NotNull;
-import org.eclipse.che.commons.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Set;
 
 import static org.eclipse.che.ide.api.editor.EditorWithErrors.EditorState.ERROR;
 import static org.eclipse.che.ide.api.editor.EditorWithErrors.EditorState.WARNING;
-import org.eclipse.che.ide.util.loging.Log;
 
 /**
  * EditorPartStackPresenter is a special PartStackPresenter that is shared among all
@@ -54,14 +58,16 @@ import org.eclipse.che.ide.util.loging.Log;
 @Singleton
 public class EditorPartStackPresenter extends PartStackPresenter implements EditorPartStack,
                                                                             EditorTab.ActionDelegate,
-                                                                            ListButton.ActionDelegate {
+                                                                            ListButton.ActionDelegate,
+                                                                            CloseCurrentProjectHandler {
 
-    private final ListButton                listButton;
+    private final ListButton listButton;
 
-    private final Map<ListItem, TabItem>    items;
+    private final Map<ListItem, TabItem> items;
 
     //this list need to save order of added parts
     private final LinkedList<PartPresenter> partsOrder;
+    private final Provider<EditorAgent>     editorAgentProvider;
 
     private PartPresenter activePart;
 
@@ -71,7 +77,8 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
                                     EventBus eventBus,
                                     TabItemFactory tabItemFactory,
                                     PartStackEventHandler partStackEventHandler,
-                                    ListButton listButton) {
+                                    ListButton listButton,
+                                    final Provider<EditorAgent> editorAgentProvider) {
         //noinspection ConstantConditions
         super(eventBus, partStackEventHandler, tabItemFactory, partsComparator, view, null);
 
@@ -84,31 +91,42 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
         this.items = new HashMap<>();
         this.partsOrder = new LinkedList<>();
 
-        eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
-            @Override
-            public void onProjectReady(ProjectActionEvent event) {
-            }
+        this.editorAgentProvider = editorAgentProvider;
 
-            @Override
-            public void onProjectOpened(ProjectActionEvent event) {
-            }
+        eventBus.addHandler(CloseCurrentProjectEvent.TYPE, this);
+    }
 
-            @Override
-            public void onProjectClosing(ProjectActionEvent event) {
-            }
+    @Override
+    public void onCloseCurrentProject(CloseCurrentProjectEvent event) {
+        String closedProjectPath = event.getDescriptor().getPath();
 
-            @Override
-            public void onProjectClosed(ProjectActionEvent event) {
+        EditorAgent editorAgent = editorAgentProvider.get();
+
+        Map<String, EditorPartPresenter> openedEditors = editorAgent.getOpenedEditors();
+
+        Set<String> openedFilesPaths = openedEditors.keySet();
+
+        for (String openedFilePath : openedFilesPaths) {
+            if (openedFilePath.startsWith(closedProjectPath)) {
+                EditorPartPresenter openedEditor = openedEditors.get(openedFilePath);
+
+                String openedFileName = openedEditor.getTitle();
+
                 Iterator<TabItem> itemIterator = parts.keySet().iterator();
 
                 while (itemIterator.hasNext()) {
                     TabItem tabItem = itemIterator.next();
-                    view.removeTab(parts.get(tabItem));
-                    itemIterator.remove();
-                    removeItemFromList(tabItem);
+
+                    if (openedFileName.equals(tabItem.getTitle())) {
+                        view.removeTab(parts.get(tabItem));
+
+                        itemIterator.remove();
+
+                        removeItemFromList(tabItem);
+                    }
                 }
             }
-        });
+        }
     }
 
     private void removeItemFromList(@NotNull TabItem tab) {
