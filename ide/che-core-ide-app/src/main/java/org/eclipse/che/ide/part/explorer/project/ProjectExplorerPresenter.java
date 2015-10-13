@@ -233,7 +233,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
 
     /** {@inheritDoc} */
     @Override
-    public void onProjectOpened(OpenProjectEvent event) {
+    public void onProjectOpened(final OpenProjectEvent event) {
         final ProjectDescriptor descriptor = event.getDescriptor();
 
         if (!Strings.isNullOrEmpty(descriptor.getContentRoot())) {
@@ -252,6 +252,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
                 @Override
                 public void apply(final Node node) throws OperationException {
                     openNode(node, descriptor);
+                    eventBus.fireEvent(ProjectReadyEvent.createReadyEvent(descriptor));
                 }
             });
         }
