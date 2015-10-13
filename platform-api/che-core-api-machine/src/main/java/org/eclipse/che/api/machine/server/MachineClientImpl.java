@@ -23,15 +23,17 @@ import org.eclipse.che.api.machine.shared.dto.recipe.MachineRecipe;
 import org.eclipse.che.api.workspace.server.MachineClient;
 import org.eclipse.che.api.workspace.server.model.impl.MachineImpl;
 import org.eclipse.che.api.workspace.server.model.impl.MachineSourceImpl;
+import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.dto.server.DtoFactory;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
+import javax.ws.rs.core.UriBuilder;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URL;
 
 /**
  * @author Alexander Garagatyi
@@ -39,14 +41,17 @@ import java.net.URL;
 @Singleton
 public class MachineClientImpl implements MachineClient {
     private final MachineManager machineManager;
+    private final String         apiEndpoint;
 
     @Inject
-    public MachineClientImpl(MachineManager machineManager) {
+    public MachineClientImpl(MachineManager machineManager, @Named("api.endpoint") String apiEndpoint) {
         this.machineManager = machineManager;
+        this.apiEndpoint = apiEndpoint;
     }
 
     @Override
-    public org.eclipse.che.api.workspace.server.model.impl.MachineImpl start(MachineConfig machineConfig, String workspaceId,
+    public org.eclipse.che.api.workspace.server.model.impl.MachineImpl start(MachineConfig machineConfig,
+                                                                             String workspaceId,
                                                                              String envName)
             throws ServerException, BadRequestException, NotFoundException, ConflictException {
         final String machineSourceType = machineConfig.getSource().getType();
@@ -55,9 +60,17 @@ public class MachineClientImpl implements MachineClient {
             String recipeContent;
             File file = null;
             try {
-                file = IoUtil.downloadFile(null, "recipe", null, new URL(machineConfig.getSource().getLocation()));
+                UriBuilder targetUriBuilder = UriBuilder.fromUri(machineConfig.getSource().getLocation());
+                // add user token to be able to download user's private recipe
+                if (machineConfig.getSource().getLocation().startsWith(apiEndpoint)) {
+                    if (EnvironmentContext.getCurrent().getUser() != null
+                        && EnvironmentContext.getCurrent().getUser().getToken() != null) {
+                        targetUriBuilder.queryParam("token", EnvironmentContext.getCurrent().getUser().getToken());
+                    }
+                }
+                file = IoUtil.downloadFile(null, "recipe", null, targetUriBuilder.build().toURL());
                 recipeContent = IoUtil.readAndCloseQuietly(new FileInputStream(file));
-            } catch (IOException e) {
+            } catch (IOException | IllegalArgumentException e) {
                 throw new ServerException("Can't start machine " + machineConfig.getName() + ". " + e.getLocalizedMessage());
             } finally {
                 if (file != null) {
