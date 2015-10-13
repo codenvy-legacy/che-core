@@ -21,8 +21,8 @@ import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.event.ActivePartChangedEvent;
 import org.eclipse.che.ide.api.event.ActivePartChangedHandler;
-import org.eclipse.che.ide.api.event.ProjectActionEvent;
-import org.eclipse.che.ide.api.event.ProjectActionHandler;
+import org.eclipse.che.ide.api.event.project.CloseCurrentProjectEvent;
+import org.eclipse.che.ide.api.event.project.CloseCurrentProjectHandler;
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.parts.HasView;
 import org.eclipse.che.ide.api.parts.OutlinePart;
@@ -41,6 +41,7 @@ import org.vectomatic.dom.svg.ui.SVGResource;
 public class OutlinePartPresenter extends BasePresenter implements ActivePartChangedHandler,
                                                                    OutlinePart,
                                                                    OutlinePartView.ActionDelegate,
+                                                                   CloseCurrentProjectHandler,
                                                                    HasView {
     private final OutlinePartView          view;
     private final CoreLocalizationConstant coreLocalizationConstant;
@@ -60,27 +61,13 @@ public class OutlinePartPresenter extends BasePresenter implements ActivePartCha
         view.setDelegate(this);
 
         eventBus.addHandler(ActivePartChangedEvent.TYPE, this);
-        eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
-            @Override
-            public void onProjectReady(ProjectActionEvent event) {
+        eventBus.addHandler(CloseCurrentProjectEvent.TYPE, this);
+    }
 
-            }
-
-            @Override
-            public void onProjectClosing(ProjectActionEvent event) {
-
-            }
-
-            @Override
-            public void onProjectClosed(ProjectActionEvent event) {
-                view.clear();
-            }
-
-            @Override
-            public void onProjectOpened(ProjectActionEvent event) {
-
-            }
-        });
+    /** {@inheritDoc} */
+    @Override
+    public void onCloseCurrentProject(CloseCurrentProjectEvent event) {
+        view.clear();
     }
 
     /** {@inheritDoc} */

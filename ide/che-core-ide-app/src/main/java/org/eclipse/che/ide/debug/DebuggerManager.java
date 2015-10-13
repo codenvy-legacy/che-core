@@ -10,11 +10,14 @@
  *******************************************************************************/
 package org.eclipse.che.ide.debug;
 
-import org.eclipse.che.ide.api.event.ProjectActionEvent;
-import org.eclipse.che.ide.api.event.ProjectActionHandler;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
+
+import org.eclipse.che.ide.api.event.project.CloseCurrentProjectEvent;
+import org.eclipse.che.ide.api.event.project.CloseCurrentProjectHandler;
+import org.eclipse.che.ide.api.event.project.ProjectReadyEvent;
+import org.eclipse.che.ide.api.event.project.ProjectReadyHandler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,32 +32,21 @@ public class DebuggerManager {
     private Debugger              currentDebugger;
     private Map<String, Debugger> debuggers;
 
-    /**
-     * Create manager.
-     *
-     * @param eventBus
-     */
     @Inject
     protected DebuggerManager(EventBus eventBus) {
         this.debuggers = new HashMap<>();
-        eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
-            @Override
-            public void onProjectReady(ProjectActionEvent event) {
-                currentDebugger = debuggers.get(event.getProject().getType());
-            }
 
+        eventBus.addHandler(CloseCurrentProjectEvent.TYPE, new CloseCurrentProjectHandler() {
             @Override
-            public void onProjectClosing(ProjectActionEvent event) {
-            }
-
-            @Override
-            public void onProjectClosed(ProjectActionEvent event) {
+            public void onCloseCurrentProject(CloseCurrentProjectEvent event) {
                 currentDebugger = null;
             }
+        });
 
+        eventBus.addHandler(ProjectReadyEvent.TYPE, new ProjectReadyHandler() {
             @Override
-            public void onProjectOpened(ProjectActionEvent event) {
-
+            public void onProjectReady(ProjectReadyEvent event) {
+                currentDebugger = debuggers.get(event.getProject().getType());
             }
         });
     }

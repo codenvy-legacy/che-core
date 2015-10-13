@@ -26,7 +26,6 @@ import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.project.node.FileReferenceNode;
 import org.eclipse.che.ide.project.node.FolderReferenceNode;
 import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
-import org.eclipse.che.ide.project.node.ProjectReferenceNode;
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
 import org.eclipse.che.ide.ui.dialogs.CancelCallback;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
@@ -126,7 +125,8 @@ public class RenameItemAction extends AbstractPerspectiveAction {
     /**
      * Asks the user for new name and renames the node.
      *
-     * @param node node to rename
+     * @param node
+     *         node to rename
      */
     private void renameNode(final ResourceBasedNode<?> node) {
         final InputCallback inputCallback = new InputCallback() {
@@ -161,7 +161,7 @@ public class RenameItemAction extends AbstractPerspectiveAction {
             inputDialog.withValidator(new FileNameValidator(node.getName()));
         } else if (node instanceof FolderReferenceNode) {
             inputDialog.withValidator(new FolderNameValidator(node.getName()));
-        } else if (node instanceof ProjectDescriptorNode || node instanceof ProjectReferenceNode) {
+        } else if (node instanceof ProjectDescriptorNode) {
             inputDialog.withValidator(new ProjectNameValidator(node.getName()));
         }
         inputDialog.show();
@@ -172,7 +172,7 @@ public class RenameItemAction extends AbstractPerspectiveAction {
             return localization.renameFileDialogTitle();
         } else if (node instanceof FolderReferenceNode) {
             return localization.renameFolderDialogTitle();
-        } else if (node instanceof ProjectDescriptorNode || node instanceof ProjectReferenceNode) {
+        } else if (node instanceof ProjectDescriptorNode) {
             return localization.renameProjectDialogTitle();
         }
         return localization.renameNodeDialogTitle();

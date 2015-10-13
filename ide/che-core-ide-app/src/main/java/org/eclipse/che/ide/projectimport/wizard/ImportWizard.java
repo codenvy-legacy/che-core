@@ -22,7 +22,8 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.vfs.gwt.client.VfsServiceClient;
 import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.api.event.OpenProjectEvent;
+import org.eclipse.che.ide.api.event.ConfigureProjectEvent;
+import org.eclipse.che.ide.api.event.project.CreateProjectEvent;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
 import org.eclipse.che.ide.api.wizard.AbstractWizard;
 import org.eclipse.che.ide.commons.exception.JobNotFoundException;
@@ -120,7 +121,7 @@ public class ImportWizard extends AbstractWizard<ImportProject> {
             protected void onSuccess(final ImportResponse result) {
                 importProjectNotificationSubscriber.onSuccess();
                 callback.onCompleted();
-                openProject(result.getProjectDescriptor());
+                createProject(result.getProjectDescriptor());
             }
 
             @Override
@@ -138,11 +139,12 @@ public class ImportWizard extends AbstractWizard<ImportProject> {
         });
     }
 
-    private void openProject(ProjectDescriptor project) {
-        eventBus.fireEvent(new OpenProjectEvent(project.getName()));
-        //if (!project.getProblems().isEmpty()) {
-        //    eventBus.fireEvent(new ConfigureProjectEvent(project));
-        //}
+    private void createProject(ProjectDescriptor project) {
+        eventBus.fireEvent(new CreateProjectEvent(project));
+
+        if (!project.getProblems().isEmpty()) {
+            eventBus.fireEvent(new ConfigureProjectEvent(project));
+        }
     }
 
     private String getImportErrorMessage(Throwable exception) {

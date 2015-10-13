@@ -8,21 +8,21 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.api.event;
+package org.eclipse.che.ide.api.event.project;
 
 import com.google.gwt.event.shared.EventHandler;
 
 /**
- * A handler for handling {@link CloseCurrentProjectEvent}.
+ * A handler for handling {@link OpenProjectEvent}.
  *
  * @author Artem Zatsarynnyy
  */
-public interface CloseCurrentProjectHandler extends EventHandler {
+public interface OpenProjectHandler extends EventHandler {
     /**
-     * Called when someone is going to close the currently opened project.
+     * Called when someone is going to open a project.
      *
      * @param event
-     *         the fired {@link CloseCurrentProjectEvent}
+     *         the fired {@link OpenProjectEvent}
      */
-    void onCloseCurrentProject(CloseCurrentProjectEvent event);
+    void onProjectOpened(OpenProjectEvent event);
 }

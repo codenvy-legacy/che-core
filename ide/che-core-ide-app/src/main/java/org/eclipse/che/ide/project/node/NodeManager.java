@@ -252,6 +252,19 @@ public class NodeManager {
 
     /** *********** Project Reference operations ********************* */
 
+    public Promise<ProjectDescriptor> getProjectDescriptor(String path) {
+        return AsyncPromiseHelper.createFromAsyncRequest(getProjectDescriptoRC(path));
+    }
+
+    private RequestCall<ProjectDescriptor> getProjectDescriptoRC(final String path) {
+        return new RequestCall<ProjectDescriptor>() {
+            @Override
+            public void makeCall(AsyncCallback<ProjectDescriptor> callback) {
+                projectService.getProject(path, _callback(callback, dtoUnmarshaller.newUnmarshaller(ProjectDescriptor.class)));
+            }
+        };
+    }
+
     @NotNull
     public Promise<List<Node>> getProjects() {
         return AsyncPromiseHelper.createFromAsyncRequest(getProjectsRC()).then(createProjectReferenceNodes());
@@ -284,7 +297,8 @@ public class NodeManager {
                 List<Node> projectList = new ArrayList<>(projects.size());
 
                 for (ProjectReference reference : projects) {
-                    ProjectReferenceNode node = nodeFactory.newProjectReferenceNode(reference, convert(reference), nodeSettings);
+                    ProjectDescriptorNode node = nodeFactory.newProjectDescriptorNode(convert(reference), nodeSettings);
+//                    ProjectReferenceNode node = nodeFactory.newProjectReferenceNode(reference, convert(reference), nodeSettings);
                     projectList.add(node);
                 }
 

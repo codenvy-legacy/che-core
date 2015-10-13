@@ -17,6 +17,7 @@ import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.parts.base.BaseActionDelegate;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
+import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
 import org.eclipse.che.ide.ui.smartTree.TreeNodeStorage.StoreSortInfo;
 import org.eclipse.che.ide.ui.smartTree.event.CollapseNodeEvent;
 import org.eclipse.che.ide.ui.smartTree.event.ExpandNodeEvent;
@@ -31,7 +32,15 @@ public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDele
 
     void setRootNodes(List<Node> nodes);
 
+    void addNode(Node node);
+
+    void removeNode(Node node);
+
     void setRootNode(Node node);
+
+    void setProjectTitle(String title);
+
+    void replaceParentNode(ProjectDescriptorNode descriptorNode);
 
     List<StoreSortInfo> getSortInfo();
 

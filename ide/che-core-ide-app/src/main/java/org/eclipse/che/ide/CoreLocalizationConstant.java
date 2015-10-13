@@ -581,9 +581,6 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("started.ws")
     String startedWs(String wsName);
 
-    @Key("starting.ext.server")
-    String startingExtServer();
-
     @Key("ext.server.started")
     String extServerStarted();
 

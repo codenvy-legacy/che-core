@@ -67,12 +67,13 @@ public class BrowserQueryFieldViewer {
 
             var browserUrl = window.location.pathname;
 
-            var lastIndex = browserUrl.lastIndexOf("/");
+            var urlParts = browserUrl.split("/");
+            urlParts[3] = "";
 
-            var url = browserUrl.substring(lastIndex);
+            browserUrl = urlParts.join("/") + projectName;
 
-            document.title = "Codenvy Developer Environment";
-            window.history.pushState(window["_history_relocation_id"], document.title, url + "/" + projectName);
+            document.title = projectName.length == 0 ? "Codenvy Developer Environment" : "Codenvy | " + projectName;
+            window.history.pushState(window["_history_relocation_id"], document.title, browserUrl);
             window["_history_relocation_id"]++;
         } catch (e) {
             console.log(e.message);

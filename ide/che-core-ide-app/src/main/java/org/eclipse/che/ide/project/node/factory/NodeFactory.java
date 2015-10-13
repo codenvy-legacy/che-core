@@ -12,13 +12,11 @@ package org.eclipse.che.ide.project.node.factory;
 
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.ide.api.project.node.settings.NodeSettings;
 import org.eclipse.che.ide.project.node.FileReferenceNode;
 import org.eclipse.che.ide.project.node.FolderReferenceNode;
 import org.eclipse.che.ide.project.node.ModuleDescriptorNode;
 import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
-import org.eclipse.che.ide.project.node.ProjectReferenceNode;
 
 import javax.validation.constraints.NotNull;
 
@@ -39,21 +37,6 @@ public interface NodeFactory {
      */
     ProjectDescriptorNode newProjectDescriptorNode(@NotNull ProjectDescriptor projectDescriptor,
                                                    @NotNull NodeSettings nodeSettings);
-
-    /**
-     * Creates project node that represent project in project list.
-     *
-     * @param projectReference
-     *         instance of {@link org.eclipse.che.api.project.shared.dto.ProjectReference} related to this node
-     * @param projectDescriptor
-     *         instance of {@link org.eclipse.che.api.project.shared.dto.ProjectDescriptor} related to this node
-     * @param nodeSettings
-     *         node view settings
-     * @return instance of {@link ProjectReferenceNode}
-     */
-    ProjectReferenceNode newProjectReferenceNode(@NotNull ProjectReference projectReference,
-                                                 @NotNull ProjectDescriptor projectDescriptor,
-                                                 @NotNull NodeSettings nodeSettings);
 
     /**
      * Creates module node that represent project module.

@@ -8,9 +8,11 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.api.event;
+package org.eclipse.che.ide.api.event.project;
 
 import com.google.gwt.event.shared.GwtEvent;
+
+import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 
 /**
  * An event that should be fired in order to close the currently opened project.
@@ -21,6 +23,16 @@ public class CloseCurrentProjectEvent extends GwtEvent<CloseCurrentProjectHandle
 
     /** Type class used to register this event. */
     public static Type<CloseCurrentProjectHandler> TYPE = new Type<>();
+
+    private final ProjectDescriptor descriptor;
+
+    public CloseCurrentProjectEvent(ProjectDescriptor descriptor) {
+        this.descriptor = descriptor;
+    }
+
+    public ProjectDescriptor getDescriptor(){
+        return descriptor;
+    }
 
     @Override
     public Type<CloseCurrentProjectHandler> getAssociatedType() {

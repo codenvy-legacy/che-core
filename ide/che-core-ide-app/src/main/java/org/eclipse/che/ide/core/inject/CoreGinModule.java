@@ -95,7 +95,6 @@ import org.eclipse.che.ide.bootstrap.StandartComponent;
 import org.eclipse.che.ide.bootstrap.WorkspaceComponent;
 import org.eclipse.che.ide.bootstrap.ZeroClipboardInjector;
 import org.eclipse.che.ide.core.Component;
-import org.eclipse.che.ide.core.ProjectStateHandler;
 import org.eclipse.che.ide.core.StandardComponentInitializer;
 import org.eclipse.che.ide.core.editor.EditorAgentImpl;
 import org.eclipse.che.ide.core.editor.EditorRegistryImpl;
@@ -116,8 +115,6 @@ import org.eclipse.che.ide.navigation.NavigateToFileViewImpl;
 import org.eclipse.che.ide.notification.NotificationManagerImpl;
 import org.eclipse.che.ide.notification.NotificationManagerView;
 import org.eclipse.che.ide.notification.NotificationManagerViewImpl;
-import org.eclipse.che.ide.openproject.OpenProjectView;
-import org.eclipse.che.ide.openproject.OpenProjectViewImpl;
 import org.eclipse.che.ide.outline.OutlinePartPresenter;
 import org.eclipse.che.ide.outline.OutlinePartView;
 import org.eclipse.che.ide.outline.OutlinePartViewImpl;
@@ -301,7 +298,6 @@ public class CoreGinModule extends AbstractGinModule {
 //        mapBinder.addBinding("Project Types").to(ProjectTypeComponent.class);
 //        mapBinder.addBinding("Project Templates").to(ProjectTemplatesComponent.class);
 //        mapBinder.addBinding("Factory").to(FactoryComponent.class);
-        mapBinder.addBinding("Project State Handler").to(ProjectStateHandler.class);
         mapBinder.addBinding("Standard components").to(StandartComponent.class);
     }
 
@@ -402,7 +398,6 @@ public class CoreGinModule extends AbstractGinModule {
         install(new GinFactoryModuleBuilder().implement(ConsoleButton.class, ConsoleButtonImpl.class)
                                              .build(ConsoleButtonFactory.class));
 
-        bind(OpenProjectView.class).to(OpenProjectViewImpl.class);
         bind(UploadFileView.class).to(UploadFileViewImpl.class);
         bind(UploadFolderFromZipView.class).to(UploadFolderFromZipViewImpl.class);
         bind(PreferencesView.class).to(PreferencesViewImpl.class).in(Singleton.class);

@@ -8,21 +8,22 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.api.event;
+package org.eclipse.che.ide.api.event.project;
 
 import com.google.gwt.event.shared.EventHandler;
 
 /**
- * A handler for handling {@link OpenProjectEvent}.
+ * Special handler which is called when project is created.
  *
- * @author Artem Zatsarynnyy
+ * @author Dmitry Shnurenko
  */
-public interface OpenProjectHandler extends EventHandler {
+public interface CreateProjectHandler extends EventHandler {
+
     /**
-     * Called when someone is going to open a project.
+     * Performs some actions when user creates a project.
      *
      * @param event
-     *         the fired {@link OpenProjectEvent}
+     *         contains information about created project
      */
-    void onOpenProject(OpenProjectEvent event);
+    void onProjectCreated(CreateProjectEvent event);
 }

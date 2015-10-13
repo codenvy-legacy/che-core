@@ -15,14 +15,19 @@ import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
+import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.event.CloseCurrentProjectEvent;
+import org.eclipse.che.ide.api.event.project.CloseCurrentProjectEvent;
+import org.eclipse.che.ide.api.selection.Selection;
+import org.eclipse.che.ide.api.selection.SelectionAgent;
+import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
 
 import javax.validation.constraints.NotNull;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
 
@@ -36,28 +41,46 @@ public class CloseProjectAction extends AbstractPerspectiveAction {
     private final AppContext           appContext;
     private final AnalyticsEventLogger eventLogger;
     private final EventBus             eventBus;
+    private final SelectionAgent       selectionAgent;
 
     @Inject
     public CloseProjectAction(AppContext appContext,
                               Resources resources,
                               AnalyticsEventLogger eventLogger,
-                              EventBus eventBus) {
+                              EventBus eventBus,
+                              SelectionAgent selectionAgent) {
         super(Arrays.asList(PROJECT_PERSPECTIVE_ID), "Close Project", "Close project", null, resources.closeProject());
         this.appContext = appContext;
         this.eventLogger = eventLogger;
         this.eventBus = eventBus;
+        this.selectionAgent = selectionAgent;
     }
 
     /** {@inheritDoc} */
     @Override
     public void updateInPerspective(@NotNull ActionEvent event) {
-        event.getPresentation().setVisible(appContext.getCurrentProject() != null);
+        List<ProjectDescriptor> openedProjects = appContext.getOpenedProjects();
+
+        event.getPresentation().setVisible(openedProjects.size() > 0);
+        event.getPresentation().setVisible(openedProjects.size() > 0);
+
+        Selection<?> selection = selectionAgent.getSelection();
+
+        if (selection == null || selection.isEmpty()) {
+            return;
+        }
+
+        List<?> selectedElements = selection.getAllElements();
+
+        event.getPresentation().setEnabled(selectedElements.size() < 2);
+        event.getPresentation().setEnabled(selectedElements.get(0) instanceof ProjectDescriptorNode);
+
     }
 
     /** {@inheritDoc} */
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(ActionEvent event) {
         eventLogger.log(this);
-        eventBus.fireEvent(new CloseCurrentProjectEvent());
+        eventBus.fireEvent(new CloseCurrentProjectEvent(appContext.getCurrentProject().getProjectDescription()));
     }
 }

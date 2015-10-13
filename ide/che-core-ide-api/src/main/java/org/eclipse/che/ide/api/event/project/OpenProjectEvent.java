@@ -8,9 +8,11 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.api.event;
+package org.eclipse.che.ide.api.event.project;
 
 import com.google.gwt.event.shared.GwtEvent;
+
+import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 
 /**
  * An event that should be fired in order to open a project.
@@ -21,16 +23,17 @@ public class OpenProjectEvent extends GwtEvent<OpenProjectHandler> {
 
     /** Type class used to register this event. */
     public static Type<OpenProjectHandler> TYPE = new Type<>();
-    private final String projectName;
+
+    private final ProjectDescriptor descriptor;
 
     /**
      * Creates an event to initiate opening the specified project.
      *
-     * @param projectName
+     * @param descriptor
      *         name of the project to open
      */
-    public OpenProjectEvent(String projectName) {
-        this.projectName = projectName;
+    public OpenProjectEvent(ProjectDescriptor descriptor) {
+        this.descriptor = descriptor;
     }
 
     @Override
@@ -39,16 +42,17 @@ public class OpenProjectEvent extends GwtEvent<OpenProjectHandler> {
     }
 
     /**
-     * Returns name of the project to open.
+     * Returns descriptor of the project to open.
      *
-     * @return name of the project to open
+     * @return descriptor of the project to open
      */
-    public String getProjectName() {
-        return projectName;
+    public ProjectDescriptor getDescriptor() {
+        return descriptor;
     }
 
     @Override
     protected void dispatch(OpenProjectHandler handler) {
-        handler.onOpenProject(this);
+        handler.onProjectOpened(this);
     }
+
 }

@@ -29,6 +29,9 @@ import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.PromisableAction;
 import org.eclipse.che.ide.api.app.AppContext;
+import org.eclipse.che.ide.api.app.CurrentProject;
+import org.eclipse.che.ide.api.app.CurrentUser;
+import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
@@ -51,10 +54,10 @@ import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspect
  */
 @Singleton
 public class DeleteItemAction extends AbstractPerspectiveAction implements PromisableAction {
-    private final AnalyticsEventLogger eventLogger;
-    private       SelectionAgent       selectionAgent;
-    private       DeleteNodeHandler    deleteNodeHandler;
-    private       AppContext           appContext;
+    private final AnalyticsEventLogger     eventLogger;
+    private       SelectionAgent           selectionAgent;
+    private       DeleteNodeHandler        deleteNodeHandler;
+    private       AppContext               appContext;
     private final ProjectExplorerPresenter projectExplorer;
 
     private Callback<Void, Throwable> actionCompletedCallBack;
@@ -92,15 +95,20 @@ public class DeleteItemAction extends AbstractPerspectiveAction implements Promi
 
         if (Iterables.all(selection.getAllElements(), isResourceBasedNode())) {
             final List<ResourceBasedNode<?>> nodes = Lists.newArrayList(Iterables.transform(selection.getAllElements(), castNode()));
-            deleteNodeHandler.deleteAll(nodes, true).then(synchronizeProjectView()).then(actionComplete());
+
+            Node selectedNode = nodes.get(0);
+
+            Node parentNode = selectedNode.getParent();
+
+            deleteNodeHandler.deleteAll(nodes, true).then(synchronizeProjectView(parentNode)).then(actionComplete());
         }
     }
 
-    private Operation<Void> synchronizeProjectView() {
+    private Operation<Void> synchronizeProjectView(final Node parent) {
         return new Operation<Void>() {
             @Override
             public void apply(Void arg) throws OperationException {
-                projectExplorer.reloadChildren();
+                projectExplorer.reloadChildren(parent);
             }
         };
     }
@@ -141,24 +149,26 @@ public class DeleteItemAction extends AbstractPerspectiveAction implements Promi
 
     /** {@inheritDoc} */
     @Override
-    public void updateInPerspective(@NotNull ActionEvent e) {
-        if ((appContext.getCurrentProject() == null && !appContext.getCurrentUser().isUserPermanent()) ||
-            (appContext.getCurrentProject() != null && appContext.getCurrentProject().isReadOnly())) {
-            e.getPresentation().setVisible(true);
-            e.getPresentation().setEnabled(false);
+    public void updateInPerspective(@NotNull ActionEvent event) {
+        CurrentProject currentProject = appContext.getCurrentProject();
+        CurrentUser currentUser = appContext.getCurrentUser();
+
+        if ((currentProject == null && currentUser.isUserPermanent()) || (currentProject != null && currentProject.isReadOnly())) {
+            event.getPresentation().setVisible(true);
+            event.getPresentation().setEnabled(false);
             return;
         }
 
         final Selection<?> selection = selectionAgent.getSelection();
 
         if (selection == null || selection.isEmpty()) {
-            e.getPresentation().setEnabled(false);
+            event.getPresentation().setEnabled(false);
             return;
         }
 
         boolean enable = Iterables.all(selection.getAllElements(), isResourceBasedNode());
 
-        e.getPresentation().setEnabled(enable);
+        event.getPresentation().setEnabled(enable);
     }
 
     @Override
