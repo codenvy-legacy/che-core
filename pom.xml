@@ -24,6 +24,7 @@
     <packaging>pom</packaging>
     <name>Che Core Parent</name>
     <modules>
+        <module>che-maven-plugin</module>
         <module>commons</module>
         <module>platform-api</module>
         <module>platform-api-client-gwt</module>
