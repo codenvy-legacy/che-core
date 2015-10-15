@@ -28,42 +28,42 @@
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-aether-provider</artifactId>
-            <version>3.3.1</version>
+            <version>${org.apache.maven.aether.provider.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.aether</groupId>
             <artifactId>aether-api</artifactId>
-            <version>1.0.2.v20150114</version>
+            <version>${org.eclipse.aether.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.aether</groupId>
             <artifactId>aether-connector-basic</artifactId>
-            <version>1.0.2.v20150114</version>
+            <version>${org.eclipse.aether.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.aether</groupId>
             <artifactId>aether-impl</artifactId>
-            <version>1.0.2.v20150114</version>
+            <version>${org.eclipse.aether.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.aether</groupId>
             <artifactId>aether-spi</artifactId>
-            <version>1.0.2.v20150114</version>
+            <version>${org.eclipse.aether.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.aether</groupId>
             <artifactId>aether-transport-file</artifactId>
-            <version>1.0.2.v20150114</version>
+            <version>${org.eclipse.aether.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.aether</groupId>
             <artifactId>aether-transport-http</artifactId>
-            <version>1.0.2.v20150114</version>
+            <version>${org.eclipse.aether.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.aether</groupId>
             <artifactId>aether-util</artifactId>
-            <version>1.0.2.v20150114</version>
+            <version>${org.eclipse.aether.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.inject</groupId>
