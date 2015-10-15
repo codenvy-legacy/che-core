@@ -150,11 +150,12 @@ public class NativeGitConnection implements GitConnection {
     @Override
     public void checkout(CheckoutRequest request) throws GitException {
         ensureExistenceRepoRootInWorkingDirectory();
-        nativeGit.createBranchCheckoutCommand()
+        nativeGit.createCheckoutCommand()
                  .setBranchName(request.getName())
                  .setStartPoint(request.getStartPoint())
                  .setCreateNew(request.isCreateNew())
                  .setTrackBranch(request.getTrackBranch())
+                 .setFilePaths(request.getFiles())
                  .execute();
     }
 

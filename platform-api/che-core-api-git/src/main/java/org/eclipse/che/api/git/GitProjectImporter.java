@@ -236,8 +236,9 @@ public class GitProjectImporter implements ProjectImporter {
     }
 
     private void checkoutCommit(GitConnection git, String commit, DtoFactory dtoFactory) throws GitException {
-        final CheckoutRequest request = dtoFactory.createDto(CheckoutRequest.class).withName("temp").withCreateNew(true)
-                                                        .withStartPoint(commit);
+        final CheckoutRequest request = dtoFactory.createDto(CheckoutRequest.class).withName("temp")
+        																		   .withCreateNew(true)
+        																		   .withStartPoint(commit);
         try {
             git.checkout(request);
         } catch (GitException e) {

@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.git.impl.nativegit.commands;
 
+import java.util.List;
 import org.eclipse.che.api.git.GitException;
 
 import java.io.File;
@@ -19,14 +20,15 @@ import java.io.File;
  *
  * @author Eugene Voevodin
  */
-public class BranchCheckoutCommand extends GitCommand<Void> {
+public class CheckoutCommand extends GitCommand<Void> {
 
     private boolean createNew;
     private String  branchName;
     private String  trackBranch;
     private String  startPoint;
+    private List<String> filePaths;
 
-    public BranchCheckoutCommand(File place) {
+    public CheckoutCommand(File place) {
         super(place);
     }
 
@@ -43,21 +45,31 @@ public class BranchCheckoutCommand extends GitCommand<Void> {
 
         reset();
         commandLine.add("checkout");
-
-        if (createNew) {
-            commandLine.add("-b");
-            commandLine.add(branchName);
-        } else if (branchName != null) {
-            commandLine.add(branchName);
+        
+        if (filePaths != null && !filePaths.isEmpty())
+        {
+        	for (String file : filePaths)
+        	{
+        		commandLine.add(file);
+        	}
         }
-
-        if (trackBranch != null) {
-            commandLine.add("-t");
-            commandLine.add(trackBranch);
-        } else if (startPoint != null) {
-            commandLine.add(startPoint);
+        else
+        {
+	        if (createNew) {
+	            commandLine.add("-b");
+	            commandLine.add(branchName);
+	        } else if (branchName != null) {
+	            commandLine.add(branchName);
+	        }
+	
+	        if (trackBranch != null) {
+	            commandLine.add("-t");
+	            commandLine.add(trackBranch);
+	        } else if (startPoint != null) {
+	            commandLine.add(startPoint);
+	        }
         }
-
+        
         start();
         return null;
     }
@@ -65,9 +77,9 @@ public class BranchCheckoutCommand extends GitCommand<Void> {
     /**
      * @param createNew
      *         if <code>true</code> new branch will be created
-     * @return BranchCheckoutCommand with established create new branch parameter
+     * @return CheckoutCommand with established create new branch parameter
      */
-    public BranchCheckoutCommand setCreateNew(boolean createNew) {
+    public CheckoutCommand setCreateNew(boolean createNew) {
         this.createNew = createNew;
         return this;
     }
@@ -75,9 +87,9 @@ public class BranchCheckoutCommand extends GitCommand<Void> {
     /**
      * @param branchName
      *         branch to checkout
-     * @return BranchCheckoutCommand with established branch to checkout
+     * @return CheckoutCommand with established branch to checkout
      */
-    public BranchCheckoutCommand setBranchName(String branchName) {
+    public CheckoutCommand setBranchName(String branchName) {
         this.branchName = branchName;
         return this;
     }
@@ -85,9 +97,9 @@ public class BranchCheckoutCommand extends GitCommand<Void> {
     /**
      * @param trackBranch
      *         branch to track
-     * @return BranchCheckoutCommand with track branch
+     * @return CheckoutCommand with track branch
      */
-    public BranchCheckoutCommand setTrackBranch(String trackBranch) {
+    public CheckoutCommand setTrackBranch(String trackBranch) {
         this.trackBranch = trackBranch;
         return this;
     }
@@ -95,10 +107,20 @@ public class BranchCheckoutCommand extends GitCommand<Void> {
     /**
      * @param startPoint
      *         checkout start point
-     * @return BranchCheckoutCommand with start point
+     * @return CheckoutCommand with start point
      */
-    public BranchCheckoutCommand setStartPoint(String startPoint) {
+    public CheckoutCommand setStartPoint(String startPoint) {
         this.startPoint = startPoint;
+        return this;
+    }
+    
+    /**
+     * @param filePaths
+     *         checkout specific files(s)
+     * @return CheckoutCommand with file paths point
+     */
+    public CheckoutCommand setFilePaths(List<String> filePaths) {
+        this.filePaths = filePaths;
         return this;
     }
 }

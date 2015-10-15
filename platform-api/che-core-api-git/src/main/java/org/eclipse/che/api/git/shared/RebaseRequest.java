@@ -19,12 +19,12 @@ import org.eclipse.che.dto.shared.DTO;
  */
 @DTO
 public interface RebaseRequest {
-
+	/** set rebase operation */
 	void setOperation(String operation);
-	
+	/** @return operation used */
 	String getOperation();
-	
-    String getRemote();
-    
-    void setRemote(String remote);
+	/** @ return rebase remote */
+	String getRemote();
+	/** set rebase remote */
+	void setRemote(String remote);
 }

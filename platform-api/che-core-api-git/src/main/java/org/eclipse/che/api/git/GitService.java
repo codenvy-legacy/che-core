@@ -259,12 +259,9 @@ public class GitService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public RebaseResponse rebase(RebaseRequest request) throws ApiException {
-        GitConnection gitConnection = getGitConnection();
-        try {
-            return gitConnection.rebase(request);
-        } finally {
-            gitConnection.close();
-        }
+    	try (GitConnection gitConnection = getGitConnection()) {
+    		return gitConnection.rebase(request);
+    	}
     }    
     
     @Path("mv")

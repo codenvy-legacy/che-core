@@ -11,6 +11,7 @@
 package org.eclipse.che.git.impl;
 
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
 
@@ -84,6 +85,68 @@ public class CheckoutTest {
         assertTrue(new File(repository, "newfile").exists());
     }
 
+    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
+    public void testSimpleFileCheckout(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
+        GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
+        addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
+        connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));
+        connection.commit(newDto(CommitRequest.class).withMessage("Initial addd"));
+
+        //when
+        //modify a file
+        String MODIFIED_CONTENT = "README modified content";
+        addFile(connection, "README.txt", MODIFIED_CONTENT);
+        
+        //then
+        assertTrue(new File(repository, "README.txt").exists());
+        assertEquals(MODIFIED_CONTENT, Files.toString(new File(connection.getWorkingDir(), "README.txt"), Charsets.UTF_8));
+        
+        //when
+        connection.checkout(newDto(CheckoutRequest.class).withFiles(Arrays.asList("README.txt")));
+
+        //then
+        assertTrue(new File(repository, "README.txt").exists());
+        assertEquals(org.eclipse.che.git.impl.GitTestUtil.CONTENT, Files.toString(new File(connection.getWorkingDir(), "README.txt"), Charsets.UTF_8));
+    }
+
+    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
+    public void testCheckoutTwoFiles(GitConnectionFactory connectionFactory) throws GitException, IOException {
+        //given
+        GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
+        addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
+  
+        String ORIG_CONTENT_1_TXT = "1.txt original content";
+        String ORIG_CONTENT_2_TXT = "2.txt original content";
+        addFile(connection, "1.txt", ORIG_CONTENT_1_TXT);
+        addFile(connection, "2.txt", ORIG_CONTENT_2_TXT);
+        connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt", "1.txt", "2.txt")));
+        connection.commit(newDto(CommitRequest.class).withMessage("Initial addd"));
+
+        //when
+        //modify the two files
+        String MODIFIED_CONTENT_1_TXT = "1.txt modified content";
+        String MODIFIED_CONTENT_2_TXT = "2.txt modified content";
+        addFile(connection, "1.txt", MODIFIED_CONTENT_1_TXT);
+        addFile(connection, "2.txt", MODIFIED_CONTENT_2_TXT);
+        
+        //then
+        assertTrue(new File(repository, "1.txt").exists());
+        assertTrue(new File(repository, "2.txt").exists());
+        assertEquals(MODIFIED_CONTENT_1_TXT, Files.toString(new File(connection.getWorkingDir(), "1.txt"), Charsets.UTF_8));
+        assertEquals(MODIFIED_CONTENT_2_TXT, Files.toString(new File(connection.getWorkingDir(), "2.txt"), Charsets.UTF_8));
+        
+        //when
+        connection.checkout(newDto(CheckoutRequest.class).withFiles(ImmutableList.of("1.txt", "2.txt")));
+
+        //then
+        assertTrue(new File(repository, "1.txt").exists());
+        assertTrue(new File(repository, "2.txt").exists());
+        assertEquals(ORIG_CONTENT_1_TXT, Files.toString(new File(connection.getWorkingDir(), "1.txt"), Charsets.UTF_8));
+        assertEquals(ORIG_CONTENT_2_TXT, Files.toString(new File(connection.getWorkingDir(), "2.txt"), Charsets.UTF_8));
+    }
+
+    
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testCreateNewAndCheckout(GitConnectionFactory connectionFactory) throws GitException, IOException {
         //given

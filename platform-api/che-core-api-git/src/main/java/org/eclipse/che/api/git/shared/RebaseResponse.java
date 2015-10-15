@@ -23,15 +23,15 @@ import org.eclipse.che.dto.shared.DTO;
 @DTO
 public interface RebaseResponse {
 	public enum RebaseStatus {
-		OK("OK"), //
-		ABORTED("Aborted"), //
-		FAST_FORWARD("Fast-forward"), //
-		ALREADY_UP_TO_DATE("Already up-to-date"), //
-		FAILED("Failed"), //
-		MERGED("Merged"), //
-		CONFLICTING("Conflicting"), //
-		STOPPED("Stopped"), //
-		UNCOMMITTED_CHANGES("Uncommitted Changes"), //
+		OK("OK"), 
+		ABORTED("Aborted"), 
+		FAST_FORWARD("Fast-forward"), 
+		ALREADY_UP_TO_DATE("Already up-to-date"), 
+		FAILED("Failed"), 
+		MERGED("Merged"), 
+		CONFLICTING("Conflicting"), 
+		STOPPED("Stopped"), 
+		UNCOMMITTED_CHANGES("Uncommitted Changes"), 
 		NOT_SUPPORTED("Not-yet-supported");
 		
 		private final String value;
@@ -47,9 +47,9 @@ public interface RebaseResponse {
 	
 	public RebaseStatus getStatus();
 	
-	/* @return files that has conflicts. May return <code>null</code> or empty array if there is no conflicts */
+	/* @return files that has conflicts. Empty array if there is no conflicts */
 	public List<String> getConflicts();
 	
-	/** @return files that failed to merge (not files that has conflicts). */
+	/* @return files that failed to merge. Empty array if there is aren't any */
 	public List<String> getFailed();
 }

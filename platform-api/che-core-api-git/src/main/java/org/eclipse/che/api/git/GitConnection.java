@@ -248,7 +248,7 @@ public interface GitConnection extends Closeable {
     MergeResult merge(MergeRequest request) throws GitException;
 
     /**
-     * rebase on a branch
+     * Rebase on a branch
      *
      * @param request
      *         rebase request

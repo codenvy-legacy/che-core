@@ -15,7 +15,7 @@ import java.util.List;
 import org.eclipse.che.dto.shared.DTO;
 
 /**
- * Request to checkout a branch / file / s to the working tree.
+ * Request to checkout a branch or file(s) to the working tree.
  *
  * @author andrew00x
  */
@@ -57,5 +57,7 @@ public interface CheckoutRequest extends GitRequest {
     List<String> getFiles();
     
     void setFiles(List<String> files);
+    
+    CheckoutRequest withFiles(List<String> files);
 
 }

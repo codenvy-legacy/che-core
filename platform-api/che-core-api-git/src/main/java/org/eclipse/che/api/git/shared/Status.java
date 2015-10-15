@@ -63,5 +63,5 @@ public interface Status {
     
     String getRepositoryState();
     
-	void setRepositoryState(String repositoryState);
+    void setRepositoryState(String repositoryState);
 }
