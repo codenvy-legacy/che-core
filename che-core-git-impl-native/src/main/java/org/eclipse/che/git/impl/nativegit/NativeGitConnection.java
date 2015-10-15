@@ -22,7 +22,7 @@ import org.eclipse.che.api.git.LogPage;
 import org.eclipse.che.api.git.UserCredential;
 import org.eclipse.che.api.git.shared.AddRequest;
 import org.eclipse.che.api.git.shared.Branch;
-import org.eclipse.che.api.git.shared.BranchCheckoutRequest;
+import org.eclipse.che.api.git.shared.CheckoutRequest;
 import org.eclipse.che.api.git.shared.BranchCreateRequest;
 import org.eclipse.che.api.git.shared.BranchDeleteRequest;
 import org.eclipse.che.api.git.shared.BranchListRequest;
@@ -40,6 +40,8 @@ import org.eclipse.che.api.git.shared.MergeResult;
 import org.eclipse.che.api.git.shared.MoveRequest;
 import org.eclipse.che.api.git.shared.PullRequest;
 import org.eclipse.che.api.git.shared.PullResponse;
+import org.eclipse.che.api.git.shared.RebaseRequest;
+import org.eclipse.che.api.git.shared.RebaseResponse;
 import org.eclipse.che.api.git.shared.PushRequest;
 import org.eclipse.che.api.git.shared.PushResponse;
 import org.eclipse.che.api.git.shared.Remote;
@@ -146,7 +148,7 @@ public class NativeGitConnection implements GitConnection {
     }
 
     @Override
-    public void branchCheckout(BranchCheckoutRequest request) throws GitException {
+    public void checkout(CheckoutRequest request) throws GitException {
         ensureExistenceRepoRootInWorkingDirectory();
         nativeGit.createBranchCheckoutCommand()
                  .setBranchName(request.getName())
@@ -368,6 +370,11 @@ public class NativeGitConnection implements GitConnection {
             throw new GitException("Invalid object for merge " + request.getCommit() + ".");
         }
         return nativeGit.createMergeCommand().setCommit(request.getCommit()).setCommitter(getLocalCommitter()).execute();
+    }
+
+    @Override
+    public RebaseResponse rebase(RebaseRequest request) throws GitException {
+    	throw new GitException("Unsupported method");
     }
 
     @Override

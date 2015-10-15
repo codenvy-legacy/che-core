@@ -13,20 +13,18 @@ package org.eclipse.che.api.git.shared;
 import org.eclipse.che.dto.shared.DTO;
 
 /**
- * Request to get commit logs.
+ * Request to add rebase branch
  *
- * @author andrew00x
+ * @author Dror Cohen
  */
 @DTO
-public interface LogRequest extends GitRequest {
-    /** @return revision range since */
-    String getRevisionRangeSince();
-    /** @return revision range since */
-    String getRevisionRangeUntil();
+public interface RebaseRequest {
+
+	void setOperation(String operation);
+	
+	String getOperation();
+	
+    String getRemote();
     
-    void setRevisionRangeSince(String revisionRangeSince);
-    void setRevisionRangeUntil(String revisionRangeUntil);	
-    // private List<String> fileFilter;
-    // private boolean noRenames = true;
-    // private int renameLimit;
+    void setRemote(String remote);
 }

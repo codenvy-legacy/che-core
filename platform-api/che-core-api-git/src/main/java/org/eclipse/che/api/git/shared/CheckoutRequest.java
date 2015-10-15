@@ -10,28 +10,30 @@
  *******************************************************************************/
 package org.eclipse.che.api.git.shared;
 
+import java.util.List;
+
 import org.eclipse.che.dto.shared.DTO;
 
 /**
- * Request to checkout a branch to the working tree.
+ * Request to checkout a branch / file / s to the working tree.
  *
  * @author andrew00x
  */
 @DTO
-public interface BranchCheckoutRequest extends GitRequest {
+public interface CheckoutRequest extends GitRequest {
     /** @return name of branch to checkout */
     String getName();
     
     void setName(String name);
     
-    BranchCheckoutRequest withName(String name);
+    CheckoutRequest withName(String name);
 
     /** @return name of a commit at which to start the new branch. If <code>null</code> the HEAD will be used */
     String getStartPoint();
     
     void setStartPoint(String startPoint);
     
-    BranchCheckoutRequest withStartPoint(String startPoint);
+    CheckoutRequest withStartPoint(String startPoint);
 
     /**
      * @return if <code>true</code> then create a new branch named {@link #name} and start it at {@link #startPoint} or to the HEAD if
@@ -42,12 +44,18 @@ public interface BranchCheckoutRequest extends GitRequest {
     
     void setCreateNew(boolean isCreateNew);
     
-    BranchCheckoutRequest withCreateNew(boolean isCreateNew);
+    CheckoutRequest withCreateNew(boolean isCreateNew);
 
     /** @return name of branch that will be tracked */
     String getTrackBranch();
 
     void setTrackBranch(String trackBranch);
 
-    BranchCheckoutRequest withTrackBranch(String trackBranch);
+    CheckoutRequest withTrackBranch(String trackBranch);
+    
+    /** @return list of files to checkout */
+    List<String> getFiles();
+    
+    void setFiles(List<String> files);
+
 }

@@ -60,4 +60,8 @@ public interface Status {
     List<String> getConflicting();
 
     void setConflicting(List<String> added);
+    
+    String getRepositoryState();
+    
+	void setRepositoryState(String repositoryState);
 }

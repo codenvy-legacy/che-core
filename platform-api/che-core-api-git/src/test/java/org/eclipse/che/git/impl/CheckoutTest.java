@@ -19,7 +19,7 @@ import org.eclipse.che.api.git.GitConnection;
 import org.eclipse.che.api.git.GitConnectionFactory;
 import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.api.git.shared.AddRequest;
-import org.eclipse.che.api.git.shared.BranchCheckoutRequest;
+import org.eclipse.che.api.git.shared.CheckoutRequest;
 import org.eclipse.che.api.git.shared.BranchCreateRequest;
 import org.eclipse.che.api.git.shared.BranchListRequest;
 import org.eclipse.che.api.git.shared.CommitRequest;
@@ -43,7 +43,7 @@ import static org.testng.Assert.assertTrue;
 /**
  * @author Eugene Voevodin
  */
-public class BranchCheckoutTest {
+public class CheckoutTest {
     private static final String FIRST_BRANCH_NAME  = "firstBranch";
     private static final String SECOND_BRANCH_NAME = "secondBranch";
 
@@ -70,16 +70,16 @@ public class BranchCheckoutTest {
         //when
         //create additional branch and make a commit
         connection.branchCreate(newDto(BranchCreateRequest.class).withName(FIRST_BRANCH_NAME));
-        connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName(FIRST_BRANCH_NAME));
+        connection.checkout(newDto(CheckoutRequest.class).withName(FIRST_BRANCH_NAME));
         addFile(connection, "newfile", "new file content");
         connection.add(newDto(AddRequest.class).withFilepattern(AddRequest.DEFAULT_PATTERN));
         connection.commit(newDto(CommitRequest.class).withMessage("Commit message"));
-        connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName("master"));
+        connection.checkout(newDto(CheckoutRequest.class).withName("master"));
         //then
         assertFalse(new File(repository, "newf3ile").exists());
 
         //when
-        connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName(FIRST_BRANCH_NAME));
+        connection.checkout(newDto(CheckoutRequest.class).withName(FIRST_BRANCH_NAME));
         //then
         assertTrue(new File(repository, "newfile").exists());
     }
@@ -96,7 +96,7 @@ public class BranchCheckoutTest {
         assertEquals(connection.branchList(newDto(BranchListRequest.class)).size(), 1);
 
         //when
-        connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName("thirdBranch").withCreateNew(true));
+        connection.checkout(newDto(CheckoutRequest.class).withName("thirdBranch").withCreateNew(true));
 
         //then
         assertEquals(connection.branchList(newDto(BranchListRequest.class)).size(), 2);
@@ -113,17 +113,17 @@ public class BranchCheckoutTest {
         //when
         //create branch additional branch and make a commit
         connection.branchCreate(newDto(BranchCreateRequest.class).withName(FIRST_BRANCH_NAME));
-        connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName(FIRST_BRANCH_NAME));
+        connection.checkout(newDto(CheckoutRequest.class).withName(FIRST_BRANCH_NAME));
         addFile(connection, "newfile", "new file content");
         connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
         connection.commit(newDto(CommitRequest.class).withMessage("Commit message"));
-        connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName("master"));
+        connection.checkout(newDto(CheckoutRequest.class).withName("master"));
 
         //check existence of 2 branches
         assertEquals(connection.branchList(newDto(BranchListRequest.class)).size(), 2);
 
         //when
-        connection.branchCheckout(newDto(BranchCheckoutRequest.class)
+        connection.checkout(newDto(CheckoutRequest.class)
                                           .withName(SECOND_BRANCH_NAME)
                                           .withStartPoint(FIRST_BRANCH_NAME)
                                           .withCreateNew(true));
@@ -143,17 +143,17 @@ public class BranchCheckoutTest {
         //when
         //create branch additional branch and make a commit
         connection.branchCreate(newDto(BranchCreateRequest.class).withName(FIRST_BRANCH_NAME));
-        connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName(FIRST_BRANCH_NAME));
+        connection.checkout(newDto(CheckoutRequest.class).withName(FIRST_BRANCH_NAME));
         addFile(connection, "newfile", "new file content");
         connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
         connection.commit(newDto(CommitRequest.class).withMessage("Commit message"));
-        connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName("master"));
+        connection.checkout(newDto(CheckoutRequest.class).withName("master"));
 
         //check existence of 2 branches
         assertEquals(connection.branchList(newDto(BranchListRequest.class)).size(), 2);
 
         //when
-        connection.branchCheckout(newDto(BranchCheckoutRequest.class)
+        connection.checkout(newDto(CheckoutRequest.class)
                                           .withCreateNew(true)
                                           .withName(SECOND_BRANCH_NAME)
                                           .withTrackBranch(FIRST_BRANCH_NAME));

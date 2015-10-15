@@ -18,7 +18,7 @@ import org.eclipse.che.api.git.GitConnection;
 import org.eclipse.che.api.git.GitConnectionFactory;
 import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.api.git.shared.AddRequest;
-import org.eclipse.che.api.git.shared.BranchCheckoutRequest;
+import org.eclipse.che.api.git.shared.CheckoutRequest;
 import org.eclipse.che.api.git.shared.BranchListRequest;
 import org.eclipse.che.api.git.shared.CloneRequest;
 import org.eclipse.che.api.git.shared.CommitRequest;
@@ -79,7 +79,7 @@ public class PushTest {
         //check branches in origin repository
         assertEquals(connection.branchList(newDto(BranchListRequest.class)).size(), 1);
         //checkout test branch
-        connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName("test"));
+        connection.checkout(newDto(CheckoutRequest.class).withName("test"));
         assertTrue(new File(connection.getWorkingDir(), "newfile").exists());
     }
 
