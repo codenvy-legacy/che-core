@@ -108,7 +108,7 @@ public class EditorPartStackView extends ResizeComposite implements PartStackVie
     public void setListButton(@NotNull ListButton listButton) {
         this.listButton = listButton;
         tabsPanel.add(listButton);
-        listButton.setVisible(true);
+        listButton.setVisible(false);
     }
 
     /** {@inheritDoc} */

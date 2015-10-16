@@ -34,6 +34,7 @@ import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionManager;
@@ -79,6 +80,7 @@ import org.eclipse.che.ide.ui.smartTree.event.ExpandNodeEvent;
 import org.eclipse.che.ide.ui.smartTree.event.GoIntoStateEvent;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.workspace.BrowserQueryFieldViewer;
+import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
@@ -110,6 +112,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
     private final List<Node>                   existingProjects;
     private final ProjectWizardPresenter       projectWizardPresenter;
     private final CoreLocalizationConstant     locale;
+    private final Resources                    resources;
     private final DtoUnmarshallerFactory       dtoUnmarshallerFactory;
     private final ProjectServiceClient         projectServiceClient;
     private final DtoFactory                   dtoFactory;
@@ -128,6 +131,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
                                     Provider<AppStateManager> appStateManagerProvider,
                                     ProjectWizardPresenter projectWizardPresenter,
                                     CoreLocalizationConstant locale,
+                                    Resources resources,
                                     DtoUnmarshallerFactory dtoUnmarshallerFactory,
                                     ProjectServiceClient projectServiceClient,
                                     DtoFactory dtoFactory,
@@ -144,6 +148,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         this.appStateManagerProvider = appStateManagerProvider;
         this.projectWizardPresenter = projectWizardPresenter;
         this.locale = locale;
+        this.resources = resources;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.projectServiceClient = projectServiceClient;
         this.dtoFactory = dtoFactory;
@@ -422,7 +427,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
     @NotNull
     @Override
     public String getTitle() {
-        return "Project";
+        return locale.projectExplorerButtonTitle();
     }
 
     /** {@inheritDoc} */
@@ -432,11 +437,16 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         return null;
     }
 
+    @Override
+    public SVGResource getTitleSVGImage() {
+        return resources.projectExplorerPartIcon();
+    }
+
     /** {@inheritDoc} */
     @Nullable
     @Override
     public String getTitleToolTip() {
-        return null;
+        return "This View helps you to do basic operation with your projects.";
     }
 
     /** {@inheritDoc} */
@@ -579,6 +589,5 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
     public HandlerRegistration addCollapseHandler(CollapseNodeEvent.CollapseNodeHandler handler) {
         return view.addCollapseHandler(handler);
     }
-
 
 }
