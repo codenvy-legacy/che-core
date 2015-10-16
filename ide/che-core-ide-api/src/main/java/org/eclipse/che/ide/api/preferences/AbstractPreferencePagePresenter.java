@@ -20,7 +20,7 @@ import com.google.gwt.resources.client.ImageResource;
  */
 public abstract class AbstractPreferencePagePresenter implements PreferencePagePresenter {
 
-    public static String DEFAULT_CATEGORY = "IDE Settings";
+    public static String DEFAULT_CATEGORY = "IDE";
 
     protected DirtyStateListener delegate;
 
