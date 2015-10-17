@@ -42,11 +42,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * CodenvyBootstrap is entry point of codenvy application implemented as ServletContextListener.
+ * CheBootstrap is entry point of Che application implemented as ServletContextListener.
  * <ul>
  * <li>Initializes Guice Injector</li>
  * <li>Automatically binds all the subclasses of com.google.inject.Module annotated with &#064DynaModule</li>
- * <li>Loads configuration from .properties and .xml files located in <i>/WEB-INF/classes/conf</i> directory</li>
+ * <li>Loads configuration from .properties and .xml files located in <i>/WEB-INF/classes/che</i> directory</li>
  * <li>Overrides it with external configuration located in directory pointed by <i>CHE_LOCAL_CONF_DIR</i> env variable (if any)</li>
  * <li>Binds all environment variables (visible as prefixed with "env.") and system properties (visible as prefixed with "sys.")</li>
  * <li>Thanks to Everrest integration injects all the properly annotated (see Everrest docs) REST Resources. Providers and ExceptionMappers
@@ -80,8 +80,26 @@ import java.util.regex.Pattern;
  *
  * @author gazarenkov
  * @author andrew00x
+ * @author Florent Benoit
  */
 public class CheBootstrap extends EverrestGuiceContextListener {
+
+    /**
+     * Path to the internal folder that is expected in WEB-INF/classes
+     */
+    private static final String WEB_INF_RESOURCES = "che";
+
+    /**
+     * Backward compliant path to the internal folder that is expected in WEB-INF/classes
+     */
+    private static final String COMPLIANT_WEB_INF_RESOURCES = "codenvy";
+
+    /**
+     * Environment variable that is used to override some Che settings properties.
+     */
+    private static final String CHE_LOCAL_CONF_DIR = "CHE_LOCAL_CONF_DIR";
+
+
     private final List<Module> modules = new ArrayList<>();
 
     @Override
@@ -117,12 +135,16 @@ public class CheBootstrap extends EverrestGuiceContextListener {
         return null;
     }
 
-    /** ConfigurationModule binding configuration located in <i>/WEB-INF/classes/codenvy</i> directory */
+    /** ConfigurationModule binding configuration located in <i>/WEB-INF/classes/che</i> directory */
     static class WebInfConfiguration extends AbstractConfigurationModule {
         protected void configure() {
-            URL parent = this.getClass().getClassLoader().getResource("codenvy");
-            if (parent != null) {
-                bindConf(new File(parent.getFile()));
+            URL compliantWebInfConf = this.getClass().getClassLoader().getResource(COMPLIANT_WEB_INF_RESOURCES);
+            if (compliantWebInfConf != null) {
+                bindConf(new File(compliantWebInfConf.getFile()));
+            }
+            URL webInfConf = this.getClass().getClassLoader().getResource(WEB_INF_RESOURCES);
+            if (webInfConf != null) {
+                bindConf(new File(webInfConf.getFile()));
             }
         }
     }
@@ -138,7 +160,7 @@ public class CheBootstrap extends EverrestGuiceContextListener {
             bindProperties("env.", System.getenv());
             // binds system properties visible as prefixed with "sys."
             bindProperties("sys.", System.getProperties());
-            String extConfig = System.getenv("CHE_LOCAL_CONF_DIR");
+            String extConfig = System.getenv(CHE_LOCAL_CONF_DIR);
             if (extConfig != null) {
                 bindConf(new File(extConfig));
             }
