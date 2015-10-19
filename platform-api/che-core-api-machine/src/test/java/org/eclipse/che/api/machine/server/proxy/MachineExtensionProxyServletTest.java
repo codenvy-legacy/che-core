@@ -49,6 +49,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
 public class MachineExtensionProxyServletTest {
@@ -286,7 +287,6 @@ public class MachineExtensionProxyServletTest {
         headers.put("Expires", Collections.singletonList("Thu, 01 Dec 2020 16:00:00 GMT"));
         headers.put("Last-Modified", Collections.singletonList("Tue, 15 Nov 1994 12:45:26 GMT"));
         headers.put("Retry-After", Collections.singletonList("120"));
-        headers.put("Upgrade", Collections.singletonList("HTTP/2.0"));
 
         when(extensionApiResponse.getHeaders()).thenReturn(headers);
 
@@ -307,10 +307,41 @@ public class MachineExtensionProxyServletTest {
         actualHeaders.remove("content-length");
         actualHeaders.remove("server");
         actualHeaders.remove("date");
-        // fixme
-        actualHeaders.remove(null);
 
         assertEqualsHeaders(actualHeaders, headers);
+    }
+
+    @Test
+    public void shouldNotCopyHeadersFromResponseIfTheyAreIgnored() throws Exception {
+        Map<String, List<String>> headers = new HashMap<>();
+        headers.put("Connection", Collections.singletonList("close"));
+        headers.put("Keep-Alive", Collections.singletonList("timeout=600"));
+        headers.put("Proxy-Authentication", Collections.singletonList("value"));
+        headers.put("Proxy-Authorization", Collections.singletonList("username:password"));
+        headers.put("TE", Collections.singletonList("value"));
+        headers.put("Trailers", Collections.singletonList("Expires"));
+        headers.put("Transfer-Encoding", Collections.singletonList("chunked"));
+        headers.put("Upgrade", Collections.singletonList("websocket"));
+
+        when(extensionApiResponse.getHeaders()).thenReturn(headers);
+
+        MockHttpServletRequest mockRequest = new MockHttpServletRequest(DEFAULT_URL,
+                                                                        new ByteArrayInputStream(new byte[0]),
+                                                                        0,
+                                                                        "POST",
+                                                                        defaultHeaders);
+
+        MockHttpServletResponse mockResponse = new MockHttpServletResponse();
+
+        proxyServlet.service(mockRequest, mockResponse);
+
+        assertEquals(mockResponse.getStatus(), 200);
+
+        final Map<String, List<String>> actualHeaders = getHeaders(mockResponse);
+        actualHeaders.remove("server");
+        actualHeaders.remove("date");
+
+        assertTrue(actualHeaders.isEmpty());
     }
 
     @Test
@@ -363,6 +394,47 @@ public class MachineExtensionProxyServletTest {
         extensionApiRequest.headers.remove("X-Forwarded-Host");
 
         assertEqualsHeaders(extensionApiRequest.headers, headers);
+    }
+
+    @Test
+    public void shouldNotCopyHeadersFromRequestIfTheyAreIgnored() throws Exception {
+        Map<String, List<String>> headers = new HashMap<>();
+        headers.put("Host", Collections.singletonList("www.w3.org"));
+        //ignored headers
+        headers.put(null, Collections.singletonList("HTTP/1.1 200 OK"));
+        headers.put("Connection", Collections.singletonList("close"));
+        headers.put("Keep-Alive", Collections.singletonList("timeout=600"));
+        headers.put("Proxy-Authentication", Collections.singletonList("value"));
+        headers.put("Proxy-Authorization", Collections.singletonList("username:password"));
+        headers.put("TE", Collections.singletonList("value"));
+        headers.put("Trailers", Collections.singletonList("Expires"));
+        headers.put("Transfer-Encoding", Collections.singletonList("chunked"));
+        headers.put("Upgrade", Collections.singletonList("websocket"));
+
+        Map<String, List<String>> requiredHeaders = new HashMap<>();
+        requiredHeaders.put("Accept", Collections.singletonList("application/json"));
+        requiredHeaders.put("X-Forwarded-Host", Collections.singletonList("www.w3.org"));
+        requiredHeaders.put("User-Agent", Collections.singletonList("Java"));
+        requiredHeaders.put("Connection", Collections.singletonList("keep-alive"));
+
+        headers.putAll(requiredHeaders);
+
+        MockHttpServletRequest mockRequest =
+                new MockHttpServletRequest(DEFAULT_URL,
+                                           new ByteArrayInputStream(new byte[0]),
+                                           0,
+                                           "GET",
+                                           headers);
+
+        final MockHttpServletResponse mockResponse = new MockHttpServletResponse();
+
+        proxyServlet.service(mockRequest, mockResponse);
+
+        assertEquals(mockResponse.getStatus(), 200);
+        // should not be copied to headers of request to extension API
+        extensionApiRequest.headers.remove("Host");
+
+        assertEqualsHeaders(extensionApiRequest.headers, requiredHeaders);
     }
 
     @Test
