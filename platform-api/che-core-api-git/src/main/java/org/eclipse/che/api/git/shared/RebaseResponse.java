@@ -22,34 +22,34 @@ import org.eclipse.che.dto.shared.DTO;
  */
 @DTO
 public interface RebaseResponse {
-	public enum RebaseStatus {
-		OK("OK"), 
-		ABORTED("Aborted"), 
-		FAST_FORWARD("Fast-forward"), 
-		ALREADY_UP_TO_DATE("Already up-to-date"), 
-		FAILED("Failed"), 
-		MERGED("Merged"), 
-		CONFLICTING("Conflicting"), 
-		STOPPED("Stopped"), 
-		UNCOMMITTED_CHANGES("Uncommitted Changes"), 
-		NOT_SUPPORTED("Not-yet-supported");
-		
-		private final String value;
-		
+    public enum RebaseStatus {
+        OK("OK"), 
+        ABORTED("Aborted"), 
+        FAST_FORWARD("Fast-forward"), 
+        ALREADY_UP_TO_DATE("Already up-to-date"), 
+        FAILED("Failed"), 
+        MERGED("Merged"), 
+        CONFLICTING("Conflicting"), 
+        STOPPED("Stopped"),
+        UNCOMMITTED_CHANGES("Uncommitted Changes"), 
+        NOT_SUPPORTED("Not-yet-supported");
+        
+        private final String value;
+
 		private RebaseStatus(String value) {
-			this.value = value;
-		}
+            this.value = value;
+        }
 		
-		public String getValue() {
-			return value;
-		}
-	}
+        public String getValue() {
+            return value;
+        }
+    }
+    
+    public RebaseStatus getStatus();
 	
-	public RebaseStatus getStatus();
+    /* @return files that has conflicts. Empty array if there is no conflicts */
+    public List<String> getConflicts();
 	
-	/* @return files that has conflicts. Empty array if there is no conflicts */
-	public List<String> getConflicts();
-	
-	/* @return files that failed to merge. Empty array if there is aren't any */
-	public List<String> getFailed();
+    /* @return files that failed to merge. Empty array if there is aren't any */
+    public List<String> getFailed();
 }

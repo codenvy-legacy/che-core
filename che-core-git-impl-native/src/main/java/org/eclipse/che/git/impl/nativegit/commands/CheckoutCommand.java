@@ -45,16 +45,12 @@ public class CheckoutCommand extends GitCommand<Void> {
 
         reset();
         commandLine.add("checkout");
-        
-        if (filePaths != null && !filePaths.isEmpty())
-        {
-        	for (String file : filePaths)
-        	{
-        		commandLine.add(file);
-        	}
-        }
-        else
-        {
+       
+        if (filePaths != null && !filePaths.isEmpty()){
+            for (String file : filePaths){
+        	    commandLine.add(file);
+            }
+        } else {
 	        if (createNew) {
 	            commandLine.add("-b");
 	            commandLine.add(branchName);
