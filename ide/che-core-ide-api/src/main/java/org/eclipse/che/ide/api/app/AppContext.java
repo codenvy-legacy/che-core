@@ -11,8 +11,7 @@
 package org.eclipse.che.ide.api.app;
 
 
-//import org.eclipse.che.api.factory.dto.Factory;
-
+import org.eclipse.che.api.factory.shared.dto.Factory;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 
@@ -34,6 +33,7 @@ public class AppContext {
     private UsersWorkspaceDto workspace;
     private CurrentProject    currentProject;
     private CurrentUser       currentUser;
+    private Factory           factory;
     private String            devMachineId;
 
     public AppContext() {
@@ -79,6 +79,17 @@ public class AppContext {
         return currentUser;
     }
 
+
+    /**
+     * Returns {@link Factory} instance which id was set on startup,
+     * or {@code null} if no factory was specified.
+     *
+     * @return loaded factory or {@code null}
+     */
+    public Factory getFactory() {
+         return factory;
+    }
+
     public void setCurrentUser(CurrentUser currentUser) {
         this.currentUser = currentUser;
     }
@@ -90,6 +101,10 @@ public class AppContext {
 
     public void setDevMachineId(String id) {
         this.devMachineId = id;
+    }
+
+    public void setFactory(Factory factory) {
+        this.factory = factory;
     }
 
     /**
