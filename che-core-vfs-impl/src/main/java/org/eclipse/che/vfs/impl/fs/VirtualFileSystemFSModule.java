@@ -10,14 +10,19 @@
  *******************************************************************************/
 package org.eclipse.che.vfs.impl.fs;
 
-import org.eclipse.che.api.vfs.server.VirtualFile;
-import org.eclipse.che.api.vfs.server.VirtualFileFilter;
-import org.eclipse.che.api.vfs.server.search.SearcherProvider;
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 
-/** @author andrew00x */
+import org.eclipse.che.api.vfs.server.VirtualFile;
+import org.eclipse.che.api.vfs.server.VirtualFileFilter;
+import org.eclipse.che.api.vfs.server.search.SearcherProvider;
+
+/**
+ * @deprecated  VFS is deprecated in 4.0
+ * @author andrew00x
+ * */
+@Deprecated
 public class VirtualFileSystemFSModule extends AbstractModule {
     @Override
     protected void configure() {

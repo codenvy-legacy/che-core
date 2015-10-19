@@ -11,7 +11,6 @@
 package org.eclipse.che.vfs.impl.fs;
 
 import com.google.common.annotations.Beta;
-import com.google.common.collect.Sets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import com.google.common.io.ByteSource;
@@ -47,7 +46,6 @@ import org.eclipse.che.api.vfs.shared.PropertyFilter;
 import org.eclipse.che.api.vfs.shared.dto.AccessControlEntry;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.api.vfs.shared.dto.Property;
-import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo;
 import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.eclipse.che.commons.lang.Pair;
@@ -79,21 +77,24 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import static java.util.Collections.singletonList;
 import static org.eclipse.che.commons.lang.IoUtil.GIT_FILTER;
 import static org.eclipse.che.commons.lang.IoUtil.deleteRecursive;
 import static org.eclipse.che.commons.lang.IoUtil.nioCopy;
 import static org.eclipse.che.commons.lang.Strings.nullToEmpty;
+import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 /**
  * Local filesystem implementation of MountPoint.
  *
+ * @deprecated  VFS is deprecated in 4.0
  * @author andrew00x
  */
+@Deprecated
 public class FSMountPoint implements MountPoint {
     private static final Logger LOG = LoggerFactory.getLogger(FSMountPoint.class);
 
@@ -229,49 +230,6 @@ public class FSMountPoint implements MountPoint {
     }
 
 
-    private class AccessControlListCache extends LoadingValueSLRUCache<Path, AccessControlList> {
-        private AccessControlListCache() {
-            super(PARTITION_PROTECTED_SIZE, PARTITION_PROBATIONARY_SIZE);
-        }
-
-        @Override
-        protected AccessControlList loadValue(Path key) {
-            DataInputStream dis = null;
-            try {
-                final Path aclFilePath = getAclFilePath(key);
-                final java.io.File aclIoFile = new java.io.File(ioRoot, toIoPath(aclFilePath));
-                if (aclIoFile.exists()) {
-                    final PathLockFactory.PathLock aclFilePathLock = pathLockFactory.getLock(aclFilePath, false).acquire(LOCK_FILE_TIMEOUT);
-                    try {
-                        dis = new DataInputStream(new BufferedInputStream(new FileInputStream(aclIoFile)));
-                        return aclSerializer.read(dis);
-                    } finally {
-                        aclFilePathLock.release();
-                    }
-                }
-
-                // TODO : REMOVE!!! Temporary default ACL until will have client side for real manage
-                if (key.isRoot()) {
-                    final Map<Principal, Set<String>> dummy = new HashMap<>(2);
-                    final Principal developer = DtoFactory.getInstance().createDto(Principal.class)
-                                                          .withName("workspace/developer").withType(Principal.Type.GROUP);
-                    final Principal other = DtoFactory.getInstance().createDto(Principal.class)
-                                                      .withName(VirtualFileSystemInfo.ANY_PRINCIPAL).withType(Principal.Type.USER);
-                    dummy.put(developer, Sets.newHashSet(BasicPermissions.ALL.value()));
-                    dummy.put(other, Sets.newHashSet(BasicPermissions.READ.value()));
-                    return new AccessControlList(dummy);
-                }
-                return new AccessControlList();
-            } catch (IOException e) {
-                String msg = String.format("Unable read ACL for '%s'. ", key);
-                LOG.error(msg + e.getMessage(), e); // More details in log but do not show internal error to caller.
-                throw new RuntimeException(msg);
-            } finally {
-                closeQuietly(dis);
-            }
-        }
-    }
-
     private final String           workspaceId;
     private final java.io.File     ioRoot;
     private final EventService     eventService;
@@ -282,10 +240,6 @@ public class FSMountPoint implements MountPoint {
 
     private final VirtualFileImpl root;
 
-    /* ----- Access control list feature. ----- */
-    private final AccessControlListSerializer      aclSerializer;
-    private final Cache<Path, AccessControlList>[] aclCache;
-
     /* ----- Virtual file system lock feature. ----- */
     private final FileLockSerializer      locksSerializer;
     private final Cache<Path, FileLock>[] lockTokensCache;
@@ -295,6 +249,11 @@ public class FSMountPoint implements MountPoint {
     private final Cache<Path, Map<String, String[]>>[] metadataCache;
 
     private final VirtualFileSystemUserContext userContext;
+
+    /**
+     * ACL that returned for any fs entry.
+     */
+    private final AccessControlList defaultAcl = new AccessControlList();
 
     /**
      * @param workspaceId
@@ -313,9 +272,6 @@ public class FSMountPoint implements MountPoint {
         root = new VirtualFileImpl(ioRoot, Path.ROOT, pathToId(Path.ROOT), this);
         pathLockFactory = new PathLockFactory(FILE_LOCK_MAX_THREADS);
 
-        aclSerializer = new AccessControlListSerializer();
-        aclCache = new Cache[CACHE_PARTITIONS_NUM];
-
         locksSerializer = new FileLockSerializer();
         lockTokensCache = new Cache[CACHE_PARTITIONS_NUM];
 
@@ -323,11 +279,24 @@ public class FSMountPoint implements MountPoint {
         metadataCache = new Cache[CACHE_PARTITIONS_NUM];
 
         for (int i = 0; i < CACHE_PARTITIONS_NUM; i++) {
-            aclCache[i] = new SynchronizedCache(new AccessControlListCache());
             lockTokensCache[i] = new SynchronizedCache(new FileLockCache());
             metadataCache[i] = new SynchronizedCache(new FileMetadataCache());
         }
         userContext = VirtualFileSystemUserContext.newInstance();
+
+        List<AccessControlEntry> acl = new ArrayList<>(2);
+        acl.add(newDto(AccessControlEntry.class)
+                        .withPrincipal(newDto(Principal.class)
+                                               .withName("user")
+                                               .withType(Principal.Type.GROUP))
+                        .withPermissions(singletonList("all")));
+
+        acl.add(newDto(AccessControlEntry.class)
+                        .withPrincipal(newDto(Principal.class)
+                                               .withName("temp_user")
+                                               .withType(Principal.Type.GROUP))
+                        .withPermissions(singletonList("all")));
+        defaultAcl.update(acl, true);
     }
 
     @Override
@@ -381,7 +350,6 @@ public class FSMountPoint implements MountPoint {
     /** Call after unmount this MountPoint. Clear all caches. */
     public void reset() {
         clearMetadataCache();
-        clearAclCache();
         clearLockTokensCache();
     }
 
@@ -739,7 +707,6 @@ public class FSMountPoint implements MountPoint {
                     // We will get FileNotFoundException at the next line when try to create FileOutputStream.
                     renamedAclFile.getParentFile().mkdirs();
                     dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(renamedAclFile)));
-                    aclSerializer.write(dos, sourceAcl);
                 } catch (IOException e) {
                     String msg = String.format("Unable save ACL for '%s'. ", virtualFile.getPath());
                     LOG.error(msg + e.getMessage(), e); // More details in log but do not show internal error to caller.
@@ -1022,7 +989,6 @@ public class FSMountPoint implements MountPoint {
         }
 
         // clear caches
-        clearAclCache();
         clearLockTokensCache();
         clearMetadataCache();
 
@@ -1063,13 +1029,6 @@ public class FSMountPoint implements MountPoint {
 
     private void clearLockTokensCache() {
         for (Cache<Path, FileLock> cache : lockTokensCache) {
-            cache.clear();
-        }
-    }
-
-
-    private void clearAclCache() {
-        for (Cache<Path, AccessControlList> cache : aclCache) {
             cache.clear();
         }
     }
@@ -1375,65 +1334,12 @@ public class FSMountPoint implements MountPoint {
    /* ============ ACCESS CONTROL  ============ */
 
     AccessControlList getACL(VirtualFileImpl virtualFile) {
-        // Do not check permission here. We already check 'read' permission when get VirtualFile.
-        return new AccessControlList(aclCache[virtualFile.getVirtualFilePath().hashCode() & MASK].get(virtualFile.getVirtualFilePath()));
+        return defaultAcl;
     }
 
 
     void updateACL(VirtualFileImpl virtualFile, List<AccessControlEntry> acl, boolean override, String lockToken)
             throws ForbiddenException, ServerException {
-        final int index = virtualFile.getVirtualFilePath().hashCode() & MASK;
-        final AccessControlList actualACL = aclCache[index].get(virtualFile.getVirtualFilePath());
-
-        if (!hasPermission(virtualFile, BasicPermissions.UPDATE_ACL.value(), true)) {
-            throw new ForbiddenException(String.format("Unable update ACL for '%s'. Operation not permitted. ", virtualFile.getPath()));
-        }
-
-        if (virtualFile.isFile() && !validateLockTokenIfLocked(virtualFile, lockToken)) {
-            throw new ForbiddenException(String.format("Unable update ACL of item '%s'. Item is locked. ", virtualFile.getPath()));
-        }
-
-        // 1. make copy of ACL
-        final AccessControlList copy = new AccessControlList(actualACL);
-        // 2. update ACL copy
-        copy.update(acl, override);
-        // 3. save updated ACL (write in file)
-        DataOutputStream dos = null;
-        try {
-            final Path aclFilePath = getAclFilePath(virtualFile.getVirtualFilePath());
-            final java.io.File aclFile = new java.io.File(ioRoot, toIoPath(aclFilePath));
-            if (copy.isEmpty()) {
-                if (!aclFile.delete()) {
-                    if (aclFile.exists()) {
-                        throw new IOException(String.format("Unable delete file '%s'. ", aclFile));
-                    }
-                }
-            } else {
-                aclFile.getParentFile().mkdirs(); // Ignore result of 'mkdirs' here. If we are failed to create directory
-                // we will get FileNotFoundException at the next line when try to create FileOutputStream.
-                final PathLockFactory.PathLock lock = pathLockFactory.getLock(aclFilePath, true).acquire(LOCK_FILE_TIMEOUT);
-                try {
-                    dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(aclFile)));
-                    aclSerializer.write(dos, copy);
-                } finally {
-                    lock.release();
-                }
-            }
-        } catch (IOException e) {
-            String msg = String.format("Unable save ACL for '%s'. ", virtualFile.getPath());
-            LOG.error(msg + e.getMessage(), e); // More details in log but do not show internal error to caller.
-            throw new ServerException(msg);
-        } finally {
-            closeQuietly(dos);
-        }
-
-        // 4. update cache
-        aclCache[index].put(virtualFile.getVirtualFilePath(), copy);
-        // 5. update last modification time
-        if (!virtualFile.getIoFile().setLastModified(System.currentTimeMillis())) {
-            LOG.warn("Unable to set timestamp to '{}'. ", virtualFile.getIoFile());
-        }
-
         eventService.publish(new UpdateACLEvent(workspaceId, virtualFile.getPath(), virtualFile.isFolder()));
     }
 

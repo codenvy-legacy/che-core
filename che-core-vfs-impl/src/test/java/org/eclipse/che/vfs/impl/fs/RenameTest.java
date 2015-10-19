@@ -10,24 +10,20 @@
  *******************************************************************************/
 package org.eclipse.che.vfs.impl.fs;
 
-import org.eclipse.che.api.vfs.shared.dto.Principal;
-import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
-import org.eclipse.che.commons.env.EnvironmentContext;
-import org.eclipse.che.commons.user.UserImpl;
-import org.eclipse.che.dto.server.DtoFactory;
-
 import com.google.common.collect.Sets;
 
+import org.eclipse.che.api.vfs.shared.dto.Principal;
+import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
+import org.eclipse.che.dto.server.DtoFactory;
 import org.everrest.core.impl.ContainerResponse;
 import org.everrest.core.tools.ByteArrayContainerResponseWriter;
 
+import javax.ws.rs.HttpMethod;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.ws.rs.HttpMethod;
 
 public class RenameTest extends LocalFileSystemTest {
     private final String lockToken = "01234567890abcdef";
@@ -186,18 +182,5 @@ public class RenameTest extends LocalFileSystemTest {
         expectedProperties.put("vfs:mimeType", new String[]{"text/directory+FOO"});
         validateProperties(expectedPath, expectedProperties, false); // media type updated only for current folder
         validateProperties(expectedPath, properties, true);
-    }
-
-    public void testRenameFileCopyPermissions() throws Exception {
-        final String newName = "_FILE_NEW_NAME_";
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String requestPath = SERVICE_URI + "rename/" + protectedFileId + '?' + "newname=" + newName;
-        EnvironmentContext.getCurrent().setUser(new UserImpl("andrew", "andrew", null, Arrays.asList("workspace/developer"), false));
-        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, null, writer, null);
-        assertEquals(200, response.getStatus());
-        String expectedPath = testRootPath + '/' + newName;
-        assertTrue(exists(expectedPath));
-        Map<Principal, Set<String>> renamedPermissions = readPermissions(expectedPath);
-        assertEquals(permissions, renamedPermissions);
     }
 }
