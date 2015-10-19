@@ -23,8 +23,8 @@ public interface RebaseRequest {
 	void setOperation(String operation);
 	/** @return operation used */
 	String getOperation();
-	/** @ return rebase remote */
-	String getRemote();
-	/** set rebase remote */
-	void setRemote(String remote);
+	/** @ return rebase branch */
+	String getBranch();
+	/** set rebase branch */
+	void setBranch(String branch);
 }
