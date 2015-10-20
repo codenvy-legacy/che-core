@@ -15,7 +15,6 @@
 <module>
     <inherits name="com.google.gwt.user.User"/>
     <inherits name="com.google.gwt.json.JSON"/>
-    <source path="factory/dto"/>
+    <source path="factory/shared"/>
     <source path="factory/gwt"/>
-    <source path="factory" includes="NonEncodedFactoryBuilder.java"/>
 </module>
