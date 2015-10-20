@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.server;
 
+import com.google.common.collect.ImmutableMap;
+
+import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
@@ -29,17 +32,21 @@ import org.eclipse.che.api.project.server.handlers.ProjectHandlerRegistry;
 import org.eclipse.che.api.project.server.type.AttributeValue;
 import org.eclipse.che.api.project.server.type.ProjectType;
 import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
+import org.eclipse.che.api.project.shared.dto.CopyOptions;
 import org.eclipse.che.api.project.shared.dto.GeneratorDescription;
 import org.eclipse.che.api.project.shared.dto.ImportProject;
 import org.eclipse.che.api.project.shared.dto.ImportResponse;
 import org.eclipse.che.api.project.shared.dto.ImportSourceDescriptor;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
+import org.eclipse.che.api.project.shared.dto.MoveOptions;
 import org.eclipse.che.api.project.shared.dto.NewProject;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.api.project.shared.dto.ProjectUpdate;
+import org.eclipse.che.api.project.shared.dto.RunnerConfiguration;
 import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentLeaf;
 import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentTree;
+import org.eclipse.che.api.project.shared.dto.RunnersDescriptor;
 import org.eclipse.che.api.project.shared.dto.Source;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.project.shared.dto.TreeElement;
@@ -86,7 +93,6 @@ import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -105,10 +111,10 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.eclipse.che.api.project.shared.dto.CopyOptions;
-import org.eclipse.che.api.project.shared.dto.MoveOptions;
-
 import static java.util.Collections.singletonList;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.AssertJUnit.assertFalse;
@@ -3009,6 +3015,36 @@ public class ProjectServiceTest {
         Assert.assertTrue(result.get(0).getType().equals("php"));
     }
 
+    @Test(expectedExceptions = BadRequestException.class, expectedExceptionsMessageRegExp = "Workspace id required")
+    public void shouldThrowExceptionWhenRequiredObjectIsNull() throws Exception {
+        ProjectService projectService = spy(new ProjectService());
+
+        projectService.requiredNotNull(null, "Workspace id");
+    }
+
+    @Test(expectedExceptions = BadRequestException.class, expectedExceptionsMessageRegExp = "Project name required")
+    public void shouldThrowExceptionWhenProjectNameIsEmpty() throws Exception {
+        ProjectService projectService = spy(new ProjectService());
+
+        projectService.checkProjectName("");
+    }
+
+    @Test(expectedExceptions = BadRequestException.class, expectedExceptionsMessageRegExp = "Project name !#project-name#! is invalid")
+    public void shouldThrowExceptionWhenProjectNameIsInvalid() throws Exception {
+        ProjectService projectService = spy(new ProjectService());
+
+        projectService.checkProjectName("!#project-name#!");
+    }
+
+    @Test(expectedExceptions = BadRequestException.class, expectedExceptionsMessageRegExp = "Runner name !#runenr#! is invalid")
+    public void shouldThrowExceptionWhenRunnerNameIsInvalid() throws Exception {
+        RunnersDescriptor runnersDescriptor = mock(RunnersDescriptor.class);
+        ProjectService projectService = spy(new ProjectService());
+        RunnerConfiguration config = mock(RunnerConfiguration.class);
+        when(runnersDescriptor.getConfigs()).thenReturn(ImmutableMap.of("!#runenr#!", config));
+
+        projectService.checkProjectRunners(runnersDescriptor);
+    }
 
     private void validateFileLinks(ItemReference item) {
         Link link = item.getLink("delete");

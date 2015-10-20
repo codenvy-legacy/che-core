@@ -41,5 +41,6 @@ public class FactoryCreateValidatorImpl extends FactoryBaseValidator implements 
         validateAccountId(factory);
         validateCurrentTimeBeforeSinceUntil(factory);
         validateProjectActions(factory);
+        validateProjectRunnerNames(factory);
     }
 }
