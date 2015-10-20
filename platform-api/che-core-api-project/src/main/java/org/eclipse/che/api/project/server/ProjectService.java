@@ -103,6 +103,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Pattern;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -117,7 +118,8 @@ import static java.util.stream.Collectors.toMap;
 @Path("/project/{ws-id}")
 @Singleton // important to have singleton
 public class ProjectService extends Service {
-    private static final Logger LOG = LoggerFactory.getLogger(ProjectService.class);
+    private static final Logger  LOG                   = LoggerFactory.getLogger(ProjectService.class);
+    private static final Pattern RUNNER_NAME_VALIDATOR = Pattern.compile("[\\w-]+((:/)?[^/\\\\]+)?");
 
     @Inject
     private ProjectManager              projectManager;
@@ -267,7 +269,11 @@ public class ProjectService extends Service {
                                            @QueryParam("name") String name,
                                            @ApiParam(value = "New project", required = true)
                                            @Description("descriptor of project") NewProject newProject)
-            throws ConflictException, ForbiddenException, ServerException, NotFoundException {
+            throws ConflictException, ForbiddenException, ServerException, NotFoundException, BadRequestException {
+        requiredNotNull(workspace, "Workspace id");
+        requiredNotNull(newProject, "Project descriptor");
+        checkProjectName(name);
+        checkProjectRunners(newProject.getRunners());
 
         final GeneratorDescription generatorDescription = newProject.getGeneratorDescription();
         Map<String, String> options;
@@ -387,7 +393,10 @@ public class ProjectService extends Service {
                                            @ApiParam(value = "Path to updated project", required = true)
                                            @PathParam("path") String path,
                                            ProjectUpdate update)
-            throws NotFoundException, ConflictException, ForbiddenException, ServerException, IOException {
+            throws NotFoundException, ConflictException, ForbiddenException, ServerException, IOException, BadRequestException {
+        requiredNotNull(workspace, "Workspace id");
+        requiredNotNull(path, "Project path");
+        checkProjectRunners(update.getRunners());
         ProjectConfig newConfig = DtoConverter.fromDto2(update, projectManager.getProjectTypeRegistry());
         String newVisibility = update.getVisibility();
         Project project = projectManager.updateProject(workspace, path, newConfig, newVisibility);
@@ -773,6 +782,9 @@ public class ProjectService extends Service {
                                         ImportProject importProject)
             throws ConflictException, ForbiddenException, UnauthorizedException, IOException, ServerException, NotFoundException,
                    BadRequestException {
+        requiredNotNull(workspace, "Workspace id");
+        requiredNotNull(path, "Project path");
+        requiredNotNull(importProject, "Project descriptor");
 
         final ImportSourceDescriptor projectSource = importProject.getSource().getProject();
         final ProjectImporter importer = importers.getImporter(projectSource.getType());
@@ -815,9 +827,8 @@ public class ProjectService extends Service {
     private ImportResponse configureProject(ImportProject importProject, FolderEntry baseProjectFolder, String workspace, long creationDate)
             throws IOException, ForbiddenException, ConflictException, NotFoundException, ServerException, BadRequestException {
         NewProject newProject = importProject.getProject();
-        if (newProject == null) {
-            throw new BadRequestException("A project being imported cannot be null");
-        }
+        requiredNotNull(newProject, "Project descriptor");
+        checkProjectRunners(newProject.getRunners());
         ImportResponse importResponse = DtoFactory.getInstance().createDto(ImportResponse.class);
         ProjectTypeRegistry projectTypeRegistry = projectManager.getProjectTypeRegistry();
         Project project;
@@ -828,8 +839,6 @@ public class ProjectService extends Service {
         //try convert folder to project with giving config
         try {
             visibility = newProject.getVisibility();
-            RunnersDescriptor descriptor = newProject.getRunners();
-            replaceDefaultRunnerPath(descriptor);
             projectConfig = DtoConverter.fromDto2(newProject, projectTypeRegistry);
             project = projectManager.convertFolderToProject(workspace,
                                                             baseProjectFolder.getPath(),
@@ -852,13 +861,12 @@ public class ProjectService extends Service {
                                          null,
                                          visibility);
                 RunnersDescriptor projectModuleRunners = projectModule.getRunners();
-                if (projectModuleRunners != null
-                    && projectModuleRunners.getDefault() != null
-                    && projectModuleRunners.getDefault().startsWith("project:/")) {
-                    replaceDefaultRunnerPath(projectModuleRunners);
+                if (projectModuleRunners != null && projectModuleRunners.getDefault() != null) {
+                    String defaultRunnerName = projectModuleRunners.getDefault()
+                                                                   .substring(projectModuleRunners.getDefault().lastIndexOf('/') + 1);
                     importRunnerEnvironment(importProject,
                                             (FolderEntry)baseProjectFolder.getChild(projectModule.getPath()),
-                                            projectModuleRunners.getDefault().substring(9));
+                                            defaultRunnerName);
                 }
             }
 
@@ -1021,7 +1029,7 @@ public class ProjectService extends Service {
                                                                  .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         for (Map.Entry<String, RunnerSource> entry : filteredRunners.entrySet()) {
-            String name = entry.getKey().substring(8);
+            String name = entry.getKey().substring(entry.getKey().lastIndexOf('/') + 1);
             if (defaultRunnerName == null || name.equals(defaultRunnerName)) {
                 try (InputStream in = new java.net.URL(entry.getValue().getLocation()).openStream()) {
                     // Add file without mediatype to avoid creation useless metadata files on virtual file system level.
@@ -1041,9 +1049,8 @@ public class ProjectService extends Service {
      * @return return false if runner location or runner type is not valid
      */
     private boolean isValidRunnerEntry(Map.Entry<String, RunnerSource> entry) {
-        final RunnerSource runnerSourceValue;
-        if (!entry.getKey().startsWith("/docker/")
-            || (runnerSourceValue = entry.getValue()) == null) {
+        final RunnerSource runnerSourceValue = entry.getValue();
+        if (runnerSourceValue == null) {
             return false;
         }
 
@@ -1053,19 +1060,6 @@ public class ProjectService extends Service {
             return false;
         }
         return true;
-    }
-
-    private void replaceDefaultRunnerPath(RunnersDescriptor runnersDescriptor) {
-        //TODO:
-        //this trick need for fixing problem for default runners in case
-        //scripts downloaded  from remote resources "docker" this is only marker not real path in file system
-        //see importRunnerEnvironment() method
-        if (runnersDescriptor != null
-            && runnersDescriptor.getDefault() != null
-            && runnersDescriptor.getDefault().startsWith("project:/docker/")) {
-            String replace = runnersDescriptor.getDefault().replace("project:/docker/", "project:/");
-            runnersDescriptor.setDefault(replace);
-        }
     }
 
     /**
@@ -1532,5 +1526,56 @@ public class ProjectService extends Service {
             return path;
         }
         return path.substring(0, end);
+    }
+
+    /**
+     * Checks object reference is not {@code null}
+     *
+     * @param object
+     *         object reference to check
+     * @param subject
+     *         used as subject of exception message "{subject} required"
+     * @throws BadRequestException
+     *         when object reference is {@code null}
+     */
+    void requiredNotNull(Object object, String subject) throws BadRequestException {
+        if (object == null) {
+            throw new BadRequestException(subject + " required");
+        }
+    }
+
+    /**
+     * Checks the validity of project name.
+     *
+     * @param name
+     *         project name
+     * @throws BadRequestException
+     *         when if the project name is null or empty of is invalid
+     */
+    void checkProjectName(String name) throws BadRequestException {
+        if (Strings.isNullOrEmpty(name)) {
+            throw new BadRequestException("Project name required");
+        }
+        if (!Pattern.compile("[a-zA-Z0-9]+[\\w-]*").matcher(name).matches()) {
+            throw new BadRequestException("Project name " + name + " is invalid");
+        }
+    }
+
+    /**
+     * Checks the validity of project runners.
+     *
+     * @param runnersDescriptor
+     *         project runners
+     * @throws BadRequestException
+     *         when runner name empty or is invalid
+     */
+    void checkProjectRunners(RunnersDescriptor runnersDescriptor) throws BadRequestException {
+        if (runnersDescriptor != null && runnersDescriptor.getConfigs() != null && !runnersDescriptor.getConfigs().isEmpty()) {
+            for (String runnerName : runnersDescriptor.getConfigs().keySet()) {
+                if (!RUNNER_NAME_VALIDATOR.matcher(runnerName).matches()) {
+                    throw new BadRequestException("Runner name " + runnerName + " is invalid");
+                }
+            }
+        }
     }
 }

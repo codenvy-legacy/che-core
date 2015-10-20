@@ -63,6 +63,7 @@ public class FactoryCreateAndAcceptValidatorsImplsTest {
         doNothing().when(spy).validateProjectActions(any(Factory.class));
         doNothing().when(spy).validateWorkspace(any(Factory.class));
         doNothing().when(spy).validateCreator(any(Factory.class));
+        doNothing().when(spy).validateProjectRunnerNames(any(Factory.class));
 
         //main invoke
         spy.validateOnCreate(factoryUrl);
@@ -76,6 +77,7 @@ public class FactoryCreateAndAcceptValidatorsImplsTest {
         verify(spy).validateProjectActions(any(Factory.class));
         verify(spy).validateCreator(any(Factory.class));
         verify(spy).validateWorkspace(any(Factory.class));
+        verify(spy).validateProjectRunnerNames(any(Factory.class));
         verifyNoMoreInteractions(spy);
     }
 

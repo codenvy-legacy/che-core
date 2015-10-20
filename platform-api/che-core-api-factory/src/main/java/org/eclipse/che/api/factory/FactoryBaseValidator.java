@@ -13,6 +13,7 @@ package org.eclipse.che.api.factory;
 import org.eclipse.che.api.account.server.dao.AccountDao;
 import org.eclipse.che.api.account.server.dao.Member;
 import org.eclipse.che.api.core.ApiException;
+import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
@@ -22,7 +23,9 @@ import org.eclipse.che.api.factory.dto.OnAppLoaded;
 import org.eclipse.che.api.factory.dto.OnProjectOpened;
 import org.eclipse.che.api.factory.dto.Policies;
 import org.eclipse.che.api.factory.dto.Workspace;
+import org.eclipse.che.api.project.shared.dto.NewProject;
 import org.eclipse.che.api.project.shared.dto.ProjectModule;
+import org.eclipse.che.api.project.shared.dto.RunnerConfiguration;
 import org.eclipse.che.api.user.server.dao.PreferenceDao;
 import org.eclipse.che.api.user.server.dao.User;
 import org.eclipse.che.api.user.server.dao.UserDao;
@@ -48,6 +51,7 @@ import static java.lang.String.format;
  */
 public abstract class FactoryBaseValidator {
     private static final Pattern PROJECT_NAME_VALIDATOR = Pattern.compile("^[\\\\\\w\\\\\\d]+[\\\\\\w\\\\\\d_.-]*$");
+    private static final Pattern RUNNER_NAME_VALIDATOR  = Pattern.compile("[\\w-]+((:/)?[^/\\\\]+)?");
 
     private final AccountDao    accountDao;
     private final UserDao       userDao;
@@ -292,6 +296,18 @@ public abstract class FactoryBaseValidator {
                             throw new ConflictException(FactoryConstants.INVALID_FIND_REPLACE_ACTION);
                         }
                         break;
+                }
+            }
+        }
+    }
+
+    protected void validateProjectRunnerNames(Factory factory) throws BadRequestException {
+        NewProject project = factory.getProject();
+        Map<String, RunnerConfiguration> runnerConfigurations = project.getRunners().getConfigs();
+        if (runnerConfigurations != null) {
+            for (String runnerName : runnerConfigurations.keySet()) {
+                if (!RUNNER_NAME_VALIDATOR.matcher(runnerName).matches()) {
+                    throw new BadRequestException("Invalid runner name " + runnerName);
                 }
             }
         }
