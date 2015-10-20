@@ -42,8 +42,6 @@ public class GitConfigurationChecker {
     private static final Logger      LOG                           = LoggerFactory.getLogger(GitConfigurationChecker.class);
     /** Special comment for global .gitignore file. Define begin of Codenvy-specific patterns. */
     private static final String      CODENVY_COMMENT               = "# Codenvy files";
-    /** Deprecated patterns to remove from gitignore. */
-    private static final Set<String> DEPRECATED_GITIGNORE_PATTERNS = new LinkedHashSet<>();
     /** Codenvy-specific file patterns to ignore by Git. */
     private static final Set<String> GITIGNORE_PATTERNS            = new LinkedHashSet<>();
     /** Path to the global gitconfig file. */
@@ -55,9 +53,8 @@ public class GitConfigurationChecker {
         GLOBAL_GITCONFIG_FILE_PATH = Paths.get(System.getProperty("user.home") + "/.gitconfig");
         DEFAULT_GITIGNORE_FILE_PATH = Paths.get(System.getProperty("user.home") + "/.gitignore_codenvy");
 
-        DEPRECATED_GITIGNORE_PATTERNS.add(".codenvy/");
-
-        GITIGNORE_PATTERNS.add(".codenvy/misc.xml");
+        GITIGNORE_PATTERNS.add(".codenvy/");
+        GITIGNORE_PATTERNS.add(".che/");
         GITIGNORE_PATTERNS.add(".vfs/");
     }
 
@@ -66,9 +63,8 @@ public class GitConfigurationChecker {
         GLOBAL_GITCONFIG_FILE_PATH = globalGitconfigFilePath;
         DEFAULT_GITIGNORE_FILE_PATH = gitIgnoreFilePath;
 
-        DEPRECATED_GITIGNORE_PATTERNS.add(".codenvy/");
-
-        GITIGNORE_PATTERNS.add(".codenvy/misc.xml");
+        GITIGNORE_PATTERNS.add(".codenvy/");
+        GITIGNORE_PATTERNS.add(".che/");
         GITIGNORE_PATTERNS.add(".vfs/");
     }
 
@@ -107,11 +103,6 @@ public class GitConfigurationChecker {
 
         if (Files.exists(path)) {
             List<String> existingRules = Files.readAllLines(path, Charset.forName("UTF-8"));
-
-            // remove deprecated patterns
-            if (existingRules.removeAll(DEPRECATED_GITIGNORE_PATTERNS)) {
-                Files.write(path, existingRules, Charset.forName("UTF-8"));
-            }
 
             // add only new rules to the existing .gitignore file
             for (String rule : existingRules) {
