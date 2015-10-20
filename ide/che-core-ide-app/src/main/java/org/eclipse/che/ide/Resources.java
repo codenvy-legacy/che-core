@@ -31,7 +31,7 @@ import org.eclipse.che.ide.ui.dropdown.DropDownHeaderWidgetImpl;
 import org.eclipse.che.ide.ui.list.CategoriesList;
 import org.eclipse.che.ide.ui.list.SimpleList;
 import org.eclipse.che.ide.ui.tree.Tree;
-import org.eclipse.che.ide.ui.zeroClipboard.ZeroClipboardResources;
+import org.eclipse.che.ide.ui.zeroclipboard.ZeroClipboardResources;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 /**

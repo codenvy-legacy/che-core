@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.ui.customListBox;
+package org.eclipse.che.ide.ui.listbox;
 
 
 import com.google.gwt.core.client.GWT;
@@ -31,8 +31,6 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.RootPanel;
-
-import org.vectomatic.dom.svg.ui.SVGImage;
 
 
 /**
@@ -291,7 +289,8 @@ public class CustomListBox extends FocusWidget implements HasChangeHandlers {
     public void insertItem(String item, String value) {
         //create new widget
         final RadioButton radioButton = new RadioButton(optionsGroupName, item);
-
+        //remove the default gwt-RadioButton style
+        radioButton.removeStyleName("gwt-RadioButton");
         //set value
         final InputElement inputElement = (InputElement)radioButton.getElement().getElementsByTagName("input").getItem(0);
         inputElement.removeAttribute("tabindex");

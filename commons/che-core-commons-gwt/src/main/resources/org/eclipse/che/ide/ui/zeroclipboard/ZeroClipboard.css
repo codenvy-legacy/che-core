@@ -15,20 +15,21 @@
 }
 
 .clipboardButton {
-    width: 19px;
-    height: 21px;
-    padding: 0;
+    top: 0;
+    width: 16px;
+    height: 22px;
     border: none;
-    background: none;
+    float: left;
     color: inherit;
     cursor: pointer;
+    background: none;
     position: relative;
     display: inline-block;
 }
 
 .clipboardButton svg {
-    width: 19px;
-    height: 19px;
+    width: 18px;
+    height: 100%;
 }
 
 .clipboardButton span {
@@ -43,11 +44,11 @@
     white-space: nowrap;
     background: #202020;
     font-family: mainFontFamily;
-    z-index: 7;
+    z-index: 9999999;
 }
 
 .clipboardButton span:after {
-    content: "";
+    content: " ";
     width: 0;
     height: 0;
     border: 9px solid;

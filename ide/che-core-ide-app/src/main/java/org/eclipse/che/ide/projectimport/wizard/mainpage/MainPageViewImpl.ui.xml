@@ -15,7 +15,6 @@
     <ui:with field='locale' type='org.eclipse.che.ide.CoreLocalizationConstant'/>
 	<ui:with field='resources' type='org.eclipse.che.ide.Resources'/>
     <ui:style src="org/eclipse/che/ide/api/ui/style.css" type="org.eclipse.che.ide.projectimport.wizard.mainpage.MainPageViewImpl.Style">
-        @eval borderColor org.eclipse.che.ide.api.theme.Style.getTabBorderColor();
 
         .mainPanel {
             margin: 0px;
@@ -24,29 +23,24 @@
         }
 
         .leftPart {
-            margin-left: 12px;
-            margin-top: 10px;
-            margin-bottom: 15px;
+            margin: 10px;
             font-size: 12px;
         }
 
         .rightPart {
-            border-left: 1px solid #505050;
+            border-left: 1px solid popupBorderColor;
             margin-left: 1px;
+            overflow-y: auto;
         }
 
-        .rightPart > div {
+        .rightPart > div[class] {
             margin-left: 12px;
             margin-right: 12px;
         }
 
         .categories {
-            margin: 0px 25px 1px 0px;
-            border-top: 1px solid #000000;
-            border-left: 1px solid #000000;
-            border-right: 1px solid #000000;
-            box-shadow: 0px 1px 0px borderColor;
-            background-color: #313131;
+            margin: 2px 0px 1px 1px;
+            border: 1px solid popupBorderColor;
         }
 
         .namePanel {
@@ -55,20 +49,15 @@
             display: block;
         }
 
-        .horizontalLine {
-            width: 255px;
-            margin-top: 7px;
-            float: right;
-            border-bottom: 1px solid #505050;
-        }
-
         .label {
+            margin: 0;
+            line-height: 35px;
             font-weight: bold;
-            font-size: 12px;
+            font-size: largeLabel;
         }
 
         .description {
-            font-size: 11px;
+            font-size: fontSize;
         }
     </ui:style>
     <g:DockLayoutPanel unit="PX" addStyleNames="{style.mainPanel}">
@@ -76,8 +65,7 @@
             <g:DockLayoutPanel unit="PCT">
                 <g:east size="53">
                     <g:FlowPanel addStyleNames="{style.rightPart}">
-                        <g:FlowPanel height="20px" addStyleNames="{style.namePanel}">
-                            <g:HTMLPanel addStyleNames="{style.horizontalLine}"/>
+                        <g:FlowPanel height="35px" addStyleNames="{style.namePanel}">
                             <g:Label text="{locale.importProjectImporterInfo}" addStyleNames="{style.label}"/>
                         </g:FlowPanel>
                         <g:FlowPanel height="15px" addStyleNames="{style.namePanel}">

@@ -127,7 +127,7 @@
 }
 
 .iconButton svg {
-    fill : mainFontColor;
+    fill: mainFontColor;
 }
 
 .headerTitleWrapper {
@@ -155,7 +155,7 @@
 }
 
 .closeButton svg {
-   fill: windowTitleFontColor;
+    fill: windowTitleFontColor;
 }
 
 .closeButton:hover svg {
@@ -199,7 +199,7 @@
 }
 
 .button[disabled] svg, .button[disabled]:HOVER svg {
-    opacity : 0.5;
+    opacity: 0.5;
 }
 
 /* Blue button styles */
@@ -229,9 +229,9 @@
 }
 
 .label {
-	font-family: mainFontFamily;
-	font-size: fontSize;
-	color: mainFontColor;
+    font-family: mainFontFamily;
+    font-size: fontSize;
+    color: mainFontColor;
 }
 
 svg.image {

@@ -1039,4 +1039,74 @@ public class DarkTheme implements Theme {
     public String openedFilesDropdownListHoverTextColor() {
         return "#FFFFFF";
     }
+
+    @Override
+    public String radioButtonIconColor() {
+        return this.getBlueIconColor();
+    }
+
+    @Override
+    public String radioButtonBorderColor() {
+        return this.getTextFieldBorderColor();
+    }
+
+    @Override
+    public String radioButtonBackgroundColor() {
+        return this.getTextFieldBackgroundColor();
+    }
+
+    @Override
+    public String radioButtonFontColor() {
+        return this.getTextFieldColor();
+    }
+
+    @Override
+    public String radioButtonDisabledFontColor() {
+        return this.getTextFieldDisabledColor();
+    }
+
+    @Override
+    public String radioButtonDisabledIconColor() {
+        return this.getTextFieldDisabledColor();
+    }
+
+    @Override
+    public String radioButtonDisabledBackgroundColor() {
+        return this.getTextFieldDisabledBackgroundColor();
+    }
+
+    @Override
+    public String checkBoxIconColor() {
+        return this.getBlueIconColor();
+    }
+
+    @Override
+    public String checkBoxFontColor() {
+        return this.getTextFieldColor();
+    }
+
+    @Override
+    public String checkBoxBorderColor() {
+        return this.getTextFieldBorderColor();
+    }
+
+    @Override
+    public String checkBoxBackgroundColor() {
+        return this.getTextFieldBackgroundColor();
+    }
+
+    @Override
+    public String checkBoxDisabledIconColor() {
+        return this.getTextFieldDisabledColor();
+    }
+
+    @Override
+    public String checkBoxDisabledFontColor() {
+        return this.getTextFieldDisabledColor();
+    }
+
+    @Override
+    public String checkBoxDisabledBackgroundColor() {
+        return this.getTextFieldDisabledBackgroundColor();
+    }
 }

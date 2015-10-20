@@ -11,6 +11,7 @@
 package org.eclipse.che.ide.projecttype.wizard.presenter;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -84,6 +85,8 @@ public class ProjectWizardViewImpl extends Window implements ProjectWizardView {
         addButtonToFooter(previousStepButton);
 
         this.ensureDebugId("projectWizard-window");
+
+        getWidget().getElement().getStyle().setPadding(0, Style.Unit.PX);
     }
 
     @Override

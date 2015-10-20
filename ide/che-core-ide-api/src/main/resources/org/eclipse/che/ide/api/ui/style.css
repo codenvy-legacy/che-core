@@ -336,3 +336,21 @@
 @eval scrollbarBorderColor org.eclipse.che.ide.api.theme.Style.theme.scrollbarBorderColor();
 @eval scrollbarHoverBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.scrollbarHoverBackgroundColor();
 @eval scrollbarActiveBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.scrollbarActiveBackgroundColor();
+
+/*RadioButton*/
+@eval radioButtonIconColor org.eclipse.che.ide.api.theme.Style.theme.radioButtonIconColor();
+@eval radioButtonBorderColor org.eclipse.che.ide.api.theme.Style.theme.radioButtonBorderColor();
+@eval radioButtonBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.radioButtonBackgroundColor();
+@eval radioButtonFontColor org.eclipse.che.ide.api.theme.Style.theme.radioButtonFontColor();
+@eval radioButtonDisabledFontColor org.eclipse.che.ide.api.theme.Style.theme.radioButtonDisabledFontColor();
+@eval radioButtonDisabledIconColor org.eclipse.che.ide.api.theme.Style.theme.radioButtonDisabledIconColor();
+@eval radioButtonDisabledBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.radioButtonDisabledBackgroundColor();
+
+/*CheckBox*/
+@eval checkBoxIconColor org.eclipse.che.ide.api.theme.Style.theme.checkBoxIconColor();
+@eval checkBoxFontColor org.eclipse.che.ide.api.theme.Style.theme.checkBoxFontColor();
+@eval checkBoxBorderColor org.eclipse.che.ide.api.theme.Style.theme.checkBoxBorderColor();
+@eval checkBoxBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.checkBoxBackgroundColor();
+@eval checkBoxDisabledIconColor org.eclipse.che.ide.api.theme.Style.theme.checkBoxDisabledIconColor();
+@eval checkBoxDisabledFontColor org.eclipse.che.ide.api.theme.Style.theme.checkBoxDisabledFontColor();
+@eval checkBoxDisabledBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.checkBoxDisabledBackgroundColor();

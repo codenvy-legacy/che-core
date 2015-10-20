@@ -34,10 +34,6 @@ body, td {
     font-family: textFieldFontFamily;
 }
 
-div.gwt-Label {
-    font-size: textFieldFontSize;
-}
-
 .gwt-ListBox {
     background-color: textFieldBackgroundColor;
     border: 1px solid textFieldBorderColor;
@@ -55,55 +51,113 @@ div.gwt-Label {
 }
 
 .gwt-CheckBox {
-    display: block;
+    display: inline-block;
+    position: relative;
+    height: 14px;
 }
 
 .gwt-CheckBox label {
+    position: relative;
+    top: 0;
+    left: 0;
     float: left;
-    line-height: 20px;
+    font-weight: bold;
+    white-space: nowrap;
+    line-height: inherit;
+    color: checkBoxFontColor;
+    font-size: smallFontSize;
 }
 
 .gwt-CheckBox input {
+    position: absolute;
+    visibility: hidden;
+}
+
+.gwt-CheckBox label::before {
+    position: relative;
+    content: " ";
     float: left;
+    left: 0;
+    top: 0;
+    width: 12px;
+    height: 12px;
+    line-height: 12px;
+    text-align: center;
+    margin-right: 5px;
+    border-radius: 2px;
+    border: 1px solid checkBoxBorderColor;
+    background-color: checkBoxBackgroundColor;
+}
+
+.gwt-CheckBox input:checked + label::before {
+    content: "\2714";
+    font-size: 14px;
+    font-weight: normal;
+    color: checkBoxIconColor;
+}
+
+.gwt-CheckBox input[disabled] + label {
+    color: checkBoxDisabledFontColor;
+}
+
+.gwt-CheckBox input[disabled] + label::before {
+    background-color: checkBoxDisabledBackgroundColor;
+    color: checkBoxDisabledIconColor !important;
+}
+
+.gwt-RadioButton {
+    float: left;
+    margin: 1px;
+    height: 14px;
+    line-height: 14px;
+    position: relative;
 }
 
 .gwt-RadioButton label {
-    display: inline-block;
+    position: relative;
+    top: 0;
+    left: 0;
     cursor: pointer;
-    position: relative;
-    margin-right: 15px;
-    height: 18px;
+    padding-left: 6px;
     font-weight: bold;
+    font-size: smallFontSize;
+    color: radioButtonFontColor;
 }
 
-.gwt-RadioButton input[type=radio] {
-    margin: 0;
-    padding: 0;
-    opacity: 0;
+.gwt-RadioButton input {
     position: absolute;
+    visibility: hidden;
 }
 
-.gwt-RadioButton label:before {
-    content: "";
-    display: inline-block;
-    width: 13px;
-    height: 13px;
-    top: 2px;
-    margin-right: 7px;
+.gwt-RadioButton input + label::before {
     position: relative;
-    background-color: radioButtonBackgroundColor;
+    content: " ";
+    float: left;
+    top: 2px;
+    left: 1px;
+    width: 8px;
+    height: 8px;
+    border-radius: 6px;
+    background: radioButtonBackgroundColor;
+    border: 2px solid radioButtonBackgroundColor;
+    box-shadow: 0 0 0 .5px radioButtonBorderColor;
 }
 
-.gwt-RadioButton label:before {
-    border-radius: 8px;
+.gwt-RadioButton input:checked + label::before {
+    background: radioButtonIconColor;
 }
 
-.gwt-RadioButton input[type=radio]:checked + label:before {
-    /*text-align: center;*/
-    /*line-height: 18px;*/
-    background: -moz-radial-gradient(center, ellipse cover, windowContentBackground 35%, radioButtonBackgroundColor 40%); /*FF3.6+*/
-    background: -webkit-radial-gradient(center, ellipse cover, windowContentBackground 35%, radioButtonBackgroundColor 40%); /*Chrome10+,Safari5.1+*/
-    background: radial-gradient(ellipse at center, windowContentBackground 35%, radioButtonBackgroundColor 40%); /* W3C*/
+.gwt-RadioButton input[disabled] + label {
+    color: radioButtonDisabledFontColor;
+}
+
+.gwt-RadioButton input[disabled] + label::before {
+    background: radioButtonDisabledBackgroundColor;
+    border-color: radioButtonDisabledBackgroundColor;
+}
+
+.gwt-RadioButton input[disabled]:checked + label::before {
+    background: radioButtonDisabledIconColor;
 }
 
 .gwt-TextBox,
@@ -192,7 +246,8 @@ div.gwt-Label {
     color: buttonHoverFontColor;
 }
 
-.gwt-Button[disabled], button[disabled], .gwt-Button[disabled]:hover, button[disabled]:hover, .gwt-Button[disabled]:active, button[disabled]:active {
+button[disabled], button[disabled]:hover, button[disabled]:active,
+.gwt-Button[disabled], .gwt-Button[disabled]:hover, .gwt-Button[disabled]:active {
     background: buttonDisabledBackground;
     border: 1px solid buttonDisabledBorderColor;
     color: buttonDisabledFontColor;
@@ -251,7 +306,6 @@ div.gwt-Label {
     border: 1px solid tabBorderColor;
     font-weight: 700;
     box-shadow: 0 0 4px 2px selectionBackground;
-    border-radius: 1px;
     outline: none;
 }
 
@@ -562,7 +616,7 @@ class for the document-level scrollbars. */
     display: none;
 }
 
-.editorFullScreen span:after {
+.editorFullScreen span::after {
     content: "";
     position: absolute;
     width: 0;
@@ -611,7 +665,7 @@ class for the document-level scrollbars. */
     cursor: default;
 }
 
-.privacyTooltip:after {
+.privacyTooltip::after {
     content: "";
     position: absolute;
     width: 0;

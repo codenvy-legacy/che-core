@@ -8,23 +8,20 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-@eval borderColor org.eclipse.che.ide.api.theme.Style.getTabBorderColor();
 
 .mainPanel {
-    margin: 0px;
+    margin: 0;
     border: none !important;
     height: 100%;
 }
 
 .leftPart {
-    margin-left: 12px;
-    margin-top: 10px;
-    margin-bottom: 15px;
+    margin: 10px;
     font-size: 12px;
 }
 
 .rightPart {
-    border-left: 1px solid #505050;
+    border-left: 1px solid popupBorderColor;
     margin-left: 1px;
 }
 
@@ -50,34 +47,34 @@
 .inputFieldPosition {
     float: left;
     width: literal("calc(100% - 12px)");
+    min-height: 18px;
 }
 
 .labelTitle {
-    position: relative;
     line-height: 35px;
-    margin-bottom: 9px;
     font-weight: bold;
-    float: left;
-    font-size: 15px;
-    color: textFieldColor;
+    font-size: largeLabel;
 }
 
 .radioButtonPosition {
     position: relative;
-    float: right;
-    padding-left: 5px;
-    top: 8px;
-    right: 65px;
+    float: left;
+    left: 0;
+}
+
+.radioButtonPosition:last-child {
+    margin-left: 55px;
 }
 
 .categories {
-    margin: 0px 25px 1px 0px;
-    border: 1px solid #000000;
-    background-color: #313131;
+    margin: 2px 0px 1px 1px;
+    border: 1px solid popupBorderColor;
 }
 
 .description {
-    font-size: 11px;
+    color: textFieldColor;
+    font-size: textFieldFontSize;
+    font-family: textFieldFontFamily;
 }
 
 .configuration {
@@ -90,16 +87,15 @@
 }
 
 .label {
+    margin-top: 5px;
     font-weight: bold;
-    font-size: 12px;
-    color: textFieldColor;
+    font-size: largeLabel;
 }
 
-.horizontalLine {
-    width: 255px;
-    margin-top: 7px;
-    float: right;
-    border-bottom: 1px solid #505050;
+div.horizontalLine {
+    border-bottom: 1px solid popupBorderColor;
+    width: 100%;
+    margin: 0;
 }
 
 .treeIcon {

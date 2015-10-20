@@ -1209,4 +1209,30 @@ public interface Theme {
     String openedFilesDropdownListHoverBackgroundColor();
     String openedFilesDropdownListHoverTextColor();
 
+    /********************************************************************************************
+     *
+     * RadioButton
+     *
+     ********************************************************************************************/
+    String radioButtonIconColor();
+    String radioButtonBorderColor();
+    String radioButtonBackgroundColor();
+    String radioButtonFontColor();
+    String radioButtonDisabledFontColor();
+    String radioButtonDisabledIconColor();
+    String radioButtonDisabledBackgroundColor();
+
+    /********************************************************************************************
+     *
+     * Checkbox
+     *
+     ********************************************************************************************/
+    String checkBoxIconColor();
+    String checkBoxFontColor();
+    String checkBoxBorderColor();
+    String checkBoxBackgroundColor();
+    String checkBoxDisabledIconColor();
+    String checkBoxDisabledFontColor();
+    String checkBoxDisabledBackgroundColor();
+
 }

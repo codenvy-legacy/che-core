@@ -62,8 +62,12 @@ public abstract class Window implements IsWidget {
     }
 
     public void setWidget(Widget widget) {
-        view.setContent(widget);
+        view.addContentWidget(widget);
         handleViewEvents();
+    }
+
+    public Widget getWidget() {
+        return view.getContent();
     }
 
     /**

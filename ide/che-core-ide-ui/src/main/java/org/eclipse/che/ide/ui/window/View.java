@@ -169,8 +169,12 @@ class View extends Composite {
         this.delegate = delegate;
     }
 
-    public void setContent(Widget content) {
+    public void addContentWidget(Widget content) {
         this.content.add(content);
+    }
+
+    public Widget getContent() {
+        return this.content;
     }
 
     private void endDragging(MouseUpEvent event) {

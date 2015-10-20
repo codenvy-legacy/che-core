@@ -25,9 +25,9 @@ public interface ProjectImporterResource extends ClientBundle {
         String inputError();
     }
 
-    @Source({"org/eclipse/che/ide/projectimport/ImporterPage.css", "org/eclipse/che/ide/ui/Styles.css"})
+    @Source({"org/eclipse/che/ide/projectimport/ImporterPage.css", "org/eclipse/che/ide/ui/Styles.css", "org/eclipse/che/ide/api/ui/style.css"})
     ZipImporterPageViewImpl.Style zipImporterPageStyle();
 
-    @Source({"org/eclipse/che/ide/projectimport/ImporterPage.css", "org/eclipse/che/ide/ui/Styles.css"})
+    @Source({"org/eclipse/che/ide/projectimport/ImporterPage.css", "org/eclipse/che/ide/ui/Styles.css", "org/eclipse/che/ide/api/ui/style.css"})
     LocalZipImporterPageViewImpl.Style localZipImporterPageStyle();
 }

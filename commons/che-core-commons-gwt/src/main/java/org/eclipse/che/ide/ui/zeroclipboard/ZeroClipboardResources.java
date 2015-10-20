@@ -8,26 +8,24 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.ui.zeroClipboard;
+package org.eclipse.che.ide.ui.zeroclipboard;
 
-import com.google.gwt.i18n.client.Messages;
+import com.google.gwt.resources.client.ClientBundle;
+import com.google.gwt.resources.client.CssResource;
+
+import org.vectomatic.dom.svg.ui.SVGResource;
 
 /**
- * Tooltip messages interface for the ZeroClipboard lib.
- *
  * @author Oleksii Orel
  */
-public interface ZeroClipboardConstant extends Messages {
-        /* Prompts */
-    @Key("prompt.readyToCopy")
-    String promptReadyToCopy();
+public interface ZeroClipboardResources extends ClientBundle {
+    public interface Css extends CssResource {
+        String clipboardButton();
+    }
 
-    @Key("prompt.afterCopy")
-    String promptAfterCopy();
+    @Source({"ZeroClipboard.css", "org/eclipse/che/ide/api/ui/style.css"})
+    Css clipboardCss();
 
-    @Key("prompt.copyError")
-    String promptCopyError();
-
-    @Key("prompt.readyToSelect")
-    String promptReadyToSelect();
+    @Source("clipboard.svg")
+    SVGResource clipboard();
 }

@@ -19,7 +19,7 @@ import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.ui.FlowPanel;
 
-import org.eclipse.che.ide.ui.customListBox.CustomListBox;
+import org.eclipse.che.ide.ui.listbox.CustomListBox;
 
 import com.google.gwt.user.client.ui.Widget;
 
