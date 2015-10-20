@@ -944,7 +944,7 @@ public class MachineManager {
         try {
             for (MachineImpl machine : machineRegistry.getStates()) {
                 try {
-                    destroy(machine.getId(), true);
+                    destroy(machine.getId(), false);
                 } catch (Exception e) {
                     LOG.warn(e.getMessage());
                 }
