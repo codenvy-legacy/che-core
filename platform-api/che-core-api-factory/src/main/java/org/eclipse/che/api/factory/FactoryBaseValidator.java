@@ -26,6 +26,7 @@ import org.eclipse.che.api.factory.dto.Workspace;
 import org.eclipse.che.api.project.shared.dto.NewProject;
 import org.eclipse.che.api.project.shared.dto.ProjectModule;
 import org.eclipse.che.api.project.shared.dto.RunnerConfiguration;
+import org.eclipse.che.api.project.shared.dto.RunnersDescriptor;
 import org.eclipse.che.api.user.server.dao.PreferenceDao;
 import org.eclipse.che.api.user.server.dao.User;
 import org.eclipse.che.api.user.server.dao.UserDao;
@@ -303,9 +304,8 @@ public abstract class FactoryBaseValidator {
 
     protected void validateProjectRunnerNames(Factory factory) throws BadRequestException {
         NewProject project = factory.getProject();
-        Map<String, RunnerConfiguration> runnerConfigurations = project.getRunners().getConfigs();
-        if (runnerConfigurations != null) {
-            for (String runnerName : runnerConfigurations.keySet()) {
+        if (project != null && project.getRunners() != null && project.getRunners().getConfigs() != null) {
+            for (String runnerName : project.getRunners().getConfigs().keySet()) {
                 if (!RUNNER_NAME_VALIDATOR.matcher(runnerName).matches()) {
                     throw new BadRequestException("Invalid runner name " + runnerName);
                 }
