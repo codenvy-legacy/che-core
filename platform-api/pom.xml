@@ -24,7 +24,6 @@
     <name>Che Core :: API :: Parent</name>
     <modules>
         <module>che-core-api-dto</module>
-        <module>che-core-api-dto-maven-plugin</module>
         <module>che-core-api-docs</module>
         <module>che-core-api-core</module>
         <module>che-core-api-vfs</module>
