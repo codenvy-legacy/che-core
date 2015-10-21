@@ -12,74 +12,67 @@ package org.eclipse.che.ide.jseditor.client.infopanel;
 
 import javax.inject.Inject;
 
-import org.eclipse.che.ide.jseditor.client.JsEditorConstants;
+import com.google.gwt.user.client.ui.FlowPanel;
 import org.eclipse.che.ide.jseditor.client.editortype.EditorType;
-import org.eclipse.che.ide.jseditor.client.editortype.EditorTypeRegistry;
 import org.eclipse.che.ide.jseditor.client.keymap.Keymap;
-import org.eclipse.che.ide.jseditor.client.keymap.KeymapChangeEvent;
-import org.eclipse.che.ide.jseditor.client.keymap.KeymapChangeHandler;
 import org.eclipse.che.ide.jseditor.client.text.TextPosition;
-import org.eclipse.che.ide.util.loging.Log;
 import com.google.gwt.core.shared.GWT;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTMLPanel;
-import com.google.gwt.user.client.ui.Label;
 import com.google.web.bindery.event.shared.EventBus;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The presenter for the editor info panel.<br>
  * Info panel shows the following things: cursor position, number of lines, tab settings and file type.
  * 
  * @author "Mickaël Leduque"
+ * @author Vitaliy Guliy
  */
-public class InfoPanel extends Composite implements KeymapChangeHandler {
+public class InfoPanel extends Composite {
 
-    private static final char NO_BREAK_SPACE = '\u00A0';
+    /**
+     * A set with file type descriptions.
+     */
+    private static Map<String, String> fileTypes = new HashMap<String, String>();
+
+    static {
+        fileTypes.put("application/xml", "XML");
+        fileTypes.put("text/html", "HTML");
+        fileTypes.put("application/x-jsp", "JSP");
+        fileTypes.put("application/javascript", "JavaScript");
+        fileTypes.put("text/css", "CSS");
+        fileTypes.put("text/x-java-source", "Java");
+        fileTypes.put("text/x-less", "Less");
+    }
+
+    /**
+     * UI binder interface for this component.
+     *
+     * @author "Mickaël Leduque"
+     */
+    interface InfoPanelUiBinder extends UiBinder<FlowPanel, InfoPanel> {
+    }
 
     /** The UI binder instance. */
     private static final InfoPanelUiBinder UIBINDER = GWT.create(InfoPanelUiBinder.class);
 
-    /**
-     * Inital budget of characters for line/char info display.
-     */
-    private static final int CHAR_INITIAL_BUDGET = 6;
-
-    private final EditorTypeRegistry editorTypeRegistry;
-
-    /** The i18n constants. */
-    @UiField(provided = true)
-    JsEditorConstants constants;
+    @UiField
+    HTMLPanel      cursorPosition;
 
     @UiField
-    SpanElement charPosLabel;
-    @UiField
-    Element     charPosition;
-    @UiField
-    Element     lineNumber;
-    @UiField
-    Label       fileType;
-    @UiField
-    Label       editorTypeValue;
-    @UiField
-    Label       keybindingsValue;
-    @UiField
-    Label       tabSize;
+    HTMLPanel      fileType;
 
-    private EditorType editorType;
+    @UiField
+    HTMLPanel      encoding;
 
     @Inject
-    public InfoPanel(final JsEditorConstants constants,
-                     final EditorTypeRegistry editorTypeRegistry,
-                     final EventBus eventBus) {
-        this.constants = constants;
-        this.editorTypeRegistry = editorTypeRegistry;
+    public InfoPanel(final EventBus eventBus) {
         initWidget(UIBINDER.createAndBindUi(this));
-
-        eventBus.addHandler(KeymapChangeEvent.TYPE, this);
     }
 
     /**
@@ -93,12 +86,7 @@ public class InfoPanel extends Composite implements KeymapChangeHandler {
                                    final EditorType editorType,
                                    final Keymap keymap,
                                    final int numberOfLines, final int tabSize) {
-        setCharPosition(null);
-        setLineNumber(numberOfLines);
         setFileType(fileContentDescription);
-        setEditorTypeFromInstance(editorType);
-        setKeybindingsFromInstance(keymap);
-        setTabSize(tabSize);
     }
 
     /**
@@ -106,63 +94,11 @@ public class InfoPanel extends Composite implements KeymapChangeHandler {
      *  @param position the position in the text
      */
     public void updateCursorPosition(final TextPosition position) {
-        setCharPosition(position.getCharacter() + 1);
-        setLineNumber(position.getLine() + 1);
-    }
-
-    /**
-     *  Update the line and char display to show the line count.
-     */
-    public void displayLineCount(final int linecount) {
-        setCharPosition(null);
-        setLineNumber(linecount + 1);
-    }
-
-    /**
-     * Changes the displayed value of the cusor line number.
-     *
-     * @param lineNum the new value
-     * @return the character count of the line number
-     */
-    private int setLineNumber(final Integer lineNum) {
-        String lineString = "";
-        if (lineNum != null) {
-            lineString = String.valueOf(lineNum);
-        }
-        this.lineNumber.setInnerText(lineString); // safe by construction
-        return lineString.length();
-    }
-
-    /**
-     * Changes the displayed value of the cursor character position.
-     * 
-     * @param charPos the new value
-     * @return the character count of the character number
-     */
-    private void setCharPosition(final Integer charPos) {
-        if (charPos != null) {
-            final String charPosString = String.valueOf(charPos);
-            this.charPosition.setInnerHTML(charPosString); //safe by definition
-            this.charPosition.getStyle().setOpacity(1D);
-            this.charPosLabel.getStyle().setOpacity(1D);
+        if (position != null) {
+            cursorPosition.getElement().setInnerText("" + (position.getLine() + 1) + ":" + (position.getCharacter() + 1));
         } else {
-            this.charPosition.setInnerHTML(NO_BREAK_SPACE + "-"); //safe by definition
-            this.charPosition.getStyle().setOpacity(0.35);
-            this.charPosLabel.getStyle().setOpacity(0.35);
+            cursorPosition.getElement().setInnerText("");
         }
-    }
-
-    /**
-     * Changes the displayed value of tab size.
-     * 
-     * @param tabSize the new value
-     */
-    private void setTabSize(final Integer tabSize) {
-        String tabSizeString = "";
-        if (tabSize != null) {
-            tabSizeString = String.valueOf(tabSize);
-        }
-        this.tabSize.setText(tabSizeString);
     }
 
     /**
@@ -171,87 +107,12 @@ public class InfoPanel extends Composite implements KeymapChangeHandler {
      * @param type the new value
      */
     private void setFileType(final String type) {
-        if (type == null || type.isEmpty()) {
-            this.fileType.setText(constants.infoPanelUnknownFileType());
+        String displayName = fileTypes.get(type);
+        if (displayName != null) {
+            fileType.getElement().setInnerHTML(displayName);
         } else {
-            this.fileType.setText(type);
+            fileType.getElement().setInnerHTML(type);
         }
     }
 
-    /**
-     * Changes the displayed value of the editor type.
-     * 
-     * @param type the new value
-     */
-    private void setEditorType(final String type) {
-        if (type == null || type.isEmpty()) {
-            this.editorTypeValue.setText(constants.infoPanelUnknownEditorType());
-        } else {
-            this.editorTypeValue.setText(type);
-        }
-    }
-
-    private void setEditorTypeFromInstance(final EditorType type) {
-        this.editorType = type;
-        if (type != null) {
-            Log.debug(InfoPanel.class, "Editor type is " + type);
-            final String name = this.editorTypeRegistry.getName(type);
-            Log.debug(InfoPanel.class, "... got name " + name);
-            setEditorType(name);
-        } else {
-            Log.debug(InfoPanel.class, "Editor type: null");
-            setEditorType(null);
-        }
-    }
-
-    /**
-     * Changes the displayed value of the editor type.
-     * 
-     * @param type the new value
-     */
-    private void setKeybindings(final String bindings) {
-        if (bindings == null || bindings.isEmpty()) {
-            this.keybindingsValue.setText(constants.infoPanelUnknownKeybindings());
-        } else {
-            this.keybindingsValue.setText(bindings);
-        }
-    }
-
-    private void setKeybindingsFromKey(final String keymapKey) {
-        final Keymap keymap = Keymap.fromKey(keymapKey);
-        setKeybindingsFromInstance(keymap);
-    }
-
-    private void setKeybindingsFromInstance(final Keymap keymap) {
-        if (keymap != null) {
-            setKeybindings(keymap.getDisplay());
-        } else {
-            setKeybindings(null);
-        }
-    }
-
-    @Override
-    public void onKeymapChanged(final KeymapChangeEvent event) {
-        final String editorTypeKey = event.getEditorTypeKey();
-        if (editorTypeKey == null || editorTypeKey.isEmpty()) {
-            return;
-        }
-        final EditorType editorType = EditorType.getInstance(editorTypeKey);
-        if (editorType == null) {
-            return;
-        }
-        if (editorType.equals(this.editorType)) {
-            final String keymapKey = event.getKeymapKey();
-            setKeybindingsFromKey(keymapKey);
-        }
-        // else ignore, we're not in the same editor type
-    }
-
-    /**
-     * UI binder interface for this component.
-     * 
-     * @author "Mickaël Leduque"
-     */
-    interface InfoPanelUiBinder extends UiBinder<HTMLPanel, InfoPanel> {
-    }
 }

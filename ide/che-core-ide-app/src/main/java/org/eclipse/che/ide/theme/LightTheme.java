@@ -718,6 +718,11 @@ public class LightTheme implements Theme {
     }
 
     @Override
+    public String editorInfoTextColor() {
+        return "#5c5c5c";
+    }
+
+    @Override
     public String getEditorInfoBorderColor() {
         return "#bdbdbd";
     }
@@ -730,6 +735,11 @@ public class LightTheme implements Theme {
     @Override
     public String getEditorLineNumberColor() {
         return "#888888";
+    }
+
+    @Override
+    public String editorGutterLineNumberBackgroundColor() {
+        return "#F6F6F6";
     }
 
     @Override

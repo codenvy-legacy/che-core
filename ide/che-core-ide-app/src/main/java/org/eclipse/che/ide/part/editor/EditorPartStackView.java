@@ -144,6 +144,11 @@ public class EditorPartStackView extends ResizeComposite implements PartStackVie
      * Updates visibility of file list button.
      */
     private void updateDropdownVisibility() {
+        if (tabsPanel.getWidgetCount() == 1) {
+            listButton.setVisible(false);
+            return;
+        }
+
         int width = 0;
         for (int i = 0; i < tabsPanel.getWidgetCount(); i++) {
             if (listButton != null && listButton != tabsPanel.getWidget(i)) {

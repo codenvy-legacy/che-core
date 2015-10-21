@@ -13,7 +13,6 @@ package org.eclipse.che.ide.part.explorer.project;
 import com.google.common.base.Strings;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ContextMenuEvent;
@@ -21,9 +20,6 @@ import com.google.gwt.event.dom.client.ContextMenuHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.DockLayoutPanel;
-import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -107,10 +103,8 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
     private final Provider<EditorAgent>    editorAgentProvider;
     private final EventBus                 eventBus;
     private final Tree                     tree;
-    private final DockLayoutPanel          projectHeader;
     private StoreSortInfo foldersOnTopSort = new StoreSortInfo(new FoldersOnTopFilter(), SortDir.ASC);
 
-    private InlineLabel         projectTitle;
     private ToolButton          goIntoBackButton;
     private ToolButton          scrollFromSourceButton;
     private SearchNodeHandler   searchNodeHandler;
@@ -136,9 +130,6 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
 
         setTitle(coreLocalizationConstant.projectExplorerTitleBarText());
 
-        projectHeader = new DockLayoutPanel(Style.Unit.PX);
-        projectHeader.setStyleName(resources.partStackCss().idePartStackToolbarBottom());
-
         TreeNodeStorage nodeStorage = new TreeNodeStorage(new NodeUniqueKeyProvider() {
             @NotNull
             @Override
@@ -161,7 +152,6 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
             }
         });
         tree.getNodeStorage().add(Collections.<Node>emptyList());
-
 
         StoreSortInfo alphabetical = new StoreSortInfo(new AlphabeticalFilter(), SortDir.ASC);
         tree.getNodeStorage().addSortInfo(foldersOnTopSort);
@@ -378,22 +368,6 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
     }
 
     @Override
-    public void setProjectTitle(String title) {
-        setTitleToHeader(title);
-    }
-
-    private void setTitleToHeader(String title) {
-        if (projectHeader.getWidgetIndex(projectTitle) > 0) {
-            projectHeader.remove(projectTitle);
-        }
-
-        projectTitle = new InlineLabel(title);
-        projectTitle.setStyleName(resources.partStackCss().idePartStackToolbarProjectTitle());
-        projectHeader.add(projectTitle);
-        projectTitle.getParent().addStyleName(resources.partStackCss().idePartStackToolbarCenterPanelProjectTitle());
-    }
-
-    @Override
     public void replaceParentNode(ProjectDescriptorNode descriptorNode) {
         tree.getNodeStorage().remove(descriptorNode);
 
@@ -401,12 +375,6 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
     }
 
     private void showProjectInfo() {
-        if (toolBar.getWidgetIndex(projectHeader) < 0) {
-            toolBar.addSouth(projectHeader, 28);
-            setToolbarHeight(50);
-        }
-        projectHeader.clear();
-
         List<Node> rootItems = tree.getNodeStorage().getRootItems();
 
         for (Node rootNode : rootItems) {
@@ -417,37 +385,21 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
                     continue;
                 }
 
-                FlowPanel delimiter = new FlowPanel();
-                delimiter.setStyleName(resources.partStackCss().idePartStackToolbarSeparator());
-                projectHeader.addNorth(delimiter, 1);
-
-                SVGImage projectVisibilityImage = new SVGImage("private".equals(descriptor.getVisibility()) ? resources.privateProject()
-                                                                                                            : resources.publicProject());
-                projectVisibilityImage.getElement().setAttribute("class", resources.partStackCss().idePartStackToolbarBottomIcon());
-
-                projectHeader.ensureDebugId("project-visibility-image");
-                projectHeader.addWest(projectVisibilityImage, 34);
-
-                FlowPanel refreshButton = new FlowPanel();
-                refreshButton.add(new SVGImage(resources.refresh()));
-                refreshButton.setStyleName(resources.partStackCss().idePartStackToolbarBottomButton());
-                refreshButton.addStyleName(resources.partStackCss().idePartStackToolbarBottomButtonRight());
-                refreshButton.ensureDebugId("refreshSelectedFolder");
-                projectHeader.addEast(refreshButton, 21);
-
-                refreshButton.addDomHandler(new ClickHandler() {
+                SVGImage refreshIcon = new SVGImage(resources.refresh());
+                ToolButton refreshButton = new ToolButton(refreshIcon);
+                refreshButton.addClickHandler(new ClickHandler() {
                     @Override
                     public void onClick(ClickEvent event) {
                         reloadChildren(null, true);
                     }
-                }, ClickEvent.getType());
+                });
+                refreshButton.ensureDebugId("refreshSelectedFolder");
 
-                Tooltip.create((elemental.dom.Element)refreshButton.getElement(),
-                               BOTTOM,
-                               MIDDLE,
-                               "Refresh selected folder");
-
-                setTitleToHeader(descriptor.getName());
+                Tooltip.create((elemental.dom.Element) refreshButton.getElement(),
+                        BOTTOM,
+                        MIDDLE,
+                        "Refresh selected folder");
+                addToolButton(refreshButton);
 
                 SVGImage collapseAllIcon = new SVGImage(explorerResources.collapse());
                 ToolButton collapseAll = new ToolButton(collapseAllIcon);
@@ -468,7 +420,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
                                MIDDLE,
                                "Collapse All");
                 collapseAll.ensureDebugId("collapseAllButton");
-                addMenuButton(collapseAll);
+                addToolButton(collapseAll);
                 return;
             }
         }
@@ -478,9 +430,14 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
 
     private void hideProjectInfo() {
         goIntoBackButton = null;
-        menuPanel.clear();
-        toolBar.remove(projectHeader);
-        setToolbarHeight(22);
+
+        if (goIntoBackButton != null) {
+            removeToolButton(goIntoBackButton);
+        }
+
+        if (scrollFromSourceButton != null) {
+            removeToolButton(scrollFromSourceButton);
+        }
     }
 
     @Override
@@ -625,11 +582,11 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
             }
         });
         goIntoBackButton.ensureDebugId("goBackButton");
-        Tooltip.create((elemental.dom.Element)goIntoBackButton.getElement(),
-                       BOTTOM,
-                       MIDDLE,
-                       "Go Back");
-        addMenuButton(goIntoBackButton);
+        Tooltip.create((elemental.dom.Element) goIntoBackButton.getElement(),
+                BOTTOM,
+                MIDDLE,
+                "Go Back");
+        addToolButton(goIntoBackButton);
     }
 
     private void initScrollFromSourceButton() {
@@ -646,7 +603,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
                        BOTTOM,
                        MIDDLE,
                        "Scroll From Source");
-        addMenuButton(scrollFromSourceButton);
+        addToolButton(scrollFromSourceButton);
     }
 
     @Override

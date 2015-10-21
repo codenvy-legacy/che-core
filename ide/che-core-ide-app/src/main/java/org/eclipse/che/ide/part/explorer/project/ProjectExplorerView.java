@@ -38,8 +38,6 @@ public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDele
 
     void setRootNode(Node node);
 
-    void setProjectTitle(String title);
-
     void replaceParentNode(ProjectDescriptorNode descriptorNode);
 
     List<StoreSortInfo> getSortInfo();

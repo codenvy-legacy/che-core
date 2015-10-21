@@ -489,8 +489,6 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
             String projectName = descriptor.getName();
 
             queryFieldViewer.setProjectName(projectName);
-
-            view.setProjectTitle(projectName);
         }
     }
 
