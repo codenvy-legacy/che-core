@@ -17,13 +17,8 @@
     <ui:style>
 
         .controlPanel {
-            float: right;
+            float: left;
             overflow: hidden;
-
-            position: relative;
-            top: 1px;
-            margin: 2px 0 0 2px;
-            padding: 0 3px 0 3px;
 
             -moz-box-sizing: border-box !important;
             box-sizing: border-box !important;
@@ -33,27 +28,33 @@
         }
 
         .button {
-            padding: 0 3px 0 3px;
-            margin: 1px 0 1px 0;
-            cursor: pointer;
-        }
+            position: absolute;
+            width: 16px;
+            height: 16px;
 
-        .button:HOVER,
-        .button:ACTIVE {
-            -webkit-box-shadow: 0 0 2px rgba(50, 50, 50, 1);
-            -moz-box-shadow: 0 0 2px rgba(50, 50, 50, 1);
-            box-shadow: 0 0 2px rgba(50, 50, 50, 1);
+            left: 2px;
+            top: 3px;
+
+            overflow: hidden;
             border-radius: 2px;
         }
 
-        .button:ACTIVE {
-            -webkit-transform: scale(0.9);
-            -moz-transform: scale(0.9);
-            transform: scale(0.9);
-            background-color: rgb(97, 125, 145);
+        .iconPanel {
+            overflow: hidden;
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            left: 3px;
+            top: 3px;
         }
 
-        .iconPanel {
+        .iconPanel svg {
+            position: absolute;
+            left: 0px;
+            top: 0px;
+
+            width: 10px;
+            height: 10px;
         }
 
     </ui:style>

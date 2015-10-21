@@ -138,13 +138,16 @@
 
 @eval editorGutterColor org.eclipse.che.ide.api.theme.Style.getEditorGutterColor();
 @eval editorGutterLineNumberColor org.eclipse.che.ide.api.theme.Style.getEditorLineNumberColor();
+@eval editorGutterLineNumberBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.editorGutterLineNumberBackgroundColor();
 @eval editorGutterSeparatorColor org.eclipse.che.ide.api.theme.Style.getEditorSeparatorColor();
 
 @eval completionPopupBorderColor org.eclipse.che.ide.api.theme.Style.getCompletionPopupBorderColor();
 @eval completionPopupBackgroundColor org.eclipse.che.ide.api.theme.Style.getCompletionPopupBackgroundColor();
+
 @eval editorInfoBorderColor org.eclipse.che.ide.api.theme.Style.getEditorInfoBorderColor();
 @eval editorInfoBorderShadowColor org.eclipse.che.ide.api.theme.Style.getEditorInfoBorderShadowColor();
 @eval editorInfoBackgroundColor org.eclipse.che.ide.api.theme.Style.getEditorInfoBackgroundColor();
+@eval editorInfoTextColor org.eclipse.che.ide.api.theme.Style.theme.editorInfoTextColor();
 
 /* Text fields */
 @eval textFieldTitleColor org.eclipse.che.ide.api.theme.Style.getTextFieldTitleColor();

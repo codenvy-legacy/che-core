@@ -951,6 +951,11 @@ public interface Theme {
     String getEditorInfoBackgroundColor();
 
     /**
+     * @return text color for editor info panel
+     */
+    String editorInfoTextColor();
+
+    /**
      * @return the color of border for editor info panel.
      */
     String getEditorInfoBorderColor();
@@ -964,6 +969,11 @@ public interface Theme {
      * @return the color of the line numbers in the editor gutter.
      */
     String getEditorLineNumberColor();
+
+    /**
+     * @return background color of the line numbers gutter
+     */
+    String editorGutterLineNumberBackgroundColor();
 
     /**
      * @return the color of the separator line between the gutter and the editor.

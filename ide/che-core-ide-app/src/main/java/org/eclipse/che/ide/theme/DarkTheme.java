@@ -738,7 +738,12 @@ public class DarkTheme implements Theme {
 
     @Override
     public String getEditorInfoBackgroundColor() {
-        return "#313335";
+        return "#292C2F";
+    }
+
+    @Override
+    public String editorInfoTextColor() {
+        return "#AAAAAA";
     }
 
     @Override
@@ -754,6 +759,11 @@ public class DarkTheme implements Theme {
     @Override
     public String getEditorLineNumberColor() {
         return "#888888";
+    }
+
+    @Override
+    public String editorGutterLineNumberBackgroundColor() {
+        return "#31353E";
     }
 
     @Override

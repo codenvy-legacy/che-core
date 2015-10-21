@@ -28,12 +28,9 @@ import java.util.List;
 
 /**
  * Button which can be added to the tool bar.
- * <p/>
  *
- * @author <a href="mailto:gavrikvetal@gmail.com">Vitaliy Gulyy</a>
- * @version $
+ * @author Vitaliy Gulyy
  */
-
 public class ToolButton extends Composite implements HasClickHandlers {
 
     /** UIBinder class for this TabButton. */

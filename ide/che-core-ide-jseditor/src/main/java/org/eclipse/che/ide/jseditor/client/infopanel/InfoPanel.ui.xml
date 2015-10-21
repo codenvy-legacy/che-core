@@ -16,137 +16,45 @@
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
              xmlns:g='urn:import:com.google.gwt.user.client.ui'>
 
-    <ui:with type="org.eclipse.che.ide.jseditor.client.JsEditorConstants" field="constants"/>
     <ui:style src="org/eclipse/che/ide/api/ui/style.css">
-        /* layout styles */
-        .infoPanel-layout {
-            display: flex;
-            display: -webkit-flex;
 
-            flex-flow: column;
-            -webkit-flex-flow: column;
-
-            justify-content: center;
-            -webkit-justify-content: center;
-
-            align-items: stretch;
-            -webkit-align-items: stretch;
-        }
-
-        .infoPanel-horizlayout {
-            display: flex;
-            display: -webkit-flex;
-
-            flex-flow: row;
-            -webkit-flex-flow: row;
-
-            justify-content: space-between;
-            -webkit-justify-content: space-between;
-
-            align-items: stretch;
-            -webkit-align-items: stretch;
-        }
-
-        .infoPanel-item {
-            flex-grow: 0; /* don't allow growth if there is space available */
-            -webkit-flex-grow: 0;
-            flex-shrink: 0; /* don't allow to shrink if there is not enough space */
-            -webkit-flex-shrink: 0;
-        }
-
-        /* specific styles */
-        .editorInfo {
-            height: 16px;
-            margin-bottom: 0;
-        }
-
-        .topBorder {
-            border-top: 1px solid editorInfoBorderColor;
-            border-bottom: 1px solid editorInfoBorderShadowColor;
-        }
-
-        .panelInfo {
-            font-family: Helvetica Neue, Light;
-            font-size: 10px;
-            color: #5c5c5c;
+        .infoPanel {
+            height: 18px;
             background-color: editorInfoBackgroundColor;
+            border-top: 1px solid tabBorderColor;
         }
 
-        .info-block {
-            flex-shrink: 0; /* don't allow to shrink if there is not enough space */
-            -webkit-flex-shrink: 0;
-
-            display: flex;
-            display: -webkit-flex;
-
-            flex-flow: row;
-            -webkit-flex-flow: row;
-
-            align-items: stretch;
-            -webkit-align-items: stretch;
+        .cursorPosition {
+            float: left;
+            margin-left: 15px;
         }
 
-        .info-block-end {
-            margin-right: 0.5em;
-            justify-content: flex-end;
-            -webkit-justify-content: flex-end;
+        .fileType {
+            float: right;
+            margin-right: 15px;
         }
 
-        .info-block-middle {
-            margin-right: 0.5em;
-            justify-content: center;
-            -webkit-justify-content: center;
+        .encoding {
+            float: right;
+            margin-right: 20px;
         }
 
-        .info-block-start {
-            margin-left: 0.5em;
-            margin-right: 0.5em;
-            justify-content: flex-start;
-            -webkit-justify-content: flex-start;
+        .cursorPosition,
+        .fileType,
+        .encoding {
+            font-family: "DejaVu Sans Mono", "Helvetica Neue", "Myriad Pro", "open sans", arial, sans-serif;
+            font-size: 9px;
+            color: editorInfoTextColor;
+            height: 18px;
+            line-height: 18px;
         }
 
-        .info-label {
-            padding-right: 0.4em;
-        }
     </ui:style>
 
-    <g:HTMLPanel addStyleNames="{style.editorInfo} {style.infoPanel-layout} {style.panelInfo}">
-        <!-- Border -->
-        <div class="{style.topBorder}"/>
-        <!-- Actual content -->
-        <div class="{style.infoPanel-horizlayout}">
-            <div class="{style.info-block} {style.info-block-start}" style="width:9em;">
-                <span class="{style.infoPanel-item} {style.info-label}">
-                    <ui:text from="{constants.infoPaneLineLabel}"/>
-                </span>
-                <span ui:field="lineNumber" class="{style.infoPanel-item}" />
-                <span ui:field="charPosLabel" class="{style.infoPanel-item} {style.info-label}">
-                    <ui:text from="{constants.infoPanelCharacterLabel}"/>
-                </span>
-                <span ui:field="charPosition" class="{style.infoPanel-item}" />
-            </div>
-            <div class="{style.info-block} {style.info-block-middle}">
-                <span class="{style.infoPanel-item} {style.info-label}">
-                    <ui:text from="{constants.infoPaneTabSizeLabel}"/>
-                </span>
-                <g:InlineLabel ui:field="tabSize" addStyleNames="{style.infoPanel-item}"/>
-            </div>
-            <div class="{style.info-block} {style.info-block-middle}">
-                <span class="{style.infoPanel-item} {style.info-label}">
-                    <ui:text from="{constants.infoPaneEditorLabel}"/>
-                </span>
-                <g:InlineLabel ui:field="editorTypeValue" addStyleNames="{style.infoPanel-item}"/>
-            </div>
-            <div class="{style.info-block} {style.info-block-middle}">
-                <span class="{style.infoPanel-item} {style.info-label}">
-                    <ui:text from="{constants.infoPaneKeybindingLabel}"/>
-                </span>
-                <g:InlineLabel ui:field="keybindingsValue" addStyleNames="{style.infoPanel-item}"/>
-            </div>
-            <div class="{style.info-block} {style.info-block-end}">
-                <g:InlineLabel ui:field="fileType" addStyleNames="{style.infoPanel-item}"/>
-            </div>
-        </div>
-    </g:HTMLPanel>
+    <g:FlowPanel styleName="{style.infoPanel}">
+        <g:HTMLPanel ui:field="cursorPosition" styleName="{style.cursorPosition}"></g:HTMLPanel>
+        <g:HTMLPanel ui:field="fileType" styleName="{style.fileType}"></g:HTMLPanel>
+        <g:HTMLPanel ui:field="encoding" styleName="{style.encoding}">UTF-8</g:HTMLPanel>
+    </g:FlowPanel>
 
 </ui:UiBinder>

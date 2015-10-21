@@ -16,7 +16,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
-import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
@@ -44,7 +43,6 @@ public abstract class BaseView<T extends BaseActionDelegate> extends Composite i
 
     protected T          delegate;
     protected ToolButton minimizeButton;
-    protected FlowPanel  menuPanel;
     protected Label      titleLabel;
 
     /** Indicates whether this view is focused */
@@ -83,17 +81,54 @@ public abstract class BaseView<T extends BaseActionDelegate> extends Composite i
             }
         });
         toolbarHeader.addWest(titleLabel, 200);
-        toolbarHeader.addEast(minimizeButton, 22);
 
-        menuPanel = new FlowPanel();
-        menuPanel.addStyleName(resources.partStackCss().headerMenuButton());
-        toolbarHeader.addEast(menuPanel, 75);
+        addToolButton(minimizeButton);
 
         toolBar.addNorth(toolbarHeader, 22);
     }
 
-    public final void addMenuButton(@NotNull IsWidget button) {
-        menuPanel.add(button);
+    /**
+     * Add a button on part toolbar,
+     *
+     * @param button button
+     */
+    public final void addToolButton(@NotNull IsWidget button) {
+        if (button != null) {
+            toolbarHeader.addEast(button, 20);
+        }
+    }
+
+    /**
+     * Removes button from part toolbar.
+     *
+     * @param button button
+     */
+    public void removeToolButton(@NotNull IsWidget button) {
+        if (button != null) {
+            toolbarHeader.remove(button);
+        }
+    }
+
+    /**
+     * Sets button visible on part toolbar.
+     *
+     * @param button button
+     */
+    public final void showToolButton(@NotNull IsWidget button) {
+        if (button != null) {
+            toolbarHeader.setWidgetHidden(button.asWidget(), false);
+        }
+    }
+
+    /**
+     * Hides button on part toolbar.
+     *
+     * @param button button
+     */
+    public final void hideToolButton(@NotNull IsWidget button) {
+        if (button != null) {
+            toolbarHeader.setWidgetHidden(button.asWidget(), true);
+        }
     }
 
     /** {@inheritDoc} */
@@ -135,6 +170,7 @@ public abstract class BaseView<T extends BaseActionDelegate> extends Composite i
      * @param height
      *         new toolbar height
      */
+    @Deprecated
     public final void setToolbarHeight(int height) {
         container.setWidgetSize(toolBar, height);
     }

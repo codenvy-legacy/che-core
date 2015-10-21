@@ -159,7 +159,7 @@ public class EmbeddedTextEditorPartViewImpl extends Composite implements Embedde
 
     @Override
     public void updateInfoPanelUnfocused(final int linecount) {
-        this.infoPanel.displayLineCount(linecount);
+//        this.infoPanel.displayLineCount(linecount);
     }
 
     /**
