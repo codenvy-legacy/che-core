@@ -57,7 +57,7 @@
 
 .category {
     display: inline;
-    line-height: 12px;
+    line-height: 18px;
     color: categoriesListItemTextColor;
     background-color: categoriesListItemBackgroundColor;
 }
@@ -75,12 +75,11 @@
 .expandControl {
     float: right;
     width: 15px;
-    height: 15px;
+    height: inherit;
     transition: all 200ms;
     display: inline-block;
-    line-height: 15px;
+    line-height: inherit;
     text-align: center;
-    margin: 1px;
 }
 
 .expandControl svg {
@@ -91,8 +90,8 @@
 }
 
 .categoryHeader {
-    height: 18px;
-    line-height: 18px;
+    height: 22px;
+    line-height: 22px;
     text-transform: capitalize;
     color: categoriesListHeaderTextColor;
     background-color: categoriesListHeaderBackgroundColor;

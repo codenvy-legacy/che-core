@@ -21,7 +21,7 @@
     position: relative;
     outline: none;
     width: 100px;
-    height: 20px;
+    height: 22px;
     margin: 0;
 }
 
@@ -37,7 +37,7 @@
 
 .listBox > label {
     margin-right: 22px;
-    line-height: 18px;
+    line-height: 22px;
 }
 
 .listBox span > label {

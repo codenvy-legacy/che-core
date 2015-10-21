@@ -58,7 +58,7 @@
 }
 
 .dropDownListMenu > table > tbody > tr > td {
-    max-height: 18px;
+    height: 20px;
     padding: 0;
 }
 
@@ -83,4 +83,5 @@
     max-height: 16px;
     fill: toolbarIconColor;
     stroke: toolbarIconColor;
+    vertical-align: baseline;
 }

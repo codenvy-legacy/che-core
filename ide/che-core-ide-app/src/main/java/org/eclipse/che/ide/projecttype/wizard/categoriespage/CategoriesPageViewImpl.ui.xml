@@ -23,7 +23,7 @@
                             <g:Label ui:field="projectType"
                                      addStyleNames="{style.labelTitle}"/>
                         </g:FlowPanel>
-                        <g:FlowPanel height="60px" addStyleNames="{style.namePanel}">
+                        <g:FlowPanel height="65px" addStyleNames="{style.namePanel}">
                             <g:Label text="{locale.createProjectFromTemplateName}"
                                      addStyleNames="{style.labelPosition}"/>
                             <g:TextBox ui:field="projectName"

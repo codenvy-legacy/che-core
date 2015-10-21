@@ -41,7 +41,7 @@ body, td {
     color: listBoxColor;
     padding-left: 5px;
     border-radius: 0;
-    height: 20px;
+    min-height: 22px;
     outline: none;
 }
 
@@ -65,7 +65,7 @@ body, td {
     white-space: nowrap;
     line-height: inherit;
     color: checkBoxFontColor;
-    font-size: smallFontSize;
+    font-size: fontSize;
 }
 
 .gwt-CheckBox input {
@@ -120,7 +120,7 @@ body, td {
     cursor: pointer;
     padding-left: 6px;
     font-weight: bold;
-    font-size: smallFontSize;
+    font-size: fontSize;
     color: radioButtonFontColor;
 }
 
@@ -176,7 +176,7 @@ body, td {
 }
 
 .gwt-TextBox {
-    min-height: 20px;
+    min-height: 22px;
     padding: 0 5px 0 5px;
 }
 
