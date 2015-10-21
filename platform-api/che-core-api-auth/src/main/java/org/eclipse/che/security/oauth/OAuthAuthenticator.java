@@ -247,7 +247,11 @@ public abstract class OAuthAuthenticator {
         if (credential != null) {
             Long expirationTime = credential.getExpiresInSeconds();
             if (expirationTime != null && expirationTime < 0) {
-                credential.refreshToken();
+                if (credential.refreshToken()) {
+                    credential = flow.loadCredential(userId);
+                } else {
+                    return null;
+                }
             }
 
             return newDto(OAuthToken.class).withToken(credential.getAccessToken());
