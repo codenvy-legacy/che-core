@@ -42,6 +42,8 @@ import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.action.PromisableAction;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
+import org.eclipse.che.ide.api.event.ConfigureProjectEvent;
+import org.eclipse.che.ide.api.event.ConfigureProjectHandler;
 import org.eclipse.che.ide.api.event.project.CloseCurrentProjectEvent;
 import org.eclipse.che.ide.api.event.project.CloseCurrentProjectHandler;
 import org.eclipse.che.ide.api.event.project.CreateProjectEvent;
@@ -99,6 +101,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
                                                                        ExtServerStateHandler,
                                                                        CreateProjectHandler,
                                                                        DeleteProjectHandler,
+                                                                       ConfigureProjectHandler,
                                                                        ResourceNodeRenamedEvent.ResourceNodeRenamedHandler,
                                                                        SynchronizeProjectViewEvent.SynchronizeProjectViewHandler {
     private final ProjectExplorerView          view;
@@ -161,6 +164,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
 
         eventBus.addHandler(CreateProjectEvent.TYPE, this);
         eventBus.addHandler(DeleteProjectEvent.TYPE, this);
+        eventBus.addHandler(ConfigureProjectEvent.TYPE, this);
 
         eventBus.addHandler(ExtServerStateEvent.TYPE, this);
 
@@ -322,6 +326,14 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
                                                                locale.projectProblemMessage(),
                                                                askHandler);
         dialog.show();
+    }
+
+    @Override
+    public void onConfigureProject(ConfigureProjectEvent event) {
+        ProjectDescriptor toConfigure = event.getProject();
+        if (toConfigure != null) {
+            projectWizardPresenter.show(toConfigure);
+        }
     }
 
     private void updateProject(final ProjectDescriptor project) {
