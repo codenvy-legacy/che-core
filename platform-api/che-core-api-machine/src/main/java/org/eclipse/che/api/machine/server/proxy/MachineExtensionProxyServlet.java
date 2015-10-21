@@ -156,8 +156,10 @@ public class MachineExtensionProxyServlet extends HttpServlet {
 
             // copy headers from proxy response to origin response
             for (Map.Entry<String, List<String>> header : conn.getHeaderFields().entrySet()) {
-                for (String headerValue : header.getValue()) {
-                    resp.addHeader(header.getKey(), headerValue);
+                if (!skipHeader(header.getKey())) {
+                    for (String headerValue : header.getValue()) {
+                        resp.addHeader(header.getKey(), headerValue);
+                    }
                 }
             }
 
@@ -196,11 +198,13 @@ public class MachineExtensionProxyServlet extends HttpServlet {
      * Checks if the header should not be copied by proxy.<br>
      * <a href="http://tools.ietf.org/html/rfc2616#section-13.5.1">RFC-2616 Section 13.5.1</a>
      *
-     * @param headerName the header name to check.
+     * @param headerName
+     *         the header name to check.
      * @return {@code true} if the header should be skipped, false otherwise.
      */
     public static boolean skipHeader(final String headerName) {
-        return headerName.equalsIgnoreCase("Connection") ||
+        return headerName == null ||
+               headerName.equalsIgnoreCase("Connection") ||
                headerName.equalsIgnoreCase("Keep-Alive") ||
                headerName.equalsIgnoreCase("Proxy-Authentication") ||
                headerName.equalsIgnoreCase("Proxy-Authorization") ||
