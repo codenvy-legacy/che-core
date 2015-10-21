@@ -304,7 +304,7 @@ public class MachineManager {
                                            .withMachineName(machineState.getName()));
 
             final Instance instance;
-            if ("recipe".equals(machineState.getSource().getType())) {
+            if ("recipe".equalsIgnoreCase(machineState.getSource().getType())) {
                 instance = instanceProvider.createInstance(recipe,
                                                            machineState,
                                                            machineLogger);

@@ -426,9 +426,11 @@ public class WorkspaceService extends Service {
         requiredNotNull(machineConfig.getSource().getType(), "Machine source type");
         requiredNotNull(machineConfig.getSource().getLocation(), "Machine source location");
 
-        ensureUserIsWorkspaceOwner(workspaceId);
+        RuntimeWorkspaceImpl runtimeWorkspace = workspaceManager.getRuntimeWorkspace(workspaceId);
 
-        final MachineStateImpl machine = machineManager.createMachineAsync(machineConfig, workspaceId, null);
+        ensureUserIsWorkspaceOwner(runtimeWorkspace);
+
+        final MachineStateImpl machine = machineManager.createMachineAsync(machineConfig, workspaceId, runtimeWorkspace.getActiveEnvName());
 
         return org.eclipse.che.api.machine.server.DtoConverter.asDto(machine);
     }
