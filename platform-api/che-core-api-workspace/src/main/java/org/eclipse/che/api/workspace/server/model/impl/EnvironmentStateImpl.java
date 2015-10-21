@@ -33,7 +33,7 @@ public class EnvironmentStateImpl /*extends EnvironmentImpl*/ implements Environ
     public EnvironmentStateImpl(String name, Recipe recipe, List<? extends MachineConfig> machineStates) {
         this.name = name;
         this.recipe = recipe;
-        if (this.machineStates != null) {
+        if (machineStates != null) {
             this.machineStates = machineStates.stream()
                                               .map(MachineStateImpl::new)
                                               .collect(toList());

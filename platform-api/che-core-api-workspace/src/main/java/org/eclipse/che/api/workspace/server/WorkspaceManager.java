@@ -27,6 +27,9 @@ import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 import org.eclipse.che.api.core.notification.EventService;
+import org.eclipse.che.api.machine.server.model.impl.ChannelsImpl;
+import org.eclipse.che.api.machine.server.model.impl.MachineStateImpl;
+import org.eclipse.che.api.workspace.server.model.impl.EnvironmentStateImpl;
 import org.eclipse.che.api.workspace.server.model.impl.RuntimeWorkspaceImpl;
 import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
 import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
@@ -351,7 +354,7 @@ public class WorkspaceManager {
         return workspaceDao.get(name, owner);
     }
 
-    /*******************************/
+    /** ****************** */
 
     private UsersWorkspaceImpl startWorkspace(UsersWorkspaceImpl workspace,
                                               String envName,
@@ -429,7 +432,18 @@ public class WorkspaceManager {
             validateName(cfg.getName());
         }
 
+        for (EnvironmentStateImpl environment : workspace.getEnvironments().values()) {
+            for (MachineStateImpl machineState : environment.getMachineConfigs()) {
+                machineState.setChannels(createMachineChannels(machineState.getName(), workspace.getId(), environment.getName()));
+            }
+        }
+
         return workspace;
+    }
+
+    private ChannelsImpl createMachineChannels(String machineName, String workspaceId, String envName) {
+        return new ChannelsImpl(workspaceId + ':' + envName + ':' + machineName,
+                                "machine:status:" + workspaceId + ':' + machineName);
     }
 
     /**

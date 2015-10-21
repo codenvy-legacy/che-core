@@ -316,7 +316,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
     }
 
     @Override
-    public Promise<MachineStateDto> createMachine(String wsId, MachineConfigDto machineConfig) {
+    public Promise<MachineStateDto> createMachine(final String wsId,final MachineConfigDto machineConfig) {
         return newPromise(new RequestCall<MachineStateDto>() {
             @Override
             public void makeCall(AsyncCallback<MachineStateDto> callback) {

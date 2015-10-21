@@ -25,8 +25,13 @@ public class ChannelsImpl implements Channels {
     }
 
     public ChannelsImpl(Channels channels) {
-        this.outputChannel = channels.getOutput();
-        this.statusChannel = channels.getStatus();
+        if (channels != null) {
+            this.outputChannel = channels.getOutput();
+            this.statusChannel = channels.getStatus();
+        } else {
+            this.outputChannel = null;
+            this.statusChannel = null;
+        }
     }
 
     @Override
