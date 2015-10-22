@@ -74,7 +74,18 @@ public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDele
 
     boolean isShowHiddenFiles();
 
-    Promise<Node> getNodeByPath(HasStorablePath path, boolean forceUpdate);
+    /**
+     * Search node in the project explorer tree by storable path.
+     *
+     * @param path
+     *         path to node
+     * @param forceUpdate
+     *         force children reload
+     * @param closeMissingFiles
+     *         allow editor to close removed files if they were opened
+     * @return promise object with found node or promise error if node wasn't found
+     */
+    Promise<Node> getNodeByPath(HasStorablePath path, boolean forceUpdate, boolean closeMissingFiles);
 
     void select(Node item, boolean keepExisting);
 

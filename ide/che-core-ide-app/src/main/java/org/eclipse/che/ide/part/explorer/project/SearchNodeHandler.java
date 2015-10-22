@@ -48,6 +48,7 @@ public class SearchNodeHandler implements ExpandNodeHandler, BeforeExpandNodeHan
     private AsyncCallback<Node> callback;
 
     private boolean forceUpdate = false;
+    private boolean closeMissingFiles = true;
 
     public SearchNodeHandler(Tree tree) {
         this.tree = tree;
@@ -58,8 +59,20 @@ public class SearchNodeHandler implements ExpandNodeHandler, BeforeExpandNodeHan
         tree.getNodeLoader().addPostLoadHandler(this);
     }
 
-    public Promise<Node> getNodeByPath(final HasStorablePath path, boolean forceUpdate) {
+    /**
+     * Search node in the project explorer tree by storable path.
+     *
+     * @param path
+     *         path to node
+     * @param forceUpdate
+     *         force children reload
+     * @param closeMissingFiles
+     *         allow editor to close removed files if they were opened
+     * @return promise object with found node or promise error if node wasn't found
+     */
+    public Promise<Node> getNodeByPath(final HasStorablePath path, boolean forceUpdate, boolean closeMissingFiles) {
         this.forceUpdate = forceUpdate;
+        this.closeMissingFiles = closeMissingFiles;
         return AsyncPromiseHelper.createFromAsyncRequest(new AsyncPromiseHelper.RequestCall<Node>() {
             @Override
             public void makeCall(AsyncCallback<Node> callback) {
@@ -220,6 +233,16 @@ public class SearchNodeHandler implements ExpandNodeHandler, BeforeExpandNodeHan
 
     public boolean isInSearchMode() {
         return inSearchMode;
+    }
+
+    /**
+     * Indicates that during node search removed nodes need to be checked
+     * if they were opened in editor parts and need to be closed.
+     *
+     * @return true if opened nodes in editor part should be closed
+     */
+    public boolean isCloseMissingFiles() {
+        return closeMissingFiles;
     }
 
     private Node getRootNode(HasStorablePath path) {
