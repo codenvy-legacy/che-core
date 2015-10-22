@@ -425,15 +425,8 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
     @Override
     public void activate() {
         if (editorWidget != null) {
-            //Todo temporary decision. We need wait, because some unknown event creates problems: IDEX-1823, IDEX-1813
-            Timer timer = new Timer() {
-                @Override
-                public void run() {
-                    editorWidget.refresh();
-                    editorWidget.setFocus();
-                }
-            };
-            timer.schedule(1);
+            editorWidget.refresh();
+            editorWidget.setFocus();
         } else {
             this.delayedFocus = true;
         }
