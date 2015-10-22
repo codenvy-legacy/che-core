@@ -16,7 +16,6 @@ import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.icon.Icon;
 import org.eclipse.che.ide.api.icon.IconRegistry;
 import org.eclipse.che.ide.projecttype.wizard.ProjectWizardResources;
-import org.eclipse.che.ide.ui.Styles;
 import org.eclipse.che.ide.ui.list.CategoriesList;
 import org.eclipse.che.ide.ui.list.Category;
 import org.eclipse.che.ide.ui.list.CategoryRenderer;
@@ -27,6 +26,7 @@ import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
@@ -403,7 +403,7 @@ public class CategoriesPageViewImpl implements CategoriesPageView {
     interface MainPageViewImplUiBinder extends UiBinder<DockLayoutPanel, CategoriesPageViewImpl> {
     }
 
-    public interface Style extends Styles {
+    public interface Style extends CssResource {
         String mainPanel();
 
         String leftPart();
@@ -431,6 +431,8 @@ public class CategoriesPageViewImpl implements CategoriesPageView {
         String labelTitle();
 
         String treeIcon();
+
+        String inputError();
     }
 
     /**

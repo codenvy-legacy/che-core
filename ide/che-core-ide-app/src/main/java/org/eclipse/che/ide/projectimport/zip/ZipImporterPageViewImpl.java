@@ -11,7 +11,6 @@
 package org.eclipse.che.ide.projectimport.zip;
 
 import org.eclipse.che.ide.projectimport.ProjectImporterResource;
-import org.eclipse.che.ide.ui.Styles;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -184,7 +183,7 @@ public class ZipImporterPageViewImpl extends Composite implements ZipImporterPag
     interface ZipImporterPageViewImplUiBinder extends UiBinder<DockLayoutPanel, ZipImporterPageViewImpl> {
     }
 
-    public interface Style extends Styles {
+    public interface Style extends CssResource {
         String mainPanel();
 
         String namePanel();
@@ -208,5 +207,9 @@ public class ZipImporterPageViewImpl extends Composite implements ZipImporterPag
         String horizontalLine();
 
         String checkBoxPosition();
+
+        String inputField();
+
+        String inputError();
     }
 }

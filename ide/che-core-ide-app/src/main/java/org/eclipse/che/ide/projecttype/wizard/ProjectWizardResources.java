@@ -20,7 +20,7 @@ import org.eclipse.che.ide.projecttype.wizard.categoriespage.CategoriesPageViewI
  */
 public interface ProjectWizardResources extends ClientBundle {
 
-    @Source({"categoriespage/MainPage.css", "org/eclipse/che/ide/api/ui/style.css", "org/eclipse/che/ide/ui/Styles.css"})
+    @Source({"categoriespage/MainPage.css", "org/eclipse/che/ide/api/ui/style.css"})
     CategoriesPageViewImpl.Style mainPageStyle();
 
 }
