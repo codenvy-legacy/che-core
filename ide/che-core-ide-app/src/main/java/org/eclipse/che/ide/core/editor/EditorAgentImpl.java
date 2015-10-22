@@ -18,6 +18,7 @@ import com.google.web.bindery.event.shared.EventBus;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorInitException;
@@ -59,10 +60,11 @@ import org.eclipse.che.ide.util.loging.Log;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.NavigableMap;
-import java.util.TreeMap;
+import java.util.Map;
 
 import static org.eclipse.che.ide.api.event.FileEvent.FileOperation.CLOSE;
 import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
@@ -73,7 +75,7 @@ import static org.eclipse.che.ide.api.parts.PartStackType.EDITING;
 @Singleton
 public class EditorAgentImpl implements EditorAgent {
 
-    private final NavigableMap<String, EditorPartPresenter> openedEditors;
+    private final Map<String, EditorPartPresenter> openedEditors;
     /** Used to notify {@link EditorAgentImpl} that editor has closed */
     private final EditorPartCloseHandler editorClosed     = new EditorPartCloseHandler() {
         @Override
@@ -146,7 +148,7 @@ public class EditorAgentImpl implements EditorAgent {
         this.nodeManager = nodeManager;
         this.projectService = projectService;
         this.unmarshallerFactory = unmarshallerFactory;
-        openedEditors = new TreeMap<>();
+        openedEditors = new LinkedHashMap<>();
 
         bind();
     }
@@ -286,6 +288,7 @@ public class EditorAgentImpl implements EditorAgent {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void openEditor(@NotNull VirtualFile file, @NotNull OpenEditorCallback callback) {
         doOpen(file, callback);
@@ -327,6 +330,7 @@ public class EditorAgentImpl implements EditorAgent {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void activateEditor(@NotNull EditorPartPresenter editor) {
         workspace.setActivePart(editor);
@@ -365,7 +369,7 @@ public class EditorAgentImpl implements EditorAgent {
     /** {@inheritDoc} */
     @NotNull
     @Override
-    public NavigableMap<String, EditorPartPresenter> getOpenedEditors() {
+    public Map<String, EditorPartPresenter> getOpenedEditors() {
         return openedEditors;
     }
 
@@ -423,4 +427,52 @@ public class EditorAgentImpl implements EditorAgent {
         return activeEditor;
     }
 
+    /** {@inheritDoc} */
+    @Nullable
+    @Override
+    public EditorPartPresenter getNextEditor() {
+        EditorPartPresenter nextPart = null;
+        Iterator<EditorPartPresenter> iterator = openedEditors.values().iterator();
+        while (iterator.hasNext()) {
+            EditorPartPresenter editor = iterator.next();
+            if (activeEditor.equals(editor) && iterator.hasNext()) {
+                nextPart = iterator.next();
+                break;
+            }
+        }
+        return nextPart;
+    }
+
+    /** {@inheritDoc} */
+    @Nullable
+    @Override
+    public EditorPartPresenter getPreviousEditor() {
+        EditorPartPresenter previousEditor = null;
+        for (EditorPartPresenter editor : openedEditors.values()) {
+            if (activeEditor.equals(editor) && previousEditor != null) {
+                break;
+            }
+            previousEditor = editor;
+        }
+        return previousEditor;
+    }
+
+    /** {@inheritDoc} */
+    @Nullable
+    @Override
+    public EditorPartPresenter getLastEditor() {
+        EditorPartPresenter result = null;
+        for (EditorPartPresenter editor : openedEditors.values()) {
+            result = editor;
+        }
+        return result;
+    }
+
+    /** {@inheritDoc} */
+    @Nullable
+    @Override
+    public EditorPartPresenter getFirstEditor() {
+        Iterator<EditorPartPresenter> openedEditors = this.openedEditors.values().iterator();
+        return openedEditors.hasNext() ? openedEditors.next() : null;
+    }
 }

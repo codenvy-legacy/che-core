@@ -29,8 +29,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.NavigableMap;
-import java.util.TreeMap;
 
 import static org.eclipse.che.ide.actions.OpenFileAction.FILE_PARAM_ID;
 import static org.junit.Assert.assertEquals;
@@ -107,11 +105,14 @@ public class ActiveFilePersistenceComponentTest {
     }
 
     private void configureOpenedEditors() {
-        NavigableMap<String, EditorPartPresenter> openedEditors = new TreeMap<>(); //TODO do we really need treemap?
-        when(editorAgent.getOpenedEditors()).thenReturn(openedEditors);
-
+        EditorInput editorInput = mock(EditorInput.class);
+        VirtualFile file = mock(VirtualFile.class);
         EditorPartPresenter editorPartPresenter = mock(EditorPartPresenter.class);
-        openedEditors.put(FILE1_PATH, editorPartPresenter);
+        when(editorPartPresenter.getEditorInput()).thenReturn(editorInput);
+        when(editorInput.getFile()).thenReturn(file);
+        when(file.getPath()).thenReturn(FILE1_PATH);
+
+        when(editorAgent.getLastEditor()).thenReturn(editorPartPresenter);
     }
 
     private void configureActiveEditor(String activeFilePath) {

@@ -17,7 +17,7 @@ import org.eclipse.che.ide.api.project.tree.VirtualFile;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
-import java.util.NavigableMap;
+import java.util.Map;
 
 /**
  * Editor Agent manages Editors, it allows to open a new editor with given file,
@@ -66,7 +66,7 @@ public interface EditorAgent {
      * @return map with all opened editors
      */
     @NotNull
-    NavigableMap<String, EditorPartPresenter> getOpenedEditors();
+    Map<String, EditorPartPresenter> getOpenedEditors();
 
     /**
      * Saves all opened files whose content have changed since the last save operation
@@ -82,6 +82,34 @@ public interface EditorAgent {
      */
     @Nullable
     EditorPartPresenter getActiveEditor();
+
+    /**
+     * Get next editor by relation to active editor
+     * @return
+     */
+    @Nullable
+    EditorPartPresenter getNextEditor();
+
+    /**
+     * Get previous editor by relation to active editor
+     * @return
+     */
+    @Nullable
+    EditorPartPresenter getPreviousEditor();
+
+    /**
+     * Get last opened editor
+     * @return
+     */
+    @Nullable
+    EditorPartPresenter getLastEditor();
+
+    /**
+     * Get first opened editor
+     * @return
+     */
+    @Nullable
+    EditorPartPresenter getFirstEditor();
 
     /**
      * Updates editor node. This method replace old editor node to new one
