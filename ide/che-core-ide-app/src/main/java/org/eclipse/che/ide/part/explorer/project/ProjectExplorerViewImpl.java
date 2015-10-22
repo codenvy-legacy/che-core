@@ -245,7 +245,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
         if (nodes.size() == 1) {
             final String contentRoot = getContentRootOrNull(nodes.get(0));
             if (!Strings.isNullOrEmpty(contentRoot)) {
-                getNodeByPath(new HasStorablePath.StorablePath(contentRoot), false).then(waitRenderAndPerformGoInto());
+                getNodeByPath(new HasStorablePath.StorablePath(contentRoot), false, true).then(waitRenderAndPerformGoInto());
             } else {
                 tree.setExpanded(nodes.get(0), true);
             }
@@ -277,6 +277,10 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
         closeEditorOnNodeRemovedHandler = tree.getNodeStorage().addStoreRemoveHandler(new StoreRemoveEvent.StoreRemoveHandler() {
             @Override
             public void onRemove(StoreRemoveEvent event) {
+                if (searchNodeHandler.isInSearchMode() && !searchNodeHandler.isCloseMissingFiles()) {
+                    return;
+                }
+
                 Node removedNode = event.getNode();
 
                 if (!(removedNode instanceof HasStorablePath)) {
@@ -349,7 +353,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
 
     @Override
     public void scrollFromSource(HasStorablePath path) {
-        getNodeByPath(path, false).then(new Operation<Node>() {
+        getNodeByPath(path, false, true).then(new Operation<Node>() {
             @Override
             public void apply(Node node) throws OperationException {
                 tree.scrollIntoView(node);
@@ -678,9 +682,10 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
         }
     }
 
+    /** {@inheritDoc} */
     @Override
-    public Promise<Node> getNodeByPath(HasStorablePath path, boolean forceUpdate) {
-        return searchNodeHandler.getNodeByPath(path, forceUpdate);
+    public Promise<Node> getNodeByPath(HasStorablePath path, boolean forceUpdate, boolean closeMissingFiles) {
+        return searchNodeHandler.getNodeByPath(path, forceUpdate, closeMissingFiles);
     }
 
     @Override

@@ -257,7 +257,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
                 }
             });
         } else {
-            view.getNodeByPath(new HasStorablePath.StorablePath(descriptor.getPath()), false).then(new Operation<Node>() {
+            view.getNodeByPath(new HasStorablePath.StorablePath(descriptor.getPath()), false, true).then(new Operation<Node>() {
                 @Override
                 public void apply(final Node node) throws OperationException {
                     openNode(node, descriptor);
@@ -569,11 +569,35 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
     }
 
     public Promise<Node> getNodeByPath(HasStorablePath path) {
-        return view.getNodeByPath(path, false);
+        return view.getNodeByPath(path, false, true);
     }
 
+    /**
+     * Search node in the project explorer tree by storable path.
+     *
+     * @param path
+     *         path to node
+     * @param forceUpdate
+     *         force children reload
+     * @return promise object with found node or promise error if node wasn't found
+     */
     public Promise<Node> getNodeByPath(HasStorablePath path, boolean forceUpdate) {
-        return view.getNodeByPath(path, forceUpdate);
+        return view.getNodeByPath(path, forceUpdate, true);
+    }
+
+    /**
+     * Search node in the project explorer tree by storable path.
+     *
+     * @param path
+     *         path to node
+     * @param forceUpdate
+     *         force children reload
+     * @param closeMissingFiles
+     *         allow editor to close removed files if they were opened
+     * @return promise object with found node or promise error if node wasn't found
+     */
+    public Promise<Node> getNodeByPath(HasStorablePath path, boolean forceUpdate, boolean closeMissingFiles) {
+        return view.getNodeByPath(path, forceUpdate, closeMissingFiles);
     }
 
     public void select(Node item, boolean keepExisting) {
