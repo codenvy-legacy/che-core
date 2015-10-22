@@ -47,6 +47,8 @@ import org.eclipse.che.ide.actions.SaveAllAction;
 import org.eclipse.che.ide.actions.SettingsAction;
 import org.eclipse.che.ide.actions.ShowHiddenFilesAction;
 import org.eclipse.che.ide.actions.ShowPreferencesAction;
+import org.eclipse.che.ide.actions.SwitchLeftTabAction;
+import org.eclipse.che.ide.actions.SwitchRightTabAction;
 import org.eclipse.che.ide.actions.UndoAction;
 import org.eclipse.che.ide.actions.UploadFileAction;
 import org.eclipse.che.ide.actions.UploadFolderFromZipAction;
@@ -67,6 +69,7 @@ import org.eclipse.che.ide.newresource.NewFileAction;
 import org.eclipse.che.ide.newresource.NewFolderAction;
 import org.eclipse.che.ide.ui.toolbar.MainToolbar;
 import org.eclipse.che.ide.ui.toolbar.ToolbarPresenter;
+import org.eclipse.che.ide.util.input.KeyCodeMap;
 import org.eclipse.che.ide.xml.NewXmlFileAction;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
@@ -221,6 +224,12 @@ public class StandardComponentInitializer {
 
     @Inject
     private CompleteAction completeAction;
+
+    @Inject
+    private SwitchLeftTabAction switchLeftTabAction;
+
+    @Inject
+    private SwitchRightTabAction switchRightTabAction;
 
     @Inject
     @Named("XMLFileType")
@@ -458,6 +467,8 @@ public class StandardComponentInitializer {
         actionManager.registerAction("findReplace", findReplaceAction);
         actionManager.registerAction("openFile", openFileAction);
         actionManager.registerAction("expandNode", expandNodeAction);
+        actionManager.registerAction("switchLeftTab", switchLeftTabAction);
+        actionManager.registerAction("switchRightTab", switchRightTabAction);
 
         changeResourceGroup.add(closeProjectAction);
         changeResourceGroup.add(cutAction);
@@ -488,6 +499,8 @@ public class StandardComponentInitializer {
         keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('c').build(), "copy");
         keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('x').build(), "cut");
         keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('v').build(), "paste");
+        keyBinding.getGlobal().addKey(new KeyBuilder().alt().charCode(KeyCodeMap.ARROW_LEFT).build(), "switchLeftTab");
+        keyBinding.getGlobal().addKey(new KeyBuilder().alt().charCode(KeyCodeMap.ARROW_RIGHT).build(), "switchRightTab");
     }
 
 }

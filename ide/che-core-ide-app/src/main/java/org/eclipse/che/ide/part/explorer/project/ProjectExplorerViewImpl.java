@@ -81,7 +81,7 @@ import org.vectomatic.dom.svg.ui.SVGResource;
 import javax.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.List;
-import java.util.NavigableMap;
+import java.util.Map;
 import java.util.Set;
 
 import static org.eclipse.che.ide.api.event.FileEvent.FileOperation.CLOSE;
@@ -287,7 +287,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
                     return;
                 }
 
-                NavigableMap<String, EditorPartPresenter> openedEditors = editorAgentProvider.get().getOpenedEditors();
+                Map<String, EditorPartPresenter> openedEditors = editorAgentProvider.get().getOpenedEditors();
                 if (openedEditors == null || openedEditors.isEmpty()) {
                     return;
                 }
