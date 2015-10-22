@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.parts;
 
+import java.util.List;
+
 /**
  * Part Stack is tabbed layout element, containing Parts. EditorPartStack is shared
  * across the Perspectives and allows to display EditorParts
@@ -18,4 +20,15 @@ package org.eclipse.che.ide.api.parts;
  */
 public interface EditorPartStack extends PartStack {
 
+    /**
+     * Get active editor
+     * @return active editor
+     */
+    PartPresenter getActiveEditor();
+
+    /**
+     * Get list editors
+     * @return list opened editors
+     */
+    List<PartPresenter> getEditors();
 }

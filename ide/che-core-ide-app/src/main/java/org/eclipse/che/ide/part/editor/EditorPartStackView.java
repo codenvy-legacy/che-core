@@ -31,6 +31,7 @@ import org.eclipse.che.ide.api.parts.PartStackView;
 import org.eclipse.che.ide.part.widgets.listtab.ListButton;
 
 import javax.validation.constraints.NotNull;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -152,7 +153,13 @@ public class EditorPartStackView extends ResizeComposite implements PartStackVie
         int width = 0;
         for (int i = 0; i < tabsPanel.getWidgetCount(); i++) {
             if (listButton != null && listButton != tabsPanel.getWidget(i)) {
-                width += tabsPanel.getWidget(i).getOffsetWidth();
+                if (tabsPanel.getWidget(i).isVisible()) {
+                    width += tabsPanel.getWidget(i).getOffsetWidth();
+                } else {
+                    tabsPanel.getWidget(i).setVisible(true);
+                    width += tabsPanel.getWidget(i).getOffsetWidth();
+                    tabsPanel.getWidget(i).setVisible(false);
+                }
             }
         }
 
@@ -167,8 +174,18 @@ public class EditorPartStackView extends ResizeComposite implements PartStackVie
             return;
         }
 
-        if (activeTab.getView().asWidget().getAbsoluteTop() > tabsPanel.getAbsoluteTop()) {
-            tabsPanel.insert(activeTab.getView(), 1);
+        for (int i = 0; i < tabsPanel.getWidgetCount(); i++) {
+            if (listButton != null && listButton != tabsPanel.getWidget(i)) {
+                tabsPanel.getWidget(i).setVisible(true);
+            }
+        }
+
+        for (int i = 0; i < tabsPanel.getWidgetCount(); i++) {
+            if (listButton != null && listButton != tabsPanel.getWidget(i)) {
+                if (activeTab.getView().asWidget().getAbsoluteTop() > tabsPanel.getAbsoluteTop()) {
+                    tabsPanel.getWidget(i).setVisible(false);
+                }
+            }
         }
     }
 
@@ -257,4 +274,11 @@ public class EditorPartStackView extends ResizeComposite implements PartStackVie
         ensureActiveTabVisible();
     }
 
+    /**
+     * Get list editors
+     * @return list opened editors
+     */
+    List<PartPresenter> getEditors() {
+        return Collections.unmodifiableList(contents);
+    }
 }
