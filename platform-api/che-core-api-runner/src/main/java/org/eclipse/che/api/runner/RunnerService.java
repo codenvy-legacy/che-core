@@ -16,7 +16,11 @@ import com.wordnik.swagger.annotations.ApiParam;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 
+import org.eclipse.che.api.account.server.dao.AccountDao;
+import org.eclipse.che.api.account.server.dao.Member;
+import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.rest.HttpJsonHelper;
 import org.eclipse.che.api.core.rest.HttpServletProxyResponse;
 import org.eclipse.che.api.core.rest.Service;
@@ -31,9 +35,10 @@ import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentTree;
 import org.eclipse.che.api.runner.dto.ApplicationProcessDescriptor;
 import org.eclipse.che.api.runner.dto.ResourcesDescriptor;
 import org.eclipse.che.api.runner.dto.RunOptions;
-import org.eclipse.che.api.runner.dto.RunRequest;
 import org.eclipse.che.api.runner.dto.RunnerDescriptor;
 import org.eclipse.che.api.runner.internal.Constants;
+import org.eclipse.che.api.workspace.server.dao.MemberDao;
+import org.eclipse.che.api.workspace.server.dao.WorkspaceDao;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.Pair;
 import org.eclipse.che.commons.user.User;
@@ -53,10 +58,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * RESTful API for RunQueue.
@@ -72,8 +77,18 @@ public class RunnerService extends Service {
     private static final String START = "{ \"recipe\":\"";
     private static final String END   = "\" }";
 
+    private final RunQueue     runQueue;
+    private final WorkspaceDao workspaceDao;
+    private final AccountDao   accountDao;
+
     @Inject
-    private RunQueue runQueue;
+    public RunnerService(RunQueue runQueue,
+                         WorkspaceDao workspaceDao,
+                         AccountDao accountDao) {
+        this.runQueue = runQueue;
+        this.workspaceDao = workspaceDao;
+        this.accountDao = accountDao;
+    }
 
 
     @ApiOperation(value = "Run project",
@@ -118,23 +133,26 @@ public class RunnerService extends Service {
     }
 
 
-
-
     @ApiOperation(value = "Get all user running processes",
-                  notes = "Get info on all running processes",
+                  notes = "Get info on all running processes in the scope of account id and project name",
                   response = ApplicationProcessDescriptor.class,
                   responseContainer = "List",
                   position = 3)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 403, message = "Forbidden"),
             @ApiResponse(code = 500, message = "Internal Server Error")})
     @GET
     @Path("/processes")
     @Produces(MediaType.APPLICATION_JSON)
     public List<ApplicationProcessDescriptor> getAllRunningProcesses(@ApiParam(value = "Project name")
                                                                      @Description("project name")
-                                                                     @QueryParam("project") String project) {
-        return getRunningProcesses(null, project);
+                                                                     @QueryParam("project") String project,
+                                                                     @ApiParam(value = "Account Id")
+                                                                     @Description("account id")
+                                                                     @QueryParam("account") String accountId)
+            throws ForbiddenException, ServerException {
+        return getRunningProcesses(null, project, accountId);
     }
 
     @ApiOperation(value = "Get run processes for a given workspace",
@@ -149,53 +167,80 @@ public class RunnerService extends Service {
     @Path("/{ws-id}/processes")
     @Produces(MediaType.APPLICATION_JSON)
     public List<ApplicationProcessDescriptor> getWorkspaceRunningProcesses(@ApiParam(value = "Workspace ID", required = true)
-                                                                  @PathParam("ws-id") String workspace,
-                                                                  @ApiParam(value = "Project name")
-                                                                  @Description("project name")
-                                                                  @QueryParam("project") String project) {
-        return getRunningProcesses(workspace, project);
+                                                                           @PathParam("ws-id") String workspace,
+                                                                           @ApiParam(value = "Project name")
+                                                                           @Description("project name")
+                                                                           @QueryParam("project") String project)
+            throws ForbiddenException, ServerException {
+        return getRunningProcesses(workspace, project, null);
     }
 
-    protected List<ApplicationProcessDescriptor> getRunningProcesses(String workspace, String project) {
+    protected List<ApplicationProcessDescriptor> getRunningProcesses(String workspaceId, String project, String accountId)
+            throws ForbiddenException, ServerException {
+        //fix project path
         if (project != null && !project.startsWith("/")) {
             project = '/' + project;
         }
         final List<ApplicationProcessDescriptor> processes = new LinkedList<>();
         final User user = EnvironmentContext.getCurrent().getUser();
-        if (user != null) {
-            final String userId = user.getId();
-            for (RunQueueTask task : runQueue.getTasks()) {
-                final RunRequest request = task.getRequest();
+        if (user == null) {
+            return processes;
+        }
 
-                // add matching task
-                // first, check user
-                if (request.getUserId().equals(userId)) {
-                    // now check workspace or project if they're given
+        final String userId = user.getId();
 
-                    // skip task if not correct workspace
-                    if (workspace != null && !request.getWorkspace().equals(workspace)) {
-                        continue;
-                    }
+        if (accountId != null) {
+            Optional<Member> owner = accountDao.getMembers(accountId)
+                                               .stream()
+                                               .filter(member -> userId.equals(member.getUserId()) &&
+                                                                 member.getRoles().contains("account/owner"))
+                                               .findAny();
+            if (!owner.isPresent()) {
+                throw new ForbiddenException("You are not an owner of the specified account");
+            }
+        }
 
-                    // skip task if not correct project
-                    if (project != null && !request.getProject().equals(project)) {
-                        continue;
-                    }
+        for (RunQueueTask task : runQueue.getTasks()) {
+            // skip task if it does not run in given workspace
+            if (workspaceId != null && !task.getRequest().getWorkspace().equals(workspaceId)) {
+                continue;
+            }
 
-                    try {
-                        processes.add(task.getDescriptor());
-                    } catch (NotFoundException ignored) {
-                        // NotFoundException is possible and should not be treated as error in this case. Typically it occurs if slave
-                        // runner already cleaned up the task by its internal cleaner but RunQueue doesn't re-check yet slave runner and
-                        // doesn't have actual info about state of slave runner.
-                    } catch (RunnerException e) {
-                        // Decide ignore such error to be able show maximum available info.
-                        LOG.error(e.getMessage(), e);
-                    }
-                }
+            // skip task if it does not run in given project
+            if (project != null && !task.getRequest().getProject().equals(project)) {
+                continue;
+            }
+
+            // skip task if it is not running by given account or by given user if account is not specified
+            if (!isRelatedToAccountOrUser(task, accountId, userId)) {
+                continue;
+            }
+
+            try {
+                processes.add(task.getDescriptor());
+            } catch (NotFoundException ignored) {
+                // NotFoundException is possible and should not be treated as error in this case. Typically it occurs if slave
+                // runner already cleaned up the task by its internal cleaner but RunQueue doesn't re-check yet slave runner and
+                // doesn't have actual info about state of slave runner.
+            } catch (RunnerException e) {
+                // Decide ignore such error to be able show maximum available info.
+                LOG.error(e.getMessage(), e);
             }
         }
         return processes;
+    }
+
+    private boolean isRelatedToAccountOrUser(RunQueueTask task, String accountId, String userId) throws ServerException {
+        if (accountId != null) {
+            try {
+                return accountId.equals(workspaceDao.getById(task.getRequest().getWorkspace()).getAccountId());
+            } catch (NotFoundException e) {
+                //Skip task because workspace with id from request is not found
+            }
+            return false;
+        }
+
+        return userId.equals(task.getRequest().getUserId());
     }
 
     @ApiOperation(value = "Stop run process",
