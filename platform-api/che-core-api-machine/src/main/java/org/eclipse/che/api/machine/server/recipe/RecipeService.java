@@ -64,6 +64,7 @@ import static org.eclipse.che.api.machine.server.Constants.LINK_REL_GET_RECIPES_
 import static org.eclipse.che.api.machine.server.Constants.LINK_REL_GET_RECIPE_SCRIPT;
 import static org.eclipse.che.api.machine.server.Constants.LINK_REL_REMOVE_RECIPE;
 import static org.eclipse.che.api.machine.server.Constants.LINK_REL_SEARCH_RECIPES;
+import static org.eclipse.che.api.machine.server.Constants.LINK_REL_UPDATE_RECIPE;
 
 /**
  * Recipe API
@@ -196,6 +197,7 @@ public class RecipeService extends Service {
     @PUT
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
+    @GenerateLink(rel = LINK_REL_UPDATE_RECIPE)
     @RolesAllowed({"user", "system/admin", "system/manager"})
     public RecipeDescriptor updateRecipe(RecipeUpdate update) throws ApiException {
         if (update == null) {

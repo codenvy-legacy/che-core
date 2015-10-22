@@ -10,9 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.gwt.client;
 
+import org.eclipse.che.api.machine.shared.dto.MachineConfigDto;
+import org.eclipse.che.api.machine.shared.dto.MachineStateDto;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.workspace.server.WorkspaceService;
-import org.eclipse.che.api.workspace.shared.dto.CommandDto;
+import org.eclipse.che.api.machine.shared.dto.CommandDto;
 import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.RuntimeWorkspaceDto;
@@ -31,9 +33,9 @@ public interface WorkspaceServiceClient {
     /**
      * Creates new workspace.
      *
-     * @see WorkspaceService#create(UsersWorkspaceDto, String)
+     * @see WorkspaceService#create(WorkspaceConfigDto, String, String)
      */
-    Promise<UsersWorkspaceDto> create(UsersWorkspaceDto newWorkspace, String account);
+    Promise<UsersWorkspaceDto> create(WorkspaceConfigDto newWorkspace, String account);
 
     /**
      * Gets users workspace by id.
@@ -87,14 +89,14 @@ public interface WorkspaceServiceClient {
     /**
      * Starts workspace based on workspace id and environment.
      *
-     * @see WorkspaceService#startById(String, String)
+     * @see WorkspaceService#startById(String, String, String)
      */
     Promise<UsersWorkspaceDto> startById(String id, String envName);
 
     /**
      * Starts workspace based on workspace name and environment.
      *
-     * @see WorkspaceService#startByName(String, String)
+     * @see WorkspaceService#startByName(String, String, String)
      */
     Promise<UsersWorkspaceDto> startByName(String name, String envName);
 
@@ -170,4 +172,11 @@ public interface WorkspaceServiceClient {
      * @see WorkspaceService#deleteProject(String, String)
      */
     Promise<UsersWorkspaceDto> deleteProject(String wsId, String projectName);
+
+    /**
+     * Creates machine in workspace.
+     *
+     * @see WorkspaceService#createMachine(String, MachineConfigDto)
+     */
+    Promise<MachineStateDto> createMachine(String wsId, MachineConfigDto machineConfig);
 }

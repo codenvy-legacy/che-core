@@ -14,6 +14,7 @@ import org.eclipse.che.api.core.factory.FactoryParameter;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
+import org.eclipse.che.api.machine.shared.dto.CommandDto;
 import org.eclipse.che.dto.shared.DTO;
 
 import java.util.List;
@@ -31,8 +32,6 @@ public interface WorkspaceConfigDto extends WorkspaceConfig, Hyperlinks {
     @Override
     @FactoryParameter(obligation = OPTIONAL)
     String getName();
-
-    void setName(String name);
 
     WorkspaceConfigDto withName(String name);
 

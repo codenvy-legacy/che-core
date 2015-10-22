@@ -201,7 +201,7 @@ public class ProjectServiceTest {
         when(testProjectConfigMock.getName()).thenReturn("my_project");
         when(testProjectConfigMock.getDescription()).thenReturn("my test project");
         when(testProjectConfigMock.getType()).thenReturn("my_project_type");
-        when(testProjectConfigMock.getStorage()).thenReturn(DtoFactory.getInstance().createDto(SourceStorageDto.class));
+        when(testProjectConfigMock.getSource()).thenReturn(DtoFactory.getInstance().createDto(SourceStorageDto.class));
         Map<String, List<String>> attr = new HashMap<>();
         for (Attribute attribute : myProjectType.getAttributes()) {
             attr.put(attribute.getName(), attribute.getValue().getList());
@@ -318,7 +318,7 @@ public class ProjectServiceTest {
                                                         .withName("my_module")
                                                         .withDescription("my test module")
                                                         .withType("testGetModules")
-                                                        .withStorage(DtoFactory.getInstance().createDto(SourceStorageDto.class));
+                                                        .withSource(DtoFactory.getInstance().createDto(SourceStorageDto.class));
         projectConfigurations.add(moduleConfig);
 
         ContainerResponse response = launcher.service(GET,
@@ -394,13 +394,13 @@ public class ProjectServiceTest {
                                                          .withName("my_module")
                                                          .withDescription("my test module")
                                                          .withType("testGetModules")
-                                                         .withStorage(DtoFactory.getInstance().createDto(SourceStorageDto.class));
+                                                         .withSource(DtoFactory.getInstance().createDto(SourceStorageDto.class));
         final ProjectConfigDto moduleConfig2 = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
                                                          .withPath("/my_project/my_module2")
                                                          .withName("my_module2")
                                                          .withDescription("my test module")
                                                          .withType("testGetModules")
-                                                         .withStorage(DtoFactory.getInstance().createDto(SourceStorageDto.class));
+                                                         .withSource(DtoFactory.getInstance().createDto(SourceStorageDto.class));
         projectConfigurations.add(moduleConfig1);
         projectConfigurations.add(moduleConfig2);
 
@@ -491,7 +491,7 @@ public class ProjectServiceTest {
                                                         .withName("my_module")
                                                         .withDescription("my test module")
                                                         .withType("my_module_type")
-                                                        .withStorage(DtoFactory.getInstance().createDto(SourceStorageDto.class));
+                                                        .withSource(DtoFactory.getInstance().createDto(SourceStorageDto.class));
         projectConfigurations.add(moduleConfig);
 
         ContainerResponse response =
@@ -564,7 +564,7 @@ public class ProjectServiceTest {
                                                             .withDescription("new project")
                                                             .withType("testCreateProject")
                                                             .withAttributes(attributeValues)
-                                                            .withStorage(DtoFactory.getInstance().createDto(SourceStorageDto.class));
+                                                            .withSource(DtoFactory.getInstance().createDto(SourceStorageDto.class));
         projectConfigurations.add(newProjectConfig);
 
         ContainerResponse response = launcher.service(POST,
@@ -645,7 +645,7 @@ public class ProjectServiceTest {
                                                         .withName("new_module")
                                                         .withDescription("new module")
                                                         .withType("my_project_type")
-                                                        .withStorage(DtoFactory.getInstance().createDto(SourceStorageDto.class));
+                                                        .withSource(DtoFactory.getInstance().createDto(SourceStorageDto.class));
         projectConfigurations.add(moduleConfig);
 
         ContainerResponse response = launcher.service(POST,
@@ -697,7 +697,7 @@ public class ProjectServiceTest {
                                                         .withPath("/new_module")
                                                         .withName("new_module")
                                                         .withType("my_project_type")
-                                                        .withStorage(DtoFactory.getInstance().createDto(SourceStorageDto.class));
+                                                        .withSource(DtoFactory.getInstance().createDto(SourceStorageDto.class));
         projectConfigurations.add(moduleConfig);
 
         pm.createProject(workspace, "new_module", new ProjectConfig("", "my_project_type"), null, null);
@@ -728,7 +728,7 @@ public class ProjectServiceTest {
                                                         .withPath("/another")
                                                         .withName("another")
                                                         .withType("my_project_type")
-                                                        .withStorage(DtoFactory.getInstance().createDto(SourceStorageDto.class));
+                                                        .withSource(DtoFactory.getInstance().createDto(SourceStorageDto.class));
         projectConfigurations.add(moduleConfig);
 
         ContainerResponse response = launcher.service(POST,
@@ -753,7 +753,7 @@ public class ProjectServiceTest {
                                                         .withPath("/todel")
                                                         .withName("todel")
                                                         .withType("my_project_type")
-                                                        .withStorage(DtoFactory.getInstance().createDto(SourceStorageDto.class));
+                                                        .withSource(DtoFactory.getInstance().createDto(SourceStorageDto.class));
         projectConfigurations.add(moduleConfig);
 
         pm.createProject(workspace, "todel", new ProjectConfig("", "my_project_type"), null, null);
@@ -821,7 +821,7 @@ public class ProjectServiceTest {
                                                             .withDescription("updated project")
                                                             .withType("testUpdateProject")
                                                             .withAttributes(attributeValues)
-                                                            .withStorage(DtoFactory.getInstance().createDto(SourceStorageDto.class));
+                                                            .withSource(DtoFactory.getInstance().createDto(SourceStorageDto.class));
         projectConfigurations.add(newProjectConfig);
 
         ContainerResponse response = launcher.service(PUT,
@@ -867,7 +867,7 @@ public class ProjectServiceTest {
                                                             .withDescription("updated project")
                                                             .withType("my_project_type")
                                                             .withAttributes(attributeValues)
-                                                            .withStorage(DtoFactory.getInstance().createDto(SourceStorageDto.class));
+                                                            .withSource(DtoFactory.getInstance().createDto(SourceStorageDto.class));
         projectConfigurations.add(newProjectConfig);
 
         ContainerResponse response = launcher.service(PUT,

@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.core.model.workspace;
 
+import java.util.Map;
+
 /**
  * Defines workspace owned by user.
  *
@@ -31,6 +33,9 @@ public interface UsersWorkspace extends WorkspaceConfig {
      * Returns true if workspace is temporary otherwise returns false.
      */
     boolean isTemporary();
+
+    @Override
+    Map<String, ? extends EnvironmentState> getEnvironments();
 
     /**
      * Returns workspace status.

@@ -11,6 +11,7 @@
 package org.eclipse.che.api.machine.server.spi;
 
 import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.core.model.machine.MachineState;
 import org.eclipse.che.api.core.model.machine.Recipe;
 import org.eclipse.che.api.core.util.LineConsumer;
 import org.eclipse.che.api.machine.server.exception.InvalidInstanceSnapshotException;
@@ -46,22 +47,12 @@ public interface InstanceProvider {
     /**
      * Creates instance from scratch.
      *
-     * @param machineId
-     *         id of machine
+     * @param machineState
+     *         machine description
      * @param recipe
      *         instance creation {@link Recipe}
-     * @param userId
-     *         id of creator of machine
-     * @param workspaceId
-     *         workspace this instance belongs to
-     * @param isDev
-     *         is this machine dev
-     * @param displayName
-     *         user-friendly machine identifier. Doesn't have to be unique.
      * @param creationLogsOutput
      *         output for instance creation logs
-     * @param memorySizeMB
-     *         amount of RAM allocated for machine
      * @return newly created {@link Instance}
      * @throws UnsupportedRecipeException
      *         if specified {@code recipe} is not supported
@@ -71,35 +62,16 @@ public interface InstanceProvider {
      *         if other error occurs
      */
     Instance createInstance(Recipe recipe,
-                            String machineId,
-                            String userId,
-                            String workspaceId,
-                            boolean isDev,
-                            String displayName,
-                            int memorySizeMB,
+                            MachineState machineState,
                             LineConsumer creationLogsOutput) throws UnsupportedRecipeException, InvalidRecipeException, MachineException;
 
     /**
      * Creates instance using implementation specific {@link InstanceKey}.
      *
-     * @param machineId
-     *         id of machine
      * @param instanceKey
      *         implementation specific {@link InstanceKey}
-     * @param userId
-     *         id of creator of machine
-     * @param workspaceId
-     *         workspace this instance belongs to
-     * @param isDev
-     *         is this machine dev
-     * @param displayName
-     *         user-friendly machine identifier. Doesn't have to be unique.
      * @param creationLogsOutput
      *         output for instance creation logs
-     * @param recipe
-     *         instance recipe
-     * @param memorySizeMB
-     *         amount of RAM allocated for machine
      * @return newly created {@link Instance}
      * @throws NotFoundException
      *         if instance described by {@code InstanceKey} doesn't exists
@@ -109,13 +81,7 @@ public interface InstanceProvider {
      *         if other error occurs
      */
     Instance createInstance(InstanceKey instanceKey,
-                            String machineId,
-                            String userId,
-                            String workspaceId,
-                            boolean isDev,
-                            String displayName,
-                            Recipe recipe,
-                            int memorySizeMB,
+                            MachineState machineState,
                             LineConsumer creationLogsOutput) throws NotFoundException, InvalidInstanceSnapshotException, MachineException;
 
     /**

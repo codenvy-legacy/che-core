@@ -47,12 +47,12 @@ public class ProjectConfigImpl implements ProjectConfig {
         type = projectCfg.getType();
         mixinTypes = projectCfg.getMixinTypes();
         attributes = projectCfg.getAttributes();
-        if (projectCfg.getStorage() != null) {
-            storage = new SourceStorageImpl(projectCfg.getStorage()
+        if (projectCfg.getSource() != null) {
+            storage = new SourceStorageImpl(projectCfg.getSource()
                                                       .getType(),
-                                            projectCfg.getStorage()
+                                            projectCfg.getSource()
                                                       .getLocation(),
-                                            projectCfg.getStorage()
+                                            projectCfg.getSource()
                                                       .getParameters());
         }
     }
@@ -118,7 +118,7 @@ public class ProjectConfigImpl implements ProjectConfig {
     }
 
     @Override
-    public SourceStorage getStorage() {
+    public SourceStorage getSource() {
         return storage;
     }
 

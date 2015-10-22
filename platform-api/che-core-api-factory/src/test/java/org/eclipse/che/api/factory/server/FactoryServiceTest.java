@@ -358,7 +358,7 @@ public class FactoryServiceTest {
                                .withWorkspace(dto.createDto(WorkspaceConfigDto.class)
                                                  .withProjects(Collections.singletonList(dto.createDto(
                                                          ProjectConfigDto.class)
-                                                                                            .withStorage(
+                                                                                            .withSource(
                                                                                                     dto.createDto(SourceStorageDto.class)
                                                                                                        .withType("git")
                                                                                                        .withLocation(
@@ -387,7 +387,7 @@ public class FactoryServiceTest {
                                .withWorkspace(dto.createDto(WorkspaceConfigDto.class)
                                                  .withProjects(Collections.singletonList(dto.createDto(
                                                          ProjectConfigDto.class)
-                                                                                            .withStorage(
+                                                                                            .withSource(
                                                                                                     dto.createDto(SourceStorageDto.class)
                                                                                                        .withType("git")
                                                                                                        .withLocation(
@@ -648,7 +648,7 @@ public class FactoryServiceTest {
                                .withWorkspace(dto.createDto(WorkspaceConfigDto.class)
                                                  .withProjects(Collections.singletonList(dto.createDto(
                                                          ProjectConfigDto.class)
-                                                                                            .withStorage(
+                                                                                            .withSource(
                                                                                                     dto.createDto(SourceStorageDto.class)
                                                                                                        .withType("git")
                                                                                                        .withLocation(
@@ -998,7 +998,7 @@ public class FactoryServiceTest {
                   .withWorkspace(dto.createDto(WorkspaceConfigDto.class)
                                     .withProjects(Collections.singletonList(dto.createDto(
                                             ProjectConfigDto.class)
-                                                                               .withStorage(
+                                                                               .withSource(
                                                                                        dto.createDto(
                                                                                                SourceStorageDto.class)
                                                                                           .withType(

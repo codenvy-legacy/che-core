@@ -14,9 +14,9 @@ import com.google.common.io.ByteStreams;
 
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.model.machine.Server;
 import org.eclipse.che.api.machine.server.MachineManager;
 import org.eclipse.che.api.machine.server.spi.Instance;
-import org.eclipse.che.api.machine.shared.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -125,7 +125,7 @@ public class MachineExtensionProxyServlet extends HttpServlet {
         }
 
         final Instance machine = machineManager.getDevMachine(workspaceId);
-        final Server server = machine.getServers().get(Integer.toString(extServicesPort));
+        final Server server = machine.getMetadata().getServers().get(Integer.toString(extServicesPort));
         if (server == null) {
             throw new ServerException("No extension server found in machine.");
         }

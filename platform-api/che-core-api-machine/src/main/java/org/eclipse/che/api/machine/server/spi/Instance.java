@@ -11,16 +11,12 @@
 package org.eclipse.che.api.machine.server.spi;
 
 import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.core.model.machine.Machine;
+import org.eclipse.che.api.core.model.machine.MachineStatus;
 import org.eclipse.che.api.core.util.LineConsumer;
 import org.eclipse.che.api.machine.server.exception.MachineException;
-import org.eclipse.che.api.machine.shared.Machine;
-import org.eclipse.che.api.machine.shared.MachineStatus;
-import org.eclipse.che.api.machine.shared.ProjectBinding;
-import org.eclipse.che.api.machine.shared.Server;
 
-import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Representation of machine instance in implementation specific way.
@@ -33,19 +29,6 @@ public interface Instance extends Machine {
     void setStatus(MachineStatus status);
 
     LineConsumer getLogger();
-
-    /**
-     * Get metadata of the instance
-     *
-     * @throws MachineException
-     *         if error occurs on retrieving metadata
-     */
-    InstanceMetadata getMetadata() throws MachineException;
-
-    /**
-     * Returns mapping of exposed ports to {link Server}
-     */
-    Map<String, Server> getServers() throws MachineException;
 
     /**
      * Get {@link InstanceProcess} by its id
@@ -99,22 +82,6 @@ public interface Instance extends Machine {
      *         if error occurs on instance destroying
      */
     void destroy() throws MachineException;
-
-    /**
-     * Binds project to machine instance
-     *
-     * @param project
-     *         project that should be bound to machine instance
-     */
-    void bindProject(ProjectBinding project) throws MachineException;
-
-    /**
-     * Unbinds project from machine instance
-     *
-     * @param project
-     *         project that should be unbound from machine instance
-     */
-    void unbindProject(ProjectBinding project) throws MachineException, NotFoundException;
 
     /**
      * Returns {@link InstanceNode} that represents server where machine is launched

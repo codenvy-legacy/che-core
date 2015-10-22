@@ -65,8 +65,8 @@ public abstract class FactoryBaseValidator {
      */
     protected void validateSource(Factory factory) throws ConflictException {
         for (ProjectConfigDto project : factory.getWorkspace().getProjects()) {
-            String type = project.getStorage().getType();
-            String location = project.getStorage().getLocation();
+            String type = project.getSource().getType();
+            String location = project.getSource().getLocation();
             String parameterTypeName = "project.storage.type";
             String parameterLocationName = "project.storage.location";
 

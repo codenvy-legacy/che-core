@@ -14,11 +14,12 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import org.eclipse.che.api.local.storage.LocalStorageFactory;
+import org.eclipse.che.api.machine.server.model.impl.CommandImpl;
+import org.eclipse.che.api.machine.server.model.impl.LimitsImpl;
+import org.eclipse.che.api.machine.server.model.impl.MachineConfigImpl;
+import org.eclipse.che.api.machine.server.model.impl.MachineSourceImpl;
 import org.eclipse.che.api.machine.server.recipe.RecipeImpl;
-import org.eclipse.che.api.workspace.server.model.impl.CommandImpl;
 import org.eclipse.che.api.workspace.server.model.impl.EnvironmentImpl;
-import org.eclipse.che.api.workspace.server.model.impl.MachineConfigImpl;
-import org.eclipse.che.api.workspace.server.model.impl.MachineSourceImpl;
 import org.eclipse.che.api.workspace.server.model.impl.ProjectConfigImpl;
 import org.eclipse.che.api.workspace.server.model.impl.SourceStorageImpl;
 import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
@@ -80,6 +81,7 @@ public class LocalWorkspaceDaoTest {
         workspaceDao.loadWorkspaces();
 
         final UsersWorkspaceImpl result = workspaceDao.get(workspace.getId());
+        System.out.println(result.equals(workspace));
         assertEquals(result, workspace);
     }
 
@@ -94,16 +96,12 @@ public class LocalWorkspaceDaoTest {
                                                                     "dev-machine",
                                                                     "machine-type",
                                                                     machineSource,
-                                                                    512,
-                                                                    "output-channel",
-                                                                    "status-channel");
+                                                                    new LimitsImpl(512));
         final MachineConfigImpl machineCfg2 = new MachineConfigImpl(false,
                                                                     "non-dev-machine",
                                                                     "machine-type-2",
                                                                     machineSource,
-                                                                    2048,
-                                                                    "output-channel-2",
-                                                                    "status-channel-2");
+                                                                    new LimitsImpl(2048));
 
         final EnvironmentImpl env1 = new EnvironmentImpl("my-environment", recipe, asList(machineCfg1, machineCfg2));
         final EnvironmentImpl env2 = new EnvironmentImpl("my-environment-2", recipe, singletonList(machineCfg1));
@@ -134,9 +132,9 @@ public class LocalWorkspaceDaoTest {
 
         // commands
         final List<CommandImpl> commands = new ArrayList<>(3);
-        commands.add(new CommandImpl("MCI", "mvn clean install", "maven", "/path/to/workingDir"));
-        commands.add(new CommandImpl("bower install", "bower install", "bower", "/path/to/workingDir"));
-        commands.add(new CommandImpl("build without tests", "mvn clean install -Dmaven.test.skip", "maven", "/path"));
+        commands.add(new CommandImpl("MCI", "mvn clean install", "maven"));
+        commands.add(new CommandImpl("bower install", "bower install", "bower"));
+        commands.add(new CommandImpl("build without tests", "mvn clean install -Dmaven.test.skip", "maven"));
 
         // attributes
         final Map<String, String> attributes = new HashMap<>(8);

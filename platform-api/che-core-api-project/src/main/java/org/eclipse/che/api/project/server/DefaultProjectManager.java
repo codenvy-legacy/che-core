@@ -15,6 +15,7 @@ import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.notification.EventSubscriber;
 import org.eclipse.che.api.core.rest.HttpJsonHelper;
@@ -37,7 +38,7 @@ import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.vfs.server.Path;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
 import org.eclipse.che.api.vfs.server.observation.VirtualFileEvent;
-import org.eclipse.che.api.workspace.server.WorkspaceService;
+import org.eclipse.che.api.workspace.server.*;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
@@ -440,7 +441,7 @@ public final class DefaultProjectManager implements ProjectManager {
         final ProjectConfigDto projectConfig = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
                                                          .withPath(project.getPath())
                                                          .withName(project.getName())
-                                                         .withStorage(DtoFactory.getInstance().createDto(SourceStorageDto.class));
+                                                         .withSource(DtoFactory.getInstance().createDto(SourceStorageDto.class));
 
         ProjectTypes types = new ProjectTypes(project, config.getTypeId(), config.getMixinTypes(), this);
         types.removeTransient();
@@ -549,7 +550,7 @@ public final class DefaultProjectManager implements ProjectManager {
         final Link link = DtoFactory.getInstance().createDto(Link.class).withMethod("PUT").withHref(href);
 
         try {
-            HttpJsonHelper.request(UsersWorkspaceDto.class, link, workspaceConfig);
+            HttpJsonHelper.request(WorkspaceConfigDto.class, link, workspaceConfig);
         } catch (IOException | ApiException e) {
             throw new ServerException(e.getMessage());
         }
@@ -840,7 +841,7 @@ public final class DefaultProjectManager implements ProjectManager {
                                   projectConfigDto.setPath(projectConfigDto.getPath().replaceFirst(oldProjectPath, entry.getPath()));
                               });
                 // update workspace with a new WorkspaceConfig
-                updateWorkspace(workspace, usersWorkspace);
+                updateWorkspace(workspace, org.eclipse.che.api.workspace.server.DtoConverter.asDto((WorkspaceConfig)usersWorkspace));
             }
 
             final String projectName = projectPath(path);
