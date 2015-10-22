@@ -3036,6 +3036,16 @@ public class ProjectServiceTest {
         projectService.checkProjectName("!#project-name#!");
     }
 
+    @Test
+    public void shouldNotThrowExceptionIfRunnerIsSystemScope() throws Exception {
+        RunnersDescriptor runnersDescriptor = mock(RunnersDescriptor.class);
+        ProjectService projectService = spy(new ProjectService());
+        RunnerConfiguration config = mock(RunnerConfiguration.class);
+        when(runnersDescriptor.getConfigs()).thenReturn(ImmutableMap.of("system:/javascript/web/simple", config));
+
+        projectService.checkProjectRunners(runnersDescriptor);
+    }
+
     @Test(expectedExceptions = BadRequestException.class, expectedExceptionsMessageRegExp = "Runner name !#runenr#! is invalid")
     public void shouldThrowExceptionWhenRunnerNameIsInvalid() throws Exception {
         RunnersDescriptor runnersDescriptor = mock(RunnersDescriptor.class);

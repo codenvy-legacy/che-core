@@ -306,7 +306,7 @@ public abstract class FactoryBaseValidator {
         NewProject project = factory.getProject();
         if (project != null && project.getRunners() != null && project.getRunners().getConfigs() != null) {
             for (String runnerName : project.getRunners().getConfigs().keySet()) {
-                if (!RUNNER_NAME_VALIDATOR.matcher(runnerName).matches()) {
+                if (!runnerName.startsWith("system:") && !RUNNER_NAME_VALIDATOR.matcher(runnerName).matches()) {
                     throw new BadRequestException("Invalid runner name " + runnerName);
                 }
             }

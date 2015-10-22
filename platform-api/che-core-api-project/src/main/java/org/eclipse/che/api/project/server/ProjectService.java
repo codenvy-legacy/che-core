@@ -1572,7 +1572,7 @@ public class ProjectService extends Service {
     void checkProjectRunners(RunnersDescriptor runnersDescriptor) throws BadRequestException {
         if (runnersDescriptor != null && runnersDescriptor.getConfigs() != null && !runnersDescriptor.getConfigs().isEmpty()) {
             for (String runnerName : runnersDescriptor.getConfigs().keySet()) {
-                if (!RUNNER_NAME_VALIDATOR.matcher(runnerName).matches()) {
+                if (!runnerName.startsWith("system:") && !RUNNER_NAME_VALIDATOR.matcher(runnerName).matches()) {
                     throw new BadRequestException("Runner name " + runnerName + " is invalid");
                 }
             }
