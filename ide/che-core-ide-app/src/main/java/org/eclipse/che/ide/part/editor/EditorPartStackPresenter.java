@@ -41,6 +41,7 @@ import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -70,6 +71,7 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
     private final Provider<EditorAgent>     editorAgentProvider;
 
     private PartPresenter activePart;
+    private EditorPartStackView view;
 
     @Inject
     public EditorPartStackPresenter(final EditorPartStackView view,
@@ -82,6 +84,7 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
         //noinspection ConstantConditions
         super(eventBus, partStackEventHandler, tabItemFactory, partsComparator, view, null);
 
+        this.view = view;
         this.listButton = listButton;
         this.listButton.setDelegate(this);
 
@@ -247,4 +250,15 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
         });
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public PartPresenter getActiveEditor() {
+        return activePart;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<PartPresenter> getEditors() {
+        return view.getEditors();
+    }
 }
