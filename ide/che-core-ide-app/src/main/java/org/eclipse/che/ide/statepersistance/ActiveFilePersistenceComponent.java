@@ -22,9 +22,10 @@ import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.NavigableMap;
+import java.util.Map;
 
 import static org.eclipse.che.ide.actions.OpenFileAction.FILE_PARAM_ID;
 
@@ -57,13 +58,14 @@ public class ActiveFilePersistenceComponent implements PersistenceComponent {
         final EditorAgent editorAgent = editorAgentProvider.get();
         final List<ActionDescriptor> actions = new ArrayList<>();
         final String openFileActionId = actionManager.getId(openFileAction);
-        final NavigableMap<String, EditorPartPresenter> openedEditors = editorAgent.getOpenedEditors();
+        final Map<String, EditorPartPresenter> openedEditors = editorAgent.getOpenedEditors();
         final EditorPartPresenter activeEditor = editorAgent.getActiveEditor();
 
         if (activeEditor != null) {
             final String activeFilePath = activeEditor.getEditorInput().getFile().getPath();
             // save active file only if it's not the last opened file
-            String lastOpenedFile = openedEditors.lastKey();
+            EditorPartPresenter lastEditorPart = getLastEditor(openedEditors.values());
+            String lastOpenedFile = lastEditorPart.getEditorInput().getFile().getPath();
             if (!activeFilePath.equals(lastOpenedFile) && activeFilePath.startsWith(projectPath)) {
 
                 final String activeFileRelPath = activeFilePath.replaceFirst(projectPath, "");
@@ -74,5 +76,13 @@ public class ActiveFilePersistenceComponent implements PersistenceComponent {
             }
         }
         return actions;
+    }
+
+    private EditorPartPresenter getLastEditor(Collection<EditorPartPresenter> openedEditors) {
+        EditorPartPresenter result = null;
+        for (EditorPartPresenter editor: openedEditors) {
+            result = editor;
+        }
+        return result;
     }
 }

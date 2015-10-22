@@ -17,7 +17,7 @@ import org.eclipse.che.ide.api.project.tree.VirtualFile;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
-import java.util.NavigableMap;
+import java.util.Map;
 
 /**
  * Editor Agent manages Editors, it allows to open a new editor with given file,
@@ -66,7 +66,7 @@ public interface EditorAgent {
      * @return map with all opened editors
      */
     @NotNull
-    NavigableMap<String, EditorPartPresenter> getOpenedEditors();
+    Map<String, EditorPartPresenter> getOpenedEditors();
 
     /**
      * Saves all opened files whose content have changed since the last save operation
