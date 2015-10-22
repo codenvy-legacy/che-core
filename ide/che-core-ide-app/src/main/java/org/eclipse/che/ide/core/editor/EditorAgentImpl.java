@@ -59,10 +59,10 @@ import org.eclipse.che.ide.util.loging.Log;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.NavigableMap;
-import java.util.TreeMap;
+import java.util.Map;
 
 import static org.eclipse.che.ide.api.event.FileEvent.FileOperation.CLOSE;
 import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
@@ -73,7 +73,7 @@ import static org.eclipse.che.ide.api.parts.PartStackType.EDITING;
 @Singleton
 public class EditorAgentImpl implements EditorAgent {
 
-    private final NavigableMap<String, EditorPartPresenter> openedEditors;
+    private final Map<String, EditorPartPresenter> openedEditors;
     /** Used to notify {@link EditorAgentImpl} that editor has closed */
     private final EditorPartCloseHandler editorClosed     = new EditorPartCloseHandler() {
         @Override
@@ -146,7 +146,7 @@ public class EditorAgentImpl implements EditorAgent {
         this.nodeManager = nodeManager;
         this.projectService = projectService;
         this.unmarshallerFactory = unmarshallerFactory;
-        openedEditors = new TreeMap<>();
+        openedEditors = new LinkedHashMap<>();
 
         bind();
     }
@@ -286,6 +286,7 @@ public class EditorAgentImpl implements EditorAgent {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void openEditor(@NotNull VirtualFile file, @NotNull OpenEditorCallback callback) {
         doOpen(file, callback);
@@ -327,6 +328,7 @@ public class EditorAgentImpl implements EditorAgent {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void activateEditor(@NotNull EditorPartPresenter editor) {
         workspace.setActivePart(editor);
@@ -365,7 +367,7 @@ public class EditorAgentImpl implements EditorAgent {
     /** {@inheritDoc} */
     @NotNull
     @Override
-    public NavigableMap<String, EditorPartPresenter> getOpenedEditors() {
+    public Map<String, EditorPartPresenter> getOpenedEditors() {
         return openedEditors;
     }
 
