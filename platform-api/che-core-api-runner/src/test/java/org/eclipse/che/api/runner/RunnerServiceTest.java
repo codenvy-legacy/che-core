@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.api.runner;
 
+import org.eclipse.che.api.account.server.dao.AccountDao;
+import org.eclipse.che.api.account.server.dao.Member;
+import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.project.shared.dto.RunnerEnvironment;
 import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentLeaf;
@@ -17,6 +20,8 @@ import org.eclipse.che.api.project.shared.dto.RunnerEnvironmentTree;
 import org.eclipse.che.api.runner.dto.ApplicationProcessDescriptor;
 import org.eclipse.che.api.runner.dto.RunRequest;
 import org.eclipse.che.api.runner.dto.RunnerDescriptor;
+import org.eclipse.che.api.workspace.server.dao.Workspace;
+import org.eclipse.che.api.workspace.server.dao.WorkspaceDao;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.user.User;
 import org.eclipse.che.commons.user.UserImpl;
@@ -33,10 +38,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
@@ -47,7 +54,11 @@ import static org.testng.Assert.assertNotNull;
 public class RunnerServiceTest {
     private DtoFactory dtoFactory = DtoFactory.getInstance();
     @Mock
-    private RunQueue runQueue;
+    private RunQueue      runQueue;
+    @Mock
+    private WorkspaceDao  workspaceDao;
+    @Mock
+    private AccountDao    accountDao;
     @InjectMocks
     private RunnerService service;
 
@@ -238,12 +249,7 @@ public class RunnerServiceTest {
 
         return runQueueTask;
     }
-
-    /**
-     * Check running processes
-     *
-     * @throws Exception
-     */
+    
     @Test
     public void testGetRunningProcesses() throws Exception {
 
@@ -269,12 +275,12 @@ public class RunnerServiceTest {
         doReturn(tasks).when(runQueue).getTasks();
 
         // we should have all the processes without specifying anything
-        List<ApplicationProcessDescriptor> processes = service.getRunningProcesses(null, null);
+        List<ApplicationProcessDescriptor> processes = service.getRunningProcesses(null, null, null);
         // list is 3 as we don't have task for dummy user
         assertEquals(processes.size(), 3);
 
         // we should have all the processes without specifying anything
-        processes = service.getRunningProcesses(workspaceCodenvy, null);
+        processes = service.getRunningProcesses(workspaceCodenvy, null, null);
         // list is 1 for this workspace
         assertEquals(processes.size(), 1);
         ApplicationProcessDescriptor process = processes.get(0);
@@ -283,27 +289,66 @@ public class RunnerServiceTest {
 
 
         // we should have all the processes without specifying anything
-        processes = service.getRunningProcesses(workspaceCodenvy, projectA);
+        processes = service.getRunningProcesses(workspaceCodenvy, projectA, null);
         // list is 1 as we only have one matching workspace + project
         assertEquals(processes.size(), 1);
 
 
         // we should have all the processes without specifying anything
-        processes = service.getRunningProcesses(null, projectA);
+        processes = service.getRunningProcesses(null, projectA, null);
         // list is 2 as we have two workspaces with this project name
         assertEquals(processes.size(), 2);
 
         // no workspace with that name
-        processes = service.getRunningProcesses("dummy", null);
+        processes = service.getRunningProcesses("dummy", null, null);
         assertEquals(processes.size(), 0);
 
         // no project with that name
-        processes = service.getRunningProcesses(null, "project");
+        processes = service.getRunningProcesses(null, "project", null);
         assertEquals(processes.size(), 0);
 
         // no project with that workspace + name
-        processes = service.getRunningProcesses("dummy", "project");
+        processes = service.getRunningProcesses("dummy", "project", null);
         assertEquals(processes.size(), 0);
+    }
+
+    @Test
+    public void shouldGetRunningProcessWithAccount() throws Exception {
+        User user = new UserImpl("User", "id-2314", "token-2323", Collections.<String>emptyList(), false);
+        EnvironmentContext context = EnvironmentContext.getCurrent();
+        context.setUser(user);
+        Workspace workspace = mock(Workspace.class);
+        Workspace dummyWorkspace = mock(Workspace.class);
+        Member member = mock(Member.class);
+        List<RunQueueTask> tasks = Collections.singletonList(createTask(user, "workspaceId", "project"));
+
+        doReturn(tasks).when(runQueue).getTasks();
+        doReturn(Collections.singletonList(member)).when(accountDao).getMembers("accountId");
+        doReturn("id-2314").when(member).getUserId();
+        doReturn(Collections.singletonList("account/owner")).when(member).getRoles();
+        doReturn("accountId").when(workspace).getAccountId();
+        doReturn("dummyAccountId").when(dummyWorkspace).getAccountId();
+        doReturn(workspace).when(workspaceDao).getById("workspaceId");
+        doReturn(dummyWorkspace).when(workspaceDao).getById("dummyWorkspace");
+
+        List<ApplicationProcessDescriptor> processes = service.getRunningProcesses(null, null, "accountId");
+        assertEquals(processes.size(), 1);
+    }
+
+    @Test(expectedExceptions = ForbiddenException.class)
+    public void shouldThrowForbiddenExceptionWhenIsNotAnAccountOwner() throws Exception {
+        User user = new UserImpl("User", "id-2314", "token-2323", Collections.<String>emptyList(), false);
+        EnvironmentContext context = EnvironmentContext.getCurrent();
+        context.setUser(user);
+        Member member = mock(Member.class);
+        List<RunQueueTask> tasks = Collections.singletonList(createTask(user, "workspaceId", "project"));
+
+        doReturn(tasks).when(runQueue).getTasks();
+        doReturn(Collections.singletonList(member)).when(accountDao).getMembers("accountId");
+        doReturn("id-2314").when(member).getUserId();
+        doReturn(Collections.singletonList("account/member")).when(member).getRoles();
+
+        service.getRunningProcesses(null, null, "accountId");
     }
 
     private List<RemoteRunnerServer> createRunners() throws Exception {
