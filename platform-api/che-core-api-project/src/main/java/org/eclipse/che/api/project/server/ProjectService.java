@@ -58,6 +58,8 @@ import org.eclipse.che.api.vfs.server.search.QueryExpression;
 import org.eclipse.che.api.vfs.server.search.SearcherProvider;
 import org.eclipse.che.api.vfs.shared.dto.AccessControlEntry;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.ws.rs.ExtMediaType;
 import org.eclipse.che.dto.server.DtoFactory;
@@ -356,11 +358,17 @@ public class ProjectService extends Service {
                                            @PathParam("ws-id") String workspace,
                                            @ApiParam(value = "Path to updated project", required = true)
                                            @PathParam("path") String path,
-                                           ProjectUpdate update)
+                                           ProjectConfigDto projectConfigDto)
             throws NotFoundException, ConflictException, ForbiddenException, ServerException, IOException {
-        ProjectConfig newConfig = DtoConverter.fromProjectUpdate(update, projectManager.getProjectTypeRegistry());
-        String newVisibility = update.getVisibility();
-        Project project = projectManager.updateProject(workspace, path, newConfig, newVisibility);
+        ProjectConfig newConfig = DtoConverter.fromProjectConfigDto(projectConfigDto, projectManager.getProjectTypeRegistry());
+        Project project;
+
+        if (projectManager.getProject(workspace, path) == null) {
+            project = projectManager.convertFolderToProject(workspace, path, newConfig, null);
+        } else {
+            project = projectManager.updateProject(workspace, path, newConfig, null);
+        }
+
         return DtoConverter.toProjectDescriptor(project,
                                                 getServiceContext().getServiceUriBuilder(),
                                                 projectManager.getProjectTypeRegistry(),
@@ -757,10 +765,9 @@ public class ProjectService extends Service {
     @ApiOperation(value = "Import resource",
             notes = "Import resource. JSON with a designated importer and project location is sent. It is possible to import from " +
                     "VCS or ZIP",
-            response = ImportResponse.class,
             position = 17)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = ""),
+            @ApiResponse(code = 201, message = ""),
             @ApiResponse(code = 401, message = "User not authorized to call this operation"),
             @ApiResponse(code = 403, message = "Forbidden operation"),
             @ApiResponse(code = 409, message = "Resource already exists"),
@@ -769,21 +776,20 @@ public class ProjectService extends Service {
     @Path("/import/{path:.*}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ImportResponse importProject(@ApiParam(value = "Workspace ID", required = true)
+    public void importProject(@ApiParam(value = "Workspace ID", required = true)
                                         @PathParam("ws-id") String workspace,
                                         @ApiParam(value = "Path in the project", required = true)
                                         @PathParam("path") String path,
                                         @ApiParam(value = "Force rewrite existing project", allowableValues = "true,false")
                                         @QueryParam("force") boolean force,
-                                        ImportProject importProject)
+                                        SourceStorageDto sourceStorage)
             throws ConflictException, ForbiddenException, UnauthorizedException, IOException, ServerException, NotFoundException,
                    BadRequestException {
 
-        final ImportSourceDescriptor projectSource = importProject.getSource().getProject();
-        final ProjectImporter importer = importers.getImporter(projectSource.getType());
+        final ProjectImporter importer = importers.getImporter(sourceStorage.getType());
         if (importer == null) {
             throw new ServerException(String.format("Unable import sources project from '%s'. Sources type '%s' is not supported.",
-                                                    projectSource.getLocation(), projectSource.getType()));
+                                                    sourceStorage.getLocation(), sourceStorage.getType()));
         }
         // Preparing websocket output publisher to broadcast output of import process to the ide clients while importing
         final LineConsumerFactory outputOutputConsumerFactory = () -> new ProjectImportOutputWSLineConsumer(path, workspace, 300);
@@ -797,10 +803,7 @@ public class ProjectService extends Service {
         filesBuffer.addToBufferRecursive(virtualFile.getVirtualFile());
 
         final FolderEntry baseProjectFolder = (FolderEntry)virtualFile;
-        importer.importSources(baseProjectFolder, projectSource.getLocation(), projectSource.getParameters(), outputOutputConsumerFactory);
-
-        //project source already imported going to configure project
-        return configureProject(importProject, baseProjectFolder, workspace, creationDate);
+        importer.importSources(baseProjectFolder, sourceStorage.getLocation(), null, outputOutputConsumerFactory);
     }
 
     private VirtualFileEntry getVirtualFile(String workspace, String path, boolean force)
