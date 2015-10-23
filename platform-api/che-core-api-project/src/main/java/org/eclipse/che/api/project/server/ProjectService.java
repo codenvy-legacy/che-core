@@ -30,24 +30,17 @@ import org.eclipse.che.api.core.rest.annotations.Description;
 import org.eclipse.che.api.core.rest.annotations.GenerateLink;
 import org.eclipse.che.api.core.rest.annotations.Required;
 import org.eclipse.che.api.core.util.LineConsumerFactory;
-import org.eclipse.che.api.project.server.handlers.PostImportProjectHandler;
 import org.eclipse.che.api.project.server.handlers.ProjectHandlerRegistry;
 import org.eclipse.che.api.project.server.notification.ProjectItemModifiedEvent;
 import org.eclipse.che.api.project.server.type.AttributeValue;
-import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
 import org.eclipse.che.api.project.shared.dto.CopyOptions;
-import org.eclipse.che.api.project.shared.dto.GeneratorDescription;
 import org.eclipse.che.api.project.shared.dto.ImportProject;
-import org.eclipse.che.api.project.shared.dto.ImportResponse;
-import org.eclipse.che.api.project.shared.dto.ImportSourceDescriptor;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.MoveOptions;
 import org.eclipse.che.api.project.shared.dto.NewProject;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.api.project.shared.dto.ProjectModule;
 import org.eclipse.che.api.project.shared.dto.ProjectProblem;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
-import org.eclipse.che.api.project.shared.dto.ProjectUpdate;
 import org.eclipse.che.api.project.shared.dto.Source;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.project.shared.dto.TreeElement;
@@ -236,22 +229,15 @@ public class ProjectService extends Service {
                                            @Required
                                            @Description("project name")
                                            @QueryParam("name") String name,
-                                           @Description("descriptor of project") NewProject newProject)
+                                           @Description("descriptor of project") ProjectConfigDto projectConfigDto)
             throws ConflictException, ForbiddenException, ServerException, NotFoundException {
 
-        final GeneratorDescription generatorDescription = newProject.getGeneratorDescription();
-        Map<String, String> options;
-        if (generatorDescription == null) {
-            options = Collections.emptyMap();
-        } else {
-            options = generatorDescription.getOptions();
-        }
+        Map<String, String> options = Collections.emptyMap();
 
         final Project project = projectManager.createProject(workspace, name,
-                                                             DtoConverter.fromProjectUpdate(newProject,
-                                                                                            projectManager.getProjectTypeRegistry()),
-                                                             options,
-                                                             newProject.getVisibility());
+                                                             DtoConverter.fromProjectConfigDto(projectConfigDto,
+                                                                                               projectManager.getProjectTypeRegistry()),
+                                                             options);
 
         final ProjectDescriptor descriptor = DtoConverter.toProjectDescriptor(project,
                                                                               getServiceContext().getServiceUriBuilder(),
@@ -318,16 +304,15 @@ public class ProjectService extends Service {
                                           @PathParam("path") String parentPath,
                                           @ApiParam(value = "New module name", required = true)
                                           @QueryParam("path") String path,
-                                          NewProject newProject)
+                                          ProjectConfigDto projectConfigDto)
             throws NotFoundException, ConflictException, ForbiddenException, ServerException {
 
         filesBuffer.addToBuffer(path);
 
         Project module = projectManager.addModule(workspace, parentPath, path,
-                                                  (newProject == null) ? null : DtoConverter
-                                                          .fromProjectUpdate(newProject, projectManager.getProjectTypeRegistry()),
-                                                  (newProject == null) ? null : newProject.getGeneratorDescription().getOptions(),
-                                                  (newProject == null) ? null : newProject.getVisibility());
+                                                  (projectConfigDto == null) ? null : DtoConverter
+                                                          .fromProjectConfigDto(projectConfigDto, projectManager.getProjectTypeRegistry()),
+                                                  null);
 
         final ProjectDescriptor descriptor = DtoConverter.toProjectDescriptor(module,
                                                                               getServiceContext().getServiceUriBuilder(),
@@ -364,9 +349,28 @@ public class ProjectService extends Service {
         Project project;
 
         if (projectManager.getProject(workspace, path) == null) {
-            project = projectManager.convertFolderToProject(workspace, path, newConfig, null);
+
+            FolderEntry baseProjectFolder = (FolderEntry)getVirtualFile(workspace, path, false);
+            try {
+                project = projectManager.convertFolderToProject(workspace, path, newConfig);
+
+                reindexProject(System.currentTimeMillis(), (FolderEntry)getVirtualFile(workspace, path, false), project);
+
+                eventService.publish(new ProjectCreatedEvent(project.getWorkspace(), project.getPath()));
+                logProjectCreatedEvent(projectConfigDto.getName(), projectConfigDto.getType());
+            } catch (ConflictException | ForbiddenException | ServerException | NotFoundException e) {
+                project = new NotValidProject(baseProjectFolder, projectManager);
+
+                ProjectDescriptor projectDescriptor = DtoConverter.toProjectDescriptor(project,
+                                                                     getServiceContext().getServiceUriBuilder(),
+                                                                     projectManager.getProjectTypeRegistry(),
+                                                                     workspace);
+                ProjectProblem problem = DtoFactory.getInstance().createDto(ProjectProblem.class).withCode(1).withMessage(e.getMessage());
+                projectDescriptor.setProblems(Collections.singletonList(problem));
+                return projectDescriptor;
+            }
         } else {
-            project = projectManager.updateProject(workspace, path, newConfig, null);
+            project = projectManager.updateProject(workspace, path, newConfig);
         }
 
         return DtoConverter.toProjectDescriptor(project,
@@ -796,7 +800,6 @@ public class ProjectService extends Service {
 
         // Not all importers uses virtual file system API. In this case virtual file system API doesn't get events and isn't able to set
         // correct creation time. Need do it manually.
-        long creationDate = System.currentTimeMillis();
         VirtualFileEntry virtualFile = getVirtualFile(workspace, path, force);
 
         filesBuffer.addToBuffer(path);
@@ -823,79 +826,7 @@ public class ProjectService extends Service {
         return virtualFile;
     }
 
-    private ImportResponse configureProject(ImportProject importProject, FolderEntry baseProjectFolder, String workspace, long creationDate)
-            throws IOException, ForbiddenException, ConflictException, NotFoundException, ServerException, BadRequestException {
-        NewProject newProject = importProject.getProject();
-        if (newProject == null) {
-            throw new BadRequestException("A project being imported cannot be null");
-        }
-        ImportResponse importResponse = DtoFactory.getInstance().createDto(ImportResponse.class);
-        ProjectTypeRegistry projectTypeRegistry = projectManager.getProjectTypeRegistry();
-        Project project;
-        ProjectDescriptor projectDescriptor;
-        ProjectConfig projectConfig;
-        String visibility = null;
 
-        //try convert folder to project with giving config
-        try {
-            visibility = newProject.getVisibility();
-            projectConfig = DtoConverter.fromProjectUpdate(newProject, projectTypeRegistry);
-            project = projectManager.convertFolderToProject(workspace,
-                                                            baseProjectFolder.getPath(),
-                                                            projectConfig,
-                                                            visibility);
-
-            for (ProjectModule projectModule : newProject.getModules()) {
-                ProjectConfig moduleConfig = DtoConverter.toProjectConfig(projectModule, projectManager.getProjectTypeRegistry());
-                projectManager.convertFolderToProject(workspace,
-                                                      baseProjectFolder.getPath() +
-                                                      projectModule.getPath(),
-                                                      moduleConfig,
-                                                      visibility);
-
-                projectManager.addModule(workspace,
-                                         baseProjectFolder.getPath(),
-                                         baseProjectFolder.getPath() +
-                                         projectModule.getPath(),
-                                         moduleConfig,
-                                         null,
-                                         visibility);
-            }
-
-            projectDescriptor = DtoConverter.toProjectDescriptor(project,
-                                                                 getServiceContext().getServiceUriBuilder(),
-                                                                 projectManager.getProjectTypeRegistry(),
-                                                                 workspace);
-            PostImportProjectHandler postImportProjectHandler =
-                    projectHandlerRegistry.getPostImportProjectHandler(projectDescriptor.getType());
-            if (postImportProjectHandler != null) {
-                postImportProjectHandler.onProjectImported(project.getBaseFolder());
-            }
-        } catch (ConflictException | ForbiddenException | ServerException | NotFoundException e) {
-            project = new NotValidProject(baseProjectFolder, projectManager);
-            project.setVisibility(visibility);
-
-            projectDescriptor = DtoConverter.toProjectDescriptor(project,
-                                                                 getServiceContext().getServiceUriBuilder(),
-                                                                 projectManager.getProjectTypeRegistry(),
-                                                                 workspace);
-            ProjectProblem problem = DtoFactory.getInstance().createDto(ProjectProblem.class).withCode(1).withMessage(e.getMessage());
-            projectDescriptor.setProblems(Collections.singletonList(problem));
-        }
-        if (newProject != null) {
-            project.getMisc().setContentRoot(newProject.getContentRoot());
-            project.getMisc().save();
-            projectDescriptor.setContentRoot(newProject.getContentRoot());
-        }
-        importResponse.setProjectDescriptor(projectDescriptor);
-        //we will add project type estimations any way
-        List<SourceEstimation> sourceEstimations = projectManager.resolveSources(workspace, baseProjectFolder.getPath(), false);
-        importResponse.setSourceEstimations(sourceEstimations);
-        reindexProject(creationDate, baseProjectFolder, project);
-        eventService.publish(new ProjectCreatedEvent(project.getWorkspace(), project.getPath()));
-        logProjectCreatedEvent(projectDescriptor.getName(), projectDescriptor.getType());
-        return importResponse;
-    }
 
     /**
      * Some importers don't use virtual file system API and changes are not indexed.
@@ -926,7 +857,7 @@ public class ProjectService extends Service {
 
     @ApiOperation(value = "Upload zip project",
             notes = "Upload project from local zip",
-            response = ImportResponse.class,
+            response = ProjectDescriptor.class,
             position = 18)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = ""),
@@ -939,7 +870,7 @@ public class ProjectService extends Service {
     @Consumes({MediaType.MULTIPART_FORM_DATA})
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/upload/zipproject/{path:.*}")
-    public ImportResponse uploadProjectFromZip(@ApiParam(value = "Workspace ID", required = true)
+    public ProjectDescriptor uploadProjectFromZip(@ApiParam(value = "Workspace ID", required = true)
                                                @PathParam("ws-id") String workspace,
                                                @ApiParam(value = "Path in the project", required = true)
                                                @PathParam("path") String path,
@@ -993,17 +924,14 @@ public class ProjectService extends Service {
         }
 
         final DtoFactory dtoFactory = DtoFactory.getInstance();
-        NewProject newProject = dtoFactory.createDto(NewProject.class)
-                                          .withName(projectName)
-                                          .withDescription(projectDescription)
-                                          .withVisibility(privacy);
-        Source source = dtoFactory.createDto(Source.class);
-        ImportProject importProject = dtoFactory.createDto(ImportProject.class)
-                                                .withProject(newProject)
-                                                .withSource(source);
+
+        ProjectConfigDto projectConfig = dtoFactory.createDto(ProjectConfigDto.class)
+                                                   .withName(projectName)
+                                                   .withDescription(projectDescription);
 
         //project source already imported going to configure project
-        return configureProject(importProject, baseProjectFolder, workspace, creationDate);
+        //return configureProject(importProject, baseProjectFolder, workspace, creationDate);
+        return  updateProject(workspace, path, projectConfig);
     }
 
     @ApiOperation(value = "Import zip",

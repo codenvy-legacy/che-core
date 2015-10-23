@@ -75,8 +75,7 @@ public interface ProjectManager {
      * @throws ServerException
      *         if other error occurs
      */
-    Project createProject(String workspace, String name, ProjectConfig projectConfig, Map<String, String> options,
-                          String visibility)
+    Project createProject(String workspace, String name, ProjectConfig projectConfig, Map<String, String> options)
             throws ConflictException, ForbiddenException, ServerException, ProjectTypeConstraintException, NotFoundException;
 
     /**
@@ -88,11 +87,9 @@ public interface ProjectManager {
      *         The path to the project.
      * @param newConfig
      *         The new configuration of the project
-     * @param newVisibility
-     *         Then new visibility of the project. If not, visibility is not changed.
      * @return The updated project.
      */
-    Project updateProject(String workspace, String path, ProjectConfig newConfig, String newVisibility)
+    Project updateProject(String workspace, String path, ProjectConfig newConfig)
             throws ForbiddenException, ServerException, NotFoundException, ConflictException, IOException;
 
     /**
@@ -209,8 +206,6 @@ public interface ProjectManager {
      *         - module configuration (optional, needed only if module does not exist)
      * @param options
      *         - options for module creation (optional, same as moduleConfig)
-     * @param visibility
-     *         - visibility for the module (optional, same as moduleConfig)
      * @return
      * @throws ConflictException
      * @throws ForbiddenException
@@ -221,8 +216,7 @@ public interface ProjectManager {
                       String projectPath,
                       String modulePath,
                       ProjectConfig moduleConfig,
-                      Map<String, String> options,
-                      String visibility) throws ConflictException, ForbiddenException, ServerException, NotFoundException;
+                      Map<String, String> options) throws ConflictException, ForbiddenException, ServerException, NotFoundException;
     List<SourceEstimation> resolveSources(String workspace, String path, boolean transientOnly) throws ServerException, ForbiddenException,
                                                                                                        NotFoundException,
                                                                                                        ValueStorageException,
@@ -233,15 +227,14 @@ public interface ProjectManager {
      *
      * @param workspace
      * @param projectConfig
-     * @param visibility
      * @return
      * @throws ConflictException
      * @throws ForbiddenException
      * @throws ServerException
      * @throws ProjectTypeConstraintException
      */
-    Project convertFolderToProject(String workspace, String path, ProjectConfig projectConfig, String visibility)
-            throws ConflictException, ForbiddenException, ServerException, NotFoundException;
+    Project convertFolderToProject(String workspace, String path, ProjectConfig projectConfig)
+            throws ConflictException, ForbiddenException, ServerException, NotFoundException, IOException;
 
     /**
      * Rename the given item.
