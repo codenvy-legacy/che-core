@@ -36,7 +36,7 @@ import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo;
-import org.eclipse.che.ide.workspace.BrowserQueryFieldViewer;
+import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
 import org.eclipse.che.ide.workspace.create.CreateWorkspaceView.HidePopupCallBack;
 
 import java.util.ArrayList;
@@ -70,7 +70,7 @@ public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDeleg
     private final CoreLocalizationConstant     locale;
     private final Provider<WorkspaceComponent> wsComponentProvider;
     private final RecipeServiceClient          recipeService;
-    private final BrowserQueryFieldViewer      browserQueryFieldViewer;
+    private final BrowserQueryFieldRenderer    browserQueryFieldRenderer;
 
     private OperationInfo                  operationInfo;
     private Callback<Component, Exception> callback;
@@ -84,7 +84,7 @@ public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDeleg
                                     CoreLocalizationConstant locale,
                                     Provider<WorkspaceComponent> wsComponentProvider,
                                     RecipeServiceClient recipeService,
-                                    BrowserQueryFieldViewer browserQueryFieldViewer) {
+                                    BrowserQueryFieldRenderer browserQueryFieldRenderer) {
         this.view = view;
         this.view.setDelegate(this);
 
@@ -94,7 +94,7 @@ public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDeleg
         this.locale = locale;
         this.wsComponentProvider = wsComponentProvider;
         this.recipeService = recipeService;
-        this.browserQueryFieldViewer = browserQueryFieldViewer;
+        this.browserQueryFieldRenderer = browserQueryFieldRenderer;
     }
 
     /**
@@ -118,7 +118,7 @@ public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDeleg
             }
         });
 
-        view.setWorkspaceName(browserQueryFieldViewer.getWorkspaceName());
+        view.setWorkspaceName(browserQueryFieldRenderer.getWorkspaceName());
 
         view.show();
     }
@@ -190,7 +190,7 @@ public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDeleg
 
                 WorkspaceComponent component = wsComponentProvider.get();
 
-                component.startWorkspace(workspace.getId(), workspace.getDefaultEnvName());
+                component.startWorkspaceById(workspace);
             }
         }).catchError(new Operation<PromiseError>() {
             @Override
@@ -220,19 +220,9 @@ public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDeleg
                                            .withName(wsName)
                                            .withMachineConfigs(machineConfigs));
 
-        List<CommandDto> commands = new ArrayList<>();
-        commands.add(dtoFactory.createDto(CommandDto.class)
-                               .withName("MCI")
-                               .withCommandLine("mvn clean install"));
-
-        Map<String, String> attrs = new HashMap<>();
-        attrs.put("fake_attr", "attr_value");
-
         return dtoFactory.createDto(WorkspaceConfigDto.class)
                          .withName(wsName)
                          .withDefaultEnvName(wsName)
-                         .withEnvironments(environments)
-                         .withCommands(commands)
-                         .withAttributes(attrs);
+                         .withEnvironments(environments);
     }
 }

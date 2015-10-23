@@ -27,7 +27,7 @@ import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 import org.eclipse.che.api.core.notification.EventService;
-import org.eclipse.che.api.machine.server.model.impl.ChannelsImpl;
+import org.eclipse.che.api.machine.server.MachineManager;
 import org.eclipse.che.api.machine.server.model.impl.MachineStateImpl;
 import org.eclipse.che.api.workspace.server.model.impl.EnvironmentStateImpl;
 import org.eclipse.che.api.workspace.server.model.impl.RuntimeWorkspaceImpl;
@@ -122,6 +122,8 @@ public class WorkspaceManager {
                 usersWorkspace.setStatus(STOPPED);
             }
             usersWorkspace.setTemporary(false);
+
+            addChannels(usersWorkspace);
         }
         return usersWorkspaces;
     }
@@ -136,12 +138,16 @@ public class WorkspaceManager {
     public List<RuntimeWorkspaceImpl> getRuntimeWorkspaces(String owner) throws BadRequestException {
         requiredNotNull(owner, "Workspace owner required");
 
-        return workspaceRegistry.getByOwner(owner);
+        List<RuntimeWorkspaceImpl> workspaces = workspaceRegistry.getByOwner(owner);
+
+        workspaces.forEach(this::addChannels);
+
+        return workspaces;
     }
 
     /**
      * Starts certain workspace with specified environment and account.
-     * <p/>
+     * <p>
      * <p>Workspace start is asynchronous
      *
      * @param workspaceId
@@ -176,7 +182,7 @@ public class WorkspaceManager {
 
     /**
      * Starts certain workspace with specified environment and account.
-     * <p/>
+     * <p>
      * <p>Workspace start is asynchronous
      *
      * @param workspaceName
@@ -218,7 +224,7 @@ public class WorkspaceManager {
 
     /**
      * Starts temporary workspace based on config and account.
-     * <p/>
+     * <p>
      * <p>Workspace start is synchronous
      *
      * @param workspaceConfig
@@ -250,6 +256,8 @@ public class WorkspaceManager {
 
         final RuntimeWorkspaceImpl runtimeWorkspace = startWorkspaceSync(workspace, null);
 
+        addChannels(runtimeWorkspace);
+
         // TODO when this code should be called for temp workspaces
         hooks.afterCreate(runtimeWorkspace, accountId);
 
@@ -278,6 +286,8 @@ public class WorkspaceManager {
         final UsersWorkspaceImpl newWorkspace = workspaceDao.create(workspace);
         newWorkspace.setStatus(STOPPED);
 
+        addChannels(workspace);
+
         hooks.afterCreate(workspace, accountId);
 
         LOG.info("EVENT#workspace-created# WS#{}# WS-ID#{}# USER#{}#",
@@ -286,6 +296,16 @@ public class WorkspaceManager {
                  getCurrentUserId());
 
         return newWorkspace;
+    }
+
+    private void addChannels(UsersWorkspaceImpl workspace) {
+        for (EnvironmentStateImpl environment : workspace.getEnvironments().values()) {
+            for (MachineStateImpl machineState : environment.getMachineConfigs()) {
+                machineState.setChannels(MachineManager.createMachineChannels(machineState.getName(),
+                                                                              workspace.getId(),
+                                                                              environment.getName()));
+            }
+        }
     }
 
     public UsersWorkspaceImpl updateWorkspace(String workspaceId, WorkspaceConfig update)
@@ -328,6 +348,9 @@ public class WorkspaceManager {
         final UsersWorkspaceImpl workspace = workspaceDao.get(workspaceId);
         try {
             final RuntimeWorkspaceImpl runtimeWorkspace = workspaceRegistry.get(workspaceId);
+
+            addChannels(runtimeWorkspace);
+
             workspace.setStatus(runtimeWorkspace.getStatus());
         } catch (NotFoundException ignored) {
             //if registry doesn't contain workspace it should have stopped status
@@ -339,7 +362,11 @@ public class WorkspaceManager {
     public RuntimeWorkspaceImpl getRuntimeWorkspace(String workspaceId) throws BadRequestException, NotFoundException, ServerException {
         requiredNotNull(workspaceId, "Workspace id required");
 
-        return workspaceRegistry.get(workspaceId);
+        RuntimeWorkspaceImpl workspace = workspaceRegistry.get(workspaceId);
+
+        addChannels(workspace);
+
+        return workspace;
     }
 
     //TODO
@@ -354,8 +381,6 @@ public class WorkspaceManager {
         return workspaceDao.get(name, owner);
     }
 
-    /** ****************** */
-
     private UsersWorkspaceImpl startWorkspace(UsersWorkspaceImpl workspace,
                                               String envName,
                                               String accountId)
@@ -368,7 +393,7 @@ public class WorkspaceManager {
         return workspace;
     }
 
-    void startWorkspaceAsync(final UsersWorkspaceImpl usersWorkspace, final String envName) {
+    UsersWorkspaceImpl startWorkspaceAsync(final UsersWorkspaceImpl usersWorkspace, final String envName) {
         executor.execute(ThreadLocalPropagateContext.wrap(() -> {
             try {
                 startWorkspaceSync(usersWorkspace, envName);
@@ -376,6 +401,10 @@ public class WorkspaceManager {
                 LOG.error(e.getLocalizedMessage(), e);
             }
         }));
+
+        addChannels(usersWorkspace);
+
+        return usersWorkspace;
     }
 
     RuntimeWorkspaceImpl startWorkspaceSync(final UsersWorkspaceImpl usersWorkspace, final String envName)
@@ -390,6 +419,8 @@ public class WorkspaceManager {
             eventService.publish(newDto(WorkspaceStatusEvent.class)
                                          .withEventType(RUNNING)
                                          .withWorkspaceId(runtimeWorkspace.getId()));
+
+            addChannels(usersWorkspace);
 
             return runtimeWorkspace;
 
@@ -432,23 +463,12 @@ public class WorkspaceManager {
             validateName(cfg.getName());
         }
 
-        for (EnvironmentStateImpl environment : workspace.getEnvironments().values()) {
-            for (MachineStateImpl machineState : environment.getMachineConfigs()) {
-                machineState.setChannels(createMachineChannels(machineState.getName(), workspace.getId(), environment.getName()));
-            }
-        }
-
         return workspace;
-    }
-
-    private ChannelsImpl createMachineChannels(String machineName, String workspaceId, String envName) {
-        return new ChannelsImpl(workspaceId + ':' + envName + ':' + machineName,
-                                "machine:status:" + workspaceId + ':' + machineName);
     }
 
     /**
      * Checks that {@link WorkspaceConfig cfg} contains valid values, if it is not throws {@link BadRequestException}.
-     * <p/>
+     * <p>
      * Validation rules:
      * <ul>
      * <li>{@link WorkspaceConfig#getDefaultEnvName()} must not be empty or null</li>

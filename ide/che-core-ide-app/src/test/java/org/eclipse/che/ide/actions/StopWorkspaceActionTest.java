@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.actions;
 
-import com.google.gwt.core.client.Callback;
 import com.google.gwtmockito.GwtMockitoTestRunner;
 
 import org.eclipse.che.api.promises.client.Operation;
@@ -22,14 +21,12 @@ import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.bootstrap.WorkspaceComponent;
-import org.eclipse.che.ide.core.Component;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 
 import static org.mockito.Matchers.anyString;
@@ -90,13 +87,6 @@ public class StopWorkspaceActionTest {
 
         verify(appContext).getWorkspace();
         verify(workspaceService).stop("id");
-        verify(voidPromise).then(operationCaptor.capture());
-
-        operationCaptor.getValue().apply(null);
-
-        verify(workspace).getDefaultEnvName();
-        verify(locale).stopWsNotification(anyString());
-        verify(notificationManager).showInfo(anyString());
-        verify(workspaceComponent).start(Matchers.<Callback<Component, Exception>>anyObject());
+        verify(workspace).getId();
     }
 }

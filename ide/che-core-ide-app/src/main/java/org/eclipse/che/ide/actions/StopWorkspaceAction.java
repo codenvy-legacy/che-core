@@ -10,21 +10,14 @@
  *******************************************************************************/
 package org.eclipse.che.ide.actions;
 
-import com.google.gwt.core.client.Callback;
 import com.google.inject.Inject;
 
-import org.eclipse.che.api.promises.client.Operation;
-import org.eclipse.che.api.promises.client.OperationException;
-import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.workspace.gwt.client.WorkspaceServiceClient;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.notification.NotificationManager;
-import org.eclipse.che.ide.bootstrap.WorkspaceComponent;
-import org.eclipse.che.ide.core.Component;
 
 import javax.validation.constraints.NotNull;
 import java.util.Collections;
@@ -38,25 +31,17 @@ public class StopWorkspaceAction extends AbstractPerspectiveAction {
 
     private static final String MACHINE_PERSPECTIVE_ID = "Machine Perspective";
 
-    private final CoreLocalizationConstant locale;
-    private final AppContext               appContext;
-    private final WorkspaceServiceClient   workspaceService;
-    private final WorkspaceComponent       workspaceComponent;
-    private final NotificationManager      notificationManager;
+    private final AppContext             appContext;
+    private final WorkspaceServiceClient workspaceService;
 
     @Inject
     public StopWorkspaceAction(CoreLocalizationConstant locale,
                                AppContext appContext,
-                               WorkspaceServiceClient workspaceService,
-                               WorkspaceComponent workspaceComponent,
-                               NotificationManager notificationManager) {
+                               WorkspaceServiceClient workspaceService) {
         super(Collections.singletonList(MACHINE_PERSPECTIVE_ID), locale.stopWsTitle(), locale.stopWsDescription(), null, null);
 
-        this.locale = locale;
         this.appContext = appContext;
         this.workspaceService = workspaceService;
-        this.workspaceComponent = workspaceComponent;
-        this.notificationManager = notificationManager;
     }
 
     /** {@inheritDoc} */
@@ -72,23 +57,6 @@ public class StopWorkspaceAction extends AbstractPerspectiveAction {
     public void actionPerformed(ActionEvent event) {
         final UsersWorkspaceDto workspace = appContext.getWorkspace();
 
-        Promise<Void> stopWsPromise = workspaceService.stop(workspace.getId());
-
-        stopWsPromise.then(new Operation<Void>() {
-            @Override
-            public void apply(Void arg) throws OperationException {
-                notificationManager.showInfo(locale.stopWsNotification(workspace.getDefaultEnvName()));
-
-                workspaceComponent.start(new Callback<Component, Exception>() {
-                    @Override
-                    public void onFailure(Exception reason) {
-                    }
-
-                    @Override
-                    public void onSuccess(Component result) {
-                    }
-                });
-            }
-        });
+        workspaceService.stop(workspace.getId());
     }
 }
