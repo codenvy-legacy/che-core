@@ -887,7 +887,6 @@ public class ProjectService extends Service {
         int stripNumber = 0;
         String projectName = "";
         String projectDescription = "";
-        String privacy = "";
         FileItem contentItem = null;
 
         while (formData.hasNext()) {
@@ -905,9 +904,6 @@ public class ProjectService extends Service {
                         break;
                     case ("description"):
                         projectDescription = item.getString().trim();
-                        break;
-                    case ("privacy"):
-                        privacy = Boolean.parseBoolean(item.getString().trim()) ? "public" : "private";
                         break;
                     case ("skipFirstLevel"):
                         stripNumber = Boolean.parseBoolean(item.getString().trim()) ? 1 : 0;
@@ -930,7 +926,6 @@ public class ProjectService extends Service {
                                                    .withDescription(projectDescription);
 
         //project source already imported going to configure project
-        //return configureProject(importProject, baseProjectFolder, workspace, creationDate);
         return  updateProject(workspace, path, projectConfig);
     }
 
