@@ -11,6 +11,7 @@
 package org.eclipse.che.api.workspace.server;
 
 import org.eclipse.che.api.core.model.machine.Command;
+import org.eclipse.che.api.core.model.project.SourceStorage;
 import org.eclipse.che.api.core.model.workspace.Environment;
 import org.eclipse.che.api.core.model.workspace.EnvironmentState;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
@@ -79,25 +80,25 @@ public final class DtoConverter {
      */
     public static WorkspaceConfigDto asDto(WorkspaceConfig workspace) {
         final List<CommandDto> commands = workspace.getCommands()
-                .stream()
-                .map(DtoConverter::asDto)
-                .collect(toList());
+                                                   .stream()
+                                                   .map(DtoConverter::asDto)
+                                                   .collect(toList());
         final List<ProjectConfigDto> projects = workspace.getProjects()
-                .stream()
-                .map(DtoConverter::asDto)
-                .collect(toList());
+                                                         .stream()
+                                                         .map(DtoConverter::asDto)
+                                                         .collect(toList());
         final Map<String, EnvironmentDto> environments = workspace.getEnvironments()
-                .values()
-                .stream()
-                .collect(toMap(Environment::getName, DtoConverter::asDto));
+                                                                  .values()
+                                                                  .stream()
+                                                                  .collect(toMap(Environment::getName, DtoConverter::asDto));
 
         return newDto(WorkspaceConfigDto.class).withName(workspace.getName())
-                .withDefaultEnvName(workspace.getDefaultEnvName())
-                .withCommands(commands)
-                .withProjects(projects)
-                .withEnvironments(environments)
-                .withDescription(workspace.getDescription())
-                .withAttributes(workspace.getAttributes());
+                                               .withDefaultEnvName(workspace.getDefaultEnvName())
+                                               .withCommands(commands)
+                                               .withProjects(projects)
+                                               .withEnvironments(environments)
+                                               .withDescription(workspace.getDescription())
+                                               .withAttributes(workspace.getAttributes());
     }
 
     /**
@@ -113,17 +114,19 @@ public final class DtoConverter {
      * Converts {@link ProjectConfig} to {@link ProjectConfigDto}.
      */
     public static ProjectConfigDto asDto(ProjectConfig projectCfg) {
-        return newDto(ProjectConfigDto.class)
-                .withName(projectCfg.getName())
-                .withDescription(projectCfg.getDescription())
-                .withPath(projectCfg.getPath())
-                .withType(projectCfg.getType())
-                .withAttributes(projectCfg.getAttributes())
-                .withMixinTypes(projectCfg.getMixinTypes())
-                .withSource(newDto(SourceStorageDto.class)
-                                    .withLocation(projectCfg.getSource().getLocation())
-                                    .withType(projectCfg.getSource().getType())
-                                    .withParameters(projectCfg.getSource().getParameters()));
+        final ProjectConfigDto projectConfigDto = newDto(ProjectConfigDto.class).withName(projectCfg.getName())
+                                                                                .withDescription(projectCfg.getDescription())
+                                                                                .withPath(projectCfg.getPath())
+                                                                                .withType(projectCfg.getType())
+                                                                                .withAttributes(projectCfg.getAttributes())
+                                                                                .withMixinTypes(projectCfg.getMixinTypes());
+        final SourceStorage source = projectCfg.getSource();
+        if (source != null) {
+            projectConfigDto.withSource(newDto(SourceStorageDto.class).withLocation(source.getLocation())
+                                                                      .withType(source.getType())
+                                                                      .withParameters(source.getParameters()));
+        }
+        return projectConfigDto;
     }
 
     //TODO add recipe
