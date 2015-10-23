@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.statepersistance.dto;
 
-import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.dto.shared.DTO;
 
 import java.util.Map;
@@ -23,16 +22,16 @@ import java.util.Map;
 @DTO
 public interface AppState {
 
-    /** Returns workspace which was previously stopped. */
-    UsersWorkspaceDto getWorkspace();
+    /** Returns workspace id which was previously stopped. */
+    String getRecentWorkspaceId();
 
     /**
-     * Set stopped workspace to app state
+     * Set stopped workspace id to app state
      *
-     * @param workspace
-     *         workspace which will be saved to app state
+     * @param workspaceId
+     *         workspace id which will be saved to app state
      */
-    void setWorkspace(UsersWorkspaceDto workspace);
+    void setRecentWorkspaceId(String workspaceId);
 
     /** Get recent project info. */
     RecentProject getRecentProject();

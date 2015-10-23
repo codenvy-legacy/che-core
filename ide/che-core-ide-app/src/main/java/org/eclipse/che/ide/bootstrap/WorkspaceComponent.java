@@ -201,12 +201,18 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
     private void tryStartRecentWorkspace(final OperationInfo operationInfo) {
         String json = preferencesManager.getValue(PREFERENCE_PROPERTY_NAME);
 
-        AppState appState = dtoFactory.createDtoFromJson(json, AppState.class);
+        AppState appState = null;
+
+        try {
+            appState = dtoFactory.createDtoFromJson(json, AppState.class);
+        } catch (Exception exception) {
+            Log.error(getClass(), "Can't create object using json: " + exception);
+        }
 
         if (appState != null) {
-            UsersWorkspaceDto workspaceFromPreferences = appState.getWorkspace();
+            String recentWorkspaceId = appState.getRecentWorkspaceId();
 
-            if (workspaceFromPreferences != null) {
+            if (recentWorkspaceId != null) {
                 Operation<UsersWorkspaceDto> workspaceOperation = new Operation<UsersWorkspaceDto>() {
                     @Override
                     public void apply(UsersWorkspaceDto workspace) throws OperationException {
@@ -226,7 +232,7 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
                     }
                 };
 
-                workspaceServiceClient.getWorkspaceById(workspaceFromPreferences.getId()).then(workspaceOperation);
+                workspaceServiceClient.getWorkspaceById(recentWorkspaceId).then(workspaceOperation);
 
                 return;
             }

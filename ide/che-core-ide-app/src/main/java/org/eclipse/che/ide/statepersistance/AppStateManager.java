@@ -178,7 +178,7 @@ public class AppStateManager implements WindowActionHandler,
 
     @Override
     public void onWorkspaceStopped(UsersWorkspaceDto workspace) {
-        appState.setWorkspace(workspace);
+        appState.setRecentWorkspaceId(workspace.getId());
 
         RecentProject recentProject = appState.getRecentProject();
         recentProject.setWorkspaceId(workspace.getId());
