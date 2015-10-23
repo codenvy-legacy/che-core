@@ -835,7 +835,7 @@ public class MachineManager {
         }
     }
 
-    private Recipe getRecipeByLocation(MachineConfig machineConfig) throws MachineException {
+    Recipe getRecipeByLocation(MachineConfig machineConfig) throws MachineException {
         String recipeContent;
         File file = null;
         try {

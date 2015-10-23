@@ -10,22 +10,72 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.server;
 
+import org.eclipse.che.api.core.BadRequestException;
+import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.core.model.machine.Channels;
+import org.eclipse.che.api.core.model.machine.Limits;
+import org.eclipse.che.api.core.model.machine.MachineConfig;
+import org.eclipse.che.api.core.model.machine.MachineMetadata;
+import org.eclipse.che.api.core.model.machine.MachineSource;
+import org.eclipse.che.api.core.model.machine.MachineState;
+import org.eclipse.che.api.core.model.machine.MachineStatus;
+import org.eclipse.che.api.core.notification.EventService;
+import org.eclipse.che.api.core.util.LineConsumer;
+import org.eclipse.che.api.machine.server.dao.SnapshotDao;
+import org.eclipse.che.api.machine.server.exception.MachineException;
+import org.eclipse.che.api.machine.server.impl.AbstractInstance;
+import org.eclipse.che.api.machine.server.model.impl.ChannelsImpl;
+import org.eclipse.che.api.machine.server.model.impl.LimitsImpl;
+import org.eclipse.che.api.machine.server.model.impl.MachineConfigImpl;
+import org.eclipse.che.api.machine.server.model.impl.MachineImpl;
+import org.eclipse.che.api.machine.server.model.impl.MachineSourceImpl;
+import org.eclipse.che.api.machine.server.recipe.RecipeImpl;
+import org.eclipse.che.api.machine.server.spi.Instance;
+import org.eclipse.che.api.machine.server.spi.InstanceKey;
+import org.eclipse.che.api.machine.server.spi.InstanceNode;
+import org.eclipse.che.api.machine.server.spi.InstanceProcess;
+import org.eclipse.che.api.machine.server.spi.InstanceProvider;
+import org.eclipse.che.commons.env.EnvironmentContext;
+import org.eclipse.che.commons.user.UserImpl;
+import org.mockito.Mock;
 import org.mockito.testng.MockitoTestNGListener;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
+import org.testng.annotations.Test;
+
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 
 /**
  * @author Anton Korneta
  */
 @Listeners(MockitoTestNGListener.class)
 public class MachineManagerTest {
-/*    private static final int DEFAULT_MACHINE_MEMORY_SIZE_MB = 1000;
+    private static final int DEFAULT_MACHINE_MEMORY_SIZE_MB = 1000;
 
     private MachineManager manager;
 
     @Mock
     private MachineInstanceProviders machineInstanceProviders;
     @Mock
+    private InstanceProvider         instanceProvider;
+    @Mock
     private MachineRegistry          machineRegistry;
+    @Mock
+    private Instance                 instance;
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -51,61 +101,125 @@ public class MachineManagerTest {
     }
 
     @Test(expectedExceptions = BadRequestException.class, expectedExceptionsMessageRegExp = "Invalid machine name @name!")
-    public void shouldThrowExceptionWhileValidatingDockerDisplayName() throws Exception {
-        final RecipeMachineCreationMetadata machineCreationMetadata = mock(RecipeMachineCreationMetadata.class);
-        final MachineRecipe machineRecipe = mock(MachineRecipe.class);
-        final InstanceProvider instanceProvider = mock(InstanceProvider.class);
-        final String type = "type";
-        final Set<String> recipeTypes = new HashSet<>(Collections.singleton(type));
-        when(machineCreationMetadata.getRecipe()).thenReturn(machineRecipe);
-        when(machineCreationMetadata.getType()).thenReturn(type);
-        when(machineInstanceProviders.getProvider(any())).thenReturn(instanceProvider);
-        when(machineRecipe.getType()).thenReturn(type);
-        when(instanceProvider.getRecipeTypes()).thenReturn(recipeTypes);
-        when(machineCreationMetadata.getName()).thenReturn("@name!");
+    public void shouldThrowExceptionOnMachineCreationIfMachineNameIsInvalid() throws Exception {
+        doReturn(new RecipeImpl().withScript("script").withType("Dockerfile"))
+                .when(manager).getRecipeByLocation(any(MachineConfig.class));
 
-        manager.create(machineCreationMetadata, false);
+        MachineConfig machineConfig = new MachineConfigImpl(false,
+                                                            "@name!",
+                                                            "machineType",
+                                                            new MachineSourceImpl("Recipe", "location"),
+                                                            new LimitsImpl(1024));
+        String workspaceId = "wsId";
+        String environmentName = "env1";
+
+        manager.createMachineSync(machineConfig, workspaceId, environmentName);
     }
 
     @Test
-    public void shouldCreateInstanceWithValidDockerMachineDisplayName() throws Exception {
-        final String machineDisplayName = "machineName";
-        final RecipeMachineCreationMetadata machineCreationMetadata = mock(RecipeMachineCreationMetadata.class);
-        final MachineRecipe machineRecipe = mock(MachineRecipe.class);
-        final InstanceProvider instanceProvider = mock(InstanceProvider.class);
-        final String type = "type";
-        final String outputChannel = "channel";
-        final Instance instance = mock(Instance.class);
-        final Set<String> recipeTypes = new HashSet<>(Collections.singleton(type));
-        final List<MachineImpl> machines = Collections.emptyList();
-        when(machineCreationMetadata.getRecipe()).thenReturn(machineRecipe);
-        when(machineCreationMetadata.getType()).thenReturn(type);
-        when(machineInstanceProviders.getProvider(any())).thenReturn(instanceProvider);
-        when(machineRecipe.getType()).thenReturn(type);
-        when(instanceProvider.getRecipeTypes()).thenReturn(recipeTypes);
-        when(machineCreationMetadata.getName()).thenReturn(machineDisplayName);
-        when(machineRegistry.getStates()).thenReturn(machines);
-        when(machineCreationMetadata.getOutputChannel()).thenReturn(outputChannel);
-        doNothing().when(machineRegistry).add(any(MachineImpl.class));
-        when(instanceProvider.createInstance(any(Recipe.class),
-                                             anyString(),
-                                             anyString(),
-                                             anyString(),
-                                             anyBoolean(),
-                                             anyString(),
-                                             anyInt(),
-                                             any(LineConsumer.class))).thenReturn(instance);
-        doNothing().when(instance).setStatus(any(MachineStatus.class));
+    public void shouldBeAbleToCreateMachineWithValidName() throws Exception {
+        String expectedName = "MachineName";
+        String workspaceId = "wsId";
+        String environmentName = "env1";
+        RecipeImpl recipe = new RecipeImpl().withScript("script").withType("Dockerfile");
+        MachineConfig machineConfig = new MachineConfigImpl(false,
+                                                            expectedName,
+                                                            "docker",
+                                                            new MachineSourceImpl("Recipe", "location"),
+                                                            new LimitsImpl(1024));
+        final NoOpInstanceImpl noOpInstance = new NoOpInstanceImpl("machineId",
+                                                                   machineConfig.getType(),
+                                                                   workspaceId,
+                                                                   "owner",
+                                                                   machineConfig.isDev(),
+                                                                   machineConfig.getName(),
+                                                                   new ChannelsImpl("chan1", "chan2"),
+                                                                   machineConfig.getLimits(),
+                                                                   machineConfig.getSource(),
+                                                                   MachineStatus.CREATING);
+        doReturn(recipe).when(manager).getRecipeByLocation(any(MachineConfig.class));
+        when(machineInstanceProviders.getProvider(anyString())).thenReturn(instanceProvider);
+        when(instanceProvider.createInstance(eq(recipe), any(MachineState.class), any(LineConsumer.class))).thenReturn(noOpInstance);
+        when(machineRegistry.get(anyString())).thenReturn(noOpInstance);
 
+        final MachineImpl machine = manager.createMachineSync(machineConfig, workspaceId, environmentName);
 
-        String result = manager.create(machineCreationMetadata, false).getDisplayName();
-
-        assertEquals(machineDisplayName, result);
+        assertEquals(machine.getName(), expectedName);
     }
 
     private static Path targetDir() throws Exception {
         final URL url = Thread.currentThread().getContextClassLoader().getResource(".");
         assertNotNull(url);
         return Paths.get(url.toURI()).getParent();
-    }*/
+    }
+
+    private static class NoOpInstanceImpl extends AbstractInstance {
+
+        public NoOpInstanceImpl(String id,
+                                String type,
+                                String workspaceId,
+                                String owner,
+                                boolean isDev,
+                                String displayName,
+                                Channels channels,
+                                Limits limits,
+                                MachineSource source,
+                                MachineStatus machineStatus) {
+            super(id, type, workspaceId, owner, isDev, displayName, channels, limits, source, machineStatus);
+        }
+
+        public NoOpInstanceImpl(MachineState machineState) {
+            super(machineState);
+        }
+
+        @Override
+        public LineConsumer getLogger() {
+            return null;
+        }
+
+        @Override
+        public InstanceProcess getProcess(int pid) throws NotFoundException, MachineException {
+            return null;
+        }
+
+        @Override
+        public List<InstanceProcess> getProcesses() throws MachineException {
+            return null;
+        }
+
+        @Override
+        public InstanceProcess createProcess(String commandLine) throws MachineException {
+            return null;
+        }
+
+        @Override
+        public InstanceKey saveToSnapshot(String owner) throws MachineException {
+            return null;
+        }
+
+        @Override
+        public void destroy() throws MachineException {
+
+        }
+
+        @Override
+        public InstanceNode getNode() {
+            return null;
+        }
+
+        @Override
+        public String readFileContent(String filePath, int startFrom, int limit) throws MachineException {
+            return null;
+        }
+
+        @Override
+        public void copy(Instance sourceMachine, String sourcePath, String targetPath, boolean overwrite) throws MachineException {
+
+        }
+
+        @Override
+        public MachineMetadata getMetadata() {
+            return null;
+        }
+    }
 }
