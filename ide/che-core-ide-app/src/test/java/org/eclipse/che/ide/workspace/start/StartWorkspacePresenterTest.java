@@ -19,7 +19,7 @@ import org.eclipse.che.ide.bootstrap.WorkspaceComponent;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo;
-import org.eclipse.che.ide.workspace.BrowserQueryFieldViewer;
+import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
 import org.eclipse.che.ide.workspace.WorkspaceWidgetFactory;
 import org.eclipse.che.ide.workspace.create.CreateWorkspacePresenter;
 import org.eclipse.che.ide.workspace.start.workspacewidget.WorkspaceWidget;
@@ -57,7 +57,7 @@ public class StartWorkspacePresenterTest {
     @Mock
     private LoaderPresenter              loaderPresenter;
     @Mock
-    private BrowserQueryFieldViewer      browserQueryFieldViewer;
+    private BrowserQueryFieldRenderer    browserQueryFieldRenderer;
 
     //additional mocks
     @Mock
@@ -81,12 +81,12 @@ public class StartWorkspacePresenterTest {
 
     @Test
     public void dialogStartWorkspaceShouldBeShown() {
-        when(browserQueryFieldViewer.getWorkspaceName()).thenReturn("test");
+        when(browserQueryFieldRenderer.getWorkspaceName()).thenReturn("test");
         when(widgetFactory.create(workspaceDto)).thenReturn(widget);
 
         presenter.show(Arrays.asList(workspaceDto), callback, operationInfo);
 
-        verify(browserQueryFieldViewer).getWorkspaceName();
+        verify(browserQueryFieldRenderer).getWorkspaceName();
         verify(widgetFactory).create(workspaceDto);
         verify(widget).setDelegate(presenter);
         verify(view).addWorkspace(widget);
@@ -97,7 +97,7 @@ public class StartWorkspacePresenterTest {
 
     @Test
     public void workspaceWithExistingNameShouldBeSelected() {
-        when(browserQueryFieldViewer.getWorkspaceName()).thenReturn("test");
+        when(browserQueryFieldRenderer.getWorkspaceName()).thenReturn("test");
         when(wsComponentProvider.get()).thenReturn(workspaceComponent);
         when(widgetFactory.create(workspaceDto)).thenReturn(widget);
         when(workspaceDto.getName()).thenReturn("test");
@@ -106,13 +106,14 @@ public class StartWorkspacePresenterTest {
 
         presenter.onStartWorkspaceClicked();
 
-        verify(workspaceDto).getId();
-        verify(workspaceDto).getDefaultEnvName();
+        verify(wsComponentProvider).get();
+        verify(workspaceComponent).startWorkspaceById(workspaceDto);
+        verify(view).hide();
     }
 
     @Test
     public void onCreateWorkspaceButtonShouldBeClicked() {
-        when(browserQueryFieldViewer.getWorkspaceName()).thenReturn("test");
+        when(browserQueryFieldRenderer.getWorkspaceName()).thenReturn("test");
         when(widgetFactory.create(workspaceDto)).thenReturn(widget);
         presenter.show(Arrays.asList(workspaceDto), callback, operationInfo);
 
@@ -144,7 +145,7 @@ public class StartWorkspacePresenterTest {
         presenter.onWorkspaceSelected(workspaceDto);
 
         verify(wsComponentProvider).get();
-        verify(workspaceComponent).setCurrentWorkspace(Matchers.<OperationInfo>anyObject(), eq(workspaceDto));
+        verify(workspaceComponent).setCurrentWorkspace(eq(workspaceDto), Matchers.<OperationInfo>anyObject());
         verify(view).hide();
     }
 
@@ -152,7 +153,7 @@ public class StartWorkspacePresenterTest {
     public void selectedWorkspaceShouldBeStarted() {
         when(widgetFactory.create(workspaceDto)).thenReturn(widget);
         when(workspaceDto.getDefaultEnvName()).thenReturn("text");
-        when(browserQueryFieldViewer.getWorkspaceName()).thenReturn("test");
+        when(browserQueryFieldRenderer.getWorkspaceName()).thenReturn("test");
         when(wsComponentProvider.get()).thenReturn(workspaceComponent);
 
         presenter.show(Arrays.asList(workspaceDto), callback, operationInfo);
@@ -165,10 +166,7 @@ public class StartWorkspacePresenterTest {
 
         verify(wsComponentProvider).get();
 
-        verify(workspaceDto).getId();
-        verify(workspaceDto).getDefaultEnvName();
-
-        verify(workspaceComponent).startWorkspace(anyString(), anyString());
+        verify(workspaceComponent).startWorkspaceById(workspaceDto);
 
         verify(view).hide();
     }

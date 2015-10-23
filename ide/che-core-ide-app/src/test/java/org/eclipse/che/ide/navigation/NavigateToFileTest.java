@@ -12,19 +12,17 @@ package org.eclipse.che.ide.navigation;
 
 import com.google.web.bindery.event.shared.EventBus;
 
-import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateEvent;
+import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.notification.NotificationManager;
+import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
-
-import org.eclipse.che.ide.navigation.NavigateToFilePresenter;
-import org.eclipse.che.ide.navigation.NavigateToFileView;
-import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.websocket.MessageBus;
-import com.google.web.bindery.event.shared.EventBus;
-
+import org.eclipse.che.ide.websocket.MessageBusProvider;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -32,8 +30,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -50,38 +46,50 @@ public class NavigateToFileTest {
     public static final String FILE_IN_ROOT_NAME = "pom.xml";
 
     @Mock
-    private NavigateToFileView view;
+    private NavigateToFileView       view;
     @Mock
-    private AppContext         appContext;
+    private AppContext               appContext;
     @Mock
-    private CurrentProject     project;
+    private EventBus                 eventBus;
+    @Mock
+    private MessageBusProvider       messageBusProvider;
+    @Mock
+    private CurrentProject           project;
+    @Mock
+    private ProjectExplorerPresenter explorerPresenter;
 
-    private NavigateToFilePresenter  presenter;
     @Mock
-    private MessageBus               messageBus;
+    private MessageBus             messageBus;
     @Mock
-    private DtoUnmarshallerFactory   dtoUnmarshallerFactory;
+    private DtoUnmarshallerFactory dtoUnmarshallerFactory;
     @Mock
-    private NotificationManager      notificationManager;
+    private NotificationManager    notificationManager;
     @Mock
-    private ProjectExplorerPresenter projectExplorer;
+    private ExtServerStateEvent    extServerStateEvent;
+    @Mock
+    private UsersWorkspaceDto      workspace;
+    @Mock
+    private Promise<Node>          nodePromise;
+
+    private NavigateToFilePresenter presenter;
 
     @Before
     public void setUp() {
         when(appContext.getCurrentProject()).thenReturn(project);
-//        when(messageBusFactory.create(anyString())).thenReturn(messageBus);
+        when(appContext.getWorkspace()).thenReturn(workspace);
+        when(messageBusProvider.getMachineMessageBus()).thenReturn(messageBus);
 
-//        presenter = new NavigateToFilePresenter(view,
-//                                                appContext,
-//                                                eventBus,
-//                                                messageBusFactory,
-//                                                dtoUnmarshallerFactory,
-//                                                dialogFactory,
-//                                                localizationConstant);
+        presenter = new NavigateToFilePresenter(view,
+                                                appContext,
+                                                eventBus,
+                                                dtoUnmarshallerFactory,
+                                                explorerPresenter,
+                                                messageBusProvider);
+
+        presenter.onExtServerStarted(extServerStateEvent);
     }
 
     @Test
-    @Ignore
     public void testShowDialog() throws Exception {
         presenter.showDialog();
 
