@@ -25,24 +25,16 @@ import org.eclipse.che.api.core.util.ValueHolder;
 import org.eclipse.che.api.project.server.handlers.CreateProjectHandler;
 import org.eclipse.che.api.project.server.handlers.GetItemHandler;
 import org.eclipse.che.api.project.server.handlers.GetModulesHandler;
-import org.eclipse.che.api.project.server.handlers.PostImportProjectHandler;
 import org.eclipse.che.api.project.server.handlers.ProjectHandlerRegistry;
 import org.eclipse.che.api.project.server.type.Attribute;
 import org.eclipse.che.api.project.server.type.AttributeValue;
 import org.eclipse.che.api.project.server.type.ProjectType;
 import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
 import org.eclipse.che.api.project.shared.dto.CopyOptions;
-import org.eclipse.che.api.project.shared.dto.GeneratorDescription;
-import org.eclipse.che.api.project.shared.dto.ImportProject;
-import org.eclipse.che.api.project.shared.dto.ImportSourceDescriptor;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.MoveOptions;
-import org.eclipse.che.api.project.shared.dto.NewProject;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.api.project.shared.dto.ProjectModule;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
-import org.eclipse.che.api.project.shared.dto.ProjectUpdate;
-import org.eclipse.che.api.project.shared.dto.Source;
 import org.eclipse.che.api.project.shared.dto.TreeElement;
 import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.api.vfs.server.ContentStream;
@@ -104,6 +96,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -549,13 +542,12 @@ public class ProjectServiceTest {
 
         Map<String, List<String>> attributeValues = new LinkedHashMap<>();
         attributeValues.put("new_project_attribute", Arrays.asList("to be or not to be"));
-        GeneratorDescription generatorDescription = DtoFactory.getInstance().createDto(GeneratorDescription.class);
 
-        NewProject descriptor = DtoFactory.getInstance().createDto(NewProject.class)
-                                          .withType("testCreateProject")
-                                          .withDescription("new project")
-                                          .withAttributes(attributeValues)
-                                          .withGeneratorDescription(generatorDescription);
+        ProjectConfigDto descriptor = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
+                                                .withType("testCreateProject")
+                                                .withDescription("new project")
+                                                .withAttributes(attributeValues);
+
 
         final ProjectConfigDto newProjectConfig = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
                                                             .withPath("/new_project")
@@ -631,13 +623,12 @@ public class ProjectServiceTest {
 
         Map<String, List<String>> attributeValues = new LinkedHashMap<>();
         attributeValues.put("new module attribute", Arrays.asList("to be or not to be"));
-        GeneratorDescription generatorDescription = DtoFactory.getInstance().createDto(GeneratorDescription.class);
 
-        NewProject descriptor = DtoFactory.getInstance().createDto(NewProject.class)
-                                          .withType("my_project_type")
-                                          .withDescription("new module")
-                                          .withAttributes(attributeValues)
-                                          .withGeneratorDescription(generatorDescription);
+        ProjectConfigDto descriptor = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
+                                                .withType("my_project_type")
+                                                .withDescription("new module")
+                                                .withAttributes(attributeValues);
+
 
         final ProjectConfigDto moduleConfig = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
                                                         .withPath("/my_project/new_module")
@@ -809,10 +800,10 @@ public class ProjectServiceTest {
 
         Map<String, List<String>> attributeValues = new LinkedHashMap<>();
         attributeValues.put("my_attribute", Arrays.asList("to be or not to be"));
-        ProjectUpdate descriptor = DtoFactory.getInstance().createDto(ProjectUpdate.class)
-                                             .withType("testUpdateProject")
-                                             .withDescription("updated project")
-                                             .withAttributes(attributeValues);
+        ProjectConfigDto descriptor = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
+                                                .withType("testUpdateProject")
+                                                .withDescription("updated project")
+                                                .withAttributes(attributeValues);
 
         final ProjectConfigDto newProjectConfig = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
                                                             .withPath("/testUpdateProject")
@@ -855,10 +846,10 @@ public class ProjectServiceTest {
         headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
         Map<String, List<String>> attributeValues = new LinkedHashMap<>();
         attributeValues.put("my_attribute", Arrays.asList("to be or not to be"));
-        ProjectUpdate descriptor = DtoFactory.getInstance().createDto(ProjectUpdate.class)
-                                             .withType("my_project_type")
-                                             .withDescription("updated project")
-                                             .withAttributes(attributeValues);
+        ProjectConfigDto descriptor = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
+                                                .withType("my_project_type")
+                                                .withDescription("updated project")
+                                                .withAttributes(attributeValues);
 
         final ProjectConfigDto newProjectConfig = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
                                                             .withPath("/not_project")
@@ -891,10 +882,10 @@ public class ProjectServiceTest {
         headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
         Map<String, List<String>> attributeValues = new LinkedHashMap<>();
         attributeValues.put("my_attribute", Arrays.asList("to be or not to be"));
-        ProjectUpdate descriptor = DtoFactory.getInstance().createDto(ProjectUpdate.class)
-                                             .withType("my_project_type")
-                                             .withDescription("updated project")
-                                             .withAttributes(attributeValues);
+        ProjectConfigDto descriptor = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
+                                                .withType("my_project_type")
+                                                .withDescription("updated project")
+                                                .withAttributes(attributeValues);
         ContainerResponse response = launcher.service(PUT,
                                                       String.format("http://localhost:8080/api/project/%s/my_project_invalid",
                                                                     workspace),
@@ -1605,13 +1596,11 @@ public class ProjectServiceTest {
 
         Map<String, List<String>> attributeValues = new LinkedHashMap<>();
         attributeValues.put("new module attribute", Arrays.asList("to be or not to be"));
-        GeneratorDescription generatorDescription = DtoFactory.getInstance().createDto(GeneratorDescription.class);
 
-        NewProject descriptor = DtoFactory.getInstance().createDto(NewProject.class)
-                                          .withType("my_project_type")
-                                          .withDescription("new module")
-                                          .withAttributes(attributeValues)
-                                          .withGeneratorDescription(generatorDescription);
+        ProjectConfigDto descriptor = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
+                                                .withType("my_project_type")
+                                                .withDescription("new module")
+                                                .withAttributes(attributeValues);
 
         ContainerResponse response = launcher.service(POST,
                                                       String.format("http://localhost:8080/api/project/%s/my_project?path=%s",
@@ -1706,17 +1695,15 @@ public class ProjectServiceTest {
         headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
 
         String json = "{\n" +
-                      "    \"source\": {\n" +
                       "            \"location\": null,\n" +
                       "            \"type\": \"%s\"\n" +
-                      "        }\n" +
                       "}";
 
         byte[] b = String.format(json, importType).getBytes();
         ContainerResponse response = launcher.service(POST,
                                                       String.format("http://localhost:8080/api/project/%s/import/new_project", workspace),
                                                       "http://localhost:8080/api", headers, b, null);
-        assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
+        assertEquals(response.getStatus(), 204);
 
         Project newProject = pm.getProject(workspace, "new_project");
         assertNotNull(newProject);
@@ -1916,9 +1903,7 @@ public class ProjectServiceTest {
         List<ItemReference> result = (List<ItemReference>)response.getEntity();
         assertEquals(result.size(), 2);
         Set<String> names = new LinkedHashSet<>(2);
-        for (ItemReference itemReference : result) {
-            names.add(itemReference.getName());
-        }
+        names.addAll(result.stream().map(ItemReference::getName).collect(Collectors.toList()));
         Assert.assertTrue(names.contains("b"));
         Assert.assertTrue(names.contains("test.txt"));
     }
@@ -2218,9 +2203,7 @@ public class ProjectServiceTest {
         List<ItemReference> result = (List<ItemReference>)response.getEntity();
         assertEquals(result.size(), 2);
         Set<String> paths = new LinkedHashSet<>(2);
-        for (ItemReference itemReference : result) {
-            paths.add(itemReference.getPath());
-        }
+        paths.addAll(result.stream().map(ItemReference::getPath).collect(Collectors.toList()));
         Assert.assertTrue(paths.contains("/my_project/x/y/__test.txt"));
         Assert.assertTrue(paths.contains("/my_project/c/_test"));
     }

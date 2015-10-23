@@ -30,18 +30,14 @@ import org.eclipse.che.api.core.rest.annotations.Description;
 import org.eclipse.che.api.core.rest.annotations.GenerateLink;
 import org.eclipse.che.api.core.rest.annotations.Required;
 import org.eclipse.che.api.core.util.LineConsumerFactory;
-import org.eclipse.che.api.project.server.handlers.ProjectHandlerRegistry;
 import org.eclipse.che.api.project.server.notification.ProjectItemModifiedEvent;
 import org.eclipse.che.api.project.server.type.AttributeValue;
 import org.eclipse.che.api.project.shared.dto.CopyOptions;
-import org.eclipse.che.api.project.shared.dto.ImportProject;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.MoveOptions;
-import org.eclipse.che.api.project.shared.dto.NewProject;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectProblem;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
-import org.eclipse.che.api.project.shared.dto.Source;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.project.shared.dto.TreeElement;
 import org.eclipse.che.api.vfs.server.ContentStream;
@@ -119,8 +115,6 @@ public class ProjectService extends Service {
     private SearcherProvider        searcherProvider;
     @Inject
     private EventService            eventService;
-    @Inject
-    private ProjectHandlerRegistry  projectHandlerRegistry;
 
     @PreDestroy
     void stop() {
@@ -128,9 +122,9 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Gets list of projects in root folder",
-            response = ProjectReference.class,
-            responseContainer = "List",
-            position = 1)
+                  response = ProjectReference.class,
+                  responseContainer = "List",
+                  position = 1)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 500, message = "Server error")})
@@ -170,8 +164,8 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Gets project by ID of workspace and project's path",
-            response = ProjectDescriptor.class,
-            position = 2)
+                  response = ProjectDescriptor.class,
+                  position = 2)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 404, message = "Project with specified path doesn't exist in workspace"),
@@ -348,9 +342,9 @@ public class ProjectService extends Service {
         ProjectConfig newConfig = DtoConverter.fromProjectConfigDto(projectConfigDto, projectManager.getProjectTypeRegistry());
         Project project;
 
-        if (projectManager.getProject(workspace, path) == null) {
-
-            FolderEntry baseProjectFolder = (FolderEntry)getVirtualFile(workspace, path, false);
+        if (projectManager.getProject(workspace, path) != null) {
+            project = projectManager.updateProject(workspace, path, newConfig);
+        } else {
             try {
                 project = projectManager.convertFolderToProject(workspace, path, newConfig);
 
@@ -358,19 +352,18 @@ public class ProjectService extends Service {
 
                 eventService.publish(new ProjectCreatedEvent(project.getWorkspace(), project.getPath()));
                 logProjectCreatedEvent(projectConfigDto.getName(), projectConfigDto.getType());
-            } catch (ConflictException | ForbiddenException | ServerException | NotFoundException e) {
+            } catch (ConflictException | ForbiddenException | ServerException e) {
+                FolderEntry baseProjectFolder = (FolderEntry)getVirtualFile(workspace, path, false);
                 project = new NotValidProject(baseProjectFolder, projectManager);
 
                 ProjectDescriptor projectDescriptor = DtoConverter.toProjectDescriptor(project,
-                                                                     getServiceContext().getServiceUriBuilder(),
-                                                                     projectManager.getProjectTypeRegistry(),
-                                                                     workspace);
+                                                                                       getServiceContext().getServiceUriBuilder(),
+                                                                                       projectManager.getProjectTypeRegistry(),
+                                                                                       workspace);
                 ProjectProblem problem = DtoFactory.getInstance().createDto(ProjectProblem.class).withCode(1).withMessage(e.getMessage());
                 projectDescriptor.setProblems(Collections.singletonList(problem));
                 return projectDescriptor;
             }
-        } else {
-            project = projectManager.updateProject(workspace, path, newConfig);
         }
 
         return DtoConverter.toProjectDescriptor(project,
@@ -771,7 +764,7 @@ public class ProjectService extends Service {
                     "VCS or ZIP",
             position = 17)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = ""),
+            @ApiResponse(code = 204, message = ""),
             @ApiResponse(code = 401, message = "User not authorized to call this operation"),
             @ApiResponse(code = 403, message = "Forbidden operation"),
             @ApiResponse(code = 409, message = "Resource already exists"),

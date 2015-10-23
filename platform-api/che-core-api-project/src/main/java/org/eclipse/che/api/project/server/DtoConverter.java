@@ -20,19 +20,17 @@ import org.eclipse.che.api.project.server.type.BaseProjectType;
 import org.eclipse.che.api.project.server.type.ProjectType;
 import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
 import org.eclipse.che.api.project.shared.dto.AttributeDescriptor;
-import org.eclipse.che.api.project.shared.dto.ImportSourceDescriptor;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectImporterDescriptor;
-import org.eclipse.che.api.project.shared.dto.ProjectModule;
 import org.eclipse.che.api.project.shared.dto.ProjectProblem;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
-import org.eclipse.che.api.project.shared.dto.ProjectUpdate;
 import org.eclipse.che.api.vfs.shared.dto.AccessControlEntry;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.ws.rs.ExtMediaType;
 import org.eclipse.che.commons.user.User;
@@ -48,6 +46,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static javax.ws.rs.HttpMethod.DELETE;
 import static javax.ws.rs.HttpMethod.GET;
@@ -61,7 +60,6 @@ import static org.eclipse.che.api.project.server.Constants.LINK_REL_MODULES;
 import static org.eclipse.che.api.project.server.Constants.LINK_REL_TREE;
 import static org.eclipse.che.api.project.server.Constants.LINK_REL_UPDATE_CONTENT;
 import static org.eclipse.che.api.project.server.Constants.LINK_REL_UPDATE_PROJECT;
-import static org.eclipse.che.api.project.shared.Constants.DEFAULT_TEMPLATE_CATEGORY;
 
 /**
  * Helper methods for convert server essentials to DTO and back.
@@ -73,71 +71,6 @@ public class DtoConverter {
     private DtoConverter() {
     }
 
-    public static ProjectTemplateDescription fromTemplateDescriptor(ProjectTemplateDescriptor dto) {
-        final String category = dto.getCategory();
-        final ImportSourceDescriptor importSource = dto.getSource();
-        return new ProjectTemplateDescription(
-                category == null ? DEFAULT_TEMPLATE_CATEGORY : category,
-                importSource == null ? null : importSource.getType(),
-                dto.getDisplayName(),
-                dto.getDescription(),
-                importSource == null ? null : importSource.getLocation(),
-                importSource == null ? null : importSource.getParameters(),
-                null);
-    }
-
-    public static ProjectTemplateDescriptor toTemplateDescriptor(ProjectTemplateDescription templateDescription) {
-        final DtoFactory dtoFactory = DtoFactory.getInstance();
-        ImportSourceDescriptor sources = dtoFactory.createDto(ImportSourceDescriptor.class)
-                                                   .withLocation(templateDescription.getLocation())
-                                                   .withType(templateDescription.getImporterType());
-
-        return dtoFactory.createDto(ProjectTemplateDescriptor.class).withDescription(templateDescription.getDescription())
-                         .withCategory(templateDescription.getCategory())
-                         .withDisplayName(templateDescription.getDisplayName())
-                         .withSource(sources);
-    }
-
-    public static ProjectConfig fromProjectUpdate(ProjectUpdate dto, ProjectTypeRegistry typeRegistry) throws ServerException,
-                                                                                                              ProjectTypeConstraintException,
-                                                                                                              InvalidValueException,
-                                                                                                              ValueStorageException {
-        if (dto.getType() == null) {
-            throw new InvalidValueException("Invalid Project definition. Primary project type is not defined.");
-        }
-
-        if (typeRegistry.getProjectType(dto.getType()) == null) {
-            throw new ProjectTypeConstraintException("Primary project type is not registered " + dto.getType());
-        }
-
-        // primary
-        final Set<ProjectType> validTypes = new HashSet<>();
-        validTypes.add(typeRegistry.getProjectType(dto.getType()));
-
-        // mixins
-        final List<String> validMixins = new ArrayList<>();
-        for (String typeId : dto.getMixinTypes()) {
-            ProjectType mixinType = typeRegistry.getProjectType(typeId);
-            if (mixinType != null) {  // otherwise just ignore
-                validTypes.add(mixinType);
-                validMixins.add(typeId);
-            }
-        }
-
-        // attributes
-        final Map<String, List<String>> updateAttributes = dto.getAttributes();
-        final HashMap<String, AttributeValue> attributes = new HashMap<>(updateAttributes.size());
-        for (Map.Entry<String, List<String>> entry : updateAttributes.entrySet()) {
-            for (ProjectType projectType : validTypes) {
-                Attribute attr = projectType.getAttribute(entry.getKey());
-                if (attr != null) {
-                    attributes.put(attr.getName(), new AttributeValue(entry.getValue()));
-                }
-            }
-        }
-
-        return new ProjectConfig(dto.getDescription(), dto.getType(), attributes, dto.getRecipe(), validMixins);
-    }
 
 
     public static ProjectConfig fromProjectConfigDto(ProjectConfigDto dto, ProjectTypeRegistry typeRegistry) throws ServerException,
@@ -183,47 +116,6 @@ public class DtoConverter {
 
 
 
-    public static ProjectConfig toProjectConfig(ProjectModule dto, ProjectTypeRegistry typeRegistry) throws ServerException,
-                                                                                                            ProjectTypeConstraintException,
-                                                                                                            InvalidValueException,
-                                                                                                            ValueStorageException {
-        if (dto.getType() == null) {
-            throw new InvalidValueException("Invalid Project definition. Primary module type is not defined.");
-        }
-
-        if (typeRegistry.getProjectType(dto.getType()) == null) {
-            throw new ProjectTypeConstraintException("Primary module type is not registered " + dto.getType());
-        }
-
-        // primary
-        final Set<ProjectType> validTypes = new HashSet<>();
-        validTypes.add(typeRegistry.getProjectType(dto.getType()));
-
-        // mixins
-        final List<String> validMixins = new ArrayList<>();
-        dto.getMixins().stream().forEach(typeId -> {
-            ProjectType mixinType = typeRegistry.getProjectType(typeId);
-            if (mixinType != null) {  // otherwise just ignore
-                validTypes.add(mixinType);
-                validMixins.add(typeId);
-            }
-        });
-
-        // attributes
-        final Map<String, List<String>> updateAttributes = dto.getAttributes();
-        final HashMap<String, AttributeValue> attributes = new HashMap<>(updateAttributes.size());
-        for (Map.Entry<String, List<String>> entry : updateAttributes.entrySet()) {
-            for (ProjectType projectType : validTypes) {
-                Attribute attr = projectType.getAttribute(entry.getKey());
-                if (attr != null) {
-                    attributes.put(attr.getName(), new AttributeValue(entry.getValue()));
-                }
-            }
-        }
-
-        return new ProjectConfig(dto.getDescription(), dto.getType(), attributes, dto.getRecipe(), validMixins);
-    }
-
     public static ProjectTypeDefinition toTypeDefinition(ProjectType projectType) {
         final DtoFactory dtoFactory = DtoFactory.getInstance();
         final ProjectTypeDefinition definition = dtoFactory.createDto(ProjectTypeDefinition.class)
@@ -239,7 +131,7 @@ public class DtoConverter {
             try {
                 if (attr.getValue() != null)
                     valueList = attr.getValue().getList();
-            } catch (ValueStorageException e) {
+            } catch (ValueStorageException ignored) {
             }
 
             typeAttributes.add(dtoFactory.createDto(AttributeDescriptor.class)
@@ -251,10 +143,9 @@ public class DtoConverter {
         }
         definition.setAttributeDescriptors(typeAttributes);
 
-        final List<String> parents = new ArrayList<>();
-        for (ProjectType parent : projectType.getParents()) {
-            parents.add(parent.getId());
-        }
+        final List<String> parents = projectType.getParents().stream()
+                                                             .map(ProjectType::getId)
+                                                             .collect(Collectors.toList());
         definition.setParents(parents);
 
         return definition;
@@ -267,7 +158,7 @@ public class DtoConverter {
     private static ProjectTemplateDescriptor toTemplateDescriptor(DtoFactory dtoFactory,
                                                                   ProjectTemplateDescription projectTemplate,
                                                                   String projectType) {
-        final ImportSourceDescriptor importSource = dtoFactory.createDto(ImportSourceDescriptor.class)
+        final SourceStorageDto importSource = dtoFactory.createDto(SourceStorageDto.class)
                                                               .withType(projectTemplate.getImporterType())
                                                               .withLocation(projectTemplate.getLocation())
                                                               .withParameters(projectTemplate.getParameters());

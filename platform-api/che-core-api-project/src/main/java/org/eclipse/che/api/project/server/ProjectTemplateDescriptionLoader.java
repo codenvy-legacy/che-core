@@ -13,8 +13,8 @@ package org.eclipse.che.api.project.server;
 import com.google.inject.Inject;
 
 import org.eclipse.che.api.project.server.type.ProjectType;
-import org.eclipse.che.api.project.shared.dto.ImportSourceDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
+import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -134,7 +134,10 @@ public class ProjectTemplateDescriptionLoader {
         templates = DtoFactory.getInstance().createListDtoFromJson(stream, ProjectTemplateDescriptor.class);
         for (ProjectTemplateDescriptor template : templates) {
             template.setProjectType(projectTypeId);
-            ImportSourceDescriptor templateSource = template.getSource();
+            SourceStorageDto
+
+
+                    templateSource = template.getSource();
             String location = templateSource.getLocation();
             if (location.contains("${project.template_location_dir}") && templateLocationDir != null) {
                 templateSource.setLocation(location.replace("${project.template_location_dir}", templateLocationDir));
