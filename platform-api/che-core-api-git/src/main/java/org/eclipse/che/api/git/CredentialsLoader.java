@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.api.git;
 
-
 import org.eclipse.che.api.git.shared.GitUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,7 +76,7 @@ public class CredentialsLoader {
     public GitUser getUser(String providerId) throws GitException {
         CredentialsProvider provider = credentialsProviders.get(providerId);
         if (provider == null) {
-            throw new GitException("Provider " + providerId + " are not found");
+            throw new GitException("Provider " + providerId + " is not found");
         }
         GitUser user = provider.getUser();
         LOG.debug("Provider {} user {}", providerId, user);
