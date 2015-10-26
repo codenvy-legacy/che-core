@@ -134,10 +134,7 @@ public class ProjectTemplateDescriptionLoader {
         templates = DtoFactory.getInstance().createListDtoFromJson(stream, ProjectTemplateDescriptor.class);
         for (ProjectTemplateDescriptor template : templates) {
             template.setProjectType(projectTypeId);
-            SourceStorageDto
-
-
-                    templateSource = template.getSource();
+            SourceStorageDto templateSource = template.getSource();
             String location = templateSource.getLocation();
             if (location.contains("${project.template_location_dir}") && templateLocationDir != null) {
                 templateSource.setLocation(location.replace("${project.template_location_dir}", templateLocationDir));

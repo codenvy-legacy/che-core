@@ -166,6 +166,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
+    @Deprecated
     public void updateProject(String path, ProjectDescriptor descriptor, AsyncRequestCallback<ProjectDescriptor> callback) {
         final String requestUrl = baseHttpUrl + normalizePath(path);
         asyncRequestFactory.createRequest(PUT, requestUrl, descriptor, false)

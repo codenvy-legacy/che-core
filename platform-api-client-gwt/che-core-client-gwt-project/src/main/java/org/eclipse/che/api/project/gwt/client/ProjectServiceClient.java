@@ -136,6 +136,7 @@ public interface ProjectServiceClient {
      *         the callback to use for the response
      * @deprecated use {@link #updateProject(String, ProjectConfigDto, AsyncRequestCallback)} instead.
      */
+    @Deprecated
     void updateProject(String path, ProjectDescriptor descriptor, AsyncRequestCallback<ProjectDescriptor> callback);
 
     /**
