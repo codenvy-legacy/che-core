@@ -47,6 +47,7 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
     private UsersWorkspaceDto              selectedWorkspace;
     private Callback<Component, Exception> callback;
     private OperationInfo                  operationInfo;
+    private List<UsersWorkspaceDto>        workspaces;
 
     @Inject
     public StartWorkspacePresenter(StartWorkspaceView view,
@@ -78,6 +79,7 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
     public void show(List<UsersWorkspaceDto> workspaces, Callback<Component, Exception> callback, OperationInfo operationInfo) {
         this.callback = callback;
         this.operationInfo = operationInfo;
+        this.workspaces = workspaces;
 
         view.clearWorkspacesPanel();
 
@@ -134,7 +136,7 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
     public void onCreateWorkspaceClicked() {
         view.hide();
 
-        createWorkspacePresenter.show(operationInfo, callback);
+        createWorkspacePresenter.show(workspaces, operationInfo, callback);
     }
 
     /** {@inheritDoc} */

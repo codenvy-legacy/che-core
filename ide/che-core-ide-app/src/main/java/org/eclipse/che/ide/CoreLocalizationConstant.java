@@ -595,4 +595,10 @@ public interface CoreLocalizationConstant extends Messages {
 
     @Key("start.ws.error.content")
     String startWsErrorContent(String workspaceName);
+
+    @Key("create.ws.name.length.is.not.correct")
+    String createWsNameLengthIsNotCorrect();
+
+    @Key("create.ws.name.already.exist")
+    String createWsNameAlreadyExist();
 }

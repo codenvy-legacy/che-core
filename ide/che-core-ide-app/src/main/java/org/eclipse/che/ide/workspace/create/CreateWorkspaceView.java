@@ -81,27 +81,27 @@ interface CreateWorkspaceView extends View<CreateWorkspaceView.ActionDelegate> {
     void setVisibleTagsError(boolean visible);
 
     /**
-     * Changes enabling of create button.
+     * Shows error message for workspace name.
      *
-     * @param enable
-     *         <code>true</code> the button is enable, <code>false</code> the button is not enable
+     * @param error
+     *         error message which will be shown
      */
-    void setEnableCreateButton(boolean enable);
+    void showValidationNameError(String error);
 
     /**
-     * Changes visibility of error message for workspace name.
+     * Changes enabling of create workspace button.
      *
      * @param visible
-     *         <code>true</code> error message is visible, <code>false</code> error message is not visible
+     *         <code>true</code> button is enable, <code>false</code> button is not enable
      */
-    void setVisibleNameError(boolean visible);
+    void setEnableCreateButton(boolean visible);
 
     interface ActionDelegate {
         /** Performs some actions when user clicks on create workspace button. */
         void onCreateButtonClicked();
 
         /** Performs some actions when user change name of workspace. */
-        void onNameChanged(String name);
+        void onNameChanged();
 
         /** Performs some actions when user change recipe url. */
         void onRecipeUrlChanged();
