@@ -52,6 +52,7 @@ import org.eclipse.che.ide.api.event.project.DeleteProjectEvent;
 import org.eclipse.che.ide.api.event.project.DeleteProjectHandler;
 import org.eclipse.che.ide.api.event.project.OpenProjectEvent;
 import org.eclipse.che.ide.api.event.project.OpenProjectHandler;
+import org.eclipse.che.ide.api.event.project.CurrentProjectChangedEvent;
 import org.eclipse.che.ide.api.event.project.ProjectReadyEvent;
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.notification.NotificationManager;
@@ -120,6 +121,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
     private final NotificationManager          notificationManager;
 
     private HandlerRegistration handlerRegistration;
+    private ProjectDescriptor   selectedProject;
 
     @Inject
     public ProjectExplorerPresenter(ProjectExplorerView view,
@@ -487,6 +489,13 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
             ProjectDescriptor descriptor = ((HasProjectDescriptor)selectedNode).getProjectDescriptor();
 
             currentProject.setProjectDescription(descriptor);
+
+            if (!descriptor.equals(selectedProject)) {
+
+                selectedProject = descriptor;
+
+                eventBus.fireEvent(new CurrentProjectChangedEvent(selectedProject));
+            }
 
             String projectName = descriptor.getName();
 

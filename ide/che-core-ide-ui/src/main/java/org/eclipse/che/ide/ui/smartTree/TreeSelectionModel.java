@@ -631,7 +631,7 @@ public class TreeSelectionModel implements HasSelectionHandlers<Node>, HasBefore
         boolean change = false;
         if (!keepExisting && selectionStorage.size() > 0) {
             change = true;
-            doDeselect(new ArrayList<>(selectionStorage), false);
+            doDeselect(new ArrayList<>(selectionStorage), true);
         }
 
         for (Node node : nodes) {

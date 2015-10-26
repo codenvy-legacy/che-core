@@ -232,8 +232,16 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
                     }
                 };
 
-                workspaceServiceClient.getWorkspaceById(recentWorkspaceId).then(workspaceOperation);
+                Operation<PromiseError> errorOperation = new Operation<PromiseError>() {
+                    @Override
+                    public void apply(PromiseError promiseError) throws OperationException {
+                        showWorkspaceDialog(operationInfo);
+                    }
+                };
 
+                workspaceServiceClient.getWorkspaceById(recentWorkspaceId)
+                                      .then(workspaceOperation)
+                                      .catchError(errorOperation);
                 return;
             }
         }
@@ -375,7 +383,7 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
             @Override
             public void apply(final List<UsersWorkspaceDto> workspaces) throws OperationException {
                 dialogFactory.createMessageDialog(locale.startWsErrorTitle(),
-                                                  locale.startWsErrorContent(wsName) + ": " + errorMessage,
+                                                  locale.startWsErrorContent(wsName, errorMessage),
                                                   new ConfirmCallback() {
                                                       @Override
                                                       public void accepted() {
