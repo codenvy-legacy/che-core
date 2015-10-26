@@ -23,6 +23,7 @@ import org.eclipse.che.api.project.shared.dto.TreeElement;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.ide.MimeType;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
@@ -290,7 +291,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void importProject(String path, boolean force, ProjectConfigDto projectConfig, RequestCallback<Void> callback) {
+    public void importProject(String path, boolean force, SourceStorageDto sourceStorage, RequestCallback<Void> callback) {
         final StringBuilder requestUrl = new StringBuilder(projectServicePath);
         requestUrl.append("/import").append(normalizePath(path));
         if (force) {
@@ -298,7 +299,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         }
 
         MessageBuilder builder = new MessageBuilder(POST, requestUrl.toString());
-        builder.data(dtoFactory.toJson(projectConfig)).header(CONTENTTYPE, APPLICATION_JSON);
+        builder.data(dtoFactory.toJson(sourceStorage)).header(CONTENTTYPE, APPLICATION_JSON);
         Message message = builder.build();
 
         sendMessageToWS(message, callback);

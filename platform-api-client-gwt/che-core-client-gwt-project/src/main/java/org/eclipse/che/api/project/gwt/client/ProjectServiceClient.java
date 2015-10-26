@@ -15,6 +15,7 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.api.project.shared.dto.TreeElement;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.websocket.rest.RequestCallback;
 
@@ -272,12 +273,12 @@ public interface ProjectServiceClient {
      *         path to the project to import sources
      * @param force
      *         set true for force rewrite existed project
-     * @param projectConfig
-     *         {@link ProjectConfigDto}
+     * @param sourceStorage
+     *         {@link SourceStorageDto}
      * @param callback
      *         the callback to use for the response
      */
-    void importProject(String path, boolean force, ProjectConfigDto projectConfig, RequestCallback<Void> callback);
+    void importProject(String path, boolean force, SourceStorageDto sourceStorage, RequestCallback<Void> callback);
 
     /**
      * Get children for the specified path.
