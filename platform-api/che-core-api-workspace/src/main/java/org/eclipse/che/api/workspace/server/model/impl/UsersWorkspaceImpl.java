@@ -80,7 +80,9 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
                                     .map(ProjectConfigImpl::new)
                                     .collect(toList());
         }
-        this.attributes = attributes;
+        if (attributes != null) {
+            this.attributes = new HashMap<>(attributes);
+        }
         setDefaultEnvName(defaultEnvironment);
     }
 
