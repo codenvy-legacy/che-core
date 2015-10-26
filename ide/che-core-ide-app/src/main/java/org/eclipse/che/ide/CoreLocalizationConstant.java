@@ -586,4 +586,13 @@ public interface CoreLocalizationConstant extends Messages {
 
     @Key("ext.server.stopped")
     String extServerStopped();
+
+    @Key("workspace.start.failed")
+    String workspaceStartFailed(String workspaceName);
+
+    @Key("start.ws.error.title")
+    String startWsErrorTitle();
+
+    @Key("start.ws.error.content")
+    String startWsErrorContent(String workspaceName);
 }

@@ -20,7 +20,7 @@ import org.eclipse.che.ide.bootstrap.WorkspaceComponent;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo;
-import org.eclipse.che.ide.workspace.BrowserQueryFieldViewer;
+import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
 import org.eclipse.che.ide.workspace.WorkspaceWidgetFactory;
 import org.eclipse.che.ide.workspace.create.CreateWorkspacePresenter;
 import org.eclipse.che.ide.workspace.start.workspacewidget.WorkspaceWidget;
@@ -42,7 +42,7 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
     private final WorkspaceWidgetFactory       widgetFactory;
     private final LoaderPresenter              loader;
     private final CreateWorkspacePresenter     createWorkspacePresenter;
-    private final BrowserQueryFieldViewer      browserQueryFieldViewer;
+    private final BrowserQueryFieldRenderer    browserQueryFieldRenderer;
 
     private UsersWorkspaceDto              selectedWorkspace;
     private Callback<Component, Exception> callback;
@@ -54,7 +54,7 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
                                    WorkspaceWidgetFactory widgetFactory,
                                    LoaderPresenter loader,
                                    CreateWorkspacePresenter createWorkspacePresenter,
-                                   BrowserQueryFieldViewer browserQueryFieldViewer) {
+                                   BrowserQueryFieldRenderer browserQueryFieldRenderer) {
         this.view = view;
         this.view.setDelegate(this);
 
@@ -62,7 +62,7 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
         this.widgetFactory = widgetFactory;
         this.loader = loader;
         this.createWorkspacePresenter = createWorkspacePresenter;
-        this.browserQueryFieldViewer = browserQueryFieldViewer;
+        this.browserQueryFieldRenderer = browserQueryFieldRenderer;
     }
 
     /**
@@ -81,7 +81,7 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
 
         view.clearWorkspacesPanel();
 
-        String workspaceName = browserQueryFieldViewer.getWorkspaceName();
+        String workspaceName = browserQueryFieldRenderer.getWorkspaceName();
 
         createWsWidgets(workspaces);
 
@@ -121,7 +121,9 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
         if (RUNNING.equals(workspace.getStatus())) {
             WorkspaceComponent workspaceComponent = wsComponentProvider.get();
 
-            workspaceComponent.setCurrentWorkspace(operationInfo, workspace);
+            workspaceComponent.setCurrentWorkspace(workspace, operationInfo);
+
+            workspaceComponent.startWorkspaceById(workspace);
 
             view.hide();
         }
@@ -142,10 +144,7 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
 
         WorkspaceComponent workspaceComponent = wsComponentProvider.get();
 
-        String workspaceId = selectedWorkspace.getId();
-        String workspaceName = selectedWorkspace.getDefaultEnvName();
-
-        workspaceComponent.startWorkspace(workspaceId, workspaceName);
+        workspaceComponent.startWorkspaceById(selectedWorkspace);
 
         view.hide();
     }

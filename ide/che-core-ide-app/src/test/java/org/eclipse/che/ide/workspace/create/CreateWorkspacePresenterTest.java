@@ -9,20 +9,23 @@
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 package org.eclipse.che.ide.workspace.create;
-/*
+
 import com.google.gwt.core.client.Callback;
 import com.google.inject.Provider;
 
 import org.eclipse.che.api.machine.gwt.client.RecipeServiceClient;
+import org.eclipse.che.api.machine.shared.dto.CommandDto;
+import org.eclipse.che.api.machine.shared.dto.LimitsDto;
+import org.eclipse.che.api.machine.shared.dto.MachineConfigDto;
+import org.eclipse.che.api.machine.shared.dto.MachineSourceDto;
+import org.eclipse.che.api.machine.shared.dto.MachineStateDto;
 import org.eclipse.che.api.machine.shared.dto.recipe.RecipeDescriptor;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.PromiseError;
 import org.eclipse.che.api.workspace.gwt.client.WorkspaceServiceClient;
-import org.eclipse.che.api.machine.shared.dto.CommandDto;
 import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
-import org.eclipse.che.api.machine.shared.dto.MachineConfigDto;
-import org.eclipse.che.api.machine.shared.dto.MachineSourceDto;
+import org.eclipse.che.api.workspace.shared.dto.EnvironmentStateDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
@@ -31,7 +34,7 @@ import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo;
-import org.eclipse.che.ide.workspace.BrowserQueryFieldViewer;
+import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
 import org.eclipse.che.ide.workspace.create.CreateWorkspaceView.HidePopupCallBack;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,13 +62,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-/*
+
 /**
  * @author Dmitry Shnurenko
  */
-//@RunWith(MockitoJUnitRunner.class)
+@RunWith(MockitoJUnitRunner.class)
 public class CreateWorkspacePresenterTest {
-/*
     //constructor mocks
     @Mock
     private CreateWorkspaceView          view;
@@ -82,7 +84,7 @@ public class CreateWorkspacePresenterTest {
     @Mock
     private RecipeServiceClient          recipeServiceClient;
     @Mock
-    private BrowserQueryFieldViewer      browserQueryFieldViewer;
+    private BrowserQueryFieldRenderer    browserQueryFieldRenderer;
 
     //additional mocks
     @Mock
@@ -99,20 +101,24 @@ public class CreateWorkspacePresenterTest {
     private RecipeDescriptor                recipeDescriptor;
     @Mock
     private WorkspaceComponent              workspaceComponent;
+    @Mock
+    private LimitsDto                       limitsDto;
 
     //DTOs
     @Mock
-    private MachineConfigDto   machineConfigDto;
+    private MachineStateDto     machineConfigDto;
     @Mock
-    private MachineSourceDto   machineSourceDto;
+    private MachineSourceDto    machineSourceDto;
     @Mock
-    private EnvironmentDto     environmentDto;
+    private EnvironmentDto      environmentDto;
     @Mock
-    private CommandDto         commandDto;
+    private EnvironmentStateDto environmentStateDto;
     @Mock
-    private WorkspaceConfigDto workspaceConfigDto;
+    private CommandDto          commandDto;
     @Mock
-    private UsersWorkspaceDto  usersWorkspaceDto;
+    private WorkspaceConfigDto  workspaceConfigDto;
+    @Mock
+    private UsersWorkspaceDto   usersWorkspaceDto;
 
     @Captor
     private ArgumentCaptor<Operation<List<RecipeDescriptor>>> recipeOperation;
@@ -126,24 +132,23 @@ public class CreateWorkspacePresenterTest {
 
     @Before
     public void setUp() {
+        when(dtoFactory.createDto(MachineSourceDto.class)).thenReturn(machineSourceDto);
+        when(machineSourceDto.withType(anyString())).thenReturn(machineSourceDto);
+        when(machineSourceDto.withLocation(anyString())).thenReturn(machineSourceDto);
+
+        when(dtoFactory.createDto(LimitsDto.class)).thenReturn(limitsDto);
+        when(limitsDto.withMemory(anyInt())).thenReturn(limitsDto);
+
         when(dtoFactory.createDto(MachineConfigDto.class)).thenReturn(machineConfigDto);
         when(machineConfigDto.withName(anyString())).thenReturn(machineConfigDto);
         when(machineConfigDto.withType(anyString())).thenReturn(machineConfigDto);
         when(machineConfigDto.withSource(machineSourceDto)).thenReturn(machineConfigDto);
         when(machineConfigDto.withDev(anyBoolean())).thenReturn(machineConfigDto);
-        when(machineConfigDto.withMemorySize(anyInt())).thenReturn(machineConfigDto);
-
-        when(dtoFactory.createDto(MachineSourceDto.class)).thenReturn(machineSourceDto);
-        when(machineSourceDto.withType(anyString())).thenReturn(machineSourceDto);
-        when(machineSourceDto.withLocation(anyString())).thenReturn(machineSourceDto);
+        when(machineConfigDto.withLimits(limitsDto)).thenReturn(machineConfigDto);
 
         when(dtoFactory.createDto(EnvironmentDto.class)).thenReturn(environmentDto);
         when(environmentDto.withName(anyString())).thenReturn(environmentDto);
         when(environmentDto.withMachineConfigs(Matchers.<List<MachineConfigDto>>anyObject())).thenReturn(environmentDto);
-
-        when(dtoFactory.createDto(CommandDto.class)).thenReturn(commandDto);
-        when(commandDto.withName(anyString())).thenReturn(commandDto);
-        when(commandDto.withCommandLine(anyString())).thenReturn(commandDto);
 
         when(dtoFactory.createDto(WorkspaceConfigDto.class)).thenReturn(workspaceConfigDto);
         when(workspaceConfigDto.withName(anyString())).thenReturn(workspaceConfigDto);
@@ -154,11 +159,8 @@ public class CreateWorkspacePresenterTest {
 
         when(dtoFactory.createDto(UsersWorkspaceDto.class)).thenReturn(usersWorkspaceDto);
         when(usersWorkspaceDto.withName(anyString())).thenReturn(usersWorkspaceDto);
-        when(usersWorkspaceDto.withAttributes(Matchers.<Map<String, String>>anyObject())).thenReturn(usersWorkspaceDto);
-        when(usersWorkspaceDto.withCommands(Matchers.<List<CommandDto>>anyObject())).thenReturn(usersWorkspaceDto);
-        when(usersWorkspaceDto.withEnvironments(Matchers.<Map<String, EnvironmentDto>>anyObject())).thenReturn(usersWorkspaceDto);
         when(usersWorkspaceDto.withDefaultEnvName(anyString())).thenReturn(usersWorkspaceDto);
-        when(usersWorkspaceDto.withTemporary(anyBoolean())).thenReturn(usersWorkspaceDto);
+        when(usersWorkspaceDto.withEnvironments(Matchers.<Map<String, EnvironmentStateDto>>anyObject())).thenReturn(usersWorkspaceDto);
 
         when(wsComponentProvider.get()).thenReturn(workspaceComponent);
     }
@@ -174,7 +176,7 @@ public class CreateWorkspacePresenterTest {
 
         presenter.show(operationInfo, componentCallback);
 
-        verify(browserQueryFieldViewer).getWorkspaceName();
+        verify(browserQueryFieldRenderer).getWorkspaceName();
         verify(view).setWorkspaceName(anyString());
 
         verify(view).show();
@@ -270,7 +272,7 @@ public class CreateWorkspacePresenterTest {
     }
 
     private void clickOnCreateButton() {
-        when(workspaceClient.create(Matchers.<UsersWorkspaceDto>anyObject(), anyString())).thenReturn(userWsPromise);
+        when(workspaceClient.create(Matchers.<WorkspaceConfigDto>anyObject(), anyString())).thenReturn(userWsPromise);
         when(userWsPromise.then(Matchers.<Operation<UsersWorkspaceDto>>anyObject())).thenReturn(userWsPromise);
         when(userWsPromise.catchError(Matchers.<Operation<PromiseError>>anyObject())).thenReturn(userWsPromise);
         when(recipeServiceClient.getRecipes(anyInt(), anyInt())).thenReturn(recipesPromise);
@@ -298,7 +300,6 @@ public class CreateWorkspacePresenterTest {
         verify(machineConfigDto).withType("docker");
         verify(machineConfigDto).withSource(machineSourceDto);
         verify(machineConfigDto).withDev(true);
-        verify(machineConfigDto).withMemorySize(2048);
 
         verify(dtoFactory).createDto(MachineSourceDto.class);
         verify(machineSourceDto).withType("recipe");
@@ -307,18 +308,6 @@ public class CreateWorkspacePresenterTest {
         verify(dtoFactory).createDto(EnvironmentDto.class);
         verify(environmentDto).withName("name");
         verify(environmentDto).withMachineConfigs(Matchers.<List<MachineConfigDto>>anyObject());
-
-        verify(dtoFactory).createDto(CommandDto.class);
-        verify(commandDto).withName("MCI");
-        verify(commandDto).withCommandLine("mvn clean install");
-
-        verify(dtoFactory).createDto(UsersWorkspaceDto.class);
-        verify(usersWorkspaceDto).withName(anyString());
-        verify(usersWorkspaceDto).withAttributes(Matchers.<Map<String, String>>anyObject());
-        verify(usersWorkspaceDto).withCommands(Matchers.<List<CommandDto>>anyObject());
-        verify(usersWorkspaceDto).withEnvironments(Matchers.<Map<String, EnvironmentDto>>anyObject());
-        verify(usersWorkspaceDto).withDefaultEnvName(anyString());
-        verify(usersWorkspaceDto).withTemporary(anyBoolean());
     }
 
     @Test
@@ -328,14 +317,12 @@ public class CreateWorkspacePresenterTest {
         callApplyCreateWorkspaceMethod();
 
         verify(wsComponentProvider).get();
-        verify(usersWorkspaceDto).getId();
-        verify(usersWorkspaceDto).getDefaultEnvName();
-        verify(workspaceComponent).startWorkspace(anyString(), anyString());
+        verify(workspaceComponent).startWorkspaceById(usersWorkspaceDto);
     }
 
     private void callApplyCreateWorkspaceMethod() throws Exception {
-        Map<String, EnvironmentDto> environments = new HashMap<>();
-        environments.put("name", environmentDto);
+        Map<String, EnvironmentStateDto> environments = new HashMap<>();
+        environments.put("name", environmentStateDto);
 
         when(usersWorkspaceDto.getDefaultEnvName()).thenReturn("name");
         when(usersWorkspaceDto.getEnvironments()).thenReturn(environments);
@@ -354,10 +341,9 @@ public class CreateWorkspacePresenterTest {
 
         callApplyCreateWorkspaceMethod();
 
-        verify(machineConfigDto, never()).getOutputChannel();
-        verify(machineConfigDto, never()).getStatusChannel();
+        verify(machineConfigDto, never()).getChannels();
 
-        verify(workspaceComponent).startWorkspace(anyString(), anyString());
+        verify(workspaceComponent).startWorkspaceById(usersWorkspaceDto);
     }
 
     @Test
@@ -372,5 +358,5 @@ public class CreateWorkspacePresenterTest {
         //noinspection ThrowableResultOfMethodCallIgnored
         verify(promiseError).getCause();
         verify(componentCallback).onFailure(Matchers.<Exception>anyObject());
-    }*/
+    }
 }

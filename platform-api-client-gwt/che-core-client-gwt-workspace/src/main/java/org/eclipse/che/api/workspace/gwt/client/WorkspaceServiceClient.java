@@ -66,6 +66,15 @@ public interface WorkspaceServiceClient {
     Promise<List<RuntimeWorkspaceDto>> getRuntimeWorkspaces(int skip, int limit);
 
     /**
+     * Gets workspace via id.
+     *
+     * @param workspaceId
+     *         id which need to get workspace
+     * @return an instance of {@link Promise<UsersWorkspaceDto>}
+     */
+    Promise<UsersWorkspaceDto> getWorkspaceById(String workspaceId);
+
+    /**
      * Updates workspace.
      *
      * @see WorkspaceService#update(String, WorkspaceConfigDto)

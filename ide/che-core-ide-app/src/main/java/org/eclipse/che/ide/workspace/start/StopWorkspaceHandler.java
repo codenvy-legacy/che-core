@@ -8,24 +8,24 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.statepersistance.dto;
+package org.eclipse.che.ide.workspace.start;
 
-import org.eclipse.che.dto.shared.DTO;
+import com.google.gwt.event.shared.EventHandler;
+
+import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 
 /**
- * @author Alexander Andrienko
+ * Provides methods which allows do some actions when workspace is stopped
+ *
+ * @author Dmitry Shnurenko
  */
-@DTO
-public interface RecentProject {
-    String getPath();
+public interface StopWorkspaceHandler extends EventHandler {
 
-    void setPath(String path);
-
-    String getWorkspaceId();
-
-    void setWorkspaceId(String workspaceId);
-
-    String getWorkspaceName();
-
-    void setWorkspaceName(String workspaceName);
+    /**
+     * Performs some actions when workspace is stopped.
+     *
+     * @param workspace
+     *         workspace which was stopped
+     */
+    void onWorkspaceStopped(UsersWorkspaceDto workspace);
 }
