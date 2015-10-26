@@ -23,7 +23,6 @@ import org.eclipse.che.ide.workspace.create.CreateWorkspaceView.ActionDelegate;
 import org.eclipse.che.ide.workspace.create.CreateWorkspaceView.HidePopupCallBack;
 import org.eclipse.che.ide.workspace.create.recipewidget.RecipeWidget;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -208,10 +207,19 @@ public class CreateWorkspaceViewImplTest {
     }
 
     @Test
-    public void nameErrorVisibilityShouldBeChanged() {
-        view.setVisibleNameError(true);
+    public void nameErrorShouldBeShown() {
+        view.showValidationNameError("error");
 
         verify(view.nameError).setVisible(true);
+        verify(view.nameError).setText("error");
+    }
+
+    @Test
+    public void nameErrorShouldNotBeShown() {
+        view.showValidationNameError("");
+
+        verify(view.nameError).setVisible(false);
+        verify(view.nameError).setText("");
     }
 
     @Test
@@ -251,8 +259,7 @@ public class CreateWorkspaceViewImplTest {
     public void workspaceNameShouldBeChanged() {
         view.onWorkspaceNameChanged(keyUpEvent);
 
-        verify(view.wsName).getText();
-        verify(delegate).onNameChanged(anyString());
+        verify(delegate).onNameChanged();
     }
 
     @Test

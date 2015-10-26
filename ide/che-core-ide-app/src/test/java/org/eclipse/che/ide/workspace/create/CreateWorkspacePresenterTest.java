@@ -60,6 +60,8 @@ import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -163,6 +165,10 @@ public class CreateWorkspacePresenterTest {
         when(usersWorkspaceDto.withEnvironments(Matchers.<Map<String, EnvironmentStateDto>>anyObject())).thenReturn(usersWorkspaceDto);
 
         when(wsComponentProvider.get()).thenReturn(workspaceComponent);
+
+        when(recipeServiceClient.getRecipes(anyInt(), anyInt())).thenReturn(recipesPromise);
+        when(view.getWorkspaceName()).thenReturn("test");
+        when(view.getRecipeUrl()).thenReturn("recipe");
     }
 
     @Test
@@ -172,9 +178,7 @@ public class CreateWorkspacePresenterTest {
 
     @Test
     public void dialogShouldBeShown() {
-        when(recipeServiceClient.getRecipes(anyInt(), anyInt())).thenReturn(recipesPromise);
-
-        presenter.show(operationInfo, componentCallback);
+        presenter.show(Arrays.asList(usersWorkspaceDto), operationInfo, componentCallback);
 
         verify(browserQueryFieldRenderer).getWorkspaceName();
         verify(view).setWorkspaceName(anyString());
@@ -183,26 +187,56 @@ public class CreateWorkspacePresenterTest {
     }
 
     @Test
-    public void errorLabelShouldNotBeShownWhenWorkspaceNameIsCorrect() {
-        presenter.onNameChanged("test");
+    public void errorLabelShouldBeShownWhenWorkspaceNameLengthIsInCorrect() {
+        when(view.getWorkspaceName()).thenReturn("te");
 
-        verify(view).setVisibleNameError(false);
+        presenter.onNameChanged();
+
+        verify(locale).createWsNameLengthIsNotCorrect();
+        verify(locale, never()).createWsNameIsNotCorrect();
+        verify(locale, never()).createWsNameAlreadyExist();
     }
 
     @Test
-    public void errorLabelShouldBeShownWhenWorkspaceNameIsNotCorrect() {
-        presenter.onNameChanged("test*");
+    public void errorLabelShouldBeShownWhenWorkspaceNameIsInCorrect() {
+        when(view.getWorkspaceName()).thenReturn("test/*");
 
-        verify(view).setVisibleNameError(true);
+        presenter.onNameChanged();
+
+        verify(locale, never()).createWsNameLengthIsNotCorrect();
+        verify(locale).createWsNameIsNotCorrect();
+        verify(locale, never()).createWsNameAlreadyExist();
     }
 
     @Test
-    public void errorLabelShouldNotBeShownWhenRecipeUrlIsCorrect() {
+    public void errorLabelShouldBeShownWhenWorkspaceNameAlreadyExist() {
+        when(usersWorkspaceDto.getName()).thenReturn("test");
+
+        presenter.show(Arrays.asList(usersWorkspaceDto), operationInfo, componentCallback);
+        reset(locale);
+
+        presenter.onNameChanged();
+
+        verify(locale, never()).createWsNameLengthIsNotCorrect();
+        verify(locale, never()).createWsNameIsNotCorrect();
+        verify(locale).createWsNameAlreadyExist();
+    }
+
+
+    @Test
+    public void errorLabelShouldNotBeShownWhenFormIsCorrect() {
         when(view.getRecipeUrl()).thenReturn("http://localhost/correct/url");
 
         presenter.onRecipeUrlChanged();
 
+        verify(locale, never()).createWsNameLengthIsNotCorrect();
+        verify(locale, never()).createWsNameIsNotCorrect();
+        verify(locale, never()).createWsNameAlreadyExist();
+
+        verify(view).showValidationNameError("");
+
         verify(view).setVisibleUrlError(false);
+
         verify(view).setEnableCreateButton(true);
     }
 
@@ -212,8 +246,13 @@ public class CreateWorkspacePresenterTest {
 
         presenter.onRecipeUrlChanged();
 
+        verify(locale, never()).createWsNameLengthIsNotCorrect();
+        verify(locale, never()).createWsNameIsNotCorrect();
+        verify(locale, never()).createWsNameAlreadyExist();
+
+        verify(view).showValidationNameError("");
+
         verify(view).setVisibleUrlError(true);
-        verify(view).setEnableCreateButton(false);
     }
 
     @Test
@@ -277,7 +316,7 @@ public class CreateWorkspacePresenterTest {
         when(userWsPromise.catchError(Matchers.<Operation<PromiseError>>anyObject())).thenReturn(userWsPromise);
         when(recipeServiceClient.getRecipes(anyInt(), anyInt())).thenReturn(recipesPromise);
 
-        presenter.show(operationInfo, componentCallback);
+        presenter.show(Arrays.asList(usersWorkspaceDto), operationInfo, componentCallback);
 
         presenter.onCreateButtonClicked();
 
@@ -294,7 +333,7 @@ public class CreateWorkspacePresenterTest {
 
         clickOnCreateButton();
 
-        verify(view).getWorkspaceName();
+        verify(view, times(2)).getWorkspaceName();
         verify(dtoFactory).createDto(MachineConfigDto.class);
         verify(machineConfigDto).withName("dev-machine");
         verify(machineConfigDto).withType("docker");

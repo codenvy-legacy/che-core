@@ -183,7 +183,7 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
                     }
                 }
 
-                createWorkspacePresenter.show(operationInfo, callback);
+                createWorkspacePresenter.show(workspaces, operationInfo, callback);
             }
         }).catchError(new Operation<PromiseError>() {
             @Override
@@ -246,7 +246,7 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
             @Override
             public void apply(List<UsersWorkspaceDto> workspaces) throws OperationException {
                 if (workspaces.isEmpty()) {
-                    createWorkspacePresenter.show(operationInfo, callback);
+                    createWorkspacePresenter.show(workspaces, operationInfo, callback);
 
                     return;
                 }
