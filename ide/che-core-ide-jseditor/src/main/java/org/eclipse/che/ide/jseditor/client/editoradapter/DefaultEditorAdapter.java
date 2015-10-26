@@ -138,6 +138,12 @@ public class DefaultEditorAdapter extends Composite implements EditorAdapter, Fi
         return this.textEditor.isFocused();
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void setFocus() {
+        textEditor.setFocus();
+    }
+
     @Override
     public void init(final EditorInput input) throws EditorInitException {
         this.textEditor.init(input);

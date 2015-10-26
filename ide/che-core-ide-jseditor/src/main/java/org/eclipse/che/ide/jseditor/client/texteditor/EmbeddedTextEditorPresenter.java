@@ -77,7 +77,6 @@ import org.eclipse.che.ide.texteditor.selection.CursorModelWithHandler;
 import org.eclipse.che.ide.ui.dialogs.CancelCallback;
 import org.eclipse.che.ide.ui.dialogs.ConfirmCallback;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
-import org.eclipse.che.ide.ui.dialogs.choice.ChoiceDialog;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.inject.Inject;
@@ -283,23 +282,7 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
             @Override
             public void onFileContentUpdate(final FileContentUpdateEvent event) {
                 if (event.getFilePath() != null && event.getFilePath().equals(document.getFile().getPath())) {
-                    if (isDirty()) {
-                        final ConfirmCallback callback = new ConfirmCallback() {
-                            @Override
-                            public void accepted() {
-                                updateContent();
-                            }
-                        };
-                        final ChoiceDialog choice = dialogFactory.createChoiceDialog(constant.fileUpdateTitle(),
-                                                                                     constant.fileUpdateMessage(event.getFilePath()),
-                                                                                     constant.fileUpdateOverwrite(),
-                                                                                     constant.fileUpdateKeepUnsaved(),
-                                                                                     callback,
-                                                                                     null);
-                        choice.show();
-                    } else {
-                        updateContent();
-                    }
+                    updateContent();
                 }
             }
         });
@@ -776,6 +759,12 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
 
     public boolean isFocused() {
         return this.isFocused;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setFocus() {
+        editorWidget.setFocus();
     }
 
     @Override

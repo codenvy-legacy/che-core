@@ -90,4 +90,7 @@ public interface TextEditor extends EditorPartPresenter {
      * @return <code>true</code> if the text editor is focused or <code>false</code> otherwise
      */
     boolean isFocused();
+
+    /** Give the focus to the editor. */
+    void setFocus();
 }
