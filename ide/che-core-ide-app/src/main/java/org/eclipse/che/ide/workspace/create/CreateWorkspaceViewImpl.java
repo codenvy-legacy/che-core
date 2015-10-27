@@ -155,16 +155,6 @@ class CreateWorkspaceViewImpl extends Window implements CreateWorkspaceView, Rec
 
     /** {@inheritDoc} */
     @Override
-    public void show() {
-        super.show();
-
-        boolean isCreateButtonEnable = !recipeURL.getText().isEmpty();
-
-        createButton.setEnabled(isCreateButtonEnable);
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public String getWorkspaceName() {
         return wsName.getText();
     }
@@ -232,14 +222,18 @@ class CreateWorkspaceViewImpl extends Window implements CreateWorkspaceView, Rec
 
     /** {@inheritDoc} */
     @Override
-    public void setEnableCreateButton(boolean enable) {
-        createButton.setEnabled(enable);
+    public void showValidationNameError(String error) {
+        boolean isErrorExist = !error.isEmpty();
+
+        nameError.setVisible(isErrorExist);
+
+        nameError.setText(error);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void setVisibleNameError(boolean visible) {
-        nameError.setVisible(visible);
+    public void setEnableCreateButton(boolean visible) {
+        createButton.setEnabled(visible);
     }
 
     @UiHandler("tags")
@@ -269,7 +263,12 @@ class CreateWorkspaceViewImpl extends Window implements CreateWorkspaceView, Rec
 
     @UiHandler("wsName")
     public void onWorkspaceNameChanged(@SuppressWarnings("UnusedParameters") KeyUpEvent event) {
-        delegate.onNameChanged(wsName.getText());
+        delegate.onNameChanged();
+    }
+
+    @UiHandler("wsName")
+    public void onNameFieldFocused(@SuppressWarnings("UnusedParameters") ClickEvent event) {
+        delegate.onNameChanged();
     }
 
     @UiHandler("predefinedRecipes")

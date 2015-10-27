@@ -96,7 +96,7 @@ public class WorkspaceManager {
     }
 
     /**
-     * Get all user workspaces of specific user
+     * Gets all workspaces belonging to given user.
      *
      * @param owner
      *         id of the owner of workspace
@@ -147,7 +147,7 @@ public class WorkspaceManager {
 
     /**
      * Starts certain workspace with specified environment and account.
-     * <p>
+     *
      * <p>Workspace start is asynchronous
      *
      * @param workspaceId
@@ -173,7 +173,7 @@ public class WorkspaceManager {
     public UsersWorkspaceImpl startWorkspaceById(String workspaceId,
                                                  String envName,
                                                  String accountId)
-            throws NotFoundException, ServerException, BadRequestException, ForbiddenException {
+            throws NotFoundException, ServerException, BadRequestException, ForbiddenException, ConflictException {
         requiredNotNull(workspaceId, "Workspace id required");
 
         final UsersWorkspaceImpl workspace = workspaceDao.get(workspaceId);
@@ -182,7 +182,7 @@ public class WorkspaceManager {
 
     /**
      * Starts certain workspace with specified environment and account.
-     * <p>
+     *
      * <p>Workspace start is asynchronous
      *
      * @param workspaceName
@@ -211,7 +211,7 @@ public class WorkspaceManager {
                                                    String envName,
                                                    String owner,
                                                    String accountId)
-            throws NotFoundException, ServerException, BadRequestException, ForbiddenException {
+            throws NotFoundException, ServerException, BadRequestException, ForbiddenException, ConflictException {
         requiredNotNull(workspaceName, "Workspace name required");
         requiredNotNull(owner, "Workspace owner required");
 
@@ -224,7 +224,7 @@ public class WorkspaceManager {
 
     /**
      * Starts temporary workspace based on config and account.
-     * <p>
+     *
      * <p>Workspace start is synchronous
      *
      * @param workspaceConfig
@@ -384,8 +384,16 @@ public class WorkspaceManager {
     private UsersWorkspaceImpl startWorkspace(UsersWorkspaceImpl workspace,
                                               String envName,
                                               String accountId)
-            throws ServerException, NotFoundException, ForbiddenException {
-
+            throws ServerException, NotFoundException, ForbiddenException, ConflictException {
+        try {
+            final RuntimeWorkspaceImpl runtime = workspaceRegistry.get(workspace.getId());
+            throw new ConflictException(format("Could not start workspace '%s' because its status is '%s'",
+                                               runtime.getName(),
+                                               runtime.getStatus()));
+        } catch (NotFoundException ignored) {
+            //it is okay if workspace does not exist
+        }
+        
         workspace.setTemporary(false);
         hooks.beforeStart(workspace, accountId);
         startWorkspaceAsync(workspace, envName);
@@ -468,7 +476,7 @@ public class WorkspaceManager {
 
     /**
      * Checks that {@link WorkspaceConfig cfg} contains valid values, if it is not throws {@link BadRequestException}.
-     * <p>
+     *
      * Validation rules:
      * <ul>
      * <li>{@link WorkspaceConfig#getDefaultEnvName()} must not be empty or null</li>

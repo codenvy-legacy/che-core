@@ -146,28 +146,22 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
     public void start(final Callback<Component, Exception> callback) {
         this.callback = callback;
 
-        final OperationInfo operationInfo = new OperationInfo(locale.gettingWorkspace(), Status.IN_PROGRESS, loader);
-
         workspaceServiceClient.getWorkspaces(SKIP_COUNT, MAX_COUNT).then(new Operation<List<UsersWorkspaceDto>>() {
             @Override
             public void apply(List<UsersWorkspaceDto> workspaces) throws OperationException {
-                operationInfo.setStatus(Status.FINISHED);
-
                 String wsNameFromBrowser = browserQueryFieldRenderer.getWorkspaceName();
-
-                startWorkspaceOperation = new OperationInfo(locale.startingOperation("workspace"), Status.IN_PROGRESS, loader);
 
                 for (UsersWorkspaceDto workspace : workspaces) {
                     boolean isWorkspaceExist = wsNameFromBrowser.equals(workspace.getName());
 
                     if (wsNameFromBrowser.isEmpty()) {
-                        tryStartRecentWorkspace(startWorkspaceOperation);
+                        tryStartRecentWorkspace();
 
                         return;
                     }
 
                     if (isWorkspaceExist && RUNNING.equals(workspace.getStatus())) {
-                        setCurrentWorkspace(workspace, operationInfo);
+                        setCurrentWorkspace(workspace);
 
                         startWorkspaceById(workspace);
 
@@ -175,30 +169,29 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
                     }
 
                     if (isWorkspaceExist) {
-                        loader.show(operationInfo);
-
                         startWorkspaceById(workspace);
 
                         return;
                     }
                 }
 
-                createWorkspacePresenter.show(operationInfo, callback);
+                createWorkspacePresenter.show(workspaces, callback);
             }
         }).catchError(new Operation<PromiseError>() {
             @Override
-            public void apply(PromiseError arg) throws OperationException {
+            public void apply(PromiseError error) throws OperationException {
                 needToReloadComponents = true;
 
-                operationInfo.setStatus(Status.ERROR);
-                loader.show(operationInfo);
+                dialogFactory.createMessageDialog(locale.getWsErrorDialogTitle(),
+                                                  locale.getWsErrorDialogContent(error.getMessage()),
+                                                  null).show();
 
-                callback.onFailure(new Exception(arg.getCause()));
+                callback.onFailure(new Exception(error.getCause()));
             }
         });
     }
 
-    private void tryStartRecentWorkspace(final OperationInfo operationInfo) {
+    private void tryStartRecentWorkspace() {
         String json = preferencesManager.getValue(PREFERENCE_PROPERTY_NAME);
 
         AppState appState = null;
@@ -219,39 +212,41 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
                         WorkspaceStatus wsFromReferenceStatus = workspace.getStatus();
 
                         if (RUNNING.equals(wsFromReferenceStatus)) {
-                            setCurrentWorkspace(workspace, operationInfo);
-
-                            startWorkspaceById(workspace);
-
-                            return;
+                            setCurrentWorkspace(workspace);
                         }
-
-                        loader.show(operationInfo);
 
                         startWorkspaceById(workspace);
                     }
                 };
 
-                workspaceServiceClient.getWorkspaceById(recentWorkspaceId).then(workspaceOperation);
+                Operation<PromiseError> errorOperation = new Operation<PromiseError>() {
+                    @Override
+                    public void apply(PromiseError promiseError) throws OperationException {
+                        showWorkspaceDialog();
+                    }
+                };
 
+                workspaceServiceClient.getWorkspaceById(recentWorkspaceId)
+                                      .then(workspaceOperation)
+                                      .catchError(errorOperation);
                 return;
             }
         }
 
-        showWorkspaceDialog(operationInfo);
+        showWorkspaceDialog();
     }
 
-    private void showWorkspaceDialog(final OperationInfo operationInfo) {
+    private void showWorkspaceDialog() {
         workspaceServiceClient.getWorkspaces(SKIP_COUNT, MAX_COUNT).then(new Operation<List<UsersWorkspaceDto>>() {
             @Override
             public void apply(List<UsersWorkspaceDto> workspaces) throws OperationException {
                 if (workspaces.isEmpty()) {
-                    createWorkspacePresenter.show(operationInfo, callback);
+                    createWorkspacePresenter.show(workspaces, callback);
 
                     return;
                 }
 
-                startWorkspacePresenter.show(workspaces, callback, operationInfo);
+                startWorkspacePresenter.show(workspaces, callback);
             }
         });
     }
@@ -261,11 +256,8 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
      *
      * @param workspace
      *         workspace which will be current
-     * @param operationInfo
-     *         information about start operation
      */
-    public void setCurrentWorkspace(UsersWorkspaceDto workspace, OperationInfo operationInfo) {
-        operationInfo.setStatus(Status.FINISHED);
+    public void setCurrentWorkspace(UsersWorkspaceDto workspace) {
         Config.setCurrentWorkspace(workspace);
         appContext.setWorkspace(workspace);
 
@@ -285,14 +277,18 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
      *         workspace which will be started
      */
     public void startWorkspaceById(final UsersWorkspaceDto workspace) {
+        startWorkspaceOperation = new OperationInfo(locale.startingOperation("workspace"), Status.IN_PROGRESS, loader);
+
         messageBus = messageBusProvider.createMessageBus(workspace.getId());
 
         messageBus.addOnOpenHandler(new ConnectionOpenedHandler() {
             @Override
             public void onOpen() {
-                subscribeToWorkspaceStatusWebSocket(workspace, startWorkspaceOperation);
+                subscribeToWorkspaceStatusWebSocket(workspace);
 
                 if (!RUNNING.equals(workspace.getStatus())) {
+                    loader.show(startWorkspaceOperation);
+
                     workspaceServiceClient.startById(workspace.getId(),
                                                      workspace.getDefaultEnvName()).then(new Operation<UsersWorkspaceDto>() {
                         @Override
@@ -302,6 +298,11 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
 
                             for (MachineStateDto machineState : machineStates) {
                                 if (machineState.isDev()) {
+                                    startMachineOperation = new OperationInfo(locale.startingMachine(machineState.getName()),
+                                                                              Status.IN_PROGRESS,
+                                                                              loader);
+                                    loader.show(startMachineOperation);
+
                                     subscribeToOutput(machineState.getChannels().getOutput());
                                     subscribeToMachineStatus(machineState.getChannels().getStatus());
                                 }
@@ -319,7 +320,7 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
         });
     }
 
-    private void subscribeToWorkspaceStatusWebSocket(final UsersWorkspaceDto workspace, final OperationInfo startWsOperation) {
+    private void subscribeToWorkspaceStatusWebSocket(final UsersWorkspaceDto workspace) {
         Unmarshallable<WorkspaceStatusEvent> unmarshaller = dtoUnmarshallerFactory.newWSUnmarshaller(WorkspaceStatusEvent.class);
 
         try {
@@ -331,7 +332,7 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
                     String workspaceName = workspace.getName();
 
                     if (EventType.RUNNING.equals(workspaceStatus)) {
-                        setCurrentWorkspace(workspace, startWsOperation);
+                        setCurrentWorkspace(workspace);
 
                         notificationManager.showInfo(locale.startedWs(workspaceName));
 
@@ -341,9 +342,9 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
                     if (EventType.ERROR.equals(workspaceStatus)) {
                         notificationManager.showError(locale.workspaceStartFailed(workspaceName));
 
-                        startWsOperation.setStatus(Status.ERROR);
+                        startWorkspaceOperation.setStatus(Status.ERROR);
 
-                        showErrorDialog(workspaceName, startWsOperation, statusEvent.getError());
+                        showErrorDialog(workspaceName, statusEvent.getError());
                     }
 
                     if (EventType.STOPPED.equals(workspaceStatus)) {
@@ -354,7 +355,7 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
                         workspaceServiceClient.getWorkspaces(SKIP_COUNT, MAX_COUNT).then(new Operation<List<UsersWorkspaceDto>>() {
                             @Override
                             public void apply(List<UsersWorkspaceDto> workspaces) throws OperationException {
-                                startWorkspacePresenter.show(workspaces, callback, startWorkspaceOperation);
+                                startWorkspacePresenter.show(workspaces, callback);
                             }
                         });
                     }
@@ -370,16 +371,16 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
         }
     }
 
-    private void showErrorDialog(final String wsName, final OperationInfo startWsOperation, final String errorMessage) {
+    private void showErrorDialog(final String wsName, final String errorMessage) {
         workspaceServiceClient.getWorkspaces(SKIP_COUNT, MAX_COUNT).then(new Operation<List<UsersWorkspaceDto>>() {
             @Override
             public void apply(final List<UsersWorkspaceDto> workspaces) throws OperationException {
                 dialogFactory.createMessageDialog(locale.startWsErrorTitle(),
-                                                  locale.startWsErrorContent(wsName) + ": " + errorMessage,
+                                                  locale.startWsErrorContent(wsName, errorMessage),
                                                   new ConfirmCallback() {
                                                       @Override
                                                       public void accepted() {
-                                                          startWorkspacePresenter.show(workspaces, callback, startWsOperation);
+                                                          startWorkspacePresenter.show(workspaces, callback);
                                                       }
                                                   }).show();
 
@@ -407,12 +408,11 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
             messageBus.subscribe(outputChanel, new SubscriptionHandler<String>(new OutputMessageUnmarshaller()) {
                 @Override
                 protected void onMessageReceived(String result) {
-                    //TODO first docker log appears when extensions logs are displaying, so need display it later(together other docker
-                    //TODO  logs)
-                    if (result.startsWith("[DOCKER] Step 0")) {
-                        return;
-                    }
-                    loader.printToDetails(new OperationInfo(result));
+                    //TODO machine output turned off temporarily, because it freezes browser. Need find other solution.
+//                    if (result.startsWith("[DOCKER] Step 0")) {
+//                        return;
+//                    }
+//                    loader.printToDetails(new OperationInfo(result));
                 }
 
                 @Override
@@ -446,16 +446,12 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
 
     private void onMachineStatusChanged(MachineStatusEvent event) {
         switch (event.getEventType()) {
-            case CREATING:
-                startMachineOperation = new OperationInfo(locale.startingMachine(event.getMachineName()),
-                                                          Status.IN_PROGRESS,
-                                                          loader);
-                loader.print(startMachineOperation);
-                break;
             case RUNNING:
                 if (startMachineOperation != null) {
                     startMachineOperation.setStatus(Status.FINISHED);
                 }
+
+                startWorkspaceOperation.setStatus(Status.FINISHED);
 
                 eventBus.fireEvent(new DevMachineStateEvent(event));
                 break;
@@ -463,6 +459,8 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
                 if (startMachineOperation != null) {
                     startMachineOperation.setStatus(Status.ERROR);
                 }
+
+                startWorkspaceOperation.setStatus(Status.ERROR);
                 break;
             default:
         }
