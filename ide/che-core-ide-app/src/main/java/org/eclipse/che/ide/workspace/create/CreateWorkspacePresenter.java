@@ -33,8 +33,6 @@ import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.bootstrap.WorkspaceComponent;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.dto.DtoFactory;
-import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter;
-import org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo;
 import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
 import org.eclipse.che.ide.workspace.create.CreateWorkspaceView.HidePopupCallBack;
 
@@ -65,7 +63,6 @@ public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDeleg
     static final int    MIN_NAME_LENGTH = 3;
 
     private final CreateWorkspaceView          view;
-    private final LoaderPresenter              loader;
     private final DtoFactory                   dtoFactory;
     private final WorkspaceServiceClient       workspaceClient;
     private final CoreLocalizationConstant     locale;
@@ -73,14 +70,12 @@ public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDeleg
     private final RecipeServiceClient          recipeService;
     private final BrowserQueryFieldRenderer    browserQueryFieldRenderer;
 
-    private OperationInfo                  operationInfo;
     private Callback<Component, Exception> callback;
     private List<RecipeDescriptor>         recipes;
     private List<String>                   workspacesNames;
 
     @Inject
     public CreateWorkspacePresenter(CreateWorkspaceView view,
-                                    LoaderPresenter loader,
                                     DtoFactory dtoFactory,
                                     WorkspaceServiceClient workspaceClient,
                                     CoreLocalizationConstant locale,
@@ -90,7 +85,6 @@ public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDeleg
         this.view = view;
         this.view.setDelegate(this);
 
-        this.loader = loader;
         this.dtoFactory = dtoFactory;
         this.workspaceClient = workspaceClient;
         this.locale = locale;
@@ -104,15 +98,12 @@ public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDeleg
     /**
      * Shows special dialog window which allows set up workspace which will be created.
      *
-     * @param operationInfo
-     *         info which needs for displaying information about creating workspace
      * @param callback
      *         callback which is necessary to notify that workspace component started or failed
      * @param workspaces
      *         list of existing workspaces
      */
-    public void show(List<UsersWorkspaceDto> workspaces, OperationInfo operationInfo, final Callback<Component, Exception> callback) {
-        this.operationInfo = operationInfo;
+    public void show(List<UsersWorkspaceDto> workspaces, final Callback<Component, Exception> callback) {
         this.callback = callback;
 
         workspacesNames.clear();
@@ -215,26 +206,17 @@ public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDeleg
     /** {@inheritDoc} */
     @Override
     public void onCreateButtonClicked() {
-        loader.show(operationInfo);
-
         view.hide();
 
-        createWorkspace(operationInfo);
+        createWorkspace();
     }
 
-    private void createWorkspace(final OperationInfo getWsOperation) {
+    private void createWorkspace() {
         WorkspaceConfigDto workspaceConfig = getWorkspaceConfig();
-
-        final OperationInfo createWsOperation = new OperationInfo(locale.creatingWorkspace(), OperationInfo.Status.IN_PROGRESS, loader);
-
-        loader.print(createWsOperation);
 
         workspaceClient.create(workspaceConfig, null).then(new Operation<UsersWorkspaceDto>() {
             @Override
             public void apply(UsersWorkspaceDto workspace) throws OperationException {
-                getWsOperation.setStatus(OperationInfo.Status.FINISHED);
-                createWsOperation.setStatus(OperationInfo.Status.FINISHED);
-
                 WorkspaceComponent component = wsComponentProvider.get();
 
                 component.startWorkspaceById(workspace);
@@ -242,8 +224,6 @@ public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDeleg
         }).catchError(new Operation<PromiseError>() {
             @Override
             public void apply(PromiseError arg) throws OperationException {
-                getWsOperation.setStatus(OperationInfo.Status.ERROR);
-                createWsOperation.setStatus(OperationInfo.Status.ERROR);
                 callback.onFailure(new Exception(arg.getCause()));
             }
         });

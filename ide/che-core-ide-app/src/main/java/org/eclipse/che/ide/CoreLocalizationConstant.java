@@ -601,4 +601,10 @@ public interface CoreLocalizationConstant extends Messages {
 
     @Key("create.ws.name.already.exist")
     String createWsNameAlreadyExist();
+
+    @Key("get.ws.error.dialog.title")
+    String getWsErrorDialogTitle();
+
+    @Key("get.ws.error.dialog.content")
+    String getWsErrorDialogContent(String reason);
 }

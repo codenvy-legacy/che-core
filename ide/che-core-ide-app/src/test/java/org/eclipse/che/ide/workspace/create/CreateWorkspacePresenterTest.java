@@ -32,8 +32,6 @@ import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.bootstrap.WorkspaceComponent;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.dto.DtoFactory;
-import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter;
-import org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo;
 import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
 import org.eclipse.che.ide.workspace.create.CreateWorkspaceView.HidePopupCallBack;
 import org.junit.Before;
@@ -74,8 +72,6 @@ public class CreateWorkspacePresenterTest {
     @Mock
     private CreateWorkspaceView          view;
     @Mock
-    private LoaderPresenter              loader;
-    @Mock
     private DtoFactory                   dtoFactory;
     @Mock
     private WorkspaceServiceClient       workspaceClient;
@@ -89,8 +85,6 @@ public class CreateWorkspacePresenterTest {
     private BrowserQueryFieldRenderer    browserQueryFieldRenderer;
 
     //additional mocks
-    @Mock
-    private OperationInfo                   operationInfo;
     @Mock
     private Callback<Component, Exception>  componentCallback;
     @Mock
@@ -178,7 +172,7 @@ public class CreateWorkspacePresenterTest {
 
     @Test
     public void dialogShouldBeShown() {
-        presenter.show(Arrays.asList(usersWorkspaceDto), operationInfo, componentCallback);
+        presenter.show(Arrays.asList(usersWorkspaceDto), componentCallback);
 
         verify(browserQueryFieldRenderer).getWorkspaceName();
         verify(view).setWorkspaceName(anyString());
@@ -212,7 +206,7 @@ public class CreateWorkspacePresenterTest {
     public void errorLabelShouldBeShownWhenWorkspaceNameAlreadyExist() {
         when(usersWorkspaceDto.getName()).thenReturn("test");
 
-        presenter.show(Arrays.asList(usersWorkspaceDto), operationInfo, componentCallback);
+        presenter.show(Arrays.asList(usersWorkspaceDto), componentCallback);
         reset(locale);
 
         presenter.onNameChanged();
@@ -306,7 +300,6 @@ public class CreateWorkspacePresenterTest {
     public void dialogShouldBeHiddenWhenUserClicksOnCreateButton() {
         clickOnCreateButton();
 
-        verify(loader).show(operationInfo);
         verify(view).hide();
     }
 
@@ -316,7 +309,7 @@ public class CreateWorkspacePresenterTest {
         when(userWsPromise.catchError(Matchers.<Operation<PromiseError>>anyObject())).thenReturn(userWsPromise);
         when(recipeServiceClient.getRecipes(anyInt(), anyInt())).thenReturn(recipesPromise);
 
-        presenter.show(Arrays.asList(usersWorkspaceDto), operationInfo, componentCallback);
+        presenter.show(Arrays.asList(usersWorkspaceDto), componentCallback);
 
         presenter.onCreateButtonClicked();
 
