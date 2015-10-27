@@ -18,8 +18,6 @@ import com.google.inject.Singleton;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.bootstrap.WorkspaceComponent;
 import org.eclipse.che.ide.core.Component;
-import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter;
-import org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo;
 import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
 import org.eclipse.che.ide.workspace.WorkspaceWidgetFactory;
 import org.eclipse.che.ide.workspace.create.CreateWorkspacePresenter;
@@ -40,20 +38,17 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
     private final StartWorkspaceView           view;
     private final Provider<WorkspaceComponent> wsComponentProvider;
     private final WorkspaceWidgetFactory       widgetFactory;
-    private final LoaderPresenter              loader;
     private final CreateWorkspacePresenter     createWorkspacePresenter;
     private final BrowserQueryFieldRenderer    browserQueryFieldRenderer;
 
     private UsersWorkspaceDto              selectedWorkspace;
     private Callback<Component, Exception> callback;
-    private OperationInfo                  operationInfo;
     private List<UsersWorkspaceDto>        workspaces;
 
     @Inject
     public StartWorkspacePresenter(StartWorkspaceView view,
                                    Provider<WorkspaceComponent> wsComponentProvider,
                                    WorkspaceWidgetFactory widgetFactory,
-                                   LoaderPresenter loader,
                                    CreateWorkspacePresenter createWorkspacePresenter,
                                    BrowserQueryFieldRenderer browserQueryFieldRenderer) {
         this.view = view;
@@ -61,7 +56,6 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
 
         this.wsComponentProvider = wsComponentProvider;
         this.widgetFactory = widgetFactory;
-        this.loader = loader;
         this.createWorkspacePresenter = createWorkspacePresenter;
         this.browserQueryFieldRenderer = browserQueryFieldRenderer;
     }
@@ -69,16 +63,13 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
     /**
      * Shows special dialog which contains workspaces which can be started at this time.
      *
-     * @param operationInfo
-     *         info which needs for displaying information about creating workspace
      * @param callback
      *         callback which is necessary to notify that workspace component started or failed
      * @param workspaces
      *         available workspaces which will be displayed
      */
-    public void show(List<UsersWorkspaceDto> workspaces, Callback<Component, Exception> callback, OperationInfo operationInfo) {
+    public void show(List<UsersWorkspaceDto> workspaces, Callback<Component, Exception> callback) {
         this.callback = callback;
-        this.operationInfo = operationInfo;
         this.workspaces = workspaces;
 
         view.clearWorkspacesPanel();
@@ -123,7 +114,7 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
         if (RUNNING.equals(workspace.getStatus())) {
             WorkspaceComponent workspaceComponent = wsComponentProvider.get();
 
-            workspaceComponent.setCurrentWorkspace(workspace, operationInfo);
+            workspaceComponent.setCurrentWorkspace(workspace);
 
             workspaceComponent.startWorkspaceById(workspace);
 
@@ -136,14 +127,12 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
     public void onCreateWorkspaceClicked() {
         view.hide();
 
-        createWorkspacePresenter.show(workspaces, operationInfo, callback);
+        createWorkspacePresenter.show(workspaces, callback);
     }
 
     /** {@inheritDoc} */
     @Override
     public void onStartWorkspaceClicked() {
-        loader.show(operationInfo);
-
         WorkspaceComponent workspaceComponent = wsComponentProvider.get();
 
         workspaceComponent.startWorkspaceById(selectedWorkspace);
