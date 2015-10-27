@@ -19,6 +19,7 @@ import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.MoveOptions;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
+import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.project.shared.dto.TreeElement;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
@@ -147,6 +148,16 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
                            .loader(loader, "Estimating project...")
                            .send(callback);
     }
+
+    @Override
+    public void resolveSources(String path, AsyncRequestCallback<List<SourceEstimation>> callback) {
+        final String requestUrl = baseHttpUrl + "/resolve" + normalizePath(path);
+        asyncRequestFactory.createGetRequest(requestUrl)
+                           .header(ACCEPT, MimeType.APPLICATION_JSON)
+                           .loader(loader, "Resolving sources...")
+                           .send(callback);
+    }
+
 
     @Override
     public void getModules(String path, AsyncRequestCallback<List<ProjectDescriptor>> callback) {
