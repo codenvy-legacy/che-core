@@ -52,6 +52,7 @@ import org.eclipse.che.ide.api.event.project.DeleteProjectEvent;
 import org.eclipse.che.ide.api.event.project.DeleteProjectHandler;
 import org.eclipse.che.ide.api.event.project.OpenProjectEvent;
 import org.eclipse.che.ide.api.event.project.OpenProjectHandler;
+import org.eclipse.che.ide.api.event.project.CurrentProjectChangedEvent;
 import org.eclipse.che.ide.api.event.project.ProjectReadyEvent;
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.notification.NotificationManager;
@@ -76,12 +77,11 @@ import org.eclipse.che.ide.projecttype.wizard.presenter.ProjectWizardPresenter;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.Unmarshallable;
-import org.eclipse.che.ide.statepersistance.AppStateManager;
 import org.eclipse.che.ide.ui.smartTree.event.CollapseNodeEvent;
 import org.eclipse.che.ide.ui.smartTree.event.ExpandNodeEvent;
 import org.eclipse.che.ide.ui.smartTree.event.GoIntoStateEvent;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
-import org.eclipse.che.ide.workspace.BrowserQueryFieldViewer;
+import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.validation.constraints.NotNull;
@@ -110,8 +110,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
     private final AppContext                   appContext;
     private final ActionManager                actionManager;
     private final Provider<PerspectiveManager> managerProvider;
-    private final BrowserQueryFieldViewer      queryFieldViewer;
-    private final Provider<AppStateManager>    appStateManagerProvider;
+    private final BrowserQueryFieldRenderer    queryFieldViewer;
     private final List<Node>                   existingProjects;
     private final ProjectWizardPresenter       projectWizardPresenter;
     private final CoreLocalizationConstant     locale;
@@ -122,6 +121,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
     private final NotificationManager          notificationManager;
 
     private HandlerRegistration handlerRegistration;
+    private ProjectDescriptor   selectedProject;
 
     @Inject
     public ProjectExplorerPresenter(ProjectExplorerView view,
@@ -130,8 +130,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
                                     AppContext appContext,
                                     ActionManager actionManager,
                                     Provider<PerspectiveManager> managerProvider,
-                                    BrowserQueryFieldViewer queryFieldViewer,
-                                    Provider<AppStateManager> appStateManagerProvider,
+                                    BrowserQueryFieldRenderer queryFieldViewer,
                                     ProjectWizardPresenter projectWizardPresenter,
                                     CoreLocalizationConstant locale,
                                     Resources resources,
@@ -148,7 +147,6 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         this.actionManager = actionManager;
         this.managerProvider = managerProvider;
         this.queryFieldViewer = queryFieldViewer;
-        this.appStateManagerProvider = appStateManagerProvider;
         this.projectWizardPresenter = projectWizardPresenter;
         this.locale = locale;
         this.resources = resources;
@@ -176,6 +174,8 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
     /** {@inheritDoc} */
     @Override
     public void onExtServerStarted(ExtServerStateEvent event) {
+        view.setVisible(true);
+
         Promise<List<Node>> nodesPromise = nodeManager.getProjects();
 
         nodesPromise.then(new Operation<List<Node>>() {
@@ -298,10 +298,6 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
 
             setExpanded(node, true);
         }
-
-        AppStateManager appStateManager = appStateManagerProvider.get();
-
-        appStateManager.restoreCurrentProjectState(descriptor);
     }
 
     private boolean hasProblems(ProjectDescriptor descriptor) {
@@ -356,10 +352,6 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
     @Override
     public void onCloseCurrentProject(CloseCurrentProjectEvent event) {
         ProjectDescriptor descriptor = event.getDescriptor();
-
-        AppStateManager appStateManager = appStateManagerProvider.get();
-
-        appStateManager.persistCurrentProjectState(descriptor);
 
         appContext.removeOpenedProject(descriptor);
 
@@ -497,6 +489,13 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
             ProjectDescriptor descriptor = ((HasProjectDescriptor)selectedNode).getProjectDescriptor();
 
             currentProject.setProjectDescription(descriptor);
+
+            if (!descriptor.equals(selectedProject)) {
+
+                selectedProject = descriptor;
+
+                eventBus.fireEvent(new CurrentProjectChangedEvent(selectedProject));
+            }
 
             String projectName = descriptor.getName();
 

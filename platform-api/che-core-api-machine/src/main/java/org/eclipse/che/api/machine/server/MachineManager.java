@@ -806,7 +806,7 @@ public class MachineManager {
         return fileLogger;
     }
 
-    private ChannelsImpl createMachineChannels(String machineName, String workspaceId, String envName) {
+    public static ChannelsImpl createMachineChannels(String machineName, String workspaceId, String envName) {
         return new ChannelsImpl(workspaceId + ':' + envName + ':' + machineName,
                                 "machine:status:" + workspaceId + ':' + machineName);
     }
@@ -835,7 +835,7 @@ public class MachineManager {
         }
     }
 
-    private Recipe getRecipeByLocation(MachineConfig machineConfig) throws MachineException {
+    Recipe getRecipeByLocation(MachineConfig machineConfig) throws MachineException {
         String recipeContent;
         File file = null;
         try {

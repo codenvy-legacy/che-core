@@ -89,6 +89,23 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
              usersWorkspace.getStatus());
     }
 
+    public RuntimeWorkspaceImpl(RuntimeWorkspace runtimeWorkspace) {
+        this(runtimeWorkspace.getId(),
+             runtimeWorkspace.getName(),
+             runtimeWorkspace.getOwner(),
+             runtimeWorkspace.getAttributes(),
+             runtimeWorkspace.getCommands(),
+             runtimeWorkspace.getProjects(),
+             runtimeWorkspace.getEnvironments(),
+             runtimeWorkspace.getDefaultEnvName(),
+             runtimeWorkspace.getDescription(),
+             runtimeWorkspace.getDevMachine(),
+             runtimeWorkspace.getMachines(),
+             runtimeWorkspace.getRootFolder(),
+             runtimeWorkspace.getActiveEnvName(),
+             runtimeWorkspace.getStatus());
+    }
+
     @Override
     public MachineImpl getDevMachine() {
         return devMachine;
@@ -122,6 +139,10 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
 
     public void setActiveEnvName(String activeEnvName) {
         this.activeEnvName = activeEnvName;
+    }
+    
+    public Environment getActiveEnvironment() {
+        return getEnvironments().get(activeEnvName);
     }
 
     @Override

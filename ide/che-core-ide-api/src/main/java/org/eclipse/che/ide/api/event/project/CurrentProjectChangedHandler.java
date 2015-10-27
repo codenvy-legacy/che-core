@@ -8,24 +8,22 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.statepersistance.dto;
+package org.eclipse.che.ide.api.event.project;
 
-import org.eclipse.che.dto.shared.DTO;
+import com.google.gwt.event.shared.EventHandler;
 
 /**
- * @author Alexander Andrienko
+ * Special handler which is called when selected other project.
+ *
+ * @author Dmitry Shnurenko
  */
-@DTO
-public interface RecentProject {
-    String getPath();
+public interface CurrentProjectChangedHandler extends EventHandler {
 
-    void setPath(String path);
-
-    String getWorkspaceId();
-
-    void setWorkspaceId(String workspaceId);
-
-    String getWorkspaceName();
-
-    void setWorkspaceName(String workspaceName);
+    /**
+     * Performs some actions when user clicks on different project.
+     *
+     * @param event
+     *         contains information about project which was selected
+     */
+    void onCurrentProjectChanged(CurrentProjectChangedEvent event);
 }

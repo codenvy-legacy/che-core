@@ -22,6 +22,17 @@ import java.util.Map;
 @DTO
 public interface AppState {
 
+    /** Returns workspace id which was previously stopped. */
+    String getRecentWorkspaceId();
+
+    /**
+     * Set stopped workspace id to app state
+     *
+     * @param workspaceId
+     *         workspace id which will be saved to app state
+     */
+    void setRecentWorkspaceId(String workspaceId);
+
     /** Get recent project info. */
     RecentProject getRecentProject();
 

@@ -152,7 +152,8 @@ public class LocalRecipeDaoImpl implements RecipeDao {
                                  .filter(new Predicate<ManagedRecipe>() {
                                      @Override
                                      public boolean apply(ManagedRecipe recipe) {
-                                         return recipe.getTags().containsAll(tags) && (type == null || type.equals(recipe.getType()));
+                                         return (tags == null || recipe.getTags().containsAll(tags))
+                                                && (type == null || type.equals(recipe.getType()));
                                      }
                                  })
                                  .limit(maxItems)

@@ -39,6 +39,7 @@ import org.eclipse.che.ide.api.event.project.ProjectReadyHandler;
 import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.logger.AnalyticsEventLoggerExt;
+import org.eclipse.che.ide.statepersistance.AppStateManager;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.Config;
 import org.eclipse.che.ide.util.loging.Log;
@@ -65,6 +66,7 @@ public class BootstrapController {
     private final PresentationFactory          presentationFactory;
     private final DocumentTitleDecorator       documentTitleDecorator;
     private final Provider<PerspectiveManager> managerProvider;
+    private final Provider<AppStateManager>    appStateManagerProvider;
 
     @Inject
     public BootstrapController(Provider<WorkspacePresenter> workspaceProvider,
@@ -74,7 +76,8 @@ public class BootstrapController {
                                EventBus eventBus,
                                ActionManager actionManager,
                                DocumentTitleDecorator documentTitleDecorator,
-                               Provider<PerspectiveManager> managerProvider) {
+                               Provider<PerspectiveManager> managerProvider,
+                               Provider<AppStateManager> appStateManagerProvider) {
         this.workspaceProvider = workspaceProvider;
         this.extensionInitializer = extensionInitializer;
         this.eventBus = eventBus;
@@ -82,6 +85,7 @@ public class BootstrapController {
         this.analyticsEventLoggerExt = analyticsEventLoggerExt;
         this.documentTitleDecorator = documentTitleDecorator;
         this.managerProvider = managerProvider;
+        this.appStateManagerProvider = appStateManagerProvider;
 
         presentationFactory = new PresentationFactory();
 
@@ -122,6 +126,8 @@ public class BootstrapController {
 
     /** Start extensions */
     private void startExtensions() {
+        appStateManagerProvider.get();
+
         Scheduler.get().scheduleDeferred(new ScheduledCommand() {
             @Override
             public void execute() {
@@ -131,6 +137,7 @@ public class BootstrapController {
                 Scheduler.get().scheduleDeferred(new ScheduledCommand() {
                     @Override
                     public void execute() {
+
                         displayIDE();
                     }
                 });

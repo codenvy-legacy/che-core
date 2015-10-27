@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static java.util.stream.Collectors.toMap;
+
 //TODO move?
 
 /**
@@ -45,15 +47,15 @@ public class ProjectConfigImpl implements ProjectConfig {
         path = projectCfg.getPath();
         description = projectCfg.getDescription();
         type = projectCfg.getType();
-        mixinTypes = projectCfg.getMixinTypes();
-        attributes = projectCfg.getAttributes();
+        mixinTypes = new ArrayList<>(projectCfg.getMixinTypes());
+        attributes = projectCfg.getAttributes()
+                               .entrySet()
+                               .stream()
+                               .collect(toMap(Map.Entry::getKey, e -> new ArrayList<>(e.getValue())));
         if (projectCfg.getSource() != null) {
-            storage = new SourceStorageImpl(projectCfg.getSource()
-                                                      .getType(),
-                                            projectCfg.getSource()
-                                                      .getLocation(),
-                                            projectCfg.getSource()
-                                                      .getParameters());
+            storage = new SourceStorageImpl(projectCfg.getSource().getType(),
+                                            projectCfg.getSource().getLocation(),
+                                            projectCfg.getSource().getParameters());
         }
     }
 

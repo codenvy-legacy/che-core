@@ -18,9 +18,7 @@ import com.google.inject.Singleton;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.bootstrap.WorkspaceComponent;
 import org.eclipse.che.ide.core.Component;
-import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter;
-import org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo;
-import org.eclipse.che.ide.workspace.BrowserQueryFieldViewer;
+import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
 import org.eclipse.che.ide.workspace.WorkspaceWidgetFactory;
 import org.eclipse.che.ide.workspace.create.CreateWorkspacePresenter;
 import org.eclipse.che.ide.workspace.start.workspacewidget.WorkspaceWidget;
@@ -40,48 +38,43 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
     private final StartWorkspaceView           view;
     private final Provider<WorkspaceComponent> wsComponentProvider;
     private final WorkspaceWidgetFactory       widgetFactory;
-    private final LoaderPresenter              loader;
     private final CreateWorkspacePresenter     createWorkspacePresenter;
-    private final BrowserQueryFieldViewer      browserQueryFieldViewer;
+    private final BrowserQueryFieldRenderer    browserQueryFieldRenderer;
 
     private UsersWorkspaceDto              selectedWorkspace;
     private Callback<Component, Exception> callback;
-    private OperationInfo                  operationInfo;
+    private List<UsersWorkspaceDto>        workspaces;
 
     @Inject
     public StartWorkspacePresenter(StartWorkspaceView view,
                                    Provider<WorkspaceComponent> wsComponentProvider,
                                    WorkspaceWidgetFactory widgetFactory,
-                                   LoaderPresenter loader,
                                    CreateWorkspacePresenter createWorkspacePresenter,
-                                   BrowserQueryFieldViewer browserQueryFieldViewer) {
+                                   BrowserQueryFieldRenderer browserQueryFieldRenderer) {
         this.view = view;
         this.view.setDelegate(this);
 
         this.wsComponentProvider = wsComponentProvider;
         this.widgetFactory = widgetFactory;
-        this.loader = loader;
         this.createWorkspacePresenter = createWorkspacePresenter;
-        this.browserQueryFieldViewer = browserQueryFieldViewer;
+        this.browserQueryFieldRenderer = browserQueryFieldRenderer;
     }
 
     /**
      * Shows special dialog which contains workspaces which can be started at this time.
      *
-     * @param operationInfo
-     *         info which needs for displaying information about creating workspace
      * @param callback
      *         callback which is necessary to notify that workspace component started or failed
      * @param workspaces
      *         available workspaces which will be displayed
      */
-    public void show(List<UsersWorkspaceDto> workspaces, Callback<Component, Exception> callback, OperationInfo operationInfo) {
+    public void show(List<UsersWorkspaceDto> workspaces, Callback<Component, Exception> callback) {
         this.callback = callback;
-        this.operationInfo = operationInfo;
+        this.workspaces = workspaces;
 
         view.clearWorkspacesPanel();
 
-        String workspaceName = browserQueryFieldViewer.getWorkspaceName();
+        String workspaceName = browserQueryFieldRenderer.getWorkspaceName();
 
         createWsWidgets(workspaces);
 
@@ -121,7 +114,9 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
         if (RUNNING.equals(workspace.getStatus())) {
             WorkspaceComponent workspaceComponent = wsComponentProvider.get();
 
-            workspaceComponent.setCurrentWorkspace(operationInfo, workspace);
+            workspaceComponent.setCurrentWorkspace(workspace);
+
+            workspaceComponent.startWorkspaceById(workspace);
 
             view.hide();
         }
@@ -132,20 +127,15 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
     public void onCreateWorkspaceClicked() {
         view.hide();
 
-        createWorkspacePresenter.show(operationInfo, callback);
+        createWorkspacePresenter.show(workspaces, callback);
     }
 
     /** {@inheritDoc} */
     @Override
     public void onStartWorkspaceClicked() {
-        loader.show(operationInfo);
-
         WorkspaceComponent workspaceComponent = wsComponentProvider.get();
 
-        String workspaceId = selectedWorkspace.getId();
-        String workspaceName = selectedWorkspace.getDefaultEnvName();
-
-        workspaceComponent.startWorkspace(workspaceId, workspaceName);
+        workspaceComponent.startWorkspaceById(selectedWorkspace);
 
         view.hide();
     }

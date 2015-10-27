@@ -244,7 +244,7 @@ public class WorkspaceService extends Service {
     public UsersWorkspaceDto startById(@PathParam("id") String workspaceId,
                                        @QueryParam("environment") String envName,
                                        @QueryParam("accountId") String accountId)
-            throws ServerException, BadRequestException, NotFoundException, ForbiddenException {
+            throws ServerException, BadRequestException, NotFoundException, ForbiddenException, ConflictException {
         ensureUserIsWorkspaceOwner(workspaceId);
 
         final Map<String, String> params = Maps.newHashMapWithExpectedSize(2);
@@ -262,7 +262,7 @@ public class WorkspaceService extends Service {
     public UsersWorkspaceDto startByName(@QueryParam("name") String name,
                                          @QueryParam("environment") String envName,
                                          @QueryParam("accountId") String accountId)
-            throws ServerException, BadRequestException, NotFoundException, ForbiddenException {
+            throws ServerException, BadRequestException, NotFoundException, ForbiddenException, ConflictException {
         final UsersWorkspace workspace = workspaceManager.getWorkspace(name, getCurrentUserId());
         ensureUserIsWorkspaceOwner(workspace);
 

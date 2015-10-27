@@ -13,6 +13,7 @@ package org.eclipse.che.ide.statepersistance;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwtmockito.GwtMockitoTestRunner;
 import com.google.inject.Provider;
+import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.promises.client.Promise;
@@ -22,6 +23,7 @@ import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.WindowActionEvent;
+import org.eclipse.che.ide.api.event.project.OpenProjectEvent;
 import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.eclipse.che.ide.api.preferences.PreferencesManager;
 import org.eclipse.che.ide.dto.DtoFactory;
@@ -78,6 +80,8 @@ public class AppStateManagerTest {
     private PresentationFactory          presentationFactory;
     @Mock
     private Provider<PerspectiveManager> managerProvider;
+    @Mock
+    private EventBus                     eventBus;
 
     //additional mocks
     @Mock
@@ -110,7 +114,7 @@ public class AppStateManagerTest {
 
         when(dtoFactory.createDto(RecentProject.class)).thenReturn(recentProject);
 
-        when(projectDescriptor.getWorkspaceName()).thenReturn(NAME);
+        when(projectDescriptor.getWorkspaceId()).thenReturn(NAME);
         when(projectDescriptor.getPath()).thenReturn(PATH);
 
         Map<String, ProjectState> projectStates = new HashMap<>();
@@ -127,7 +131,8 @@ public class AppStateManagerTest {
                                               dtoFactory,
                                               actionManager,
                                               presentationFactory,
-                                              managerProvider);
+                                              managerProvider,
+                                              eventBus);
     }
 
     @Test
@@ -147,23 +152,29 @@ public class AppStateManagerTest {
 
     @Test
     public void projectStateShouldNotBeRestoredWhenProjectStateIsNull() {
+        OpenProjectEvent openProjectEvent = mock(OpenProjectEvent.class);
+        when(openProjectEvent.getDescriptor()).thenReturn(projectDescriptor);
+
         when(appState.getProjects()).thenReturn(new HashMap<>());
 
-        appStateManager.restoreCurrentProjectState(projectDescriptor);
+        appStateManager.onProjectOpened(openProjectEvent);
 
         verify(projectState, never()).getActions();
     }
 
     @Test
     public void projectStateShouldBeRestored() {
+        OpenProjectEvent openProjectEvent = mock(OpenProjectEvent.class);
+        when(openProjectEvent.getDescriptor()).thenReturn(projectDescriptor);
+
         when(projectState.getActions()).thenReturn(Arrays.asList(actionDescriptor));
         when(actionDescriptor.getId()).thenReturn(SOME_TEXT);
         when(actionManager.getAction(anyString())).thenReturn(action);
         when(actionManager.performActions(Matchers.<List<Pair<Action, ActionEvent>>>anyObject(), eq(false))).thenReturn(voidPromise);
 
-        appStateManager.restoreCurrentProjectState(projectDescriptor);
+        appStateManager.onProjectOpened(openProjectEvent);
 
-        verify(projectDescriptor).getWorkspaceName();
+        verify(projectDescriptor).getWorkspaceId();
         verify(projectDescriptor).getPath();
         verify(appState).getProjects();
 

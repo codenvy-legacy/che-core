@@ -32,7 +32,9 @@ public class SourceStorageImpl implements SourceStorage {
     public SourceStorageImpl(String type, String location, Map<String, String> parameters) {
         this.type = type;
         this.location = location;
-        this.parameters = parameters;
+        if (parameters != null) {
+            this.parameters = new HashMap<>(parameters);
+        }
     }
 
     @Override

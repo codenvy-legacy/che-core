@@ -36,6 +36,7 @@ public class EnvironmentImpl implements Environment {
 
     public EnvironmentImpl(String name, Recipe recipe, List<? extends MachineConfig> machineConfigs) {
         this.name = name;
+        // TODO here should be the copy of the recipe
         this.recipe = recipe;
         if (machineConfigs != null) {
             this.machineConfigs = machineConfigs.stream()

@@ -19,7 +19,7 @@ import com.google.inject.Singleton;
  * @author Dmitry Shnurenko
  */
 @Singleton
-public class BrowserQueryFieldViewer {
+public class BrowserQueryFieldRenderer {
 
     private static final int WORKSPACE_ORDER_IN_URL = 2;
 
@@ -38,12 +38,15 @@ public class BrowserQueryFieldViewer {
                 window["_history_relocation_id"] = 0;
             }
 
-            var isHostedVersion = window.location.pathname.indexOf("/ws/") > -1;
+            var browserUrl = window.location.pathname;
 
-            var url = isHostedVersion ? "/ws/" + workspaceName : "/che/" + workspaceName;
+            var urlParts = browserUrl.split("/");
+            urlParts[2] = workspaceName;
+
+            browserUrl = urlParts.join("/");
 
             document.title = "Codenvy Developer Environment";
-            window.history.pushState(window["_history_relocation_id"], document.title, url);
+            window.history.pushState(window["_history_relocation_id"], document.title, browserUrl);
             window["_history_relocation_id"]++;
         } catch (e) {
             console.log(e.message);
