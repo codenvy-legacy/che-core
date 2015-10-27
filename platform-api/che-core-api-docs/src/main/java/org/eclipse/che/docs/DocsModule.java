@@ -23,8 +23,6 @@ import com.wordnik.swagger.jaxrs.listing.ResourceListingProvider;
 import com.wordnik.swagger.jaxrs.reader.DefaultJaxrsApiReader;
 import com.wordnik.swagger.reader.ClassReaders;
 
-import org.eclipse.che.api.core.rest.Constants;
-
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -92,7 +90,7 @@ public class DocsModule extends AbstractModule {
         public void init() {
             final SwaggerConfig config = ConfigFactory.config();
             config.setBasePath(baseApiUrl);
-            config.setApiVersion(Constants.API_VERSION);
+            config.setApiVersion("1.0");
             final com.wordnik.swagger.model.ApiInfo apiInfo = new com.wordnik.swagger.model.ApiInfo(
                     "Eclipse Che REST API", // title
                     "", // description
