@@ -16,14 +16,11 @@ import com.google.inject.name.Named;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
-import org.eclipse.che.api.project.shared.dto.ImportResponse;
 import org.eclipse.che.api.vfs.gwt.client.VfsServiceClient;
 import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.api.event.project.CreateProjectEvent;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
 import org.eclipse.che.ide.dto.DtoFactory;
-import org.eclipse.che.ide.json.JsonHelper;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.util.NameUtils;
@@ -102,12 +99,12 @@ public class LocalZipImporterPagePresenter implements LocalZipImporterPageView.A
                 return;
             }
 
-            ImportResponse importResponse = dtoFactory.createDtoFromJson(result, ImportResponse.class);
-            if (importResponse.getProjectDescriptor() == null) {
-                importFailure(JsonHelper.parseJsonMessage(result));
-                return;
-            }
-            importSuccess(importResponse);
+//            ImportResponse importResponse = dtoFactory.createDtoFromJson(result, ImportResponse.class);
+//            if (importResponse.getProjectDescriptor() == null) {
+//                importFailure(JsonHelper.parseJsonMessage(result));
+//                return;
+//            }
+            importSuccess();
         } catch (Exception e) {
             importFailure(result);
         }
@@ -146,11 +143,11 @@ public class LocalZipImporterPagePresenter implements LocalZipImporterPageView.A
         showProcessing(true);
     }
 
-    private void importSuccess(ImportResponse importResponse) {
+    private void importSuccess() {
         view.closeDialog();
         importProjectNotificationSubscriber.onSuccess();
 
-        eventBus.fireEvent(new CreateProjectEvent(importResponse.getProjectDescriptor()));
+        //eventBus.fireEvent(new CreateProjectEvent(importResponse.getProjectDescriptor()));
     }
 
     private void importFailure(String error) {

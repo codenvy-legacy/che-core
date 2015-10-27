@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.project.type.wizard;
 
-import org.eclipse.che.api.project.shared.dto.ImportProject;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.api.wizard.WizardPage;
 import com.google.inject.Provider;
 
@@ -47,5 +47,5 @@ public interface ProjectWizardRegistrar {
 
     /** Returns pages that should be used in project wizard. */
     @NotNull
-    List<Provider<? extends WizardPage<ImportProject>>> getWizardPages();
+    List<Provider<? extends WizardPage<ProjectConfigDto>>> getWizardPages();
 }

@@ -16,11 +16,11 @@ import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
-import org.eclipse.che.api.project.shared.dto.ImportProject;
-import org.eclipse.che.api.project.shared.dto.ImportResponse;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.vfs.gwt.client.VfsServiceClient;
 import org.eclipse.che.api.vfs.shared.dto.Item;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.event.ConfigureProjectEvent;
 import org.eclipse.che.ide.api.event.project.CreateProjectEvent;
@@ -31,18 +31,19 @@ import org.eclipse.che.ide.commons.exception.UnauthorizedException;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
+import org.eclipse.che.ide.rest.Unmarshallable;
 import org.eclipse.che.ide.util.loging.Log;
 import org.eclipse.che.ide.websocket.rest.RequestCallback;
-import org.eclipse.che.ide.websocket.rest.Unmarshallable;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * Project import wizard used for importing a project.
  *
  * @author Artem Zatsarynnyy
  */
-public class ImportWizard extends AbstractWizard<ImportProject> {
+public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
 
     private final ProjectServiceClient                projectServiceClient;
     private final VfsServiceClient                    vfsServiceClient;
@@ -71,7 +72,7 @@ public class ImportWizard extends AbstractWizard<ImportProject> {
      *         {@link CoreLocalizationConstant} instance
      */
     @Inject
-    public ImportWizard(@Assisted ImportProject dataObject,
+    public ImportWizard(@Assisted ProjectConfigDto dataObject,
                         ProjectServiceClient projectServiceClient,
                         VfsServiceClient vfsServiceClient,
                         DtoUnmarshallerFactory dtoUnmarshallerFactory,
@@ -97,7 +98,7 @@ public class ImportWizard extends AbstractWizard<ImportProject> {
 
     private void checkFolderExistenceAndImport(final CompleteCallback callback) {
         // check on VFS because need to check whether the folder with the same name already exists in the root of workspace
-        final String projectName = dataObject.getProject().getName();
+        final String projectName = dataObject.getName();
         vfsServiceClient.getItemByPath(projectName, new AsyncRequestCallback<Item>() {
             @Override
             protected void onSuccess(Item result) {
@@ -112,23 +113,18 @@ public class ImportWizard extends AbstractWizard<ImportProject> {
     }
 
     private void importProject(final CompleteCallback callback) {
-        final String projectName = dataObject.getProject().getName();
+        final String projectName = dataObject.getName();
         importProjectNotificationSubscriber.subscribe(projectName);
-        Unmarshallable<ImportResponse> unmarshaller = dtoUnmarshallerFactory.newWSUnmarshaller(ImportResponse.class);
 
-        projectServiceClient.importProject(projectName, false, dataObject, new RequestCallback<ImportResponse>(unmarshaller) {
+        projectServiceClient.importProject(projectName, false, dataObject.getSource(), new RequestCallback<Void>() {
             @Override
-            protected void onSuccess(final ImportResponse result) {
-                importProjectNotificationSubscriber.onSuccess();
-                callback.onCompleted();
-                createProject(result.getProjectDescriptor());
+            protected void onSuccess(final Void result) {
+                resolveProject(callback);
             }
 
             @Override
             protected void onFailure(Throwable exception) {
                 importProjectNotificationSubscriber.onFailure(exception.getMessage());
-                deleteProject(projectName);
-
                 String errorMessage = getImportErrorMessage(exception);
                 if (errorMessage.equals("Unable get private ssh key")) {
                     callback.onFailure(new Exception(localizationConstant.importProjectMessageUnableGetSshKey()));
@@ -139,12 +135,53 @@ public class ImportWizard extends AbstractWizard<ImportProject> {
         });
     }
 
-    private void createProject(ProjectDescriptor project) {
-        eventBus.fireEvent(new CreateProjectEvent(project));
 
-        if (!project.getProblems().isEmpty()) {
-            eventBus.fireEvent(new ConfigureProjectEvent(project));
-        }
+    private void resolveProject(final CompleteCallback callback) {
+        final String projectName = dataObject.getName();
+        importProjectNotificationSubscriber.subscribe(projectName);
+        Unmarshallable<List<SourceEstimation>> unmarshaller = dtoUnmarshallerFactory.newListUnmarshaller(SourceEstimation.class);
+        projectServiceClient.resolveSources(projectName,  new AsyncRequestCallback<List<SourceEstimation>>(unmarshaller) {
+
+            @Override
+            protected void onSuccess(List<SourceEstimation> result) {
+                createProject(callback, dataObject.withType(result.get(0).getType()));
+            }
+
+            @Override
+            protected void onFailure(Throwable exception) {
+                importProjectNotificationSubscriber.onFailure(exception.getMessage());
+                String errorMessage = getImportErrorMessage(exception);
+                callback.onFailure(new Exception(errorMessage));
+            }
+        });
+    }
+
+    private void createProject(final CompleteCallback callback, ProjectConfigDto projectConfig) {
+        final String projectName = dataObject.getName();
+        Unmarshallable<ProjectDescriptor> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class);
+        projectServiceClient.updateProject(projectName, projectConfig, new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
+
+            @Override
+            protected void onSuccess(ProjectDescriptor result) {
+                eventBus.fireEvent(new CreateProjectEvent(result));
+
+                if (!result.getProblems().isEmpty()) {
+                    eventBus.fireEvent(new ConfigureProjectEvent(result));
+                }
+                importProjectNotificationSubscriber.onSuccess();
+                callback.onCompleted();
+            }
+
+            @Override
+            protected void onFailure(Throwable exception) {
+                importProjectNotificationSubscriber.onFailure(exception.getMessage());
+                deleteProject(projectName);
+                String errorMessage = getImportErrorMessage(exception);
+                callback.onFailure(new Exception(errorMessage));
+            }
+        });
+
+
     }
 
     private String getImportErrorMessage(Throwable exception) {

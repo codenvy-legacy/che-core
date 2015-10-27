@@ -17,13 +17,13 @@ import com.google.inject.Singleton;
 import org.eclipse.che.api.machine.gwt.client.RecipeServiceClient;
 import org.eclipse.che.api.machine.shared.dto.recipe.RecipeDescriptor;
 import org.eclipse.che.api.project.gwt.client.ProjectTypeServiceClient;
-import org.eclipse.che.api.project.shared.dto.ImportProject;
 import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
 import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.api.wizard.AbstractWizardPage;
 
 import java.util.ArrayList;
@@ -36,7 +36,7 @@ import java.util.List;
  * @author Artem Zatsarynnyy
  */
 @Singleton
-public class RecipesPagePresenter extends AbstractWizardPage<ImportProject> implements RecipesPageView.ActionDelegate {
+public class RecipesPagePresenter extends AbstractWizardPage<ProjectConfigDto> implements RecipesPageView.ActionDelegate {
 
     private final RecipesPageView          view;
     private final RecipeServiceClient      recipeServiceClient;
@@ -62,11 +62,12 @@ public class RecipesPagePresenter extends AbstractWizardPage<ImportProject> impl
 
     @Override
     public void onRecipeSelected(String recipe) {
-        dataObject.getProject().setRecipe(recipe);
+
+        //dataObject.getProject().setRecipe(recipe);
     }
 
     private void requestRecipesAndUpdateView() {
-        final String projectTypeID = dataObject.getProject().getType();
+        final String projectTypeID = dataObject.getType();
         final Promise<ProjectTypeDefinition> projectTypePromise = projectTypeServiceClient.getProjectType(projectTypeID);
         final Promise<List<RecipeDescriptor>> recipesPromise = recipeServiceClient.getAllRecipes();
 
@@ -97,7 +98,7 @@ public class RecipesPagePresenter extends AbstractWizardPage<ImportProject> impl
 
     /** Updates view from data-object. */
     private void updateView() {
-        final String recipe = dataObject.getProject().getRecipe();
+        final String recipe = null; //dataObject.getRecipe();
         if (recipe != null) {
             view.selectRecipe(recipe);
         }
