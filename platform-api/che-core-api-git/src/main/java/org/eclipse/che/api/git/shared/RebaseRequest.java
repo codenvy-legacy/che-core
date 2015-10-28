@@ -55,5 +55,4 @@ public interface RebaseRequest {
      * @return the rebase branch 
      */
     String getBranch();
-    
 }
