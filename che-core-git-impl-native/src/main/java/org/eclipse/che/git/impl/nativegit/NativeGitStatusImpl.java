@@ -51,6 +51,8 @@ public class NativeGitStatusImpl implements Status, InfoPage {
     private List<String> conflicting;
 
     private NativeGit nativeGit;
+    
+    private String repositoryState;
 
     /**
      * @param branchName
@@ -237,7 +239,18 @@ public class NativeGitStatusImpl implements Status, InfoPage {
         this.conflicting = conflicting;
     }
 
+    /** @see Status#getRepositoryState() */
+    @Override
+    public String getRepositoryState() {
+        return this.repositoryState;
+    }
 
+    /** @see Status#setRepositoryState(String) */
+    @Override
+    public void setRepositoryState(String repositoryState) {
+        this.repositoryState = repositoryState;
+    }
+    
     /**
      * loads status information.
      *

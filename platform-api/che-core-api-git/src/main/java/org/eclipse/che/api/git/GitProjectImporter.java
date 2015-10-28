@@ -23,7 +23,7 @@ import org.eclipse.che.dto.server.DtoFactory;
 
 import org.eclipse.che.vfs.impl.fs.VirtualFileImpl;
 import org.eclipse.che.api.git.shared.Branch;
-import org.eclipse.che.api.git.shared.BranchCheckoutRequest;
+import org.eclipse.che.api.git.shared.CheckoutRequest;
 import org.eclipse.che.api.git.shared.BranchListRequest;
 import org.eclipse.che.api.git.shared.CloneRequest;
 import org.eclipse.che.api.git.shared.FetchRequest;
@@ -236,10 +236,11 @@ public class GitProjectImporter implements ProjectImporter {
     }
 
     private void checkoutCommit(GitConnection git, String commit, DtoFactory dtoFactory) throws GitException {
-        final BranchCheckoutRequest request = dtoFactory.createDto(BranchCheckoutRequest.class).withName("temp").withCreateNew(true)
-                                                        .withStartPoint(commit);
+        final CheckoutRequest request = dtoFactory.createDto(CheckoutRequest.class).withName("temp")
+                                                                                   .withCreateNew(true)
+                                                                                   .withStartPoint(commit);
         try {
-            git.branchCheckout(request);
+            git.checkout(request);
         } catch (GitException e) {
             LOG.warn("Git exception on commit checkout", e);
             throw new GitException(
@@ -248,9 +249,9 @@ public class GitProjectImporter implements ProjectImporter {
     }
 
     private void checkoutBranch(GitConnection git, String branch, DtoFactory dtoFactory) throws GitException {
-        final BranchCheckoutRequest request = dtoFactory.createDto(BranchCheckoutRequest.class).withName(branch);
+        final CheckoutRequest request = dtoFactory.createDto(CheckoutRequest.class).withName(branch);
         try {
-            git.branchCheckout(request);
+            git.checkout(request);
         } catch (GitException e) {
             LOG.warn("Git exception on branch checkout", e);
             throw new GitException(

@@ -15,7 +15,7 @@ import org.eclipse.che.api.git.Config;
 import org.eclipse.che.api.git.CredentialsLoader;
 import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.git.impl.nativegit.commands.AddCommand;
-import org.eclipse.che.git.impl.nativegit.commands.BranchCheckoutCommand;
+import org.eclipse.che.git.impl.nativegit.commands.CheckoutCommand;
 import org.eclipse.che.git.impl.nativegit.commands.BranchCreateCommand;
 import org.eclipse.che.git.impl.nativegit.commands.BranchDeleteCommand;
 import org.eclipse.che.git.impl.nativegit.commands.BranchListCommand;
@@ -237,8 +237,8 @@ public class NativeGit {
     /**
      * @return branch checkout command
      */
-    public BranchCheckoutCommand createBranchCheckoutCommand() {
-        BranchCheckoutCommand command = new BranchCheckoutCommand(repository);
+    public CheckoutCommand createCheckoutCommand() {
+    	CheckoutCommand command = new CheckoutCommand(repository);
         command.setLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
