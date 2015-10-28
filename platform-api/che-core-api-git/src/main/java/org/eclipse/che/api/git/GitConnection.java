@@ -15,7 +15,7 @@ import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.core.util.LineConsumerFactory;
 import org.eclipse.che.api.git.shared.AddRequest;
 import org.eclipse.che.api.git.shared.Branch;
-import org.eclipse.che.api.git.shared.BranchCheckoutRequest;
+import org.eclipse.che.api.git.shared.CheckoutRequest;
 import org.eclipse.che.api.git.shared.BranchCreateRequest;
 import org.eclipse.che.api.git.shared.BranchDeleteRequest;
 import org.eclipse.che.api.git.shared.BranchListRequest;
@@ -41,6 +41,8 @@ import org.eclipse.che.api.git.shared.RemoteListRequest;
 import org.eclipse.che.api.git.shared.RemoteReference;
 import org.eclipse.che.api.git.shared.RemoteUpdateRequest;
 import org.eclipse.che.api.git.shared.ResetRequest;
+import org.eclipse.che.api.git.shared.RebaseRequest;
+import org.eclipse.che.api.git.shared.RebaseResponse;
 import org.eclipse.che.api.git.shared.Revision;
 import org.eclipse.che.api.git.shared.RmRequest;
 import org.eclipse.che.api.git.shared.Status;
@@ -75,15 +77,15 @@ public interface GitConnection extends Closeable {
     void add(AddRequest request) throws GitException;
 
     /**
-     * Checkout a branch to the working tree.
+     * Checkout a branch / file to the working tree.
      *
      * @param request
      *         checkout request
      * @throws GitException
      *         if any error occurs when checkout
-     * @see BranchCheckoutRequest
+     * @see CheckoutRequest
      */
-    void branchCheckout(BranchCheckoutRequest request) throws GitException;
+    void checkout(CheckoutRequest request) throws GitException;
 
     /**
      * Create new branch.
@@ -245,6 +247,17 @@ public interface GitConnection extends Closeable {
      */
     MergeResult merge(MergeRequest request) throws GitException;
 
+    /**
+     * Rebase on a branch
+     *
+     * @param request
+     *         rebase request
+     * @throws GitException
+     *         if any error occurs when checkout
+     * @see RebaseRequest
+     */
+    RebaseResponse rebase(RebaseRequest request) throws GitException;    
+    
     /**
      * Move or rename file or directory.
      *

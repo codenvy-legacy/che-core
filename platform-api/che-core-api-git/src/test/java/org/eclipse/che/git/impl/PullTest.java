@@ -18,7 +18,7 @@ import org.eclipse.che.api.git.GitConnection;
 import org.eclipse.che.api.git.GitConnectionFactory;
 import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.api.git.shared.AddRequest;
-import org.eclipse.che.api.git.shared.BranchCheckoutRequest;
+import org.eclipse.che.api.git.shared.CheckoutRequest;
 import org.eclipse.che.api.git.shared.BranchListRequest;
 import org.eclipse.che.api.git.shared.CloneRequest;
 import org.eclipse.che.api.git.shared.CommitRequest;
@@ -89,7 +89,7 @@ public class PullTest {
 
         connection2.clone(newDto(CloneRequest.class).withRemoteUri(connection.getWorkingDir().getAbsolutePath()));
         //add new branch
-        connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName("b1").withCreateNew(true));
+        connection.checkout(newDto(CheckoutRequest.class).withName("b1").withCreateNew(true));
         addFile(connection, "newfile1", "new file1 content");
         connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
         connection.commit(newDto(CommitRequest.class).withMessage("Test commit"));
@@ -109,7 +109,7 @@ public class PullTest {
         //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
         String branchName = "remoteBranch";
-        connection.branchCheckout(newDto(BranchCheckoutRequest.class).withCreateNew(true).withName(branchName));
+        connection.checkout(newDto(CheckoutRequest.class).withCreateNew(true).withName(branchName));
         addFile(connection, "remoteFile", "");
         connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
         connection.commit(newDto(CommitRequest.class).withMessage("remote test"));

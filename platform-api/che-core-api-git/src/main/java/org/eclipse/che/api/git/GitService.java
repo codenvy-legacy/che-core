@@ -14,7 +14,7 @@ import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.git.shared.AddRequest;
 import org.eclipse.che.api.git.shared.Branch;
-import org.eclipse.che.api.git.shared.BranchCheckoutRequest;
+import org.eclipse.che.api.git.shared.CheckoutRequest;
 import org.eclipse.che.api.git.shared.BranchCreateRequest;
 import org.eclipse.che.api.git.shared.BranchDeleteRequest;
 import org.eclipse.che.api.git.shared.BranchListRequest;
@@ -37,6 +37,8 @@ import org.eclipse.che.api.git.shared.Remote;
 import org.eclipse.che.api.git.shared.RemoteAddRequest;
 import org.eclipse.che.api.git.shared.RemoteListRequest;
 import org.eclipse.che.api.git.shared.RemoteUpdateRequest;
+import org.eclipse.che.api.git.shared.RebaseRequest;
+import org.eclipse.che.api.git.shared.RebaseResponse;
 import org.eclipse.che.api.git.shared.RepoInfo;
 import org.eclipse.che.api.git.shared.ResetRequest;
 import org.eclipse.che.api.git.shared.Revision;
@@ -111,12 +113,12 @@ public class GitService {
         }
     }
 
-    @Path("branch-checkout")
+    @Path("checkout")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public void branchCheckout(BranchCheckoutRequest request) throws ApiException {
+    public void checkout(CheckoutRequest request) throws ApiException {
         try (GitConnection gitConnection = getGitConnection()) {
-            gitConnection.branchCheckout(request);
+            gitConnection.checkout(request);
         }
     }
 
@@ -252,6 +254,16 @@ public class GitService {
         }
     }
 
+    @Path("rebase")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public RebaseResponse rebase(RebaseRequest request) throws ApiException {
+        try (GitConnection gitConnection = getGitConnection()) {
+    	    return gitConnection.rebase(request);
+        }
+    }    
+    
     @Path("mv")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)

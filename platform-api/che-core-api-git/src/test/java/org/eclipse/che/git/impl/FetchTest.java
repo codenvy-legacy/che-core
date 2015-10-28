@@ -17,7 +17,7 @@ import org.eclipse.che.api.git.GitConnection;
 import org.eclipse.che.api.git.GitConnectionFactory;
 import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.api.git.shared.AddRequest;
-import org.eclipse.che.api.git.shared.BranchCheckoutRequest;
+import org.eclipse.che.api.git.shared.CheckoutRequest;
 import org.eclipse.che.api.git.shared.CloneRequest;
 import org.eclipse.che.api.git.shared.CommitRequest;
 import org.eclipse.che.api.git.shared.FetchRequest;
@@ -110,7 +110,7 @@ public class FetchTest {
         connection.commit(newDto(CommitRequest.class).withMessage("fetch test"));
 
         String branchName = "branch";
-        connection.branchCheckout(newDto(BranchCheckoutRequest.class).withCreateNew(true).withName(branchName));
+        connection.checkout(newDto(CheckoutRequest.class).withCreateNew(true).withName(branchName));
         addFile(connection, "otherfile1", "otherfile1 content");
         addFile(connection, "otherfile2", "otherfile2 content");
         connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));

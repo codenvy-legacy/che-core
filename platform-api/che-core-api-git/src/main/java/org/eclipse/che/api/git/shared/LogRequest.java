@@ -19,6 +19,13 @@ import org.eclipse.che.dto.shared.DTO;
  */
 @DTO
 public interface LogRequest extends GitRequest {
+    /** @return revision range since */
+    String getRevisionRangeSince();
+    /** @return revision range since */
+    String getRevisionRangeUntil();
+    
+    void setRevisionRangeSince(String revisionRangeSince);
+    void setRevisionRangeUntil(String revisionRangeUntil);	
     // private List<String> fileFilter;
     // private boolean noRenames = true;
     // private int renameLimit;

@@ -177,14 +177,14 @@ public class StatusTest {
         //commit "a" and "b"
         connection.commit(newDto(CommitRequest.class).withMessage("add 2 test files"));
         //switch to other branch
-        connection.branchCheckout(newDto(BranchCheckoutRequest.class).withCreateNew(true)
+        connection.checkout(newDto(CheckoutRequest.class).withCreateNew(true)
                 .withName("new_branch"));
         //modify and commit "a"
         addFile(connection, "a", "new_branch a content");
         connection.commit(newDto(CommitRequest.class).withAll(true)
                 .withMessage("a changed in new_branch"));
         //switch back to master
-        connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName("master"));
+        connection.checkout(newDto(CheckoutRequest.class).withName("master"));
         //modify and commit "a"
         addFile(connection, "a", "master content");
         connection.commit(newDto(CommitRequest.class).withAll(true)
