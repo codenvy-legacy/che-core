@@ -264,12 +264,33 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
         }
     }
 
+    /** {@inheritDoc} */
     @Override
-    public void removeNode(Node node) {
+    public void removeNode(Node node, boolean closeMissingFiles) {
         tree.getNodeStorage().remove(node);
+
+        if (!(node instanceof HasStorablePath) || !closeMissingFiles) {
+            return;
+        }
+
+        Map<String, EditorPartPresenter> openedEditors = editorAgentProvider.get().getOpenedEditors();
+        if (openedEditors == null || openedEditors.isEmpty()) {
+            return;
+        }
+
+        closeEditor((HasStorablePath)node, openedEditors);
 
         if (tree.getRootNodes().isEmpty()) {
             hideProjectInfo();
+        }
+    }
+
+    private void closeEditor(HasStorablePath node, Map<String, EditorPartPresenter> openedEditors) {
+        for (EditorPartPresenter editorPartPresenter : openedEditors.values()) {
+            VirtualFile openedFile = editorPartPresenter.getEditorInput().getFile();
+            if (openedFile.getPath().equals(node.getStorablePath())) {
+                eventBus.fireEvent(new FileEvent(openedFile, CLOSE));
+            }
         }
     }
 
@@ -277,7 +298,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
         closeEditorOnNodeRemovedHandler = tree.getNodeStorage().addStoreRemoveHandler(new StoreRemoveEvent.StoreRemoveHandler() {
             @Override
             public void onRemove(StoreRemoveEvent event) {
-                if (searchNodeHandler.isInSearchMode() && !searchNodeHandler.isCloseMissingFiles()) {
+                if (!searchNodeHandler.isCloseMissingFiles() || !searchNodeHandler.isInSearchMode()) {
                     return;
                 }
 
@@ -292,12 +313,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
                     return;
                 }
 
-                for (EditorPartPresenter editorPartPresenter : openedEditors.values()) {
-                    VirtualFile openedFile = editorPartPresenter.getEditorInput().getFile();
-                    if (openedFile.getPath().equals(((HasStorablePath)removedNode).getStorablePath())) {
-                        eventBus.fireEvent(new FileEvent(openedFile, CLOSE));
-                    }
-                }
+                closeEditor((HasStorablePath)removedNode, openedEditors);
             }
         });
     }

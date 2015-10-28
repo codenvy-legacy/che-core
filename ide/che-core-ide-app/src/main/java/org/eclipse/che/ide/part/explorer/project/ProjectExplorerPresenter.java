@@ -219,7 +219,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
             if (node instanceof ProjectDescriptorNode && deletedProject.equals(((ProjectDescriptorNode)node).getData())) {
                 existingProjects.remove(node);
 
-                view.removeNode(node);
+                view.removeNode(node, true);
             }
         }
 
@@ -621,6 +621,18 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
 
     public HandlerRegistration addCollapseHandler(CollapseNodeEvent.CollapseNodeHandler handler) {
         return view.addCollapseHandler(handler);
+    }
+
+    /**
+     * Remove node from the project tree.
+     *
+     * @param node
+     *         node which should be remove
+     * @param closeMissingFiles
+     *         true if opened nodes in editor part should be closed
+     */
+    public void removeNode(Node node, boolean closeMissingFiles) {
+        view.removeNode(node, closeMissingFiles);
     }
 
 }
