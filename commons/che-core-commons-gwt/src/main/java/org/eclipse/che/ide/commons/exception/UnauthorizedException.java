@@ -10,13 +10,15 @@
  *******************************************************************************/
 package org.eclipse.che.ide.commons.exception;
 
-import org.eclipse.che.ide.rest.AsyncRequest;
-
 import com.google.gwt.http.client.Response;
 
+import org.eclipse.che.ide.rest.AsyncRequest;
 
-/** @author <a href="mailto:gavrikvetal@gmail.com">Vitaliy Gulyy</a> */
 
+/**
+ * @author Vitaliy Gulyy
+ * @author Sergii Leschenko
+ */
 @SuppressWarnings("serial")
 public class UnauthorizedException extends Exception {
 
@@ -25,6 +27,7 @@ public class UnauthorizedException extends Exception {
     private AsyncRequest request;
 
     public UnauthorizedException(Response response, AsyncRequest request) {
+        super(response.getText());
         this.response = response;
         this.request = request;
     }
@@ -36,5 +39,4 @@ public class UnauthorizedException extends Exception {
     public AsyncRequest getRequest() {
         return request;
     }
-
 }
