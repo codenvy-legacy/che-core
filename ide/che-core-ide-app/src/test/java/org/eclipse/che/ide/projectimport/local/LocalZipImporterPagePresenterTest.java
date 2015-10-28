@@ -53,14 +53,14 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class LocalZipImporterPagePresenterTest {
-//    private static final String PROJECT_NAME    = "test";
-//    private static final String FILE_NAME       = "test.zip";
-//    private static final String RESPONSE        = "<pre style=\"word-wrap: break-word; white-space: pre-wrap;\">{\"projectDescriptor\":{}}</pre>";
-//    private static final String PARSED_RESPONSE = "{\"projectDescriptor\":{}}";
-//
-//    @Captor
-//    private ArgumentCaptor<AsyncRequestCallback<Item>> callbackCaptorForItem;
-//
+    private static final String PROJECT_NAME    = "test";
+    private static final String FILE_NAME       = "test.zip";
+    private static final String RESPONSE        = "<pre style=\"word-wrap: break-word; white-space: pre-wrap;\">{\"projectDescriptor\":{}}</pre>";
+    private static final String PARSED_RESPONSE = "{\"projectDescriptor\":{}}";
+
+    @Captor
+    private ArgumentCaptor<AsyncRequestCallback<Item>> callbackCaptorForItem;
+
     @Mock
     private ProjectServiceClient                projectServiceClient;
     @Mock
@@ -79,18 +79,18 @@ public class LocalZipImporterPagePresenterTest {
     private LocalZipImporterPageView            view;
     @InjectMocks
     private LocalZipImporterPagePresenter       presenter;
-//
-//    @Test
-//    public void showDialogTest() {
-//        presenter.show();
-//
-//        verify(view).setProjectName(eq(""));
-//        verify(view).setProjectDescription(eq(""));
-//        verify(view).setProjectVisibility(eq(true));
-//        verify(view).setSkipFirstLevel(eq(true));
-//        verify(view).showDialog();
-//    }
-//
+
+    @Test
+    public void showDialogTest() {
+        presenter.show();
+
+        verify(view).setProjectName(eq(""));
+        verify(view).setProjectDescription(eq(""));
+        verify(view).setProjectVisibility(eq(true));
+        verify(view).setSkipFirstLevel(eq(true));
+        verify(view).showDialog();
+    }
+
     @Test
     public void shouldCloseDialogTest() {
         presenter.onCancelClicked();

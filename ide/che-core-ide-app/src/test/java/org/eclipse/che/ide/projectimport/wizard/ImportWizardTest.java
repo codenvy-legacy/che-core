@@ -18,6 +18,8 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectProblem;
 import org.eclipse.che.api.vfs.gwt.client.VfsServiceClient;
 import org.eclipse.che.api.vfs.shared.dto.Item;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
 import org.eclipse.che.ide.api.wizard.Wizard;
@@ -55,14 +57,13 @@ public class ImportWizardTest {
     private static final String PROJECT_NAME = "project1";
 
     @Captor
-    private ArgumentCaptor<AsyncRequestCallback<Item>>      callbackCaptorForItem;
-//    @Captor
-//    private ArgumentCaptor<RequestCallback<ImportResponse>> callbackCaptorForProject;
-//    @Captor
-//    private ArgumentCaptor<AsyncRequestCallback<Void>>      callbackCaptorForVoid;
-//
+    private ArgumentCaptor<AsyncRequestCallback<Item>>                   callbackCaptorForItem;
+    @Captor
+    private ArgumentCaptor<RequestCallback<Void>>                        callbackCaptorForProject;
     @Mock
     private ProjectServiceClient                projectServiceClient;
+    @Mock
+    private ProjectConfigDto                    dataObject;
     @Mock
     private VfsServiceClient                    vfsServiceClient;
     @Mock
@@ -72,80 +73,68 @@ public class ImportWizardTest {
     @Mock
     private EventBus                            eventBus;
     @Mock
-    private CoreLocalizationConstant            localizationConstant;
-//    @Mock
-//    private ImportProjectNotificationSubscriber importProjectNotificationSubscriber;
-//
-//    @Mock
-//    private ImportProject           importProject;
-//    @Mock
-//    private NewProject              newProject;
+    private SourceStorageDto                    source;
     @Mock
-    private Wizard.CompleteCallback completeCallback;
+    private CoreLocalizationConstant            localizationConstant;
+    @Mock
+    private ImportProjectNotificationSubscriber importProjectNotificationSubscriber;
+    @Mock
+    private Wizard.CompleteCallback             completeCallback;
 
     @InjectMocks
     private ImportWizard wizard;
-//
-//    @Before
-//    public void setUp() {
-//        when(newProject.getName()).thenReturn(PROJECT_NAME);
-//        when(importProject.getProject()).thenReturn(newProject);
-//    }
-//
+
+    @Before
+    public void setUp() {
+        when(dataObject.getName()).thenReturn(PROJECT_NAME);
+        when(dataObject.getSource()).thenReturn(source);
+    }
+
     @Test
     public void shouldInvokeCallbackWhenFolderAlreadyExists() throws Exception {
-//        wizard.complete(completeCallback);
-//
-//        verify(vfsServiceClient).getItemByPath(eq(PROJECT_NAME), callbackCaptorForItem.capture());
-//
-//        AsyncRequestCallback<Item> callback = callbackCaptorForItem.getValue();
-//        GwtReflectionUtils.callOnSuccess(callback, mock(Item.class));
-//
-//        verify(completeCallback).onFailure(any(Throwable.class));
+        wizard.complete(completeCallback);
+
+        verify(vfsServiceClient).getItemByPath(eq(PROJECT_NAME), callbackCaptorForItem.capture());
+
+        AsyncRequestCallback<Item> callback = callbackCaptorForItem.getValue();
+        GwtReflectionUtils.callOnSuccess(callback, mock(Item.class));
+
+        verify(completeCallback).onFailure(any(Throwable.class));
     }
-//
-//    @Test
-//    public void shouldImportAndOpenProject() throws Exception {
-//        wizard.complete(completeCallback);
-//
-//        verify(vfsServiceClient).getItemByPath(eq(PROJECT_NAME), callbackCaptorForItem.capture());
-//
-//        AsyncRequestCallback<Item> itemCallback = callbackCaptorForItem.getValue();
-//        GwtReflectionUtils.callOnFailure(itemCallback, mock(Throwable.class));
-//
-//        verify(projectServiceClient).importProject(eq(PROJECT_NAME), eq(false), eq(importProject), callbackCaptorForProject.capture());
-//
-//        ImportResponse importResponse = mock(ImportResponse.class);
-//        when(importResponse.getProjectDescriptor()).thenReturn(mock(ProjectDescriptor.class));
-//        RequestCallback<ImportResponse> callback = callbackCaptorForProject.getValue();
-//        GwtReflectionUtils.callOnSuccess(callback, importResponse);
-//
-//        verify(eventBus).fireEvent(Matchers.<Event<Object>>anyObject());
-//        verify(completeCallback).onCompleted();
-//    }
-//
-//    //  @Test
-//    public void shouldImportAndOpenProjectForConfiguring() throws Exception {
-//        ImportResponse importResponse = mock(ImportResponse.class);
-//        ProjectDescriptor projectDescriptor = mock(ProjectDescriptor.class);
-//        List<ProjectProblem> problems = mock(List.class);
-//        when(problems.isEmpty()).thenReturn(false);
-//        when(importResponse.getProjectDescriptor()).thenReturn(projectDescriptor);
-//        when(projectDescriptor.getProblems()).thenReturn(problems);
-//
-//        wizard.complete(completeCallback);
-//
-//        verify(vfsServiceClient).getItemByPath(eq(PROJECT_NAME), callbackCaptorForItem.capture());
-//
-//        AsyncRequestCallback<Item> itemCallback = callbackCaptorForItem.getValue();
-//        GwtReflectionUtils.callOnFailure(itemCallback, mock(Throwable.class));
-//
-//        verify(projectServiceClient).importProject(eq(PROJECT_NAME), eq(false), eq(importProject), callbackCaptorForProject.capture());
-//
-//        RequestCallback<ImportResponse> callback = callbackCaptorForProject.getValue();
-//        GwtReflectionUtils.callOnSuccess(callback, importResponse);
-//
+
+    //@Test
+    public void shouldImportAndOpenProject() throws Exception {
+        wizard.complete(completeCallback);
+
+        verify(vfsServiceClient).getItemByPath(eq(PROJECT_NAME), callbackCaptorForItem.capture());
+
+        AsyncRequestCallback<Item> itemCallback = callbackCaptorForItem.getValue();
+        GwtReflectionUtils.callOnFailure(itemCallback, mock(Throwable.class));
+
+        verify(projectServiceClient).importProject(eq(PROJECT_NAME), eq(false), eq(source), callbackCaptorForProject.capture());
+
+        verify(eventBus).fireEvent(Matchers.<Event<Object>>anyObject());
+        verify(completeCallback).onCompleted();
+    }
+
+    @Test
+    public void shouldImportAndOpenProjectForConfiguring() throws Exception {
+        ProjectDescriptor projectDescriptor = mock(ProjectDescriptor.class);
+        List<ProjectProblem> problems = mock(List.class);
+        when(problems.isEmpty()).thenReturn(false);
+        when(projectDescriptor.getProblems()).thenReturn(problems);
+
+        wizard.complete(completeCallback);
+
+        verify(vfsServiceClient).getItemByPath(eq(PROJECT_NAME), callbackCaptorForItem.capture());
+
+        AsyncRequestCallback<Item> itemCallback = callbackCaptorForItem.getValue();
+        GwtReflectionUtils.callOnFailure(itemCallback, mock(Throwable.class));
+
+        verify(projectServiceClient).importProject(eq(PROJECT_NAME), eq(false), eq(source), callbackCaptorForProject.capture());
+
+
 //        verify(eventBus, times(2)).fireEvent(Matchers.<Event<Object>>anyObject());
 //        verify(completeCallback).onCompleted();
-//    }
+    }
 }
