@@ -27,7 +27,6 @@ import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.api.wizard.AbstractWizardPage;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -62,7 +61,6 @@ public class RecipesPagePresenter extends AbstractWizardPage<ProjectConfigDto> i
 
     @Override
     public void onRecipeSelected(String recipe) {
-
         //dataObject.getProject().setRecipe(recipe);
     }
 

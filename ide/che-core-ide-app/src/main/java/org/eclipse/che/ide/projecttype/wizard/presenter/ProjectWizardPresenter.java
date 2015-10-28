@@ -211,7 +211,6 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
         wizard = importWizard == null ? importWizard = createDefaultWizard(null, IMPORT) : importWizard;
         wizard.navigateToFirst();
         final ProjectConfigDto dataObject = wizard.getDataObject();
-        //final NewProject newProject = dataObject.getProject();
 
         // some values should be shared between wizards for different project types
         dataObject.setName(prevData.getName());
@@ -249,8 +248,6 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
         if (dataObject == null) {
             dataObject = dtoFactory.createDto(ProjectConfigDto.class)
                                    .withSource(dtoFactory.createDto(SourceStorageDto.class));
-//                                   .withProject(dtoFactory.createDto(NewProject.class)
-//                                                          .withGeneratorDescription(dtoFactory.createDto(GeneratorDescription.class)));
         }
 
         final ProjectWizard projectWizard = projectWizardFactory.newWizard(dataObject, mode, projectPath);

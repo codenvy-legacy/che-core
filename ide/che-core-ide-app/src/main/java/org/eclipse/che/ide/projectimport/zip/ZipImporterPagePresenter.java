@@ -30,8 +30,6 @@ import java.util.Map;
  */
 public class ZipImporterPagePresenter extends AbstractWizardPage<ProjectConfigDto> implements ZipImporterPageView.ActionDelegate {
 
-    private static final String PUBLIC_VISIBILITY           = "public";
-    private static final String PRIVATE_VISIBILITY          = "private";
     private static final String SKIP_FIRST_LEVEL_PARAM_NAME = "skipFirstLevel";
 
     private static final RegExp URL_REGEX  = RegExp.compile("(https?|ftp)://(-\\.)?([^\\s/?\\.#-]+\\.?)+(/[^\\s]*)?");
@@ -101,7 +99,6 @@ public class ZipImporterPagePresenter extends AbstractWizardPage<ProjectConfigDt
 
     @Override
     public void projectVisibilityChanged(boolean visible) {
-        //dataObject.getProject().setVisibility(visible ? PUBLIC_VISIBILITY : PRIVATE_VISIBILITY);
         updateDelegate.updateControls();
     }
 
@@ -122,11 +119,8 @@ public class ZipImporterPagePresenter extends AbstractWizardPage<ProjectConfigDt
 
     /** Updates view from data-object. */
     private void updateView() {
-        //final NewProject project = dataObject.getProject();
-
         view.setProjectName(dataObject.getName());
         view.setProjectDescription(dataObject.getDescription());
-        //view.setVisibility(PUBLIC_VISIBILITY.equals(dataObject.getVisibility()));
         view.setProjectUrl(dataObject.getSource().getLocation());
 
         final String value = getImportParameterValue(SKIP_FIRST_LEVEL_PARAM_NAME);

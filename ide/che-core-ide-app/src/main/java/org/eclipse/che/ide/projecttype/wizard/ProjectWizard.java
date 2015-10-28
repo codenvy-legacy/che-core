@@ -122,7 +122,6 @@ public class ProjectWizard extends AbstractWizard<ProjectConfigDto> {
     }
 
     private void doSaveAsBlank(final CompleteCallback callback) {
-        //final NewProject project = dataObject.getProject();
         dataObject.setType(Constants.BLANK_ID);
         final Unmarshallable<ProjectDescriptor> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class);
         projectServiceClient.updateProject(dataObject.getName(), dataObject, new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
@@ -143,7 +142,6 @@ public class ProjectWizard extends AbstractWizard<ProjectConfigDto> {
     }
 
     private void createProject(final CompleteCallback callback) {
-        //final NewProject project = dataObject.getProject();
         final Unmarshallable<ProjectDescriptor> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class);
         projectServiceClient.createProject(dataObject.getName(), dataObject, new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
             @Override
@@ -164,7 +162,6 @@ public class ProjectWizard extends AbstractWizard<ProjectConfigDto> {
     private void createModule(final CompleteCallback callback) {
         final String parentPath = appContext.getCurrentProject().getRootProject().getPath();
         final String modulePath = context.get(PROJECT_PATH_KEY);
-        //final NewProject project = dataObject.getProject();
         final Unmarshallable<ProjectDescriptor> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class);
         projectServiceClient.createModule(
                 parentPath, modulePath, dataObject, new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
@@ -198,11 +195,10 @@ public class ProjectWizard extends AbstractWizard<ProjectConfigDto> {
     }
 
     private void updateProject(final CompleteCallback callback) {
-        //final NewProject project = dataObject.getProject();
         final String currentName = context.get(PROJECT_NAME_KEY);
         if (currentName.equals(dataObject.getName())) {
             doUpdateProject(callback);
-       } else {
+        } else {
             renameProject(new AsyncCallback<Void>() {
                 @Override
                 public void onSuccess(Void result) {
