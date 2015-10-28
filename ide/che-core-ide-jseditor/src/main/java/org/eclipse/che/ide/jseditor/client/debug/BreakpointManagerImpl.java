@@ -66,7 +66,7 @@ public class BreakpointManagerImpl implements BreakpointManager, LineChangeActio
         eventBus.addHandler(EditorOpenedEvent.TYPE, new EditorOpenedEventHandler() {
             @Override
             public void onEditorOpened(EditorOpenedEvent event) {
-                BreakpointManagerImpl.this.onEditorOpened(event.getFile(), event.getEditor());
+                doOpenEditor(event.getFile(), event.getEditor());
             }
         });
     }
@@ -336,7 +336,7 @@ public class BreakpointManagerImpl implements BreakpointManager, LineChangeActio
         }
     }
 
-    private void onEditorOpened(VirtualFile file, EditorPartPresenter editor) {
+    private void doOpenEditor(VirtualFile file, EditorPartPresenter editor) {
         final List<Breakpoint> fileBreakpoints = this.breakpoints.get(file.getPath());
 
         if (fileBreakpoints != null) {
