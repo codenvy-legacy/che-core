@@ -345,17 +345,14 @@ public class ProjectService extends Service {
         if (projectManager.getProject(workspace, path) != null) {
             project = projectManager.updateProject(workspace, path, newConfig);
         } else {
+            FolderEntry baseProjectFolder = (FolderEntry)projectManager.getProjectsRoot(workspace).getChild(path);
             try {
                 project = projectManager.convertFolderToProject(workspace, path, newConfig);
-
-                reindexProject(System.currentTimeMillis(), (FolderEntry)getVirtualFile(workspace, path, false), project);
-
+                reindexProject(System.currentTimeMillis(), baseProjectFolder, project);
                 eventService.publish(new ProjectCreatedEvent(project.getWorkspace(), project.getPath()));
                 logProjectCreatedEvent(projectConfigDto.getName(), projectConfigDto.getType());
             } catch (ConflictException | ForbiddenException | ServerException e) {
-                FolderEntry baseProjectFolder = (FolderEntry)getVirtualFile(workspace, path, false);
                 project = new NotValidProject(baseProjectFolder, projectManager);
-
                 ProjectDescriptor projectDescriptor = DtoConverter.toProjectDescriptor(project,
                                                                                        getServiceContext().getServiceUriBuilder(),
                                                                                        projectManager.getProjectTypeRegistry(),

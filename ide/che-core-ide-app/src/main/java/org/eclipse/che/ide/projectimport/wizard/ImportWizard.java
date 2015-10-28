@@ -144,7 +144,7 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
 
             @Override
             protected void onSuccess(List<SourceEstimation> result) {
-                createProject(callback, dataObject.withType(result.get(0).getType()));
+                createProject(callback, dataObject.withType(result.get(1).getType())); //TODO: check project type is Primary
             }
 
             @Override
@@ -164,7 +164,6 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
             @Override
             protected void onSuccess(ProjectDescriptor result) {
                 eventBus.fireEvent(new CreateProjectEvent(result));
-
                 if (!result.getProblems().isEmpty()) {
                     eventBus.fireEvent(new ConfigureProjectEvent(result));
                 }
