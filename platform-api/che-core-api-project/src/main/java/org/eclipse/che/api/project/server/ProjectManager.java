@@ -16,6 +16,7 @@ import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.model.workspace.ModuleConfig;
 import org.eclipse.che.api.project.server.handlers.ProjectHandlerRegistry;
 import org.eclipse.che.api.project.server.type.AttributeValue;
 import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
@@ -170,7 +171,7 @@ public interface ProjectManager {
      * @throws ForbiddenException
      *         if user which perform operation doesn't have required permissions
      */
-    Set<Project> getProjectModules(Project project)
+    List<ModuleConfig> getProjectModules(Project project)
             throws ServerException, ForbiddenException, ConflictException, IOException, NotFoundException;
 
     /**
@@ -215,8 +216,10 @@ public interface ProjectManager {
     Project addModule(String workspace,
                       String projectPath,
                       String modulePath,
-                      ProjectConfig moduleConfig,
+                      ModuleConfig moduleConfig,
                       Map<String, String> options) throws ConflictException, ForbiddenException, ServerException, NotFoundException;
+
+
     List<SourceEstimation> resolveSources(String workspace, String path, boolean transientOnly) throws ServerException, ForbiddenException,
                                                                                                        NotFoundException,
                                                                                                        ValueStorageException,

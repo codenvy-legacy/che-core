@@ -18,19 +18,7 @@ import java.util.Map;
 /**
  * @author gazarenkov
  */
-public interface ProjectConfig {
-
-    String getName();
-
-    String getPath();
-
-    String getDescription();
-
-    String getType();
-
-    List<String> getMixinTypes();
-
-    Map<String, List<String>> getAttributes();
+public interface ProjectConfig extends ModuleConfig {
 
     SourceStorage getSource();
 }

@@ -24,7 +24,7 @@ import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.OPTIO
  * @author Alexander Garagatyi
  */
 @DTO
-public interface ProjectConfigDto extends ProjectConfig {
+public interface ProjectConfigDto extends ModuleConfigDto, ProjectConfig {
     @Override
     @FactoryParameter(obligation = MANDATORY)
     String getName();
@@ -72,6 +72,13 @@ public interface ProjectConfigDto extends ProjectConfig {
     void setAttributes(Map<String, List<String>> attributes);
 
     ProjectConfigDto withAttributes(Map<String, List<String>> attributes);
+
+    @Override
+    List<ModuleConfigDto> getModules();
+
+    void setModules(List<ModuleConfigDto> modules);
+
+    ProjectConfigDto withModules(List<ModuleConfigDto> modules);
 
     @Override
     @FactoryParameter(obligation = MANDATORY)

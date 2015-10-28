@@ -15,6 +15,7 @@ import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.model.workspace.ModuleConfig;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.notification.EventSubscriber;
@@ -40,6 +41,9 @@ import org.eclipse.che.api.vfs.server.Path;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
 import org.eclipse.che.api.vfs.server.observation.VirtualFileEvent;
 import org.eclipse.che.api.workspace.server.*;
+import org.eclipse.che.api.workspace.server.DtoConverter;
+import org.eclipse.che.api.workspace.server.model.impl.ProjectConfigImpl;
+import org.eclipse.che.api.workspace.shared.dto.ModuleConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
@@ -299,15 +303,19 @@ public final class DefaultProjectManager implements ProjectManager {
     public Project addModule(String workspace,
                              String projectPath,
                              String modulePath,
-                             ProjectConfig moduleConfig,
+                             ModuleConfig moduleConfig,
                              Map<String, String> options) throws ConflictException, ForbiddenException, ServerException, NotFoundException {
-        Project parentProject = getProject(workspace, projectPath);
+        ProjectConfigDto parentProject = getProjectFromWorkspace(workspace, projectPath);
         if (parentProject == null) {
             throw new NotFoundException("Parent Project not found " + projectPath);
         }
 
-        if (parentProject.getModules().get().contains(modulePath)) {
-            throw new ConflictException("Module " + modulePath + " already exists");
+        final List<ModuleConfigDto> modules = parentProject.getModules();
+
+        for(ModuleConfigDto moduleConfigDto : modules) {
+            if (moduleConfigDto.getPath().equals(modulePath)) {
+                throw new ConflictException("Module " + modulePath + " already exists");
+            }
         }
 
         if (!projectPath.startsWith("/")) {
@@ -339,13 +347,17 @@ public final class DefaultProjectManager implements ProjectManager {
 
             module = new Project((FolderEntry)moduleFolder, this);
 
-            final CreateProjectHandler generator = this.getHandlers().getCreateProjectHandler(moduleConfig.getTypeId());
-            if (generator != null) {
-                generator.onCreateProject(module.getBaseFolder(), moduleConfig.getAttributes(), options);
+            final Map<String, AttributeValue> valueMap = new HashMap<>();
+            if (moduleConfig.getAttributes() != null) {
+                final Map<String, List<String>> attributes = moduleConfig.getAttributes();
+                for (String key : attributes.keySet()) {
+                    valueMap.put(key, new AttributeValue(attributes.get(key)));
+                }
             }
-
-            module.updateConfig(moduleConfig);
-
+            final CreateProjectHandler generator = this.getHandlers().getCreateProjectHandler(moduleConfig.getType());
+            if (generator != null) {
+                generator.onCreateProject(module.getBaseFolder(), valueMap, options);
+            }
             final ProjectMisc misc = module.getMisc();
             misc.setCreationDate(System.currentTimeMillis());
             misc.save(); // Important to save misc!!
@@ -357,17 +369,17 @@ public final class DefaultProjectManager implements ProjectManager {
                     throw new ConflictException("Folder at " + absModulePath + " is not a project and module configuration is not defined");
                 }
                 module = new Project((FolderEntry)moduleFolder, this);
-                module.updateConfig(moduleConfig);
             }
         }
 
-        // finally adds the module to parent
-        parentProject.getModules().add(modulePath);
-
-        CreateModuleHandler moduleHandler = this.getHandlers().getCreateModuleHandler(parentProject.getConfig().getTypeId());
+        CreateModuleHandler moduleHandler = this.getHandlers().getCreateModuleHandler(parentProject.getType());
         if (moduleHandler != null) {
-            moduleHandler.onCreateModule(parentProject.getBaseFolder(), absModulePath, module.getConfig(), options);
+            moduleHandler.onCreateModule(getProject(workspace, projectPath).getBaseFolder(), absModulePath, module.getConfig(), options);
         }
+
+        modules.add(DtoConverter.asDto(moduleConfig));
+        parentProject.setModules(modules);
+        updateProjectInWorkspace(workspace, parentProject);
         return module;
     }
 
@@ -663,28 +675,12 @@ public final class DefaultProjectManager implements ProjectManager {
     }
 
     @Override
-    public Set<Project> getProjectModules(Project parent)
+    public List<ModuleConfig> getProjectModules(Project parent)
             throws ServerException, ForbiddenException, ConflictException, IOException, NotFoundException {
-        final List<String> modulePaths = new LinkedList<>();
-        final Set<Project> modules = new LinkedHashSet<>();
-        for (String p : parent.getModules().get()) {
-            String modulePath = p.startsWith("/") ? p : parent.getPath() + "/" + p;
-            modulePaths.add(modulePath);
-        }
 
-        //get modules via handler
-        GetModulesHandler modulesHandler = handlers.getModulesHandler(parent.getConfig().getTypeId());
-        if (modulesHandler != null) {
-            modulesHandler.onGetModules(parent.getBaseFolder(), modulePaths);
-        }
-
-        for (String modulePath : modulePaths) {
-            Project module = getProject(parent.getWorkspace(), modulePath);
-            if (module != null) {
-                modules.add(module);
-            }
-        }
-        return modules;
+        final ProjectConfigDto project = getProjectFromWorkspace(parent.getWorkspace(), parent.getPath());
+        ProjectConfigImpl projectConfig = new ProjectConfigImpl(project);
+        return projectConfig.getModules();
     }
 
     @Override

@@ -24,6 +24,7 @@ import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.UnauthorizedException;
+import org.eclipse.che.api.core.model.workspace.ModuleConfig;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.rest.Service;
 import org.eclipse.che.api.core.rest.annotations.Description;
@@ -49,6 +50,7 @@ import org.eclipse.che.api.vfs.shared.dto.AccessControlEntry;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
+import org.eclipse.che.api.workspace.shared.dto.ModuleConfigDto;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.ws.rs.ExtMediaType;
 import org.eclipse.che.dto.server.DtoFactory;
@@ -87,6 +89,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 /**
  * @author andrew00x
@@ -258,7 +261,7 @@ public class ProjectService extends Service {
     @GET
     @Path("/modules/{path:.*}")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<ProjectDescriptor> getModules(@ApiParam(value = "Workspace ID", required = true)
+    public List<ModuleConfigDto> getModules(@ApiParam(value = "Workspace ID", required = true)
                                               @PathParam("ws-id") String workspace,
                                               @ApiParam(value = "Path to a project", required = true)
                                               @PathParam("path") String path)
@@ -268,13 +271,9 @@ public class ProjectService extends Service {
         if (parent == null) {
             throw new NotFoundException("Project " + path + " was not found");
         }
-        final List<ProjectDescriptor> modules = new LinkedList<>();
-        for (Project module : projectManager.getProjectModules(parent)) {
-            modules.add(DtoConverter.toProjectDescriptor(module,
-                                                         getServiceContext().getServiceUriBuilder(),
-                                                         projectManager.getProjectTypeRegistry(),
-                                                         workspace));
-        }
+        final List<ModuleConfigDto> modules =
+                projectManager.getProjectModules(parent).stream().map(org.eclipse.che.api.workspace.server.DtoConverter::asDto)
+                              .collect(Collectors.toCollection(() -> new LinkedList<>()));
         return modules;
     }
 
@@ -298,7 +297,7 @@ public class ProjectService extends Service {
                                           @PathParam("path") String parentPath,
                                           @ApiParam(value = "New module name", required = true)
                                           @QueryParam("path") String path,
-                                          ProjectConfigDto projectConfigDto)
+                                          ModuleConfigDto moduleConfig)
             throws NotFoundException, ConflictException, ForbiddenException, ServerException {
 
         filesBuffer.addToBuffer(path);
@@ -307,6 +306,7 @@ public class ProjectService extends Service {
                                                   (projectConfigDto == null) ? null : DtoConverter
                                                           .fromProjectConfigDto(projectConfigDto, projectManager.getProjectTypeRegistry()),
                                                   null);
+        Project module = projectManager.addModule(workspace, parentPath, path, moduleConfig, null);
 
         final ProjectDescriptor descriptor = DtoConverter.toProjectDescriptor(module,
                                                                               getServiceContext().getServiceUriBuilder(),

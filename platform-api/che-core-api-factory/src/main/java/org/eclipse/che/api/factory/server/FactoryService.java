@@ -579,7 +579,7 @@ public class FactoryService extends Service {
 //                    projectAttributes.put(entry.getKey(), entry.getValue().getList());
 //                }
 //
-//                projectConfig.getModules().add(DtoFactory.newDto(ProjectModule.class).withType(moduleConfig.getTypeId())
+//                newProject.getModules().add(DtoFactory.newDto(ProjectModule.class).withType(moduleConfig.getTypeId())
 //                                                      .withPath(moduleRelativePath)
 //                                                      .withRecipe(moduleConfig.getRecipe())
 //                                                      .withAttributes(moduleAttributes)
