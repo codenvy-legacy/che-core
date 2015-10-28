@@ -12,8 +12,11 @@
 package org.eclipse.che.ide.jseditor.client.debug;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.ide.api.editor.EditorAgent;
+import org.eclipse.che.ide.api.editor.EditorOpenedEvent;
+import org.eclipse.che.ide.api.editor.EditorOpenedEventHandler;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.parts.ConsolePart;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
@@ -53,11 +56,19 @@ public class BreakpointManagerImpl implements BreakpointManager, LineChangeActio
     @Inject
     public BreakpointManagerImpl(final EditorAgent editorAgent,
                                  final DebuggerManager debuggerManager,
-                                 final ConsolePart console) {
+                                 final ConsolePart console,
+                                 final EventBus eventBus) {
         this.editorAgent = editorAgent;
         this.breakpoints = new HashMap<>();
         this.debuggerManager = debuggerManager;
         this.console = console;
+
+        eventBus.addHandler(EditorOpenedEvent.TYPE, new EditorOpenedEventHandler() {
+            @Override
+            public void onEditorOpened(EditorOpenedEvent event) {
+                BreakpointManagerImpl.this.onEditorOpened(event.getFile(), event.getEditor());
+            }
+        });
     }
 
     @Override
@@ -322,6 +333,26 @@ public class BreakpointManagerImpl implements BreakpointManager, LineChangeActio
             // so i'll just unmark the current line without marking the new one as it doesn't make sense (the
             // current position is not synchronized with the debugger)
             unmarkCurrentBreakpoint();
+        }
+    }
+
+    private void onEditorOpened(VirtualFile file, EditorPartPresenter editor) {
+        final List<Breakpoint> fileBreakpoints = this.breakpoints.get(file.getPath());
+
+        if (fileBreakpoints != null) {
+            final BreakpointRenderer breakpointRenderer = getBreakpointRendererForEditor(editor);
+            if (breakpointRenderer != null) {
+                for (final Breakpoint breakpoint : fileBreakpoints) {
+                    int lineNumber = breakpoint.getLineNumber();
+
+                    breakpointRenderer.addBreakpointMark(lineNumber);
+                    if (isCurrentBreakpoint(lineNumber)) {
+                        breakpointRenderer.setBreakpointActive(lineNumber, true);
+                        breakpointRenderer.setLineActive(lineNumber, false);
+                        breakpointRenderer.setLineActive(lineNumber, true);
+                    }
+                }
+            }
         }
     }
 }
