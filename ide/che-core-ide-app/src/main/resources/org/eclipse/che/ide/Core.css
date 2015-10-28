@@ -207,6 +207,11 @@ body, td {
     transition: border-bottom 0.2s linear;
 }
 
+.gwt-TextBox-readonly:focus {
+    border-bottom: 1px solid textFieldBorderColor;
+}
+
+
 .gwt-TextBox:focus::-webkit-input-placeholder,
 .gwt-TextArea:focus::-webkit-input-placeholder,
 .gwt-SuggestBox:focus::-webkit-input-placeholder,
