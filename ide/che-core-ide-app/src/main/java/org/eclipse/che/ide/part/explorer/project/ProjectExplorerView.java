@@ -34,7 +34,15 @@ public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDele
 
     void addNode(Node node);
 
-    void removeNode(Node node);
+    /**
+     * Remove node from the project tree.
+     *
+     * @param node
+     *         node which should be remove
+     * @param closeMissingFiles
+     *         true if opened nodes in editor part should be closed
+     */
+    void removeNode(Node node, boolean closeMissingFiles);
 
     void setRootNode(Node node);
 
