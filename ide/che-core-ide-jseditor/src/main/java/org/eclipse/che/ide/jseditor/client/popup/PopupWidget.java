@@ -58,7 +58,7 @@ public abstract class PopupWidget<T> {
     private Element previousFocus;
 
     public PopupWidget(final PopupResources popupResources) {
-        this.popupElement = Elements.createDivElement(popupResources.popupStyle().window());
+        this.popupElement = Elements.createDivElement(popupResources.popupStyle().popup());
         this.listElement = Elements.createUListElement();
         this.popupElement.appendChild(this.listElement);
         this.popupResources = popupResources;

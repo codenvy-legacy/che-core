@@ -40,6 +40,8 @@ public interface CompletionResources extends ClientBundle {
 
         String hint();
 
+        String hintActive();
+
         int maxHeight();
     }
 }

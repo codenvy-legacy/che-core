@@ -18,14 +18,22 @@ public interface PopupResources extends ClientBundle {
 
     /** The CSS resource for the popup window component. */
     @Source({"popup.css", "org/eclipse/che/ide/api/ui/style.css"})
+
     PopupStyle popupStyle();
 
     /** The CSS resource interface for the popup window component. */
-    public interface PopupStyle extends CssResource {
-        String window();
+    interface PopupStyle extends CssResource {
+
+        String popup();
+
+        String header();
+
+        String body();
+
         String item();
 
-        @ClassName("hint-active")
-        String hintActive();
+        String icon();
+
+        String label();
     }
 }
