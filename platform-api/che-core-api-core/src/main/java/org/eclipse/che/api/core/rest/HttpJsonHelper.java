@@ -28,6 +28,7 @@ import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.HttpHeaders;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -409,9 +410,6 @@ public class HttpJsonHelper {
             final String authToken = getAuthenticationToken();
             if ((parameters != null && parameters.length > 0) || authToken != null) {
                 final UriBuilder ub = UriBuilder.fromUri(url);
-                if (authToken != null) {
-                    ub.queryParam("token", authToken);
-                }
                 if (parameters != null && parameters.length > 0) {
                     for (Pair<String, ?> parameter : parameters) {
                         String name = URLEncoder.encode(parameter.first, "UTF-8");
@@ -430,7 +428,9 @@ public class HttpJsonHelper {
                 if (body != null) {
                     conn.addRequestProperty("content-type", MediaType.APPLICATION_JSON);
                     conn.setDoOutput(true);
-
+                    if (authToken != null) {
+                        conn.setRequestProperty("X-HTTP-Method-Override", authToken);
+                    }
                     if (HttpMethod.DELETE.equals(method)) { //to avoid jdk bug described here http://bugs.java.com/view_bug.do?bug_id=7157360
                         conn.setRequestMethod(HttpMethod.POST);
                         conn.setRequestProperty("X-HTTP-Method-Override", HttpMethod.DELETE);
