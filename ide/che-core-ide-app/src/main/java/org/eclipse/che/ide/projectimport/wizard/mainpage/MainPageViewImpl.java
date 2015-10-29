@@ -52,7 +52,10 @@ public class MainPageViewImpl implements MainPageView {
 
         @Override
         public SpanElement renderCategory(Category<ProjectImporterDescriptor> category) {
-            return renderCategoryWithIcon(category.getTitle());
+            SpanElement textElement = Document.get().createSpanElement();
+            textElement.setClassName(resources.defaultCategoriesListCss().headerText());
+            textElement.setInnerText(category.getTitle());
+            return textElement;
         }
     };
 
@@ -82,13 +85,6 @@ public class MainPageViewImpl implements MainPageView {
     public MainPageViewImpl(Resources resources) {
         this.resources = resources;
         rootElement = uiBinder.createAndBindUi(this);
-    }
-
-    private SpanElement renderCategoryWithIcon(String title) {
-        SpanElement textElement = Document.get().createSpanElement();
-        textElement.setClassName(resources.defaultCategoriesListCss().headerText());
-        textElement.setInnerText(title);
-        return textElement;
     }
 
     @Override

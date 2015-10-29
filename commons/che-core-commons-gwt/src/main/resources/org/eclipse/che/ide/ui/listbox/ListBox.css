@@ -84,7 +84,9 @@
     display: none;
     z-index: 9999998;
     line-height: 22px;
+    white-space: normal;
     position: absolute;
+    text-align: left;
     top: 100%;
     left: -1px;
     right: -1px;

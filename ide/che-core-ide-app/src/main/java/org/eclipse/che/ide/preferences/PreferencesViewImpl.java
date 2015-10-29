@@ -24,6 +24,7 @@ import org.eclipse.che.ide.util.dom.Elements;
 import org.eclipse.che.ide.util.loging.Log;
 
 import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;

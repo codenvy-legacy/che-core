@@ -425,14 +425,6 @@ public class CustomListBox extends FocusWidget implements HasChangeHandlers {
         inputElement.setValue(value);
     }
 
-    /**
-     * @see com.google.gwt.user.client.ui.UIObject#onEnsureDebugId(String)
-     */
-    @Override
-    protected void onEnsureDebugId(String baseID) {
-        super.onEnsureDebugId(baseID);
-    }
-
     private void checkIndex(int index) {
         if (index < 0 || index >= getItemCount()) {
             throw new IndexOutOfBoundsException();

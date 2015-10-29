@@ -168,6 +168,11 @@ public class CategoryNodeElement extends FlowPanel {
             UIObject.ensureDebugId(element, "projectWizard-" + element.getInnerText());
             container.getElement().appendChild(element);
         }
+        if(elementsMap.isEmpty()) {
+            expandControl.setAttribute("style", "visibility: hidden;");
+        } else {
+            expandControl.removeAttribute("style");
+        }
     }
 
     /**

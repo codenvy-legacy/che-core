@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-@external .gwt-SplitLayoutPanel-HDragger, .gwt-SplitLayoutPanel-VDragger, .hsplitter, .hsplitter, .gwt-DialogBox, .gwt-Button, .gwt-PushButton, gwt-PushButton-up, gwt-PushButton-up-hovering, gwt-PushButton-up-disabled, gwt-PushButton-down,.gwt-PushButton-down-hovering,.gwt-PushButton-down-disabled, gwt-ToggleButton, gwt-ToggleButton-up, gwt-ToggleButton-up-hovering, gwt-ToggleButton-up-disabled, gwt-ToggleButton-down, .gwt-ToggleButton-down-hovering, .gwt-ToggleButton-down-disabled, .gwt-TextBox, .inputError, .gwt-TextArea, .gwt-ListBox, .gwt-PopupPanel, .gwt-Label;
+@external .gwt-SplitLayoutPanel-HDragger, .gwt-SplitLayoutPanel-VDragger, .hsplitter, .hsplitter, .gwt-DialogBox, .gwt-Button, .gwt-PushButton, gwt-PushButton-up, gwt-PushButton-up-hovering, gwt-PushButton-up-disabled, gwt-PushButton-down,.gwt-PushButton-down-hovering,.gwt-PushButton-down-disabled, gwt-ToggleButton, gwt-ToggleButton-up, gwt-ToggleButton-up-hovering, gwt-ToggleButton-up-disabled, gwt-ToggleButton-down, .gwt-ToggleButton-down-hovering, .gwt-ToggleButton-down-disabled, .gwt-TextBox, .inputError, .gwt-TextArea, .gwt-PopupPanel, .gwt-Label;
 
 /* Global styles and external GWT styles. */
 
@@ -34,24 +34,8 @@ body, td {
     font-family: textFieldFontFamily;
 }
 
-.gwt-ListBox {
-    background-color: textFieldBackgroundColor;
-    border: 1px solid textFieldBorderColor;
-    font-size: textFieldFontSize;
-    color: listBoxColor;
-    padding-left: 5px;
-    border-radius: 0;
-    min-height: 22px;
-    outline: none;
-}
-
-.gwt-ListBox[disabled] {
-    background-color: listBoxDisabledBackgroundColor;
-    color: listBoxDisabledColor;
-}
-
 .gwt-CheckBox {
-    display: inline-block;
+    display: inline;
     position: relative;
     height: 14px;
 }

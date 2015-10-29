@@ -95,6 +95,9 @@
     text-transform: capitalize;
     color: categoriesListHeaderTextColor;
     background-color: categoriesListHeaderBackgroundColor;
+}
+
+.categoryHeader > span {
     padding: 0 listHeaderRightPadding 0 listHeaderLeftPadding;
 }
 
@@ -113,6 +116,7 @@
 .headerText {
     float: left;
     white-space: nowrap;
+    text-transform: uppercase;
 }
 
 svg.headerIcon {
