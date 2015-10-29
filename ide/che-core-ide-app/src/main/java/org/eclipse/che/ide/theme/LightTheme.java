@@ -423,13 +423,38 @@ public class LightTheme implements Theme {
     }
 
     @Override
-    public String getCompletionPopupBackgroundColor() {
-        return "#303030";
+    public String completionPopupBackgroundColor() {
+        return "#FFFFFF";
     }
 
     @Override
-    public String getCompletionPopupBorderColor() {
-        return "#484848";
+    public String completionPopupBorderColor() {
+        return "#A5A5A5";
+    }
+
+    @Override
+    public String completionPopupHeaderBackgroundColor() {
+        return "#F2F2F2";
+    }
+
+    @Override
+    public String completionPopupHeaderTextColor() {
+        return "#909090";
+    }
+
+    @Override
+    public String completionPopupSelectedItemBackgroundColor() {
+        return "rgba(0, 0, 0, 0.12)";
+    }
+
+    @Override
+    public String completionPopupItemTextColor() {
+        return "#555555";
+    }
+
+    @Override
+    public String completionPopupItemSubtitleTextColor() {
+        return "#909090";
     }
 
     @Override
@@ -934,16 +959,16 @@ public class LightTheme implements Theme {
 
     @Override
     public String scrollbarBorderColor() {
-        return "rgba(59, 59, 59, 0.15)";
+        return "rgba(59, 59, 59, 0.3)";
     }
 
     @Override
-    public String scrollbarHoverBackgroundColor() {
+    public String scrollbarBackgroundColor() {
         return "rgba(27, 27, 27, 0.10)";
     }
 
     @Override
-    public String scrollbarActiveBackgroundColor() {
+    public String scrollbarHoverBackgroundColor() {
         return "rgba(27, 27, 27, 0.15)";
     }
 

@@ -580,14 +580,49 @@ public interface Theme {
      *
      * @return the color
      */
-    String getCompletionPopupBackgroundColor();
+    String completionPopupBackgroundColor();
 
     /**
      * Border color of completion popup.
      *
      * @return the color
      */
-    String getCompletionPopupBorderColor();
+    String completionPopupBorderColor();
+
+    /**
+     * Background color for completion popup header.
+     *
+     * @return color
+     */
+    String completionPopupHeaderBackgroundColor();
+
+    /**
+     * Text color for completion popup header.
+     *
+     * @return color
+     */
+    String completionPopupHeaderTextColor();
+
+    /**
+     * Background color of selected or highlighted item for completion popup.
+     *
+     * @return color
+     */
+    String completionPopupSelectedItemBackgroundColor();
+
+    /**
+     * Item text color for completion popup.
+     *
+     * @return color
+     */
+    String completionPopupItemTextColor();
+
+    /**
+     * Item subtitle text color for completion popup.
+     *
+     * @return color
+     */
+    String completionPopupItemSubtitleTextColor();
 
     /**
      * Background color of the window widget.
@@ -1175,19 +1210,19 @@ public interface Theme {
     String categoriesListItemBackgroundColor();
 
     /**
-     * @return the scrollbar border color.
+     * @return the scrollbar border color
      */
     String scrollbarBorderColor();
 
     /**
-     * @return the scrollbar background color if hover.
+     * @return scrollbar background color
      */
-    String scrollbarHoverBackgroundColor();
+    String scrollbarBackgroundColor();
 
     /**
-     * @return the scrollbar background color if active.
+     * @return scrollbar hover background color
      */
-    String scrollbarActiveBackgroundColor();
+    String scrollbarHoverBackgroundColor();
 
     /********************************************************************************************
      *

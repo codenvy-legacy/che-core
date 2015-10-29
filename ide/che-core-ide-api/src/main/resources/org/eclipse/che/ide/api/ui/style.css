@@ -141,8 +141,13 @@
 @eval editorGutterLineNumberBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.editorGutterLineNumberBackgroundColor();
 @eval editorGutterSeparatorColor org.eclipse.che.ide.api.theme.Style.getEditorSeparatorColor();
 
-@eval completionPopupBorderColor org.eclipse.che.ide.api.theme.Style.getCompletionPopupBorderColor();
-@eval completionPopupBackgroundColor org.eclipse.che.ide.api.theme.Style.getCompletionPopupBackgroundColor();
+@eval completionPopupBorderColor org.eclipse.che.ide.api.theme.Style.theme.completionPopupBorderColor();
+@eval completionPopupBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.completionPopupBackgroundColor();
+@eval completionPopupHeaderBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.completionPopupHeaderBackgroundColor();
+@eval completionPopupHeaderTextColor org.eclipse.che.ide.api.theme.Style.theme.completionPopupHeaderTextColor();
+@eval completionPopupSelectedItemBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.completionPopupSelectedItemBackgroundColor();
+@eval completionPopupItemTextColor org.eclipse.che.ide.api.theme.Style.theme.completionPopupItemTextColor();
+@eval completionPopupItemSubtitleTextColor org.eclipse.che.ide.api.theme.Style.theme.completionPopupItemSubtitleTextColor();
 
 @eval editorInfoBorderColor org.eclipse.che.ide.api.theme.Style.getEditorInfoBorderColor();
 @eval editorInfoBorderShadowColor org.eclipse.che.ide.api.theme.Style.getEditorInfoBorderShadowColor();
@@ -334,8 +339,8 @@
 
 /*Scrollbar*/
 @eval scrollbarBorderColor org.eclipse.che.ide.api.theme.Style.theme.scrollbarBorderColor();
+@eval scrollbarBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.scrollbarBackgroundColor();
 @eval scrollbarHoverBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.scrollbarHoverBackgroundColor();
-@eval scrollbarActiveBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.scrollbarActiveBackgroundColor();
 
 /*RadioButton*/
 @eval radioButtonIconColor org.eclipse.che.ide.api.theme.Style.theme.radioButtonIconColor();

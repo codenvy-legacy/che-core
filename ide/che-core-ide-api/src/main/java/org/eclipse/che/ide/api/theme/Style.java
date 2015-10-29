@@ -340,14 +340,6 @@ public class Style {
         return theme.getEditorAttribute();
     }
 
-    public static String getCompletionPopupBorderColor() {
-        return theme.getCompletionPopupBorderColor();
-    }
-
-    public static String getCompletionPopupBackgroundColor() {
-        return theme.getCompletionPopupBackgroundColor();
-    }
-
     public static String getWindowContentBackground() {
         return theme.getWindowContentBackground();
     }

@@ -8,21 +8,49 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-.window {
-        /* from codenvy classic AutoComplete.css .container class. */
+
+/* TODO we have to merge AutocompleteComponents.css here */
+
+.popup {
     position: absolute;
-    z-index: 1; /* absolute+ z-index -> set up stacking context -*/
+    z-index: 1;
     border: 1px solid completionPopupBorderColor;
     background-color: completionPopupBackgroundColor;
-    box-shadow: 0 2px 5px 0 rgba(50, 50, 50, 0.75);
-    padding: 5px 0 5px 10px;
+    border-radius: 3px;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.5);
     min-width: 150px;
-    /*max-width: 800px;*/
-    overflow: auto !important;
+    overflow: hidden;
     resize: both;
     white-space: nowrap;
-    /*width: 400px;*/
-    /*height: 200px;*/
+    transition: opacity 0.15s ease;
+}
+
+.header {
+    background-color: completionPopupHeaderBackgroundColor;
+    font-family: mainFontFamily;
+    line-height: 18px;
+    font-size: 11px;
+    padding-left: 7px;
+    color: completionPopupHeaderTextColor;
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    height: 18px;
+}
+
+.body {
+    overflow: auto !important;
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    top: 19px;
+}
+
+.body > ul,
+.body > ulist {
+    position: absolute;
+    width: 100%;
 }
 
 .item {
@@ -36,8 +64,53 @@
     align-items: center;
     -webkit-flex-wrap: nowrap;
     flex-wrap: nowrap;
+    outline: none;
+    border-left: 1px solid transparent;
 }
-.hint-active {
-    background: #08f;
-    color: white;
+
+.item[selected="true"] {
+    background: completionPopupSelectedItemBackgroundColor !important;
+}
+
+.item:HOVER {
+    border-left: 1px solid #4EABFF;
+    background-color: completionPopupSelectedItemBackgroundColor;
+}
+
+.icon {
+    min-width: 18px;
+    width: 18px;
+    height: 18px;
+    overflow: hidden;
+    margin-left: 3px;
+    margin-right: 3px;
+}
+
+.icon img {
+    width: 16px;
+    height: 16px;
+    margin-left: 1px;
+    margin-top: 1px;
+}
+
+.icon svg {
+    width: 18px;
+    height: 18px;
+    position: relative;
+    left: 0px;
+    top: 0px;
+    transform-origin: 0px 0px 0px;
+}
+
+.label {
+    font-family: mainFontFamily;
+    line-height: 16px;
+    font-size: 13px;
+    cursor: default;
+
+    color: completionPopupItemTextColor;
+}
+
+.label span {
+    color: completionPopupItemSubtitleTextColor !important;
 }

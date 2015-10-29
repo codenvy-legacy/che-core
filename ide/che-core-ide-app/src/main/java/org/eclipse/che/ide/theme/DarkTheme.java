@@ -442,13 +442,38 @@ public class DarkTheme implements Theme {
     }
 
     @Override
-    public String getCompletionPopupBackgroundColor() {
-        return "#303030";
+    public String completionPopupBackgroundColor() {
+        return "#292C2F";
     }
 
     @Override
-    public String getCompletionPopupBorderColor() {
-        return "#484848";
+    public String completionPopupBorderColor() {
+        return "#121416";
+    }
+
+    @Override
+    public String completionPopupHeaderBackgroundColor() {
+        return "#222222";
+    }
+
+    @Override
+    public String completionPopupHeaderTextColor() {
+        return "#A5A5A5";
+    }
+
+    @Override
+    public String completionPopupSelectedItemBackgroundColor() {
+        return "rgba(215, 215, 215, 0.12)";
+    }
+
+    @Override
+    public String completionPopupItemTextColor() {
+        return "#E4E4E4";
+    }
+
+    @Override
+    public String completionPopupItemSubtitleTextColor() {
+        return "#727272";
     }
 
     @Override
@@ -957,17 +982,17 @@ public class DarkTheme implements Theme {
 
     @Override
     public String scrollbarBorderColor() {
-        return "rgba(235, 235, 235, 0.15)";
+        return "rgba(235, 235, 235, 0.3)";
     }
 
     @Override
-    public String scrollbarHoverBackgroundColor() {
+    public String scrollbarBackgroundColor() {
         return "rgba(215, 215, 215, 0.10)";
     }
 
     @Override
-    public String scrollbarActiveBackgroundColor() {
-        return "rgba(215, 215, 215, 0.15)";
+    public String scrollbarHoverBackgroundColor() {
+        return "rgba(215, 215, 215, 0.3)";
     }
     
     @Override

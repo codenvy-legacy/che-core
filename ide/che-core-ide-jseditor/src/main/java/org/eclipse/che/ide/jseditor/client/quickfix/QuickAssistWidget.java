@@ -109,14 +109,14 @@ public class QuickAssistWidget extends PopupWidget<CompletionProposal> {
         element.addEventListener(Event.FOCUS, new EventListener() {
             @Override
             public void handleEvent(Event event) {
-                Elements.addClassName(popupResources.popupStyle().hintActive(), element);
+                Elements.addClassName(completionResources.completionCss().hintActive(), element);
             }
         },false);
 
         element.addEventListener(Event.BLUR, new EventListener() {
             @Override
             public void handleEvent(Event event) {
-                Elements.removeClassName(popupResources.popupStyle().hintActive(), element);
+                Elements.removeClassName(completionResources.completionCss().hintActive(), element);
             }
         },false);
 
