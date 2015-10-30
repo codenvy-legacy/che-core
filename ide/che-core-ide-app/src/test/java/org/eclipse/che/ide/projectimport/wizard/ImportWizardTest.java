@@ -14,6 +14,7 @@ import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
+import org.eclipse.che.api.project.gwt.client.ProjectTypeServiceClient;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectProblem;
 import org.eclipse.che.api.vfs.gwt.client.VfsServiceClient;
@@ -43,7 +44,6 @@ import java.util.List;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -62,6 +62,8 @@ public class ImportWizardTest {
     private ArgumentCaptor<RequestCallback<Void>>                        callbackCaptorForProject;
     @Mock
     private ProjectServiceClient                projectServiceClient;
+    @Mock
+    private ProjectTypeServiceClient            projectTypeServiceClient;
     @Mock
     private ProjectConfigDto                    dataObject;
     @Mock

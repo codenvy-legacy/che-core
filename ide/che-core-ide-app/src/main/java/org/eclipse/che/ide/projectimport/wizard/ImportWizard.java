@@ -16,8 +16,13 @@ import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
+import org.eclipse.che.api.project.gwt.client.ProjectTypeServiceClient;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
+import org.eclipse.che.api.promises.client.Operation;
+import org.eclipse.che.api.promises.client.OperationException;
+import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.vfs.gwt.client.VfsServiceClient;
 import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
@@ -46,6 +51,7 @@ import java.util.List;
 public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
 
     private final ProjectServiceClient                projectServiceClient;
+    private final ProjectTypeServiceClient            projectTypeServiceClient;
     private final VfsServiceClient                    vfsServiceClient;
     private final DtoUnmarshallerFactory              dtoUnmarshallerFactory;
     private final DtoFactory                          dtoFactory;
@@ -74,6 +80,7 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
     @Inject
     public ImportWizard(@Assisted ProjectConfigDto dataObject,
                         ProjectServiceClient projectServiceClient,
+                        ProjectTypeServiceClient projectTypeServiceClient,
                         VfsServiceClient vfsServiceClient,
                         DtoUnmarshallerFactory dtoUnmarshallerFactory,
                         DtoFactory dtoFactory,
@@ -82,6 +89,7 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
                         ImportProjectNotificationSubscriber importProjectNotificationSubscriber) {
         super(dataObject);
         this.projectServiceClient = projectServiceClient;
+        this.projectTypeServiceClient = projectTypeServiceClient;
         this.vfsServiceClient = vfsServiceClient;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.dtoFactory = dtoFactory;
@@ -140,11 +148,21 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
         final String projectName = dataObject.getName();
         importProjectNotificationSubscriber.subscribe(projectName);
         Unmarshallable<List<SourceEstimation>> unmarshaller = dtoUnmarshallerFactory.newListUnmarshaller(SourceEstimation.class);
-        projectServiceClient.resolveSources(projectName,  new AsyncRequestCallback<List<SourceEstimation>>(unmarshaller) {
+        projectServiceClient.resolveSources(projectName, new AsyncRequestCallback<List<SourceEstimation>>(unmarshaller) {
 
             @Override
             protected void onSuccess(List<SourceEstimation> result) {
-                createProject(callback, dataObject.withType(result.get(1).getType())); //TODO: check project type is Primary
+                for (SourceEstimation estimation : result) {
+                    final Promise<ProjectTypeDefinition> projectTypePromise = projectTypeServiceClient.getProjectType(estimation.getType());
+                    projectTypePromise.then(new Operation<ProjectTypeDefinition>() {
+                        @Override
+                        public void apply(ProjectTypeDefinition arg) throws OperationException {
+                            if (arg.getPrimaryable()) {
+                                createProject(callback, dataObject.withType(estimation.getType()));
+                            }
+                        }
+                    });
+                }
             }
 
             @Override
