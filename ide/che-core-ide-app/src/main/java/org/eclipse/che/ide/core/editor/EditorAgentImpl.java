@@ -21,6 +21,7 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.editor.EditorAgent;
+import org.eclipse.che.ide.api.editor.EditorOpenedEvent;
 import org.eclipse.che.ide.api.editor.EditorInitException;
 import org.eclipse.che.ide.api.editor.EditorInput;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
@@ -322,8 +323,9 @@ public class EditorAgentImpl implements EditorAgent {
                         if (callback != null) {
                             callback.onEditorOpened(editor);
                         }
-                    }
 
+                        eventBus.fireEvent(new EditorOpenedEvent(file, editor));
+                    }
                 }
             });
 

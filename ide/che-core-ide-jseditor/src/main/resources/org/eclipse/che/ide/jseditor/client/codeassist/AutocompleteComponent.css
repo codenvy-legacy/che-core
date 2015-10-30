@@ -49,6 +49,11 @@
         padding: 0 3px;
     }
 
+    .hintActive {
+        background: #08f;
+        color: white;
+    }
+
     .proposalIcon {
         max-width: 16px;
         flex-shrink: 0;

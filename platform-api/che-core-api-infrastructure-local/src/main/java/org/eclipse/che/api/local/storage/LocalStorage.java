@@ -81,7 +81,7 @@ public class LocalStorage {
         } catch (JsonSyntaxException e) {
             LOG.warn(storedFile.getName() + " contains invalid JSON content");
         } catch (IOException ioEx) {
-            LOG.warn("Impossible to read from " + storedFile.getName());
+            LOG.debug("Impossible to read from " + storedFile.getName());
         }
         return result;
     }
