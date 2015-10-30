@@ -158,7 +158,7 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
                         @Override
                         public void apply(ProjectTypeDefinition arg) throws OperationException {
                             if (arg.getPrimaryable()) {
-                                createProject(callback, dataObject.withType(estimation.getType()));
+                                createProject(callback, dataObject.withType(arg.getId()));
                             }
                         }
                     });
