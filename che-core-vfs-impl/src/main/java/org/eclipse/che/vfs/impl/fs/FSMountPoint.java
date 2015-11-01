@@ -36,6 +36,7 @@ import org.eclipse.che.api.vfs.server.observation.UpdatePropertiesEvent;
 import org.eclipse.che.api.vfs.server.search.SearcherProvider;
 import org.eclipse.che.api.vfs.server.util.DeleteOnCloseFileInputStream;
 import org.eclipse.che.api.vfs.server.util.NotClosableInputStream;
+import org.eclipse.che.api.vfs.server.util.VirtualFileDefaults;
 import org.eclipse.che.api.vfs.server.util.ZipContent;
 import org.eclipse.che.api.vfs.shared.PropertyFilter;
 import org.eclipse.che.api.vfs.shared.dto.AccessControlEntry;
@@ -445,7 +446,7 @@ public class FSMountPoint implements MountPoint {
         final Path childPath = parent.getVirtualFilePath().newPath(name);
         final VirtualFileImpl child = new VirtualFileImpl(new java.io.File(parent.getIoFile(), name), childPath, pathToId(childPath), this);
         if (child.exists()) {
-            if (!child.getPath().endsWith(".codenvy/misc.xml")) {
+            if (!VirtualFileDefaults.isPathIgnored(child.getVirtualFilePath())) {
                 // Don't check permissions for file "misc.xml" in folder ".codenvy". Dirty huck :( but seems simplest solution for now.
                 // Need to work with 'misc.xml' independently to user.
                 if (!hasPermission(child, BasicPermissions.READ.value(), true)) {
@@ -509,14 +510,14 @@ public class FSMountPoint implements MountPoint {
             throw new ForbiddenException("Unable create new file. Item specified as parent is not a folder. ");
         }
 
-        if (!".codenvy".equals(parent.getName()) && !"misc.xml".equals(name)) {
+        final Path newPath = parent.getVirtualFilePath().newPath(name);
+        if (!VirtualFileDefaults.isPathIgnored(newPath)) {
             // Don't check permissions when create file "misc.xml" in folder ".codenvy". Dirty huck :( but seems simplest solution for now.
             // Need to work with 'misc.xml' independently to user.
             if (!hasPermission(parent, BasicPermissions.WRITE.value(), true)) {
                 throw new ForbiddenException(String.format("Unable create new file in '%s'. Operation not permitted. ", parent.getPath()));
             }
         }
-        final Path newPath = parent.getVirtualFilePath().newPath(name);
         final java.io.File newIoFile = new java.io.File(ioRoot, toIoPath(newPath));
         try {
             if (!newIoFile.createNewFile()) { // atomic
@@ -909,7 +910,7 @@ public class FSMountPoint implements MountPoint {
             throw new ForbiddenException(String.format("Unable update content. Item '%s' is not file. ", virtualFile.getPath()));
         }
 
-        if (!virtualFile.getPath().endsWith(".codenvy/misc.xml")) {
+        if (!VirtualFileDefaults.isPathIgnored(virtualFile.getVirtualFilePath())) {
             // Don't check permissions when update file ".codenvy/misc.xml". Dirty huck :( but seems simplest solution for now.
             // Need to work with 'misc.xml' independently to user.
             if (!hasPermission(virtualFile, BasicPermissions.WRITE.value(), true)) {
