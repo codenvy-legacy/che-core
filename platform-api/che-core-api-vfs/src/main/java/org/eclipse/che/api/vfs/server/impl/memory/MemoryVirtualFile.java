@@ -32,6 +32,7 @@ import org.eclipse.che.api.vfs.server.observation.UpdateContentEvent;
 import org.eclipse.che.api.vfs.server.observation.UpdatePropertiesEvent;
 import org.eclipse.che.api.vfs.server.search.SearcherProvider;
 import org.eclipse.che.api.vfs.server.util.NotClosableInputStream;
+import org.eclipse.che.api.vfs.server.util.VirtualFileDefaults;
 import org.eclipse.che.api.vfs.server.util.ZipContent;
 import org.eclipse.che.api.vfs.shared.PropertyFilter;
 import org.eclipse.che.api.vfs.shared.dto.AccessControlEntry;
@@ -110,6 +111,7 @@ public class MemoryVirtualFile implements VirtualFile {
 
     private String                      name;
     private MemoryVirtualFile           parent;
+    private Path                        path;
     private byte[]                      content;
     private long                        lastModificationDate;
     private LockHolder                  lock;
@@ -193,35 +195,24 @@ public class MemoryVirtualFile implements VirtualFile {
     }
 
     public String getPath() {
-        checkExist();
-        VirtualFile parent = this.parent;
-        if (parent == null) {
-            return "/"; // for root folder
-        }
-
-        String name = this.name;
-        LinkedList<String> pathSegments = new LinkedList<>();
-        pathSegments.add(name);
-
-        while (parent != null) {
-            pathSegments.addFirst(parent.getName());
-            parent = parent.getParent();
-        }
-
-        StringBuilder path = new StringBuilder();
-        path.append('/');
-        for (String seg : pathSegments) {
-            if (path.length() > 1) {
-                path.append('/');
-            }
-            path.append(seg);
-        }
-        return path.toString();
+        return getVirtualFilePath().toString();
     }
 
     @Override
     public Path getVirtualFilePath() {
-        return Path.fromString(getPath());
+        checkExist();
+        MemoryVirtualFile parent = this.parent;
+        if (parent == null) {
+            return Path.ROOT; // for root folder
+        }
+        // Reuse if already cached
+        if (path != null) {
+            return path;
+        }
+        // Calculate based on parent path and cache the result
+        Path parentPath = parent.getVirtualFilePath();
+        path = parentPath.newPath(getName());
+        return path;
     }
 
     @Override
@@ -499,7 +490,7 @@ public class MemoryVirtualFile implements VirtualFile {
             }
         }
         if (child != null) {
-            if (!child.getPath().endsWith(".codenvy/misc.xml")) {
+            if (!VirtualFileDefaults.isPathIgnored(child.getVirtualFilePath())) {
                 // Don't check permissions for file "misc.xml" in folder ".codenvy". Dirty huck :( but seems simplest solution for now.
                 // Need to work with 'misc.xml' independently to user.
                 if (!child.hasPermission(BasicPermissions.READ.value(), false)) {
@@ -553,7 +544,7 @@ public class MemoryVirtualFile implements VirtualFile {
         if (!isFile()) {
             throw new ForbiddenException(String.format("We were unable to update the content. Item '%s' is not a file. ", getPath()));
         }
-        if (!getPath().endsWith(".codenvy/misc.xml")) {
+        if (!VirtualFileDefaults.isPathIgnored(getVirtualFilePath())) {
             // Don't check permissions when update file ".codenvy/misc.xml". Dirty huck :( but seems simplest solution for now.
             // Need to work with 'misc.xml' independently to user.
             if (!hasPermission(BasicPermissions.WRITE.value(), true)) {
@@ -818,6 +809,7 @@ public class MemoryVirtualFile implements VirtualFile {
         this.parent.children.remove(getName());
             this.parent = (MemoryVirtualFile) parent;
         }
+        this.path = null;
         // =======================
 
         SearcherProvider searcherProvider = mountPoint.getSearcherProvider();
@@ -903,6 +895,7 @@ public class MemoryVirtualFile implements VirtualFile {
         parent.children.remove(name);
         parent.children.put(newName, this);
         name = newName;
+        path = null;
 
         if (newMediaType != null) {
             setMediaType(newMediaType);
@@ -990,6 +983,7 @@ public class MemoryVirtualFile implements VirtualFile {
         parent.children.remove(name);
         exists = false;
         parent = null;
+        path = null;
         SearcherProvider searcherProvider = mountPoint.getSearcherProvider();
         if (searcherProvider != null) {
             try {
@@ -1203,7 +1197,7 @@ public class MemoryVirtualFile implements VirtualFile {
         if (!isFolder()) {
             throw new ForbiddenException("Unable create new file. Item specified as parent is not a folder. ");
         }
-        if (!".codenvy".equals(getName()) && !"misc.xml".equals(name)) {
+        if (!VirtualFileDefaults.isPathIgnored(getVirtualFilePath().newPath(name))) {
             // Don't check permissions when create file "misc.xml" in folder ".codenvy". Dirty huck :( but seems simplest solution for now.
             // Need to work with 'misc.xml' independently to user.
             if (!hasPermission(BasicPermissions.WRITE.value(), true)) {
