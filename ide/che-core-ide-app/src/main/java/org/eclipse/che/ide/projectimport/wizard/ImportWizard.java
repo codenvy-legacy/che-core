@@ -146,7 +146,6 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
 
     private void resolveProject(final CompleteCallback callback) {
         final String projectName = dataObject.getName();
-        importProjectNotificationSubscriber.subscribe(projectName);
         Unmarshallable<List<SourceEstimation>> unmarshaller = dtoUnmarshallerFactory.newListUnmarshaller(SourceEstimation.class);
         projectServiceClient.resolveSources(projectName, new AsyncRequestCallback<List<SourceEstimation>>(unmarshaller) {
 
