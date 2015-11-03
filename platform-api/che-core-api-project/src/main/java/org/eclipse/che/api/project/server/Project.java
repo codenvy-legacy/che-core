@@ -140,30 +140,6 @@ public class Project {
     }
 
     /**
-     * Updates project privacy.
-     *
-     * @see #getVisibility()
-     */
-    public void setVisibility(String projectVisibility) throws ServerException, ForbiddenException {
-        switch (projectVisibility) {
-            case "private":
-                final List<AccessControlEntry> acl = new ArrayList<>(1);
-                final Principal developer = DtoFactory.getInstance().createDto(Principal.class)
-                                                      .withName("workspace/developer")
-                                                      .withType(Principal.Type.GROUP);
-                acl.add(DtoFactory.getInstance().createDto(AccessControlEntry.class)
-                                  .withPrincipal(developer)
-                                  .withPermissions(Arrays.asList("all")));
-                baseFolder.getVirtualFile().updateACL(acl, true, null);
-                break;
-            case "public":
-                // Remove ACL. Default behaviour of underlying virtual filesystem: everyone can read but can't update.
-                baseFolder.getVirtualFile().updateACL(Collections.<AccessControlEntry>emptyList(), true, null);
-                break;
-        }
-    }
-
-    /**
      * Gets security restriction applied to this project. Method returns empty {@code List} is project doesn't have any security
      * restriction.
      */

@@ -2121,53 +2121,6 @@ public class ProjectServiceTest {
         Assert.assertFalse(names.contains("x/test.txt"));
     }
 
-    @Test
-    public void testSwitchProjectVisibilityToPrivate() throws Exception {
-        Project myProject = pm.getProject(workspace, "my_project");
-        ContainerResponse response = launcher.service(POST,
-                                                      String.format(
-                                                              "http://localhost:8080/api/project/%s/switch_visibility/my_project?visibility=private",
-                                                              workspace),
-                                                      "http://localhost:8080/api", null, null, null);
-        assertEquals(response.getStatus(), 204, "Error: " + response.getEntity());
-        // Private project is accessible only for user who are in the group "workspace/developer"
-        Map<Principal, Set<String>> permissions = myProject.getBaseFolder().getVirtualFile().getPermissions();
-        assertEquals(permissions.size(), 1);
-        Principal principal = DtoFactory.getInstance().createDto(Principal.class)
-                                        .withName("workspace/developer")
-                                        .withType(Principal.Type.GROUP);
-        assertEquals(permissions.get(principal), Arrays.asList(VirtualFileSystemInfo.BasicPermissions.ALL.value()));
-
-        response = launcher.service(GET,
-                                    String.format("http://localhost:8080/api/project/%s/my_project", workspace),
-                                    "http://localhost:8080/api", null, null, null);
-        assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
-        ProjectDescriptor descriptor = (ProjectDescriptor)response.getEntity();
-        assertEquals(descriptor.getVisibility(), "private");
-    }
-
-    @Test
-    public void testUpdateProjectVisibilityToPublic() throws Exception {
-        Project myProject = pm.getProject(workspace, "my_project");
-        myProject.setVisibility("private");
-        ContainerResponse response = launcher.service(POST,
-                                                      String.format(
-                                                              "http://localhost:8080/api/project/%s/switch_visibility/my_project?visibility=public",
-                                                              workspace),
-                                                      "http://localhost:8080/api", null, null, null);
-        assertEquals(response.getStatus(), 204, "Error: " + response.getEntity());
-        // List of permissions should be cleared. After that project inherits permissions from parent folder (typically root folder)
-        Map<Principal, Set<String>> permissions = myProject.getBaseFolder().getVirtualFile().getPermissions();
-        assertEquals(permissions.size(), 0);
-
-        response = launcher.service(GET,
-                                    String.format("http://localhost:8080/api/project/%s/my_project", workspace),
-                                    "http://localhost:8080/api", null, null, null);
-        assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
-        ProjectDescriptor descriptor = (ProjectDescriptor)response.getEntity();
-        assertEquals(descriptor.getVisibility(), "public");
-    }
-
     @SuppressWarnings("unchecked")
     @Test
     public void testSearchByName() throws Exception {

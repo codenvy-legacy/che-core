@@ -508,10 +508,10 @@ public final class DefaultProjectManager implements ProjectManager {
 
         // TODO: .codenvy folder creation should be removed when all project's meta-info will be stored on Workspace API
         try {
-        final VirtualFileEntry codenvyDir = project.getBaseFolder().getChild(CODENVY_DIR);
-        if (codenvyDir == null || !codenvyDir.isFolder()) {
-            project.getBaseFolder().createFolder(CODENVY_DIR);
-        }
+            final VirtualFileEntry codenvyDir = project.getBaseFolder().getChild(CODENVY_DIR);
+            if (codenvyDir == null || !codenvyDir.isFolder()) {
+                project.getBaseFolder().createFolder(CODENVY_DIR);
+            }
         } catch (ForbiddenException | ConflictException e) {
             throw new ServerException(e.getServiceError());
         }
@@ -779,7 +779,7 @@ public final class DefaultProjectManager implements ProjectManager {
             projectConfig.getAttributes().putAll(estimateProject);
             project.updateConfig(projectConfig);
         } else {  // try to get config (it will throw exception in case config is not valid)
-            project.getConfig();
+            projectConfig = project.getConfig();
         }
 
         if (projectConfig.getTypeId() != null) {

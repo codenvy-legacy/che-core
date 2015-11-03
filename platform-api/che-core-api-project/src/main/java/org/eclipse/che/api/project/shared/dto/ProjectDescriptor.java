@@ -166,29 +166,7 @@ public interface ProjectDescriptor extends Hyperlinks {
 
     ProjectDescriptor withPermissions(List<String> permissions);
 
-    //
 
-//    /** Gets builder configurations. */
-//    @ApiModelProperty(value = "Builders configuration for the project", position = 13)
-//    BuildersDescriptor getBuilders();
-//
-//    /** Sets builder configurations. */
-//    void setBuilders(BuildersDescriptor builders);
-//
-//    ProjectDescriptor withBuilders(BuildersDescriptor builders);
-//
-//    //
-//
-//    /** Gets runner configurations. */
-//    @ApiModelProperty(value = "Runners configuration for the project", position = 14)
-//    RunnersDescriptor getRunners();
-//
-//    /** Sets runner configurations. */
-//    void setRunners(RunnersDescriptor runners);
-//
-//    ProjectDescriptor withRunners(RunnersDescriptor runners);
-
-    //
 
     String getRecipe();
 

@@ -1252,33 +1252,6 @@ public class ProjectService extends Service {
         return acl;
     }
 
-    @ApiOperation(value = "Set project visibility",
-                  notes = "Set project visibility. Projects can be private or public",
-                  position = 25)
-    @ApiResponses(value = {
-            @ApiResponse(code = 204, message = "OK"),
-            @ApiResponse(code = 403, message = "User not authorized to call this operation"),
-            @ApiResponse(code = 404, message = "Not found"),
-            @ApiResponse(code = 500, message = "Internal Server Error")})
-    @POST
-    @Path("/switch_visibility/{path:.*}")
-    public void switchVisibility(@ApiParam(value = "Workspace ID", required = true)
-                                 @PathParam("ws-id") String wsId,
-                                 @ApiParam(value = "Path to a project", required = true)
-                                 @PathParam("path") String path,
-                                 @ApiParam(value = "Visibility type", required = true, allowableValues = "public,private")
-                                 @QueryParam("visibility") String visibility)
-            throws NotFoundException, ForbiddenException, ServerException {
-        if (visibility == null || visibility.isEmpty()) {
-            throw new ServerException(String.format("Invalid visibility '%s'", visibility));
-        }
-        final Project project = projectManager.getProject(wsId, path);
-        if (project == null) {
-            throw new NotFoundException(String.format("Project '%s' doesn't exist in workspace '%s'.", path, wsId));
-        }
-        project.setVisibility(visibility);
-    }
-
     @ApiOperation(value = "Set permissions for a user in a project",
                   notes = "Set permissions for a user in a specified project, such as read, write, build, " +
                           "run etc. ID of a user is set in a query parameter of a request URL.",
