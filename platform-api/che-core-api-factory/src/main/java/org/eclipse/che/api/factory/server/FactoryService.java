@@ -546,18 +546,22 @@ public class FactoryService extends Service {
         try {
             final ProjectConfig projectDescription = project.getConfig();
             Map<String, AttributeValue> attributes = projectDescription.getAttributes();
+            String vcs;
             if (attributes.containsKey("vcs.provider.name") && attributes.get("vcs.provider.name").getList().contains("git")) {
-                final Link importSourceLink = dtoFactory.createDto(Link.class)
-                                                        .withMethod(HttpMethod.GET)
-                                                        .withHref(UriBuilder.fromUri(baseApiUrl)
-                                                                            .path("git")
-                                                                            .path(workspace)
-                                                                            .path("import-source-descriptor")
-                                                                            .build().toString());
-                source = HttpJsonHelper.request(ImportSourceDescriptor.class, importSourceLink, new Pair<>("projectPath", path));
+                vcs = "git";
+            } else if (attributes.containsKey("svn.repository.url")) {
+                vcs = "svn";
             } else {
                 throw new ConflictException("Not able to generate project configuration, project has to be under version control system");
             }
+            final Link importSourceLink = dtoFactory.createDto(Link.class)
+                                                    .withMethod(HttpMethod.GET)
+                                                    .withHref(UriBuilder.fromUri(baseApiUrl)
+                                                                        .path(vcs)
+                                                                        .path(workspace)
+                                                                        .path("import-source-descriptor")
+                                                                        .build().toString());
+            source = HttpJsonHelper.request(ImportSourceDescriptor.class, importSourceLink, new Pair<>("projectPath", path));
 
             Map<String, List<String>> projectAttributes = new HashMap<>();
             for (Map.Entry<String, AttributeValue> entry : projectDescription.getAttributes().entrySet()) {
