@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.core.rest;
 
+import com.google.common.io.CharStreams;
+
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
@@ -22,13 +24,11 @@ import org.eclipse.che.commons.lang.Pair;
 import org.eclipse.che.commons.user.User;
 import org.eclipse.che.dto.server.DtoFactory;
 
-import com.google.common.io.CharStreams;
-
 import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -409,9 +409,9 @@ public class HttpJsonHelper {
             final String authToken = getAuthenticationToken();
             if ((parameters != null && parameters.length > 0) || authToken != null) {
                 final UriBuilder ub = UriBuilder.fromUri(url);
-                if (authToken != null) {
-                    ub.queryParam("token", authToken);
-                }
+                //remove sensitive information from url.
+                ub.replaceQueryParam("token", null);
+
                 if (parameters != null && parameters.length > 0) {
                     for (Pair<String, ?> parameter : parameters) {
                         String name = URLEncoder.encode(parameter.first, "UTF-8");
@@ -427,8 +427,13 @@ public class HttpJsonHelper {
             conn.setReadTimeout(timeout > 0 ? timeout : 60000);
             try {
                 conn.setRequestMethod(method);
+                //drop a hint for server side that we want to receive application/json
+                conn.addRequestProperty(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON);
+                if (authToken != null) {
+                    conn.setRequestProperty(HttpHeaders.AUTHORIZATION, authToken);
+                }
                 if (body != null) {
-                    conn.addRequestProperty("content-type", MediaType.APPLICATION_JSON);
+                    conn.addRequestProperty(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
                     conn.setDoOutput(true);
 
                     if (HttpMethod.DELETE.equals(method)) { //to avoid jdk bug described here http://bugs.java.com/view_bug.do?bug_id=7157360
