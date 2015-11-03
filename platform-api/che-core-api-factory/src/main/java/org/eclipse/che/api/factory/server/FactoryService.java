@@ -25,11 +25,10 @@ import org.eclipse.che.api.factory.shared.dto.Factory;
 import org.eclipse.che.api.factory.shared.dto.FactoryV4_0;
 import org.eclipse.che.api.project.server.ProjectConfig;
 import org.eclipse.che.api.project.server.type.AttributeValue;
-import org.eclipse.che.api.project.shared.dto.ProjectModule;
 import org.eclipse.che.api.project.server.Project;
 import org.eclipse.che.api.project.server.ProjectManager;
-import org.eclipse.che.api.project.shared.dto.ImportSourceDescriptor;
-import org.eclipse.che.api.project.shared.dto.NewProject;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.eclipse.che.commons.lang.Pair;
@@ -541,8 +540,8 @@ public class FactoryService extends Service {
             throw new NotFoundException("Project " + path + " are not found in workspace " + workspace);
         }
         final DtoFactory dtoFactory = DtoFactory.getInstance();
-        ImportSourceDescriptor source;
-        NewProject newProject;
+        SourceStorageDto source;
+        ProjectConfigDto projectConfig;
         try {
             final ProjectConfig projectDescription = project.getConfig();
             Map<String, AttributeValue> attributes = projectDescription.getAttributes();
@@ -554,7 +553,7 @@ public class FactoryService extends Service {
                                                                             .path(workspace)
                                                                             .path("import-source-descriptor")
                                                                             .build().toString());
-                source = HttpJsonHelper.request(ImportSourceDescriptor.class, importSourceLink, new Pair<>("projectPath", path));
+                source = HttpJsonHelper.request(SourceStorageDto.class, importSourceLink, new Pair<>("projectPath", path));
             } else {
                 throw new ConflictException("Not able to generate project configuration, project has to be under version control system");
             }
@@ -564,31 +563,29 @@ public class FactoryService extends Service {
                 projectAttributes.put(entry.getKey(), entry.getValue().getList());
             }
 
-            newProject = dtoFactory.createDto(NewProject.class)
+            projectConfig = dtoFactory.createDto(ProjectConfigDto.class)
                                    .withName(project.getName())
                                    .withType(projectDescription.getTypeId())
                                    .withAttributes(projectAttributes)
-                                   .withVisibility(project.getVisibility())
                                    .withDescription(projectDescription.getDescription());
-            newProject.setMixinTypes(projectDescription.getMixinTypes());
-            newProject.setRecipe(projectDescription.getRecipe());
+            projectConfig.setMixinTypes(projectDescription.getMixinTypes());
 
-            for (Project module : projectManager.getProjectModules(project)) {
-                ProjectConfig moduleConfig = module.getConfig();
-                String moduleRelativePath = module.getPath().substring(project.getPath().length());
-
-                Map<String, List<String>> moduleAttributes = new HashMap<>();
-                for (Map.Entry<String, AttributeValue> entry : moduleConfig.getAttributes().entrySet()) {
-                    projectAttributes.put(entry.getKey(), entry.getValue().getList());
-                }
-
-                newProject.getModules().add(DtoFactory.newDto(ProjectModule.class).withType(moduleConfig.getTypeId())
-                                                      .withPath(moduleRelativePath)
-                                                      .withRecipe(moduleConfig.getRecipe())
-                                                      .withAttributes(moduleAttributes)
-                                                      .withMixins(moduleConfig.getMixinTypes())
-                                                      .withDescription(moduleConfig.getDescription()));
-            }
+//            for (Project module : projectManager.getProjectModules(project)) {
+//                ProjectConfig moduleConfig = module.getConfig();
+//                String moduleRelativePath = module.getPath().substring(project.getPath().length());
+//
+//                Map<String, List<String>> moduleAttributes = new HashMap<>();
+//                for (Map.Entry<String, AttributeValue> entry : moduleConfig.getAttributes().entrySet()) {
+//                    projectAttributes.put(entry.getKey(), entry.getValue().getList());
+//                }
+//
+//                projectConfig.getModules().add(DtoFactory.newDto(ProjectModule.class).withType(moduleConfig.getTypeId())
+//                                                      .withPath(moduleRelativePath)
+//                                                      .withRecipe(moduleConfig.getRecipe())
+//                                                      .withAttributes(moduleAttributes)
+//                                                      .withMixins(moduleConfig.getMixinTypes())
+//                                                      .withDescription(moduleConfig.getDescription()));
+//            }
         } catch (IOException e) {
             throw new ServerException(e.getLocalizedMessage());
         }

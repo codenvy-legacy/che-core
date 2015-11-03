@@ -23,6 +23,7 @@ import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.project.server.handlers.CreateModuleHandler;
 import org.eclipse.che.api.project.server.handlers.CreateProjectHandler;
 import org.eclipse.che.api.project.server.handlers.GetModulesHandler;
+import org.eclipse.che.api.project.server.handlers.PostImportProjectHandler;
 import org.eclipse.che.api.project.server.handlers.ProjectCreatedHandler;
 import org.eclipse.che.api.project.server.handlers.ProjectHandlerRegistry;
 import org.eclipse.che.api.project.server.handlers.ProjectTypeChangedHandler;
@@ -220,8 +221,8 @@ public final class DefaultProjectManager implements ProjectManager {
     public Project createProject(String workspace,
                                  String name,
                                  ProjectConfig projectConfig,
-                                 Map<String, String> options,
-                                 String visibility) throws ConflictException, ForbiddenException, ServerException, NotFoundException {
+                                 Map<String, String> options)
+            throws ConflictException, ForbiddenException, ServerException, NotFoundException {
         final FolderEntry myRoot = getProjectsRoot(workspace);
         final FolderEntry projectFolder = myRoot.createFolder(name);
         final Project project = new Project(projectFolder, this);
@@ -239,10 +240,6 @@ public final class DefaultProjectManager implements ProjectManager {
         misc.setCreationDate(System.currentTimeMillis());
         misc.save(); // Important to save misc!!
 
-        if (visibility != null) {
-            project.setVisibility(visibility);
-        }
-
         final ProjectCreatedHandler projectCreatedHandler = handlers.getProjectCreatedHandler(projectConfig.getTypeId());
         if (projectCreatedHandler != null) {
             projectCreatedHandler.onProjectCreated(project.getBaseFolder());
@@ -251,7 +248,7 @@ public final class DefaultProjectManager implements ProjectManager {
     }
 
     @Override
-    public Project updateProject(String workspace, String path, ProjectConfig newConfig, String newVisibility)
+    public Project updateProject(String workspace, String path, ProjectConfig newConfig)
             throws ForbiddenException, ServerException, NotFoundException, ConflictException, IOException {
         Project project = getProject(workspace, path);
         String oldProjectType = null;
@@ -274,10 +271,6 @@ public final class DefaultProjectManager implements ProjectManager {
                 // here we allow changing bad project type on registered
                 LOG.warn(e.getMessage());
             }
-        }
-        // Update the visibility if asked to do so
-        if (newVisibility != null && !newVisibility.isEmpty()) {
-            project.setVisibility(newVisibility);
         }
         project.updateConfig(newConfig);
         // handle project type changes
@@ -307,8 +300,7 @@ public final class DefaultProjectManager implements ProjectManager {
                              String projectPath,
                              String modulePath,
                              ProjectConfig moduleConfig,
-                             Map<String, String> options,
-                             String visibility) throws ConflictException, ForbiddenException, ServerException, NotFoundException {
+                             Map<String, String> options) throws ConflictException, ForbiddenException, ServerException, NotFoundException {
         Project parentProject = getProject(workspace, projectPath);
         if (parentProject == null) {
             throw new NotFoundException("Parent Project not found " + projectPath);
@@ -357,10 +349,6 @@ public final class DefaultProjectManager implements ProjectManager {
             final ProjectMisc misc = module.getMisc();
             misc.setCreationDate(System.currentTimeMillis());
             misc.save(); // Important to save misc!!
-
-            if (visibility != null) {
-                module.setVisibility(visibility);
-            }
         } else {
             module = getProject(workspace, absModulePath);
             if (module == null) {
@@ -777,8 +765,8 @@ public final class DefaultProjectManager implements ProjectManager {
     }
 
     @Override
-    public Project convertFolderToProject(String workspace, String path, ProjectConfig projectConfig, String visibility)
-            throws ConflictException, ForbiddenException, ServerException, NotFoundException {
+    public Project convertFolderToProject(String workspace, String path, ProjectConfig projectConfig)
+            throws ConflictException, ForbiddenException, ServerException, NotFoundException, IOException {
 
         final VirtualFileEntry projectEntry = getProjectsRoot(workspace).getChild(path);
         if (projectEntry == null || !projectEntry.isFolder())
@@ -798,13 +786,17 @@ public final class DefaultProjectManager implements ProjectManager {
             project.getConfig();
         }
 
+        if (projectConfig.getTypeId() != null) {
+            PostImportProjectHandler postImportProjectHandler =
+                    handlers.getPostImportProjectHandler(projectConfig.getTypeId());
+            if (postImportProjectHandler != null) {
+                postImportProjectHandler.onProjectImported(project.getBaseFolder());
+            }
+        }
+
         final ProjectMisc misc = project.getMisc();
         misc.setCreationDate(System.currentTimeMillis());
         misc.save(); // Important to save misc!!
-
-        if (visibility != null) {
-            project.setVisibility(visibility);
-        }
 
         return project;
     }

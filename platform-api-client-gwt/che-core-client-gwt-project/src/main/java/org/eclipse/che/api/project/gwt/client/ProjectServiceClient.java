@@ -10,14 +10,13 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.gwt.client;
 
-import org.eclipse.che.api.project.shared.dto.ImportProject;
-import org.eclipse.che.api.project.shared.dto.ImportResponse;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
-import org.eclipse.che.api.project.shared.dto.NewProject;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
-import org.eclipse.che.api.project.shared.dto.ProjectUpdate;
+import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.project.shared.dto.TreeElement;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.websocket.rest.RequestCallback;
 
@@ -84,12 +83,12 @@ public interface ProjectServiceClient {
      *
      * @param name
      *         name of the project to create
-     * @param newProject
+     * @param projectConfig
      *         descriptor of the project to create
      * @param callback
      *         the callback to use for the response
      */
-    void createProject(String name, NewProject newProject, AsyncRequestCallback<ProjectDescriptor> callback);
+    void createProject(String name, ProjectConfigDto projectConfig, AsyncRequestCallback<ProjectDescriptor> callback);
 
 
     /**
@@ -103,6 +102,17 @@ public interface ProjectServiceClient {
      *         the callback to use for the response
      */
     void estimateProject(String path, String projectType, AsyncRequestCallback<Map<String, List<String>>> callback);
+
+
+   /** Gets list of {@link SourceEstimation} for all supposed project types.
+    *
+    * @param path
+    *         path of the project to resolve
+    * @param callback
+    *         the callback to use for the response
+    */
+    void resolveSources(String path, AsyncRequestCallback<List<SourceEstimation>> callback);
+
 
     /**
      * Get sub-project.
@@ -121,12 +131,12 @@ public interface ProjectServiceClient {
      *         path to the parent project
      * @param name
      *         name of the module to create
-     * @param newProject
+     * @param projectConfig
      *         descriptor of the project to create
      * @param callback
      *         the callback to use for the response
      */
-    void createModule(String parentProjectPath, String name, NewProject newProject, AsyncRequestCallback<ProjectDescriptor> callback);
+    void createModule(String parentProjectPath, String name, ProjectConfigDto projectConfig, AsyncRequestCallback<ProjectDescriptor> callback);
 
     /**
      * Update project.
@@ -137,8 +147,9 @@ public interface ProjectServiceClient {
      *         descriptor of the project to update
      * @param callback
      *         the callback to use for the response
-     * @deprecated use {@link #updateProject(String, ProjectUpdate, AsyncRequestCallback)} instead.
+     * @deprecated use {@link #updateProject(String, ProjectConfigDto, AsyncRequestCallback)} instead.
      */
+    @Deprecated
     void updateProject(String path, ProjectDescriptor descriptor, AsyncRequestCallback<ProjectDescriptor> callback);
 
     /**
@@ -146,12 +157,12 @@ public interface ProjectServiceClient {
      *
      * @param path
      *         path to the project to get
-     * @param descriptor
+     * @param projectConfig
      *         descriptor of the project to update
      * @param callback
      *         the callback to use for the response
      */
-    void updateProject(String path, ProjectUpdate descriptor, AsyncRequestCallback<ProjectDescriptor> callback);
+    void updateProject(String path, ProjectConfigDto projectConfig, AsyncRequestCallback<ProjectDescriptor> callback);
 
     /**
      * Create new file in the specified folder.
@@ -274,12 +285,12 @@ public interface ProjectServiceClient {
      *         path to the project to import sources
      * @param force
      *         set true for force rewrite existed project
-     * @param importProject
-     *         {@link ImportProject}
+     * @param sourceStorage
+     *         {@link SourceStorageDto}
      * @param callback
      *         the callback to use for the response
      */
-    void importProject(String path, boolean force, ImportProject importProject, RequestCallback<ImportResponse> callback);
+    void importProject(String path, boolean force, SourceStorageDto sourceStorage, RequestCallback<Void> callback);
 
     /**
      * Get children for the specified path.

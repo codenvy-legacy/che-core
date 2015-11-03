@@ -48,13 +48,13 @@ import org.eclipse.che.api.git.shared.TagCreateRequest;
 import org.eclipse.che.api.git.shared.TagDeleteRequest;
 import org.eclipse.che.api.git.shared.TagListRequest;
 import org.eclipse.che.api.project.server.DefaultProjectManager;
-import org.eclipse.che.api.project.shared.dto.ImportSourceDescriptor;
 import org.eclipse.che.api.vfs.server.MountPoint;
 import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.server.VirtualFileSystem;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
 import org.eclipse.che.api.vfs.shared.PropertyFilter;
 import org.eclipse.che.api.vfs.shared.dto.Item;
+import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.eclipse.che.vfs.impl.fs.GitUrlResolver;
 import org.eclipse.che.vfs.impl.fs.LocalPathResolver;
@@ -419,12 +419,12 @@ public class GitService {
     @Path("import-source-descriptor")
     @Produces(MediaType.APPLICATION_JSON)
     @GET
-    public ImportSourceDescriptor importDescriptor(@Context UriInfo uriInfo) throws ApiException {
+    public SourceStorageDto importDescriptor(@Context UriInfo uriInfo) throws ApiException {
         final VirtualFile virtualFile = vfsRegistry.getProvider(vfsId).getMountPoint(true).getVirtualFile(projectPath);
         if (virtualFile.getChild(".git") != null) {
 
             try (GitConnection gitConnection = getGitConnection()) {
-                return DtoFactory.getInstance().createDto(ImportSourceDescriptor.class)
+                return DtoFactory.getInstance().createDto(SourceStorageDto.class)
                                  .withType("git")
                                  .withLocation(
                                          gitUrlResolver.resolve(uriInfo.getBaseUri(), (VirtualFileImpl)virtualFile))

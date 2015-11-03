@@ -15,17 +15,16 @@ import com.google.inject.name.Named;
 
 import org.eclipse.che.api.machine.gwt.client.ExtServerStateController;
 import org.eclipse.che.api.project.shared.dto.CopyOptions;
-import org.eclipse.che.api.project.shared.dto.ImportProject;
-import org.eclipse.che.api.project.shared.dto.ImportResponse;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.MoveOptions;
-import org.eclipse.che.api.project.shared.dto.NewProject;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
-import org.eclipse.che.api.project.shared.dto.ProjectUpdate;
+import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.project.shared.dto.TreeElement;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.ide.MimeType;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
@@ -133,9 +132,9 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void createProject(String name, NewProject newProject, AsyncRequestCallback<ProjectDescriptor> callback) {
+    public void createProject(String name, ProjectConfigDto projectConfig, AsyncRequestCallback<ProjectDescriptor> callback) {
         final String requestUrl = baseHttpUrl + "?name=" + name;
-        asyncRequestFactory.createPostRequest(requestUrl, newProject)
+        asyncRequestFactory.createPostRequest(requestUrl, projectConfig)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loader, "Creating project...")
                            .send(callback);
@@ -151,6 +150,16 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
+    public void resolveSources(String path, AsyncRequestCallback<List<SourceEstimation>> callback) {
+        final String requestUrl = baseHttpUrl + "/resolve" + normalizePath(path);
+        asyncRequestFactory.createGetRequest(requestUrl)
+                           .header(ACCEPT, MimeType.APPLICATION_JSON)
+                           .loader(loader, "Resolving sources...")
+                           .send(callback);
+    }
+
+
+    @Override
     public void getModules(String path, AsyncRequestCallback<List<ProjectDescriptor>> callback) {
         final String requestUrl = baseHttpUrl + "/modules" + normalizePath(path);
         asyncRequestFactory.createGetRequest(requestUrl)
@@ -159,16 +168,17 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void createModule(String parentProjectPath, String name, NewProject newProject,
+    public void createModule(String parentProjectPath, String name, ProjectConfigDto projectConfig,
                              AsyncRequestCallback<ProjectDescriptor> callback) {
         final String requestUrl = baseHttpUrl + normalizePath(parentProjectPath) + "?path=" + name;
-        asyncRequestFactory.createPostRequest(requestUrl, newProject)
+        asyncRequestFactory.createPostRequest(requestUrl, projectConfig)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loader, "Creating module...")
                            .send(callback);
     }
 
     @Override
+    @Deprecated
     public void updateProject(String path, ProjectDescriptor descriptor, AsyncRequestCallback<ProjectDescriptor> callback) {
         final String requestUrl = baseHttpUrl + normalizePath(path);
         asyncRequestFactory.createRequest(PUT, requestUrl, descriptor, false)
@@ -179,9 +189,9 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void updateProject(String path, ProjectUpdate descriptor, AsyncRequestCallback<ProjectDescriptor> callback) {
+    public void updateProject(String path, ProjectConfigDto projectConfig, AsyncRequestCallback<ProjectDescriptor> callback) {
         final String requestUrl = baseHttpUrl + normalizePath(path);
-        asyncRequestFactory.createRequest(PUT, requestUrl, descriptor, false)
+        asyncRequestFactory.createRequest(PUT, requestUrl, projectConfig, false)
                            .header(CONTENT_TYPE, MimeType.APPLICATION_JSON)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loader, "Updating project...")
@@ -292,7 +302,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void importProject(String path, boolean force, ImportProject importProject, RequestCallback<ImportResponse> callback) {
+    public void importProject(String path, boolean force, SourceStorageDto sourceStorage, RequestCallback<Void> callback) {
         final StringBuilder requestUrl = new StringBuilder(projectServicePath);
         requestUrl.append("/import").append(normalizePath(path));
         if (force) {
@@ -300,7 +310,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         }
 
         MessageBuilder builder = new MessageBuilder(POST, requestUrl.toString());
-        builder.data(dtoFactory.toJson(importProject)).header(CONTENTTYPE, APPLICATION_JSON);
+        builder.data(dtoFactory.toJson(sourceStorage)).header(CONTENTTYPE, APPLICATION_JSON);
         Message message = builder.build();
 
         sendMessageToWS(message, callback);
