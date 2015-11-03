@@ -586,18 +586,23 @@ public class FactoryService extends Service {
         try {
             final ProjectConfig projectDescription = project.getConfig();
             Map<String, AttributeValue> attributes = projectDescription.getAttributes();
+            String vcs;
             if (attributes.containsKey("vcs.provider.name") && attributes.get("vcs.provider.name").getList().contains("git")) {
-                final Link importSourceLink = dtoFactory.createDto(Link.class)
-                                                        .withMethod(HttpMethod.GET)
-                                                        .withHref(UriBuilder.fromUri(baseApiUrl)
-                                                                            .path("git")
-                                                                            .path(workspace)
-                                                                            .path("import-source-descriptor")
-                                                                            .build().toString());
-                source = HttpJsonHelper.request(ImportSourceDescriptor.class, importSourceLink, new Pair<>("projectPath", path));
+                vcs = "git";
+            } else if (attributes.containsKey("svn.repository.url")) {
+                vcs = "svn";
             } else {
                 throw new ConflictException("Not able to generate project configuration, project has to be under version control system");
             }
+            final Link importSourceLink = dtoFactory.createDto(Link.class)
+                                                    .withMethod(HttpMethod.GET)
+                                                    .withHref(UriBuilder.fromUri(baseApiUrl)
+                                                                        .path(vcs)
+                                                                        .path(workspace)
+                                                                        .path("import-source-descriptor")
+                                                                        .build().toString());
+            source = HttpJsonHelper.request(ImportSourceDescriptor.class, importSourceLink, new Pair<>("projectPath", path));
+
             // Read again project.json file even we already have all information about project in 'projectDescription' variable.
             // We do so because 'projectDescription' variable contains all attributes of project including 'calculated' attributes but we
             // don't need 'calculated' attributes in this case. Such attributes exists only in runtime and may be restored from the project.
