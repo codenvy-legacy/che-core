@@ -16,8 +16,8 @@ import com.google.common.collect.FluentIterable;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.rest.annotations.OPTIONS;
 import org.eclipse.che.api.core.rest.shared.dto.ApiInfo;
+import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.dto.server.DtoFactory;
-
 import org.everrest.core.ObjectFactory;
 import org.everrest.core.ResourceBinder;
 import org.everrest.core.resource.AbstractResourceDescriptor;
@@ -25,7 +25,6 @@ import org.everrest.services.RestServicesList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.eclipse.che.commons.annotation.Nullable;
 import javax.inject.Singleton;
 import javax.servlet.ServletContext;
 import javax.ws.rs.GET;
@@ -38,6 +37,8 @@ import java.net.URL;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * @author andrew00x
@@ -62,7 +63,7 @@ public class ApiInfoService {
         try {
             URL url = ApiInfoService.class.getProtectionDomain().getCodeSource().getLocation();
             try (JarFile jar = new JarFile(new File(url.toURI()))) {
-                final Manifest manifest = jar.getManifest();
+                final Manifest manifest = requireNonNull(jar.getManifest(), "Manifest must not be null");
                 final Attributes mainAttributes = manifest.getMainAttributes();
                 final DtoFactory dtoFactory = DtoFactory.getInstance();
                 return dtoFactory.createDto(ApiInfo.class)

@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -452,8 +453,10 @@ public class HttpJsonHelper {
                     if (in == null) {
                         in = conn.getInputStream();
                     }
-                    final InputStream fIn = in;
-                    final String str = CharStreams.toString(new InputStreamReader(fIn));
+                    final String str;
+                    try (Reader reader = new InputStreamReader(in)) {
+                        str = CharStreams.toString(reader);
+                    }
                     final String contentType = conn.getContentType();
                     if (contentType != null && contentType.startsWith(MediaType.APPLICATION_JSON)) {
                         final ServiceError serviceError = DtoFactory.getInstance().createDtoFromJson(str, ServiceError.class);
@@ -481,7 +484,9 @@ public class HttpJsonHelper {
                     throw new IOException(conn.getResponseMessage());
                 }
 
-                return CharStreams.toString(new InputStreamReader(conn.getInputStream()));
+                try (Reader reader = new InputStreamReader(conn.getInputStream())) {
+                    return CharStreams.toString(reader);
+                }
             } finally {
                 conn.disconnect();
             }

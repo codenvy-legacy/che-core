@@ -49,11 +49,21 @@ import org.eclipse.che.api.vfs.shared.dto.Property;
 import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.eclipse.che.commons.lang.Pair;
+import org.eclipse.che.commons.lang.Strings;
 import org.eclipse.che.commons.lang.cache.Cache;
 import org.eclipse.che.commons.lang.cache.LoadingValueSLRUCache;
 import org.eclipse.che.commons.lang.cache.SynchronizedCache;
 import org.eclipse.che.commons.lang.ws.rs.ExtMediaType;
 import org.eclipse.che.dto.server.DtoFactory;
+
+import com.google.common.annotations.Beta;
+import com.google.common.collect.Sets;
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hashing;
+import com.google.common.io.ByteSource;
+import com.google.common.io.ByteStreams;
+
+import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1563,9 +1573,8 @@ public class FSMountPoint implements MountPoint {
 
     private String countHashSum(VirtualFile virtualFile, HashFunction hashFunction) throws ServerException {
         final PathLockFactory.PathLock lock = pathLockFactory.getLock(virtualFile.getVirtualFilePath(), false).acquire(LOCK_FILE_TIMEOUT);
-        try {
-            final InputStream stream = virtualFile.getContent().getStream();
-            return ByteSource.concat().hash(hashFunction).toString();
+        try (InputStream contentStream = virtualFile.getContent().getStream()) {
+            return ByteSource.wrap(ByteStreams.toByteArray(contentStream)).hash(hashFunction).toString();
         } catch (ForbiddenException e) {
             throw new ServerException(e.getServiceError());
         } catch (IOException e) {

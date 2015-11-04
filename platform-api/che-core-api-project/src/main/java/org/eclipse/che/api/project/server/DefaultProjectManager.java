@@ -764,8 +764,7 @@ public final class DefaultProjectManager implements ProjectManager {
                                               .withAttributes(attributes));
                 }
             } catch (ValueStorageException e) {
-                // just not added
-                //e.printStackTrace();
+                LOG.warn(e.getLocalizedMessage(), e);
             }
         }
         if (estimations.isEmpty()) {

@@ -21,7 +21,7 @@ import javax.inject.Singleton;
 @Singleton
 public class GitProjectType extends TransientMixin {
 
-    public static String VCS_PROVIDER_NAME = "vcs.provider.name";
+    public static final String VCS_PROVIDER_NAME = "vcs.provider.name";
 
     @Inject
     public GitProjectType(GitValueProviderFactory gitRepositoryValueProviderFactory) {

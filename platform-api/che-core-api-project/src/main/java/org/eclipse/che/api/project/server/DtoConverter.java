@@ -194,7 +194,7 @@ public class DtoConverter {
             try {
                 if (attr.getValue() != null)
                     valueList = attr.getValue().getList();
-            } catch (ValueStorageException e) {
+            } catch (ValueStorageException ignored) {
             }
 
             typeAttributes.add(dtoFactory.createDto(AttributeDescriptor.class)
