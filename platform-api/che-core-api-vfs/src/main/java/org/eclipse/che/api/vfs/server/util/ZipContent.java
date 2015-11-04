@@ -64,11 +64,10 @@ public final class ZipContent {
             spool = new ByteArrayInputStream(inMemory);
         }
 
-        ZipInputStream zip = null;
-        try {
-            // Counts numbers of compressed data.
-            final CountingInputStream compressedCounter = new CountingInputStream(spool);
-            zip = new ZipInputStream(compressedCounter);
+        // Counts numbers of compressed data.
+        try (CountingInputStream compressedCounter = new CountingInputStream(spool);
+             ZipInputStream zip = new ZipInputStream(compressedCounter)) {
+
             // Counts number of uncompressed data.
             CountingInputStream uncompressedCounter = new CountingInputStream(zip) {
                 @Override
@@ -121,10 +120,6 @@ public final class ZipContent {
 
             return new ZipContent(inMemory != null ? new ByteArrayInputStream(inMemory) : new DeleteOnCloseFileInputStream(file),
                                   file == null);
-        } finally {
-            if (zip != null) {
-                zip.close();
-            }
         }
     }
 
