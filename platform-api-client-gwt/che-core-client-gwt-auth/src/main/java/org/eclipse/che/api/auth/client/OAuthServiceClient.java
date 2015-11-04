@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.auth.client;
 
+import org.eclipse.che.api.auth.shared.dto.OAuthToken;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 
 /**
@@ -18,6 +19,6 @@ import org.eclipse.che.ide.rest.AsyncRequestCallback;
 public interface OAuthServiceClient {
     void invalidateToken(String oauthProvider, AsyncRequestCallback<Void> callback);
 
-    void getToken(String oauthProvider, AsyncRequestCallback<String> callback);
+    void getToken(String oauthProvider, AsyncRequestCallback<OAuthToken> callback);
 
 }

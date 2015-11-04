@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.auth.client;
 
+import org.eclipse.che.api.auth.shared.dto.OAuthToken;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.RestContext;
@@ -37,7 +38,7 @@ public class OAuthServiceClientImpl implements OAuthServiceClient {
     }
 
     @Override
-    public void getToken(String oauthProvider, AsyncRequestCallback<String> callback) {
+    public void getToken(String oauthProvider, AsyncRequestCallback<OAuthToken> callback) {
         asyncRequestFactory.createGetRequest(restContext + "/token?oauth_provider=" + oauthProvider)
                            .send(callback);
     }
