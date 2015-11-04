@@ -36,6 +36,8 @@ import org.eclipse.che.ide.api.event.FileEvent.FileOperation;
 import org.eclipse.che.ide.api.event.FileEventHandler;
 import org.eclipse.che.ide.api.event.WindowActionEvent;
 import org.eclipse.che.ide.api.event.WindowActionHandler;
+import org.eclipse.che.ide.api.event.project.DeleteProjectEvent;
+import org.eclipse.che.ide.api.event.project.DeleteProjectHandler;
 import org.eclipse.che.ide.api.filetypes.FileType;
 import org.eclipse.che.ide.api.filetypes.FileTypeRegistry;
 import org.eclipse.che.ide.api.notification.Notification;
@@ -162,25 +164,24 @@ public class EditorAgentImpl implements EditorAgent {
             @Override
             public void onResourceEvent(ResourceNodeDeletedEvent event) {
                 ResourceBasedNode node = event.getNode();
-
+                List<EditorPartPresenter> editors = new ArrayList<>(openedEditors.values());
                 if (node instanceof FileReferenceNode) {
-                    for (EditorPartPresenter editor : openedEditors.values()) {
+                    for (EditorPartPresenter editor : editors) {
                         VirtualFile deletedVFile = (VirtualFile)node;
                         if (deletedVFile.getPath().equals(editor.getEditorInput().getFile().getPath())) {
                             eventBus.fireEvent(new FileEvent(editor.getEditorInput().getFile(), CLOSE));
                         }
                     }
                 } else if (node instanceof FolderReferenceNode) {
-                    for (EditorPartPresenter editor : openedEditors.values()) {
+                    for (EditorPartPresenter editor : editors) {
                         if (editor.getEditorInput().getFile().getPath().startsWith(((FolderReferenceNode)node).getStorablePath())) {
                             eventBus.fireEvent(new FileEvent(editor.getEditorInput().getFile(), CLOSE));
                         }
                     }
                 } else if (node instanceof ModuleDescriptorNode) {
-                    for (EditorPartPresenter editor : openedEditors.values()) {
+                    for (EditorPartPresenter editor : editors) {
                         VirtualFile virtualFile = editor.getEditorInput().getFile();
-                        if (virtualFile.getProject() != null
-                            && virtualFile.getProject().getProjectDescriptor().equals(node.getProjectDescriptor())) {
+                        if (moduleHasFile(node.getProjectDescriptor(), virtualFile)) {
                             eventBus.fireEvent(new FileEvent(virtualFile, CLOSE));
                         }
                         if (node.getParent() == null || !(node.getParent() instanceof HasStorablePath)) {
@@ -197,7 +198,19 @@ public class EditorAgentImpl implements EditorAgent {
                 }
             }
         });
-
+        eventBus.addHandler(DeleteProjectEvent.TYPE, new DeleteProjectHandler() {
+            @Override
+            public void onProjectDeleted(DeleteProjectEvent event) {
+                ProjectDescriptor descriptor = event.getDescriptor();
+                List<EditorPartPresenter> editors = new ArrayList<>(openedEditors.values());
+                for (EditorPartPresenter editor : editors) {
+                    VirtualFile virtualFile = editor.getEditorInput().getFile();
+                    if (moduleHasFile(descriptor, virtualFile)) {
+                        eventBus.fireEvent(new FileEvent(virtualFile, CLOSE));
+                    }
+                }
+            }
+        });
         eventBus.addHandler(ResourceNodeRenamedEvent.getType(), new ResourceNodeRenamedEvent.ResourceNodeRenamedHandler() {
             @Override
             public void onResourceRenamedEvent(ResourceNodeRenamedEvent event) {
@@ -273,6 +286,12 @@ public class EditorAgentImpl implements EditorAgent {
                 updateEditorPartsAfterRename(editorParts, oldTargetPath, newTargetPath, unmarshaller);
             }
         });
+    }
+
+    private boolean moduleHasFile(ProjectDescriptor descriptor, VirtualFile virtualFile) {
+        String descriptorPath = descriptor.getPath();
+        String descriptorPathOfFile = virtualFile.getProject().getProjectDescriptor().getPath();
+        return descriptorPathOfFile.equals(descriptorPath) || descriptorPathOfFile.startsWith(descriptorPath + "/");
     }
 
     /** {@inheritDoc} */
