@@ -10,26 +10,28 @@
  *******************************************************************************/
 package org.eclipse.che.api.local;
 
-import org.eclipse.che.api.auth.AuthenticationDao;
-import org.eclipse.che.api.auth.AuthenticationException;
-import org.eclipse.che.api.auth.shared.dto.Credentials;
-import org.eclipse.che.api.auth.shared.dto.Token;
-import org.eclipse.che.dto.server.DtoFactory;
+//import com.codenvy.api.auth.AuthenticationDao;
+//import com.codenvy.api.auth.AuthenticationException;
+//import com.codenvy.api.auth.shared.dto.Credentials;
+//import com.codenvy.api.auth.shared.dto.Token;
+//import com.codenvy.dto.server.DtoFactory;
 
 import javax.inject.Singleton;
-import javax.ws.rs.core.Cookie;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+//import javax.ws.rs.core.Cookie;
+//import javax.ws.rs.core.Response;
+//import javax.ws.rs.core.UriInfo;
 
 @Singleton
-public class LocalAuthenticationDaoImpl implements AuthenticationDao {
-    @Override
-    public Response login(Credentials credentials, Cookie tokenAccessCookie, UriInfo uriInfo) throws AuthenticationException {
-        return Response.ok().entity((DtoFactory.getInstance().createDto(Token.class).withValue("123123"))).build();
-    }
-
-    @Override
-    public Response logout(String token, Cookie tokenAccessCookie, UriInfo uriInfo) {
-        return Response.ok().build();
-    }
+public class LocalAuthenticationDaoImpl
+//        implements AuthenticationDao
+{
+//    @Override
+//    public Response login(Credentials credentials, Cookie tokenAccessCookie, UriInfo uriInfo) throws AuthenticationException {
+//        return Response.ok().entity((DtoFactory.getInstance().createDto(Token.class).withValue("123123"))).build();
+//    }
+//
+//    @Override
+//    public Response logout(String token, Cookie tokenAccessCookie, UriInfo uriInfo) {
+//        return Response.ok().build();
+//    }
 }

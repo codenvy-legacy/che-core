@@ -10,18 +10,19 @@
  *******************************************************************************/
 package org.eclipse.che.api.auth;
 
-import org.eclipse.che.api.auth.shared.dto.Credentials;
 
-import javax.ws.rs.core.Cookie;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import org.eclipse.che.commons.user.User;
 
 /**
- * @author gazarenkov
+ * Provider user by his authentication token.
+ *
+ * @author Sergii Kabashniuk
  */
-public interface AuthenticationDao {
-
-    Response login(Credentials credentials, Cookie tokenAccessCookie, UriInfo uriInfo) throws AuthenticationException;
-
-    Response logout(String token, Cookie tokenAccessCookie, UriInfo uriInfo);
+public interface UserProvider {
+    /**
+     * @param token
+     *         authentication token.
+     * @return user that will be user in request.
+     */
+    User getUser(String token);
 }
