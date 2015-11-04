@@ -11,6 +11,7 @@
 package org.eclipse.che.api.runner;
 
 import javax.inject.Singleton;
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.Random;
 
@@ -21,7 +22,7 @@ import java.util.Random;
  */
 @Singleton
 public class RandomRunnerSelectionStrategy implements RunnerSelectionStrategy {
-    private final Random random = new Random();
+    private final Random random = new SecureRandom();
 
     @Override
     public RemoteRunner select(List<RemoteRunner> remoteRunners) {

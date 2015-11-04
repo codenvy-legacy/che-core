@@ -11,6 +11,7 @@
 package org.eclipse.che.api.builder;
 
 import javax.inject.Singleton;
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.Random;
 
@@ -19,7 +20,7 @@ import java.util.Random;
  */
 @Singleton
 public class RandomBuilderSelectionStrategy implements BuilderSelectionStrategy {
-    private final Random random = new Random();
+    private final Random random = new SecureRandom();
 
     @Override
     public RemoteBuilder select(List<RemoteBuilder> slaveBuilders) {

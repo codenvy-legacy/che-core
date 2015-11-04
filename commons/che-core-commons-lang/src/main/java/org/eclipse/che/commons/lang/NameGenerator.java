@@ -10,11 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.commons.lang;
 
+import java.security.SecureRandom;
 import java.util.Random;
 
 public class NameGenerator {
 
-    private static final Random RANDOM = new Random();
+    private static final Random RANDOM = new SecureRandom();
 
     private static final char[] CHARS = new char[36];
 

@@ -21,6 +21,7 @@ import javax.inject.Singleton;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
+import java.security.SecureRandom;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -71,7 +72,7 @@ public class CustomPortService {
             throw new IllegalArgumentException(String.format("Invalid port range: [%d:%d]", range.first, range.second));
         }
         this.range = range;
-        rnd = new Random();
+        rnd = new SecureRandom();
         portsInUse = new ConcurrentHashMap<>();
     }
 

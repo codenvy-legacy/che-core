@@ -41,6 +41,8 @@ import org.eclipse.che.commons.lang.ws.rs.ExtMediaType;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.apache.commons.fileupload.FileItem;
 import org.everrest.core.impl.provider.multipart.OutputItem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -82,6 +84,8 @@ import java.util.regex.Pattern;
  * @author andrew00x
  */
 public abstract class VirtualFileSystemImpl implements VirtualFileSystem {
+    private static final Logger LOG = LoggerFactory.getLogger(VirtualFileSystemImpl.class);
+
     protected final String                       vfsId;
     protected final URI                          baseUri;
     protected final VirtualFileSystemUserContext userContext;
@@ -114,7 +118,8 @@ public abstract class VirtualFileSystemImpl implements VirtualFileSystem {
                      @QueryParam("parentId") String parentId,
                      @QueryParam("name") String newName)
             throws NotFoundException, ForbiddenException, ConflictException, ServerException {
-        final VirtualFile virtualFileCopy = mountPoint.getVirtualFileById(id).copyTo(mountPoint.getVirtualFileById(parentId), newName, false);
+        final VirtualFile virtualFileCopy =
+                mountPoint.getVirtualFileById(id).copyTo(mountPoint.getVirtualFileById(parentId), newName, false);
         return fromVirtualFile(virtualFileCopy, false, PropertyFilter.ALL_FILTER);
     }
 
@@ -519,7 +524,7 @@ public abstract class VirtualFileSystemImpl implements VirtualFileSystem {
                     }
                 }
             } catch (IOException e) {
-                //LOG.warn(e.getMessage(), e);
+                LOG.warn(e.getMessage(), e);
             }
         }
     }

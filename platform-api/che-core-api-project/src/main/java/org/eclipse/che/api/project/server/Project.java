@@ -214,23 +214,24 @@ public class Project {
             if (definition != null && definition.isVariable()) {
                 Variable var = (Variable)definition;
 
-                final ValueProviderFactory valueProviderFactory = var.getValueProviderFactory();
-
-                // calculate provided values
-                if (valueProviderFactory != null) {
-                    valueProviderFactory.newInstance(baseFolder).setValues(var.getName(), attributeValue.getList());
+                if (attributeValue == null && var.isRequired()) {
+                    throw new ProjectTypeConstraintException("Required attribute value is initialized with null value " + var.getId());
                 }
 
-                if (attributeValue == null && var.isRequired())
-                    throw new ProjectTypeConstraintException("Required attribute value is initialized with null value " + var.getId());
+                if (attributeValue != null) {
+                    final ValueProviderFactory valueProviderFactory = var.getValueProviderFactory();
 
+                    // calculate provided values
+                    if (valueProviderFactory != null) {
+                        valueProviderFactory.newInstance(baseFolder).setValues(var.getName(), attributeValue.getList());
+                    }
 
-                // store non-provided values into JSON
-                if (valueProviderFactory == null)
-                    projectJson.getAttributes().put(definition.getName(), attributeValue.getList());
-
+                    // store non-provided values into JSON
+                    if (valueProviderFactory == null) {
+                        projectJson.getAttributes().put(definition.getName(), attributeValue.getList());
+                    }
+                }
                 checkVariables.put(attributeName, attributeValue);
-
             }
         }
 
@@ -444,12 +445,10 @@ public class Project {
             if (file == null || file.isFolder())
                 return modules;
 
-            try {
-                BufferedReader in = new BufferedReader(new InputStreamReader(((FileEntry)file).getInputStream()));
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(((FileEntry)file).getInputStream()))) {
                 while (in.ready()) {
                     modules.add(in.readLine());
                 }
-                in.close();
             } catch (IOException e) {
                 throw new ServerException(e);
             }
@@ -458,26 +457,21 @@ public class Project {
         }
 
         private void write(Set<String> modules) throws ForbiddenException, ServerException, ConflictException {
+            VirtualFileEntry file = baseFolder.getChild(MODULES_PATH);
 
-            VirtualFileEntry file = null;
-            file = baseFolder.getChild(MODULES_PATH);
-
-            if (file == null && !modules.isEmpty())
+            if (file == null && !modules.isEmpty()) {
                 file = ((FolderEntry)baseFolder.getChild(".codenvy")).createFile("modules", new byte[0], MediaType.TEXT_PLAIN);
-
-//                if(modules.isEmpty() && file != null)
-//                    file.remove();
+            }
 
             String all = "";
             for (String path : modules) {
                 all += (path + "\n");
             }
 
-            ((FileEntry)file).updateContent(all.getBytes());
-
+            if (file != null) {
+                ((FileEntry)file).updateContent(all.getBytes());
+            }
         }
-
-
     }
 
 
