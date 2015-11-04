@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.runner;
 
+import com.google.common.io.ByteStreams;
+
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
@@ -20,21 +22,18 @@ import org.eclipse.che.api.core.rest.HttpOutputMessage;
 import org.eclipse.che.api.core.rest.OutputProvider;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.runner.dto.ApplicationProcessDescriptor;
-import org.eclipse.che.dto.server.DtoFactory;
-
-import com.google.common.io.ByteStreams;
-import com.google.common.io.Closer;
-
 import org.eclipse.che.api.runner.internal.Constants;
+import org.eclipse.che.dto.server.DtoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.HttpHeaders;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 /**
  * Representation of remote application process.
@@ -152,13 +151,10 @@ public class RemoteRunnerProcess {
                     httpOutput.addHttpHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition);
                 }
             }
-            Closer closer = Closer.create();
-            try {
-                ByteStreams.copy(closer.register(conn.getInputStream()), closer.register(output.getOutputStream()));
-            } catch (Throwable e) {
-                throw closer.rethrow(e);
-            } finally {
-                closer.close();
+
+            try (InputStream in = conn.getInputStream();
+                 OutputStream out = output.getOutputStream()) {
+                ByteStreams.copy(in, out);
             }
 
         } finally {

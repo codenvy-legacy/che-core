@@ -45,7 +45,6 @@ import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo;
 import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.eclipse.che.commons.lang.Pair;
-import org.eclipse.che.commons.lang.Strings;
 import org.eclipse.che.commons.lang.cache.Cache;
 import org.eclipse.che.commons.lang.cache.LoadingValueSLRUCache;
 import org.eclipse.che.commons.lang.cache.SynchronizedCache;
@@ -57,6 +56,7 @@ import com.google.common.collect.Sets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import com.google.common.io.ByteSource;
+import com.google.common.io.ByteStreams;
 
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
@@ -1696,9 +1696,8 @@ public class FSMountPoint implements MountPoint {
 
     private String countHashSum(VirtualFile virtualFile, HashFunction hashFunction) throws ServerException {
         final PathLockFactory.PathLock lock = pathLockFactory.getLock(virtualFile.getVirtualFilePath(), false).acquire(LOCK_FILE_TIMEOUT);
-        try {
-            final InputStream stream = virtualFile.getContent().getStream();
-            return ByteSource.concat().hash(hashFunction).toString();
+        try (InputStream contentStream = virtualFile.getContent().getStream()) {
+            return ByteSource.wrap(ByteStreams.toByteArray(contentStream)).hash(hashFunction).toString();
         } catch (ForbiddenException e) {
             throw new ServerException(e.getServiceError());
         } catch (IOException e) {

@@ -138,9 +138,10 @@ public final class HttpServletProxyResponse implements HttpOutputMessage {
 
         @Override
         public void close() throws IOException {
-            flush();
-            if (writer != null) {
-                writer.close();
+            // Define variable which is unused in the case of correctly closed resources
+            // BTW it may be simplified with JDK9 see https://blogs.oracle.com/darcy/entry/concise_twr_jdk9
+            try (@SuppressWarnings("unused") Writer writer = this.writer) {
+                flush();
             }
         }
     }

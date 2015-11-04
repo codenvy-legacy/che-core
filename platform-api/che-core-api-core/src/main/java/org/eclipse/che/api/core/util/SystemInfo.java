@@ -171,7 +171,7 @@ public class SystemInfo {
                                                                  Charset.forName("UTF-8"))) {
                 line = reader.readLine(); // need first line only
             }
-            if (line.startsWith("cpu")) { // just to be sure we have correct line
+            if (line != null && line.startsWith("cpu")) { // just to be sure we have correct line
                 final String[] strings = line.split("\\s+");
                 for (int i = 1; i < 5; i++) {
                     times[i - 1] = Integer.parseInt(strings[i]);
