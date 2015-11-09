@@ -80,11 +80,8 @@ public class CodenvyJsonProvider<T> implements MessageBodyReader<T>, MessageBody
         // Add Cache-Control before start write body.
         httpHeaders.putSingle(HttpHeaders.CACHE_CONTROL, "public, no-cache, no-store, no-transform");
         if (t instanceof JsonSerializable) {
-            Writer w = new OutputStreamWriter(entityStream, Charset.forName("UTF-8"));
-            try {
+            try (Writer w = new OutputStreamWriter(entityStream, Charset.forName("UTF-8"))) {
                 w.write(((JsonSerializable)t).toJson());
-            } finally {
-                w.flush();
             }
         } else {
             delegate.writeTo(t, type, genericType, annotations, mediaType, httpHeaders, entityStream);
