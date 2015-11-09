@@ -19,12 +19,9 @@ import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ImportProject;
 import org.eclipse.che.api.project.shared.dto.ImportResponse;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.api.vfs.gwt.client.VfsServiceClient;
-import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.api.event.ConfigureProjectEvent;
 import org.eclipse.che.ide.api.event.project.CreateProjectEvent;
+import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
 import org.eclipse.che.ide.api.wizard.AbstractWizard;
 import org.eclipse.che.ide.commons.exception.JobNotFoundException;
@@ -52,6 +49,7 @@ public class ImportWizard extends AbstractWizard<ImportProject> {
     private final EventBus                            eventBus;
     private final CoreLocalizationConstant            localizationConstant;
     private final ImportProjectNotificationSubscriber importProjectNotificationSubscriber;
+    private final NotificationManager                 notificationManager;
 
     /**
      * Creates project wizard.
@@ -76,7 +74,8 @@ public class ImportWizard extends AbstractWizard<ImportProject> {
                         DtoFactory dtoFactory,
                         EventBus eventBus,
                         CoreLocalizationConstant localizationConstant,
-                        ImportProjectNotificationSubscriber importProjectNotificationSubscriber) {
+                        ImportProjectNotificationSubscriber importProjectNotificationSubscriber,
+                        NotificationManager notificationManager) {
         super(dataObject);
         this.projectServiceClient = projectServiceClient;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
@@ -84,6 +83,7 @@ public class ImportWizard extends AbstractWizard<ImportProject> {
         this.eventBus = eventBus;
         this.localizationConstant = localizationConstant;
         this.importProjectNotificationSubscriber = importProjectNotificationSubscriber;
+        this.notificationManager = notificationManager;
     }
 
     /** {@inheritDoc} */
@@ -106,7 +106,7 @@ public class ImportWizard extends AbstractWizard<ImportProject> {
                 if (exception instanceof ServerException && ((ServerException)exception).getHTTPStatus() == 404) {
                     importProject(callback);
                 } else {
-                   //TODO Show error message
+                    notificationManager.showError(exception.getMessage());
                 }
             }
         });
