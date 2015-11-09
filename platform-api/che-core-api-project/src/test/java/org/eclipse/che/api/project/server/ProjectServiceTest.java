@@ -2897,7 +2897,7 @@ public class ProjectServiceTest {
     @Test
     public void testGetRunnerEnvironments() throws Exception {
         Project myProject = pm.getProject(workspace, "my_project");
-        FolderEntry environmentsFolder = myProject.getBaseFolder().createFolder(".codenvy/runners/environments");
+        FolderEntry environmentsFolder = myProject.getBaseFolder().createFolder(Constants.CODENVY_RUNNER_ENVIRONMENTS_DIR);
         environmentsFolder.createFolder("my_env_1");
         environmentsFolder.createFolder("my_env_2");
         ContainerResponse response = launcher.service(HttpMethod.GET,

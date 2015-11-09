@@ -394,8 +394,6 @@ public class Project {
 
     public class Modules {
 
-        private final String MODULES_PATH = ".codenvy/modules";
-
         public boolean remove(String path) throws ForbiddenException, ServerException, ConflictException {
 
             Set<String> all = read();
@@ -440,7 +438,7 @@ public class Project {
             HashSet<String> modules = new HashSet<>();
             VirtualFileEntry file = null;
 
-            file = baseFolder.getChild(MODULES_PATH);
+            file = baseFolder.getChild(Constants.CODENVY_MODULES_FILE_RELATIVE_PATH);
 
             if (file == null || file.isFolder())
                 return modules;
@@ -457,10 +455,10 @@ public class Project {
         }
 
         private void write(Set<String> modules) throws ForbiddenException, ServerException, ConflictException {
-            VirtualFileEntry file = baseFolder.getChild(MODULES_PATH);
+            VirtualFileEntry file = baseFolder.getChild(Constants.CODENVY_MODULES_FILE_RELATIVE_PATH);
 
             if (file == null && !modules.isEmpty()) {
-                file = ((FolderEntry)baseFolder.getChild(".codenvy")).createFile("modules", new byte[0], MediaType.TEXT_PLAIN);
+                file = ((FolderEntry)baseFolder.getChild(Constants.CODENVY_DIR)).createFile(Constants.CODENVY_MODULES_FILE, new byte[0], MediaType.TEXT_PLAIN);
             }
 
             String all = "";

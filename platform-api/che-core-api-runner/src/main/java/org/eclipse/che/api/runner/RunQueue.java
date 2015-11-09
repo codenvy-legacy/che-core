@@ -785,8 +785,10 @@ public class RunQueue {
         try {
             return HttpJsonHelper.requestArray(ItemReference.class, DtoFactory.getInstance()
                                                                               .clone(childrenLink)
-                                                                              .withHref(String.format("%s/.codenvy/runners/environments/%s",
-                                                                                                      childrenLink.getHref(), envName)));
+                                                                              .withHref(String.format("%s/%s/%s",
+                                                                                      childrenLink.getHref(),
+                                                                                      org.eclipse.che.api.project.server.Constants.CODENVY_RUNNER_ENVIRONMENTS_DIR,
+                                                                                      envName)));
         } catch (IOException e) {
             throw new RunnerException(e);
         } catch (ServerException | UnauthorizedException | ForbiddenException | NotFoundException | ConflictException e) {

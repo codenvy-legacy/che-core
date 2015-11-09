@@ -53,7 +53,7 @@ public class FileEntryTest {
         });
         VirtualFile myVfRoot = mmp.getRoot();
         myVfProject = myVfRoot.createFolder("my_project");
-        myVfProject.createFolder(".codenvy").createFile("project", null, null);
+        myVfProject.createFolder(Constants.CODENVY_DIR).createFile("project", null, null);
         myVfFile = myVfProject.createFile("test", MediaType.TEXT_PLAIN, new ByteArrayInputStream("to be or not to be".getBytes()));
         myFile = new FileEntry(workspace, myVfFile);
         Assert.assertTrue(myFile.isFile());
@@ -137,7 +137,7 @@ public class FileEntryTest {
     @Test
     public void testMove() throws Exception {
         VirtualFile vfProject = mmp.getRoot().createFolder("my_project_2");
-        vfProject.createFolder(".codenvy").createFile("project", null, null);
+        vfProject.createFolder(Constants.CODENVY_DIR).createFile("project", null, null);
         String name = myFile.getName();
         String newPath = vfProject.getVirtualFilePath().newPath(name).toString();
         byte[] b = myFile.contentAsBytes();
@@ -155,7 +155,7 @@ public class FileEntryTest {
     @Test
     public void testCopy() throws Exception {
         VirtualFile vfProject = mmp.getRoot().createFolder("my_project_2");
-        vfProject.createFolder(".codenvy").createFile("project", null, null);
+        vfProject.createFolder(Constants.CODENVY_DIR).createFile("project", null, null);
         String name = myFile.getName();
         String newPath = vfProject.getVirtualFilePath().newPath(name).toString();
         byte[] b = myFile.contentAsBytes();
