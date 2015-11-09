@@ -84,8 +84,8 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void getProjects(AsyncRequestCallback<List<ProjectReference>> callback) {
-        asyncRequestFactory.createGetRequest(baseHttpUrl)
+    public void getProjects(boolean includeAttributes, AsyncRequestCallback<List<ProjectDescriptor>> callback) {
+        asyncRequestFactory.createGetRequest(baseHttpUrl + "?includeAttributes=" + includeAttributes)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loader, "Getting projects...")
                            .send(callback);

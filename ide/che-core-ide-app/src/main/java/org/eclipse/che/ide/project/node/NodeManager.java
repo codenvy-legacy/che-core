@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.project.node;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.core.client.JsArrayMixed;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
@@ -48,6 +49,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import static org.eclipse.che.api.promises.client.callback.PromiseHelper.newCallback;
+import static org.eclipse.che.api.promises.client.callback.PromiseHelper.newPromise;
+
 /**
  * Helper class to define various functionality related with nodes.
  * Such as get node children. Wrapping nodes.
@@ -81,7 +85,7 @@ public class NodeManager {
         this.nodeIconProvider = nodeIconProvider;
     }
 
-    /** *********** Children operations ********************* */
+    /** ********** Children operations ********************* */
 
     @NotNull
     public Promise<List<Node>> getChildren(@NotNull ItemReference itemReference,
@@ -97,14 +101,17 @@ public class NodeManager {
     }
 
     @NotNull
-    public Promise<List<Node>> getChildren(@NotNull String path,
+    public Promise<List<Node>> getChildren(final @NotNull String path,
                                            @NotNull ProjectDescriptor relProjectDescriptor,
                                            @NotNull NodeSettings nodeSettings) {
-        return AsyncPromiseHelper.createFromAsyncRequest(getItemReferenceRC(path))
-                                 .thenPromise(filterItemReference())
-                                 .thenPromise(createItemReferenceNodes(relProjectDescriptor, nodeSettings))
-                                 .thenPromise(sortNodes())
-                                 .catchError(handleError());
+        return newPromise(new RequestCall<List<ItemReference>>() {
+            @Override
+            public void makeCall(AsyncCallback<List<ItemReference>> callback) {
+                projectService.getChildren(path, newCallback(callback, dtoUnmarshaller.newListUnmarshaller(ItemReference.class)));
+            }
+        }).thenPromise(filterItemReference())
+          .thenPromise(createItemReferenceNodes(relProjectDescriptor, nodeSettings))
+          .catchError(handleError());
     }
 
     protected Function<List<Node>, Promise<List<Node>>> sortNodes() {
@@ -250,7 +257,7 @@ public class NodeManager {
         };
     }
 
-    /** *********** Project Reference operations ********************* */
+    /** ********** Project Reference operations ********************* */
 
     public Promise<ProjectDescriptor> getProjectDescriptor(String path) {
         return AsyncPromiseHelper.createFromAsyncRequest(getProjectDescriptoRC(path));
@@ -265,49 +272,39 @@ public class NodeManager {
         };
     }
 
+    /**
+     * Get project list and construct project nodes for the tree.
+     *
+     * @return list of the {@link ProjectDescriptorNode} nodes.
+     */
     @NotNull
-    public Promise<List<Node>> getProjects() {
-        return AsyncPromiseHelper.createFromAsyncRequest(getProjectsRC()).then(createProjectReferenceNodes());
-    }
-
-    @NotNull
-    private RequestCall<List<ProjectReference>> getProjectsRC() {
-        return new RequestCall<List<ProjectReference>>() {
+    public Promise<List<Node>> getProjectNodes() {
+        return newPromise(new RequestCall<List<ProjectDescriptor>>() {
             @Override
-            public void makeCall(AsyncCallback<List<ProjectReference>> callback) {
-                projectService.getProjects(_callback(callback, dtoUnmarshaller.newListUnmarshaller(ProjectReference.class)));
+            public void makeCall(AsyncCallback<List<ProjectDescriptor>> callback) {
+                projectService.getProjects(true, newCallback(callback, dtoUnmarshaller.newListUnmarshaller(ProjectDescriptor.class)));
             }
-        };
-    }
-
-    @NotNull
-    private Function<List<ProjectReference>, List<Node>> createProjectReferenceNodes() {
-        return new Function<List<ProjectReference>, List<Node>>() {
+        }).then(new Function<List<ProjectDescriptor>, List<Node>>() {
             @Override
-            public List<Node> apply(List<ProjectReference> projects) throws FunctionException {
+            public List<Node> apply(List<ProjectDescriptor> projects) throws FunctionException {
                 if (projects == null) {
                     return Collections.emptyList();
                 }
 
-                NodeSettings nodeSettings = nodeSettingsProvider.getSettings();
-                if (nodeSettings == null) {
-                    nodeSettings = NodeSettings.DEFAULT_SETTINGS;
-                }
+                final NodeSettings settings = nodeSettingsProvider.getSettings();
 
-                List<Node> projectList = new ArrayList<>(projects.size());
-
-                for (ProjectReference reference : projects) {
-                    ProjectDescriptorNode node = nodeFactory.newProjectDescriptorNode(convert(reference), nodeSettings);
-//                    ProjectReferenceNode node = nodeFactory.newProjectReferenceNode(reference, convert(reference), nodeSettings);
-                    projectList.add(node);
-                }
-
-                return projectList;
+                return Lists.transform(projects, new com.google.common.base.Function<ProjectDescriptor, Node>() {
+                    @javax.annotation.Nullable
+                    @Override
+                    public Node apply(@Nullable ProjectDescriptor project) {
+                        return nodeFactory.newProjectDescriptorNode(project, settings == null ? NodeSettings.DEFAULT_SETTINGS : settings);
+                    }
+                });
             }
-        };
+        });
     }
 
-    /** *********** Content methods ********************* */
+    /** ********** Content methods ********************* */
 
     @NotNull
     public Promise<String> getContent(@NotNull final VirtualFile virtualFile) {
@@ -342,7 +339,7 @@ public class NodeManager {
         };
     }
 
-    /** *********** Common methods ********************* */
+    /** ********** Common methods ********************* */
 
     @NotNull
     protected <T> AsyncRequestCallback<T> _callback(@NotNull final AsyncCallback<T> callback, @NotNull Unmarshallable<T> u) {

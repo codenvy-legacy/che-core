@@ -142,21 +142,31 @@ public class ProjectService extends Service {
     @GenerateLink(rel = Constants.LINK_REL_GET_PROJECTS)
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<ProjectReference> getProjects(@ApiParam("ID of workspace to get projects") @PathParam("ws-id") String workspace)
+    public List<ProjectDescriptor> getProjects(@ApiParam("ID of workspace to get projects")
+                                               @PathParam("ws-id") String workspace,
+                                               @ApiParam("Include project attributes")
+                                               @QueryParam("includeAttributes")
+                                               @DefaultValue("false") boolean includeAttributes)
             throws IOException, ServerException, ConflictException, ForbiddenException, NotFoundException {
         final List<Project> projects = projectManager.getProjects(workspace);
 
-        final List<ProjectReference> projectReferences = new ArrayList<>(projects.size());
+        final List<ProjectDescriptor> projectReferences = new ArrayList<>(projects.size());
 
         for (Project project : projects) {
             try {
-                projectReferences.add(DtoConverter.toProjectReference(project, getServiceContext().getServiceUriBuilder()));
+                projectReferences.add(DtoConverter.toProjectDescriptor(project,
+                                                                       getServiceContext().getServiceUriBuilder(),
+                                                                       projectManager.getProjectTypeRegistry(),
+                                                                       workspace));
             } catch (RuntimeException e) {
                 // Ignore known error for single project.
                 // In result we won't have them in explorer tree but at least 'bad' projects won't prevent to show 'good' projects.
                 LOG.warn(e.getMessage(), e);
                 NotValidProject notValidProject = new NotValidProject(project.getBaseFolder(), projectManager);
-                projectReferences.add(DtoConverter.toProjectReference(notValidProject, getServiceContext().getServiceUriBuilder()));
+                projectReferences.add(DtoConverter.toProjectDescriptor(notValidProject,
+                                                                       getServiceContext().getServiceUriBuilder(),
+                                                                       projectManager.getProjectTypeRegistry(),
+                                                                       workspace));
             }
         }
 
@@ -167,7 +177,10 @@ public class ProjectService extends Service {
                 final FolderEntry folderEntry = (FolderEntry)child;
                 if (!projectManager.isProjectFolder(folderEntry)) {
                     NotValidProject notValidProject = new NotValidProject(folderEntry, projectManager);
-                    projectReferences.add(DtoConverter.toProjectReference(notValidProject, getServiceContext().getServiceUriBuilder()));
+                    projectReferences.add(DtoConverter.toProjectDescriptor(notValidProject,
+                                                                           getServiceContext().getServiceUriBuilder(),
+                                                                           projectManager.getProjectTypeRegistry(),
+                                                                           workspace));
                 }
             }
         }

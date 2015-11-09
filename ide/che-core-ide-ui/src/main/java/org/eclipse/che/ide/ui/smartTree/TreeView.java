@@ -42,12 +42,12 @@ public class TreeView {
 
     public void collapse(NodeDescriptor node) {
         getDescendantsContainer(node).getStyle().setDisplay(Style.Display.NONE);
-        tree.refresh(node.getNode());
+        onJointChange(node, tree.getJoint(node.getNode()));
     }
 
     public void expand(NodeDescriptor node) {
         getDescendantsContainer(node).getStyle().setDisplay(Style.Display.BLOCK);
-        tree.refresh(node.getNode());
+        onJointChange(node, tree.getJoint(node.getNode()));
     }
 
     /**
@@ -185,6 +185,20 @@ public class TreeView {
         Element nodeElement = getNodeContainer(node);
 
         nodeElement.getStyle().setPaddingLeft(newDepth * getIndenting(node), Style.Unit.PX);
+    }
+
+    public void onElementChanged(NodeDescriptor node, Element element) {
+        Element el = getRootContainer(node).getFirstChildElement();
+
+        if (el == null) {
+            return;
+        }
+        el.removeFromParent();
+        getRootContainer(node).insertFirst(element.getFirstChild());
+        node.setNodeContainerElement(null);
+        node.setJointContainerElement(null);
+
+        onSelectChange(node.getNode(), tree.getSelectionModel().isSelected(node.getNode()));
     }
 
     public void onJointChange(NodeDescriptor node, Tree.Joint joint) {

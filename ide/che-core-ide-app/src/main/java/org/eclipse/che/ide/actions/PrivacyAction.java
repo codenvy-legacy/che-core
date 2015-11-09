@@ -93,6 +93,7 @@ public class PrivacyAction extends Action implements CustomComponentAction {
         if (project == null) {
             e.getPresentation().setVisible(false);
         } else {
+            e.getPresentation().setVisible(true);
             final ProjectDescriptor projectDescriptor = project.getProjectDescription();
             if (!projectDescriptor.getVisibility().equals(previousVisibility)) {
                 final boolean isPrivate = "private".equals(projectDescriptor.getVisibility());

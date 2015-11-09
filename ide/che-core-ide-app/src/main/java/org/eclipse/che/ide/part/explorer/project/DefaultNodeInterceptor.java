@@ -20,19 +20,23 @@ import org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor;
 import java.util.List;
 
 /**
- * //
+ * Default implementation of node interceptor that do nothing.
+ * Just need to proper initialization of ide components at startup.
  *
  * @author Vitalii Parfonov
+ * @author Vlad Zhukovskyi
  */
 @Singleton
 public class DefaultNodeInterceptor implements NodeInterceptor {
+    /** {@inheritDoc} */
     @Override
     public Promise<List<Node>> intercept(Node parent, List<Node> children) {
         return Promises.resolve(children);
     }
 
+    /** {@inheritDoc} */
     @Override
-    public Integer weightOrder() {
-        return 0;
+    public int getPriority() {
+        return MAX_PRIORITY;
     }
 }

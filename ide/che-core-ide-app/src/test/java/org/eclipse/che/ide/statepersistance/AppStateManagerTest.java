@@ -187,24 +187,4 @@ public class AppStateManagerTest {
 
         verify(actionManager).performActions(Matchers.<List<Pair<Action, ActionEvent>>>anyObject(), eq(false));
     }
-
-    @Test
-    public void appSateShouldBeStoredWhenWeCloseWindow() {
-        WindowActionEvent windowActionEvent = mock(WindowActionEvent.class);
-
-        when(appContext.getOpenedProjects()).thenReturn(Arrays.asList(currentProject));
-        when(dtoFactory.createDto(ProjectState.class)).thenReturn(projectState);
-
-        appStateManager.onWindowClosing(windowActionEvent);
-
-        verify(persistenceComponent).getActions(anyString());
-
-        verify(dtoFactory).createDto(ProjectState.class);
-        verify(appState).getProjects();
-
-        verify(dtoFactory).toJson(appState);
-
-        verify(preferencesManager).setValue(eq(PREFERENCE_PROPERTY_NAME), anyString());
-        verify(preferencesManager).flushPreferences(Matchers.<AsyncCallback<Map<String, String>>>anyObject());
-    }
 }

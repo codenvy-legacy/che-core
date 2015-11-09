@@ -116,7 +116,7 @@ public abstract class AbstractPresentationRenderer<N extends Node> implements Pr
     public Element getPresentableTextContainer(Element content) {
         DivElement divElement = Document.get().createDivElement();
         divElement.setClassName(treeStyles.styles().presentableTextContainer());
-        divElement.setInnerHTML(content != null ? content.getInnerHTML() : "");
+        divElement.appendChild(content);
         return divElement;
     }
 
@@ -125,7 +125,7 @@ public abstract class AbstractPresentationRenderer<N extends Node> implements Pr
     public Element getInfoTextContainer(Element content) {
         DivElement divElement = Document.get().createDivElement();
         divElement.setClassName(treeStyles.styles().infoTextContainer());
-        divElement.setInnerHTML(content != null ? content.getInnerHTML() : "");
+        divElement.appendChild(content);
         return divElement;
     }
 

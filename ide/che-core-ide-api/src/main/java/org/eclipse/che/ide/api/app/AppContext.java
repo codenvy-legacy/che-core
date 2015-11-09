@@ -12,12 +12,9 @@ package org.eclipse.che.ide.api.app;
 
 
 import org.eclipse.che.api.factory.shared.dto.Factory;
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 
 import javax.inject.Singleton;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Describes current state of application.
@@ -28,17 +25,12 @@ import java.util.List;
 @Singleton
 public class AppContext {
 
-    private final List<ProjectDescriptor> openedProjects;
-
     private UsersWorkspaceDto workspace;
     private CurrentProject    currentProject;
     private CurrentUser       currentUser;
     private Factory           factory;
     private String            devMachineId;
-
-    public AppContext() {
-        openedProjects = new ArrayList<>();
-    }
+    private String            projectsRoot;
 
     public UsersWorkspaceDto getWorkspace() {
         return workspace;
@@ -107,28 +99,11 @@ public class AppContext {
         this.factory = factory;
     }
 
-    /**
-     * Adds passed project to list of opened projects
-     *
-     * @param descriptor
-     *         project descriptor which will be added
-     */
-    public void addOpenedProject(ProjectDescriptor descriptor) {
-        openedProjects.add(descriptor);
+    public String getProjectsRoot() {
+        return projectsRoot;
     }
 
-    /**
-     * Removes passed project from list of opened projects
-     *
-     * @param descriptor
-     *         project descriptor which will be removed
-     */
-    public void removeOpenedProject(ProjectDescriptor descriptor) {
-        openedProjects.remove(descriptor);
-    }
-
-    /** Returns list of opened projects. */
-    public List<ProjectDescriptor> getOpenedProjects() {
-        return openedProjects;
+    public void setProjectsRoot(String projectsRoot) {
+        this.projectsRoot = projectsRoot;
     }
 }

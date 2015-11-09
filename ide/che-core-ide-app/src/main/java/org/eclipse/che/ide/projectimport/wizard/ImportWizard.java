@@ -120,8 +120,8 @@ public class ImportWizard extends AbstractWizard<ImportProject> {
             @Override
             protected void onSuccess(final ImportResponse result) {
                 importProjectNotificationSubscriber.onSuccess();
+                eventBus.fireEvent(new CreateProjectEvent(result.getProjectDescriptor()));
                 callback.onCompleted();
-                createProject(result.getProjectDescriptor());
             }
 
             @Override
@@ -137,14 +137,6 @@ public class ImportWizard extends AbstractWizard<ImportProject> {
                 callback.onFailure(new Exception(errorMessage));
             }
         });
-    }
-
-    private void createProject(ProjectDescriptor project) {
-        eventBus.fireEvent(new CreateProjectEvent(project));
-
-        if (!project.getProblems().isEmpty()) {
-            eventBus.fireEvent(new ConfigureProjectEvent(project));
-        }
     }
 
     private String getImportErrorMessage(Throwable exception) {

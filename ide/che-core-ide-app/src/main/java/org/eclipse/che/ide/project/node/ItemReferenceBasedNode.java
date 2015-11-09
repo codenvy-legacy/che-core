@@ -68,13 +68,16 @@ public abstract class ItemReferenceBasedNode extends ResourceBasedNode<ItemRefer
     @NotNull
     @Override
     protected Promise<List<Node>> getChildrenImpl() {
-        return nodeManager.getChildren(getData(), getProjectDescriptor(), getSettings());
+        return nodeManager.getChildren(getStorablePath(), getProjectDescriptor(), getSettings());
     }
 
     @NotNull
     @Override
     public String getStorablePath() {
-        return getData().getPath();
-    }
+        if (getParent() == null || !(getParent() instanceof HasStorablePath)) {
+            return getData().getPath();
+        }
 
+        return ((HasStorablePath)getParent()).getStorablePath() + "/" + getData().getName();
+    }
 }

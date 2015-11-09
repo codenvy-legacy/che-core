@@ -38,7 +38,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void getProjects(AsyncRequestCallback<List<ProjectReference>> callback);
+    void getProjects(boolean includeAttributes, AsyncRequestCallback<List<ProjectDescriptor>> callback);
 
     /**
      * Get all projects in specific workspace.

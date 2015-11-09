@@ -16,6 +16,8 @@ import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
+import org.eclipse.che.api.promises.client.Function;
+import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper.RequestCall;
@@ -26,6 +28,8 @@ import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 
 import javax.validation.constraints.NotNull;
+
+import static org.eclipse.che.api.promises.client.callback.PromiseHelper.*;
 
 /**
  * @author Vlad Zhukovskiy
@@ -60,30 +64,19 @@ public class ItemReferenceProcessor extends AbstractResourceProcessor<ItemRefere
 
     @Override
     public Promise<ItemReference> rename(@Nullable final HasStorablePath parent, final @NotNull HasDataObject<ItemReference> node, final @NotNull String newName) {
-        return AsyncPromiseHelper.createFromAsyncRequest(new RequestCall<ItemReference>() {
+
+        return newPromise(new RequestCall<Void>() {
             @Override
-            public void makeCall(final AsyncCallback<ItemReference> callback) {
-                projectService.rename(node.getData().getPath(), newName, null, new AsyncRequestCallback<Void>() {
+            public void makeCall(AsyncCallback<Void> callback) {
+                projectService.rename(parent.getStorablePath() + "/" + node.getData().getName(), newName, null, newCallback(callback));
+            }
+        }).thenPromise(new Function<Void, Promise<ItemReference>>() {
+            @Override
+            public Promise<ItemReference> apply(Void arg) throws FunctionException {
+                return newPromise(new RequestCall<ItemReference>() {
                     @Override
-                    protected void onSuccess(Void result) {
-                        String newPath = parent.getStorablePath() + "/" + newName;
-                        projectService.getItem(newPath, new AsyncRequestCallback<ItemReference>(
-                                unmarshallerFactory.newUnmarshaller(ItemReference.class)) {
-                            @Override
-                            protected void onSuccess(ItemReference result) {
-                                callback.onSuccess(result);
-                            }
-
-                            @Override
-                            protected void onFailure(Throwable exception) {
-                                callback.onFailure(exception);
-                            }
-                        });
-                    }
-
-                    @Override
-                    protected void onFailure(Throwable exception) {
-                        callback.onFailure(exception);
+                    public void makeCall(AsyncCallback<ItemReference> callback) {
+                        projectService.getItem(parent.getStorablePath() + "/" + newName, newCallback(callback, unmarshallerFactory.newUnmarshaller(ItemReference.class)));
                     }
                 });
             }

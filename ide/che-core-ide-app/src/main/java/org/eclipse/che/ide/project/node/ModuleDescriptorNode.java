@@ -55,6 +55,7 @@ public class ModuleDescriptorNode extends ResourceBasedNode<ProjectDescriptor> i
     public void updatePresentation(@NotNull NodePresentation presentation) {
         presentation.setPresentableText(getData().getName());
         presentation.setPresentableIcon(nodeManager.getNodesResources().moduleFolder());
+        presentation.setPresentableTextCss("font-weight:bold");
     }
 
     @NotNull
@@ -83,7 +84,11 @@ public class ModuleDescriptorNode extends ResourceBasedNode<ProjectDescriptor> i
     @NotNull
     @Override
     public String getStorablePath() {
-        return getData().getPath();
+        if (getParent() == null || !(getParent() instanceof HasStorablePath)) {
+            return getData().getPath();
+        }
+
+        return ((HasStorablePath)getParent()).getStorablePath() + "/" + getData().getName();
     }
 
     @Override

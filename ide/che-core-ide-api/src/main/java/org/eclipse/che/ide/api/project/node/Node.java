@@ -93,5 +93,10 @@ public interface Node {
      */
     boolean isLeaf();
 
+    /**
+     * Indicate that node support "Go Into" mode.
+     *
+     * @return true if support
+     */
     boolean supportGoInto();
 }
