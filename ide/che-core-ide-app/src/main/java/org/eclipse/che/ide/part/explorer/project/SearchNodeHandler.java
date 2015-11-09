@@ -258,6 +258,10 @@ public class SearchNodeHandler implements ExpandNodeHandler, BeforeExpandNodeHan
                 continue;
             }
 
+            if (!rootPath.endsWith("/")) {
+                rootPath = rootPath + "/";
+            }
+
             if (!path.getStorablePath().startsWith(rootPath)) {
                 continue;
             }
