@@ -294,7 +294,7 @@ public class NodeManager {
                 final NodeSettings settings = nodeSettingsProvider.getSettings();
 
                 return Lists.transform(projects, new com.google.common.base.Function<ProjectDescriptor, Node>() {
-                    @javax.annotation.Nullable
+                    @org.eclipse.che.commons.annotation.Nullable
                     @Override
                     public Node apply(@Nullable ProjectDescriptor project) {
                         return nodeFactory.newProjectDescriptorNode(project, settings == null ? NodeSettings.DEFAULT_SETTINGS : settings);
