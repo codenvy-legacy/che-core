@@ -375,8 +375,8 @@ public class RunQueueTest {
         doNothing().when(runQueue).checkResources(eq(workspace), any(RunRequest.class));
 
         ItemReference recipe = dto(ItemReference.class).withName("Dockerfile").withType("file");
-        String recipeUrl = String.format("http://localhost:8080/api/project/%s/.codenvy/runners/environments/%s", wsId,
-                                         envName);
+        String recipeUrl = String.format("http://localhost:8080/api/project/%s/%s/%s", wsId,
+                org.eclipse.che.api.project.server.Constants.CODENVY_RUNNER_ENVIRONMENTS_DIR, envName);
         recipe.getLinks()
               .add(dto(Link.class).withRel(org.eclipse.che.api.project.server.Constants.LINK_REL_GET_CONTENT).withHref(recipeUrl));
         doReturn(Arrays.asList(recipe)).when(runQueue).getProjectRunnerRecipes(eq(project), eq(envName));

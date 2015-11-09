@@ -10,11 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.api.git;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.PostConstruct;
-import javax.inject.Singleton;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -25,6 +20,13 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Singleton;
+
+import org.eclipse.che.api.project.server.Constants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Checks Git configuration to ensure properly work Git-extension in Codenvy.
@@ -55,9 +57,9 @@ public class GitConfigurationChecker {
         GLOBAL_GITCONFIG_FILE_PATH = Paths.get(System.getProperty("user.home") + "/.gitconfig");
         DEFAULT_GITIGNORE_FILE_PATH = Paths.get(System.getProperty("user.home") + "/.gitignore_codenvy");
 
-        DEPRECATED_GITIGNORE_PATTERNS.add(".codenvy/");
+        DEPRECATED_GITIGNORE_PATTERNS.add(Constants.CODENVY_DIR + "/");
 
-        GITIGNORE_PATTERNS.add(".codenvy/misc.xml");
+        GITIGNORE_PATTERNS.add(Constants.CODENVY_MISC_FILE_RELATIVE_PATH);
         GITIGNORE_PATTERNS.add(".vfs/");
     }
 
@@ -66,9 +68,9 @@ public class GitConfigurationChecker {
         GLOBAL_GITCONFIG_FILE_PATH = globalGitconfigFilePath;
         DEFAULT_GITIGNORE_FILE_PATH = gitIgnoreFilePath;
 
-        DEPRECATED_GITIGNORE_PATTERNS.add(".codenvy/");
+        DEPRECATED_GITIGNORE_PATTERNS.add(Constants.CODENVY_DIR + "/");
 
-        GITIGNORE_PATTERNS.add(".codenvy/misc.xml");
+        GITIGNORE_PATTERNS.add(Constants.CODENVY_MISC_FILE_RELATIVE_PATH);
         GITIGNORE_PATTERNS.add(".vfs/");
     }
 

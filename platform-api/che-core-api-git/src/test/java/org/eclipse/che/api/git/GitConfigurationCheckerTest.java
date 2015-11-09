@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.git;
 
+import org.eclipse.che.api.project.server.Constants;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,7 +29,7 @@ import java.nio.file.Paths;
 public class GitConfigurationCheckerTest {
     private static final String GITIGNORE_FILE_CONTENT = "\n"
                                                          + "# Codenvy files\n"
-                                                         + ".codenvy/misc.xml\n"
+                                                         + Constants.CODENVY_MISC_FILE_RELATIVE_PATH + "\n"
                                                          + ".vfs/\n";
     private        GitConfigurationChecker checker;
     private static String                  excludesfilePropertyContent;
