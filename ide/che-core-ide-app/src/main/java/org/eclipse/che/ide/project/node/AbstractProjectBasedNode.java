@@ -46,11 +46,22 @@ public abstract class AbstractProjectBasedNode<DataObject> extends AbstractTreeN
     @NotNull
     @Override
     public ProjectDescriptor getProjectDescriptor() {
+        if (getParent() != null
+            && getParent() instanceof HasProjectDescriptor
+            && ((HasProjectDescriptor)getParent()).getProjectDescriptor().equals(projectDescriptor)) {
+            return ((HasProjectDescriptor)getParent()).getProjectDescriptor();
+        }
+
         return projectDescriptor;
     }
 
     @Override
     public void setProjectDescriptor(@NotNull ProjectDescriptor projectDescriptor) {
+        if (getParent() != null && getParent() instanceof HasProjectDescriptor) {
+            ((HasProjectDescriptor)getParent()).setProjectDescriptor(projectDescriptor);
+            return;
+        }
+
         this.projectDescriptor = projectDescriptor;
     }
 

@@ -130,9 +130,7 @@ public class AppStateManager implements WindowActionHandler,
 
     @Override
     public void onWindowClosing(WindowActionEvent event) {
-        for (ProjectDescriptor openedProject : appContext.getOpenedProjects()) {
-            persistCurrentProjectState(openedProject);
-        }
+
     }
 
     private void persistCurrentProjectState(ProjectDescriptor projectDescriptor) {

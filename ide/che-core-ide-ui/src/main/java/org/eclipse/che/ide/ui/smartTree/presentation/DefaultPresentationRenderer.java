@@ -73,6 +73,7 @@ public class DefaultPresentationRenderer<N extends Node> extends AbstractPresent
         SpanElement textElement = Document.get().createSpanElement();
 
         textElement.setInnerText(Strings.nullToEmpty(presentation.getPresentableText()));
+        textElement.setAttribute("style", presentation.getPresentableTextCss());
 
         //TODO support text colorization
 
@@ -97,6 +98,7 @@ public class DefaultPresentationRenderer<N extends Node> extends AbstractPresent
         }
 
         textElement.setInnerText(sb.toString());
+        textElement.setAttribute("style", presentation.getInfoTextCss());
 
         //TODO support text colorization
 

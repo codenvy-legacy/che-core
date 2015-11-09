@@ -135,15 +135,7 @@ public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegat
         view.close();
         final ItemReference selectedItem = resultMap.get(view.getItemPath());
 
-        HasStorablePath selectedPath = new HasStorablePath() {
-            @NotNull
-            @Override
-            public String getStorablePath() {
-                return selectedItem.getPath();
-            }
-        };
-
-        projectExplorer.getNodeByPath(selectedPath)
+        projectExplorer.getNodeByPath(new HasStorablePath.StorablePath(selectedItem.getPath()))
                        .then(selectNode())
                        .then(openNode());
     }
@@ -173,8 +165,7 @@ public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegat
     }
 
     private void search(String fileName, final AsyncCallback<List<ItemReference>> callback) {
-        final String projectPath = appContext.getCurrentProject().getRootProject().getPath();
-        final String url = SEARCH_URL + projectPath + "/?name=" + URL.encodePathSegment(fileName);
+        final String url = SEARCH_URL + "/?name=" + URL.encodePathSegment(fileName);
         Message message = new MessageBuilder(GET, url).header(ACCEPT, APPLICATION_JSON).build();
         Unmarshallable<List<ItemReference>> unmarshaller = dtoUnmarshallerFactory.newWSListUnmarshaller(ItemReference.class);
         try {

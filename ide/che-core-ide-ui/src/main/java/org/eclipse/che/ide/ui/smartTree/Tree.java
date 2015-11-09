@@ -976,10 +976,6 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
         sinkEvents(Event.ONSCROLL | Event.ONCLICK | Event.ONDBLCLICK | Event.MOUSEEVENTS | Event.KEYEVENTS);
     }
 
-    private Element createNodesContainer() {
-        return getNodePresentationRenderer().getDescendantsContainer();
-    }
-
     public void setAllowTextSelection(boolean enable) {
         allowTextSelection = enable;
         if (isAttached()) {
@@ -1015,6 +1011,7 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
                     } else {
                         container.insertBefore(renderChild(child, parentDepth), container.getChild(index));
                     }
+                    scrollIntoView(child);
                 }
             } else {
                 redraw(parent);
@@ -1053,8 +1050,6 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
             NodeDescriptor pNodeDescriptor = findNode(parent);
             if (pNodeDescriptor != null && pNodeDescriptor.isExpanded() && nodeStorage.getChildCount(pNodeDescriptor.getNode()) == 0) {
                 setExpanded(pNodeDescriptor.getNode(), false);
-            } else if (pNodeDescriptor != null && nodeStorage.getChildCount(pNodeDescriptor.getNode()) == 0) {
-                refresh(parent);
             }
             moveFocus(nodeDescriptor.getRootContainer());
         }
@@ -1075,7 +1070,6 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
                 if (nodeDescriptor.getNode() != node) {
                     nodeDescriptor.setNode(node);
                 }
-                refresh(node);
             }
         }
     }
@@ -1084,19 +1078,17 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
         if (isOrWasAttached()) {
             NodeDescriptor nodeDescriptor = findNode(node);
             if (node != null && view.getRootContainer(nodeDescriptor) != null) {
-                view.onJointChange(nodeDescriptor, getJoint(node));
-                view.onInfoTextChange(nodeDescriptor, getUpdatedInfoText(node));
+                if (node instanceof HasPresentation) {
+                    ((HasPresentation)node).getPresentation(true);
+                    Element el = getNodePresentationRenderer().render(node,
+                                                                      nodeDescriptor.getDomId(),
+                                                                      getJoint(node),
+                                                                      nodeStorage.getDepth(node) - 1);
+
+                    view.onElementChanged(nodeDescriptor, el);
+                }
             }
         }
-    }
-
-    @Nullable
-    private String getUpdatedInfoText(Node node) {
-        if (node instanceof HasPresentation) {
-            return ((HasPresentation)node).getPresentation(false).getInfoText();
-        }
-
-        return null;
     }
 
     /**
@@ -1118,9 +1110,7 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
             if (autoSelect) {
                 Node child = nodeStorage.getChild(0);
                 if (child != null) {
-                    List<Node> selection = new ArrayList<>();
-                    selection.add(child);
-                    getSelectionModel().setSelection(selection);
+                    getSelectionModel().setSelection(Collections.singletonList(child));
                 }
             }
         } else {

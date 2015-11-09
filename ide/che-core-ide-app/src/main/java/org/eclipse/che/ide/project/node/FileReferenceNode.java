@@ -28,12 +28,14 @@ import org.eclipse.che.ide.api.project.node.settings.NodeSettings;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.project.node.icon.NodeIconProvider;
 import org.eclipse.che.ide.project.node.resource.ItemReferenceProcessor;
-import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.StringUnmarshaller;
 import org.eclipse.che.ide.ui.smartTree.presentation.NodePresentation;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.validation.constraints.NotNull;
+
+import static org.eclipse.che.api.promises.client.callback.PromiseHelper.newCallback;
+import static org.eclipse.che.api.promises.client.callback.PromiseHelper.newPromise;
 
 /**
  * @author Vlad Zhukovskiy
@@ -72,7 +74,7 @@ public class FileReferenceNode extends ItemReferenceBasedNode implements Virtual
     @NotNull
     @Override
     public String getPath() {
-        return getData().getPath();
+        return getStorablePath();
     }
 
     @Override
@@ -106,20 +108,10 @@ public class FileReferenceNode extends ItemReferenceBasedNode implements Virtual
 
     @Override
     public Promise<Void> updateContent(final String content) {
-        return AsyncPromiseHelper.createFromAsyncRequest(new AsyncPromiseHelper.RequestCall<Void>() {
+        return newPromise(new AsyncPromiseHelper.RequestCall<Void>() {
             @Override
-            public void makeCall(final AsyncCallback<Void> callback) {
-                nodeManager.projectService.updateFile(getStorablePath(), content, getMediaType(), new AsyncRequestCallback<Void>() {
-                    @Override
-                    protected void onSuccess(Void result) {
-                        callback.onSuccess(result);
-                    }
-
-                    @Override
-                    protected void onFailure(Throwable exception) {
-                        callback.onFailure(exception);
-                    }
-                });
+            public void makeCall(AsyncCallback<Void> callback) {
+                nodeManager.projectService.updateFile(getStorablePath(), content, getMediaType(), newCallback(callback));
             }
         });
     }
@@ -131,21 +123,10 @@ public class FileReferenceNode extends ItemReferenceBasedNode implements Virtual
 
     @Override
     public Promise<String> getContent() {
-        return AsyncPromiseHelper.createFromAsyncRequest(new AsyncPromiseHelper.RequestCall<String>() {
+        return newPromise(new AsyncPromiseHelper.RequestCall<String>() {
             @Override
-            public void makeCall(final AsyncCallback<String> callback) {
-                nodeManager.projectService.getFileContent(getPath(),
-                                                          new AsyncRequestCallback<String>(new StringUnmarshaller()) {
-                                                              @Override
-                                                              protected void onSuccess(String result) {
-                                                                  callback.onSuccess(result);
-                                                              }
-
-                                                              @Override
-                                                              protected void onFailure(Throwable exception) {
-                                                                  callback.onFailure(exception);
-                                                              }
-                                                          });
+            public void makeCall(AsyncCallback<String> callback) {
+                nodeManager.projectService.getFileContent(getStorablePath(), newCallback(callback, new StringUnmarshaller()));
             }
         });
     }

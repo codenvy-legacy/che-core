@@ -26,6 +26,21 @@ import java.util.List;
 public interface NodeInterceptor {
 
     /**
+     * The minimum priority that a interceptor can have.
+     */
+    int MIN_PRIORITY = 1;
+
+    /**
+     * The default priority that is assigned to a interceptor.
+     */
+    int NORM_PRIORITY = 5;
+
+    /**
+     * The maximum priority that a interceptor can have.
+     */
+    int MAX_PRIORITY = 10;
+
+    /**
      * Intercept nodes and perform operations with them, e.g. settings additional properties,
      * replace ones child with other, etc.
      *
@@ -37,5 +52,10 @@ public interface NodeInterceptor {
      */
     Promise<List<Node>> intercept(Node parent, List<Node> children);
 
-    Integer weightOrder(); //TODO temporary solution, we need to order interceptors
+    /**
+     * Priority of the run.
+     *
+     * @return priority for the interceptor in which it should be runned
+     */
+    int getPriority();
 }

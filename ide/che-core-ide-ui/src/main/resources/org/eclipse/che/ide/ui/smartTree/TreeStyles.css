@@ -78,23 +78,10 @@
     background-color: #defadc !important;
 }
 
-/*.loadIconContainer {*/
-    /*display: inline-block;*/
-/*}*/
-
-/*.loadIconContainer > svg {*/
-    /*float: right;*/
-    /*-webkit-filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.4));*/
-    /*padding-top: 2px;*/
-    /*padding-right: 2px;*/
-    /*fill: #dbdbdb;*/
-/*}*/
-
 .tree {
     display: inline-block;
     min-width: 100%;
     font-size: 0.85em;
-    font-weight: bold;
 }
 
 .loading {

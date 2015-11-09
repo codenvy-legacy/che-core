@@ -607,4 +607,22 @@ public interface CoreLocalizationConstant extends Messages {
 
     @Key("get.ws.error.dialog.content")
     String getWsErrorDialogContent(String reason);
+
+    @Key("project.explorer.project.configuration.failed")
+    String projectExplorerProjectConfigurationFailed();
+
+    @Key("project.explorer.project.update.failed")
+    String projectExplorerProjectUpdateFailed();
+
+    @Key("project.explorer.projects.load.failed")
+    String projectExplorerProjectsLoadFailed();
+
+    @Key("project.explorer.detected.unconfigured.project")
+    String projectExplorerDetectedUnconfiguredProject();
+
+    @Key("project.explorer.extension.server.stopped")
+    String projectExplorerExtensionServerStopped();
+
+    @Key("project.explorer.part.tooltip")
+    String projectExplorerPartTooltip();
 }

@@ -128,10 +128,12 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
                 }
             }
 
-            //Set joint element on the view
-            Promise<Void> promise = Promises.resolve(null);
-            List<Node> exist = tree.getNodeStorage().getChildren(event.getRequestedNode());
-            chainChildrenAndSetJointElement(promise, exist.listIterator());
+            //This method will be refactored with this issue https://jira.codenvycorp.com/browse/IDEX-3319
+            //So to reduce requests count was temporary disable inner checking of children to proper displaying ">" control of the node.
+//            Set joint element on the view
+//            Promise<Void> promise = Promises.resolve(null);
+//            List<Node> exist = tree.getNodeStorage().getChildren(event.getRequestedNode());
+//            chainChildrenAndSetJointElement(promise, exist.listIterator());
 
             //Iterate on nested descendants to make additional load request
             if (event.isReloadExpandedChild()) {
@@ -266,7 +268,7 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
             Collections.sort(this.nodeInterceptors, new Comparator<NodeInterceptor>() {
                 @Override
                 public int compare(NodeInterceptor o1, NodeInterceptor o2) {
-                    return o1.weightOrder().compareTo(o2.weightOrder());
+                    return o1.getPriority() - o2.getPriority();
                 }
             });
         }
@@ -313,6 +315,11 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
     }
 
     public boolean loadChildren(Node parent, boolean reloadExpandedChild) {
+        //we don't need to load children for leaf nodes
+        if (parent.isLeaf()) {
+            return false;
+        }
+
         if (childRequested.containsKey(parent)) {
             return false;
         }
@@ -424,6 +431,9 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
 
     private void iterate(final LinkedList<NodeInterceptor> deque, final Node parent, final List<Node> children) {
         if (deque.isEmpty()) {
+            for (Node child : children) {
+                child.setParent(parent);
+            }
             onLoadSuccess(parent, children);
             return;
         }
@@ -502,6 +512,15 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
      */
     public void setUseCaching(boolean useCaching) {
         this.useCaching = useCaching;
+    }
+
+    /**
+     * Return list of node interceptors.
+     *
+     * @return node interceptors list
+     */
+    public List<NodeInterceptor> getNodeInterceptors() {
+        return nodeInterceptors;
     }
 
     /**

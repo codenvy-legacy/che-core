@@ -271,22 +271,19 @@ public class ProjectServiceTest {
         ContainerResponse response =
                 launcher.service(GET, "http://localhost:8080/api/project/my_ws", "http://localhost:8080/api", null, null, null);
         assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
-        List<ProjectReference> result = (List<ProjectReference>)response.getEntity();
+        List<ProjectDescriptor> result = (List<ProjectDescriptor>)response.getEntity();
         assertNotNull(result);
         assertEquals(result.size(), 2);
-        ProjectReference projectReference = result.get(0);
-        assertEquals(projectReference.getName(), "my_project");
-        assertEquals(projectReference.getUrl(), String.format("http://localhost:8080/api/project/%s/my_project", workspace));
-        assertEquals(projectReference.getDescription(), "my test project");
-        assertEquals(projectReference.getWorkspaceId(), workspace);
-        assertEquals(projectReference.getVisibility(), "public");
+        ProjectDescriptor projectDescriptor = result.get(0);
+        assertEquals(projectDescriptor.getName(), "my_project");
+        assertEquals(projectDescriptor.getDescription(), "my test project");
+        assertEquals(projectDescriptor.getWorkspaceId(), workspace);
+        assertEquals(projectDescriptor.getVisibility(), "public");
 
-        assertEquals(projectReference.getType(), "my_project_type");
-        //Assert.assertEquals(projectReference.getTypeName(), "my project type");
+        assertEquals(projectDescriptor.getType(), "my_project_type");
 
-        ProjectReference badProject = result.get(1);
+        ProjectDescriptor badProject = result.get(1);
         assertEquals(badProject.getName(), "not_project");
-        assertEquals(badProject.getUrl(), String.format("http://localhost:8080/api/project/%s/not_project", workspace));
         assertEquals(badProject.getWorkspaceId(), workspace);
         assertEquals(badProject.getVisibility(), "public");
         assertNotNull(badProject.getProblems());

@@ -784,4 +784,15 @@ public class TreeNodeStorage implements StoreHandlers.HasStoreHandlers {
         }
     }
 
+    public boolean reIndexNode(String oldId, Node node) {
+        if (!idToNodeMap.containsKey(oldId)) {
+            return false;
+        }
+
+        NodeDescriptor descriptor = idToNodeMap.remove(oldId);
+        idToNodeMap.put(getKeyProvider().getKey(node), descriptor);
+
+        return true;
+    }
+
 }

@@ -56,7 +56,6 @@ public class TreeSelectionModel implements HasSelectionHandlers<Node>, HasBefore
     private class TreeMouseHandler implements MouseDownHandler, ClickHandler {
         @Override
         public void onClick(ClickEvent event) {
-            onMouseClick(event);
         }
 
         @Override
@@ -785,5 +784,9 @@ public class TreeSelectionModel implements HasSelectionHandlers<Node>, HasBefore
             }
             fireSelectionChange();
         }
+    }
+
+    public List<Node> getSelectedNodes() {
+        return Collections.unmodifiableList(selectionStorage);
     }
 }

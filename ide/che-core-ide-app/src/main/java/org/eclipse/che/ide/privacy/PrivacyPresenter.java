@@ -12,20 +12,14 @@ package org.eclipse.che.ide.privacy;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.ide.actions.PrivacyAction;
-import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.DefaultActionGroup;
 import org.eclipse.che.ide.api.action.IdeActions;
-import org.eclipse.che.ide.api.action.Separator;
 import org.eclipse.che.ide.api.constraints.Constraints;
-import org.eclipse.che.ide.api.event.project.CloseCurrentProjectEvent;
-import org.eclipse.che.ide.api.event.project.CloseCurrentProjectHandler;
-import org.eclipse.che.ide.api.event.project.ProjectReadyEvent;
-import org.eclipse.che.ide.api.event.project.ProjectReadyHandler;
 
+import static org.eclipse.che.ide.api.action.Separator.getInstance;
 import static org.eclipse.che.ide.api.constraints.Anchor.AFTER;
 import static org.eclipse.che.ide.api.constraints.Anchor.BEFORE;
 import static org.eclipse.che.ide.api.constraints.Constraints.LAST;
@@ -37,59 +31,18 @@ import static org.eclipse.che.ide.api.constraints.Constraints.LAST;
  * @author Kevin Pollet
  */
 @Singleton
-public class PrivacyPresenter implements ProjectReadyHandler, CloseCurrentProjectHandler {
+public class PrivacyPresenter{
     private static final String PRIVACY_ACTION_ID = "privacy";
 
-    private final ActionManager      actionManager;
-    private final DefaultActionGroup rightMainMenuGroup;
-    private final PrivacyAction      privacyAction;
-
     @Inject
-    public PrivacyPresenter(ActionManager actionManager, PrivacyAction privacyAction, EventBus eventBus) {
-        this.actionManager = actionManager;
-        this.privacyAction = privacyAction;
-        this.rightMainMenuGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_RIGHT_MAIN_MENU);
+    public PrivacyPresenter(ActionManager actionManager, PrivacyAction privacyAction) {
+        DefaultActionGroup rightMainMenuGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_RIGHT_MAIN_MENU);
 
-        eventBus.addHandler(ProjectReadyEvent.TYPE, this);
-        eventBus.addHandler(CloseCurrentProjectEvent.TYPE, this);
-    }
-
-    @Override
-    public void onProjectReady(ProjectReadyEvent event) {
         actionManager.registerAction(PRIVACY_ACTION_ID, privacyAction);
 
+        rightMainMenuGroup.add(getInstance(), new Constraints(BEFORE, PRIVACY_ACTION_ID));
         rightMainMenuGroup.add(privacyAction, LAST);
-        rightMainMenuGroup.add(Separator.getInstance(), new Constraints(BEFORE, PRIVACY_ACTION_ID));
-        rightMainMenuGroup.add(Separator.getInstance(), new Constraints(AFTER, PRIVACY_ACTION_ID));
-    }
+        rightMainMenuGroup.add(getInstance(), new Constraints(AFTER, PRIVACY_ACTION_ID));
 
-    @Override
-    public void onCloseCurrentProject(CloseCurrentProjectEvent event) {
-        int index = 0;
-        boolean found = false;
-
-        final Action[] actions = rightMainMenuGroup.getChildActionsOrStubs();
-        for (Action oneAction : actions) {
-            if (oneAction.equals(privacyAction)) {
-                found = true;
-                break;
-            }
-            index++;
-        }
-
-        if (found) {
-            final Action previousAction = actions[index - 1];
-            if (previousAction instanceof Separator) {
-                rightMainMenuGroup.remove(previousAction);
-            }
-
-            actionManager.unregisterAction(PRIVACY_ACTION_ID);
-            rightMainMenuGroup.remove(actions[index]);
-
-            final Action nextAction = actions[index + 1];
-            if (previousAction instanceof Separator) {
-                rightMainMenuGroup.remove(nextAction);
-            }
-        }
     }
 }

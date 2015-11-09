@@ -220,6 +220,7 @@ public class SearchNodeHandler implements ExpandNodeHandler, BeforeExpandNodeHan
             String childPath = ((HasStorablePath)receivedNode).getStorablePath();
             if (path.getStorablePath().equals(childPath)) {
                 callback.onSuccess(receivedNode);
+                inSearchMode = false;
                 return;
             } else if (path.getStorablePath().startsWith(childPath)) {
                 tree.setExpanded(receivedNode, true);

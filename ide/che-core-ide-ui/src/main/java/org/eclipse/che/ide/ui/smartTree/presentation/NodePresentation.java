@@ -22,7 +22,9 @@ import org.vectomatic.dom.svg.ui.SVGResource;
  */
 public class NodePresentation {
     private String               presentableText;
+    private String               presentableTextCss;
     private String               infoText;
+    private String               infoTextCss;
     private Pair<String, String> infoTextWrapper;
     private SVGResource          presentableIcon;
     private Element              userElement;
@@ -76,5 +78,21 @@ public class NodePresentation {
 
     public void setUserElement(Element userElement) {
         this.userElement = userElement;
+    }
+
+    public String getPresentableTextCss() {
+        return presentableTextCss;
+    }
+
+    public void setPresentableTextCss(String presentableTextCss) {
+        this.presentableTextCss = presentableTextCss;
+    }
+
+    public String getInfoTextCss() {
+        return infoTextCss;
+    }
+
+    public void setInfoTextCss(String infoTextCss) {
+        this.infoTextCss = infoTextCss;
     }
 }

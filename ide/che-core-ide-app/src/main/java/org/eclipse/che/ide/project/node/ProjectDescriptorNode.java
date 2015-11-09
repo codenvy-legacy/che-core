@@ -10,19 +10,16 @@
  *******************************************************************************/
 package org.eclipse.che.ide.project.node;
 
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.SpanElement;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.api.promises.client.Operation;
-import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.commons.annotation.Nullable;
-import org.eclipse.che.ide.api.event.project.OpenProjectEvent;
-import org.eclipse.che.ide.api.project.node.HasAction;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
-import org.eclipse.che.ide.api.project.node.MutableNode;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.project.node.resource.DeleteProcessor;
 import org.eclipse.che.ide.api.project.node.resource.RenameProcessor;
@@ -36,11 +33,9 @@ import java.util.List;
 /**
  * @author Vlad Zhukovskiy
  */
-public class ProjectDescriptorNode extends ResourceBasedNode<ProjectDescriptor> implements HasStorablePath, MutableNode, HasAction {
+public class ProjectDescriptorNode extends ResourceBasedNode<ProjectDescriptor> implements HasStorablePath {
 
     private final ProjectDescriptorProcessor resourceProcessor;
-
-    private boolean leaf = true;
 
     @Inject
     public ProjectDescriptorNode(@Assisted ProjectDescriptor projectDescriptor,
@@ -63,6 +58,7 @@ public class ProjectDescriptorNode extends ResourceBasedNode<ProjectDescriptor> 
         presentation.setPresentableText(getData().getName());
         presentation.setPresentableIcon(isValid(getData()) ? nodeManager.getNodesResources().projectFolder()
                                                            : nodeManager.getNodesResources().notValidProjectFolder());
+        presentation.setPresentableTextCss("font-weight:bold");
     }
 
     private boolean isValid(ProjectDescriptor descriptor) {
@@ -77,7 +73,7 @@ public class ProjectDescriptorNode extends ResourceBasedNode<ProjectDescriptor> 
 
     @Override
     public boolean isLeaf() {
-        return leaf;
+        return false;
     }
 
     @Nullable
@@ -95,30 +91,15 @@ public class ProjectDescriptorNode extends ResourceBasedNode<ProjectDescriptor> 
     @NotNull
     @Override
     public String getStorablePath() {
-        return getData().getPath();
+        if (getParent() == null || !(getParent() instanceof HasStorablePath)) {
+            return getData().getPath();
+        }
+
+        return ((HasStorablePath)getParent()).getStorablePath() + "/" + getData().getName();
     }
 
     @Override
     public boolean supportGoInto() {
         return true;
-    }
-
-    @Override
-    public void setLeaf(boolean leaf) {
-        this.leaf = leaf;
-    }
-
-    @Override
-    public void actionPerformed() {
-        if (leaf) {
-            Promise<ProjectDescriptor> descriptorPromise = nodeManager.getProjectDescriptor(getData().getPath());
-
-            descriptorPromise.then(new Operation<ProjectDescriptor>() {
-                @Override
-                public void apply(ProjectDescriptor descriptor) throws OperationException {
-                    eventBus.fireEvent(new OpenProjectEvent(descriptor));
-                }
-            });
-        }
     }
 }
