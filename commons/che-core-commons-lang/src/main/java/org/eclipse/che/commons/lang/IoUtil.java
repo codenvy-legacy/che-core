@@ -461,21 +461,10 @@ public class IoUtil {
     }
 
     public static String countFileHash(File file, MessageDigest digest) throws IOException {
-        FileInputStream fis = null;
-        DigestInputStream dis = null;
         byte[] b = new byte[8192];
-        try {
-            fis = new FileInputStream(file);
-            dis = new DigestInputStream(fis, digest);
+        try (DigestInputStream dis = new DigestInputStream(new FileInputStream(file), digest)) {
             while (dis.read(b) != -1) ;
             return toHex(digest.digest());
-        } finally {
-            if (dis != null) {
-                dis.close();
-            }
-            if (fis != null) {
-                fis.close();
-            }
         }
     }
 
