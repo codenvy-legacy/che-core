@@ -85,12 +85,6 @@ public class EmbeddedTextEditorPresenterTest {
     @InjectMocks
     private EmbeddedTextEditorPresenter<EditorWidget> embeddedTextEditorPresenter;
 
-
-    /*
-     * Todo operations editorWidget.setFocus() and editorWidget.refresh() temporary situated inside Timer.
-     * That's why we ignore this test.
-     */
-    @Ignore
     @Test
     public void activateEditorIfEditorWidgetNotNull() throws EditorInitException {
         initializeAndInitEditor();
