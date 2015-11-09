@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.api.git;
 
-import org.eclipse.che.api.auth.shared.dto.Credentials;
 import org.eclipse.che.api.core.util.LineConsumerFactory;
 
 import java.io.File;
