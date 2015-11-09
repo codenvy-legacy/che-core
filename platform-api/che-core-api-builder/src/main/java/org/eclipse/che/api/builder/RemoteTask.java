@@ -22,6 +22,7 @@ import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.core.rest.HttpJsonHelper;
 import org.eclipse.che.api.core.rest.HttpOutputMessage;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
+import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -233,6 +234,10 @@ public class RemoteTask {
         conn.setConnectTimeout(60 * 1000);
         conn.setReadTimeout(60 * 1000);
         conn.setRequestMethod(HttpMethod.GET);
+        final EnvironmentContext context = EnvironmentContext.getCurrent();
+        if (context.getUser() != null && context.getUser().getToken() != null) {
+            conn.setRequestProperty(HttpHeaders.AUTHORIZATION, context.getUser().getToken());
+        }
         try {
             output.setStatus(conn.getResponseCode());
             final String contentType = conn.getContentType();

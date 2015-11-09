@@ -12,6 +12,7 @@ package org.eclipse.che.api.builder.internal;
 
 import org.eclipse.che.api.builder.dto.BaseBuilderRequest;
 import org.eclipse.che.api.core.util.ValueHolder;
+import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.json.JsonHelper;
 import org.eclipse.che.commons.json.JsonParseException;
 import org.eclipse.che.commons.lang.IoUtil;
@@ -219,6 +220,10 @@ public class SourcesManagerImpl implements SourcesManager {
             conn = (HttpURLConnection)new URL(downloadUrl).openConnection();
             conn.setConnectTimeout(CONNECT_TIMEOUT);
             conn.setReadTimeout(READ_TIMEOUT);
+            final EnvironmentContext context = EnvironmentContext.getCurrent();
+            if (context.getUser() != null && context.getUser().getToken() != null) {
+                conn.setRequestProperty(HttpHeaders.AUTHORIZATION, context.getUser().getToken());
+            }
             if (!md5sums.isEmpty()) {
                 conn.setRequestMethod(HttpMethod.POST);
                 conn.setRequestProperty("Content-type", MediaType.TEXT_PLAIN);
