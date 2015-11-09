@@ -33,7 +33,7 @@ public interface WorkspaceHooks {
      */
     WorkspaceHooks NOOP_WORKSPACE_HOOKS = new WorkspaceHooks() {
         @Override
-        public void beforeStart(UsersWorkspace workspace, String accountId) throws NotFoundException, ServerException {}
+        public void beforeStart(UsersWorkspace workspace, String evnName, String accountId) throws NotFoundException, ServerException {}
 
         @Override
         public void beforeCreate(UsersWorkspace workspace, String accountId) throws NotFoundException, ServerException {}
@@ -52,16 +52,20 @@ public interface WorkspaceHooks {
      *         workspace which is going to be started
      * @param accountId
      *         account identifier indicates the account which should be used for runtime workspace
+     * @param envName
+     *         the name of environment which is going to be started
      * @throws NotFoundException
      *         when any not found error occurs
      * @throws ForbiddenException
      *         when user doesn't have access to start workspace in certain account
      * @throws ServerException
      *         when any other error occurs
+     * @throws NullPointerException
+     *         when either {@code workspace} or {@code envName} is null
      */
-    void beforeStart(@NotNull UsersWorkspace workspace, @Nullable String accountId) throws NotFoundException,
-                                                                                           ForbiddenException,
-                                                                                           ServerException;
+    void beforeStart(@NotNull UsersWorkspace workspace, @NotNull String envName, @Nullable String accountId) throws NotFoundException,
+                                                                                                                    ForbiddenException,
+                                                                                                                    ServerException;
 
     /**
      * Called before creating workspace.

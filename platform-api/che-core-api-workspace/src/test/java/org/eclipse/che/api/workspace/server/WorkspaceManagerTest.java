@@ -142,8 +142,8 @@ public class WorkspaceManagerTest {
         final UsersWorkspace workspace2 = manager.startWorkspaceById(workspace.getId(), null, null);
 
         assertEquals(workspace2.getStatus(), STARTING);
-        verify(manager).startWorkspaceAsync(workspace, null);
-        verify(workspaceHooks).beforeStart(workspace, null);
+        verify(manager).startWorkspaceAsync(workspace, workspace.getDefaultEnvName());
+        verify(workspaceHooks).beforeStart(workspace, workspace.getDefaultEnvName(), null);
     }
 
     @Test(expectedExceptions = ConflictException.class,
@@ -167,7 +167,7 @@ public class WorkspaceManagerTest {
         final RuntimeWorkspaceImpl workspace2 = manager.startTemporaryWorkspace(config, "account");
 
         assertEquals(runtime, workspace2);
-        verify(workspaceHooks).beforeStart(workspace, "account");
+        verify(workspaceHooks).beforeStart(workspace, workspace.getDefaultEnvName(), "account");
     }
 
     @Test

@@ -40,7 +40,6 @@ import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.RUNNING;
@@ -92,12 +91,12 @@ public class RuntimeWorkspaceRegistry {
      * @param usersWorkspace
      *         workspace which should be started
      * @param envName
-     *         name of environment or null when default environment should be used
+     *         name of environment
      * @return runtime view of {@code usersWorkspace} with status {@link WorkspaceStatus#RUNNING}
      * @throws ConflictException
      *         when workspace is already running or any other conflict error occurs during environment start
      * @throws BadRequestException
-     *         when active environment is in inconsistent state
+     *         when active environment is in inconsistent state or {@code envName} is null
      * @throws NotFoundException
      *         whe any not found exception occurs during environment start
      * @throws ServerException
@@ -108,11 +107,14 @@ public class RuntimeWorkspaceRegistry {
                                                                                             ServerException,
                                                                                             BadRequestException,
                                                                                             NotFoundException {
+        if (envName == null) {
+            throw new BadRequestException("Required non-null environment name");
+        }
         checkIsNotStopped();
         // Prepare runtime workspace for start
         RuntimeWorkspaceImpl newRuntime = RuntimeWorkspaceImpl.builder()
                                                               .fromWorkspace(usersWorkspace)
-                                                              .setActiveEnvName(firstNonNull(envName, usersWorkspace.getDefaultEnvName()))
+                                                              .setActiveEnvName(envName)
                                                               .setStatus(STARTING)
                                                               .build();
         // Save workspace with 'STARTING' status
