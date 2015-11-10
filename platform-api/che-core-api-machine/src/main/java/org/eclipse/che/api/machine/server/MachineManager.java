@@ -573,7 +573,6 @@ public class MachineManager {
                                              .withProcessId(pid)
                                              .withError(error.getLocalizedMessage()));
 
-                LOG.warn(error.getMessage());
                 try {
                     processLogger.writeLine(String.format("[ERROR] %s", error.getMessage()));
                 } catch (IOException ignored) {
