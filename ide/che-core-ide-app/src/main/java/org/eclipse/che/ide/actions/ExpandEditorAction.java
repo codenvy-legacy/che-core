@@ -77,9 +77,7 @@ public class ExpandEditorAction extends Action implements CustomComponentAction 
 
 
     @Override
-    public void actionPerformed(ActionEvent e) {
-        eventLogger.log(this);
-    }
+    public void actionPerformed(ActionEvent e) {}
 
     @Override
     public Widget createCustomComponent(Presentation presentation) {
@@ -117,6 +115,7 @@ public class ExpandEditorAction extends Action implements CustomComponentAction 
      * Handles the clicking on Expand button and expands or restores the editor.
      */
     public void expandEditor() {
+        eventLogger.log(this);
         if (expanded) {
             workBenchPresenter.restoreEditorPart();
             for (SVGToggleButton toggleButton : toggleButtons) {
