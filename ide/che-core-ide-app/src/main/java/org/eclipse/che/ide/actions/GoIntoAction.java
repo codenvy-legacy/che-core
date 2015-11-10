@@ -59,6 +59,6 @@ public class GoIntoAction extends ProjectAction {
     }
 
     private boolean isNodeSupportGoInto(Object node) {
-        return node != null && node instanceof Node && ((Node)node).getParent() != null && ((Node)node).supportGoInto();
+        return node instanceof Node && ((Node)node).supportGoInto();
     }
 }

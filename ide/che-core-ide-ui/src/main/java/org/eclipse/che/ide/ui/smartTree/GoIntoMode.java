@@ -114,7 +114,11 @@ public class GoIntoMode implements HasGoIntoStateHandlers {
         }
 
         //then re-add our go into node
-        tree.getNodeStorage().add(goIntoNode.getParent(), goIntoNode);
+        Node parent = goIntoNode.getParent();
+        if (parent != null) {
+            tree.getNodeStorage().add(parent, goIntoNode);
+        }
+
         tree.scrollIntoView(goIntoNode);
         tree.getSelectionModel().select(goIntoNode, false);
 
