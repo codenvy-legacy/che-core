@@ -222,6 +222,14 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
                             @Override
                             public void onClick(ClickEvent event) {
                                 final String sourcePath = editorAgentProvider.get().getActiveEditor().getEditorInput().getFile().getPath();
+
+                                //if we request scroll to file that may be outside of go into flow
+                                if (tree.getGoIntoMode().isActivated()
+                                    && tree.getGoIntoMode().getLastNode() instanceof HasStorablePath
+                                    && !sourcePath.startsWith(((HasStorablePath)tree.getGoIntoMode().getLastNode()).getStorablePath())) {
+                                    tree.getGoIntoMode().reset();
+                                }
+
                                 scrollFromSource(new HasStorablePath.StorablePath(sourcePath));
                             }
                         });
