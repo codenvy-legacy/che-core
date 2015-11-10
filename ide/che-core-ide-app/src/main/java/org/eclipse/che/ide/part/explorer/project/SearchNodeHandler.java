@@ -138,7 +138,7 @@ public class SearchNodeHandler implements ExpandNodeHandler, BeforeExpandNodeHan
                     callback.onSuccess(child);
                     inSearchMode = false;
                     return;
-                } else if (path.getStorablePath().startsWith(childPath)) {
+                } else if (path.getStorablePath().startsWith(childPath + (child.isLeaf() ? "" : "/"))) {
                     event.setCancelled(true); //disallow to continue expanding current node
                     tree.setExpanded(child, true);
                     return;
@@ -168,7 +168,7 @@ public class SearchNodeHandler implements ExpandNodeHandler, BeforeExpandNodeHan
                 callback.onSuccess(child);
                 inSearchMode = false;
                 return;
-            } else if (path.getStorablePath().startsWith(childPath)) {
+            } else if (path.getStorablePath().startsWith(childPath + (child.isLeaf() ? "" : "/"))) {
                 tree.setExpanded(child, true);
                 return;
             }
@@ -197,7 +197,7 @@ public class SearchNodeHandler implements ExpandNodeHandler, BeforeExpandNodeHan
                 callback.onSuccess(node);
                 inSearchMode = false;
                 break;
-            } else if (path.getStorablePath().startsWith(childPath)) {
+            } else if (path.getStorablePath().startsWith(childPath + (node.isLeaf() ? "" : "/"))) {
                 tree.setExpanded(node, true);
                 return;
             }
@@ -222,7 +222,7 @@ public class SearchNodeHandler implements ExpandNodeHandler, BeforeExpandNodeHan
                 callback.onSuccess(receivedNode);
                 inSearchMode = false;
                 return;
-            } else if (path.getStorablePath().startsWith(childPath)) {
+            } else if (path.getStorablePath().startsWith(childPath + (receivedNode.isLeaf() ? "" : "/"))) {
                 tree.setExpanded(receivedNode, true);
                 return;
             }

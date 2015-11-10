@@ -743,4 +743,14 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         view.removeNode(node, closeMissingFiles);
     }
 
+    /**
+     * Perform visual scroll to node in the Project Explorer.
+     *
+     * @param node
+     *         node
+     */
+    public void scrollToNode(Node node) {
+        view.scrollToNode(node);
+    }
+
 }

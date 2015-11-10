@@ -328,6 +328,14 @@ public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDele
      */
     boolean reIndex(String oldId, Node node);
 
+    /**
+     * Perform visual scroll to node in the Project Explorer.
+     *
+     * @param node
+     *         node
+     */
+    void scrollToNode(Node node);
+
     interface ActionDelegate extends BaseActionDelegate {
         void onSelectionChanged(List<Node> selection);
 
