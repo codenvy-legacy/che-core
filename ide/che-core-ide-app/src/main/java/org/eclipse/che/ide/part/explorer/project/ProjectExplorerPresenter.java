@@ -195,6 +195,10 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
             return;
         }
 
+        if (view.isGoIntoActivated()) {
+            view.resetGoIntoMode();
+        }
+
         final ProjectDescriptorNode node = nodeManager.wrap(descriptor);
 
         view.addNode(null, node);
@@ -229,6 +233,10 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
                     public void apply(PromiseError arg) throws OperationException {
                         notificationManager.showError(locale.projectExplorerProjectConfigurationFailed());
                         Log.warn(getClass(), arg.getMessage());
+
+                        if (view.isGoIntoActivated()) {
+                            view.resetGoIntoMode();
+                        }
 
                         final ProjectDescriptorNode node = nodeManager.wrap(descriptor);
 
