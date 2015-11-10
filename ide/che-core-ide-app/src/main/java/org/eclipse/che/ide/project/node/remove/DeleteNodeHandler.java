@@ -270,12 +270,12 @@ public class DeleteNodeHandler {
 
     @NotNull
     private Promise<Void> chainNodes(@NotNull Promise<Void> promise,
-                                     @NotNull Iterator<ResourceBasedNode<?>> projectNodes) {
-        if (!projectNodes.hasNext()) {
+                                     @NotNull Iterator<ResourceBasedNode<?>> nodes) {
+        if (!nodes.hasNext()) {
             return promise;
         }
 
-        final ResourceBasedNode<?> node = projectNodes.next();
+        final ResourceBasedNode<?> node = nodes.next();
 
         final Promise<Void> derivedPromise = promise.thenPromise(new Function<Void, Promise<Void>>() {
             @Override
@@ -292,7 +292,7 @@ public class DeleteNodeHandler {
             }
         });
 
-        return chainNodes(derivedErrorSafePromise, projectNodes);
+        return chainNodes(derivedErrorSafePromise, nodes);
     }
 
     @NotNull
