@@ -43,6 +43,7 @@ import elemental.js.dom.JsElement;
 import elemental.ranges.Range;
 
 import org.eclipse.che.ide.util.StringUtils;
+
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
 
@@ -372,7 +373,7 @@ public class Elements {
         }
     }
 
-    public static void removeClassName(String className,Element element) {
+    public static void removeClassName(String className, Element element) {
         assert (className != null) : "Unexpectedly null class name";
 
         className = className.trim();
@@ -414,6 +415,30 @@ public class Elements {
             element.setClassName(newClassName);
         }
     }
+
+    /**
+     * Disable element text selection. Useful for disabling text selection in UI elements especially in main menu, etc.
+     *
+     * @param e
+     *         element
+     * @param disable
+     *         true - if text selection should be disabled
+     */
+    public native static void disableTextSelection(com.google.gwt.dom.client.Element e, boolean disable)/*-{
+        if (disable) {
+            e.ondrag = function () {
+                return false;
+            };
+            e.onselectstart = function () {
+                return false;
+            };
+            e.style.MozUserSelect = "none"
+        } else {
+            e.ondrag = null;
+            e.onselectstart = null;
+            e.style.MozUserSelect = "text"
+        }
+    }-*/;
 
     private Elements() {
     } // COV_NF_LINE

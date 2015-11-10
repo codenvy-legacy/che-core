@@ -43,6 +43,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.eclipse.che.ide.util.dom.Elements.disableTextSelection;
+
 
 /**
  * Implements {@link MainMenuView} using standard GWT Menu Widgets
@@ -90,7 +92,7 @@ public class MainMenuViewImpl extends Composite implements MainMenuView, CloseMe
         this.managerProvider = managerProvider;
 
         initWidget(rootPanel);
-
+        disableTextSelection(rootPanel.getElement(), true);
         rootPanel.setStyleName(resources.menuCss().menuBar());
         leftPanel.addStyleName(resources.menuCss().leftPanel());
         rootPanel.add(leftPanel);

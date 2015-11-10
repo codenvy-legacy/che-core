@@ -50,6 +50,8 @@ import org.vectomatic.dom.svg.ui.SVGResource;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.eclipse.che.ide.util.dom.Elements.disableTextSelection;
+
 /**
  * PopupMenu is visual component represents all known Popup Menu.
  *
@@ -158,6 +160,7 @@ public class PopupMenu extends Composite {
         }
 
         popupMenuPanel = new SimplePanel();
+        disableTextSelection(popupMenuPanel.getElement(), true);
         initWidget(popupMenuPanel);
 
         popupMenuPanel.addDomHandler(new MouseOutHandler() {
