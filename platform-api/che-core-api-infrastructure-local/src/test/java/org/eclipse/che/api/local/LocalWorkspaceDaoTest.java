@@ -13,6 +13,8 @@ package org.eclipse.che.api.local;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 import org.eclipse.che.api.local.storage.LocalStorageFactory;
 import org.eclipse.che.api.machine.server.model.impl.CommandImpl;
 import org.eclipse.che.api.machine.server.model.impl.LimitsImpl;
@@ -30,6 +32,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +41,6 @@ import static java.nio.file.Files.readAllBytes;
 import static java.nio.file.Files.write;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static java.util.Collections.singletonMap;
 import static org.eclipse.che.commons.lang.NameGenerator.generate;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
@@ -48,10 +50,10 @@ import static org.testng.Assert.assertNotNull;
  */
 public class LocalWorkspaceDaoTest {
 
-    static Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private static Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
-    LocalWorkspaceDaoImpl workspaceDao;
-    Path                  workspacesPath;
+    private LocalWorkspaceDaoImpl workspaceDao;
+    private Path                  workspacesPath;
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -70,19 +72,55 @@ public class LocalWorkspaceDaoTest {
         workspaceDao.create(workspace);
         workspaceDao.saveWorkspaces();
 
-        assertEquals(GSON.toJson(singletonMap(workspace.getId(), workspace)), new String(readAllBytes(workspacesPath)));
+        assertEquals(GSON.toJson(singletonList(workspace)), new String(readAllBytes(workspacesPath)));
     }
 
     @Test
     public void testWorkspaceDeserialization() throws Exception {
         final UsersWorkspaceImpl workspace = createWorkspace();
-        write(workspacesPath, GSON.toJson(singletonMap(workspace.getId(), workspace)).getBytes());
+        write(workspacesPath, GSON.toJson(singletonList(workspace)).getBytes());
 
         workspaceDao.loadWorkspaces();
 
         final UsersWorkspaceImpl result = workspaceDao.get(workspace.getId());
-        System.out.println(result.equals(workspace));
+        workspace.setStatus(WorkspaceStatus.STOPPED);
         assertEquals(result, workspace);
+    }
+
+    @Test
+    public void shouldNotSaveTempWSsToLocalStorage() throws Exception {
+        final UsersWorkspaceImpl workspace = createWorkspace();
+        final UsersWorkspaceImpl tempWorkspace = UsersWorkspaceImpl.builder()
+                                                                   .fromWorkspace(createWorkspace())
+                                                                   .setId("tempWsId")
+                                                                   .setTemporary(true)
+                                                                   .setName("tempWsName")
+                                                                   .build();
+
+        workspaceDao.create(workspace);
+        workspaceDao.create(tempWorkspace);
+        workspaceDao.saveWorkspaces();
+
+        assertEquals(GSON.toJson(singletonList(workspace)),
+                     new String(readAllBytes(workspacesPath)));
+    }
+
+    @Test(expectedExceptions = NotFoundException.class,
+          expectedExceptionsMessageRegExp = "Workspace with id tempWsId was not found")
+    public void shouldNotRestoreTempWssFromLocalStorage() throws Exception {
+        final UsersWorkspaceImpl workspace = createWorkspace();
+        final UsersWorkspaceImpl tempWorkspace = UsersWorkspaceImpl.builder()
+                                                                   .fromWorkspace(createWorkspace())
+                                                                   .setId("tempWsId")
+                                                                   .setTemporary(true)
+                                                                   .build();
+
+        write(workspacesPath, GSON.toJson(Arrays.asList(new UsersWorkspaceImpl[]{workspace, tempWorkspace}))
+                                  .getBytes());
+
+        workspaceDao.loadWorkspaces();
+
+        workspaceDao.get(tempWorkspace.getId());
     }
 
     private static UsersWorkspaceImpl createWorkspace() {
@@ -152,6 +190,8 @@ public class LocalWorkspaceDaoTest {
                                  .setProjects(projects)
                                  .setEnvironments(environments)
                                  .setDefaultEnvName(env1.getName())
+                                 .setTemporary(false)
+                                 .setStatus(WorkspaceStatus.STARTING)
                                  .build();
     }
 }

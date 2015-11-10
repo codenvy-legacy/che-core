@@ -11,8 +11,8 @@
 package org.eclipse.che.api.workspace.server.model.impl;
 
 import org.eclipse.che.api.core.model.machine.Command;
-import org.eclipse.che.api.core.model.workspace.Environment;
 import org.eclipse.che.api.core.model.machine.Machine;
+import org.eclipse.che.api.core.model.workspace.Environment;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.model.workspace.RuntimeWorkspace;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
@@ -140,7 +140,7 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
     public void setActiveEnvName(String activeEnvName) {
         this.activeEnvName = activeEnvName;
     }
-    
+
     public Environment getActiveEnvironment() {
         return getEnvironments().get(activeEnvName);
     }
@@ -192,15 +192,36 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
         }
 
         public RuntimeWorkspaceBuilder fromWorkspace(UsersWorkspace workspace) {
-            this.id = workspace.getId();
-            this.name = workspace.getName();
-            this.owner = workspace.getOwner();
-            this.description = workspace.getDescription();
-            this.defaultEnvName = workspace.getDefaultEnvName();
-            this.commands = workspace.getCommands();
-            this.projects = workspace.getProjects();
-            this.environments = workspace.getEnvironments();
-            this.attributes = workspace.getAttributes();
+            name = workspace.getName();
+            id = workspace.getId();
+            owner = workspace.getOwner();
+            defaultEnvName = workspace.getDefaultEnvName();
+            commands = workspace.getCommands();
+            projects = workspace.getProjects();
+            attributes = workspace.getAttributes();
+            environments = workspace.getEnvironments();
+            description = workspace.getDescription();
+            isTemporary = workspace.isTemporary();
+            status = workspace.getStatus();
+            return this;
+        }
+
+        public RuntimeWorkspaceBuilder fromWorkspace(RuntimeWorkspace workspace) {
+            name = workspace.getName();
+            id = workspace.getId();
+            owner = workspace.getOwner();
+            defaultEnvName = workspace.getDefaultEnvName();
+            commands = workspace.getCommands();
+            projects = workspace.getProjects();
+            attributes = workspace.getAttributes();
+            environments = workspace.getEnvironments();
+            description = workspace.getDescription();
+            isTemporary = workspace.isTemporary();
+            status = workspace.getStatus();
+            rootFolder = workspace.getRootFolder();
+            activeEnvName = workspace.getActiveEnvName();
+            devMachine = workspace.getDevMachine();
+            machines = workspace.getMachines();
             return this;
         }
 

@@ -17,6 +17,7 @@ import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.machine.Recipe;
+import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 import org.eclipse.che.api.local.storage.LocalStorage;
 import org.eclipse.che.api.local.storage.LocalStorageFactory;
 import org.eclipse.che.api.machine.server.recipe.adapters.RecipeTypeAdapter;
@@ -32,6 +33,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
@@ -39,13 +42,11 @@ import static java.util.stream.Collectors.toList;
 /**
  * In memory based implementation of {@link WorkspaceDao}.
  *
- * <p>{@link #loadWorkspaces() Loads} & {@link #saveWorkspaces() stores} in memory workspaces
- * to/from filesystem, when component starts/stops.
- *
- *
- * @implNote it is thread-safe, guarded by <i>this</i> instance
+ * <p>{@link #loadWorkspaces() Loads} & {@link #saveWorkspaces() stores} in memory workspaces to/from filesystem, when component
+ * starts/stops.
  *
  * @author Eugene Voevodin
+ * @implNote it is thread-safe, guarded by <i>this</i> instance
  */
 @Singleton
 public class LocalWorkspaceDaoImpl implements WorkspaceDao {
@@ -62,12 +63,22 @@ public class LocalWorkspaceDaoImpl implements WorkspaceDao {
 
     @PostConstruct
     public synchronized void loadWorkspaces() {
-        workspaces.putAll(localStorage.loadMap(new TypeToken<Map<String, UsersWorkspaceImpl>>() {}));
+        workspaces.putAll(localStorage.loadList(new TypeToken<List<UsersWorkspaceImpl>>() {})
+                                      .stream()
+                                      .filter(workspace -> !workspace.isTemporary())
+                                      .map(workspace -> {
+                                          workspace.setStatus(WorkspaceStatus.STOPPED);
+                                          return workspace;
+                                      })
+                                      .collect(Collectors.toMap(UsersWorkspaceImpl::getId, Function.identity())));
     }
 
     @PreDestroy
     public synchronized void saveWorkspaces() throws IOException {
-        localStorage.store(workspaces);
+        localStorage.store(workspaces.values()
+                                     .stream()
+                                     .filter(workspace -> !workspace.isTemporary())
+                                     .collect(Collectors.toList()));
     }
 
     @Override

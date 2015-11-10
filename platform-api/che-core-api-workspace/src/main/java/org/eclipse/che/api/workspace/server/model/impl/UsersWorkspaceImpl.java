@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server.model.impl;
 
-
 import org.eclipse.che.api.core.model.machine.Command;
 import org.eclipse.che.api.core.model.workspace.Environment;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
@@ -153,8 +152,8 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
     }
 
     /**
-     * Sets particular environment configured for this workspace  as default
-     * Throws NullPointerException if no Env with incoming name configured
+     * Sets particular environment configured for this workspace  as default Throws NullPointerException if no Env with incoming name
+     * configured
      */
     public void setDefaultEnvName(String name) {
         if (environments.get(name) == null) {
@@ -265,7 +264,19 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
         protected boolean                            isTemporary;
         protected WorkspaceStatus                    status;
 
-        UsersWorkspaceImplBuilder() {
+        public UsersWorkspaceImplBuilder fromWorkspace(UsersWorkspace workspace) {
+            name = workspace.getName();
+            id = workspace.getId();
+            owner = workspace.getOwner();
+            defaultEnvName = workspace.getDefaultEnvName();
+            commands = workspace.getCommands();
+            projects = workspace.getProjects();
+            attributes = workspace.getAttributes();
+            environments = workspace.getEnvironments();
+            description = workspace.getDescription();
+            isTemporary = workspace.isTemporary();
+            status = workspace.getStatus();
+            return this;
         }
 
         public UsersWorkspaceImpl build() {
