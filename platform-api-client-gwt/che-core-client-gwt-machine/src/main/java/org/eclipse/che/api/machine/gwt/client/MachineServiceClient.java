@@ -45,11 +45,12 @@ public interface MachineServiceClient {
     /**
      * Find machines bound to the workspace/project.
      *
+     * @param workspaceId workspace id
      * @param projectPath
      *         project binding. If {@code projectPath} is {@code null} returns machines which bound to the current workspace,
      *         if {@code projectPath} is not {@code null} - returns machines which bound to the specified project
      */
-    Promise<List<MachineDto>> getMachines(@Nullable String projectPath);
+    Promise<List<MachineDto>> getMachines(@NotNull String workspaceId, @Nullable String projectPath);
 
     /**
      * Returns list of machines which are bounded to current workspace.
@@ -63,11 +64,12 @@ public interface MachineServiceClient {
     /**
      * Find machines states bound to the workspace/project.
      *
+     * @param workspaceId workspace id
      * @param projectPath
      *         project binding. If {@code projectPath} is {@code null} returns machines which bound to the current workspace,
      *         if {@code projectPath} is not {@code null} - returns machines which bound to the specified project
      */
-    Promise<List<MachineStateDto>> getMachinesStates(@Nullable String projectPath);
+    Promise<List<MachineStateDto>> getMachinesStates(@NotNull String workspaceId, @Nullable String projectPath);
 
     /**
      * Destroy machine with the specified ID.
