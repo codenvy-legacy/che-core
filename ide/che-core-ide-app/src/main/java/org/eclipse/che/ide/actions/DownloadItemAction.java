@@ -24,7 +24,6 @@ import org.eclipse.che.ide.download.DownloadContainer;
 import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.project.node.FileReferenceNode;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
-import org.eclipse.che.ide.rest.RestContext;
 
 /**
  * Download selected item action.
@@ -42,7 +41,7 @@ public class DownloadItemAction extends Action {
     private final ProjectExplorerPresenter  projectExplorer;
 
     @Inject
-    public DownloadItemAction(@RestContext String restContext,
+    public DownloadItemAction(@Named("cheExtensionPath") String extPath,
                               @Named("workspaceId") String workspaceId,
                               CoreLocalizationConstant locale,
                               AnalyticsEventLogger eventLogger,
@@ -54,7 +53,7 @@ public class DownloadItemAction extends Action {
         this.downloadContainer = downloadContainer;
         this.projectExplorer = projectExplorer;
 
-        BASE_URL = restContext + "/project/" + workspaceId + "/export/";
+        BASE_URL = extPath + "/project/" + workspaceId + "/export/";
     }
 
     /** {@inheritDoc} */
