@@ -1134,4 +1134,34 @@ public class DarkTheme implements Theme {
     public String checkBoxDisabledBackgroundColor() {
         return this.getTextFieldDisabledBackgroundColor();
     }
+
+    @Override
+    public String getProjectExplorerJointContainerFill() {
+        return "#dbdbdb";
+    }
+
+    @Override
+    public String getProjectExplorerJointContainerShadow() {
+        return "drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.4))";
+    }
+
+    @Override
+    public String getProjectExplorerPresentableTextShadow() {
+        return "1px 1px 0 rgba(0, 0, 0, 0.4)";
+    }
+
+    @Override
+    public String getProjectExplorerInfoTextShadow() {
+        return "1px 1px 0 rgba(0, 0, 0, 0.4)";
+    }
+
+    @Override
+    public String getProjectExplorerSelectedRowBackground() {
+        return "#256c9f";
+    }
+
+    @Override
+    public String getProjectExplorerHoverRowBackground() {
+        return "#555";
+    }
 }

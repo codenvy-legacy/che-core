@@ -699,4 +699,28 @@ public class Style {
     public static String getListBoxDropdownBackgroundColor() {
         return theme.getListBoxDropdownBackgroundColor();
     }
+
+    public static String getProjectExplorerJointContainerFill() {
+        return theme.getProjectExplorerJointContainerFill();
+    }
+
+    public static String getProjectExplorerJointContainerShadow() {
+        return theme.getProjectExplorerJointContainerShadow();
+    }
+
+    public static String getProjectExplorerPresentableTextShadow() {
+        return theme.getProjectExplorerPresentableTextShadow();
+    }
+
+    public static String getProjectExplorerInfoTextShadow() {
+        return theme.getProjectExplorerInfoTextShadow();
+    }
+
+    public static String getProjectExplorerSelectedRowBackground() {
+        return theme.getProjectExplorerSelectedRowBackground();
+    }
+
+    public static String getProjectExplorerHoverRowBackground() {
+        return theme.getProjectExplorerHoverRowBackground();
+    }
 }

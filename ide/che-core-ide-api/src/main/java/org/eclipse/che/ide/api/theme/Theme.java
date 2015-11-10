@@ -1270,4 +1270,16 @@ public interface Theme {
     String checkBoxDisabledFontColor();
     String checkBoxDisabledBackgroundColor();
 
+
+    /********************************************************************************************
+     *
+     * Project Explorer
+     *
+     ********************************************************************************************/
+    String getProjectExplorerJointContainerFill();
+    String getProjectExplorerJointContainerShadow();
+    String getProjectExplorerPresentableTextShadow();
+    String getProjectExplorerInfoTextShadow();
+    String getProjectExplorerSelectedRowBackground();
+    String getProjectExplorerHoverRowBackground();
 }

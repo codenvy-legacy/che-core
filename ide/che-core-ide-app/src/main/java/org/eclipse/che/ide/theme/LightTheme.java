@@ -1111,4 +1111,34 @@ public class LightTheme implements Theme {
     public String checkBoxDisabledBackgroundColor() {
         return this.radioButtonDisabledBackgroundColor();
     }
+
+    @Override
+    public String getProjectExplorerJointContainerFill() {
+        return "#5D5D5D";
+    }
+
+    @Override
+    public String getProjectExplorerJointContainerShadow() {
+        return "drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.1))";
+    }
+
+    @Override
+    public String getProjectExplorerPresentableTextShadow() {
+        return "1px 1px 1px rgba(0, 0, 0, 0.1)";
+    }
+
+    @Override
+    public String getProjectExplorerInfoTextShadow() {
+        return "1px 1px 1px rgba(0, 0, 0, 0.1)";
+    }
+
+    @Override
+    public String getProjectExplorerSelectedRowBackground() {
+        return "rgba(73,143,225,0.40)";
+    }
+
+    @Override
+    public String getProjectExplorerHoverRowBackground() {
+        return "rgba(215,215,215,0.45)";
+    }
 }
