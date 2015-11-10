@@ -150,14 +150,7 @@ public class DeleteItemAction extends AbstractPerspectiveAction implements Promi
     /** {@inheritDoc} */
     @Override
     public void updateInPerspective(@NotNull ActionEvent event) {
-        CurrentProject currentProject = appContext.getCurrentProject();
-        CurrentUser currentUser = appContext.getCurrentUser();
-
-        if ((currentProject == null && currentUser.isUserPermanent()) || (currentProject != null && currentProject.isReadOnly())) {
-            event.getPresentation().setVisible(true);
-            event.getPresentation().setEnabled(false);
-            return;
-        }
+        event.getPresentation().setVisible(true);
 
         final Selection<?> selection = selectionAgent.getSelection();
 
@@ -168,7 +161,7 @@ public class DeleteItemAction extends AbstractPerspectiveAction implements Promi
 
         boolean enable = Iterables.all(selection.getAllElements(), isResourceBasedNode());
 
-        event.getPresentation().setEnabled(enable);
+        event.getPresentation().setEnabled(enable && appContext.getCurrentUser().isUserPermanent());
     }
 
     @Override
