@@ -20,7 +20,7 @@ import org.eclipse.che.api.git.GitConnectionFactory;
 import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.api.git.shared.AddRequest;
 import org.eclipse.che.api.git.shared.Branch;
-import org.eclipse.che.api.git.shared.BranchCheckoutRequest;
+import org.eclipse.che.api.git.shared.CheckoutRequest;
 import org.eclipse.che.api.git.shared.BranchCreateRequest;
 import org.eclipse.che.api.git.shared.BranchDeleteRequest;
 import org.eclipse.che.api.git.shared.BranchListRequest;
@@ -98,11 +98,11 @@ public class BranchDeleteTest {
         connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));
         connection.commit(newDto(CommitRequest.class).withMessage("Initial addd"));
         //create new branch and make a commit
-        connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName("newbranch").withCreateNew(true));
+        connection.checkout(newDto(CheckoutRequest.class).withName("newbranch").withCreateNew(true));
         addFile(connection, "newfile", "new file content");
         connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
         connection.commit(newDto(CommitRequest.class).withMessage("second commit"));
-        connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName("master"));
+        connection.checkout(newDto(CheckoutRequest.class).withName("master"));
 
         //when
         connection.branchDelete(newDto(BranchDeleteRequest.class).withName("newbranch").withForce(true));
@@ -128,11 +128,11 @@ public class BranchDeleteTest {
         connection.add(newDto(AddRequest.class).withFilepattern(ImmutableList.of("README.txt")));
         connection.commit(newDto(CommitRequest.class).withMessage("Initial addd"));
         //create new branch and make a commit
-        connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName("newbranch").withCreateNew(true));
+        connection.checkout(newDto(CheckoutRequest.class).withName("newbranch").withCreateNew(true));
         addFile(connection, "newfile", "new file content");
         connection.add(newDto(AddRequest.class).withFilepattern(Arrays.asList(".")));
         connection.commit(newDto(CommitRequest.class).withMessage("second commit"));
-        connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName("master"));
+        connection.checkout(newDto(CheckoutRequest.class).withName("master"));
 
         connection.branchDelete(newDto(BranchDeleteRequest.class).withName("newbranch").withForce(false));
     }

@@ -16,7 +16,7 @@ import com.google.inject.name.Named;
 
 import org.eclipse.che.api.git.shared.AddRequest;
 import org.eclipse.che.api.git.shared.Branch;
-import org.eclipse.che.api.git.shared.BranchCheckoutRequest;
+import org.eclipse.che.api.git.shared.CheckoutRequest;
 import org.eclipse.che.api.git.shared.BranchCreateRequest;
 import org.eclipse.che.api.git.shared.BranchDeleteRequest;
 import org.eclipse.che.api.git.shared.BranchListRequest;
@@ -80,7 +80,7 @@ import static org.eclipse.che.ide.rest.HTTPHeader.CONTENTTYPE;
 public class GitServiceClientImpl implements GitServiceClient {
     public static final String ADD               = "/add";
     public static final String BRANCH_LIST       = "/branch-list";
-    public static final String BRANCH_CHECKOUT   = "/branch-checkout";
+    public static final String CHECKOUT   = "/checkout";
     public static final String BRANCH_CREATE     = "/branch-create";
     public static final String BRANCH_DELETE     = "/branch-delete";
     public static final String BRANCH_RENAME     = "/branch-rename";
@@ -314,10 +314,10 @@ public class GitServiceClientImpl implements GitServiceClient {
 
     /** {@inheritDoc} */
     @Override
-    public void branchCheckout(@NotNull ProjectDescriptor project, @NotNull BranchCheckoutRequest branchCheckoutRequest,
+    public void checkout(@NotNull ProjectDescriptor project, @NotNull CheckoutRequest checkoutRequest,
                                @NotNull AsyncRequestCallback<String> callback) {
-        String url = baseHttpUrl + BRANCH_CHECKOUT + "?projectPath=" + project.getPath();
-        asyncRequestFactory.createPostRequest(url, branchCheckoutRequest).loader(loader).send(callback);
+        String url = baseHttpUrl + CHECKOUT + "?projectPath=" + project.getPath();
+        asyncRequestFactory.createPostRequest(url, checkoutRequest).loader(loader).send(callback);
     }
 
     /** {@inheritDoc} */

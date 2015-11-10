@@ -16,7 +16,7 @@ import com.google.common.io.Files;
 import org.eclipse.che.api.git.GitConnection;
 import org.eclipse.che.api.git.GitConnectionFactory;
 import org.eclipse.che.api.git.shared.AddRequest;
-import org.eclipse.che.api.git.shared.BranchCheckoutRequest;
+import org.eclipse.che.api.git.shared.CheckoutRequest;
 import org.eclipse.che.api.git.shared.BranchCreateRequest;
 import org.eclipse.che.api.git.shared.CommitRequest;
 import org.eclipse.che.api.git.shared.LogRequest;
@@ -72,12 +72,12 @@ public class MergeTest {
     public void testMerge(GitConnectionFactory connectionFactory) throws Exception {
         //given
         GitConnection connection = connectToGitRepositoryWithContent(connectionFactory, repository);
-        connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName(branchName).withCreateNew(true));
+        connection.checkout(newDto(CheckoutRequest.class).withName(branchName).withCreateNew(true));
         File file = addFile(connection, "t-merge", "aaa\n");
 
         connection.add(newDto(AddRequest.class).withFilepattern(new ArrayList<>(Arrays.asList("."))));
         connection.commit(newDto(CommitRequest.class).withMessage("add file in new branch"));
-        connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName("master"));
+        connection.checkout(newDto(CheckoutRequest.class).withName("master"));
         //when
         MergeResult mergeResult = connection.merge(newDto(MergeRequest.class).withCommit(branchName));
         //then
@@ -91,12 +91,12 @@ public class MergeTest {
     public void testMergeConflict(GitConnectionFactory connectionFactory) throws Exception {
         //given
         GitConnection connection = connectToGitRepositoryWithContent(connectionFactory, repository);
-        connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName(branchName).withCreateNew(true));
+        connection.checkout(newDto(CheckoutRequest.class).withName(branchName).withCreateNew(true));
         addFile(connection, "t-merge-conflict", "aaa\n");
         connection.add(newDto(AddRequest.class).withFilepattern(new ArrayList<>(Arrays.asList("."))));
         connection.commit(newDto(CommitRequest.class).withMessage("add file in new branch"));
 
-        connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName("master"));
+        connection.checkout(newDto(CheckoutRequest.class).withName("master"));
         addFile(connection, "t-merge-conflict", "bbb\n");
         connection.add(newDto(AddRequest.class).withFilepattern(new ArrayList<>(Arrays.asList("."))));
         connection.commit(newDto(CommitRequest.class).withMessage("add file in new branch"));
@@ -124,12 +124,12 @@ public class MergeTest {
 //        //given
 //        GitConnection connection = connectToGitRepositoryWithContent(connectionFactory, repository);
 //
-//        connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName(branchName).withCreateNew(true));
+//        connection.checkout(newDto(CheckoutRequest.class).withName(branchName).withCreateNew(true));
 //        addFile(connection, "t-merge-failed", "aaa\n");
 //        connection.add(newDto(AddRequest.class).withFilepattern(new ArrayList<>(Arrays.asList("."))));
 //        connection.commit(newDto(CommitRequest.class).withMessage("add file in new branch"));
 //
-//        connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName("master"));
+//        connection.checkout(newDto(CheckoutRequest.class).withName("master"));
 //        addFile(connection, "t-merge-failed", "bbb\n");
 //        //when
 //        MergeResult mergeResult = connection.merge(newDto(MergeRequest.class).withCommit(branchName));

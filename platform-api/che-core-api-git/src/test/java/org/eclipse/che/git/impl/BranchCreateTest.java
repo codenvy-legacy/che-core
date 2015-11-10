@@ -18,7 +18,7 @@ import org.eclipse.che.api.git.GitConnectionFactory;
 import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.api.git.shared.AddRequest;
 import org.eclipse.che.api.git.shared.Branch;
-import org.eclipse.che.api.git.shared.BranchCheckoutRequest;
+import org.eclipse.che.api.git.shared.CheckoutRequest;
 import org.eclipse.che.api.git.shared.BranchCreateRequest;
 import org.eclipse.che.api.git.shared.BranchListRequest;
 import org.eclipse.che.api.git.shared.CommitRequest;
@@ -96,7 +96,7 @@ public class BranchCreateTest {
                                                         .withName("new-branch")
                                                         .withStartPoint(revCommitList.get(1).getId()));
         //then
-        connection.branchCheckout(newDto(BranchCheckoutRequest.class).withName(branch.getDisplayName()));
+        connection.checkout(newDto(CheckoutRequest.class).withName(branch.getDisplayName()));
 
         int afterCheckoutCommitsCount = connection.log(newDto(LogRequest.class)).getCommits().size();
         assertEquals(afterCheckoutCommitsCount, beforeCheckoutCommitsCount - 1);

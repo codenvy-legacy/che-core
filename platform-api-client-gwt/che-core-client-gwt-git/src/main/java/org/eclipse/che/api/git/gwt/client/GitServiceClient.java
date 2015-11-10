@@ -11,7 +11,7 @@
 package org.eclipse.che.api.git.gwt.client;
 
 import org.eclipse.che.api.git.shared.Branch;
-import org.eclipse.che.api.git.shared.BranchCheckoutRequest;
+import org.eclipse.che.api.git.shared.CheckoutRequest;
 import org.eclipse.che.api.git.shared.Commiters;
 import org.eclipse.che.api.git.shared.DiffRequest;
 import org.eclipse.che.api.git.shared.GitUrlVendorInfo;
@@ -142,7 +142,7 @@ public interface GitServiceClient {
     /**
      * Checkout the branch with pointed name.
      */
-    void branchCheckout(@NotNull ProjectDescriptor project, @NotNull BranchCheckoutRequest branchCheckoutRequest,
+    void checkout(@NotNull ProjectDescriptor project, @NotNull CheckoutRequest checkoutRequest,
                         @NotNull AsyncRequestCallback<String> callback);
 
     /**
