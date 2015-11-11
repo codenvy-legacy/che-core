@@ -246,7 +246,9 @@ class CreateWorkspaceViewImpl extends Window implements CreateWorkspaceView, Rec
 
         tagsError.setVisible(!tag.isEmpty());
 
-        delegate.onTagsChanged(hidePopupCallBack);
+        if (!tag.isEmpty()) {
+            delegate.onTagsChanged(hidePopupCallBack);
+        }
 
         isPredefinedRecipe = false;
     }
