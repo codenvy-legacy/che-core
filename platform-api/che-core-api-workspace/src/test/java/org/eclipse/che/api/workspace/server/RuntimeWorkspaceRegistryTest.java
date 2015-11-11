@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server;
 
+import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.machine.server.MachineManager;
 
 import org.eclipse.che.api.core.ConflictException;
@@ -77,15 +78,15 @@ public class RuntimeWorkspaceRegistryTest {
     public void shouldNotStartRunningWorkspaces() throws Exception {
         final RuntimeWorkspaceImpl workspace = createWorkspace();
 
-        registry.start(workspace, null);
-        registry.start(workspace, null);
+        registry.start(workspace, workspace.getDefaultEnvName());
+        registry.start(workspace, workspace.getDefaultEnvName());
     }
 
     @Test
     public void shouldStartWorkspace() throws Exception {
         final RuntimeWorkspaceImpl workspace = createWorkspace();
 
-        final RuntimeWorkspaceImpl running = registry.start(workspace, null);
+        final RuntimeWorkspaceImpl running = registry.start(workspace, workspace.getDefaultEnvName());
 
         assertEquals(running.getStatus(), RUNNING);
         assertNotNull(running.getDevMachine());
@@ -95,7 +96,7 @@ public class RuntimeWorkspaceRegistryTest {
     @Test
     public void shouldUpdateRunningWorkspace() throws Exception {
         final RuntimeWorkspaceImpl workspace = createWorkspace();
-        registry.start(workspace, null);
+        registry.start(workspace, workspace.getDefaultEnvName());
 
         final RuntimeWorkspaceImpl running = registry.get(workspace.getId());
         running.setStatus(STOPPING);
@@ -115,6 +116,11 @@ public class RuntimeWorkspaceRegistryTest {
         final RuntimeWorkspaceImpl workspace = createWorkspace();
 
         registry.update(workspace);
+    }
+
+    @Test(expectedExceptions = BadRequestException.class, expectedExceptionsMessageRegExp = "Required non-null environment name")
+    public void shouldThrowBadRequestExceptionWhenStartingWorkspaceWithNullEnvironment() throws Exception {
+        registry.start(createWorkspace(), null);
     }
 
     private static RuntimeWorkspaceImpl createWorkspace() {

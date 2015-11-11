@@ -47,6 +47,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.lang.String.format;
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.STOPPED;
@@ -162,12 +163,12 @@ public class WorkspaceManager {
      *         when {@code workspaceId} is null
      * @throws NotFoundException
      *         when workspace with given {@code workspaceId} doesn't exist, or
-     *         {@link WorkspaceHooks#beforeStart(UsersWorkspace, String)} throws this exception
+     *         {@link WorkspaceHooks#beforeStart(UsersWorkspace, String, String)} throws this exception
      * @throws ForbiddenException
      *         when user doesn't have access to start workspace in certain account
      * @throws ServerException
      *         when any other error occurs during workspace start
-     * @see WorkspaceHooks#beforeStart(UsersWorkspace, String)
+     * @see WorkspaceHooks#beforeStart(UsersWorkspace, String, String)
      * @see RuntimeWorkspaceRegistry#start(UsersWorkspace, String)
      */
     public UsersWorkspaceImpl startWorkspaceById(String workspaceId,
@@ -199,12 +200,12 @@ public class WorkspaceManager {
      *         when given {@code workspaceName} or {@code owner} is null
      * @throws NotFoundException
      *         when workspace with given {@code workspaceName & owner} doesn't exist, or
-     *         {@link WorkspaceHooks#beforeStart(UsersWorkspace, String)} throws this exception
+     *         {@link WorkspaceHooks#beforeStart(UsersWorkspace, String, String)} throws this exception
      * @throws ForbiddenException
      *         when user doesn't have access to start workspace in certain account
      * @throws ServerException
      *         when any other error occurs during workspace start
-     * @see WorkspaceHooks#beforeStart(UsersWorkspace, String)
+     * @see WorkspaceHooks#beforeStart(UsersWorkspace, String, String)
      * @see RuntimeWorkspaceRegistry#start(UsersWorkspace, String)
      */
     public UsersWorkspaceImpl startWorkspaceByName(String workspaceName,
@@ -239,10 +240,10 @@ public class WorkspaceManager {
      *         when user doesn't have access to start workspace in certain account
      * @throws NotFoundException
      *         when {@link WorkspaceHooks#beforeCreate(UsersWorkspace, String)}
-     *         or {@link WorkspaceHooks#beforeStart(UsersWorkspace, String)} throws this exception
+     *         or {@link WorkspaceHooks#beforeStart(UsersWorkspace, String, String)} throws this exception
      * @throws ServerException
      *         when any other error occurs during workspace start
-     * @see WorkspaceHooks#beforeStart(UsersWorkspace, String)
+     * @see WorkspaceHooks#beforeStart(UsersWorkspace, String, String)
      * @see WorkspaceHooks#beforeCreate(UsersWorkspace, String)
      * @see RuntimeWorkspaceRegistry#start(UsersWorkspace, String)
      */
@@ -252,9 +253,9 @@ public class WorkspaceManager {
         workspace.setTemporary(true);
 
         hooks.beforeCreate(workspace, accountId);
-        hooks.beforeStart(workspace, accountId);
+        hooks.beforeStart(workspace, workspace.getDefaultEnvName(), accountId);
 
-        final RuntimeWorkspaceImpl runtimeWorkspace = startWorkspaceSync(workspace, null);
+        final RuntimeWorkspaceImpl runtimeWorkspace = startWorkspaceSync(workspace, workspace.getDefaultEnvName());
 
         addChannels(runtimeWorkspace);
 
@@ -381,10 +382,10 @@ public class WorkspaceManager {
         return workspaceDao.get(name, owner);
     }
 
-    private UsersWorkspaceImpl startWorkspace(UsersWorkspaceImpl workspace,
-                                              String envName,
-                                              String accountId)
+    private UsersWorkspaceImpl startWorkspace(UsersWorkspaceImpl workspace, String envName, String accountId)
             throws ServerException, NotFoundException, ForbiddenException, ConflictException {
+        envName = firstNonNull(envName, workspace.getDefaultEnvName());
+
         try {
             final RuntimeWorkspaceImpl runtime = workspaceRegistry.get(workspace.getId());
             throw new ConflictException(format("Could not start workspace '%s' because its status is '%s'",
@@ -395,7 +396,7 @@ public class WorkspaceManager {
         }
         
         workspace.setTemporary(false);
-        hooks.beforeStart(workspace, accountId);
+        hooks.beforeStart(workspace, envName, accountId);
         startWorkspaceAsync(workspace, envName);
         workspace.setStatus(WorkspaceStatus.STARTING);
         return workspace;
