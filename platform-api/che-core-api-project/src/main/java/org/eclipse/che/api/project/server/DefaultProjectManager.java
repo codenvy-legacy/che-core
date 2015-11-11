@@ -96,6 +96,8 @@ public final class DefaultProjectManager implements ProjectManager {
     private final ProjectTypeRegistry               projectTypeRegistry;
     private final ProjectHandlerRegistry            handlers;
     private final String                            apiEndpoint;
+    private UsersWorkspaceDto                       usersWorkspace;
+
 
     @Inject
     @SuppressWarnings("unchecked")
@@ -519,17 +521,20 @@ public final class DefaultProjectManager implements ProjectManager {
         updateProjectInWorkspace(project.getWorkspace(), projectConfig);
     }
 
-    private UsersWorkspaceDto getWorkspace(String wsId) throws ServerException {
-        final String href = UriBuilder.fromUri(apiEndpoint)
-                                      .path(WorkspaceService.class).path(WorkspaceService.class, "getById")
-                                      .build(wsId).toString();
-        final Link link = DtoFactory.getInstance().createDto(Link.class).withMethod("GET").withHref(href);
+    private synchronized UsersWorkspaceDto getWorkspace(String wsId) throws ServerException {
+        if (usersWorkspace == null) {
+            final String href = UriBuilder.fromUri(apiEndpoint)
+                    .path(WorkspaceService.class).path(WorkspaceService.class, "getById")
+                    .build(wsId).toString();
+            final Link link = DtoFactory.getInstance().createDto(Link.class).withMethod("GET").withHref(href);
 
-        try {
-            return HttpJsonHelper.request(UsersWorkspaceDto.class, link);
-        } catch (IOException | ApiException e) {
-            throw new ServerException(e);
+            try {
+                usersWorkspace = HttpJsonHelper.request(UsersWorkspaceDto.class, link);
+            } catch (IOException | ApiException e) {
+                throw new ServerException(e);
+            }
         }
+        return usersWorkspace;
     }
 
     private ProjectConfigDto getProjectFromWorkspace(String wsId, String projectPath) throws ServerException {
@@ -543,38 +548,39 @@ public final class DefaultProjectManager implements ProjectManager {
         return null;
     }
 
-    private void updateWorkspace(String wsId, WorkspaceConfigDto workspaceConfig) throws ServerException {
+    private synchronized void updateWorkspace(String wsId, WorkspaceConfigDto workspaceConfig) throws ServerException {
         final String href = UriBuilder.fromUri(apiEndpoint)
                                       .path(WorkspaceService.class).path(WorkspaceService.class, "update")
                                       .build(wsId).toString();
         final Link link = DtoFactory.getInstance().createDto(Link.class).withMethod("PUT").withHref(href);
 
         try {
-            HttpJsonHelper.request(WorkspaceConfigDto.class, link, workspaceConfig);
+            usersWorkspace = HttpJsonHelper.request(UsersWorkspaceDto.class, link, workspaceConfig);
         } catch (IOException | ApiException e) {
             throw new ServerException(e.getMessage());
         }
     }
 
-    private void updateProjectInWorkspace(String wsId, ProjectConfigDto projectConfig) throws ServerException {
+    private synchronized void updateProjectInWorkspace(String wsId, ProjectConfigDto projectConfig) throws ServerException {
         final String href = UriBuilder.fromUri(apiEndpoint)
                                       .path(WorkspaceService.class).path(WorkspaceService.class, "updateProject")
                                       .build(wsId).toString();
         final Link link = DtoFactory.getInstance().createDto(Link.class).withMethod("PUT").withHref(href);
 
         try {
-            HttpJsonHelper.request(UsersWorkspaceDto.class, link, projectConfig);
+            usersWorkspace = HttpJsonHelper.request(UsersWorkspaceDto.class, link, projectConfig);
         } catch (NotFoundException e) {
             final String addProjectHref = UriBuilder.fromUri(apiEndpoint)
                                           .path(WorkspaceService.class).path(WorkspaceService.class, "addProject")
                                           .build(wsId).toString();
             final Link addProjectLink = DtoFactory.getInstance().createDto(Link.class).withMethod("POST").withHref(addProjectHref);
             try {
-                HttpJsonHelper.request(UsersWorkspaceDto.class, addProjectLink, projectConfig);
+                usersWorkspace = HttpJsonHelper.request(UsersWorkspaceDto.class, addProjectLink, projectConfig);
             } catch (IOException | ApiException e1) {
                 throw new ServerException(e1.getMessage());
             }
         } catch (IOException | ApiException e) {
+            usersWorkspace = null;
             throw new ServerException(e.getMessage());
         }
     }
@@ -910,15 +916,16 @@ public final class DefaultProjectManager implements ProjectManager {
         return true;
     }
 
-    private void deleteProjectFromWorkspace(String wsId, String projectName) throws ServerException {
+    private synchronized void deleteProjectFromWorkspace(String wsId, String projectName) throws ServerException {
         final String href = UriBuilder.fromUri(apiEndpoint)
                                       .path(WorkspaceService.class).path(WorkspaceService.class, "deleteProject")
                                       .build(wsId, projectName).toString();
         final Link link = DtoFactory.getInstance().createDto(Link.class).withMethod("DELETE").withHref(href);
 
         try {
-            HttpJsonHelper.request(null, link);
+            usersWorkspace = HttpJsonHelper.request(UsersWorkspaceDto.class, link);
         } catch (IOException | ApiException e) {
+            usersWorkspace = null;
             throw new ServerException(e);
         }
     }
