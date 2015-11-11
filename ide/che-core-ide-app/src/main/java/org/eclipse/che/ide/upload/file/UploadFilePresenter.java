@@ -21,7 +21,6 @@ import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
-import org.eclipse.che.ide.rest.RestContext;
 
 import org.eclipse.che.commons.annotation.Nullable;
 import java.util.List;
@@ -42,7 +41,7 @@ public class UploadFilePresenter implements UploadFileView.ActionDelegate {
 
     @Inject
     public UploadFilePresenter(UploadFileView view,
-                               @RestContext String restContext,
+                               @Named("cheExtensionPath") String restContext,
                                @Named("workspaceId") String workspaceId,
                                EventBus eventBus,
                                NotificationManager notificationManager,
