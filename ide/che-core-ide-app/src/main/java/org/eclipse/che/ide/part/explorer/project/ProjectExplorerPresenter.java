@@ -226,22 +226,13 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
                 updateProject(descriptor).then(new Operation<ProjectDescriptor>() {
                     @Override
                     public void apply(ProjectDescriptor updatedDescriptor) throws OperationException {
-                        eventBus.fireEvent(new CreateProjectEvent(updatedDescriptor));
+                        eventBus.fireEvent(new ProjectUpdatedEvent(updatedDescriptor.getPath(), updatedDescriptor));
                     }
                 }).catchError(new Operation<PromiseError>() {
                     @Override
                     public void apply(PromiseError arg) throws OperationException {
                         notificationManager.showError(locale.projectExplorerProjectConfigurationFailed());
                         Log.warn(getClass(), arg.getMessage());
-
-                        if (view.isGoIntoActivated()) {
-                            view.resetGoIntoMode();
-                        }
-
-                        final ProjectDescriptorNode node = nodeManager.wrap(descriptor);
-
-                        view.addNode(null, node);
-                        view.select(node, false);
                     }
                 });
             }
