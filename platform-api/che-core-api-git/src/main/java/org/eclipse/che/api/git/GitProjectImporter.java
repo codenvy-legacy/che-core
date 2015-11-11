@@ -276,7 +276,7 @@ public class GitProjectImporter implements ProjectImporter {
         final File workingDir = git.getWorkingDir();
         final File sparseCheckout = new File(workingDir, ".git" + File.separator + "info" + File.separator + "sparse-checkout");
         try (BufferedWriter writer = Files.newBufferedWriter(sparseCheckout.toPath(), Charset.forName("UTF-8"))) {
-            writer.write(directory);
+            writer.write(directory.startsWith(File.separator) ? directory : File.separator + directory);
         } catch (IOException e) {
             throw new GitException(e);
         }
