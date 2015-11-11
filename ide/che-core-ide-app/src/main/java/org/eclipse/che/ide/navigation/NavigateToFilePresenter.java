@@ -19,8 +19,8 @@ import com.google.web.bindery.event.shared.EventBus;
 import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateEvent;
 import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateHandler;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
-import org.eclipse.che.api.promises.client.Function;
-import org.eclipse.che.api.promises.client.FunctionException;
+import org.eclipse.che.api.promises.client.Operation;
+import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
@@ -35,7 +35,6 @@ import org.eclipse.che.ide.websocket.WebSocketException;
 import org.eclipse.che.ide.websocket.rest.RequestCallback;
 import org.eclipse.che.ide.websocket.rest.Unmarshallable;
 
-import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -135,33 +134,17 @@ public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegat
         view.close();
         final ItemReference selectedItem = resultMap.get(view.getItemPath());
 
-        projectExplorer.getNodeByPath(new HasStorablePath.StorablePath(selectedItem.getPath()))
-                       .then(selectNode())
-                       .then(openNode());
-    }
-
-    protected Function<Node, Node> selectNode() {
-        return new Function<Node, Node>() {
+        projectExplorer.getNodeByPath(new HasStorablePath.StorablePath(selectedItem.getPath())).then(new Operation<Node>() {
             @Override
-            public Node apply(Node node) throws FunctionException {
+            public void apply(Node node) throws OperationException {
                 projectExplorer.select(node, false);
+                projectExplorer.scrollToNode(node);
 
-                return node;
-            }
-        };
-    }
-
-    protected Function<Node, Node> openNode() {
-        return new Function<Node, Node>() {
-            @Override
-            public Node apply(Node node) throws FunctionException {
                 if (node instanceof FileReferenceNode) {
                     ((FileReferenceNode)node).actionPerformed();
                 }
-
-                return node;
             }
-        };
+        });
     }
 
     private void search(String fileName, final AsyncCallback<List<ItemReference>> callback) {

@@ -364,6 +364,12 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
         });
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void scrollToNode(Node node) {
+        tree.scrollIntoView(node);
+    }
+
     private void showToolbar() {
         if (refreshButton == null) {
             refreshButton = new ToolButton(new SVGImage(resources.refresh()));
