@@ -12,7 +12,6 @@ package org.eclipse.che.api.machine.gwt.client;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
 import org.eclipse.che.api.machine.shared.dto.CommandDto;
 import org.eclipse.che.api.machine.shared.dto.MachineDto;
@@ -46,7 +45,6 @@ import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
  * @author Dmitry Shnurenko
  */
 public class MachineServiceClientImpl implements MachineServiceClient {
-    private final String                 workspaceId;
     private final DtoFactory             dtoFactory;
     private final DtoUnmarshallerFactory dtoUnmarshallerFactory;
     private final AsyncRequestFactory    asyncRequestFactory;
@@ -55,12 +53,10 @@ public class MachineServiceClientImpl implements MachineServiceClient {
 
     @Inject
     protected MachineServiceClientImpl(@RestContext String restContext,
-                                       @Named("workspaceId") String workspaceId,
                                        DtoFactory dtoFactory,
                                        DtoUnmarshallerFactory dtoUnmarshallerFactory,
                                        AsyncRequestFactory asyncRequestFactory,
                                        AsyncRequestLoader loader) {
-        this.workspaceId = workspaceId;
         this.dtoFactory = dtoFactory;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.asyncRequestFactory = asyncRequestFactory;
@@ -68,6 +64,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
         this.baseHttpUrl = restContext + "/machine";
     }
 
+    /** {@inheritDoc} */
     @Override
     public Promise<MachineDto> getMachine(@NotNull final String machineId) {
         return newPromise(new RequestCall<MachineDto>() {
@@ -86,6 +83,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
                            .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(MachineDto.class)));
     }
 
+    /** {@inheritDoc} */
     @Override
     public Promise<MachineStateDto> getMachineState(@NotNull final String machineId) {
         return newPromise(new RequestCall<MachineStateDto>() {
@@ -104,8 +102,9 @@ public class MachineServiceClientImpl implements MachineServiceClient {
                            .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(MachineStateDto.class)));
     }
 
+    /** {@inheritDoc} */
     @Override
-    public Promise<List<MachineDto>> getMachines(@Nullable final String projectPath) {
+    public Promise<List<MachineDto>> getMachines(@NotNull final String workspaceId, @Nullable final String projectPath) {
         return newPromise(new RequestCall<List<MachineDto>>() {
             @Override
             public void makeCall(AsyncCallback<List<MachineDto>> callback) {
@@ -123,6 +122,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
         });
     }
 
+    /** {@inheritDoc} */
     @Override
     public Promise<List<MachineDto>> getWorkspaceMachines(final String workspaceId) {
         return newPromise(new RequestCall<List<MachineDto>>() {
@@ -151,8 +151,9 @@ public class MachineServiceClientImpl implements MachineServiceClient {
                            .send(newCallback(callback, dtoUnmarshallerFactory.newListUnmarshaller(MachineDto.class)));
     }
 
+    /** {@inheritDoc} */
     @Override
-    public Promise<List<MachineStateDto>> getMachinesStates(@Nullable final String projectPath) {
+    public Promise<List<MachineStateDto>> getMachinesStates(@NotNull final String workspaceId, @Nullable final String projectPath) {
         return newPromise(new RequestCall<List<MachineStateDto>>() {
             @Override
             public void makeCall(AsyncCallback<List<MachineStateDto>> callback) {
@@ -179,6 +180,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
                            .send(newCallback(callback, dtoUnmarshallerFactory.newListUnmarshaller(MachineStateDto.class)));
     }
 
+    /** {@inheritDoc} */
     @Override
     public Promise<Void> destroyMachine(@NotNull final String machineId) {
         return newPromise(new RequestCall<Void>() {
@@ -195,6 +197,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
                            .send(newCallback(callback));
     }
 
+    /** {@inheritDoc} */
     @Override
     public Promise<MachineProcessDto> executeCommand(@NotNull final String machineId,
                                                      @NotNull final String commandLine,
@@ -220,6 +223,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
                            .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(MachineProcessDto.class)));
     }
 
+    /** {@inheritDoc} */
     @Override
     public Promise<List<MachineProcessDto>> getProcesses(@NotNull final String machineId) {
         return newPromise(new RequestCall<List<MachineProcessDto>>() {
@@ -243,6 +247,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
         });
     }
 
+    /** {@inheritDoc} */
     @Override
     public Promise<Void> stopProcess(@NotNull final String machineId, final int processId) {
         return newPromise(new RequestCall<Void>() {
@@ -259,6 +264,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
                            .send(newCallback(callback));
     }
 
+    /** {@inheritDoc} */
     @Override
     public Promise<Void> bindProject(@NotNull final String machineId, @NotNull final String projectPath) {
         return newPromise(new RequestCall<Void>() {
@@ -275,6 +281,7 @@ public class MachineServiceClientImpl implements MachineServiceClient {
                            .send(newCallback(callback));
     }
 
+    /** {@inheritDoc} */
     @Override
     public Promise<Void> unbindProject(@NotNull final String machineId, @NotNull final String projectPath) {
         return newPromise(new RequestCall<Void>() {
