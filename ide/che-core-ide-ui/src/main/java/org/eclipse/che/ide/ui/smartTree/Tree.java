@@ -70,6 +70,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.eclipse.che.ide.util.dom.Elements.disableTextSelection;
+
 /**
  * @author Vlad Zhukovskiy
  */
@@ -1167,22 +1169,6 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
     public ContextMenuInvocationHandler getContextMenuInvocationHandler() {
         return contextMenuInvocationHandler;
     }
-
-    private native static void disableTextSelection(Element e, boolean disable)/*-{
-        if (disable) {
-            e.ondrag = function () {
-                return false;
-            };
-            e.onselectstart = function () {
-                return false;
-            };
-            e.style.MozUserSelect = "none"
-        } else {
-            e.ondrag = null;
-            e.onselectstart = null;
-            e.style.MozUserSelect = "text"
-        }
-    }-*/;
 
     public void expandAll() {
         for (Node node : nodeStorage.getRootItems()) {
