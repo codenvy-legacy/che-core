@@ -34,7 +34,6 @@ import org.eclipse.che.commons.lang.TarUtils;
 import org.eclipse.che.commons.lang.ZipUtils;
 import org.eclipse.che.dto.server.DtoFactory;
 
-import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -78,7 +77,6 @@ public final class SlaveBuilderService extends Service {
     @GET
     @Path("available")
     @Produces(MediaType.APPLICATION_JSON)
-    @RolesAllowed({"user", "tmp_user"})
     public List<BuilderDescriptor> availableBuilders() {
         final Set<Builder> all = builders.getAll();
         final List<BuilderDescriptor> list = new ArrayList<>(all.size());
@@ -96,7 +94,6 @@ public final class SlaveBuilderService extends Service {
     @GET
     @Path("state")
     @Produces(MediaType.APPLICATION_JSON)
-    @RolesAllowed({"user", "tmp_user"})
     public BuilderState getBuilderState(@Required
                                         @Description("Name of the builder")
                                         @QueryParam("builder") String builder) throws Exception {
@@ -112,7 +109,6 @@ public final class SlaveBuilderService extends Service {
     @GET
     @Path("server-state")
     @Produces(MediaType.APPLICATION_JSON)
-    @RolesAllowed({"user", "tmp_user"})
     public ServerState getServerState() {
         return DtoFactory.getInstance().createDto(ServerState.class)
                          .withCpuPercentUsage(SystemInfo.cpu())
@@ -125,7 +121,6 @@ public final class SlaveBuilderService extends Service {
     @Path("build")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @RolesAllowed({"user", "tmp_user"})
     public BuildTaskDescriptor build(@Description("Parameters for build task in JSON format") BuildRequest request) throws Exception {
         final Builder myBuilder = getBuilder(request.getBuilder());
         final BuildTask task = myBuilder.perform(request);
@@ -137,7 +132,6 @@ public final class SlaveBuilderService extends Service {
     @Path("dependencies")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @RolesAllowed({"user", "tmp_user"})
     public BuildTaskDescriptor dependencies(@Description("Parameters for analyze dependencies in JSON format") DependencyRequest request)
             throws Exception {
         final Builder myBuilder = getBuilder(request.getBuilder());
@@ -148,7 +142,6 @@ public final class SlaveBuilderService extends Service {
     @GET
     @Path("status/{builder}/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    @RolesAllowed({"user", "tmp_user"})
     public BuildTaskDescriptor getStatus(@PathParam("builder") String builder, @PathParam("id") Long id) throws Exception {
         final Builder myBuilder = getBuilder(builder);
         final BuildTask task = myBuilder.getBuildTask(id);
@@ -165,7 +158,6 @@ public final class SlaveBuilderService extends Service {
     @POST
     @Path("cancel/{builder}/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    @RolesAllowed({"user", "tmp_user"})
     public BuildTaskDescriptor cancel(@PathParam("builder") String builder, @PathParam("id") Long id) throws Exception {
         final Builder myBuilder = getBuilder(builder);
         final BuildTask task = myBuilder.getBuildTask(id);
@@ -176,7 +168,6 @@ public final class SlaveBuilderService extends Service {
     @GET
     @Path("browse/{builder}/{id}")
     @Produces(MediaType.TEXT_HTML)
-    @RolesAllowed({"user", "tmp_user"})
     public Response browseDirectory(@PathParam("builder") String builder,
                                     @PathParam("id") Long id,
                                     @DefaultValue(".") @QueryParam("path") String path) throws Exception {
@@ -270,7 +261,6 @@ public final class SlaveBuilderService extends Service {
     @GET
     @Path("tree/{builder}/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    @RolesAllowed({"user", "tmp_user"})
     public List<ItemReference> listDirectory(@PathParam("builder") String builder,
                                              @PathParam("id") Long id,
                                              @DefaultValue(".") @QueryParam("path") String path) throws Exception {
@@ -364,7 +354,6 @@ public final class SlaveBuilderService extends Service {
 
     @GET
     @Path("download/{builder}/{id}")
-    @RolesAllowed({"user", "tmp_user"})
     public Response downloadFile(@PathParam("builder") String builder,
                                  @PathParam("id") Long id,
                                  @Required @QueryParam("path") String path) throws Exception {
@@ -385,7 +374,6 @@ public final class SlaveBuilderService extends Service {
 
     @GET
     @Path("download-all/{builder}/{id}")
-    @RolesAllowed({"user", "tmp_user"})
     public Response downloadResultArchive(@PathParam("builder") String builder,
                                           @PathParam("id") Long id,
                                           @DefaultValue(Constants.RESULT_ARCHIVE_TAR) @QueryParam("arch") String arch) throws Exception {
@@ -412,7 +400,6 @@ public final class SlaveBuilderService extends Service {
 
     @GET
     @Path("view/{builder}/{id}")
-    @RolesAllowed({"user", "tmp_user"})
     public Response viewFile(@PathParam("builder") String builder,
                              @PathParam("id") Long id,
                              @Required @QueryParam("path") String path) throws Exception {
