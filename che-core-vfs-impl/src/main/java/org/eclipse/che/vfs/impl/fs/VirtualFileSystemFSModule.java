@@ -17,6 +17,7 @@ import com.google.inject.name.Names;
 import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.server.VirtualFileFilter;
 import org.eclipse.che.api.vfs.server.search.SearcherProvider;
+import org.eclipse.che.api.vfs.server.util.VirtualFileDefaults;
 
 /**
  * @deprecated  VFS is deprecated in 4.0
@@ -31,7 +32,7 @@ public class VirtualFileSystemFSModule extends AbstractModule {
         multibinder.addBinding().toInstance(new VirtualFileFilter() {
             @Override
             public boolean accept(VirtualFile virtualFile) {
-                return !virtualFile.getPath().endsWith("/.codenvy/misc.xml");
+                return !VirtualFileDefaults.isPathIgnored(virtualFile.getVirtualFilePath());
             }
         });
         //bind(LocalFSMountStrategy.class).to(WorkspaceHashLocalFSMountStrategy.class);
