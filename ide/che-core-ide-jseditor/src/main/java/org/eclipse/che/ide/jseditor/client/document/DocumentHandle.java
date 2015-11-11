@@ -32,5 +32,5 @@ public interface DocumentHandle {
      * Returns the pointed document
      * @return the document
      */
-    EmbeddedDocument getDocument();
+    Document getDocument();
 }

@@ -11,7 +11,7 @@
 package org.eclipse.che.ide.jseditor.client.reconciler;
 
 import org.eclipse.che.ide.api.text.Region;
-import org.eclipse.che.ide.jseditor.client.document.EmbeddedDocument;
+import org.eclipse.che.ide.jseditor.client.document.Document;
 
 /**
  * A reconciling strategy is used by an reconciler to reconcile a model
@@ -31,7 +31,7 @@ public interface ReconcilingStrategy {
      * @param document
      *         the document on which this strategy will work
      */
-    void setDocument(EmbeddedDocument document);
+    void setDocument(Document document);
 
     /**
      * Activates incremental reconciling of the specified dirty region.

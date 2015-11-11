@@ -14,7 +14,6 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.gwt.user.client.ui.Label;
@@ -50,9 +49,9 @@ import org.eclipse.che.ide.jseditor.client.codeassist.CodeAssistProcessor;
 import org.eclipse.che.ide.jseditor.client.codeassist.CodeAssistantFactory;
 import org.eclipse.che.ide.jseditor.client.codeassist.CompletionsSource;
 import org.eclipse.che.ide.jseditor.client.debug.BreakpointRendererFactory;
+import org.eclipse.che.ide.jseditor.client.document.Document;
 import org.eclipse.che.ide.jseditor.client.document.DocumentStorage;
 import org.eclipse.che.ide.jseditor.client.document.DocumentStorage.EmbeddedDocumentCallback;
-import org.eclipse.che.ide.jseditor.client.document.EmbeddedDocument;
 import org.eclipse.che.ide.jseditor.client.editorconfig.EditorUpdateAction;
 import org.eclipse.che.ide.jseditor.client.editorconfig.TextEditorConfiguration;
 import org.eclipse.che.ide.jseditor.client.events.CompletionRequestEvent;
@@ -125,7 +124,7 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
     private List<EditorUpdateAction> updateActions;
     private TextEditorConfiguration  configuration;
     private EditorWidget             editorWidget;
-    private EmbeddedDocument         document;
+    private Document                 document;
     private CursorModelWithHandler   cursorModel;
     private HasKeybindings keyBindingsManager = new TemporaryKeybindingsManager();
     private AsyncRequestLoader  loader;
@@ -536,7 +535,7 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
     }
 
     @Override
-    public EmbeddedDocument getDocument() {
+    public Document getDocument() {
         return this.document;
     }
 

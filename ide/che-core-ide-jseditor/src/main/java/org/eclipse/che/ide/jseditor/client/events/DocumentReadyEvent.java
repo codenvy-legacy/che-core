@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.events;
 
-import org.eclipse.che.ide.jseditor.client.document.EmbeddedDocument;
+import org.eclipse.che.ide.jseditor.client.document.Document;
 import org.eclipse.che.ide.jseditor.client.texteditor.EditorHandle;
 import com.google.gwt.event.shared.GwtEvent;
 
@@ -22,9 +22,9 @@ public class DocumentReadyEvent extends GwtEvent<DocumentReadyHandler> {
     /** The editor. */
     private final EditorHandle editorHandle;
     /** The document. */
-    private final EmbeddedDocument document;
+    private final Document     document;
 
-    public DocumentReadyEvent(final EditorHandle editorHandle, final EmbeddedDocument document) {
+    public DocumentReadyEvent(final EditorHandle editorHandle, final Document document) {
         this.editorHandle = editorHandle;
         this.document = document;
     }
@@ -39,7 +39,7 @@ public class DocumentReadyEvent extends GwtEvent<DocumentReadyHandler> {
         handler.onDocumentReady(this);
     }
 
-    public EmbeddedDocument getDocument() {
+    public Document getDocument() {
         return document;
     }
 

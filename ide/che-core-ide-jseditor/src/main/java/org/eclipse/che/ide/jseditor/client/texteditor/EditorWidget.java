@@ -22,7 +22,7 @@ import org.eclipse.che.ide.api.texteditor.UndoableEditor;
 import org.eclipse.che.ide.jseditor.client.codeassist.AdditionalInfoCallback;
 import org.eclipse.che.ide.jseditor.client.codeassist.CompletionProposal;
 import org.eclipse.che.ide.jseditor.client.codeassist.CompletionsSource;
-import org.eclipse.che.ide.jseditor.client.document.EmbeddedDocument;
+import org.eclipse.che.ide.jseditor.client.document.Document;
 import org.eclipse.che.ide.jseditor.client.editortype.EditorType;
 import org.eclipse.che.ide.jseditor.client.events.HasCursorActivityHandlers;
 import org.eclipse.che.ide.jseditor.client.events.HasGutterClickHandlers;
@@ -111,11 +111,11 @@ public interface EditorWidget extends IsWidget,
     void setTabSize(int tabSize);
 
     /**
-     * The instance of {@link org.eclipse.che.ide.jseditor.client.document.EmbeddedDocument}.
+     * The instance of {@link org.eclipse.che.ide.jseditor.client.document.Document}.
      *
      * @return the embedded document
      */
-    EmbeddedDocument getDocument();
+    Document getDocument();
 
     /**
      * Returns the selected range in the editor. In case of multiple selection support, returns the primary selection. When no actual

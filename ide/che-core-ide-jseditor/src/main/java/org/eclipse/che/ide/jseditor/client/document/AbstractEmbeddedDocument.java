@@ -15,8 +15,8 @@ import org.eclipse.che.ide.api.text.RegionImpl;
 import org.eclipse.che.ide.jseditor.client.text.LinearRange;
 import org.eclipse.che.ide.jseditor.client.text.TextRange;
 
-/** An abstract implementation of {@link EmbeddedDocument}. */
-public abstract class AbstractEmbeddedDocument implements EmbeddedDocument, DocumentHandle {
+/** An abstract implementation of {@link Document}. */
+public abstract class AbstractEmbeddedDocument implements Document, DocumentHandle {
 
     /** The document event bus. */
     private final DocumentEventBus eventBus = new DocumentEventBus();
@@ -35,7 +35,7 @@ public abstract class AbstractEmbeddedDocument implements EmbeddedDocument, Docu
     }
 
     @Override
-    public EmbeddedDocument getDocument() {
+    public Document getDocument() {
         return this;
     }
 

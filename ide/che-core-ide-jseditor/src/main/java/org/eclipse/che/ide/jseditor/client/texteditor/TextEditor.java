@@ -11,8 +11,8 @@
 package org.eclipse.che.ide.jseditor.client.texteditor;
 
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
+import org.eclipse.che.ide.jseditor.client.document.Document;
 import org.eclipse.che.ide.jseditor.client.text.TextRange;
-import org.eclipse.che.ide.jseditor.client.document.EmbeddedDocument;
 import org.eclipse.che.ide.jseditor.client.text.LinearRange;
 import org.eclipse.che.ide.jseditor.client.text.TextPosition;
 
@@ -45,7 +45,7 @@ public interface TextEditor extends EditorPartPresenter {
      * Returns the document backing the text content.
      * @return the document
      */
-    EmbeddedDocument getDocument();
+    Document getDocument();
 
     /**
      * Return the content type of the editor content.<br>

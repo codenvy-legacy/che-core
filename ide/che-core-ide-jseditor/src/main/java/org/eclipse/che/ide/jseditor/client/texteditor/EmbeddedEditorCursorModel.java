@@ -11,7 +11,7 @@
 package org.eclipse.che.ide.jseditor.client.texteditor;
 
 import org.eclipse.che.ide.api.text.Position;
-import org.eclipse.che.ide.jseditor.client.document.EmbeddedDocument;
+import org.eclipse.che.ide.jseditor.client.document.Document;
 import org.eclipse.che.ide.jseditor.client.events.CursorActivityEvent;
 import org.eclipse.che.ide.jseditor.client.events.CursorActivityHandler;
 import org.eclipse.che.ide.jseditor.client.text.TextPosition;
@@ -28,10 +28,10 @@ import org.eclipse.che.ide.util.ListenerRegistrar.Remover;
  */
 class EmbeddedEditorCursorModel implements CursorModelWithHandler, CursorActivityHandler {
 
-    private final EmbeddedDocument document;
+    private final Document document;
     private final ListenerManager<CursorHandler> cursorHandlerManager = ListenerManager.create();
 
-    public EmbeddedEditorCursorModel(final EmbeddedDocument document) {
+    public EmbeddedEditorCursorModel(final Document document) {
         this.document = document;
         this.document.addCursorHandler(this);
     }

@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.codeassist;
 
-import org.eclipse.che.ide.jseditor.client.document.EmbeddedDocument;
+import org.eclipse.che.ide.jseditor.client.document.Document;
 import org.eclipse.che.ide.jseditor.client.text.LinearRange;
 
 /**
@@ -24,7 +24,7 @@ public interface Completion {
      * @param document
      *         the document into which to insert the proposed completion
      */
-    void apply(EmbeddedDocument document);
+    void apply(Document document);
 
     /**
      * Returns the new selection after the proposal has been applied to the given document in absolute document coordinates. If it
@@ -32,11 +32,11 @@ public interface Completion {
      * <p/>
      * A document change can trigger other document changes, which have to be taken into account when calculating the new
      * selection. Typically, this would be done by installing a document listener or by using a document position during
-     * {@link #apply(EmbeddedDocument)}.
+     * {@link #apply(Document)}.
      *
      * @param document
      *         the document into which the proposed completion has been inserted
      * @return the new selection in absolute document coordinates
      */
-    LinearRange getSelection(EmbeddedDocument document);
+    LinearRange getSelection(Document document);
 }

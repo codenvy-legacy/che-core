@@ -17,8 +17,8 @@ import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.api.texteditor.TextEditorOperations;
 import org.eclipse.che.ide.jseditor.client.JsEditorConstants;
 import org.eclipse.che.ide.jseditor.client.codeassist.CodeAssistProcessor;
+import org.eclipse.che.ide.jseditor.client.document.Document;
 import org.eclipse.che.ide.jseditor.client.document.DocumentStorage;
-import org.eclipse.che.ide.jseditor.client.document.EmbeddedDocument;
 import org.eclipse.che.ide.jseditor.client.editorconfig.TextEditorConfiguration;
 import org.eclipse.che.ide.jseditor.client.formatter.ContentFormatter;
 import org.eclipse.che.ide.jseditor.client.quickfix.QuickAssistantFactory;
@@ -26,7 +26,6 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwtmockito.GwtMockitoTestRunner;
 import com.google.web.bindery.event.shared.EventBus;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -71,7 +70,7 @@ public class EmbeddedTextEditorPresenterTest {
     @Mock
     private EditorWidget                      editorWidget;
     @Mock
-    private EmbeddedDocument                  document;
+    private Document                          document;
     @Mock
     private TextEditorConfiguration           configuration;
     @Mock

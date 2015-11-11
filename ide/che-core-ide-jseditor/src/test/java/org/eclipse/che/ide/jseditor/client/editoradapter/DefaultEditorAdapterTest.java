@@ -21,7 +21,7 @@ import org.eclipse.che.ide.api.parts.WorkspaceAgent;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.texteditor.UndoableEditor;
-import org.eclipse.che.ide.jseditor.client.document.EmbeddedDocument;
+import org.eclipse.che.ide.jseditor.client.document.Document;
 import org.eclipse.che.ide.jseditor.client.editorconfig.TextEditorConfiguration;
 import org.eclipse.che.ide.jseditor.client.keymap.Keybinding;
 import org.eclipse.che.ide.jseditor.client.text.LinearRange;
@@ -115,11 +115,11 @@ public class DefaultEditorAdapterTest {
 
     @Test
     public void shouldGetDocument() {
-        final EmbeddedDocument embeddedDocument = mock(EmbeddedDocument.class);
+        final Document document = mock(Document.class);
 
-        when(textEditor.getDocument()).thenReturn(embeddedDocument);
+        when(textEditor.getDocument()).thenReturn(document);
 
-        assertEquals(embeddedDocument, defaultEditorAdapter.getDocument());
+        assertEquals(document, defaultEditorAdapter.getDocument());
     }
 
     @Test
