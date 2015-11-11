@@ -483,10 +483,6 @@ public class TreeSelectionModel implements HasSelectionHandlers<Node>, HasBefore
                     break;
 
                 case MULTI:
-                    if (isMeta) {
-                        break;
-                    }
-
                     if (isShift && lastSelectedNode != null) {
                         List<Node> selectedItems = new ArrayList<>();
 
@@ -541,10 +537,15 @@ public class TreeSelectionModel implements HasSelectionHandlers<Node>, HasBefore
 
                     } else if (!isSelected(sel)) {
                         tree.focus();
-                        doSelect(Collections.singletonList(sel), false, false);
+                        doSelect(Collections.singletonList(sel), e.getCtrlOrMetaKey(), false);
 
                         // reset the starting location of multi select
                         lastSelectedNode = sel;
+                    } else if (isSelected(sel) && !e.getShiftKey() && !e.getCtrlOrMetaKey() && !selectionStorage.isEmpty()) {
+                        doSelect(Collections.singletonList(sel), false, false);
+                        tree.focus();
+                    } else if (isSelected(sel) && !selectionStorage.isEmpty()) {
+                        doDeselect(Collections.singletonList(sel), false);
                     }
                     break;
             }
