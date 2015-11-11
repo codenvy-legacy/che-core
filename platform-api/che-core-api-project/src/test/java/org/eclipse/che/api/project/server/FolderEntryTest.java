@@ -88,7 +88,7 @@ public class FolderEntryTest {
     @Test
     public void testMove() throws Exception {
         VirtualFile vfProject = mmp.getRoot().createFolder("my_project_2");
-        vfProject.createFolder(".codenvy").createFile("project", null, null);
+        vfProject.createFolder(Constants.CODENVY_DIR).createFile("project", null, null);
         String name = myFolder.getName();
         String newPath = vfProject.getVirtualFilePath().newPath(name).toString();
 
@@ -104,7 +104,7 @@ public class FolderEntryTest {
     @Test
     public void testCopy() throws Exception {
         VirtualFile vfProject = mmp.getRoot().createFolder("my_project_2");
-        vfProject.createFolder(".codenvy").createFile("project", null, null);
+        vfProject.createFolder(Constants.CODENVY_DIR).createFile("project", null, null);
         String name = myFolder.getName();
         String newPath = vfProject.getVirtualFilePath().newPath(name).toString();
 
