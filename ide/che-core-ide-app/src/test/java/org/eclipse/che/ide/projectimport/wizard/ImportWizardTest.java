@@ -16,14 +16,17 @@ import com.google.web.bindery.event.shared.EventBus;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ImportProject;
 import org.eclipse.che.api.project.shared.dto.ImportResponse;
+import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.NewProject;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectProblem;
 import org.eclipse.che.api.vfs.gwt.client.VfsServiceClient;
 import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
 import org.eclipse.che.ide.api.wizard.Wizard;
+import org.eclipse.che.ide.commons.exception.ServerException;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
@@ -46,6 +49,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -58,11 +62,13 @@ public class ImportWizardTest {
     private static final String PROJECT_NAME = "project1";
 
     @Captor
-    private ArgumentCaptor<AsyncRequestCallback<Item>>      callbackCaptorForItem;
+    private ArgumentCaptor<AsyncRequestCallback<Item>>          callbackCaptorForItem;
     @Captor
-    private ArgumentCaptor<RequestCallback<ImportResponse>> callbackCaptorForProject;
+    private ArgumentCaptor<RequestCallback<ImportResponse>>     callbackCaptorForProject;
     @Captor
-    private ArgumentCaptor<AsyncRequestCallback<Void>>      callbackCaptorForVoid;
+    private ArgumentCaptor<AsyncRequestCallback<Void>>          callbackCaptorForVoid;
+    @Captor
+    private ArgumentCaptor<AsyncRequestCallback<ItemReference>> callbackCaptorForItemReference;
 
     @Mock
     private ProjectServiceClient                projectServiceClient;
@@ -78,6 +84,8 @@ public class ImportWizardTest {
     private CoreLocalizationConstant            localizationConstant;
     @Mock
     private ImportProjectNotificationSubscriber importProjectNotificationSubscriber;
+    @Mock
+    private NotificationManager                 notificationManager;
 
     @Mock
     private ImportProject           importProject;
@@ -99,10 +107,10 @@ public class ImportWizardTest {
     public void shouldInvokeCallbackWhenFolderAlreadyExists() throws Exception {
         wizard.complete(completeCallback);
 
-        verify(vfsServiceClient).getItemByPath(eq(PROJECT_NAME), callbackCaptorForItem.capture());
+        verify(projectServiceClient).getItem(eq(PROJECT_NAME), callbackCaptorForItemReference.capture());
 
-        AsyncRequestCallback<Item> callback = callbackCaptorForItem.getValue();
-        GwtReflectionUtils.callOnSuccess(callback, mock(Item.class));
+        AsyncRequestCallback<ItemReference> callback = callbackCaptorForItemReference.getValue();
+        GwtReflectionUtils.callOnSuccess(callback, mock(ItemReference.class));
 
         verify(completeCallback).onFailure(any(Throwable.class));
     }
@@ -111,10 +119,13 @@ public class ImportWizardTest {
     public void shouldImportAndOpenProject() throws Exception {
         wizard.complete(completeCallback);
 
-        verify(vfsServiceClient).getItemByPath(eq(PROJECT_NAME), callbackCaptorForItem.capture());
+        verify(projectServiceClient).getItem(eq(PROJECT_NAME), callbackCaptorForItemReference.capture());
 
-        AsyncRequestCallback<Item> itemCallback = callbackCaptorForItem.getValue();
-        GwtReflectionUtils.callOnFailure(itemCallback, mock(Throwable.class));
+        final ServerException exception = mock(ServerException.class);
+        when(exception.getHTTPStatus()).thenReturn(404);
+
+        AsyncRequestCallback<ItemReference> itemReferenceCallback = callbackCaptorForItemReference.getValue();
+        GwtReflectionUtils.callOnFailure(itemReferenceCallback, exception);
 
         verify(projectServiceClient).importProject(eq(PROJECT_NAME), eq(false), eq(importProject), callbackCaptorForProject.capture());
 
@@ -125,6 +136,24 @@ public class ImportWizardTest {
 
         verify(eventBus).fireEvent(Matchers.<Event<Object>>anyObject());
         verify(completeCallback).onCompleted();
+    }
+
+    @Test
+    public void shouldNotImportProjectAndShowNotificationIfAnyUnexpectedErrorOccur() throws Exception {
+        wizard.complete(completeCallback);
+
+        verify(projectServiceClient).getItem(eq(PROJECT_NAME), callbackCaptorForItemReference.capture());
+
+        final ServerException exception = mock(ServerException.class);
+        when(exception.getHTTPStatus()).thenReturn(400);
+        when(exception.getMessage()).thenReturn("Bad Request");
+
+        AsyncRequestCallback<ItemReference> itemReferenceCallback = callbackCaptorForItemReference.getValue();
+        GwtReflectionUtils.callOnFailure(itemReferenceCallback, exception);
+
+        verify(notificationManager).showError("Bad Request");
+
+        verifyNoMoreInteractions(projectServiceClient, eventBus, completeCallback);
     }
 
     //  @Test
