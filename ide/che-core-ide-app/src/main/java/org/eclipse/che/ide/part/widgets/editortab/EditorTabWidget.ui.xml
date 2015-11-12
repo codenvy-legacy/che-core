@@ -18,15 +18,15 @@
 
     <ui:style>
 
-        @eval editorPanelBackgroundColor org.eclipse.che.ide.api.theme.Style.getEditorPanelBackgroundColor();
-        @eval tabBorderColor org.eclipse.che.ide.api.theme.Style.getTabBorderColor();
-        @eval tabTextColor org.eclipse.che.ide.api.theme.Style.getTabTextColor();
-        @eval hoveredTabTextColor org.eclipse.che.ide.api.theme.Style.getHoveredTabTextColor();
-        @eval activeTabTextColor org.eclipse.che.ide.api.theme.Style.getActiveTabTextColor();
+        @eval editorPanelBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.editorPanelBackgroundColor();
+        @eval tabBorderColor org.eclipse.che.ide.api.theme.Style.theme.tabBorderColor();
+        @eval tabTextColor org.eclipse.che.ide.api.theme.Style.theme.tabTextColor();
+        @eval hoveredTabTextColor org.eclipse.che.ide.api.theme.Style.theme.hoveredTabTextColor();
+        @eval activeTabTextColor org.eclipse.che.ide.api.theme.Style.theme.activeTabTextColor();
         @eval editorTabIconColor org.eclipse.che.ide.api.theme.Style.getEditorTabIconColor();
-        @eval activeEditorTabBackgroundColor org.eclipse.che.ide.api.theme.Style.getActiveEditorTabBackgroundColor();
-        @eval focusedEditorTabBackgroundColor org.eclipse.che.ide.api.theme.Style.getFocusedEditorTabBackgroundColor();
-        @eval focusedEditorTabBorderBottomColor org.eclipse.che.ide.api.theme.Style.getFocusedEditorTabBorderBottomColor();
+        @eval activeEditorTabBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.activeEditorTabBackgroundColor();
+        @eval focusedEditorTabBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.focusedEditorTabBackgroundColor();
+        @eval focusedEditorTabBorderBottomColor org.eclipse.che.ide.api.theme.Style.theme.focusedEditorTabBorderBottomColor();
 
         .mainPanel {
             -webkit-box-sizing: border-box;

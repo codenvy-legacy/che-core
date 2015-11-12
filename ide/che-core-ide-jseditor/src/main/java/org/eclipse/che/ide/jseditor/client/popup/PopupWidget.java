@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.popup;
 
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.user.client.Timer;
 import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.dom.Node;
@@ -29,16 +31,12 @@ import static elemental.css.CSSStyleDeclaration.Unit.PX;
  */
 public abstract class PopupWidget<T> {
 
-    private static final int MAX_HEIGHT = 500;
-
-    private static final int MAX_WIDTH = 400;
-
-    private static final int MIN_HEIGHT = 200;
-
-    private static final int MIN_WIDTH = 200;
+    private static final int MIN_WIDTH = 400;
+    private static final int MIN_HEIGHT = 130;
 
     /** The main element for the popup. */
     private final Element popupElement;
+    protected final Element popupBodyElement;
 
     /** The list (ul) element for the popup. */
     private final Element listElement;
@@ -58,12 +56,21 @@ public abstract class PopupWidget<T> {
     private Element previousFocus;
 
     public PopupWidget(final PopupResources popupResources) {
-        this.popupElement = Elements.createDivElement(popupResources.popupStyle().popup());
-        this.listElement = Elements.createUListElement();
-        this.popupElement.appendChild(this.listElement);
         this.popupResources = popupResources;
 
-        this.popupListener = new EventListener() {
+        popupElement = Elements.createDivElement(popupResources.popupStyle().popup());
+
+        Element headerElement = Elements.createDivElement(popupResources.popupStyle().header());
+        headerElement.setInnerText("Proposals:");
+        popupElement.appendChild(headerElement);
+
+        popupBodyElement = Elements.createDivElement(popupResources.popupStyle().body());
+        popupElement.appendChild(popupBodyElement);
+
+        listElement = Elements.createUListElement();
+        popupBodyElement.appendChild(listElement);
+
+        popupListener = new EventListener() {
             @Override
             public void handleEvent(final Event evt) {
                 if (evt instanceof MouseEvent) {
@@ -80,48 +87,44 @@ public abstract class PopupWidget<T> {
                 // else won't happen
             }
         };
-        this.keyboardListener = new PopupKeyDownListener(this, this.listElement);
+
+        keyboardListener = new PopupKeyDownListener(this, this.listElement);
     }
 
-    /** Returns the content to display when no items were added. */
-    public abstract Element getEmptyDisplay();
+    public abstract String getEmptyMessage();
 
     /** Create an element for the given item data. */
     public abstract Element createItem(final T itemModel);
 
-    /** Remove all items. */
-    public void clear() {
-        Node lastChild = this.listElement.getLastChild(); 
-        while (lastChild != null) {
-            this.listElement.removeChild(lastChild);
-            lastChild = this.listElement.getLastChild();
-        }
-    }
-
     /**
      * Show the widget at the given document position.
-     * @param Xcoord the horizontal pixel position in the document
-     * @param Ycoord the vertical pixel position in the document
+     * @param left the horizontal pixel position in the document
+     * @param top the vertical pixel position in the document
      */
-    public void show(final float Xcoord, final float Ycoord) {
-        if (this.listElement.getChildElementCount() == 0) {
-            Element emptyElement = getEmptyDisplay();
-            if (emptyElement != null) {
-                emptyElement.setTabIndex(1);
-                this.listElement.appendChild(emptyElement);
-            } else {
-                return;
-            }
+    public void show(final float left, final float top) {
+        if (!listElement.hasChildNodes()) {
+            Element emptyElement = Elements.createLiElement(popupResources.popupStyle().item());
+            emptyElement.setTextContent(getEmptyMessage());
+            listElement.appendChild(emptyElement);
+            return;
         }
 
-        final Document document = Elements.getDocument();
-        document.getBody().appendChild(this.popupElement);
-        document.addEventListener(Event.MOUSEDOWN, this.popupListener, false);
+        /* Reset popup dimensions and show. */
+        popupElement.getStyle().setLeft(left, PX);
+        popupElement.getStyle().setTop(top, PX);
+        popupElement.getStyle().setWidth("" + MIN_WIDTH + "px");
+        popupElement.getStyle().setHeight("" + MIN_HEIGHT + "px");
+        popupElement.getStyle().setOpacity(0);
+        Elements.getDocument().getBody().appendChild(popupElement);
 
-        this.popupElement.getStyle().setTop(Ycoord, PX);
-        this.popupElement.getStyle().setLeft(Xcoord, PX);
-        this.popupElement.getStyle().setProperty("max-height", Integer.toString(MAX_HEIGHT) + "px");
-        this.popupElement.getStyle().setProperty("max-width", Integer.toString(MAX_WIDTH) + "px");
+        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+            @Override
+            public void execute() {
+                popupElement.getStyle().setOpacity(1);
+            }
+        });
+
+        Elements.getDocument().addEventListener(Event.MOUSEDOWN, popupListener, false);
 
         // does it fit inside the doc body?
         // This does exactly the same thing for height/top and width/left
@@ -161,18 +164,12 @@ public abstract class PopupWidget<T> {
 
         if (needsFocus()) {
             // save previous focus and set focus in popup
-            this.previousFocus = Elements.getDocument().getActiveElement();
-            final Element toFocus = this.listElement.getFirstElementChild();
-            toFocus.focus();
+            previousFocus = Elements.getDocument().getActiveElement();
+            listElement.getFirstElementChild().focus();
         }
 
         // add key event listener on popup
-        this.listElement.addEventListener(Event.KEYDOWN, this.keyboardListener, false);
-    }
-
-    /** Returns the style to add to all items. */
-    protected String getItemStyle() {
-        return this.popupResources.popupStyle().item();
+        listElement.addEventListener(Event.KEYDOWN, keyboardListener, false);
     }
 
     /**
@@ -183,34 +180,36 @@ public abstract class PopupWidget<T> {
         if (itemModel == null) {
             return;
         }
-        final Element itemElement = createItem(itemModel);
-        if (itemElement != null) {
-            // makes the element focusable
-            itemElement.setTabIndex(1);
-            this.listElement.appendChild(itemElement);
-        }
+
+        Element element = createItem(itemModel);
+        element.setTabIndex(1);
+        listElement.appendChild(element);
     }
 
     /** Hide the popup. */
     public void hide() {
         // restore previous focus state
-        if (this.previousFocus != null) {
-            this.previousFocus.focus();
-            this.previousFocus = null;
+        if (previousFocus != null) {
+            previousFocus.focus();
+            previousFocus = null;
         }
+
+        popupElement.getStyle().setOpacity(0);
+        new Timer() {
+            @Override
+            public void run() {
+                // detach assist popup
+                popupElement.getParentNode().removeChild(popupElement);
+                // remove all items from popup element
+                listElement.setInnerHTML("");
+            }
+        }.schedule(250);
 
         // remove the keyboard listener
-        this.listElement.removeEventListener(Event.KEYDOWN, this.keyboardListener, false);
-
-        // remove the element from dom
-        final Document document = Elements.getDocument();
-        final Node parent = this.popupElement.getParentNode();
-        if (parent  != null) {
-            parent.removeChild(this.popupElement);
-        }
+        listElement.removeEventListener(Event.KEYDOWN, keyboardListener, false);
 
         // remove the mouse listener
-        document.removeEventListener(Event.MOUSEDOWN, this.popupListener);
+        Elements.getDocument().removeEventListener(Event.MOUSEDOWN, popupListener);
     }
 
     /**

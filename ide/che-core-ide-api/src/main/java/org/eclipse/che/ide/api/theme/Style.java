@@ -19,104 +19,8 @@ public class Style {
 
     public static Theme theme;
 
-    public static String getHoverBackgroundColor() {
-        return theme.getHoverBackgroundColor();
-    }
-
-    public static String getKeyboardSelectionBackgroundColor() {
-        return theme.getKeyboardSelectionBackgroundColor();
-    }
-
-    public static String getSelectionBackground() {
-        return theme.getSelectionBackground();
-    }
-
-    public static String getInactiveTabBackground() {
-        return theme.getInactiveTabBackground();
-    }
-
-    public static String getInactiveTabBorderColor() {
-        return theme.getInactiveTabBorderColor();
-    }
-
-    public static String getActiveTabBackground() {
-        return theme.getActiveTabBackground();
-    }
-
-    public static String getTabTextColor() {
-        return theme.getTabTextColor();
-    }
-
-    public static String getHoveredTabTextColor() {
-        return theme.getHoveredTabTextColor();
-    }
-
-    public static String getActiveTabBorderColor() {
-        return theme.getActiveTabBorderColor();
-    }
-
-    public static String getActiveTabTextColor() {
-        return theme.getActiveTabTextColor();
-    }
-
-    public static String getActiveTabTextShadow() {
-        return theme.getActiveTabTextShadow();
-    }
-
-    public static String getActiveTabIconColor() {
-        return theme.getActiveTabIconColor();
-    }
-
-    public static String getTabsPanelBackground() {
-        return theme.getTabsPanelBackground();
-    }
-
-    public static String getTabBorderColor() {
-        return theme.getTabBorderColor();
-    }
-
-    public static String getTabUnderlineColor() {
-        return theme.getTabUnderlineColor();
-    }
-
-    public static String getPartBackground() {
-        return theme.getPartBackground();
-    }
-
     public static String getEditorTabIconColor() {
         return theme.getEditorTabIconColor();
-    }
-
-    public static String getActiveEditorTabBackgroundColor() {
-        return theme.getActiveEditorTabBackgroundColor();
-    }
-
-    public static String getFocusedEditorTabBackgroundColor() {
-        return theme.getFocusedEditorTabBackgroundColor();
-    }
-
-    public static String getFocusedEditorTabBorderBottomColor() {
-        return theme.getFocusedEditorTabBorderBottomColor();
-    }
-
-    public static String getPartToolbar() {
-        return theme.getPartToolbar();
-    }
-
-    public static String getPartToolbarActive() {
-        return theme.getPartToolbarActive();
-    }
-
-    public static String getPartToolbarShadow() {
-        return theme.getPartToolbarShadow();
-    }
-
-    public static String getPartToolbarSeparatorTopColor() {
-        return theme.getPartToolbarSeparatorTopColor();
-    }
-
-    public static String getPartToolbarSeparatorBottomColor() {
-        return theme.getPartToolbarSeparatorBottomColor();
     }
 
     public static String getMainFontColor() {
@@ -241,10 +145,6 @@ public class Style {
 
     public static String getSocialButtonColor() {
         return theme.getSocialButtonColor();
-    }
-
-    public static String getEditorPanelBackgroundColor() {
-        return theme.getEditorPanelBackgroundColor();
     }
 
     public static String getEditorBackgroundColor() {
@@ -396,10 +296,6 @@ public class Style {
         return theme.getFactoryLinkColor();
     }
 
-    public static String getConsolePanelColor() {
-        return theme.getConsolePanelColor();
-    }
-
     public static String getStatusPanelColor() {
         return theme.getStatusPanelColor();
     }
@@ -442,26 +338,6 @@ public class Style {
 
     public static String getMainMenuFontSelectedColor() {
         return theme.getMainMenuFontSelectedColor();
-    }
-
-    public static String getTabBorderShadow() {
-        return theme.getTabBorderShadow();
-    }
-
-    public static String getTreeTextFileColor() {
-        return theme.getTreeTextFileColor();
-    }
-
-    public static String getTreeTextFolderColor() {
-        return theme.getTreeTextFolderColor();
-    }
-
-    public static String getTreeTextShadow() {
-        return theme.getTreeTextShadow();
-    }
-
-    public static String getTreeIconFileColor() {
-        return theme.getTreeIconFileColor();
     }
 
     public static String getToolbarBackgroundImage() {
@@ -520,10 +396,6 @@ public class Style {
         return theme.getSelectCommandActionHoverColor();
     }
 
-    public static String getProgressColor() {
-        return theme.getProgressColor();
-    }
-
     public static String getSuccessEventColor() {
         return theme.getSuccessEventColor();
     }
@@ -538,14 +410,6 @@ public class Style {
 
     public static String getDelimeterColor() {
         return theme.getDelimeterColor();
-    }
-
-    public static String getMinimizeIconColor() {
-        return theme.getMinimizeIconColor();
-    }
-
-    public static String getMinimizeIconHoverColor() {
-        return theme.getMinimizeIconHoverColor();
     }
 
     public static String getOutputFontColor() {

@@ -9,85 +9,75 @@
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 
-/*Tabs*/
+/* Tabs */
 
 /** Tab panel background */
-@eval tabsPanelBackground org.eclipse.che.ide.api.theme.Style.getTabsPanelBackground();
+@eval tabsPanelBackground org.eclipse.che.ide.api.theme.Style.theme.tabsPanelBackground();
 
 /** Tab button border color */
-@eval tabBorderColor org.eclipse.che.ide.api.theme.Style.getTabBorderColor();
+@eval tabBorderColor org.eclipse.che.ide.api.theme.Style.theme.tabBorderColor();
 
 /** Color used for underlining active tab */
-@eval tabUnderlineColor org.eclipse.che.ide.api.theme.Style.getTabUnderlineColor();
+@eval tabUnderlineColor org.eclipse.che.ide.api.theme.Style.theme.tabUnderlineColor();
 
 /** Tab button text color */
-@eval tabTextColor org.eclipse.che.ide.api.theme.Style.getTabTextColor();
-
+@eval tabTextColor org.eclipse.che.ide.api.theme.Style.theme.tabTextColor();
 
 /** Hovered tab button text color */
-@eval hoveredTabTextColor org.eclipse.che.ide.api.theme.Style.getHoveredTabTextColor();
-
+@eval hoveredTabTextColor org.eclipse.che.ide.api.theme.Style.theme.hoveredTabTextColor();
 
 /** Background color for active tab */
-@eval activeTabBackground org.eclipse.che.ide.api.theme.Style.getActiveTabBackground();
+@eval activeTabBackground org.eclipse.che.ide.api.theme.Style.theme.activeTabBackground();
 
 /** Border color for active tab */
-@eval activeTabBorderColor org.eclipse.che.ide.api.theme.Style.getActiveTabBorderColor();
+@eval activeTabBorderColor org.eclipse.che.ide.api.theme.Style.theme.activeTabBorderColor();
 
 /** Text color for active tab */
-@eval activeTabTextColor org.eclipse.che.ide.api.theme.Style.getActiveTabTextColor();
+@eval activeTabTextColor org.eclipse.che.ide.api.theme.Style.theme.activeTabTextColor();
 
 /** Text shadow for active tab */
-@eval activeTabTextShadow org.eclipse.che.ide.api.theme.Style.getActiveTabTextShadow();
+@eval activeTabTextShadow org.eclipse.che.ide.api.theme.Style.theme.activeTabTextShadow();
 
 /** Icon stroke color for active tab */
-@eval activeTabIconColor org.eclipse.che.ide.api.theme.Style.getActiveTabIconColor();
+@eval activeTabIconColor org.eclipse.che.ide.api.theme.Style.theme.activeTabIconColor();
 
-@eval activeEditorTabBackgroundColor org.eclipse.che.ide.api.theme.Style.getActiveEditorTabBackgroundColor();
-@eval focusedEditorTabBackgroundColor org.eclipse.che.ide.api.theme.Style.getFocusedEditorTabBackgroundColor();
-@eval focusedEditorTabBorderBottomColor org.eclipse.che.ide.api.theme.Style.getFocusedEditorTabBorderBottomColor();
+@eval activeEditorTabBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.activeEditorTabBackgroundColor();
+@eval focusedEditorTabBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.focusedEditorTabBackgroundColor();
+@eval focusedEditorTabBorderBottomColor org.eclipse.che.ide.api.theme.Style.theme.focusedEditorTabBorderBottomColor();
 
-@eval inactiveTabBackground org.eclipse.che.ide.api.theme.Style.getInactiveTabBackground();
-@eval inactiveTabBorderColor org.eclipse.che.ide.api.theme.Style.getInactiveTabBorderColor();
+@eval inactiveTabBackground org.eclipse.che.ide.api.theme.Style.theme.inactiveTabBackground();
+@eval inactiveTabBorderColor org.eclipse.che.ide.api.theme.Style.theme.inactiveTabBorderColor();
 
 @eval openedFilesDropdownListBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.openedFilesDropdownListBackgroundColor();
 @eval openedFilesDropdownListBorderColor org.eclipse.che.ide.api.theme.Style.theme.openedFilesDropdownListBorderColor();
 @eval openedFilesDropdownListShadowColor org.eclipse.che.ide.api.theme.Style.theme.openedFilesDropdownListShadowColor();
 
-@eval highlightFocus org.eclipse.che.ide.api.theme.Style.getHighlightFocus();
+@eval partBackground org.eclipse.che.ide.api.theme.Style.theme.partBackground();
+@eval partToolbar org.eclipse.che.ide.api.theme.Style.theme.partToolbar();
+@eval partToolbarActive org.eclipse.che.ide.api.theme.Style.theme.partToolbarActive();
+@eval partToolbarShadow org.eclipse.che.ide.api.theme.Style.theme.partToolbarShadow();
+@eval partToolbarSeparatorTopColor org.eclipse.che.ide.api.theme.Style.theme.partToolbarSeparatorTopColor();
+@eval partToolbarSeparatorBottomColor org.eclipse.che.ide.api.theme.Style.theme.partToolbarSeparatorBottomColor();
 
-@eval hoverBackgroundColor org.eclipse.che.ide.api.theme.Style.getHoverBackgroundColor();
-@eval lightGreyBackground org.eclipse.che.ide.api.theme.Style.getLightGreyBackground();
-@eval barBackgroundColor org.eclipse.che.ide.api.theme.Style.getBarBackgroundColor();
+@eval consolePanelColor org.eclipse.che.ide.api.theme.Style.theme.consolePanelColor();
 
-@eval partBackground org.eclipse.che.ide.api.theme.Style.getPartBackground();
+@eval tabBorderShadow org.eclipse.che.ide.api.theme.Style.theme.tabBorderShadow();
+@eval minimizeIconColor org.eclipse.che.ide.api.theme.Style.theme.minimizeIconColor();
+@eval minimizeIconHoverColor org.eclipse.che.ide.api.theme.Style.theme.minimizeIconHoverColor();
 
-@eval partToolbar org.eclipse.che.ide.api.theme.Style.getPartToolbar();
-@eval partToolbarActive org.eclipse.che.ide.api.theme.Style.getPartToolbarActive();
-@eval partToolbarShadow org.eclipse.che.ide.api.theme.Style.getPartToolbarShadow();
-@eval partToolbarSeparatorTopColor org.eclipse.che.ide.api.theme.Style.getPartToolbarSeparatorTopColor();
-@eval partToolbarSeparatorBottomColor org.eclipse.che.ide.api.theme.Style.getPartToolbarSeparatorBottomColor();
+@eval progressColor org.eclipse.che.ide.api.theme.Style.theme.progressColor();
 
-@eval consolePanelColor org.eclipse.che.ide.api.theme.Style.getConsolePanelColor();
-
-@eval tabBorderShadow org.eclipse.che.ide.api.theme.Style.getTabBorderShadow();
-@eval minimizeIconColor org.eclipse.che.ide.api.theme.Style.getMinimizeIconColor();
-@eval minimizeIconHoverColor org.eclipse.che.ide.api.theme.Style.getMinimizeIconHoverColor();
-
-/* Indicates a completed action. Preferred text color is lightTextColor. */
-@eval completedBackgroundColor org.eclipse.che.ide.api.theme.Style.getCompletedBackgroundColor();
-@eval progressColor org.eclipse.che.ide.api.theme.Style.getProgressColor();
 /* Background color for an item selected with the keyboard */
-@eval keyboardSelectionBackgroundColor org.eclipse.che.ide.api.theme.Style.getKeyboardSelectionBackgroundColor();
-@eval anchorColor org.eclipse.che.ide.api.theme.Style.getAnchorColor();
+@eval keyboardSelectionBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.keyboardSelectionBackgroundColor();
 
 /* Tree */
-@eval hoverBackground org.eclipse.che.ide.api.theme.Style.getHoverBackground();
-@eval selectionBackground org.eclipse.che.ide.api.theme.Style.getSelectionBackground();
-@eval treeTextFileColor org.eclipse.che.ide.api.theme.Style.getTreeTextFileColor();
-@eval treeTextFolderColor org.eclipse.che.ide.api.theme.Style.getTreeTextFolderColor();
-@eval treeTextShadow org.eclipse.che.ide.api.theme.Style.getTreeTextShadow();
-@eval treeIconFileColor org.eclipse.che.ide.api.theme.Style.getTreeIconFileColor();
+@eval hoverBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.hoverBackgroundColor();
+
+@eval selectionBackground org.eclipse.che.ide.api.theme.Style.theme.selectionBackground();
+@eval treeTextFileColor org.eclipse.che.ide.api.theme.Style.theme.treeTextFileColor();
+@eval treeTextFolderColor org.eclipse.che.ide.api.theme.Style.theme.treeTextFolderColor();
+@eval treeTextShadow org.eclipse.che.ide.api.theme.Style.theme.treeTextShadow();
+@eval treeIconFileColor org.eclipse.che.ide.api.theme.Style.theme.treeIconFileColor();
 
 /*Button */
 @def buttonHeight 22px;
@@ -128,7 +118,7 @@
 @eval notableButtonColor org.eclipse.che.ide.api.theme.Style.getNotableButtonColor();
 
 /*Editor*/
-@eval editorPanelBackgroundColor org.eclipse.che.ide.api.theme.Style.getEditorPanelBackgroundColor();
+@eval editorPanelBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.editorPanelBackgroundColor();
 @eval editorBackgroundColor org.eclipse.che.ide.api.theme.Style.getEditorBackgroundColor();
 @eval editorCurrentLineColor org.eclipse.che.ide.api.theme.Style.getEditorCurrentLineColor();
 @eval editorDefaultFontColor org.eclipse.che.ide.api.theme.Style.getEditorDefaultFontColor();
@@ -254,14 +244,14 @@
 @eval selectCommandActionIconBackgroundColor org.eclipse.che.ide.api.theme.Style.getSelectCommandActionIconBackgroundColor();
 
 /* DialogBox*/
-@eval dialogTopLeft org.eclipse.che.ide.api.theme.Style.getTabBorderColor();
-@eval dialogTopCenter org.eclipse.che.ide.api.theme.Style.getTabBorderColor();
-@eval dialogTopRight org.eclipse.che.ide.api.theme.Style.getTabBorderColor();
-@eval dialogMiddleLeft org.eclipse.che.ide.api.theme.Style.getTabBorderColor();
-@eval dialogMiddleRight org.eclipse.che.ide.api.theme.Style.getTabBorderColor();
-@eval dialogBottomLeft org.eclipse.che.ide.api.theme.Style.getTabBorderColor();
-@eval dialogBottomCenter org.eclipse.che.ide.api.theme.Style.getTabBorderColor();
-@eval dialogBottomRight org.eclipse.che.ide.api.theme.Style.getTabBorderColor();
+@eval dialogTopLeft org.eclipse.che.ide.api.theme.Style.theme.tabBorderColor();
+@eval dialogTopCenter org.eclipse.che.ide.api.theme.Style.theme.tabBorderColor();
+@eval dialogTopRight org.eclipse.che.ide.api.theme.Style.theme.tabBorderColor();
+@eval dialogMiddleLeft org.eclipse.che.ide.api.theme.Style.theme.tabBorderColor();
+@eval dialogMiddleRight org.eclipse.che.ide.api.theme.Style.theme.tabBorderColor();
+@eval dialogBottomLeft org.eclipse.che.ide.api.theme.Style.theme.tabBorderColor();
+@eval dialogBottomCenter org.eclipse.che.ide.api.theme.Style.theme.tabBorderColor();
+@eval dialogBottomRight org.eclipse.che.ide.api.theme.Style.theme.tabBorderColor();
 @eval dialogContentBackground org.eclipse.che.ide.api.theme.Style.getDialogContentBackground();
 
 /*Window*/

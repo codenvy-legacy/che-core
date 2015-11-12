@@ -33,22 +33,22 @@ public class DarkTheme implements Theme {
     }
 
     @Override
-    public String getHoverBackgroundColor() {
+    public String hoverBackgroundColor() {
         return "rgba(215, 215, 215, 0.12)";
     }
 
     @Override
-    public String getKeyboardSelectionBackgroundColor() {
+    public String keyboardSelectionBackgroundColor() {
         return "#2f65ca";
     }
 
     @Override
-    public String getSelectionBackground() {
+    public String selectionBackground() {
         return "#256c9f";
     }
 
     @Override
-    public String getTabsPanelBackground() {
+    public String tabsPanelBackground() {
         return "#33373B";
     }
 
@@ -59,32 +59,32 @@ public class DarkTheme implements Theme {
      ************************************************************************************************/
 
     @Override
-    public String getInactiveTabBackground() {
+    public String inactiveTabBackground() {
         return "#484848";
     }
 
     @Override
-    public String getTabBorderColor() {
+    public String tabBorderColor() {
         return "#121416";
     }
 
     @Override
-    public String getInactiveTabBorderColor() {
+    public String inactiveTabBorderColor() {
         return "#353535";
     }
 
     @Override
-    public String getTabUnderlineColor() {
+    public String tabUnderlineColor() {
         return "rgb(70,102,149)";
     }
 
     @Override
-    public String getTabTextColor() {
+    public String tabTextColor() {
         return "#AAAAAA";
     }
 
     @Override
-    public String getHoveredTabTextColor() {
+    public String hoveredTabTextColor() {
         return "#FFFFFF";
     }
 
@@ -95,27 +95,27 @@ public class DarkTheme implements Theme {
      ************************************************************************************************/
 
     @Override
-    public String getActiveTabBackground() {
+    public String activeTabBackground() {
         return "#292C2F";
     }
 
     @Override
-    public String getActiveTabBorderColor() {
+    public String activeTabBorderColor() {
         return "#121416";
     }
 
     @Override
-    public String getActiveTabTextColor() {
+    public String activeTabTextColor() {
         return "#FFFFFF";
     }
 
     @Override
-    public String getActiveTabTextShadow() {
+    public String activeTabTextShadow() {
         return "0px 1px 1px rgba(0, 0, 0, 0.5)";
     }
 
     @Override
-    public String getActiveTabIconColor() {
+    public String activeTabIconColor() {
         return "#FFFFFF";
     }
 
@@ -131,17 +131,17 @@ public class DarkTheme implements Theme {
     }
 
     @Override
-    public String getActiveEditorTabBackgroundColor() {
+    public String activeEditorTabBackgroundColor() {
         return "rgba(53, 62, 80, 0.5)";
     }
 
     @Override
-    public String getFocusedEditorTabBackgroundColor() {
+    public String focusedEditorTabBackgroundColor() {
         return "#353E50";
     }
 
     @Override
-    public String getFocusedEditorTabBorderBottomColor() {
+    public String focusedEditorTabBorderBottomColor() {
         return "#4EABFF";
     }
 
@@ -152,32 +152,32 @@ public class DarkTheme implements Theme {
      ************************************************************************************************/
 
     @Override
-    public String getPartBackground() {
+    public String partBackground() {
         return "#292C2F";
     }
 
     @Override
-    public String getPartToolbar() {
+    public String partToolbar() {
         return "#33373B";
     }
 
     @Override
-    public String getPartToolbarActive() {
+    public String partToolbarActive() {
         return "#414c5e";
     }
 
     @Override
-    public String getPartToolbarShadow() {
+    public String partToolbarShadow() {
         return "rgba(50,50,50, 0.75)";
     }
 
     @Override
-    public String getPartToolbarSeparatorTopColor() {
+    public String partToolbarSeparatorTopColor() {
         return "#232323";
     }
 
     @Override
-    public String getPartToolbarSeparatorBottomColor() {
+    public String partToolbarSeparatorBottomColor() {
         return "#878787";
     }
 
@@ -322,7 +322,7 @@ public class DarkTheme implements Theme {
     }
 
     @Override
-    public String getEditorPanelBackgroundColor() {
+    public String editorPanelBackgroundColor() {
         return "#21252b";
     }
 
@@ -547,7 +547,7 @@ public class DarkTheme implements Theme {
     }
 
     @Override
-    public String getConsolePanelColor() {
+    public String consolePanelColor() {
         return "#313131";
     }
 
@@ -573,7 +573,7 @@ public class DarkTheme implements Theme {
 
     @Override
     public String getCellHoveredRow() {
-        return getHoverBackgroundColor();
+        return hoverBackgroundColor();
     }
 
     @Override
@@ -617,27 +617,27 @@ public class DarkTheme implements Theme {
     }
 
     @Override
-    public String getTabBorderShadow() {
+    public String tabBorderShadow() {
         return "rgba(188, 195, 199, 0.5)";
     }
 
     @Override
-    public String getTreeTextFileColor() {
+    public String treeTextFileColor() {
         return "#dbdbdb";
     }
 
     @Override
-    public String getTreeTextFolderColor() {
+    public String treeTextFolderColor() {
         return "#b4b4b4";
     }
 
     @Override
-    public String getTreeTextShadow() {
+    public String treeTextShadow() {
         return "rgba(0, 0, 0, 0.5)";
     }
 
     @Override
-    public String getTreeIconFileColor() {
+    public String treeIconFileColor() {
         return "#b4b4b4";
     }
 
@@ -717,7 +717,7 @@ public class DarkTheme implements Theme {
     }
 
     @Override
-    public String getProgressColor() {
+    public String progressColor() {
         return "#ffffff";
     }
 
@@ -742,12 +742,12 @@ public class DarkTheme implements Theme {
     }
 
     @Override
-    public String getMinimizeIconColor() {
+    public String minimizeIconColor() {
         return "#5D5D5D";
     }
 
     @Override
-    public String getMinimizeIconHoverColor() {
+    public String minimizeIconHoverColor() {
         return "#D8D8D8";
     }
 

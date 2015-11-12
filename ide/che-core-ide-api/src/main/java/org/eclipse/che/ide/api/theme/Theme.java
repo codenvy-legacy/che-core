@@ -34,84 +34,84 @@ public interface Theme {
      *
      * @return the color
      */
-    String getHoverBackgroundColor();
+    String hoverBackgroundColor();
 
     /**
      * Background color for an item selected with the keyboard
      *
      * @return the color
      */
-    String getKeyboardSelectionBackgroundColor();
+    String keyboardSelectionBackgroundColor();
 
     /**
      * Background color for selected items in CellWidgets, menu, toolbar
      *
      * @return the color
      */
-    String getSelectionBackground();
+    String selectionBackground();
 
     /**
      * Background color for inactive(not selected part button)
      *
      * @return the color
      */
-    String getInactiveTabBackground();
+    String inactiveTabBackground();
 
     /**
      * Border color for inactive(not selected part button)
      *
      * @return the color
      */
-    String getInactiveTabBorderColor();
+    String inactiveTabBorderColor();
 
     /**
      * Background color for active (selected) part button
      *
      * @return the color
      */
-    String getActiveTabBackground();
+    String activeTabBackground();
 
     /**
      * Border color for active (selected) part button
      *
      * @return the color
      */
-    String getActiveTabBorderColor();
+    String activeTabBorderColor();
 
     /**
      * Text color for active (selected) part button
      *
      * @return the color
      */
-    String getActiveTabTextColor();
+    String activeTabTextColor();
 
     /**
      * Text shadow for active tab.
      *
      * @return text shadow
      */
-    String getActiveTabTextShadow();
+    String activeTabTextShadow();
 
     /**
      * Icon color in active (selected) tab.
      *
      * @return color for icon
      */
-    String getActiveTabIconColor();
+    String activeTabIconColor();
 
     /**
      * Text color for part button.
      *
      * @return the color
      */
-    String getTabTextColor();
+    String tabTextColor();
 
     /**
      * Text color for hovered part button.
      *
      * @return the color
      */
-    String getHoveredTabTextColor();
+    String hoveredTabTextColor();
 
     /**
      * Icon color for editor tab.
@@ -125,84 +125,84 @@ public interface Theme {
      *
      * @return color
      */
-    String getActiveEditorTabBackgroundColor();
+    String activeEditorTabBackgroundColor();
 
     /**
      * Background color for focused editor tab.
      *
      * @return color
      */
-    String getFocusedEditorTabBackgroundColor();
+    String focusedEditorTabBackgroundColor();
 
     /**
      * Bottom border (underline) color for focused editor tab.
      *
      * @return color
      */
-    String getFocusedEditorTabBorderBottomColor();
+    String focusedEditorTabBorderBottomColor();
 
     /**
      * Background color of part stack panel(where placed part button)
      *
      * @return the color
      */
-    String getTabsPanelBackground();
+    String tabsPanelBackground();
 
     /**
      * Border color of the tab(part button)
      *
      * @return the color
      */
-    String getTabBorderColor();
+    String tabBorderColor();
 
     /**
      * Color to underline active tab
      *
      * @return
      */
-    String getTabUnderlineColor();
+    String tabUnderlineColor();
 
     /**
      * Background color of the tab(part button)
      *
      * @return
      */
-    String getPartBackground();
+    String partBackground();
 
     /**
      * Background color of the part toolbar panel
      *
      * @return the color
      */
-    String getPartToolbar();
+    String partToolbar();
 
     /**
      * Background color for selected (active) part toolbar
      *
      * @return the color
      */
-    String getPartToolbarActive();
+    String partToolbarActive();
 
     /**
      * Shadow color(css box-shadow property) of the part toolbar
      *
      * @return the color
      */
-    String getPartToolbarShadow();
+    String partToolbarShadow();
 
     /**
      * First top line's color of the part toolbar separator.
      *
      * @return the color
      */
-    String getPartToolbarSeparatorTopColor();
+    String partToolbarSeparatorTopColor();
 
     /**
      * Second bottom line's color of the part toolbar separator.
      *
      * @return the color
      */
-    String getPartToolbarSeparatorBottomColor();
+    String partToolbarSeparatorBottomColor();
 
     /**
      * Color of the main font
@@ -412,7 +412,7 @@ public interface Theme {
      *
      * @return color for editor panel
      */
-    String getEditorPanelBackgroundColor();
+    String editorPanelBackgroundColor();
 
     /**
      * Background color of the editor
@@ -728,7 +728,7 @@ public interface Theme {
      *
      * @return the color
      */
-    String getConsolePanelColor();
+    String consolePanelColor();
 
     /**
      * Font color for status panel
@@ -814,27 +814,27 @@ public interface Theme {
     /**
      * @return the color of border shadow
      */
-    String getTabBorderShadow();
+    String tabBorderShadow();
 
     /**
      * @return the color of tree file text
      */
-    String getTreeTextFileColor();
+    String treeTextFileColor();
 
     /**
      * @return the color of tree folder text
      */
-    String getTreeTextFolderColor();
+    String treeTextFolderColor();
 
     /**
      * @return the color of tree text-shadow
      */
-    String getTreeTextShadow();
+    String treeTextShadow();
 
     /**
      * @return the color of tree icon file
      */
-    String getTreeIconFileColor();
+    String treeIconFileColor();
 
     /**
      * The color of the action group shadow.
@@ -938,7 +938,7 @@ public interface Theme {
     /**
      * @return the progress icon color
      */
-    String getProgressColor();
+    String progressColor();
 
     /**
      * @return the color of the success event
@@ -963,12 +963,12 @@ public interface Theme {
     /**
      * @return the color of part minimize button
      */
-    String getMinimizeIconColor();
+    String minimizeIconColor();
 
     /**
      * @return the hovering color of part minimize button
      */
-    String getMinimizeIconHoverColor();
+    String minimizeIconHoverColor();
 
     /**
      * @return the color of the output font.
