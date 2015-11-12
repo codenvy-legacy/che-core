@@ -23,10 +23,8 @@ public class AdditionalInformationWidget extends PopupWidget<Element> {
     }
 
     @Override
-    public Element getEmptyDisplay() {
-        final Element noProposalMessage = Elements.createLiElement(getItemStyle());
-        noProposalMessage.setTextContent("No information available");
-        return noProposalMessage;
+    public String getEmptyMessage() {
+        return "No information available";
     }
 
     @Override

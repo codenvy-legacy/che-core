@@ -228,9 +228,9 @@ public class PartButtonWidget extends Composite implements PartButton {
         }
 
         if (selected) {
-            badgeWidget.getElement().getStyle().setBorderColor(org.eclipse.che.ide.api.theme.Style.getActiveTabBackground());
+            badgeWidget.getElement().getStyle().setBorderColor(org.eclipse.che.ide.api.theme.Style.theme.activeTabBackground());
         } else {
-            badgeWidget.getElement().getStyle().setBorderColor(org.eclipse.che.ide.api.theme.Style.getTabsPanelBackground());
+            badgeWidget.getElement().getStyle().setBorderColor(org.eclipse.che.ide.api.theme.Style.theme.tabsPanelBackground());
         }
     }
 

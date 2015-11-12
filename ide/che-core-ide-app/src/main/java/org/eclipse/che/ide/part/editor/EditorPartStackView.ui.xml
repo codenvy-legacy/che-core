@@ -16,8 +16,8 @@
 
     <ui:style>
 
-        @eval editorPanelBackgroundColor org.eclipse.che.ide.api.theme.Style.getEditorPanelBackgroundColor();
-        @eval tabBorderColor org.eclipse.che.ide.api.theme.Style.getTabBorderColor();
+        @eval editorPanelBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.editorPanelBackgroundColor();
+        @eval tabBorderColor org.eclipse.che.ide.api.theme.Style.theme.tabBorderColor();
 
         .tabsPanel {
             -webkit-box-sizing: border-box;

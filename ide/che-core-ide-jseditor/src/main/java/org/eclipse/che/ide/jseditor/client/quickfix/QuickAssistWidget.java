@@ -24,7 +24,6 @@ import org.eclipse.che.ide.api.texteditor.HandlesUndoRedo;
 import org.eclipse.che.ide.api.texteditor.UndoableEditor;
 import org.eclipse.che.ide.jseditor.client.codeassist.Completion;
 import org.eclipse.che.ide.jseditor.client.codeassist.CompletionProposal;
-import org.eclipse.che.ide.jseditor.client.codeassist.CompletionResources;
 import org.eclipse.che.ide.jseditor.client.popup.PopupResources;
 import org.eclipse.che.ide.jseditor.client.popup.PopupWidget;
 import org.eclipse.che.ide.jseditor.client.text.LinearRange;
@@ -47,30 +46,26 @@ public class QuickAssistWidget extends PopupWidget<CompletionProposal> {
     /** The related editor. */
     private final TextEditor textEditor;
 
-    @Inject
-    private CompletionResources completionResources;
-
     @AssistedInject
-    public QuickAssistWidget(final PopupResources popupResources,
-                             @Assisted final TextEditor textEditor) {
+    public QuickAssistWidget(final PopupResources popupResources, @Assisted final TextEditor textEditor) {
         super(popupResources);
         this.textEditor = textEditor;
     }
 
     public Element createItem(final CompletionProposal proposal) {
-        final Element element = Elements.createLiElement(getItemStyle());
-        final SpanElement icon = Elements.createSpanElement(completionResources.completionCss().proposalIcon());
-        final SpanElement label = Elements.createSpanElement(completionResources.completionCss().proposalLabel());
-        final SpanElement group = Elements.createSpanElement(completionResources.completionCss().proposalGroup());
+        final Element element = Elements.createLiElement(popupResources.popupStyle().item());
+
+        final Element icon = Elements.createDivElement(popupResources.popupStyle().icon());
         if (proposal.getIcon() != null && proposal.getIcon().getSVGImage() != null) {
             icon.appendChild((Node)proposal.getIcon().getSVGImage().getElement());
         } else if (proposal.getIcon() != null && proposal.getIcon().getImage() != null) {
             icon.appendChild((Node)proposal.getIcon().getImage().getElement());
         }
-        label.setInnerHTML(proposal.getDisplayString());
         element.appendChild(icon);
+
+        final SpanElement label = Elements.createSpanElement(popupResources.popupStyle().label());
+        label.setInnerHTML(proposal.getDisplayString());
         element.appendChild(label);
-        element.appendChild(group);
 
         final EventListener validateListener = new EventListener() {
             @Override
@@ -104,29 +99,16 @@ public class QuickAssistWidget extends PopupWidget<CompletionProposal> {
                 hide();
             }
         };
+
         element.addEventListener(Event.DBLCLICK, validateListener, false);
         element.addEventListener(CUSTOM_EVT_TYPE_VALIDATE, validateListener, false);
-        element.addEventListener(Event.FOCUS, new EventListener() {
-            @Override
-            public void handleEvent(Event event) {
-                Elements.addClassName(completionResources.completionCss().hintActive(), element);
-            }
-        },false);
-
-        element.addEventListener(Event.BLUR, new EventListener() {
-            @Override
-            public void handleEvent(Event event) {
-                Elements.removeClassName(completionResources.completionCss().hintActive(), element);
-            }
-        },false);
 
         return element;
     }
 
-    public Element getEmptyDisplay() {
-        final Element noProposalMessage = Elements.createLiElement(getItemStyle());
-        noProposalMessage.setTextContent("No proposals");
-        return noProposalMessage;
+    @Override
+    public String getEmptyMessage() {
+        return "No proposals";
     }
 
     @Override
@@ -144,4 +126,5 @@ public class QuickAssistWidget extends PopupWidget<CompletionProposal> {
     private native CustomEvent createValidateEvent(String eventType) /*-{
         return new CustomEvent(eventType);
     }-*/;
+
 }

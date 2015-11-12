@@ -19,10 +19,13 @@
     border-radius: 3px;
     box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.5);
     min-width: 150px;
+    min-height: 150px;
     overflow: hidden;
     resize: both;
     white-space: nowrap;
-    transition: opacity 0.15s ease;
+    opacity: 0;
+    -webkit-transition: opacity 0.1s ease;
+    transition: opacity 0.1s ease;
 }
 
 .header {
@@ -68,7 +71,8 @@
     border-left: 1px solid transparent;
 }
 
-.item[selected="true"] {
+.item[selected="true"],
+.item:FOCUS {
     background: completionPopupSelectedItemBackgroundColor !important;
 }
 

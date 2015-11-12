@@ -13,8 +13,6 @@
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
              xmlns:g='urn:import:com.google.gwt.user.client.ui'>
     <ui:style>
-        @eval bgTopPanel org.eclipse.che.ide.api.theme.Style.getConsolePanelColor();
-
         .rootPanel {
             position: relative;
         }
@@ -35,6 +33,7 @@
             margin-top: 4px;
         }
     </ui:style>
+
     <g:FlowPanel width="774px" height="470px" addStyleNames="{style.rootPanel}">
         <g:SimplePanel ui:field="wizardPanel" addStyleNames="{style.tab}"/>
     </g:FlowPanel>

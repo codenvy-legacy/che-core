@@ -33,82 +33,82 @@ public class LightTheme implements Theme {
     }
 
     @Override
-    public String getHoverBackgroundColor() {
+    public String hoverBackgroundColor() {
         return "#D4E8FF";
     }
 
     @Override
-    public String getKeyboardSelectionBackgroundColor() {
+    public String keyboardSelectionBackgroundColor() {
         return "#C3DEFF";
     }
 
     @Override
-    public String getSelectionBackground() {
+    public String selectionBackground() {
         return "#C3DEFF";
     }
 
     @Override
-    public String getInactiveTabBackground() {
+    public String inactiveTabBackground() {
         return "#D6D6D9";
     }
 
     @Override
-    public String getInactiveTabBorderColor() {
+    public String inactiveTabBorderColor() {
         return "#D6D6D9";
     }
 
     @Override
-    public String getActiveTabBackground() {
+    public String activeTabBackground() {
         return "#ffffff";
     }
 
     @Override
-    public String getActiveTabBorderColor() {
+    public String activeTabBorderColor() {
         return "#8E8E8E";
     }
 
     @Override
-    public String getActiveTabTextColor() {
+    public String activeTabTextColor() {
         return "#555555";
     }
 
     @Override
-    public String getActiveTabTextShadow() {
+    public String activeTabTextShadow() {
         return "none";
     }
 
     @Override
-    public String getActiveTabIconColor() {
+    public String activeTabIconColor() {
         return "#1A68AF";
     }
 
     @Override
-    public String getTabTextColor() {
+    public String tabTextColor() {
         return "#555555";
     }
 
     @Override
-    public String getHoveredTabTextColor() {
+    public String hoveredTabTextColor() {
         return "#333333";
     }
 
     @Override
-    public String getTabsPanelBackground() {
+    public String tabsPanelBackground() {
         return "#D6D6D9";
     }
 
     @Override
-    public String getTabBorderColor() {
+    public String tabBorderColor() {
         return "#8E8E8E";
     }
 
     @Override
-    public String getTabUnderlineColor() {
+    public String tabUnderlineColor() {
         return "rgb(70,102,149)";
     }
 
     @Override
-    public String getActiveEditorTabBackgroundColor() {
+    public String activeEditorTabBackgroundColor() {
         return "rgb(197, 197, 197)";
     }
 
@@ -118,42 +118,42 @@ public class LightTheme implements Theme {
     }
 
     @Override
-    public String getFocusedEditorTabBackgroundColor() {
+    public String focusedEditorTabBackgroundColor() {
         return "#FFFFFF";
     }
 
     @Override
-    public String getFocusedEditorTabBorderBottomColor() {
+    public String focusedEditorTabBorderBottomColor() {
         return "#4EABFF";
     }
 
     @Override
-    public String getPartBackground() {
+    public String partBackground() {
         return "#ffffff";
     }
 
     @Override
-    public String getPartToolbar() {
+    public String partToolbar() {
         return "#D6D6D6";
     }
 
     @Override
-    public String getPartToolbarActive() {
+    public String partToolbarActive() {
         return "rgba(195,222,255,1)";
     }
 
     @Override
-    public String getPartToolbarShadow() {
+    public String partToolbarShadow() {
         return "#bdbdbd";
     }
 
     @Override
-    public String getPartToolbarSeparatorTopColor() {
+    public String partToolbarSeparatorTopColor() {
         return "#FFFFFF";
     }
 
     @Override
-    public String getPartToolbarSeparatorBottomColor() {
+    public String partToolbarSeparatorBottomColor() {
         return "#AAAAAA";
     }
 
@@ -303,7 +303,7 @@ public class LightTheme implements Theme {
     }
 
     @Override
-    public String getEditorPanelBackgroundColor() {
+    public String editorPanelBackgroundColor() {
         return "#D6D6D9";
     }
 
@@ -523,13 +523,13 @@ public class LightTheme implements Theme {
     }
 
     @Override
-    public String getConsolePanelColor() {
-        return getTabsPanelBackground();
+    public String consolePanelColor() {
+        return tabsPanelBackground();
     }
 
     @Override
     public String getStatusPanelColor() {
-        return getTabsPanelBackground();
+        return tabsPanelBackground();
     }
 
     @Override
@@ -593,27 +593,27 @@ public class LightTheme implements Theme {
     }
 
     @Override
-    public String getTabBorderShadow() {
+    public String tabBorderShadow() {
         return "rgba(198, 205, 209, 0.5)";
     }
 
     @Override
-    public String getTreeTextFileColor() {
+    public String treeTextFileColor() {
         return "#7b7b7b";
     }
 
     @Override
-    public String getTreeTextFolderColor() {
+    public String treeTextFolderColor() {
         return "#606060";
     }
 
     @Override
-    public String getTreeTextShadow() {
+    public String treeTextShadow() {
         return "rgba(255, 255, 255, 0.5)";
     }
 
     @Override
-    public String getTreeIconFileColor() {
+    public String treeIconFileColor() {
         return "#606060";
     }
 
@@ -688,7 +688,7 @@ public class LightTheme implements Theme {
     }
 
     @Override
-    public String getProgressColor() {
+    public String progressColor() {
         return "#000000";
     }
 
@@ -718,12 +718,12 @@ public class LightTheme implements Theme {
     }
 
     @Override
-    public String getMinimizeIconColor() {
+    public String minimizeIconColor() {
         return "#7b7b7b";
     }
 
     @Override
-    public String getMinimizeIconHoverColor() {
+    public String minimizeIconHoverColor() {
         return "#333333";
     }
 
