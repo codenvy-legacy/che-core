@@ -18,15 +18,14 @@ import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ImportProject;
 import org.eclipse.che.api.project.shared.dto.ImportResponse;
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.api.vfs.gwt.client.VfsServiceClient;
-import org.eclipse.che.api.vfs.shared.dto.Item;
+import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.api.event.ConfigureProjectEvent;
 import org.eclipse.che.ide.api.event.project.CreateProjectEvent;
+import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
 import org.eclipse.che.ide.api.wizard.AbstractWizard;
 import org.eclipse.che.ide.commons.exception.JobNotFoundException;
+import org.eclipse.che.ide.commons.exception.ServerException;
 import org.eclipse.che.ide.commons.exception.UnauthorizedException;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
@@ -45,12 +44,12 @@ import javax.validation.constraints.NotNull;
 public class ImportWizard extends AbstractWizard<ImportProject> {
 
     private final ProjectServiceClient                projectServiceClient;
-    private final VfsServiceClient                    vfsServiceClient;
     private final DtoUnmarshallerFactory              dtoUnmarshallerFactory;
     private final DtoFactory                          dtoFactory;
     private final EventBus                            eventBus;
     private final CoreLocalizationConstant            localizationConstant;
     private final ImportProjectNotificationSubscriber importProjectNotificationSubscriber;
+    private final NotificationManager                 notificationManager;
 
     /**
      * Creates project wizard.
@@ -59,8 +58,6 @@ public class ImportWizard extends AbstractWizard<ImportProject> {
      *         wizard's data-object
      * @param projectServiceClient
      *         GWT-client for Project service
-     * @param vfsServiceClient
-     *         GWT-client for VFS service
      * @param dtoUnmarshallerFactory
      *         {@link DtoUnmarshallerFactory} instance
      * @param dtoFactory
@@ -73,20 +70,20 @@ public class ImportWizard extends AbstractWizard<ImportProject> {
     @Inject
     public ImportWizard(@Assisted ImportProject dataObject,
                         ProjectServiceClient projectServiceClient,
-                        VfsServiceClient vfsServiceClient,
                         DtoUnmarshallerFactory dtoUnmarshallerFactory,
                         DtoFactory dtoFactory,
                         EventBus eventBus,
                         CoreLocalizationConstant localizationConstant,
-                        ImportProjectNotificationSubscriber importProjectNotificationSubscriber) {
+                        ImportProjectNotificationSubscriber importProjectNotificationSubscriber,
+                        NotificationManager notificationManager) {
         super(dataObject);
         this.projectServiceClient = projectServiceClient;
-        this.vfsServiceClient = vfsServiceClient;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.dtoFactory = dtoFactory;
         this.eventBus = eventBus;
         this.localizationConstant = localizationConstant;
         this.importProjectNotificationSubscriber = importProjectNotificationSubscriber;
+        this.notificationManager = notificationManager;
     }
 
     /** {@inheritDoc} */
@@ -98,15 +95,19 @@ public class ImportWizard extends AbstractWizard<ImportProject> {
     private void checkFolderExistenceAndImport(final CompleteCallback callback) {
         // check on VFS because need to check whether the folder with the same name already exists in the root of workspace
         final String projectName = dataObject.getProject().getName();
-        vfsServiceClient.getItemByPath(projectName, new AsyncRequestCallback<Item>() {
+        projectServiceClient.getItem(projectName, new AsyncRequestCallback<ItemReference>() {
             @Override
-            protected void onSuccess(Item result) {
+            protected void onSuccess(ItemReference result) {
                 callback.onFailure(new Exception(localizationConstant.createProjectFromTemplateProjectExists(projectName)));
             }
 
             @Override
             protected void onFailure(Throwable exception) {
-                importProject(callback);
+                if (exception instanceof ServerException && ((ServerException)exception).getHTTPStatus() == 404) {
+                    importProject(callback);
+                } else {
+                    notificationManager.showError(exception.getMessage());
+                }
             }
         });
     }

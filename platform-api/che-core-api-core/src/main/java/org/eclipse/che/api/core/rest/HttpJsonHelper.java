@@ -132,6 +132,14 @@ public class HttpJsonHelper {
         return httpJsonHelperImpl.requestString(timeout, url, method, body, parameters);
     }
 
+    public static void request(String url,
+                               String method,
+                               Object body,
+                               Pair<String, ?>... parameters)
+            throws IOException, ServerException, UnauthorizedException, ForbiddenException, NotFoundException, ConflictException {
+        httpJsonHelperImpl.request(url, method, body, parameters);
+    }
+
     /**
      * Sends HTTP request to specified {@code url}.
      * <p/>
@@ -338,6 +346,14 @@ public class HttpJsonHelper {
      * Execute all request from HttpJsonHelper throw single method  requestString.
      */
     public static class HttpJsonHelperImpl {
+
+        public void request(String url,
+                            String method,
+                            Object body,
+                            Pair<String, ?>... parameters)
+                throws IOException, ServerException, UnauthorizedException, ForbiddenException, NotFoundException, ConflictException {
+            request(null, -1, url, method, body, parameters);
+        }
 
         public <DTO> DTO request(Class<DTO> dtoInterface,
                                  String url,

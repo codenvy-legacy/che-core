@@ -1183,6 +1183,9 @@ public class ProjectService extends Service {
                    ProjectTypeConstraintException {
 
         Project project = projectManager.getProject(workspace, projectPath(path));
+        if (project == null) {
+            throw new NotFoundException("Project " + path + " was not found");
+        }
         final VirtualFileEntry entry = project.getItem(path);
 
         final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
