@@ -18,7 +18,7 @@ import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
  * @author Dmytro Nochevnov
  * @author Vitaliy Guliy
  */
-@Deprecated
+
 public class Config {
 
     private static UsersWorkspaceDto _workspace;
@@ -33,6 +33,8 @@ public class Config {
      *
      * @return
      */
+
+    @Deprecated
     public static native String getContext() /*-{
         if ($wnd.IDE && $wnd.IDE.config) {
             return $wnd.IDE.config.context;
@@ -56,16 +58,10 @@ public class Config {
      *
      * @return
      */
+    @Deprecated
     public static String getWorkspaceName() {
         return _workspace.getName();
     }
-//    public static native String getWorkspaceName() /*-{
-//        if ($wnd.IDE && $wnd.IDE.config) {
-//            return $wnd.IDE.config.workspaceName;
-//        } else {
-//            return null;
-//        }
-//    }-*/;
 
 
     /**
@@ -73,23 +69,17 @@ public class Config {
      *
      * @return
      */
+    @Deprecated
     public static String getWorkspaceId() {
         return _workspace.getId();
     }
-//    public static native String getWorkspaceId() /*-{
-//        if ($wnd.IDE && $wnd.IDE.config) {
-//            return $wnd.IDE.config.workspaceId;
-//        } else {
-//            return null;
-//        }
-//    }-*/;
-
 
     /**
      * Returns project name
      *
      * @return
      */
+    @Deprecated
     public static native String getProjectName() /*-{
         if ($wnd.IDE && $wnd.IDE.config) {
             return $wnd.IDE.config.projectName;
@@ -99,20 +89,7 @@ public class Config {
     }-*/;
 
 
-    public static native String getStartupParams() /*-{
-        if ($wnd.IDE && $wnd.IDE.config && $wnd.IDE.config.startupParams) {
-            // remove leading question marks
-            while ($wnd.IDE.config.startupParams.indexOf("?") == 0) {
-                $wnd.IDE.config.startupParams = $wnd.IDE.config.startupParams.substring(1);
-            }
-
-            return $wnd.IDE.config.startupParams;
-        } else {
-            return null;
-        }
-    }-*/;
-
-
+    @Deprecated
     public static native String getStartupParam(String name) /*-{
         if ($wnd.IDE && $wnd.IDE.config && $wnd.IDE.config.startupParams) {
             // remove leading question marks
@@ -131,20 +108,6 @@ public class Config {
         return null;
     }-*/;
 
-    /**
-     * The method defines current mode is sdk or not.
-     *
-     * @return <code>true</code> current mode is sdk, <code>false</code> current mode isn't sdk
-     */
-    public static native boolean isSdkProject()/*-{
-        var isSdk = $wnd.sdk;
-
-        if (!isSdk) {
-            return false;
-        }
-
-        return isSdk == 1;
-    }-*/;
 
     /**
      * Set current Workspace.
@@ -152,6 +115,7 @@ public class Config {
      * @param workspace
      *         the Workspace to set
      */
+    @Deprecated
     public static void setCurrentWorkspace(UsersWorkspaceDto workspace) {
         _workspace = workspace;
     }
@@ -161,6 +125,7 @@ public class Config {
      *
      * @return workspace
      */
+    @Deprecated
     public static UsersWorkspaceDto getCurrentWorkspace() {
         return _workspace;
     }
