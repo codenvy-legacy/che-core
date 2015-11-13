@@ -22,10 +22,10 @@ import org.eclipse.che.api.git.LogPage;
 import org.eclipse.che.api.git.UserCredential;
 import org.eclipse.che.api.git.shared.AddRequest;
 import org.eclipse.che.api.git.shared.Branch;
-import org.eclipse.che.api.git.shared.CheckoutRequest;
 import org.eclipse.che.api.git.shared.BranchCreateRequest;
 import org.eclipse.che.api.git.shared.BranchDeleteRequest;
 import org.eclipse.che.api.git.shared.BranchListRequest;
+import org.eclipse.che.api.git.shared.CheckoutRequest;
 import org.eclipse.che.api.git.shared.CloneRequest;
 import org.eclipse.che.api.git.shared.CommitRequest;
 import org.eclipse.che.api.git.shared.DiffRequest;
@@ -40,10 +40,10 @@ import org.eclipse.che.api.git.shared.MergeResult;
 import org.eclipse.che.api.git.shared.MoveRequest;
 import org.eclipse.che.api.git.shared.PullRequest;
 import org.eclipse.che.api.git.shared.PullResponse;
-import org.eclipse.che.api.git.shared.RebaseRequest;
-import org.eclipse.che.api.git.shared.RebaseResponse;
 import org.eclipse.che.api.git.shared.PushRequest;
 import org.eclipse.che.api.git.shared.PushResponse;
+import org.eclipse.che.api.git.shared.RebaseRequest;
+import org.eclipse.che.api.git.shared.RebaseResponse;
 import org.eclipse.che.api.git.shared.Remote;
 import org.eclipse.che.api.git.shared.RemoteAddRequest;
 import org.eclipse.che.api.git.shared.RemoteListRequest;
@@ -326,6 +326,19 @@ public class NativeGitConnection implements GitConnection {
                     .setRemoteUri(remoteUri)
                     .setTimeout(request.getTimeout());
         executeRemoteCommand(fetchCommand);
+    }
+
+    @Override
+    public boolean isInsideWorkTree() throws GitException {
+        final EmptyGitCommand emptyGitCommand = nativeGit.createEmptyGitCommand();
+        
+        // command "rev-parse --is-inside-work-tree" returns true/false
+        emptyGitCommand.setNextParameter("rev-parse")
+                       .setNextParameter("--is-inside-work-tree")
+                       .execute();
+                       
+        final String output = emptyGitCommand.getText();
+        return Boolean.valueOf(output);
     }
 
     @Override
