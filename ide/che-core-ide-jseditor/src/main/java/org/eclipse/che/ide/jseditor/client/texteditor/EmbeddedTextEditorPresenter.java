@@ -26,6 +26,7 @@ import com.google.web.bindery.event.shared.EventBus;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.editor.AbstractEditorPresenter;
 import org.eclipse.che.ide.api.editor.EditorInput;
+import org.eclipse.che.ide.api.editor.EditorWithAutoSave;
 import org.eclipse.che.ide.api.editor.EditorWithErrors;
 import org.eclipse.che.ide.api.event.FileContentUpdateEvent;
 import org.eclipse.che.ide.api.event.FileContentUpdateHandler;
@@ -65,12 +66,12 @@ import org.eclipse.che.ide.jseditor.client.gutter.HasGutter;
 import org.eclipse.che.ide.jseditor.client.keymap.Keybinding;
 import org.eclipse.che.ide.jseditor.client.position.PositionConverter;
 import org.eclipse.che.ide.jseditor.client.quickfix.QuickAssistantFactory;
-import org.eclipse.che.ide.api.editor.EditorWithAutoSave;
 import org.eclipse.che.ide.jseditor.client.reconciler.Reconciler;
 import org.eclipse.che.ide.jseditor.client.reconciler.ReconcilerWithAutoSave;
 import org.eclipse.che.ide.jseditor.client.text.LinearRange;
 import org.eclipse.che.ide.jseditor.client.text.TextPosition;
 import org.eclipse.che.ide.jseditor.client.text.TextRange;
+import org.eclipse.che.ide.jseditor.client.texteditor.EditorWidget.WidgetInitializedCallback;
 import org.eclipse.che.ide.jseditor.client.texteditor.EmbeddedTextEditorPartView.Delegate;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.texteditor.selection.CursorModelWithHandler;
@@ -80,8 +81,8 @@ import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.ui.dialogs.choice.ChoiceDialog;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.validation.constraints.NotNull;
 import javax.inject.Inject;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -229,44 +230,53 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
 
     private void createEditor(final String content) {
         this.fileTypes = detectFileType(getEditorInput().getFile());
-        this.editorWidget = editorWigetFactory.createEditorWidget(fileTypes);
+        editorWigetFactory.createEditorWidget(fileTypes, new WidgetInitializedCallback() {
 
-        // finish editor initialization
-        this.editorView.setEditorWidget(this.editorWidget);
+            @Override
+            public void initialized(EditorWidget widget) {
+                EmbeddedTextEditorPresenter.this.editorWidget = widget;
+                // finish editor initialization
+                EmbeddedTextEditorPresenter.this.editorView.setEditorWidget(EmbeddedTextEditorPresenter.this.editorWidget);
 
-        this.document = this.editorWidget.getDocument();
-        this.document.setFile(input.getFile());
-        this.cursorModel = new EmbeddedEditorCursorModel(this.document);
+                EmbeddedTextEditorPresenter.this.document = EmbeddedTextEditorPresenter.this.editorWidget.getDocument();
+                EmbeddedTextEditorPresenter.this.document.setFile(input.getFile());
+                EmbeddedTextEditorPresenter.this.cursorModel = new EmbeddedEditorCursorModel(EmbeddedTextEditorPresenter.this.document);
 
-        this.editorWidget.setTabSize(this.configuration.getTabWidth());
+                EmbeddedTextEditorPresenter.this.editorWidget.setTabSize(EmbeddedTextEditorPresenter.this.configuration.getTabWidth());
 
-        // initialize info panel
-        this.editorView.initInfoPanel(this.editorWidget.getMode(), this.editorWidget.getEditorType(),
-                                      this.editorWidget.getKeymap(), this.document.getLineCount(),
-                                      this.configuration.getTabWidth());
+                // initialize info panel
+                EmbeddedTextEditorPresenter.this.editorView.initInfoPanel(EmbeddedTextEditorPresenter.this.editorWidget.getMode(),
+                                                                          EmbeddedTextEditorPresenter.this.editorWidget.getEditorType(),
+                                                                          EmbeddedTextEditorPresenter.this.editorWidget.getKeymap(),
+                                                                          EmbeddedTextEditorPresenter.this.document.getLineCount(),
+                                                                          EmbeddedTextEditorPresenter.this.configuration.getTabWidth());
 
-        // handle delayed focus
-        // should also check if I am visible, but how ?
-        if (delayedFocus) {
-            this.editorWidget.setFocus();
-            this.delayedFocus = false;
-        }
+                // handle delayed focus
+                // should also check if I am visible, but how ?
+                if (delayedFocus) {
+                    EmbeddedTextEditorPresenter.this.editorWidget.setFocus();
+                    EmbeddedTextEditorPresenter.this.delayedFocus = false;
+                }
 
-        // delayed keybindings creation ?
-        switchHasKeybinding();
+                // delayed keybindings creation ?
+                switchHasKeybinding();
 
-        this.editorWidget.setValue(content);
-        this.generalEventBus.fireEvent(new DocumentReadyEvent(this.getEditorHandle(), this.document));
+                EmbeddedTextEditorPresenter.this.editorWidget.setValue(content);
+                EmbeddedTextEditorPresenter.this.generalEventBus.fireEvent(
+                        new DocumentReadyEvent(EmbeddedTextEditorPresenter.this.getEditorHandle(),
+                                               EmbeddedTextEditorPresenter.this.document));
 
-        final OutlineImpl outline = getOutline();
-        if (outline != null) {
-            outline.bind(this.cursorModel, this.document);
-        }
+                final OutlineImpl outline = getOutline();
+                if (outline != null) {
+                    outline.bind(EmbeddedTextEditorPresenter.this.cursorModel, EmbeddedTextEditorPresenter.this.document);
+                }
 
-        firePropertyChange(PROP_INPUT);
+                firePropertyChange(PROP_INPUT);
 
-        setupEventHandlers();
-        setupFileContentUpdateHandler();
+                setupEventHandlers();
+                setupFileContentUpdateHandler();
+            }
+        });
     }
 
     private void setupEventHandlers() {
