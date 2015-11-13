@@ -760,41 +760,39 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
 
         @Override
         public void initialized(EditorWidget widget) {
-            EmbeddedTextEditorPresenter.this.editorWidget = widget;
+            editorWidget = widget;
             // finish editor initialization
-            EmbeddedTextEditorPresenter.this.editorView.setEditorWidget(EmbeddedTextEditorPresenter.this.editorWidget);
+            editorView.setEditorWidget(editorWidget);
 
-            EmbeddedTextEditorPresenter.this.document = EmbeddedTextEditorPresenter.this.editorWidget.getDocument();
-            EmbeddedTextEditorPresenter.this.document.setFile(input.getFile());
-            EmbeddedTextEditorPresenter.this.cursorModel = new EmbeddedEditorCursorModel(EmbeddedTextEditorPresenter.this.document);
+            document = editorWidget.getDocument();
+            document.setFile(input.getFile());
+            cursorModel = new EmbeddedEditorCursorModel(document);
 
-            EmbeddedTextEditorPresenter.this.editorWidget.setTabSize(EmbeddedTextEditorPresenter.this.configuration.getTabWidth());
+            editorWidget.setTabSize(configuration.getTabWidth());
 
             // initialize info panel
-            EmbeddedTextEditorPresenter.this.editorView.initInfoPanel(EmbeddedTextEditorPresenter.this.editorWidget.getMode(),
-                                                                      EmbeddedTextEditorPresenter.this.editorWidget.getEditorType(),
-                                                                      EmbeddedTextEditorPresenter.this.editorWidget.getKeymap(),
-                                                                      EmbeddedTextEditorPresenter.this.document.getLineCount(),
-                                                                      EmbeddedTextEditorPresenter.this.configuration.getTabWidth());
+            editorView.initInfoPanel(editorWidget.getMode(),
+                                     editorWidget.getEditorType(),
+                                     editorWidget.getKeymap(),
+                                     document.getLineCount(),
+                                     configuration.getTabWidth());
 
             // handle delayed focus
             // should also check if I am visible, but how ?
             if (delayedFocus) {
-                EmbeddedTextEditorPresenter.this.editorWidget.setFocus();
-                EmbeddedTextEditorPresenter.this.delayedFocus = false;
+                editorWidget.setFocus();
+                delayedFocus = false;
             }
 
             // delayed keybindings creation ?
             switchHasKeybinding();
 
-            EmbeddedTextEditorPresenter.this.editorWidget.setValue(content);
-            EmbeddedTextEditorPresenter.this.generalEventBus.fireEvent(
-                    new DocumentReadyEvent(EmbeddedTextEditorPresenter.this.getEditorHandle(),
-                                           EmbeddedTextEditorPresenter.this.document));
+            editorWidget.setValue(content);
+            generalEventBus.fireEvent(new DocumentReadyEvent(getEditorHandle(), document));
 
             final OutlineImpl outline = getOutline();
             if (outline != null) {
-                outline.bind(EmbeddedTextEditorPresenter.this.cursorModel, EmbeddedTextEditorPresenter.this.document);
+                outline.bind(cursorModel, document);
             }
 
             firePropertyChange(PROP_INPUT);
