@@ -26,6 +26,7 @@ import com.google.web.bindery.event.shared.EventBus;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.editor.AbstractEditorPresenter;
 import org.eclipse.che.ide.api.editor.EditorInput;
+import org.eclipse.che.ide.api.editor.EditorWithAutoSave;
 import org.eclipse.che.ide.api.editor.EditorWithErrors;
 import org.eclipse.che.ide.api.event.FileContentUpdateEvent;
 import org.eclipse.che.ide.api.event.FileContentUpdateHandler;
@@ -65,12 +66,12 @@ import org.eclipse.che.ide.jseditor.client.gutter.HasGutter;
 import org.eclipse.che.ide.jseditor.client.keymap.Keybinding;
 import org.eclipse.che.ide.jseditor.client.position.PositionConverter;
 import org.eclipse.che.ide.jseditor.client.quickfix.QuickAssistantFactory;
-import org.eclipse.che.ide.api.editor.EditorWithAutoSave;
 import org.eclipse.che.ide.jseditor.client.reconciler.Reconciler;
 import org.eclipse.che.ide.jseditor.client.reconciler.ReconcilerWithAutoSave;
 import org.eclipse.che.ide.jseditor.client.text.LinearRange;
 import org.eclipse.che.ide.jseditor.client.text.TextPosition;
 import org.eclipse.che.ide.jseditor.client.text.TextRange;
+import org.eclipse.che.ide.jseditor.client.texteditor.EditorWidget.WidgetInitializedCallback;
 import org.eclipse.che.ide.jseditor.client.texteditor.EmbeddedTextEditorPartView.Delegate;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.texteditor.selection.CursorModelWithHandler;
@@ -80,8 +81,8 @@ import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.ui.dialogs.choice.ChoiceDialog;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.validation.constraints.NotNull;
 import javax.inject.Inject;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -229,44 +230,7 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
 
     private void createEditor(final String content) {
         this.fileTypes = detectFileType(getEditorInput().getFile());
-        this.editorWidget = editorWigetFactory.createEditorWidget(fileTypes);
-
-        // finish editor initialization
-        this.editorView.setEditorWidget(this.editorWidget);
-
-        this.document = this.editorWidget.getDocument();
-        this.document.setFile(input.getFile());
-        this.cursorModel = new EmbeddedEditorCursorModel(this.document);
-
-        this.editorWidget.setTabSize(this.configuration.getTabWidth());
-
-        // initialize info panel
-        this.editorView.initInfoPanel(this.editorWidget.getMode(), this.editorWidget.getEditorType(),
-                                      this.editorWidget.getKeymap(), this.document.getLineCount(),
-                                      this.configuration.getTabWidth());
-
-        // handle delayed focus
-        // should also check if I am visible, but how ?
-        if (delayedFocus) {
-            this.editorWidget.setFocus();
-            this.delayedFocus = false;
-        }
-
-        // delayed keybindings creation ?
-        switchHasKeybinding();
-
-        this.editorWidget.setValue(content);
-        this.generalEventBus.fireEvent(new DocumentReadyEvent(this.getEditorHandle(), this.document));
-
-        final OutlineImpl outline = getOutline();
-        if (outline != null) {
-            outline.bind(this.cursorModel, this.document);
-        }
-
-        firePropertyChange(PROP_INPUT);
-
-        setupEventHandlers();
-        setupFileContentUpdateHandler();
+        editorWigetFactory.createEditorWidget(fileTypes, new EditorWidgetInitializedCallback(content));
     }
 
     private void setupEventHandlers() {
@@ -785,5 +749,56 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
     public boolean isAutoSaveEnabled() {
         Reconciler reconciler = getConfiguration().getReconciler();
          return reconciler != null && reconciler instanceof ReconcilerWithAutoSave;
+    }
+
+    private class EditorWidgetInitializedCallback implements WidgetInitializedCallback {
+        private final String content;
+
+        private EditorWidgetInitializedCallback(String content) {
+            this.content = content;
+        }
+
+        @Override
+        public void initialized(EditorWidget widget) {
+            editorWidget = widget;
+            // finish editor initialization
+            editorView.setEditorWidget(editorWidget);
+
+            document = editorWidget.getDocument();
+            document.setFile(input.getFile());
+            cursorModel = new EmbeddedEditorCursorModel(document);
+
+            editorWidget.setTabSize(configuration.getTabWidth());
+
+            // initialize info panel
+            editorView.initInfoPanel(editorWidget.getMode(),
+                                     editorWidget.getEditorType(),
+                                     editorWidget.getKeymap(),
+                                     document.getLineCount(),
+                                     configuration.getTabWidth());
+
+            // handle delayed focus
+            // should also check if I am visible, but how ?
+            if (delayedFocus) {
+                editorWidget.setFocus();
+                delayedFocus = false;
+            }
+
+            // delayed keybindings creation ?
+            switchHasKeybinding();
+
+            editorWidget.setValue(content);
+            generalEventBus.fireEvent(new DocumentReadyEvent(getEditorHandle(), document));
+
+            final OutlineImpl outline = getOutline();
+            if (outline != null) {
+                outline.bind(cursorModel, document);
+            }
+
+            firePropertyChange(PROP_INPUT);
+
+            setupEventHandlers();
+            setupFileContentUpdateHandler();
+        }
     }
 }

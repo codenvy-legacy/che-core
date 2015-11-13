@@ -198,4 +198,9 @@ public interface EditorWidget extends IsWidget,
      * Refresh the editor widget.
      */
     void refresh();
+
+    /** Callback that should be called when editor widget implementation is fully initialized. */
+    interface WidgetInitializedCallback {
+        void initialized(EditorWidget editorWidget);
+    }
 }
