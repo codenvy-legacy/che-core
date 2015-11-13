@@ -24,9 +24,7 @@ public class TestGeneratorUtils {
     /** Should match package name */
     @Test
     public void shouldMatchPackage() {
-        String packageString =
-                "* along with this program; if not, see<http://www.gnu.org/licenses/>.\n" + "*/ \n"
-                + "package org.eclipse.che.ide.util;" + "import junit.framework.Assert;";
+        String packageString = "package org.eclipse.che.ide.util;" + "import junit.framework.Assert;";
         Matcher matcher = GeneratorUtils.PACKAGE_PATTERN.matcher(packageString);
         assertTrue(matcher.matches());
         assertEquals(1, matcher.groupCount());
@@ -42,9 +40,7 @@ public class TestGeneratorUtils {
      */
     @Test
     public void shouldExtractPackage() throws IOException {
-        String packageString =
-                "* along with this program; if not, see<http://www.gnu.org/licenses/>.\n" + "*/ \n"
-                + "package org.eclipse.che.ide.util;" + "import junit.framework.Assert;";
+        String packageString = "package org.eclipse.che.ide.util;" + "import junit.framework.Assert;";
         assertEquals("org.eclipse.che.ide.util", GeneratorUtils.getClassFQN("dummy", packageString));
     }
 }
