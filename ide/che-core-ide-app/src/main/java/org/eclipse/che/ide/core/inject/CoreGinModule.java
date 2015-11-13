@@ -25,6 +25,8 @@ import com.google.web.bindery.event.shared.SimpleEventBus;
 import org.eclipse.che.api.account.gwt.client.AccountServiceClient;
 import org.eclipse.che.api.account.gwt.client.AccountServiceClientImpl;
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
+import org.eclipse.che.api.factory.gwt.client.FactoryServiceClient;
+import org.eclipse.che.api.factory.gwt.client.FactoryServiceClientImpl;
 import org.eclipse.che.api.git.gwt.client.GitServiceClient;
 import org.eclipse.che.api.git.gwt.client.GitServiceClientImpl;
 import org.eclipse.che.api.machine.gwt.client.MachineServiceClient;
@@ -91,9 +93,11 @@ import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.api.theme.Theme;
 import org.eclipse.che.ide.api.theme.ThemeAgent;
 import org.eclipse.che.ide.bootstrap.DefaultIconsComponent;
+import org.eclipse.che.ide.bootstrap.FactoryComponent;
 import org.eclipse.che.ide.bootstrap.PreferencesComponent;
 import org.eclipse.che.ide.bootstrap.ProfileComponent;
 import org.eclipse.che.ide.bootstrap.StandartComponent;
+import org.eclipse.che.ide.bootstrap.StartupComponent;
 import org.eclipse.che.ide.bootstrap.WorkspaceComponent;
 import org.eclipse.che.ide.bootstrap.ZeroClipboardInjector;
 import org.eclipse.che.ide.core.Component;
@@ -295,12 +299,16 @@ public class CoreGinModule extends AbstractGinModule {
         mapBinder.addBinding("Default Icons").to(DefaultIconsComponent.class);
         mapBinder.addBinding("ZeroClipboard").to(ZeroClipboardInjector.class);
         mapBinder.addBinding("Preferences").to(PreferencesComponent.class);
-        mapBinder.addBinding("Workspace").to(WorkspaceComponent.class);
+        mapBinder.addBinding("Startup").to(StartupComponent.class);
+//        mapBinder.addBinding("Workspace").to(WorkspaceComponent.class);
         mapBinder.addBinding("Profile").to(ProfileComponent.class);
 //        mapBinder.addBinding("Project Types").to(ProjectTypeComponent.class);
 //        mapBinder.addBinding("Project Templates").to(ProjectTemplatesComponent.class);
 //        mapBinder.addBinding("Factory").to(FactoryComponent.class);
         mapBinder.addBinding("Standard components").to(StandartComponent.class);
+
+        bind(WorkspaceComponent.class);
+        bind(FactoryComponent.class);
     }
 
     private void configureProjectWizard() {
@@ -324,7 +332,7 @@ public class CoreGinModule extends AbstractGinModule {
         bind(GitServiceClient.class).to(GitServiceClientImpl.class).in(Singleton.class);
         bind(AccountServiceClient.class).to(AccountServiceClientImpl.class).in(Singleton.class);
         bind(OAuthServiceClient.class).to(OAuthServiceClientImpl.class).in(Singleton.class);
-//        bind(FactoryServiceClient.class).to(FactoryServiceClientImpl.class).in(Singleton.class);
+        bind(FactoryServiceClient.class).to(FactoryServiceClientImpl.class).in(Singleton.class);
         bind(WorkspaceServiceClient.class).to(WorkspaceServiceClientImpl.class).in(Singleton.class);
         bind(VfsServiceClient.class).to(VfsServiceClientImpl.class).in(Singleton.class);
         bind(ProjectServiceClient.class).to(ProjectServiceClientImpl.class).in(Singleton.class);
