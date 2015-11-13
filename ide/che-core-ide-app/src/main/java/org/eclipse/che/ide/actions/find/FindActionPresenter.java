@@ -258,8 +258,7 @@ public class FindActionPresenter implements Presenter, FindActionView.ActionDele
     }
 
     private static boolean containsOnlyUppercaseLetters(String s) {
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
+        for (char c : s.toCharArray()) {
             if (c != '*' && c != ' ' && !Character.isUpperCase(c)) return false;
         }
         return true;
