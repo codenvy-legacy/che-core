@@ -230,53 +230,7 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
 
     private void createEditor(final String content) {
         this.fileTypes = detectFileType(getEditorInput().getFile());
-        editorWigetFactory.createEditorWidget(fileTypes, new WidgetInitializedCallback() {
-
-            @Override
-            public void initialized(EditorWidget widget) {
-                EmbeddedTextEditorPresenter.this.editorWidget = widget;
-                // finish editor initialization
-                EmbeddedTextEditorPresenter.this.editorView.setEditorWidget(EmbeddedTextEditorPresenter.this.editorWidget);
-
-                EmbeddedTextEditorPresenter.this.document = EmbeddedTextEditorPresenter.this.editorWidget.getDocument();
-                EmbeddedTextEditorPresenter.this.document.setFile(input.getFile());
-                EmbeddedTextEditorPresenter.this.cursorModel = new EmbeddedEditorCursorModel(EmbeddedTextEditorPresenter.this.document);
-
-                EmbeddedTextEditorPresenter.this.editorWidget.setTabSize(EmbeddedTextEditorPresenter.this.configuration.getTabWidth());
-
-                // initialize info panel
-                EmbeddedTextEditorPresenter.this.editorView.initInfoPanel(EmbeddedTextEditorPresenter.this.editorWidget.getMode(),
-                                                                          EmbeddedTextEditorPresenter.this.editorWidget.getEditorType(),
-                                                                          EmbeddedTextEditorPresenter.this.editorWidget.getKeymap(),
-                                                                          EmbeddedTextEditorPresenter.this.document.getLineCount(),
-                                                                          EmbeddedTextEditorPresenter.this.configuration.getTabWidth());
-
-                // handle delayed focus
-                // should also check if I am visible, but how ?
-                if (delayedFocus) {
-                    EmbeddedTextEditorPresenter.this.editorWidget.setFocus();
-                    EmbeddedTextEditorPresenter.this.delayedFocus = false;
-                }
-
-                // delayed keybindings creation ?
-                switchHasKeybinding();
-
-                EmbeddedTextEditorPresenter.this.editorWidget.setValue(content);
-                EmbeddedTextEditorPresenter.this.generalEventBus.fireEvent(
-                        new DocumentReadyEvent(EmbeddedTextEditorPresenter.this.getEditorHandle(),
-                                               EmbeddedTextEditorPresenter.this.document));
-
-                final OutlineImpl outline = getOutline();
-                if (outline != null) {
-                    outline.bind(EmbeddedTextEditorPresenter.this.cursorModel, EmbeddedTextEditorPresenter.this.document);
-                }
-
-                firePropertyChange(PROP_INPUT);
-
-                setupEventHandlers();
-                setupFileContentUpdateHandler();
-            }
-        });
+        editorWigetFactory.createEditorWidget(fileTypes, new EditorWidgetInitializedCallback(content));
     }
 
     private void setupEventHandlers() {
@@ -795,5 +749,58 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
     public boolean isAutoSaveEnabled() {
         Reconciler reconciler = getConfiguration().getReconciler();
          return reconciler != null && reconciler instanceof ReconcilerWithAutoSave;
+    }
+
+    private class EditorWidgetInitializedCallback implements WidgetInitializedCallback {
+        private final String content;
+
+        private EditorWidgetInitializedCallback(String content) {
+            this.content = content;
+        }
+
+        @Override
+        public void initialized(EditorWidget widget) {
+            EmbeddedTextEditorPresenter.this.editorWidget = widget;
+            // finish editor initialization
+            EmbeddedTextEditorPresenter.this.editorView.setEditorWidget(EmbeddedTextEditorPresenter.this.editorWidget);
+
+            EmbeddedTextEditorPresenter.this.document = EmbeddedTextEditorPresenter.this.editorWidget.getDocument();
+            EmbeddedTextEditorPresenter.this.document.setFile(input.getFile());
+            EmbeddedTextEditorPresenter.this.cursorModel = new EmbeddedEditorCursorModel(EmbeddedTextEditorPresenter.this.document);
+
+            EmbeddedTextEditorPresenter.this.editorWidget.setTabSize(EmbeddedTextEditorPresenter.this.configuration.getTabWidth());
+
+            // initialize info panel
+            EmbeddedTextEditorPresenter.this.editorView.initInfoPanel(EmbeddedTextEditorPresenter.this.editorWidget.getMode(),
+                                                                      EmbeddedTextEditorPresenter.this.editorWidget.getEditorType(),
+                                                                      EmbeddedTextEditorPresenter.this.editorWidget.getKeymap(),
+                                                                      EmbeddedTextEditorPresenter.this.document.getLineCount(),
+                                                                      EmbeddedTextEditorPresenter.this.configuration.getTabWidth());
+
+            // handle delayed focus
+            // should also check if I am visible, but how ?
+            if (delayedFocus) {
+                EmbeddedTextEditorPresenter.this.editorWidget.setFocus();
+                EmbeddedTextEditorPresenter.this.delayedFocus = false;
+            }
+
+            // delayed keybindings creation ?
+            switchHasKeybinding();
+
+            EmbeddedTextEditorPresenter.this.editorWidget.setValue(content);
+            EmbeddedTextEditorPresenter.this.generalEventBus.fireEvent(
+                    new DocumentReadyEvent(EmbeddedTextEditorPresenter.this.getEditorHandle(),
+                                           EmbeddedTextEditorPresenter.this.document));
+
+            final OutlineImpl outline = getOutline();
+            if (outline != null) {
+                outline.bind(EmbeddedTextEditorPresenter.this.cursorModel, EmbeddedTextEditorPresenter.this.document);
+            }
+
+            firePropertyChange(PROP_INPUT);
+
+            setupEventHandlers();
+            setupFileContentUpdateHandler();
+        }
     }
 }
