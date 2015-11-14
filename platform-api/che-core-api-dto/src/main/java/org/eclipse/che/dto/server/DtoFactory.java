@@ -132,6 +132,13 @@ public final class DtoFactory {
         throw new IllegalArgumentException("JsonSerializable instance required. ");
     }
 
+    public <T> JsonElement toJsonElement(T dto) {
+        if (dto instanceof JsonSerializable) {
+            return ((JsonSerializable)dto).toJsonElement();
+        }
+        throw new IllegalArgumentException("JsonSerializable instance required. ");
+    }
+
     /**
      * Creates new instance of class which implements specified DTO interface.
      *
