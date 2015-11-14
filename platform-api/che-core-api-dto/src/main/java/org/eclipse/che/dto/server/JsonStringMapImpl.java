@@ -13,6 +13,7 @@ package org.eclipse.che.dto.server;
 import org.eclipse.che.dto.shared.JsonStringMap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 
 import java.util.Collection;
 import java.util.Map;
@@ -98,6 +99,11 @@ public class JsonStringMapImpl<T> implements JsonStringMap<T> {
     @Override
     public String toJson() {
         return gson.toJson(this);
+    }
+
+    @Override
+    public JsonElement toJsonElement() {
+        return gson.toJsonTree(this);
     }
 
     @Override

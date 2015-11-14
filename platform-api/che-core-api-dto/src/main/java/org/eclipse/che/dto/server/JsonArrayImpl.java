@@ -13,6 +13,7 @@ package org.eclipse.che.dto.server;
 import org.eclipse.che.dto.shared.JsonArray;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -151,6 +152,11 @@ public class JsonArrayImpl<T> implements JsonArray<T> {
     @Override
     public String toJson() {
         return gson.toJson(this);
+    }
+
+    @Override
+    public JsonElement toJsonElement() {
+        return gson.toJsonTree(this);
     }
 
     @Override

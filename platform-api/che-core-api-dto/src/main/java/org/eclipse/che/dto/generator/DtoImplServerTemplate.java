@@ -279,6 +279,7 @@ public class DtoImplServerTemplate extends DtoImpl {
     }
 
     private void emitSerializer(List<Method> getters, StringBuilder builder) {
+        builder.append("    @Override\n");
         builder.append("    public JsonElement toJsonElement() {\n");
         // The default toJsonElement() returns JSONs for unsafe use thus 'any' properties should be copied
         builder.append("      return toJsonElementInt(true);\n");
