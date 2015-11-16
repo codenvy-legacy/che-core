@@ -15,6 +15,7 @@ import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.git.GitConnection;
 import org.eclipse.che.api.git.GitConnectionFactory;
+import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.api.git.shared.AddRequest;
 import org.eclipse.che.api.git.shared.CommitRequest;
 import org.testng.annotations.AfterMethod;
@@ -66,23 +67,21 @@ public class IsInsideWorkTreeTest {
         connection.commit(newDto(CommitRequest.class).withMessage("test"));
 
         // when
-        GitConnection internalDirConnection = connectToInitializedGitRepository(connectionFactory, internalDir.toFile());
+        GitConnection internalDirConnection = connectionFactory.getConnection(internalDir.toFile());
         boolean isInsideWorkingTree = internalDirConnection.isInsideWorkTree();
 
         // then
         assertTrue(isInsideWorkingTree);
     }
 
-    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = GitConnectionFactoryProvider.class)
-    public void shouldReturnFalseOutsideWorkingTree(GitConnectionFactory connectionFactory)
+    @Test(dataProvider = "GitConnectionFactory", dataProviderClass = GitConnectionFactoryProvider.class,
+          expectedExceptions = GitException.class, expectedExceptionsMessageRegExp = "(?s).*fatal: Not a git repository.*(?s).*")
+    public void shouldThrowGitExceptionOutsideWorkingTree(GitConnectionFactory connectionFactory)
             throws ServerException, IOException, UnauthorizedException, URISyntaxException {
         // given
-        GitConnection connection = connectToInitializedGitRepository(connectionFactory, notRepoDir);
+        GitConnection connection = connectionFactory.getConnection(notRepoDir);
 
-        // when
-        boolean isInsideWorkingTree = connection.isInsideWorkTree();
-
-        // then
-        assertFalse(isInsideWorkingTree);
+        // when-then
+        connection.isInsideWorkTree();
     }
 }
