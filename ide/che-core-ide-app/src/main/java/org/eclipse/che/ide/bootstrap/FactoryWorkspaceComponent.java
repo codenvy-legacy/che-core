@@ -38,6 +38,7 @@ import org.eclipse.che.ide.workspace.create.CreateWorkspacePresenter;
 import org.eclipse.che.ide.workspace.start.StartWorkspacePresenter;
 
 import com.google.gwt.core.client.Callback;
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
@@ -49,10 +50,10 @@ import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.RUNNING;
 @Singleton
 public class FactoryWorkspaceComponent extends WorkspaceComponent implements Component {
 
-    private final FactoryServiceClient           factoryServiceClient;
-    private       Factory factory;
+    private final FactoryServiceClient factoryServiceClient;
+    private       Factory              factory;
 
-    @javax.inject.Inject
+    @Inject
     public FactoryWorkspaceComponent(WorkspaceServiceClient workspaceServiceClient,
                                      FactoryServiceClient factoryServiceClient,
                                      CreateWorkspacePresenter createWorkspacePresenter,

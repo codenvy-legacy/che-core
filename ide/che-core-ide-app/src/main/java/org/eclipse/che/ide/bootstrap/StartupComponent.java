@@ -13,29 +13,31 @@ package org.eclipse.che.ide.bootstrap;
 
 
 import com.google.gwt.core.client.Callback;
+import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.util.Config;
 import org.eclipse.che.ide.util.loging.Log;
 
-import javax.inject.Inject;
 
 /**
  * @author Max Shaposhnik
  */
 public class StartupComponent implements Component {
 
-    private final DefaultWorkspaceComponent workspaceComponent;
-    private final FactoryWorkspaceComponent factoryComponent;
-    private final AppContext                appContext;
+    private final Provider<DefaultWorkspaceComponent> workspaceComponentProvider;
+    private final Provider<FactoryWorkspaceComponent> factoryComponentProvider;
+    private final AppContext                          appContext;
 
 
     @Inject
-    public StartupComponent(DefaultWorkspaceComponent workspaceComponent, FactoryWorkspaceComponent factoryComponent,
+    public StartupComponent(Provider<DefaultWorkspaceComponent> workspaceComponentProvider,
+                            Provider<FactoryWorkspaceComponent> factoryComponentProvider,
                             AppContext appContext) {
-        this.workspaceComponent = workspaceComponent;
-        this.factoryComponent = factoryComponent;
+        this.workspaceComponentProvider = workspaceComponentProvider;
+        this.factoryComponentProvider = factoryComponentProvider;
         this.appContext = appContext;
     }
 
@@ -45,10 +47,10 @@ public class StartupComponent implements Component {
         String factoryParams = Config.getStartupParam("factory");
         if (factoryParams != null) {
             Log.info(StartupComponent.class, "Starting factory.");
-            factoryComponent.start(callback);
+            factoryComponentProvider.get().start(callback);
         } else {
             Log.info(StartupComponent.class, "Starting default.");
-            workspaceComponent.start(callback);
+            workspaceComponentProvider.get().start(callback);
         }
     }
 }

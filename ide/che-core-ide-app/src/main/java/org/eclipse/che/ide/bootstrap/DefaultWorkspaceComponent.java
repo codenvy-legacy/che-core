@@ -11,6 +11,8 @@
 package org.eclipse.che.ide.bootstrap;
 
 import com.google.gwt.core.client.Callback;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
@@ -35,7 +37,6 @@ import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
 import org.eclipse.che.ide.workspace.create.CreateWorkspacePresenter;
 import org.eclipse.che.ide.workspace.start.StartWorkspacePresenter;
 
-import javax.inject.Inject;
 import java.util.List;
 
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.RUNNING;
@@ -45,6 +46,7 @@ import static org.eclipse.che.ide.statepersistance.AppStateManager.PREFERENCE_PR
  * @author Max Shaposhnik (mshaposhnik@codenvy.com)
  *
  */
+@Singleton
 public class DefaultWorkspaceComponent extends WorkspaceComponent implements Component {
 
     @Inject
