@@ -30,7 +30,7 @@ import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.bootstrap.WorkspaceComponent;
+import org.eclipse.che.ide.bootstrap.DefaultWorkspaceComponent;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
@@ -62,13 +62,13 @@ public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDeleg
     static final int    MAX_NAME_LENGTH = 20;
     static final int    MIN_NAME_LENGTH = 3;
 
-    private final CreateWorkspaceView          view;
-    private final DtoFactory                   dtoFactory;
-    private final WorkspaceServiceClient       workspaceClient;
-    private final CoreLocalizationConstant     locale;
-    private final Provider<WorkspaceComponent> wsComponentProvider;
-    private final RecipeServiceClient          recipeService;
-    private final BrowserQueryFieldRenderer    browserQueryFieldRenderer;
+    private final CreateWorkspaceView                 view;
+    private final DtoFactory                          dtoFactory;
+    private final WorkspaceServiceClient              workspaceClient;
+    private final CoreLocalizationConstant            locale;
+    private final Provider<DefaultWorkspaceComponent> wsComponentProvider;
+    private final RecipeServiceClient                 recipeService;
+    private final BrowserQueryFieldRenderer           browserQueryFieldRenderer;
 
     private Callback<Component, Exception> callback;
     private List<RecipeDescriptor>         recipes;
@@ -79,7 +79,7 @@ public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDeleg
                                     DtoFactory dtoFactory,
                                     WorkspaceServiceClient workspaceClient,
                                     CoreLocalizationConstant locale,
-                                    Provider<WorkspaceComponent> wsComponentProvider,
+                                    Provider<DefaultWorkspaceComponent> wsComponentProvider,
                                     RecipeServiceClient recipeService,
                                     BrowserQueryFieldRenderer browserQueryFieldRenderer) {
         this.view = view;
@@ -217,7 +217,7 @@ public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDeleg
         workspaceClient.create(workspaceConfig, null).then(new Operation<UsersWorkspaceDto>() {
             @Override
             public void apply(UsersWorkspaceDto workspace) throws OperationException {
-                WorkspaceComponent component = wsComponentProvider.get();
+                DefaultWorkspaceComponent component = wsComponentProvider.get();
 
                 component.startWorkspaceById(workspace);
             }

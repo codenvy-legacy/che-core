@@ -12,11 +12,9 @@
 package org.eclipse.che.ide.bootstrap;
 
 import com.google.gwt.core.client.Callback;
-import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
-import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 import org.eclipse.che.api.machine.gwt.client.OutputMessageUnmarshaller;
 import org.eclipse.che.api.machine.gwt.client.events.DevMachineStateEvent;
 import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateEvent;
@@ -37,7 +35,6 @@ import org.eclipse.che.ide.api.preferences.PreferencesManager;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
-import org.eclipse.che.ide.statepersistance.dto.AppState;
 import org.eclipse.che.ide.ui.dialogs.ConfirmCallback;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter;
@@ -61,40 +58,40 @@ import org.eclipse.che.ide.workspace.start.StopWorkspaceEvent;
 import java.util.List;
 
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.RUNNING;
-import static org.eclipse.che.ide.statepersistance.AppStateManager.PREFERENCE_PROPERTY_NAME;
 
 /**
  * @author Evgen Vidolob
  * @author Dmitry Shnurenko
  */
 @Singleton
-public class WorkspaceComponent implements Component, ExtServerStateHandler {
+public abstract class WorkspaceComponent implements Component, ExtServerStateHandler {
 
-    private final static int SKIP_COUNT = 0;
-    private final static int MAX_COUNT  = 10;
+    protected final static int SKIP_COUNT = 0;
+    protected final static int MAX_COUNT  = 10;
 
-    private final WorkspaceServiceClient    workspaceServiceClient;
-    private final CoreLocalizationConstant  locale;
-    private final CreateWorkspacePresenter  createWorkspacePresenter;
-    private final StartWorkspacePresenter   startWorkspacePresenter;
-    private final DtoUnmarshallerFactory    dtoUnmarshallerFactory;
-    private final EventBus                  eventBus;
-    private final LoaderPresenter           loader;
-    private final AppContext                appContext;
-    private final NotificationManager       notificationManager;
-    private final MessageBusProvider        messageBusProvider;
-    private final BrowserQueryFieldRenderer browserQueryFieldRenderer;
-    private final DialogFactory             dialogFactory;
-    private final PreferencesManager        preferencesManager;
-    private final DtoFactory                dtoFactory;
+    protected final WorkspaceServiceClient   workspaceServiceClient;
+    protected final CoreLocalizationConstant locale;
+    protected final CreateWorkspacePresenter createWorkspacePresenter;
+    protected final DtoUnmarshallerFactory   dtoUnmarshallerFactory;
 
-    private OperationInfo                  startMachineOperation;
-    private Callback<Component, Exception> callback;
-    private MessageBus                     messageBus;
-    private boolean                        needToReloadComponents;
-    private OperationInfo                  startWorkspaceOperation;
+    protected final AppContext                appContext;
+    protected final BrowserQueryFieldRenderer browserQueryFieldRenderer;
+    protected final DialogFactory             dialogFactory;
+    protected final PreferencesManager        preferencesManager;
+    protected final DtoFactory                dtoFactory;
 
-    @Inject
+    private final NotificationManager     notificationManager;
+    private final MessageBusProvider      messageBusProvider;
+    private final EventBus                eventBus;
+    private final LoaderPresenter         loader;
+    private final StartWorkspacePresenter startWorkspacePresenter;
+
+    protected Callback<Component, Exception> callback;
+    protected boolean                        needToReloadComponents;
+    private   MessageBus                     messageBus;
+    private   OperationInfo                  startMachineOperation;
+    private   OperationInfo                  startWorkspaceOperation;
+
     public WorkspaceComponent(WorkspaceServiceClient workspaceServiceClient,
                               CreateWorkspacePresenter createWorkspacePresenter,
                               StartWorkspacePresenter startWorkspacePresenter,
@@ -141,102 +138,10 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
         notificationManager.showInfo(locale.extServerStopped());
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public void start(final Callback<Component, Exception> callback) {
-        this.callback = callback;
 
-        workspaceServiceClient.getWorkspaces(SKIP_COUNT, MAX_COUNT).then(new Operation<List<UsersWorkspaceDto>>() {
-            @Override
-            public void apply(List<UsersWorkspaceDto> workspaces) throws OperationException {
-                String wsNameFromBrowser = browserQueryFieldRenderer.getWorkspaceName();
+    abstract void tryStartWorkspace();
 
-                for (UsersWorkspaceDto workspace : workspaces) {
-                    boolean isWorkspaceExist = wsNameFromBrowser.equals(workspace.getName());
-
-                    if (wsNameFromBrowser.isEmpty()) {
-                        tryStartRecentWorkspace();
-
-                        return;
-                    }
-
-                    if (isWorkspaceExist && RUNNING.equals(workspace.getStatus())) {
-                        setCurrentWorkspace(workspace);
-
-                        startWorkspaceById(workspace);
-
-                        return;
-                    }
-
-                    if (isWorkspaceExist) {
-                        startWorkspaceById(workspace);
-
-                        return;
-                    }
-                }
-
-                createWorkspacePresenter.show(workspaces, callback);
-            }
-        }).catchError(new Operation<PromiseError>() {
-            @Override
-            public void apply(PromiseError error) throws OperationException {
-                needToReloadComponents = true;
-
-                dialogFactory.createMessageDialog(locale.getWsErrorDialogTitle(),
-                                                  locale.getWsErrorDialogContent(error.getMessage()),
-                                                  null).show();
-
-                callback.onFailure(new Exception(error.getCause()));
-            }
-        });
-    }
-
-    private void tryStartRecentWorkspace() {
-        String json = preferencesManager.getValue(PREFERENCE_PROPERTY_NAME);
-
-        AppState appState = null;
-
-        try {
-            appState = dtoFactory.createDtoFromJson(json, AppState.class);
-        } catch (Exception exception) {
-            Log.error(getClass(), "Can't create object using json: " + exception);
-        }
-
-        if (appState != null) {
-            String recentWorkspaceId = appState.getRecentWorkspaceId();
-
-            if (recentWorkspaceId != null) {
-                Operation<UsersWorkspaceDto> workspaceOperation = new Operation<UsersWorkspaceDto>() {
-                    @Override
-                    public void apply(UsersWorkspaceDto workspace) throws OperationException {
-                        WorkspaceStatus wsFromReferenceStatus = workspace.getStatus();
-
-                        if (RUNNING.equals(wsFromReferenceStatus)) {
-                            setCurrentWorkspace(workspace);
-                        }
-
-                        startWorkspaceById(workspace);
-                    }
-                };
-
-                Operation<PromiseError> errorOperation = new Operation<PromiseError>() {
-                    @Override
-                    public void apply(PromiseError promiseError) throws OperationException {
-                        showWorkspaceDialog();
-                    }
-                };
-
-                workspaceServiceClient.getWorkspaceById(recentWorkspaceId)
-                                      .then(workspaceOperation)
-                                      .catchError(errorOperation);
-                return;
-            }
-        }
-
-        showWorkspaceDialog();
-    }
-
-    private void showWorkspaceDialog() {
+    protected void showWorkspaceDialog() {
         workspaceServiceClient.getWorkspaces(SKIP_COUNT, MAX_COUNT).then(new Operation<List<UsersWorkspaceDto>>() {
             @Override
             public void apply(List<UsersWorkspaceDto> workspaces) throws OperationException {

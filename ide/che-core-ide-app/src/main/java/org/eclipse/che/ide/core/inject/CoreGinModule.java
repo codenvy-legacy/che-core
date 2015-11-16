@@ -93,12 +93,12 @@ import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.api.theme.Theme;
 import org.eclipse.che.ide.api.theme.ThemeAgent;
 import org.eclipse.che.ide.bootstrap.DefaultIconsComponent;
-import org.eclipse.che.ide.bootstrap.FactoryComponent;
+import org.eclipse.che.ide.bootstrap.DefaultWorkspaceComponent;
+import org.eclipse.che.ide.bootstrap.FactoryWorkspaceComponent;
 import org.eclipse.che.ide.bootstrap.PreferencesComponent;
 import org.eclipse.che.ide.bootstrap.ProfileComponent;
 import org.eclipse.che.ide.bootstrap.StandartComponent;
 import org.eclipse.che.ide.bootstrap.StartupComponent;
-import org.eclipse.che.ide.bootstrap.WorkspaceComponent;
 import org.eclipse.che.ide.bootstrap.ZeroClipboardInjector;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.core.StandardComponentInitializer;
@@ -300,15 +300,13 @@ public class CoreGinModule extends AbstractGinModule {
         mapBinder.addBinding("ZeroClipboard").to(ZeroClipboardInjector.class);
         mapBinder.addBinding("Preferences").to(PreferencesComponent.class);
         mapBinder.addBinding("Startup").to(StartupComponent.class);
-//        mapBinder.addBinding("Workspace").to(WorkspaceComponent.class);
         mapBinder.addBinding("Profile").to(ProfileComponent.class);
 //        mapBinder.addBinding("Project Types").to(ProjectTypeComponent.class);
 //        mapBinder.addBinding("Project Templates").to(ProjectTemplatesComponent.class);
-//        mapBinder.addBinding("Factory").to(FactoryComponent.class);
         mapBinder.addBinding("Standard components").to(StandartComponent.class);
 
-        bind(WorkspaceComponent.class);
-        bind(FactoryComponent.class);
+        bind(DefaultWorkspaceComponent.class);
+        bind(FactoryWorkspaceComponent.class);
     }
 
     private void configureProjectWizard() {

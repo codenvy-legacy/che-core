@@ -17,6 +17,7 @@ import com.google.gwt.core.client.Callback;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.util.Config;
+import org.eclipse.che.ide.util.loging.Log;
 
 import javax.inject.Inject;
 
@@ -25,13 +26,14 @@ import javax.inject.Inject;
  */
 public class StartupComponent implements Component {
 
-    private final WorkspaceComponent workspaceComponent;
-    private final FactoryComponent   factoryComponent;
-    private final AppContext         appContext;
+    private final DefaultWorkspaceComponent workspaceComponent;
+    private final FactoryWorkspaceComponent factoryComponent;
+    private final AppContext                appContext;
 
 
     @Inject
-    public StartupComponent(WorkspaceComponent workspaceComponent, FactoryComponent factoryComponent, AppContext appContext) {
+    public StartupComponent(DefaultWorkspaceComponent workspaceComponent, FactoryWorkspaceComponent factoryComponent,
+                            AppContext appContext) {
         this.workspaceComponent = workspaceComponent;
         this.factoryComponent = factoryComponent;
         this.appContext = appContext;
@@ -39,10 +41,13 @@ public class StartupComponent implements Component {
 
     @Override
     public void start(final Callback<Component, Exception> callback) {
+        Log.info(StartupComponent.class, "Into startup.start();");
         String factoryParams = Config.getStartupParam("factory");
         if (factoryParams != null) {
+            Log.info(StartupComponent.class, "Starting factory.");
             factoryComponent.start(callback);
         } else {
+            Log.info(StartupComponent.class, "Starting default.");
             workspaceComponent.start(callback);
         }
     }
