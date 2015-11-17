@@ -24,14 +24,6 @@ import java.util.Map;
 @DTO
 @ApiModel(description = "Generate new project")
 public interface GeneratorDescription {
-//    /** Get name of project generator. */
-//    @ApiModelProperty(value = "Name of project generator", position = 1, required = true)
-//    String getName();
-//
-//    /** Set name of project generator. */
-//    void setName(String generatorName);
-//
-//    GeneratorDescription withName(String generatorName);
 
     /** Get options needed for generator. */
     @ApiModelProperty("Options needed for generator")

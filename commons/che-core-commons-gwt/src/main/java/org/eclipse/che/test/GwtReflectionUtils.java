@@ -17,6 +17,7 @@ import com.google.web.bindery.event.shared.UmbrellaException;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.websocket.rest.RequestCallback;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -25,20 +26,30 @@ import java.lang.reflect.Method;
  */
 public class GwtReflectionUtils {
 
+    public static void callOnSuccessVoidParameter(RequestCallback<?> callback) throws NoSuchMethodException,
+                                                                                      IllegalAccessException,
+                                                                                      InvocationTargetException,
+                                                                                      InstantiationException {
+        Method onSuccess = callback.getClass().getDeclaredMethod("onSuccess", Void.class);
+        onSuccess.setAccessible(true);
+        Constructor<Void> constructor = Void.class.getDeclaredConstructor();
+        constructor.setAccessible(true);
+        onSuccess.invoke(callback, constructor.newInstance());
+    }
 
-    public static void callOnFailure(AsyncRequestCallback<?> callback, Object... args){
+    public static void callOnFailure(AsyncRequestCallback<?> callback, Object... args) {
         callPrivateMethod(callback, "onFailure", args);
     }
 
-    public static void callOnSuccess(AsyncRequestCallback<?> callback, Object... args){
+    public static void callOnSuccess(AsyncRequestCallback<?> callback, Object... args) {
         callPrivateMethod(callback, "onSuccess", args);
     }
 
-    public static void callOnFailure(RequestCallback<?> callback, Object... args){
+    public static void callOnFailure(RequestCallback<?> callback, Object... args) {
         callPrivateMethod(callback, "onFailure", args);
     }
 
-    public static void callOnSuccess(RequestCallback<?> callback, Object... args){
+    public static void callOnSuccess(RequestCallback<?> callback, Object... args) {
         callPrivateMethod(callback, "onSuccess", args);
     }
 
@@ -51,9 +62,9 @@ public class GwtReflectionUtils {
         Method method = findMethod(target.getClass(), methodName, args);
         if (method == null) {
             throw new RuntimeException("Cannot find method '" + target.getClass().getName() + "."
-                                          + methodName + "(..)'");
+                                       + methodName + "(..)'");
         }
-        return (T) callPrivateMethod(target, method, args);
+        return (T)callPrivateMethod(target, method, args);
 
     }
 
@@ -129,19 +140,19 @@ public class GwtReflectionUtils {
         try {
             method.setAccessible(true);
             Object res = method.invoke(target, args);
-            return (T) res;
+            return (T)res;
         } catch (InvocationTargetException e) {
             if (AssertionError.class.isInstance(e.getCause())) {
-                throw (AssertionError) e.getCause();
+                throw (AssertionError)e.getCause();
             } else if (UmbrellaException.class.isInstance(e.getCause())) {
                 throw new RuntimeException("Error while calling method '" + method.toString() + "'",
-                                              e.getCause().getCause());
+                                           e.getCause().getCause());
             }
             throw new RuntimeException("Error while calling method '" + method.toString() + "'",
-                                          e.getCause());
+                                       e.getCause());
         } catch (Exception e) {
             throw new RuntimeException("Unable to call method '"
-                                          + target.getClass().getSimpleName() + "." + method.getName() + "(..)'", e);
+                                       + target.getClass().getSimpleName() + "." + method.getName() + "(..)'", e);
         }
     }
 }

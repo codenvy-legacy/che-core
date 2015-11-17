@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.shared.dto;
 
+import org.eclipse.che.api.core.model.project.SourceStorage;
+import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.dto.shared.DTO;
 
 /** @author Vitaly Parfonov */
@@ -34,11 +36,11 @@ public interface ProjectTemplateDescriptor {
 
     //
 
-    ImportSourceDescriptor getSource();
+    SourceStorageDto getSource();
 
-    void setSource(ImportSourceDescriptor sources);
+    void setSource(SourceStorageDto sources);
 
-    ProjectTemplateDescriptor withSource(ImportSourceDescriptor sources);
+    ProjectTemplateDescriptor withSource(SourceStorageDto sources);
 
     //
 
@@ -68,23 +70,4 @@ public interface ProjectTemplateDescriptor {
 
     ProjectTemplateDescriptor withRecipe(String recipe);
 
-    //
-
-    /** Gets builder configurations. */
-//    BuildersDescriptor getBuilders();
-//
-//    /** Sets builder configurations. */
-//    void setBuilders(BuildersDescriptor builders);
-//
-//    ProjectTemplateDescriptor withBuilders(BuildersDescriptor builders);
-//
-//    //
-//
-//    /** Gets runner configurations. */
-//    RunnersDescriptor getRunners();
-//
-//    /** Sets runner configurations. */
-//    void setRunners(RunnersDescriptor runners);
-//
-//    ProjectTemplateDescriptor withRunners(RunnersDescriptor runners);
 }

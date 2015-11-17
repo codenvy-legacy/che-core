@@ -24,31 +24,24 @@ import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.UnauthorizedException;
+import org.eclipse.che.api.core.model.workspace.ModuleConfig;
+import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.rest.Service;
 import org.eclipse.che.api.core.rest.annotations.Description;
 import org.eclipse.che.api.core.rest.annotations.GenerateLink;
 import org.eclipse.che.api.core.rest.annotations.Required;
 import org.eclipse.che.api.core.util.LineConsumerFactory;
-import org.eclipse.che.api.project.server.handlers.PostImportProjectHandler;
-import org.eclipse.che.api.project.server.handlers.ProjectHandlerRegistry;
 import org.eclipse.che.api.project.server.notification.ProjectItemModifiedEvent;
 import org.eclipse.che.api.project.server.type.AttributeValue;
+import org.eclipse.che.api.project.server.type.ProjectType;
 import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
 import org.eclipse.che.api.project.shared.dto.CopyOptions;
-import org.eclipse.che.api.project.shared.dto.GeneratorDescription;
-import org.eclipse.che.api.project.shared.dto.ImportProject;
-import org.eclipse.che.api.project.shared.dto.ImportResponse;
-import org.eclipse.che.api.project.shared.dto.ImportSourceDescriptor;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.MoveOptions;
-import org.eclipse.che.api.project.shared.dto.NewProject;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.api.project.shared.dto.ProjectModule;
 import org.eclipse.che.api.project.shared.dto.ProjectProblem;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
-import org.eclipse.che.api.project.shared.dto.ProjectUpdate;
-import org.eclipse.che.api.project.shared.dto.Source;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.project.shared.dto.TreeElement;
 import org.eclipse.che.api.vfs.server.ContentStream;
@@ -58,6 +51,9 @@ import org.eclipse.che.api.vfs.server.search.QueryExpression;
 import org.eclipse.che.api.vfs.server.search.SearcherProvider;
 import org.eclipse.che.api.vfs.shared.dto.AccessControlEntry;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
+import org.eclipse.che.api.workspace.shared.dto.ModuleConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.ws.rs.ExtMediaType;
 import org.eclipse.che.dto.server.DtoFactory;
@@ -96,15 +92,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+
 
 /**
  * @author andrew00x
  * @author Eugene Voevodin
  * @author Artem Zatsarynnyi
  * @author Valeriy Svydenko
+ * @author Dmitry Shnurenko
  */
 @Api(value = "/project",
-        description = "Project manager")
+     description = "Project manager")
 @Path("/project/{ws-id}")
 @Singleton // important to have singleton
 public class ProjectService extends Service {
@@ -125,7 +124,7 @@ public class ProjectService extends Service {
     @Inject
     private EventService            eventService;
     @Inject
-    private ProjectHandlerRegistry  projectHandlerRegistry;
+    private ProjectTypeRegistry     typeRegistry;
 
     @PreDestroy
     void stop() {
@@ -133,9 +132,9 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Gets list of projects in root folder",
-            response = ProjectReference.class,
-            responseContainer = "List",
-            position = 1)
+                  response = ProjectReference.class,
+                  responseContainer = "List",
+                  position = 1)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 500, message = "Server error")})
@@ -188,8 +187,8 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Gets project by ID of workspace and project's path",
-            response = ProjectDescriptor.class,
-            position = 2)
+                  response = ProjectDescriptor.class,
+                  position = 2)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 404, message = "Project with specified path doesn't exist in workspace"),
@@ -229,8 +228,8 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Creates new project",
-            response = ProjectDescriptor.class,
-            position = 3)
+                  response = ProjectDescriptor.class,
+                  position = 3)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 403, message = "Operation is forbidden"),
@@ -247,22 +246,14 @@ public class ProjectService extends Service {
                                            @Required
                                            @Description("project name")
                                            @QueryParam("name") String name,
-                                           @Description("descriptor of project") NewProject newProject)
+                                           @Description("descriptor of project") ProjectConfigDto projectConfigDto)
             throws ConflictException, ForbiddenException, ServerException, NotFoundException {
 
-        final GeneratorDescription generatorDescription = newProject.getGeneratorDescription();
-        Map<String, String> options;
-        if (generatorDescription == null) {
-            options = Collections.emptyMap();
-        } else {
-            options = generatorDescription.getOptions();
-        }
+        Map<String, String> options = Collections.emptyMap();
 
         final Project project = projectManager.createProject(workspace, name,
-                                                             DtoConverter.fromProjectUpdate(newProject,
-                                                                                            projectManager.getProjectTypeRegistry()),
-                                                             options,
-                                                             newProject.getVisibility());
+                                                             projectConfigDto,
+                                                             options);
 
         final ProjectDescriptor descriptor = DtoConverter.toProjectDescriptor(project,
                                                                               getServiceContext().getServiceUriBuilder(),
@@ -277,10 +268,10 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Get project modules",
-            notes = "Get project modules. Roles allowed: system/admin, system/manager.",
-            response = ProjectDescriptor.class,
-            responseContainer = "List",
-            position = 4)
+                  notes = "Get project modules. Roles allowed: system/admin, system/manager.",
+                  response = ProjectDescriptor.class,
+                  responseContainer = "List",
+                  position = 4)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 403, message = "User not authorized to call this operation"),
@@ -289,30 +280,23 @@ public class ProjectService extends Service {
     @GET
     @Path("/modules/{path:.*}")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<ProjectDescriptor> getModules(@ApiParam(value = "Workspace ID", required = true)
-                                              @PathParam("ws-id") String workspace,
-                                              @ApiParam(value = "Path to a project", required = true)
-                                              @PathParam("path") String path)
+    public List<ModuleConfig> getModules(@ApiParam(value = "Workspace ID", required = true)
+                                         @PathParam("ws-id") String workspace,
+                                         @ApiParam(value = "Path to a project", required = true)
+                                         @PathParam("path") String path)
             throws NotFoundException, ForbiddenException, ServerException, ConflictException, IOException {
 
         Project parent = projectManager.getProject(workspace, path);
         if (parent == null) {
             throw new NotFoundException("Project " + path + " was not found");
         }
-        final List<ProjectDescriptor> modules = new LinkedList<>();
-        for (Project module : projectManager.getProjectModules(parent)) {
-            modules.add(DtoConverter.toProjectDescriptor(module,
-                                                         getServiceContext().getServiceUriBuilder(),
-                                                         projectManager.getProjectTypeRegistry(),
-                                                         workspace));
-        }
-        return modules;
+        return projectManager.getProjectModules(parent).stream().collect(Collectors.toCollection(LinkedList::new));
     }
 
     @ApiOperation(value = "Create a new module",
-            notes = "Create a new module in a specified project",
-            response = ProjectDescriptor.class,
-            position = 5)
+                  notes = "Create a new module in a specified project",
+                  response = ProjectDescriptor.class,
+                  position = 5)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 403, message = "User not authorized to call this operation"),
@@ -323,38 +307,31 @@ public class ProjectService extends Service {
     @Path("/{path:.*}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ProjectDescriptor createModule(@ApiParam(value = "Workspace ID", required = true)
-                                          @PathParam("ws-id") String workspace,
-                                          @ApiParam(value = "Path to a target directory", required = true)
-                                          @PathParam("path") String parentPath,
-                                          @ApiParam(value = "New module name", required = true)
-                                          @QueryParam("path") String path,
-                                          NewProject newProject)
-            throws NotFoundException, ConflictException, ForbiddenException, ServerException {
+    public ModuleConfigDto createModule(@ApiParam(value = "Workspace ID", required = true)
+                                        @PathParam("ws-id") String workspace,
+                                        @ApiParam(value = "Path to a target directory", required = true)
+                                        @PathParam("path") String pathToParent,
+                                        ModuleConfigDto moduleConfigDto) throws NotFoundException,
+                                                                                ConflictException,
+                                                                                ForbiddenException,
+                                                                                ServerException {
+        filesBuffer.addToBuffer(moduleConfigDto.getName());
 
-        filesBuffer.addToBuffer(path);
+        ModuleConfigDto module = projectManager.addModule(workspace,
+                                                          pathToParent,
+                                                          moduleConfigDto,
+                                                          null);
 
-        Project module = projectManager.addModule(workspace, parentPath, path,
-                                                  (newProject == null) ? null : DtoConverter
-                                                          .fromProjectUpdate(newProject, projectManager.getProjectTypeRegistry()),
-                                                  (newProject == null) ? null : newProject.getGeneratorDescription().getOptions(),
-                                                  (newProject == null) ? null : newProject.getVisibility());
+        eventService.publish(new ProjectCreatedEvent(workspace, module.getPath()));
 
-        final ProjectDescriptor descriptor = DtoConverter.toProjectDescriptor(module,
-                                                                              getServiceContext().getServiceUriBuilder(),
-                                                                              projectManager.getProjectTypeRegistry(),
-                                                                              workspace);
+        logProjectCreatedEvent(module.getName(), module.getType());
 
-        eventService.publish(new ProjectCreatedEvent(module.getWorkspace(), module.getPath()));
-
-        logProjectCreatedEvent(descriptor.getName(), descriptor.getType());
-
-        return descriptor;
+        return module;
     }
 
     @ApiOperation(value = "Updates existing project",
-            response = ProjectDescriptor.class,
-            position = 6)
+                  response = ProjectDescriptor.class,
+                  position = 6)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 404, message = "Project with specified path doesn't exist in workspace"),
@@ -369,11 +346,31 @@ public class ProjectService extends Service {
                                            @PathParam("ws-id") String workspace,
                                            @ApiParam(value = "Path to updated project", required = true)
                                            @PathParam("path") String path,
-                                           ProjectUpdate update)
+                                           ProjectConfigDto projectConfigDto)
             throws NotFoundException, ConflictException, ForbiddenException, ServerException, IOException {
-        ProjectConfig newConfig = DtoConverter.fromProjectUpdate(update, projectManager.getProjectTypeRegistry());
-        String newVisibility = update.getVisibility();
-        Project project = projectManager.updateProject(workspace, path, newConfig, newVisibility);
+        Project project;
+
+        if (projectManager.getProject(workspace, path) != null) {
+            project = projectManager.updateProject(workspace, path, projectConfigDto);
+        } else {
+            FolderEntry baseProjectFolder = (FolderEntry)projectManager.getProjectsRoot(workspace).getChild(path);
+            try {
+                project = projectManager.convertFolderToProject(workspace, path, projectConfigDto);
+                reindexProject(System.currentTimeMillis(), baseProjectFolder, project);
+                eventService.publish(new ProjectCreatedEvent(project.getWorkspace(), project.getPath()));
+                logProjectCreatedEvent(projectConfigDto.getName(), projectConfigDto.getType());
+            } catch (ConflictException | ForbiddenException | ServerException e) {
+                project = new NotValidProject(baseProjectFolder, projectManager);
+                ProjectDescriptor projectDescriptor = DtoConverter.toProjectDescriptor(project,
+                                                                                       getServiceContext().getServiceUriBuilder(),
+                                                                                       projectManager.getProjectTypeRegistry(),
+                                                                                       workspace);
+                ProjectProblem problem = DtoFactory.getInstance().createDto(ProjectProblem.class).withCode(1).withMessage(e.getMessage());
+                projectDescriptor.setProblems(Collections.singletonList(problem));
+                return projectDescriptor;
+            }
+        }
+
         return DtoConverter.toProjectDescriptor(project,
                                                 getServiceContext().getServiceUriBuilder(),
                                                 projectManager.getProjectTypeRegistry(),
@@ -381,8 +378,8 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Estimates if the folder supposed to be project of certain type",
-            response = Map.class,
-            position = 20)
+                  response = Map.class,
+                  position = 20)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 404, message = "Project with specified path doesn't exist in workspace"),
@@ -421,8 +418,8 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Create file",
-            notes = "Create a new file in a project. If file type isn't specified the server will resolve its type.",
-            position = 7)
+                  notes = "Create a new file in a project. If file type isn't specified the server will resolve its type.",
+                  position = 7)
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = ""),
             @ApiResponse(code = 403, message = "User not authorized to call this operation"),
@@ -450,7 +447,7 @@ public class ProjectService extends Service {
         // Have agreement with client to send Content-type header with "application/unknown" value if client doesn't want to specify media
         // type of new file. In this case server takes care about resolving media type of file.
         final FileEntry newFile;
-        if (contentType == null || ("application".equals(contentType.getType()) && "unknown".equals(contentType.getSubtype()))) {
+        if (contentType == null || ("application" .equals(contentType.getType()) && "unknown" .equals(contentType.getSubtype()))) {
             newFile = parent.createFile(fileName, content, null);
         } else {
             newFile = parent.createFile(fileName, content, (contentType.getType() + '/' + contentType.getSubtype()));
@@ -466,8 +463,8 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Create a folder",
-            notes = "Create a folder is a specified project",
-            position = 8)
+                  notes = "Create a folder is a specified project",
+                  position = 8)
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = ""),
             @ApiResponse(code = 403, message = "User not authorized to call this operation"),
@@ -496,8 +493,8 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Upload a file",
-            notes = "Upload a new file",
-            position = 9)
+                  notes = "Upload a new file",
+                  position = 9)
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = ""),
             @ApiResponse(code = 403, message = "User not authorized to call this operation"),
@@ -520,9 +517,9 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Upload zip folder",
-            notes = "Upload folder from local zip",
-            response = Response.class,
-            position = 10)
+                  notes = "Upload folder from local zip",
+                  response = Response.class,
+                  position = 10)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = ""),
             @ApiResponse(code = 401, message = "User not authorized to call this operation"),
@@ -547,8 +544,8 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Get file content",
-            notes = "Get file content by its name",
-            position = 11)
+                  notes = "Get file content by its name",
+                  position = 11)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 403, message = "User not authorized to call this operation"),
@@ -566,8 +563,8 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Update file",
-            notes = "Update an existing file with new content",
-            position = 12)
+                  notes = "Update an existing file with new content",
+                  position = 12)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = ""),
             @ApiResponse(code = 403, message = "User not authorized to call this operation"),
@@ -588,7 +585,7 @@ public class ProjectService extends Service {
         // In this case have Content-type is set with "text/plain; charset=UTF-8" which isn't acceptable.
         // Have agreement with client to send Content-type header with "application/unknown" value if client doesn't want to specify media
         // type of new file. In this case server takes care about resolving media type of file.
-        if (contentType == null || ("application".equals(contentType.getType()) && "unknown".equals(contentType.getSubtype()))) {
+        if (contentType == null || ("application" .equals(contentType.getType()) && "unknown" .equals(contentType.getSubtype()))) {
             file.updateContent(content);
         } else {
             file.updateContent(content, contentType.getType() + '/' + contentType.getSubtype());
@@ -600,9 +597,9 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Delete a resource",
-            notes = "Delete resources. If you want to delete a single project, specify project name. If a folder or file needs to " +
-                    "be deleted a path to the requested resource needs to be specified",
-            position = 13)
+                  notes = "Delete resources. If you want to delete a single project, specify project name. If a folder or file needs to " +
+                          "be deleted a path to the requested resource needs to be specified",
+                  position = 13)
     @ApiResponses(value = {
             @ApiResponse(code = 204, message = ""),
             @ApiResponse(code = 403, message = "User not authorized to call this operation"),
@@ -613,19 +610,18 @@ public class ProjectService extends Service {
     public void delete(@ApiParam(value = "Workspace ID", required = true)
                        @PathParam("ws-id") String workspace,
                        @ApiParam(value = "Path to a resource to be deleted", required = true)
-                       @PathParam("path") String path,
-                       @QueryParam("module") String modulePath)
+                       @PathParam("path") String path)
             throws NotFoundException, ForbiddenException, ConflictException, ServerException {
         filesBuffer.addToBufferRecursive(getVirtualFileEntry(workspace, path).getVirtualFile());
 
-        if (!projectManager.delete(workspace, path, modulePath)) {
+        if (!projectManager.delete(workspace, path)) {
             throw new NotFoundException(String.format("Path '%s' doesn't exist.", path));
         }
     }
 
     @ApiOperation(value = "Copy resource",
-            notes = "Copy resource to a new location which is specified in a query parameter",
-            position = 14)
+                  notes = "Copy resource to a new location which is specified in a query parameter",
+                  position = 14)
     @ApiResponses({@ApiResponse(code = 201, message = ""),
                    @ApiResponse(code = 403, message = "User not authorized to call this operation"),
                    @ApiResponse(code = 404, message = "Not found"),
@@ -664,7 +660,7 @@ public class ProjectService extends Service {
             final Project project = projectManager.getProject(copy.getWorkspace(), copy.getPath());
             if (project != null) {
                 final String name = project.getName();
-                final String projectType = project.getConfig().getTypeId();
+                final String projectType = project.getConfig().getType();
 
                 logProjectCreatedEvent(name, projectType);
             }
@@ -673,8 +669,8 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Move resource",
-            notes = "Move resource to a new location which is specified in a query parameter",
-            position = 15)
+                  notes = "Move resource to a new location which is specified in a query parameter",
+                  position = 15)
     @ApiResponses({@ApiResponse(code = 201, message = ""),
                    @ApiResponse(code = 403, message = "User not authorized to call this operation"),
                    @ApiResponse(code = 404, message = "Not found"),
@@ -712,7 +708,7 @@ public class ProjectService extends Service {
             final Project project = projectManager.getProject(entry.getWorkspace(), entry.getPath());
             if (project != null) {
                 final String name = project.getName();
-                final String projectType = project.getConfig().getTypeId();
+                final String projectType = project.getConfig().getType();
                 LOG.info("EVENT#project-destroyed# PROJECT#{}# TYPE#{}# WS#{}# USER#{}#", name, projectType,
                          EnvironmentContext.getCurrent().getWorkspaceName(), EnvironmentContext.getCurrent().getUser().getName());
 
@@ -726,8 +722,8 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Rename resource",
-            notes = "Rename resources. It can be project, module, folder or file",
-            position = 16)
+                  notes = "Rename resources. It can be project, module, folder or file",
+                  position = 16)
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = ""),
             @ApiResponse(code = 403, message = "User not authorized to call this operation"),
@@ -768,12 +764,11 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Import resource",
-            notes = "Import resource. JSON with a designated importer and project location is sent. It is possible to import from " +
-                    "VCS or ZIP",
-            response = ImportResponse.class,
-            position = 17)
+                  notes = "Import resource. JSON with a designated importer and project location is sent. It is possible to import from " +
+                          "VCS or ZIP",
+                  position = 17)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = ""),
+            @ApiResponse(code = 204, message = ""),
             @ApiResponse(code = 401, message = "User not authorized to call this operation"),
             @ApiResponse(code = 403, message = "Forbidden operation"),
             @ApiResponse(code = 409, message = "Resource already exists"),
@@ -782,38 +777,33 @@ public class ProjectService extends Service {
     @Path("/import/{path:.*}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ImportResponse importProject(@ApiParam(value = "Workspace ID", required = true)
-                                        @PathParam("ws-id") String workspace,
-                                        @ApiParam(value = "Path in the project", required = true)
-                                        @PathParam("path") String path,
-                                        @ApiParam(value = "Force rewrite existing project", allowableValues = "true,false")
-                                        @QueryParam("force") boolean force,
-                                        ImportProject importProject)
+    public void importProject(@ApiParam(value = "Workspace ID", required = true)
+                              @PathParam("ws-id") String workspace,
+                              @ApiParam(value = "Path in the project", required = true)
+                              @PathParam("path") String path,
+                              @ApiParam(value = "Force rewrite existing project", allowableValues = "true,false")
+                              @QueryParam("force") boolean force,
+                              SourceStorageDto sourceStorage)
             throws ConflictException, ForbiddenException, UnauthorizedException, IOException, ServerException, NotFoundException,
                    BadRequestException {
 
-        final ImportSourceDescriptor projectSource = importProject.getSource().getProject();
-        final ProjectImporter importer = importers.getImporter(projectSource.getType());
+        final ProjectImporter importer = importers.getImporter(sourceStorage.getType());
         if (importer == null) {
             throw new ServerException(String.format("Unable import sources project from '%s'. Sources type '%s' is not supported.",
-                                                    projectSource.getLocation(), projectSource.getType()));
+                                                    sourceStorage.getLocation(), sourceStorage.getType()));
         }
         // Preparing websocket output publisher to broadcast output of import process to the ide clients while importing
         final LineConsumerFactory outputOutputConsumerFactory = () -> new ProjectImportOutputWSLineConsumer(path, workspace, 300);
 
         // Not all importers uses virtual file system API. In this case virtual file system API doesn't get events and isn't able to set
         // correct creation time. Need do it manually.
-        long creationDate = System.currentTimeMillis();
         VirtualFileEntry virtualFile = getVirtualFile(workspace, path, force);
 
         filesBuffer.addToBuffer(path);
         filesBuffer.addToBufferRecursive(virtualFile.getVirtualFile());
 
         final FolderEntry baseProjectFolder = (FolderEntry)virtualFile;
-        importer.importSources(baseProjectFolder, projectSource.getLocation(), projectSource.getParameters(), outputOutputConsumerFactory);
-
-        //project source already imported going to configure project
-        return configureProject(importProject, baseProjectFolder, workspace, creationDate);
+        importer.importSources(baseProjectFolder, sourceStorage.getLocation(), null, outputOutputConsumerFactory);
     }
 
     private VirtualFileEntry getVirtualFile(String workspace, String path, boolean force)
@@ -833,79 +823,6 @@ public class ProjectService extends Service {
         return virtualFile;
     }
 
-    private ImportResponse configureProject(ImportProject importProject, FolderEntry baseProjectFolder, String workspace, long creationDate)
-            throws IOException, ForbiddenException, ConflictException, NotFoundException, ServerException, BadRequestException {
-        NewProject newProject = importProject.getProject();
-        if (newProject == null) {
-            throw new BadRequestException("A project being imported cannot be null");
-        }
-        ImportResponse importResponse = DtoFactory.getInstance().createDto(ImportResponse.class);
-        ProjectTypeRegistry projectTypeRegistry = projectManager.getProjectTypeRegistry();
-        Project project;
-        ProjectDescriptor projectDescriptor;
-        ProjectConfig projectConfig;
-        String visibility = null;
-
-        //try convert folder to project with giving config
-        try {
-            visibility = newProject.getVisibility();
-            projectConfig = DtoConverter.fromProjectUpdate(newProject, projectTypeRegistry);
-            project = projectManager.convertFolderToProject(workspace,
-                                                            baseProjectFolder.getPath(),
-                                                            projectConfig,
-                                                            visibility);
-
-            for (ProjectModule projectModule : newProject.getModules()) {
-                ProjectConfig moduleConfig = DtoConverter.toProjectConfig(projectModule, projectManager.getProjectTypeRegistry());
-                projectManager.convertFolderToProject(workspace,
-                                                      baseProjectFolder.getPath() +
-                                                      projectModule.getPath(),
-                                                      moduleConfig,
-                                                      visibility);
-
-                projectManager.addModule(workspace,
-                                         baseProjectFolder.getPath(),
-                                         baseProjectFolder.getPath() +
-                                         projectModule.getPath(),
-                                         moduleConfig,
-                                         null,
-                                         visibility);
-            }
-
-            projectDescriptor = DtoConverter.toProjectDescriptor(project,
-                                                                 getServiceContext().getServiceUriBuilder(),
-                                                                 projectManager.getProjectTypeRegistry(),
-                                                                 workspace);
-            PostImportProjectHandler postImportProjectHandler =
-                    projectHandlerRegistry.getPostImportProjectHandler(projectDescriptor.getType());
-            if (postImportProjectHandler != null) {
-                postImportProjectHandler.onProjectImported(project.getBaseFolder());
-            }
-        } catch (ConflictException | ForbiddenException | ServerException | NotFoundException e) {
-            project = new NotValidProject(baseProjectFolder, projectManager);
-            project.setVisibility(visibility);
-
-            projectDescriptor = DtoConverter.toProjectDescriptor(project,
-                                                                 getServiceContext().getServiceUriBuilder(),
-                                                                 projectManager.getProjectTypeRegistry(),
-                                                                 workspace);
-            ProjectProblem problem = DtoFactory.getInstance().createDto(ProjectProblem.class).withCode(1).withMessage(e.getMessage());
-            projectDescriptor.setProblems(Collections.singletonList(problem));
-        }
-        if (newProject != null) {
-            project.getMisc().setContentRoot(newProject.getContentRoot());
-            project.getMisc().save();
-            projectDescriptor.setContentRoot(newProject.getContentRoot());
-        }
-        importResponse.setProjectDescriptor(projectDescriptor);
-        //we will add project type estimations any way
-        List<SourceEstimation> sourceEstimations = projectManager.resolveSources(workspace, baseProjectFolder.getPath(), false);
-        importResponse.setSourceEstimations(sourceEstimations);
-        reindexProject(creationDate, baseProjectFolder, project);
-        eventService.publish(new ProjectCreatedEvent(project.getWorkspace(), project.getPath()));
-        logProjectCreatedEvent(projectDescriptor.getName(), projectDescriptor.getType());
-        return importResponse;
-    }
 
     /**
      * Some importers don't use virtual file system API and changes are not indexed.
@@ -918,14 +835,11 @@ public class ProjectService extends Service {
      */
     private void reindexProject(long creationDate, FolderEntry baseProjectFolder, final Project project) throws ServerException {
         final VirtualFile file = baseProjectFolder.getVirtualFile();
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    searcherProvider.getSearcher(file.getMountPoint(), true).add(file);
-                } catch (Exception e) {
-                    LOG.warn(String.format("Workspace: %s, project: %s", project.getWorkspace(), project.getPath()), e.getMessage());
-                }
+        executor.execute(() -> {
+            try {
+                searcherProvider.getSearcher(file.getMountPoint(), true).add(file);
+            } catch (Exception e) {
+                LOG.warn(String.format("Workspace: %s, project: %s", project.getWorkspace(), project.getPath()), e.getMessage());
             }
         });
         if (creationDate > 0) {
@@ -935,9 +849,9 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Upload zip project",
-            notes = "Upload project from local zip",
-            response = ImportResponse.class,
-            position = 18)
+                  notes = "Upload project from local zip",
+                  response = ProjectDescriptor.class,
+                  position = 18)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = ""),
             @ApiResponse(code = 401, message = "User not authorized to call this operation"),
@@ -949,13 +863,13 @@ public class ProjectService extends Service {
     @Consumes({MediaType.MULTIPART_FORM_DATA})
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/upload/zipproject/{path:.*}")
-    public ImportResponse uploadProjectFromZip(@ApiParam(value = "Workspace ID", required = true)
-                                               @PathParam("ws-id") String workspace,
-                                               @ApiParam(value = "Path in the project", required = true)
-                                               @PathParam("path") String path,
-                                               @ApiParam(value = "Force rewrite existing project", allowableValues = "true,false")
-                                               @QueryParam("force") boolean force,
-                                               Iterator<FileItem> formData)
+    public ProjectDescriptor uploadProjectFromZip(@ApiParam(value = "Workspace ID", required = true)
+                                                  @PathParam("ws-id") String workspace,
+                                                  @ApiParam(value = "Path in the project", required = true)
+                                                  @PathParam("path") String path,
+                                                  @ApiParam(value = "Force rewrite existing project", allowableValues = "true,false")
+                                                  @QueryParam("force") boolean force,
+                                                  Iterator<FileItem> formData)
             throws ServerException, IOException, ConflictException, ForbiddenException, NotFoundException, BadRequestException {
 
         // Not all importers uses virtual file system API. In this case virtual file system API doesn't get events and isn't able to set
@@ -966,7 +880,6 @@ public class ProjectService extends Service {
         int stripNumber = 0;
         String projectName = "";
         String projectDescription = "";
-        String privacy = "";
         FileItem contentItem = null;
 
         while (formData.hasNext()) {
@@ -985,9 +898,6 @@ public class ProjectService extends Service {
                     case ("description"):
                         projectDescription = item.getString().trim();
                         break;
-                    case ("privacy"):
-                        privacy = Boolean.parseBoolean(item.getString().trim()) ? "public" : "private";
-                        break;
                     case ("skipFirstLevel"):
                         stripNumber = Boolean.parseBoolean(item.getString().trim()) ? 1 : 0;
                         break;
@@ -1003,22 +913,28 @@ public class ProjectService extends Service {
         }
 
         final DtoFactory dtoFactory = DtoFactory.getInstance();
-        NewProject newProject = dtoFactory.createDto(NewProject.class)
-                                          .withName(projectName)
-                                          .withDescription(projectDescription)
-                                          .withVisibility(privacy);
-        Source source = dtoFactory.createDto(Source.class);
-        ImportProject importProject = dtoFactory.createDto(ImportProject.class)
-                                                .withProject(newProject)
-                                                .withSource(source);
+
+        ProjectConfigDto projectConfig = dtoFactory.createDto(ProjectConfigDto.class)
+                                                   .withName(projectName)
+                                                   .withDescription(projectDescription);
+
+        List<SourceEstimation> sourceEstimations = projectManager.resolveSources(workspace, path, false);
+
+        for (SourceEstimation estimation : sourceEstimations) {
+            ProjectType projectType = typeRegistry.getProjectType(estimation.getType());
+
+            if (projectType.isPersisted()) {
+                projectConfig.withType(projectType.getId());
+            }
+        }
 
         //project source already imported going to configure project
-        return configureProject(importProject, baseProjectFolder, workspace, creationDate);
+        return updateProject(workspace, path, projectConfig);
     }
 
     @ApiOperation(value = "Import zip",
-            notes = "Import resources as zip",
-            position = 19)
+                  notes = "Import resources as zip",
+                  position = 19)
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = ""),
             @ApiResponse(code = 403, message = "User not authorized to call this operation"),
@@ -1040,7 +956,7 @@ public class ProjectService extends Service {
         final Project project = projectManager.getProject(workspace, path);
         if (project != null) {
             eventService.publish(new ProjectCreatedEvent(project.getWorkspace(), project.getPath()));
-            final String projectType = project.getConfig().getTypeId();
+            final String projectType = project.getConfig().getType();
             logProjectCreatedEvent(path, projectType);
         }
         return Response.created(getServiceContext().getServiceUriBuilder()
@@ -1049,8 +965,8 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Download ZIP",
-            notes = "Export resource as zip. It can be an entire project or folder",
-            position = 20)
+                  notes = "Export resource as zip. It can be an entire project or folder",
+                  position = 20)
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = ""),
             @ApiResponse(code = 403, message = "User not authorized to call this operation"),
@@ -1102,10 +1018,10 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Get project children items",
-            notes = "Request all children items for a project, such as files and folders",
-            response = ItemReference.class,
-            responseContainer = "List",
-            position = 21)
+                  notes = "Request all children items for a project, such as files and folders",
+                  response = ItemReference.class,
+                  responseContainer = "List",
+                  position = 21)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 403, message = "User not authorized to call this operation"),
@@ -1135,9 +1051,9 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Get project tree",
-            notes = "Get project tree. Depth is specified in a query parameter",
-            response = TreeElement.class,
-            position = 22)
+                  notes = "Get project tree. Depth is specified in a query parameter",
+                  response = TreeElement.class,
+                  position = 22)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 403, message = "User not authorized to call this operation"),
@@ -1165,8 +1081,8 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Get file or folder",
-            response = ItemReference.class,
-            position = 28)
+                  response = ItemReference.class,
+                  position = 28)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 403, message = "User not authorized to call this operation"),
@@ -1228,10 +1144,10 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Search for resources",
-            notes = "Search for resources applying a number of search filters as query parameters",
-            response = ItemReference.class,
-            responseContainer = "List",
-            position = 23)
+                  notes = "Search for resources applying a number of search filters as query parameters",
+                  response = ItemReference.class,
+                  responseContainer = "List",
+                  position = 23)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 403, message = "User not authorized to call this operation"),
@@ -1299,11 +1215,11 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Get user permissions in a project",
-            notes = "Get permissions for a user in a specified project, such as read, write, build, " +
-                    "run etc. ID of a user is set in a query parameter of a request URL.",
-            response = AccessControlEntry.class,
-            responseContainer = "List",
-            position = 24)
+                  notes = "Get permissions for a user in a specified project, such as read, write, build, " +
+                          "run etc. ID of a user is set in a query parameter of a request URL.",
+                  response = AccessControlEntry.class,
+                  responseContainer = "List",
+                  position = 24)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK"),
             @ApiResponse(code = 403, message = "User not authorized to call this operation"),
@@ -1338,8 +1254,8 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Set project visibility",
-            notes = "Set project visibility. Projects can be private or public",
-            position = 25)
+                  notes = "Set project visibility. Projects can be private or public",
+                  position = 25)
     @ApiResponses(value = {
             @ApiResponse(code = 204, message = "OK"),
             @ApiResponse(code = 403, message = "User not authorized to call this operation"),
@@ -1365,11 +1281,11 @@ public class ProjectService extends Service {
     }
 
     @ApiOperation(value = "Set permissions for a user in a project",
-            notes = "Set permissions for a user in a specified project, such as read, write, build, " +
-                    "run etc. ID of a user is set in a query parameter of a request URL.",
-            response = AccessControlEntry.class,
-            responseContainer = "List",
-            position = 26)
+                  notes = "Set permissions for a user in a specified project, such as read, write, build, " +
+                          "run etc. ID of a user is set in a query parameter of a request URL.",
+                  response = AccessControlEntry.class,
+                  responseContainer = "List",
+                  position = 26)
     @ApiResponses(value = {
             @ApiResponse(code = 204, message = "OK"),
             @ApiResponse(code = 403, message = "User not authorized to call this operation"),

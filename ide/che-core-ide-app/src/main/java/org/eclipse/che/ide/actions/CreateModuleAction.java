@@ -12,50 +12,44 @@ package org.eclipse.che.ide.actions;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
-import org.eclipse.che.api.promises.client.Function;
-import org.eclipse.che.api.promises.client.FunctionException;
+import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ProjectAction;
-import org.eclipse.che.ide.api.event.ModuleCreatedEvent;
-import org.eclipse.che.ide.api.project.node.HasStorablePath;
-import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.project.node.FolderReferenceNode;
 import org.eclipse.che.ide.project.shared.NodesResources;
 import org.eclipse.che.ide.projecttype.wizard.presenter.ProjectWizardPresenter;
 
-import org.eclipse.che.commons.annotation.Nullable;
 import java.util.List;
 
-/** @author Artem Zatsarynnyy */
+/**
+ * @author Artem Zatsarynnyy
+ * @author Dmitry Shnurenko
+ */
 @Singleton
-public class CreateModuleAction extends ProjectAction implements ModuleCreatedEvent.ModuleCreatedHandler {
+public class CreateModuleAction extends ProjectAction {
 
     private final ProjectWizardPresenter   wizard;
     private final AnalyticsEventLogger     eventLogger;
     private final ProjectExplorerPresenter projectExplorer;
-    private       FolderReferenceNode      folderNode;
 
     @Inject
     public CreateModuleAction(NodesResources resources,
                               ProjectWizardPresenter wizard,
                               AnalyticsEventLogger eventLogger,
-                              ProjectExplorerPresenter projectExplorer,
-                              EventBus eventBus) {
+                              ProjectExplorerPresenter projectExplorer) {
         super("Create Module...", "Create module from existing folder", resources.moduleFolder());
         this.wizard = wizard;
         this.eventLogger = eventLogger;
         this.projectExplorer = projectExplorer;
-        eventBus.addHandler(ModuleCreatedEvent.getType(), this);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
-        folderNode = getResourceBasedNode();
+        FolderReferenceNode folderNode = getResourceBasedNode();
         if (folderNode != null) {
             wizard.show(folderNode.getData());
         }
@@ -81,31 +75,5 @@ public class CreateModuleAction extends ProjectAction implements ModuleCreatedEv
         }
 
         return null;
-    }
-
-    @Override
-    public void onModuleCreated(final ModuleCreatedEvent event) {
-        if (folderNode != null && folderNode.getParent() != null) {
-
-            boolean goIntoState = projectExplorer.isGoIntoActivated();
-
-            if (goIntoState) {
-                projectExplorer.resetGoIntoMode();
-            }
-
-            projectExplorer.getNodeByPath(new HasStorablePath.StorablePath(event.getModule().getPath()), true)
-                           .then(selectNode());
-        }
-    }
-
-    protected Function<Node, Node> selectNode() {
-        return new Function<Node, Node>() {
-            @Override
-            public Node apply(Node node) throws FunctionException {
-                projectExplorer.select(node, false);
-
-                return node;
-            }
-        };
     }
 }

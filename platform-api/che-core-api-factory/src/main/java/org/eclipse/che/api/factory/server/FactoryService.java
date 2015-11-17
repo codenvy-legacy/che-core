@@ -10,32 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.api.factory.server;
 
-import org.eclipse.che.api.account.server.dao.AccountDao;
-import org.eclipse.che.api.core.ApiException;
-import org.eclipse.che.api.core.ConflictException;
-import org.eclipse.che.api.core.NotFoundException;
-import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.core.rest.HttpJsonHelper;
-import org.eclipse.che.api.core.rest.Service;
-import org.eclipse.che.api.core.rest.shared.dto.Link;
-import org.eclipse.che.api.factory.server.builder.FactoryBuilder;
-import org.eclipse.che.api.factory.server.snippet.SnippetGenerator;
-import org.eclipse.che.api.factory.shared.dto.Author;
-import org.eclipse.che.api.factory.shared.dto.Factory;
-import org.eclipse.che.api.factory.shared.dto.FactoryV4_0;
-import org.eclipse.che.api.project.server.ProjectConfig;
-import org.eclipse.che.api.project.server.type.AttributeValue;
-import org.eclipse.che.api.project.shared.dto.ProjectModule;
-import org.eclipse.che.api.project.server.Project;
-import org.eclipse.che.api.project.server.ProjectManager;
-import org.eclipse.che.api.project.shared.dto.ImportSourceDescriptor;
-import org.eclipse.che.api.project.shared.dto.NewProject;
-import org.eclipse.che.commons.env.EnvironmentContext;
-import org.eclipse.che.commons.lang.NameGenerator;
-import org.eclipse.che.commons.lang.Pair;
-import org.eclipse.che.commons.lang.URLEncodedUtils;
-import org.eclipse.che.commons.user.User;
-import org.eclipse.che.dto.server.DtoFactory;
 import com.google.gson.JsonSyntaxException;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -44,6 +18,31 @@ import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 
 import org.apache.commons.fileupload.FileItem;
+import org.eclipse.che.api.account.server.dao.AccountDao;
+import org.eclipse.che.api.core.ApiException;
+import org.eclipse.che.api.core.ConflictException;
+import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.model.workspace.ModuleConfig;
+import org.eclipse.che.api.core.model.workspace.ProjectConfig;
+import org.eclipse.che.api.core.rest.Service;
+import org.eclipse.che.api.core.rest.shared.dto.Link;
+import org.eclipse.che.api.factory.server.builder.FactoryBuilder;
+import org.eclipse.che.api.factory.server.snippet.SnippetGenerator;
+import org.eclipse.che.api.factory.shared.dto.Author;
+import org.eclipse.che.api.factory.shared.dto.Factory;
+import org.eclipse.che.api.factory.shared.dto.FactoryV4_0;
+import org.eclipse.che.api.project.server.Project;
+import org.eclipse.che.api.project.server.ProjectManager;
+import org.eclipse.che.api.workspace.shared.dto.ModuleConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
+import org.eclipse.che.commons.env.EnvironmentContext;
+import org.eclipse.che.commons.lang.NameGenerator;
+import org.eclipse.che.commons.lang.Pair;
+import org.eclipse.che.commons.lang.URLEncodedUtils;
+import org.eclipse.che.commons.user.User;
+import org.eclipse.che.dto.server.DtoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,13 +66,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -381,8 +378,8 @@ public class FactoryService extends Service {
         }
         ArrayList<Pair> pairs = new ArrayList<>();
         queryParams.entrySet().stream()
-                              .filter(entry -> !entry.getValue().isEmpty())
-                              .forEach(entry -> pairs.add(Pair.of(entry.getKey(), entry.getValue().iterator().next())));
+                   .filter(entry -> !entry.getValue().isEmpty())
+                   .forEach(entry -> pairs.add(Pair.of(entry.getKey(), entry.getValue().iterator().next())));
         List<Factory> factories = factoryStore.findByAttribute(pairs.toArray(new Pair[pairs.size()]));
         result.addAll(factories.stream()
                                .map(factory -> DtoFactory.getInstance()
@@ -412,7 +409,8 @@ public class FactoryService extends Service {
      * no images, exception will be thrown.
      * @throws org.eclipse.che.api.core.ApiException
      *         - {@link org.eclipse.che.api.core.NotFoundException} when factory with given id doesn't exist
-     *         - {@link org.eclipse.che.api.core.NotFoundException} when imgId is not set in request and there is no default image for factory
+     *         - {@link org.eclipse.che.api.core.NotFoundException} when imgId is not set in request and there is no default image for
+     *         factory
      *         with given id
      *         - {@link org.eclipse.che.api.core.NotFoundException} when image with given image id doesn't exist
      */
@@ -541,13 +539,13 @@ public class FactoryService extends Service {
             throw new NotFoundException("Project " + path + " are not found in workspace " + workspace);
         }
         final DtoFactory dtoFactory = DtoFactory.getInstance();
-        ImportSourceDescriptor source;
-        NewProject newProject;
+        SourceStorageDto source;
+        ProjectConfigDto projectConfig;
         try {
             final ProjectConfig projectDescription = project.getConfig();
-            Map<String, AttributeValue> attributes = projectDescription.getAttributes();
+            Map<String, List<String>> attributes = projectDescription.getAttributes();
             String vcs;
-            if (attributes.containsKey("vcs.provider.name") && attributes.get("vcs.provider.name").getList().contains("git")) {
+            if (attributes.containsKey("vcs.provider.name") && attributes.get("vcs.provider.name").contains("git")) {
                 vcs = "git";
             } else if (attributes.containsKey("svn.repository.url")) {
                 vcs = "svn";
@@ -561,37 +559,22 @@ public class FactoryService extends Service {
                                                                         .path(workspace)
                                                                         .path("import-source-descriptor")
                                                                         .build().toString());
-            source = HttpJsonHelper.request(ImportSourceDescriptor.class, importSourceLink, new Pair<>("projectPath", path));
+            projectConfig = dtoFactory.createDto(ProjectConfigDto.class)
+                                      .withName(project.getName())
+                                      .withType(projectDescription.getType())
+                                      .withAttributes(attributes)
+                                      .withDescription(projectDescription.getDescription())
+                                      .withMixinTypes(projectDescription.getMixinTypes());
 
-            Map<String, List<String>> projectAttributes = new HashMap<>();
-            for (Map.Entry<String, AttributeValue> entry : projectDescription.getAttributes().entrySet()) {
-                projectAttributes.put(entry.getKey(), entry.getValue().getList());
-            }
-
-            newProject = dtoFactory.createDto(NewProject.class)
-                                   .withName(project.getName())
-                                   .withType(projectDescription.getTypeId())
-                                   .withAttributes(projectAttributes)
-                                   .withVisibility(project.getVisibility())
-                                   .withDescription(projectDescription.getDescription());
-            newProject.setMixins(projectDescription.getMixinTypes());
-            newProject.setRecipe(projectDescription.getRecipe());
-
-            for (Project module : projectManager.getProjectModules(project)) {
-                ProjectConfig moduleConfig = module.getConfig();
+            for (ModuleConfig module : projectManager.getProjectModules(project)) {
                 String moduleRelativePath = module.getPath().substring(project.getPath().length());
 
-                Map<String, List<String>> moduleAttributes = new HashMap<>();
-                for (Map.Entry<String, AttributeValue> entry : moduleConfig.getAttributes().entrySet()) {
-                    projectAttributes.put(entry.getKey(), entry.getValue().getList());
-                }
-
-                newProject.getModules().add(DtoFactory.newDto(ProjectModule.class).withType(moduleConfig.getTypeId())
-                                                      .withPath(moduleRelativePath)
-                                                      .withRecipe(moduleConfig.getRecipe())
-                                                      .withAttributes(moduleAttributes)
-                                                      .withMixins(moduleConfig.getMixinTypes())
-                                                      .withDescription(moduleConfig.getDescription()));
+                projectConfig.getModules().add(DtoFactory.newDto(ModuleConfigDto.class).withType(module.getType())
+                                                       .withPath(moduleRelativePath)
+                                                               //.withRecipe(moduleConfig.getRecipe())
+                                                       .withAttributes(module.getAttributes())
+                                                       .withMixinTypes(module.getMixinTypes())
+                                                       .withDescription(module.getDescription()));
             }
         } catch (IOException e) {
             throw new ServerException(e.getLocalizedMessage());
@@ -604,12 +587,12 @@ public class FactoryService extends Service {
 
     private void processDefaults(Factory factory) throws ApiException {
 
-        User currentUser =  EnvironmentContext.getCurrent().getUser();
+        User currentUser = EnvironmentContext.getCurrent().getUser();
         if (factory.getCreator() == null) {
             factory.setCreator(DtoFactory.getInstance().createDto(Author.class).withUserId(currentUser.getId()).withCreated(
                     System.currentTimeMillis()));
         } else {
-            if (isNullOrEmpty(factory.getCreator().getUserId())){
+            if (isNullOrEmpty(factory.getCreator().getUserId())) {
                 factory.getCreator().setUserId(currentUser.getId());
             }
             if (factory.getCreator().getCreated() == null) {

@@ -24,12 +24,12 @@ import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.Constants;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.api.project.shared.dto.ProjectUpdate;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.PromiseError;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
+import org.eclipse.che.api.workspace.shared.dto.ModuleConfigDto;
 import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.Resources;
@@ -42,6 +42,8 @@ import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.event.ConfigureProjectEvent;
 import org.eclipse.che.ide.api.event.ConfigureProjectHandler;
+import org.eclipse.che.ide.api.event.ModuleCreatedEvent;
+import org.eclipse.che.ide.api.event.ModuleCreatedEvent.ModuleCreatedHandler;
 import org.eclipse.che.ide.api.event.project.CreateProjectEvent;
 import org.eclipse.che.ide.api.event.project.CreateProjectHandler;
 import org.eclipse.che.ide.api.event.project.CurrentProjectChangedEvent;
@@ -60,7 +62,6 @@ import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.core.problemDialog.ProjectProblemDialog;
-import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.part.explorer.project.ProjectExplorerView.ActionDelegate;
 import org.eclipse.che.ide.project.event.ProjectExplorerLoadedEvent;
 import org.eclipse.che.ide.project.event.ResourceNodeDeletedEvent;
@@ -104,8 +105,9 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
                                                                        DeleteProjectHandler,
                                                                        ConfigureProjectHandler,
                                                                        ResourceNodeRenamedHandler,
-                                                                       ResourceNodeDeletedHandler {
-    private final ProjectExplorerView view;
+                                                                       ResourceNodeDeletedHandler,
+                                                                       ModuleCreatedHandler {
+    private final ProjectExplorerView          view;
     private final EventBus                     eventBus;
     private final NodeManager                  nodeManager;
     private final AppContext                   appContext;
@@ -117,7 +119,6 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
     private final Resources                    resources;
     private final DtoUnmarshallerFactory       dtoUnmarshaller;
     private final ProjectServiceClient         projectService;
-    private final DtoFactory                   dtoFactory;
     private final NotificationManager          notificationManager;
 
     public static final int PART_SIZE = 250;
@@ -135,7 +136,6 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
                                     Resources resources,
                                     DtoUnmarshallerFactory dtoUnmarshaller,
                                     ProjectServiceClient projectService,
-                                    DtoFactory dtoFactory,
                                     NotificationManager notificationManager) {
         this.view = view;
         this.view.setDelegate(this);
@@ -151,7 +151,6 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         this.resources = resources;
         this.dtoUnmarshaller = dtoUnmarshaller;
         this.projectService = projectService;
-        this.dtoFactory = dtoFactory;
         this.notificationManager = notificationManager;
 
         eventBus.addHandler(CreateProjectEvent.TYPE, this);
@@ -161,6 +160,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         eventBus.addHandler(ExtServerStateEvent.TYPE, this);
         eventBus.addHandler(ResourceNodeRenamedEvent.getType(), this);
         eventBus.addHandler(ResourceNodeDeletedEvent.getType(), this);
+        eventBus.addHandler(ModuleCreatedEvent.getType(), this);
     }
 
     /** {@inheritDoc} */
@@ -330,9 +330,8 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
 
             node.setData(newDTO);
         } else if (event.getNode() instanceof ModuleDescriptorNode) {
-            ProjectDescriptor newDTO = (ProjectDescriptor)event.getNewDataObject();
+            ModuleConfigDto newDTO = (ModuleConfigDto)event.getNewDataObject();
             ModuleDescriptorNode node = (ModuleDescriptorNode)event.getNode();
-
             node.setData(newDTO);
         }
 
@@ -374,6 +373,60 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
 
     /** {@inheritDoc} */
     @Override
+    public void onModuleCreated(ModuleCreatedEvent event) {
+        if (isGoIntoActivated()) {
+            resetGoIntoMode();
+        }
+
+        ModuleConfigDto createdModule = event.getModule();
+
+        String pathToModule = createdModule.getPath();
+
+        String pathToParent = pathToModule.substring(0, pathToModule.lastIndexOf("/"));
+
+        ProjectDescriptor projectDescription = appContext.getCurrentProject().getProjectDescription();
+
+        boolean parentIsProjectFolder = pathToParent.split("/").length <= 2;
+
+        if (parentIsProjectFolder) {
+            projectDescription.getModules().add(createdModule);
+        } else {
+            for (ModuleConfigDto configDto : projectDescription.getModules()) {
+                ModuleConfigDto foundNode = findModuleRecursive(configDto, pathToParent);
+
+                if (foundNode != null) {
+                    configDto.getModules().add(createdModule);
+
+                    break;
+                }
+            }
+        }
+
+        reloadChildren();
+    }
+
+    private ModuleConfigDto findModuleRecursive(ModuleConfigDto moduleConfig, String pathToParent) {
+        if (pathToParent.equals(moduleConfig.getPath())) {
+            return moduleConfig;
+        }
+
+        for (ModuleConfigDto configDto : moduleConfig.getModules()) {
+            if (pathToParent.equals(configDto.getPath())) {
+                return configDto;
+            }
+
+            ModuleConfigDto foundConfig = findModuleRecursive(configDto, pathToParent);
+
+            if (foundConfig != null) {
+                return foundConfig;
+            }
+        }
+
+        return null;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void onConfigureProject(ConfigureProjectEvent event) {
         final ProjectDescriptor toConfigure = event.getProject();
         if (toConfigure != null) {
@@ -381,20 +434,12 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         }
     }
 
-    private Promise<ProjectDescriptor> updateProject(final ProjectDescriptor descriptor) {
+    private Promise<ProjectDescriptor> updateProject(final ProjectDescriptor project) {
         return newPromise(new AsyncPromiseHelper.RequestCall<ProjectDescriptor>() {
             @Override
             public void makeCall(AsyncCallback<ProjectDescriptor> callback) {
-                final ProjectUpdate toUpdate = dtoFactory.createDto(ProjectUpdate.class)
-                                                         .withType(descriptor.getType())
-                                                         .withVisibility(descriptor.getVisibility())
-                                                         .withMixins(descriptor.getMixins())
-                                                         .withDescription(descriptor.getDescription())
-                                                         .withAttributes(descriptor.getAttributes())
-                                                         .withContentRoot(descriptor.getContentRoot())
-                                                         .withRecipe(descriptor.getRecipe());
-
-                projectService.updateProject(descriptor.getPath(), toUpdate,
+                projectService.updateProject(project.getName(),
+                                             project,
                                              newCallback(callback, dtoUnmarshaller.newUnmarshaller(ProjectDescriptor.class)));
             }
         }).catchError(new Operation<PromiseError>() {
@@ -529,7 +574,6 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
      *
      * @param node
      *         node which should be activated in "Go Into" mode
-     * @return true - if "Go Into" mode has been activated
      */
     public void goInto(Node node) {
         view.setGoIntoModeOn(node);

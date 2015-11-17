@@ -10,10 +10,10 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.server;
 
-import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.project.server.handlers.GetItemHandler;
 import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.shared.dto.AccessControlEntry;
@@ -21,21 +21,13 @@ import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
 import org.eclipse.che.dto.server.DtoFactory;
 
-import javax.ws.rs.core.MediaType;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
-
-import static org.eclipse.che.api.project.server.Constants.CODENVY_DIR;
 
 /**
  * Server side representation for codenvy project.
@@ -49,12 +41,10 @@ public class Project {
                                                   BasicPermissions.UPDATE_ACL.value(), "build", "run"};
     private final FolderEntry    baseFolder;
     private final ProjectManager manager;
-    private final Modules        modules;
 
     public Project(FolderEntry baseFolder, ProjectManager manager) {
         this.baseFolder = baseFolder;
         this.manager = manager;
-        modules = new Modules();
     }
 
     /** Gets id of workspace which this project belongs to. */
@@ -215,17 +205,10 @@ public class Project {
     public VirtualFileEntry getItem(String path) throws ProjectTypeConstraintException,
                                                         ValueStorageException, ServerException, NotFoundException, ForbiddenException {
         final VirtualFileEntry entry = getVirtualFileEntry(path);
-        GetItemHandler handler = manager.getHandlers().getGetItemHandler(getConfig().getTypeId());
+        GetItemHandler handler = manager.getHandlers().getGetItemHandler(getConfig().getType());
         if (handler != null)
             handler.onGetItem(entry);
         return entry;
-    }
-
-    /**
-     * @return list of paths to modules
-     */
-    public Modules getModules() {
-        return modules;
     }
 
     private VirtualFileEntry getVirtualFileEntry(String path) throws NotFoundException, ForbiddenException, ServerException {
@@ -235,84 +218,5 @@ public class Project {
             throw new NotFoundException(String.format("Path '%s' doesn't exist.", path));
         }
         return entry;
-    }
-
-    public class Modules {
-        private final String MODULES_PATH = CODENVY_DIR + "/modules";
-
-        public void add(String path) throws ForbiddenException, ServerException, ConflictException {
-            Set<String> all = read();
-            all.add(path);
-            write(all);
-        }
-
-        public void update(String oldPath, String newPath) throws ForbiddenException, ServerException, ConflictException {
-            Set<String> all = new CopyOnWriteArraySet<>(read());
-
-            all.remove(oldPath);
-            all.add(newPath);
-
-            //update subModule paths
-            for (String modulePath : all) {
-                if (modulePath.startsWith(oldPath + "/")) {
-                    all.remove(modulePath);
-
-                    String subModulePath = modulePath.replaceFirst(oldPath, newPath);
-                    all.add(subModulePath);
-                }
-            }
-
-            write(all);
-        }
-
-        public boolean remove(String path) throws ForbiddenException, ServerException, ConflictException {
-            Set<String> all = read();
-            if (all.contains(path)) {
-                all.remove(path);
-                write(all);
-                return true;
-            }
-            return false;
-        }
-
-        public Set<String> get() throws ForbiddenException, ServerException {
-            return read();
-        }
-
-        private Set<String> read() throws ForbiddenException, ServerException {
-            HashSet<String> modules = new HashSet<>();
-            VirtualFileEntry file = baseFolder.getChild(Constants.CODENVY_MODULES_FILE_RELATIVE_PATH);
-
-            if (file == null || file.isFolder()) {
-                return modules;
-            }
-
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(((FileEntry)file).getInputStream()))) {
-                while (in.ready()) {
-                    modules.add(in.readLine());
-                }
-            } catch (IOException e) {
-                throw new ServerException(e);
-            }
-
-            return modules;
-        }
-
-        private void write(Set<String> modules) throws ForbiddenException, ServerException, ConflictException {
-            VirtualFileEntry file = baseFolder.getChild(Constants.CODENVY_MODULES_FILE_RELATIVE_PATH);
-
-            if (file == null && !modules.isEmpty()) {
-                file = ((FolderEntry)baseFolder.getChild(Constants.CODENVY_DIR)).createFile(Constants.CODENVY_MODULES_FILE, new byte[0], MediaType.TEXT_PLAIN);
-            }
-
-            String all = "";
-            for (String path : modules) {
-                all += (path + "\n");
-            }
-
-            if (file != null) {
-                ((FileEntry)file).updateContent(all.getBytes());
-            }
-        }
     }
 }

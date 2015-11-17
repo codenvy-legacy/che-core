@@ -15,6 +15,8 @@ import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.model.workspace.ModuleConfig;
+import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.notification.EventSubscriber;
@@ -22,7 +24,7 @@ import org.eclipse.che.api.core.rest.HttpJsonHelper;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.project.server.handlers.CreateModuleHandler;
 import org.eclipse.che.api.project.server.handlers.CreateProjectHandler;
-import org.eclipse.che.api.project.server.handlers.GetModulesHandler;
+import org.eclipse.che.api.project.server.handlers.PostImportProjectHandler;
 import org.eclipse.che.api.project.server.handlers.ProjectCreatedHandler;
 import org.eclipse.che.api.project.server.handlers.ProjectHandlerRegistry;
 import org.eclipse.che.api.project.server.handlers.ProjectTypeChangedHandler;
@@ -35,10 +37,10 @@ import org.eclipse.che.api.project.server.type.ProjectType;
 import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
 import org.eclipse.che.api.project.server.type.Variable;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
-import org.eclipse.che.api.vfs.server.Path;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
 import org.eclipse.che.api.vfs.server.observation.VirtualFileEvent;
-import org.eclipse.che.api.workspace.server.*;
+import org.eclipse.che.api.workspace.server.WorkspaceService;
+import org.eclipse.che.api.workspace.shared.dto.ModuleConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
@@ -58,17 +60,17 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.ws.rs.core.UriBuilder;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -220,17 +222,23 @@ public final class DefaultProjectManager implements ProjectManager {
     public Project createProject(String workspace,
                                  String name,
                                  ProjectConfig projectConfig,
-                                 Map<String, String> options,
-                                 String visibility) throws ConflictException, ForbiddenException, ServerException, NotFoundException {
+                                 Map<String, String> options)
+            throws ConflictException, ForbiddenException, ServerException, NotFoundException {
         final FolderEntry myRoot = getProjectsRoot(workspace);
         final FolderEntry projectFolder = myRoot.createFolder(name);
         final Project project = new Project(projectFolder, this);
 
-        final CreateProjectHandler generator = handlers.getCreateProjectHandler(projectConfig.getTypeId());
+        final CreateProjectHandler generator = handlers.getCreateProjectHandler(projectConfig.getType());
 
         if (generator != null) {
-            generator.onCreateProject(project.getBaseFolder(),
-                                      projectConfig.getAttributes(), options);
+            final Map<String, AttributeValue> valueMap = new HashMap<>();
+            if (projectConfig.getAttributes() != null) {
+                final Map<String, List<String>> attributes = projectConfig.getAttributes();
+                for (String key : attributes.keySet()) {
+                    valueMap.put(key, new AttributeValue(attributes.get(key)));
+                }
+            }
+            generator.onCreateProject(project.getBaseFolder(), valueMap, options);
         }
 
         project.updateConfig(projectConfig);
@@ -239,11 +247,7 @@ public final class DefaultProjectManager implements ProjectManager {
         misc.setCreationDate(System.currentTimeMillis());
         misc.save(); // Important to save misc!!
 
-        if (visibility != null) {
-            project.setVisibility(visibility);
-        }
-
-        final ProjectCreatedHandler projectCreatedHandler = handlers.getProjectCreatedHandler(projectConfig.getTypeId());
+        final ProjectCreatedHandler projectCreatedHandler = handlers.getProjectCreatedHandler(projectConfig.getType());
         if (projectCreatedHandler != null) {
             projectCreatedHandler.onProjectCreated(project.getBaseFolder());
         }
@@ -251,7 +255,7 @@ public final class DefaultProjectManager implements ProjectManager {
     }
 
     @Override
-    public Project updateProject(String workspace, String path, ProjectConfig newConfig, String newVisibility)
+    public Project updateProject(String workspace, String path, ProjectConfig newConfig)
             throws ForbiddenException, ServerException, NotFoundException, ConflictException, IOException {
         Project project = getProject(workspace, path);
         String oldProjectType = null;
@@ -268,24 +272,20 @@ public final class DefaultProjectManager implements ProjectManager {
         } else {
             try {
                 ProjectConfig config = project.getConfig();
-                oldProjectType = config.getTypeId();
+                oldProjectType = config.getType();
                 oldMixinTypes = config.getMixinTypes();
             } catch (ProjectTypeConstraintException | ValueStorageException e) {
                 // here we allow changing bad project type on registered
                 LOG.warn(e.getMessage());
             }
         }
-        // Update the visibility if asked to do so
-        if (newVisibility != null && !newVisibility.isEmpty()) {
-            project.setVisibility(newVisibility);
-        }
         project.updateConfig(newConfig);
         // handle project type changes
         // post actions on changing project type
         // base or mixin
-        if (!newConfig.getTypeId().equals(oldProjectType)) {
+        if (!newConfig.getType().equals(oldProjectType)) {
             ProjectTypeChangedHandler projectTypeChangedHandler = handlers
-                    .getProjectTypeChangedHandler(newConfig.getTypeId());
+                    .getProjectTypeChangedHandler(newConfig.getType());
             if (projectTypeChangedHandler != null) {
                 projectTypeChangedHandler.onProjectTypeChanged(project.getBaseFolder());
             }
@@ -303,84 +303,120 @@ public final class DefaultProjectManager implements ProjectManager {
     }
 
     @Override
-    public Project addModule(String workspace,
-                             String projectPath,
-                             String modulePath,
-                             ProjectConfig moduleConfig,
-                             Map<String, String> options,
-                             String visibility) throws ConflictException, ForbiddenException, ServerException, NotFoundException {
-        Project parentProject = getProject(workspace, projectPath);
-        if (parentProject == null) {
-            throw new NotFoundException("Parent Project not found " + projectPath);
+    public ModuleConfigDto addModule(String workspaceId,
+                                     String pathToParent,
+                                     ModuleConfigDto createdModuleDto,
+                                     Map<String, String> options) throws ConflictException,
+                                                                         ForbiddenException,
+                                                                         ServerException,
+                                                                         NotFoundException {
+        if (createdModuleDto == null) {
+            throw new ConflictException("Module not found and module configuration is not defined");
         }
 
-        if (parentProject.getModules().get().contains(modulePath)) {
-            throw new ConflictException("Module " + modulePath + " already exists");
+        String[] pathToParentParts = pathToParent.split(String.format("(?=[%s])", File.separator));
+
+        String pathToProject = pathToParentParts[0];
+
+        ProjectConfigDto projectFromWorkspaceDto = getProjectFromWorkspace(workspaceId, pathToProject);
+
+        if (projectFromWorkspaceDto == null) {
+            throw new NotFoundException("Parent Project not found " + pathToProject);
         }
 
-        if (!projectPath.startsWith("/")) {
-            projectPath = "/" + projectPath;
-        }
-        String absModulePath = modulePath.startsWith("/") ? modulePath : projectPath + "/" + modulePath;
+        boolean addModuleToProjectFolder = pathToParentParts.length == 1;
 
-        VirtualFileEntry moduleFolder = getProjectsRoot(workspace).getChild(absModulePath);
-        if (moduleFolder != null && moduleFolder.isFile()) {
-            throw new ConflictException("Item exists on " + absModulePath + " but is not a folder or project");
-        }
+        VirtualFileEntry parentFolder = null;
 
-        Project module;
-        // there are no source folder for module
-        // create folder and make it project and update config
-        if (moduleFolder == null) {
-            if (moduleConfig == null) {
-                throw new ConflictException("Module not found on " + absModulePath + " and module configuration is not defined");
-            }
+        if (addModuleToProjectFolder) {
+            parentFolder = getProjectsRoot(workspaceId).getChild(projectFromWorkspaceDto.getPath());
 
-            String parentPath = Path.fromString(absModulePath).getParent().toString();
-            String name = Path.fromString(modulePath).getName();
-            final VirtualFileEntry parentFolder = getProjectsRoot(workspace).getChild(parentPath);
-            if (parentFolder == null || parentFolder.isFile())
-                throw new NotFoundException("Parent Folder not found " + parentPath);
-
-            // create folder for module
-            moduleFolder = ((FolderEntry)parentFolder).createFolder(name);
-
-            module = new Project((FolderEntry)moduleFolder, this);
-
-            final CreateProjectHandler generator = this.getHandlers().getCreateProjectHandler(moduleConfig.getTypeId());
-            if (generator != null) {
-                generator.onCreateProject(module.getBaseFolder(), moduleConfig.getAttributes(), options);
-            }
-
-            module.updateConfig(moduleConfig);
-
-            final ProjectMisc misc = module.getMisc();
-            misc.setCreationDate(System.currentTimeMillis());
-            misc.save(); // Important to save misc!!
-
-            if (visibility != null) {
-                module.setVisibility(visibility);
-            }
+            projectFromWorkspaceDto.getModules().add(createdModuleDto);
         } else {
-            module = getProject(workspace, absModulePath);
-            if (module == null) {
-                //  folder exists but is not a project, just update config
-                if (moduleConfig == null) {
-                    throw new ConflictException("Folder at " + absModulePath + " is not a project and module configuration is not defined");
+            String absolutePathToParent = pathToParent.startsWith("/") ? pathToParent : '/' + pathToParent;
+
+            for (ModuleConfigDto moduleConfig : projectFromWorkspaceDto.getModules()) {
+
+                ModuleConfigDto parentModule = findModuleRecursive(moduleConfig, absolutePathToParent);
+
+                if (parentModule != null) {
+                    parentModule.getModules().add(createdModuleDto);
+
+                    parentFolder = getProjectsRoot(workspaceId).getChild(parentModule.getPath());
+
+                    break;
                 }
-                module = new Project((FolderEntry)moduleFolder, this);
-                module.updateConfig(moduleConfig);
             }
         }
 
-        // finally adds the module to parent
-        parentProject.getModules().add(modulePath);
-
-        CreateModuleHandler moduleHandler = this.getHandlers().getCreateModuleHandler(parentProject.getConfig().getTypeId());
-        if (moduleHandler != null) {
-            moduleHandler.onCreateModule(parentProject.getBaseFolder(), absModulePath, module.getConfig(), options);
+        if (parentFolder == null) {
+            throw new NotFoundException("Parent folder not found to create module in it.");
         }
-        return module;
+
+        String createdModuleName = createdModuleDto.getName();
+
+        VirtualFileEntry moduleFolder = ((FolderEntry)parentFolder).getChild(createdModuleName);
+
+        if (moduleFolder == null) {
+            moduleFolder = ((FolderEntry)parentFolder).createFolder(createdModuleName);
+        }
+
+        Project createdModule = new Project((FolderEntry)moduleFolder, this);
+
+        Map<String, AttributeValue> projectAttributes = new HashMap<>();
+
+        Map<String, List<String>> attributes = createdModuleDto.getAttributes();
+
+        if (attributes != null) {
+            for (String key : attributes.keySet()) {
+                projectAttributes.put(key, new AttributeValue(attributes.get(key)));
+            }
+        }
+
+        CreateProjectHandler generator = this.getHandlers().getCreateProjectHandler(createdModuleDto.getType());
+
+        if (generator != null) {
+            generator.onCreateProject(createdModule.getBaseFolder(), projectAttributes, options);
+        }
+
+        ProjectMisc misc = createdModule.getMisc();
+        misc.setCreationDate(System.currentTimeMillis());
+        misc.save(); // Important to save misc!!
+
+        CreateModuleHandler moduleHandler = this.getHandlers().getCreateModuleHandler(createdModuleDto.getType());
+
+        if (moduleHandler != null) {
+            moduleHandler.onCreateModule((FolderEntry)parentFolder,
+                                         createdModule.getPath(),
+                                         createdModuleDto.getType(),
+                                         options);
+        }
+
+        createdModuleDto.setPath(createdModule.getPath());
+
+        updateProjectInWorkspace(workspaceId, projectFromWorkspaceDto);
+
+        return createdModuleDto;
+    }
+
+    private ModuleConfigDto findModuleRecursive(ModuleConfigDto moduleConfig, String pathToModule) {
+        if (pathToModule.equals(moduleConfig.getPath())) {
+            return moduleConfig;
+        }
+
+        for (ModuleConfigDto configDto : moduleConfig.getModules()) {
+            if (pathToModule.equals(configDto.getPath())) {
+                return configDto;
+            }
+
+            ModuleConfigDto foundConfig = findModuleRecursive(configDto, pathToModule);
+
+            if (foundConfig != null) {
+                return foundConfig;
+            }
+        }
+
+        return null;
     }
 
     @Override
@@ -398,7 +434,7 @@ public final class DefaultProjectManager implements ProjectManager {
         ProjectTypes types = new ProjectTypes(project, projectConfigDto.getType(), projectConfigDto.getMixinTypes(), this);
         types.addTransient();
 
-        final Map<String, AttributeValue> attributes = new HashMap<>();
+        final Map<String, List<String>> attributes = new HashMap<>();
 
         for (ProjectType t : types.getAll().values()) {
             for (Attribute attr : t.getAttributes()) {
@@ -424,26 +460,40 @@ public final class DefaultProjectManager implements ProjectManager {
                                     "No Value nor ValueProvider defined for required variable " + var.getId());
                         // else just not add it
                     } else {
-                        attributes.put(var.getName(), new AttributeValue(val));
+                        attributes.put(var.getName(), val);
                     }
                 } else {  // Constant
-                    attributes.put(attr.getName(), attr.getValue());
+                    attributes.put(attr.getName(), attr.getValue().getList());
                 }
             }
         }
 
-        return new ProjectConfig(projectConfigDto.getDescription(), types.getPrimary().getId(), attributes, "", types.mixinIds());
+        return DtoFactory.getInstance()
+                         .createDto(ProjectConfigDto.class)
+                         .withDescription(projectConfigDto.getDescription())
+                         .withType(types.getPrimary().getId())
+                         .withAttributes(attributes)
+                         .withMixinTypes(types.mixinIds())
+                         .withModules(projectConfigDto.getModules());
     }
 
     @Override
     public void updateProjectConfig(Project project, ProjectConfig config)
             throws ServerException, ValueStorageException, ProjectTypeConstraintException, InvalidValueException {
+
+        List<ModuleConfigDto> modules = new ArrayList<>();
+
+        for (ModuleConfig moduleConfig : config.getModules()) {
+            getModulesRecursive(moduleConfig, modules);
+        }
+
         final ProjectConfigDto projectConfig = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
                                                          .withPath(project.getPath())
                                                          .withName(project.getName())
+                                                         .withModules(modules)
                                                          .withSource(DtoFactory.getInstance().createDto(SourceStorageDto.class));
 
-        ProjectTypes types = new ProjectTypes(project, config.getTypeId(), config.getMixinTypes(), this);
+        ProjectTypes types = new ProjectTypes(project, config.getType(), config.getMixinTypes(), this);
         types.removeTransient();
 
         projectConfig.setType(types.getPrimary().getId());
@@ -454,9 +504,9 @@ public final class DefaultProjectManager implements ProjectManager {
         projectConfig.setMixinTypes(ms);
 
         // update attributes
-        HashMap<String, AttributeValue> checkVariables = new HashMap<>();
+        HashMap<String, List<String>> checkVariables = new HashMap<>();
         for (String attributeName : config.getAttributes().keySet()) {
-            AttributeValue attributeValue = config.getAttributes().get(attributeName);
+            List<String> attributeValue = config.getAttributes().get(attributeName);
 
             // Try to find definition in all the types
             Attribute definition = null;
@@ -475,7 +525,7 @@ public final class DefaultProjectManager implements ProjectManager {
 
                 // calculate provided values
                 if (valueProviderFactory != null) {
-                    valueProviderFactory.newInstance(project.getBaseFolder()).setValues(var.getName(), attributeValue.getList());
+                    valueProviderFactory.newInstance(project.getBaseFolder()).setValues(var.getName(), attributeValue);
                 }
 
                 if (attributeValue == null && var.isRequired()) {
@@ -484,7 +534,7 @@ public final class DefaultProjectManager implements ProjectManager {
 
                 // store non-provided values into JSON
                 if (valueProviderFactory == null) {
-                    projectConfig.getAttributes().put(definition.getName(), attributeValue.getList());
+                    projectConfig.getAttributes().put(definition.getName(), attributeValue);
                 }
 
                 checkVariables.put(attributeName, attributeValue);
@@ -508,15 +558,35 @@ public final class DefaultProjectManager implements ProjectManager {
 
         // TODO: .codenvy folder creation should be removed when all project's meta-info will be stored on Workspace API
         try {
-        final VirtualFileEntry codenvyDir = project.getBaseFolder().getChild(CODENVY_DIR);
-        if (codenvyDir == null || !codenvyDir.isFolder()) {
-            project.getBaseFolder().createFolder(CODENVY_DIR);
-        }
+            final VirtualFileEntry codenvyDir = project.getBaseFolder().getChild(CODENVY_DIR);
+            if (codenvyDir == null || !codenvyDir.isFolder()) {
+                project.getBaseFolder().createFolder(CODENVY_DIR);
+            }
         } catch (ForbiddenException | ConflictException e) {
             throw new ServerException(e.getServiceError());
         }
 
         updateProjectInWorkspace(project.getWorkspace(), projectConfig);
+    }
+
+    private void getModulesRecursive(ModuleConfig moduleConfig, List<ModuleConfigDto> projectModules) {
+        List<ModuleConfigDto> modules = new ArrayList<>();
+
+        for (ModuleConfig config : moduleConfig.getModules()) {
+            getModulesRecursive(config, modules);
+        }
+
+        ModuleConfigDto module = DtoFactory.getInstance()
+                                           .createDto(ModuleConfigDto.class)
+                                           .withName(moduleConfig.getName())
+                                           .withPath(moduleConfig.getPath())
+                                           .withType(moduleConfig.getType())
+                                           .withModules(modules)
+                                           .withAttributes(moduleConfig.getAttributes())
+                                           .withDescription(moduleConfig.getDescription())
+                                           .withMixinTypes(moduleConfig.getMixinTypes());
+
+        projectModules.add(module);
     }
 
     private UsersWorkspaceDto getWorkspace(String wsId) throws ServerException {
@@ -566,8 +636,8 @@ public final class DefaultProjectManager implements ProjectManager {
             HttpJsonHelper.request(UsersWorkspaceDto.class, link, projectConfig);
         } catch (NotFoundException e) {
             final String addProjectHref = UriBuilder.fromUri(apiEndpoint)
-                                          .path(WorkspaceService.class).path(WorkspaceService.class, "addProject")
-                                          .build(wsId).toString();
+                                                    .path(WorkspaceService.class).path(WorkspaceService.class, "addProject")
+                                                    .build(wsId).toString();
             final Link addProjectLink = DtoFactory.getInstance().createDto(Link.class).withMethod("POST").withHref(addProjectHref);
             try {
                 HttpJsonHelper.request(UsersWorkspaceDto.class, addProjectLink, projectConfig);
@@ -675,28 +745,15 @@ public final class DefaultProjectManager implements ProjectManager {
     }
 
     @Override
-    public Set<Project> getProjectModules(Project parent)
-            throws ServerException, ForbiddenException, ConflictException, IOException, NotFoundException {
-        final List<String> modulePaths = new LinkedList<>();
-        final Set<Project> modules = new LinkedHashSet<>();
-        for (String p : parent.getModules().get()) {
-            String modulePath = p.startsWith("/") ? p : parent.getPath() + "/" + p;
-            modulePaths.add(modulePath);
-        }
+    public List<? extends ModuleConfig> getProjectModules(Project parent) throws ServerException,
+                                                                                 ForbiddenException,
+                                                                                 ConflictException,
+                                                                                 IOException,
+                                                                                 NotFoundException {
 
-        //get modules via handler
-        GetModulesHandler modulesHandler = handlers.getModulesHandler(parent.getConfig().getTypeId());
-        if (modulesHandler != null) {
-            modulesHandler.onGetModules(parent.getBaseFolder(), modulePaths);
-        }
+        ProjectConfigDto project = getProjectFromWorkspace(parent.getWorkspace(), parent.getPath());
 
-        for (String modulePath : modulePaths) {
-            Project module = getProject(parent.getWorkspace(), modulePath);
-            if (module != null) {
-                modules.add(module);
-            }
-        }
-        return modules;
+        return project.getModules();
     }
 
     @Override
@@ -776,8 +833,8 @@ public final class DefaultProjectManager implements ProjectManager {
     }
 
     @Override
-    public Project convertFolderToProject(String workspace, String path, ProjectConfig projectConfig, String visibility)
-            throws ConflictException, ForbiddenException, ServerException, NotFoundException {
+    public Project convertFolderToProject(String workspace, String path, ProjectConfig projectConfig)
+            throws ConflictException, ForbiddenException, ServerException, NotFoundException, IOException {
 
         final VirtualFileEntry projectEntry = getProjectsRoot(workspace).getChild(path);
         if (projectEntry == null || !projectEntry.isFolder())
@@ -788,22 +845,27 @@ public final class DefaultProjectManager implements ProjectManager {
         final Project project = new Project(projectFolder, this);
 
         // Update config
-        if (projectConfig != null && projectConfig.getTypeId() != null) {
+        if (projectConfig != null && projectConfig.getType() != null) {
             //TODO: need add checking for concurrency attributes name in giving config and in estimation
-            Map<String, AttributeValue> estimateProject = estimateProject(workspace, path, projectConfig.getTypeId());
-            projectConfig.getAttributes().putAll(estimateProject);
+            for (Map.Entry<String, AttributeValue> entry : estimateProject(workspace, path, projectConfig.getType()).entrySet()) {
+                projectConfig.getAttributes().put(entry.getKey(), entry.getValue().getList());
+            }
             project.updateConfig(projectConfig);
         } else {  // try to get config (it will throw exception in case config is not valid)
-            project.getConfig();
+            projectConfig = project.getConfig();
+        }
+
+        if (projectConfig.getType() != null) {
+            PostImportProjectHandler postImportProjectHandler =
+                    handlers.getPostImportProjectHandler(projectConfig.getType());
+            if (postImportProjectHandler != null) {
+                postImportProjectHandler.onProjectImported(project.getBaseFolder());
+            }
         }
 
         final ProjectMisc misc = project.getMisc();
         misc.setCreationDate(System.currentTimeMillis());
         misc.save(); // Important to save misc!!
-
-        if (visibility != null) {
-            project.setVisibility(visibility);
-        }
 
         return project;
     }
@@ -835,7 +897,7 @@ public final class DefaultProjectManager implements ProjectManager {
                               .filter(projectConfigDto -> projectConfigDto.getPath().startsWith(oldProjectPath))
                               .forEach(projectConfigDto -> {
                                   if (oldProjectPath.equals(projectConfigDto.getPath())) {
-                                    projectConfigDto.setName(newName);
+                                      projectConfigDto.setName(newName);
                                   }
                                   projectConfigDto.setPath(projectConfigDto.getPath().replaceFirst(oldProjectPath, entry.getPath()));
                               });
@@ -847,21 +909,22 @@ public final class DefaultProjectManager implements ProjectManager {
             // We should not edit Modules if resource to rename is project
             if (!projectName.equals(path) && entry.isFolder()) {
                 final Project rootProject = getProject(workspace, projectName);
-                if (rootProject != null) {
-                    // We need module path without projectName, f.e projectName/module1/oldModuleName -> module1/oldModuleName
-                    String oldModulePath = path.replaceFirst(projectName + "/", "");
-                    // Calculates new module path, f.e module1/oldModuleName -> module1/newModuleName
-                    String newModulePath = oldModulePath.substring(0, oldModulePath.lastIndexOf("/") + 1) + newName;
-
-                    rootProject.getModules().update(oldModulePath, newModulePath);
-                }
+                // TODO: rework
+//                if (rootProject != null) {
+//                    // We need module path without projectName, f.e projectName/module1/oldModuleName -> module1/oldModuleName
+//                    String oldModulePath = path.replaceFirst(projectName + "/", "");
+//                    // Calculates new module path, f.e module1/oldModuleName -> module1/newModuleName
+//                    String newModulePath = oldModulePath.substring(0, oldModulePath.lastIndexOf("/") + 1) + newName;
+//
+//                    rootProject.getModules().update(oldModulePath, newModulePath);
+//                }
             }
         }
         return entry;
     }
 
     @Override
-    public boolean delete(String workspace, String path, String modulePath)
+    public boolean delete(String workspace, String path)
             throws ServerException, ForbiddenException, NotFoundException, ConflictException {
         final FolderEntry root = getProjectsRoot(workspace);
         final VirtualFileEntry entry = root.getChild(path);
@@ -869,30 +932,16 @@ public final class DefaultProjectManager implements ProjectManager {
             return false;
         }
 
-        final Project project = getProject(workspace, path);
+        final ProjectConfig project = getProjectFromWorkspace(workspace, path);
+
         if (project != null) {
-            // In case of project extract some information about project for logger before delete project.
-            // remove module only
-            if (modulePath != null) {
-                RemoveModuleHandler removeModuleHandler = this.getHandlers().getRemoveModuleHandler(project.getConfig().getTypeId());
-                if (removeModuleHandler != null) {
-                    removeModuleHandler.onRemoveModule(project.getBaseFolder(), modulePath, project.getConfig());
-                }
-                Set<String> modules = project.getModules().get();
-                if (modules == null || modules.isEmpty()) {
-                    return false;
-                }
-
-                modulePath = modules.contains(modulePath) ? modulePath : project.getPath() + "/" + modulePath;
-                return project.getModules().remove(modulePath);
-            }
-
+            // Remove whole project
             final String projectName = project.getName();
             String projectType = null;
             try {
-                projectType = project.getConfig().getTypeId();
+                projectType = project.getType();
                 deleteProjectFromWorkspace(workspace, project.getName());
-            } catch (ServerException | ValueStorageException | ProjectTypeConstraintException e) {
+            } catch (ServerException e) {
                 // Let delete even project in invalid state.
                 LOG.warn(String.format("Removing not valid project ws : %s, project path: %s ", workspace, path) + e.getMessage(), e);
             }
@@ -903,6 +952,46 @@ public final class DefaultProjectManager implements ProjectManager {
                      EnvironmentContext.getCurrent().getWorkspaceName(),
                      EnvironmentContext.getCurrent().getUser().getName());
         } else {
+            // find if path is a module
+            ModuleConfig parentConfig = null;
+            if (!path.startsWith(File.separator)) {
+                path = File.separator + path;
+            }
+            String[] parts = path.split(String.format("(?=[%s])", File.separator));
+            ProjectConfigDto projectConfig = getProjectFromWorkspace(workspace, parts[0]);
+            ModuleConfig tmp = projectConfig;
+            boolean isModuleFound = false;
+            if (tmp != null) {
+                StringBuilder strBuilder = new StringBuilder(parts[0]);
+                for (int i = 1; i < parts.length; i++) {
+                    strBuilder.append(parts[i]);
+                    Optional<? extends ModuleConfig> optional = findModuleWithPath(tmp, strBuilder.toString());
+                    if (optional.isPresent()) {
+                        isModuleFound = true;
+                        tmp = optional.get();
+                    } else {
+                        isModuleFound = false;
+                        break;
+                    }
+                }
+                parentConfig = tmp;
+            }
+
+            if (isModuleFound) {
+                RemoveModuleHandler removeModuleHandler = this.getHandlers().getRemoveModuleHandler(parentConfig.getType());
+                if (removeModuleHandler != null) {
+                    removeModuleHandler.onRemoveModule((FolderEntry)entry, path, parentConfig);
+                }
+
+                Iterator<? extends ModuleConfig> it = parentConfig.getModules().iterator();
+                while (it.hasNext()) {
+                    if (it.next().getPath().equals(path)) {
+                        it.remove();
+                    }
+                }
+                updateProjectInWorkspace(workspace, projectConfig);
+            }
+
             eventService.publish(new ProjectItemModifiedEvent(ProjectItemModifiedEvent.EventType.DELETED, workspace,
                                                               projectPath(entry.getPath()), entry.getPath(), entry.isFolder()));
             entry.remove();
@@ -931,4 +1020,28 @@ public final class DefaultProjectManager implements ProjectManager {
             throw new ServerException(e);
         }
     }
+
+    @Override
+    public boolean isModuleFolder(FolderEntry folder) throws ServerException {
+        String pathToModuleFolder = folder.getPath();
+
+        String[] pathToModuleParts = pathToModuleFolder.split(String.format("(?=[%s])", File.separator));
+
+        ProjectConfigDto projectFromWorkspace = getProjectFromWorkspace(folder.getWorkspace(), pathToModuleParts[0]);
+
+        for (ModuleConfigDto moduleConfigDto : projectFromWorkspace.getModules()) {
+            ModuleConfigDto foundModule = findModuleRecursive(moduleConfigDto, pathToModuleFolder);
+
+            if (foundModule != null) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private Optional<? extends ModuleConfig> findModuleWithPath(ModuleConfig parent, String modulePath) {
+        return parent.getModules().stream().filter(module -> module.getPath().equals(modulePath)).findAny();
+    }
+
 }

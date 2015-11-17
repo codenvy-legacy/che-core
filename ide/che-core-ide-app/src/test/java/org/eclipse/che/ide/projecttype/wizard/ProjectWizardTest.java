@@ -15,13 +15,12 @@ import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
-import org.eclipse.che.api.project.shared.dto.ImportProject;
-import org.eclipse.che.api.project.shared.dto.ImportResponse;
-import org.eclipse.che.api.project.shared.dto.NewProject;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.api.project.shared.dto.ProjectUpdate;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode;
+import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.api.wizard.Wizard;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
@@ -64,11 +63,10 @@ public class ProjectWizardTest {
 
     @Captor
     private ArgumentCaptor<AsyncRequestCallback<ProjectDescriptor>> callbackCaptor;
-
     @Captor
-    private ArgumentCaptor<RequestCallback<ImportResponse>> importCallbackCaptor;
+    private ArgumentCaptor<RequestCallback<Void>>                   importCallbackCaptor;
     @Captor
-    private ArgumentCaptor<AsyncRequestCallback<Void>>      callbackCaptorForVoid;
+    private ArgumentCaptor<AsyncRequestCallback<Void>>              callbackCaptorForVoid;
 
     @Mock
     private ProjectServiceClient     projectServiceClient;
@@ -83,22 +81,26 @@ public class ProjectWizardTest {
     @Mock
     private AppContext               appContext;
     @Mock
-    private ImportProject            importProject;
+    private ProjectConfigDto         dataObject;
     @Mock
-    private NewProject               newProject;
+    private ProjectDescriptor        descriptor;
+    @Mock
+    private SourceStorageDto         storage;
     @Mock
     private Wizard.CompleteCallback  completeCallback;
     @Mock
     private ConfirmDialog            confirmDialog;
     @Mock
     private ProjectExplorerPresenter projectExplorer;
+    @Mock
+    private SelectionAgent           selectionAgent;
 
     private ProjectWizard wizard;
 
     @Before
     public void setUp() {
-        when(newProject.getName()).thenReturn(PROJECT_NAME);
-        when(importProject.getProject()).thenReturn(newProject);
+        when(dataObject.getName()).thenReturn(PROJECT_NAME);
+        when(dataObject.getSource()).thenReturn(storage);
         when(dialogFactory.createConfirmDialog(anyString(), anyString(), Matchers.<ConfirmCallback>anyObject(),
                                                Matchers.<CancelCallback>anyObject())).thenReturn(confirmDialog);
     }
@@ -109,7 +111,7 @@ public class ProjectWizardTest {
 
         wizard.complete(completeCallback);
 
-        verify(projectServiceClient).createProject(eq(PROJECT_NAME), eq(newProject), callbackCaptor.capture());
+        verify(projectServiceClient).createProject(eq(PROJECT_NAME), eq(dataObject), callbackCaptor.capture());
 
         AsyncRequestCallback<ProjectDescriptor> callback = callbackCaptor.getValue();
         GwtReflectionUtils.callOnSuccess(callback, mock(ProjectDescriptor.class));
@@ -125,7 +127,7 @@ public class ProjectWizardTest {
 
         wizard.complete(completeCallback);
 
-        verify(projectServiceClient).createProject(eq(PROJECT_NAME), eq(newProject), callbackCaptor.capture());
+        verify(projectServiceClient).createProject(eq(PROJECT_NAME), eq(dataObject), callbackCaptor.capture());
 
         AsyncRequestCallback<ProjectDescriptor> callback = callbackCaptor.getValue();
         GwtReflectionUtils.callOnFailure(callback, mock(Throwable.class));
@@ -139,12 +141,11 @@ public class ProjectWizardTest {
 
         wizard.complete(completeCallback);
 
-        verify(projectServiceClient).importProject(eq(PROJECT_NAME), eq(false), eq(importProject), importCallbackCaptor.capture());
+        verify(projectServiceClient).importProject(eq(PROJECT_NAME), eq(false), eq(storage), importCallbackCaptor.capture());
+        GwtReflectionUtils.callOnSuccessVoidParameter(importCallbackCaptor.getValue());
 
-        ImportResponse importResponse = mock(ImportResponse.class);
-        when(importResponse.getProjectDescriptor()).thenReturn(mock(ProjectDescriptor.class));
-        RequestCallback<ImportResponse> callback = importCallbackCaptor.getValue();
-        GwtReflectionUtils.callOnSuccess(callback, importResponse);
+        verify(projectServiceClient).updateProject(anyString(), Matchers.<ProjectConfigDto>anyObject(), callbackCaptor.capture());
+        GwtReflectionUtils.callOnSuccess(callbackCaptor.getValue(), descriptor);
 
         verify(eventBus).fireEvent(Matchers.<Event<Object>>anyObject());
         verify(completeCallback).onCompleted();
@@ -157,9 +158,9 @@ public class ProjectWizardTest {
 
         wizard.complete(completeCallback);
 
-        verify(projectServiceClient).importProject(eq(PROJECT_NAME), eq(false), eq(importProject), importCallbackCaptor.capture());
+        verify(projectServiceClient).importProject(eq(PROJECT_NAME), eq(false), eq(storage), importCallbackCaptor.capture());
 
-        RequestCallback<ImportResponse> callback = importCallbackCaptor.getValue();
+        RequestCallback<Void> callback = importCallbackCaptor.getValue();
         GwtReflectionUtils.callOnFailure(callback, mock(Throwable.class));
 
         verify(completeCallback).onFailure(Matchers.<Throwable>anyObject());
@@ -171,7 +172,7 @@ public class ProjectWizardTest {
 
         wizard.complete(completeCallback);
 
-        verify(projectServiceClient).updateProject(eq(PROJECT_NAME), eq(newProject), callbackCaptor.capture());
+        verify(projectServiceClient).updateProject(eq(PROJECT_NAME), eq(dataObject), callbackCaptor.capture());
 
         AsyncRequestCallback<ProjectDescriptor> callback = callbackCaptor.getValue();
         GwtReflectionUtils.callOnSuccess(callback, mock(ProjectDescriptor.class));
@@ -187,7 +188,7 @@ public class ProjectWizardTest {
 
         wizard.complete(completeCallback);
 
-        verify(projectServiceClient).updateProject(eq(PROJECT_NAME), eq(newProject), callbackCaptor.capture());
+        verify(projectServiceClient).updateProject(eq(PROJECT_NAME), eq(dataObject), callbackCaptor.capture());
 
         AsyncRequestCallback<ProjectDescriptor> callback = callbackCaptor.getValue();
         GwtReflectionUtils.callOnFailure(callback, mock(Throwable.class));
@@ -199,7 +200,7 @@ public class ProjectWizardTest {
     public void shouldRenameProjectBeforeUpdating() throws Exception {
         prepareWizard(UPDATE);
         String changedName = PROJECT_NAME + "1";
-        when(newProject.getName()).thenReturn(changedName);
+        when(dataObject.getName()).thenReturn(changedName);
 
         wizard.complete(completeCallback);
 
@@ -210,7 +211,7 @@ public class ProjectWizardTest {
         GwtReflectionUtils.callOnSuccess(voidCallback, (Void)null);
 
         // should update
-        verify(projectServiceClient).updateProject(eq(changedName), eq(newProject), callbackCaptor.capture());
+        verify(projectServiceClient).updateProject(eq(changedName), eq(dataObject), callbackCaptor.capture());
 
         AsyncRequestCallback<ProjectDescriptor> callback = callbackCaptor.getValue();
         GwtReflectionUtils.callOnSuccess(callback, mock(ProjectDescriptor.class));
@@ -219,11 +220,11 @@ public class ProjectWizardTest {
         verify(completeCallback).onCompleted();
     }
 
-    //    @Test
+    @Test
     public void shouldNotUpdateProjectWhenRenameFailed() throws Exception {
         prepareWizard(UPDATE);
         String changedName = PROJECT_NAME + "1";
-        when(newProject.getName()).thenReturn(changedName);
+        when(dataObject.getName()).thenReturn(changedName);
         when(dtoFactory.createDtoFromJson(anyString(), any(Class.class))).thenReturn(mock(ServiceError.class));
 
         wizard.complete(completeCallback);
@@ -234,13 +235,12 @@ public class ProjectWizardTest {
         GwtReflectionUtils.callOnFailure(callback, mock(Throwable.class));
 
         verify(projectServiceClient, never()).updateProject(anyString(),
-                                                            Matchers.<ProjectUpdate>anyObject(),
+                                                            Matchers.<ProjectConfigDto>anyObject(),
                                                             Matchers.<AsyncRequestCallback<ProjectDescriptor>>anyObject());
-        verify(completeCallback).onFailure(Matchers.<Throwable>anyObject());
     }
 
     private void prepareWizard(ProjectWizardMode mode) {
-        wizard = new ProjectWizard(importProject,
+        wizard = new ProjectWizard(dataObject,
                                    mode,
                                    PROJECT_NAME,
                                    projectServiceClient,
@@ -248,6 +248,7 @@ public class ProjectWizardTest {
                                    dtoFactory,
                                    dialogFactory,
                                    eventBus,
-                                   appContext);
+                                   appContext,
+                                   selectionAgent);
     }
 }

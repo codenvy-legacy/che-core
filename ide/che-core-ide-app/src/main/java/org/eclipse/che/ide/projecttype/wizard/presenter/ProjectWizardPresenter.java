@@ -14,14 +14,12 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
-import org.eclipse.che.api.project.shared.dto.GeneratorDescription;
-import org.eclipse.che.api.project.shared.dto.ImportProject;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
-import org.eclipse.che.api.project.shared.dto.NewProject;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
-import org.eclipse.che.api.project.shared.dto.Source;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistrar;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistry;
@@ -31,7 +29,6 @@ import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.projecttype.wizard.ProjectWizard;
 import org.eclipse.che.ide.projecttype.wizard.ProjectWizardFactory;
 import org.eclipse.che.ide.projecttype.wizard.categoriespage.CategoriesPagePresenter;
-import org.eclipse.che.ide.projecttype.wizard.recipespage.RecipesPagePresenter;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 
 import javax.validation.constraints.NotNull;
@@ -149,15 +146,12 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
         resetState();
         wizardMode = UPDATE;
         projectPath = project.getPath();
-        final ImportProject dataObject = dtoFactory.createDto(ImportProject.class)
-                                                   .withProject(dtoFactory.createDto(NewProject.class)
+        final ProjectConfigDto dataObject = dtoFactory.createDto(ProjectConfigDto.class)
                                                                           .withType(project.getType())
                                                                           .withName(project.getName())
                                                                           .withDescription(project.getDescription())
-                                                                          .withVisibility(project.getVisibility())
-                                                                          .withAttributes(new HashMap<>(project.getAttributes()))
-                                                                          .withRecipe(project.getRecipe()));
-        dataObject.getProject().setMixins(project.getMixins());
+                                                                          .withAttributes(new HashMap<>(project.getAttributes()));
+        dataObject.setMixinTypes(project.getMixins());
         showDialog(dataObject);
     }
 
@@ -166,9 +160,8 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
         resetState();
         wizardMode = CREATE_MODULE;
         projectPath = folder.getPath();
-        final ImportProject dataObject = dtoFactory.createDto(ImportProject.class)
-                                                   .withProject(dtoFactory.createDto(NewProject.class)
-                                                                          .withName(folder.getName()));
+        final ProjectConfigDto dataObject = dtoFactory.createDto(ProjectConfigDto.class)
+                                                                          .withName(folder.getName());
 
         showDialog(dataObject);
     }
@@ -183,9 +176,9 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
         importWizard = null;
     }
 
-    private void showDialog(@Nullable ImportProject dataObject) {
+    private void showDialog(@Nullable ProjectConfigDto dataObject) {
         wizard = createDefaultWizard(dataObject, wizardMode);
-        final WizardPage<ImportProject> firstPage = wizard.navigateToFirst();
+        final WizardPage<ProjectConfigDto> firstPage = wizard.navigateToFirst();
         if (firstPage != null) {
             showPage(firstPage);
             view.showDialog(wizardMode);
@@ -194,43 +187,38 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
 
     @Override
     public void onProjectTypeSelected(ProjectTypeDefinition projectType) {
-        final ImportProject prevData = wizard.getDataObject();
+        final ProjectConfigDto prevData = wizard.getDataObject();
         wizard = getWizardForProjectType(projectType);
         wizard.navigateToFirst();
-        final NewProject newProject = wizard.getDataObject().getProject();
+        final ProjectConfigDto newProject = wizard.getDataObject();
 
         // some values should be shared between wizards for different project types
-        NewProject prevDataProject = prevData.getProject();
-        newProject.setName(prevDataProject.getName());
-        newProject.setDescription(prevDataProject.getDescription());
-        newProject.setVisibility(prevDataProject.getVisibility());
-        newProject.setMixins(prevDataProject.getMixins());
+        newProject.setName(prevData.getName());
+        newProject.setDescription(prevData.getDescription());
+        newProject.setMixinTypes(prevData.getMixinTypes());
         if (wizardMode == UPDATE) {
-            newProject.setAttributes(prevDataProject.getAttributes());
+            newProject.setAttributes(prevData.getAttributes());
         }
 
         // set dataObject's values from projectType
         newProject.setType(projectType.getId());
-        newProject.setRecipe(projectType.getDefaultRecipe());
+//        newProject.setRecipe(projectType.getDefaultRecipe());
     }
 
     @Override
     public void onProjectTemplateSelected(ProjectTemplateDescriptor projectTemplate) {
-        final ImportProject prevData = wizard.getDataObject();
+        final ProjectConfigDto prevData = wizard.getDataObject();
         wizard = importWizard == null ? importWizard = createDefaultWizard(null, IMPORT) : importWizard;
         wizard.navigateToFirst();
-        final ImportProject dataObject = wizard.getDataObject();
-        final NewProject newProject = dataObject.getProject();
+        final ProjectConfigDto dataObject = wizard.getDataObject();
 
         // some values should be shared between wizards for different project types
-        newProject.setName(prevData.getProject().getName());
-        newProject.setDescription(prevData.getProject().getDescription());
-        newProject.setVisibility(prevData.getProject().getVisibility());
+        dataObject.setName(prevData.getName());
+        dataObject.setDescription(prevData.getDescription());
 
         // set dataObject's values from projectTemplate
-        newProject.setType(projectTemplate.getProjectType());
-        newProject.setRecipe(projectTemplate.getRecipe());
-        dataObject.getSource().setProject(projectTemplate.getSource());
+        dataObject.setType(projectTemplate.getProjectType());
+        dataObject.setSource(projectTemplate.getSource());
     }
 
     /** Creates or returns project wizard for the specified projectType with the given dataObject. */
@@ -245,9 +233,9 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
             throw new IllegalStateException("WizardRegistrar for the project type " + projectType.getId() + " isn't registered.");
         }
 
-        List<Provider<? extends WizardPage<ImportProject>>> pageProviders = wizardRegistrar.getWizardPages();
+        List<Provider<? extends WizardPage<ProjectConfigDto>>> pageProviders = wizardRegistrar.getWizardPages();
         final ProjectWizard projectWizard = createDefaultWizard(null, wizardMode);
-        for (Provider<? extends WizardPage<ImportProject>> provider : pageProviders) {
+        for (Provider<? extends WizardPage<ProjectConfigDto>> provider : pageProviders) {
             projectWizard.addPage(provider.get(), 1, false);
         }
 
@@ -256,12 +244,10 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
     }
 
     /** Creates and returns 'default' project wizard with pre-defined pages only. */
-    private ProjectWizard createDefaultWizard(@Nullable ImportProject dataObject, @NotNull ProjectWizardMode mode) {
+    private ProjectWizard createDefaultWizard(@Nullable ProjectConfigDto dataObject, @NotNull ProjectWizardMode mode) {
         if (dataObject == null) {
-            dataObject = dtoFactory.createDto(ImportProject.class)
-                                   .withSource(dtoFactory.createDto(Source.class))
-                                   .withProject(dtoFactory.createDto(NewProject.class)
-                                                          .withGeneratorDescription(dtoFactory.createDto(GeneratorDescription.class)));
+            dataObject = dtoFactory.createDto(ProjectConfigDto.class)
+                                   .withSource(dtoFactory.createDto(SourceStorageDto.class));
         }
 
         final ProjectWizard projectWizard = projectWizardFactory.newWizard(dataObject, mode, projectPath);

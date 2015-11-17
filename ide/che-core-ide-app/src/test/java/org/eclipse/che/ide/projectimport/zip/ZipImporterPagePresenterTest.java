@@ -10,15 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projectimport.zip;
 
-import org.eclipse.che.api.project.shared.dto.ImportProject;
-import org.eclipse.che.api.project.shared.dto.ImportSourceDescriptor;
-import org.eclipse.che.api.project.shared.dto.NewProject;
-import org.eclipse.che.api.project.shared.dto.Source;
-import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.api.wizard.Wizard;
-
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
+import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.api.wizard.Wizard;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,7 +30,6 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -44,6 +40,7 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ZipImporterPagePresenterTest {
+
     private static final String SKIP_FIRST_LEVEL_PARAM_NAME = "skipFirstLevel";
 
     @Mock
@@ -51,11 +48,9 @@ public class ZipImporterPagePresenterTest {
     @Mock
     private CoreLocalizationConstant locale;
     @Mock
-    private ImportProject            dataObject;
+    private ProjectConfigDto         dataObject;
     @Mock
-    private ImportSourceDescriptor   importSourceDescriptor;
-    @Mock
-    private NewProject               newProject;
+    private SourceStorageDto         sourceStorageDto;
     @Mock
     private Wizard.UpdateDelegate    delegate;
     @Mock
@@ -65,19 +60,11 @@ public class ZipImporterPagePresenterTest {
 
     @Before
     public void setUp() {
-        Source source = mock(Source.class);
-        when(importSourceDescriptor.getParameters()).thenReturn(parameters);
-        when(source.getProject()).thenReturn(importSourceDescriptor);
-        when(dataObject.getSource()).thenReturn(source);
-        when(dataObject.getProject()).thenReturn(newProject);
+        when(dataObject.getSource()).thenReturn(sourceStorageDto);
+        when(sourceStorageDto.getParameters()).thenReturn(parameters);
 
         presenter.setUpdateDelegate(delegate);
         presenter.init(dataObject);
-    }
-
-    @Test
-    public void shouldSkipFirstLevelByDefault() {
-        verify(parameters).put(SKIP_FIRST_LEVEL_PARAM_NAME, "true");
     }
 
     @Test
@@ -90,7 +77,6 @@ public class ZipImporterPagePresenterTest {
         verify(container).setWidget(eq(view));
         verify(view).setProjectName(anyString());
         verify(view).setProjectDescription(anyString());
-        verify(view).setVisibility(anyBoolean());
         verify(view).setProjectUrl(anyString());
         verify(view).setSkipFirstLevel(anyBoolean());
         verify(view).setInputsEnableState(eq(true));
@@ -140,7 +126,6 @@ public class ZipImporterPagePresenterTest {
         presenter.projectUrlChanged(correctUrl);
 
         verify(view, never()).showUrlError(anyString());
-        verify(importSourceDescriptor).setLocation(eq(correctUrl));
         verify(view).hideNameError();
         verify(view).setProjectName(anyString());
         verify(delegate).updateControls();
@@ -153,7 +138,6 @@ public class ZipImporterPagePresenterTest {
 
         presenter.projectNameChanged(correctName);
 
-        verify(newProject).setName(eq(correctName));
         verify(view).hideNameError();
         verify(view, never()).showNameError();
         verify(delegate).updateControls();
@@ -166,7 +150,6 @@ public class ZipImporterPagePresenterTest {
 
         presenter.projectNameChanged(emptyName);
 
-        verify(newProject).setName(anyString());
         verify(view).showNameError();
         verify(delegate).updateControls();
     }
@@ -178,7 +161,6 @@ public class ZipImporterPagePresenterTest {
 
         presenter.projectNameChanged(incorrectName);
 
-        verify(newProject).setName(anyString());
         verify(view).showNameError();
         verify(delegate).updateControls();
     }
@@ -187,7 +169,6 @@ public class ZipImporterPagePresenterTest {
     public void skipFirstLevelSelectedTest() {
         presenter.skipFirstLevelChanged(true);
 
-        verify(parameters, times(2)).put(SKIP_FIRST_LEVEL_PARAM_NAME, "true");
         verify(delegate).updateControls();
     }
 
@@ -196,7 +177,6 @@ public class ZipImporterPagePresenterTest {
         String description = "description";
         presenter.projectDescriptionChanged(description);
 
-        verify(newProject).setDescription(eq(description));
         verify(delegate).updateControls();
     }
 
@@ -204,7 +184,6 @@ public class ZipImporterPagePresenterTest {
     public void projectVisibilityChangedTest() {
         presenter.projectVisibilityChanged(true);
 
-        verify(newProject).setVisibility(eq("public"));
         verify(delegate).updateControls();
     }
 }

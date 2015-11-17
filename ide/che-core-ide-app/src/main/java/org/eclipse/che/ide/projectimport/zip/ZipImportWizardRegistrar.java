@@ -11,7 +11,7 @@
 package org.eclipse.che.ide.projectimport.zip;
 
 import org.eclipse.che.api.project.server.ZipProjectImporter;
-import org.eclipse.che.api.project.shared.dto.ImportProject;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.api.project.wizard.ImportWizardRegistrar;
 import org.eclipse.che.ide.api.wizard.WizardPage;
 import com.google.inject.Inject;
@@ -28,7 +28,7 @@ import java.util.List;
  * @author Artem Zatsarynnyy
  */
 public class ZipImportWizardRegistrar implements ImportWizardRegistrar {
-    private final List<Provider<? extends WizardPage<ImportProject>>> wizardPages;
+    private final List<Provider<? extends WizardPage<ProjectConfigDto>>> wizardPages;
 
     @Inject
     public ZipImportWizardRegistrar(Provider<ZipImporterPagePresenter> provider) {
@@ -42,7 +42,7 @@ public class ZipImportWizardRegistrar implements ImportWizardRegistrar {
     }
 
     @NotNull
-    public List<Provider<? extends WizardPage<ImportProject>>> getWizardPages() {
+    public List<Provider<? extends WizardPage<ProjectConfigDto>>> getWizardPages() {
         return wizardPages;
     }
 }

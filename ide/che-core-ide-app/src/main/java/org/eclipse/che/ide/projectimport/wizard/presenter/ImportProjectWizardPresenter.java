@@ -10,11 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projectimport.wizard.presenter;
 
-import org.eclipse.che.api.project.shared.dto.ImportProject;
-import org.eclipse.che.api.project.shared.dto.ImportSourceDescriptor;
-import org.eclipse.che.api.project.shared.dto.NewProject;
 import org.eclipse.che.api.project.shared.dto.ProjectImporterDescriptor;
-import org.eclipse.che.api.project.shared.dto.Source;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.ide.api.project.wizard.ImportWizardRegistrar;
 import org.eclipse.che.ide.api.project.wizard.ImportWizardRegistry;
 import org.eclipse.che.ide.api.wizard.Wizard;
@@ -125,7 +123,7 @@ public class ImportProjectWizardPresenter implements Wizard.UpdateDelegate,
         resetState();
 
         wizard = createDefaultWizard();
-        final WizardPage<ImportProject> firstPage = wizard.navigateToFirst();
+        final WizardPage<ProjectConfigDto> firstPage = wizard.navigateToFirst();
         if (firstPage != null) {
             showPage(firstPage);
             view.showDialog();
@@ -152,9 +150,9 @@ public class ImportProjectWizardPresenter implements Wizard.UpdateDelegate,
             throw new IllegalStateException("WizardRegistrar for the importer " + importer.getId() + " isn't registered.");
         }
 
-        List<Provider<? extends WizardPage<ImportProject>>> pageProviders = wizardRegistrar.getWizardPages();
+        List<Provider<? extends WizardPage<ProjectConfigDto>>> pageProviders = wizardRegistrar.getWizardPages();
         final ImportWizard importWizard = createDefaultWizard();
-        for (Provider<? extends WizardPage<ImportProject>> provider : pageProviders) {
+        for (Provider<? extends WizardPage<ProjectConfigDto>> provider : pageProviders) {
             importWizard.addPage(provider.get(), 1, false);
         }
 
@@ -164,11 +162,8 @@ public class ImportProjectWizardPresenter implements Wizard.UpdateDelegate,
 
     /** Creates and returns 'default' project wizard with pre-defined pages only. */
     private ImportWizard createDefaultWizard() {
-        final ImportProject dataObject = dtoFactory.createDto(ImportProject.class)
-                                                   .withProject(dtoFactory.createDto(NewProject.class))
-                                                   .withSource(dtoFactory.createDto(Source.class)
-                                                   .withProject(dtoFactory.createDto(ImportSourceDescriptor.class)
-                                                   .withLocation("")));
+        final ProjectConfigDto dataObject = dtoFactory.createDto(ProjectConfigDto.class)
+               .withSource(dtoFactory.createDto(SourceStorageDto.class).withType("").withLocation(""));
 
         final ImportWizard importWizard = importWizardFactory.newWizard(dataObject);
         importWizard.setUpdateDelegate(this);
@@ -194,24 +189,23 @@ public class ImportProjectWizardPresenter implements Wizard.UpdateDelegate,
 
     @Override
     public void onImporterSelected(ProjectImporterDescriptor importer) {
-        final ImportProject prevData = wizard.getDataObject();
+        final ProjectConfigDto prevData = wizard.getDataObject();
         wizard = getWizardForImporter(importer);
-        final ImportProject dataObject = wizard.getDataObject();
-        final NewProject newProject = dataObject.getProject();
+        final ProjectConfigDto dataObject = wizard.getDataObject();
+        //final NewProject newProject = dataObject.getProject();
 
-        dataObject.getSource().getProject().setType(importer.getId());
+        dataObject.getSource().setType(importer.getId());
 
         // some values should be shared between wizards for different project types
-        newProject.setName(prevData.getProject().getName());
-        newProject.setDescription(prevData.getProject().getDescription());
-        newProject.setVisibility(prevData.getProject().getVisibility());
+        dataObject.setName(prevData.getName());
+        dataObject.setDescription(prevData.getDescription());
 
-        WizardPage<ImportProject> firstPage = wizard.navigateToFirst();
+        WizardPage<ProjectConfigDto> firstPage = wizard.navigateToFirst();
         if (firstPage != null) {
             firstPage.init(dataObject);
         }
 
-        WizardPage<ImportProject> importerPage = wizard.navigateToNext();
+        WizardPage<ProjectConfigDto> importerPage = wizard.navigateToNext();
         importerPage.go(mainPage.getImporterPanel());
     }
 }
