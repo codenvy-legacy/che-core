@@ -1029,6 +1029,10 @@ public final class DefaultProjectManager implements ProjectManager {
 
         ProjectConfigDto projectFromWorkspace = getProjectFromWorkspace(folder.getWorkspace(), pathToModuleParts[0]);
 
+        if (projectFromWorkspace == null) {
+            return false;
+        }
+
         for (ModuleConfigDto moduleConfigDto : projectFromWorkspace.getModules()) {
             ModuleConfigDto foundModule = findModuleRecursive(moduleConfigDto, pathToModuleFolder);
 

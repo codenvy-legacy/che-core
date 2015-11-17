@@ -21,7 +21,6 @@ import org.eclipse.che.api.project.shared.Constants;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.workspace.shared.dto.ModuleConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
-import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.ModuleCreatedEvent;
 import org.eclipse.che.ide.api.event.project.CreateProjectEvent;
 import org.eclipse.che.ide.api.event.project.OpenProjectEvent;
@@ -64,8 +63,9 @@ public class ProjectWizard extends AbstractWizard<ProjectConfigDto> {
     private final DtoFactory             dtoFactory;
     private final DialogFactory          dialogFactory;
     private final EventBus               eventBus;
-    private final AppContext             appContext;
     private final SelectionAgent         selectionAgent;
+    private final UpdateProjectCallBack  updateAfterImportCallback;
+    private final UpdateProjectCallBack  projectChangedCallBack;
 
     /**
      * Creates project wizard.
@@ -85,8 +85,6 @@ public class ProjectWizard extends AbstractWizard<ProjectConfigDto> {
      *         {@link org.eclipse.che.ide.ui.dialogs.DialogFactory} instance
      * @param eventBus
      *         {@link com.google.web.bindery.event.shared.EventBus} instance
-     * @param appContext
-     *         {@link org.eclipse.che.ide.api.app.AppContext} instance
      */
     @Inject
     public ProjectWizard(@Assisted ProjectConfigDto dataObject,
@@ -96,8 +94,7 @@ public class ProjectWizard extends AbstractWizard<ProjectConfigDto> {
                          DtoUnmarshallerFactory dtoUnmarshallerFactory,
                          DtoFactory dtoFactory,
                          DialogFactory dialogFactory,
-                         EventBus eventBus,
-                         AppContext appContext,
+                         final EventBus eventBus,
                          SelectionAgent selectionAgent) {
         super(dataObject);
         this.mode = mode;
@@ -106,7 +103,6 @@ public class ProjectWizard extends AbstractWizard<ProjectConfigDto> {
         this.dtoFactory = dtoFactory;
         this.dialogFactory = dialogFactory;
         this.eventBus = eventBus;
-        this.appContext = appContext;
         this.selectionAgent = selectionAgent;
 
         context.put(WIZARD_MODE_KEY, mode.toString());
@@ -114,6 +110,20 @@ public class ProjectWizard extends AbstractWizard<ProjectConfigDto> {
         if (mode == UPDATE || mode == CREATE_MODULE) {
             context.put(PROJECT_PATH_KEY, projectPath);
         }
+
+        updateAfterImportCallback = new UpdateProjectCallBack() {
+            @Override
+            public void onProjectUpdated(ProjectDescriptor descriptor) {
+                eventBus.fireEvent(new CreateProjectEvent(descriptor));
+            }
+        };
+
+        projectChangedCallBack = new UpdateProjectCallBack() {
+            @Override
+            public void onProjectUpdated(ProjectDescriptor descriptor) {
+                eventBus.fireEvent(new ProjectUpdatedEvent(context.get(PROJECT_PATH_KEY), descriptor));
+            }
+        };
     }
 
     /** {@inheritDoc} */
@@ -124,7 +134,7 @@ public class ProjectWizard extends AbstractWizard<ProjectConfigDto> {
         } else if (mode == CREATE_MODULE) {
             createModule(callback);
         } else if (mode == UPDATE) {
-            updateProject(new UpdateCallback(callback));
+            updateProject(new UpdateCallback(callback), projectChangedCallBack);
         } else if (mode == IMPORT) {
             importProject(callback);
         }
@@ -209,30 +219,33 @@ public class ProjectWizard extends AbstractWizard<ProjectConfigDto> {
     }
 
     private void importProject(final CompleteCallback callback) {
-        projectServiceClient.importProject(
-                dataObject.getName(), false, dataObject.getSource(), new RequestCallback<Void>() {
-                    @Override
-                    protected void onSuccess(Void result) {
-                        updateProject(callback);
-                    }
+        projectServiceClient.importProject(dataObject.getName(), false, dataObject.getSource(), new RequestCallback<Void>() {
+            @Override
+            protected void onSuccess(Void result) {
+                updateAfterImport(callback, updateAfterImportCallback);
+            }
 
-                    @Override
-                    protected void onFailure(Throwable exception) {
-                        final String message = dtoFactory.createDtoFromJson(exception.getMessage(), ServiceError.class).getMessage();
-                        callback.onFailure(new Exception(message));
-                    }
-                });
+            @Override
+            protected void onFailure(Throwable exception) {
+                final String message = dtoFactory.createDtoFromJson(exception.getMessage(), ServiceError.class).getMessage();
+                callback.onFailure(new Exception(message));
+            }
+        });
     }
 
-    private void updateProject(final CompleteCallback callback) {
+    private void updateAfterImport(final CompleteCallback callback, final UpdateProjectCallBack updateProjectCallBack) {
+        doUpdateProject(callback, updateProjectCallBack);
+    }
+
+    private void updateProject(final CompleteCallback callback, final UpdateProjectCallBack updateProjectCallBack) {
         final String currentName = context.get(PROJECT_NAME_KEY);
         if (currentName.equals(dataObject.getName())) {
-            doUpdateProject(callback);
+            doUpdateProject(callback, updateProjectCallBack);
         } else {
             renameProject(new AsyncCallback<Void>() {
                 @Override
                 public void onSuccess(Void result) {
-                    doUpdateProject(callback);
+                    doUpdateProject(callback, updateProjectCallBack);
                 }
 
                 @Override
@@ -244,13 +257,14 @@ public class ProjectWizard extends AbstractWizard<ProjectConfigDto> {
         }
     }
 
-    private void doUpdateProject(final CompleteCallback callback) {
+    private void doUpdateProject(final CompleteCallback callback, final UpdateProjectCallBack updateProjectCallBack) {
         //final NewProject project = dataObject.getProject();
         final Unmarshallable<ProjectDescriptor> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class);
         projectServiceClient.updateProject(dataObject.getName(), dataObject, new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
             @Override
             protected void onSuccess(ProjectDescriptor result) {
-                eventBus.fireEvent(new ProjectUpdatedEvent(context.get(PROJECT_PATH_KEY), result));
+                updateProjectCallBack.onProjectUpdated(result);
+
                 callback.onCompleted();
             }
 
@@ -307,5 +321,15 @@ public class ProjectWizard extends AbstractWizard<ProjectConfigDto> {
                                                   }
                                               }).show();
         }
+    }
+
+    private interface UpdateProjectCallBack {
+        /**
+         * The method is called when project was changed or after project import at once.
+         *
+         * @param descriptor
+         *         description of project
+         */
+        void onProjectUpdated(ProjectDescriptor descriptor);
     }
 }
