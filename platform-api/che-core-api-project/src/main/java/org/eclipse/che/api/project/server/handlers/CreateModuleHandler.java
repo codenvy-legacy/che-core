@@ -13,16 +13,16 @@ package org.eclipse.che.api.project.server.handlers;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.project.server.ProjectConfig;
 import org.eclipse.che.api.project.server.FolderEntry;
 
 import java.util.Map;
 
 /**
  * @author gazarenkov
+ * @author Dmitry Shnurenko
  */
 public interface CreateModuleHandler extends ProjectHandler {
 
-    void onCreateModule(FolderEntry parentFolder, String modulePath, ProjectConfig moduleConfig, Map<String, String> options)
+    void onCreateModule(FolderEntry parentFolder, String modulePath, String moduleType, Map<String, String> options)
             throws ForbiddenException, ConflictException, ServerException;
 }

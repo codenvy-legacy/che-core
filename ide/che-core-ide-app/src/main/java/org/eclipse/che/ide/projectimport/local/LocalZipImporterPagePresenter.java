@@ -16,7 +16,7 @@ import com.google.inject.name.Named;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
-import org.eclipse.che.api.project.shared.dto.ImportResponse;
+import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.vfs.gwt.client.VfsServiceClient;
 import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.ide.CoreLocalizationConstant;
@@ -102,15 +102,22 @@ public class LocalZipImporterPagePresenter implements LocalZipImporterPageView.A
                 return;
             }
 
-            ImportResponse importResponse = dtoFactory.createDtoFromJson(result, ImportResponse.class);
-            if (importResponse.getProjectDescriptor() == null) {
+            ProjectDescriptor projectDescriptor = dtoFactory.createDtoFromJson(result, ProjectDescriptor.class);
+            if (projectDescriptor == null) {
                 importFailure(JsonHelper.parseJsonMessage(result));
                 return;
             }
-            importSuccess(importResponse);
+            importSuccess(projectDescriptor);
         } catch (Exception e) {
             importFailure(result);
         }
+    }
+
+    private void importSuccess(ProjectDescriptor projectDescriptor) {
+        view.closeDialog();
+        importProjectNotificationSubscriber.onSuccess();
+
+        eventBus.fireEvent(new CreateProjectEvent(projectDescriptor));
     }
 
     @Override
@@ -144,13 +151,6 @@ public class LocalZipImporterPagePresenter implements LocalZipImporterPageView.A
         view.setAction(extPath + "/project/" + workspaceId + "/upload/zipproject/" + projectName + "?force=false");
         view.submit();
         showProcessing(true);
-    }
-
-    private void importSuccess(ImportResponse importResponse) {
-        view.closeDialog();
-        importProjectNotificationSubscriber.onSuccess();
-
-        eventBus.fireEvent(new CreateProjectEvent(importResponse.getProjectDescriptor()));
     }
 
     private void importFailure(String error) {

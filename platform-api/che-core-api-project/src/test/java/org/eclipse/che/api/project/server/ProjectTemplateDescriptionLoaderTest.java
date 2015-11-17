@@ -13,8 +13,8 @@ package org.eclipse.che.api.project.server;
 import com.google.common.io.Resources;
 
 import org.eclipse.che.api.project.server.type.ProjectType;
-import org.eclipse.che.api.project.shared.dto.ImportSourceDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
+import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.junit.Assert;
 import org.junit.Before;
@@ -121,7 +121,7 @@ public class ProjectTemplateDescriptionLoaderTest {
         Assert.assertEquals(1, type.size());
         ProjectTemplateDescriptor templateDescriptor = type.get(0);
         Assert.assertNotNull(templateDescriptor);
-        ImportSourceDescriptor source = templateDescriptor.getSource();
+        SourceStorageDto source = templateDescriptor.getSource();
         Assert.assertNotNull(source);
         Assert.assertNotNull(source.getLocation());
         Assert.assertTrue(source.getLocation().contains(location));

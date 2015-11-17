@@ -14,6 +14,7 @@ import org.eclipse.che.api.core.model.machine.Command;
 import org.eclipse.che.api.core.model.project.SourceStorage;
 import org.eclipse.che.api.core.model.workspace.Environment;
 import org.eclipse.che.api.core.model.workspace.EnvironmentState;
+import org.eclipse.che.api.core.model.workspace.ModuleConfig;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.model.workspace.RuntimeWorkspace;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
@@ -22,8 +23,10 @@ import org.eclipse.che.api.machine.shared.dto.CommandDto;
 import org.eclipse.che.api.machine.shared.dto.MachineConfigDto;
 import org.eclipse.che.api.machine.shared.dto.MachineDto;
 import org.eclipse.che.api.machine.shared.dto.MachineStateDto;
+import org.eclipse.che.api.workspace.server.model.impl.ProjectConfigImpl;
 import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
 import org.eclipse.che.api.workspace.shared.dto.EnvironmentStateDto;
+import org.eclipse.che.api.workspace.shared.dto.ModuleConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.RuntimeWorkspaceDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
@@ -120,6 +123,13 @@ public final class DtoConverter {
                                                                                 .withType(projectCfg.getType())
                                                                                 .withAttributes(projectCfg.getAttributes())
                                                                                 .withMixinTypes(projectCfg.getMixinTypes());
+        if (projectCfg.getModules() != null) {
+            final List<ModuleConfigDto> modules = projectCfg.getModules()
+                                                            .stream()
+                                                            .map(DtoConverter::asDto)
+                                                            .collect(toList());
+            projectConfigDto.withModules(modules);
+        }
         final SourceStorage source = projectCfg.getSource();
         if (source != null) {
             projectConfigDto.withSource(newDto(SourceStorageDto.class).withLocation(source.getLocation())
@@ -127,6 +137,27 @@ public final class DtoConverter {
                                                                       .withParameters(source.getParameters()));
         }
         return projectConfigDto;
+    }
+
+
+    /**
+     * Converts {@link ProjectConfig} to {@link ProjectConfigDto}.
+     */
+    public static ModuleConfigDto asDto(ModuleConfig moduleConfig) {
+        final ModuleConfigDto moduleConfigDto = newDto(ModuleConfigDto.class).withName(moduleConfig.getName())
+                                                                                .withDescription(moduleConfig.getDescription())
+                                                                                .withPath(moduleConfig.getPath())
+                                                                                .withType(moduleConfig.getType())
+                                                                                .withAttributes(moduleConfig.getAttributes())
+                                                                                .withMixinTypes(moduleConfig.getMixinTypes());
+        if (moduleConfig.getModules() != null) {
+            final List<ModuleConfigDto> modules = moduleConfig.getModules()
+                                                              .stream()
+                                                              .map(DtoConverter::asDto)
+                                                              .collect(toList());
+            moduleConfigDto.withModules(modules);
+        }
+        return moduleConfigDto;
     }
 
     //TODO add recipe

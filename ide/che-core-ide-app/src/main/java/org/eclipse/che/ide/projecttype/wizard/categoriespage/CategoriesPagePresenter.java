@@ -10,9 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projecttype.wizard.categoriespage;
 
-import org.eclipse.che.api.project.shared.dto.ImportProject;
 import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.api.project.type.ProjectTemplateRegistry;
 import org.eclipse.che.ide.api.project.type.ProjectTypeRegistry;
 import org.eclipse.che.ide.api.project.type.wizard.PreSelectedProjectTypeManager;
@@ -39,7 +39,7 @@ import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistrar
  * @author Artem Zatsarynnyy
  * @author Dmitry Shnurenko
  */
-public class CategoriesPagePresenter extends AbstractWizardPage<ImportProject> implements CategoriesPageView.ActionDelegate {
+public class CategoriesPagePresenter extends AbstractWizardPage<ProjectConfigDto> implements CategoriesPageView.ActionDelegate {
     private static final String PUBLIC_VISIBILITY  = "public";
     private static final String PRIVATE_VISIBILITY = "private";
     public final static String DEFAULT_TEMPLATE_CATEGORY = "Samples";
@@ -73,7 +73,7 @@ public class CategoriesPagePresenter extends AbstractWizardPage<ImportProject> i
     }
 
     @Override
-    public void init(ImportProject dataObject) {
+    public void init(ProjectConfigDto dataObject) {
         super.init(dataObject);
         // this page may be reused so need to init it only once
         if (initialized) {
@@ -84,12 +84,11 @@ public class CategoriesPagePresenter extends AbstractWizardPage<ImportProject> i
         final ProjectWizardMode wizardMode = ProjectWizardMode.parse(context.get(WIZARD_MODE_KEY));
         if (CREATE == wizardMode) {
             // set default visibility for new projects
-            dataObject.getProject().setVisibility(PUBLIC_VISIBILITY);
 
             // set pre-selected project type
             final String preSelectedProjectTypeId = preSelectedProjectTypeManager.getPreSelectedProjectTypeId();
             if (wizardRegistry.getWizardRegistrar(preSelectedProjectTypeId) != null) {
-                dataObject.getProject().setType(preSelectedProjectTypeId);
+                dataObject.setType(preSelectedProjectTypeId);
             }
         }
 
@@ -98,7 +97,7 @@ public class CategoriesPagePresenter extends AbstractWizardPage<ImportProject> i
 
     @Override
     public boolean isCompleted() {
-        final String projectName = dataObject.getProject().getName();
+        final String projectName = dataObject.getName();
         return projectName != null && NameUtils.checkProjectName(projectName) &&
                (selectedProjectType != null || selectedProjectTemplate != null);
     }
@@ -111,13 +110,12 @@ public class CategoriesPagePresenter extends AbstractWizardPage<ImportProject> i
 
     /** Updates view from data-object. */
     private void updateView() {
-        if (dataObject.getProject().getType() != null
-            && (selectedProjectType == null || !selectedProjectType.getId().equals(dataObject.getProject().getType()))) {
-            view.selectProjectType(dataObject.getProject().getType());
+        if (dataObject.getType() != null
+            && (selectedProjectType == null || !selectedProjectType.getId().equals(dataObject.getType()))) {
+            view.selectProjectType(dataObject.getType());
         }
-        view.setName(dataObject.getProject().getName());
-        view.setDescription(dataObject.getProject().getDescription());
-        view.setVisibility(dataObject.getProject().getVisibility().equals(PUBLIC_VISIBILITY));
+        view.setName(dataObject.getName());
+        view.setDescription(dataObject.getDescription());
     }
 
     @Override
@@ -144,7 +142,7 @@ public class CategoriesPagePresenter extends AbstractWizardPage<ImportProject> i
 
     @Override
     public void projectNameChanged(String name) {
-        dataObject.getProject().setName(name);
+        dataObject.setName(name);
         updateDelegate.updateControls();
 
         if (NameUtils.checkProjectName(name)) {
@@ -156,13 +154,13 @@ public class CategoriesPagePresenter extends AbstractWizardPage<ImportProject> i
 
     @Override
     public void projectDescriptionChanged(String projectDescription) {
-        dataObject.getProject().setDescription(projectDescription);
+        dataObject.setDescription(projectDescription);
         updateDelegate.updateControls();
     }
 
     @Override
     public void projectVisibilityChanged(boolean visible) {
-        dataObject.getProject().setVisibility(visible ? PUBLIC_VISIBILITY : PRIVATE_VISIBILITY);
+//        dataObject.().setVisibility(visible ? PUBLIC_VISIBILITY : PRIVATE_VISIBILITY);
         updateDelegate.updateControls();
     }
 

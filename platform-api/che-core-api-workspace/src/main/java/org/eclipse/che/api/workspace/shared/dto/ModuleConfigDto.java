@@ -11,7 +11,7 @@
 package org.eclipse.che.api.workspace.shared.dto;
 
 import org.eclipse.che.api.core.factory.FactoryParameter;
-import org.eclipse.che.api.core.model.workspace.ProjectConfig;
+import org.eclipse.che.api.core.model.workspace.ModuleConfig;
 import org.eclipse.che.dto.shared.DTO;
 
 import java.util.List;
@@ -21,17 +21,18 @@ import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.MANDA
 import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.OPTIONAL;
 
 /**
- * @author Alexander Garagatyi
+ *  @author  Vitalii Parfonov
  */
 @DTO
-public interface ProjectConfigDto extends ModuleConfigDto, ProjectConfig {
+public interface ModuleConfigDto extends ModuleConfig {
+
     @Override
     @FactoryParameter(obligation = MANDATORY)
     String getName();
 
     void setName(String name);
 
-    ProjectConfigDto withName(String name);
+    ModuleConfigDto withName(String name);
 
     @Override
     @FactoryParameter(obligation = MANDATORY)
@@ -39,7 +40,7 @@ public interface ProjectConfigDto extends ModuleConfigDto, ProjectConfig {
 
     void setPath(String path);
 
-    ProjectConfigDto withPath(String path);
+    ModuleConfigDto withPath(String path);
 
     @Override
     @FactoryParameter(obligation = OPTIONAL)
@@ -47,7 +48,7 @@ public interface ProjectConfigDto extends ModuleConfigDto, ProjectConfig {
 
     void setDescription(String description);
 
-    ProjectConfigDto withDescription(String description);
+    ModuleConfigDto withDescription(String description);
 
     @Override
     @FactoryParameter(obligation = MANDATORY)
@@ -55,7 +56,7 @@ public interface ProjectConfigDto extends ModuleConfigDto, ProjectConfig {
 
     void setType(String type);
 
-    ProjectConfigDto withType(String type);
+    ModuleConfigDto withType(String type);
 
     @Override
     @FactoryParameter(obligation = OPTIONAL)
@@ -63,7 +64,7 @@ public interface ProjectConfigDto extends ModuleConfigDto, ProjectConfig {
 
     void setMixinTypes(List<String> mixinTypes);
 
-    ProjectConfigDto withMixinTypes(List<String> mixinTypes);
+    ModuleConfigDto withMixinTypes(List<String> mixinTypes);
 
     @Override
     @FactoryParameter(obligation = OPTIONAL)
@@ -71,20 +72,12 @@ public interface ProjectConfigDto extends ModuleConfigDto, ProjectConfig {
 
     void setAttributes(Map<String, List<String>> attributes);
 
-    ProjectConfigDto withAttributes(Map<String, List<String>> attributes);
+    ModuleConfigDto withAttributes(Map<String, List<String>> attributes);
 
     @Override
     List<ModuleConfigDto> getModules();
 
     void setModules(List<ModuleConfigDto> modules);
 
-    ProjectConfigDto withModules(List<ModuleConfigDto> modules);
-
-    @Override
-    @FactoryParameter(obligation = MANDATORY)
-    SourceStorageDto getSource();
-
-    void setSource(SourceStorageDto source);
-
-    ProjectConfigDto withSource(SourceStorageDto source);
+    ModuleConfigDto withModules(List<ModuleConfigDto> modules);
 }

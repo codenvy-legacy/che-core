@@ -22,13 +22,12 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.FunctionException;
-import org.eclipse.che.api.promises.client.Operation;
-import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.PromiseError;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper.RequestCall;
 import org.eclipse.che.api.promises.client.js.Promises;
+import org.eclipse.che.api.workspace.shared.dto.ModuleConfigDto;
 import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.project.node.settings.NodeSettings;
@@ -68,6 +67,8 @@ public class NodeManager {
     protected final DtoFactory             dtoFactory;
     protected final Set<NodeIconProvider>  nodeIconProvider;
 
+    private ModuleDescriptorNode moduleNode;
+
     @Inject
     public NodeManager(NodeFactory nodeFactory,
                        ProjectServiceClient projectService,
@@ -86,7 +87,6 @@ public class NodeManager {
     }
 
     /** ********** Children operations ********************* */
-
     @NotNull
     public Promise<List<Node>> getChildren(@NotNull ItemReference itemReference,
                                            @NotNull ProjectDescriptor relProjectDescriptor,
@@ -152,8 +152,6 @@ public class NodeManager {
 
                 final List<Node> nodes = new ArrayList<>(itemRefList.size());
 
-                List<ItemReference> modules = null;
-
                 for (ItemReference itemReference : itemRefList) {
                     //Skip files which starts with "." if enabled
                     if (!nodeSettings.isShowHiddenFiles() && itemReference.getName().startsWith(".")) {
@@ -163,88 +161,55 @@ public class NodeManager {
                     Node node = createNodeByType(itemReference, relProjectDescriptor, nodeSettings);
                     if (node != null) {
                         nodes.add(node);
-                    } else if ("project".equals(itemReference.getType())) {
-                        if (modules == null) {
-                            modules = new ArrayList<>();
-                        }
-                        modules.add(itemReference);
                     }
 
-                    //NOTE if we want support more type nodes than we should refactor mechanism of hardcoded types for item references
                 }
 
-                if (modules == null) {
-                    return Promises.resolve(nodes);
-                }
-
-                //else we have modules, so we have get them
-
-                final List<Node> collector = new ArrayList<>(modules.size());
-
-                Promise<?>[] promises = new Promise[modules.size()];
-
-                for (int i = 0; i < promises.length; i++) {
-                    promises[i] = getModule(modules.get(i), collector, nodeSettings);
-                }
-
-                return Promises.all(promises).then(new Function<JsArrayMixed, List<Node>>() {
-                    @Override
-                    public List<Node> apply(JsArrayMixed arg) throws FunctionException {
-                        nodes.addAll(collector);
-                        return nodes;
-                    }
-                });
+                return Promises.resolve(nodes);
             }
         };
     }
 
     public Node createNodeByType(ItemReference itemReference, ProjectDescriptor descriptor, NodeSettings settings) {
-        if ("file".equals(itemReference.getType())) {
+        String itemType = itemReference.getType();
+
+        if ("file".equals(itemType)) {
             return nodeFactory.newFileReferenceNode(itemReference, descriptor, settings);
-        } else if ("folder".equals(itemReference.getType())) {
+        }
+
+        if ("folder".equals(itemType)) {
             return nodeFactory.newFolderReferenceNode(itemReference, descriptor, settings);
         }
+
+        if ("module".equals(itemType)) {
+            moduleNode = null;
+
+            for (ModuleConfigDto moduleConfigDto : descriptor.getModules()) {
+                createModuleNode(itemReference, moduleConfigDto, descriptor, settings);
+
+                if (moduleNode != null) {
+                    return moduleNode;
+                }
+            }
+        }
+
         return null;
     }
 
-    private Promise<Node> getModule(ItemReference module, List<Node> collector, NodeSettings nodeSettings) {
-        return AsyncPromiseHelper.createFromAsyncRequest(getModuleRC(module))
-                                 .then(createModuleNode(nodeSettings))
-                                 .then(_collectNodesFromPromises(collector));
-    }
+    public void createModuleNode(ItemReference itemReference,
+                                 ModuleConfigDto moduleConfigDto,
+                                 ProjectDescriptor descriptor,
+                                 NodeSettings settings) {
 
-    private RequestCall<ProjectDescriptor> getModuleRC(final ItemReference module) {
-        return new RequestCall<ProjectDescriptor>() {
-            @Override
-            public void makeCall(AsyncCallback<ProjectDescriptor> callback) {
-                projectService
-                        .getProject(module.getPath(), _callback(callback, dtoUnmarshaller.newUnmarshaller(ProjectDescriptor.class)));
-            }
-        };
-    }
+        if (itemReference.getName().equals(moduleConfigDto.getName())) {
+            moduleNode = nodeFactory.newModuleNode(moduleConfigDto, descriptor, settings);
 
-    private Function<ProjectDescriptor, Node> createModuleNode(final NodeSettings nodeSettings) {
-        return new Function<ProjectDescriptor, Node>() {
-            @Override
-            public Node apply(ProjectDescriptor module) throws FunctionException {
-                //Skip files which starts with "." if enabled
-//                if (!nodeSettings.isShowHiddenFiles() && module.getName().startsWith(".")) {
-//                    continue;
-//                }
+            return;
+        }
 
-                return nodeFactory.newModuleNode(module, nodeSettings);
-            }
-        };
-    }
-
-    @NotNull
-    private Operation<Node> _collectNodesFromPromises(@NotNull final List<Node> collector) {
-        return new Operation<Node>() {
-            @Override
-            public void apply(Node nodes) throws OperationException {
-                collector.add(nodes);
-            }
-        };
+        for (ModuleConfigDto moduleConfig : moduleConfigDto.getModules()) {
+            createModuleNode(itemReference, moduleConfig, descriptor, settings);
+        }
     }
 
     @NotNull
@@ -258,7 +223,6 @@ public class NodeManager {
     }
 
     /** ********** Project Reference operations ********************* */
-
     public Promise<ProjectDescriptor> getProjectDescriptor(String path) {
         return AsyncPromiseHelper.createFromAsyncRequest(getProjectDescriptoRC(path));
     }

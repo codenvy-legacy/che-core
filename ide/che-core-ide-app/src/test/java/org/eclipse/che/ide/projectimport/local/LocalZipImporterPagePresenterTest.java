@@ -15,7 +15,6 @@ import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
-import org.eclipse.che.api.project.shared.dto.ImportResponse;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.vfs.gwt.client.VfsServiceClient;
 import org.eclipse.che.api.vfs.shared.dto.Item;
@@ -56,7 +55,8 @@ import static org.mockito.Mockito.when;
 public class LocalZipImporterPagePresenterTest {
     private static final String PROJECT_NAME    = "test";
     private static final String FILE_NAME       = "test.zip";
-    private static final String RESPONSE        = "<pre style=\"word-wrap: break-word; white-space: pre-wrap;\">{\"projectDescriptor\":{}}</pre>";
+    private static final String RESPONSE        =
+            "<pre style=\"word-wrap: break-word; white-space: pre-wrap;\">{\"projectDescriptor\":{}}</pre>";
     private static final String PARSED_RESPONSE = "{\"projectDescriptor\":{}}";
 
     @Captor
@@ -174,25 +174,16 @@ public class LocalZipImporterPagePresenterTest {
     }
 
     @Test
-    public void extractFromHtmlFormatSubmitResultTest() {
-        presenter.onSubmitComplete(RESPONSE);
-
-        verify(dtoFactory).createDtoFromJson(PARSED_RESPONSE, ImportResponse.class);
-    }
-
-    @Test
     public void submitCompleteWhenImportIsSuccessTest() {
         reset(view);
-        ImportResponse importResponse = mock(ImportResponse.class);
         ProjectDescriptor projectDescriptor = mock(ProjectDescriptor.class);
-        when(dtoFactory.createDtoFromJson(anyString(), Matchers.<Class<ImportResponse>>anyObject())).thenReturn(importResponse);
-        when(importResponse.getProjectDescriptor()).thenReturn(projectDescriptor);
+        when(dtoFactory.createDtoFromJson(anyString(), Matchers.<Class<ProjectDescriptor>>anyObject())).thenReturn(projectDescriptor);
 
         presenter.onSubmitComplete(RESPONSE);
 
         verify(view).setLoaderVisibility(eq(false));
         verify(view).setInputsEnableState(eq(true));
-        verify(dtoFactory).createDtoFromJson(PARSED_RESPONSE, ImportResponse.class);
+        verify(dtoFactory).createDtoFromJson(PARSED_RESPONSE, ProjectDescriptor.class);
         verify(view).closeDialog();
         verify(importProjectNotificationSubscriber).onSuccess();
         verify(eventBus).fireEvent(Matchers.<Event<OpenProjectEvent>>anyObject());
@@ -200,27 +191,10 @@ public class LocalZipImporterPagePresenterTest {
     }
 
     @Test
-    public void submitCompleteWhenImportIsFailureTest() {
-        reset(view);
-        String response = "ERROR";
-        when(view.getProjectName()).thenReturn(PROJECT_NAME);
-
-        presenter.onSubmitComplete(response);
-
-        verify(view).setLoaderVisibility(eq(false));
-        verify(view).setInputsEnableState(eq(true));
-        verify(dtoFactory).createDtoFromJson(response, ImportResponse.class);
-        verify(view).closeDialog();
-        verify(importProjectNotificationSubscriber, never()).onSuccess();
-        verify(importProjectNotificationSubscriber).onFailure(anyString());
-        verify(projectServiceClient).delete(eq(PROJECT_NAME), Matchers.<AsyncRequestCallback<Void>>anyObject());
-    }
-
-    @Test
     public void onImportClickedWhenProjectWithSameNameAlreadyExistsTest() {
         when(view.getProjectName()).thenReturn(PROJECT_NAME);
         MessageDialog dialog = mock(MessageDialog.class);
-        when(dialogFactory.createMessageDialog(anyString(), anyString(), (ConfirmCallback)anyObject())).thenReturn(dialog);
+        when(dialogFactory.createMessageDialog(anyString(), anyString(), anyObject())).thenReturn(dialog);
 
         presenter.onImportClicked();
 
@@ -229,7 +203,7 @@ public class LocalZipImporterPagePresenterTest {
         GwtReflectionUtils.callOnSuccess(callback, mock(Item.class));
 
         verify(view).setEnabledImportButton(eq(false));
-        verify(dialogFactory).createMessageDialog(anyString(), anyString(), (ConfirmCallback)anyObject());
+        verify(dialogFactory).createMessageDialog(anyString(), anyString(), anyObject());
         verify(dialog).show();
         verify(view, never()).submit();
         verify(view, never()).setLoaderVisibility(anyBoolean());
@@ -240,7 +214,7 @@ public class LocalZipImporterPagePresenterTest {
     public void onImportClickedWhenShouldImportAndOpenProjectTest() {
         when(view.getProjectName()).thenReturn(PROJECT_NAME);
         MessageDialog dialog = mock(MessageDialog.class);
-        when(dialogFactory.createMessageDialog(anyString(), anyString(), (ConfirmCallback)anyObject())).thenReturn(dialog);
+        when(dialogFactory.createMessageDialog(anyString(), anyString(), anyObject())).thenReturn(dialog);
 
         presenter.onImportClicked();
 
@@ -248,7 +222,7 @@ public class LocalZipImporterPagePresenterTest {
         AsyncRequestCallback<Item> itemCallback = callbackCaptorForItem.getValue();
         GwtReflectionUtils.callOnFailure(itemCallback, mock(Throwable.class));
 
-        verify(dialogFactory, never()).createMessageDialog(anyString(), anyString(), (ConfirmCallback)anyObject());
+        verify(dialogFactory, never()).createMessageDialog(anyString(), anyString(), anyObject());
         verify(dialog, never()).show();
         verify(importProjectNotificationSubscriber).subscribe(eq(PROJECT_NAME));
         verify(view).setEncoding(eq(FormPanel.ENCODING_MULTIPART));
@@ -257,5 +231,4 @@ public class LocalZipImporterPagePresenterTest {
         verify(view).setLoaderVisibility(eq(true));
         verify(view).setInputsEnableState(eq(false));
     }
-
 }
