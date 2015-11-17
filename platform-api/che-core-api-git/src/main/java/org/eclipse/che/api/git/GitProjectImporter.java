@@ -141,7 +141,7 @@ public class GitProjectImporter implements ProjectImporter {
             } else {
                 git = gitConnectionFactory.getConnection(localPath, consumerFactory);
                 if (baseFolder.getChildren().size() == 0) {
-                    cloneRepository(git, "origin", recursiveEnabled, location, dtoFactory);
+                    cloneRepository(git, "origin", location, dtoFactory, recursiveEnabled);
                     if (commitId != null) {
                         checkoutCommit(git, commitId, dtoFactory);
                     } else if (remoteOriginFetch != null) {
@@ -198,7 +198,7 @@ public class GitProjectImporter implements ProjectImporter {
         }
     }
 
-    private void cloneRepository(GitConnection git, String remoteName, boolean recursiveEnabled, String url, DtoFactory dtoFactory)
+    private void cloneRepository(GitConnection git, String remoteName, String url, DtoFactory dtoFactory, boolean recursiveEnabled)
             throws ServerException, UnauthorizedException, URISyntaxException {
         final CloneRequest request = dtoFactory.createDto(CloneRequest.class)
                                                .withRemoteName(remoteName)
