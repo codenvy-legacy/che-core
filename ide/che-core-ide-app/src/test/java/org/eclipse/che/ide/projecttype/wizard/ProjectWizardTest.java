@@ -248,7 +248,6 @@ public class ProjectWizardTest {
                                    dtoFactory,
                                    dialogFactory,
                                    eventBus,
-                                   appContext,
                                    selectionAgent);
     }
 }
