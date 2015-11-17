@@ -11,7 +11,6 @@
 package org.eclipse.che.api.git;
 
 import com.google.inject.Inject;
-
 import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.project.server.FolderEntry;
 import org.eclipse.che.api.project.server.InvalidValueException;
@@ -29,9 +28,8 @@ import org.eclipse.che.vfs.impl.fs.VirtualFileImpl;
 
 import javax.inject.Singleton;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-
-import static org.eclipse.che.api.git.shared.StatusFormat.LONG;
 
 /**
  * @author Roman Nikitenko
@@ -55,9 +53,8 @@ public class GitValueProviderFactory implements ValueProviderFactory {
                 try (GitConnection gitConnection =
                              gitConnectionFactory.getConnection(resolveLocalPathByPath(folder.getPath(), folder.getWorkspace()))) {
 
-                    //check whether the project git repository by performing git status(throw Exception if the project is not git repository)
-                    gitConnection.status(LONG);
-                    return Arrays.asList("git");
+                    //check whether the folder belongs to git repository
+                    return gitConnection.isInsideWorkTree() ? Arrays.asList("git") : Collections.EMPTY_LIST;
                 } catch (ApiException e) {
                     throw new ValueStorageException(e.getMessage());
                 }

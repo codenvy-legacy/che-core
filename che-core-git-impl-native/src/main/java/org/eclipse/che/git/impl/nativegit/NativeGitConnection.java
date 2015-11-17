@@ -22,10 +22,10 @@ import org.eclipse.che.api.git.LogPage;
 import org.eclipse.che.api.git.UserCredential;
 import org.eclipse.che.api.git.shared.AddRequest;
 import org.eclipse.che.api.git.shared.Branch;
-import org.eclipse.che.api.git.shared.CheckoutRequest;
 import org.eclipse.che.api.git.shared.BranchCreateRequest;
 import org.eclipse.che.api.git.shared.BranchDeleteRequest;
 import org.eclipse.che.api.git.shared.BranchListRequest;
+import org.eclipse.che.api.git.shared.CheckoutRequest;
 import org.eclipse.che.api.git.shared.CloneRequest;
 import org.eclipse.che.api.git.shared.CommitRequest;
 import org.eclipse.che.api.git.shared.DiffRequest;
@@ -40,10 +40,10 @@ import org.eclipse.che.api.git.shared.MergeResult;
 import org.eclipse.che.api.git.shared.MoveRequest;
 import org.eclipse.che.api.git.shared.PullRequest;
 import org.eclipse.che.api.git.shared.PullResponse;
-import org.eclipse.che.api.git.shared.RebaseRequest;
-import org.eclipse.che.api.git.shared.RebaseResponse;
 import org.eclipse.che.api.git.shared.PushRequest;
 import org.eclipse.che.api.git.shared.PushResponse;
+import org.eclipse.che.api.git.shared.RebaseRequest;
+import org.eclipse.che.api.git.shared.RebaseResponse;
 import org.eclipse.che.api.git.shared.Remote;
 import org.eclipse.che.api.git.shared.RemoteAddRequest;
 import org.eclipse.che.api.git.shared.RemoteListRequest;
@@ -138,7 +138,6 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public void add(AddRequest request) throws GitException {
-        ensureExistenceRepoRootInWorkingDirectory();
         AddCommand command = nativeGit.createAddCommand();
         command.setFilePattern(request.getFilepattern() == null ?
                                AddRequest.DEFAULT_PATTERN :
@@ -149,7 +148,6 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public void checkout(CheckoutRequest request) throws GitException {
-        ensureExistenceRepoRootInWorkingDirectory();
         nativeGit.createCheckoutCommand()
                  .setBranchName(request.getName())
                  .setStartPoint(request.getStartPoint())
@@ -161,7 +159,6 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public Branch branchCreate(BranchCreateRequest request) throws GitException {
-        ensureExistenceRepoRootInWorkingDirectory();
         BranchCreateCommand branchCreateCommand = nativeGit.createBranchCreateCommand();
         branchCreateCommand.setBranchName(request.getName())
                            .setStartPoint(request.getStartPoint())
@@ -172,7 +169,6 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public void branchDelete(BranchDeleteRequest request) throws GitException, UnauthorizedException {
-        ensureExistenceRepoRootInWorkingDirectory();
         String branchName = getBranchRef(request.getName());
         String remoteName = null;
         String remoteUri = null;
@@ -195,7 +191,6 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public void branchRename(String oldName, String newName) throws GitException, UnauthorizedException {
-        ensureExistenceRepoRootInWorkingDirectory();
         String branchName = getBranchRef(oldName);
         String remoteName = null;
         String remoteUri = null;
@@ -218,7 +213,6 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public List<Branch> branchList(BranchListRequest request) throws GitException {
-        ensureExistenceRepoRootInWorkingDirectory();
         String listMode = request.getListMode();
         if (listMode != null
             && !(listMode.equals(BranchListRequest.LIST_ALL) || listMode.equals(BranchListRequest.LIST_REMOTE))) {
@@ -239,7 +233,6 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public List<String> listFiles(LsFilesRequest request) throws GitException {
-        ensureExistenceRepoRootInWorkingDirectory();
         return nativeGit.createListFilesCommand()
                         .setOthers(request.isOthers())
                         .setModified(request.isModified())
@@ -275,7 +268,6 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public Revision commit(CommitRequest request) throws GitException {
-        ensureExistenceRepoRootInWorkingDirectory();
         CommitCommand command = nativeGit.createCommitCommand();
         GitUser committer = getLocalCommitter();
         command.setCommitter(committer);
@@ -311,13 +303,11 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public DiffPage diff(DiffRequest request) throws GitException {
-        ensureExistenceRepoRootInWorkingDirectory();
         return new NativeGitDiffPage(request, nativeGit);
     }
 
     @Override
     public void fetch(FetchRequest request) throws GitException, UnauthorizedException {
-        ensureExistenceRepoRootInWorkingDirectory();
         String remoteUri = getRemoteUri(request.getRemote());
         FetchCommand fetchCommand = nativeGit.createFetchCommand();
         fetchCommand.setRemote(request.getRemote())
@@ -326,6 +316,19 @@ public class NativeGitConnection implements GitConnection {
                     .setRemoteUri(remoteUri)
                     .setTimeout(request.getTimeout());
         executeRemoteCommand(fetchCommand);
+    }
+
+    @Override
+    public boolean isInsideWorkTree() throws GitException {
+        final EmptyGitCommand emptyGitCommand = nativeGit.createEmptyGitCommand();
+        
+        // command "rev-parse --is-inside-work-tree" returns true/false
+        emptyGitCommand.setNextParameter("rev-parse")
+                       .setNextParameter("--is-inside-work-tree")
+                       .execute();
+                       
+        final String output = emptyGitCommand.getText();
+        return Boolean.valueOf(output);
     }
 
     @Override
@@ -351,13 +354,11 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public LogPage log(LogRequest request) throws GitException {
-        ensureExistenceRepoRootInWorkingDirectory();
         return new LogPage(nativeGit.createLogCommand().execute());
     }
 
     @Override
     public List<RemoteReference> lsRemote(LsRemoteRequest request) throws GitException, UnauthorizedException {
-        ensureExistenceRepoRootInWorkingDirectory();
         LsRemoteCommand command = nativeGit.createLsRemoteCommand().setRemoteUrl(request.getRemoteUrl());
         executeRemoteCommand(command);
         return command.getRemoteReferences();
@@ -365,7 +366,6 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public MergeResult merge(MergeRequest request) throws GitException {
-        ensureExistenceRepoRootInWorkingDirectory();
         final String gitObjectType = getRevisionType(request.getCommit());
         if (!("commit".equalsIgnoreCase(gitObjectType) || "tag".equalsIgnoreCase(gitObjectType))) {
             throw new GitException("Invalid object for merge " + request.getCommit() + ".");
@@ -380,7 +380,6 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public void mv(MoveRequest request) throws GitException {
-        ensureExistenceRepoRootInWorkingDirectory();
         nativeGit.createMoveCommand()
                  .setSource(request.getSource())
                  .setTarget(request.getTarget())
@@ -389,7 +388,6 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public PullResponse pull(PullRequest request) throws GitException, UnauthorizedException {
-        ensureExistenceRepoRootInWorkingDirectory();
         String remoteUri = getRemoteUri(request.getRemote());
 
         PullCommand pullCommand = nativeGit.createPullCommand();
@@ -406,7 +404,6 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public PushResponse push(PushRequest request) throws GitException, UnauthorizedException {
-        ensureExistenceRepoRootInWorkingDirectory();
         String remoteUri = getRemoteUri(request.getRemote());
 
         PushCommand pushCommand = nativeGit.createPushCommand();
@@ -424,7 +421,6 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public void remoteAdd(RemoteAddRequest request) throws GitException {
-        ensureExistenceRepoRootInWorkingDirectory();
         nativeGit.createRemoteAddCommand()
                  .setName(request.getName())
                  .setUrl(request.getUrl())
@@ -434,20 +430,17 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public void remoteDelete(String name) throws GitException {
-        ensureExistenceRepoRootInWorkingDirectory();
         nativeGit.createRemoteDeleteCommand().setName(name).execute();
     }
 
     @Override
     public List<Remote> remoteList(RemoteListRequest request) throws GitException {
-        ensureExistenceRepoRootInWorkingDirectory();
         RemoteListCommand remoteListCommand = nativeGit.createRemoteListCommand();
         return remoteListCommand.setRemoteName(request.getRemote()).execute();
     }
 
     @Override
     public void remoteUpdate(RemoteUpdateRequest request) throws GitException {
-        ensureExistenceRepoRootInWorkingDirectory();
         nativeGit.createRemoteUpdateCommand()
                  .setRemoteName(request.getName())
                  .setAddUrl(request.getAddUrl())
@@ -461,7 +454,6 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public void reset(ResetRequest request) throws GitException {
-        ensureExistenceRepoRootInWorkingDirectory();
         nativeGit.createResetCommand()
                  .setMode(request.getType().getValue())
                  .setCommit(request.getCommit())
@@ -471,7 +463,6 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public void rm(RmRequest request) throws GitException {
-        ensureExistenceRepoRootInWorkingDirectory();
         nativeGit.createRemoveCommand()
                  .setCached(request.isCached())
                  .setListOfItems(request.getItems())
@@ -481,13 +472,11 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public Status status(final StatusFormat format) throws GitException {
-        ensureExistenceRepoRootInWorkingDirectory();
-        return new NativeGitStatusImpl(getCurrentBranch(), nativeGit, format);
+                return new NativeGitStatusImpl(getCurrentBranch(), nativeGit, format);
     }
 
     @Override
     public Tag tagCreate(TagCreateRequest request) throws GitException {
-        ensureExistenceRepoRootInWorkingDirectory();
         return nativeGit.createTagCreateCommand().setName(request.getName())
                         .setCommitter(getLocalCommitter())
                         .setCommit(request.getCommit())
@@ -498,19 +487,16 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public void tagDelete(TagDeleteRequest request) throws GitException {
-        ensureExistenceRepoRootInWorkingDirectory();
         nativeGit.createTagDeleteCommand().setName(request.getName()).execute();
     }
 
     @Override
     public List<Tag> tagList(TagListRequest request) throws GitException {
-        ensureExistenceRepoRootInWorkingDirectory();
         return nativeGit.createTagListCommand().setPattern(request.getPattern()).execute();
     }
 
     @Override
     public List<GitUser> getCommiters() throws GitException {
-        ensureExistenceRepoRootInWorkingDirectory();
         List<GitUser> users = new LinkedList<>();
         List<Revision> revList = nativeGit.createLogCommand().execute();
         for (Revision rev : revList) {
@@ -521,29 +507,12 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public Config getConfig() throws GitException {
-        ensureExistenceRepoRootInWorkingDirectory();
         return nativeGit.createConfig();
     }
 
     @Override
     public void close() {
         //do not need to do anything
-    }
-
-    /**
-     * Ensure existence repository root directory inside working directory
-     * @throws GitException if git root folder is not in working directory
-     */
-    private void ensureExistenceRepoRootInWorkingDirectory() throws GitException {
-        final EmptyGitCommand emptyGitCommand = nativeGit.createEmptyGitCommand();
-        // command "rev-parse --show-cdup" returns relative path to repository root, f.e "../"
-        emptyGitCommand.setNextParameter("rev-parse").setNextParameter("--show-cdup").execute();
-        final String relativePathToRepositoryRoot = emptyGitCommand.getText();
-
-        // fn. if root repository located in working directory then relative path equals to ""
-        if (!relativePathToRepositoryRoot.isEmpty()) {
-            throw new GitException("Project is not a git repository.");
-        }
     }
 
     @Override

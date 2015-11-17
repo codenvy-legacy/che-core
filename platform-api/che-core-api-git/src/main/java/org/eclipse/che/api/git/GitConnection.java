@@ -210,6 +210,14 @@ public interface GitConnection extends Closeable {
     void init(InitRequest request) throws GitException;
 
     /**
+     * Check if directory, which was used to create Git connection, is inside the working tree.
+     * 
+     * @throws GitException
+     *         if any error occurs
+     */
+    boolean isInsideWorkTree() throws GitException;
+
+    /**
      * Get commit logs.
      *
      * @param request
