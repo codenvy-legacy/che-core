@@ -305,8 +305,8 @@ public class CoreGinModule extends AbstractGinModule {
 //        mapBinder.addBinding("Project Templates").to(ProjectTemplatesComponent.class);
         mapBinder.addBinding("Standard components").to(StandartComponent.class);
 
-        bind(DefaultWorkspaceComponent.class);
-        bind(FactoryWorkspaceComponent.class);
+        bind(DefaultWorkspaceComponent.class).in(Singleton.class);
+        bind(FactoryWorkspaceComponent.class).in(Singleton.class);
     }
 
     private void configureProjectWizard() {
