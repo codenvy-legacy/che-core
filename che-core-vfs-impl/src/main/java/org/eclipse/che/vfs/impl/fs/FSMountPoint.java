@@ -14,6 +14,7 @@ import com.google.common.annotations.Beta;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import com.google.common.io.ByteSource;
+import com.google.common.io.ByteStreams;
 
 import org.apache.commons.codec.binary.Base64;
 import org.eclipse.che.api.core.ConflictException;
@@ -50,21 +51,11 @@ import org.eclipse.che.api.vfs.shared.dto.Property;
 import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.eclipse.che.commons.lang.Pair;
-import org.eclipse.che.commons.lang.Strings;
 import org.eclipse.che.commons.lang.cache.Cache;
 import org.eclipse.che.commons.lang.cache.LoadingValueSLRUCache;
 import org.eclipse.che.commons.lang.cache.SynchronizedCache;
 import org.eclipse.che.commons.lang.ws.rs.ExtMediaType;
 import org.eclipse.che.dto.server.DtoFactory;
-
-import com.google.common.annotations.Beta;
-import com.google.common.collect.Sets;
-import com.google.common.hash.HashFunction;
-import com.google.common.hash.Hashing;
-import com.google.common.io.ByteSource;
-import com.google.common.io.ByteStreams;
-
-import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,11 +83,11 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import static com.google.common.base.Strings.nullToEmpty;
 import static java.util.Collections.singletonList;
 import static org.eclipse.che.commons.lang.IoUtil.GIT_FILTER;
 import static org.eclipse.che.commons.lang.IoUtil.deleteRecursive;
 import static org.eclipse.che.commons.lang.IoUtil.nioCopy;
-import static org.eclipse.che.commons.lang.Strings.nullToEmpty;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 /**
