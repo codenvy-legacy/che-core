@@ -12,6 +12,7 @@ package org.eclipse.che.ide.project.node.factory;
 
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.api.workspace.shared.dto.ModuleConfigDto;
 import org.eclipse.che.ide.api.project.node.settings.NodeSettings;
 import org.eclipse.che.ide.project.node.FileReferenceNode;
 import org.eclipse.che.ide.project.node.FolderReferenceNode;
@@ -47,7 +48,8 @@ public interface NodeFactory {
      *         node view settings
      * @return instance of {@link org.eclipse.che.ide.project.node.ModuleDescriptorNode}
      */
-    ModuleDescriptorNode newModuleNode(@NotNull ProjectDescriptor projectDescriptor,
+    ModuleDescriptorNode newModuleNode(@NotNull ModuleConfigDto moduleConfigDto,
+                                       @NotNull ProjectDescriptor projectDescriptor,
                                        @NotNull NodeSettings nodeSettings);
 
     /**

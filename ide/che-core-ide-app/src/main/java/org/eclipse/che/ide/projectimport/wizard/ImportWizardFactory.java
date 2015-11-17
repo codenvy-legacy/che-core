@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projectimport.wizard;
 
-import org.eclipse.che.api.project.shared.dto.ImportProject;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 
 import javax.validation.constraints.NotNull;
 
@@ -20,5 +20,5 @@ import javax.validation.constraints.NotNull;
  * @author Artem Zatsarynnyy
  */
 public interface ImportWizardFactory {
-    ImportWizard newWizard(@NotNull ImportProject dataObject);
+    ImportWizard newWizard(@NotNull ProjectConfigDto dataObject);
 }

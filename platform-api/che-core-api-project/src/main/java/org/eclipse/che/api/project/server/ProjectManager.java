@@ -16,21 +16,24 @@ import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.model.workspace.ModuleConfig;
+import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.project.server.handlers.ProjectHandlerRegistry;
 import org.eclipse.che.api.project.server.type.AttributeValue;
 import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
+import org.eclipse.che.api.workspace.shared.dto.ModuleConfigDto;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * A manager for codenvy projects.
  *
  * @author andrew00x
+ * @author Dmitry Shnurenko
  */
 @ImplementedBy(DefaultProjectManager.class)
 public interface ProjectManager {
@@ -75,8 +78,7 @@ public interface ProjectManager {
      * @throws ServerException
      *         if other error occurs
      */
-    Project createProject(String workspace, String name, ProjectConfig projectConfig, Map<String, String> options,
-                          String visibility)
+    Project createProject(String workspace, String name, ProjectConfig projectConfig, Map<String, String> options)
             throws ConflictException, ForbiddenException, ServerException, ProjectTypeConstraintException, NotFoundException;
 
     /**
@@ -88,11 +90,9 @@ public interface ProjectManager {
      *         The path to the project.
      * @param newConfig
      *         The new configuration of the project
-     * @param newVisibility
-     *         Then new visibility of the project. If not, visibility is not changed.
      * @return The updated project.
      */
-    Project updateProject(String workspace, String path, ProjectConfig newConfig, String newVisibility)
+    Project updateProject(String workspace, String path, ProjectConfig newConfig)
             throws ForbiddenException, ServerException, NotFoundException, ConflictException, IOException;
 
     /**
@@ -173,7 +173,7 @@ public interface ProjectManager {
      * @throws ForbiddenException
      *         if user which perform operation doesn't have required permissions
      */
-    Set<Project> getProjectModules(Project project)
+    List<? extends ModuleConfig> getProjectModules(Project project)
             throws ServerException, ForbiddenException, ConflictException, IOException, NotFoundException;
 
     /**
@@ -203,26 +203,22 @@ public interface ProjectManager {
      * @param workspace
      * @param projectPath
      *         - parent project path
-     * @param modulePath
-     *         - path for the module to add
      * @param moduleConfig
      *         - module configuration (optional, needed only if module does not exist)
      * @param options
      *         - options for module creation (optional, same as moduleConfig)
-     * @param visibility
-     *         - visibility for the module (optional, same as moduleConfig)
      * @return
      * @throws ConflictException
      * @throws ForbiddenException
      * @throws ServerException
      * @throws NotFoundException
      */
-    Project addModule(String workspace,
-                      String projectPath,
-                      String modulePath,
-                      ProjectConfig moduleConfig,
-                      Map<String, String> options,
-                      String visibility) throws ConflictException, ForbiddenException, ServerException, NotFoundException;
+    ModuleConfigDto addModule(String workspace,
+                              String projectPath,
+                              ModuleConfigDto moduleConfig,
+                              Map<String, String> options) throws ConflictException, ForbiddenException, ServerException, NotFoundException;
+
+
     List<SourceEstimation> resolveSources(String workspace, String path, boolean transientOnly) throws ServerException, ForbiddenException,
                                                                                                        NotFoundException,
                                                                                                        ValueStorageException,
@@ -233,15 +229,13 @@ public interface ProjectManager {
      *
      * @param workspace
      * @param projectConfig
-     * @param visibility
-     * @return
      * @throws ConflictException
      * @throws ForbiddenException
      * @throws ServerException
      * @throws ProjectTypeConstraintException
      */
-    Project convertFolderToProject(String workspace, String path, ProjectConfig projectConfig, String visibility)
-            throws ConflictException, ForbiddenException, ServerException, NotFoundException;
+    Project convertFolderToProject(String workspace, String path, ProjectConfig projectConfig)
+            throws ConflictException, ForbiddenException, ServerException, NotFoundException, IOException;
 
     /**
      * Rename the given item.
@@ -265,12 +259,10 @@ public interface ProjectManager {
      * @param workspace
      *         The workspace to delete from.
      * @param path
-     *         Path to the item (file / folder / project) to delete.
-     * @param modulePath
      *         In case a module is being deleted, the module's path relative to the provided path.
      * @return True if the path was found and deleted, false if the path was not found.
      */
-    boolean delete(String workspace, String path, String modulePath)
+    boolean delete(String workspace, String path)
             throws ServerException, ForbiddenException, NotFoundException, ConflictException;
 
     /**
@@ -280,4 +272,12 @@ public interface ProjectManager {
      *         if an error occurs
      */
     boolean isProjectFolder(FolderEntry folder) throws ServerException;
+
+    /**
+     * Tests whether the {@code folder} is a project module.
+     *
+     * @throws ServerException
+     *         if an error occurs
+     */
+    boolean isModuleFolder(FolderEntry folder) throws ServerException;
 }

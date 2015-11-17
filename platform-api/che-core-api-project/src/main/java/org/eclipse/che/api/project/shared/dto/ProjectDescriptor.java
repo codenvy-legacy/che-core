@@ -10,10 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.shared.dto;
 
+import com.wordnik.swagger.annotations.ApiModelProperty;
+
 import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
+import org.eclipse.che.api.workspace.shared.dto.ModuleConfigDto;
 import org.eclipse.che.dto.shared.DTO;
-import com.wordnik.swagger.annotations.ApiModelProperty;
 
 import java.util.List;
 import java.util.Map;
@@ -77,7 +79,6 @@ public interface ProjectDescriptor extends Hyperlinks {
     void setMixins(List<String> mixins);
 
     ProjectDescriptor withMixins(List<String> mixins);
-
 
 
     /** Gets id of workspace which projects belongs to. */
@@ -166,29 +167,11 @@ public interface ProjectDescriptor extends Hyperlinks {
 
     ProjectDescriptor withPermissions(List<String> permissions);
 
-    //
+    List<ModuleConfigDto> getModules();
 
-//    /** Gets builder configurations. */
-//    @ApiModelProperty(value = "Builders configuration for the project", position = 13)
-//    BuildersDescriptor getBuilders();
-//
-//    /** Sets builder configurations. */
-//    void setBuilders(BuildersDescriptor builders);
-//
-//    ProjectDescriptor withBuilders(BuildersDescriptor builders);
-//
-//    //
-//
-//    /** Gets runner configurations. */
-//    @ApiModelProperty(value = "Runners configuration for the project", position = 14)
-//    RunnersDescriptor getRunners();
-//
-//    /** Sets runner configurations. */
-//    void setRunners(RunnersDescriptor runners);
-//
-//    ProjectDescriptor withRunners(RunnersDescriptor runners);
+    void setModules(List<ModuleConfigDto> modules);
 
-    //
+    ProjectDescriptor withModules(List<ModuleConfigDto> modules);
 
     String getRecipe();
 

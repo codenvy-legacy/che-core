@@ -18,16 +18,19 @@ import com.google.web.bindery.event.shared.EventBus;
 import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.Constants;
-import org.eclipse.che.api.project.shared.dto.ImportProject;
-import org.eclipse.che.api.project.shared.dto.ImportResponse;
-import org.eclipse.che.api.project.shared.dto.NewProject;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.api.workspace.shared.dto.ModuleConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.ModuleCreatedEvent;
 import org.eclipse.che.ide.api.event.project.CreateProjectEvent;
 import org.eclipse.che.ide.api.event.project.OpenProjectEvent;
 import org.eclipse.che.ide.api.event.project.ProjectUpdatedEvent;
+import org.eclipse.che.ide.api.project.node.HasStorablePath;
+import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode;
+import org.eclipse.che.ide.api.selection.Selection;
+import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.api.wizard.AbstractWizard;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
@@ -53,7 +56,7 @@ import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistrar
  *
  * @author Artem Zatsarynnyy
  */
-public class ProjectWizard extends AbstractWizard<ImportProject> {
+public class ProjectWizard extends AbstractWizard<ProjectConfigDto> {
 
     private final ProjectWizardMode      mode;
     private final ProjectServiceClient   projectServiceClient;
@@ -62,6 +65,7 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
     private final DialogFactory          dialogFactory;
     private final EventBus               eventBus;
     private final AppContext             appContext;
+    private final SelectionAgent         selectionAgent;
 
     /**
      * Creates project wizard.
@@ -85,7 +89,7 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
      *         {@link org.eclipse.che.ide.api.app.AppContext} instance
      */
     @Inject
-    public ProjectWizard(@Assisted ImportProject dataObject,
+    public ProjectWizard(@Assisted ProjectConfigDto dataObject,
                          @Assisted ProjectWizardMode mode,
                          @Assisted String projectPath,
                          ProjectServiceClient projectServiceClient,
@@ -93,7 +97,8 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
                          DtoFactory dtoFactory,
                          DialogFactory dialogFactory,
                          EventBus eventBus,
-                         AppContext appContext) {
+                         AppContext appContext,
+                         SelectionAgent selectionAgent) {
         super(dataObject);
         this.mode = mode;
         this.projectServiceClient = projectServiceClient;
@@ -102,9 +107,10 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
         this.dialogFactory = dialogFactory;
         this.eventBus = eventBus;
         this.appContext = appContext;
+        this.selectionAgent = selectionAgent;
 
         context.put(WIZARD_MODE_KEY, mode.toString());
-        context.put(PROJECT_NAME_KEY, dataObject.getProject().getName());
+        context.put(PROJECT_NAME_KEY, dataObject.getName());
         if (mode == UPDATE || mode == CREATE_MODULE) {
             context.put(PROJECT_PATH_KEY, projectPath);
         }
@@ -125,10 +131,9 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
     }
 
     private void doSaveAsBlank(final CompleteCallback callback) {
-        final NewProject project = dataObject.getProject();
-        project.setType(Constants.BLANK_ID);
+        dataObject.setType(Constants.BLANK_ID);
         final Unmarshallable<ProjectDescriptor> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class);
-        projectServiceClient.updateProject(project.getName(), project, new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
+        projectServiceClient.updateProject(dataObject.getName(), dataObject, new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
             @Override
             protected void onSuccess(ProjectDescriptor result) {
                 // just re-open project if it's already opened
@@ -146,9 +151,8 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
     }
 
     private void createProject(final CompleteCallback callback) {
-        final NewProject project = dataObject.getProject();
         final Unmarshallable<ProjectDescriptor> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class);
-        projectServiceClient.createProject(project.getName(), project, new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
+        projectServiceClient.createProject(dataObject.getName(), dataObject, new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
             @Override
             protected void onSuccess(ProjectDescriptor result) {
                 eventBus.fireEvent(new CreateProjectEvent(result));
@@ -165,35 +169,51 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
     }
 
     private void createModule(final CompleteCallback callback) {
-        final String parentPath = appContext.getCurrentProject().getRootProject().getPath();
-        final String modulePath = context.get(PROJECT_PATH_KEY);
-        final NewProject project = dataObject.getProject();
-        final Unmarshallable<ProjectDescriptor> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class);
-        projectServiceClient.createModule(
-                parentPath, modulePath, project, new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
-                    @Override
-                    protected void onSuccess(ProjectDescriptor result) {
-                        eventBus.fireEvent(new ModuleCreatedEvent(result));
-                        callback.onCompleted();
-                    }
+        final String pathToSelectedNodeParent = getPathToSelectedNodeParent();
 
-                    @Override
-                    protected void onFailure(Throwable exception) {
-                        callback.onFailure(exception);
-                    }
-                });
+        final Unmarshallable<ModuleConfigDto> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ModuleConfigDto.class);
+        projectServiceClient.createModule(pathToSelectedNodeParent, dataObject, new AsyncRequestCallback<ModuleConfigDto>(unmarshaller) {
+            @Override
+            protected void onSuccess(ModuleConfigDto result) {
+                eventBus.fireEvent(new ModuleCreatedEvent(result));
+                callback.onCompleted();
+            }
+
+            @Override
+            protected void onFailure(Throwable exception) {
+                callback.onFailure(exception);
+            }
+        });
+    }
+
+    private String getPathToSelectedNodeParent() {
+        Selection<?> selection = selectionAgent.getSelection();
+
+        if (selection.isMultiSelection() || selection.isEmpty()) {
+            return "";
+        }
+
+        Object selectedElement = selection.getHeadElement();
+
+        if (selectedElement instanceof Node) {
+            Node element = (Node)selectedElement;
+
+            Node parent = element.getParent();
+
+            if (parent instanceof HasStorablePath) {
+                return ((HasStorablePath)parent).getStorablePath();
+            }
+        }
+
+        return "";
     }
 
     private void importProject(final CompleteCallback callback) {
-        final NewProject project = dataObject.getProject();
-        org.eclipse.che.ide.websocket.rest.Unmarshallable<ImportResponse> unmarshaller = dtoUnmarshallerFactory.newWSUnmarshaller(
-                ImportResponse.class);
         projectServiceClient.importProject(
-                project.getName(), false, dataObject, new RequestCallback<ImportResponse>(unmarshaller) {
+                dataObject.getName(), false, dataObject.getSource(), new RequestCallback<Void>() {
                     @Override
-                    protected void onSuccess(ImportResponse result) {
-                        eventBus.fireEvent(new CreateProjectEvent(result.getProjectDescriptor()));
-                        callback.onCompleted();
+                    protected void onSuccess(Void result) {
+                        updateProject(callback);
                     }
 
                     @Override
@@ -205,9 +225,8 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
     }
 
     private void updateProject(final CompleteCallback callback) {
-        final NewProject project = dataObject.getProject();
         final String currentName = context.get(PROJECT_NAME_KEY);
-        if (currentName.equals(project.getName())) {
+        if (currentName.equals(dataObject.getName())) {
             doUpdateProject(callback);
         } else {
             renameProject(new AsyncCallback<Void>() {
@@ -226,9 +245,9 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
     }
 
     private void doUpdateProject(final CompleteCallback callback) {
-        final NewProject project = dataObject.getProject();
+        //final NewProject project = dataObject.getProject();
         final Unmarshallable<ProjectDescriptor> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class);
-        projectServiceClient.updateProject(project.getName(), project, new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
+        projectServiceClient.updateProject(dataObject.getName(), dataObject, new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
             @Override
             protected void onSuccess(ProjectDescriptor result) {
                 eventBus.fireEvent(new ProjectUpdatedEvent(context.get(PROJECT_PATH_KEY), result));
@@ -245,7 +264,7 @@ public class ProjectWizard extends AbstractWizard<ImportProject> {
 
     private void renameProject(final AsyncCallback<Void> callback) {
         final String path = context.get(PROJECT_PATH_KEY);
-        projectServiceClient.rename(path, dataObject.getProject().getName(), null, new AsyncRequestCallback<Void>() {
+        projectServiceClient.rename(path, dataObject.getName(), null, new AsyncRequestCallback<Void>() {
             @Override
             protected void onSuccess(Void result) {
                 callback.onSuccess(result);

@@ -8,16 +8,27 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.project.server;
+package org.eclipse.che.api.core.model.workspace;
+
+import java.util.List;
+import java.util.Map;
 
 /**
- * Listener for project events.
- *
- * @author andrew00x
- * @see ProjectEventService
- * @see ProjectEvent
+ * @author  Vitalii Parfonov
  */
-@Deprecated
-public interface ProjectEventListener {
-    void onEvent(ProjectEvent event);
+public interface ModuleConfig {
+
+    String getName();
+
+    String getPath();
+
+    String getDescription();
+
+    String getType();
+
+    List<String> getMixinTypes();
+
+    Map<String, List<String>> getAttributes();
+
+    List<? extends ModuleConfig> getModules();
 }

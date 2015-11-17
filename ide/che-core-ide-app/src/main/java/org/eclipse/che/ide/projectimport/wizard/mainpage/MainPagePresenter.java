@@ -11,9 +11,9 @@
 package org.eclipse.che.ide.projectimport.wizard.mainpage;
 
 import org.eclipse.che.api.project.gwt.client.ProjectImportersServiceClient;
-import org.eclipse.che.api.project.shared.dto.ImportProject;
 import org.eclipse.che.api.project.shared.dto.ProjectImporterDescriptor;
 
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.projectimport.wizard.presenter.ImportProjectWizardView;
 
@@ -44,7 +44,7 @@ import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
  *
  * @author Ann Shumilova
  */
-public class MainPagePresenter extends AbstractWizardPage<ImportProject> implements MainPageView.ActionDelegate {
+public class MainPagePresenter extends AbstractWizardPage<ProjectConfigDto> implements MainPageView.ActionDelegate {
 
     private static final String PUBLIC_VISIBILITY = "public";
 
@@ -77,10 +77,8 @@ public class MainPagePresenter extends AbstractWizardPage<ImportProject> impleme
     }
 
     @Override
-    public void init(ImportProject dataObject) {
+    public void init(ProjectConfigDto dataObject) {
         super.init(dataObject);
-
-        dataObject.getProject().setVisibility(PUBLIC_VISIBILITY);
     }
 
     public void setEnterPressedDelegate(ImportProjectWizardView.EnterPressedDelegate enterPressedDelegate) {
@@ -106,7 +104,7 @@ public class MainPagePresenter extends AbstractWizardPage<ImportProject> impleme
 
     @Override
     public boolean isCompleted() {
-        final String projectName = dataObject.getProject().getName();
+        final String projectName = dataObject.getName();
         return selectedProjectImporter != null && projectName != null && NameUtils.checkProjectName(projectName);
     }
 

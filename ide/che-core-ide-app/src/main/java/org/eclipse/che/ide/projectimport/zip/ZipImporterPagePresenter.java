@@ -10,9 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projectimport.zip;
 
-import org.eclipse.che.api.project.shared.dto.ImportProject;
-import org.eclipse.che.api.project.shared.dto.NewProject;
 
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 
 import org.eclipse.che.ide.api.wizard.AbstractWizardPage;
@@ -29,10 +28,8 @@ import java.util.Map;
 /**
  * @author Roman Nikitenko
  */
-public class ZipImporterPagePresenter extends AbstractWizardPage<ImportProject> implements ZipImporterPageView.ActionDelegate {
+public class ZipImporterPagePresenter extends AbstractWizardPage<ProjectConfigDto> implements ZipImporterPageView.ActionDelegate {
 
-    private static final String PUBLIC_VISIBILITY           = "public";
-    private static final String PRIVATE_VISIBILITY          = "private";
     private static final String SKIP_FIRST_LEVEL_PARAM_NAME = "skipFirstLevel";
 
     private static final RegExp URL_REGEX  = RegExp.compile("(https?|ftp)://(-\\.)?([^\\s/?\\.#-]+\\.?)+(/[^\\s]*)?");
@@ -50,7 +47,7 @@ public class ZipImporterPagePresenter extends AbstractWizardPage<ImportProject> 
     }
 
     @Override
-    public void init(ImportProject dataObject) {
+    public void init(ProjectConfigDto dataObject) {
         super.init(dataObject);
 
         setImportParameterValue(SKIP_FIRST_LEVEL_PARAM_NAME, String.valueOf(true));
@@ -58,12 +55,12 @@ public class ZipImporterPagePresenter extends AbstractWizardPage<ImportProject> 
 
     @Override
     public boolean isCompleted() {
-        return isUrlCorrect(dataObject.getSource().getProject().getLocation());
+        return isUrlCorrect(dataObject.getSource().getLocation());
     }
 
     @Override
     public void projectNameChanged(@NotNull String name) {
-        dataObject.getProject().setName(name);
+        dataObject.setName(name);
         updateDelegate.updateControls();
 
         validateProjectName();
@@ -79,14 +76,14 @@ public class ZipImporterPagePresenter extends AbstractWizardPage<ImportProject> 
 
     @Override
     public void projectUrlChanged(@NotNull String url) {
-        dataObject.getSource().getProject().setLocation(url);
+        dataObject.getSource().setLocation(url);
         isUrlCorrect(url);
 
         String projectName = view.getProjectName();
         if (projectName.isEmpty()) {
             projectName = extractProjectNameFromUri(url);
 
-            dataObject.getProject().setName(projectName);
+            dataObject.setName(projectName);
             view.setProjectName(projectName);
             validateProjectName();
         }
@@ -96,13 +93,12 @@ public class ZipImporterPagePresenter extends AbstractWizardPage<ImportProject> 
 
     @Override
     public void projectDescriptionChanged(@NotNull String projectDescription) {
-        dataObject.getProject().setDescription(projectDescription);
+        dataObject.setDescription(projectDescription);
         updateDelegate.updateControls();
     }
 
     @Override
     public void projectVisibilityChanged(boolean visible) {
-        dataObject.getProject().setVisibility(visible ? PUBLIC_VISIBILITY : PRIVATE_VISIBILITY);
         updateDelegate.updateControls();
     }
 
@@ -123,12 +119,9 @@ public class ZipImporterPagePresenter extends AbstractWizardPage<ImportProject> 
 
     /** Updates view from data-object. */
     private void updateView() {
-        final NewProject project = dataObject.getProject();
-
-        view.setProjectName(project.getName());
-        view.setProjectDescription(project.getDescription());
-        view.setVisibility(PUBLIC_VISIBILITY.equals(project.getVisibility()));
-        view.setProjectUrl(dataObject.getSource().getProject().getLocation());
+        view.setProjectName(dataObject.getName());
+        view.setProjectDescription(dataObject.getDescription());
+        view.setProjectUrl(dataObject.getSource().getLocation());
 
         final String value = getImportParameterValue(SKIP_FIRST_LEVEL_PARAM_NAME);
         if (value != null) {
@@ -138,12 +131,12 @@ public class ZipImporterPagePresenter extends AbstractWizardPage<ImportProject> 
 
     @Nullable
     private String getImportParameterValue(String name) {
-        Map<String, String> parameters = dataObject.getSource().getProject().getParameters();
+        Map<String, String> parameters = dataObject.getSource().getParameters();
         return parameters.get(name);
     }
 
     private void setImportParameterValue(String name, String value) {
-        Map<String, String> parameters = dataObject.getSource().getProject().getParameters();
+        Map<String, String> parameters = dataObject.getSource().getParameters();
         parameters.put(name, value);
     }
 

@@ -29,94 +29,21 @@ import static java.util.stream.Collectors.toMap;
  *
  * @author Eugene Voevodin
  */
-public class ProjectConfigImpl implements ProjectConfig {
+public class ProjectConfigImpl extends ModuleConfigImpl implements ProjectConfig {
 
-    private String                    name;
-    private String                    path;
-    private String                    description;
-    private String                    type;
-    private List<String>              mixinTypes;
-    private Map<String, List<String>> attributes;
+
     private SourceStorageImpl         storage;
 
     public ProjectConfigImpl() {
     }
 
     public ProjectConfigImpl(ProjectConfig projectCfg) {
-        name = projectCfg.getName();
-        path = projectCfg.getPath();
-        description = projectCfg.getDescription();
-        type = projectCfg.getType();
-        mixinTypes = new ArrayList<>(projectCfg.getMixinTypes());
-        attributes = projectCfg.getAttributes()
-                               .entrySet()
-                               .stream()
-                               .collect(toMap(Map.Entry::getKey, e -> new ArrayList<>(e.getValue())));
+        super(projectCfg);
         if (projectCfg.getSource() != null) {
             storage = new SourceStorageImpl(projectCfg.getSource().getType(),
                                             projectCfg.getSource().getLocation(),
                                             projectCfg.getSource().getParameters());
         }
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-    @Override
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    @Override
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    @Override
-    public List<String> getMixinTypes() {
-        if (mixinTypes == null) {
-            mixinTypes = new ArrayList<>();
-        }
-        return mixinTypes;
-    }
-
-    public void setMixinTypes(List<String> mixinTypes) {
-        this.mixinTypes = mixinTypes;
-    }
-
-    @Override
-    public Map<String, List<String>> getAttributes() {
-        if (attributes == null) {
-            attributes = new HashMap<>();
-        }
-        return attributes;
-    }
-
-    public void setAttributes(Map<String, List<String>> attributes) {
-        this.attributes = attributes;
     }
 
     @Override
@@ -132,38 +59,27 @@ public class ProjectConfigImpl implements ProjectConfig {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof ProjectConfigImpl)) return false;
+        if (!super.equals(o)) return false;
         final ProjectConfigImpl other = (ProjectConfigImpl)o;
-        return Objects.equals(name, other.name) &&
-               Objects.equals(path, other.path) &&
-               Objects.equals(description, other.description) &&
-               Objects.equals(type, other.type) &&
-               Objects.equals(storage, other.storage) &&
-               getMixinTypes().equals(other.getMixinTypes()) &&
-               getAttributes().equals(other.getAttributes());
+        return Objects.equals(storage, other.storage);
     }
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = hash * 31 + Objects.hashCode(name);
-        hash = hash * 31 + Objects.hashCode(path);
-        hash = hash * 31 + Objects.hashCode(description);
-        hash = hash * 31 + Objects.hashCode(type);
+        int hash = super.hashCode();
         hash = hash * 31 + Objects.hashCode(storage);
-        hash = hash * 31 + getMixinTypes().hashCode();
-        hash = hash * 31 + getAttributes().hashCode();
         return hash;
     }
 
     @Override
     public String toString() {
         return "ProjectConfigImpl{" +
-               "name='" + name + '\'' +
-               ", path='" + path + '\'' +
-               ", description='" + description + '\'' +
-               ", type='" + type + '\'' +
-               ", mixinTypes=" + mixinTypes +
-               ", attributes=" + attributes +
+               "name='" + super.getName() + '\'' +
+               ", path='" + super.getPath() + '\'' +
+               ", description='" + super.getDescription() + '\'' +
+               ", type='" + super.getType() + '\'' +
+               ", mixinTypes=" + super.getMixinTypes() +
+               ", attributes=" + super.getAttributes() +
                ", storage=" + storage +
                '}';
     }
