@@ -12,43 +12,30 @@ package org.eclipse.che.ide.debug;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.web.bindery.event.shared.EventBus;
 
-import org.eclipse.che.ide.api.event.project.CloseCurrentProjectEvent;
-import org.eclipse.che.ide.api.event.project.CloseCurrentProjectHandler;
-import org.eclipse.che.ide.api.event.project.ProjectReadyEvent;
-import org.eclipse.che.ide.api.event.project.ProjectReadyHandler;
+import org.eclipse.che.commons.annotation.Nullable;
+import org.eclipse.che.ide.api.app.AppContext;
+import org.eclipse.che.ide.api.app.CurrentProject;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * The manager provides to return debugger for current project.
+ * The debugger provider.
  *
  * @author Andrey Plotnikov
+ * @author Anatoliy Bazko
  */
 @Singleton
 public class DebuggerManager {
-    private Debugger              currentDebugger;
+    private final AppContext appContext;
+
     private Map<String, Debugger> debuggers;
 
     @Inject
-    protected DebuggerManager(EventBus eventBus) {
+    protected DebuggerManager(AppContext appContext) {
+        this.appContext = appContext;
         this.debuggers = new HashMap<>();
-
-        eventBus.addHandler(CloseCurrentProjectEvent.TYPE, new CloseCurrentProjectHandler() {
-            @Override
-            public void onCloseCurrentProject(CloseCurrentProjectEvent event) {
-                currentDebugger = null;
-            }
-        });
-
-        eventBus.addHandler(ProjectReadyEvent.TYPE, new ProjectReadyHandler() {
-            @Override
-            public void onProjectReady(ProjectReadyEvent event) {
-                currentDebugger = debuggers.get(event.getProject().getType());
-            }
-        });
     }
 
     /**
@@ -61,8 +48,17 @@ public class DebuggerManager {
         debuggers.put(projectTypeId, debugger);
     }
 
-    /** @return debugger for project type */
+    /**
+     * @return debugger for current project type or null otherwise
+     */
+    @Nullable
     public Debugger getDebugger() {
-        return currentDebugger;
+        CurrentProject currentProject = appContext.getCurrentProject();
+        if (currentProject != null) {
+            String projectTypeId = currentProject.getProjectDescription().getType();
+            return debuggers.get(projectTypeId);
+        }
+
+        return null;
     }
 }
