@@ -15,7 +15,6 @@ import org.eclipse.che.api.vfs.shared.dto.ReplacementSet;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
-import org.eclipse.che.ide.rest.RestContext;
 
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.inject.name.Named;
@@ -44,14 +43,14 @@ public class VfsServiceClientImpl implements VfsServiceClient {
     private final AsyncRequestFactory asyncRequestFactory;
 
     @Inject
-    public VfsServiceClientImpl(@RestContext String restContext,
+    public VfsServiceClientImpl(@Named("cheExtensionPath") String extPath,
                                 @Named("workspaceId") String workspaceId,
                                 AsyncRequestLoader loader,
                                 AsyncRequestFactory asyncRequestFactory) {
         this.loader = loader;
         this.asyncRequestFactory = asyncRequestFactory;
 
-        VFS = restContext + "/vfs/" + workspaceId + "/v2";
+        VFS = extPath + "/vfs/" + workspaceId + "/v2";
         FIND_REPLACE = VFS + "/replace";
         GET_ITEM_BY_PATH = VFS + "/itembypath";
     }
