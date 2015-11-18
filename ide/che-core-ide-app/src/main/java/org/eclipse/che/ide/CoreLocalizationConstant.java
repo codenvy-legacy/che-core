@@ -625,4 +625,31 @@ public interface CoreLocalizationConstant extends Messages {
 
     @Key("project.explorer.part.tooltip")
     String projectExplorerPartTooltip();
+
+    @Key("switch.to.left.editor.action.description")
+    String switchToLeftEditorActionDescription();
+
+    @Key("switch.to.left.editor.action")
+    String switchToLeftEditorAction();
+
+    @Key("switch.to.right.editor.action.description")
+    String switchToRightEditorActionDescription();
+
+    @Key("switch.to.right.editor.action")
+    String switchToRightEditorAction();
+
+    @Key("hot.keys.action.name")
+    String hotKeysActionName();
+
+    @Key("hot.keys.action.description")
+    String hotKeysActionDescription();
+
+    @Key("hot.keys.dialog.title")
+    String hotKeysDialogTitle();
+
+    @Key("hot.keys.table.action.description.title")
+    String hotKeysTableActionDescriptionTitle();
+
+    @Key("hot.keys.table.item.title")
+    String hotKeysTableItemTitle();
 }

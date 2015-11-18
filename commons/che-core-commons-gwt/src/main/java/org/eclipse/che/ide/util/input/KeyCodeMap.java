@@ -258,6 +258,10 @@ public class KeyCodeMap {
             case F12: return "F12";
             case INSERT: return "Insert";
             case ENTER: return "Enter";
+            case ARROW_LEFT: return "←";
+            case ARROW_RIGHT: return "→";
+            case ARROW_UP: return "↑";
+            case ARROW_DOWN: return "↓";
             //todo add others keys
         }
 

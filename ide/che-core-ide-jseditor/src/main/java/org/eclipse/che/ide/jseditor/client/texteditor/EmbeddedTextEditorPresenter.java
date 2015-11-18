@@ -71,6 +71,8 @@ import org.eclipse.che.ide.jseditor.client.text.LinearRange;
 import org.eclipse.che.ide.jseditor.client.text.TextPosition;
 import org.eclipse.che.ide.jseditor.client.text.TextRange;
 import org.eclipse.che.ide.jseditor.client.texteditor.EmbeddedTextEditorPartView.Delegate;
+import org.eclipse.che.ide.hotkeys.HasHotKeyItems;
+import org.eclipse.che.ide.hotkeys.HotKeyItem;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.texteditor.selection.CursorModelWithHandler;
 import org.eclipse.che.ide.ui.dialogs.CancelCallback;
@@ -99,6 +101,7 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
                    HandlesTextOperations,
                    EditorWithAutoSave,
                    EditorWithErrors,
+                   HasHotKeyItems,
                    Delegate {
 
     /** File type used when we have no idea of the actual content type. */
@@ -674,6 +677,12 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
         for (final Keybinding binding : bindings) {
             this.keyBindingsManager.addKeybinding(binding);
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<HotKeyItem> getHotKeys() {
+        return editorWidget.getHotKeys();
     }
 
     @Override

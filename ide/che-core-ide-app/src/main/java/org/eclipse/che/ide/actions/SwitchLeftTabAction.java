@@ -12,6 +12,7 @@ package org.eclipse.che.ide.actions;
 
 import com.google.inject.Inject;
 
+import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.editor.EditorAgent;
@@ -30,7 +31,10 @@ public class SwitchLeftTabAction extends Action {
     private final EditorPartStackPresenter editorPartStackPresenter;
 
     @Inject
-    public SwitchLeftTabAction(EditorAgent editorAgent, EditorPartStackPresenter editorPartStackPresenter) {
+    public SwitchLeftTabAction(EditorAgent editorAgent,
+                               EditorPartStackPresenter editorPartStackPresenter,
+                               CoreLocalizationConstant constant) {
+        super(constant.switchToLeftEditorAction(), constant.switchToLeftEditorActionDescription());
         this.editorAgent = editorAgent;
         this.editorPartStackPresenter = editorPartStackPresenter;
     }

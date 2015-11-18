@@ -28,6 +28,7 @@ import org.eclipse.che.ide.jseditor.client.events.HasCursorActivityHandlers;
 import org.eclipse.che.ide.jseditor.client.events.HasGutterClickHandlers;
 import org.eclipse.che.ide.jseditor.client.keymap.Keymap;
 import org.eclipse.che.ide.jseditor.client.position.PositionConverter;
+import org.eclipse.che.ide.hotkeys.HotKeyItem;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -199,4 +200,10 @@ public interface EditorWidget extends IsWidget,
     void refresh();
 
     boolean isCompletionProposalsShowing();
+
+    /**
+     * Return list hotKeys for editor
+     * @return list hotKeys
+     */
+    List<HotKeyItem> getHotKeys();
 }
