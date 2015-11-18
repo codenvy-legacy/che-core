@@ -19,7 +19,6 @@ import org.eclipse.che.api.core.util.LineConsumerFactory;
 import org.eclipse.che.api.project.server.FolderEntry;
 import org.eclipse.che.api.project.server.ProjectImporter;
 import org.eclipse.che.commons.lang.IoUtil;
-import org.eclipse.che.dto.server.DtoFactory;
 
 import org.eclipse.che.vfs.impl.fs.VirtualFileImpl;
 import org.eclipse.che.api.git.shared.Branch;
@@ -46,6 +45,8 @@ import java.nio.file.Files;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 /**
  * @author Vladyslav Zhukovskii
@@ -110,6 +111,7 @@ public class GitProjectImporter implements ProjectImporter {
             // Delete vcs info if false.
             String branchMerge = null;
             boolean keepVcs = true;
+            boolean recursiveEnabled = false;
             if (parameters != null) {
                 commitId = parameters.get("commitId");
                 branch = parameters.get("branch");
@@ -118,16 +120,18 @@ public class GitProjectImporter implements ProjectImporter {
                 if (parameters.containsKey("keepVcs")) {
                     keepVcs = Boolean.parseBoolean(parameters.get("keepVcs"));
                 }
+                if (parameters.containsKey("recursive")) {
+                    recursiveEnabled = true;
+                }
                 branchMerge = parameters.get("branchMerge");
             }
             // Get path to local file. Git works with local filesystem only.
             final String localPath = localPathResolver.resolve((VirtualFileImpl)baseFolder.getVirtualFile());
-            final DtoFactory dtoFactory = DtoFactory.getInstance();
             if (keepDirectory != null) {
                 final File temp = Files.createTempDirectory(null).toFile();
                 try {
                     git = gitConnectionFactory.getConnection(temp, consumerFactory);
-                    sparsecheckout(git, location, branch == null ? "master" : branch, keepDirectory, dtoFactory);
+                    sparsecheckout(git, location, branch == null ? "master" : branch, keepDirectory);
                     // Copy content of directory to the project folder.
                     final File projectDir = new File(localPath);
                     IoUtil.copy(temp, projectDir, IoUtil.ANY_FILTER);
@@ -137,36 +141,36 @@ public class GitProjectImporter implements ProjectImporter {
             } else {
                 git = gitConnectionFactory.getConnection(localPath, consumerFactory);
                 if (baseFolder.getChildren().size() == 0) {
-                    cloneRepository(git, "origin", location, dtoFactory);
+                    cloneRepository(git, "origin", location, recursiveEnabled);
                     if (commitId != null) {
-                        checkoutCommit(git, commitId, dtoFactory);
+                        checkoutCommit(git, commitId);
                     } else if (remoteOriginFetch != null) {
                         git.getConfig().add("remote.origin.fetch", remoteOriginFetch);
-                        fetch(git, "origin", dtoFactory);
+                        fetch(git, "origin");
                         if (branch != null) {
-                            checkoutBranch(git, branch, dtoFactory);
+                            checkoutBranch(git, branch);
                         }
                     } else if (branch != null) {
-                        checkoutBranch(git, branch, dtoFactory);
+                        checkoutBranch(git, branch);
                     }
                 } else {
-                    initRepository(git, dtoFactory);
-                    addRemote(git, "origin", location, dtoFactory);
+                    initRepository(git);
+                    addRemote(git, "origin", location);
                     if (commitId != null) {
-                        fetchBranch(git, "origin", branch == null ? "*" : branch, dtoFactory);
-                        checkoutCommit(git, commitId, dtoFactory);
+                        fetchBranch(git, "origin", branch == null ? "*" : branch);
+                        checkoutCommit(git, commitId);
                     } else if (remoteOriginFetch != null) {
                         git.getConfig().add("remote.origin.fetch", remoteOriginFetch);
-                        fetch(git, "origin", dtoFactory);
+                        fetch(git, "origin");
                         if (branch != null) {
-                            checkoutBranch(git, branch, dtoFactory);
+                            checkoutBranch(git, branch);
                         }
                     } else {
-                        fetchBranch(git, "origin", branch == null ? "*" : branch, dtoFactory);
+                        fetchBranch(git, "origin", branch == null ? "*" : branch);
 
-                        List<Branch> branchList = git.branchList(dtoFactory.createDto(BranchListRequest.class).withListMode("r"));
+                        List<Branch> branchList = git.branchList(newDto(BranchListRequest.class).withListMode("r"));
                         if (!branchList.isEmpty()) {
-                            checkoutBranch(git, branch == null ? "master" : branch, dtoFactory);
+                            checkoutBranch(git, branch == null ? "master" : branch);
                         }
                     }
                 }
@@ -194,33 +198,36 @@ public class GitProjectImporter implements ProjectImporter {
         }
     }
 
-    private void cloneRepository(GitConnection git, String remoteName, String url, DtoFactory dtoFactory)
+    private void cloneRepository(GitConnection git, String remoteName, String url, boolean recursiveEnabled)
             throws ServerException, UnauthorizedException, URISyntaxException {
-        final CloneRequest request = dtoFactory.createDto(CloneRequest.class).withRemoteName(remoteName).withRemoteUri(url);
+        final CloneRequest request = newDto(CloneRequest.class)
+                .withRemoteName(remoteName)
+                .withRemoteUri(url)
+                .withRecursiveEnabled(recursiveEnabled);
         git.clone(request);
     }
 
-    private void initRepository(GitConnection git, DtoFactory dtoFactory) throws GitException {
-        final InitRequest request = dtoFactory.createDto(InitRequest.class).withInitCommit(false).withBare(false);
+    private void initRepository(GitConnection git) throws GitException {
+        final InitRequest request = newDto(InitRequest.class).withInitCommit(false).withBare(false);
         git.init(request);
     }
 
-    private void addRemote(GitConnection git, String name, String url, DtoFactory dtoFactory) throws GitException {
-        final RemoteAddRequest request = dtoFactory.createDto(RemoteAddRequest.class).withName(name).withUrl(url);
+    private void addRemote(GitConnection git, String name, String url) throws GitException {
+        final RemoteAddRequest request = newDto(RemoteAddRequest.class).withName(name).withUrl(url);
         git.remoteAdd(request);
     }
 
-    private void fetch(GitConnection git, String remote, DtoFactory dtoFactory) throws UnauthorizedException, GitException {
-        final FetchRequest request = dtoFactory.createDto(FetchRequest.class).withRemote(remote);
+    private void fetch(GitConnection git, String remote) throws UnauthorizedException, GitException {
+        final FetchRequest request = newDto(FetchRequest.class).withRemote(remote);
         git.fetch(request);
     }
 
-    private void fetchBranch(GitConnection gitConnection, String remote, String branch, DtoFactory dtoFactory)
+    private void fetchBranch(GitConnection gitConnection, String remote, String branch)
             throws UnauthorizedException, GitException {
 
         final List<String> refSpecs = Collections.singletonList(String.format("refs/heads/%1$s:refs/remotes/origin/%1$s", branch));
         try {
-            fetchRefSpecs(gitConnection, remote, refSpecs, dtoFactory);
+            fetchRefSpecs(gitConnection, remote, refSpecs);
         } catch (GitException e) {
             LOG.warn("Git exception on branch fetch", e);
             throw new GitException(
@@ -229,16 +236,16 @@ public class GitProjectImporter implements ProjectImporter {
         }
     }
 
-    private void fetchRefSpecs(GitConnection git, String remote, List<String> refSpecs, DtoFactory dtoFactory)
+    private void fetchRefSpecs(GitConnection git, String remote, List<String> refSpecs)
             throws UnauthorizedException, GitException {
-        final FetchRequest request = dtoFactory.createDto(FetchRequest.class).withRemote(remote).withRefSpec(refSpecs);
+        final FetchRequest request = newDto(FetchRequest.class).withRemote(remote).withRefSpec(refSpecs);
         git.fetch(request);
     }
 
-    private void checkoutCommit(GitConnection git, String commit, DtoFactory dtoFactory) throws GitException {
-        final CheckoutRequest request = dtoFactory.createDto(CheckoutRequest.class).withName("temp")
-                                                                                   .withCreateNew(true)
-                                                                                   .withStartPoint(commit);
+    private void checkoutCommit(GitConnection git, String commit) throws GitException {
+        final CheckoutRequest request = newDto(CheckoutRequest.class).withName("temp")
+                                                                     .withCreateNew(true)
+                                                                     .withStartPoint(commit);
         try {
             git.checkout(request);
         } catch (GitException e) {
@@ -248,8 +255,8 @@ public class GitProjectImporter implements ProjectImporter {
         }
     }
 
-    private void checkoutBranch(GitConnection git, String branch, DtoFactory dtoFactory) throws GitException {
-        final CheckoutRequest request = dtoFactory.createDto(CheckoutRequest.class).withName(branch);
+    private void checkoutBranch(GitConnection git, String branch) throws GitException {
+        final CheckoutRequest request = newDto(CheckoutRequest.class).withName(branch);
         try {
             git.checkout(request);
         } catch (GitException e) {
@@ -260,7 +267,7 @@ public class GitProjectImporter implements ProjectImporter {
         }
     }
 
-    private void sparsecheckout(GitConnection git, String url, String branch, String directory, DtoFactory dtoFactory)
+    private void sparsecheckout(GitConnection git, String url, String branch, String directory)
             throws GitException, UnauthorizedException {
         /*
         Does following sequence of Git commands:
@@ -270,8 +277,8 @@ public class GitProjectImporter implements ProjectImporter {
         $ echo keepDirectory >> .git/info/sparse-checkout
         $ git pull origin master
         */
-        initRepository(git, dtoFactory);
-        addRemote(git, "origin", url, dtoFactory);
+        initRepository(git);
+        addRemote(git, "origin", url);
         git.getConfig().add("core.sparsecheckout", "true");
         final File workingDir = git.getWorkingDir();
         final File sparseCheckout = new File(workingDir, ".git" + File.separator + "info" + File.separator + "sparse-checkout");
@@ -280,8 +287,8 @@ public class GitProjectImporter implements ProjectImporter {
         } catch (IOException e) {
             throw new GitException(e);
         }
-        fetchBranch(git, "origin", branch, dtoFactory);
-        checkoutBranch(git, branch, dtoFactory);
+        fetchBranch(git, "origin", branch);
+        checkoutBranch(git, branch);
     }
 
     private void cleanGit(File project) {
