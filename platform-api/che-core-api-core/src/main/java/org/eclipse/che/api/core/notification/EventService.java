@@ -111,13 +111,29 @@ public class EventService {
     }
 
     /**
-     * Subscribe event listener.
+     * Subscribe event listener. The event to subscribe to is inferred by checking the generic type arguments of the
+     * given subscriber.
      *
      * @param subscriber
      *         event subscriber
      */
     public void subscribe(EventSubscriber<?> subscriber) {
         final Class<?> eventType = getEventType(subscriber);
+        doSubscribe(subscriber, eventType);
+    }
+
+    /**
+     * Subscribe to an event. The given subscriber will be called whenever an instance of the specified event is
+     * published.
+     *
+     * @param subscriber The subscriber to call when an event is published.
+     * @param eventType The event to subscribe to.
+     */
+    public <T> void subscribe(EventSubscriber<? extends T> subscriber, Class<T> eventType) {
+        doSubscribe(subscriber, eventType);
+    }
+
+    private void doSubscribe(EventSubscriber<?> subscriber, Class<?> eventType) {
         Set<EventSubscriber> entries = subscribersByEventType.get(eventType);
         if (entries == null) {
             Set<EventSubscriber> newEntries = new CopyOnWriteArraySet<>();
