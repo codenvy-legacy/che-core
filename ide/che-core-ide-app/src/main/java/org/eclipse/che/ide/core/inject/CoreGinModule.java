@@ -105,6 +105,8 @@ import org.eclipse.che.ide.extension.ExtensionManagerView;
 import org.eclipse.che.ide.extension.ExtensionManagerViewImpl;
 import org.eclipse.che.ide.filetypes.FileTypeRegistryImpl;
 import org.eclipse.che.ide.icon.IconRegistryImpl;
+import org.eclipse.che.ide.hotkeys.dialog.HotKeysDialogView;
+import org.eclipse.che.ide.hotkeys.dialog.HotKeysDialogViewImpl;
 import org.eclipse.che.ide.keybinding.KeyBindingManager;
 import org.eclipse.che.ide.logger.AnalyticsEventLoggerExt;
 import org.eclipse.che.ide.logger.AnalyticsEventLoggerImpl;
@@ -413,6 +415,8 @@ public class CoreGinModule extends AbstractGinModule {
         bind(PrivacyPresenter.class).asEagerSingleton();
 
         bind(LoaderView.class).to(LoaderViewImpl.class).in(Singleton.class);
+
+        bind(HotKeysDialogView.class).to(HotKeysDialogViewImpl.class).in(Singleton.class);
 
         GinMultibinder.newSetBinder(binder(), SettingsPagePresenter.class);
     }

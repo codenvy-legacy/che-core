@@ -29,8 +29,6 @@ import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.PromisableAction;
 import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.app.CurrentProject;
-import org.eclipse.che.ide.api.app.CurrentUser;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
@@ -39,7 +37,7 @@ import org.eclipse.che.ide.project.node.ResourceBasedNode;
 import org.eclipse.che.ide.project.node.remove.DeleteNodeHandler;
 
 import javax.validation.constraints.NotNull;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper.createFromCallback;
@@ -70,7 +68,7 @@ public class DeleteItemAction extends AbstractPerspectiveAction implements Promi
                             CoreLocalizationConstant localization,
                             AppContext appContext,
                             ProjectExplorerPresenter projectExplorer) {
-        super(Arrays.asList(PROJECT_PERSPECTIVE_ID),
+        super(Collections.singletonList(PROJECT_PERSPECTIVE_ID),
               localization.deleteItemActionText(),
               localization.deleteItemActionDescription(),
               null,

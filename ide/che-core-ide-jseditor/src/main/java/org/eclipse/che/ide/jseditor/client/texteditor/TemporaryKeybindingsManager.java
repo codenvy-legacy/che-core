@@ -20,11 +20,19 @@ public class TemporaryKeybindingsManager implements HasKeybindings {
 
     private final List<Keybinding> bindings = new ArrayList<>();
 
+    /** {@inheritDoc} */
     @Override
     public void addKeybinding(final Keybinding keybinding) {
         this.bindings.add(keybinding);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void addKeybinding(Keybinding keybinding, String actionDescription) {
+        this.bindings.add(keybinding);
+    }
+
+    /** {@inheritDoc} */
     public List<Keybinding> getbindings() {
         return this.bindings;
     }

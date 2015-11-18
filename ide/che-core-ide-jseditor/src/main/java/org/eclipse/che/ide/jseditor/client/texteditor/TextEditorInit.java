@@ -61,6 +61,9 @@ public class TextEditorInit<T extends EditorWidget> {
     /** The logger. */
     private static final Logger LOG = Logger.getLogger(TextEditorInit.class.getName());
 
+    private static final String CONTENT_ASSIST = "Content assist";
+    private static final String QUICK_FIX      = "Quick fix";
+
     private final TextEditorConfiguration        configuration;
     private final EventBus                       generalEventBus;
     private final CodeAssistantFactory           codeAssistantFactory;
@@ -209,7 +212,7 @@ public class TextEditorInit<T extends EditorWidget> {
                 }
             };
             final HasKeybindings hasKeybindings = this.textEditor.getHasKeybindings();
-            hasKeybindings.addKeybinding(new Keybinding(true, false, false, false, KeyCode.SPACE, action));
+            hasKeybindings.addKeybinding(new Keybinding(true, false, false, false, KeyCode.SPACE, action), CONTENT_ASSIST);
 
             // handle CompletionRequest events that come from text operations instead of simple key binding
             documentHandle.getDocEventBus().addHandler(CompletionRequestEvent.TYPE, new CompletionRequestHandler() {
@@ -227,10 +230,10 @@ public class TextEditorInit<T extends EditorWidget> {
             };
             final HasKeybindings hasKeybindings = this.textEditor.getHasKeybindings();
             if(UserAgent.isMac()){
-                hasKeybindings.addKeybinding(new Keybinding(false,false,false, true, KeyCode.SPACE, action));
-                hasKeybindings.addKeybinding(new Keybinding(false,false,true, true, KeyCode.SPACE, action));
+                hasKeybindings.addKeybinding(new Keybinding(false,false,false, true, KeyCode.SPACE, action), CONTENT_ASSIST);
+                hasKeybindings.addKeybinding(new Keybinding(false,false,true, true, KeyCode.SPACE, action), CONTENT_ASSIST);
             } else {
-                hasKeybindings.addKeybinding(new Keybinding(true, false, false, false, KeyCode.SPACE, action));
+                hasKeybindings.addKeybinding(new Keybinding(true, false, false, false, KeyCode.SPACE, action), CONTENT_ASSIST);
             }
             // handle CompletionRequest events that come from text operations instead of simple key binding
             documentHandle.getDocEventBus().addHandler(CompletionRequestEvent.TYPE, new CompletionRequestHandler() {
@@ -314,7 +317,7 @@ public class TextEditorInit<T extends EditorWidget> {
                 }
             };
             final HasKeybindings hasKeybindings = this.textEditor.getHasKeybindings();
-            hasKeybindings.addKeybinding(new Keybinding(false, false, true, false, KeyCode.ENTER, action));
+            hasKeybindings.addKeybinding(new Keybinding(false, false, true, false, KeyCode.ENTER, action), QUICK_FIX);
 //            hasKeybindings.addKeybinding(new Keybinding(true, false, false, false, KeyCode.ONE, action));
         }
     }

@@ -33,6 +33,7 @@ import org.eclipse.che.ide.actions.FormatterAction;
 import org.eclipse.che.ide.actions.GoIntoAction;
 import org.eclipse.che.ide.actions.ImportLocalProjectAction;
 import org.eclipse.che.ide.actions.ImportProjectFromLocationAction;
+import org.eclipse.che.ide.actions.HotKeysListAction;
 import org.eclipse.che.ide.actions.NavigateToFileAction;
 import org.eclipse.che.ide.actions.NewProjectAction;
 import org.eclipse.che.ide.actions.OpenFileAction;
@@ -229,6 +230,9 @@ public class StandardComponentInitializer {
     private SwitchRightTabAction switchRightTabAction;
 
     @Inject
+    private HotKeysListAction hotKeysListAction;
+
+    @Inject
     @Named("XMLFileType")
     private FileType xmlFile;
 
@@ -407,8 +411,10 @@ public class StandardComponentInitializer {
         // Compose Help menu
         DefaultActionGroup helpGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_HELP);
         actionManager.registerAction("findActionAction", findActionAction);
+        actionManager.registerAction("hotKeysList", hotKeysListAction);
 
         helpGroup.add(findActionAction);
+        helpGroup.add(hotKeysListAction);
         helpGroup.addSeparator();
 
         // Compose main context menu

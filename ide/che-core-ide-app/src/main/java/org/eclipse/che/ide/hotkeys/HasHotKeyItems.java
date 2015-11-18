@@ -8,25 +8,19 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.jseditor.client.texteditor;
+package org.eclipse.che.ide.hotkeys;
 
-import org.eclipse.che.ide.jseditor.client.keymap.Keybinding;
+import java.util.List;
 
 /**
- * Interface for components that handles key bindings.
+ * Interface for components that return hotKeys list  
+ * @author Alexander Andrienko
  */
-public interface HasKeybindings {
-
+public interface HasHotKeyItems {
+    
     /**
-     * Adds a key bindings.
-     * @param keybinding the new binding
+     * Get hotKeys list 
+     * @return hotKeys list
      */
-    void addKeybinding(Keybinding keybinding);
-
-    /**
-     * Adds a key bindings.
-     * @param keybinding the new binding
-     * @param actionDescription action description
-     */
-    void addKeybinding(Keybinding keybinding, String actionDescription);
+    List<HotKeyItem> getHotKeys();
 }
