@@ -179,7 +179,7 @@ public class GitProjectImporter implements ProjectImporter {
             }
         } catch (UnauthorizedException e) {
             throw new UnauthorizedException(
-                    "You are not authorized to perform the remote import. Codenvy may need accurate keys to the " +
+                    "You are not authorized to perform the remote import. You may need to provide accurate keys to the " +
                     "external system. You can create a new SSH key pair in Window->Preferences->Keys And " +
                     "Certificates->SSH Keystore.");
         } catch (URISyntaxException e) {
