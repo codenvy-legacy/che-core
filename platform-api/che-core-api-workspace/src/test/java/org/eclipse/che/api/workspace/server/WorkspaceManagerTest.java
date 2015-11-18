@@ -13,7 +13,6 @@ package org.eclipse.che.api.workspace.server;
 
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
-import org.eclipse.che.api.core.model.workspace.RuntimeWorkspace;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.core.notification.EventService;
@@ -70,6 +69,8 @@ public class WorkspaceManagerTest {
     @Mock
     WorkspaceDao             workspaceDao;
     @Mock
+    WorkspaceConfigValidator workspaceConfigValidator;
+    @Mock
     MachineManager           client;
     @Mock
     WorkspaceHooks           workspaceHooks;
@@ -81,7 +82,7 @@ public class WorkspaceManagerTest {
 
     @BeforeMethod
     public void setUpManager() throws Exception {
-        manager = spy(new WorkspaceManager(workspaceDao, registry, eventService));
+        manager = spy(new WorkspaceManager(workspaceDao, registry, workspaceConfigValidator, eventService));
         manager.setHooks(workspaceHooks);
 
         when(workspaceDao.create(any(UsersWorkspaceImpl.class))).thenAnswer(invocation -> invocation.getArguments()[0]);

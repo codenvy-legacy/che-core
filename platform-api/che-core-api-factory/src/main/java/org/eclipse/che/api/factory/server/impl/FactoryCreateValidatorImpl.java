@@ -15,6 +15,7 @@ import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.factory.server.FactoryCreateValidator;
 import org.eclipse.che.api.factory.shared.dto.Factory;
 import org.eclipse.che.api.user.server.dao.PreferenceDao;
+import org.eclipse.che.api.workspace.server.WorkspaceConfigValidator;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -24,10 +25,14 @@ import javax.inject.Singleton;
  */
 @Singleton
 public class FactoryCreateValidatorImpl extends FactoryBaseValidator implements FactoryCreateValidator {
+    private WorkspaceConfigValidator workspaceConfigValidator;
+
     @Inject
     public FactoryCreateValidatorImpl(AccountDao accountDao,
-                                      PreferenceDao preferenceDao) {
+                                      PreferenceDao preferenceDao,
+                                      WorkspaceConfigValidator workspaceConfigValidator) {
         super(accountDao, preferenceDao);
+        this.workspaceConfigValidator = workspaceConfigValidator;
     }
 
     @Override
@@ -37,5 +42,6 @@ public class FactoryCreateValidatorImpl extends FactoryBaseValidator implements 
         validateAccountId(factory);
         validateCurrentTimeBeforeSinceUntil(factory);
         validateProjectActions(factory);
+        workspaceConfigValidator.validate(factory.getWorkspace());
     }
 }
