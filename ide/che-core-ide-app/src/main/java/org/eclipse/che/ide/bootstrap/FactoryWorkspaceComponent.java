@@ -113,6 +113,16 @@ public class FactoryWorkspaceComponent extends WorkspaceComponent implements Com
 
         WorkspaceConfigDto workspaceConfigDto = factory.getWorkspace();
         if (workspaceConfigDto != null) {
+            //we don't need to store projects here, they will be auto imported later
+            WorkspaceConfigDto copy = dtoFactory.createDto(WorkspaceConfigDto.class)
+                    .withAttributes(workspaceConfigDto.getAttributes())
+                    .withCommands(workspaceConfigDto.getCommands())
+                    .withDefaultEnvName(workspaceConfigDto.getDefaultEnvName())
+                    .withDescription(workspaceConfigDto.getDescription())
+                    .withEnvironments(workspaceConfigDto.getEnvironments())
+                    .withName(workspaceConfigDto.getName());
+
+
             Operation<UsersWorkspaceDto> workspaceOperation = new Operation<UsersWorkspaceDto>() {
                 @Override
                 public void apply(UsersWorkspaceDto workspace) throws OperationException {
@@ -134,7 +144,7 @@ public class FactoryWorkspaceComponent extends WorkspaceComponent implements Com
                 }
             };
 
-            workspaceServiceClient.create(workspaceConfigDto, "???")
+            workspaceServiceClient.create(copy, null)
                                   .then(workspaceOperation)
                                   .catchError(errorOperation);
             return;
