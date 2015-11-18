@@ -481,7 +481,7 @@ public class HttpJsonHelper {
                 }
                 final String contentType = conn.getContentType();
                 if (!(contentType == null || contentType.startsWith(MediaType.APPLICATION_JSON))) {
-                    throw new IOException("We received an error response from the Codenvy server." +
+                    throw new IOException("We received an error response from the server." +
                                           " Retry the request. If this issue continues, contact. support.");
                 }
 
