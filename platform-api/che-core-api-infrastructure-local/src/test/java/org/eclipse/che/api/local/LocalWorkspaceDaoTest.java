@@ -81,7 +81,6 @@ public class LocalWorkspaceDaoTest {
         workspaceDao.loadWorkspaces();
 
         final UsersWorkspaceImpl result = workspaceDao.get(workspace.getId());
-        System.out.println(result.equals(workspace));
         assertEquals(result, workspace);
     }
 

@@ -25,6 +25,8 @@ import org.eclipse.che.api.core.model.workspace.RuntimeWorkspace;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 import org.eclipse.che.api.machine.server.MachineManager;
+import org.eclipse.che.api.machine.server.exception.MachineException;
+import org.eclipse.che.api.machine.server.exception.SnapshotException;
 import org.eclipse.che.api.machine.server.model.impl.MachineImpl;
 import org.eclipse.che.api.workspace.server.model.impl.RuntimeWorkspaceImpl;
 import org.slf4j.Logger;
@@ -92,6 +94,8 @@ public class RuntimeWorkspaceRegistry {
      *         workspace which should be started
      * @param envName
      *         name of environment
+     * @param recover
+     *         if true - registry tries to recover workspace from snapshot, otherwise starts workspace from recipes
      * @return runtime view of {@code usersWorkspace} with status {@link WorkspaceStatus#RUNNING}
      * @throws ConflictException
      *         when workspace is already running or any other conflict error occurs during environment start
@@ -103,10 +107,10 @@ public class RuntimeWorkspaceRegistry {
      *         when registry {@link #isStopped is stopped} other error occurs during environment start
      * @see MachineManager#createMachineSync(MachineConfig, String, String)
      */
-    public RuntimeWorkspaceImpl start(UsersWorkspace usersWorkspace, String envName) throws ConflictException,
-                                                                                            ServerException,
-                                                                                            BadRequestException,
-                                                                                            NotFoundException {
+    public RuntimeWorkspaceImpl start(UsersWorkspace usersWorkspace, String envName, boolean recover) throws ConflictException,
+                                                                                                             ServerException,
+                                                                                                             BadRequestException,
+                                                                                                             NotFoundException {
         if (envName == null) {
             throw new BadRequestException("Required non-null environment name");
         }
@@ -134,7 +138,7 @@ public class RuntimeWorkspaceRegistry {
         }
 
         // Start active environment
-        final List<MachineImpl> machines = startEnvironment(newRuntime.getActiveEnvironment(), newRuntime.getId());
+        final List<MachineImpl> machines = startEnvironment(newRuntime.getActiveEnvironment(), newRuntime.getId(), recover);
 
         // Update runtime workspace with machines and 'RUNNING' status
         final RuntimeWorkspaceImpl running = get(newRuntime.getId());
@@ -143,6 +147,38 @@ public class RuntimeWorkspaceRegistry {
         running.setStatus(RUNNING);
         update(running);
         return running;
+    }
+
+    /**
+     * Starts {@link UsersWorkspace workspace} with specified environment.
+     *
+     * <p>Actually starts all machines in certain environment starting from dev-machine.
+     * When environment is not specified - default one is going to be used.
+     * During workspace starting workspace is visible with {@link WorkspaceStatus#STARTING starting} status,
+     * until all machines in workspace are started, after that status will be changed to {@link WorkspaceStatus#RUNNING running}.
+     *
+     * <p>Note that it doesn't provide any events for machines start, Machine API is responsible for it.
+     *
+     * @param usersWorkspace
+     *         workspace which should be started
+     * @param envName
+     *         name of environment
+     * @return runtime view of {@code usersWorkspace} with status {@link WorkspaceStatus#RUNNING}
+     * @throws ConflictException
+     *         when workspace is already running or any other conflict error occurs during environment start
+     * @throws BadRequestException
+     *         when active environment is in inconsistent state or {@code envName} is null
+     * @throws NotFoundException
+     *         whe any not found exception occurs during environment start
+     * @throws ServerException
+     *         when registry {@link #isStopped is stopped} other error occurs during environment start
+     * @see MachineManager#createMachineSync(MachineConfig, String, String)
+     */
+    public RuntimeWorkspaceImpl start(UsersWorkspace usersWorkspace, String envName) throws ConflictException,
+                                                                                            ServerException,
+                                                                                            BadRequestException,
+                                                                                            NotFoundException {
+        return start(usersWorkspace, envName, false);
     }
 
     /**
@@ -298,10 +334,10 @@ public class RuntimeWorkspaceRegistry {
     /**
      * Starts all environment machines, starting from dev machine.
      */
-    List<MachineImpl> startEnvironment(Environment environment, String workspaceId) throws BadRequestException,
-                                                                                           ServerException,
-                                                                                           NotFoundException,
-                                                                                           ConflictException {
+    List<MachineImpl> startEnvironment(Environment environment, String workspaceId, boolean recover) throws BadRequestException,
+                                                                                                            ServerException,
+                                                                                                            NotFoundException,
+                                                                                                            ConflictException {
         /* todo replace with environments management
            for now we consider environment is:
            - recipe with type "docker"
@@ -321,7 +357,8 @@ public class RuntimeWorkspaceRegistry {
         if (devMachine == null) {
             throw new BadRequestException("Dev machine was not found in workspace environment " + environment.getName());
         }
-        machines.add(machineManager.createMachineSync(devMachine, workspaceId, environment.getName()));
+
+        machines.add(createMachine(devMachine, workspaceId, environment.getName(), recover));
 
         //TODO should it be error?
         environment.getMachineConfigs()
@@ -329,7 +366,8 @@ public class RuntimeWorkspaceRegistry {
                    .filter(machineConfig -> !machineConfig.isDev())
                    .forEach(machineConfig -> {
                        try {
-                           machines.add(machineManager.createMachineSync(machineConfig, workspaceId, environment.getName()));
+                           // TODO change to true when it will be necessary to recover not only dev machine
+                           machines.add(createMachine(machineConfig, workspaceId, environment.getName(), false));
                        } catch (ApiException apiEx) {
                            //TODO should it be error?
                            LOG.error(apiEx.getMessage(), apiEx);
@@ -337,6 +375,18 @@ public class RuntimeWorkspaceRegistry {
                    });
 
         return machines;
+    }
+
+    /**
+     * Creates or recovers machine based on machine config.
+     */
+    private MachineImpl createMachine(MachineConfig machine, String workspaceId, String envName, boolean recover)
+            throws MachineException, BadRequestException, SnapshotException, NotFoundException, ConflictException {
+        if (recover) {
+            return machineManager.recoverMachine(machine, workspaceId, envName);
+        } else {
+            return machineManager.createMachineSync(machine, workspaceId, envName);
+        }
     }
 
     /**

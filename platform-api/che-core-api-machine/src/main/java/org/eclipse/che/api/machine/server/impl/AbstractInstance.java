@@ -30,6 +30,7 @@ public abstract class AbstractInstance implements Instance {
     private final Channels            channels;
     private final Limits              limits;
     private final MachineSource       source;
+    private final String              envName;
 
     private MachineStatus machineStatus;
 
@@ -42,7 +43,8 @@ public abstract class AbstractInstance implements Instance {
                             Channels channels,
                             Limits limits,
                             MachineSource source,
-                            MachineStatus machineStatus) {
+                            MachineStatus machineStatus,
+                            String envName) {
         this.id = id;
         this.type = type;
         this.owner = owner;
@@ -53,6 +55,7 @@ public abstract class AbstractInstance implements Instance {
         this.limits = limits;
         this.source = source;
         this.machineStatus = machineStatus;
+        this.envName = envName;
     }
 
     public AbstractInstance(MachineState machineState) {
@@ -66,6 +69,7 @@ public abstract class AbstractInstance implements Instance {
         this.limits = machineState.getLimits();
         this.source = machineState.getSource();
         this.machineStatus = machineState.getStatus();
+        this.envName = machineState.getEnvName();
     }
 
     @Override
@@ -111,6 +115,11 @@ public abstract class AbstractInstance implements Instance {
     @Override
     public MachineSource getSource() {
         return source;
+    }
+
+    @Override
+    public String getEnvName() {
+        return envName;
     }
 
     @Override

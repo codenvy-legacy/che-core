@@ -29,18 +29,20 @@ public class MachineStateImpl extends MachineConfigImpl implements MachineState 
     private String        id;
     private ChannelsImpl  channels;
     private String        workspace;
+    private String        envName;
     private String        owner;
     private MachineStatus machineStatus;
 
     public MachineStateImpl(boolean isDev,
-                            String name,
                             String type,
+                            String name,
                             MachineSource source,
                             Limits limits,
                             String id,
                             Channels channels,
                             String workspaceId,
                             String owner,
+                            String envName,
                             MachineStatus machineStatus) {
         super(isDev, name, type, source, limits);
         this.id = id;
@@ -48,6 +50,7 @@ public class MachineStateImpl extends MachineConfigImpl implements MachineState 
         this.workspace = workspaceId;
         this.owner = owner;
         this.machineStatus = machineStatus;
+        this.envName = envName;
     }
 
     public MachineStateImpl(MachineState machine) {
@@ -60,15 +63,17 @@ public class MachineStateImpl extends MachineConfigImpl implements MachineState 
              machine.getChannels(),
              machine.getWorkspaceId(),
              machine.getOwner(),
+             machine.getEnvName(),
              machine.getStatus());
     }
 
     public MachineStateImpl(MachineConfig machine) {
         this(machine.isDev(),
-             machine.getName(),
              machine.getType(),
+             machine.getName(),
              machine.getSource(),
              machine.getLimits(),
+             null,
              null,
              null,
              null,
@@ -95,6 +100,11 @@ public class MachineStateImpl extends MachineConfigImpl implements MachineState 
     }
 
     @Override
+    public String getEnvName() {
+        return envName;
+    }
+
+    @Override
     public String getOwner() {
         return owner;
     }
@@ -118,10 +128,11 @@ public class MachineStateImpl extends MachineConfigImpl implements MachineState 
         if (!(o instanceof MachineStateImpl)) return false;
         if (!super.equals(o)) return false;
         final MachineStateImpl other = (MachineStateImpl)o;
-        return Objects.equals(id, other.id) &&
-               Objects.equals(getChannels(), other.getChannels()) &&
-               Objects.equals(workspace, other.workspace) &&
-               Objects.equals(owner, other.owner);
+        return Objects.equals(id, other.id)
+               && Objects.equals(getChannels(), other.getChannels())
+               && Objects.equals(workspace, other.workspace)
+               && Objects.equals(owner, other.owner)
+               && Objects.equals(envName, other.envName);
     }
 
     @Override
@@ -131,6 +142,7 @@ public class MachineStateImpl extends MachineConfigImpl implements MachineState 
         hash = hash * 31 + getChannels().hashCode();
         hash = hash * 31 + Objects.hashCode(workspace);
         hash = hash * 31 + Objects.hashCode(owner);
+        hash = hash * 31 + Objects.hashCode(envName);
         return hash;
     }
 }

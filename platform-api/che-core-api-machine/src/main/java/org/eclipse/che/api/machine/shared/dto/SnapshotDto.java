@@ -50,6 +50,14 @@ public interface SnapshotDto extends Snapshot, Hyperlinks {
 
     SnapshotDto withDev(boolean isDev);
 
+    SnapshotDto withMachineName(String name);
+
+    void setMachineName(String name);
+
+    SnapshotDto withEnvName(String envName);
+
+    void setEnvName(String envName);
+
     @Override
     SnapshotDto withLinks(List<Link> links);
 }

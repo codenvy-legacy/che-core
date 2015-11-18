@@ -43,6 +43,7 @@ import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.STARTING;
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.STOPPED;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -59,7 +60,7 @@ import static org.testng.Assert.assertNotNull;
 /**
  * Covers main cases of {@link WorkspaceManager}.
  *
- * @author Eugene Voevodin
+ * @author Yevhenii Voevodin
  */
 @Listeners(value = {MockitoTestNGListener.class})
 public class WorkspaceManagerTest {
@@ -75,6 +76,8 @@ public class WorkspaceManagerTest {
     @Mock
     WorkspaceHooks           workspaceHooks;
     @Mock
+    MachineManager           machineManager;
+    @Mock
     RuntimeWorkspaceRegistry registry;
 
     WorkspaceManager   manager;
@@ -82,7 +85,7 @@ public class WorkspaceManagerTest {
 
     @BeforeMethod
     public void setUpManager() throws Exception {
-        manager = spy(new WorkspaceManager(workspaceDao, registry, workspaceConfigValidator, eventService));
+        manager = spy(new WorkspaceManager(workspaceDao, registry, workspaceConfigValidator, eventService, machineManager));
         manager.setHooks(workspaceHooks);
 
         when(workspaceDao.create(any(UsersWorkspaceImpl.class))).thenAnswer(invocation -> invocation.getArguments()[0]);
@@ -137,13 +140,13 @@ public class WorkspaceManagerTest {
     public void shouldBeAbleToStartWorkspace() throws Exception {
         final UsersWorkspaceImpl workspace = manager.createWorkspace(createConfig(), "user123", "account");
         when(workspaceDao.get(workspace.getId())).thenReturn(workspace);
-        doReturn(workspace).when(manager).startWorkspaceAsync(workspace, null);
+        doReturn(workspace).when(manager).startWorkspaceAsync(any(), anyString(), anyBoolean());
         when(registry.get(any())).thenThrow(new NotFoundException(""));
 
         final UsersWorkspace workspace2 = manager.startWorkspaceById(workspace.getId(), null, null);
 
         assertEquals(workspace2.getStatus(), STARTING);
-        verify(manager).startWorkspaceAsync(workspace, workspace.getDefaultEnvName());
+        verify(manager).startWorkspaceAsync(workspace, workspace.getDefaultEnvName(), false);
         verify(workspaceHooks).beforeStart(workspace, workspace.getDefaultEnvName(), null);
     }
 
@@ -163,7 +166,7 @@ public class WorkspaceManagerTest {
         final UsersWorkspace workspace = manager.createWorkspace(config, "user123", "account");
         doReturn(workspace).when(manager).fromConfig(config);
         final RuntimeWorkspaceImpl runtime = mock(RuntimeWorkspaceImpl.class);
-        when(registry.start(any(), anyString())).thenReturn(runtime);
+        when(registry.start(any(), anyString(), anyBoolean())).thenReturn(runtime);
 
         final RuntimeWorkspaceImpl workspace2 = manager.startTemporaryWorkspace(config, "account");
 

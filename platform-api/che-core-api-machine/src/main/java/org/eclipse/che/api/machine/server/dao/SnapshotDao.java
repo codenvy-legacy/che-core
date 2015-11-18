@@ -20,8 +20,27 @@ import java.util.List;
  * Stores metadata of snapshots
  *
  * @author andrew00x
+ * @author Yevhenii Voevodin
  */
 public interface SnapshotDao {
+
+    /**
+     * Retrieves snapshot metadata by machine related information.
+     *
+     * @param workspaceId
+     *         workspace id
+     * @param envName
+     *         name of environment
+     * @param machineName
+     *         name of machine
+     * @return snapshot which matches given parameters
+     * @throws NotFoundException
+     *         when snapshot with such workspaceId, envName and machineName doesn't exist
+     * @throws SnapshotException
+     *         when any other error occurs
+     */
+    SnapshotImpl getSnapshot(String workspaceId, String envName, String machineName) throws NotFoundException, SnapshotException;
+
     /**
      * Retrieve snapshot metadata by id
      *
@@ -43,7 +62,7 @@ public interface SnapshotDao {
      * @throws SnapshotException
      *         if error occurs
      */
-    void saveSnapshot(SnapshotImpl snapshot) throws SnapshotException ;
+    void saveSnapshot(SnapshotImpl snapshot) throws SnapshotException;
 
     /**
      * Find snapshots by owner, workspace, project
@@ -56,7 +75,7 @@ public interface SnapshotDao {
      * @throws SnapshotException
      *         if error occurs
      */
-    List<SnapshotImpl> findSnapshots(String owner, String workspaceId) throws SnapshotException ;
+    List<SnapshotImpl> findSnapshots(String owner, String workspaceId) throws SnapshotException;
 
     /**
      * Remove snapshot by id
@@ -68,5 +87,5 @@ public interface SnapshotDao {
      * @throws SnapshotException
      *         if other error occur
      */
-    void removeSnapshot(String snapshotId) throws NotFoundException, SnapshotException ;
+    void removeSnapshot(String snapshotId) throws NotFoundException, SnapshotException;
 }
