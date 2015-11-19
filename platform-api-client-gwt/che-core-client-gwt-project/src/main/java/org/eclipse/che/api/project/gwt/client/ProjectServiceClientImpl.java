@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.gwt.client;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -26,11 +27,14 @@ import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.workspace.shared.dto.ModuleConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
+import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
 import org.eclipse.che.ide.MimeType;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
+import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.websocket.Message;
 import org.eclipse.che.ide.websocket.MessageBuilder;
 import org.eclipse.che.ide.websocket.MessageBus;
@@ -44,6 +48,8 @@ import java.util.Map;
 import static com.google.gwt.http.client.RequestBuilder.DELETE;
 import static com.google.gwt.http.client.RequestBuilder.POST;
 import static com.google.gwt.http.client.RequestBuilder.PUT;
+import static org.eclipse.che.api.promises.client.callback.PromiseHelper.newCallback;
+import static org.eclipse.che.api.promises.client.callback.PromiseHelper.newPromise;
 import static org.eclipse.che.ide.MimeType.APPLICATION_JSON;
 import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
 import static org.eclipse.che.ide.rest.HTTPHeader.CONTENTTYPE;
@@ -64,6 +70,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     private final AsyncRequestLoader       loader;
     private final AsyncRequestFactory      asyncRequestFactory;
     private final DtoFactory               dtoFactory;
+    private final DtoUnmarshallerFactory   dtoUnmarshaller;
     private final String                   baseHttpUrl;
 
     @Inject
@@ -72,7 +79,8 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
                                        ExtServerStateController extServerStateController,
                                        AsyncRequestLoader loader,
                                        AsyncRequestFactory asyncRequestFactory,
-                                       DtoFactory dtoFactory) {
+                                       DtoFactory dtoFactory,
+                                       DtoUnmarshallerFactory dtoUnmarshaller) {
         this.extPath = extPath;
         this.workspaceId = workspaceId;
         this.projectServicePath = "/project/" + workspaceId;
@@ -80,6 +88,8 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         this.loader = loader;
         this.asyncRequestFactory = asyncRequestFactory;
         this.dtoFactory = dtoFactory;
+        this.dtoUnmarshaller= dtoUnmarshaller;
+
         baseHttpUrl = extPath + projectServicePath;
     }
 
@@ -89,6 +99,16 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loader, "Getting projects...")
                            .send(callback);
+    }
+
+    @Override
+    public Promise<List<ProjectDescriptor>> getProjects(boolean includeAttributes) {
+        return newPromise(new AsyncPromiseHelper.RequestCall<List<ProjectDescriptor>>() {
+            @Override
+            public void makeCall(AsyncCallback<List<ProjectDescriptor>> callback) {
+                        getProjects(false, newCallback(callback, dtoUnmarshaller.newListUnmarshaller(ProjectDescriptor.class)));
+            }
+        });
     }
 
     @Override
