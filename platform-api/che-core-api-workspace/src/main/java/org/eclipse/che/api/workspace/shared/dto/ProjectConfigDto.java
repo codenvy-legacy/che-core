@@ -59,11 +59,11 @@ public interface ProjectConfigDto extends ModuleConfigDto, ProjectConfig {
 
     @Override
     @FactoryParameter(obligation = OPTIONAL)
-    List<String> getMixinTypes();
+    List<String> getMixins();
 
-    void setMixinTypes(List<String> mixinTypes);
+    void setMixins(List<String> mixins);
 
-    ProjectConfigDto withMixinTypes(List<String> mixinTypes);
+    ProjectConfigDto withMixins(List<String> mixins);
 
     @Override
     @FactoryParameter(obligation = OPTIONAL)

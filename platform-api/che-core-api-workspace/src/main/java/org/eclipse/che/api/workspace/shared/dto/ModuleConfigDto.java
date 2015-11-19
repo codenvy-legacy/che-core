@@ -60,11 +60,11 @@ public interface ModuleConfigDto extends ModuleConfig {
 
     @Override
     @FactoryParameter(obligation = OPTIONAL)
-    List<String> getMixinTypes();
+    List<String> getMixins();
 
-    void setMixinTypes(List<String> mixinTypes);
+    void setMixins(List<String> mixins);
 
-    ModuleConfigDto withMixinTypes(List<String> mixinTypes);
+    ModuleConfigDto withMixins(List<String> mixins);
 
     @Override
     @FactoryParameter(obligation = OPTIONAL)

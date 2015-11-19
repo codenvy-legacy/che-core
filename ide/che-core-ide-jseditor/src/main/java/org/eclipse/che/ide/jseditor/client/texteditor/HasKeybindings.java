@@ -22,4 +22,11 @@ public interface HasKeybindings {
      * @param keybinding the new binding
      */
     void addKeybinding(Keybinding keybinding);
+
+    /**
+     * Adds a key bindings.
+     * @param keybinding the new binding
+     * @param actionDescription action description
+     */
+    void addKeybinding(Keybinding keybinding, String actionDescription);
 }

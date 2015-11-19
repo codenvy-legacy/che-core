@@ -36,7 +36,7 @@ public class ModuleConfigImpl implements ModuleConfig {
     private String                    path;
     private String                    description;
     private String                    type;
-    private List<String>              mixinTypes;
+    private List<String>              mixins;
     private Map<String, List<String>> attributes;
     private List<ModuleConfig>        modules;
 
@@ -48,7 +48,7 @@ public class ModuleConfigImpl implements ModuleConfig {
         path = moduleConfig.getPath();
         description = moduleConfig.getDescription();
         type = moduleConfig.getType();
-        mixinTypes = new ArrayList<>(moduleConfig.getMixinTypes());
+        mixins = new ArrayList<>(moduleConfig.getMixins());
         modules = new ArrayList<>(moduleConfig.getModules() != null ? moduleConfig.getModules() : Collections.<ModuleConfig>emptyList());
         attributes = moduleConfig.getAttributes()
                                  .entrySet()
@@ -93,15 +93,15 @@ public class ModuleConfigImpl implements ModuleConfig {
     }
 
     @Override
-    public List<String> getMixinTypes() {
-        if (mixinTypes == null) {
-            mixinTypes = new ArrayList<>();
+    public List<String> getMixins() {
+        if (mixins == null) {
+            mixins = new ArrayList<>();
         }
-        return mixinTypes;
+        return mixins;
     }
 
-    public void setMixinTypes(List<String> mixinTypes) {
-        this.mixinTypes = mixinTypes;
+    public void setMixins(List<String> mixins) {
+        this.mixins = mixins;
     }
 
     @Override
@@ -135,7 +135,7 @@ public class ModuleConfigImpl implements ModuleConfig {
                Objects.equals(path, other.path) &&
                Objects.equals(description, other.description) &&
                Objects.equals(type, other.type) &&
-               getMixinTypes().equals(other.getMixinTypes()) &&
+               getMixins().equals(other.getMixins()) &&
                getAttributes().equals(other.getAttributes()) &&
                getModules().equals(other.getModules());
     }
@@ -147,7 +147,7 @@ public class ModuleConfigImpl implements ModuleConfig {
         hash = hash * 31 + Objects.hashCode(path);
         hash = hash * 31 + Objects.hashCode(description);
         hash = hash * 31 + Objects.hashCode(type);
-        hash = hash * 31 + getMixinTypes().hashCode();
+        hash = hash * 31 + getMixins().hashCode();
         hash = hash * 31 + getAttributes().hashCode();
         hash = hash * 31 + getModules().hashCode();
         return hash;
@@ -160,7 +160,7 @@ public class ModuleConfigImpl implements ModuleConfig {
                ", path='" + path + '\'' +
                ", description='" + description + '\'' +
                ", type='" + type + '\'' +
-               ", mixinTypes=" + mixinTypes +
+               ", mixins=" + mixins +
                ", attributes=" + attributes +
                ", modules=" + modules +
                '}';

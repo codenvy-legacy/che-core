@@ -77,12 +77,12 @@ public interface ProjectUpdate {
 
     /** Gets project mixin types */
     @ApiModelProperty("Mixing types")
-    List<String> getMixinTypes();
+    List<String> getMixins();
 
     /** Sets permissions of current user on this project. */
-    void setMixinTypes(List<String> mixinTypes);
+    void setMixins(List<String> mixins);
 
-    ProjectUpdate withMixinTypes(List<String> mixinTypes);
+    ProjectUpdate withMixins(List<String> mixins);
 
 
     String getRecipe();

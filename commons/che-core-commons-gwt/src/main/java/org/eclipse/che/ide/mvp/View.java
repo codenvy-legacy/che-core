@@ -25,11 +25,11 @@ import elemental.dom.Element;
  */
 public interface View<D> {
     /** @return the delegate which receives events from this view. */
-    public D getDelegate();
+    D getDelegate();
 
     /** Sets the delegate to receive events from this view. */
-    public void setDelegate(D delegate);
+    void setDelegate(D delegate);
 
     /** @return the base element for this view. */
-    public Element getElement();
+    Element getElement();
 }

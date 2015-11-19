@@ -8,27 +8,19 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.core.model.workspace;
+package org.eclipse.che.ide.hotkeys;
 
 import java.util.List;
-import java.util.Map;
 
 /**
- * @author  Vitalii Parfonov
+ * Interface for components that return hotKeys list  
+ * @author Alexander Andrienko
  */
-public interface ModuleConfig {
-
-    String getName();
-
-    String getPath();
-
-    String getDescription();
-
-    String getType();
-
-    List<String> getMixins();
-
-    Map<String, List<String>> getAttributes();
-
-    List<? extends ModuleConfig> getModules();
+public interface HasHotKeyItems {
+    
+    /**
+     * Get hotKeys list 
+     * @return hotKeys list
+     */
+    List<HotKeyItem> getHotKeys();
 }

@@ -14,10 +14,6 @@ package org.eclipse.che.api.workspace.server.model.impl;
 import org.eclipse.che.api.core.model.project.SourceStorage;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import static java.util.stream.Collectors.toMap;
@@ -78,7 +74,7 @@ public class ProjectConfigImpl extends ModuleConfigImpl implements ProjectConfig
                ", path='" + super.getPath() + '\'' +
                ", description='" + super.getDescription() + '\'' +
                ", type='" + super.getType() + '\'' +
-               ", mixinTypes=" + super.getMixinTypes() +
+               ", mixins=" + super.getMixins() +
                ", attributes=" + super.getAttributes() +
                ", storage=" + storage +
                '}';
