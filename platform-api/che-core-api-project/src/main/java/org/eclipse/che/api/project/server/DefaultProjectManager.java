@@ -259,7 +259,7 @@ public final class DefaultProjectManager implements ProjectManager {
             throws ForbiddenException, ServerException, NotFoundException, ConflictException, IOException {
         Project project = getProject(workspace, path);
         String oldProjectType = null;
-        List<String> oldMixinTypes = new ArrayList<>();
+        List<String> oldMixins = new ArrayList<>();
         // If a project does not exist in the target path, create a new one
         if (project == null) {
             FolderEntry projectsRoot = getProjectsRoot(workspace);
@@ -273,7 +273,7 @@ public final class DefaultProjectManager implements ProjectManager {
             try {
                 ProjectConfig config = project.getConfig();
                 oldProjectType = config.getType();
-                oldMixinTypes = config.getMixinTypes();
+                oldMixins = config.getMixins();
             } catch (ProjectTypeConstraintException | ValueStorageException e) {
                 // here we allow changing bad project type on registered
                 LOG.warn(e.getMessage());
@@ -290,9 +290,9 @@ public final class DefaultProjectManager implements ProjectManager {
                 projectTypeChangedHandler.onProjectTypeChanged(project.getBaseFolder());
             }
         }
-        List<String> mixinTypes = firstNonNull(newConfig.getMixinTypes(), Collections.<String>emptyList());
-        for (String mixin : mixinTypes) {
-            if (!oldMixinTypes.contains(mixin)) {
+        List<String> mixins = firstNonNull(newConfig.getMixins(), Collections.<String>emptyList());
+        for (String mixin : mixins) {
+            if (!oldMixins.contains(mixin)) {
                 ProjectTypeChangedHandler projectTypeChangedHandler = handlers.getProjectTypeChangedHandler(mixin);
                 if (projectTypeChangedHandler != null) {
                     projectTypeChangedHandler.onProjectTypeChanged(project.getBaseFolder());
@@ -431,7 +431,7 @@ public final class DefaultProjectManager implements ProjectManager {
             projectConfigDto = DtoFactory.getInstance().createDto(ProjectConfigDto.class);
         }
 
-        ProjectTypes types = new ProjectTypes(project, projectConfigDto.getType(), projectConfigDto.getMixinTypes(), this);
+        ProjectTypes types = new ProjectTypes(project, projectConfigDto.getType(), projectConfigDto.getMixins(), this);
         types.addTransient();
 
         final Map<String, List<String>> attributes = new HashMap<>();
@@ -473,7 +473,7 @@ public final class DefaultProjectManager implements ProjectManager {
                          .withDescription(projectConfigDto.getDescription())
                          .withType(types.getPrimary().getId())
                          .withAttributes(attributes)
-                         .withMixinTypes(types.mixinIds())
+                         .withMixins(types.mixinIds())
                          .withModules(projectConfigDto.getModules());
     }
 
@@ -493,7 +493,7 @@ public final class DefaultProjectManager implements ProjectManager {
                                                          .withModules(modules)
                                                          .withSource(DtoFactory.getInstance().createDto(SourceStorageDto.class));
 
-        ProjectTypes types = new ProjectTypes(project, config.getType(), config.getMixinTypes(), this);
+        ProjectTypes types = new ProjectTypes(project, config.getType(), config.getMixins(), this);
         types.removeTransient();
 
         projectConfig.setType(types.getPrimary().getId());
@@ -501,7 +501,7 @@ public final class DefaultProjectManager implements ProjectManager {
 
         ArrayList<String> ms = new ArrayList<>();
         ms.addAll(types.getMixins().keySet());
-        projectConfig.setMixinTypes(ms);
+        projectConfig.setMixins(ms);
 
         // update attributes
         HashMap<String, List<String>> checkVariables = new HashMap<>();
@@ -584,7 +584,7 @@ public final class DefaultProjectManager implements ProjectManager {
                                            .withModules(modules)
                                            .withAttributes(moduleConfig.getAttributes())
                                            .withDescription(moduleConfig.getDescription())
-                                           .withMixinTypes(moduleConfig.getMixinTypes());
+                                           .withMixins(moduleConfig.getMixins());
 
         projectModules.add(module);
     }
