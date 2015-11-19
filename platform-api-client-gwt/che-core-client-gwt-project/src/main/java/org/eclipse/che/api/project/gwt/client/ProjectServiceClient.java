@@ -18,6 +18,7 @@ import org.eclipse.che.api.project.shared.dto.TreeElement;
 import org.eclipse.che.api.workspace.shared.dto.ModuleConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
+import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.websocket.rest.RequestCallback;
 
@@ -39,6 +40,11 @@ public interface ProjectServiceClient {
      *         the callback to use for the response
      */
     void getProjects(boolean includeAttributes, AsyncRequestCallback<List<ProjectDescriptor>> callback);
+
+    /**
+     * Get all projects in current workspace.
+     */
+    Promise<List<ProjectDescriptor>> getProjects(boolean includeAttributes);
 
     /**
      * Get all projects in specific workspace.
