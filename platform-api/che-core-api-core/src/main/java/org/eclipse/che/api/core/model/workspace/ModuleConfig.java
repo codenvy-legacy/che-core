@@ -26,7 +26,7 @@ public interface ModuleConfig {
 
     String getType();
 
-    List<String> getMixinTypes();
+    List<String> getMixins();
 
     Map<String, List<String>> getAttributes();
 

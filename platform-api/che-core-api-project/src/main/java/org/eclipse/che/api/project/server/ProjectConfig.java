@@ -27,15 +27,15 @@ public class ProjectConfig {
     private String                      typeId;
     private Map<String, AttributeValue> attributes;
     private String                      recipe;
-    private List<String>                mixinTypes;
+    private List<String>                mixins;
 
     public ProjectConfig(String description, String typeId, Map<String, AttributeValue> attributes, String recipe,
-                         List<String> mixinTypes) {
+                         List<String> mixins) {
         this.description = description;
         this.typeId = typeId;
         this.attributes = (attributes == null) ? new HashMap<>() : attributes;
         this.recipe = recipe;
-        this.mixinTypes = (mixinTypes == null) ? new ArrayList<>() : mixinTypes;
+        this.mixins = (mixins == null) ? new ArrayList<>() : mixins;
     }
 
     public ProjectConfig(String description, String typeId) {
@@ -62,7 +62,7 @@ public class ProjectConfig {
         return recipe;
     }
 
-    public List<String> getMixinTypes() {
-        return mixinTypes;
+    public List<String> getMixins() {
+        return mixins;
     }
 }

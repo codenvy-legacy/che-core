@@ -564,7 +564,7 @@ public class FactoryService extends Service {
                                       .withType(projectDescription.getType())
                                       .withAttributes(attributes)
                                       .withDescription(projectDescription.getDescription())
-                                      .withMixinTypes(projectDescription.getMixinTypes());
+                                      .withMixins(projectDescription.getMixins());
 
             for (ModuleConfig module : projectManager.getProjectModules(project)) {
                 String moduleRelativePath = module.getPath().substring(project.getPath().length());
@@ -573,7 +573,7 @@ public class FactoryService extends Service {
                                                        .withPath(moduleRelativePath)
                                                                //.withRecipe(moduleConfig.getRecipe())
                                                        .withAttributes(module.getAttributes())
-                                                       .withMixinTypes(module.getMixinTypes())
+                                                       .withMixins(module.getMixins())
                                                        .withDescription(module.getDescription()));
             }
         } catch (IOException e) {

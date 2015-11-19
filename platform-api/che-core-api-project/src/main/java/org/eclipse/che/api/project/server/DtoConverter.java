@@ -186,7 +186,7 @@ public class DtoConverter {
             dto.withDescription(config.getDescription());
 //            dto.withRecipe(config.getSource().getLocation());
             String typeId = config.getType();
-            dto.withType(typeId).withTypeName(ptRegistry.getProjectType(typeId).getDisplayName()).withMixins(config.getMixinTypes());
+            dto.withType(typeId).withTypeName(ptRegistry.getProjectType(typeId).getDisplayName()).withMixins(config.getMixins());
 
             dto.withAttributes(config.getAttributes());
 
@@ -268,7 +268,7 @@ public class DtoConverter {
                          .withModules(modules)
                          .withAttributes(moduleConfig.getAttributes())
                          .withDescription(moduleConfig.getDescription())
-                         .withMixinTypes(moduleConfig.getMixinTypes());
+                         .withMixins(moduleConfig.getMixins());
     }
 
     public static ProjectReference toProjectReference(Project project, UriBuilder uriBuilder) throws InvalidValueException {

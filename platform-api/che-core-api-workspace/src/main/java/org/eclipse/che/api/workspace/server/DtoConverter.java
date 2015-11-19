@@ -23,7 +23,6 @@ import org.eclipse.che.api.machine.shared.dto.CommandDto;
 import org.eclipse.che.api.machine.shared.dto.MachineConfigDto;
 import org.eclipse.che.api.machine.shared.dto.MachineDto;
 import org.eclipse.che.api.machine.shared.dto.MachineStateDto;
-import org.eclipse.che.api.workspace.server.model.impl.ProjectConfigImpl;
 import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
 import org.eclipse.che.api.workspace.shared.dto.EnvironmentStateDto;
 import org.eclipse.che.api.workspace.shared.dto.ModuleConfigDto;
@@ -122,7 +121,7 @@ public final class DtoConverter {
                                                                                 .withPath(projectCfg.getPath())
                                                                                 .withType(projectCfg.getType())
                                                                                 .withAttributes(projectCfg.getAttributes())
-                                                                                .withMixinTypes(projectCfg.getMixinTypes());
+                                                                                .withMixins(projectCfg.getMixins());
         if (projectCfg.getModules() != null) {
             final List<ModuleConfigDto> modules = projectCfg.getModules()
                                                             .stream()
@@ -149,7 +148,7 @@ public final class DtoConverter {
                                                                                 .withPath(moduleConfig.getPath())
                                                                                 .withType(moduleConfig.getType())
                                                                                 .withAttributes(moduleConfig.getAttributes())
-                                                                                .withMixinTypes(moduleConfig.getMixinTypes());
+                                                                                .withMixins(moduleConfig.getMixins());
         if (moduleConfig.getModules() != null) {
             final List<ModuleConfigDto> modules = moduleConfig.getModules()
                                                               .stream()

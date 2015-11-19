@@ -116,7 +116,7 @@ public class LocalWorkspaceDaoTest {
         project1.setDescription("This is test project");
         project1.setPath("/path/to/project");
         project1.setType("maven");
-        project1.setMixinTypes(singletonList("git"));
+        project1.setMixins(singletonList("git"));
 
         final Map<String, List<String>> projectAttrs = new HashMap<>(4);
         projectAttrs.put("project.attribute1", singletonList("value1"));
