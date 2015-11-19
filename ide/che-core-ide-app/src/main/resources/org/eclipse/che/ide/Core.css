@@ -118,7 +118,7 @@ body, td {
     top: 0;
     left: 0;
     cursor: pointer;
-    padding-left: 6px;
+    padding-left: 10px;
     font-weight: bold;
     font-size: fontSize;
     color: radioButtonFontColor;
@@ -237,6 +237,7 @@ body, td {
 
 .gwt-Button, button {
     height: buttonHeight;
+    min-width: buttonMinWidth;
     padding: 0px buttonPadding;
     outline: none;
     font-size: buttonFontSize;

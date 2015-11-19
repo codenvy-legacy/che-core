@@ -14,19 +14,28 @@
 @def listItemLeftPadding 24px;
 @def listItemRightPadding 44px;
 
-.listBase {
-    outline: none;
-    white-space: nowrap;
-    background: dialogContentBackground;
+.rootPanel {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: categoriesListItemBackgroundColor;
 }
 
-.listContainer {
+.scrollPanel {
+    position: absolute;
     height: 100%;
+    width: 100%;
     overflow-y: auto;
     overflow-x: hidden;
     font-size: textFieldFontSize;
     font-family: textFieldFontFamily;
-    background-color: categoriesListItemBackgroundColor;
+}
+
+.lockPanel {
+    position: absolute;
+    width: 100%;
+    height: 100%;
 }
 
 .categoryItem {
