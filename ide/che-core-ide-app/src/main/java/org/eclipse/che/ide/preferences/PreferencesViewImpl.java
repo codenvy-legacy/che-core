@@ -12,15 +12,6 @@ package org.eclipse.che.ide.preferences;
 
 import elemental.html.TableElement;
 
-import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.api.preferences.PreferencePagePresenter;
-import org.eclipse.che.ide.ui.list.CategoriesList;
-import org.eclipse.che.ide.ui.list.Category;
-import org.eclipse.che.ide.ui.list.CategoryRenderer;
-import org.eclipse.che.ide.ui.window.Window;
-import org.eclipse.che.ide.util.dom.Elements;
-import org.eclipse.che.ide.util.loging.Log;
-
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -34,11 +25,20 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.api.preferences.PreferencePagePresenter;
+import org.eclipse.che.ide.ui.list.CategoriesList;
+import org.eclipse.che.ide.ui.list.Category;
+import org.eclipse.che.ide.ui.list.CategoryRenderer;
+import org.eclipse.che.ide.ui.window.Window;
+import org.eclipse.che.ide.util.dom.Elements;
+import org.eclipse.che.ide.util.loging.Log;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
-
 
 /**
  * PreferenceViewImpl is the view of preferences.
@@ -117,9 +117,6 @@ public class PreferencesViewImpl extends Window implements PreferencesView {
     }
 
     private void createButtons() {
-        /*
-            Save
-         */
         btnSave = createPrimaryButton(locale.save(), "window-preferences-storeChanges", new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
@@ -129,9 +126,6 @@ public class PreferencesViewImpl extends Window implements PreferencesView {
         });
         addButtonToFooter(btnSave);
 
-        /*
-            Refresh
-         */
         btnRefresh = createButton(locale.refresh(), "window-preferences-refresh", new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
@@ -141,9 +135,6 @@ public class PreferencesViewImpl extends Window implements PreferencesView {
         });
         addButtonToFooter(btnRefresh);
 
-        /*
-            Close
-         */
         btnClose = createButton(locale.close(), "window-preferences-close", new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
@@ -187,12 +178,14 @@ public class PreferencesViewImpl extends Window implements PreferencesView {
     /** {@inheritDoc} */
     @Override
     public void setPreferences(Map<String, Set<PreferencePagePresenter>> preferences) {
-        List<Category<?>> categoriesList = new ArrayList<Category<?>>();
-        for (String s : preferences.keySet()) {
-            Category<PreferencePagePresenter> category =
-                    new Category<PreferencePagePresenter>(s, preferencesPageRenderer, preferences.get(s), preferencesPageDelegate);
-            categoriesList.add(category);
+        List<Category<?>> categoriesList = new ArrayList<>();
+        for (Entry<String, Set<PreferencePagePresenter>> entry : preferences.entrySet()) {
+            categoriesList.add(new Category<>(entry.getKey(),
+                                              preferencesPageRenderer,
+                                              entry.getValue(),
+                                              preferencesPageDelegate));
         }
+
         list.render(categoriesList);
     }
 

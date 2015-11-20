@@ -17,6 +17,7 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Class responsible for register DTO providers. It uses {@link DtoFactoryVisitorRegistry} to acquire
@@ -38,9 +39,8 @@ public class DtoRegistrar {
     public void registerDtoProviders() {
         Map<String, Provider> dtoVisitors = dtoFactoryVisitorRegistry.getDtoFactoryVisitors();
 
-        for (String dtoFactoryVisitorFqn: dtoVisitors.keySet()) {
-            Provider provider = dtoVisitors.get(dtoFactoryVisitorFqn);
-            ((DtoFactoryVisitor)provider.get()).accept(dtoFactory);
+        for (Entry<String, Provider> entry : dtoVisitors.entrySet()) {
+            ((DtoFactoryVisitor)entry.getValue().get()).accept(dtoFactory);
         }
     }
 }

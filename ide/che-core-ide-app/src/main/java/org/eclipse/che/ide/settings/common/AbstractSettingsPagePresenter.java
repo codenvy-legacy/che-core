@@ -22,7 +22,7 @@ import javax.validation.constraints.NotNull;
  */
 public abstract class AbstractSettingsPagePresenter implements SettingsPagePresenter {
 
-    public static String DEFAULT_CATEGORY = "Java Compiler";
+    public static final String DEFAULT_CATEGORY = "Java Compiler";
 
     protected DirtyStateListener delegate;
 
