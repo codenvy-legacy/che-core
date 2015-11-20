@@ -252,7 +252,6 @@ public class CoreGinModule extends AbstractGinModule {
         bind(String.class).annotatedWith(RestContext.class).toProvider(RestContextProvider.class).in(Singleton.class);
         bind(ExtensionRegistry.class).in(Singleton.class);
         bind(StandardComponentInitializer.class).in(Singleton.class);
-//        bind(BuildContext.class).to(BuildContextImpl.class).in(Singleton.class);
         bind(ClipboardButtonBuilder.class).to(ClipboardButtonBuilderImpl.class);
 
         install(new GinFactoryModuleBuilder().implement(PartStackView.class, PartStackViewImpl.class).build(PartStackViewFactory.class));

@@ -22,13 +22,6 @@
             background-color: partBackground;
         }
 
-        .labelActivate,
-        .enabledColumn {
-            border: none;
-            border-right: 1px solid separatorColor;
-        }
-
-        .labelActivate,
         .labelName {
             padding-top: 2px;
         }
@@ -43,15 +36,10 @@
             margin-left: 10px;
         }
 
-        .enabledColumn,
         .titleColumn {
             min-height: 20px;
             padding: 0px;
             margin: 0px;
-        }
-
-        .leftSeparator {
-            border-left: 1px solid separatorColor;
         }
 
         .chatMessageInput {
@@ -89,9 +77,6 @@
                     <g:DockLayoutPanel width="100%" height="100%">
                         <g:north size="22" unit="PX">
                             <g:DockLayoutPanel width="100%" height="100%" styleName="{style.headerTitle}">
-                                <!--<g:west size="75" unit="PX">-->
-                                    <!--<g:Label styleName="{style.labelActivate}">Activate</g:Label>-->
-                                <!--</g:west>-->
                                 <g:center>
                                     <g:Label styleName="{style.labelName}">Plugin Name</g:Label>
                                 </g:center>
