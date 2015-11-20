@@ -32,14 +32,10 @@ import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.DefaultActionGroup;
 import org.eclipse.che.ide.api.extension.ExtensionDescription;
 import org.eclipse.che.ide.ui.toolbar.ToolbarPresenter;
-import org.eclipse.che.ide.util.loging.Log;
 
 import java.util.List;
 
-/**
- * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
- * @version $Id:
- */
+/** @author Evgen Vidolob */
 @Singleton
 public class ExtensionManagerViewImpl implements ExtensionManagerView {
     private static ExtensionManagerViewImplUiBinder ourUiBinder = GWT.create(ExtensionManagerViewImplUiBinder.class);
@@ -52,47 +48,17 @@ public class ExtensionManagerViewImpl implements ExtensionManagerView {
     TextAreaElement                descriptionArea;
     @UiField
     SimplePanel                    toolBarPanel;
+
     private ActionDelegate delegate;
 
     @Inject
     public ExtensionManagerViewImpl(ToolbarPresenter toolbarPresenter, ActionManager actionManager, Resources resources) {
-        dataGrid = new DataGrid<ExtensionDescription>(100, resources);
+        dataGrid = new DataGrid<>(100, resources);
         rootElement = ourUiBinder.createAndBindUi(this);
-//        toolbarPresenter.go(toolBarPanel);
         DefaultActionGroup actionGroup = new DefaultActionGroup("extensionManager", false, actionManager);
         actionManager.registerAction("extensionManagerGroup", actionGroup);
-//        SortByStatusAction sortByStatusAction = new SortByStatusAction(this, resources);
-//        actionManager.registerAction("extensionManagerSortByStatus", sortByStatusAction);
-//        actionGroup.add(sortByStatusAction);
         toolbarPresenter.bindMainGroup(actionGroup);
         UIObject.ensureDebugId(descriptionArea, "window-preferences-extensions-descriptionArea");
-
-//        CheckboxCell checkboxCell = new CheckboxCell(false, false);
-//        Column<ExtensionDescription, Boolean> enabledColumn = new Column<ExtensionDescription, Boolean>(checkboxCell) {
-//            @Override
-//            public Boolean getValue(ExtensionDescription object) {
-//                return object.isEnabled();
-//            }
-//
-//            @Override
-//            public void render(Cell.MachineContext context, ExtensionDescription object, SafeHtmlBuilder sb) {
-//                sb.appendHtmlConstant(
-//                        "<div id=\"" + UIObject.DEBUG_ID_PREFIX + "window-preferences-extensions-row-" + context.getIndex() + "\">");
-//                super.render(context, object, sb);
-//            }
-//        };
-
-//        enabledColumn.setFieldUpdater(new FieldUpdater<ExtensionDescription, Boolean>() {
-//            @Override
-//            public void update(int index, ExtensionDescription object, Boolean value) {
-//                object.setEnabled(value);
-//                delegate.setDirty();
-//            }
-//        });
-//        enabledColumn.setCellStyleNames(style.enabledColumn());
-//
-//        dataGrid.addColumn(enabledColumn);
-//        dataGrid.setColumnWidth(enabledColumn, 75, com.google.gwt.dom.client.Style.Unit.PX);
 
         Column<ExtensionDescription, String> titleColumn = new Column<ExtensionDescription, String>(new TextCell()) {
             @Override
@@ -108,10 +74,8 @@ public class ExtensionManagerViewImpl implements ExtensionManagerView {
         selectionModel.addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
             @Override
             public void onSelectionChange(SelectionChangeEvent event) {
-
             }
         });
-
     }
 
     /** {@inheritDoc} */
@@ -126,10 +90,6 @@ public class ExtensionManagerViewImpl implements ExtensionManagerView {
         return rootElement;
     }
 
-    public void sortByStatus(boolean state) {
-        Log.info(getClass(), "Not implemented yet!");
-    }
-
     /** {@inheritDoc} */
     @Override
     public void setExtensions(List<ExtensionDescription> extensions) {
@@ -137,22 +97,15 @@ public class ExtensionManagerViewImpl implements ExtensionManagerView {
         dataGrid.redraw();
     }
 
-    interface ExtensionManagerViewImplUiBinder
-            extends UiBinder<DockLayoutPanel, ExtensionManagerViewImpl> {
+    interface ExtensionManagerViewImplUiBinder extends UiBinder<DockLayoutPanel, ExtensionManagerViewImpl> {
     }
 
     interface Style extends CssResource {
         String headerTitle();
 
-        String labelActivate();
-
         String labelName();
 
-        String enabledColumn();
-
         String titleColumn();
-
-        String leftSeparator();
 
         String chatMessageInput();
 

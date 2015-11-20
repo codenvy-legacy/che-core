@@ -10,17 +10,14 @@
  *******************************************************************************/
 package org.eclipse.che.ide.extension;
 
-import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.Resources;
-
-import org.eclipse.che.ide.api.extension.ExtensionDescription;
-import org.eclipse.che.ide.api.extension.ExtensionRegistry;
-import org.eclipse.che.ide.api.preferences.AbstractPreferencePagePresenter;
-import org.eclipse.che.ide.api.preferences.PreferencesManager;
-import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
+import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.api.extension.ExtensionDescription;
+import org.eclipse.che.ide.api.extension.ExtensionRegistry;
+import org.eclipse.che.ide.api.preferences.AbstractPreferencePagePresenter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,25 +26,15 @@ import java.util.List;
 @Singleton
 public class ExtensionManagerPresenter extends AbstractPreferencePagePresenter implements ExtensionManagerView.ActionDelegate {
 
-    public final static String PREFS_EXTENSIONS = "extensions";
-
     private ExtensionManagerView view;
     private ExtensionRegistry    extensionRegistry;
-    private PreferencesManager   preferencesManager;
-    private DialogFactory        dialogFactory;
     private boolean              dirty;
 
-    private List<ExtensionDescription> extensions;
-
     @Inject
-    public ExtensionManagerPresenter(Resources resources, CoreLocalizationConstant constant, ExtensionManagerView view,
-                                     ExtensionRegistry extensionRegistry, PreferencesManager preferencesManager,
-                                     DialogFactory dialogFactory) {
-        super(constant.extensionTitle(), constant.extensionCategory(), resources.extension());
+    public ExtensionManagerPresenter(CoreLocalizationConstant constant, ExtensionManagerView view, ExtensionRegistry extensionRegistry) {
+        super(constant.extensionTitle(), constant.extensionCategory(), null);
         this.view = view;
         this.extensionRegistry = extensionRegistry;
-        this.preferencesManager = preferencesManager;
-        this.dialogFactory = dialogFactory;
         view.setDelegate(this);
     }
 
@@ -61,7 +48,7 @@ public class ExtensionManagerPresenter extends AbstractPreferencePagePresenter i
     @Override
     public void go(AcceptsOneWidget container) {
         container.setWidget(view);
-        extensions = new ArrayList<>();
+        List<ExtensionDescription> extensions = new ArrayList<>();
         for (ExtensionDescription ed : extensionRegistry.getExtensionDescriptions().values()) {
             extensions.add(ed);
         }
@@ -69,23 +56,11 @@ public class ExtensionManagerPresenter extends AbstractPreferencePagePresenter i
     }
 
     @Override
-    public void setDirty() {
-        dirty = true;
-        delegate.onDirtyChanged();
-    }
-
-    @Override
     public void storeChanges() {
-//        Jso jso = Jso.create();
-//        for (ExtensionDescription ed : extensions) {
-//            jso.addField(ed.getId(), ed.isEnabled());
-//        }
-//        preferencesManager.setValue(PREFS_EXTENSIONS, jso.serialize());
         dirty = false;
     }
 
     @Override
     public void revertChanges() {
     }
-
 }

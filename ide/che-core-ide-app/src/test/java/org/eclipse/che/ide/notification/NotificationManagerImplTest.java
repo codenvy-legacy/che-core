@@ -10,19 +10,14 @@
  *******************************************************************************/
 package org.eclipse.che.ide.notification;
 
-import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.api.notification.Notification;
-
-import org.eclipse.che.ide.notification.NotificationContainer;
-import org.eclipse.che.ide.notification.NotificationManagerImpl;
-import org.eclipse.che.ide.notification.NotificationManagerView;
-import org.eclipse.che.ide.notification.NotificationMessageStack;
-import org.eclipse.che.ide.part.PartStackPresenter;
-import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.gwtmockito.GwtMockitoTestRunner;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.ide.Resources;
+import org.eclipse.che.ide.api.notification.Notification;
+import org.eclipse.che.ide.part.PartStackPresenter;
+import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,12 +25,11 @@ import org.mockito.Answers;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 
+import static junit.framework.Assert.assertEquals;
 import static org.eclipse.che.ide.api.notification.Notification.State.READ;
 import static org.eclipse.che.ide.api.notification.Notification.Status.FINISHED;
 import static org.eclipse.che.ide.api.notification.Notification.Status.PROGRESS;
 import static org.eclipse.che.ide.api.notification.Notification.Type.INFO;
-import static junit.framework.Assert.assertEquals;
-import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
