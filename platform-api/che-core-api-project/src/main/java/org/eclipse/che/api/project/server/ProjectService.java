@@ -803,7 +803,7 @@ public class ProjectService extends Service {
         filesBuffer.addToBufferRecursive(virtualFile.getVirtualFile());
 
         final FolderEntry baseProjectFolder = (FolderEntry)virtualFile;
-        importer.importSources(baseProjectFolder, sourceStorage.getLocation(), null, outputOutputConsumerFactory);
+        importer.importSources(baseProjectFolder, sourceStorage.getLocation(), sourceStorage.getParameters(), outputOutputConsumerFactory);
     }
 
     private VirtualFileEntry getVirtualFile(String workspace, String path, boolean force)
