@@ -11,7 +11,6 @@
 package org.eclipse.che.ide.newresource;
 
 import com.google.inject.Inject;
-import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
@@ -23,12 +22,9 @@ import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
-import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.selection.Selection;
-import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.json.JsonHelper;
 import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.project.node.FileReferenceNode;
@@ -59,11 +55,7 @@ public abstract class AbstractNewResourceAction extends AbstractPerspectiveActio
     protected final InputValidator           fileNameValidator;
     protected final InputValidator           folderNameValidator;
     protected final String                   title;
-    protected       SelectionAgent           selectionAgent;
-    protected       EditorAgent              editorAgent;
     protected       ProjectServiceClient     projectServiceClient;
-    protected       EventBus                 eventBus;
-    protected       AppContext               appContext;
     protected       AnalyticsEventLogger     eventLogger;
     protected       DtoUnmarshallerFactory   dtoUnmarshallerFactory;
     protected       DialogFactory            dialogFactory;
@@ -222,21 +214,13 @@ public abstract class AbstractNewResourceAction extends AbstractPerspectiveActio
     }
 
     @Inject
-    private void init(SelectionAgent selectionAgent,
-                      EditorAgent editorAgent,
-                      ProjectServiceClient projectServiceClient,
-                      EventBus eventBus,
-                      AppContext appContext,
+    private void init(ProjectServiceClient projectServiceClient,
                       AnalyticsEventLogger eventLogger,
                       DtoUnmarshallerFactory dtoUnmarshallerFactory,
                       DialogFactory dialogFactory,
                       CoreLocalizationConstant coreLocalizationConstant,
                       ProjectExplorerPresenter projectExplorer) {
-        this.selectionAgent = selectionAgent;
-        this.editorAgent = editorAgent;
         this.projectServiceClient = projectServiceClient;
-        this.eventBus = eventBus;
-        this.appContext = appContext;
         this.eventLogger = eventLogger;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.dialogFactory = dialogFactory;

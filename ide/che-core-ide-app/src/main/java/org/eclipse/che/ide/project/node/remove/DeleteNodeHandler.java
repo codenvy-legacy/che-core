@@ -33,7 +33,6 @@ import org.eclipse.che.ide.project.node.FolderReferenceNode;
 import org.eclipse.che.ide.project.node.ModuleDescriptorNode;
 import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
-import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.ui.dialogs.CancelCallback;
 import org.eclipse.che.ide.ui.dialogs.ConfirmCallback;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
@@ -55,15 +54,11 @@ import static org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper.cr
 @Singleton
 public class DeleteNodeHandler {
 
-    private       DtoUnmarshallerFactory   dtoUnmarshaller;
     private final CoreLocalizationConstant localization;
     private final DialogFactory            dialogFactory;
 
     @Inject
-    public DeleteNodeHandler(DtoUnmarshallerFactory dtoUnmarshaller,
-                             CoreLocalizationConstant localization,
-                             DialogFactory dialogFactory) {
-        this.dtoUnmarshaller = dtoUnmarshaller;
+    public DeleteNodeHandler(CoreLocalizationConstant localization, DialogFactory dialogFactory) {
         this.localization = localization;
         this.dialogFactory = dialogFactory;
     }

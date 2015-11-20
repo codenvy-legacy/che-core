@@ -36,12 +36,12 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.NotSupportedException;
 import java.util.Arrays;
 
-import static junit.framework.Assert.assertSame;
 import static org.eclipse.che.ide.api.parts.PartStackType.EDITING;
 import static org.eclipse.che.ide.api.parts.PartStackType.INFORMATION;
 import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.BELOW;
 import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.LEFT;
 import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.RIGHT;
+import static org.junit.Assert.assertSame;
 import static org.mockito.Matchers.anyDouble;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;

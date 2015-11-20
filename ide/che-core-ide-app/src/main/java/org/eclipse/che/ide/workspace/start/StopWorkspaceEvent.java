@@ -21,7 +21,7 @@ import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
  */
 public class StopWorkspaceEvent extends GwtEvent<StopWorkspaceHandler> {
 
-    public static Type<StopWorkspaceHandler> TYPE = new Type<>();
+    public static final Type<StopWorkspaceHandler> TYPE = new Type<>();
 
     private final UsersWorkspaceDto workspace;
 

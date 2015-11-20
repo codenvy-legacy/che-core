@@ -32,6 +32,7 @@ import org.eclipse.che.ide.util.UnicodeUtils;
 import org.eclipse.che.commons.annotation.Nullable;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -149,23 +150,25 @@ public class FindActionPresenter implements Presenter, FindActionView.ActionDele
                     actions.put(action, null);
                 }
             }
-
         }
-        for (Action action : actionsMap.keySet()) {
+
+        for (Entry<Action, String> entry : actionsMap.entrySet()) {
+            final Action action = entry.getKey();
+            final String groupName = entry.getValue();
+
             Presentation presentation = action.getTemplatePresentation();
             String text = presentation.getText();
             String description = presentation.getDescription();
             if (text != null && regExp.test(text) ||
                 description != null && !description.equals(text) && regExp.test(description)) {
-                actions.put(action, actionsMap.get(action));
+                actions.put(action, groupName);
             } else {
-                String groupName = actionsMap.get(action);
                 if (groupName != null && text != null && regExp.test(groupName + " " + text)) {
                     actions.put(action, groupName);
                 }
             }
-
         }
+
         if (!actions.isEmpty()) {
             view.showActions(actions);
         } else {

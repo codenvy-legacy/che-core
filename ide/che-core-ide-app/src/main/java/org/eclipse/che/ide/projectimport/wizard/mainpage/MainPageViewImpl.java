@@ -10,11 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projectimport.wizard.mainpage;
 
-import org.eclipse.che.api.project.shared.dto.ProjectImporterDescriptor;
-import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.ui.list.CategoriesList;
-import org.eclipse.che.ide.ui.list.Category;
-import org.eclipse.che.ide.ui.list.CategoryRenderer;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -29,10 +24,17 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 
+import org.eclipse.che.api.project.shared.dto.ProjectImporterDescriptor;
+import org.eclipse.che.ide.Resources;
+import org.eclipse.che.ide.ui.list.CategoriesList;
+import org.eclipse.che.ide.ui.list.Category;
+import org.eclipse.che.ide.ui.list.CategoryRenderer;
+
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -112,13 +114,13 @@ public class MainPageViewImpl implements MainPageView {
     @Override
     public void setImporters(Map<String, Set<ProjectImporterDescriptor>> categories) {
         List<Category<?>> categoriesList = new ArrayList<>();
-        for (String categoryTitle : categories.keySet()) {
-            Category<ProjectImporterDescriptor> category = new Category<>(categoryTitle,
-                                                                          projectImporterRenderer,
-                                                                          categories.get(categoryTitle),
-                                                                          projectImporterDelegate);
-            categoriesList.add(category);
+        for (Entry<String, Set<ProjectImporterDescriptor>> entry : categories.entrySet()) {
+            categoriesList.add(new Category<>(entry.getKey(),
+                                              projectImporterRenderer,
+                                              entry.getValue(),
+                                              projectImporterDelegate));
         }
+
         list.render(categoriesList);
     }
 

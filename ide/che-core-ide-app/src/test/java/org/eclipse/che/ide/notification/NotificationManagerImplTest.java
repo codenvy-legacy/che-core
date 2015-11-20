@@ -25,11 +25,11 @@ import org.mockito.Answers;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 
-import static junit.framework.Assert.assertEquals;
 import static org.eclipse.che.ide.api.notification.Notification.State.READ;
 import static org.eclipse.che.ide.api.notification.Notification.Status.FINISHED;
 import static org.eclipse.che.ide.api.notification.Notification.Status.PROGRESS;
 import static org.eclipse.che.ide.api.notification.Notification.Type.INFO;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;

@@ -40,6 +40,7 @@ import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -163,11 +164,8 @@ public class SettingsViewImpl extends Window implements SettingsView {
     @Override
     public void setSettings(@NotNull Map<String, Set<SettingsPagePresenter>> preferences) {
         List<Category<?>> categoriesList = new ArrayList<>();
-        for (String name : preferences.keySet()) {
-            Set<SettingsPagePresenter> data = preferences.get(name);
-
-            Category<SettingsPagePresenter> category = new Category<>(name, settingsRenderer, data, categoryPageDelegate);
-            categoriesList.add(category);
+        for (Entry<String, Set<SettingsPagePresenter>> entry : preferences.entrySet()) {
+            categoriesList.add(new Category<>(entry.getKey(), settingsRenderer, entry.getValue(), categoryPageDelegate));
         }
 
         list.render(categoriesList);

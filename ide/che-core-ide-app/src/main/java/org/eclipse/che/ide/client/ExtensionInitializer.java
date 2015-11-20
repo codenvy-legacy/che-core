@@ -21,6 +21,7 @@ import org.eclipse.che.ide.collections.Jso;
 import org.eclipse.che.ide.util.loging.Log;
 
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * {@link ExtensionInitializer} responsible for bringing up Extensions. It uses ExtensionRegistry to acquire
@@ -34,11 +35,8 @@ public class ExtensionInitializer {
     protected final ExtensionRegistry extensionRegistry;
 
     private final ExtensionManager   extensionManager;
-    private       PreferencesManager preferencesManager;
+    private final PreferencesManager preferencesManager;
 
-    /**
-     *
-     */
     @Inject
     public ExtensionInitializer(final ExtensionRegistry extensionRegistry,
                                 final ExtensionManager extensionManager,
@@ -53,8 +51,9 @@ public class ExtensionInitializer {
         String value = preferencesManager.getValue("ExtensionsPreferences");
         final Jso jso = Jso.deserialize(value == null ? "{}" : value);
         Map<String, Provider> providers = extensionManager.getExtensions();
-        for (String extensionFqn : providers.keySet()) {
-            Provider extensionProvider = providers.get(extensionFqn);
+        for (Entry<String, Provider> entry : providers.entrySet()) {
+            final String extensionFqn = entry.getKey();
+            final Provider extensionProvider = entry.getValue();
             boolean enabled = !jso.hasOwnProperty(extensionFqn) || jso.getBooleanField(extensionFqn);
 
             try {
@@ -75,5 +74,4 @@ public class ExtensionInitializer {
     public Map<String, ExtensionDescription> getExtensionDescriptions() {
         return extensionRegistry.getExtensionDescriptions();
     }
-
 }

@@ -53,7 +53,7 @@ import static org.eclipse.che.ide.api.notification.Notification.Type.WARNING;
 public class OpenFileAction extends Action implements PromisableAction {
 
     /** ID of the parameter to specify file path to open. */
-    public static String FILE_PARAM_ID = "file";
+    public static final String FILE_PARAM_ID = "file";
 
     private final EventBus                 eventBus;
     private final AppContext               appContext;

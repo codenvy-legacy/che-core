@@ -10,15 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projecttype.wizard.categoriespage;
 
-import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
-import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
-import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.api.icon.Icon;
-import org.eclipse.che.ide.api.icon.IconRegistry;
-import org.eclipse.che.ide.projecttype.wizard.ProjectWizardResources;
-import org.eclipse.che.ide.ui.list.CategoriesList;
-import org.eclipse.che.ide.ui.list.Category;
-import org.eclipse.che.ide.ui.list.CategoryRenderer;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -41,11 +32,22 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 
+import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
+import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
+import org.eclipse.che.ide.Resources;
+import org.eclipse.che.ide.api.icon.Icon;
+import org.eclipse.che.ide.api.icon.IconRegistry;
+import org.eclipse.che.ide.projecttype.wizard.ProjectWizardResources;
+import org.eclipse.che.ide.ui.list.CategoriesList;
+import org.eclipse.che.ide.ui.list.Category;
+import org.eclipse.che.ide.ui.list.CategoryRenderer;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -321,10 +323,10 @@ public class CategoriesPageViewImpl implements CategoriesPageView {
     @Override
     public void selectProjectType(final String projectTypeId) {
         ProjectTypeDefinition typeDescriptor = null;
-        for (String category : typesByCategory.keySet()) {
-            for (ProjectTypeDefinition descriptor : typesByCategory.get(category)) {
-                if (descriptor.getId().equals(projectTypeId)) {
-                    typeDescriptor = descriptor;
+        for (Entry<String, Set<ProjectTypeDefinition>> entry : typesByCategory.entrySet()) {
+            for (ProjectTypeDefinition typeDefinition : entry.getValue()) {
+                if (typeDefinition.getId().equals(projectTypeId)) {
+                    typeDescriptor = typeDefinition;
                     break;
                 }
             }
@@ -332,6 +334,7 @@ public class CategoriesPageViewImpl implements CategoriesPageView {
                 break;
             }
         }
+
         if (typeDescriptor != null) {
             for (ProjectTypeDefinition existingProjectTypeDescriptor : availableProjectTypes) {
                 if (existingProjectTypeDescriptor.getId().equals(typeDescriptor.getId())) {
@@ -359,24 +362,29 @@ public class CategoriesPageViewImpl implements CategoriesPageView {
     public void updateCategories(boolean includeTemplates) {
         List<Category<?>> categories = new ArrayList<>();
 
-        for (String typeCategory : typesByCategory.keySet()) {
+        for (Entry<String, Set<ProjectTypeDefinition>> entry : typesByCategory.entrySet()) {
+            final Set<ProjectTypeDefinition> projectTypes = entry.getValue();
+
             List<ProjectTypeDefinition> projectTypeDescriptors = new ArrayList<>();
-            projectTypeDescriptors.addAll(typesByCategory.get(typeCategory));
+            projectTypeDescriptors.addAll(projectTypes);
             Collections.sort(projectTypeDescriptors, projectTypesComparator);
-            categories.add(new Category<>(typeCategory,
+            categories.add(new Category<>(entry.getKey(),
                                           projectTypeCategoryRenderer,
                                           projectTypeDescriptors,
                                           projectTypeCategoryEventDelegate));
         }
+
         // Sort project type categories only. Project templates categories should be in the end.
         Collections.sort(categories, categoriesComparator);
 
         if (includeTemplates) {
-            for (String templateCategory : templatesByCategory.keySet()) {
+            for (Entry<String, Set<ProjectTemplateDescriptor>> entry : templatesByCategory.entrySet()) {
+                final Set<ProjectTemplateDescriptor> projectTemplates = entry.getValue();
+
                 List<ProjectTemplateDescriptor> templateDescriptors = new ArrayList<>();
-                templateDescriptors.addAll(templatesByCategory.get(templateCategory));
+                templateDescriptors.addAll(projectTemplates);
                 Collections.sort(templateDescriptors, templatesComparator);
-                categories.add(new Category<>(templateCategory,
+                categories.add(new Category<>(entry.getKey(),
                                               templateCategoryRenderer,
                                               templateDescriptors,
                                               templateCategoryEventDelegate));

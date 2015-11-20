@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /** @author Evgen Vidolob */
@@ -272,8 +273,9 @@ public class ActionManagerImpl implements ActionManager {
         Action oldValue = (Action)myId2Action.remove(actionId);
         myAction2Id.remove(oldValue);
         myId2Index.remove(actionId);
-        for (String pluginName : myPlugin2Id.keySet()) {
-            final Set<String> pluginActions = myPlugin2Id.get(pluginName);
+
+        for (Entry<String, Set<String>> entry : myPlugin2Id.entrySet()) {
+            final Set<String> pluginActions = entry.getValue();
             if (pluginActions != null) {
                 pluginActions.remove(actionId);
             }

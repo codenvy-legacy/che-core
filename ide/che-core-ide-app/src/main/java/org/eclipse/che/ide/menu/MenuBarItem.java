@@ -27,11 +27,10 @@ import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.ui.toolbar.Utils;
 
 /**
+ * Menu bar is implementation of Menu interface and represents a visual component.
+ *
  * @author Vitaliy Gulyy
  * @author Dmitry Shnurenko
- * @version $
- *          <p/>
- *          Menu bar is implementation of Menu interface and represents a visual component.
  */
 public class MenuBarItem implements ActionSelectedHandler {
 
@@ -40,11 +39,6 @@ public class MenuBarItem implements ActionSelectedHandler {
     private final Provider<PerspectiveManager> managerProvider;
     private final PresentationFactory          presentationFactory;
     private final String                       place;
-    /**
-     * Working variable:
-     * is need to store hovered or normal state.
-     */
-    boolean hovered = false;
     /**
      * Working variable:
      * is need to store pressed state.
@@ -140,7 +134,6 @@ public class MenuBarItem implements ActionSelectedHandler {
 
         if (enabled && hasVisibleItems) {
             element.setClassName(css.menuBarItemOver());
-            hovered = true;
         }
     }
 
