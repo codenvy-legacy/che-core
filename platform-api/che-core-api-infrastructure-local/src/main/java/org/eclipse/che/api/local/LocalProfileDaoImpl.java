@@ -55,8 +55,8 @@ public class LocalProfileDaoImpl implements UserProfileDao {
             final Map<String, String> attributes = new HashMap<>(2);
             attributes.put("firstName", "Che");
             attributes.put("lastName", "Codenvy");
-            Profile profile = new Profile().withId("codenvy")
-                                           .withUserId("codenvy")
+            Profile profile = new Profile().withId("che")
+                                           .withUserId("che")
                                            .withAttributes(attributes);
             profiles.put(profile.getId(), profile);
         }
