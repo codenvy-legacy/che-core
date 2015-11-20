@@ -17,6 +17,7 @@ import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.machine.Recipe;
+import org.eclipse.che.api.core.model.workspace.ModuleConfig;
 import org.eclipse.che.api.local.storage.LocalStorage;
 import org.eclipse.che.api.local.storage.LocalStorageFactory;
 import org.eclipse.che.api.machine.server.recipe.adapters.RecipeTypeAdapter;
@@ -42,10 +43,11 @@ import static java.util.stream.Collectors.toList;
  * <p>{@link #loadWorkspaces() Loads} & {@link #saveWorkspaces() stores} in memory workspaces
  * to/from filesystem, when component starts/stops.
  *
- *
  * @implNote it is thread-safe, guarded by <i>this</i> instance
  *
  * @author Eugene Voevodin
+ * @author Dmitry Shnurenko
+ *
  */
 @Singleton
 public class LocalWorkspaceDaoImpl implements WorkspaceDao {
@@ -55,7 +57,8 @@ public class LocalWorkspaceDaoImpl implements WorkspaceDao {
 
     @Inject
     public LocalWorkspaceDaoImpl(LocalStorageFactory factory) throws IOException {
-        final Map<Class<?>, Object> adapters = ImmutableMap.of(Recipe.class, new RecipeTypeAdapter());
+        final Map<Class<?>, Object> adapters = ImmutableMap.of(Recipe.class, new RecipeTypeAdapter(),
+                                                               ModuleConfig.class, new ModuleConfigAdapter());
         this.localStorage = factory.create("workspaces.json", adapters);
         this.workspaces = new HashMap<>();
     }
