@@ -29,7 +29,6 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import org.eclipse.che.commons.annotation.Nullable;
-import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 /**
@@ -49,7 +48,10 @@ public abstract class Window implements IsWidget {
         resources.windowCss().ensureInjected();
     }
 
+    private boolean blocked = false;
+
     private boolean hideOnEscapeEnabled = true;
+
     private boolean isShowing;
     private View    view;
 
@@ -85,12 +87,32 @@ public abstract class Window implements IsWidget {
     }
 
     /**
+     * Blocks the window, prevents it closing.
+     */
+    public void setBlocked(boolean blocked) {
+        this.blocked = blocked;
+
+        if (blocked) {
+            view.closeButton.getElement().getStyle().setProperty("opacity", "0.3");
+            view.closeButton.getElement().setAttribute("blocked", "");
+        } else {
+            view.closeButton.getElement().getStyle().clearProperty("opacity");
+            view.closeButton.getElement().removeAttribute("blocked");
+        }
+    }
+
+    /**
      * Hides the {@link Window} popup. The popup will animate out of view.
      */
     public void hide() {
+        if (blocked) {
+            return;
+        }
+
         if (!isShowing) {
             return;
         }
+
         isShowing = false;
 
         // Animate the popup out of existence.
@@ -100,6 +122,10 @@ public abstract class Window implements IsWidget {
         new Timer() {
             @Override
             public void run() {
+                if (blocked) {
+                    return;
+                }
+
                 // The popup may have been shown before this timer executes.
                 if (!isShowing) {
                     view.removeFromParent();
@@ -142,27 +168,7 @@ public abstract class Window implements IsWidget {
         return button;
     }
 
-    protected Button createButton(String tooltip, SVGImage image, String debugId, ClickHandler clickHandler) {
-        Button button = new Button();
-        button.setTitle(tooltip);
-        button.ensureDebugId(debugId);
-        button.getElement().setId(debugId);
-        if (image != null) {
-            button.getElement().appendChild(image.getElement());
-        }
-        button.addStyleName(resources.windowCss().iconButton());
-        button.addStyleName(resources.windowCss().button());
-        button.addClickHandler(clickHandler);
-        return button;
-    }
-
     protected Button createPrimaryButton(String title, String debugId, ClickHandler clickHandler) {
-        Button button = createButton(title, debugId, clickHandler);
-        button.addStyleName(resources.windowCss().primaryButton());
-        return button;
-    }
-
-    protected Button createSuccessButton(String title, String debugId, ClickHandler clickHandler) {
         Button button = createButton(title, debugId, clickHandler);
         button.addStyleName(resources.windowCss().primaryButton());
         return button;
@@ -191,9 +197,12 @@ public abstract class Window implements IsWidget {
      *         shown. If null, no element will be given focus
      */
     public void show(@Nullable final InputElement selectAndFocusElement) {
+        setBlocked(false);
+
         if (isShowing) {
             return;
         }
+
         isShowing = true;
 
         // Attach the popup to the body.
@@ -226,7 +235,7 @@ public abstract class Window implements IsWidget {
         view.setDelegate(new ViewEvents() {
             @Override
             public void onEscapeKey() {
-                if (hideOnEscapeEnabled) {
+                if (hideOnEscapeEnabled && !blocked) {
                     hide();
                     Window.this.onClose();
                 }
@@ -234,8 +243,10 @@ public abstract class Window implements IsWidget {
 
             @Override
             public void onClose() {
-                hide();
-                Window.this.onClose();
+                if (!blocked) {
+                    hide();
+                    Window.this.onClose();
+                }
             }
 
             @Override
@@ -320,8 +331,6 @@ public abstract class Window implements IsWidget {
         String label();
 
         String image();
-
-        String iconButton();
     }
 
     /**

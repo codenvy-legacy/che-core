@@ -82,6 +82,7 @@
 /*Button */
 @def buttonHeight 22px;
 @def buttonPadding 16px;
+@def buttonMinWidth 60px;
 
 /* Default Button */
 @eval buttonBackground org.eclipse.che.ide.api.theme.Style.getButtonBackground();
@@ -264,7 +265,7 @@
 @eval windowFooterBorderColor org.eclipse.che.ide.api.theme.Style.getWindowFooterBorderColor();
 @eval windowSeparatorColor org.eclipse.che.ide.api.theme.Style.getWindowSeparatorColor();
 @eval windowTitleFontColor org.eclipse.che.ide.api.theme.Style.getWindowTitleFontColor();
-@def windowTitleFontSize 12px;
+@def windowTitleFontSize 11px;
 
 /*syntax highlight*/
 @eval keyword org.eclipse.che.ide.api.theme.Style.getEditorKeyWord();

@@ -13,8 +13,6 @@ package org.eclipse.che.ide.preferences;
 import elemental.html.TableElement;
 
 import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.preferences.PreferencePagePresenter;
 import org.eclipse.che.ide.ui.list.CategoriesList;
 import org.eclipse.che.ide.ui.list.Category;
@@ -129,13 +127,12 @@ public class PreferencesViewImpl extends Window implements PreferencesView {
                 delegate.onSaveClicked();
             }
         });
-
         addButtonToFooter(btnSave);
 
         /*
             Refresh
          */
-        btnRefresh = createSuccessButton(locale.refresh(), "window-preferences-refresh", new ClickHandler() {
+        btnRefresh = createButton(locale.refresh(), "window-preferences-refresh", new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
                 Log.debug(this.getClass(), "< REFRESH");

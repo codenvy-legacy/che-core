@@ -23,21 +23,38 @@ import java.util.List;
 
 /**
  * @author Evgen Vidolob
+ * @author Vitaliy Guliy
  */
 public class CategoriesList extends Composite {
     /** Defines the attribute used to indicate selection. */
     private static final String SELECTED_ATTRIBUTE = "SELECTED";
     private final Resources                 resources;
     private final SelectionManager          selectionManager;
-    private       FlowPanel                 root;
     private       List<CategoryNodeElement> categoryNodeElements;
+
+    private       FlowPanel                 rootPanel;
+    private       FlowPanel                 scrollPanel;
+    private       FlowPanel                 lockPanel;
+
+    private boolean enabled = true;
 
     public CategoriesList(Resources resources) {
         this.resources = resources;
         this.categoryNodeElements = new ArrayList<>();
-        root = new FlowPanel();
-        initWidget(root);
-        root.setStyleName(resources.defaultCategoriesListCss().listContainer());
+
+        rootPanel = new FlowPanel();
+        rootPanel.setStyleName(resources.defaultCategoriesListCss().rootPanel());
+        initWidget(rootPanel);
+
+        scrollPanel = new FlowPanel();
+        scrollPanel.setStyleName(resources.defaultCategoriesListCss().scrollPanel());
+        rootPanel.add(scrollPanel);
+
+        lockPanel = new FlowPanel();
+        lockPanel.setStyleName(resources.defaultCategoriesListCss().lockPanel());
+        lockPanel.setVisible(false);
+        rootPanel.add(lockPanel);
+
         selectionManager = new SelectionManager();
     }
 
@@ -54,7 +71,7 @@ public class CategoriesList extends Composite {
         for (Category category : categories) {
             CategoryNodeElement categoryNodeElement = new CategoryNodeElement(category, selectionManager, resources);
             categoryNodeElements.add(categoryNodeElement);
-            root.add(categoryNodeElement);
+            scrollPanel.add(categoryNodeElement);
         }
     }
 
@@ -68,18 +85,41 @@ public class CategoriesList extends Composite {
         if (categoryNodeElements == null || categoryNodeElements.isEmpty()) {
             return false;
         }
+
         for (CategoryNodeElement category : categoryNodeElements) {
             if (category.containsItem(element)) {
                 category.selectItem(element);
                 return true;
             }
         }
+
         return false;
     }
 
-    /** Clear list of items. */
+    /**
+     * Clears list of items.
+     */
     public void clear() {
-        root.clear();
+        scrollPanel.clear();
+        categoryNodeElements = null;
+    }
+
+    /**
+     * Enables ot disables this widget.
+     *
+     * @param enabled
+     *         enabled state
+     */
+    public void setEnabled(boolean enabled) {
+        if (enabled) {
+            lockPanel.setVisible(false);
+            scrollPanel.getElement().getStyle().clearProperty("opacity");
+        } else {
+            lockPanel.setVisible(true);
+            scrollPanel.getElement().getStyle().setProperty("opacity", "0.5");
+        }
+
+        this.enabled = enabled;
     }
 
     class SelectionManager {
@@ -97,13 +137,15 @@ public class CategoriesList extends Composite {
 
     /** Item style selectors for a categories list item. */
     public interface Css extends CssResource {
-        int menuListBorderPx();
+
+        String rootPanel();
+
+        String scrollPanel();
+
+        String lockPanel();
+
 
         String categoryItem();
-
-        String listBase();
-
-        String listContainer();
 
         String category();
 
