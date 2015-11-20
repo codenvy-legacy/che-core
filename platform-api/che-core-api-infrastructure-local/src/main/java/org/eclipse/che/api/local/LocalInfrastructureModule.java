@@ -23,19 +23,12 @@ import org.eclipse.che.api.user.server.dao.PreferenceDao;
 import org.eclipse.che.api.user.server.dao.User;
 import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.api.user.server.dao.UserProfileDao;
-//import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
-//import org.eclipse.che.api.workspace.server.dao.Member;
-//import org.eclipse.che.api.workspace.server.dao.MemberDao;
-//import org.eclipse.che.api.workspace.server.dao.Workspace;
-//import org.eclipse.che.api.workspace.server.dao.WorkspaceDao;
 import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
-import org.eclipse.che.inject.DynaModule;
 
 import javax.inject.Named;
 import java.util.HashSet;
 import java.util.Set;
 
-@DynaModule
 public class LocalInfrastructureModule extends AbstractModule {
     @Override
     protected void configure() {
