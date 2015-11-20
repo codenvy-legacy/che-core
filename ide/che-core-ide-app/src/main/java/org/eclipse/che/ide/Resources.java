@@ -85,14 +85,6 @@ public interface Resources extends Tree.Resources,
 
         String editorFullScreenSvgDown();
 
-        String privacy();
-
-        String privacyTooltip();
-
-        String privateProjectSvg();
-
-        String publicProjectSvg();
-
         String createWsTagsPopup();
 
         String tagsPanel();
@@ -227,12 +219,6 @@ public interface Resources extends Tree.Resources,
 
     @Source("actions/refresh.svg")
     SVGResource refresh();
-
-    @Source("project/private-project.svg")
-    SVGResource privateProject();
-
-    @Source("project/public-project.svg")
-    SVGResource publicProject();
 
     @Source("workspace/perspectives/general/codenvy-placeholder.png")
     ImageResource codenvyPlaceholder();

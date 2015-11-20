@@ -25,14 +25,14 @@ import com.google.web.bindery.event.shared.SimpleEventBus;
 import org.eclipse.che.api.account.gwt.client.AccountServiceClient;
 import org.eclipse.che.api.account.gwt.client.AccountServiceClientImpl;
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
+import org.eclipse.che.api.auth.client.OAuthServiceClient;
+import org.eclipse.che.api.auth.client.OAuthServiceClientImpl;
 import org.eclipse.che.api.git.gwt.client.GitServiceClient;
 import org.eclipse.che.api.git.gwt.client.GitServiceClientImpl;
 import org.eclipse.che.api.machine.gwt.client.MachineServiceClient;
 import org.eclipse.che.api.machine.gwt.client.MachineServiceClientImpl;
 import org.eclipse.che.api.machine.gwt.client.RecipeServiceClient;
 import org.eclipse.che.api.machine.gwt.client.RecipeServiceClientImpl;
-import org.eclipse.che.api.auth.client.OAuthServiceClient;
-import org.eclipse.che.api.auth.client.OAuthServiceClientImpl;
 import org.eclipse.che.api.project.gwt.client.ProjectImportersServiceClient;
 import org.eclipse.che.api.project.gwt.client.ProjectImportersServiceClientImpl;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
@@ -104,9 +104,9 @@ import org.eclipse.che.ide.extension.ExtensionManagerPresenter;
 import org.eclipse.che.ide.extension.ExtensionManagerView;
 import org.eclipse.che.ide.extension.ExtensionManagerViewImpl;
 import org.eclipse.che.ide.filetypes.FileTypeRegistryImpl;
-import org.eclipse.che.ide.icon.IconRegistryImpl;
 import org.eclipse.che.ide.hotkeys.dialog.HotKeysDialogView;
 import org.eclipse.che.ide.hotkeys.dialog.HotKeysDialogViewImpl;
+import org.eclipse.che.ide.icon.IconRegistryImpl;
 import org.eclipse.che.ide.keybinding.KeyBindingManager;
 import org.eclipse.che.ide.logger.AnalyticsEventLoggerExt;
 import org.eclipse.che.ide.logger.AnalyticsEventLoggerImpl;
@@ -138,7 +138,6 @@ import org.eclipse.che.ide.part.explorer.project.ProjectExplorerViewImpl;
 import org.eclipse.che.ide.preferences.PreferencesManagerImpl;
 import org.eclipse.che.ide.preferences.PreferencesView;
 import org.eclipse.che.ide.preferences.PreferencesViewImpl;
-import org.eclipse.che.ide.privacy.PrivacyPresenter;
 import org.eclipse.che.ide.project.node.NodeManager;
 import org.eclipse.che.ide.project.node.factory.NodeFactory;
 import org.eclipse.che.ide.project.node.icon.DockerfileIconProvider;
@@ -411,8 +410,6 @@ public class CoreGinModule extends AbstractGinModule {
         bind(ExtensionManagerView.class).to(ExtensionManagerViewImpl.class).in(Singleton.class);
         bind(AppearanceView.class).to(AppearanceViewImpl.class).in(Singleton.class);
         bind(FindActionView.class).to(FindActionViewImpl.class).in(Singleton.class);
-
-        bind(PrivacyPresenter.class).asEagerSingleton();
 
         bind(LoaderView.class).to(LoaderViewImpl.class).in(Singleton.class);
 
