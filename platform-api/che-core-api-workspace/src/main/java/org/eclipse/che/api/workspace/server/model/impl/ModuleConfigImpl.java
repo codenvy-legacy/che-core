@@ -114,6 +114,9 @@ public class ModuleConfigImpl implements ModuleConfig {
 
     @Override
     public List<ModuleConfig> getModules() {
+        if (modules == null) {
+            modules = new ArrayList<>();
+        }
         return modules;
     }
 

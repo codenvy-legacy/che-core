@@ -121,15 +121,6 @@
     margin-left: buttonSpacing;
 }
 
-.iconButton {
-    min-width: 30px !important;
-    padding: 5px !important;
-}
-
-.iconButton svg {
-    fill: mainFontColor;
-}
-
 .headerTitleWrapper {
     display: table;
     height: 100%;
@@ -166,6 +157,7 @@
 .button, .primaryButton {
     float: right;
     height: buttonHeight;
+    min-width: buttonMinWidth;
     padding: 0px buttonPadding;
     outline: none;
     font-size: buttonFontSize;

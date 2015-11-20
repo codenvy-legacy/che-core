@@ -15,9 +15,14 @@ package org.eclipse.che.dto.server;
 
 import java.io.Serializable;
 
+import com.google.gson.JsonElement;
+
 /** An entity that may serialize itself to JSON. */
 public interface JsonSerializable extends Serializable {
 
     /** Serializes DTO to JSON format. */
     String toJson();
+
+    /** Serializes DTO to JSON object. */
+    JsonElement toJsonElement();
 }

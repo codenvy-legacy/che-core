@@ -117,7 +117,7 @@ public class SettingsViewImpl extends Window implements SettingsView {
 
         addButtonToFooter(btnSave);
 
-        Button btnRefresh = createSuccessButton(locale.refresh(), "window-settings-refresh", new ClickHandler() {
+        Button btnRefresh = createButton(locale.refresh(), "window-settings-refresh", new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
                 delegate.onRefreshClicked();
