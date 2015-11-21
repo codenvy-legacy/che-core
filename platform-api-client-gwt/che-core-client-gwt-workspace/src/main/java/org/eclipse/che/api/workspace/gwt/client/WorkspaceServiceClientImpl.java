@@ -15,6 +15,7 @@ import com.google.inject.Inject;
 
 import org.eclipse.che.api.machine.shared.dto.MachineConfigDto;
 import org.eclipse.che.api.machine.shared.dto.MachineStateDto;
+import org.eclipse.che.api.machine.shared.dto.SnapshotDto;
 import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Promise;
@@ -48,6 +49,7 @@ import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
  * @author Artem Zatsarynnyy
  * @author Dmitry Shnurenko
  * @author Alexander Garagatyi
+ * @author Yevhenii Voevodin
  */
 public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
 
@@ -348,5 +350,47 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
                            .header(CONTENT_TYPE, APPLICATION_JSON)
                            .loader(loader, "Creating machine...")
                            .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(MachineStateDto.class)));
+    }
+
+    @Override
+    public Promise<List<SnapshotDto>> getSnapshot(String workspaceId) {
+        return newPromise(new RequestCall<List<SnapshotDto>>() {
+            @Override
+            public void makeCall(AsyncCallback<List<SnapshotDto>> callback) {
+                final String url = baseHttpUrl + '/' + workspaceId + "/snapshot";
+                asyncRequestFactory.createGetRequest(url)
+                                   .header(ACCEPT, APPLICATION_JSON)
+                                   .loader(loader, "Getting workspace's snapshot")
+                                   .send(newCallback(callback, dtoUnmarshallerFactory.newListUnmarshaller(SnapshotDto.class)));
+            }
+        });
+    }
+
+    @Override
+    public Promise<List<SnapshotDto>> createSnapshot(String workspaceId) {
+        return newPromise(new RequestCall<List<SnapshotDto>>() {
+            @Override
+            public void makeCall(AsyncCallback<List<SnapshotDto>> callback) {
+                final String url = baseHttpUrl + '/' + workspaceId + "/snapshot";
+                asyncRequestFactory.createPostRequest(url, null)
+                                   .header(ACCEPT, APPLICATION_JSON)
+                                   .loader(loader, "Creating workspace's snapshot")
+                                   .send(newCallback(callback, dtoUnmarshallerFactory.newListUnmarshaller(SnapshotDto.class)));
+            }
+        });
+    }
+
+    @Override
+    public Promise<UsersWorkspaceDto> recoverWorkspace(String workspaceId, String envName, String accountId) {
+        return newPromise(new RequestCall<UsersWorkspaceDto>() {
+            @Override
+            public void makeCall(AsyncCallback<UsersWorkspaceDto> callback) {
+                final String url = baseHttpUrl + '/' + workspaceId + "/snapshot/runtime?environment=" + envName;
+                asyncRequestFactory.createPostRequest(url, null)
+                                   .header(ACCEPT, APPLICATION_JSON)
+                                   .loader(loader, "Recovering workspace from snapshot")
+                                   .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(UsersWorkspaceDto.class)));
+            }
+        });
     }
 }

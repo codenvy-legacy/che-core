@@ -294,11 +294,6 @@ public class MachineServiceClientImpl implements MachineServiceClient {
         });
     }
 
-    @Override
-    public Promise<List<Snapshot>> getSnapshots(String workspaceId) {
-        return null;
-    }
-
     private void unbindProject(@NotNull String machineId, @NotNull String projectPath, @NotNull AsyncCallback<Void> callback) {
         asyncRequestFactory.createDeleteRequest(baseHttpUrl + '/' + machineId + "/binding/" + projectPath)
                            .loader(loader, "Unbinding project from machine...")

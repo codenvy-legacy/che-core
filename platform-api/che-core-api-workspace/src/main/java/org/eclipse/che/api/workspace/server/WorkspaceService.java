@@ -291,6 +291,21 @@ public class WorkspaceService extends Service {
                                .collect(toList());
     }
 
+    @GET
+    @Path("/{id}/snapshot")
+    @Produces(APPLICATION_JSON)
+    @RolesAllowed("user")
+    public List<SnapshotDto> getSnapshot(@PathParam("id") String workspaceId)
+            throws ServerException, BadRequestException, NotFoundException, ForbiddenException {
+        ensureUserIsWorkspaceOwner(workspaceId);
+
+        return workspaceManager.getSnapshot(workspaceId)
+                               .stream()
+                               .map(DtoConverter::asDto)
+                               .map(this::injectLinks)
+                               .collect(toList());
+    }
+
     @POST
     @Path("/name/{name}/runtime")
     @Produces(APPLICATION_JSON)
@@ -501,7 +516,7 @@ public class WorkspaceService extends Service {
     @SuppressWarnings("unchecked")
     private <T extends UsersWorkspaceDto> T injectLinks(T workspace) {
         final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
-        final List<Link> links = new ArrayList<>(5);
+        final List<Link> links = new ArrayList<>(6);
         links.add(createLink("POST",
                              uriBuilder.clone()
                                        .path(getClass(), "startById")
@@ -523,6 +538,13 @@ public class WorkspaceService extends Service {
                                        .toString(),
                              APPLICATION_JSON,
                              GET_ALL_USER_WORKSPACES));
+        links.add(createLink("GET",
+                             uriBuilder.clone()
+                                       .path(getClass(), "getSnapshot")
+                                       .build(workspace.getId())
+                                       .toString(),
+                             APPLICATION_JSON,
+                             "get workspace's snapshot"));
         if (RuntimeWorkspaceDto.class.isAssignableFrom(workspace.getClass())) {
             links.add(createLink("GET",
                                  uriBuilder.clone()
@@ -591,7 +613,14 @@ public class WorkspaceService extends Service {
                                                                .toString(),
                                                      APPLICATION_JSON,
                                                      "get runtime workspace");
-        return snapshotDto.withLinks(asList(machineLink, workspaceCfgLink, runtimeWorkspaceLink));
+        final Link workspaceSnapshotLink = createLink("GET",
+                                                      uriBuilder.clone()
+                                                                .path(getClass(), "getSnapshot")
+                                                                .build(snapshotDto.getWorkspaceId())
+                                                                .toString(),
+                                                      APPLICATION_JSON,
+                                                      "get workspace's snapshot");
+        return snapshotDto.withLinks(asList(machineLink, workspaceCfgLink, runtimeWorkspaceLink, workspaceSnapshotLink));
     }
 
     private static String getCurrentUserId() {

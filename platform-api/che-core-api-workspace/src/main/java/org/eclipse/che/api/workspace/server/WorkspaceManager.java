@@ -27,7 +27,6 @@ import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.machine.server.MachineManager;
 import org.eclipse.che.api.machine.server.impl.SnapshotImpl;
-import org.eclipse.che.api.machine.server.model.impl.MachineImpl;
 import org.eclipse.che.api.machine.server.model.impl.MachineStateImpl;
 import org.eclipse.che.api.workspace.server.model.impl.EnvironmentStateImpl;
 import org.eclipse.che.api.workspace.server.model.impl.RuntimeWorkspaceImpl;
@@ -213,7 +212,7 @@ public class WorkspaceManager {
      * @throws ServerException
      *         when any other error occurs
      */
-    public List<SnapshotImpl>createSnapshot(String workspaceId) throws BadRequestException, NotFoundException, ServerException {
+    public List<SnapshotImpl> createSnapshot(String workspaceId) throws BadRequestException, NotFoundException, ServerException {
         requiredNotNull(workspaceId, "Required non-null workspace id");
 
         final RuntimeWorkspaceImpl workspace = workspaceRegistry.get(workspaceId);
@@ -226,6 +225,26 @@ public class WorkspaceManager {
             }
         }
         return snapshots;
+    }
+
+    /**
+     * Returns list of machine snapshots which are related to workspace with given id.
+     *
+     * @param workspaceId
+     *         workspace id to get snapshot
+     * @return list of machine snapshots related to given workspace
+     * @throws BadRequestException
+     *         when {@code workspaceId} is null
+     * @throws NotFoundException
+     *         when workspace with given id doesn't exists
+     * @throws ServerException
+     *         when any other error occurs
+     */
+    public List<SnapshotImpl> getSnapshot(String workspaceId) throws ServerException, BadRequestException, NotFoundException {
+        requiredNotNull(workspaceId, "Required non-null workspace id");
+        // check if workspace exists
+        workspaceDao.get(workspaceId);
+        return machineManager.getSnapshots(getCurrentUserId(), workspaceId);
     }
 
     /**
