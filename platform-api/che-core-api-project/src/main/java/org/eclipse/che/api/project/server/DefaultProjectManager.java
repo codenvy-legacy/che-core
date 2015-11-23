@@ -802,7 +802,7 @@ public final class DefaultProjectManager implements ProjectManager {
     public List<SourceEstimation> resolveSources(String workspace, String path, boolean transientOnly)
             throws ServerException, ForbiddenException, NotFoundException, ProjectTypeConstraintException {
         final List<SourceEstimation> estimations = new ArrayList<>();
-
+        boolean isPresentPrimaryType = false;
         for (ProjectType type : projectTypeRegistry.getProjectTypes(ProjectTypeRegistry.CHILD_TO_PARENT_COMPARATOR)) {
             if (transientOnly && type.isPersisted()) {
                 continue;
@@ -819,12 +819,17 @@ public final class DefaultProjectManager implements ProjectManager {
                     estimations.add(DtoFactory.getInstance().createDto(SourceEstimation.class)
                                               .withType(type.getId())
                                               .withAttributes(attributes));
+
+                    ProjectType projectType = projectTypeRegistry.getProjectType(type.getId());
+                    if (projectType.canBePrimary()) {
+                        isPresentPrimaryType = true;
+                    }
                 }
             } catch (ValueStorageException e) {
                 LOG.warn(e.getLocalizedMessage(), e);
             }
         }
-        if (estimations.isEmpty()) {
+        if (!isPresentPrimaryType) {
             estimations.add(DtoFactory.getInstance().createDto(SourceEstimation.class)
                                       .withType(BaseProjectType.ID));
         }
