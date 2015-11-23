@@ -353,7 +353,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
     }
 
     @Override
-    public Promise<List<SnapshotDto>> getSnapshot(String workspaceId) {
+    public Promise<List<SnapshotDto>> getSnapshot(final String workspaceId) {
         return newPromise(new RequestCall<List<SnapshotDto>>() {
             @Override
             public void makeCall(AsyncCallback<List<SnapshotDto>> callback) {
@@ -367,25 +367,25 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
     }
 
     @Override
-    public Promise<List<SnapshotDto>> createSnapshot(String workspaceId) {
-        return newPromise(new RequestCall<List<SnapshotDto>>() {
+    public Promise<Void> createSnapshot(final String workspaceId) {
+        return newPromise(new RequestCall<Void>() {
             @Override
-            public void makeCall(AsyncCallback<List<SnapshotDto>> callback) {
+            public void makeCall(AsyncCallback<Void> callback) {
                 final String url = baseHttpUrl + '/' + workspaceId + "/snapshot";
                 asyncRequestFactory.createPostRequest(url, null)
                                    .header(ACCEPT, APPLICATION_JSON)
                                    .loader(loader, "Creating workspace's snapshot")
-                                   .send(newCallback(callback, dtoUnmarshallerFactory.newListUnmarshaller(SnapshotDto.class)));
+                                   .send(newCallback(callback));
             }
         });
     }
 
     @Override
-    public Promise<UsersWorkspaceDto> recoverWorkspace(String workspaceId, String envName, String accountId) {
+    public Promise<UsersWorkspaceDto> recoverWorkspace(final String workspaceId, final String envName, final String accountId) {
         return newPromise(new RequestCall<UsersWorkspaceDto>() {
             @Override
             public void makeCall(AsyncCallback<UsersWorkspaceDto> callback) {
-                final String url = baseHttpUrl + '/' + workspaceId + "/snapshot/runtime?environment=" + envName;
+                final String url = baseHttpUrl + '/' + workspaceId + "/runtime/snapshot?environment=" + envName;
                 asyncRequestFactory.createPostRequest(url, null)
                                    .header(ACCEPT, APPLICATION_JSON)
                                    .loader(loader, "Recovering workspace from snapshot")

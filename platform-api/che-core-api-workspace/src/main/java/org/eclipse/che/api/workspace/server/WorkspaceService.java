@@ -278,17 +278,12 @@ public class WorkspaceService extends Service {
 
     @POST
     @Path("/{id}/snapshot")
-    @Produces(APPLICATION_JSON)
     @RolesAllowed("user")
-    public List<SnapshotDto> createSnapshot(@PathParam("id") String workspaceId)
+    public void createSnapshot(@PathParam("id") String workspaceId)
             throws BadRequestException, ForbiddenException, NotFoundException, ServerException {
         ensureUserIsWorkspaceOwner(workspaceId);
 
-        return workspaceManager.createSnapshot(workspaceId)
-                               .stream()
-                               .map(DtoConverter::asDto)
-                               .map(this::injectLinks)
-                               .collect(toList());
+        workspaceManager.createSnapshot(workspaceId);
     }
 
     @GET

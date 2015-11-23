@@ -202,7 +202,7 @@ public interface WorkspaceServiceClient {
      *
      * @see WorkspaceService#createSnapshot(String)
      */
-    Promise<List<SnapshotDto>> createSnapshot(String workspaceId);
+    Promise<Void> createSnapshot(String workspaceId);
 
     /**
      * Recovers workspace from snapshot.

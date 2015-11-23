@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.gwt.client;
 
-import org.eclipse.che.api.core.model.machine.Snapshot;
 import org.eclipse.che.api.machine.shared.dto.MachineDto;
 import org.eclipse.che.api.machine.shared.dto.MachineProcessDto;
 import org.eclipse.che.api.machine.shared.dto.MachineStateDto;

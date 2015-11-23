@@ -22,7 +22,7 @@ import org.eclipse.che.dto.shared.DTO;
 @DTO
 public interface WorkspaceStatusEvent {
     enum EventType {
-        STARTING, RUNNING, STOPPING, STOPPED, ERROR
+        STARTING, RUNNING, STOPPING, STOPPED, ERROR, SNAPSHOT_CREATED, SNAPSHOT_CREATION_ERROR
     }
 
     EventType getEventType();

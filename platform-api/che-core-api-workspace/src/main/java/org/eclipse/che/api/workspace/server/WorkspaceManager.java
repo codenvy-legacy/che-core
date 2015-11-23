@@ -33,6 +33,7 @@ import org.eclipse.che.api.workspace.server.model.impl.RuntimeWorkspaceImpl;
 import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
 import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
 import org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent;
+import org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent.EventType;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.concurrent.ThreadLocalPropagateContext;
 import org.slf4j.Logger;
@@ -43,6 +44,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -51,6 +53,8 @@ import static java.lang.String.format;
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.STOPPED;
 import static org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent.EventType.ERROR;
 import static org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent.EventType.RUNNING;
+import static org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent.EventType.SNAPSHOT_CREATED;
+import static org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent.EventType.SNAPSHOT_CREATION_ERROR;
 import static org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent.EventType.STARTING;
 import static org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent.EventType.STOPPING;
 import static org.eclipse.che.commons.lang.NameGenerator.generate;
@@ -198,13 +202,16 @@ public class WorkspaceManager {
      * <p>Basically creates {@link SnapshotImpl snapshot} instance for each machine from
      * runtime workspace's active environment.
      *
+     * <p> If snapshot of workspace's dev machine was created successfully
+     * publishes {@link EventType#SNAPSHOT_CREATED} event, otherwise publishes {@link EventType#SNAPSHOT_CREATION_ERROR}
+     * with appropriate error message.
+     *
      * <p> Note that:
      * <br>Snapshots are created asynchronously
      * <br>If snapshot creation for one machine failed, it wouldn't affect another snapshot creations
      *
      * @param workspaceId
      *         runtime workspace id
-     * @return list of created snapshots
      * @throws BadRequestException
      *         when workspace id is null
      * @throws NotFoundException
@@ -212,19 +219,30 @@ public class WorkspaceManager {
      * @throws ServerException
      *         when any other error occurs
      */
-    public List<SnapshotImpl> createSnapshot(String workspaceId) throws BadRequestException, NotFoundException, ServerException {
+    public void createSnapshot(String workspaceId) throws BadRequestException, NotFoundException, ServerException {
         requiredNotNull(workspaceId, "Required non-null workspace id");
 
         final RuntimeWorkspaceImpl workspace = workspaceRegistry.get(workspaceId);
-        final List<SnapshotImpl> snapshots = new ArrayList<>(workspace.getMachines().size());
-        for (MachineStateImpl machineState : workspace.getMachines()) {
-            try {
-                snapshots.add(machineManager.save(machineState.getId(), workspace.getOwner(), workspace.getActiveEnvName()));
-            } catch (ApiException apiEx) {
-                LOG.error(apiEx.getLocalizedMessage(), apiEx);
+        executor.execute(ThreadLocalPropagateContext.wrap(() -> {
+            String devMachineSnapshotFailMessage = null;
+            for (MachineStateImpl machineState : workspace.getMachines()) {
+                try {
+                    machineManager.saveSync(machineState.getId(), workspace.getOwner(), workspace.getActiveEnvName());
+                } catch (ApiException apiEx) {
+                    if (machineState.isDev()) {
+                        devMachineSnapshotFailMessage = apiEx.getLocalizedMessage();
+                    }
+                    LOG.error(apiEx.getLocalizedMessage(), apiEx);
+                }
             }
-        }
-        return snapshots;
+            if (devMachineSnapshotFailMessage != null) {
+                eventService.publish(newDto(WorkspaceStatusEvent.class).withEventType(SNAPSHOT_CREATION_ERROR)
+                                                                       .withWorkspaceId(workspaceId)
+                                                                       .withError(devMachineSnapshotFailMessage));
+            } else {
+                eventService.publish(newDto(WorkspaceStatusEvent.class).withEventType(SNAPSHOT_CREATED).withWorkspaceId(workspaceId));
+            }
+        }));
     }
 
     /**
@@ -520,7 +538,7 @@ public class WorkspaceManager {
             }
 
             eventService.publish(newDto(WorkspaceStatusEvent.class)
-                                         .withEventType(WorkspaceStatusEvent.EventType.STOPPED)
+                                         .withEventType(EventType.STOPPED)
                                          .withWorkspaceId(workspaceId));
         });
     }
