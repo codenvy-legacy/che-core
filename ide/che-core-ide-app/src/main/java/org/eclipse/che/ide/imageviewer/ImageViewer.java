@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.imageviewer;
 
-import org.eclipse.che.ide.CoreLocalizationConstant;
+import com.google.gwt.user.client.ui.IsWidget;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.editor.AbstractEditorPresenter;
 import org.eclipse.che.ide.api.editor.EditorInput;
@@ -42,6 +42,7 @@ public class ImageViewer extends AbstractEditorPresenter {
     private ImageViewerResources     resources;
     private CoreLocalizationConstant constant;
     private DialogFactory            dialogFactory;
+    private ScrollPanel              editorView;
 
     @Inject
     public ImageViewer(ImageViewerResources resources,
@@ -132,9 +133,9 @@ public class ImageViewer extends AbstractEditorPresenter {
         panel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
         panel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
         panel.add(getImage());
-        ScrollPanel scrollable = new ScrollPanel(panel);
-        scrollable.getElement().getFirstChildElement().getStyle().setHeight(100, Unit.PCT);
-        container.setWidget(scrollable);
+        editorView = new ScrollPanel(panel);
+        editorView.getElement().getFirstChildElement().getStyle().setHeight(100, Unit.PCT);
+        container.setWidget(editorView);
     }
 
     /**
@@ -157,5 +158,15 @@ public class ImageViewer extends AbstractEditorPresenter {
     @Override
     public void close(final boolean save) {
         // nothing to do
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        editorView.setVisible(visible);
+    }
+
+    @Override
+    public IsWidget getView() {
+        return editorView;
     }
 }
