@@ -15,7 +15,8 @@ import com.google.gwt.json.client.JSONParser;
 import com.google.inject.Inject;
 import com.google.web.bindery.event.shared.EventBus;
 
-import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
+import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateEvent;
+import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateHandler;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.notification.Notification;
@@ -29,8 +30,6 @@ import org.eclipse.che.ide.websocket.MessageBus;
 import org.eclipse.che.ide.websocket.MessageBusProvider;
 import org.eclipse.che.ide.websocket.WebSocketException;
 import org.eclipse.che.ide.websocket.rest.SubscriptionHandler;
-import org.eclipse.che.ide.workspace.start.StartWorkspaceEvent;
-import org.eclipse.che.ide.workspace.start.StartWorkspaceHandler;
 
 public class ImportProjectNotificationSubscriberImpl implements ImportProjectNotificationSubscriber {
     private CoreLocalizationConstant    locale;
@@ -51,12 +50,15 @@ public class ImportProjectNotificationSubscriberImpl implements ImportProjectNot
         this.notificationManager = notificationManager;
         this.workspaceId = appContext.getWorkspace().getId();
 
-        this.messageBus = messageBusProvider.getMessageBus();
-
-        eventBus.addHandler(StartWorkspaceEvent.TYPE, new StartWorkspaceHandler() {
+        messageBus = messageBusProvider.getMachineMessageBus();
+        eventBus.addHandler(ExtServerStateEvent.TYPE, new ExtServerStateHandler() {
             @Override
-            public void onWorkspaceStarted(UsersWorkspaceDto workspace) {
-                messageBus = messageBusProvider.getMessageBus();
+            public void onExtServerStarted(ExtServerStateEvent event) {
+                messageBus = messageBusProvider.getMachineMessageBus();
+            }
+
+            @Override
+            public void onExtServerStopped(ExtServerStateEvent event) {
             }
         });
     }
