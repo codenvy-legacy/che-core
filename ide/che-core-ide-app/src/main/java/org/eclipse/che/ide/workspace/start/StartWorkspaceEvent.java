@@ -21,7 +21,7 @@ import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
  */
 public class StartWorkspaceEvent extends GwtEvent<StartWorkspaceHandler> {
 
-    public static Type<StartWorkspaceHandler> TYPE = new Type<>();
+    public static final Type<StartWorkspaceHandler> TYPE = new Type<>();
 
     private final UsersWorkspaceDto workspace;
 

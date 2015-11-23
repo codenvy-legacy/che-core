@@ -44,7 +44,7 @@ import static org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper
 public class ExpandNodeAction extends Action implements PromisableAction {
 
     /** ID of the parameter to specify node path to open. */
-    public static String NODE_PARAM_ID = "node";
+    public static final String NODE_PARAM_ID = "node";
 
     private final AppContext               appContext;
     private final CoreLocalizationConstant localization;

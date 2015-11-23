@@ -15,17 +15,11 @@ import org.eclipse.che.ide.api.mvp.View;
 
 import java.util.List;
 
-/**
- * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
- * @version $Id:
- */
+/** @author Evgen Vidolob */
 public interface ExtensionManagerView extends View<ExtensionManagerView.ActionDelegate> {
 
     void setExtensions(List<ExtensionDescription> extensions);
 
-    public interface ActionDelegate {
-
-        void setDirty();
+    interface ActionDelegate {
     }
-
 }

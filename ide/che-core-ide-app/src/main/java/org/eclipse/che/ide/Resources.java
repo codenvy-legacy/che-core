@@ -85,14 +85,6 @@ public interface Resources extends Tree.Resources,
 
         String editorFullScreenSvgDown();
 
-        String privacy();
-
-        String privacyTooltip();
-
-        String privateProjectSvg();
-
-        String publicProjectSvg();
-
         String createWsTagsPopup();
 
         String tagsPanel();
@@ -119,9 +111,6 @@ public interface Resources extends Tree.Resources,
 
     @Source("wizard/arrow.svg")
     SVGResource wizardArrow();
-
-    @Source("extension/extention.png")
-    ImageResource extension();
 
     @Source("texteditor/save-all.png")
     ImageResource saveAll();
@@ -159,15 +148,6 @@ public interface Resources extends Tree.Resources,
     @Source("actions/project-configuration.svg")
     SVGResource projectConfiguration();
 
-    @Source("actions/forums.svg")
-    SVGResource forums();
-
-    @Source("actions/feature-vote.svg")
-    SVGResource featureVote();
-
-    @Source("actions/close-project.svg")
-    SVGResource closeProject();
-
     @Source("actions/delete.svg")
     SVGResource delete();
 
@@ -185,9 +165,6 @@ public interface Resources extends Tree.Resources,
 
     @Source("actions/navigate-to-file.svg")
     SVGResource navigateToFile();
-
-    @Source("actions/open-project.svg")
-    SVGResource openProject();
 
     @Source("actions/save.svg")
     SVGResource save();
@@ -216,9 +193,6 @@ public interface Resources extends Tree.Resources,
     @Source("actions/upload-file.svg")
     SVGResource uploadFile();
 
-    @Source("actions/upload-folder.svg")
-    SVGResource uploadFolder();
-
     @Source("actions/zip-folder.svg")
     SVGResource downloadZip();
 
@@ -227,12 +201,6 @@ public interface Resources extends Tree.Resources,
 
     @Source("actions/refresh.svg")
     SVGResource refresh();
-
-    @Source("project/private-project.svg")
-    SVGResource privateProject();
-
-    @Source("project/public-project.svg")
-    SVGResource publicProject();
 
     @Source("workspace/perspectives/general/codenvy-placeholder.png")
     ImageResource codenvyPlaceholder();

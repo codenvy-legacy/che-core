@@ -48,7 +48,6 @@ import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
 public class PasteAction extends Action {
 
     private final AnalyticsEventLogger     eventLogger;
-    //    private       SelectionAgent              selectionAgent;
     private       AppContext               appContext;
     private       DialogFactory            dialogFactory;
     private       ProjectServiceClient     projectServiceClient;
@@ -86,7 +85,6 @@ public class PasteAction extends Action {
                        ProjectExplorerPresenter projectExplorer,
                        RenameItemAction renameItemAction) {
         super(localization.pasteItemsActionText(), localization.pasteItemsActionDescription(), null, resources.paste());
-//        this.selectionAgent = selectionAgent;
         this.eventLogger = eventLogger;
         this.appContext = appContext;
         this.dialogFactory = dialogFactory;

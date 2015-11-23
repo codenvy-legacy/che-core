@@ -109,7 +109,7 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
 
     private final Resources              resources;
     private final WorkspaceAgent         workspaceAgent;
-    private final EditorWidgetFactory<T> editorWigetFactory;
+    private final EditorWidgetFactory<T> editorWidgetFactory;
     private final EditorModule<T>        editorModule;
     private final JsEditorConstants      constant;
 
@@ -165,7 +165,7 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
         this.documentStorage = documentStorage;
         this.editorView = editorView;
         this.editorModule = editorModule;
-        this.editorWigetFactory = editorWidgetFactory;
+        this.editorWidgetFactory = editorWidgetFactory;
         this.fileTypeIdentifier = fileTypeIdentifier;
         this.generalEventBus = eventBus;
         this.quickAssistantFactory = quickAssistantFactory;
@@ -178,7 +178,6 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
 
     @Override
     protected void initializeEditor() {
-
         new TextEditorInit<T>(configuration,
                               generalEventBus,
                               this.codeAssistantFactory,
@@ -221,7 +220,7 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
 
     private void createEditor(final String content) {
         this.fileTypes = detectFileType(getEditorInput().getFile());
-        this.editorWidget = editorWigetFactory.createEditorWidget(fileTypes);
+        this.editorWidget = editorWidgetFactory.createEditorWidget(fileTypes);
 
         // finish editor initialization
         this.editorView.setEditorWidget(this.editorWidget);

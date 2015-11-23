@@ -10,15 +10,20 @@
  *******************************************************************************/
 package org.eclipse.che.ide.notification;
 
-import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.api.notification.Notification;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.safehtml.shared.SimpleHtmlSanitizer;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.Grid;
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasAlignment;
+import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.SimplePanel;
 
+import org.eclipse.che.ide.Resources;
+import org.eclipse.che.ide.api.notification.Notification;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
@@ -46,8 +51,6 @@ public class NotificationItem extends Composite implements Notification.Notifica
     private Resources      resources;
     private Notification   prevState;
     private Notification   notification;
-    private ActionDelegate delegate;
-    private Grid           container;
 
     /**
      * Create notification item.
@@ -61,14 +64,12 @@ public class NotificationItem extends Composite implements Notification.Notifica
         this.resources = resources;
         this.notification = notification;
         this.prevState = notification.clone();
-        this.delegate = delegate;
-        this.container = container;
         notification.addObserver(this);
 
         iconPanel = new SimplePanel();
 
         time = new Label(DATA_FORMAT.format(notification.getTime()));
-        //If notification message is formated HTML - need to display only plain text from it.
+        //If notification message is formatted HTML - need to display only plain text from it.
         //TODO: need rework this. we need sanitize only messages that comes from server if we do it here we lose possibility for
         // formatting outputs
         title = new HTML(SimpleHtmlSanitizer.sanitizeHtml(notification.getMessage()));
@@ -108,8 +109,6 @@ public class NotificationItem extends Composite implements Notification.Notifica
         container.getCellFormatter().setHorizontalAlignment(index, 1, HasAlignment.ALIGN_CENTER);
         container.getRowFormatter().addStyleName(index, resources.notificationCss().notificationItem());
         container.getRowFormatter().setVerticalAlign(index, HasAlignment.ALIGN_MIDDLE);
-
-
     }
 
     /**
@@ -134,8 +133,6 @@ public class NotificationItem extends Composite implements Notification.Notifica
 
             if (!notification.isFinished()) {
                 changeImage(resources.progress()).getElement().setAttribute("class", resources.notificationCss().progress());
-            } else if (!prevState.getType().equals(notification.getType())) {
-                changeType();
             } else {
                 changeType();
             }

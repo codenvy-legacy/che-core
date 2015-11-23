@@ -17,47 +17,14 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("createProjectFromTemplate.nameField")
     String createProjectFromTemplateName();
 
-    @Key("noIncorrectProjectNameMessage")
-    String noIncorrectProjectNameMessage();
-
     @Key("createProjectFromTemplate.project.exists")
     String createProjectFromTemplateProjectExists(String projectName);
-
-    @Key("chooseTechnology")
-    String chooseTechnology();
-
-    @Key("chooseTechnologyTooltip")
-    String chooseTechnologyTooltip();
-
-    @Key("enteringProjectName")
-    String enteringProjectName();
-
-    @Key("checkingProjectsList")
-    String checkingProjectsList();
-
-    @Key("noTechnologyTitle")
-    String noTechnologyTitle();
-
-    @Key("noTechnologyMessage")
-    String noTechnologyMessage();
 
     @Key("extension.title")
     String extensionTitle();
 
     @Key("extension.category")
     String extensionCategory();
-
-    @Key("enteringResourceName")
-    String enteringResourceName();
-
-    @Key("noIncorrectResourceName")
-    String noIncorrectResourceName();
-
-    @Key("resourceExists")
-    String resourceExists(String resourceName);
-
-    @Key("chooseResourceType")
-    String chooseResourceType();
 
     @Key("navigateToFile.view.title")
     String navigateToFileViewTitle();
@@ -67,9 +34,6 @@ public interface CoreLocalizationConstant extends Messages {
 
     @Key("navigateToFile.view.file.field.prompt")
     String navigateToFileViewFileFieldPrompt();
-
-    @Key("navigateToFile.canNotOpenFile")
-    String navigateToFileCanNotOpenFile();
 
     @Key("navigateToFile.searchIsCaseSensitive")
     String navigateToFileSearchIsCaseSensitive();
@@ -117,12 +81,6 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("deleteFilesAndSubdirectoriesInTheSelectedDirectory")
     String deleteFilesAndSubdirectoriesInTheSelectedDirectory();
 
-    @Key("stopProcessesBeforeDeletingProject")
-    String stopProcessesBeforeDeletingProject();
-
-    @Key("mixedProjectDeleteTitle")
-    String mixedProjectDeleteTitle();
-
     @Key("mixedProjectDeleteMessage")
     String mixedProjectDeleteMessage();
 
@@ -147,21 +105,6 @@ public interface CoreLocalizationConstant extends Messages {
 
     @Key("renameDialogNewNameLabel")
     String renameDialogNewNameLabel();
-
-    @Key("renameButton")
-    String renameButton();
-
-    @Key("renameResourceViewTitle")
-    String renameResourceViewTitle();
-
-    @Key("renameFieldTitle")
-    String renameFieldTitle();
-
-    @Key("closeProjectBeforeRenaming")
-    String closeProjectBeforeRenaming();
-
-    @Key("stopProcessesBeforeRenamingProject")
-    String stopProcessesBeforeRenamingProject();
 
     @Key("createProjectFromTemplate.descriptionField")
     String createProjectFromTemplateDescription();
@@ -207,12 +150,6 @@ public interface CoreLocalizationConstant extends Messages {
 
     @Key("redo.description")
     String redoDescription();
-
-    @Key("refresh.projectTree.name")
-    String refreshProjectTreeName();
-
-    @Key("refresh.projectTree.description")
-    String refreshProjectTreeDescription();
 
     @Key("uploadFile.name")
     String uploadFileName();
@@ -267,10 +204,6 @@ public interface CoreLocalizationConstant extends Messages {
 
     @Key("projectExplorer.titleBar.text")
     String projectExplorerTitleBarText();
-
-    @Key("projectExplorer.problemProject.title")
-    @DefaultMessage("Looks like your project needs to be configured")
-    String projectExplorerProblemProjetTitle();
 
     @Key("importProject.message.success")
     String importProjectMessageSuccess();
@@ -389,9 +322,6 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("messages.someFilesCanNotBeSaved")
     String someFilesCanNotBeSaved();
 
-    @Key("messages.appWillBeStopped")
-    String appWillBeStopped(String appName);
-
     @Key("messages.saveChanges")
     String messagesSaveChanges(String name);
 
@@ -400,9 +330,6 @@ public interface CoreLocalizationConstant extends Messages {
 
     @Key("messages.unableOpenResource")
     String unableOpenResource(String path);
-
-    @Key("messages.unableSelectResource")
-    String unableSelectResource(String path);
 
     @Key("messages.canNotOpenFileWithoutParams")
     String canNotOpenFileWithoutParams();
@@ -413,14 +340,8 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("messages.canNotOpenNodeWithoutParams")
     String canNotOpenNodeWithoutParams();
 
-    @Key("messages.canNotSelectNodeWithoutParams")
-    String canNotSelectNodeWithoutParams();
-
     @Key("messages.nodeToOpenIsNotSpecified")
     String nodeToOpenIsNotSpecified();
-
-    @Key("messages.nodeToSelectIsNotSpecified")
-    String nodeToSelectIsNotSpecified();
 
     @Key("messages.noOpenedProject")
     String noOpenedProject();
@@ -430,15 +351,6 @@ public interface CoreLocalizationConstant extends Messages {
 
     @Key("messages.startingMachine")
     String startingMachine(String machineName);
-
-    @Key("messages.gettingWorkspace")
-    String gettingWorkspace();
-
-    @Key("messages.creatingWorkspace")
-    String creatingWorkspace();
-
-    @Key("messages.operationsCompleted")
-    String operationsCompleted();
 
     /* Buttons */
     @Key("ok")
@@ -455,9 +367,6 @@ public interface CoreLocalizationConstant extends Messages {
 
     @Key("back")
     String back();
-
-    @Key("finish")
-    String finish();
 
     @Key("close")
     String close();
@@ -498,19 +407,6 @@ public interface CoreLocalizationConstant extends Messages {
 
     @Key("outline.noFileOpened.message")
     String outlineNoFileOpenedMessage();
-
-    /* Privacy */
-    @Key("privacy.tooltip.publicHeader")
-    String privacyTooltipPublicHeader();
-
-    @Key("privacy.tooltip.publicMessage")
-    String privacyTooltipPublicMessage();
-
-    @Key("privacy.tooltip.privateHeader")
-    String privacyTooltipPrivateHeader();
-
-    @Key("privacy.tooltip.privateMessage")
-    String privacyTooltipPrivateMessage();
 
     @Key("action.completions.title")
     String actionCompetitionsTitle();
@@ -574,9 +470,6 @@ public interface CoreLocalizationConstant extends Messages {
 
     @Key("stop.ws.description")
     String stopWsDescription();
-
-    @Key("stop.ws.notification")
-    String stopWsNotification(String wsName);
 
     @Key("started.ws")
     String startedWs(String wsName);

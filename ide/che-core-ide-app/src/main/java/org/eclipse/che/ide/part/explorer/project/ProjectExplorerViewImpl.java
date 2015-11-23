@@ -48,16 +48,13 @@ import org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor;
 import org.eclipse.che.ide.api.project.node.settings.HasSettings;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.menu.ContextMenu;
-import org.eclipse.che.ide.project.node.NodeManager;
 import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
 import org.eclipse.che.ide.project.node.SyntheticBasedNode;
 import org.eclipse.che.ide.ui.Tooltip;
 import org.eclipse.che.ide.ui.smartTree.KeyboardNavigationHandler;
 import org.eclipse.che.ide.ui.smartTree.NodeDescriptor;
-import org.eclipse.che.ide.ui.smartTree.NodeNameConverter;
 import org.eclipse.che.ide.ui.smartTree.NodeUniqueKeyProvider;
 import org.eclipse.che.ide.ui.smartTree.SortDir;
-import org.eclipse.che.ide.ui.smartTree.SpeedSearch;
 import org.eclipse.che.ide.ui.smartTree.Tree;
 import org.eclipse.che.ide.ui.smartTree.TreeNodeLoader;
 import org.eclipse.che.ide.ui.smartTree.TreeNodeStorage;
@@ -98,7 +95,6 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
                                                                                                      GoIntoStateHandler {
     private final Resources                resources;
     private final ProjectExplorerResources explorerResources;
-    private final NodeManager              nodeManager;
     private final AppContext               appContext;
     private final Provider<EditorAgent>    editorAgentProvider;
     private final EventBus                 eventBus;
@@ -125,14 +121,12 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
                                    final ContextMenu contextMenu,
                                    final CoreLocalizationConstant coreLocalizationConstant,
                                    final Set<NodeInterceptor> nodeInterceptorSet,
-                                   final NodeManager nodeManager,
                                    final AppContext appContext,
                                    final Provider<EditorAgent> editorAgentProvider,
                                    final EventBus eventBus) {
         super(resources);
         this.resources = resources;
         this.explorerResources = explorerResources;
-        this.nodeManager = nodeManager;
         this.appContext = appContext;
         this.editorAgentProvider = editorAgentProvider;
         this.eventBus = eventBus;
