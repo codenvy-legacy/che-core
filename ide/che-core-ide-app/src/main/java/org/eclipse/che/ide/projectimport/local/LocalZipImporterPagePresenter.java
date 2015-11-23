@@ -163,7 +163,6 @@ public class LocalZipImporterPagePresenter implements LocalZipImporterPageView.A
     private void updateView() {
         view.setProjectName("");
         view.setProjectDescription("");
-        view.setProjectVisibility(true);
         view.setSkipFirstLevel(true);
     }
 

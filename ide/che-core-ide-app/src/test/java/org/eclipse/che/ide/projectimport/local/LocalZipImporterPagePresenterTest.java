@@ -87,7 +87,6 @@ public class LocalZipImporterPagePresenterTest {
 
         verify(view).setProjectName(eq(""));
         verify(view).setProjectDescription(eq(""));
-        verify(view).setProjectVisibility(eq(true));
         verify(view).setSkipFirstLevel(eq(true));
         verify(view).showDialog();
     }

@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projectimport.zip;
 
-import org.eclipse.che.ide.projectimport.ProjectImporterResource;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -22,10 +21,11 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.inject.Inject;
+
+import org.eclipse.che.ide.projectimport.ProjectImporterResource;
 
 import javax.validation.constraints.NotNull;
 
@@ -41,10 +41,6 @@ public class ZipImporterPageViewImpl extends Composite implements ZipImporterPag
     TextBox     projectName;
     @UiField
     TextArea    projectDescription;
-    @UiField
-    RadioButton projectPrivate;
-    @UiField
-    RadioButton projectPublic;
     @UiField
     TextBox     projectUrl;
     @UiField
@@ -88,11 +84,6 @@ public class ZipImporterPageViewImpl extends Composite implements ZipImporterPag
             return;
         }
         delegate.projectDescriptionChanged(projectDescription.getValue());
-    }
-
-    @UiHandler({"projectPublic", "projectPrivate"})
-    void visibilityHandler(ValueChangeEvent<Boolean> event) {
-        delegate.projectVisibilityChanged(projectPublic.getValue());
     }
 
     @UiHandler({"skipFirstLevel"})
@@ -170,12 +161,6 @@ public class ZipImporterPageViewImpl extends Composite implements ZipImporterPag
         skipFirstLevel.setValue(skip);
     }
 
-    @Override
-    public void setVisibility(boolean visible) {
-        projectPublic.setValue(visible, false);
-        projectPrivate.setValue(!visible, false);
-    }
-
     public void setDelegate(@NotNull ActionDelegate delegate) {
         this.delegate = delegate;
     }
@@ -197,8 +182,6 @@ public class ZipImporterPageViewImpl extends Composite implements ZipImporterPag
         String alignLeft();
 
         String labelErrorPosition();
-
-        String radioButtonPosition();
 
         String description();
 

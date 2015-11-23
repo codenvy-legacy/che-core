@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projecttype.wizard.categoriespage;
 
+import com.google.gwt.user.client.ui.AcceptsOneWidget;
+import com.google.inject.Inject;
+
 import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
@@ -20,8 +23,6 @@ import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistry;
 import org.eclipse.che.ide.api.wizard.AbstractWizardPage;
 import org.eclipse.che.ide.util.NameUtils;
-import com.google.gwt.user.client.ui.AcceptsOneWidget;
-import com.google.inject.Inject;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -40,8 +41,6 @@ import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistrar
  * @author Dmitry Shnurenko
  */
 public class CategoriesPagePresenter extends AbstractWizardPage<ProjectConfigDto> implements CategoriesPageView.ActionDelegate {
-    private static final String PUBLIC_VISIBILITY  = "public";
-    private static final String PRIVATE_VISIBILITY = "private";
     public final static String DEFAULT_TEMPLATE_CATEGORY = "Samples";
 
     private final CategoriesPageView               view;
@@ -83,8 +82,6 @@ public class CategoriesPagePresenter extends AbstractWizardPage<ProjectConfigDto
 
         final ProjectWizardMode wizardMode = ProjectWizardMode.parse(context.get(WIZARD_MODE_KEY));
         if (CREATE == wizardMode) {
-            // set default visibility for new projects
-
             // set pre-selected project type
             final String preSelectedProjectTypeId = preSelectedProjectTypeManager.getPreSelectedProjectTypeId();
             if (wizardRegistry.getWizardRegistrar(preSelectedProjectTypeId) != null) {
@@ -155,12 +152,6 @@ public class CategoriesPagePresenter extends AbstractWizardPage<ProjectConfigDto
     @Override
     public void projectDescriptionChanged(String projectDescription) {
         dataObject.setDescription(projectDescription);
-        updateDelegate.updateControls();
-    }
-
-    @Override
-    public void projectVisibilityChanged(boolean visible) {
-//        dataObject.().setVisibility(visible ? PUBLIC_VISIBILITY : PRIVATE_VISIBILITY);
         updateDelegate.updateControls();
     }
 

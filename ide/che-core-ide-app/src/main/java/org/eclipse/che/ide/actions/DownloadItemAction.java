@@ -16,14 +16,13 @@ import com.google.inject.name.Named;
 
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
+import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.download.DownloadContainer;
 import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.project.node.FileReferenceNode;
-import org.eclipse.che.ide.api.project.node.HasStorablePath;
 
 /**
  * Download selected item action.
@@ -36,16 +35,15 @@ public class DownloadItemAction extends Action {
 
     private final String BASE_URL;
 
-    private final AnalyticsEventLogger eventLogger;
-    private       DownloadContainer    downloadContainer;
-    private final ProjectExplorerPresenter  projectExplorer;
+    private final AnalyticsEventLogger     eventLogger;
+    private final DownloadContainer        downloadContainer;
+    private final ProjectExplorerPresenter projectExplorer;
 
     @Inject
     public DownloadItemAction(@Named("cheExtensionPath") String extPath,
                               @Named("workspaceId") String workspaceId,
                               CoreLocalizationConstant locale,
                               AnalyticsEventLogger eventLogger,
-                              Resources resources,
                               DownloadContainer downloadContainer,
                               ProjectExplorerPresenter projectExplorer) {
         super(locale.downloadItemName(), locale.downloadItemDescription(), null);

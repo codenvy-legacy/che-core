@@ -16,7 +16,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
@@ -25,7 +24,6 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
@@ -117,10 +115,6 @@ public class CategoriesPageViewImpl implements CategoriesPageView {
     TextBox     projectName;
     @UiField
     TextArea    projectDescription;
-    @UiField
-    RadioButton projectPrivate;
-    @UiField
-    RadioButton projectPublic;
 
     private ActionDelegate                              delegate;
     private Map<String, Set<ProjectTypeDefinition>>     typesByCategory;
@@ -180,11 +174,6 @@ public class CategoriesPageViewImpl implements CategoriesPageView {
         delegate.projectDescriptionChanged(projectDescription.getValue());
     }
 
-    @UiHandler({"projectPublic", "projectPrivate"})
-    void visibilityHandler(ValueChangeEvent<Boolean> event) {
-        delegate.projectVisibilityChanged(projectPublic.getValue());
-    }
-
     private void selectNextWizardType(Object itemData) {
         if (itemData instanceof ProjectTemplateDescriptor) {
             delegate.projectTemplateSelected((ProjectTemplateDescriptor)itemData);
@@ -215,8 +204,6 @@ public class CategoriesPageViewImpl implements CategoriesPageView {
 
     private void changeEnabledStateAll(boolean enabled) {
         projectDescription.setEnabled(enabled);
-        projectPublic.setEnabled(enabled);
-        projectPrivate.setEnabled(enabled);
     }
 
     private SpanElement renderCategoryWithIcon(String category) {
@@ -268,8 +255,6 @@ public class CategoriesPageViewImpl implements CategoriesPageView {
     public void resetName() {
         projectName.setText("");
         projectDescription.setText("");
-        projectPublic.setValue(true);
-        projectPrivate.setValue(false);
         changeEnabledState(true);
     }
 
@@ -282,12 +267,6 @@ public class CategoriesPageViewImpl implements CategoriesPageView {
     @Override
     public void setDescription(String description) {
         projectDescription.setValue(description);
-    }
-
-    @Override
-    public void setVisibility(boolean visible) {
-        projectPublic.setValue(visible, false);
-        projectPrivate.setValue(!visible, false);
     }
 
     @Override
@@ -424,8 +403,6 @@ public class CategoriesPageViewImpl implements CategoriesPageView {
 
         String inputFieldPosition();
 
-        String radioButtonPosition();
-
         String categories();
 
         String description();
@@ -434,11 +411,7 @@ public class CategoriesPageViewImpl implements CategoriesPageView {
 
         String label();
 
-        String horizontalLine();
-
         String labelTitle();
-
-        String treeIcon();
 
         String inputError();
     }

@@ -42,8 +42,6 @@ public interface CategoriesPageView extends View<CategoriesPageView.ActionDelega
 
     void setDescription(String description);
 
-    void setVisibility(boolean visible);
-
     void removeNameError();
 
     void showNameError();
@@ -52,13 +50,11 @@ public interface CategoriesPageView extends View<CategoriesPageView.ActionDelega
 
     void setProjectTypes(List<ProjectTypeDefinition> availableProjectTypes);
 
-    public interface ActionDelegate {
+    interface ActionDelegate {
 
         void projectNameChanged(String name);
 
         void projectDescriptionChanged(String projectDescriptionValue);
-
-        void projectVisibilityChanged(boolean visible);
 
         void projectTemplateSelected(ProjectTemplateDescriptor template);
 
