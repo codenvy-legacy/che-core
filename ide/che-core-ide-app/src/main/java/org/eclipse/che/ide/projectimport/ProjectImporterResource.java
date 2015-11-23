@@ -21,7 +21,7 @@ import org.eclipse.che.ide.projectimport.zip.ZipImporterPageViewImpl;
  */
 public interface ProjectImporterResource extends ClientBundle {
 
-    public interface Css extends CssResource {
+    interface Css extends CssResource {
         String inputError();
     }
 

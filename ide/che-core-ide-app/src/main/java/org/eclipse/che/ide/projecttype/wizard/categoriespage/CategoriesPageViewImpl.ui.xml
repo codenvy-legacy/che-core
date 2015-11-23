@@ -37,18 +37,6 @@
                                         addStyleNames="{style.inputFieldPosition}"
                                         debugId="file-newProject-projectDescription" tabIndex="2"/>
                         </g:FlowPanel>
-                        <g:FlowPanel height="30px" addStyleNames="{style.namePanel}">
-                            <g:Label text="{locale.createProjectFromTemplateProjectPrivacy}" addStyleNames="{style.labelPosition}"/>
-                        </g:FlowPanel>
-                        <g:FlowPanel height="45px" addStyleNames="{style.namePanel}">
-                            <g:RadioButton name="privacy" text="{locale.createProjectFromTemplatePublic}"
-                                           addStyleNames="{style.radioButtonPosition}" checked="true"
-                                           ui:field="projectPublic" debugId="file-newProject-public" tabIndex="4"/>
-                            <g:RadioButton name="privacy" text="{locale.createProjectFromTemplatePrivate}"
-                                           addStyleNames="{style.radioButtonPosition}"
-                                           ui:field="projectPrivate" debugId="file-newProject-private" tabIndex="3"/>
-                        </g:FlowPanel>
-                        <g:FlowPanel height="0" addStyleNames="{style.horizontalLine}"/>
                         <g:FlowPanel height="70px" addStyleNames="{style.namePanel}">
                             <g:Label text="Template Information" addStyleNames="{style.label}"/>
                             <g:HTMLPanel debugId="newProject-descriptionArea" ui:field="descriptionArea"

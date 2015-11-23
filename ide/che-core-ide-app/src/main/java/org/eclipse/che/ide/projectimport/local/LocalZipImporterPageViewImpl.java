@@ -25,7 +25,6 @@ import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.FileUpload;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.FormPanel;
-import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.inject.Inject;
@@ -47,10 +46,6 @@ public class LocalZipImporterPageViewImpl extends Window implements LocalZipImpo
     TextBox     projectName;
     @UiField
     TextArea    projectDescription;
-    @UiField
-    RadioButton projectPrivate;
-    @UiField
-    RadioButton projectPublic;
     @UiField
     CheckBox    skipFirstLevel;
     @UiField
@@ -155,7 +150,6 @@ public class LocalZipImporterPageViewImpl extends Window implements LocalZipImpo
 
     @Override
     public void submit() {
-        projectPublic.setFormValue(projectPublic.getValue().toString());
         skipFirstLevel.setFormValue(skipFirstLevel.getValue().toString());
         submitForm.submit();
     }
@@ -197,8 +191,6 @@ public class LocalZipImporterPageViewImpl extends Window implements LocalZipImpo
     public void setInputsEnableState(boolean isEnabled) {
         file.setEnabled(isEnabled);
         skipFirstLevel.setEnabled(isEnabled);
-        projectPrivate.setEnabled(isEnabled);
-        projectPublic.setEnabled(isEnabled);
         projectName.setEnabled(isEnabled);
         projectDescription.setEnabled(isEnabled);
         cancelButton.setEnabled(isEnabled);
@@ -212,12 +204,6 @@ public class LocalZipImporterPageViewImpl extends Window implements LocalZipImpo
     @Override
     public void setSkipFirstLevel(boolean skip) {
         skipFirstLevel.setValue(skip);
-    }
-
-    @Override
-    public void setProjectVisibility(boolean visible) {
-        projectPublic.setValue(visible, false);
-        projectPrivate.setValue(!visible, false);
     }
 
     @Override
@@ -274,8 +260,6 @@ public class LocalZipImporterPageViewImpl extends Window implements LocalZipImpo
         String alignLeft();
 
         String labelErrorPosition();
-
-        String radioButtonPosition();
 
         String description();
 

@@ -20,7 +20,7 @@ import javax.validation.constraints.NotNull;
  */
 @ImplementedBy(ZipImporterPageViewImpl.class)
 public interface ZipImporterPageView extends View<ZipImporterPageView.ActionDelegate> {
-    public interface ActionDelegate {
+    interface ActionDelegate {
         /** Performs any actions appropriate in response to the user having changed the project's name. */
         void projectNameChanged(@NotNull String name);
 
@@ -29,9 +29,6 @@ public interface ZipImporterPageView extends View<ZipImporterPageView.ActionDele
 
         /** Performs any actions appropriate in response to the user having changed the project's description. */
         void projectDescriptionChanged(@NotNull String projectDescriptionValue);
-
-        /** Performs any actions appropriate in response to the user having changed the project's visibility. */
-        void projectVisibilityChanged(boolean visible);
 
         /** Performs any actions appropriate in response to the user having selected a skip first level. */
         void skipFirstLevelChanged(boolean isSkipFirstLevel);
@@ -90,6 +87,4 @@ public interface ZipImporterPageView extends View<ZipImporterPageView.ActionDele
     boolean isSkipFirstLevelSelected();
 
     void setSkipFirstLevel(boolean skip);
-
-    void setVisibility(boolean visible);
 }

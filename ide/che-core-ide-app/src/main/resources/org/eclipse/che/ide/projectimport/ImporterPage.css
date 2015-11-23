@@ -68,16 +68,6 @@
     float: right;
 }
 
-.radioButtonPosition {
-    position: relative;
-    float: left;
-    left: 0;
-}
-
-.radioButtonPosition:last-child {
-    margin-left: 55px;
-}
-
 .checkBoxPosition {
     position: relative;
     float: left;

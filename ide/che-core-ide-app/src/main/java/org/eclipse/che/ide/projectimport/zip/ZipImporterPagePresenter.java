@@ -98,11 +98,6 @@ public class ZipImporterPagePresenter extends AbstractWizardPage<ProjectConfigDt
     }
 
     @Override
-    public void projectVisibilityChanged(boolean visible) {
-        updateDelegate.updateControls();
-    }
-
-    @Override
     public void skipFirstLevelChanged(boolean isSkipFirstLevel) {
         setImportParameterValue(SKIP_FIRST_LEVEL_PARAM_NAME, String.valueOf(isSkipFirstLevel));
         updateDelegate.updateControls();
