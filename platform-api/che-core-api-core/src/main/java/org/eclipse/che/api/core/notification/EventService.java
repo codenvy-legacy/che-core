@@ -10,9 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.api.core.notification;
 
-import org.eclipse.che.commons.lang.cache.Cache;
-import org.eclipse.che.commons.lang.cache.LoadingValueSLRUCache;
-import org.eclipse.che.commons.lang.cache.SynchronizedCache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,35 +51,36 @@ public class EventService {
     private static final int CACHE_MASK = CACHE_NUM - 1;
     private static final int SEG_SIZE   = 32;
 
-    private final Cache<Class<?>, Set<Class<?>>>[]              typeCache;
+    private final LoadingCache<Class<?>, Set<Class<?>>>[]       typeCache;
     private final ConcurrentMap<Class<?>, Set<EventSubscriber>> subscribersByEventType;
 
     @SuppressWarnings("unchecked")
     public EventService() {
         subscribersByEventType = new ConcurrentHashMap<>();
-        typeCache = new Cache[CACHE_NUM];
+        typeCache = new LoadingCache[CACHE_NUM];
         for (int i = 0; i < CACHE_NUM; i++) {
-            typeCache[i] = new SynchronizedCache<>(new LoadingValueSLRUCache<Class<?>, Set<Class<?>>>(SEG_SIZE, SEG_SIZE) {
-                @Override
-                protected Set<Class<?>> loadValue(Class<?> eventClass) throws RuntimeException {
-                    LinkedList<Class<?>> parents = new LinkedList<>();
-                    Set<Class<?>> classes = new HashSet<>();
-                    parents.add(eventClass);
-                    while (!parents.isEmpty()) {
-                        Class<?> clazz = parents.pop();
-                        classes.add(clazz);
-                        Class<?> parent = clazz.getSuperclass();
-                        if (parent != null) {
-                            parents.add(parent);
+            typeCache[i] = CacheBuilder.newBuilder().concurrencyLevel(SEG_SIZE).build(
+                    new CacheLoader<Class<?>, Set<Class<?>>>() {
+                        @Override
+                        public Set<Class<?>> load(Class<?> eventClass) {
+                            LinkedList<Class<?>> parents = new LinkedList<>();
+                            Set<Class<?>> classes = new HashSet<>();
+                            parents.add(eventClass);
+                            while (!parents.isEmpty()) {
+                                Class<?> clazz = parents.pop();
+                                classes.add(clazz);
+                                Class<?> parent = clazz.getSuperclass();
+                                if (parent != null) {
+                                    parents.add(parent);
+                                }
+                                Class<?>[] interfaces = clazz.getInterfaces();
+                                if (interfaces.length > 0) {
+                                    Collections.addAll(parents, interfaces);
+                                }
+                            }
+                            return classes;
                         }
-                        Class<?>[] interfaces = clazz.getInterfaces();
-                        if (interfaces.length > 0) {
-                            Collections.addAll(parents, interfaces);
-                        }
-                    }
-                    return classes;
-                }
-            });
+                    });
         }
     }
 
@@ -95,7 +96,7 @@ public class EventService {
             throw new IllegalArgumentException("Null event.");
         }
         final Class<?> eventClass = event.getClass();
-        for (Class<?> clazz : typeCache[eventClass.hashCode() & CACHE_MASK].get(eventClass)) {
+        for (Class<?> clazz : typeCache[eventClass.hashCode() & CACHE_MASK].getUnchecked(eventClass)) {
             final Set<EventSubscriber> eventSubscribers = subscribersByEventType.get(clazz);
             if (eventSubscribers != null && !eventSubscribers.isEmpty()) {
                 for (EventSubscriber eventSubscriber : eventSubscribers) {
