@@ -10,7 +10,6 @@
  *******************************************************************************/
 @def selectionBorderWidth 2px;
 .cellTableWidget {
-
 }
 
 .cellTableFirstColumn {
@@ -26,7 +25,6 @@
     padding: 3px 15px;
     text-align: left;
     color: mainFontColor;
-    /*text-shadow: #ddf 1px 1px 0;*/
     overflow: hidden;
     font-size: fontSize;
 }
@@ -37,13 +35,31 @@
     text-align: left;
     color: mainFontColor;
     font-size: fontSize;
-    /*text-shadow: #ddf 1px 1px 0;*/
     overflow: hidden;
 }
 
 .cellTableCell {
-    padding: 2px 15px;
+    padding: 1px 5px;
     overflow: hidden;
+    color: mainFontColor;
+    font-size: fontSize;
+    font-family: mainFontFamily;
+}
+
+.cellTableCell input {
+    outline: none;
+    border-radius: 0;
+    box-shadow: none;
+    text-align: start;
+    color: textFieldColor;
+    background-color: textFieldBackgroundColor;
+    border: 1px solid textFieldBorderColor;
+    font-size: textFieldFontSize;
+    font-family: textFieldFontFamily;
+    min-height: 22px;
+    padding: 0 5px 0 5px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .cellTableFirstColumnFooter {
@@ -84,7 +100,7 @@
 }
 
 .cellTableEvenRowCell {
-    border: selectionBorderWidth solid cellEvenRow;
+    border: 1px solid cellEvenRow;
 }
 
 .cellTableOddRow {
@@ -92,7 +108,7 @@
 }
 
 .cellTableOddRowCell {
-    border: selectionBorderWidth solid cellOddRow;
+    border: 1px solid cellOddRow;
 }
 
 .cellTableHoveredRow {
