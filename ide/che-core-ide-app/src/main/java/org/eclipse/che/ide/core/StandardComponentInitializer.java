@@ -33,6 +33,7 @@ import org.eclipse.che.ide.actions.FormatterAction;
 import org.eclipse.che.ide.actions.GoIntoAction;
 import org.eclipse.che.ide.actions.ImportLocalProjectAction;
 import org.eclipse.che.ide.actions.ImportProjectFromLocationAction;
+import org.eclipse.che.ide.actions.LoaderAction;
 import org.eclipse.che.ide.actions.HotKeysListAction;
 import org.eclipse.che.ide.actions.NavigateToFileAction;
 import org.eclipse.che.ide.actions.NewProjectAction;
@@ -228,6 +229,9 @@ public class StandardComponentInitializer {
 
     @Inject
     private SwitchRightTabAction switchRightTabAction;
+
+    @Inject
+    private LoaderAction loaderAction;
 
     @Inject
     private HotKeysListAction hotKeysListAction;
@@ -485,6 +489,12 @@ public class StandardComponentInitializer {
                 (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_PROJECT_EXPLORER_CONTEXT_MENU);
         projectExplorerContextMenu.add(foldersAlwaysOnTopAction);
         actionManager.registerAction("foldersAlwaysOnTop", foldersAlwaysOnTopAction);
+
+        final DefaultActionGroup loaderToolbarGroup = new DefaultActionGroup("loader", false, actionManager);
+        actionManager.registerAction("loader", loaderToolbarGroup);
+        actionManager.registerAction("loaderAction", loaderAction);
+        centerToolbarGroup.add(loaderToolbarGroup);
+        loaderToolbarGroup.add(loaderAction);
 
         // Define hot-keys
         keyBinding.getGlobal().addKey(new KeyBuilder().action().alt().charCode('n').build(), "navigateToFile");

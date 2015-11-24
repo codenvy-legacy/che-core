@@ -1141,4 +1141,19 @@ public class LightTheme implements Theme {
     public String getProjectExplorerHoverRowBackground() {
         return "rgba(215,215,215,0.45)";
     }
+
+    @Override
+    public String loaderExpanderColor() {
+        return "#555555";
+    }
+
+    @Override
+    public String loaderIconBackgroundColor() {
+        return "#e9e9e9";
+    }
+
+    @Override
+    public String loaderProgressStatusColor() {
+        return "#1a68af";
+    }
 }

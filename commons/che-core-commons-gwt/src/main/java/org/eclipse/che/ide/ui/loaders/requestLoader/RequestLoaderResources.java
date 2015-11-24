@@ -8,39 +8,28 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.ui.loaders;
+package org.eclipse.che.ide.ui.loaders.requestLoader;
 
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.DataResource;
 import com.google.gwt.resources.client.DataResource.MimeType;
 
-import org.vectomatic.dom.svg.ui.SVGResource;
-
 /**
- * Resources for loader.
+ * Resources for request loader.
  *
- * @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a>
+ * @author Andrey Plotnikov
  */
-public interface LoaderResources extends ClientBundle {
+public interface RequestLoaderResources extends ClientBundle {
 
     interface PinionCss extends CssResource {
         String pinion();
-        String expandControl();
-        String expandedImage();
-        String errorStatus();
-        String successStatus();
-        String inProgressStatus();
     }
 
     @MimeType("image/png")
     @Source("pinion-icon.png")
     DataResource pinionIcon();
 
-    @Source({"org/eclipse/che/ide/ui/constants.css", "IdeLoader.css", "org/eclipse/che/ide/api/ui/style.css"})
+    @Source({"org/eclipse/che/ide/ui/constants.css", "RequestLoader.css", "org/eclipse/che/ide/api/ui/style.css"})
     PinionCss Css();
-
-    @Source("org/eclipse/che/ide/ui/loaders/initializationLoader/expansionIcon.svg")
-    SVGResource expansionImage();
-
 }

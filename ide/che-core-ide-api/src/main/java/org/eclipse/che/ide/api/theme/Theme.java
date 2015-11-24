@@ -1282,4 +1282,28 @@ public interface Theme {
     String getProjectExplorerInfoTextShadow();
     String getProjectExplorerSelectedRowBackground();
     String getProjectExplorerHoverRowBackground();
+    /********************************************************************************************
+     *
+     * Loader
+     *
+     ********************************************************************************************/
+    /**
+     * @return color of the loader expander.
+     */
+    String loaderExpanderColor();
+
+    /**
+     * The background color for loader icon.
+     *
+     * @return {@link String} color
+     */
+    String loaderIconBackgroundColor();
+
+    /**
+     * The progress status color for loader.
+     *
+     * @return {@link String} color
+     */
+    String loaderProgressStatusColor();
+
 }

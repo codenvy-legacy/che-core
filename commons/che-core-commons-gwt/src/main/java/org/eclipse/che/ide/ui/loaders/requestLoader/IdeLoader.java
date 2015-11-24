@@ -11,7 +11,6 @@
 package org.eclipse.che.ide.ui.loaders.requestLoader;
 
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
-import org.eclipse.che.ide.ui.loaders.LoaderResources;
 
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Grid;
@@ -39,7 +38,7 @@ public class IdeLoader implements AsyncRequestLoader {
      * Create loader.
      */
     @Inject
-    public IdeLoader(LoaderResources resources) {
+    public IdeLoader(RequestLoaderResources resources) {
         messageHeap = new MessageHeap();
         loader = new ViewLoader(resources);
     }
@@ -80,7 +79,7 @@ public class IdeLoader implements AsyncRequestLoader {
     private static class ViewLoader extends PopupPanel {
         private Grid grid;
 
-        public ViewLoader(LoaderResources resources) {
+        public ViewLoader(RequestLoaderResources resources) {
             resources.Css().ensureInjected();
             FlowPanel container = new FlowPanel();
             HTML pinionWidget = new HTML("<i></i><i></i>");
