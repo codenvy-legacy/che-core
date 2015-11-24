@@ -102,8 +102,9 @@ public class MachineExtensionProxyServlet extends HttpServlet {
                 if (req.getInputStream() != null) {
                     conn.setDoOutput(true);
 
-                    try (InputStream is = req.getInputStream()) {
-                        ByteStreams.copy(is, conn.getOutputStream());
+                    try (InputStream is = req.getInputStream();
+                         OutputStream os = conn.getOutputStream()) {
+                        ByteStreams.copy(is, os);
                     }
                 }
             }
@@ -165,8 +166,9 @@ public class MachineExtensionProxyServlet extends HttpServlet {
 
             if (responseStream != null) {
                 // copy content of input or error stream from destination response to output stream of origin response
-                try (OutputStream os = resp.getOutputStream()) {
-                    ByteStreams.copy(responseStream, os);
+                try (OutputStream os = resp.getOutputStream();
+                     InputStream is = responseStream) {
+                    ByteStreams.copy(is, os);
                     os.flush();
                 }
             }
