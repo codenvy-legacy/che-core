@@ -21,7 +21,7 @@ import javax.validation.constraints.NotNull;
  */
 @ImplementedBy(LocalZipImporterPageViewImpl.class)
 public interface LocalZipImporterPageView extends View<LocalZipImporterPageView.ActionDelegate> {
-    public interface ActionDelegate {
+    interface ActionDelegate {
         /** Performs any actions appropriate in response to the user having changed the project's name. */
         void projectNameChanged();
 
@@ -101,14 +101,6 @@ public interface LocalZipImporterPageView extends View<LocalZipImporterPageView.
      *         project's description to set
      */
     void setProjectDescription(@NotNull String projectDescription);
-
-    /**
-     * Set the project's visibility value.
-     *
-     * @param visible
-     *         <code>true</code> for public project, <code>false</code> for private project
-     */
-    void setProjectVisibility(boolean visible);
 
     /**
      * Set the enable state of the inputs.

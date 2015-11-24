@@ -179,11 +179,4 @@ public class ZipImporterPagePresenterTest {
 
         verify(delegate).updateControls();
     }
-
-    @Test
-    public void projectVisibilityChangedTest() {
-        presenter.projectVisibilityChanged(true);
-
-        verify(delegate).updateControls();
-    }
 }

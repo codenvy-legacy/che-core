@@ -22,7 +22,6 @@ body, td {
 
     /* We turn off document level scrolling all together for the outer page. */
     overflow: hidden;
-    /*background-color: partBackground;*/
 }
 
 /* We must override the user agent stylesheet which sets textarea font to monospace. */
@@ -340,12 +339,10 @@ button[disabled], button[disabled]:hover, button[disabled]:active,
 
 /* Style for splitter */
 .gwt-SplitLayoutPanel-HDragger {
-    /*background: tabBorderColor;*/
     cursor: col-resize;
 }
 
 .gwt-SplitLayoutPanel-VDragger {
-    /*background: tabBorderColor;*/
     cursor: row-resize;
 }
 

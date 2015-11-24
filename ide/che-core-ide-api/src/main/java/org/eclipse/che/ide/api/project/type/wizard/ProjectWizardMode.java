@@ -30,7 +30,7 @@ public enum ProjectWizardMode {
 
     private final String value;
 
-    private ProjectWizardMode(String value) {
+    ProjectWizardMode(String value) {
         this.value = value;
     }
 
