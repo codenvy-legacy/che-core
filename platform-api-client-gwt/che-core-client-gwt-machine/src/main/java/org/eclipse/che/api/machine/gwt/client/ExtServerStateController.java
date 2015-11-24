@@ -19,9 +19,8 @@ import com.google.web.bindery.event.shared.EventBus;
 import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateEvent;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
+import org.eclipse.che.ide.ui.loaders.initializationLoader.InitialLoadingInfo;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter;
-import org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo;
-import org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status;
 import org.eclipse.che.ide.websocket.MessageBus;
 import org.eclipse.che.ide.websocket.MessageBusProvider;
 import org.eclipse.che.ide.websocket.WebSocket;
@@ -29,6 +28,11 @@ import org.eclipse.che.ide.websocket.events.ConnectionClosedHandler;
 import org.eclipse.che.ide.websocket.events.ConnectionErrorHandler;
 import org.eclipse.che.ide.websocket.events.ConnectionOpenedHandler;
 import org.eclipse.che.ide.websocket.events.WebSocketClosedEvent;
+
+import static org.eclipse.che.ide.ui.loaders.initializationLoader.InitialLoadingInfo.Operations.EXTENSION_SERVER_BOOTING;
+import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.ERROR;
+import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.IN_PROGRESS;
+import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.SUCCESS;
 
 /**
  * @author Roman Nikitenko
@@ -40,20 +44,24 @@ public class ExtServerStateController implements ConnectionOpenedHandler, Connec
     private final Timer              retryConnectionTimer;
     private final EventBus           eventBus;
     private final MessageBusProvider messageBusProvider;
+    private final InitialLoadingInfo initialLoadingInfo;
+    private final LoaderPresenter    loader;
 
     private MessageBus                messageBus;
-    private LoaderPresenter           loader;
-    private OperationInfo             startExtServerOperation;
     private ExtServerState            state;
     private String                    wsUrl;
     private int                       countRetry;
     private AsyncCallback<MessageBus> messageBusCallback;
 
     @Inject
-    public ExtServerStateController(EventBus eventBus, LoaderPresenter loader, MessageBusProvider messageBusProvider) {
-        this.eventBus = eventBus;
+    public ExtServerStateController(EventBus eventBus,
+                                    LoaderPresenter loader,
+                                    MessageBusProvider messageBusProvider,
+                                    InitialLoadingInfo initialLoadingInfo) {
         this.loader = loader;
+        this.eventBus = eventBus;
         this.messageBusProvider = messageBusProvider;
+        this.initialLoadingInfo = initialLoadingInfo;
 
         retryConnectionTimer = new Timer() {
             @Override
@@ -69,9 +77,8 @@ public class ExtServerStateController implements ConnectionOpenedHandler, Connec
         this.countRetry = 50;
         this.state = ExtServerState.STOPPED;
 
+        initialLoadingInfo.setOperationStatus(EXTENSION_SERVER_BOOTING.getValue(), IN_PROGRESS);
         connect();
-        startExtServerOperation = new OperationInfo("Starting extension server", Status.IN_PROGRESS, loader);
-        loader.print(startExtServerOperation);
     }
 
     @Override
@@ -87,9 +94,9 @@ public class ExtServerStateController implements ConnectionOpenedHandler, Connec
         if (countRetry > 0) {
             retryConnectionTimer.schedule(1000);
         } else {
-            startExtServerOperation.setStatus(Status.ERROR);
-            loader.hide();
             state = ExtServerState.STOPPED;
+            initialLoadingInfo.setOperationStatus(EXTENSION_SERVER_BOOTING.getValue(), ERROR);
+            loader.hide();
             eventBus.fireEvent(ExtServerStateEvent.createExtServerStoppedEvent());
         }
     }
@@ -97,7 +104,7 @@ public class ExtServerStateController implements ConnectionOpenedHandler, Connec
     @Override
     public void onOpen() {
         state = ExtServerState.STARTED;
-        startExtServerOperation.setStatus(Status.FINISHED);
+        initialLoadingInfo.setOperationStatus(EXTENSION_SERVER_BOOTING.getValue(), SUCCESS);
         loader.hide();
 
         messageBus = messageBusProvider.createMachineMessageBus(wsUrl);

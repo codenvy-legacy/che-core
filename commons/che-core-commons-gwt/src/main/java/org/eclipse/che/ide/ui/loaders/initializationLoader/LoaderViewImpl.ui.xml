@@ -12,91 +12,44 @@
 -->
 <!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
 <ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
-             xmlns:p1='urn:import:com.google.gwt.user.cellview.client'
              xmlns:g="urn:import:com.google.gwt.user.client.ui">
-    <ui:with field="resources" type="org.eclipse.che.ide.ui.loaders.LoaderResources"/>
-
+    <ui:with field='resources' type='org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderViewImpl.Resources'/>
     <ui:style>
-        .pinion > i {
-            top: 8px;
-            left: 4px;
-        }
-
-        .pinion i:last-of-type {
-            top: 12px;
-            left: 17px;
-        }
-
-        .detailsPanel {
-            height: 217px;
-            background-color: #272727;
-        }
-
-        .detailsTable tr,
-        .detailsTable td {
-            background-color: #272727 !important;
-
-            border-width: 2px;
-            border-style: solid;
-            border-color: transparent;
-        }
-
         .animate {
-            transition: width 0.25s  linear, height 0.25s linear;
+            transition: width 0.25s linear, height 0.25s linear;
             overflow: hidden;
         }
 
-        .button {
-            margin-top: 7px;
-            margin-right: 12px;
-            width: 80px;
-            height: 25px;
-            float: right;
+        .mainPanel {
+            height: 100%;
+            min-width: 336px;
+            display: inline-block;
+            margin: 0 !important;
         }
 
-        .operationPanel {
-            margin-left: 8px;
+        .rightPanel {
+            height: 100%;
+            display: inline-block;
+            margin: 0 !important;
         }
-
-        .operationPanel td {
-            width: 60px;
-        }
-
     </ui:style>
 
-    <g:DockLayoutPanel unit="PX" addStyleNames="{style.animate}">
-        <g:north size="65">
-            <g:FlowPanel addStyleNames="{style.operationPanel}">
-                <g:Grid>
-                    <g:row>
-                        <g:customCell>
-                            <g:HTML styleName="{style.pinion}" addStyleNames="{resources.Css.pinion}">
-                                <i></i>
-                                <i></i>
-                            </g:HTML>
-                        </g:customCell>
-                        <g:customCell>
-                            <g:SimplePanel ui:field="operationPanel"/>
-                        </g:customCell>
-                    </g:row>
-                    <g:row>
-                        <g:customCell>
-                            <g:FlowPanel ui:field="expandPanel" debugId="expandPanel">
-                                <g:FlowPanel ui:field="expandHolder"/>
-                                <g:Label text="Details"/>
-                            </g:FlowPanel>
-                        </g:customCell>
-                    </g:row>
-                </g:Grid>
+    <g:FlowPanel addStyleNames="{style.mainPanel}">
+        <g:FlowPanel ui:field="iconPanel" addStyleNames="{resources.css.iconPanel}"
+                     debugId="loaderView-iconPanel"/>
+        <g:FlowPanel addStyleNames="{resources.css.statusPanel}">
+            <g:Label ui:field="status"/>
+        </g:FlowPanel>
+        <g:FlowPanel ui:field="operationPanel" addStyleNames="{style.rightPanel}">
+            <g:FlowPanel addStyleNames="{resources.css.operationPanel}"
+                         debugId="loaderView-operationPanel">
+                <g:FlowPanel ui:field="currentOperation" addStyleNames="{resources.css.currentOperation}"
+                             debugId="loaderView-currentOperation"/>
+                <g:FlowPanel ui:field="operations" addStyleNames="{resources.css.operations}"
+                             debugId="loaderView-operations"/>
             </g:FlowPanel>
-        </g:north>
-        <g:north size="249">
-            <g:FlowPanel ui:field="detailsArea">
-                <g:ScrollPanel ui:field="scroll" styleName="{style.detailsPanel}">
-                    <p1:CellTable width="100%" ui:field="detailsTable" focus="false" styleName="{style.detailsTable}"/>
-                </g:ScrollPanel>
-                <g:Button text="Close" addStyleNames="{style.button}" ui:field="closeButton" debugId="closeButton"/>
-            </g:FlowPanel>
-        </g:north>
-    </g:DockLayoutPanel>
+            <g:FlowPanel ui:field="expandHolder" addStyleNames="{resources.css.expandedIcon}"
+                         debugId="loaderView-expandedImage"/>
+        </g:FlowPanel>
+    </g:FlowPanel>
 </ui:UiBinder>

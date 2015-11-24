@@ -10,40 +10,22 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ui.loaders.initializationLoader;
 
-import com.google.gwt.cell.client.Cell;
-import com.google.gwt.cell.client.SafeHtmlCell;
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.ResizeEvent;
-import com.google.gwt.event.logical.shared.ResizeHandler;
-import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.safehtml.shared.SafeHtmlUtils;
-import com.google.gwt.safehtml.shared.SimpleHtmlSanitizer;
+import com.google.gwt.resources.client.ClientBundle;
+import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
-import com.google.gwt.uibinder.client.UiHandler;
-import com.google.gwt.user.cellview.client.CellTable;
-import com.google.gwt.user.cellview.client.Column;
-import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.PopupPanel;
-import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.view.client.ListDataProvider;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import org.eclipse.che.ide.ui.loaders.LoaderResources;
+import org.vectomatic.dom.svg.ui.SVGResource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,235 +36,190 @@ import java.util.List;
  * @author Roman Nikitenko
  */
 @Singleton
-public class LoaderViewImpl extends PopupPanel implements LoaderView, ResizeHandler {
+public class LoaderViewImpl implements LoaderView {
 
-    private static final String PRE_STYLE       = "style='margin:0px;'";
-    private static final int    EXPAND_WIDTH    = 650;
-    private static final int    EXPAND_HEIGHT   = 321;
-    private static final int    COLLAPSE_WIDTH  = 400;
-    private static final int    COLLAPSE_HEIGHT = 65;
-    private static final int    DELTA_WIDTH     = (EXPAND_WIDTH - COLLAPSE_WIDTH) / 2;
-    private static final int    DELTA_HEIGHT    = (EXPAND_HEIGHT - COLLAPSE_HEIGHT) / 2;
-
-    @UiField
-    SimplePanel operationPanel;
-    @UiField
-    FlowPanel   expandHolder;
-    @UiField
-    FlowPanel   expandPanel;
-    @UiField
-    ScrollPanel scroll;
-    @UiField
-    FlowPanel   detailsArea;
-    @UiField
-    Button      closeButton;
+    private static final String LOADING = "LOADING:";
 
     @UiField(provided = true)
-    CellTable<OperationInfo> detailsTable;
+    Resources resources;
+    @UiField
+    FlowPanel iconPanel;
+    @UiField
+    FlowPanel expandHolder;
+    @UiField
+    FlowPanel operations;
+    @UiField
+    FlowPanel currentOperation;
+    @UiField
+    FlowPanel operationPanel;
+    @UiField
+    Label     status;
 
-    private       HandlerRegistration             resizeHandler;
-    private       ListDataProvider<OperationInfo> dataProvider;
-    private       List<OperationInfo>             operationData;
-    private final DivElement                      expander;
-    private       LoaderResources                 resources;
-    private       ActionDelegate                  delegate;
+    DivElement progressBar;
+    FlowPanel  rootElement;
+
+    private List<HTML>     components;
+    private ActionDelegate delegate;
+    private LoaderCss      styles;
 
     @Inject
     public LoaderViewImpl(LoaderViewImplUiBinder uiBinder,
-                          LoaderResources resources) {
+                          Resources resources) {
         this.resources = resources;
-        resources.Css().ensureInjected();
 
-        this.setPixelSize(COLLAPSE_WIDTH, COLLAPSE_HEIGHT);
+        styles = resources.css();
+        styles.ensureInjected();
 
-        createTable();
+        rootElement = uiBinder.createAndBindUi(this);
 
-        DockLayoutPanel rootElement = uiBinder.createAndBindUi(this);
-        this.add(rootElement);
-
-        expander = Document.get().createDivElement();
-        expander.appendChild(resources.expansionImage().getSvg().getElement());
-        expander.setClassName(resources.Css().expandControl());
-        expandHolder.getElement().appendChild(expander);
-        expandPanel.sinkEvents(Event.ONCLICK);
-        expandPanel.addDomHandler(new ClickHandler() {
+        progressBar = Document.get().createDivElement();
+        operationPanel.getElement().appendChild(progressBar);
+        operationPanel.addDomHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-                delegate.onDetailsClicked();
+                delegate.onExpanderClicked();
             }
         }, ClickEvent.getType());
+        operations.setVisible(false);
 
-        detailsArea.setVisible(false);
-        closeButton.setEnabled(false);
-
-        setGlassEnabled(true);
-        getGlassElement().getStyle().setOpacity(0);
-        getGlassElement().getStyle().setZIndex(9999998);
-        getElement().getStyle().setZIndex(9999999);
-    }
-
-    @UiHandler("closeButton")
-    public void onCloseClicked(ClickEvent event) {
-        delegate.onCloseClicked();
+        DivElement expander = Document.get().createDivElement();
+        expander.appendChild(resources.expansionIcon().getSvg().getElement());
+        expandHolder.getElement().appendChild(expander);
     }
 
     @Override
-    public void expandDetails() {
-        resize(EXPAND_WIDTH, EXPAND_HEIGHT, true);
-        detailsArea.setVisible(true);
-        expander.addClassName(resources.Css().expandedImage());
-        scrollBottom();
+    public void setOperations(List<String> operations) {
+        components = new ArrayList<>(operations.size());
+        this.operations.clear();
+
+        status.setText(LOADING);
+        status.setStyleName(styles.inProgressStatusLabel());
+
+        iconPanel.clear();
+        iconPanel.getElement().appendChild((resources.loaderIcon().getSvg().getElement()));
+
+        progressBar.addClassName(styles.progressBarInProgressStatus());
+        setProgressBarState(0);
+
+        for (String operation : operations) {
+            HTML operationComponent = new HTML(operation);
+            operationComponent.addStyleName(styles.waitStatus());
+            this.components.add(operationComponent);
+            this.operations.add(operationComponent);
+        }
     }
 
     @Override
-    public void collapseDetails() {
-        resize(COLLAPSE_WIDTH, COLLAPSE_HEIGHT, false);
-        detailsArea.setVisible(false);
-        expander.removeClassName(resources.Css().expandedImage());
+    public void setCurrentOperation(String operation) {
+        currentOperation.clear();
+        currentOperation.add(new HTML(operation));
     }
 
-    /** {@inheritDoc} */
+    @Override
+    public void setErrorStatus(int index) {
+        iconPanel.clear();
+        HTML error = new HTML("!");
+        error.addStyleName(styles.iconPanelErrorStatus());
+        iconPanel.add(error);
+
+        components.get(index).setStyleName(styles.completedStatus());
+        progressBar.setClassName(styles.progressBarErrorStatus());
+        status.setStyleName(styles.errorStatusLabel());
+        setProgressBarState(100);
+    }
+
+    @Override
+    public void setSuccessStatus(int index) {
+        components.get(index).setStyleName(styles.completedStatus());
+    }
+
+    @Override
+    public void setInProgressStatus(int index) {
+        components.get(index).setStyleName(styles.inProgressStatus());
+    }
+
     @Override
     public void setDelegate(ActionDelegate delegate) {
         this.delegate = delegate;
     }
 
-    /** {@inheritDoc} */
     @Override
-    public void print(OperationInfo info) {
-        final HTML html = new HTML(buildSafeHtmlMessage(info.getOperation()));
-        html.getElement().getStyle().setPaddingLeft(2, Style.Unit.PX);
-        html.getElement().getStyle().setPaddingTop(9, Style.Unit.PX);
-        operationPanel.clear();
-        operationPanel.add(html);
+    public void expandOperations() {
+        operations.setVisible(true);
+        resize();
     }
 
-    /** {@inheritDoc} */
     @Override
-    public void printToDetails(OperationInfo info) {
-        operationData.add(info);
-        dataProvider.refresh();
+    public void collapseOperations() {
+        operations.setVisible(false);
     }
 
-    /** {@inheritDoc} */
     @Override
-    public void scrollBottom() {
-        scroll.getElement().setScrollTop(scroll.getElement().getScrollHeight());
+    public void setProgressBarState(int percent) {
+        progressBar.getStyle().setProperty("width", percent + "%");
     }
 
-    /** {@inheritDoc} */
     @Override
-    public void show(OperationInfo info) {
-        closeButton.setEnabled(false);
-        center();
-        print(info);
+    public Widget asWidget() {
+        return rootElement;
+    }
 
-        if (resizeHandler == null) {
-            resizeHandler = Window.addResizeHandler(this);
+    private void resize() {
+        if (!operations.isVisible()) {
+            return;
         }
+
+        int top = currentOperation.getElement().getAbsoluteTop();
+        int left = currentOperation.getElement().getAbsoluteLeft();
+        operations.getElement().getStyle().setPropertyPx("top", top + 27);
+        operations.getElement().getStyle().setPropertyPx("left", left);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public void hide() {
-        if (resizeHandler != null) {
-            resizeHandler.removeHandler();
-        }
-        resizeHandler = null;
-        super.hide();
+    /** Styles for loader. */
+    public interface LoaderCss extends CssResource {
+        String errorStatusLabel();
 
-        clearContent();
+        String inProgressStatusLabel();
+
+        String progressBarErrorStatus();
+
+        String progressBarInProgressStatus();
+
+        String errorStatus();
+
+        String completedStatus();
+
+        String inProgressStatus();
+
+        String waitStatus();
+
+        String iconPanelErrorStatus();
+
+        String statusPanel();
+
+        String iconPanel();
+
+        String operationPanel();
+
+        String operations();
+
+        String currentOperation();
+
+        String expandedIcon();
     }
 
-    private void clearContent() {
-        operationPanel.clear();
-        operationData.clear();
+    /** Resources for loader. */
+    public interface Resources extends ClientBundle {
+        @Source({"Loader.css"})
+        LoaderCss css();
+
+        @Source("expansionIcon.svg")
+        SVGResource expansionIcon();
+
+        @Source("loaderIcon.svg")
+        SVGResource loaderIcon();
     }
 
-    @Override
-    public void update() {
-        dataProvider.refresh();
-    }
-
-    @Override
-    public void setEnabledCloseButton(boolean enabled) {
-        closeButton.setEnabled(enabled);
-    }
-
-    /** Return sanitized message (with all restricted HTML-tags escaped) in {@link SafeHtml}. */
-    private SafeHtml buildSafeHtmlMessage(String message) {
-        return new SafeHtmlBuilder()
-                .appendHtmlConstant("<pre " + PRE_STYLE + ">")
-                .append(SimpleHtmlSanitizer.sanitizeHtml(message))
-                .appendHtmlConstant("</pre>")
-                .toSafeHtml();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void onResize(ResizeEvent event) {
-        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-            @Override
-            public void execute() {
-                center();
-            }
-        });
-    }
-
-    private void resize(final int width, final int height, final boolean expanded) {
-        this.setPixelSize(width, height);
-
-        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-            @Override
-            public void execute() {
-                int left = (expanded) ? getPopupLeft() - DELTA_WIDTH : getPopupLeft() + DELTA_WIDTH;
-                int top = (expanded) ? getPopupTop() - DELTA_HEIGHT : getPopupTop() + DELTA_HEIGHT;
-                setPopupPosition(left, top);
-            }
-        });
-
-    }
-
-    private void createTable() {
-        operationData = new ArrayList<>();
-        detailsTable = new CellTable<>();
-        dataProvider = new ListDataProvider<>();
-        dataProvider.addDataDisplay(detailsTable);
-        operationData = dataProvider.getList();
-
-        Column<OperationInfo, SafeHtml> operationColumn = new Column<OperationInfo, SafeHtml>(new SafeHtmlCell()) {
-            @Override
-            public SafeHtml getValue(final OperationInfo item) {
-                return SafeHtmlUtils.fromString(item.getOperation());
-            }
-        };
-
-        Column<OperationInfo, SafeHtml> statusColumn = new Column<OperationInfo, SafeHtml>(new SafeHtmlCell()) {
-            @Override
-            public SafeHtml getValue(final OperationInfo item) {
-                return SafeHtmlUtils.fromString(item.getStatus().getValue());
-            }
-
-            @Override
-            public String getCellStyleNames(Cell.Context context, OperationInfo info) {
-                switch (info.getStatus()) {
-                    case ERROR:
-                        return resources.Css().errorStatus();
-                    case IN_PROGRESS:
-                        return resources.Css().inProgressStatus();
-                    default:
-                        return resources.Css().successStatus();
-                }
-            }
-        };
-
-        detailsTable.setColumnWidth(statusColumn, 100, Style.Unit.PX);
-        detailsTable.setColumnWidth(operationColumn, 250, Style.Unit.PX);
-        detailsTable.addColumn(operationColumn);
-        detailsTable.addColumn(statusColumn);
-        detailsTable.setVisibleRange(0, 10000);
-    }
-
-    interface LoaderViewImplUiBinder extends UiBinder<DockLayoutPanel, LoaderViewImpl> {
+    interface LoaderViewImplUiBinder extends UiBinder<FlowPanel, LoaderViewImpl> {
     }
 }

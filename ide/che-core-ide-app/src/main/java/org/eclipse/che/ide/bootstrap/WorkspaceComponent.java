@@ -13,16 +13,15 @@ package org.eclipse.che.ide.bootstrap;
 
 import com.google.gwt.core.client.Callback;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
-import org.eclipse.che.api.machine.gwt.client.OutputMessageUnmarshaller;
-import org.eclipse.che.api.machine.gwt.client.events.DevMachineStateEvent;
+import org.eclipse.che.api.machine.gwt.client.MachineManager;
 import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateEvent;
 import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateHandler;
 import org.eclipse.che.api.machine.shared.dto.MachineStateDto;
-import org.eclipse.che.api.machine.shared.dto.event.MachineStatusEvent;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.PromiseError;
@@ -40,9 +39,8 @@ import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.statepersistance.dto.AppState;
 import org.eclipse.che.ide.ui.dialogs.ConfirmCallback;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
+import org.eclipse.che.ide.ui.loaders.initializationLoader.InitialLoadingInfo;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter;
-import org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo;
-import org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status;
 import org.eclipse.che.ide.util.Config;
 import org.eclipse.che.ide.util.loging.Log;
 import org.eclipse.che.ide.websocket.MessageBus;
@@ -62,6 +60,10 @@ import java.util.List;
 
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.RUNNING;
 import static org.eclipse.che.ide.statepersistance.AppStateManager.PREFERENCE_PROPERTY_NAME;
+import static org.eclipse.che.ide.ui.loaders.initializationLoader.InitialLoadingInfo.Operations.WORKSPACE_BOOTING;
+import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.IN_PROGRESS;
+import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.ERROR;
+import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.SUCCESS;
 
 /**
  * @author Evgen Vidolob
@@ -81,18 +83,18 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
     private final EventBus                  eventBus;
     private final LoaderPresenter           loader;
     private final AppContext                appContext;
+    private final Provider<MachineManager>  machineManagerProvider;
     private final NotificationManager       notificationManager;
     private final MessageBusProvider        messageBusProvider;
     private final BrowserQueryFieldRenderer browserQueryFieldRenderer;
     private final DialogFactory             dialogFactory;
     private final PreferencesManager        preferencesManager;
     private final DtoFactory                dtoFactory;
+    private final InitialLoadingInfo        initialLoadingInfo;
 
-    private OperationInfo                  startMachineOperation;
     private Callback<Component, Exception> callback;
     private MessageBus                     messageBus;
     private boolean                        needToReloadComponents;
-    private OperationInfo                  startWorkspaceOperation;
 
     @Inject
     public WorkspaceComponent(WorkspaceServiceClient workspaceServiceClient,
@@ -103,12 +105,14 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
                               EventBus eventBus,
                               LoaderPresenter loader,
                               AppContext appContext,
+                              Provider<MachineManager> machineManagerProvider,
                               NotificationManager notificationManager,
                               MessageBusProvider messageBusProvider,
                               BrowserQueryFieldRenderer browserQueryFieldRenderer,
                               DialogFactory dialogFactory,
                               PreferencesManager preferencesManager,
-                              DtoFactory dtoFactory) {
+                              DtoFactory dtoFactory,
+                              InitialLoadingInfo initialLoadingInfo) {
         this.workspaceServiceClient = workspaceServiceClient;
         this.createWorkspacePresenter = createWorkspacePresenter;
         this.startWorkspacePresenter = startWorkspacePresenter;
@@ -117,12 +121,14 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
         this.eventBus = eventBus;
         this.loader = loader;
         this.appContext = appContext;
+        this.machineManagerProvider = machineManagerProvider;
         this.notificationManager = notificationManager;
         this.messageBusProvider = messageBusProvider;
         this.browserQueryFieldRenderer = browserQueryFieldRenderer;
         this.dialogFactory = dialogFactory;
         this.preferencesManager = preferencesManager;
         this.dtoFactory = dtoFactory;
+        this.initialLoadingInfo = initialLoadingInfo;
 
         this.needToReloadComponents = true;
 
@@ -263,7 +269,6 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
 
         if (needToReloadComponents) {
             callback.onSuccess(WorkspaceComponent.this);
-
             needToReloadComponents = false;
         }
 
@@ -277,7 +282,8 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
      *         workspace which will be started
      */
     public void startWorkspaceById(final UsersWorkspaceDto workspace) {
-        startWorkspaceOperation = new OperationInfo(locale.startingOperation("workspace"), Status.IN_PROGRESS, loader);
+        loader.show(initialLoadingInfo);
+        initialLoadingInfo.setOperationStatus(WORKSPACE_BOOTING.getValue(), IN_PROGRESS);
 
         messageBus = messageBusProvider.createMessageBus(workspace.getId());
 
@@ -287,31 +293,28 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
                 subscribeToWorkspaceStatusWebSocket(workspace);
 
                 if (!RUNNING.equals(workspace.getStatus())) {
-                    loader.show(startWorkspaceOperation);
-
                     workspaceServiceClient.startById(workspace.getId(),
                                                      workspace.getDefaultEnvName()).then(new Operation<UsersWorkspaceDto>() {
                         @Override
                         public void apply(UsersWorkspaceDto workspace) throws OperationException {
+                            setCurrentWorkspace(workspace);
+
                             List<MachineStateDto> machineStates = workspace.getEnvironments()
                                                                            .get(workspace.getDefaultEnvName()).getMachineConfigs();
 
                             for (MachineStateDto machineState : machineStates) {
                                 if (machineState.isDev()) {
-                                    startMachineOperation = new OperationInfo(locale.startingMachine(machineState.getName()),
-                                                                              Status.IN_PROGRESS,
-                                                                              loader);
-                                    loader.show(startMachineOperation);
-
-                                    subscribeToOutput(machineState.getChannels().getOutput());
-                                    subscribeToMachineStatus(machineState.getChannels().getStatus());
+                                    MachineManager machineManager = machineManagerProvider.get();
+                                    machineManager.onDevMachineCreating(machineState);
                                 }
                             }
+
+                            initialLoadingInfo.setOperationStatus(WORKSPACE_BOOTING.getValue(), SUCCESS);
                         }
                     }).catchError(new Operation<PromiseError>() {
                         @Override
                         public void apply(PromiseError arg) throws OperationException {
-                            startWorkspaceOperation.setStatus(Status.ERROR);
+                            initialLoadingInfo.setOperationStatus(WORKSPACE_BOOTING.getValue(), ERROR);
                             callback.onFailure(new Exception(arg.getCause()));
                         }
                     });
@@ -342,7 +345,7 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
                     if (EventType.ERROR.equals(workspaceStatus)) {
                         notificationManager.showError(locale.workspaceStartFailed(workspaceName));
 
-                        startWorkspaceOperation.setStatus(Status.ERROR);
+                        initialLoadingInfo.setOperationStatus(WORKSPACE_BOOTING.getValue(), ERROR);
 
                         showErrorDialog(workspaceName, statusEvent.getError());
                     }
@@ -384,7 +387,6 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
                                                       }
                                                   }).show();
 
-                loader.hide();
             }
         });
 
@@ -400,69 +402,6 @@ public class WorkspaceComponent implements Component, ExtServerStateHandler {
             });
         } catch (WebSocketException exception) {
             Log.error(getClass(), exception);
-        }
-    }
-
-    private void subscribeToOutput(String outputChanel) {
-        try {
-            messageBus.subscribe(outputChanel, new SubscriptionHandler<String>(new OutputMessageUnmarshaller()) {
-                @Override
-                protected void onMessageReceived(String result) {
-                    //TODO machine output turned off temporarily, because it freezes browser. Need find other solution.
-//                    if (result.startsWith("[DOCKER] Step 0")) {
-//                        return;
-//                    }
-//                    loader.printToDetails(new OperationInfo(result));
-                }
-
-                @Override
-                protected void onErrorReceived(Throwable exception) {
-                    loader.printToDetails(new OperationInfo(exception.getMessage(), Status.ERROR));
-                }
-            });
-        } catch (WebSocketException exception) {
-            Log.error(getClass(), exception);
-        }
-    }
-
-    private void subscribeToMachineStatus(String machineStatusChanel) {
-        final Unmarshallable<MachineStatusEvent> unmarshaller = dtoUnmarshallerFactory.newWSUnmarshaller(MachineStatusEvent.class);
-        try {
-            messageBus.subscribe(machineStatusChanel, new SubscriptionHandler<MachineStatusEvent>(unmarshaller) {
-                @Override
-                protected void onMessageReceived(MachineStatusEvent event) {
-                    onMachineStatusChanged(event);
-                }
-
-                @Override
-                protected void onErrorReceived(Throwable exception) {
-                    loader.printToDetails(new OperationInfo(exception.getMessage(), Status.ERROR));
-                }
-            });
-        } catch (WebSocketException exception) {
-            Log.error(getClass(), exception);
-        }
-    }
-
-    private void onMachineStatusChanged(MachineStatusEvent event) {
-        switch (event.getEventType()) {
-            case RUNNING:
-                if (startMachineOperation != null) {
-                    startMachineOperation.setStatus(Status.FINISHED);
-                }
-
-                startWorkspaceOperation.setStatus(Status.FINISHED);
-
-                eventBus.fireEvent(new DevMachineStateEvent(event));
-                break;
-            case ERROR:
-                if (startMachineOperation != null) {
-                    startMachineOperation.setStatus(Status.ERROR);
-                }
-
-                startWorkspaceOperation.setStatus(Status.ERROR);
-                break;
-            default:
         }
     }
 }

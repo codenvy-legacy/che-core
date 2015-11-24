@@ -1164,4 +1164,19 @@ public class DarkTheme implements Theme {
     public String getProjectExplorerHoverRowBackground() {
         return "#555";
     }
+
+    @Override
+    public String loaderExpanderColor() {
+        return "#e3e3e3";
+    }
+
+    @Override
+    public String loaderIconBackgroundColor() {
+        return "#1e1e1e";
+    }
+
+    @Override
+    public String loaderProgressStatusColor() {
+        return "#4a90e2";
+    }
 }
