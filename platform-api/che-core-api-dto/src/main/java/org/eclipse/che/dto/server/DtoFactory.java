@@ -10,17 +10,18 @@
  *******************************************************************************/
 package org.eclipse.che.dto.server;
 
-import org.eclipse.che.commons.lang.cache.Cache;
-import org.eclipse.che.commons.lang.cache.LoadingValueSLRUCache;
-import org.eclipse.che.commons.lang.cache.SynchronizedCache;
-import org.eclipse.che.commons.lang.reflect.ParameterizedTypeImpl;
-import org.eclipse.che.dto.shared.DTO;
-import org.eclipse.che.dto.shared.JsonArray;
-import org.eclipse.che.dto.shared.JsonStringMap;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
+
+import org.eclipse.che.commons.lang.reflect.ParameterizedTypeImpl;
+import org.eclipse.che.dto.shared.DTO;
+import org.eclipse.che.dto.shared.JsonArray;
+import org.eclipse.che.dto.shared.JsonStringMap;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -44,17 +45,18 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class DtoFactory {
     private static final Gson gson = new GsonBuilder().serializeNulls().create();
 
-    private static final Cache<Type, ParameterizedType> listTypeCache = new SynchronizedCache<>(
-            new LoadingValueSLRUCache<Type, ParameterizedType>(16, 16) {
+    private static final LoadingCache<Type, ParameterizedType> listTypeCache = CacheBuilder.newBuilder().concurrencyLevel(16).build(
+            new CacheLoader<Type, ParameterizedType>() {
                 @Override
-                protected ParameterizedType loadValue(Type type) {
+                public ParameterizedType load(Type type) {
                     return new ParameterizedTypeImpl(List.class, type);
                 }
             });
-    private static final Cache<Type, ParameterizedType> mapTypeCache  = new SynchronizedCache<>(
-            new LoadingValueSLRUCache<Type, ParameterizedType>(16, 16) {
+
+    private static final LoadingCache<Type, ParameterizedType> mapTypeCache = CacheBuilder.newBuilder().concurrencyLevel(16).build(
+            new CacheLoader<Type, ParameterizedType>() {
                 @Override
-                protected ParameterizedType loadValue(Type type) {
+                public ParameterizedType load(Type type) {
                     return new ParameterizedTypeImpl(Map.class, String.class, type);
                 }
             });
@@ -224,7 +226,7 @@ public final class DtoFactory {
      */
     public <T> JsonArray<T> createListDtoFromJson(String json, Class<T> dtoInterface) {
         final DtoProvider<T> dtoProvider = getDtoProvider(dtoInterface);
-        final List<JsonElement> list = gson.fromJson(json, listTypeCache.get(JsonElement.class));
+        final List<JsonElement> list = gson.fromJson(json, listTypeCache.getUnchecked(JsonElement.class));
         final List<T> result = new ArrayList<>(list.size());
         for (JsonElement e : list) {
             result.add(dtoProvider.fromJson(e));
@@ -248,7 +250,7 @@ public final class DtoFactory {
         final DtoProvider<T> dtoProvider = getDtoProvider(dtoInterface);
         final List<JsonElement> list;
         try {
-            list = gson.fromJson(json, listTypeCache.get(JsonElement.class));
+            list = gson.fromJson(json, listTypeCache.getUnchecked(JsonElement.class));
         } catch (JsonSyntaxException e) {
             final Throwable cause = e.getCause();
             if (cause instanceof IOException) {
@@ -295,7 +297,7 @@ public final class DtoFactory {
      */
     public <T> JsonStringMap<T> createMapDtoFromJson(String json, Class<T> dtoInterface) {
         final DtoProvider<T> dtoProvider = getDtoProvider(dtoInterface);
-        final Map<String, JsonElement> map = gson.fromJson(json, mapTypeCache.get(JsonElement.class));
+        final Map<String, JsonElement> map = gson.fromJson(json, mapTypeCache.getUnchecked(JsonElement.class));
         final Map<String, T> result = new LinkedHashMap<>(map.size());
         for (Map.Entry<String, JsonElement> e : map.entrySet()) {
             result.put(e.getKey(), dtoProvider.fromJson(e.getValue()));
@@ -322,7 +324,7 @@ public final class DtoFactory {
         final DtoProvider<T> dtoProvider = getDtoProvider(dtoInterface);
         final Map<String, JsonElement> map;
         try {
-            map = gson.fromJson(json, mapTypeCache.get(JsonElement.class));
+            map = gson.fromJson(json, mapTypeCache.getUnchecked(JsonElement.class));
         } catch (JsonSyntaxException e) {
             final Throwable cause = e.getCause();
             if (cause instanceof IOException) {
