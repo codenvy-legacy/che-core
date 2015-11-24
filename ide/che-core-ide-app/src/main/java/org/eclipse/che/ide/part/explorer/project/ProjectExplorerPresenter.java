@@ -166,24 +166,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
     /** {@inheritDoc} */
     @Override
     public void onExtServerStarted(ExtServerStateEvent event) {
-        nodeManager.getProjectNodes().then(new Operation<List<Node>>() {
-            @Override
-            public void apply(List<Node> nodes) throws OperationException {
-                view.removeAllNodes();
-                view.addNodes(null, nodes);
-                //actually we don't need to setup current project in application context
-                //because when we apply selection to first node, then tree will fires
-                //selection changed event and app context will be filled in method
-                //updateAppContext(List<Nodes>)
-
-                eventBus.fireEvent(new ProjectExplorerLoadedEvent(nodes));
-            }
-        }).catchError(new Operation<PromiseError>() {
-            @Override
-            public void apply(PromiseError arg) throws OperationException {
-                notificationManager.showError(locale.projectExplorerProjectsLoadFailed());
-            }
-        });
+       reloadProjectTree();
     }
 
     /** {@inheritDoc} */
@@ -210,6 +193,28 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
             return;
         }
 
+    }
+
+    //TODO: temporary fix to make accept factory working
+    public void reloadProjectTree() {
+        nodeManager.getProjectNodes().then(new Operation<List<Node>>() {
+            @Override
+            public void apply(List<Node> nodes) throws OperationException {
+                view.removeAllNodes();
+                view.addNodes(null, nodes);
+                //actually we don't need to setup current project in application context
+                //because when we apply selection to first node, then tree will fires
+                //selection changed event and app context will be filled in method
+                //updateAppContext(List<Nodes>)
+
+                eventBus.fireEvent(new ProjectExplorerLoadedEvent(nodes));
+            }
+        }).catchError(new Operation<PromiseError>() {
+            @Override
+            public void apply(PromiseError arg) throws OperationException {
+                notificationManager.showError(locale.projectExplorerProjectsLoadFailed());
+            }
+        });
     }
 
     private void askUserToSetUpProject(final ProjectDescriptor descriptor) {
