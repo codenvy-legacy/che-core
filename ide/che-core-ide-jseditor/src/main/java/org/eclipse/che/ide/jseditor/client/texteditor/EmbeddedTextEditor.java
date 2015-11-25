@@ -10,12 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.texteditor;
 
-import org.eclipse.che.ide.api.texteditor.outline.HasOutline;
 import org.eclipse.che.ide.jseditor.client.editorconfig.EditorUpdateAction;
 import org.eclipse.che.ide.jseditor.client.position.PositionConverter;
 import org.eclipse.che.ide.texteditor.selection.CursorModelWithHandler;
 
-public interface EmbeddedTextEditor extends TextEditor, ConfigurableTextEditor, HasOutline {
+public interface EmbeddedTextEditor extends TextEditor, ConfigurableTextEditor {
 
     /**
      * @return the text editor view implementation //todo need to introduce more simple way to use TextEditorPartView interface

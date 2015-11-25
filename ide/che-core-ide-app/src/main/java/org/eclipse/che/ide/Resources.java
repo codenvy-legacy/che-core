@@ -226,9 +226,6 @@ public interface Resources extends Tree.Resources,
     @Source("defaulticons/json.svg")
     SVGResource jsonFile();
 
-    @Source("part/outline/no-outline.svg")
-    SVGResource noOutline();
-
     @Source("part/project-explorer-part-icon.svg")
     SVGResource projectExplorerPartIcon();
 
@@ -237,7 +234,4 @@ public interface Resources extends Tree.Resources,
 
     @Source("part/output-part-icon.svg")
     SVGResource outputPartIcon();
-
-    @Source("part/outline-part-icon.svg")
-    SVGResource outlinePartIcon();
 }
