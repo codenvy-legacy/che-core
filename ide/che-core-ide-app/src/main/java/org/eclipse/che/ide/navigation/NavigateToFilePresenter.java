@@ -16,6 +16,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateEvent;
 import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateHandler;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
@@ -24,6 +25,7 @@ import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
+import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.project.node.FileReferenceNode;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
@@ -55,13 +57,14 @@ public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegat
 
     private final ProjectExplorerPresenter projectExplorer;
     private final MessageBusProvider       messageBusProvider;
+    private final DtoUnmarshallerFactory   dtoUnmarshallerFactory;
+    private final NavigateToFileView       view;
+    private final DtoFactory               dtoFactory;
+    private final AppContext               appContext;
 
+    private Map<String, ItemReference> resultMap;
     private String                     SEARCH_URL;
     private MessageBus                 wsMessageBus;
-    private DtoUnmarshallerFactory     dtoUnmarshallerFactory;
-    private NavigateToFileView         view;
-    private AppContext                 appContext;
-    private Map<String, ItemReference> resultMap;
 
     @Inject
     public NavigateToFilePresenter(NavigateToFileView view,
@@ -69,30 +72,29 @@ public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegat
                                    EventBus eventBus,
                                    DtoUnmarshallerFactory dtoUnmarshallerFactory,
                                    ProjectExplorerPresenter projectExplorer,
-                                   MessageBusProvider messageBusProvider) {
+                                   MessageBusProvider messageBusProvider,
+                                   DtoFactory dtoFactory) {
         this.view = view;
-        this.view.setDelegate(this);
-
+        this.dtoFactory = dtoFactory;
         this.appContext = appContext;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.projectExplorer = projectExplorer;
         this.messageBusProvider = messageBusProvider;
 
-        resultMap = new HashMap<>();
+        this.view.setDelegate(this);
 
+        resultMap = new HashMap<>();
         eventBus.addHandler(ExtServerStateEvent.TYPE, this);
     }
 
     @Override
     public void onExtServerStarted(ExtServerStateEvent event) {
         wsMessageBus = messageBusProvider.getMachineMessageBus();
-
         SEARCH_URL = "/project/" + appContext.getWorkspace().getId() + "/search";
     }
 
     @Override
     public void onExtServerStopped(ExtServerStateEvent event) {
-
     }
 
     /** Show dialog with view for navigation. */
@@ -101,7 +103,6 @@ public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegat
         view.clearInput();
     }
 
-    /** {@inheritDoc} */
     @Override
     public void onRequestSuggestions(String query, final AsyncCallback<List<ItemReference>> callback) {
         resultMap = new HashMap<>();
@@ -128,7 +129,6 @@ public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegat
         });
     }
 
-    /** {@inheritDoc} */
     @Override
     public void onFileSelected() {
         view.close();
@@ -149,8 +149,8 @@ public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegat
 
     private void search(String fileName, final AsyncCallback<List<ItemReference>> callback) {
         final String url = SEARCH_URL + "/?name=" + URL.encodePathSegment(fileName);
-        Message message = new MessageBuilder(GET, url).header(ACCEPT, APPLICATION_JSON).build();
-        Unmarshallable<List<ItemReference>> unmarshaller = dtoUnmarshallerFactory.newWSListUnmarshaller(ItemReference.class);
+        final Message message = new MessageBuilder(GET, url).header(ACCEPT, APPLICATION_JSON).build();
+        final Unmarshallable<List<ItemReference>> unmarshaller = dtoUnmarshallerFactory.newWSListUnmarshaller(ItemReference.class);
         try {
             wsMessageBus.send(message, new RequestCallback<List<ItemReference>>(unmarshaller) {
                 @Override
@@ -160,7 +160,8 @@ public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegat
 
                 @Override
                 protected void onFailure(Throwable exception) {
-                    callback.onFailure(exception);
+                    final String message = dtoFactory.createDtoFromJson(exception.getMessage(), ServiceError.class).getMessage();
+                    callback.onFailure(new Exception(message));
                 }
             });
         } catch (WebSocketException e) {
@@ -171,5 +172,4 @@ public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegat
     private boolean isItemHidden(String path) {
         return path.contains("/.");
     }
-
 }

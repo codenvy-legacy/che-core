@@ -12,25 +12,26 @@ package org.eclipse.che.ide.navigation;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.shared.HandlerRegistration;
-import org.eclipse.che.api.project.shared.dto.ItemReference;
-import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.ui.window.Window;
-import org.eclipse.che.ide.util.loging.Log;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SuggestBox;
 import com.google.gwt.user.client.ui.SuggestOracle;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
+import org.eclipse.che.api.project.shared.dto.ItemReference;
+import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.ui.window.Window;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,19 +48,22 @@ public class NavigateToFileViewImpl extends Window implements NavigateToFileView
     interface NavigateToFileViewImplUiBinder extends UiBinder<Widget, NavigateToFileViewImpl> {
     }
 
+    @UiField
+    Label errLabel;
+
     @UiField(provided = true)
     SuggestBox files;
 
     @UiField(provided = true)
     CoreLocalizationConstant locale;
 
-    private ActionDelegate delegate;
+    private ActionDelegate      delegate;
     private HandlerRegistration handlerRegistration;
 
     @Inject
     public NavigateToFileViewImpl(CoreLocalizationConstant locale, NavigateToFileViewImplUiBinder uiBinder) {
         this.locale = locale;
-        this.setTitle(locale.navigateToFileViewTitle());
+        setTitle(locale.navigateToFileViewTitle());
         files = new SuggestBox(new MySuggestOracle());
 
         files.getValueBox().addKeyUpHandler(new KeyUpHandler() {
@@ -79,27 +83,26 @@ public class NavigateToFileViewImpl extends Window implements NavigateToFileView
         });
 
         Widget widget = uiBinder.createAndBindUi(this);
-        this.setWidget(widget);
+        setWidget(widget);
         getFooter().setVisible(false);
     }
 
-    /** {@inheritDoc} */
     @Override
     public void setDelegate(ActionDelegate delegate) {
         this.delegate = delegate;
     }
 
-    /** {@inheritDoc} */
     @Override
     public void close() {
         files.setEnabled(false);
-        this.hide();
+        hide();
     }
 
-    /** {@inheritDoc} */
     @Override
     public void showDialog() {
-        this.files.setEnabled(true);
+        errLabel.setText("");
+
+        files.setEnabled(true);
         new Timer() {
             @Override
             public void run() {
@@ -131,20 +134,17 @@ public class NavigateToFileViewImpl extends Window implements NavigateToFileView
         //Do nothing
     }
 
-    /** {@inheritDoc} */
     @Override
     public String getItemPath() {
         return files.getValue();
     }
 
-    /** {@inheritDoc} */
     @Override
     public void clearInput() {
         files.getValueBox().setValue("");
     }
 
     private class MySuggestOracle extends SuggestOracle {
-        /** {@inheritDoc} */
         @Override
         public boolean isDisplayStringHTML() {
             return true;
@@ -153,9 +153,10 @@ public class NavigateToFileViewImpl extends Window implements NavigateToFileView
         @Override
         public void requestSuggestions(final Request request, final Callback callback) {
             delegate.onRequestSuggestions(request.getQuery(), new AsyncCallback<List<ItemReference>>() {
-                /** {@inheritDoc} */
                 @Override
                 public void onSuccess(List<ItemReference> result) {
+                    errLabel.setText("");
+
                     final List<SuggestOracle.Suggestion> suggestions = new ArrayList<>(result.size());
                     for (final ItemReference item : result) {
                         suggestions.add(new SuggestOracle.Suggestion() {
@@ -174,10 +175,11 @@ public class NavigateToFileViewImpl extends Window implements NavigateToFileView
                     callback.onSuggestionsReady(request, new Response(suggestions));
                 }
 
-                /** {@inheritDoc} */
                 @Override
                 public void onFailure(Throwable caught) {
-                    Log.error(NavigateToFileViewImpl.class, "Failed to search files.");
+                    errLabel.setText(caught.getMessage());
+                    // hide previous suggestion list in case any error
+                    callback.onSuggestionsReady(request, new Response(new ArrayList<Suggestion>(0)));
                 }
             });
         }

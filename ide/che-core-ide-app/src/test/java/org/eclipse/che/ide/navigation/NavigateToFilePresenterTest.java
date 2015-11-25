@@ -19,6 +19,7 @@ import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.project.node.Node;
+import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.websocket.MessageBus;
@@ -40,7 +41,7 @@ import static org.mockito.Mockito.when;
  * @author Artem Zatsarynnyy
  */
 @RunWith(MockitoJUnitRunner.class)
-public class NavigateToFileTest {
+public class NavigateToFilePresenterTest {
 
     public static final String PROJECT_NAME      = "test";
     public static final String FILE_IN_ROOT_NAME = "pom.xml";
@@ -57,6 +58,8 @@ public class NavigateToFileTest {
     private CurrentProject           project;
     @Mock
     private ProjectExplorerPresenter explorerPresenter;
+    @Mock
+    private DtoFactory               dtoFactory;
 
     @Mock
     private MessageBus             messageBus;
@@ -84,7 +87,8 @@ public class NavigateToFileTest {
                                                 eventBus,
                                                 dtoUnmarshallerFactory,
                                                 explorerPresenter,
-                                                messageBusProvider);
+                                                messageBusProvider,
+                                                dtoFactory);
 
         presenter.onExtServerStarted(extServerStateEvent);
     }
