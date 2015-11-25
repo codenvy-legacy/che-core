@@ -45,7 +45,9 @@ import com.google.web.bindery.event.shared.EventBus;
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.RUNNING;
 
 /**
- * @author Evgen Vidolob
+ * Retrieves specified factory, and creates and/or starts workspace configured in it.
+ *
+ * @author Max Shaposhnik
  */
 @Singleton
 public class FactoryWorkspaceComponent extends WorkspaceComponent implements Component {
@@ -109,6 +111,7 @@ public class FactoryWorkspaceComponent extends WorkspaceComponent implements Com
        
     }
 
+    @Override
     void tryStartWorkspace() {
 
         WorkspaceConfigDto workspaceConfigDto = factory.getWorkspace();
@@ -138,7 +141,6 @@ public class FactoryWorkspaceComponent extends WorkspaceComponent implements Com
             workspaceServiceClient.create(workspaceConfigDto, null)
                                   .then(workspaceOperation)
                                   .catchError(errorOperation);
-            return;
         }
     }
 

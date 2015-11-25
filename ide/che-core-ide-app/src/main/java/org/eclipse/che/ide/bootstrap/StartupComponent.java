@@ -23,6 +23,8 @@ import org.eclipse.che.ide.util.loging.Log;
 
 
 /**
+ * Checks startup params and calls appropriate factory or default workspace component.
+ *
  * @author Max Shaposhnik
  */
 public class StartupComponent implements Component {
@@ -43,13 +45,12 @@ public class StartupComponent implements Component {
 
     @Override
     public void start(final Callback<Component, Exception> callback) {
-        Log.info(StartupComponent.class, "Into startup.start();");
         String factoryParams = Config.getStartupParam("factory");
         if (factoryParams != null) {
-            Log.info(StartupComponent.class, "Starting factory.");
+            Log.info(StartupComponent.class, "Starting factory workspace component");
             factoryComponentProvider.get().start(callback);
         } else {
-            Log.info(StartupComponent.class, "Starting default.");
+            Log.info(StartupComponent.class, "Starting default workspace component");
             workspaceComponentProvider.get().start(callback);
         }
     }

@@ -43,6 +43,9 @@ import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.RUNNING;
 import static org.eclipse.che.ide.statepersistance.AppStateManager.PREFERENCE_PROPERTY_NAME;
 
 /**
+ * Performs default start of IDE - creates new or starts latest workspace.
+ * Used when no factory specified.
+ *
  * @author Max Shaposhnik (mshaposhnik@codenvy.com)
  *
  */
@@ -130,7 +133,7 @@ public class DefaultWorkspaceComponent extends WorkspaceComponent implements Com
         });
     }
 
-
+    @Override
     public void tryStartWorkspace() {
         String json = preferencesManager.getValue(PREFERENCE_PROPERTY_NAME);
 
