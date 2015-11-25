@@ -68,8 +68,12 @@ public final class ZipContent {
         try (CountingInputStream compressedCounter = new CountingInputStream(spool);
              ZipInputStream zip = new ZipInputStream(compressedCounter)) {
 
-            // Counts number of uncompressed data.
-            CountingInputStream uncompressedCounter = new CountingInputStream(zip) {
+            class UncompressedCounterInputStream extends CountingInputStream {
+
+                public UncompressedCounterInputStream(InputStream in) {
+                    super(in);
+                }
+
                 @Override
                 public int read() throws IOException {
                     int i = super.read();
@@ -107,13 +111,16 @@ public final class ZipContent {
                         }
                     }
                 }
-            };
+            }
 
-            ZipEntry zipEntry;
-            while ((zipEntry = zip.getNextEntry()) != null) {
-                if (!zipEntry.isDirectory()) {
-                    while (uncompressedCounter.read(buff) != -1) {
-                        // Read full data from stream to be able detect zip-bomb.
+            // Counts number of uncompressed data.
+            try (CountingInputStream uncompressedCounter = new UncompressedCounterInputStream(zip)) {
+                ZipEntry zipEntry;
+                while ((zipEntry = zip.getNextEntry()) != null) {
+                    if (!zipEntry.isDirectory()) {
+                        while (uncompressedCounter.read(buff) != -1) {
+                            // Read full data from stream to be able detect zip-bomb.
+                        }
                     }
                 }
             }
