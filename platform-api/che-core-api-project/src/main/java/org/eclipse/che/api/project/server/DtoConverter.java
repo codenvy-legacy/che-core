@@ -113,40 +113,12 @@ public class DtoConverter {
         if (dto.getType() == null)
             throw new InvalidValueException("Invalid Project definition. Primary project type is not defined.");
 
-        if (typeRegistry.getProjectType(dto.getType()) == null)
+        ProjectType primaryType = typeRegistry.getProjectType(dto.getType());
+        if (primaryType == null)
             throw new ProjectTypeConstraintException("Primary project type is not registered " + dto.getType());
 
-        // primary
-        final Set<ProjectType> validTypes = new HashSet<>();
-        validTypes.add(typeRegistry.getProjectType(dto.getType()));
-
-        // mixins
-        final List<String> validMixins = new ArrayList<>();
-        for (String typeId : dto.getMixins()) {
-            ProjectType mixinType = typeRegistry.getProjectType(typeId);
-            if (mixinType != null) {  // otherwise just ignore
-                validTypes.add(mixinType);
-                validMixins.add(typeId);
-            }
-        }
-
-        // attributes
-        final Map<String, List<String>> updateAttributes = dto.getAttributes();
-        final HashMap<String, AttributeValue> attributes = new HashMap<>(updateAttributes.size());
-        for (Map.Entry<String, List<String>> entry : updateAttributes.entrySet()) {
-
-            for (ProjectType projectType : validTypes) {
-                Attribute attr = projectType.getAttribute(entry.getKey());
-                if (attr != null) {
-                    attributes.put(attr.getName(), new AttributeValue(entry.getValue()));
-
-                }
-            }
-        }
-
-        return new ProjectConfig(dto.getDescription(), dto.getType(), attributes,
-                                 fromDto(dto.getRunners()), fromDto(dto.getBuilders()), validMixins);
-
+        return createProjectConfig(primaryType, dto.getDescription(), dto.getMixins(), dto.getAttributes(),
+                dto.getRunners(), dto.getBuilders(), typeRegistry);
     }
 
 
@@ -158,16 +130,28 @@ public class DtoConverter {
         if (dto.getType() == null)
             throw new InvalidValueException("Invalid Project definition. Primary module type is not defined.");
 
-        if (typeRegistry.getProjectType(dto.getType()) == null)
+        ProjectType primaryType = typeRegistry.getProjectType(dto.getType());
+        if (primaryType == null)
             throw new ProjectTypeConstraintException("Primary module type is not registered " + dto.getType());
 
-        // primary
-        final Set<ProjectType> validTypes = new HashSet<>();
-        validTypes.add(typeRegistry.getProjectType(dto.getType()));
+        return createProjectConfig(primaryType, dto.getDescription(), dto.getMixins(), dto.getAttributes(),
+                dto.getRunners(), dto.getBuilders(), typeRegistry);
+    }
+
+    private static ProjectConfig createProjectConfig(
+            ProjectType primaryType,
+            String dtoDescription,
+            List<String> dtoMixins,
+            Map<String, List<String>> dtoAttributes,
+            RunnersDescriptor dtoRunners,
+            BuildersDescriptor dtoBuilders,
+            ProjectTypeRegistry typeRegistry) {
+        Set<ProjectType> validTypes = new HashSet<>(dtoMixins.size() + 1);
+        validTypes.add(primaryType);
 
         // mixins
-        final List<String> validMixins = new ArrayList<>();
-        dto.getMixins().stream().forEach(typeId -> {
+        final List<String> validMixins = new ArrayList<>(dtoMixins.size());
+        dtoMixins.stream().forEach(typeId -> {
             ProjectType mixinType = typeRegistry.getProjectType(typeId);
             if (mixinType != null) {  // otherwise just ignore
                 validTypes.add(mixinType);
@@ -176,9 +160,8 @@ public class DtoConverter {
         });
 
         // attributes
-        final Map<String, List<String>> updateAttributes = dto.getAttributes();
-        final HashMap<String, AttributeValue> attributes = new HashMap<>(updateAttributes.size());
-        for (Map.Entry<String, List<String>> entry : updateAttributes.entrySet()) {
+        final Map<String, AttributeValue> attributes = new HashMap<>(dtoAttributes.size());
+        for (Map.Entry<String, List<String>> entry : dtoAttributes.entrySet()) {
 
             for (ProjectType projectType : validTypes) {
                 Attribute attr = projectType.getAttribute(entry.getKey());
@@ -189,9 +172,9 @@ public class DtoConverter {
             }
         }
 
-        return new ProjectConfig(dto.getDescription(), dto.getType(), attributes,
-                                 fromDto(dto.getRunners()), fromDto(dto.getBuilders()), validMixins);
-
+        Runners runners = fromDto(dtoRunners);
+        Builders builders = fromDto(dtoBuilders);
+        return new ProjectConfig(dtoDescription, primaryType.getId(), attributes, runners, builders, validMixins);
     }
 
     /*================================ Methods for conversion to DTO. ===============================*/
