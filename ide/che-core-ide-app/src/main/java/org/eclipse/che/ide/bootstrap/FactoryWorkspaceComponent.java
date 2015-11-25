@@ -11,13 +11,22 @@
 
 package org.eclipse.che.ide.bootstrap;
 
-import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
+import com.google.gwt.core.client.Callback;
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.google.inject.Singleton;
+import com.google.web.bindery.event.shared.EventBus;
+
 import org.eclipse.che.api.factory.gwt.client.FactoryServiceClient;
 import org.eclipse.che.api.factory.shared.dto.Factory;
 import org.eclipse.che.api.machine.gwt.client.MachineManager;
+import org.eclipse.che.api.promises.client.Function;
+import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
+import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.PromiseError;
+import org.eclipse.che.api.promises.client.js.Promises;
 import org.eclipse.che.api.workspace.gwt.client.WorkspaceServiceClient;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
@@ -39,13 +48,7 @@ import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
 import org.eclipse.che.ide.workspace.create.CreateWorkspacePresenter;
 import org.eclipse.che.ide.workspace.start.StartWorkspacePresenter;
 
-import com.google.gwt.core.client.Callback;
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-import com.google.inject.Singleton;
-import com.google.web.bindery.event.shared.EventBus;
-
-import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.RUNNING;
+import java.util.List;
 
 /**
  * Retrieves specified factory, and creates and/or starts workspace configured in it.
@@ -112,44 +115,88 @@ public class FactoryWorkspaceComponent extends WorkspaceComponent implements Com
                                             protected void onFailure(Throwable error) {
                                                 Log.error(FactoryWorkspaceComponent.class, "Unable to load Factory", error);
                                                 callback.onFailure(new Exception(error.getCause()));
-                                      }
-                                  }
-                                 );
-       
+                                            }
+                                        });
     }
 
     @Override
-    void tryStartWorkspace() {
+    public void tryStartWorkspace() {
+        final WorkspaceConfigDto workspaceConfigDto = factory.getWorkspace();
 
-        WorkspaceConfigDto workspaceConfigDto = factory.getWorkspace();
-        if (workspaceConfigDto != null) {
+        if (workspaceConfigDto == null) {
+            //TODO handle this situation
+        }
 
-            Operation<UsersWorkspaceDto> workspaceOperation = new Operation<UsersWorkspaceDto>() {
-                @Override
-                public void apply(UsersWorkspaceDto workspace) throws OperationException {
-                    WorkspaceStatus wsFromReferenceStatus = workspace.getStatus();
+        getWorkspaceToStart().then(startWorkspace()).catchError(new Operation<PromiseError>() {
+            @Override
+            public void apply(PromiseError arg) throws OperationException {
+                Log.error(getClass(), arg.getMessage());
+            }
+        });
+    }
 
-                    if (RUNNING.equals(wsFromReferenceStatus)) {
-                        setCurrentWorkspace(workspace);
+    /**
+     * Gets {@link Promise} of workspace according to {@code factory} {@link org.eclipse.che.api.factory.shared.dto.Policies}.
+     *
+     * <p>Return policy for workspace:
+     * <p><i>perClick</i> - every click from any user always creates a new workspace every time and if policy is not specified<br/>
+     * it will be used by default.
+     *
+     * <p><i>perUser</i> - create one workspace for a user, a 2nd click from same user reloads the same workspace.
+     *
+     * <p><i>perAccount</i> - only create workspace for all users. A 2nd click from any user reloads the same workspace<br/>
+     * Note that if location = owner, then only 1 workspace ever is created. If location = acceptor<br/>
+     * it's one workspace for each unique user.
+     */
+    private Promise<UsersWorkspaceDto> getWorkspaceToStart() {
+        final WorkspaceConfigDto workspaceConfigDto = factory.getWorkspace();
+
+        switch (factory.getPolicies().getCreate()) {
+            case "perUser":
+                final String currentUserId = appContext.getCurrentUser().getProfile().getUserId();
+                return getWorkspaceByConditionOrCreateNew(workspaceConfigDto, new Function<UsersWorkspaceDto, Boolean>() {
+                    @Override
+                    public Boolean apply(UsersWorkspaceDto workspaceDto) throws FunctionException {
+                        return currentUserId.equals(workspaceDto.getOwner())
+                               && workspaceDto.getName().equals(workspaceConfigDto.getName());
+
                     }
-
-                    startWorkspaceById(workspace);
-                }
-            };
-
-            Operation<PromiseError> errorOperation = new Operation<PromiseError>() {
-                @Override
-                public void apply(PromiseError promiseError) throws OperationException {
-                    //showWorkspaceDialog();
-                    callback.onFailure(new Exception(promiseError.getMessage()));
-                }
-            };
-
-            workspaceServiceClient.create(workspaceConfigDto, null)
-                                  .then(workspaceOperation)
-                                  .catchError(errorOperation);
+                });
+            case "perAccount":
+                return getWorkspaceByConditionOrCreateNew(workspaceConfigDto, new Function<UsersWorkspaceDto, Boolean>() {
+                    @Override
+                    public Boolean apply(UsersWorkspaceDto arg) throws FunctionException {
+                        //TODO rework it when account will be ready
+                        return workspaceConfigDto.getName().equals(arg.getName());
+                    }
+                });
+            case "perClick":
+            default:
+                return workspaceServiceClient.create(workspaceConfigDto.withName("xXx"), null);
         }
     }
 
+    /**
+     * Gets the workspace by condition which is determined by given {@link Function}<br/>
+     * if workspace found by condition then it will return {@link Promise} of it<br/>
+     * else it wil produce {@link Promise} of new workspace.
+     */
+    private Promise<UsersWorkspaceDto> getWorkspaceByConditionOrCreateNew(final WorkspaceConfigDto workspaceConfigDto,
+                                                                          final Function<UsersWorkspaceDto, Boolean> condition) {
+        return workspaceServiceClient.getWorkspaces(0, 0)
+                                     .thenPromise(new Function<List<UsersWorkspaceDto>, Promise<UsersWorkspaceDto>>() {
+                                         @Override
+                                         public Promise<UsersWorkspaceDto> apply(List<UsersWorkspaceDto> workspaces)
+                                                 throws FunctionException {
+                                             for (UsersWorkspaceDto existsWs : workspaces) {
+                                                 if (condition.apply(existsWs)) {
+                                                     return Promises.resolve(existsWs);
+                                                 }
+                                             }
+
+                                             return workspaceServiceClient.create(workspaceConfigDto, null);
+                                         }
+                                     });
+    }
 }
 

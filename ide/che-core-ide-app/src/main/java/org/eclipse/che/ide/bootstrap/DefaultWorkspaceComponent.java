@@ -156,29 +156,14 @@ public class DefaultWorkspaceComponent extends WorkspaceComponent implements Com
             String recentWorkspaceId = appState.getRecentWorkspaceId();
 
             if (recentWorkspaceId != null) {
-                Operation<UsersWorkspaceDto> workspaceOperation = new Operation<UsersWorkspaceDto>() {
-                    @Override
-                    public void apply(UsersWorkspaceDto workspace) throws OperationException {
-                        WorkspaceStatus wsFromReferenceStatus = workspace.getStatus();
-
-                        if (RUNNING.equals(wsFromReferenceStatus)) {
-                            setCurrentWorkspace(workspace);
-                        }
-
-                        startWorkspaceById(workspace);
-                    }
-                };
-
-                Operation<PromiseError> errorOperation = new Operation<PromiseError>() {
-                    @Override
-                    public void apply(PromiseError promiseError) throws OperationException {
-                        showWorkspaceDialog();
-                    }
-                };
-
                 workspaceServiceClient.getWorkspaceById(recentWorkspaceId)
-                                      .then(workspaceOperation)
-                                      .catchError(errorOperation);
+                                      .then(startWorkspace())
+                                      .catchError(new Operation<PromiseError>() {
+                                          @Override
+                                          public void apply(PromiseError promiseError) throws OperationException {
+                                              showWorkspaceDialog();
+                                          }
+                                      });
                 return;
             }
         }

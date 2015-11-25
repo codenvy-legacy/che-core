@@ -16,6 +16,7 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 import org.eclipse.che.api.machine.gwt.client.MachineManager;
 import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateEvent;
 import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateHandler;
@@ -57,8 +58,8 @@ import java.util.List;
 
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.RUNNING;
 import static org.eclipse.che.ide.ui.loaders.initializationLoader.InitialLoadingInfo.Operations.WORKSPACE_BOOTING;
-import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.IN_PROGRESS;
 import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.ERROR;
+import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.IN_PROGRESS;
 import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.SUCCESS;
 
 /**
@@ -81,13 +82,13 @@ public abstract class WorkspaceComponent implements Component, ExtServerStateHan
     protected final PreferencesManager        preferencesManager;
     protected final DtoFactory                dtoFactory;
 
-    private final   StartWorkspacePresenter   startWorkspacePresenter;
-    private final   EventBus                  eventBus;
-    private final   LoaderPresenter           loader;
-    private final   Provider<MachineManager>  machineManagerProvider;
-    private final   NotificationManager       notificationManager;
-    private final   MessageBusProvider        messageBusProvider;
-    private final   InitialLoadingInfo        initialLoadingInfo;
+    private final StartWorkspacePresenter  startWorkspacePresenter;
+    private final EventBus                 eventBus;
+    private final LoaderPresenter          loader;
+    private final Provider<MachineManager> machineManagerProvider;
+    private final NotificationManager      notificationManager;
+    private final MessageBusProvider       messageBusProvider;
+    private final InitialLoadingInfo       initialLoadingInfo;
 
     protected Callback<Component, Exception> callback;
     protected boolean                        needToReloadComponents;
@@ -307,5 +308,23 @@ public abstract class WorkspaceComponent implements Component, ExtServerStateHan
         } catch (WebSocketException exception) {
             Log.error(getClass(), exception);
         }
+    }
+
+    /**
+     * Starts specified workspace if it's {@link WorkspaceStatus} different of {@code RUNNING}
+     */
+    protected Operation<UsersWorkspaceDto> startWorkspace() {
+        return new Operation<UsersWorkspaceDto>() {
+            @Override
+            public void apply(UsersWorkspaceDto workspaceToStart) throws OperationException {
+                WorkspaceStatus wsFromReferenceStatus = workspaceToStart.getStatus();
+
+                if (RUNNING.equals(wsFromReferenceStatus)) {
+                    setCurrentWorkspace(workspaceToStart);
+                } else {
+                    startWorkspaceById(workspaceToStart);
+                }
+            }
+        };
     }
 }

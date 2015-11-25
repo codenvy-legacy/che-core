@@ -62,4 +62,14 @@ public interface Policies {
     void setMatch(String match);
 
     Policies withMatch(String match);
+
+    /**
+     * It's very usefully
+     */
+    @FactoryParameter(obligation = OPTIONAL)
+    String getCreate();
+
+    void setCreate(String create);
+
+    Policies withCreate(String create);
 }
