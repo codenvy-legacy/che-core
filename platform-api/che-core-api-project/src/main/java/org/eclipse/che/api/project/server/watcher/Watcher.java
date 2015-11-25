@@ -34,6 +34,7 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
+import static org.eclipse.che.api.project.server.Constants.CODENVY_DIR;
 
 /**
  * The class contains business logic which allows describe on some folder on file system and handle all changes related to
@@ -102,7 +103,7 @@ class Watcher {
         boolean isTargetFolder = path.contains("target");
         boolean isCheFolder = path.contains(".che");
         //noinspection SpellCheckingInspection
-        boolean isCodenvyFolder = path.contains(".codenvy");
+        boolean isCodenvyFolder = path.contains(CODENVY_DIR);
         boolean isVfsFolder = path.contains(".vfs");
         boolean isGitFolder = path.contains(".git");
         boolean isMvnFolder = path.contains(".mvn");
