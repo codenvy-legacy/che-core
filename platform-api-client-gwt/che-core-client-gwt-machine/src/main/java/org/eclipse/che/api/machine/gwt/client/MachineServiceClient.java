@@ -128,4 +128,18 @@ public interface MachineServiceClient {
      *         project that should be unbound
      */
     Promise<Void> unbindProject(@NotNull String machineId, @NotNull String projectPath);
+
+    /**
+     * Get file content.
+     *
+     * @param machineId
+     *         ID of the machine
+     * @param path
+     *         path to file on machine instance
+     * @param startFrom
+     *         line number to start reading from
+     * @param limit
+     *         limitation on line
+     */
+    Promise<String> getFileContent(@NotNull String machineId, @NotNull String path, int startFrom, int limit);
 }

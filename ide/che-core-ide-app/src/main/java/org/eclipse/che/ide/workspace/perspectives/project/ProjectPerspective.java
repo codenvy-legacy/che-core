@@ -16,7 +16,6 @@ import com.google.inject.Singleton;
 
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.parts.EditorPartStack;
-import org.eclipse.che.ide.api.parts.OutlinePart;
 import org.eclipse.che.ide.api.parts.PartStack;
 import org.eclipse.che.ide.api.parts.ProjectExplorerPart;
 import org.eclipse.che.ide.workspace.PartStackPresenterFactory;
@@ -54,7 +53,6 @@ public class ProjectPerspective extends AbstractPerspective {
                               PartStackPresenterFactory stackPresenterFactory,
                               PartStackViewFactory partViewFactory,
                               WorkBenchControllerFactory controllerFactory,
-                              OutlinePart outlinePart,
                               ProjectExplorerPart projectExplorerPart,
                               NotificationManager notificationManager) {
         super(PROJECT_PERSPECTIVE_ID, view, stackPresenterFactory, partViewFactory, controllerFactory);
@@ -63,7 +61,6 @@ public class ProjectPerspective extends AbstractPerspective {
 
         partStacks.put(EDITING, editorPartStackPresenter);
 
-        addPart(outlinePart, TOOLING);
         addPart(notificationManager, INFORMATION);
         addPart(projectExplorerPart, NAVIGATION);
 

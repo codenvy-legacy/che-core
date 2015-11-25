@@ -424,6 +424,10 @@ public class Style {
         return theme.getEditorInfoBackgroundColor();
     }
 
+    public static String getEditorInfoTextColor() {
+        return theme.editorInfoTextColor();
+    }
+
     public static String getEditorInfoBorderColor() {
         return theme.getEditorInfoBorderColor();
     }

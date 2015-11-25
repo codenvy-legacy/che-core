@@ -18,7 +18,6 @@ import com.google.gwtmockito.GwtMockitoTestRunner;
 
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.parts.EditorPartStack;
-import org.eclipse.che.ide.api.parts.OutlinePart;
 import org.eclipse.che.ide.api.parts.PartStackView;
 import org.eclipse.che.ide.api.parts.ProjectExplorerPart;
 import org.eclipse.che.ide.part.PartStackPresenter;
@@ -54,8 +53,6 @@ public class ProjectPerspectiveTest {
     private WorkBenchControllerFactory controllerFactory;
     @Mock
     private PartStackPresenterFactory  stackPresenterFactory;
-    @Mock
-    private OutlinePart                outlinePart;
     @Mock
     private ProjectExplorerPart        projectExplorerPart;
     @Mock
@@ -107,7 +104,6 @@ public class ProjectPerspectiveTest {
                                              stackPresenterFactory,
                                              partViewFactory,
                                              controllerFactory,
-                                             outlinePart,
                                              projectExplorerPart,
                                              notificationManager);
     }
@@ -121,11 +117,9 @@ public class ProjectPerspectiveTest {
                                              stackPresenterFactory,
                                              partViewFactory,
                                              controllerFactory,
-                                             outlinePart,
                                              projectExplorerPart,
                                              notificationManager);
 
-        verify(partStackPresenter, times(2)).addPart(outlinePart, null);
         verify(partStackPresenter, times(2)).addPart(notificationManager, null);
         verify(partStackPresenter).addPart(projectExplorerPart, null);
 

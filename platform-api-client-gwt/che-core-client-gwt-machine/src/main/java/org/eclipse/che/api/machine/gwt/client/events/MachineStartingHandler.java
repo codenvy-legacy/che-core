@@ -8,18 +8,22 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.outline;
+package org.eclipse.che.api.machine.gwt.client.events;
 
-import org.eclipse.che.ide.api.texteditor.outline.CodeBlock;
-import org.eclipse.che.ide.ui.tree.Tree.Listener;
-import com.google.gwt.user.client.ui.IsWidget;
+import com.google.gwt.event.shared.EventHandler;
 
-public interface OutlineView extends IsWidget {
-    void renderTree();
+/**
+ * Special handler which handles starting machine processes.
+ *
+ * @author Dmitry Shnurenko
+ */
+public interface MachineStartingHandler extends EventHandler {
 
-    void rootChanged(CodeBlock newRoot);
-
-    void setTreeEventHandler(Listener<CodeBlock> listener);
-
-    void selectAndExpand(CodeBlock block);
+    /**
+     * Performs some actions when machine is starting.
+     *
+     * @param event
+     *         event which contains information about starting machine
+     */
+    void onMachineStarting(MachineStartingEvent event);
 }

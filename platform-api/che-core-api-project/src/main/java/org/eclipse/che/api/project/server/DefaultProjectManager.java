@@ -10,6 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.server;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalListener;
+import com.google.common.cache.RemovalNotification;
+
 import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
@@ -47,8 +52,6 @@ import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.Pair;
-import org.eclipse.che.commons.lang.cache.Cache;
-import org.eclipse.che.commons.lang.cache.SLRUCache;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,23 +120,24 @@ public final class DefaultProjectManager implements ProjectManager {
         this.miscLocks = new Lock[CACHE_NUM];
         for (int i = 0; i < CACHE_NUM; i++) {
             miscLocks[i] = new ReentrantLock();
-            miscCaches[i] = new SLRUCache<Pair<String, String>, ProjectMisc>(SEG_SIZE, SEG_SIZE) {
-                @Override
-                protected void evict(Pair<String, String> key, ProjectMisc value) {
-                    if (value.isUpdated()) {
-                        final int index = key.hashCode() & CACHE_MASK;
-                        miscLocks[index].lock();
-                        try {
-                            writeProjectMisc(value.getProject(), value);
-                        } catch (Exception e) {
-                            LOG.error(e.getMessage(), e);
-                        } finally {
-                            miscLocks[index].unlock();
+            miscCaches[i] = CacheBuilder.newBuilder()
+                .concurrencyLevel(SEG_SIZE)
+                .removalListener(new RemovalListener<Pair<String, String>, ProjectMisc>() {
+                    @Override
+                    public void onRemoval(RemovalNotification<Pair<String, String>, ProjectMisc> n) {
+                        if (n.getValue().isUpdated()) {
+                            final int index = n.getKey().hashCode() & CACHE_MASK;
+                            miscLocks[index].lock();
+                            try {
+                                writeProjectMisc(n.getValue().getProject(), n.getValue());
+                            } catch (Exception e) {
+                                LOG.error(e.getMessage(), e);
+                            } finally {
+                                miscLocks[index].unlock();
+                            }
                         }
-                        super.evict(key, value);
                     }
-                }
-            };
+                }).build();
         }
 
         vfsSubscriber = new EventSubscriber<VirtualFileEvent>() {
@@ -188,7 +192,7 @@ public final class DefaultProjectManager implements ProjectManager {
         for (int i = 0, length = miscLocks.length; i < length; i++) {
             miscLocks[i].lock();
             try {
-                miscCaches[i].clear();
+                miscCaches[i].cleanUp();
             } finally {
                 miscLocks[i].unlock();
             }
@@ -657,7 +661,7 @@ public final class DefaultProjectManager implements ProjectManager {
         final int index = key.hashCode() & CACHE_MASK;
         miscLocks[index].lock();
         try {
-            ProjectMisc misc = miscCaches[index].get(key);
+            ProjectMisc misc = miscCaches[index].getIfPresent(key);
             if (misc == null) {
                 miscCaches[index].put(key, misc = readProjectMisc(project));
             }
@@ -699,7 +703,7 @@ public final class DefaultProjectManager implements ProjectManager {
             final int index = key.hashCode() & CACHE_MASK;
             miscLocks[index].lock();
             try {
-                miscCaches[index].remove(key);
+                miscCaches[index].invalidate(key);
                 writeProjectMisc(project, misc);
                 miscCaches[index].put(key, misc);
             } finally {

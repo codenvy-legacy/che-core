@@ -12,6 +12,8 @@ package org.eclipse.che.ide.ui.loaders.initializationLoader;
 
 import com.google.gwt.user.client.ui.IsWidget;
 
+import java.util.List;
+
 /**
  * View of {@link LoaderPresenter}.
  *
@@ -20,58 +22,34 @@ import com.google.gwt.user.client.ui.IsWidget;
 public interface LoaderView extends IsWidget {
     interface ActionDelegate {
         /**
-         * Performs any actions appropriate in response to the user having clicked the 'Close' button.
+         * Performs any actions appropriate in response to the user having clicked the expander area.
          */
-        void onCloseClicked();
-
-        /**
-         * Performs any actions appropriate in response to the user having clicked the 'Details'.
-         */
-        void onDetailsClicked();
+        void onExpanderClicked();
     }
-
-    /** Expand Details area. */
-    void expandDetails();
-
-    /** Collapse Details area. */
-    void collapseDetails();
-
     /** Sets the delegate to receive events from this view. */
     void setDelegate(ActionDelegate delegate);
 
-    /**
-     * Print operation to operation panel and details area.
-     *
-     * @param info
-     *         information about the operation.
-     */
-    void print(OperationInfo info);
+    /** Sets the list of operations for displaying. */
+    void setOperations(List<String> operations);
 
-    /**
-     * Print operation only to details area.
-     *
-     * @param info
-     *         information about the operation.
-     */
-    void printToDetails(OperationInfo info);
+    /** Sets the current operation for displaying. */
+    void setCurrentOperation(String operation);
 
-    /** Scrolls details area to bottom. */
-    void scrollBottom();
+    /** Sets the 'error' status for operation with {@code index}. */
+    void setErrorStatus(int index);
 
-    /** Show loader and print operation to operation panel and details area. */
-    void show(OperationInfo info);
+    /** Sets the 'success' status for operation with {@code index}. */
+    void setSuccessStatus(int index);
 
-    /** Hide loader */
-    void hide();
+    /** Sets the 'in progress' status for operation with {@code index}. */
+    void setInProgressStatus(int index);
 
-    /** Refresh details area(after change status, for example). */
-    void update();
+    /** Expand Operations area. */
+    void expandOperations();
 
-    /**
-     * Change the enable state of the close button.
-     *
-     * @param enabled
-     *         <code>true</code> to enable the button, <code>false</code> to disable it
-     */
-    void setEnabledCloseButton(boolean enabled);
+    /** Collapse Operations area. */
+    void collapseOperations();
+
+    /** Displays the progress bar's state corresponding to {@code percent}. */
+    void setProgressBarState(int percent);
 }

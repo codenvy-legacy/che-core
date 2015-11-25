@@ -395,19 +395,6 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("askWindow.close.title")
     String askWindowCloseTitle();
 
-    /* Outline */
-    @Key("outline.button.title")
-    String outlineButtonTitle();
-
-    @Key("outline.titleBar.text")
-    String outlineTitleBarText();
-
-    @Key("outline.notAvailable.message")
-    String outlineNotAvailableMessage();
-
-    @Key("outline.noFileOpened.message")
-    String outlineNoFileOpenedMessage();
-
     @Key("action.completions.title")
     String actionCompetitionsTitle();
 

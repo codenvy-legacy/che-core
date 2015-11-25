@@ -12,10 +12,12 @@ package org.eclipse.che.ide.bootstrap;
 
 import com.google.gwt.core.client.Callback;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
+import org.eclipse.che.api.machine.gwt.client.MachineManager;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.PromiseError;
@@ -30,6 +32,7 @@ import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.statepersistance.dto.AppState;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
+import org.eclipse.che.ide.ui.loaders.initializationLoader.InitialLoadingInfo;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter;
 import org.eclipse.che.ide.util.loging.Log;
 import org.eclipse.che.ide.websocket.MessageBusProvider;
@@ -61,12 +64,14 @@ public class DefaultWorkspaceComponent extends WorkspaceComponent implements Com
                               EventBus eventBus,
                               LoaderPresenter loader,
                               AppContext appContext,
+                              Provider<MachineManager> machineManagerProvider,
                               NotificationManager notificationManager,
                               MessageBusProvider messageBusProvider,
                               BrowserQueryFieldRenderer browserQueryFieldRenderer,
                               DialogFactory dialogFactory,
                               PreferencesManager preferencesManager,
-                              DtoFactory dtoFactory) {
+                              DtoFactory dtoFactory,
+                              InitialLoadingInfo initialLoadingInfo) {
         super(workspaceServiceClient,
               createWorkspacePresenter,
               startWorkspacePresenter,
@@ -75,12 +80,14 @@ public class DefaultWorkspaceComponent extends WorkspaceComponent implements Com
               eventBus,
               loader,
               appContext,
+              machineManagerProvider,
               notificationManager,
               messageBusProvider,
               browserQueryFieldRenderer,
               dialogFactory,
               preferencesManager,
-              dtoFactory);
+              dtoFactory,
+              initialLoadingInfo);
     }
 
     /** {@inheritDoc} */

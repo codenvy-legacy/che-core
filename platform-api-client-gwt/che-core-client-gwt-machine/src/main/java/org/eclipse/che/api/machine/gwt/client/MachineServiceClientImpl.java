@@ -27,6 +27,7 @@ import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.RestContext;
+import org.eclipse.che.ide.rest.StringUnmarshaller;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
@@ -296,5 +297,24 @@ public class MachineServiceClientImpl implements MachineServiceClient {
         asyncRequestFactory.createDeleteRequest(baseHttpUrl + '/' + machineId + "/binding/" + projectPath)
                            .loader(loader, "Unbinding project from machine...")
                            .send(newCallback(callback));
+    }
+
+    @Override
+    public Promise<String> getFileContent(@NotNull final String machineId, final @NotNull String path, final int startFrom,
+                                          final int limit) {
+        return newPromise(new RequestCall<String>() {
+            @Override
+            public void makeCall(AsyncCallback<String> callback) {
+                getFileContent(machineId, path, startFrom, limit, callback);
+            }
+        });
+    }
+
+    private void getFileContent(@NotNull String machineId, @NotNull String path, int startFrom, int limit,
+                                @NotNull AsyncCallback<String> callback) {
+        String url = baseHttpUrl + "/" + machineId + "/filepath/" + path + "?startFrom=" + startFrom + "&limit=" + limit;
+        asyncRequestFactory.createGetRequest(url)
+                           .loader(loader, "Loading file content...")
+                           .send(newCallback(callback, new StringUnmarshaller()));
     }
 }
