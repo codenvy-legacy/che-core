@@ -40,10 +40,11 @@ import org.eclipse.che.ide.api.texteditor.HandlesUndoRedo;
 import org.eclipse.che.ide.api.texteditor.HasReadOnlyProperty;
 import org.eclipse.che.ide.api.texteditor.TextEditorOperations;
 import org.eclipse.che.ide.api.texteditor.UndoableEditor;
-import org.eclipse.che.ide.api.texteditor.outline.OutlineModel;
 import org.eclipse.che.ide.debug.BreakpointManager;
 import org.eclipse.che.ide.debug.BreakpointRenderer;
 import org.eclipse.che.ide.debug.HasBreakpointRenderer;
+import org.eclipse.che.ide.hotkeys.HasHotKeyItems;
+import org.eclipse.che.ide.hotkeys.HotKeyItem;
 import org.eclipse.che.ide.jseditor.client.JsEditorConstants;
 import org.eclipse.che.ide.jseditor.client.codeassist.CodeAssistProcessor;
 import org.eclipse.che.ide.jseditor.client.codeassist.CodeAssistantFactory;
@@ -71,8 +72,6 @@ import org.eclipse.che.ide.jseditor.client.text.LinearRange;
 import org.eclipse.che.ide.jseditor.client.text.TextPosition;
 import org.eclipse.che.ide.jseditor.client.text.TextRange;
 import org.eclipse.che.ide.jseditor.client.texteditor.EmbeddedTextEditorPartView.Delegate;
-import org.eclipse.che.ide.hotkeys.HasHotKeyItems;
-import org.eclipse.che.ide.hotkeys.HotKeyItem;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.texteditor.selection.CursorModelWithHandler;
 import org.eclipse.che.ide.ui.dialogs.CancelCallback;
@@ -132,7 +131,6 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
     private HasKeybindings keyBindingsManager = new TemporaryKeybindingsManager();
     private AsyncRequestLoader  loader;
     private NotificationManager notificationManager;
-    private OutlineImpl         outline;
     /** The editor's error state. */
     private EditorState         errorState;
     private boolean delayedFocus = false;
@@ -249,11 +247,6 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
         this.editorWidget.setValue(content);
         this.generalEventBus.fireEvent(new DocumentReadyEvent(this.getEditorHandle(), this.document));
 
-        final OutlineImpl outline = getOutline();
-        if (outline != null) {
-            outline.bind(this.cursorModel, this.document);
-        }
-
         firePropertyChange(PROP_INPUT);
 
         setupEventHandlers();
@@ -343,20 +336,6 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
     @Override
     public void doRevertToSaved() {
         // do nothing
-    }
-
-    @Override
-    public OutlineImpl getOutline() {
-        if (outline != null) {
-            return outline;
-        }
-        final OutlineModel outlineModel = getConfiguration().getOutline();
-        if (outlineModel != null) {
-            outline = new OutlineImpl(resources, outlineModel);
-            return outline;
-        } else {
-            return null;
-        }
     }
 
     @NotNull

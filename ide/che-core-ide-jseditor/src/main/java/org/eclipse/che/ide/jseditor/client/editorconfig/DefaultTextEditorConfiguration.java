@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.editorconfig;
 
-import org.eclipse.che.ide.api.texteditor.outline.OutlineModel;
 import org.eclipse.che.ide.jseditor.client.annotation.AnnotationModel;
 import org.eclipse.che.ide.jseditor.client.changeintercept.ChangeInterceptorProvider;
 import org.eclipse.che.ide.jseditor.client.codeassist.CodeAssistProcessor;
@@ -33,11 +32,6 @@ public class DefaultTextEditorConfiguration implements TextEditorConfiguration {
     @Override
     public int getTabWidth() {
         return 3;
-    }
-
-    @Override
-    public OutlineModel getOutline() {
-        return null;
     }
 
     @Override

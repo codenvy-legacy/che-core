@@ -65,7 +65,6 @@ import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.parts.ConsolePart;
 import org.eclipse.che.ide.api.parts.EditorPartStack;
-import org.eclipse.che.ide.api.parts.OutlinePart;
 import org.eclipse.che.ide.api.parts.PartStack;
 import org.eclipse.che.ide.api.parts.PartStackUIResources;
 import org.eclipse.che.ide.api.parts.PartStackView;
@@ -119,9 +118,6 @@ import org.eclipse.che.ide.navigation.NavigateToFileViewImpl;
 import org.eclipse.che.ide.notification.NotificationManagerImpl;
 import org.eclipse.che.ide.notification.NotificationManagerView;
 import org.eclipse.che.ide.notification.NotificationManagerViewImpl;
-import org.eclipse.che.ide.outline.OutlinePartPresenter;
-import org.eclipse.che.ide.outline.OutlinePartView;
-import org.eclipse.che.ide.outline.OutlinePartViewImpl;
 import org.eclipse.che.ide.part.FocusManager;
 import org.eclipse.che.ide.part.PartStackPresenter;
 import org.eclipse.che.ide.part.PartStackPresenter.PartStackEventHandler;
@@ -348,7 +344,6 @@ public class CoreGinModule extends AbstractGinModule {
         bind(EditorPartStack.class).to(EditorPartStackPresenter.class).in(Singleton.class);
         // Parts
         bind(ConsolePart.class).to(ConsolePartPresenter.class).in(Singleton.class);
-        bind(OutlinePart.class).to(OutlinePartPresenter.class).in(Singleton.class);
         bind(ActionManager.class).to(ActionManagerImpl.class).in(Singleton.class);
 
         GinMultibinder<NodeInterceptor> nodeInterceptors = GinMultibinder.newSetBinder(binder(), NodeInterceptor.class);
@@ -423,7 +418,6 @@ public class CoreGinModule extends AbstractGinModule {
 
         bind(EditorRegistry.class).to(EditorRegistryImpl.class).in(Singleton.class);
         bind(UserActivityManager.class).in(Singleton.class);
-        bind(OutlinePartView.class).to(OutlinePartViewImpl.class).in(Singleton.class);
     }
 
     /** Configure bindings for project's tree. */

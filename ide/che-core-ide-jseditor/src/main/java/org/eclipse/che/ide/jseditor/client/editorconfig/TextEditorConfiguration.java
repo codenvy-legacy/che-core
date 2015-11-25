@@ -10,19 +10,17 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.editorconfig;
 
-import javax.validation.constraints.NotNull;
 import org.eclipse.che.commons.annotation.Nullable;
-
-import org.eclipse.che.ide.api.texteditor.outline.OutlineModel;
 import org.eclipse.che.ide.jseditor.client.annotation.AnnotationModel;
 import org.eclipse.che.ide.jseditor.client.changeintercept.ChangeInterceptorProvider;
 import org.eclipse.che.ide.jseditor.client.codeassist.CodeAssistProcessor;
+import org.eclipse.che.ide.jseditor.client.formatter.ContentFormatter;
 import org.eclipse.che.ide.jseditor.client.partition.DocumentPartitioner;
+import org.eclipse.che.ide.jseditor.client.partition.DocumentPositionMap;
 import org.eclipse.che.ide.jseditor.client.quickfix.QuickAssistProcessor;
 import org.eclipse.che.ide.jseditor.client.reconciler.Reconciler;
-import org.eclipse.che.ide.jseditor.client.formatter.ContentFormatter;
-import org.eclipse.che.ide.jseditor.client.partition.DocumentPositionMap;
 
+import javax.validation.constraints.NotNull;
 import java.util.Map;
 
 /**
@@ -36,14 +34,6 @@ public interface TextEditorConfiguration {
      * @return the tab width
      */
     public int getTabWidth();
-
-    /**
-     * Returns the outline model. This implementation always returns <code>null</code>.
-     *
-     * @return a model that used to build outline tree.
-     */
-    @Nullable
-    public OutlineModel getOutline();
 
     /**
      * Returns the content formatter.
