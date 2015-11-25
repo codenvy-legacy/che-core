@@ -1387,7 +1387,7 @@ public class ProjectService extends Service {
             for (Iterator<AccessControlEntry> itr = acl.iterator(); itr.hasNext(); ) {
                 final AccessControlEntry ace = itr.next();
                 final Principal principal = ace.getPrincipal();
-                if (principal.getType() != Principal.Type.USER || !users.contains(principal.getName())) {
+                if (principal != null && (principal.getType() != Principal.Type.USER || !users.contains(principal.getName()))) {
                     itr.remove();
                 }
             }
