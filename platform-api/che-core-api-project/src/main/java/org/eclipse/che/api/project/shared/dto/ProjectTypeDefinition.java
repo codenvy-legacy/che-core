@@ -61,11 +61,4 @@ public interface ProjectTypeDefinition {
     void setMixable(boolean mixable);
 
     ProjectTypeDefinition withMixable(boolean mixable);
-
-
-    String getDefaultRecipe();
-
-    void setDefaultRecipe(String defaultRecipe);
-
-    ProjectTypeDefinition withDefaultRecipe(String defaultRecipe);
 }

@@ -72,7 +72,6 @@ public class DtoConverter {
         final ProjectTypeDefinition definition = dtoFactory.createDto(ProjectTypeDefinition.class)
                                                            .withId(projectType.getId())
                                                            .withDisplayName(projectType.getDisplayName())
-                                                           .withDefaultRecipe(projectType.getDefaultRecipe())
                                                            .withPrimaryable(projectType.canBePrimary())
                                                            .withMixable(projectType.canBeMixin());
 
