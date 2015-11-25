@@ -40,6 +40,7 @@
                 <g:Label width="100%" addStyleNames="{style.labelMargin}" text="{locale.navigateToFileViewFileFieldTitle}"/>
                 <g:SuggestBox ui:field="files" width="100%" addStyleNames="{style.box}" debugId="file-navigateToFile-fileName"/>
                 <g:Label width="100%" addStyleNames="{style.labelMargin} {res.coreCss.greyFontColor}" text="{locale.navigateToFileViewFileFieldPrompt}"/>
+                <g:Label ui:field="errLabel" width="100%" addStyleNames="{style.labelMargin} {res.coreCss.errorFont}"/>
             </g:FlowPanel>
         </g:center>
     </g:DockLayoutPanel>
