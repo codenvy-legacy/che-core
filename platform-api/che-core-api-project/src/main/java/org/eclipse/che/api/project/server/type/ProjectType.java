@@ -17,14 +17,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 /**
  * @author gazarenkov
  */
 public abstract class ProjectType {
 
     protected final boolean                persisted;
-    protected final String                 defaultRecipe;
     private final   String                 id;
     private final   String                 displayName;
     private final   Map<String, Attribute> attributes;
@@ -32,7 +30,7 @@ public abstract class ProjectType {
     private final   boolean                mixable;
     private final   boolean                primaryable;
 
-    protected ProjectType(String id, String displayName, boolean primaryable, boolean mixable, boolean persisted, String defaultRecipe) {
+    protected ProjectType(String id, String displayName, boolean primaryable, boolean mixable, boolean persisted) {
         this.id = id;
         this.displayName = displayName;
         this.attributes = new HashMap<>();
@@ -40,7 +38,6 @@ public abstract class ProjectType {
         this.mixable = mixable;
         this.primaryable = primaryable;
         this.persisted = persisted;
-        this.defaultRecipe = defaultRecipe;
     }
 
     /**
@@ -52,7 +49,7 @@ public abstract class ProjectType {
      *         - whether the projectType can be used as Mixin
      */
     protected ProjectType(String id, String displayName, boolean primaryable, boolean mixable) {
-        this(id, displayName, primaryable, mixable, true, null);
+        this(id, displayName, primaryable, mixable, true);
     }
 
     public boolean isPersisted() {
@@ -73,10 +70,6 @@ public abstract class ProjectType {
 
     public List<ProjectType> getParents() {
         return parents;
-    }
-
-    public String getDefaultRecipe() {
-        return defaultRecipe;
     }
 
     public boolean isTypeOf(String typeId) {
