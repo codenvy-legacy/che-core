@@ -323,12 +323,20 @@ public class NativeGitConnection implements GitConnection {
         final EmptyGitCommand emptyGitCommand = nativeGit.createEmptyGitCommand();
         
         // command "rev-parse --is-inside-work-tree" returns true/false
-        emptyGitCommand.setNextParameter("rev-parse")
-                       .setNextParameter("--is-inside-work-tree")
-                       .execute();
-                       
-        final String output = emptyGitCommand.getText();
-        return Boolean.valueOf(output);
+        try {
+            emptyGitCommand.setNextParameter("rev-parse")
+                           .setNextParameter("--is-inside-work-tree")
+                           .execute();
+                   
+            final String output = emptyGitCommand.getText();
+            return Boolean.valueOf(output);
+        } catch(GitException ge) {
+            if (ge.getMessage().matches("(?s).*fatal: Not a git repository.*(?s).*")) {
+                return false;
+            }
+            
+            throw ge;
+        }
     }
 
     @Override
@@ -472,7 +480,7 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public Status status(final StatusFormat format) throws GitException {
-                return new NativeGitStatusImpl(getCurrentBranch(), nativeGit, format);
+        return new NativeGitStatusImpl(getCurrentBranch(), nativeGit, format);
     }
 
     @Override
