@@ -164,7 +164,7 @@ public class RecipeServiceClientImpl implements RecipeServiceClient {
     }
 
     private void getRecipes(int skipCount, int maxItems, @NotNull AsyncCallback<List<RecipeDescriptor>> callback) {
-        String url = baseHttpUrl + "?skipCount=" + skipCount;
+        String url = baseHttpUrl + "/list?skipCount=" + skipCount;
         if (maxItems > 0) {
             url += "&maxItems=" + maxItems;
         }
