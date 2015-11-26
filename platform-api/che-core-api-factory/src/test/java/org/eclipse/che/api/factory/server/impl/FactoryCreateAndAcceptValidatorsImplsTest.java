@@ -12,10 +12,12 @@ package org.eclipse.che.api.factory.server.impl;
 
 import org.eclipse.che.api.account.server.dao.AccountDao;
 import org.eclipse.che.api.core.ApiException;
+import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.factory.shared.dto.Factory;
 import org.eclipse.che.api.user.server.dao.PreferenceDao;
 import org.eclipse.che.api.user.server.dao.UserDao;
 
+import org.eclipse.che.api.workspace.server.WorkspaceConfigValidator;
 import org.mockito.Mock;
 import org.mockito.testng.MockitoTestNGListener;
 import org.testng.annotations.BeforeMethod;
@@ -41,15 +43,19 @@ public class FactoryCreateAndAcceptValidatorsImplsTest {
     @Mock
     private Factory factory;
 
+    @Mock
+    private WorkspaceConfigValidator workspaceConfigValidator;
+
     private FactoryAcceptValidatorImpl acceptValidator;
 
     private FactoryCreateValidatorImpl createValidator;
+
 
     @BeforeMethod
     public void setUp() throws Exception {
 
         acceptValidator = new FactoryAcceptValidatorImpl(accountDao, preferenceDao);
-        createValidator = new FactoryCreateValidatorImpl(accountDao, preferenceDao);
+        createValidator = new FactoryCreateValidatorImpl(accountDao, preferenceDao, workspaceConfigValidator);
     }
 
     @Test
@@ -65,6 +71,9 @@ public class FactoryCreateAndAcceptValidatorsImplsTest {
                    .validateCurrentTimeBeforeSinceUntil(any(Factory.class));
         doNothing().when(spy)
                    .validateProjectActions(any(Factory.class));
+        doNothing().when(workspaceConfigValidator)
+                   .validate(any(WorkspaceConfig.class));
+
         //main invoke
         spy.validateOnCreate(factory);
 

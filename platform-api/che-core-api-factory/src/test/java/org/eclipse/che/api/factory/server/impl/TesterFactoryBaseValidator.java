@@ -11,17 +11,16 @@
 package org.eclipse.che.api.factory.server.impl;
 
 import org.eclipse.che.api.account.server.dao.AccountDao;
-import org.eclipse.che.api.factory.server.impl.FactoryBaseValidator;
 import org.eclipse.che.api.user.server.dao.PreferenceDao;
 
 /**
  * @author Sergii Kabashniuk
  */
-public class TestFactoryBaseValidator extends FactoryBaseValidator {
+public class TesterFactoryBaseValidator extends FactoryBaseValidator {
 
-    public TestFactoryBaseValidator(AccountDao accountDao,
-                                    PreferenceDao preferenceDao
-                                    ) {
+    public TesterFactoryBaseValidator(AccountDao accountDao,
+                                      PreferenceDao preferenceDao
+                                     ) {
         super(accountDao, preferenceDao);
     }
 }

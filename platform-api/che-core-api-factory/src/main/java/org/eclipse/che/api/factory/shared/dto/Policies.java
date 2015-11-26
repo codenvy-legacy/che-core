@@ -62,4 +62,14 @@ public interface Policies {
     void setMatch(String match);
 
     Policies withMatch(String match);
+
+    /**
+     * Workspace creation strategy
+     */
+    @FactoryParameter(obligation = OPTIONAL)
+    String getCreate();
+
+    void setCreate(String create);
+
+    Policies withCreate(String create);
 }

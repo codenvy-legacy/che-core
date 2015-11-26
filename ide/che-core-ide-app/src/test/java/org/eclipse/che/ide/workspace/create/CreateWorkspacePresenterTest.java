@@ -29,6 +29,7 @@ import org.eclipse.che.api.workspace.shared.dto.EnvironmentStateDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.bootstrap.DefaultWorkspaceComponent;
 import org.eclipse.che.ide.bootstrap.WorkspaceComponent;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.dto.DtoFactory;
@@ -96,7 +97,7 @@ public class CreateWorkspacePresenterTest {
     @Mock
     private RecipeDescriptor                recipeDescriptor;
     @Mock
-    private WorkspaceComponent              workspaceComponent;
+    private DefaultWorkspaceComponent       workspaceComponent;
     @Mock
     private LimitsDto                       limitsDto;
 

@@ -15,6 +15,7 @@ import com.google.inject.Provider;
 
 import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
+import org.eclipse.che.ide.bootstrap.DefaultWorkspaceComponent;
 import org.eclipse.che.ide.bootstrap.WorkspaceComponent;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo;
@@ -63,7 +64,7 @@ public class StartWorkspacePresenterTest {
     @Mock
     private WorkspaceWidget                widget;
     @Mock
-    private WorkspaceComponent             workspaceComponent;
+    private DefaultWorkspaceComponent      workspaceComponent;
     @Mock
     private Callback<Component, Exception> callback;
     @Mock

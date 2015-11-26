@@ -19,9 +19,6 @@ import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.core.model.machine.Command;
-import org.eclipse.che.api.core.model.machine.MachineConfig;
-import org.eclipse.che.api.core.model.workspace.Environment;
 import org.eclipse.che.api.core.model.workspace.RuntimeWorkspace;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
@@ -45,10 +42,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.regex.Pattern;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.lang.String.format;
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.STOPPED;
 import static org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent.EventType.ERROR;
@@ -70,20 +65,22 @@ import static org.eclipse.che.dto.server.DtoFactory.newDto;
 public class WorkspaceManager {
     private static final Logger LOG = LoggerFactory.getLogger(WorkspaceManager.class);
 
-    /* should contain [3, 20] characters, first and last character is letter or digit, available characters {A-Za-z0-9.-_}*/
-    private static final Pattern WS_NAME = Pattern.compile("[\\w][\\w\\.\\-]{1,18}[\\w]");
-
     private final WorkspaceDao             workspaceDao;
     private final RuntimeWorkspaceRegistry workspaceRegistry;
-    private final EventService             eventService;
+    private       WorkspaceConfigValidator workspaceConfigValidator;
+    private final EventService eventService;
     private final ExecutorService          executor;
 
     private WorkspaceHooks hooks = WorkspaceHooks.NOOP_WORKSPACE_HOOKS;
 
     @Inject
-    public WorkspaceManager(WorkspaceDao workspaceDao, RuntimeWorkspaceRegistry workspaceRegistry, EventService eventService) {
+    public WorkspaceManager(WorkspaceDao workspaceDao,
+                            RuntimeWorkspaceRegistry workspaceRegistry,
+                            WorkspaceConfigValidator workspaceConfigValidator,
+                            EventService eventService) {
         this.workspaceDao = workspaceDao;
         this.workspaceRegistry = workspaceRegistry;
+        this.workspaceConfigValidator = workspaceConfigValidator;
         this.eventService = eventService;
 
         executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("WorkspaceManager-%d")
@@ -311,8 +308,7 @@ public class WorkspaceManager {
 
     public UsersWorkspaceImpl updateWorkspace(String workspaceId, WorkspaceConfig update)
             throws ConflictException, ServerException, BadRequestException, NotFoundException {
-        validateName(update.getName());
-        validateConfig(update);
+        workspaceConfigValidator.validate(update);
 
         final UsersWorkspaceImpl oldWorkspace = workspaceDao.get(workspaceId);
         final UsersWorkspaceImpl updated = workspaceDao.update(new UsersWorkspaceImpl(update,
@@ -462,92 +458,20 @@ public class WorkspaceManager {
 
     UsersWorkspaceImpl fromConfig(final WorkspaceConfig cfg) throws BadRequestException, ForbiddenException, ServerException {
         requiredNotNull(cfg, "Workspace config required");
-        validateConfig(cfg);
+        workspaceConfigValidator.validateWithoutWorkspaceName(cfg);
 
         final UsersWorkspaceImpl workspace = new UsersWorkspaceImpl(cfg, generateWorkspaceId(), getCurrentUserId());
 
         if (Strings.isNullOrEmpty(workspace.getName())) {
             workspace.setName(generateWorkspaceName());
         } else {
-            validateName(cfg.getName());
+            workspaceConfigValidator.validateWorkspaceName(cfg.getName());
         }
 
         return workspace;
     }
 
-    /**
-     * Checks that {@link WorkspaceConfig cfg} contains valid values, if it is not throws {@link BadRequestException}.
-     *
-     * Validation rules:
-     * <ul>
-     * <li>{@link WorkspaceConfig#getDefaultEnvName()} must not be empty or null</li>
-     * <li>{@link WorkspaceConfig#getEnvironments()} must contain {@link WorkspaceConfig#getDefaultEnvName() default environment}
-     * which is declared in the same configuration</li>
-     * <li>{@link Environment#getName()} must not be null</li>
-     * <li>{@link Environment#getMachineConfigs()} must contain at least 1 machine(which is dev),
-     * also it must contain exactly one dev machine</li>
-     * </ul>
-     */
-    private void validateConfig(WorkspaceConfig cfg) throws BadRequestException {
-        //attributes
-        for (String attributeName : cfg.getAttributes().keySet()) {
-            //attribute name should not be empty and should not start with codenvy
-            if (attributeName.trim().isEmpty() || attributeName.toLowerCase().startsWith("codenvy")) {
-                throw new BadRequestException(format("Attribute name '%s' is not valid", attributeName));
-            }
-        }
 
-        //environments
-        requiredNotNull(cfg.getDefaultEnvName(), "Workspace default environment name required");
-        requiredNotNull(cfg.getEnvironments().get(cfg.getDefaultEnvName()), "Workspace default environment configuration required");
-        for (Environment environment : cfg.getEnvironments().values()) {
-            final String envName = environment.getName();
-            requiredNotNull(envName, "Environment name should not be null");
-
-            //machine configs
-            if (environment.getMachineConfigs().isEmpty()) {
-                throw new BadRequestException("Environment '" + envName + "' should contain at least 1 machine");
-            }
-            final long devCount = environment.getMachineConfigs()
-                                             .stream()
-                                             .filter(MachineConfig::isDev)
-                                             .count();
-            if (devCount != 1) {
-                throw new BadRequestException(format("Environment should contain exactly 1 dev machine, but '%s' contains '%d'",
-                                                     envName,
-                                                     devCount));
-            }
-            for (MachineConfig machineCfg : environment.getMachineConfigs()) {
-                if (isNullOrEmpty(machineCfg.getName())) {
-                    throw new BadRequestException("Environment " + envName + " contains machine without of name");
-                }
-                requiredNotNull(machineCfg.getSource(), "Environment " + envName + " contains machine without of source");
-                //TODO require type?
-            }
-        }
-
-        //commands
-        for (Command command : cfg.getCommands()) {
-            requiredNotNull(command.getName(), "Workspace " + cfg.getName() + " contains command without of name");
-            requiredNotNull(command.getCommandLine(), format("Command line required for command '%s' in workspace '%s'",
-                                                             command.getName(),
-                                                             cfg.getName()));
-        }
-
-        //projects
-        //TODO
-    }
-
-    private void validateName(String workspaceName) throws BadRequestException {
-        if (isNullOrEmpty(workspaceName)) {
-            throw new BadRequestException("Workspace name should not be null or empty");
-        }
-        if (!WS_NAME.matcher(workspaceName).matches()) {
-            throw new BadRequestException("Incorrect workspace name, it should be between 3 to 20 characters and may contain digits, " +
-                                          "latin letters, underscores, dots, dashes and should start and end only with digits, " +
-                                          "latin letters or underscores");
-        }
-    }
 
     private String getCurrentUserId() {
         return EnvironmentContext.getCurrent().getUser().getId();
