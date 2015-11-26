@@ -16,7 +16,7 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
-import org.eclipse.che.ide.bootstrap.WorkspaceComponent;
+import org.eclipse.che.ide.bootstrap.DefaultWorkspaceComponent;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
 import org.eclipse.che.ide.workspace.WorkspaceWidgetFactory;
@@ -35,11 +35,11 @@ import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.RUNNING;
 @Singleton
 public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegate, WorkspaceWidget.ActionDelegate {
 
-    private final StartWorkspaceView           view;
-    private final Provider<WorkspaceComponent> wsComponentProvider;
-    private final WorkspaceWidgetFactory       widgetFactory;
-    private final CreateWorkspacePresenter     createWorkspacePresenter;
-    private final BrowserQueryFieldRenderer    browserQueryFieldRenderer;
+    private final StartWorkspaceView                  view;
+    private final Provider<DefaultWorkspaceComponent> wsComponentProvider;
+    private final WorkspaceWidgetFactory              widgetFactory;
+    private final CreateWorkspacePresenter            createWorkspacePresenter;
+    private final BrowserQueryFieldRenderer           browserQueryFieldRenderer;
 
     private UsersWorkspaceDto              selectedWorkspace;
     private Callback<Component, Exception> callback;
@@ -47,7 +47,7 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
 
     @Inject
     public StartWorkspacePresenter(StartWorkspaceView view,
-                                   Provider<WorkspaceComponent> wsComponentProvider,
+                                   Provider<DefaultWorkspaceComponent> wsComponentProvider,
                                    WorkspaceWidgetFactory widgetFactory,
                                    CreateWorkspacePresenter createWorkspacePresenter,
                                    BrowserQueryFieldRenderer browserQueryFieldRenderer) {
@@ -112,7 +112,7 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
         view.setEnableStartButton(!wsName.isEmpty());
 
         if (RUNNING.equals(workspace.getStatus())) {
-            WorkspaceComponent workspaceComponent = wsComponentProvider.get();
+            DefaultWorkspaceComponent workspaceComponent = wsComponentProvider.get();
 
             workspaceComponent.setCurrentWorkspace(workspace);
 
@@ -133,7 +133,7 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
     /** {@inheritDoc} */
     @Override
     public void onStartWorkspaceClicked() {
-        WorkspaceComponent workspaceComponent = wsComponentProvider.get();
+        DefaultWorkspaceComponent workspaceComponent = wsComponentProvider.get();
 
         workspaceComponent.startWorkspaceById(selectedWorkspace);
 
