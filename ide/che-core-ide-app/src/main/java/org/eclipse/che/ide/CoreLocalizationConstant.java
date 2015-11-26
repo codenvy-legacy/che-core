@@ -470,7 +470,7 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("workspace.start.failed")
     String workspaceStartFailed(String workspaceName);
 
-    @Key("workspace.start.failed")
+    @Key("workspace.config.undefined")
     String workspaceConfigUndefined();
 
     @Key("start.ws.error.title")
