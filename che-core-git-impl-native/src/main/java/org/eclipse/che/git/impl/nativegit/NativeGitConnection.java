@@ -92,13 +92,14 @@ import java.util.regex.Pattern;
  */
 public class NativeGitConnection implements GitConnection {
 
-    private static final Pattern authErrorPattern =
-            Pattern.compile(
-                    ".*fatal: could not read (Username|Password) for '.*': No such device or address.*|" +
-                    ".*fatal: could not read (Username|Password) for '.*': Input/output error.*|" +
-                    ".*fatal: Authentication failed for '.*'.*|.*fatal: Could not read from remote repository\\.\\n\\nPlease make sure " +
-                    "you have the correct access rights\\nand the repository exists\\.\\n.*",
-                    Pattern.MULTILINE);
+    private static final Pattern authErrorPattern         =
+        Pattern.compile(
+            ".*fatal: could not read (Username|Password) for '.*': No such device or address.*|" +
+            ".*fatal: could not read (Username|Password) for '.*': Input/output error.*|" +
+            ".*fatal: Authentication failed for '.*'.*|.*fatal: Could not read from remote repository\\.\\n\\nPlease make sure " +
+            "you have the correct access rights\\nand the repository exists\\.\\n.*",
+            Pattern.MULTILINE);
+    private static final Pattern notInGitRepoErrorPattern = Pattern.compile(".*fatal: Not a git repository.*", Pattern.MULTILINE);
     private final NativeGit         nativeGit;
     private final CredentialsLoader credentialsLoader;
 
@@ -331,7 +332,8 @@ public class NativeGitConnection implements GitConnection {
             final String output = emptyGitCommand.getText();
             return Boolean.valueOf(output);
         } catch(GitException ge) {
-            if (ge.getMessage().matches("(?s).*fatal: Not a git repository.*(?s).*")) {
+            String msg = ge.getMessage();
+            if (msg != null && notInGitRepoErrorPattern.matcher(msg).find()) {
                 return false;
             }
             
