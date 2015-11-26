@@ -42,6 +42,7 @@ import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.InitialLoadingInfo;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter;
 import org.eclipse.che.ide.util.Config;
+import org.eclipse.che.ide.util.UUID;
 import org.eclipse.che.ide.util.loging.Log;
 import org.eclipse.che.ide.websocket.MessageBusProvider;
 import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
@@ -57,6 +58,7 @@ import java.util.List;
  */
 @Singleton
 public class FactoryWorkspaceComponent extends WorkspaceComponent implements Component {
+    private static final String FACTORY_ID_ATTRIBUTE = "factoryId";
 
     private final FactoryServiceClient factoryServiceClient;
     private       Factory              factory;
@@ -124,7 +126,8 @@ public class FactoryWorkspaceComponent extends WorkspaceComponent implements Com
         final WorkspaceConfigDto workspaceConfigDto = factory.getWorkspace();
 
         if (workspaceConfigDto == null) {
-            //TODO handle this situation
+            notificationManager.showError(locale.workspaceConfigUndefined());
+            return;
         }
 
         getWorkspaceToStart().then(startWorkspace()).catchError(new Operation<PromiseError>() {
@@ -155,11 +158,12 @@ public class FactoryWorkspaceComponent extends WorkspaceComponent implements Com
             case "perUser":
                 return getWorkspaceByConditionOrCreateNew(workspaceConfigDto, new Function<UsersWorkspaceDto, Boolean>() {
                     @Override
-                    public Boolean apply(UsersWorkspaceDto workspaceDto) throws FunctionException {
-                        return workspaceDto.getName().equals(workspaceConfigDto.getName());
-
+                    public Boolean apply(UsersWorkspaceDto existWs) throws FunctionException {
+                        final String existWsFactoryId = existWs.getAttributes().get(FACTORY_ID_ATTRIBUTE);
+                        return existWs.getName().equals(workspaceConfigDto.getName()) && existWsFactoryId != null
+                               && existWsFactoryId.equals(workspaceConfigDto.getAttributes().get(FACTORY_ID_ATTRIBUTE));
                     }
-                });
+                }, false);
             case "perAccount":
                 return getWorkspaceByConditionOrCreateNew(workspaceConfigDto, new Function<UsersWorkspaceDto, Boolean>() {
                     @Override
@@ -167,20 +171,28 @@ public class FactoryWorkspaceComponent extends WorkspaceComponent implements Com
                         //TODO rework it when account will be ready
                         return workspaceConfigDto.getName().equals(arg.getName());
                     }
-                });
+                }, false);
             case "perClick":
             default:
-                return workspaceServiceClient.create(workspaceConfigDto.withName("xXx"), null);
+                return getWorkspaceByConditionOrCreateNew(workspaceConfigDto, new Function<UsersWorkspaceDto, Boolean>() {
+                    @Override
+                    public Boolean apply(UsersWorkspaceDto workspaceDto) throws FunctionException {
+                        return workspaceDto.getName().equals(workspaceConfigDto.getName());
+                    }
+                }, true);
         }
     }
 
     /**
      * Gets the workspace by condition which is determined by given {@link Function}<br/>
-     * if workspace found by condition then it will return {@link Promise} of it<br/>
-     * else it wil produce {@link Promise} of new workspace.
+     * if workspace found by condition and {@code generateName} is defined as {@code true}<br/>
+     * it create instance of workspace with generated name and return {@link Promise} of it<br/>
+     * if generateName is {@code false} it will return {@link Promise} of founded workspace,<br/>
+     * if workspace not found by condition Promise of new workspace will be returned.
      */
     private Promise<UsersWorkspaceDto> getWorkspaceByConditionOrCreateNew(final WorkspaceConfigDto workspaceConfigDto,
-                                                                          final Function<UsersWorkspaceDto, Boolean> condition) {
+                                                                          final Function<UsersWorkspaceDto, Boolean> condition,
+                                                                          final boolean generateName) {
         return workspaceServiceClient.getWorkspaces(0, 0)
                                      .thenPromise(new Function<List<UsersWorkspaceDto>, Promise<UsersWorkspaceDto>>() {
                                          @Override
@@ -188,10 +200,16 @@ public class FactoryWorkspaceComponent extends WorkspaceComponent implements Com
                                                  throws FunctionException {
                                              for (UsersWorkspaceDto existsWs : workspaces) {
                                                  if (condition.apply(existsWs)) {
-                                                     return Promises.resolve(existsWs);
+                                                     if (generateName) {
+                                                         workspaceConfigDto.withName(existsWs.getName() + UUID.uuid(5));
+                                                         workspaceConfigDto.getAttributes().put(FACTORY_ID_ATTRIBUTE, factory.getId());
+                                                         return workspaceServiceClient.create(workspaceConfigDto, null);
+                                                     } else
+                                                         return Promises.resolve(existsWs);
                                                  }
                                              }
 
+                                             workspaceConfigDto.getAttributes().put(FACTORY_ID_ATTRIBUTE, factory.getId());
                                              return workspaceServiceClient.create(workspaceConfigDto, null);
                                          }
                                      });
