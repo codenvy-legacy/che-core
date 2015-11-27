@@ -81,12 +81,12 @@ public abstract class WorkspaceComponent implements Component, ExtServerStateHan
     protected final DialogFactory             dialogFactory;
     protected final PreferencesManager        preferencesManager;
     protected final DtoFactory                dtoFactory;
+    protected final NotificationManager      notificationManager;
 
     private final StartWorkspacePresenter  startWorkspacePresenter;
     private final EventBus                 eventBus;
     private final LoaderPresenter          loader;
     private final Provider<MachineManager> machineManagerProvider;
-    private final NotificationManager      notificationManager;
     private final MessageBusProvider       messageBusProvider;
     private final InitialLoadingInfo       initialLoadingInfo;
 

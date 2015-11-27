@@ -12,6 +12,7 @@
 package org.eclipse.che.ide.bootstrap;
 
 import com.google.gwt.core.client.Callback;
+import java.util.HashSet;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
@@ -49,6 +50,7 @@ import org.eclipse.che.ide.workspace.create.CreateWorkspacePresenter;
 import org.eclipse.che.ide.workspace.start.StartWorkspacePresenter;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Retrieves specified factory, and creates and/or starts workspace configured in it.
@@ -57,6 +59,7 @@ import java.util.List;
  */
 @Singleton
 public class FactoryWorkspaceComponent extends WorkspaceComponent implements Component {
+    private static final String FACTORY_ID_ATTRIBUTE = "factoryId";
 
     private final FactoryServiceClient factoryServiceClient;
     private       Factory              factory;
@@ -124,7 +127,8 @@ public class FactoryWorkspaceComponent extends WorkspaceComponent implements Com
         final WorkspaceConfigDto workspaceConfigDto = factory.getWorkspace();
 
         if (workspaceConfigDto == null) {
-            //TODO handle this situation
+            notificationManager.showError(locale.workspaceConfigUndefined());
+            return;
         }
 
         getWorkspaceToStart().then(startWorkspace()).catchError(new Operation<PromiseError>() {
@@ -155,11 +159,12 @@ public class FactoryWorkspaceComponent extends WorkspaceComponent implements Com
             case "perUser":
                 return getWorkspaceByConditionOrCreateNew(workspaceConfigDto, new Function<UsersWorkspaceDto, Boolean>() {
                     @Override
-                    public Boolean apply(UsersWorkspaceDto workspaceDto) throws FunctionException {
-                        return workspaceDto.getName().equals(workspaceConfigDto.getName());
-
+                    public Boolean apply(UsersWorkspaceDto existWs) throws FunctionException {
+                        final String existWsFactoryId = existWs.getAttributes().get(FACTORY_ID_ATTRIBUTE);
+                        return existWs.getName().equals(workspaceConfigDto.getName()) && existWsFactoryId != null
+                               && existWsFactoryId.equals(workspaceConfigDto.getAttributes().get(FACTORY_ID_ATTRIBUTE));
                     }
-                });
+                }, true);
             case "perAccount":
                 return getWorkspaceByConditionOrCreateNew(workspaceConfigDto, new Function<UsersWorkspaceDto, Boolean>() {
                     @Override
@@ -167,20 +172,28 @@ public class FactoryWorkspaceComponent extends WorkspaceComponent implements Com
                         //TODO rework it when account will be ready
                         return workspaceConfigDto.getName().equals(arg.getName());
                     }
-                });
+                }, true);
             case "perClick":
             default:
-                return workspaceServiceClient.create(workspaceConfigDto.withName("xXx"), null);
+                return getWorkspaceByConditionOrCreateNew(workspaceConfigDto, new Function<UsersWorkspaceDto, Boolean>() {
+                    @Override
+                    public Boolean apply(UsersWorkspaceDto workspaceDto) throws FunctionException {
+                        return workspaceDto.getName().equals(workspaceConfigDto.getName());
+                    }
+                }, false);
         }
     }
 
     /**
      * Gets the workspace by condition which is determined by given {@link Function}<br/>
-     * if workspace found by condition then it will return {@link Promise} of it<br/>
-     * else it wil produce {@link Promise} of new workspace.
+     * if workspace found by condition and {@code reuseExisted} is defined as {@code false}<br/>
+     * it create instance of workspace with generated name and return {@link Promise} of it<br/>
+     * if {@code reuseExisted} is {@code true} it will return {@link Promise} of founded workspace,<br/>
+     * if workspace not found by condition Promise of new workspace will be returned.
      */
     private Promise<UsersWorkspaceDto> getWorkspaceByConditionOrCreateNew(final WorkspaceConfigDto workspaceConfigDto,
-                                                                          final Function<UsersWorkspaceDto, Boolean> condition) {
+                                                                          final Function<UsersWorkspaceDto, Boolean> condition,
+                                                                          final boolean reuseExisted) {
         return workspaceServiceClient.getWorkspaces(0, 0)
                                      .thenPromise(new Function<List<UsersWorkspaceDto>, Promise<UsersWorkspaceDto>>() {
                                          @Override
@@ -188,13 +201,38 @@ public class FactoryWorkspaceComponent extends WorkspaceComponent implements Com
                                                  throws FunctionException {
                                              for (UsersWorkspaceDto existsWs : workspaces) {
                                                  if (condition.apply(existsWs)) {
-                                                     return Promises.resolve(existsWs);
+                                                     return reuseExisted ? Promises.resolve(existsWs)
+                                                                         : createWorkspaceWithCounterName(workspaces, workspaceConfigDto);
+
                                                  }
                                              }
 
+                                             workspaceConfigDto.getAttributes().put(FACTORY_ID_ATTRIBUTE, factory.getId());
                                              return workspaceServiceClient.create(workspaceConfigDto, null);
                                          }
                                      });
+    }
+
+    /**
+     * Create workspace with counter in name and add factoryId attribute.
+     */
+    private Promise<UsersWorkspaceDto> createWorkspaceWithCounterName(final List<UsersWorkspaceDto> workspaces,
+                                                                      final WorkspaceConfigDto workspaceConfigDto) {
+        Set<String> workspacesNames = new HashSet<>();
+        for (UsersWorkspaceDto workspace : workspaces) {
+            workspacesNames.add(workspace.getName());
+        }
+
+        String wsName = workspaceConfigDto.getName();
+        String genName = wsName;
+        int counter = 1;
+        while (workspacesNames.contains(genName)) {
+            genName = wsName + '-' + counter++;
+        }
+
+        workspaceConfigDto.withName(genName);
+        workspaceConfigDto.getAttributes().put(FACTORY_ID_ATTRIBUTE, factory.getId());
+        return workspaceServiceClient.create(workspaceConfigDto, null);
     }
 }
 
