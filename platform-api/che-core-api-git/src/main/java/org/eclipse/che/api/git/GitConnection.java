@@ -212,6 +212,8 @@ public interface GitConnection extends Closeable {
     /**
      * Check if directory, which was used to create Git connection, is inside the working tree.
      * 
+     * @return <b>true</b> if only directory is inside working tree, and <b>false</b> if directory is outside the working tree including directory inside .git directory, or bare repository. 
+     * 
      * @throws GitException
      *         if any error occurs
      */

@@ -92,13 +92,14 @@ import java.util.regex.Pattern;
  */
 public class NativeGitConnection implements GitConnection {
 
-    private static final Pattern authErrorPattern =
-            Pattern.compile(
-                    ".*fatal: could not read (Username|Password) for '.*': No such device or address.*|" +
-                    ".*fatal: could not read (Username|Password) for '.*': Input/output error.*|" +
-                    ".*fatal: Authentication failed for '.*'.*|.*fatal: Could not read from remote repository\\.\\n\\nPlease make sure " +
-                    "you have the correct access rights\\nand the repository exists\\.\\n.*",
-                    Pattern.MULTILINE);
+    private static final Pattern authErrorPattern         =
+        Pattern.compile(
+            ".*fatal: could not read (Username|Password) for '.*': No such device or address.*|" +
+            ".*fatal: could not read (Username|Password) for '.*': Input/output error.*|" +
+            ".*fatal: Authentication failed for '.*'.*|.*fatal: Could not read from remote repository\\.\\n\\nPlease make sure " +
+            "you have the correct access rights\\nand the repository exists\\.\\n.*",
+            Pattern.MULTILINE);
+    private static final Pattern notInGitRepoErrorPattern = Pattern.compile("^fatal: Not a git repository.*\\n.*$", Pattern.MULTILINE);
     private final NativeGit         nativeGit;
     private final CredentialsLoader credentialsLoader;
 
@@ -323,12 +324,21 @@ public class NativeGitConnection implements GitConnection {
         final EmptyGitCommand emptyGitCommand = nativeGit.createEmptyGitCommand();
         
         // command "rev-parse --is-inside-work-tree" returns true/false
-        emptyGitCommand.setNextParameter("rev-parse")
-                       .setNextParameter("--is-inside-work-tree")
-                       .execute();
-                       
-        final String output = emptyGitCommand.getText();
-        return Boolean.valueOf(output);
+        try {
+            emptyGitCommand.setNextParameter("rev-parse")
+                           .setNextParameter("--is-inside-work-tree")
+                           .execute();
+                   
+            final String output = emptyGitCommand.getText();
+            return Boolean.valueOf(output);
+        } catch(GitException ge) {
+            String msg = ge.getMessage();
+            if (msg != null && notInGitRepoErrorPattern.matcher(msg).matches()) {
+                return false;
+            }
+            
+            throw ge;
+        }
     }
 
     @Override
@@ -472,7 +482,7 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public Status status(final StatusFormat format) throws GitException {
-                return new NativeGitStatusImpl(getCurrentBranch(), nativeGit, format);
+        return new NativeGitStatusImpl(getCurrentBranch(), nativeGit, format);
     }
 
     @Override
