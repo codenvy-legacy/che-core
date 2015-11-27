@@ -99,7 +99,7 @@ public class NativeGitConnection implements GitConnection {
             ".*fatal: Authentication failed for '.*'.*|.*fatal: Could not read from remote repository\\.\\n\\nPlease make sure " +
             "you have the correct access rights\\nand the repository exists\\.\\n.*",
             Pattern.MULTILINE);
-    private static final Pattern notInGitRepoErrorPattern = Pattern.compile(".*fatal: Not a git repository.*", Pattern.MULTILINE);
+    private static final Pattern notInGitRepoErrorPattern = Pattern.compile("^fatal: Not a git repository.*\\n.*$", Pattern.MULTILINE);
     private final NativeGit         nativeGit;
     private final CredentialsLoader credentialsLoader;
 
@@ -333,7 +333,7 @@ public class NativeGitConnection implements GitConnection {
             return Boolean.valueOf(output);
         } catch(GitException ge) {
             String msg = ge.getMessage();
-            if (msg != null && notInGitRepoErrorPattern.matcher(msg).find()) {
+            if (msg != null && notInGitRepoErrorPattern.matcher(msg).matches()) {
                 return false;
             }
             
