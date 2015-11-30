@@ -55,11 +55,11 @@ public class FactoryConstants {
             "accountId Submitted: %s \n" +
             "Invalid Parameter Name: %s";
 
-    public static final String INVALID_VALIDSINCE_MESSAGE = "Valid Since date cannot occur before the current date.";
+    public static final String INVALID_SINCE_MESSAGE = "Since date cannot occur before the current date.";
 
-    public static final String INVALID_VALIDUNTIL_MESSAGE = "Valid Until date cannot occur before the current date.";
+    public static final String INVALID_UNTIL_MESSAGE = "Until date cannot occur before the current date.";
 
-    public static final String INVALID_VALIDSINCEUNTIL_MESSAGE = "Valid Until date should occur after the Valid Since date.";
+    public static final String INVALID_SINCEUNTIL_MESSAGE = "Until date should occur after the Since date.";
 
     public static final String INVALID_ACTION_SECTION = "The action %s is not allowed in this IDE event section.";
 
@@ -74,11 +74,11 @@ public class FactoryConstants {
     public static final String ILLEGAL_REQUIRE_AUTHENTICATION_FOR_NAMED_WORKSPACE_MESSAGE =
             "This factory was improperly configured. The parameter 'workspace.type=named' requires 'policies.requireAuthentication=true'.";
 
-    public static final String ILLEGAL_FACTORY_BY_VALIDSINCE_MESSAGE =
+    public static final String ILLEGAL_FACTORY_BY_SINCE_MESSAGE =
             "This Factory is not yet valid due to time restrictions applied by its owner. Please, " +
             "contact owner for more information.";
 
-    public static final String ILLEGAL_FACTORY_BY_VALIDUNTIL_MESSAGE =
+    public static final String ILLEGAL_FACTORY_BY_UNTIL_MESSAGE =
             "This Factory has expired due to time restrictions applied by its owner. Please, " +
             "contact owner for more information.";
 

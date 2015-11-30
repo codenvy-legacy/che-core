@@ -134,9 +134,9 @@ public class FactoryBuilderTest {
 
         Factory factory = prepareFactory()
                 .withPolicies(dto.createDto(Policies.class)
-                                 .withRefererHostname("referrer")
-                                 .withValidSince(123L)
-                                 .withValidUntil(123L));
+                                 .withReferer("referrer")
+                                 .withSince(123L)
+                                 .withUntil(123L));
 
         factoryBuilder.checkValid(factory);
     }
@@ -186,9 +186,9 @@ public class FactoryBuilderTest {
                                   .withEmail("email")
                                   .withName("name"))
                   .withPolicies(dto.createDto(Policies.class)
-                                   .withRefererHostname("referrer")
-                                   .withValidSince(123L)
-                                   .withValidUntil(123L))
+                                   .withReferer("referrer")
+                                   .withSince(123L)
+                                   .withUntil(123L))
                   .withButton(dto.createDto(Button.class)
                                  .withType(Button.ButtonType.logo)
                                  .withAttributes(dto.createDto(
