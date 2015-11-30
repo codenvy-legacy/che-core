@@ -12,21 +12,27 @@ package org.eclipse.che.api.promises.client;
 
 import org.eclipse.che.commons.annotation.Nullable;
 
-
+/**
+ * Represents a promise rejection reason.
+ *
+ * @author Mickaël Leduque
+ * @author Artem Zatsarynnyi
+ */
 public interface PromiseError {
 
     /**
      * Returns the error message.
-     * 
-     * @return the message
+     *
+     * @return the error message
      */
     @Nullable
     String getMessage();
 
     /**
-     * Returns the error cause.
-     * 
-     * @return the cause
+     * Returns the error cause. May returns {@code null} in case
+     * this {@link PromiseError} represents a JS Error object.
+     *
+     * @return the error cause
      */
     @Nullable
     Throwable getCause();

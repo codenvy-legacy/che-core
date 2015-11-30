@@ -10,13 +10,15 @@
  *******************************************************************************/
 package org.eclipse.che.api.promises.client;
 
+import org.eclipse.che.commons.annotation.Nullable;
+
 /**
  * A placeholder for a value that will be completed at a later time.
  *
  * @param <V>
  *         the type of the 'promised' value
  * @author Mickaël Leduque
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface Promise<V> extends Thenable<V> {
 
@@ -53,19 +55,19 @@ public interface Promise<V> extends Thenable<V> {
      *         the rejection action added
      * @return a promise equivalent to the original promise with the actions added
      */
-    <B> Promise<B> then(Function<V, B> onFulfilled, Function<PromiseError, B> onRejected);
+    <B> Promise<B> then(@Nullable Function<V, B> onFulfilled, Function<PromiseError, B> onRejected);
 
     /**
      * Adds actions when the promise is rejected.
      * <p>The action is added both to the original promise and the returned value, but the promises are not
      * necessarily the same object.</p>
-     * <p>This is equivalent to <code>promise.then(null, onRejected)</code>.</p>
-     * <p>Note: the method name is <code>catch_</code> with an underscore added, and does not match the ES6
-     * specification, obviously because <code>catch</code> can't be used in java.
+     * <p>This is shorthand for {@code promise.then(null, onRejected)}.</p>
+     * <p>Note: the method name does not match the ES6 specification,
+     * obviously because <code>catch</code> can't be used in Java.
      *
      * @param onRejected
      *         the rejection action added
-     * @return a promise equivalent to the original promise with the action added
+     * @return a promise equivalent to the original promise with the rejection action added
      */
     <B> Promise<B> catchError(Function<PromiseError, B> onRejected);
 
@@ -80,13 +82,28 @@ public interface Promise<V> extends Thenable<V> {
      */
     <B> Promise<B> catchErrorPromise(Function<PromiseError, Promise<B>> onRejected);
 
+    /**
+     * @see #then(Function)
+     */
     Promise<V> then(Operation<V> onFulfilled);
 
+    /**
+     * @see #then(Function, Function)
+     */
     Promise<V> then(Operation<V> onFulfilled, Function<PromiseError, V> onRejected);
 
+    /**
+     * @see #then(Function, Function)
+     */
     Promise<V> then(Operation<V> onFulfilled, Operation<PromiseError> onRejected);
 
+    /**
+     * @see #then(Function)
+     */
     <B> Promise<B> then(Thenable<B> thenable);
 
+    /**
+     * @see #catchError(Function)
+     */
     Promise<V> catchError(Operation<PromiseError> onRejected);
 }

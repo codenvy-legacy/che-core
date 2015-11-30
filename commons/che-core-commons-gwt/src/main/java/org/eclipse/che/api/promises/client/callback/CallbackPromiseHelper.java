@@ -10,14 +10,21 @@
  *******************************************************************************/
 package org.eclipse.che.api.promises.client.callback;
 
+import com.google.gwt.core.client.Callback;
+
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.js.Executor;
 import org.eclipse.che.api.promises.client.js.JsPromiseError;
 import org.eclipse.che.api.promises.client.js.Promises;
 import org.eclipse.che.api.promises.client.js.RejectFunction;
 import org.eclipse.che.api.promises.client.js.ResolveFunction;
-import com.google.gwt.core.client.Callback;
 
+/**
+ * Helps to create a {@link Promise} from a {@link Callback}.
+ *
+ * @author Mickaël Leduque
+ * @author Artem Zatsarynnyi
+ */
 public final class CallbackPromiseHelper {
 
     private CallbackPromiseHelper() {
@@ -31,8 +38,7 @@ public final class CallbackPromiseHelper {
             }
         };
         final Executor<T> executor = Executor.create(body);
-        final Promise<T> result = Promises.create(executor);
-        return result;
+        return Promises.create(executor);
     }
 
     public interface Call<T, F> {
@@ -42,7 +48,7 @@ public final class CallbackPromiseHelper {
     private static class LocalCallback<T> implements Callback<T, Throwable> {
 
         private ResolveFunction<T> resolve;
-        private RejectFunction reject;
+        private RejectFunction     reject;
 
         private LocalCallback(final ResolveFunction<T> resolve, final RejectFunction reject) {
             this.resolve = resolve;
@@ -58,6 +64,5 @@ public final class CallbackPromiseHelper {
         public void onFailure(final Throwable reason) {
             this.reject.apply(JsPromiseError.create(reason));
         }
-
     }
 }

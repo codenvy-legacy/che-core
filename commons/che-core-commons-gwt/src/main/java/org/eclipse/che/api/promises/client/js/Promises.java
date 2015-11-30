@@ -19,6 +19,12 @@ import com.google.gwt.core.client.JsArrayMixed;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.PromiseError;
 
+/**
+ * A smattering of useful methods to work with Promises.
+ *
+ * @author Mickaël Leduque
+ * @author Artem Zatsarynnyi
+ */
 public final class Promises {
 
     /** Private constructor, the class is not instantiable. */
@@ -39,8 +45,9 @@ public final class Promises {
     }-*/;
 
     /**
-     * Creates a promise that resolves as soon as all the promises used as parameters are resolved or rejected
-     * as soon as the first rejection happens on one of the included promises.
+     * Creates a promise that resolves as soon as all the promises used as parameters are resolved or
+     * rejected as soon as the first rejection happens on one of the included promises.
+     * This is useful for aggregating results of multiple promises together.
      *
      * @param promises
      *         the included promises
@@ -50,6 +57,7 @@ public final class Promises {
         return Promise.all(promises);
     }-*/;
 
+    /** @see #all(ArrayOf) */
     public static final JsPromise<JsArrayMixed> all(final Promise<?>... promises) {
         final JsArrayOf<Promise<?>> promisesArray = JavaScriptObject.createArray().cast();
         for (final Promise<?> promise : promises) {
@@ -58,10 +66,28 @@ public final class Promises {
         return all(promisesArray);
     }
 
+    /**
+     * Returns a promise that is rejected with the given reason.
+     *
+     * @param reason
+     *         the reason of promise rejection
+     * @param <U>
+     *         the type of the returned promise
+     * @return
+     */
     public static final native <U> JsPromise<U> reject(PromiseError reason) /*-{
         return Promise.reject(reason);
     }-*/;
 
+    /**
+     * Returns a promise that is resolved with the given {@code value}.
+     *
+     * @param value
+     *         the 'promised' value
+     * @param <U>
+     *         the type of the returned promise
+     * @return a promise that is resolved with the specified value
+     */
     public static final native <U> JsPromise<U> resolve(U value) /*-{
         return Promise.resolve(value);
     }-*/;

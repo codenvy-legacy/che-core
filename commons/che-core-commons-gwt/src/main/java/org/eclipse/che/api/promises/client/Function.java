@@ -11,13 +11,19 @@
 package org.eclipse.che.api.promises.client;
 
 /**
- * Function interface.
+ * Interface for a 'function'.
  *
  * @param <A>
  *         the argument type
  * @param <R>
  *         the result type
+ * @author Mickaël Leduque
+ * @author Artem Zatsarynnyi
  */
 public interface Function<A, R> {
+
+    /**
+     * Returns the result of applying this function to the given argument.
+     */
     R apply(A arg) throws FunctionException;
 }
