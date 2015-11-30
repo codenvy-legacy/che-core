@@ -43,8 +43,9 @@ public class MachineImpl extends MachineStateImpl implements Machine {
                        Channels channels,
                        String workspace,
                        String owner,
+                       String envName,
                        MachineStatus status) {
-        super(isDev, name, type, source, limits, id, channels, workspace, owner, status);
+        super(isDev, type, name, source, limits, id, channels, workspace, owner, envName, status);
         this.metadata = new MachineMetadataImpl(metadata);
     }
 
@@ -59,6 +60,7 @@ public class MachineImpl extends MachineStateImpl implements Machine {
              machine.getChannels(),
              machine.getWorkspaceId(),
              machine.getOwner(),
+             machine.getEnvName(),
              machine.getStatus());
     }
 
@@ -103,6 +105,7 @@ public class MachineImpl extends MachineStateImpl implements Machine {
         private Channels        channels;
         private String          workspaceId;
         private String          owner;
+        private String          envName;
         private MachineStatus   machineStatus;
 
         public MachineImpl build() {
@@ -116,6 +119,7 @@ public class MachineImpl extends MachineStateImpl implements Machine {
                                    channels,
                                    workspaceId,
                                    owner,
+                                   envName,
                                    machineStatus);
         }
 
@@ -171,6 +175,11 @@ public class MachineImpl extends MachineStateImpl implements Machine {
 
         public MachineImplBuilder setStatus(MachineStatus status) {
             this.machineStatus = status;
+            return this;
+        }
+
+        public MachineImplBuilder setEnvName(String envName){
+            this.envName = envName;
             return this;
         }
     }

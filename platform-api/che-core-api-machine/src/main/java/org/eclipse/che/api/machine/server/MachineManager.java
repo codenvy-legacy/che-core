@@ -19,10 +19,12 @@ import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.machine.Command;
+import org.eclipse.che.api.core.model.machine.Machine;
 import org.eclipse.che.api.core.model.machine.MachineConfig;
 import org.eclipse.che.api.core.model.machine.MachineState;
 import org.eclipse.che.api.core.model.machine.MachineStatus;
 import org.eclipse.che.api.core.model.machine.Recipe;
+import org.eclipse.che.api.core.model.machine.Snapshot;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.notification.EventSubscriber;
 import org.eclipse.che.api.core.util.CompositeLineConsumer;
@@ -84,6 +86,7 @@ import static org.eclipse.che.dto.server.DtoFactory.newDto;
  *
  * @author gazarenkov
  * @author Alexander Garagatyi
+ * @author Yevhenii Voevodin
  */
 @Singleton
 public class MachineManager {
@@ -158,10 +161,52 @@ public class MachineManager {
                    ConflictException,
                    MachineException,
                    BadRequestException {
-        final MachineStateImpl machine = createMachine(machineConfig,
-                                                       workspaceId,
-                                                       environmentName,
-                                                       this::createInstance);
+        LOG.info("Creating machine [ws = {}: env = {}: machine = {}]", workspaceId, environmentName, machineConfig.getName());
+        final MachineStateImpl machine = createMachine(machineConfig, workspaceId, environmentName, this::createInstance, null);
+        LOG.info("Machine [ws = {}: env = {}: machine = {}] was successfully created, its id is '{}'",
+                 workspaceId,
+                 environmentName,
+                 machineConfig.getName(),
+                 machine.getId());
+
+        return instanceToMachineImpl(machineRegistry.get(machine.getId()));
+    }
+
+    /**
+     * Synchronously recovers machine from snapshot.
+     *
+     * @param machineConfig
+     *         machine meta information which is needed for {@link Machine machine} instance creation
+     * @param workspaceId
+     *         workspace id
+     * @param envName
+     *         name of environment
+     * @return machine instance
+     * @throws NotFoundException
+     *         when snapshot doesn't exist
+     * @throws SnapshotException
+     *         when any error occurs during snapshot fetching
+     * @throws MachineException
+     *         when any error occurs during machine start
+     * @throws ConflictException
+     *         when any conflict occurs during machine creation (e.g Machine with given name already registered for certain workspace)
+     * @throws BadRequestException
+     *         when either machineConfig or workspace id, or environment name is not valid
+     */
+    public MachineImpl recoverMachine(MachineConfig machineConfig, String workspaceId, String envName) throws NotFoundException,
+                                                                                                              SnapshotException,
+                                                                                                              MachineException,
+                                                                                                              ConflictException,
+                                                                                                              BadRequestException {
+        final SnapshotImpl snapshot = snapshotDao.getSnapshot(workspaceId, envName, machineConfig.getName());
+
+        LOG.info("Recovering machine [ws = {}: env = {}: machine = {}] from snapshot", workspaceId, envName, machineConfig.getName());
+        final MachineStateImpl machine = createMachine(machineConfig, workspaceId, envName, this::createInstance, snapshot);
+        LOG.info("Machine [ws = {}: env = {}: machine = {}] was successfully recovered, its id '{}'",
+                 workspaceId,
+                 envName,
+                 machineConfig.getName(),
+                 machine.getId());
 
         return instanceToMachineImpl(machineRegistry.get(machine.getId()));
     }
@@ -218,13 +263,15 @@ public class MachineManager {
                                              LOG.error(e.getLocalizedMessage(), e);
                                              // todo what should we do in that case?
                                          }
-                                     })));
+                                     })),
+                             null);
     }
 
     private MachineStateImpl createMachine(MachineConfig machineConfig,
-                                           final String workspaceId,
-                                           final String environmentName,
-                                           MachineInstanceCreator instanceCreator)
+                                           String workspaceId,
+                                           String environmentName,
+                                           MachineInstanceCreator instanceCreator,
+                                           SnapshotImpl snapshot)
             throws NotFoundException,
                    SnapshotException,
                    ConflictException,
@@ -233,13 +280,14 @@ public class MachineManager {
         final InstanceProvider instanceProvider = machineInstanceProviders.getProvider(machineConfig.getType());
         final String sourceType = machineConfig.getSource().getType();
 
-        Recipe recipe = null;
+        Recipe recipe;
         InstanceKey instanceKey = null;
+        if (snapshot != null) {
+            instanceKey = snapshot.getInstanceKey();
+        }
         if ("Recipe".equalsIgnoreCase(sourceType)) {
             // TODO should we check that it is dockerfile?
             recipe = getRecipeByLocation(machineConfig);
-        } else if ("Snapshot".equalsIgnoreCase(sourceType)) {
-            instanceKey = snapshotDao.getSnapshot(machineConfig.getSource().getLocation()).getInstanceKey();
         } else {
             throw new BadRequestException("Source type is unsupported " + sourceType);
         }
@@ -264,8 +312,8 @@ public class MachineManager {
         }
 
         final MachineStateImpl machineState = new MachineStateImpl(machineConfig.isDev(),
-                                                                   machineConfig.getName(),
                                                                    machineConfig.getType(),
+                                                                   machineConfig.getName(),
                                                                    machineConfig.getSource(),
                                                                    machineConfig.getLimits(),
                                                                    machineId,
@@ -274,6 +322,7 @@ public class MachineManager {
                                                                                          environmentName),
                                                                    workspaceId,
                                                                    creator,
+                                                                   environmentName,
                                                                    MachineStatus.CREATING);
 
         createMachineLogsDir(machineId);
@@ -304,14 +353,10 @@ public class MachineManager {
                                            .withMachineName(machineState.getName()));
 
             final Instance instance;
-            if ("recipe".equalsIgnoreCase(machineState.getSource().getType())) {
-                instance = instanceProvider.createInstance(recipe,
-                                                           machineState,
-                                                           machineLogger);
+            if (instanceKey == null) {
+                instance = instanceProvider.createInstance(recipe, machineState, machineLogger);
             } else {
-                instance = instanceProvider.createInstance(instanceKey,
-                                                           machineState,
-                                                           machineLogger);
+                instance = instanceProvider.createInstance(instanceKey, machineState, machineLogger);
             }
 
             machineRegistry.update(instance);
@@ -417,7 +462,7 @@ public class MachineManager {
     }
 
     /**
-     * Saves state of machine to snapshot.
+     * Asynchronously saves state of machine to snapshot.
      *
      * @param machineId
      *         id of machine for saving
@@ -431,34 +476,63 @@ public class MachineManager {
      * @throws MachineException
      *         if other error occur
      */
-    public SnapshotImpl save(final String machineId, final String owner, final String description)
+    public SnapshotImpl save(String machineId, String owner, String description)
             throws NotFoundException, MachineException {
         final Instance machine = getMachine(machineId);
-
-        final SnapshotImpl snapshot = new SnapshotImpl(generateSnapshotId(),
-                                                       machine.getType(),
-                                                       null,
-                                                       owner,
-                                                       System.currentTimeMillis(),
-                                                       machine.getWorkspaceId(),
-                                                       description,
-                                                       machine.isDev());
-
+        final SnapshotImpl snapshot = SnapshotImpl.builder()
+                                                  .generateId()
+                                                  .setType(machine.getType())
+                                                  .setOwner(owner)
+                                                  .setWorkspaceId(machine.getWorkspaceId())
+                                                  .setDescription(description)
+                                                  .setDev(machine.isDev())
+                                                  .setEnvName(machine.getEnvName())
+                                                  .setMachineName(machine.getName())
+                                                  .useCurrentCreationDate()
+                                                  .build();
         executor.submit(ThreadLocalPropagateContext.wrap(() -> {
             try {
-                final InstanceKey instanceKey = machine.saveToSnapshot(machine.getOwner());
-                snapshot.setInstanceKey(instanceKey);
-
-                snapshotDao.saveSnapshot(snapshot);
-            } catch (Exception e) {
-                try {
-                    machine.getLogger().writeLine("Snapshot storing failed. " + e.getLocalizedMessage());
-                } catch (IOException ignore) {
-                }
+                doSaveMachine(snapshot, machine);
+            } catch (Exception ignored) {
+                // exception is already logged in #doSaveMachine
             }
         }));
-
         return snapshot;
+    }
+
+    /**
+     * Synchronously saves state of machine to snapshot.
+     *
+     * @param machineId
+     *         id of machine for saving
+     * @param owner
+     *         owner for new snapshot
+     * @param description
+     *         optional description that should help to understand purpose of new snapshot in future
+     * @return {@link SnapshotImpl} that will be stored in background
+     * @throws NotFoundException
+     *         if machine with specified id doesn't exist
+     * @throws SnapshotException
+     *         when any error occurs during snapshot storing
+     * @throws MachineException
+     *         if other error occur
+     */
+    public SnapshotImpl saveSync(String machineId, String owner, String description) throws MachineException,
+                                                                                            SnapshotException,
+                                                                                            NotFoundException {
+        final Instance machine = getMachine(machineId);
+        final SnapshotImpl snapshot = SnapshotImpl.builder()
+                                                  .generateId()
+                                                  .setType(machine.getType())
+                                                  .setOwner(owner)
+                                                  .setWorkspaceId(machine.getWorkspaceId())
+                                                  .setDescription(description)
+                                                  .setDev(machine.isDev())
+                                                  .setEnvName(machine.getEnvName())
+                                                  .setMachineName(machine.getName())
+                                                  .useCurrentCreationDate()
+                                                  .build();
+        return doSaveMachine(snapshot, machine);
     }
 
     /**
@@ -722,6 +796,38 @@ public class MachineManager {
             }
         }
         throw new NotFoundException(String.format("Logs for process '%s' of machine '%s' are not available", pid, machineId));
+    }
+
+    private SnapshotImpl doSaveMachine(SnapshotImpl snapshot, Instance machine) throws SnapshotException, MachineException {
+        final SnapshotImpl snapshotWithKey;
+        try {
+            LOG.info("Creating snapshot of machine [ws = {}: env = {}: machine = {}]",
+                     snapshot.getWorkspaceId(),
+                     snapshot.getEnvName(),
+                     snapshot.getMachineName());
+
+            snapshotWithKey = new SnapshotImpl(snapshot);
+            snapshotWithKey.setInstanceKey(machine.saveToSnapshot(machine.getOwner()));
+            snapshotDao.saveSnapshot(snapshotWithKey);
+
+            LOG.info("Snapshot of machine [ws = {}: env = {}: machine = {}] was successfully created, its id is '{}'",
+                     snapshot.getWorkspaceId(),
+                     snapshot.getEnvName(),
+                     snapshot.getMachineName(),
+                     snapshot.getId());
+        } catch (MachineException | SnapshotException ex) {
+            try {
+                machine.getLogger().writeLine("Snapshot storing failed. " + ex.getLocalizedMessage());
+            } catch (IOException ignore) {
+            }
+            LOG.error("Failed to create snapshot of machine [ws = {}: env = {}: machine = {}], because {}",
+                      snapshot.getWorkspaceId(),
+                      snapshot.getEnvName(),
+                      snapshot.getMachineName(),
+                      ex.getLocalizedMessage());
+            throw ex;
+        }
+        return snapshotWithKey;
     }
 
     private void doDestroy(Instance machine) throws MachineException, NotFoundException {

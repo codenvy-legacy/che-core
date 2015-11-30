@@ -23,6 +23,8 @@ public interface MachineState extends MachineConfig {
 
     String getWorkspaceId();
 
+    String getEnvName();
+
     String getOwner();
 
     MachineStatus getStatus();

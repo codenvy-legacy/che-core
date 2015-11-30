@@ -157,6 +157,7 @@ public class MachineRegistry {
                                     instance.getChannels(),
                                     instance.getWorkspaceId(),
                                     instance.getOwner(),
+                                    instance.getEnvName(),
                                     instance.getStatus());
     }
 }

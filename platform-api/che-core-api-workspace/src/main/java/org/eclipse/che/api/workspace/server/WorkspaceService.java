@@ -34,6 +34,7 @@ import org.eclipse.che.api.machine.server.model.impl.MachineStateImpl;
 import org.eclipse.che.api.machine.shared.dto.CommandDto;
 import org.eclipse.che.api.machine.shared.dto.MachineConfigDto;
 import org.eclipse.che.api.machine.shared.dto.MachineStateDto;
+import org.eclipse.che.api.machine.shared.dto.SnapshotDto;
 import org.eclipse.che.api.workspace.server.model.impl.EnvironmentStateImpl;
 import org.eclipse.che.api.workspace.server.model.impl.ProjectConfigImpl;
 import org.eclipse.che.api.workspace.server.model.impl.RuntimeWorkspaceImpl;
@@ -66,6 +67,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -81,7 +83,7 @@ import static org.eclipse.che.api.workspace.server.Constants.START_WORKSPACE;
 /**
  * Workspace API
  *
- * @author Eugene Voevodin
+ * @author Yevhenii Voevodin
  */
 @Api(value = "/workspace", description = "Workspace service")
 @Path("/workspace")
@@ -219,7 +221,8 @@ public class WorkspaceService extends Service {
     @Path("/name/{name}/runtime")
     @Produces(APPLICATION_JSON)
     @RolesAllowed("user")
-    public RuntimeWorkspace getRuntimeWorkspaceByName(@PathParam("name") String name) throws ServerException, BadRequestException, ForbiddenException {
+    public RuntimeWorkspace getRuntimeWorkspaceByName(@PathParam("name") String name)
+            throws ServerException, BadRequestException, ForbiddenException {
         final RuntimeWorkspace workspace = workspaceManager.getRuntimeWorkspace(name, getCurrentUserId());
         ensureUserIsWorkspaceOwner(workspace);
         return injectLinks(DtoConverter.asDto(workspace));
@@ -253,6 +256,49 @@ public class WorkspaceService extends Service {
         permissionManager.checkPermission(START_WORKSPACE, getCurrentUserId(), params);
 
         return injectLinks(DtoConverter.asDto(workspaceManager.startWorkspaceById(workspaceId, envName, accountId)));
+    }
+
+    @POST
+    @Path("/{id}/runtime/snapshot")
+    @Produces(APPLICATION_JSON)
+    @RolesAllowed("user")
+    public UsersWorkspaceDto recoverWorkspace(@PathParam("id") String workspaceId,
+                                              @QueryParam("environment") String envName,
+                                              @QueryParam("accountId") String accountId)
+            throws BadRequestException, ForbiddenException, NotFoundException, ServerException, ConflictException {
+        ensureUserIsWorkspaceOwner(workspaceId);
+
+        final Map<String, String> params = Maps.newHashMapWithExpectedSize(2);
+        params.put("accountId", accountId);
+        params.put("workspaceId", workspaceId);
+        permissionManager.checkPermission(START_WORKSPACE, getCurrentUserId(), params);
+
+        return injectLinks(DtoConverter.asDto(workspaceManager.recoverWorkspace(workspaceId, envName, accountId)));
+    }
+
+    @POST
+    @Path("/{id}/snapshot")
+    @RolesAllowed("user")
+    public void createSnapshot(@PathParam("id") String workspaceId)
+            throws BadRequestException, ForbiddenException, NotFoundException, ServerException {
+        ensureUserIsWorkspaceOwner(workspaceId);
+
+        workspaceManager.createSnapshot(workspaceId);
+    }
+
+    @GET
+    @Path("/{id}/snapshot")
+    @Produces(APPLICATION_JSON)
+    @RolesAllowed("user")
+    public List<SnapshotDto> getSnapshot(@PathParam("id") String workspaceId)
+            throws ServerException, BadRequestException, NotFoundException, ForbiddenException {
+        ensureUserIsWorkspaceOwner(workspaceId);
+
+        return workspaceManager.getSnapshot(workspaceId)
+                               .stream()
+                               .map(DtoConverter::asDto)
+                               .map(this::injectLinks)
+                               .collect(toList());
     }
 
     @POST
@@ -465,7 +511,7 @@ public class WorkspaceService extends Service {
     @SuppressWarnings("unchecked")
     private <T extends UsersWorkspaceDto> T injectLinks(T workspace) {
         final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
-        final List<Link> links = new ArrayList<>(5);
+        final List<Link> links = new ArrayList<>(6);
         links.add(createLink("POST",
                              uriBuilder.clone()
                                        .path(getClass(), "startById")
@@ -487,6 +533,13 @@ public class WorkspaceService extends Service {
                                        .toString(),
                              APPLICATION_JSON,
                              GET_ALL_USER_WORKSPACES));
+        links.add(createLink("GET",
+                             uriBuilder.clone()
+                                       .path(getClass(), "getSnapshot")
+                                       .build(workspace.getId())
+                                       .toString(),
+                             APPLICATION_JSON,
+                             "get workspace's snapshot"));
         if (RuntimeWorkspaceDto.class.isAssignableFrom(workspace.getClass())) {
             links.add(createLink("GET",
                                  uriBuilder.clone()
@@ -530,6 +583,39 @@ public class WorkspaceService extends Service {
                                  Constants.STOP_WORKSPACE));
         }
         return (T)workspace.withLinks(links);
+    }
+
+    private SnapshotDto injectLinks(SnapshotDto snapshotDto) {
+        final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
+        final Link machineLink = createLink("GET",
+                                            getServiceContext().getBaseUriBuilder()
+                                                               .path("/machine/{id}")
+                                                               .build(snapshotDto.getId())
+                                                               .toString(),
+                                            APPLICATION_JSON,
+                                            "get machine");
+        final Link workspaceCfgLink = createLink("GET",
+                                                 uriBuilder.clone()
+                                                           .path(getClass(), "getRuntimeWorkspaceById")
+                                                           .build(snapshotDto.getId())
+                                                           .toString(),
+                                                 APPLICATION_JSON,
+                                                 "get workspace config");
+        final Link runtimeWorkspaceLink = createLink("GET",
+                                                     uriBuilder.clone()
+                                                               .path(getClass(), "getRuntimeWorkspaceById")
+                                                               .build(snapshotDto.getWorkspaceId())
+                                                               .toString(),
+                                                     APPLICATION_JSON,
+                                                     "get runtime workspace");
+        final Link workspaceSnapshotLink = createLink("GET",
+                                                      uriBuilder.clone()
+                                                                .path(getClass(), "getSnapshot")
+                                                                .build(snapshotDto.getWorkspaceId())
+                                                                .toString(),
+                                                      APPLICATION_JSON,
+                                                      "get workspace's snapshot");
+        return snapshotDto.withLinks(asList(machineLink, workspaceCfgLink, runtimeWorkspaceLink, workspaceSnapshotLink));
     }
 
     private static String getCurrentUserId() {

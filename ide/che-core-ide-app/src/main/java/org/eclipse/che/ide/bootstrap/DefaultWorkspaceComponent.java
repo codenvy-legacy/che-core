@@ -24,6 +24,7 @@ import org.eclipse.che.api.promises.client.PromiseError;
 import org.eclipse.che.api.workspace.gwt.client.WorkspaceServiceClient;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.actions.WorkspaceSnapshotCreator;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.preferences.PreferencesManager;
@@ -57,21 +58,22 @@ public class DefaultWorkspaceComponent extends WorkspaceComponent implements Com
 
     @Inject
     public DefaultWorkspaceComponent(WorkspaceServiceClient workspaceServiceClient,
-                              CreateWorkspacePresenter createWorkspacePresenter,
-                              StartWorkspacePresenter startWorkspacePresenter,
-                              CoreLocalizationConstant locale,
-                              DtoUnmarshallerFactory dtoUnmarshallerFactory,
-                              EventBus eventBus,
-                              LoaderPresenter loader,
-                              AppContext appContext,
-                              Provider<MachineManager> machineManagerProvider,
-                              NotificationManager notificationManager,
-                              MessageBusProvider messageBusProvider,
-                              BrowserQueryFieldRenderer browserQueryFieldRenderer,
-                              DialogFactory dialogFactory,
-                              PreferencesManager preferencesManager,
-                              DtoFactory dtoFactory,
-                              InitialLoadingInfo initialLoadingInfo) {
+                                     CreateWorkspacePresenter createWorkspacePresenter,
+                                     StartWorkspacePresenter startWorkspacePresenter,
+                                     CoreLocalizationConstant locale,
+                                     DtoUnmarshallerFactory dtoUnmarshallerFactory,
+                                     EventBus eventBus,
+                                     LoaderPresenter loader,
+                                     AppContext appContext,
+                                     Provider<MachineManager> machineManagerProvider,
+                                     NotificationManager notificationManager,
+                                     MessageBusProvider messageBusProvider,
+                                     BrowserQueryFieldRenderer browserQueryFieldRenderer,
+                                     DialogFactory dialogFactory,
+                                     PreferencesManager preferencesManager,
+                                     DtoFactory dtoFactory,
+                                     InitialLoadingInfo initialLoadingInfo,
+                                     WorkspaceSnapshotCreator snapshotCreator) {
         super(workspaceServiceClient,
               createWorkspacePresenter,
               startWorkspacePresenter,
@@ -87,7 +89,8 @@ public class DefaultWorkspaceComponent extends WorkspaceComponent implements Com
               dialogFactory,
               preferencesManager,
               dtoFactory,
-              initialLoadingInfo);
+              initialLoadingInfo,
+              snapshotCreator);
     }
 
     /** {@inheritDoc} */

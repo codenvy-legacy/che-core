@@ -21,20 +21,23 @@ import org.eclipse.che.api.machine.gwt.client.MachineManager;
 import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateEvent;
 import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateHandler;
 import org.eclipse.che.api.machine.shared.dto.MachineStateDto;
+import org.eclipse.che.api.machine.shared.dto.SnapshotDto;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
+import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.PromiseError;
 import org.eclipse.che.api.workspace.gwt.client.WorkspaceServiceClient;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent;
-import org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent.EventType;
 import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.actions.WorkspaceSnapshotCreator;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.preferences.PreferencesManager;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
+import org.eclipse.che.ide.ui.dialogs.CancelCallback;
 import org.eclipse.che.ide.ui.dialogs.ConfirmCallback;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.InitialLoadingInfo;
@@ -60,11 +63,11 @@ import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.RUNNING;
 import static org.eclipse.che.ide.ui.loaders.initializationLoader.InitialLoadingInfo.Operations.WORKSPACE_BOOTING;
 import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.ERROR;
 import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.IN_PROGRESS;
-import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.SUCCESS;
 
 /**
  * @author Evgen Vidolob
  * @author Dmitry Shnurenko
+ * @author Yevhenii Voevodin
  */
 @Singleton
 public abstract class WorkspaceComponent implements Component, ExtServerStateHandler {
@@ -89,6 +92,7 @@ public abstract class WorkspaceComponent implements Component, ExtServerStateHan
     private final Provider<MachineManager> machineManagerProvider;
     private final MessageBusProvider       messageBusProvider;
     private final InitialLoadingInfo       initialLoadingInfo;
+    private final WorkspaceSnapshotCreator snapshotCreator;
 
     protected Callback<Component, Exception> callback;
     protected boolean                        needToReloadComponents;
@@ -109,7 +113,8 @@ public abstract class WorkspaceComponent implements Component, ExtServerStateHan
                               DialogFactory dialogFactory,
                               PreferencesManager preferencesManager,
                               DtoFactory dtoFactory,
-                              InitialLoadingInfo initialLoadingInfo) {
+                              InitialLoadingInfo initialLoadingInfo,
+                              WorkspaceSnapshotCreator snapshotCreator) {
         this.workspaceServiceClient = workspaceServiceClient;
         this.createWorkspacePresenter = createWorkspacePresenter;
         this.startWorkspacePresenter = startWorkspacePresenter;
@@ -126,6 +131,7 @@ public abstract class WorkspaceComponent implements Component, ExtServerStateHan
         this.preferencesManager = preferencesManager;
         this.dtoFactory = dtoFactory;
         this.initialLoadingInfo = initialLoadingInfo;
+        this.snapshotCreator = snapshotCreator;
 
         this.needToReloadComponents = true;
 
@@ -198,32 +204,74 @@ public abstract class WorkspaceComponent implements Component, ExtServerStateHan
                 subscribeToWorkspaceStatusWebSocket(workspace);
 
                 if (!RUNNING.equals(workspace.getStatus())) {
-                    workspaceServiceClient.startById(workspace.getId(),
-                                                     workspace.getDefaultEnvName()).then(new Operation<UsersWorkspaceDto>() {
+                    workspaceServiceClient.getSnapshot(workspace.getId()).then(new Operation<List<SnapshotDto>>() {
                         @Override
-                        public void apply(UsersWorkspaceDto workspace) throws OperationException {
-                            setCurrentWorkspace(workspace);
-
-                            List<MachineStateDto> machineStates = workspace.getEnvironments()
-                                                                           .get(workspace.getDefaultEnvName()).getMachineConfigs();
-
-                            for (MachineStateDto machineState : machineStates) {
-                                if (machineState.isDev()) {
-                                    MachineManager machineManager = machineManagerProvider.get();
-                                    machineManager.onDevMachineCreating(machineState);
-                                }
+                        public void apply(List<SnapshotDto> snapshots) throws OperationException {
+                            if (snapshots.isEmpty()) {
+                                handleWsStart(workspaceServiceClient.startById(workspace.getId(), workspace.getDefaultEnvName()));
+                            } else {
+                                showRecoverWorkspaceConfirmDialog(workspace);
                             }
-
-                            initialLoadingInfo.setOperationStatus(WORKSPACE_BOOTING.getValue(), SUCCESS);
-                        }
-                    }).catchError(new Operation<PromiseError>() {
-                        @Override
-                        public void apply(PromiseError arg) throws OperationException {
-                            initialLoadingInfo.setOperationStatus(WORKSPACE_BOOTING.getValue(), ERROR);
-                            callback.onFailure(new Exception(arg.getCause()));
                         }
                     });
                 }
+            }
+        });
+    }
+
+    /**
+     * Shows workspace recovering confirm dialog.
+     *
+     * <p> When "Ok" button is pressed - {@link WorkspaceServiceClient#recoverWorkspace(String, String, String) recovers workspace}
+     * <br>When "Cancel" button is pressed - {@link WorkspaceServiceClient#startById(String, String) starts workspace}
+     */
+    private void showRecoverWorkspaceConfirmDialog(final UsersWorkspaceDto workspace) {
+        dialogFactory.createConfirmDialog("Workspace recovering",
+                                          "Do you want to recover the workspace from snapshot?",
+                                          new ConfirmCallback() {
+                                              @Override
+                                              public void accepted() {
+                                                  handleWsStart(workspaceServiceClient.recoverWorkspace(workspace.getId(),
+                                                                                                        workspace.getDefaultEnvName(),
+                                                                                                        null));
+                                              }
+                                          },
+                                          new CancelCallback() {
+                                              @Override
+                                              public void cancelled() {
+                                                  handleWsStart(workspaceServiceClient.startById(workspace.getId(),
+                                                                                                 workspace.getDefaultEnvName()));
+                                              }
+                                          })
+                     .show();
+    }
+
+    /**
+     * Handles workspace start or recovering.
+     */
+    private void handleWsStart(final Promise<UsersWorkspaceDto> promise) {
+        loader.show(initialLoadingInfo);
+        initialLoadingInfo.setOperationStatus(WORKSPACE_BOOTING.getValue(), IN_PROGRESS);
+        promise.then(new Operation<UsersWorkspaceDto>() {
+            @Override
+            public void apply(UsersWorkspaceDto workspace) throws OperationException {
+                setCurrentWorkspace(workspace);
+                List<MachineStateDto> machineStates = workspace.getEnvironments()
+                                                               .get(workspace.getDefaultEnvName())
+                                                               .getMachineConfigs();
+
+                for (MachineStateDto machineState : machineStates) {
+                    if (machineState.isDev()) {
+                        MachineManager machineManager = machineManagerProvider.get();
+                        machineManager.onDevMachineCreating(machineState);
+                    }
+                }
+            }
+        }).catchError(new Operation<PromiseError>() {
+            @Override
+            public void apply(PromiseError arg) throws OperationException {
+                initialLoadingInfo.setOperationStatus(WORKSPACE_BOOTING.getValue(), ERROR);
+                callback.onFailure(new Exception(arg.getCause()));
             }
         });
     }
@@ -235,37 +283,47 @@ public abstract class WorkspaceComponent implements Component, ExtServerStateHan
             messageBus.subscribe("workspace:" + workspace.getId(), new SubscriptionHandler<WorkspaceStatusEvent>(unmarshaller) {
                 @Override
                 protected void onMessageReceived(WorkspaceStatusEvent statusEvent) {
-                    EventType workspaceStatus = statusEvent.getEventType();
-
                     String workspaceName = workspace.getName();
 
-                    if (EventType.RUNNING.equals(workspaceStatus)) {
-                        setCurrentWorkspace(workspace);
+                    switch (statusEvent.getEventType()) {
+                        case RUNNING:
+                            setCurrentWorkspace(workspace);
 
-                        notificationManager.showInfo(locale.startedWs(workspaceName));
+                            notificationManager.showInfo(locale.startedWs(workspaceName));
 
-                        eventBus.fireEvent(new StartWorkspaceEvent(workspace));
-                    }
+                            eventBus.fireEvent(new StartWorkspaceEvent(workspace));
 
-                    if (EventType.ERROR.equals(workspaceStatus)) {
-                        notificationManager.showError(locale.workspaceStartFailed(workspaceName));
+                            break;
+                        case ERROR:
+                            notificationManager.showError(locale.workspaceStartFailed(workspaceName));
 
-                        initialLoadingInfo.setOperationStatus(WORKSPACE_BOOTING.getValue(), ERROR);
+                            initialLoadingInfo.setOperationStatus(WORKSPACE_BOOTING.getValue(), ERROR);
 
-                        showErrorDialog(workspaceName, statusEvent.getError());
-                    }
+                            showErrorDialog(workspaceName, statusEvent.getError());
 
-                    if (EventType.STOPPED.equals(workspaceStatus)) {
-                        unSubscribeWorkspace(statusEvent.getWorkspaceId());
+                            break;
+                        case STOPPED:
+                            unSubscribeWorkspace(statusEvent.getWorkspaceId());
 
-                        eventBus.fireEvent(new StopWorkspaceEvent(workspace));
+                            eventBus.fireEvent(new StopWorkspaceEvent(workspace));
 
-                        workspaceServiceClient.getWorkspaces(SKIP_COUNT, MAX_COUNT).then(new Operation<List<UsersWorkspaceDto>>() {
-                            @Override
-                            public void apply(List<UsersWorkspaceDto> workspaces) throws OperationException {
-                                startWorkspacePresenter.show(workspaces, callback);
-                            }
-                        });
+                            workspaceServiceClient.getWorkspaces(SKIP_COUNT, MAX_COUNT).then(new Operation<List<UsersWorkspaceDto>>() {
+                                @Override
+                                public void apply(List<UsersWorkspaceDto> workspaces) throws OperationException {
+                                    startWorkspacePresenter.show(workspaces, callback);
+                                }
+                            });
+
+                            break;
+                        case SNAPSHOT_CREATED:
+                            snapshotCreator.successfullyCreated();
+                            break;
+                        case SNAPSHOT_CREATION_ERROR:
+                            snapshotCreator.creationError("Snapshot creation error: " + statusEvent.getError());
+                            break;
+                        default:
+                            // do nothing
+                            break;
                     }
                 }
 

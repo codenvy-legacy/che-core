@@ -11,6 +11,7 @@
 package org.eclipse.che.api.workspace.server;
 
 import org.eclipse.che.api.core.model.machine.Command;
+import org.eclipse.che.api.core.model.machine.Snapshot;
 import org.eclipse.che.api.core.model.project.SourceStorage;
 import org.eclipse.che.api.core.model.workspace.Environment;
 import org.eclipse.che.api.core.model.workspace.EnvironmentState;
@@ -23,6 +24,7 @@ import org.eclipse.che.api.machine.shared.dto.CommandDto;
 import org.eclipse.che.api.machine.shared.dto.MachineConfigDto;
 import org.eclipse.che.api.machine.shared.dto.MachineDto;
 import org.eclipse.che.api.machine.shared.dto.MachineStateDto;
+import org.eclipse.che.api.machine.shared.dto.SnapshotDto;
 import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
 import org.eclipse.che.api.workspace.shared.dto.EnvironmentStateDto;
 import org.eclipse.che.api.workspace.shared.dto.ModuleConfigDto;
@@ -144,11 +146,11 @@ public final class DtoConverter {
      */
     public static ModuleConfigDto asDto(ModuleConfig moduleConfig) {
         final ModuleConfigDto moduleConfigDto = newDto(ModuleConfigDto.class).withName(moduleConfig.getName())
-                                                                                .withDescription(moduleConfig.getDescription())
-                                                                                .withPath(moduleConfig.getPath())
-                                                                                .withType(moduleConfig.getType())
-                                                                                .withAttributes(moduleConfig.getAttributes())
-                                                                                .withMixins(moduleConfig.getMixins());
+                                                                             .withDescription(moduleConfig.getDescription())
+                                                                             .withPath(moduleConfig.getPath())
+                                                                             .withType(moduleConfig.getType())
+                                                                             .withAttributes(moduleConfig.getAttributes())
+                                                                             .withMixins(moduleConfig.getMixins());
         if (moduleConfig.getModules() != null) {
             final List<ModuleConfigDto> modules = moduleConfig.getModules()
                                                               .stream()
@@ -221,6 +223,17 @@ public final class DtoConverter {
                                                 .withDescription(workspace.getDescription());
     }
 
-    private DtoConverter() {
+    public static SnapshotDto asDto(Snapshot snapshot) {
+        return newDto(SnapshotDto.class).withId(snapshot.getId())
+                                        .withCreationDate(snapshot.getCreationDate())
+                                        .withDescription(snapshot.getDescription())
+                                        .withDev(snapshot.isDev())
+                                        .withOwner(snapshot.getOwner())
+                                        .withType(snapshot.getType())
+                                        .withWorkspaceId(snapshot.getWorkspaceId())
+                                        .withEnvName(snapshot.getEnvName())
+                                        .withMachineName(snapshot.getEnvName());
     }
+
+    private DtoConverter() {}
 }

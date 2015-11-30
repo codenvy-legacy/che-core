@@ -24,6 +24,7 @@ import org.eclipse.che.api.core.util.LineConsumer;
 import org.eclipse.che.api.machine.server.dao.SnapshotDao;
 import org.eclipse.che.api.machine.server.exception.MachineException;
 import org.eclipse.che.api.machine.server.impl.AbstractInstance;
+import org.eclipse.che.api.machine.server.impl.SnapshotImpl;
 import org.eclipse.che.api.machine.server.model.impl.ChannelsImpl;
 import org.eclipse.che.api.machine.server.model.impl.LimitsImpl;
 import org.eclipse.che.api.machine.server.model.impl.MachineConfigImpl;
@@ -136,7 +137,8 @@ public class MachineManagerTest {
                                                                    new ChannelsImpl("chan1", "chan2"),
                                                                    machineConfig.getLimits(),
                                                                    machineConfig.getSource(),
-                                                                   MachineStatus.CREATING);
+                                                                   MachineStatus.CREATING,
+                                                                   environmentName);
         doReturn(recipe).when(manager).getRecipeByLocation(any(MachineConfig.class));
         when(machineInstanceProviders.getProvider(anyString())).thenReturn(instanceProvider);
         when(instanceProvider.createInstance(eq(recipe), any(MachineState.class), any(LineConsumer.class))).thenReturn(noOpInstance);
@@ -164,8 +166,9 @@ public class MachineManagerTest {
                                 Channels channels,
                                 Limits limits,
                                 MachineSource source,
-                                MachineStatus machineStatus) {
-            super(id, type, workspaceId, owner, isDev, displayName, channels, limits, source, machineStatus);
+                                MachineStatus machineStatus,
+                                String envName) {
+            super(id, type, workspaceId, owner, isDev, displayName, channels, limits, source, machineStatus, envName);
         }
 
         public NoOpInstanceImpl(MachineState machineState) {

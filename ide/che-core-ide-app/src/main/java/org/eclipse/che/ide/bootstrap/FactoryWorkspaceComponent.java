@@ -32,6 +32,7 @@ import org.eclipse.che.api.workspace.gwt.client.WorkspaceServiceClient;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.actions.WorkspaceSnapshotCreator;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.preferences.PreferencesManager;
@@ -81,7 +82,8 @@ public class FactoryWorkspaceComponent extends WorkspaceComponent implements Com
                                      DialogFactory dialogFactory,
                                      PreferencesManager preferencesManager,
                                      DtoFactory dtoFactory,
-                                     InitialLoadingInfo initialLoadingInfo) {
+                                     InitialLoadingInfo initialLoadingInfo,
+                                     WorkspaceSnapshotCreator snapshotCreator) {
         super(workspaceServiceClient,
               createWorkspacePresenter,
               startWorkspacePresenter,
@@ -97,7 +99,8 @@ public class FactoryWorkspaceComponent extends WorkspaceComponent implements Com
               dialogFactory,
               preferencesManager,
               dtoFactory,
-              initialLoadingInfo);
+              initialLoadingInfo,
+              snapshotCreator);
         this.factoryServiceClient = factoryServiceClient;
     }
 

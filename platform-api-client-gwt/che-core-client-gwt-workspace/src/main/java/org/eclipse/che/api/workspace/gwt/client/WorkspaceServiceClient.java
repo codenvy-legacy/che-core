@@ -12,6 +12,7 @@ package org.eclipse.che.api.workspace.gwt.client;
 
 import org.eclipse.che.api.machine.shared.dto.MachineConfigDto;
 import org.eclipse.che.api.machine.shared.dto.MachineStateDto;
+import org.eclipse.che.api.machine.shared.dto.SnapshotDto;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.workspace.server.WorkspaceService;
 import org.eclipse.che.api.machine.shared.dto.CommandDto;
@@ -26,7 +27,7 @@ import java.util.List;
 /**
  * GWT Client for Workspace Service.
  *
- * @author Eugene Voevodin
+ * @author Yevhenii Voevodin
  */
 public interface WorkspaceServiceClient {
 
@@ -188,4 +189,25 @@ public interface WorkspaceServiceClient {
      * @see WorkspaceService#createMachine(String, MachineConfigDto)
      */
     Promise<MachineStateDto> createMachine(String wsId, MachineConfigDto machineConfig);
+
+    /**
+     * Returns workspace's snapshot.
+     *
+     * @see WorkspaceService#getSnapshot(String)
+     */
+    Promise<List<SnapshotDto>> getSnapshot(String workspaceId);
+
+    /**
+     * Creates snapshot of workspace.
+     *
+     * @see WorkspaceService#createSnapshot(String)
+     */
+    Promise<Void> createSnapshot(String workspaceId);
+
+    /**
+     * Recovers workspace from snapshot.
+     *
+     * @see WorkspaceService#recoverWorkspace(String, String, String)
+     */
+    Promise<UsersWorkspaceDto> recoverWorkspace(String workspaceId, String envName, String accountId);
 }

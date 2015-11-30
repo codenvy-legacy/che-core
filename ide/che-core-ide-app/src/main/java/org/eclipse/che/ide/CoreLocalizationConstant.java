@@ -461,6 +461,18 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("started.ws")
     String startedWs(String wsName);
 
+    @Key("create.snapshot.title")
+    String createSnapshotTitle();
+
+    @Key("create.snapshot.description")
+    String createSnapshotDescription();
+
+    @Key("create.snapshot.progress")
+    String createSnapshotProgress();
+
+    @Key("create.snapshot.success")
+    String createSnapshotSuccess();
+
     @Key("ext.server.started")
     String extServerStarted();
 

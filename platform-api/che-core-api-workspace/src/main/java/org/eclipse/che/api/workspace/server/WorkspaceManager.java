@@ -14,6 +14,7 @@ import com.google.common.base.Strings;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
 
+import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
@@ -25,21 +26,25 @@ import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.machine.server.MachineManager;
+import org.eclipse.che.api.machine.server.impl.SnapshotImpl;
 import org.eclipse.che.api.machine.server.model.impl.MachineStateImpl;
 import org.eclipse.che.api.workspace.server.model.impl.EnvironmentStateImpl;
 import org.eclipse.che.api.workspace.server.model.impl.RuntimeWorkspaceImpl;
 import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
 import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
 import org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent;
+import org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent.EventType;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.concurrent.ThreadLocalPropagateContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -48,6 +53,8 @@ import static java.lang.String.format;
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.STOPPED;
 import static org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent.EventType.ERROR;
 import static org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent.EventType.RUNNING;
+import static org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent.EventType.SNAPSHOT_CREATED;
+import static org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent.EventType.SNAPSHOT_CREATION_ERROR;
 import static org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent.EventType.STARTING;
 import static org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent.EventType.STOPPING;
 import static org.eclipse.che.commons.lang.NameGenerator.generate;
@@ -70,6 +77,7 @@ public class WorkspaceManager {
     private       WorkspaceConfigValidator workspaceConfigValidator;
     private final EventService eventService;
     private final ExecutorService          executor;
+    private final MachineManager           machineManager;
 
     private WorkspaceHooks hooks = WorkspaceHooks.NOOP_WORKSPACE_HOOKS;
 
@@ -77,11 +85,13 @@ public class WorkspaceManager {
     public WorkspaceManager(WorkspaceDao workspaceDao,
                             RuntimeWorkspaceRegistry workspaceRegistry,
                             WorkspaceConfigValidator workspaceConfigValidator,
-                            EventService eventService) {
+                            EventService eventService,
+                            MachineManager machineManager) {
         this.workspaceDao = workspaceDao;
         this.workspaceRegistry = workspaceRegistry;
         this.workspaceConfigValidator = workspaceConfigValidator;
         this.eventService = eventService;
+        this.machineManager = machineManager;
 
         executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("WorkspaceManager-%d")
                                                                            .setDaemon(true)
@@ -175,7 +185,84 @@ public class WorkspaceManager {
         requiredNotNull(workspaceId, "Workspace id required");
 
         final UsersWorkspaceImpl workspace = workspaceDao.get(workspaceId);
-        return startWorkspace(workspace, envName, accountId);
+        return startWorkspace(workspace, envName, accountId, false);
+    }
+
+    public UsersWorkspaceImpl recoverWorkspace(String workspaceId, String envName, String accountId)
+            throws BadRequestException, NotFoundException, ServerException, ConflictException, ForbiddenException {
+        requiredNotNull(workspaceId, "Workspace id required");
+
+        final UsersWorkspaceImpl workspace = workspaceDao.get(workspaceId);
+        return startWorkspace(workspace, envName, accountId, true);
+    }
+
+    /**
+     * Creates snapshot of runtime workspace.
+     *
+     * <p>Basically creates {@link SnapshotImpl snapshot} instance for each machine from
+     * runtime workspace's active environment.
+     *
+     * <p> If snapshot of workspace's dev machine was created successfully
+     * publishes {@link EventType#SNAPSHOT_CREATED} event, otherwise publishes {@link EventType#SNAPSHOT_CREATION_ERROR}
+     * with appropriate error message.
+     *
+     * <p> Note that:
+     * <br>Snapshots are created asynchronously
+     * <br>If snapshot creation for one machine failed, it wouldn't affect another snapshot creations
+     *
+     * @param workspaceId
+     *         runtime workspace id
+     * @throws BadRequestException
+     *         when workspace id is null
+     * @throws NotFoundException
+     *         when runtime workspace with given id does not exist
+     * @throws ServerException
+     *         when any other error occurs
+     */
+    public void createSnapshot(String workspaceId) throws BadRequestException, NotFoundException, ServerException {
+        requiredNotNull(workspaceId, "Required non-null workspace id");
+
+        final RuntimeWorkspaceImpl workspace = workspaceRegistry.get(workspaceId);
+        executor.execute(ThreadLocalPropagateContext.wrap(() -> {
+            String devMachineSnapshotFailMessage = null;
+            for (MachineStateImpl machineState : workspace.getMachines()) {
+                try {
+                    machineManager.saveSync(machineState.getId(), workspace.getOwner(), workspace.getActiveEnvName());
+                } catch (ApiException apiEx) {
+                    if (machineState.isDev()) {
+                        devMachineSnapshotFailMessage = apiEx.getLocalizedMessage();
+                    }
+                    LOG.error(apiEx.getLocalizedMessage(), apiEx);
+                }
+            }
+            if (devMachineSnapshotFailMessage != null) {
+                eventService.publish(newDto(WorkspaceStatusEvent.class).withEventType(SNAPSHOT_CREATION_ERROR)
+                                                                       .withWorkspaceId(workspaceId)
+                                                                       .withError(devMachineSnapshotFailMessage));
+            } else {
+                eventService.publish(newDto(WorkspaceStatusEvent.class).withEventType(SNAPSHOT_CREATED).withWorkspaceId(workspaceId));
+            }
+        }));
+    }
+
+    /**
+     * Returns list of machine snapshots which are related to workspace with given id.
+     *
+     * @param workspaceId
+     *         workspace id to get snapshot
+     * @return list of machine snapshots related to given workspace
+     * @throws BadRequestException
+     *         when {@code workspaceId} is null
+     * @throws NotFoundException
+     *         when workspace with given id doesn't exists
+     * @throws ServerException
+     *         when any other error occurs
+     */
+    public List<SnapshotImpl> getSnapshot(String workspaceId) throws ServerException, BadRequestException, NotFoundException {
+        requiredNotNull(workspaceId, "Required non-null workspace id");
+        // check if workspace exists
+        workspaceDao.get(workspaceId);
+        return machineManager.getSnapshots(getCurrentUserId(), workspaceId);
     }
 
     /**
@@ -214,7 +301,7 @@ public class WorkspaceManager {
         requiredNotNull(owner, "Workspace owner required");
 
         final UsersWorkspaceImpl workspace = workspaceDao.get(workspaceName, owner);
-        return startWorkspace(workspace, envName, accountId);
+        return startWorkspace(workspace, envName, accountId, false);
     }
 
     // TODO should we store temp workspaces and where?
@@ -252,7 +339,7 @@ public class WorkspaceManager {
         hooks.beforeCreate(workspace, accountId);
         hooks.beforeStart(workspace, workspace.getDefaultEnvName(), accountId);
 
-        final RuntimeWorkspaceImpl runtimeWorkspace = startWorkspaceSync(workspace, workspace.getDefaultEnvName());
+        final RuntimeWorkspaceImpl runtimeWorkspace = startWorkspaceSync(workspace, workspace.getDefaultEnvName(), false);
 
         addChannels(runtimeWorkspace);
 
@@ -378,7 +465,7 @@ public class WorkspaceManager {
         return workspaceDao.get(name, owner);
     }
 
-    private UsersWorkspaceImpl startWorkspace(UsersWorkspaceImpl workspace, String envName, String accountId)
+    private UsersWorkspaceImpl startWorkspace(UsersWorkspaceImpl workspace, String envName, String accountId, boolean recover)
             throws ServerException, NotFoundException, ForbiddenException, ConflictException {
         envName = firstNonNull(envName, workspace.getDefaultEnvName());
 
@@ -390,18 +477,18 @@ public class WorkspaceManager {
         } catch (NotFoundException ignored) {
             //it is okay if workspace does not exist
         }
-        
+
         workspace.setTemporary(false);
         hooks.beforeStart(workspace, envName, accountId);
-        startWorkspaceAsync(workspace, envName);
+        startWorkspaceAsync(workspace, envName, recover);
         workspace.setStatus(WorkspaceStatus.STARTING);
         return workspace;
     }
 
-    UsersWorkspaceImpl startWorkspaceAsync(final UsersWorkspaceImpl usersWorkspace, final String envName) {
+    UsersWorkspaceImpl startWorkspaceAsync(UsersWorkspaceImpl usersWorkspace, String envName, boolean recover) {
         executor.execute(ThreadLocalPropagateContext.wrap(() -> {
             try {
-                startWorkspaceSync(usersWorkspace, envName);
+                startWorkspaceSync(usersWorkspace, envName, recover);
             } catch (BadRequestException | ServerException | NotFoundException | ConflictException e) {
                 LOG.error(e.getLocalizedMessage(), e);
             }
@@ -412,14 +499,14 @@ public class WorkspaceManager {
         return usersWorkspace;
     }
 
-    RuntimeWorkspaceImpl startWorkspaceSync(final UsersWorkspaceImpl usersWorkspace, final String envName)
+    RuntimeWorkspaceImpl startWorkspaceSync(final UsersWorkspaceImpl usersWorkspace, final String envName, boolean recover)
             throws BadRequestException, ServerException, NotFoundException, ConflictException {
         eventService.publish(newDto(WorkspaceStatusEvent.class)
                                      .withEventType(STARTING)
                                      .withWorkspaceId(usersWorkspace.getId()));
 
         try {
-            final RuntimeWorkspaceImpl runtimeWorkspace = workspaceRegistry.start(usersWorkspace, envName);
+            final RuntimeWorkspaceImpl runtimeWorkspace = workspaceRegistry.start(usersWorkspace, envName, recover);
 
             eventService.publish(newDto(WorkspaceStatusEvent.class)
                                          .withEventType(RUNNING)
@@ -451,7 +538,7 @@ public class WorkspaceManager {
             }
 
             eventService.publish(newDto(WorkspaceStatusEvent.class)
-                                         .withEventType(WorkspaceStatusEvent.EventType.STOPPED)
+                                         .withEventType(EventType.STOPPED)
                                          .withWorkspaceId(workspaceId));
         });
     }
@@ -529,5 +616,4 @@ public class WorkspaceManager {
         }
         return true;
     }
-
 }

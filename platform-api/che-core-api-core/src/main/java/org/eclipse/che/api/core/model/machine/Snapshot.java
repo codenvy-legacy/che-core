@@ -14,6 +14,7 @@ package org.eclipse.che.api.core.model.machine;
  * Represents saved state of a machine
  *
  * @author gazarenkov
+ * @author Yevhenii Voevodin
  */
 public interface Snapshot {
 
@@ -37,15 +38,25 @@ public interface Snapshot {
      */
     long getCreationDate();
 
-    /**
-     * Id of the workspace that is bound to snapshot
-     */
-    String getWorkspaceId();
-
     boolean isDev();
 
     /**
      * Description of the snapshot
      */
     String getDescription();
+
+    /**
+     * Id of workspace which machines is bound to snapshot
+     */
+    String getWorkspaceId();
+
+    /**
+     * Returns name of bound to this snapshot machine
+     */
+    String getMachineName();
+
+    /**
+     * Returns name of environment which machine belongs to
+     */
+    String getEnvName();
 }
