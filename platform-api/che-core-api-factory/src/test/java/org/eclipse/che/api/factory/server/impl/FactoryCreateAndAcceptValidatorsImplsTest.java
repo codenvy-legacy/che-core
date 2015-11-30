@@ -68,7 +68,7 @@ public class FactoryCreateAndAcceptValidatorsImplsTest {
         doNothing().when(spy)
                    .validateProjectNames(any(Factory.class));
         doNothing().when(spy)
-                   .validateCurrentTimeBeforeSinceUntil(any(Factory.class));
+                   .validateCurrentTimeAfterSinceUntil(any(Factory.class));
         doNothing().when(spy)
                    .validateProjectActions(any(Factory.class));
         doNothing().when(workspaceConfigValidator)
@@ -80,7 +80,7 @@ public class FactoryCreateAndAcceptValidatorsImplsTest {
         verify(spy).validateSource(any(Factory.class));
         verify(spy).validateAccountId(any(Factory.class));
         verify(spy).validateProjectNames(any(Factory.class));
-        verify(spy).validateCurrentTimeBeforeSinceUntil(any(Factory.class));
+        verify(spy).validateCurrentTimeAfterSinceUntil(any(Factory.class));
         verify(spy).validateOnCreate(any(Factory.class));
         verify(spy).validateProjectActions(any(Factory.class));
         verifyNoMoreInteractions(spy);

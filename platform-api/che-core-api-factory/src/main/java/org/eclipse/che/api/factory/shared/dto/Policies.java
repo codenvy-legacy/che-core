@@ -27,31 +27,31 @@ public interface Policies {
      */
     // Do not change referer to referrer
     @FactoryParameter(obligation = OPTIONAL)
-    String getRefererHostname();
+    String getReferer();
 
-    void setRefererHostname(String refererHostname);
+    void setReferer(String referer);
 
-    Policies withRefererHostname(String refererHostname);
+    Policies withReferer(String referer);
 
     /**
      * Restrict access for factories used earlier then author supposes
      */
     @FactoryParameter(obligation = OPTIONAL)
-    Long getValidSince();
+    Long getSince();
 
-    void setValidSince(Long validSince);
+    void setSince(Long since);
 
-    Policies withValidSince(Long validSince);
+    Policies withSince(Long since);
 
     /**
      * Restrict access for factories used later then author supposes
      */
     @FactoryParameter(obligation = OPTIONAL)
-    Long getValidUntil();
+    Long getUntil();
 
-    void setValidUntil(Long validUntil);
+    void setUntil(Long until);
 
-    Policies withValidUntil(Long validUntil);
+    Policies withUntil(Long until);
 
     /**
      * Re-open project on factory 2-nd click

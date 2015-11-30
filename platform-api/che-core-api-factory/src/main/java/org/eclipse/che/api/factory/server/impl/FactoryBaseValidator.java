@@ -27,7 +27,6 @@ import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -36,6 +35,7 @@ import static com.google.common.base.Strings.emptyToNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.String.format;
+import static java.lang.System.currentTimeMillis;
 
 /**
  * Validates values of factory parameters.
@@ -142,9 +142,13 @@ public abstract class FactoryBaseValidator {
 
     /**
      * Validates that factory can be used at present time (used on accept)
+     *
      * @param factory
-     *          - factory to validate
+     *         factory to validate
      * @throws ConflictException
+     *         if since date greater than current date<br/>
+     * @throws ConflictException
+     *         if until date less than current date<br/>
      */
     protected void validateCurrentTimeBetweenSinceUntil(Factory factory) throws ConflictException {
         final Policies policies = factory.getPolicies();
@@ -152,47 +156,49 @@ public abstract class FactoryBaseValidator {
             return;
         }
 
-        Long validSince = policies.getValidSince();
-        Long validUntil = policies.getValidUntil();
+        Long since = policies.getSince() == null ? 0L : policies.getSince();
+        Long until = policies.getUntil() == null ? 0L : policies.getUntil();
 
-        if (validSince != null && validSince != 0) {
-            if (new Date().before(new Date(validSince))) {
-                throw new ConflictException(FactoryConstants.ILLEGAL_FACTORY_BY_VALIDSINCE_MESSAGE);
-            }
+        if (since != 0 && currentTimeMillis() < since) {
+            throw new ConflictException(FactoryConstants.ILLEGAL_FACTORY_BY_SINCE_MESSAGE);
         }
 
-        if (validUntil != null && validUntil != 0) {
-            if (new Date().after(new Date(validUntil))) {
-                throw new ConflictException(FactoryConstants.ILLEGAL_FACTORY_BY_VALIDUNTIL_MESSAGE);
-            }
+        if (until != 0 && currentTimeMillis() > until) {
+            throw new ConflictException(FactoryConstants.ILLEGAL_FACTORY_BY_UNTIL_MESSAGE);
         }
     }
 
     /**
      * Validates correct valid since and until times are used (on factory creation)
+     *
      * @param factory
-     *          - factory to validate
+     *         factory to validate
      * @throws ConflictException
+     *         if since date greater or equal than until date<br/>
+     * @throws ConflictException
+     *         if since date less than current date<br/>
+     * @throws ConflictException
+     *         if until date less than current date<br/>
      */
-    protected void validateCurrentTimeBeforeSinceUntil(Factory factory) throws ConflictException {
+    protected void validateCurrentTimeAfterSinceUntil(Factory factory) throws ConflictException {
         final Policies policies = factory.getPolicies();
         if (policies == null) {
             return;
         }
 
-        Long validSince = policies.getValidSince();
-        Long validUntil = policies.getValidUntil();
+        Long since = policies.getSince() == null ? 0L : policies.getSince();
+        Long until = policies.getUntil() == null ? 0L : policies.getUntil();
 
-        if (validSince != null && validSince != 0 && validUntil != null && validUntil != 0 && validSince >= validUntil) {
-            throw new ConflictException(FactoryConstants.INVALID_VALIDSINCEUNTIL_MESSAGE);
+        if (since != 0 && until != 0 && since >= until) {
+            throw new ConflictException(FactoryConstants.INVALID_SINCEUNTIL_MESSAGE);
         }
 
-        if (validSince != null && validSince != 0 && new Date().after(new Date(validSince))) {
-            throw new ConflictException(FactoryConstants.INVALID_VALIDSINCE_MESSAGE);
+        if (since != 0 && currentTimeMillis() > since) {
+            throw new ConflictException(FactoryConstants.INVALID_SINCE_MESSAGE);
         }
 
-        if (validUntil != null && validUntil != 0 && new Date().after(new Date(validUntil))) {
-            throw new ConflictException(FactoryConstants.INVALID_VALIDUNTIL_MESSAGE);
+        if (until != 0 && currentTimeMillis() > until) {
+            throw new ConflictException(FactoryConstants.INVALID_UNTIL_MESSAGE);
         }
     }
 
