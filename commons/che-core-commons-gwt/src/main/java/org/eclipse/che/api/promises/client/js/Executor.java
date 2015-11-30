@@ -18,20 +18,14 @@ import com.google.gwt.core.client.JavaScriptObject;
  *
  * @param <V>
  *         the type of the promised value
+ * @author Mickaël Leduque
+ * @author Artem Zatsarynnyi
  */
 public class Executor<V> extends JavaScriptObject {
 
     /** JSO mandated protected constructor. */
     protected Executor() {
     }
-
-    /*
-     * The first parameter is the fulfillment function, the second is the rejection function. Both
-     * functions accept one argument.
-     * These functions are handed by the promise implementation
-     * The resolve function single parameter is the eventual value that's born by the promise
-     * The reject function single parameter is the cause of the rejection
-     */
 
     /**
      * Creates an executor.
@@ -61,8 +55,8 @@ public class Executor<V> extends JavaScriptObject {
     public interface ExecutorBody<V> {
         /**
          * The executor describes what the promise must do in order to be fulfilled.
-         * It will execute some code to process or retrieve some value, then use the <code>resolve</code> or
-         * <code>reject</code> callback to conclude.
+         * It will execute some code to process or retrieve some value,
+         * then use the {@code resolve} or {@code reject} callback to conclude.
          *
          * @param resolve
          *         what to do on success

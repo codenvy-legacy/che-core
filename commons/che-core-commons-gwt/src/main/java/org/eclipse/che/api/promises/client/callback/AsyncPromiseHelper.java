@@ -10,14 +10,21 @@
  *******************************************************************************/
 package org.eclipse.che.api.promises.client.callback;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
+
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.js.Executor;
 import org.eclipse.che.api.promises.client.js.JsPromiseError;
 import org.eclipse.che.api.promises.client.js.Promises;
 import org.eclipse.che.api.promises.client.js.RejectFunction;
 import org.eclipse.che.api.promises.client.js.ResolveFunction;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 
+/**
+ * Helps to create a {@link Promise} from a {@link AsyncCallback}.
+ *
+ * @author Mickaël Leduque
+ * @author Artem Zatsarynnyi
+ */
 public final class AsyncPromiseHelper {
 
     private AsyncPromiseHelper() {

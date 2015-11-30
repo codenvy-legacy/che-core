@@ -23,12 +23,13 @@ import org.eclipse.che.ide.util.loging.Log;
 import static org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper.createFromAsyncRequest;
 
 /**
- * A smattering of useful methods to work with Promises.
+ * Helps to combine promises with async requests.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class PromiseHelper {
 
+    /** Not instantiable. */
     private PromiseHelper() {
     }
 

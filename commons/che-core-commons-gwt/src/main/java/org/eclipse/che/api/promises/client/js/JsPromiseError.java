@@ -10,12 +10,13 @@
  *******************************************************************************/
 package org.eclipse.che.api.promises.client.js;
 
-import org.eclipse.che.api.promises.client.PromiseError;
-
 import com.google.gwt.core.client.JavaScriptObject;
+
+import org.eclipse.che.api.promises.client.PromiseError;
 
 public class JsPromiseError extends JavaScriptObject implements PromiseError {
 
+    /** JSO mandated protected constructor. */
     protected JsPromiseError() {
     }
 
@@ -53,10 +54,6 @@ public class JsPromiseError extends JavaScriptObject implements PromiseError {
         result.cause = e;
         return result;
     }-*/;
-
-    private final void setStack(final StackTraceElement[] stack) {
-        // TODO
-    }
 
     public final native String getMessage() /*-{
         return this.message;
