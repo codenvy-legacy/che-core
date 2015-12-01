@@ -19,6 +19,7 @@ import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 import java.io.File;
 
@@ -31,18 +32,21 @@ import java.io.File;
 @Singleton
 public class NativeGitConnectionFactory extends GitConnectionFactory {
 
-    private final CredentialsLoader    credentialsLoader;
+    private File mountRoot;
+    private final CredentialsLoader credentialsLoader;
     private final GitSshScriptProvider gitSshScriptProvider;
 
     @Inject
-    public NativeGitConnectionFactory(CredentialsLoader credentialsLoader, GitSshScriptProvider gitSshScriptProvider) {
+    public NativeGitConnectionFactory(@Named("vfs.local.fs_root_dir") java.io.File mountRoot, CredentialsLoader credentialsLoader,
+                                      GitSshScriptProvider gitSshScriptProvider) {
+        this.mountRoot = mountRoot;
         this.credentialsLoader = credentialsLoader;
         this.gitSshScriptProvider = gitSshScriptProvider;
     }
 
     @Override
     public GitConnection getConnection(File workDir, LineConsumerFactory outputPublisherFactory) throws GitException {
-        final GitConnection gitConnection = new NativeGitConnection(workDir, gitSshScriptProvider, credentialsLoader);
+        final GitConnection gitConnection = new NativeGitConnection(mountRoot, workDir, gitSshScriptProvider, credentialsLoader);
         gitConnection.setOutputLineConsumerFactory(outputPublisherFactory);
         return gitConnection;
     }
