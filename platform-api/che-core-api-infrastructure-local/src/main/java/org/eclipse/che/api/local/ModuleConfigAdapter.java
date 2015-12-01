@@ -25,7 +25,9 @@ import org.eclipse.che.api.workspace.server.model.impl.ModuleConfigImpl;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Dmitry Shnurenko
@@ -47,6 +49,7 @@ public class ModuleConfigAdapter implements JsonDeserializer<ModuleConfig>, Json
         config.setDescription(configJson.get("description") == null ? null : configJson.get("description").getAsString());
         config.setMixins(deserializeMixins(configJson));
         config.setModules(deserializeModules(configJson));
+        config.setAttributes(deserializeAttributes(configJson));
 
         return config;
     }
@@ -81,6 +84,31 @@ public class ModuleConfigAdapter implements JsonDeserializer<ModuleConfig>, Json
         return mixins;
     }
 
+    private Map<String, List<String>> deserializeAttributes(JsonObject configJson) {
+        JsonObject attributesFromJson = configJson.get("attributes") == null ? null : configJson.get("attributes").getAsJsonObject();
+
+        if (attributesFromJson == null) {
+            return Collections.emptyMap();
+        }
+        Map<String, List<String>> result = new HashMap<>();
+
+        //traversing over map
+        for (Map.Entry<String, JsonElement> entry : attributesFromJson.entrySet()) {
+            JsonArray jsonValue = entry.getValue().getAsJsonArray();
+            if (jsonValue.isJsonNull()) {
+                continue;
+            }
+            List<String> stringValues = new ArrayList<>();
+            for (JsonElement jsonElement : jsonValue) {
+                if (!jsonElement.isJsonNull()) {
+                    stringValues.add(jsonElement.getAsString());
+                }
+            }
+            result.put(entry.getKey(), stringValues);
+        }
+        return result;
+    }
+
     @Override
     public JsonElement serialize(ModuleConfig moduleConfig, Type type, JsonSerializationContext context) {
         return serializeModule(moduleConfig, context);
@@ -94,6 +122,7 @@ public class ModuleConfigAdapter implements JsonDeserializer<ModuleConfig>, Json
         object.addProperty("type", moduleConfig.getType());
         object.addProperty("description", moduleConfig.getDescription());
         object.add("mixins", context.serialize(moduleConfig.getMixins()));
+        object.add("attributes", context.serialize(moduleConfig.getAttributes()));
         object.add("modules", serializeModules(moduleConfig, context));
 
         return object;
