@@ -74,6 +74,7 @@ import org.eclipse.che.ide.project.node.NodeManager;
 import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
 import org.eclipse.che.ide.projecttype.wizard.presenter.ProjectWizardPresenter;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
+import org.eclipse.che.ide.ui.smartTree.event.BeforeExpandNodeEvent;
 import org.eclipse.che.ide.ui.smartTree.event.CollapseNodeEvent;
 import org.eclipse.che.ide.ui.smartTree.event.ExpandNodeEvent;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
@@ -739,6 +740,17 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
     }
 
     /**
+     * Check if node is loaded or not.
+     *
+     * @param node
+     *         node to check
+     * @return true - if node is loaded, otherwise - false
+     */
+    public boolean isLoaded(Node node) {
+        return view.isLoaded(node);
+    }
+
+    /**
      * Navigate to the storable source node in the project tree.
      * Perform node search and setting selection.
      *
@@ -758,6 +770,17 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
      */
     public HandlerRegistration addExpandHandler(ExpandNodeEvent.ExpandNodeHandler handler) {
         return view.addExpandHandler(handler);
+    }
+
+    /**
+     * Register befor node expand handler to allow custom functionality retrieve before expand event from the project tree.
+     *
+     * @param handler
+     *         before expand handler
+     * @return handler registration
+     */
+    public HandlerRegistration addBeforeExpandHandler(BeforeExpandNodeEvent.BeforeExpandNodeHandler handler) {
+        return view.addBeforeExpandHandler(handler);
     }
 
     /**
