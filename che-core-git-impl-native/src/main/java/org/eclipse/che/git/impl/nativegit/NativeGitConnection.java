@@ -11,6 +11,8 @@
 package org.eclipse.che.git.impl.nativegit;
 
 
+import com.google.common.base.Strings;
+
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.core.util.LineConsumerFactory;
 import org.eclipse.che.api.git.Config;
@@ -79,6 +81,7 @@ import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -100,9 +103,14 @@ public class NativeGitConnection implements GitConnection {
                     "you have the correct access rights\\nand the repository exists\\.\\n.*",
                     Pattern.MULTILINE);
     private final NativeGit         nativeGit;
+
+    private static final Pattern notInGitRepoErrorPattern = Pattern.compile("^fatal: Not a git repository.*(\\n.*)*$", Pattern.MULTILINE);
     private final CredentialsLoader credentialsLoader;
+    private final File mountRoot;
 
     /**
+     * @param mountRoot
+     *          directory where mount virtual file system @see property vfs.local.fs_root_dir
      * @param repository
      *         directory where commands will be invoked
      * @param gitSshScriptProvider
@@ -112,9 +120,9 @@ public class NativeGitConnection implements GitConnection {
      * @throws GitException
      *         when some error occurs
      */
-    public NativeGitConnection(File repository, GitSshScriptProvider gitSshScriptProvider,
+    public NativeGitConnection(File mountRoot, File repository, GitSshScriptProvider gitSshScriptProvider,
                                CredentialsLoader credentialsLoader) throws GitException {
-        this(new NativeGit(repository, gitSshScriptProvider, credentialsLoader, new GitAskPassScript()), credentialsLoader);
+        this(mountRoot, new NativeGit(repository, gitSshScriptProvider, credentialsLoader, new GitAskPassScript()), credentialsLoader);
     }
 
     /**
@@ -125,8 +133,9 @@ public class NativeGitConnection implements GitConnection {
      * @throws GitException
      *         when some error occurs
      */
-    public NativeGitConnection(NativeGit nativeGit, CredentialsLoader credentialsLoader)
+    public NativeGitConnection(File mountRoot, NativeGit nativeGit, CredentialsLoader credentialsLoader)
             throws GitException {
+        this.mountRoot = mountRoot;
         this.credentialsLoader = credentialsLoader;
         this.nativeGit = nativeGit;
     }
@@ -532,18 +541,49 @@ public class NativeGitConnection implements GitConnection {
     }
 
     /**
-     * Ensure existence repository root directory inside working directory
-     * @throws GitException if git root folder is not in working directory
+     * Ensure existence repository root directory inside working directory and in our virtual file system
+     *
+     * @throws GitException
+     *         if git root folder is not in working directory
      */
-    private void ensureExistenceRepoRootInWorkingDirectory() throws GitException {
-        final EmptyGitCommand emptyGitCommand = nativeGit.createEmptyGitCommand();
-        // command "rev-parse --show-cdup" returns relative path to repository root, f.e "../"
-        emptyGitCommand.setNextParameter("rev-parse").setNextParameter("--show-cdup").execute();
-        final String relativePathToRepositoryRoot = emptyGitCommand.getText();
-
-        // fn. if root repository located in working directory then relative path equals to ""
-        if (!relativePathToRepositoryRoot.isEmpty()) {
+    void ensureExistenceRepoRootInWorkingDirectory() throws GitException {
+        if (isInsideWorkTree()) {
+            final EmptyGitCommand emptyGitCommand = nativeGit.createEmptyGitCommand();
+            emptyGitCommand.setNextParameter("rev-parse").setNextParameter("--git-dir").execute();
+            final String gitDir = emptyGitCommand.getText();
+            //here we check that git repo inside our file system mount point
+            if (!gitDir.startsWith(mountRoot.getAbsolutePath()) && !gitDir.equals(".git")) {
+                throw new GitException("Project is not a git repository.");
+            }
+        } else {
             throw new GitException("Project is not a git repository.");
+        }
+
+    }
+
+
+    /**
+     * Ensure existence repository root directory inside working directory
+     *
+     * @throws GitException
+     *         if git root folder is not in working directory
+     */
+     boolean isInsideWorkTree() throws GitException {
+        final EmptyGitCommand emptyGitCommand = nativeGit.createEmptyGitCommand();
+        // command "rev-parse --is-inside-work-tree" returns true/false
+        try {
+            emptyGitCommand.setNextParameter("rev-parse")
+                           .setNextParameter("--is-inside-work-tree")
+                           .execute();
+
+            final String output = emptyGitCommand.getText();
+            return Boolean.valueOf(output);
+        } catch (GitException ge) {
+            String msg = ge.getMessage();
+            if (msg != null && notInGitRepoErrorPattern.matcher(msg).matches()) {
+                return false;
+            }
+            throw ge;
         }
     }
 
