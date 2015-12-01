@@ -27,5 +27,7 @@ public interface CustomListBoxResources extends ClientBundle {
 
     interface CSS extends CssResource {
         String listBox();
+
+        String dropdown();
     }
 }

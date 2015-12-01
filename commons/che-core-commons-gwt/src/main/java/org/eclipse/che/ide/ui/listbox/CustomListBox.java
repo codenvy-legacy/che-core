@@ -16,16 +16,19 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.LabelElement;
 import com.google.gwt.dom.client.NodeList;
-import com.google.gwt.event.dom.client.BlurEvent;
-import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.event.dom.client.HasChangeHandlers;
-import com.google.gwt.event.dom.client.MouseDownEvent;
-import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.dom.client.MouseUpEvent;
 import com.google.gwt.event.dom.client.MouseUpHandler;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.EventListener;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.RadioButton;
@@ -39,18 +42,21 @@ import com.google.gwt.user.client.ui.RootPanel;
 public class CustomListBox extends FocusWidget implements HasChangeHandlers {
 
     private static final CustomListBoxResources RESOURCES = GWT.create(CustomListBoxResources.class);
+    private static final FlowPanel              panel     = new FlowPanel();
 
     static {
         RESOURCES.getCSS().ensureInjected();
+        panel.getElement().setAttribute("tabindex", "1");
+        Document.get().getBody().appendChild(panel.getElement());
     }
 
     private final LabelElement currentItemLabel = Document.get().createLabelElement();
-    private final FlowPanel    optionsPanel     = new FlowPanel();
+    private final FlowPanel    popupPanel       = new FlowPanel();
     private final String       optionsGroupName = "listBox-" + Document.get().createUniqueId();
 
     private int     selectedIndex        = -1;
     private int     defaultSelectedIndex = -1;
-    private boolean isActive             = false;
+    private boolean isPopupPanelVisible  = false;
 
 
     public static CustomListBox wrap(Element element) {
@@ -65,72 +71,96 @@ public class CustomListBox extends FocusWidget implements HasChangeHandlers {
 
         return customListBox;
     }
-
+    
     /**
      * Creates an empty custom list box.
      */
     public CustomListBox() {
         super(Document.get().createDivElement());
 
-        Element listBoxElement = getElement();
+        getElement().appendChild(currentItemLabel);
+        getElement().appendChild(RESOURCES.arrow().getSvg().getElement());
 
-        listBoxElement.appendChild(currentItemLabel);
-        listBoxElement.appendChild(optionsPanel.getElement());
-        listBoxElement.appendChild(RESOURCES.arrow().getSvg().getElement());
+        popupPanel.addStyleName(RESOURCES.getCSS().dropdown());
 
-        optionsPanel.setVisible(false);
-
-        addDomHandler(new BlurHandler() {
+        Window.addResizeHandler(new ResizeHandler() {
             @Override
-            public void onBlur(BlurEvent event) {
-                optionsPanel.setVisible(false);
-                isActive = false;
-            }
-        }, BlurEvent.getType());
-
-        addDomHandler(new MouseDownHandler() {
-            @Override
-            public void onMouseDown(MouseDownEvent event) {
-                //Update isActive state. It actually when we lose onBlur event in the parent widget.
-                isActive = isActive(getElement());
-                if (!isActive) {
-                    optionsPanel.setVisible(true);
+            public void onResize(ResizeEvent event) {
+                if (!isPopupPanelVisible) {
+                    return;
                 }
+                updateCurrentPopupPosition();
             }
-        }, MouseDownEvent.getType());
+        });
 
         addDomHandler(new MouseUpHandler() {
             @Override
             public void onMouseUp(MouseUpEvent event) {
-                if (isActive) {
-                    optionsPanel.setVisible(!optionsPanel.isVisible());
+                panel.clear();
+                if (isPopupPanelVisible) {
+                    isPopupPanelVisible = false;
                 } else {
-                    isActive = true;
+                    if (getElement().hasAttribute("disabled")) {
+                        return;
+                    }
+                    updateCurrentPopupPosition();
+                    panel.add(popupPanel);
+                    panel.getElement().focus();
+                    isPopupPanelVisible = true;
                 }
             }
         }, MouseUpEvent.getType());
 
-        addChangeHandler(new ChangeHandler() {
+        Element panelElement = popupPanel.getElement();
+
+        DOM.sinkEvents(panelElement, Event.ONCHANGE | Event.ONCLICK);
+        DOM.setEventListener(panelElement, new EventListener() {
             @Override
-            public void onChange(ChangeEvent event) {
-                selectedIndex = -1;
-                NodeList<Element> selectionElements = optionsPanel.getElement().getElementsByTagName("input");
-                for (int pos = 0; pos < selectionElements.getLength(); pos++) {
-                    InputElement inputElement = (InputElement)selectionElements.getItem(pos);
-                    if (inputElement.isChecked()) {
-                        //update currentItemLabel
-                        currentItemLabel.setInnerText(getItemText(pos));
-                        selectedIndex = pos;
+            public void onBrowserEvent(Event event) {
+                switch (DOM.eventGetType(event)) {
+                    case Event.ONCLICK:
+                        getElement().focus();
+                        isPopupPanelVisible = false;
                         break;
-                    }
-                }
-                if (selectedIndex == -1) {
-                    currentItemLabel.setInnerText("");
+                    case Event.ONCHANGE:
+                        selectedIndex = -1;
+                        NodeList<Element> selectionElements = popupPanel.getElement().getElementsByTagName("input");
+                        for (int pos = 0; pos < selectionElements.getLength(); pos++) {
+                            InputElement inputElement = (InputElement)selectionElements.getItem(pos);
+                            if (inputElement.isChecked()) {
+                                //update currentItemLabel
+                                currentItemLabel.setInnerText(getItemText(pos));
+                                selectedIndex = pos;
+                                break;
+                            }
+                        }
+                        fireChangeEvent();
+                        if (selectedIndex == -1) {
+                            currentItemLabel.setInnerText("");
+                        }
+                        break;
                 }
             }
         });
 
         setStyleName(RESOURCES.getCSS().listBox());
+    }
+
+    private void updateCurrentPopupPosition() {
+        panel.getElement().setAttribute("style", "top: " + getElement().getAbsoluteBottom() + "px;" +
+                                                 "left: " + getElement().getAbsoluteLeft() + "px;" +
+                                                 "width: " + getElement().getOffsetWidth() + "px;" +
+                                                 "position:fixed;");
+    }
+
+    private void fireChangeEvent() {
+        DomEvent.fireNativeEvent(Document.get().createChangeEvent(), this);
+    }
+
+    private InputElement getListItemElement(int index) {
+        final Element optionElement = (Element)popupPanel.getElement().getChild(index);
+
+        return (InputElement)optionElement.getElementsByTagName("input").getItem(0);
     }
 
     /**
@@ -141,12 +171,6 @@ public class CustomListBox extends FocusWidget implements HasChangeHandlers {
      */
     protected CustomListBox(Element element) {
         super(element);
-    }
-
-    private InputElement getListItemElement(int index) {
-        final Element optionElement = (Element)optionsPanel.getElement().getChild(index);
-
-        return (InputElement)optionElement.getElementsByTagName("input").getItem(0);
     }
 
     /**
@@ -188,7 +212,7 @@ public class CustomListBox extends FocusWidget implements HasChangeHandlers {
     public void clear() {
         selectedIndex = -1;
         currentItemLabel.setInnerText("");
-        optionsPanel.getElement().removeAllChildren();
+        popupPanel.getElement().removeAllChildren();
     }
 
     /**
@@ -197,7 +221,7 @@ public class CustomListBox extends FocusWidget implements HasChangeHandlers {
      * @return the number of items
      */
     public int getItemCount() {
-        return optionsPanel.getElement().getChildCount();
+        return popupPanel.getElement().getChildCount();
     }
 
     /**
@@ -211,7 +235,7 @@ public class CustomListBox extends FocusWidget implements HasChangeHandlers {
      */
     public String getItemText(int index) {
         checkIndex(index);
-        final Element optionElement = (Element)optionsPanel.getElement().getChild(index);
+        final Element optionElement = (Element)popupPanel.getElement().getChild(index);
         final LabelElement labelElement = (LabelElement)optionElement.getElementsByTagName("label").getItem(0);
 
         return labelElement.getInnerText();
@@ -249,7 +273,7 @@ public class CustomListBox extends FocusWidget implements HasChangeHandlers {
      */
     public String getValue(int index) {
         checkIndex(index);
-        final Element optionElement = (Element)optionsPanel.getElement().getChild(index);
+        final Element optionElement = (Element)popupPanel.getElement().getChild(index);
         final InputElement inputElement = (InputElement)optionElement.getElementsByTagName("input").getItem(0);
 
         return inputElement.getValue();
@@ -294,12 +318,12 @@ public class CustomListBox extends FocusWidget implements HasChangeHandlers {
         inputElement.removeAttribute("tabindex");
         inputElement.setAttribute("value", value);
         //set default state
-        if (defaultSelectedIndex > -1 && optionsPanel.getElement().getChildCount() == defaultSelectedIndex) {
+        if (defaultSelectedIndex > -1 && popupPanel.getElement().getChildCount() == defaultSelectedIndex) {
             inputElement.setChecked(true);
             currentItemLabel.setInnerText(item);
         }
         //add to widget
-        optionsPanel.add(radioButton);
+        popupPanel.add(radioButton);
     }
 
     /**
@@ -309,9 +333,8 @@ public class CustomListBox extends FocusWidget implements HasChangeHandlers {
      */
     public void setHeight(String height) {
         this.getElement().getStyle().setProperty("height", height);
-        final String lineHeightStyle = "line-height: " + height + ";";
-        currentItemLabel.setAttribute("style", lineHeightStyle);
-        optionsPanel.getElement().setAttribute("style", optionsPanel.isVisible() ? lineHeightStyle : lineHeightStyle + "display: none;");
+        currentItemLabel.setAttribute("style", "line-height: " + height + ";");
+        popupPanel.getElement().setAttribute("style", "line-height: " + height + ";");
     }
 
     /**
@@ -343,7 +366,7 @@ public class CustomListBox extends FocusWidget implements HasChangeHandlers {
             currentItemLabel.setInnerText("");
             selectedIndex = -1;
         }
-        optionsPanel.getElement().removeChild(optionsPanel.getElement().getChild(index));
+        popupPanel.getElement().removeChild(popupPanel.getElement().getChild(index));
     }
 
     /**
@@ -378,7 +401,7 @@ public class CustomListBox extends FocusWidget implements HasChangeHandlers {
      */
     public void setItemText(int index, String text) {
         checkIndex(index);
-        final Element optionElement = (Element)optionsPanel.getElement().getChild(index);
+        final Element optionElement = (Element)popupPanel.getElement().getChild(index);
         final LabelElement labelElement = (LabelElement)optionElement.getElementsByTagName("label").getItem(0);
         labelElement.setInnerText(text);
         if (selectedIndex == index) {
@@ -429,6 +452,8 @@ public class CustomListBox extends FocusWidget implements HasChangeHandlers {
     @Override
     protected void onEnsureDebugId(String baseID) {
         super.onEnsureDebugId(baseID);
+
+        ensureDebugId(this.popupPanel.getElement(), baseID, "popup-panel");
     }
 
     private void checkIndex(int index) {
@@ -436,12 +461,4 @@ public class CustomListBox extends FocusWidget implements HasChangeHandlers {
             throw new IndexOutOfBoundsException();
         }
     }
-
-    /**
-     * Check isActive status.
-     */
-    private native boolean isActive(Element element) /*-{
-        var activeElement = $doc.activeElement;
-        return activeElement.isEqualNode(element);
-    }-*/;
 }

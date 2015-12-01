@@ -25,9 +25,10 @@
     margin: 0;
 }
 
-.listBox label {
-    font-size: inherit;
-    font-weight: inherit !important;
+.listBox label,
+.dropdown label {
+    font-size: textFieldFontSize;
+    font-weight: normal;
     vertical-align: bottom;
     white-space: nowrap;
     color: listBoxColor;
@@ -37,19 +38,7 @@
 
 .listBox > label {
     margin-right: 22px;
-    line-height: 22px;
-}
-
-.listBox span > label {
-    width: literal("calc(100% - 8px)");
-    margin-right: 0 !important;
-    display: inline-block;
-    line-height: inherit;
-    height: 100%;
-}
-
-.listBox label::before {
-    display: none !important;
+    line-height: 20px;
 }
 
 .listBox svg:last-child {
@@ -61,21 +50,15 @@
     top: 1px;
 }
 
-.listBox div input {
-    display: none;
+div:focus .dropdown {
+    display: block;
+    width: inherit;
+    margin-top: -1px;
+    box-sizing: border-box;
 }
 
-.listBox div span {
-    display: inline-block;
-    line-height: inherit;
-    width: 100%;
-}
-
-.listBox:focus div {
-    display: inline-block;
-}
-
-.listBox div {
+.dropdown {
+    position: inherit;
     background-color: listBoxDropdownBackgroundColor;
     box-shadow: listBoxDropdownShadowColor;
     border: 1px solid textFieldBorderColor;
@@ -84,14 +67,27 @@
     display: none;
     z-index: 9999998;
     line-height: 22px;
-    position: absolute;
-    top: 100%;
-    left: -1px;
-    right: -1px;
 }
 
-.listBox div span:hover {
+.dropdown input {
+    display: none;
+}
+
+.dropdown span {
+    display: inline-block;
+    line-height: inherit;
+    width: 100%;
+}
+
+.dropdown span:hover {
     background-color: popupHoverColor;
+}
+
+.dropdown span > label {
+    width: literal("calc(100% - 8px)");
+    display: inline-block;
+    line-height: inherit;
+    height: 100%;
 }
 
 .listBox[disabled] {
@@ -104,8 +100,4 @@
 
 .listBox[disabled] svg {
     fill: listBoxDisabledColor;
-}
-
-.listBox[disabled] div {
-    display: none !important;
 }
