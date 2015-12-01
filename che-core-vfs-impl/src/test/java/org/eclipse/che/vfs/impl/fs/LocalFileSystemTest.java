@@ -20,6 +20,7 @@ import org.eclipse.che.vfs.impl.fs.FileMetadataSerializer;
 import org.eclipse.che.vfs.impl.fs.LocalFileSystemProvider;
 import org.eclipse.che.vfs.impl.fs.WorkspaceHashLocalFSMountStrategy;
 import org.eclipse.che.api.core.notification.EventService;
+import org.eclipse.che.api.vfs.server.SystemPathsFilter;
 import org.eclipse.che.api.vfs.server.URLHandlerFactorySetup;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemApplication;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
@@ -135,7 +136,7 @@ public abstract class LocalFileSystemTest extends TestCase {
         assertTrue(new java.io.File(testFsIoRoot, testName).mkdirs());
 
         provider = new LocalFileSystemProvider(MY_WORKSPACE_ID, new WorkspaceHashLocalFSMountStrategy(root, root), new EventService(), null,
-                                               virtualFileSystemRegistry);
+                                               SystemPathsFilter.ANY, virtualFileSystemRegistry);
         provider.mount(testFsIoRoot);
         mountPoint = provider.getMountPoint(true);
         ROOT_ID = mountPoint.getRoot().getId();

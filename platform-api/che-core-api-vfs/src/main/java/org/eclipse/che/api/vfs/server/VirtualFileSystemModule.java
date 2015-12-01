@@ -21,6 +21,8 @@ public class VirtualFileSystemModule extends AbstractModule {
     protected void configure() {
         // Initialize empty set of VirtualFileSystemProvider.
         Multibinder.newSetBinder(binder(), VirtualFileSystemProvider.class);
+        // Initial an empty set of VirtualFilePathFilter
+        Multibinder.newSetBinder(binder(), SystemVirtualFilePathFilter.class);
         bind(VirtualFileSystemRegistryPlugin.class);
         // Avoid writing ContentStream with common JSON writer.
         // ContentStream should be serialized with dedicated MessageBodyWriter
