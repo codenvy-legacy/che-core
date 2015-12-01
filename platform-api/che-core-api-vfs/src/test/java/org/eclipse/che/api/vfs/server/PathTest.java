@@ -65,6 +65,12 @@ public class PathTest extends TestCase {
         assertEquals("/a/b/c/d", parsed.newPath("/c/d").toString());
     }
 
+    public void testNewPathRelative() {
+        final String raw = "/a/b";
+        Path parsed = Path.fromString(raw);
+        assertEquals("/a/y", parsed.newPath("x/../../y").toString());
+    }
+
     public void testChildPath() {
         Path parent = Path.fromString("/a/b/c");
         Path child1 = Path.fromString("/a/b/c/d");
